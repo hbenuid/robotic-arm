@@ -1,15 +1,23 @@
 #include "stm32f4xx_hal.h"
+#include <string.h>
+#include <stdio.h>
 
 // LED is connected to PA5 on Nucleo-F446RE (green user LED)
 #define LED_PIN GPIO_PIN_5
 #define LED_PORT GPIOA
 
+// UART handle for serial communication
+UART_HandleTypeDef huart2;
+
 void SystemClock_Config(void);
 void GPIO_Init(void);
+void UART_Init(void);
 void Error_Handler(void);
 
 int main(void)
 {
+    char msg[100];
+
     // Initialize HAL Library
     HAL_Init();
 
@@ -19,12 +27,40 @@ int main(void)
     // Initialize GPIO for LED
     GPIO_Init();
 
-    // Main loop - blink LED rapidly
+    // Initialize UART for serial communication
+    UART_Init();
+
+    // Send startup message
+    sprintf(msg, "STM32 Blink Test Started\r\n");
+    HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+
+    // Main loop - blink LED rapidly three times
+    int loop_count = 0;
     while (1)
     {
-        // Toggle LED state
-        HAL_GPIO_TogglePin(LED_PORT, LED_PIN);
-        HAL_Delay(100);  // Wait 100ms
+        loop_count++;
+        sprintf(msg, "Starting blink sequence #%d\r\n", loop_count);
+        HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+
+        // Blink rapidly three times
+        for (int i = 0; i < 3; i++)
+        {
+            sprintf(msg, "  Blink %d - ON\r\n", i + 1);
+            HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+            HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET);    // LED ON
+            HAL_Delay(100);  // Wait 100ms
+
+            sprintf(msg, "  Blink %d - OFF\r\n", i + 1);
+            HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+            HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_RESET);  // LED OFF
+            HAL_Delay(100);  // Wait 100ms
+        }
+
+        sprintf(msg, "Pausing...\r\n\r\n");
+        HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+
+        // Pause before repeating the pattern
+        HAL_Delay(1000);  // Wait 1 second
     }
 }
 
@@ -82,6 +118,38 @@ void GPIO_Init(void)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 
     HAL_GPIO_Init(LED_PORT, &GPIO_InitStruct);
+}
+
+void UART_Init(void)
+{
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+    // Enable USART2 and GPIOA clocks
+    __HAL_RCC_USART2_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+
+    // Configure UART pins (PA2 = TX, PA3 = RX)
+    GPIO_InitStruct.Pin = GPIO_PIN_2 | GPIO_PIN_3;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    // Configure UART parameters
+    huart2.Instance = USART2;
+    huart2.Init.BaudRate = 9600;
+    huart2.Init.WordLength = UART_WORDLENGTH_8B;
+    huart2.Init.StopBits = UART_STOPBITS_1;
+    huart2.Init.Parity = UART_PARITY_NONE;
+    huart2.Init.Mode = UART_MODE_TX_RX;
+    huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+
+    if (HAL_UART_Init(&huart2) != HAL_OK)
+    {
+        Error_Handler();
+    }
 }
 
 void Error_Handler(void)
