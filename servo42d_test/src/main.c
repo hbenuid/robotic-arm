@@ -494,9 +494,9 @@ int main(void) {
     
     HAL_Delay(500);
     
-    /* Test: Run motor forward at 100 RPM */
-    printf("\r\nRunning motor forward at 100 RPM...\r\n");
-    if (MKS_SpeedMode(0, 100, 10) == HAL_OK) {
+    /* Test: Run motor CW at 100 RPM */
+    printf("\r\nRunning motor CW at 100 RPM...\r\n");
+    if (MKS_SpeedMode(1, 100, 10) == HAL_OK) {  /* dir=1 for CW */
         printf("Speed command OK\r\n");
     } else {
         printf("Speed command FAILED\r\n");
@@ -521,10 +521,29 @@ int main(void) {
     
     HAL_Delay(1000);
     
+    /* Clear any pending RX messages */
+    while (HAL_CAN_GetRxFifoFillLevel(&hcan1, CAN_RX_FIFO0) > 0) {
+        CAN_RxHeaderTypeDef rxHeader;
+        uint8_t dummy[8];
+        HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &rxHeader, dummy);
+    }
+    
     /* Test: Position mode - rotate 1 full turn (3200 pulses at 16 microsteps) */
-    printf("\r\nPosition mode: 1 rotation forward...\r\n");
-    if (MKS_PositionMode(0, 200, 10, 3200) == HAL_OK) {
+    printf("\r\nPosition mode: 1 rotation CW...\r\n");
+    if (MKS_PositionMode(1, 200, 10, 3200) == HAL_OK) {
         printf("Position command OK\r\n");
+        
+        /* Monitor until complete */
+        for (int i = 0; i < 10; i++) {
+            HAL_Delay(500);
+            uint8_t stat = MKS_QueryStatus();
+            encoder = MKS_ReadEncoder();
+            printf("  Status: %d, Encoder: %ld\r\n", stat, encoder);
+            if (stat == 1) {  /* stopped = complete */
+                printf("Movement complete!\r\n");
+                break;
+            }
+        }
     } else {
         printf("Position command FAILED\r\n");
     }
