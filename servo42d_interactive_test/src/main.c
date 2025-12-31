@@ -450,7 +450,7 @@ void ProcessCommand(char *cmd) {
         uint8_t dir = (pulses >= 0) ? 1 : 0;
         uint32_t absPulses = (pulses >= 0) ? pulses : -pulses;
         printf("Position: %d pulses %s\r\n", (int)absPulses, dir ? "CW" : "CCW");
-        MKS_PositionMode(dir, 300, 30, absPulses);
+        MKS_PositionMode(dir, 2000, 5, absPulses);
     }
 }
 
