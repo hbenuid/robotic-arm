@@ -47,6 +47,7 @@ void Error_Handler(void);
 uint8_t MKS_CalcChecksum(uint8_t canId, uint8_t *data, uint8_t len);
 HAL_StatusTypeDef MKS_SendCommand(uint8_t *data, uint8_t len);
 HAL_StatusTypeDef MKS_ReceiveResponse(uint8_t *data, uint8_t *len, uint32_t timeout);
+void MKS_FlushRx(void);
 int32_t MKS_ReadEncoder(void);
 int16_t MKS_ReadSpeed(void);
 uint8_t MKS_QueryStatus(void);
@@ -104,22 +105,33 @@ HAL_StatusTypeDef MKS_SendCommand(uint8_t *data, uint8_t len) {
 
 /**
  * Receive CAN response from servo
+ * Waits for a response with matching command code
  */
 HAL_StatusTypeDef MKS_ReceiveResponse(uint8_t *data, uint8_t *len, uint32_t timeout) {
     CAN_RxHeaderTypeDef rxHeader;
     uint32_t startTick = HAL_GetTick();
     
-    while (HAL_CAN_GetRxFifoFillLevel(&hcan1, CAN_RX_FIFO0) == 0) {
-        if ((HAL_GetTick() - startTick) > timeout) {
-            return HAL_TIMEOUT;
+    while ((HAL_GetTick() - startTick) < timeout) {
+        if (HAL_CAN_GetRxFifoFillLevel(&hcan1, CAN_RX_FIFO0) > 0) {
+            HAL_StatusTypeDef status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &rxHeader, data);
+            if (status == HAL_OK) {
+                *len = rxHeader.DLC;
+                return HAL_OK;
+            }
         }
     }
-    
-    HAL_StatusTypeDef status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &rxHeader, data);
-    if (status == HAL_OK) {
-        *len = rxHeader.DLC;
+    return HAL_TIMEOUT;
+}
+
+/**
+ * Flush any pending CAN RX messages
+ */
+void MKS_FlushRx(void) {
+    CAN_RxHeaderTypeDef rxHeader;
+    uint8_t data[8];
+    while (HAL_CAN_GetRxFifoFillLevel(&hcan1, CAN_RX_FIFO0) > 0) {
+        HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &rxHeader, data);
     }
-    return status;
 }
 
 /**
@@ -521,22 +533,20 @@ int main(void) {
     
     HAL_Delay(1000);
     
-    /* Clear any pending RX messages */
-    while (HAL_CAN_GetRxFifoFillLevel(&hcan1, CAN_RX_FIFO0) > 0) {
-        CAN_RxHeaderTypeDef rxHeader;
-        uint8_t dummy[8];
-        HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &rxHeader, dummy);
-    }
+    MKS_FlushRx();  /* Clear any pending messages */
     
     /* Test: Position mode - rotate 1 full turn (3200 pulses at 16 microsteps) */
     printf("\r\nPosition mode: 1 rotation CW...\r\n");
+    MKS_FlushRx();  /* Clear buffer before position command */
     if (MKS_PositionMode(1, 200, 10, 3200) == HAL_OK) {
         printf("Position command OK\r\n");
         
         /* Monitor until complete */
         for (int i = 0; i < 10; i++) {
             HAL_Delay(500);
+            MKS_FlushRx();  /* Clear any async completion messages */
             uint8_t stat = MKS_QueryStatus();
+            MKS_FlushRx();
             encoder = MKS_ReadEncoder();
             printf("  Status: %d, Encoder: %ld\r\n", stat, encoder);
             if (stat == 1) {  /* stopped = complete */
