@@ -1,0 +1,21 @@
+# robotic-arm
+
+3-motor MKS SERVO42D/57D arm controlled over CAN bus from macOS via a CANable adapter.
+
+## Toolchain
+- Always use `uv` — never `pip install` directly. `uv add <pkg>` for new deps;
+  commit `pyproject.toml` and `uv.lock`.
+- Run the CLI with `uv run launcher` (entry point defined in `[project.scripts]`).
+  After adding or renaming entry points, run `uv sync` to refresh `.venv/bin/`.
+
+## Code layout
+- `launcher.py` auto-detects `/dev/tty.usbmodem*` and calls `motor_control.main()`.
+- `motor_control.py` is the interactive CLI. Near the top it does
+  `sys.path.insert(0, "src")` so `src/can_interface.py`, `src/motor_driver.py`,
+  `src/config.py` import without an `arctos.` prefix. **Don't** convert `src/`
+  into a real Python package without also rewriting those imports — the sys.path
+  hack is load-bearing.
+- Joint table and CAN settings live in `src/config.py` (`JOINTS`, `CAN_CHANNEL`, etc).
+
+## Known issue
+- `tests/` still imports `from arctos.*` and is broken. CLI runs fine without it.

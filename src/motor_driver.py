@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import time
 
-from arctos.can_interface import CANInterface
+from can_interface import CANInterface
 
 
 class MotorDriver:

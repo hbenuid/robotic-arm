@@ -15,10 +15,10 @@ import argparse
 import signal
 import sys
 
-# Allow running from project root: `python scripts/motor_control.py`
-sys.path.insert(0, ".")
-from arctos.can_interface import CANInterface
-from arctos.config import (
+# Allow running from project root: `python motor_control.py`
+sys.path.insert(0, "src")
+from can_interface import CANInterface
+from config import (
     CAN_BITRATE,
     CAN_CHANNEL,
     DEFAULT_ACC,
@@ -26,7 +26,7 @@ from arctos.config import (
     ENCODER_COUNTS_PER_REV,
     JOINTS,
 )
-from arctos.motor_driver import MotorDriver
+from motor_driver import MotorDriver
 
 # ---------------------------------------------------------------------------
 # Global state
@@ -57,7 +57,7 @@ def emergency_stop_all() -> None:
     print("\n!!! EMERGENCY STOP ALL MOTORS !!!")
     for _, can_id, *_ in JOINTS:
         _drivers[can_id].emergency_stop()
-    print("Emergency stop sent to all 6 motors.")
+    print(f"Emergency stop sent to all {len(JOINTS)} motors.")
 
 
 def _sigint_handler(_signum, _frame):
@@ -773,8 +773,8 @@ def main():
     )
     parser.add_argument(
         "--interface",
-        default="socketcan",
-        help="python-can interface type (default: socketcan)",
+        default="slcan",
+        help="python-can interface type (default: slcan)",
     )
     args = parser.parse_args()
 
