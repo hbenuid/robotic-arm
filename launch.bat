@@ -2,15 +2,29 @@
 setlocal EnableExtensions
 cd /d "%~dp0"
 
-REM Ensure uv is on PATH for this session even if a recent setup hasn't
-REM been picked up by File Explorer's environment yet.
+REM Ensure uv is on PATH for this session.
 set "PATH=%USERPROFILE%\.local\bin;%PATH%"
 
+REM Install uv on first run.
 where uv >nul 2>nul
 if %errorlevel% NEQ 0 (
-    echo uv not found on PATH.
-    echo Run setup.bat first to install uv and project dependencies.
+    echo === First-time setup: installing uv ===
+    powershell -ExecutionPolicy ByPass -NoProfile -Command "irm https://astral.sh/uv/install.ps1 | iex"
+    if errorlevel 1 (
+        echo.
+        echo ERROR: uv install failed.
+        pause
+        exit /b 1
+    )
+    REM uv install updates persistent user PATH; refresh current session.
+    set "PATH=%USERPROFILE%\.local\bin;%PATH%"
+)
+
+REM Sync dependencies (no-op if already current).
+uv sync
+if errorlevel 1 (
     echo.
+    echo ERROR: uv sync failed.
     pause
     exit /b 1
 )

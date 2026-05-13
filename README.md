@@ -16,9 +16,9 @@ Prerequisite: `uv`. Install one of:
 - Linux / macOS: `curl -LsSf https://astral.sh/uv/install.sh | sh`
 - Windows: `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
 
-**Windows shortcut:** instead of running the install command and `uv sync`
-separately, you can double-click `setup.bat` from File Explorer — it installs
-uv (if missing) and runs `uv sync` in one step.
+**Windows shortcut:** skip the install commands above — just double-click
+`launch.bat` from File Explorer. The first run installs uv and project
+dependencies; subsequent runs go straight to the motor controller menu.
 
 Then:
 
