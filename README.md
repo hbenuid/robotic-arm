@@ -10,15 +10,20 @@ Robot arm control software for a 3-motor MKS SERVO42D/57D arm over CAN bus.
 
 ## Setup
 
-Prerequisite: `uv`. Install one of:
+### Windows
+
+1. Clone the repo.
+2. Double-click `launch.bat`. That's it.
+
+The first run installs uv and project dependencies (~30s); every subsequent
+run goes straight to the motor controller menu.
+
+### macOS / Linux
+
+Install `uv`:
 
 - macOS: `brew install uv`
 - Linux / macOS: `curl -LsSf https://astral.sh/uv/install.sh | sh`
-- Windows: `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
-
-**Windows shortcut:** skip the install commands above — just double-click
-`launch.bat` from File Explorer. The first run installs uv and project
-dependencies; subsequent runs go straight to the motor controller menu.
 
 Then:
 
@@ -28,8 +33,8 @@ cd robotic-arm
 uv sync
 ```
 
-`uv sync` creates `.venv/`, installs `python-can` + `pyserial`, and registers the
-`launcher` console script in `.venv/bin/`.
+`uv sync` creates `.venv/`, installs `python-can` + `pyserial`, and registers
+the `launcher` console script in `.venv/bin/`.
 
 ## Configure your motors
 
@@ -52,8 +57,7 @@ itself (Menu → CAN → ID).
 uv run launcher
 ```
 
-**Windows shortcut:** double-click `launch.bat` from File Explorer to start the
-same thing (no terminal needed).
+(Windows: just double-click `launch.bat` — same thing, no terminal needed.)
 
 `launcher` auto-detects the CANable via `pyserial` — works on macOS
 (`/dev/cu.usbmodem*`), Linux (`/dev/ttyACM*`), and Windows (`COM*`). It opens
