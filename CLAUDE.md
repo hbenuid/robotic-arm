@@ -1,6 +1,6 @@
 # robotic-arm
 
-3-motor MKS SERVO42D/57D arm controlled over CAN bus from macOS via a CANable adapter.
+3-motor MKS SERVO42D/57D arm controlled over CAN bus via a CANable / slcan-compatible USB adapter. Runs on macOS, Linux, and Windows.
 
 ## Toolchain
 - Always use `uv` — never `pip install` directly. `uv add <pkg>` for new deps;
@@ -9,7 +9,8 @@
   After adding or renaming entry points, run `uv sync` to refresh `.venv/bin/`.
 
 ## Code layout
-- `launcher.py` auto-detects `/dev/tty.usbmodem*` and calls `motor_control.main()`.
+- `launcher.py` auto-detects the CANable via `pyserial.tools.list_ports` and calls
+  `motor_control.main()`.
 - `motor_control.py` is the interactive CLI. Near the top it does
   `sys.path.insert(0, "src")` so `src/can_interface.py`, `src/motor_driver.py`,
   `src/config.py` import without an `arctos.` prefix. **Don't** convert `src/`

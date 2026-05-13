@@ -1,7 +1,9 @@
 """Project configuration: CAN bus + joint table."""
 
 # CAN bus
-CAN_CHANNEL = "/dev/tty.usbmodem1101"  # adjust to actual CANable path
+# Use launcher.py (or pass --channel) — it auto-detects the adapter path on
+# macOS / Linux / Windows. This default is just a placeholder for direct runs.
+CAN_CHANNEL = "/dev/tty.usbmodem1101"
 CAN_BITRATE = 500000                    # MKS factory default
 
 # Motion defaults

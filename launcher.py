@@ -8,21 +8,32 @@ Usage:
 
 from __future__ import annotations
 
-import glob
 import sys
 
-CANABLE_GLOB = "/dev/tty.usbmodem*"  # macOS path for CANable / slcan adapters
+from serial.tools import list_ports
 
 
 def find_can_port() -> str:
-    ports = sorted(glob.glob(CANABLE_GLOB))
+    ports = list(list_ports.comports())
     if not ports:
-        print(f"No CAN adapter found at {CANABLE_GLOB}.")
-        print("Plug the CANable in and try again.")
+        print("No serial ports detected. Plug the CANable in and try again.")
         sys.exit(1)
+
+    # When multiple ports exist, prefer ones whose description/manufacturer
+    # mentions CANable. Otherwise fall back to all USB devices.
     if len(ports) > 1:
-        print(f"Multiple adapters: {ports}. Using first; pass --channel to override.")
-    return ports[0]
+        likely = [
+            p for p in ports
+            if "canable" in (p.description or "").lower()
+            or "canable" in (p.manufacturer or "").lower()
+        ]
+        if likely:
+            ports = likely
+        if len(ports) > 1:
+            shown = ", ".join(f"{p.device} ({p.description or '?'})" for p in ports)
+            print(f"Multiple candidates: {shown}. Using first; pass --channel to override.")
+
+    return ports[0].device
 
 
 def main() -> None:

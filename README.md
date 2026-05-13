@@ -7,11 +7,16 @@ Robot arm control software for a 3-motor MKS SERVO42D/57D arm over CAN bus.
 - 3× MKS SERVO42D/57D stepper drivers (one per joint: J1, J2, J3)
 - CANable / slcan-compatible USB-to-CAN adapter
 - 500 kbit/s CAN bus (MKS factory default)
-- Host: macOS
 
 ## Setup
 
-Prerequisite: `uv` (`brew install uv` on macOS).
+Prerequisite: `uv`. Install one of:
+
+- macOS: `brew install uv`
+- Linux / macOS: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- Windows: `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
+
+Then:
 
 ```
 git clone <repo-url>
@@ -29,7 +34,8 @@ Edit [src/config.py](src/config.py):
 - `JOINTS` — three `(name, can_id, gear_ratio)` tuples. Defaults are placeholders
   (CAN IDs `0x01`/`0x02`/`0x03`, gear ratio `1.0`). Set CAN IDs to match what
   you've programmed into each motor's on-board menu.
-- `CAN_CHANNEL` — only needed if auto-detect fails or you're not on macOS.
+- `CAN_CHANNEL` — only needed if auto-detect fails. The launcher overrides this
+  on every run.
 - `CAN_BITRATE`, `DEFAULT_SPEED`, `DEFAULT_ACC`, `ENCODER_COUNTS_PER_REV` —
   usually leave alone.
 
@@ -42,13 +48,17 @@ itself (Menu → CAN → ID).
 uv run launcher
 ```
 
-`launcher` auto-detects the CANable at `/dev/tty.usbmodem*`, opens the CAN bus
-at the configured bitrate, and drops you into the interactive menu.
+`launcher` auto-detects the CANable via `pyserial` — works on macOS
+(`/dev/cu.usbmodem*`), Linux (`/dev/ttyACM*`), and Windows (`COM*`). It opens
+the CAN bus at the configured bitrate and drops you into the interactive menu.
 
 Override config from the command line if needed:
 
 ```
-uv run launcher --bitrate 250000 --channel /dev/tty.usbmodemXXXX --interface slcan
+uv run launcher --channel /dev/cu.usbmodemXXXX    # macOS
+uv run launcher --channel /dev/ttyACM0            # Linux
+uv run launcher --channel COM3                    # Windows
+uv run launcher --bitrate 250000                  # change bitrate
 ```
 
 **Safety**: `Ctrl+C` at any time sends emergency-stop to ALL motors before
