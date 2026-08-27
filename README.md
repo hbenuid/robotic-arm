@@ -8,6 +8,26 @@ Robot arm control software for a 3-motor MKS SERVO42D/57D arm over CAN bus.
 - CANable / slcan-compatible USB-to-CAN adapter
 - 500 kbit/s CAN bus (MKS factory default)
 
+## CAD
+
+The arm's mechanical design lives in [`cad/`](cad/README.md) as parametric
+[build123d](https://github.com/gumyr/build123d) code — a **separate uv project**
+(Python 3.12) that the control software never depends on. It is being converted
+part-by-part from the original SolidWorks STEP exports (kept in `cad/reference/`);
+until a part is converted it is an import wrapper around its reference geometry, so
+the whole arm already assembles and renders:
+
+```
+cd cad
+./cadtool setup                      # one-time: venv + Playwright Chromium (snapshots)
+./cadtool step assemblies/arm.py     # build the arm STEP
+./cadtool viewer                     # CAD Viewer; open the printed URL with &file=assemblies/arm.step
+./cadtool pytest                     # convention + reference-match tests
+```
+
+See [`cad/README.md`](cad/README.md) for the workflow and [`cad/CLAUDE.md`](cad/CLAUDE.md)
+for the conventions.
+
 ## Setup
 
 ### Windows
@@ -85,7 +105,8 @@ src/
   config.py              joint table, CAN bus settings, motion defaults
   can_interface.py       thin python-can wrapper
   motor_driver.py        MKS CAN protocol (CRC, encode/decode, commands)
-stm32_tests/             STM32 firmware experiments (separate from Python)
+cad/                     parametric build123d CAD, separate uv project (see cad/README.md)
+old_stm32_tests/         archived STM32 firmware experiments (separate from Python)
 tests/                   pytest suite (currently broken — see Known issues)
 pyproject.toml, uv.lock  uv-managed project metadata
 ```

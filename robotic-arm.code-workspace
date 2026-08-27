@@ -1,0 +1,17 @@
+{
+  "folders": [
+    { "name": "Project Root", "path": "." },
+    { "name": "CAD (build123d)", "path": "cad" }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/__pycache__": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "bernhard-42.ocp-cad-viewer",
+      "ms-python.python"
+    ]
+  }
+}

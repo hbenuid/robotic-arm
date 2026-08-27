@@ -1,0 +1,148 @@
+"""SolidWorks reference geometry: the naming map, loaders and the reference-match check.
+
+The originals live outside the repo (~/Documents/arm_assembly_organized/, SolidWorks 2026
+AP214 exports of 2026-08-27). `tools/import_reference.py` copies the per-part exports into
+reference/<clean_name>.step (immutable inputs) and vendor/<clean_name>.step (purchased
+parts); `tools/extract_placements.py` extracts the assembly placements from the
+full-assembly STEP into reference/placements.json.
+
+`lib/` never imports `parts/`.
+"""
+from __future__ import annotations
+
+import pathlib
+import unicodedata
+
+from build123d import Location, Shape, import_step
+
+CAD_DIR = pathlib.Path(__file__).resolve().parent.parent
+REF_DIR = CAD_DIR / "reference"
+VENDOR_DIR = CAD_DIR / "vendor"
+
+# Where the SolidWorks export tree lives on this machine (override: --src / ARM_REFERENCE_SRC).
+DEFAULT_SOURCE_DIR = pathlib.Path.home() / "Documents" / "arm_assembly_organized"
+MONOLITH_NAME = "final Arm Assembly Fully Movable.STEP"   # 13 MB, inch units, the full positioned assembly
+
+# Custom / printed parts: clean name -> (SolidWorks product name, export path under the source dir).
+# Each gets parts/<name>.py (an import wrapper until converted) + reference/<name>.step.
+CUSTOM: dict[str, tuple[str, str]] = {
+    "base":                  ("base of robot arm 62126",                 "step/base of robot arm 62126.STEP"),
+    "j1_coupler":            ("Base couple updated 62126 _J1 coupler",   "step/Base couple updated 62126 _J1 coupler.STEP"),
+    "j1_link":               ("first joint edit 62126",                  "step/first joint edit 62126.STEP"),
+    "j1_cap":                ("first joint cap 8726",                    "step/first joint cap 8726.STEP"),   # inch-unit file; OCCT converts to mm
+    "j2_link":               ("Joint 2 change 8126",                     "step/Joint 2 change 8126.STEP"),
+    "j2_cap_1":              ("cap 1 joint 2 8726",                      "step/cap 1 joint 2 8726.STEP"),
+    "j2_cap_2":              ("cap of joint 2 piece 2 8526",             "step/cap of joint 2 piece 2 8526.STEP"),
+    "j3_coupler":            ("Joint 2 coupler 62226_J3 Coupler",        "step/Joint 2 coupler 62226_J3 Coupler.STEP"),
+    "gt2_pulley_90t":        ("GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric",
+                              "step/GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric.STEP"),
+    "gripper_clamp_bracket": ("brack for hand cmap",                     "step/brack for hand cmap.STEP"),
+    "wrist_link":            ("final component arm qwrist movement",     "step/final component arm qwrist movement.STEP"),
+    "gripper_cover":         ("Gripper Cover_Gripper Cover",             "step/Gripper Cover_Gripper Cover.STEP"),
+    "gripper_end":           ("Gripper End_Gripper End",                 "step/Gripper End_Gripper End.STEP"),
+    "gripper_finger_left":   ("Gripper Hand Left_Gripper Hand Left",     "step/Gripper Hand Left_Gripper Hand Left.STEP"),
+    "gripper_finger_right":  ("Gripper Hand Right_Gripper Hand Left",    "step/Gripper Hand Right_Gripper Hand Left.STEP"),  # mirror of Left; stale config name
+    "gripper_link_1":        ("Gripper link 1_Gripper link 1",           "step/Gripper link 1_Gripper link 1.STEP"),
+    "gripper_link_2":        ("Gripper link 2_Gripper link 2",           "step/Gripper link 2_Gripper link 2.STEP"),
+    "gripper_slider":        ("Gripper Mechanism Slider_Gripper Mechanism Slider",
+                              "step/Gripper Mechanism Slider_Gripper Mechanism Slider.STEP"),
+    "gripper_j3_connector":  ("Gripper to J3 connector 7726_Gripper to J3 connector",
+                              "step/Gripper to J3 connector 7726_Gripper to J3 connector.STEP"),
+    "servo_holder":          ("Servo Holder_Servo Holder",               "step/Servo Holder_Servo Holder.STEP"),
+}
+
+# Purchased (COTS) parts: clean name -> (product name, export path, or None when extracted
+# from the full assembly). Each gets parts/<name>.py (COTS = True) + vendor/<name>.step.
+COTS: dict[str, tuple[str, str | None]] = {
+    "gt2_pulley_20t":   ("GT2_20T_Конфигурация1",                                    "step/GT2_20T_Конфигурация1.STEP"),
+    "gripper_rail_6mm": ("Gripper rail 6mm_Gripper rail 6mm",                        "step/Gripper rail 6mm_Gripper rail 6mm.STEP"),
+    "mg996r_servo":     ("Servo Motor MG996R 3D Model_Servo Motor MG996R 3D Model",  "step/Servo Motor MG996R 3D Model_Servo Motor MG996R 3D Model.STEP"),
+    "mg996r_horn":      ("Servo MG996R Horn_Servo MG996R Horn",                      "step/Servo MG996R Horn_Servo MG996R Horn.STEP"),
+    "nema17_pancake":   ("nema17_pancake", None),   # 7-part sub-assembly, flattened by tools/extract_placements.py
+}
+
+# Sub-assemblies kept as modules under assemblies/: clean name -> product name.
+MODULES: dict[str, str] = {
+    "gripper": "Gripper Mechanism_Gripper Mechanism",
+}
+
+# Full-assembly nodes deliberately not modelled here (whole subtree skipped).
+SKIPPED_PRODUCTS: dict[str, str] = {
+    "New cyloidal assembly":    "cycloidal drive lives in the cycloidal_drive repo (CadQuery); re-attach later",
+    "cycloidal_drive_assembly": "child of New cyloidal assembly",
+    "nema17_pancake(2)":        "pancake internals are flattened into vendor/nema17_pancake.step",
+}
+
+PRODUCT_TO_PART: dict[str, str] = {prod: name for name, (prod, _) in {**CUSTOM, **COTS}.items()}
+
+
+def clean_label(product_name: str) -> str:
+    """Mangle a STEP product name the way build123d.import_step() labels nodes
+    (control characters stripped, ' .()' -> '_'), so node labels map back to products."""
+    text = "".join(ch for ch in product_name if unicodedata.category(ch)[0] != "C")
+    return text.translate(str.maketrans(" .()", "____"))
+
+
+LABEL_TO_PART: dict[str, str] = {clean_label(p): n for p, n in PRODUCT_TO_PART.items()}
+LABEL_TO_MODULE: dict[str, str] = {clean_label(p): n for n, p in MODULES.items()}
+SKIPPED_LABELS: dict[str, str] = {clean_label(p): why for p, why in SKIPPED_PRODUCTS.items()}
+
+
+def path_of(name: str) -> pathlib.Path:
+    return REF_DIR / f"{name}.step"
+
+
+def load(name: str, *, label: str | None = None) -> Shape:
+    """Fresh import of reference/<name>.step in the SolidWorks part-file frame.
+    A Solid for one-body parts, a flat Compound for multi-body ones."""
+    path = path_of(name)
+    if not path.exists():
+        raise FileNotFoundError(f"missing reference STEP {path} - run tools/import_reference.py")
+    shape = import_step(str(path))
+    shape.label = label or name
+    return shape
+
+
+def solid_volume(shape: Shape) -> float:
+    """Sum of solid volumes. Never use Compound.volume: in build123d 0.10 it skips nested
+    sub-assembly compounds."""
+    return sum(s.volume for s in shape.solids())
+
+
+def bbox_size(shape: Shape) -> tuple[float, float, float]:
+    bb = shape.bounding_box()
+    return (bb.size.X, bb.size.Y, bb.size.Z)
+
+
+def bbox_min(shape: Shape) -> tuple[float, float, float]:
+    bb = shape.bounding_box()
+    return (bb.min.X, bb.min.Y, bb.min.Z)
+
+
+def matches_reference(
+    shape: Shape,
+    name: str,
+    *,
+    local_from_ref: Location | None = None,
+    vol_tol: float = 0.005,
+    bbox_tol: float = 0.2,
+    check_position: bool = True,
+) -> tuple[bool, dict]:
+    """Compare `shape` (in its part-local frame) with reference/<name>.step moved by
+    `local_from_ref`. Volume must agree within `vol_tol` (relative); bounding-box size and,
+    if `check_position`, bounding-box min within `bbox_tol` mm. Returns (ok, report)."""
+    ref = load(name).moved(local_from_ref or Location())
+    vol, ref_vol = solid_volume(shape), solid_volume(ref)
+    size, ref_size = bbox_size(shape), bbox_size(ref)
+    lo, ref_lo = bbox_min(shape), bbox_min(ref)
+    report = {
+        "volume": (vol, ref_vol),
+        "bbox_size": (size, ref_size),
+        "bbox_min": (lo, ref_lo),
+        "solids": (len(shape.solids()), len(ref.solids())),
+    }
+    ok = abs(vol - ref_vol) <= vol_tol * ref_vol
+    ok = ok and all(abs(a - b) <= bbox_tol for a, b in zip(size, ref_size))
+    if check_position:
+        ok = ok and all(abs(a - b) <= bbox_tol for a, b in zip(lo, ref_lo))
+    return ok, report

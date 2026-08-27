@@ -20,3 +20,11 @@
 
 ## Known issue
 - `tests/` still imports `from arctos.*` and is broken. CLI runs fine without it.
+
+## CAD (`cad/`)
+- `cad/` is a **separate uv project** (Python 3.12, build123d) — the motor-control
+  project above never depends on it, and `launch.bat` never installs it. Never run
+  CAD code with the root venv.
+- Work from `cad/` via `./cadtool …` (`setup|step|inspect|snapshot|viewer|pytest|python`);
+  it runs the `cad@text-to-cad` plugin CLIs inside the CAD venv. Conventions, the
+  wrapper → parametric conversion workflow and the reference-match tests: `cad/CLAUDE.md`.

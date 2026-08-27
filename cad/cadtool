@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# cadtool - run the cad@text-to-cad plugin CLIs (and the usual dev commands) inside THIS
+# uv project (Python 3.12 + build123d), always from cad/ so cwd-relative paths resolve.
+# CAD_SKILL may be set to override plugin auto-detection (newest installed version wins).
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+cadtool - run the cad@text-to-cad plugin CLIs inside this uv project (paths relative to cad/)
+  ./cadtool setup                                   one-time: uv sync + Playwright Chromium (for snapshots)
+  ./cadtool step parts/<name>.py [--stl exports/<name>.stl]   -> parts/<name>.step (+ hidden .<name>.step.glb)
+  ./cadtool step assemblies/arm.py                  -> assemblies/arm.step (git-ignored, regenerable)
+  ./cadtool inspect refs <file.step> --facts --planes --positioning
+  ./cadtool snapshot --help                         PNG/GIF review packets
+  ./cadtool viewer                                  CAD Viewer for this dir; open the printed URL + &file=<rel path>
+  ./cadtool pytest [-m "not slow"]                  test suite
+  ./cadtool python -m assemblies.arm                any python in the venv
+USAGE
+}
+
+CAD_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$CAD_DIR"   # the plugin's cadpy resolves its root from cwd; keep paths cad/-relative
+
+CAD_SKILL="${CAD_SKILL:-$(ls -d "$HOME"/.claude/plugins/cache/text-to-cad/cad/*/skills/cad 2>/dev/null | sort -V | tail -1 || true)}"
+VIEWER_DIR="${CAD_SKILL:+$(dirname "$CAD_SKILL")/cad-viewer/scripts/viewer}"
+
+need_skill() {
+  if [[ -z "${CAD_SKILL:-}" || ! -d "$CAD_SKILL" ]]; then
+    echo "cadtool: cad@text-to-cad plugin not found under ~/.claude/plugins/cache/text-to-cad" >&2
+    echo "  install:  claude plugin marketplace add https://github.com/earthtojake/text-to-cad.git" >&2
+    echo "            claude plugin install cad@text-to-cad" >&2
+    exit 1
+  fi
+}
+
+# cadpy (the plugin's Python helper) is a pure-Python src-layout package; expose it via
+# PYTHONPATH instead of installing it, so `uv sync` can never prune it.
+if [[ -n "${CAD_SKILL:-}" && -d "$CAD_SKILL/scripts/packages/cadpy/src" ]]; then
+  export PYTHONPATH="$CAD_SKILL/scripts/packages/cadpy/src${PYTHONPATH:+:$PYTHONPATH}"
+fi
+
+cmd="${1:-help}"
+shift || true
+case "$cmd" in
+  step|inspect|snapshot)
+    need_skill
+    exec uv run --frozen python "$CAD_SKILL/scripts/$cmd" "$@" ;;
+  viewer)
+    need_skill
+    exec npm --prefix "$VIEWER_DIR" run start -- --host 127.0.0.1 --dir "$CAD_DIR" --shutdown-after 12h "$@" ;;
+  setup)
+    uv sync
+    uv run --frozen python -m playwright install chromium ;;
+  python)
+    exec uv run --frozen python "$@" ;;
+  pytest)
+    exec uv run --frozen pytest "$@" ;;
+  help|-h|--help)
+    usage ;;
+  *)
+    echo "cadtool: unknown command '$cmd'" >&2
+    usage >&2
+    exit 2 ;;
+esac

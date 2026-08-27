@@ -1,0 +1,33 @@
+[project]
+name = "robotic-arm-cad"
+version = "0.1.0"
+description = "Parametric build123d CAD for the 3-joint arm (converted from SolidWorks STEP exports)."
+readme = "README.md"
+# build123d caps at <3.14 and vtk 9.3.1 (pulled by build123d 0.10) ships wheels only up
+# to cp312, while the system Python is 3.14 -> the venv is pinned to 3.12 (.python-version).
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "build123d==0.10.0",
+    "ocp-vscode==3.4.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    # Needed by the plugin's scripts/snapshot. Declared here (not `uv pip install`-ed)
+    # so `uv sync` never prunes it; browser: `./cadtool setup` (playwright install chromium).
+    "playwright>=1.50",
+]
+
+[tool.pytest.ini_options]
+# rootdir is cad/; put it on sys.path so `import parts` / `from lib ...` resolve
+# (each part's path shim still covers Ctrl+F5, `python -m`, and the plugin CLI).
+pythonpath = ["."]
+testpaths = ["tests"]
+markers = [
+    "slow: builds/imports real OCCT geometry (deselect with -m 'not slow')",
+]
+filterwarnings = [
+    # build123d fires these from a class body at import time; third-party noise.
+    "ignore::DeprecationWarning:build123d.objects_curve",
+]

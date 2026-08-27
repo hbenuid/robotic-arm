@@ -2,3 +2,34 @@
 .venv/
 __pycache__/
 *.pyc
+
+# --- Python tooling ---
+.pytest_cache/
+*.egg-info/
+
+# --- CAD (cad/ is its own uv project; see cad/README.md) ---
+# Meshes and bulk exports are regenerated from the .py source - never committed.
+*.stl
+*.stp
+*.3mf
+*.glb
+*.step
+# EXCEPT: each part's primary STEP beside its gen_step() source, purchased-part
+# vendor STEPs, and the SolidWorks reference exports (none regenerable from Python).
+!/cad/parts/*.step
+!/cad/vendor/*.step
+!/cad/reference/*.step
+# Hidden CAD Viewer artifacts written by the plugin's scripts/step
+# (listed after the re-admits so they win).
+.*.step.glb
+.*.step.js
+.*.step/
+# Bulk STL/3MF sidecars and snapshot packets - regenerable.
+/cad/exports/*
+!/cad/exports/.gitkeep
+/cad/snapshots/
+
+# --- Claude Code ---
+# Share project-scoped config (.claude/settings.json); keep local overrides out.
+**/.claude/settings.local.json
+**/.claude/worktrees/
