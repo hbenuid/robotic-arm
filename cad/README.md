@@ -6,12 +6,14 @@ Parametric CAD-as-code for the 3-joint arm, converted part-by-part from the orig
 SolidWorks design. This folder is a **separate uv project** (Python 3.12) — the motor-control
 software in the repo root never depends on it.
 
-**Status:** every custom part exists as an *import wrapper* around its SolidWorks reference
+**Status:** every SolidWorks custom part exists as an *import wrapper* around its reference
 geometry (`reference/<name>.step`), purchased parts use their vendor STEPs, and
 `assemblies/arm.py` places all of them from placements extracted from the SolidWorks
 assembly — so the whole arm already assembles, renders and is tested. Converting a part means
-replacing its wrapper body with real build123d code (see "Converting a part"). The cycloidal
-drive is not modelled here (it lives in the `cycloidal_drive` repo).
+replacing its wrapper body with real build123d code (see "Converting a part"). The **20:1
+cycloidal shoulder drive is fully parametric build123d** (`lib/cycloidal/`, 16 parts,
+`assemblies/cycloidal_drive.py`), ported from the `cycloidal_drive` repo and verified against its
+CadQuery exports — see [`docs/cycloidal_drive.md`](docs/cycloidal_drive.md).
 
 ## Setup (once per machine)
 
@@ -63,24 +65,30 @@ cad/
 ├── cadtool                # bash wrapper around the plugin CLIs + uv (see above)
 ├── lib/
 │   ├── params.py          # single source of truth for shared dimensions (tagged provenance)
-│   ├── reference.py       # naming map SolidWorks <-> clean names, reference loaders, matches_reference()
+│   ├── reference.py       # naming maps (SolidWorks custom/COTS, designed cycloidal parts, modules), loaders, matches_reference()
 │   ├── placements.py      # reference/placements.json -> build123d Location
 │   ├── assembly.py        # AssemblyHelper (cadgen, tiny fallback otherwise)
-│   └── export.py          # plugin-free STL/STEP export into exports/
+│   ├── export.py          # plugin-free STL/STEP export into exports/
+│   └── cycloidal/         # the cycloidal drive: DriveConfig (params.py), layout.py, profiles.py, housing.py, disc.py, geom.py
 ├── parts/                 # one part per file, gen_step() returns it at its LOCAL origin
 │   ├── _template.py           # designed (parametric) part template
-│   ├── _wrapper_template.py   # import-wrapper template (day-one state of every custom part)
+│   ├── _wrapper_template.py   # import-wrapper template (day-one state of every SolidWorks custom part)
 │   ├── _cots_template.py      # purchased part template (vendor STEP else envelope)
-│   └── <name>.py + <name>.step   # 20 custom + 5 COTS parts; the .step is generated and committed
+│   ├── _cycloidal_cots.py     # shared body of the drive's purchased-part modules
+│   └── <name>.py + <name>.step   # 20 custom (wrappers) + 6 designed (cycloidal_*) + 15 COTS parts; the .step is generated and committed
 ├── assemblies/
-│   ├── arm.py             # the whole arm (15 top-level occurrences + the gripper module)
-│   ├── gripper.py         # the gripper mechanism module (19 occurrences)
-│   └── _occurrences.py    # place()/add_occurrences() helpers
-├── reference/             # SolidWorks per-part exports for ALL parts (immutable, committed) + manifest + placements
+│   ├── arm.py             # the whole arm (16 top-level occurrences + the gripper and cycloidal_drive modules = 52 leaves)
+│   ├── gripper.py         # the gripper mechanism module (19 occurrences, placed from placements.json)
+│   ├── cycloidal_drive.py # the drive module (18 rows placed from lib/cycloidal stack_positions - code-driven)
+│   └── _occurrences.py    # place()/add_occurrences() (placement keys), place_at()/add_located() (Locations), world_rows()
+├── docs/cycloidal_drive.md  # the drive's spec, port notes and attachment
+├── reference/             # per-part reference STEPs (SolidWorks exports; CadQuery exports for the drive), manifest, placements
 ├── vendor/                # purchased-part STEPs (committed; replaceable by better catalog models)
 ├── robot/                 # URDF / SRDF / SDF + per-link meshes and generators (see below)
-├── tools/                 # import_reference.py, extract_placements.py, export_link_meshes.py, robot_frames.py
-├── tests/                 # pytest: conventions, reference match, placements, assembly totals, params locks, robot description
+├── tools/                 # import_reference.py, extract_placements.py, export_link_meshes.py, robot_frames.py,
+│                          # export_cycloidal_cadquery.py (runs in the old CadQuery venv), import_cycloidal_reference.py
+├── tests/                 # pytest: conventions, reference match, placements, assembly totals, params locks, robot description,
+│                          # test_cycloidal_*.py (the drive's own 200+ tests)
 ├── exports/               # STL/3MF sidecars (git-ignored)
 └── snapshots/             # snapshot PNGs (git-ignored)
 ```
@@ -99,6 +107,9 @@ Each `parts/<name>.py` follows the plugin-native **`gen_step()`** convention:
 - **custom parts** declare `REFERENCE` (their `reference/<name>.step`), `CONVERTED`
   (`False` while the file is a wrapper) and `LOCAL_FROM_REF` (rigid transform from the
   SolidWorks part-file frame to the part's local frame; identity for wrappers);
+- **designed parts** (the cycloidal drive's printed parts, `lib/reference.py DESIGNED`) are the
+  same contract with `CONVERTED = True` and a reference that is the CadQuery export they were
+  ported from — the strict `tests/test_cycloidal_port.py` checks them beyond the reference match;
 - **COTS parts** declare `COTS = True`, `MASS_G`, `VENDOR_STEP` and `VENDOR_TO_REF`, and
   `gen_step()` returns the vendor STEP (re-oriented by `VENDOR_TO_REF`) when present, else a
   parametric `_envelope()`.
@@ -144,8 +155,11 @@ the reference) → `./cadtool gen parts/<name>.py` → `./cadtool python tools/i
 `(part, role, placement_key)` in SolidWorks document order — and place a fresh copy of each
 part with `lib.placements` (`"j3_coupler#2"` = second occurrence of that part). Roles make
 duplicate parts' labels unique (`j3_coupler:j2`, `gripper_end:1`); they are positional for
-now. `tests/test_assembly.py` checks the rebuilt arm against the SolidWorks totals
-(34 occurrences, 50 solids, volume and bounding box).
+now. `assemblies/cycloidal_drive.py` is a **code-driven module**: its rows are
+`(part, role, Location)` computed from `lib/cycloidal` (`stack_positions`), and `arm.py` locates
+the whole module at the SolidWorks node's pose (`placements.json` `cycloidal_drive#1`, a
+`designed` module record). `tests/test_assembly.py` checks the rebuilt arm against the
+SolidWorks totals plus the module's own lock (34 + 18 leaves, 50 + 58 solids, volumes, bbox).
 
 ## Reference geometry and placements
 
@@ -154,7 +168,10 @@ now. `tests/test_assembly.py` checks the rebuilt arm against the SolidWorks tota
 `reference/placements.json` holds every occurrence's placement extracted from the full-assembly
 STEP. Both are **immutable inputs** (a checksum test guards them); regenerate with
 `./cadtool python tools/import_reference.py` and `./cadtool python tools/extract_placements.py`
-if the SolidWorks design changes.
+if the SolidWorks design changes. The cycloidal drive's 16 references are the CadQuery exports of
+the `cycloidal_drive` repo at `2f1f67d` (`tools/export_cycloidal_cadquery.py` in that repo's venv,
+then `./cadtool python tools/import_cycloidal_reference.py`), and its SolidWorks node is recorded
+in `placements.json` as a designed module (pose only; the contents come from code).
 
 ## Robot description (URDF / SRDF / SDF)
 
@@ -172,7 +189,10 @@ robot/
 ```
 
 Links: `base_link → j1 → link1 → j2 → link2 → j3 → link3 → wrist_roll → wrist_roll_link → jaw_a / jaw_b
-(prismatic, jaw_b mimics jaw_a) + tool0` (frame-only). Frames are REP-103 (`base_link` on the base's
+(prismatic, jaw_b mimics jaw_a) + tool0` (frame-only). `link1` carries the whole cycloidal drive
+(module key `cycloidal_drive#1` in `LINKS`, expanded by `assemblies/_occurrences.world_rows`) —
+physically the drive is a shoulder-pitch joint between `j1_coupler` and `j1_link` that is **not modelled
+as a joint yet** (see the URDF ledger and `docs/cycloidal_drive.md` §12). Frames are REP-103 (`base_link` on the base's
 bottom face at the J1 axis, Z up, X forward); every joint frame has Z on its axis; **all joints are 0
 at the SolidWorks capture pose**, so every mesh has an identity origin and the URDF at zero
 reproduces `assemblies/arm.py`. Limits, effort/velocity and axis signs are placeholders
@@ -194,7 +214,7 @@ frame moved re-derive the affected `<origin>`/`<inertial>` values with `--urdf-d
 ## Tests
 
 ```bash
-./cadtool pytest                 # everything (geometry builds take ~20 s)
+./cadtool pytest                 # everything (~420 tests; the geometry builds take ~2 min)
 ./cadtool pytest -m "not slow"   # fast lane: metadata, params, placements JSON
 uv run pytest                    # equivalent (cadgen is a normal dependency)
 ```

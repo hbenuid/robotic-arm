@@ -2,7 +2,8 @@
 
 **Purpose:** CAD-scoped agent guide — the `gen_step()` part convention, the wrapper → parametric
 conversion workflow, shared-dimension rules, assembly placements, purchased parts, tests, tooling.
-**Audience:** agent. Human docs: `README.md`. Reference provenance: `reference/README.md`.
+**Audience:** agent. Human docs: `README.md`. Reference provenance: `reference/README.md`. The
+cycloidal drive (spec, port notes, attachment): `docs/cycloidal_drive.md`.
 **Last updated:** 2026-08-28. Every commit that changes behaviour, layout or tooling gets a dated entry in the
 root `CHANGELOG.md` and bumps the `Last updated` line of the docs it touches.
 
@@ -26,8 +27,11 @@ robotic-arm repo; the root motor-control project never depends on it.
 - `./cadtool viewer` — CAD Viewer for this folder: `http://127.0.0.1:3245/<abs cad>?file=<rel path>`
   (Python backend in our venv; 12 h auto-stop). Hand every created/updated STEP to it.
 - `./cadtool validate <file.urdf|.srdf|.sdf>`, `./cadtool parts "<query>"`, `./cadtool skill <skill> <tool> …`.
-- `./cadtool pytest [-m "not slow"]`, `./cadtool python -m assemblies.arm`.
+- `./cadtool pytest [-m "not slow"]`, `./cadtool python -m assemblies.arm`,
+  `./cadtool python -m assemblies.cycloidal_drive [--totals]`.
 - `uv add <pkg>` for deps (commit `pyproject.toml` + `uv.lock`); never `pip install`.
+- Cycloidal references: `cd ../cycloidal_drive && uv run python ../robotic-arm/cad/tools/export_cycloidal_cadquery.py`
+  (the OLD repo's CadQuery venv — never ours), then `./cadtool python tools/import_cycloidal_reference.py`.
 
 ## Authoring a part (`parts/<name>.py`)
 Every part MUST (enforced by `tests/test_parts_convention.py`):
@@ -48,6 +52,10 @@ Every part MUST (enforced by `tests/test_parts_convention.py`):
   local frame; the assemblies compose `placement * LOCAL_FROM_REF⁻¹`, so `placements.json` never
   changes), then `./cadtool pytest tests/test_reference_match.py -k <name>` (volume ±0.5 %,
   bbox ±0.2 mm; per-part `REF_VOL_TOL` / `REF_BBOX_TOL`) and `./cadtool gen parts/<name>.py`.
+- *designed* (`CONVERTED = True`, `REFERENCE = NAME`, registered in `lib/reference.py DESIGNED`):
+  the cycloidal drive's printed parts — the reference is the CadQuery export they were ported
+  from; `tests/test_cycloidal_port.py` additionally demands identical face sets / tessellations.
+  Their geometry helpers live in `lib/cycloidal/` and each module exposes `build(cfg)` for tests.
 - Multi-body parts are registered in `MULTI_BODY` in `tests/test_parts_convention.py`.
 - Keep the importable `parts/<name>.py` naming (tests/assemblies import them); the plugin's
   `<name>.step.py` entry naming is deliberately not used.
@@ -57,15 +65,20 @@ Every part MUST (enforced by `tests/test_parts_convention.py`):
 (vendor-file frame → SolidWorks frame; identity for the SolidWorks re-exports); `gen_step()` is
 hybrid (vendor STEP if present, else `_envelope()` from `lib.params`, both in the SolidWorks
 frame `placements.json` assumes). `reference/<name>.step` keeps the SolidWorks re-export of every
-COTS part as the frame/size reference; `test_cots_vendor_matches_reference_frame` (bbox within
-1.5 mm) and `test_cots_envelope_tracks_reference_bbox` guard vendor swaps. Swap procedure and
-what has been tried: `vendor/README.md` (`./cadtool parts …`, step.parts).
+COTS part as the frame/size reference (for the drive's purchased parts: the CadQuery export of
+their simplified model, `lib/reference.py CYCLOIDAL_COTS`); `test_cots_vendor_matches_reference_frame`
+(bbox within 1.5 mm, skipped when there is no vendor file - the envelope is then the geometry) and
+`test_cots_envelope_tracks_reference_bbox` guard vendor swaps. Swap procedure and what has been
+tried: `vendor/README.md` (`./cadtool parts …`, step.parts).
 
 ## Shared dimensions (DRY)
 `lib/params.py` is the single source of truth: mm and grams, every constant tagged
 `[MEASURE] / [DATASHEET] / [DESIGN] / [REFERENCE] / [ESTIMATE]` with a derivation comment.
 `lib/` never imports `parts/`. Docs name constants, never numbers. Datum: the SolidWorks capture
 frame is **Y up** (J1 axis); the URDF base frame (REP-103) lives in `robot/frames.py`.
+The cycloidal drive's own dimensions are `lib/cycloidal/params.py` (`DriveConfig`, frozen
+dataclasses, variants via `dataclasses.replace`); `lib/params.py` re-exports the interface values
+(`CYCLOIDAL_*`, masses) from it - never retype a drive number.
 
 Changing a shared dimension — touchpoints in order:
 
@@ -82,8 +95,14 @@ Changing a shared dimension — touchpoints in order:
   `"<part>#<n>"`, module `"gripper#1"`. Treat it as an immutable input.
 - `assemblies/arm.py` / `gripper.py`: `OCCURRENCES = [(part, role|None, key), …]` in SolidWorks
   document order; `assemblies/_occurrences.py` places a **fresh** `gen_step()` copy per occurrence
-  with `.moved(rel * LOCAL_FROM_REF⁻¹)` and locates the gripper module **in place** (`.locate`).
+  with `.moved(rel * LOCAL_FROM_REF⁻¹)` and locates the modules **in place** (`.locate`).
   Roles (`j2`/`j3`, `1`/`2`) only disambiguate duplicates; rename when joint semantics arrive.
+- `assemblies/cycloidal_drive.py` is **code-driven**: rows are `(part, role, Location)` from
+  `lib/cycloidal stack_positions` (`add_located`); its placement key `cycloidal_drive#1` is a
+  `designed` module record in `placements.json` (pose from the SolidWorks node, no leaf records,
+  `solidworks` cross-check block; `tools/extract_placements.py` never descends into
+  `DESIGNED_MODULES`). `world_rows(key)` expands a designed-module key into world-placed parts for
+  links and inertials. Keep `EXPECTED` in step with the geometry (`--totals`).
 - When adding source-level joints, use `cadgen.assembly.AssemblyHelper` frames/mates, keep
   placements parameter-driven, and validate with `inspect align/measure/frame`.
 
@@ -103,15 +122,20 @@ Changing a shared dimension — touchpoints in order:
   `./cadtool skill urdf snapshot --input robot/arm.urdf --output snapshots/x.png` after every edit;
   hand `.urdf` files to the viewer (`?file=robot/arm.urdf`).
 - Placeholders to confirm before real use: joint limits/effort/velocity (`lib/params.py`), axis signs,
-  jaw travel, the link-membership assumptions listed in the URDF ledger. The cycloidal drive (J1
-  actuator) is not modelled; wrist_roll and the jaws are not driven by `src/config.py`.
+  jaw travel, the link-membership assumptions listed in the URDF ledger. The cycloidal drive is
+  physically the shoulder-pitch joint between `j1_coupler` and `j1_link` but is NOT a joint yet: its
+  module key rides in `LINKS["link1"]`; which MKS motor drives which joint is unconfirmed;
+  wrist_roll and the jaws are not driven by `src/config.py`.
 
 ## Tests (`./cadtool pytest`)
 `test_parts_convention.py` (contract + geometry for every part, COTS envelopes + vendor frames),
 `test_reference_match.py` (manifest checksums; converted parts vs reference), `test_placements.py`
-(JSON integrity, tables cover every key once), `test_assembly.py` (34 leaves / 50 solids /
-volume / bbox vs SolidWorks), `test_params_invariants.py` (locks), `test_robot.py` (link partition, frames, FK at zero = capture,
-meshes, inertials, URDF/SRDF/SDF consistency + plugin validators). Geometry tests are `slow`.
+(JSON integrity, tables cover every key once, the designed module record), `test_assembly.py`
+(34 + 18 leaves / 50 + 58 solids / volume / bbox vs SolidWorks + the module lock),
+`test_params_invariants.py` (locks), `test_robot.py` (link partition, frames, FK at zero = capture,
+meshes, inertials, URDF/SRDF/SDF consistency + plugin validators), `test_cycloidal_*.py` (the
+drive: one module per part + housing / purchased / fitment / assembly / port, ~230 tests,
+`tests/cycloidal_helpers.py`). Geometry tests are `slow`.
 
 ## Gotchas (all verified)
 - `Compound.volume` skips nested sub-assemblies in build123d 0.10 — use `lib.reference.solid_volume()`.
@@ -125,3 +149,8 @@ meshes, inertials, URDF/SRDF/SDF consistency + plugin validators). Geometry test
 - `uv sync` prunes anything `uv pip install`-ed; `uv run` doesn't — that's why `cadgen` is a
   pyproject dependency, not a manual install.
 - Don't compare large STEP/GLB artifacts with `git diff`; compare source, `inspect` output and snapshots.
+- Cycloidal discs: chamfer the lobe edges BEFORE cutting holes (the end face must carry only the
+  spline edge); the profile is a periodic *interpolating* spline (`Edge.make_spline(periodic=True)`,
+  never `make_spline_approx`); OCCT's analytic volume is ~0.3 % off on that face (both ours and the
+  reference) - compare tessellations/face sets, not `.volume`. A boolean between the two discs takes
+  minutes: probe points instead.

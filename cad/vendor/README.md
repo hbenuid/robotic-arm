@@ -17,6 +17,18 @@ occupies the reference's bounding box (±1.5 mm) after the part's `VENDOR_TO_REF
 | `mg996r_servo.step` | `parts/mg996r_servo.py` | SolidWorks re-export of a third-party MG996R model (4 bodies); original: `arm_assembly_organized/gripper/Servo Motor MG996R 3D Model.step` | `MG996R`/`towerpro` not in the catalog; only generic servo envelopes — keep |
 | `mg996r_horn.step` | `parts/mg996r_horn.py` | idem; original `…/gripper/Servo MG996R Horn.step` | not a catalog part |
 | `nema17_pancake.step` | `parts/nema17_pancake.py` | the 7-part pancake-motor sub-assembly of the SolidWorks arm, flattened into one 11-solid part by `tools/extract_placements.py` | `stepper_motor_nema17_l0020_single_shaft` exists but is analytic simplified — keep |
+| `bearing_625.step` | `parts/bearing_625.py` | step.parts `bearing_625_2rs_sealed_simple` (1 solid, 16 faces, Ø16 × 5, axis Z standing on z=0 — identity `VENDOR_TO_REF`) | adopted 2026-08-28; the reference is the drive repo's annulus |
+
+Cycloidal-drive purchased parts **without** a vendor file (their `_envelope()` — the drive repo's
+simplified model, also the reference STEP — is the geometry; `test_cots_vendor_matches_reference_frame`
+skips them):
+
+| Part module | Why no catalog model (2026-08-28) |
+|---|---|
+| `parts/bearing_6003.py` | `bearing_6003_2rs_sealed_simple` **tried and rejected**: the file is a Ø24 × 8 bearing (a 628 size), not 17 × 35 × 10 |
+| `parts/bearing_6814.py` | no 6814 / 61814 entry in the catalog (search and direct ids 404) |
+| `parts/nema17_48mm.py` | `stepper_motor_nema17_l0048_single_shaft` **tried and rejected**: 42.3² × 48 body but a 14.8 mm shaft — the drive needs the 22 mm D-shaft (13 mm engagement past the 9 mm plate) |
+| `cycloidal_ring_pins`, `cycloidal_output_pins`, `cycloidal_shaft_support_pin`, `cycloidal_motor_bolts`, `cycloidal_housing_bolts`, `cycloidal_housing_nuts` | pattern parts (21 / 4 / 1 / 4 / 8 / 8 solids); the catalog has single fasteners only |
 
 ## Swapping in a catalog model
 ```bash
@@ -30,7 +42,6 @@ occupies the reference's bounding box (±1.5 mm) after the part's `VENDOR_TO_REF
 ```
 If the catalog model is worse than the SolidWorks re-export, restore it:
 `cp reference/<name>.step vendor/<name>.step && ./cadtool python tools/import_reference.py`.
-
-The bearings, NEMA 17 motor and pins of the cycloidal drive are *not* here: that
-sub-assembly lives in the `cycloidal_drive` repo (`bearing_625_zz_shielded_simple`, 6003/6814
-bearings and NEMA17 bodies are available on step.parts when it is re-attached).
+For the cycloidal drive's parts the manifest is owned by `tools/import_cycloidal_reference.py`
+(run it instead of `import_reference.py`), and a worse catalog model is simply deleted — the
+envelope takes over and the manifest entry loses its `vendor` block.

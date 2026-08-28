@@ -30,6 +30,8 @@ cd cad
 
 The same CAD also produces the arm's robot description — [`cad/robot/arm.urdf`](cad/robot/arm.urdf)
 (+ SRDF for MoveIt2, SDF for Gazebo) with per-link meshes, validated by the plugin's checkers.
+The 20:1 cycloidal shoulder drive (formerly the separate `cycloidal_drive` CadQuery repo) is fully
+parametric build123d here — see [`cad/docs/cycloidal_drive.md`](cad/docs/cycloidal_drive.md).
 
 See [`cad/README.md`](cad/README.md) for the workflow and [`cad/CLAUDE.md`](cad/CLAUDE.md)
 for the conventions.
@@ -68,7 +70,9 @@ Edit [src/config.py](src/config.py):
 
 - `JOINTS` — three `(name, can_id, gear_ratio)` tuples. Defaults are placeholders
   (CAN IDs `0x01`/`0x02`/`0x03`, gear ratio `1.0`). Set CAN IDs to match what
-  you've programmed into each motor's on-board menu.
+  you've programmed into each motor's on-board menu. The CAD's reductions are
+  `cad/lib/params.py` `CYCLOIDAL_RATIO` (20:1, shoulder pitch) and `GT2_RATIO` (4.5:1, belts) —
+  which motor drives which joint is not confirmed yet, so the ratios here stay `1.0`.
 - `CAN_CHANNEL` — only needed if auto-detect fails. The launcher overrides this
   on every run.
 - `CAN_BITRATE`, `DEFAULT_SPEED`, `DEFAULT_ACC`, `ENCODER_COUNTS_PER_REV` —

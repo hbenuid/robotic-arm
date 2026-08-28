@@ -3,9 +3,11 @@
 **Last updated:** 2026-08-28 — see the root `CHANGELOG.md` for dated changes.
 
 **Purpose:** the original design, as exported from SolidWorks, renamed to the clean part
-names used everywhere in `cad/`. These files are **immutable inputs**: each custom part's
-wrapper returns them until it is converted, and `tests/test_reference_match.py` compares every
-converted part against them (checksums locked in `manifest.json`). Regenerate — never edit.
+names used everywhere in `cad/` — plus, for the cycloidal drive, the CadQuery exports of the
+`cycloidal_drive` repo the build123d parts were ported from. These files are **immutable inputs**:
+each custom part's wrapper returns them until it is converted, and `tests/test_reference_match.py`
+compares every converted part against them (checksums locked in `manifest.json`). Regenerate —
+never edit.
 
 ## Provenance
 - Source tree: `/home/hben09/Documents/arm_assembly_organized` (SolidWorks 2026, STEP AP214 exports of 2026-08-27; not in git).
@@ -14,6 +16,11 @@ converted part against them (checksums locked in `manifest.json`). Regenerate �
 - Regenerate: `./cadtool python tools/import_reference.py` (copies + `manifest.json`), then
   `./cadtool python tools/extract_placements.py` (`placements.json` + `vendor/nema17_pancake.step`),
   then `import_reference.py` once more so the manifest describes the extracted pancake.
+- Cycloidal drive (manifest `origin: cycloidal_drive@2f1f67d`, kind `designed` / `cots`): in the old
+  repo `cd ../cycloidal_drive && uv run python ../robotic-arm/cad/tools/export_cycloidal_cadquery.py`
+  (CadQuery venv, writes its git-ignored `export/step/house/`), then here
+  `./cadtool python tools/import_cycloidal_reference.py` (copies + merges its manifest entries;
+  `import_reference.py` leaves them alone).
 
 ## Naming map
 Clean name ← SolidWorks product (source file under the source tree). Sizes are the bounding
@@ -47,6 +54,28 @@ box in mm after OCCT's import (inch-unit files are converted automatically).
 | `mg996r_horn` | COTS | `Servo MG996R Horn_Servo MG996R Horn` | `step/Servo MG996R Horn_Servo MG996R Horn.STEP` | mm | 1 | 32 × 2.5 × 12 | ×1 |
 | `nema17_pancake` | COTS | `nema17_pancake` | `(extracted from the full assembly)` | mm | 11 | 41.5 × 47 × 43 | ×1 |
 
+Cycloidal drive (the reference is the named CadQuery builder's export at `cycloidal_drive@2f1f67d`;
+"in arm" counts inside the `cycloidal_drive#1` module):
+
+| Part | Kind | CadQuery builder | Units | Solids | Bbox size (mm) | In arm |
+|---|---|---|---|---|---|---|
+| `cycloidal_disc_1` | designed | `src/cycloidal_disc.py:build_cycloidal_disc()` | mm | 1 | 105.885 × 105.885 × 10 | ×1 |
+| `cycloidal_disc_2` | designed | `src/cycloidal_disc.py:build_cycloidal_disc(phase_offset_deg=disc2_phase)` | mm | 1 | 107 × 107 × 10 | ×1 |
+| `cycloidal_eccentric_shaft` | designed | `src/eccentric_shaft.py:build_eccentric_shaft()` | mm | 1 | 26.1 × 23.1 × 26 | ×1 |
+| `cycloidal_motor_plate` | designed | `src/motor_plate.py:build_motor_plate()` | mm | 1 | 140 × 140 × 9 | ×1 |
+| `cycloidal_ring_gear_body` | designed | `src/ring_gear_body.py:build_ring_gear_body()` | mm | 1 | 140 × 140 × 51 | ×1 |
+| `cycloidal_output_hub` | designed | `src/output_hub.py:build_output_hub()` | mm | 1 | 70.3 × 70.3 × 28 | ×1 |
+| `bearing_6003` | COTS | `src/purchased_parts.py:build_bearing_6003()` | mm | 1 | 35 × 35 × 10 | ×2 |
+| `bearing_6814` | COTS | `src/purchased_parts.py:build_bearing_6814()` | mm | 1 | 90 × 90 × 10 | ×2 |
+| `bearing_625` | COTS | `src/purchased_parts.py:build_bearing_625()` | mm | 1 | 16 × 16 × 5 | ×1 |
+| `nema17_48mm` | COTS | `src/purchased_parts.py:build_nema17_motor()` | mm | 1 | 42.3 × 42.3 × 70 | ×1 |
+| `cycloidal_ring_pins` | COTS | `src/purchased_parts.py:build_ring_pins()` | mm | 21 | 111.397 × 111.698 × 35 | ×1 |
+| `cycloidal_output_pins` | COTS | `src/purchased_parts.py:build_output_pins()` | mm | 4 | 64 × 64 × 45 | ×1 |
+| `cycloidal_shaft_support_pin` | COTS | `src/purchased_parts.py:build_shaft_support_pin()` | mm | 1 | 5 × 5 × 20 | ×1 |
+| `cycloidal_motor_bolts` | COTS | `src/purchased_parts.py:build_motor_bolts()` | mm | 4 | 36.3 × 36.3 × 13 | ×1 |
+| `cycloidal_housing_bolts` | COTS | `src/purchased_parts.py:build_housing_bolts()` | mm | 8 | 132 × 132 × 59 | ×1 |
+| `cycloidal_housing_nuts` | COTS | `src/purchased_parts.py:build_housing_nuts()` | mm | 8 | 133.083 × 133.083 × 3.2 | ×1 |
+
 Notes:
 - `gripper_finger_right` is the mirror configuration of `gripper_finger_left`; its SolidWorks
   export is still named `…_Gripper Hand Left` (stale configuration name, geometry is correct).
@@ -58,10 +87,15 @@ Notes:
 - `gt2_pulley_90t` is a printed parametric pulley (842 faces, ~1 s import); `gripper_j3_connector`
   has two bodies.
 
+## Designed module: the cycloidal drive
+- `New_cyloidal_assembly` (sic; path 1.3, 15 leaves / 38 solids in SolidWorks) is recorded in
+  `placements.json` as the **designed module** `cycloidal_drive#1`: its pose — position
+  (1.84, 85.01, 31.45) mm, rotation XYZ (-180.00, -3.69, 180.00)° — places
+  `assemblies/cycloidal_drive.py`, whose contents come from code (`lib/cycloidal`), not from the
+  SolidWorks node. The node's own totals / bbox stay in the record's `solidworks` block as a
+  cross-check (`tests/test_cycloidal_assembly.py`); the walker does not descend into it.
+
 ## Skipped from the SolidWorks assembly
-- `New_cyloidal_assembly` (path 1.3, 15 leaves / 38 solids): the cycloidal drive — its
-  source lives in the `cycloidal_drive` repo. World pose recorded in `placements.json`
-  (`skipped[0]`): position (1.84, 85.01, 31.45) mm, rotation XYZ (-180.00, -3.69, 180.00)°.
 - The 6 zero-geometry assembly-skeleton STEPs, the `base/step/` re-exports and the pancake
   motor's internal parts (flattened into `vendor/nema17_pancake.step`).
 
@@ -70,5 +104,7 @@ Notes:
 with `key` (`<part>#<n>`), `path` (SolidWorks tree path), `parent` (module key or null),
 `rel` / `world` placements as `{position, rotation_xyz_deg, matrix_3x4}`
 (`Location(position, rotation_xyz_deg)` reproduces them; intrinsic XYZ Euler, degrees),
-world bounding boxes, solid counts and volumes; `expected` totals for the assembly test;
-`skipped[]` as above.
+world bounding boxes, solid counts and volumes; `expected` totals (SolidWorks parts only) for the
+assembly test; `designed_modules[]` (the keys of `kind: module, designed: true` records, which carry
+`rel`/`world`, a `solidworks` cross-check block and `source` instead of solids/volume);
+`skipped[]` (currently empty).

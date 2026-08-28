@@ -28,6 +28,9 @@
 - Work from `cad/` via `./cadtool …` (`setup|gen|export|inspect|snapshot|validate|parts|skill|viewer|pytest|python`);
   it runs the `cad@text-to-cad` plugin (v0.4.x) CLIs inside the CAD venv. Conventions, the
   wrapper → parametric conversion workflow and the reference-match tests: `cad/CLAUDE.md`.
+- The 20:1 cycloidal shoulder drive was imported from the `cycloidal_drive` repo (history kept
+  via a subtree merge) and ported to build123d: `cad/lib/cycloidal/`, `cad/parts/cycloidal_*.py`,
+  `cad/assemblies/cycloidal_drive.py`; spec + port notes in `cad/docs/cycloidal_drive.md`.
 
 ## Docs
 - `CHANGELOG.md` is the dated record of changes: add an entry (date, what changed, commit) with
