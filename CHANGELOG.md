@@ -5,7 +5,7 @@ behaviour, layout or tooling gets an entry here; the commit hashes are on branch
 
 ## 2026-08-28 — text-to-cad v0.4.28, purchased-part workflow, robot description
 
-### Changed — CAD plugin updated to `cad@text-to-cad` v0.4.28 (`da3d5d5`)
+### Changed — CAD plugin updated to `cad@text-to-cad` v0.4.28 (`cc1b028`)
 - The installed plugin was 0.3.2 (June); upstream had moved to 0.4.28 with breaking changes.
   The update needed `git-lfs` on `PATH` (installed to `~/.local/bin`, user scope).
 - `cadgen==0.4.28` (the plugin's Python runtime, PyPI) is now a locked dependency of `cad/`
@@ -20,7 +20,7 @@ behaviour, layout or tooling gets an entry here; the commit hashes are on branch
 - Docs rewritten for the new commands; the CAD datum comment corrected (the SolidWorks
   capture frame is **Y up**).
 
-### Added — step.parts vendor workflow (`f3ddc4e`)
+### Added — step.parts vendor workflow (`8e16a0f`)
 - Every purchased (COTS) part keeps its SolidWorks re-export in `cad/reference/<name>.step`
   as an immutable frame/size reference; `cad/vendor/<name>.step` is the current best model
   and may be replaced. `reference/manifest.json` records both (`vendor` sub-entry).
@@ -30,7 +30,7 @@ behaviour, layout or tooling gets an entry here; the commit hashes are on branch
   rejected it (analytic simplified model); MG996R not in the catalog; pancake catalog model is
   simplified; no Ø6 rod — all kept as the SolidWorks re-exports.
 
-### Added — robot description from the CAD (`eefc433`)
+### Added — robot description from the CAD (`d84354a`)
 - `cad/robot/frames.py`: 7 rigid links partitioning all 34 part occurrences and 5 actuated
   joints (`j1`–`j3` revolute, `wrist_roll` revolute, `jaw_a`/`jaw_b` prismatic with mimic)
   + `tool0`, computed from `reference/placements.json`. REP-103 base frame; every joint frame
@@ -47,7 +47,7 @@ behaviour, layout or tooling gets an entry here; the commit hashes are on branch
   (see the URDF ledger); the cycloidal drive is not modelled; wrist roll and jaws are not
   driven by `src/config.py`.
 
-## 2026-08-27 — CAD workspace scaffold (`b87e277`)
+## 2026-08-27 — CAD workspace scaffold (`91bfcf1`)
 
 ### Added
 - `cad/`: a separate uv project (Python 3.12, build123d 0.10) wired to the `cad@text-to-cad`
