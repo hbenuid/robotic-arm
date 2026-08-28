@@ -28,3 +28,8 @@
 - Work from `cad/` via `./cadtool …` (`setup|gen|export|inspect|snapshot|validate|parts|skill|viewer|pytest|python`);
   it runs the `cad@text-to-cad` plugin (v0.4.x) CLIs inside the CAD venv. Conventions, the
   wrapper → parametric conversion workflow and the reference-match tests: `cad/CLAUDE.md`.
+
+## Docs
+- `CHANGELOG.md` is the dated record of changes: add an entry (date, what changed, commit) with
+  every commit that changes behaviour, layout or tooling, and bump the `Last updated` line of any
+  README/CLAUDE.md you touch.

@@ -3,6 +3,8 @@
 **Purpose:** CAD-scoped agent guide — the `gen_step()` part convention, the wrapper → parametric
 conversion workflow, shared-dimension rules, assembly placements, purchased parts, tests, tooling.
 **Audience:** agent. Human docs: `README.md`. Reference provenance: `reference/README.md`.
+**Last updated:** 2026-08-28. Every commit that changes behaviour, layout or tooling gets a dated entry in the
+root `CHANGELOG.md` and bumps the `Last updated` line of the docs it touches.
 
 `cad/` is a **separate uv project** (Python 3.12, build123d 0.10, cadgen 0.4.x) inside the
 robotic-arm repo; the root motor-control project never depends on it.

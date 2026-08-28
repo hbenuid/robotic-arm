@@ -1,5 +1,7 @@
 # robotic-arm — CAD (build123d)
 
+**Last updated:** 2026-08-28 — see the root `CHANGELOG.md` for dated changes.
+
 Parametric CAD-as-code for the 3-joint arm, converted part-by-part from the original
 SolidWorks design. This folder is a **separate uv project** (Python 3.12) — the motor-control
 software in the repo root never depends on it.

@@ -1,5 +1,7 @@
 # robotic-arm
 
+**Last updated:** 2026-08-28 — see the root `CHANGELOG.md` for dated changes.
+
 Robot arm control software for a 3-motor MKS SERVO42D/57D arm over CAN bus.
 
 ## Hardware

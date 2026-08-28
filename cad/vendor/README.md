@@ -1,5 +1,7 @@
 # vendor/ — purchased-part STEP files (current best model per part)
 
+**Last updated:** 2026-08-28 — see the root `CHANGELOG.md` for dated changes.
+
 **Purpose:** the geometry each `COTS = True` part in `parts/` imports. Committed via the
 `!/cad/vendor/*.step` gitignore exception (not regenerable from Python). Unlike
 `reference/<name>.step` — the immutable SolidWorks re-export that fixes each purchased part's
