@@ -4,7 +4,7 @@
   "bytes": 13541053,
   "sha256": "67c39d5dc9ff1d7b03ed99647310c2c0303028a3b7b991ecca28f60f17b78e7c",
   "units": "inch (OCCT converts to mm on import)",
-  "extracted": "2026-08-27",
+  "extracted": "2026-08-28",
   "build123d": "0.10.0"
  },
  "rotation_convention": "build123d Location.to_tuple(): intrinsic XYZ Euler angles, degrees; rebuild with Location(position, rotation_xyz_deg). matrix_3x4 = rows of the gp_Trsf (rotation | translation) for other consumers.",
@@ -15,6 +15,9 @@
   "solids": 50,
   "solid_volume": 1938168.79
  },
+ "designed_modules": [
+  "cycloidal_drive#1"
+ ],
  "occurrences": [
   {
    "key": "base#1",
@@ -183,6 +186,96 @@
     63.976,
     96.0
    ]
+  },
+  {
+   "key": "cycloidal_drive#1",
+   "part": "cycloidal_drive",
+   "kind": "module",
+   "designed": true,
+   "path": "1.3",
+   "parent": null,
+   "label_in_monolith": "New_cyloidal_assembly",
+   "rel": {
+    "position": [
+     1.844381,
+     85.010435,
+     31.446506
+    ],
+    "rotation_xyz_deg": [
+     -180.0,
+     -3.694455,
+     180.0
+    ],
+    "matrix_3x4": [
+     [
+      -0.997921859,
+      -0.0,
+      -0.064435732,
+      1.844381495
+     ],
+     [
+      -0.0,
+      1.0,
+      0.0,
+      85.01043549
+     ],
+     [
+      0.064435732,
+      0.0,
+      -0.997921859,
+      31.446506206
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     1.844381,
+     85.010435,
+     31.446506
+    ],
+    "rotation_xyz_deg": [
+     -180.0,
+     -3.694455,
+     180.0
+    ],
+    "matrix_3x4": [
+     [
+      -0.997921859,
+      -0.0,
+      -0.064435732,
+      1.844381495
+     ],
+     [
+      -0.0,
+      1.0,
+      0.0,
+      85.01043549
+     ],
+     [
+      0.064435732,
+      0.0,
+      -0.997921859,
+      31.446506206
+     ]
+    ]
+   },
+   "solidworks": {
+    "leaves": 15,
+    "solids": 38,
+    "solid_volume": 674390.543,
+    "world_bbox_min": [
+     -71.78,
+     15.01,
+     -35.683
+    ],
+    "world_bbox_size": [
+     143.382,
+     140.0,
+     116.393
+    ],
+    "note": "the SolidWorks node (imported from the drive repo's export.py assembly: ring pins z 4.5 / output pins z 13, no fasteners) - cross-check only; the module's contents come from assemblies/cycloidal_drive.py"
+   },
+   "source": "assemblies/cycloidal_drive.py"
   },
   {
    "key": "j1_link#1",
@@ -2957,88 +3050,5 @@
    ]
   }
  ],
- "skipped": [
-  {
-   "path": "1.3",
-   "label": "New_cyloidal_assembly",
-   "reason": "cycloidal drive lives in the cycloidal_drive repo (CadQuery); re-attach later",
-   "leaves": 15,
-   "solids": 38,
-   "solid_volume": 674390.543,
-   "rel": {
-    "position": [
-     1.844381,
-     85.010435,
-     31.446506
-    ],
-    "rotation_xyz_deg": [
-     -180.0,
-     -3.694455,
-     180.0
-    ],
-    "matrix_3x4": [
-     [
-      -0.997921859,
-      -0.0,
-      -0.064435732,
-      1.844381495
-     ],
-     [
-      -0.0,
-      1.0,
-      0.0,
-      85.01043549
-     ],
-     [
-      0.064435732,
-      0.0,
-      -0.997921859,
-      31.446506206
-     ]
-    ]
-   },
-   "world": {
-    "position": [
-     1.844381,
-     85.010435,
-     31.446506
-    ],
-    "rotation_xyz_deg": [
-     -180.0,
-     -3.694455,
-     180.0
-    ],
-    "matrix_3x4": [
-     [
-      -0.997921859,
-      -0.0,
-      -0.064435732,
-      1.844381495
-     ],
-     [
-      -0.0,
-      1.0,
-      0.0,
-      85.01043549
-     ],
-     [
-      0.064435732,
-      0.0,
-      -0.997921859,
-      31.446506206
-     ]
-    ]
-   },
-   "world_bbox_min": [
-    -71.78,
-    15.01,
-    -35.683
-   ],
-   "world_bbox_size": [
-    143.382,
-    140.0,
-    116.393
-   ]
-  }
- ]
+ "skipped": []
 }

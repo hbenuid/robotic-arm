@@ -9,8 +9,9 @@ part (vendor/nema17_pancake.step).
 build123d.import_step() walks the STEP's XCAF document and keeps the hierarchy: each node
 is a Compound whose .label is the (mangled) product name and whose .location is the
 placement RELATIVE to its parent; world = parent_world * rel. The full assembly is an
-inch-unit file; OCCT converts it to mm on import. Skipped nodes (the cycloidal drive) are
-recorded with their world pose so they can be re-attached later.
+inch-unit file; OCCT converts it to mm on import. Designed modules (the cycloidal drive,
+lib/reference.py DESIGNED_MODULES) are recorded with their world pose and the node's totals but
+not descended into: assemblies/<module>.py builds their contents from code.
 """
 from __future__ import annotations
 
@@ -88,6 +89,28 @@ class Extractor:
                 "world_bbox_min": bmin, "world_bbox_size": bsize,
             })
             return
+        if label in R.LABEL_TO_DESIGNED_MODULE:
+            # A sub-assembly whose SolidWorks node gives the placement but whose contents are
+            # code-driven (assemblies/<module>.py): record the pose, keep the node's totals as a
+            # cross-check, do not descend.
+            module = R.LABEL_TO_DESIGNED_MODULE[label]
+            key = self.key_for(module)
+            bmin, bsize = world_bbox(node, parent_world)
+            self.records.append({
+                "key": key, "part": module, "kind": "module", "designed": True, "path": path_s,
+                "parent": parent_key, "label_in_monolith": label,
+                "rel": loc_json(node.location), "world": loc_json(world),
+                "solidworks": {
+                    "leaves": count_leaves(node), "solids": len(node.solids()),
+                    "solid_volume": round(R.solid_volume(node), 3),
+                    "world_bbox_min": bmin, "world_bbox_size": bsize,
+                    "note": "the SolidWorks node (imported from the drive repo's export.py assembly: ring pins "
+                            "z 4.5 / output pins z 13, no fasteners) - cross-check only; the module's contents "
+                            "come from assemblies/" + module + ".py",
+                },
+                "source": f"assemblies/{module}.py",
+            })
+            return
         if label in R.LABEL_TO_MODULE:
             module = R.LABEL_TO_MODULE[label]
             key = self.key_for(module)
@@ -151,6 +174,7 @@ def main(argv=None) -> int:
         "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame.",
         "root_label": root.label,
         "expected": expected,
+        "designed_modules": [o["key"] for o in ex.records if o.get("designed")],
         "occurrences": ex.records,
         "skipped": ex.skipped,
     }

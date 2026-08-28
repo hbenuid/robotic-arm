@@ -101,12 +101,11 @@ CYCLOIDAL_PARTS: set[str] = set(DESIGNED) | set(CYCLOIDAL_COTS)
 # Sub-assemblies whose placement comes from SolidWorks but whose contents are code-driven
 # (assemblies/<name>.py places its parts from lib/cycloidal StackUp): clean name -> product name.
 DESIGNED_MODULES: dict[str, str] = {
+    "cycloidal_drive": "New cyloidal assembly",   # sic - the SolidWorks node is misspelled
 }
 
 # Full-assembly nodes deliberately not modelled here (whole subtree skipped).
 SKIPPED_PRODUCTS: dict[str, str] = {
-    "New cyloidal assembly":    "cycloidal drive lives in the cycloidal_drive repo (CadQuery); re-attach later",
-    "cycloidal_drive_assembly": "child of New cyloidal assembly",
     "nema17_pancake(2)":        "pancake internals are flattened into vendor/nema17_pancake.step",
 }
 

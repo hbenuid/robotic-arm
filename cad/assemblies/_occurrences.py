@@ -3,6 +3,8 @@
 An OCCURRENCES table row is (part_or_module_name, role_or_None, placement_key), in the
 SolidWorks document order. Roles make duplicate parts' labels unique (`j3_coupler:j2`);
 they are positional/ordinal for now - rename them when the joint semantics are modelled.
+Code-driven modules (assemblies/cycloidal_drive.py) use (part, role, Location) rows instead:
+their placement key is a SolidWorks node, their contents are not (add_located / world_rows).
 """
 from __future__ import annotations
 
@@ -49,15 +51,61 @@ def add_occurrences(asm, rows, modules: dict | None = None) -> None:
             asm.add(place(name, key), name, role)
 
 
-def place_world(part_name: str, key: str, into=None):
-    """A fresh copy of parts/<part_name>.gen_step() at occurrence `key`'s WORLD placement,
-    optionally re-expressed in another frame (`into` = that frame's world Location, so the
-    result is `into^-1 * world * LOCAL_FROM_REF^-1 * local`). Used for per-link meshes."""
+def place_at(part_name: str, loc: Location):
+    """A fresh copy of parts/<part_name>.gen_step() at an explicit placement of its reference
+    frame (the rows of a code-driven module such as assemblies/cycloidal_drive.py)."""
     if CAD_DIR not in sys.path:
         sys.path.insert(0, CAD_DIR)
     mod = importlib.import_module(f"parts.{part_name}")
     local_from_ref = getattr(mod, "LOCAL_FROM_REF", None) or Location()
-    loc = P.location(key, "world") * local_from_ref.inverse()
+    return mod.gen_step().moved(loc * local_from_ref.inverse())
+
+
+def add_located(asm, rows) -> None:
+    """Add every (part, role|None, Location) row of a code-driven module table to `asm`."""
+    for name, role, loc in rows:
+        if role is None:
+            asm.add(place_at(name, loc), name)
+        else:
+            asm.add(place_at(name, loc), name, role)
+
+
+def module_rows(module_name: str) -> list:
+    """The (part, role, Location-in-module-frame) rows of a code-driven assemblies/<module>.py."""
+    if CAD_DIR not in sys.path:
+        sys.path.insert(0, CAD_DIR)
+    return list(importlib.import_module(f"assemblies.{module_name}").OCCURRENCES)
+
+
+def world_rows(key: str) -> list:
+    """(part, role, WORLD placement of the part's reference frame) for a placement key.
+
+    A part key gives one row. A designed module key (placements.json kind "module",
+    designed: true - the cycloidal drive) expands to its module's rows composed with the
+    module's world pose, so links and inertials see every part inside it."""
+    o = P.OCCURRENCES[key]
+    if o["kind"] == "module":
+        if not o.get("designed"):
+            raise ValueError(f"{key}: only designed (code-driven) modules expand into world rows")
+        world = P.location(key, "world")
+        return [(part, role, world * loc) for part, role, loc in module_rows(o["part"])]
+    return [(o["part"], None, P.location(key, "world"))]
+
+
+def place_world_at(part_name: str, world: Location, into=None):
+    """A fresh copy of parts/<part_name>.gen_step() at a WORLD placement of its reference frame,
+    optionally re-expressed in another frame (`into` = that frame's world Location, so the result
+    is `into^-1 * world * LOCAL_FROM_REF^-1 * local`). Used for per-link meshes."""
+    if CAD_DIR not in sys.path:
+        sys.path.insert(0, CAD_DIR)
+    mod = importlib.import_module(f"parts.{part_name}")
+    local_from_ref = getattr(mod, "LOCAL_FROM_REF", None) or Location()
+    loc = world * local_from_ref.inverse()
     if into is not None:
         loc = into.inverse() * loc
     return mod.gen_step().moved(loc)
+
+
+def place_world(part_name: str, key: str, into=None):
+    """place_world_at() for a part occurrence key of placements.json."""
+    return place_world_at(part_name, P.location(key, "world"), into)
