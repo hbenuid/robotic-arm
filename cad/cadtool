@@ -1,53 +1,91 @@
 #!/usr/bin/env bash
-# cadtool - run the cad@text-to-cad plugin CLIs (and the usual dev commands) inside THIS
-# uv project (Python 3.12 + build123d), always from cad/ so cwd-relative paths resolve.
-# CAD_SKILL may be set to override plugin auto-detection (newest installed version wins).
+# cadtool - run the cad@text-to-cad plugin (v0.4.x) CLIs and the usual dev commands inside THIS
+# uv project (Python 3.12 + build123d + cadgen), always from cad/ so cwd-relative paths resolve.
+# CAD_PLUGIN=<dir> overrides plugin auto-detection (newest installed version wins).
 set -euo pipefail
 
 usage() {
   cat <<'USAGE'
-cadtool - run the cad@text-to-cad plugin CLIs inside this uv project (paths relative to cad/)
+cadtool - cad@text-to-cad plugin CLIs inside this uv project (paths relative to cad/)
   ./cadtool setup                                   one-time: uv sync + Playwright Chromium (for snapshots)
-  ./cadtool step parts/<name>.py [--stl exports/<name>.stl]   -> parts/<name>.step (+ hidden .<name>.step.glb)
-  ./cadtool step assemblies/arm.py                  -> assemblies/arm.step (git-ignored, regenerable)
-  ./cadtool inspect refs <file.step> --facts --planes --positioning
-  ./cadtool snapshot --help                         PNG/GIF review packets
-  ./cadtool viewer                                  CAD Viewer for this dir; open the printed URL + &file=<rel path>
+  ./cadtool gen parts/<name>.py [--force]           build + write parts/<name>.step (+ parts/__cadgen__/ viewer package)
+  ./cadtool step ...                                alias of gen
+  ./cadtool export parts/<name>.py --stl [exports/<name>.stl] [--3mf [..]] [--glb [..]]
+  ./cadtool artifact <file.step> --kind part|assembly      viewer package for an imported STEP
+  ./cadtool inspect refs <file.step> --facts --planes --positioning   (also measure|align|frame|diff|interfere)
+  ./cadtool snapshot --input <file.step> --output snapshots/x.png [--size-profile assembly --view-labels]
+  ./cadtool validate <file.urdf|.srdf|.sdf> [--strict]     robot-description validators (urdf/srdf/sdf skills)
+  ./cadtool parts "<query>" [--download] [--id <id>] [--filename <name>.step]   step.parts search / download into vendor/
+  ./cadtool skill <skill> <tool> [args]             any skill CLI: skills/<skill>/scripts/<tool>
+  ./cadtool viewer [--port N]                       CAD Viewer for this dir: http://127.0.0.1:3245/<abs cad>?file=<rel path>
   ./cadtool pytest [-m "not slow"]                  test suite
   ./cadtool python -m assemblies.arm                any python in the venv
+Env: CAD_PLUGIN=<plugin dir> overrides detection; CADGEN_WARM=1 uses the plugin's warm cadgen daemon.
 USAGE
 }
 
 CAD_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$CAD_DIR"   # the plugin's cadpy resolves its root from cwd; keep paths cad/-relative
+cd "$CAD_DIR"   # the plugin resolves targets from cwd; the viewer serves cwd
 
-CAD_SKILL="${CAD_SKILL:-$(ls -d "$HOME"/.claude/plugins/cache/text-to-cad/cad/*/skills/cad 2>/dev/null | sort -V | tail -1 || true)}"
-VIEWER_DIR="${CAD_SKILL:+$(dirname "$CAD_SKILL")/cad-viewer/scripts/viewer}"
+CAD_PLUGIN="${CAD_PLUGIN:-$(ls -d "$HOME"/.claude/plugins/cache/text-to-cad/cad/*/ 2>/dev/null | sort -V | tail -1 || true)}"
+CAD_PLUGIN="${CAD_PLUGIN%/}"
+SKILLS="$CAD_PLUGIN/skills"
+CAD_SKILL="$SKILLS/cad"
+VIEWER_DIR="$SKILLS/cad-viewer/scripts/viewer"
 
-need_skill() {
-  if [[ -z "${CAD_SKILL:-}" || ! -d "$CAD_SKILL" ]]; then
+need_plugin() {
+  if [[ -z "${CAD_PLUGIN:-}" || ! -d "$CAD_SKILL/scripts" ]]; then
     echo "cadtool: cad@text-to-cad plugin not found under ~/.claude/plugins/cache/text-to-cad" >&2
     echo "  install:  claude plugin marketplace add https://github.com/earthtojake/text-to-cad.git" >&2
-    echo "            claude plugin install cad@text-to-cad" >&2
+    echo "            claude plugin install cad@text-to-cad      (needs git-lfs on PATH)" >&2
     exit 1
   fi
 }
 
-# cadpy (the plugin's Python helper) is a pure-Python src-layout package; expose it via
-# PYTHONPATH instead of installing it, so `uv sync` can never prune it.
-if [[ -n "${CAD_SKILL:-}" && -d "$CAD_SKILL/scripts/packages/cadpy/src" ]]; then
-  export PYTHONPATH="$CAD_SKILL/scripts/packages/cadpy/src${PYTHONPATH:+:$PYTHONPATH}"
+# cadgen is a locked dependency of this project (same version as the plugin). If the venv lacks it
+# (e.g. the plugin was bumped before pyproject.toml), expose the plugin's vendored copy instead.
+if ! ls .venv/lib/python3.*/site-packages/cadgen >/dev/null 2>&1 && [[ -d "$CAD_SKILL/scripts/packages/cadgen/src" ]]; then
+  export PYTHONPATH="$CAD_SKILL/scripts/packages/cadgen/src${PYTHONPATH:+:$PYTHONPATH}"
 fi
+
+run_skill() {  # run_skill <skill> <tool> [args...]  ->  python skills/<skill>/scripts/<tool> args
+  local skill="$1" tool="$2"; shift 2
+  need_plugin
+  local target="$SKILLS/$skill/scripts/$tool"
+  if [[ ! -e "$target" ]]; then
+    echo "cadtool: no such plugin tool: $target" >&2
+    exit 1
+  fi
+  exec uv run --frozen python "$target" "$@"
+}
 
 cmd="${1:-help}"
 shift || true
 case "$cmd" in
-  step|inspect|snapshot)
-    need_skill
-    exec uv run --frozen python "$CAD_SKILL/scripts/$cmd" "$@" ;;
+  gen|step)
+    run_skill cad gen "$@" --write ;;
+  export|artifact|inspect|snapshot)
+    run_skill cad "$cmd" "$@" ;;
+  validate)
+    file="${1:-}"
+    case "$file" in
+      *.urdf) run_skill urdf validate "$@" ;;
+      *.srdf) run_skill srdf validate "$@" ;;
+      *.sdf)  run_skill sdf validate "$@" ;;
+      *) echo "usage: cadtool validate <file.urdf|.srdf|.sdf> [--strict] [--format json]" >&2; exit 2 ;;
+    esac ;;
+  parts)
+    run_skill step-parts download_step_part.py --out-dir "$CAD_DIR/vendor" "$@" ;;
+  skill)
+    skill="${1:?usage: cadtool skill <skill> <tool> [args]}"; tool="${2:?usage: cadtool skill <skill> <tool> [args]}"; shift 2
+    run_skill "$skill" "$tool" "$@" ;;
   viewer)
-    need_skill
-    exec npm --prefix "$VIEWER_DIR" run start -- --host 127.0.0.1 --dir "$CAD_DIR" --shutdown-after 12h "$@" ;;
+    need_plugin
+    export VIEWER_CAD_PYTHON="$CAD_DIR/.venv/bin/python"          # the viewer's Python backend runs in our venv
+    [[ -n "${PYTHONPATH:-}" ]] && export VIEWER_CAD_PYTHONPATH="$PYTHONPATH"
+    port=3245; prev=""; for a in "$@"; do [[ "$prev" == "--port" ]] && port="$a"; prev="$a"; done
+    echo "CAD Viewer: http://127.0.0.1:$port$CAD_DIR?file=assemblies/arm.step   (auto-stops after 12h; Ctrl+C to stop)"
+    exec timeout --foreground 12h npm --prefix "$VIEWER_DIR" run start -- --host 127.0.0.1 "$@" ;;
   setup)
     uv sync
     uv run --frozen python -m playwright install chromium ;;

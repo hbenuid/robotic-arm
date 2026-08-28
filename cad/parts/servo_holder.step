@@ -1,8 +1,8 @@
 ISO-10303-21;
 HEADER;
 FILE_DESCRIPTION(('Open CASCADE Model'),'2;1');
-FILE_NAME('servo_holder','2026-08-27T19:32:26',('Author'),(
-    'Open CASCADE'),'Open CASCADE STEP processor 7.8','cadpy','Unknown'
+FILE_NAME('servo_holder','2026-08-28T01:48:05',('Author'),(
+    'Open CASCADE'),'Open CASCADE STEP processor 7.8','cadgen','Unknown'
   );
 FILE_SCHEMA(('AUTOMOTIVE_DESIGN { 1 0 10303 214 1 1 1 1 }'));
 ENDSEC;
@@ -5373,21 +5373,21 @@ SHAPE_REPRESENTATION_RELATIONSHIP() );
 #4503 = FILL_AREA_STYLE_COLOUR('',#4504);
 #4504 = COLOUR_RGB('',0.792156867455,0.819607826924,0.933333342953);
 
-#4505=DESCRIPTIVE_REPRESENTATION_ITEM('cadpy:generator','cadpy');
-#4506=REPRESENTATION('cadpy:generator',(#4505),#19);
-#4507=PROPERTY_DEFINITION('cadpy metadata','cadpy:generator',#5);
+#4505=DESCRIPTIVE_REPRESENTATION_ITEM('cadgen:generator','cadgen');
+#4506=REPRESENTATION('cadgen:generator',(#4505),#19);
+#4507=PROPERTY_DEFINITION('cadgen metadata','cadgen:generator',#5);
 #4508=PROPERTY_DEFINITION_REPRESENTATION(#4507,#4506);
-#4509=DESCRIPTIVE_REPRESENTATION_ITEM('cadpy:entryKind','part');
-#4510=REPRESENTATION('cadpy:entryKind',(#4509),#19);
-#4511=PROPERTY_DEFINITION('cadpy metadata','cadpy:entryKind',#5);
+#4509=DESCRIPTIVE_REPRESENTATION_ITEM('cadgen:entryKind','part');
+#4510=REPRESENTATION('cadgen:entryKind',(#4509),#19);
+#4511=PROPERTY_DEFINITION('cadgen metadata','cadgen:entryKind',#5);
 #4512=PROPERTY_DEFINITION_REPRESENTATION(#4511,#4510);
-#4513=DESCRIPTIVE_REPRESENTATION_ITEM('cadpy:sourcePath','servo_holder.py');
-#4514=REPRESENTATION('cadpy:sourcePath',(#4513),#19);
-#4515=PROPERTY_DEFINITION('cadpy metadata','cadpy:sourcePath',#5);
+#4513=DESCRIPTIVE_REPRESENTATION_ITEM('cadgen:sourcePath','servo_holder.py');
+#4514=REPRESENTATION('cadgen:sourcePath',(#4513),#19);
+#4515=PROPERTY_DEFINITION('cadgen metadata','cadgen:sourcePath',#5);
 #4516=PROPERTY_DEFINITION_REPRESENTATION(#4515,#4514);
-#4517=DESCRIPTIVE_REPRESENTATION_ITEM('cadpy:sourceHash','ee127872e8d2783bceb0b98d9fc2c6ab89ca07603ebc755aceda993a5c479be7');
-#4518=REPRESENTATION('cadpy:sourceHash',(#4517),#19);
-#4519=PROPERTY_DEFINITION('cadpy metadata','cadpy:sourceHash',#5);
+#4517=DESCRIPTIVE_REPRESENTATION_ITEM('cadgen:sourceHash','ee127872e8d2783bceb0b98d9fc2c6ab89ca07603ebc755aceda993a5c479be7');
+#4518=REPRESENTATION('cadgen:sourceHash',(#4517),#19);
+#4519=PROPERTY_DEFINITION('cadgen metadata','cadgen:sourceHash',#5);
 #4520=PROPERTY_DEFINITION_REPRESENTATION(#4519,#4518);
 ENDSEC;
 END-ISO-10303-21;

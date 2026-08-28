@@ -13,15 +13,17 @@ drive is not modelled here (it lives in the `cycloidal_drive` repo).
 
 ## Setup (once per machine)
 
-Requirements: [`uv`](https://docs.astral.sh/uv/), Node 18+ (for the CAD viewer), and the
-[`cad@text-to-cad`](https://github.com/earthtojake/text-to-cad) Claude Code plugin (the repo's
-`.claude/settings.json` enables its marketplace; install with
-`claude plugin marketplace add https://github.com/earthtojake/text-to-cad.git` then
-`claude plugin install cad@text-to-cad`).
+Requirements: [`uv`](https://docs.astral.sh/uv/), Node 18+ (the CAD Viewer launcher), `git-lfs`
+on `PATH` (the plugin marketplace uses LFS), and the
+[`cad@text-to-cad`](https://github.com/earthtojake/text-to-cad) Claude Code plugin **v0.4.x**
+(the repo's `.claude/settings.json` enables its marketplace; install/update with
+`claude plugin marketplace add https://github.com/earthtojake/text-to-cad.git`,
+`claude plugin install cad@text-to-cad`, later `claude plugin marketplace update text-to-cad &&
+claude plugin update cad@text-to-cad`).
 
 ```bash
 cd cad
-./cadtool setup        # uv sync (build123d/OCP into ./.venv) + Playwright Chromium (~150 MB, snapshots only)
+./cadtool setup        # uv sync (build123d/OCP/cadgen into ./.venv) + Playwright Chromium (~150 MB, snapshots only)
 ./cadtool pytest       # everything green?
 ```
 
@@ -29,21 +31,28 @@ Python is pinned to **3.12** in `.python-version`: build123d caps at `<3.14` and
 wheel it pulls stops at cp312, while the system Python is 3.14. Don't bump it. Never run
 bare `python` here — always `./cadtool …` or `uv run …` from `cad/`.
 
+`cadgen` (the plugin's Python runtime, on PyPI) is a **locked dependency** pinned to the
+installed plugin version — bump `cadgen==…` in `pyproject.toml` together with the plugin.
+
 ## `./cadtool` — the one entry point
 
 | Command | What it does |
 |---|---|
-| `./cadtool step parts/<name>.py` | generate the committed `parts/<name>.step` (+ hidden `.<name>.step.glb` viewer artifact); add `--stl exports/<name>.stl` for a printable sidecar |
-| `./cadtool step assemblies/arm.py` | build `assemblies/arm.step` (git-ignored, regenerable) |
-| `./cadtool inspect refs <file.step> --facts --planes --positioning` | geometry facts, selector refs, planes; also `measure`, `align`, `frame`, `diff` |
-| `./cadtool snapshot --input assemblies/arm.step --output snapshots/arm.png --size-profile assembly --view-labels` | PNG review packet (timestamp appended to the file name) |
-| `./cadtool viewer` | start/reuse the CAD Viewer on this folder; open the printed URL and append `&file=assemblies/arm.step` |
+| `./cadtool gen parts/<name>.py` (alias `step`) | build the part and write the committed `parts/<name>.step` (+ the `parts/__cadgen__/` viewer package); `--force` rebuilds |
+| `./cadtool gen assemblies/arm.py` | build `assemblies/arm.step` (git-ignored, regenerable) |
+| `./cadtool export parts/<name>.py --stl [path]` | STL/3MF/GLB sidecars; a bare `--stl` writes `parts/<name>.stl`, a path resolves **beside the source** (`--stl ../exports/<name>.stl` for `cad/exports/`) |
+| `./cadtool inspect refs <file.step> --facts --planes --positioning` | geometry facts, selector refs, planes; also `measure`, `align`, `frame`, `diff`, `interfere` |
+| `./cadtool snapshot --input assemblies/arm.step --output snapshots/arm.png --size-profile assembly --view-labels` | PNG review packet (`--job -` takes a JSON job on stdin; timestamp appended) |
+| `./cadtool viewer [--port N]` | CAD Viewer on this folder — `http://127.0.0.1:3245/<abs cad>?file=assemblies/arm.step` (Python backend in our venv; stops after 12 h or Ctrl+C) |
+| `./cadtool validate robot/arm.urdf` (`.srdf`, `.sdf`) | robot-description validators |
+| `./cadtool parts "<query>" [--download --id <id> --filename <name>.step]` | step.parts search / download into `vendor/` |
+| `./cadtool skill <skill> <tool> [args]` | any plugin skill CLI (`urdf snapshot`, `dfam-check dfam_tool.py`, …) |
 | `./cadtool pytest [-m "not slow"]` | test suite (the fast lane skips geometry builds) |
 | `./cadtool python -m assemblies.arm` | preview in the OCP CAD Viewer VS Code extension (`ocp_vscode`) |
 
-`cadtool` always `cd`s to `cad/` (the plugin resolves paths from the working directory) and
-exposes the plugin's `cadpy` helper via `PYTHONPATH` instead of installing it, so `uv sync`
-can never prune it. `playwright` is a locked dev dependency for the same reason.
+`cadtool` always `cd`s to `cad/` (the plugin resolves paths from the working directory and the
+viewer serves it). If the venv ever lacks `cadgen`, it falls back to the plugin's vendored copy
+via `PYTHONPATH`. `CADGEN_WARM=1` uses the plugin's warm daemon for faster repeated builds.
 
 ## Layout
 
@@ -54,7 +63,7 @@ cad/
 │   ├── params.py          # single source of truth for shared dimensions (tagged provenance)
 │   ├── reference.py       # naming map SolidWorks <-> clean names, reference loaders, matches_reference()
 │   ├── placements.py      # reference/placements.json -> build123d Location
-│   ├── assembly.py        # AssemblyHelper (cadpy when available, tiny fallback otherwise)
+│   ├── assembly.py        # AssemblyHelper (cadgen, tiny fallback otherwise)
 │   └── export.py          # plugin-free STL/STEP export into exports/
 ├── parts/                 # one part per file, gen_step() returns it at its LOCAL origin
 │   ├── _template.py           # designed (parametric) part template
@@ -65,13 +74,15 @@ cad/
 │   ├── arm.py             # the whole arm (15 top-level occurrences + the gripper module)
 │   ├── gripper.py         # the gripper mechanism module (19 occurrences)
 │   └── _occurrences.py    # place()/add_occurrences() helpers
-├── reference/             # SolidWorks per-part exports (immutable inputs, committed) + manifest + placements
-├── vendor/                # purchased-part STEPs (committed; source of truth for COTS parts)
-├── tools/                 # import_reference.py, extract_placements.py (regenerate reference/ + vendor/nema17_pancake.step)
+├── reference/             # SolidWorks per-part exports for ALL parts (immutable, committed) + manifest + placements
+├── vendor/                # purchased-part STEPs (committed; replaceable by better catalog models)
+├── tools/                 # import_reference.py, extract_placements.py (regenerate reference/, vendor/, placements)
 ├── tests/                 # pytest: conventions, reference match, placements, assembly totals, params locks
 ├── exports/               # STL/3MF sidecars (git-ignored)
 └── snapshots/             # snapshot PNGs (git-ignored)
 ```
+`__cadgen__/` directories (viewer packages, STEP import caches) appear next to entries and
+imported STEPs; they are git-ignored and regenerable.
 
 ## Part conventions
 
@@ -85,10 +96,14 @@ Each `parts/<name>.py` follows the plugin-native **`gen_step()`** convention:
 - **custom parts** declare `REFERENCE` (their `reference/<name>.step`), `CONVERTED`
   (`False` while the file is a wrapper) and `LOCAL_FROM_REF` (rigid transform from the
   SolidWorks part-file frame to the part's local frame; identity for wrappers);
-- **COTS parts** declare `COTS = True`, `MASS_G` and `VENDOR_STEP`, and `gen_step()` returns
-  the vendor STEP when present, else a parametric `_envelope()`.
+- **COTS parts** declare `COTS = True`, `MASS_G`, `VENDOR_STEP` and `VENDOR_TO_REF`, and
+  `gen_step()` returns the vendor STEP (re-oriented by `VENDOR_TO_REF`) when present, else a
+  parametric `_envelope()`.
 
 `tests/test_parts_convention.py` enforces all of this automatically for every file in `parts/`.
+(The plugin's viewer catalog lists generator *entries* named `<name>.step.py`; our importable
+`parts/<name>.py` modules still build with `gen`, and the committed `parts/<name>.step` files
+show up in the viewer as imported STEPs.)
 
 ## Converting a part (wrapper → parametric)
 
@@ -105,8 +120,20 @@ Each `parts/<name>.py` follows the plugin-native **`gen_step()`** convention:
    ones that want this.)
 4. `./cadtool pytest tests/test_reference_match.py -k <name>` — volume within 0.5 % and bounding
    box within 0.2 mm of the reference (per-part overrides: `REF_VOL_TOL`, `REF_BBOX_TOL`).
-5. `./cadtool step parts/<name>.py` to regenerate the committed STEP, then
-   `./cadtool step assemblies/arm.py` + `./cadtool snapshot …` to eyeball it in place.
+5. `./cadtool gen parts/<name>.py` to regenerate the committed STEP, then
+   `./cadtool gen assemblies/arm.py` + `./cadtool snapshot …` to eyeball it in place.
+
+## Purchased parts and step.parts
+
+Each COTS part keeps its SolidWorks re-export in `reference/<name>.step` (the frame and size
+reference) and its current best model in `vendor/<name>.step`. To try a catalog model:
+`./cadtool parts "<query>"` → pick an id → `./cadtool parts --id <id> --download --filename
+<name>.step --overwrite` → `./cadtool inspect refs vendor/<name>.step --facts --planes --positioning`
+→ set `VENDOR_TO_REF` in `parts/<name>.py` so the model lands in the SolidWorks frame →
+`./cadtool pytest -k <name>` (`test_cots_vendor_matches_reference_frame`: bbox within 1.5 mm of
+the reference) → `./cadtool gen parts/<name>.py` → `./cadtool python tools/import_reference.py`
+(updates `manifest.json`). If the catalog model is worse, restore the reference copy. See
+`vendor/README.md` for what has been tried.
 
 ## Assembly
 
@@ -119,22 +146,23 @@ now. `tests/test_assembly.py` checks the rebuilt arm against the SolidWorks tota
 
 ## Reference geometry and placements
 
-`reference/*.step` (custom parts) and `vendor/*.step` (purchased parts) are renamed copies of
-the SolidWorks exports in `~/Documents/arm_assembly_organized/` — see `reference/README.md`
-for the naming map. `reference/placements.json` holds every occurrence's placement extracted
-from the full-assembly STEP. Both are **immutable inputs** (a checksum test guards them);
-regenerate with `./cadtool python tools/import_reference.py` and
-`./cadtool python tools/extract_placements.py` if the SolidWorks design changes.
+`reference/*.step` are renamed copies of the SolidWorks exports in
+`~/Documents/arm_assembly_organized/` — see `reference/README.md` for the naming map.
+`reference/placements.json` holds every occurrence's placement extracted from the full-assembly
+STEP. Both are **immutable inputs** (a checksum test guards them); regenerate with
+`./cadtool python tools/import_reference.py` and `./cadtool python tools/extract_placements.py`
+if the SolidWorks design changes.
 
 ## Tests
 
 ```bash
-./cadtool pytest                 # everything (geometry builds take a minute)
+./cadtool pytest                 # everything (geometry builds take ~20 s)
 ./cadtool pytest -m "not slow"   # fast lane: metadata, params, placements JSON
-uv run pytest                    # also works without the plugin (lib/assembly.py falls back)
+uv run pytest                    # equivalent (cadgen is a normal dependency)
 ```
 
 ## AI CAD assistance
 
 The `cad@text-to-cad` plugin's `/cad:*` skills drive the generate → inspect → snapshot loop
-this repo is aligned with. Agent-facing conventions live in `CLAUDE.md`.
+this repo is aligned with (plus `dfam-check` for printability, `step-parts`, and the URDF/SRDF/SDF
+skills). Agent-facing conventions live in `CLAUDE.md`.

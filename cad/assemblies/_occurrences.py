@@ -23,8 +23,8 @@ def place(part_name: str, key: str):
     The part is modelled in its LOCAL frame (= LOCAL_FROM_REF * reference frame); the
     extracted placement maps the REFERENCE frame into the parent frame, so compose
     rel * LOCAL_FROM_REF^-1 and MOVE (compose) rather than locate (replace)."""
-    # The plugin's scripts/step restores sys.path after importing the generator module, so
-    # this lazy import must re-assert the cad/ root itself (the module-level shim is gone).
+    # The plugin's generator runner (scripts/gen) restores sys.path after importing the generator
+    # module and does not seed the cwd, so this lazy import must re-assert the cad/ root itself.
     if CAD_DIR not in sys.path:
         sys.path.insert(0, CAD_DIR)
     mod = importlib.import_module(f"parts.{part_name}")

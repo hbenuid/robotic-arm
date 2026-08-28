@@ -5,9 +5,13 @@ description = "Parametric build123d CAD for the 3-joint arm (converted from Soli
 readme = "README.md"
 # build123d caps at <3.14 and vtk 9.3.1 (pulled by build123d 0.10) ships wheels only up
 # to cp312, while the system Python is 3.14 -> the venv is pinned to 3.12 (.python-version).
-requires-python = ">=3.10,<3.14"
+# cadgen (the text-to-cad plugin's Python runtime) needs >=3.11.
+requires-python = ">=3.11,<3.14"
 dependencies = [
     "build123d==0.10.0",
+    # Same version as the installed cad@text-to-cad plugin: gives `cadgen.assembly` to plain
+    # `uv run` and satisfies the CAD Viewer's Python-backend check. Bump together with the plugin.
+    "cadgen==0.4.28",
     "ocp-vscode==3.4.0",
 ]
 

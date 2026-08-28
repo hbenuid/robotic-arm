@@ -9,9 +9,10 @@ Every constant carries a provenance tag:
               part is converted to parametric build123d
   [ESTIMATE]  placeholder until measured / looked up
 
-Units: millimetres and grams. Datum: the SolidWorks assembly frame (Z up); each part keeps
-its SolidWorks part-file frame until it is converted (see CLAUDE.md). `lib/` never imports
-`parts/`.
+Units: millimetres and grams. Datum: the SolidWorks capture frame of reference/placements.json
+- **+Y is up** (the J1 axis), the arm extends toward -X, Z is the pitch-axis direction. Each part
+keeps its SolidWorks part-file frame until it is converted (see CLAUDE.md). The URDF's REP-103
+base frame (Z up, X forward) is defined in robot/frames.py. `lib/` never imports `parts/`.
 """
 import math
 

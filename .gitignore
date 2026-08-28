@@ -19,8 +19,9 @@ __pycache__/
 !/cad/parts/*.step
 !/cad/vendor/*.step
 !/cad/reference/*.step
-# Hidden CAD Viewer artifacts written by the plugin's scripts/step
-# (listed after the re-admits so they win).
+# CAD Viewer render packages / STEP import caches written by the plugin (cadgen >= 0.4),
+# plus the pre-0.4 hidden sidecars (listed after the re-admits so they win).
+__cadgen__/
 .*.step.glb
 .*.step.js
 .*.step/

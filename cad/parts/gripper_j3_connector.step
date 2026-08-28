@@ -1,8 +1,8 @@
 ISO-10303-21;
 HEADER;
 FILE_DESCRIPTION(('Open CASCADE Model'),'2;1');
-FILE_NAME('gripper_j3_connector','2026-08-27T19:32:01',('Author'),(
-    'Open CASCADE'),'Open CASCADE STEP processor 7.8','cadpy','Unknown'
+FILE_NAME('gripper_j3_connector','2026-08-28T01:47:34',('Author'),(
+    'Open CASCADE'),'Open CASCADE STEP processor 7.8','cadgen','Unknown'
   );
 FILE_SCHEMA(('AUTOMOTIVE_DESIGN { 1 0 10303 214 1 1 1 1 }'));
 ENDSEC;
@@ -11317,21 +11317,21 @@ SHAPE_REPRESENTATION_RELATIONSHIP() );
 #9796 = NEXT_ASSEMBLY_USAGE_OCCURRENCE('1','=>[0:1:1:2]','',#5,#27,$);
 #9797 = PRODUCT_RELATED_PRODUCT_CATEGORY('part',$,(#29));
 
-#9798=DESCRIPTIVE_REPRESENTATION_ITEM('cadpy:generator','cadpy');
-#9799=REPRESENTATION('cadpy:generator',(#9798),#19);
-#9800=PROPERTY_DEFINITION('cadpy metadata','cadpy:generator',#5);
+#9798=DESCRIPTIVE_REPRESENTATION_ITEM('cadgen:generator','cadgen');
+#9799=REPRESENTATION('cadgen:generator',(#9798),#19);
+#9800=PROPERTY_DEFINITION('cadgen metadata','cadgen:generator',#5);
 #9801=PROPERTY_DEFINITION_REPRESENTATION(#9800,#9799);
-#9802=DESCRIPTIVE_REPRESENTATION_ITEM('cadpy:entryKind','assembly');
-#9803=REPRESENTATION('cadpy:entryKind',(#9802),#19);
-#9804=PROPERTY_DEFINITION('cadpy metadata','cadpy:entryKind',#5);
+#9802=DESCRIPTIVE_REPRESENTATION_ITEM('cadgen:entryKind','assembly');
+#9803=REPRESENTATION('cadgen:entryKind',(#9802),#19);
+#9804=PROPERTY_DEFINITION('cadgen metadata','cadgen:entryKind',#5);
 #9805=PROPERTY_DEFINITION_REPRESENTATION(#9804,#9803);
-#9806=DESCRIPTIVE_REPRESENTATION_ITEM('cadpy:sourcePath','gripper_j3_connector.py');
-#9807=REPRESENTATION('cadpy:sourcePath',(#9806),#19);
-#9808=PROPERTY_DEFINITION('cadpy metadata','cadpy:sourcePath',#5);
+#9806=DESCRIPTIVE_REPRESENTATION_ITEM('cadgen:sourcePath','gripper_j3_connector.py');
+#9807=REPRESENTATION('cadgen:sourcePath',(#9806),#19);
+#9808=PROPERTY_DEFINITION('cadgen metadata','cadgen:sourcePath',#5);
 #9809=PROPERTY_DEFINITION_REPRESENTATION(#9808,#9807);
-#9810=DESCRIPTIVE_REPRESENTATION_ITEM('cadpy:sourceHash','1c982c3870a1996542893ab1a9df82808203624bdd16299463dce5d5f87ad41d');
-#9811=REPRESENTATION('cadpy:sourceHash',(#9810),#19);
-#9812=PROPERTY_DEFINITION('cadpy metadata','cadpy:sourceHash',#5);
+#9810=DESCRIPTIVE_REPRESENTATION_ITEM('cadgen:sourceHash','1c982c3870a1996542893ab1a9df82808203624bdd16299463dce5d5f87ad41d');
+#9811=REPRESENTATION('cadgen:sourceHash',(#9810),#19);
+#9812=PROPERTY_DEFINITION('cadgen metadata','cadgen:sourceHash',#5);
 #9813=PROPERTY_DEFINITION_REPRESENTATION(#9812,#9811);
 ENDSEC;
 END-ISO-10303-21;

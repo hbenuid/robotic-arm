@@ -12,7 +12,8 @@ Robot arm control software for a 3-motor MKS SERVO42D/57D arm over CAN bus.
 
 The arm's mechanical design lives in [`cad/`](cad/README.md) as parametric
 [build123d](https://github.com/gumyr/build123d) code — a **separate uv project**
-(Python 3.12) that the control software never depends on. It is being converted
+(Python 3.12) that the control software never depends on, driven by the
+[`text-to-cad`](https://github.com/earthtojake/text-to-cad) CAD skills plugin (v0.4.x). It is being converted
 part-by-part from the original SolidWorks STEP exports (kept in `cad/reference/`);
 until a part is converted it is an import wrapper around its reference geometry, so
 the whole arm already assembles and renders:
@@ -20,8 +21,8 @@ the whole arm already assembles and renders:
 ```
 cd cad
 ./cadtool setup                      # one-time: venv + Playwright Chromium (snapshots)
-./cadtool step assemblies/arm.py     # build the arm STEP
-./cadtool viewer                     # CAD Viewer; open the printed URL with &file=assemblies/arm.step
+./cadtool gen assemblies/arm.py      # build the arm STEP
+./cadtool viewer                     # CAD Viewer: http://127.0.0.1:3245/<abs cad>?file=assemblies/arm.step
 ./cadtool pytest                     # convention + reference-match tests
 ```
 
