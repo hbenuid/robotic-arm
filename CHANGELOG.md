@@ -44,7 +44,7 @@ links. Baseline suite 410 + 9 skipped → 412 + 9 skipped (two new discovery loc
   on a checkout that shows pointer files); every regenerated STEP is a new LFS object against the
   GitHub LFS quota.
 
-### Changed — docs (`pending-r5`)
+### Changed — docs (`6301516`)
 - `cad/README.md` (setup / LFS, cadtool table incl. `clean`, the layout tree, part conventions,
   converting, purchased parts, references, robot, tests), `cad/CLAUDE.md`, `cad/docs/cycloidal_drive.md`,
   `cad/reference/README.md`, `cad/vendor/README.md`, root `README.md` / `CLAUDE.md` follow the new paths.
