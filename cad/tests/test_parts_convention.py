@@ -85,3 +85,26 @@ def test_cots_envelope_tracks_reference_bbox(name):
     assert env.is_valid
     for got, exp in ((R.bbox_min(env), entry["bbox_min"]), (R.bbox_size(env), entry["bbox_size"])):
         assert all(abs(g - e) <= 0.05 for g, e in zip(got, exp)), f"{name} envelope {got} vs reference {exp}"
+
+
+COTS_FRAME_TOL_MM = 1.5   # catalog models differ slightly from the SolidWorks re-exports
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize("name", COTS_PARTS)
+def test_cots_vendor_matches_reference_frame(name):
+    """The vendor geometry (after VENDOR_TO_REF) must occupy the SolidWorks reference's bounding
+    box - guards the re-orientation of a swapped-in step.parts model."""
+    mod = importlib.import_module(f"parts.{name}")
+    if not mod.VENDOR_STEP.exists():
+        pytest.skip(f"no vendor/{name}.step - envelope in use")
+    shape = mod.gen_step()
+    ref = R.load(name)
+    for got, exp, what in (
+        (R.bbox_min(shape), R.bbox_min(ref), "bbox min"),
+        (R.bbox_size(shape), R.bbox_size(ref), "bbox size"),
+    ):
+        assert all(abs(g - e) <= COTS_FRAME_TOL_MM for g, e in zip(got, exp)), (
+            f"{name} vendor geometry {what} {got} vs reference {exp} (tol {COTS_FRAME_TOL_MM} mm) - "
+            f"set VENDOR_TO_REF in parts/{name}.py"
+        )

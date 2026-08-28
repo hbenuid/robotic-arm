@@ -17,7 +17,7 @@
     106.679
    ],
    "bytes": 205516,
-   "kind": "reference",
+   "kind": "custom",
    "product": "base of robot arm 62126",
    "sha256": "abeb196d0655dc47a40a666b0ef4a8240cb04d186cc6110ede61cde8d546cabb",
    "solid_volume": 286169.096,
@@ -37,7 +37,7 @@
     43.2
    ],
    "bytes": 106221,
-   "kind": "reference",
+   "kind": "custom",
    "product": "brack for hand cmap",
    "sha256": "d6a8775816cef9211919a151fa99b9fd5d2ff5a9836edb668734bf0174813055",
    "solid_volume": 11175.598,
@@ -57,7 +57,7 @@
     70.0
    ],
    "bytes": 77996,
-   "kind": "reference",
+   "kind": "custom",
    "product": "Gripper Cover_Gripper Cover",
    "sha256": "3e257b1ddda456d92653747242441d64a6906527813b89196c1146f98ad57c46",
    "solid_volume": 13140.556,
@@ -77,7 +77,7 @@
     25.123
    ],
    "bytes": 47904,
-   "kind": "reference",
+   "kind": "custom",
    "product": "Gripper End_Gripper End",
    "sha256": "2929c51aea59171ba16ca5ec4ccb843e67e1be51c7ae55b1419c30f97031ec5a",
    "solid_volume": 11497.737,
@@ -97,7 +97,7 @@
     105.0
    ],
    "bytes": 46176,
-   "kind": "reference",
+   "kind": "custom",
    "product": "Gripper Hand Left_Gripper Hand Left",
    "sha256": "4babea7bf94b7c1273b91e0d313bf1c46e9167c1305be3810081ce28ceb85fa6",
    "solid_volume": 9069.32,
@@ -117,7 +117,7 @@
     105.0
    ],
    "bytes": 46136,
-   "kind": "reference",
+   "kind": "custom",
    "product": "Gripper Hand Right_Gripper Hand Left",
    "sha256": "b063c579dfb38f18fe6a4dd445e1fe98156c9419d3fb3e3e9d8763c6eb291f57",
    "solid_volume": 9069.32,
@@ -137,7 +137,7 @@
     46.0
    ],
    "bytes": 325526,
-   "kind": "reference",
+   "kind": "custom",
    "product": "Gripper to J3 connector 7726_Gripper to J3 connector",
    "sha256": "994ce3dcc15f4540d350c5f7fd377dc07fd8109f23ffde510d85f8f6500f7e6a",
    "solid_volume": 4713.027,
@@ -157,7 +157,7 @@
     7.2
    ],
    "bytes": 24606,
-   "kind": "reference",
+   "kind": "custom",
    "product": "Gripper link 1_Gripper link 1",
    "sha256": "18b02fc9317640fed13175a46bfde89aa77520f982de9c36a935bf770a033d60",
    "solid_volume": 766.605,
@@ -177,7 +177,7 @@
     7.2
    ],
    "bytes": 33886,
-   "kind": "reference",
+   "kind": "custom",
    "product": "Gripper link 2_Gripper link 2",
    "sha256": "fccc9dd028cb990e453d14cca1c9dc1f5a47c51e26b0af43019784d2c408eb91",
    "solid_volume": 782.263,
@@ -197,13 +197,30 @@
     6.0
    ],
    "bytes": 9463,
-   "kind": "vendor",
+   "kind": "cots",
    "product": "Gripper rail 6mm_Gripper rail 6mm",
    "sha256": "54dc6e9691fd24d93462e9a17bb7a29717af3976444c94c6aabfceb91576f947",
    "solid_volume": 3534.292,
    "solids": 1,
    "source": "step/Gripper rail 6mm_Gripper rail 6mm.STEP",
-   "units": "mm"
+   "units": "mm",
+   "vendor": {
+    "bbox_min": [
+     -3.0,
+     0.0,
+     -3.0
+    ],
+    "bbox_size": [
+     6.0,
+     125.0,
+     6.0
+    ],
+    "bytes": 9463,
+    "same_as_reference": true,
+    "sha256": "54dc6e9691fd24d93462e9a17bb7a29717af3976444c94c6aabfceb91576f947",
+    "solid_volume": 3534.292,
+    "solids": 1
+   }
   },
   "gripper_slider": {
    "bbox_min": [
@@ -217,7 +234,7 @@
     60.0
    ],
    "bytes": 72693,
-   "kind": "reference",
+   "kind": "custom",
    "product": "Gripper Mechanism Slider_Gripper Mechanism Slider",
    "sha256": "aa14b167f96f53080755a9c894be6f9bce1d3e77a5e52a27ed51c6dd19af68a8",
    "solid_volume": 16553.698,
@@ -237,13 +254,30 @@
     16.0
    ],
    "bytes": 661715,
-   "kind": "vendor",
+   "kind": "cots",
    "product": "GT2_20T_Конфигурация1",
    "sha256": "e1dd5c81ed7179a111b42af77a9baf96aa7de60c7acce1887480163560d42b33",
    "solid_volume": 1878.627,
    "solids": 3,
    "source": "step/GT2_20T_Конфигурация1.STEP",
-   "units": "mm"
+   "units": "mm",
+   "vendor": {
+    "bbox_min": [
+     0.0,
+     -8.0,
+     -8.0
+    ],
+    "bbox_size": [
+     14.45,
+     16.0,
+     16.0
+    ],
+    "bytes": 661715,
+    "same_as_reference": true,
+    "sha256": "e1dd5c81ed7179a111b42af77a9baf96aa7de60c7acce1887480163560d42b33",
+    "solid_volume": 1878.627,
+    "solids": 3
+   }
   },
   "gt2_pulley_90t": {
    "bbox_min": [
@@ -257,7 +291,7 @@
     59.188
    ],
    "bytes": 2255780,
-   "kind": "reference",
+   "kind": "custom",
    "product": "GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric",
    "sha256": "f6d47a48c9b5ab0dfaf893f669fe4e02531cd3149267c32650bce1923f1caa1d",
    "solid_volume": 24810.708,
@@ -277,7 +311,7 @@
     27.228
    ],
    "bytes": 112539,
-   "kind": "reference",
+   "kind": "custom",
    "product": "first joint cap 8726",
    "sha256": "695547567e95414497753a901ea47905758a9bf3405ef64587b89e5b3e3ac72f",
    "solid_volume": 150356.572,
@@ -297,7 +331,7 @@
     106.264
    ],
    "bytes": 290769,
-   "kind": "reference",
+   "kind": "custom",
    "product": "Base couple updated 62126 _J1 coupler",
    "sha256": "6013455ea063a8643764c7ab287b86f6fe40b62c122551da0231c1540546a137",
    "solid_volume": 199961.363,
@@ -317,7 +351,7 @@
     90.0
    ],
    "bytes": 363199,
-   "kind": "reference",
+   "kind": "custom",
    "product": "first joint edit 62126",
    "sha256": "8a771424c7f99e19f52c3f28c73af7eceb7394c184e0e2fdc7423321109e24bb",
    "solid_volume": 354048.813,
@@ -337,7 +371,7 @@
     14.5
    ],
    "bytes": 85762,
-   "kind": "reference",
+   "kind": "custom",
    "product": "cap 1 joint 2 8726",
    "sha256": "7e485f41735be289de4720c809dca8d987d69842b308fc05bd3ab9216ba76000",
    "solid_volume": 97819.467,
@@ -357,7 +391,7 @@
     13.5
    ],
    "bytes": 96673,
-   "kind": "reference",
+   "kind": "custom",
    "product": "cap of joint 2 piece 2 8526",
    "sha256": "c983497013105196e6d670a65c29651fd16a3ad5c0fa8ebe10aafa6f468828ac",
    "solid_volume": 75151.405,
@@ -377,7 +411,7 @@
     33.5
    ],
    "bytes": 279070,
-   "kind": "reference",
+   "kind": "custom",
    "product": "Joint 2 change 8126",
    "sha256": "9a0a94b8db390b51438a89dfb65cb77969e2d83cf5133762ff12261143e2de42",
    "solid_volume": 285470.463,
@@ -397,7 +431,7 @@
     78.0
    ],
    "bytes": 163964,
-   "kind": "reference",
+   "kind": "custom",
    "product": "Joint 2 coupler 62226_J3 Coupler",
    "sha256": "2783762d6ca83ff398a17d14b0b0aa373768d09d6c1f759ede60057b02628859",
    "solid_volume": 55568.499,
@@ -417,13 +451,30 @@
     12.0
    ],
    "bytes": 44713,
-   "kind": "vendor",
+   "kind": "cots",
    "product": "Servo MG996R Horn_Servo MG996R Horn",
    "sha256": "e17722d40d4377ac7c36b937c7a681499cdffb144bdcfa8ca620496f126972a5",
    "solid_volume": 531.838,
    "solids": 1,
    "source": "step/Servo MG996R Horn_Servo MG996R Horn.STEP",
-   "units": "mm"
+   "units": "mm",
+   "vendor": {
+    "bbox_min": [
+     -16.0,
+     0.0,
+     -6.0
+    ],
+    "bbox_size": [
+     32.0,
+     2.5,
+     12.0
+    ],
+    "bytes": 44713,
+    "same_as_reference": true,
+    "sha256": "e17722d40d4377ac7c36b937c7a681499cdffb144bdcfa8ca620496f126972a5",
+    "solid_volume": 531.838,
+    "solids": 1
+   }
   },
   "mg996r_servo": {
    "bbox_min": [
@@ -437,13 +488,30 @@
     20.5
    ],
    "bytes": 321776,
-   "kind": "vendor",
+   "kind": "cots",
    "product": "Servo Motor MG996R 3D Model_Servo Motor MG996R 3D Model",
    "sha256": "fc8ca8d9d80066cce57f711b4871627790e31cd86654098f4ae81dd3f5e43af7",
    "solid_volume": 33161.289,
    "solids": 4,
    "source": "step/Servo Motor MG996R 3D Model_Servo Motor MG996R 3D Model.STEP",
-   "units": "mm"
+   "units": "mm",
+   "vendor": {
+    "bbox_min": [
+     -28.5,
+     -0.0,
+     -10.25
+    ],
+    "bbox_size": [
+     55.8,
+     45.2,
+     20.5
+    ],
+    "bytes": 321776,
+    "same_as_reference": true,
+    "sha256": "fc8ca8d9d80066cce57f711b4871627790e31cd86654098f4ae81dd3f5e43af7",
+    "solid_volume": 33161.289,
+    "solids": 4
+   }
   },
   "nema17_pancake": {
    "bbox_min": [
@@ -457,13 +525,30 @@
     43.0
    ],
    "bytes": 1566078,
-   "kind": "vendor",
+   "kind": "cots",
    "product": "nema17_pancake",
    "sha256": "1cefcd61f031f576fce126590ba43bd1d518b519bf6f5411da82a7e401428d7a",
    "solid_volume": 33013.761,
    "solids": 11,
    "source": null,
-   "units": "mm"
+   "units": "mm",
+   "vendor": {
+    "bbox_min": [
+     -20.75,
+     -13.591,
+     12.659
+    ],
+    "bbox_size": [
+     41.5,
+     47.0,
+     43.0
+    ],
+    "bytes": 1566078,
+    "same_as_reference": true,
+    "sha256": "1cefcd61f031f576fce126590ba43bd1d518b519bf6f5411da82a7e401428d7a",
+    "solid_volume": 33013.761,
+    "solids": 11
+   }
   },
   "servo_holder": {
    "bbox_min": [
@@ -477,7 +562,7 @@
     72.5
    ],
    "bytes": 137377,
-   "kind": "reference",
+   "kind": "custom",
    "product": "Servo Holder_Servo Holder",
    "sha256": "39442a0b270499bfbb7cec0d1b5ee1a78a11910965532eb21bd735505b70dd41",
    "solid_volume": 14670.662,
@@ -497,7 +582,7 @@
     44.0
    ],
    "bytes": 434090,
-   "kind": "reference",
+   "kind": "custom",
    "product": "final component arm qwrist movement",
    "sha256": "0c6cbabc96ade3515ad94ccd2e0b32d1f7f642668a9f5cbc41cb5ee1de7af13b",
    "solid_volume": 113601.405,

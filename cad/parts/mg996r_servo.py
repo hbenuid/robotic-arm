@@ -22,6 +22,9 @@ NAME = pathlib.Path(__file__).stem
 COTS = True
 MASS_G = MG996R_MASS_G   # [DATASHEET] 55 g
 VENDOR_STEP = pathlib.Path(__file__).resolve().parent.parent / "vendor" / f"{NAME}.step"
+# Rigid transform vendor-file frame -> the SolidWorks frame placements.json assumes (identity while
+# vendor/<name>.step is the SolidWorks re-export; set it after swapping in a step.parts model).
+VENDOR_TO_REF = Location()
 
 
 def _envelope():
@@ -32,7 +35,7 @@ def _envelope():
 
 def gen_step():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
-    part = import_step(str(VENDOR_STEP)) if VENDOR_STEP.exists() else _envelope()
+    part = import_step(str(VENDOR_STEP)).moved(VENDOR_TO_REF) if VENDOR_STEP.exists() else _envelope()
     part.label = NAME
     return part
 

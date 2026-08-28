@@ -30,12 +30,19 @@ def _sha256(path):
 
 
 def test_reference_and_vendor_files_match_manifest():
-    """reference/*.step and vendor/*.step are immutable inputs - detect edits/corruption."""
+    """reference/*.step are immutable inputs and vendor/*.step must match what the manifest
+    describes - detect edits/corruption or a vendor swap without re-running import_reference."""
     manifest = json.loads((R.REF_DIR / "manifest.json").read_text(encoding="utf-8"))
     for name, entry in manifest["parts"].items():
-        path = (R.REF_DIR if entry["kind"] == "reference" else R.VENDOR_DIR) / f"{name}.step"
-        assert path.exists(), f"{path} listed in manifest.json but missing"
-        assert _sha256(path) == entry["sha256"], f"{path} differs from reference/manifest.json"
+        ref = R.REF_DIR / f"{name}.step"
+        assert ref.exists(), f"{ref} listed in manifest.json but missing"
+        assert _sha256(ref) == entry["sha256"], f"{ref} differs from reference/manifest.json"
+        if entry["kind"] == "cots":
+            vendor = R.VENDOR_DIR / f"{name}.step"
+            assert vendor.exists(), f"{vendor} missing"
+            assert _sha256(vendor) == entry["vendor"]["sha256"], (
+                f"{vendor} differs from manifest.json - run tools/import_reference.py after replacing a vendor file"
+            )
     assert set(manifest["parts"]) == set(R.CUSTOM) | set(R.COTS)
 
 

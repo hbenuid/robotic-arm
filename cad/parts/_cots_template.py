@@ -17,13 +17,16 @@ Generate the committed STEP:   ./cadtool step parts/<name>.py
 import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from build123d import Align, Box, import_step  # noqa: E402  (import after shim)
+from build123d import Align, Box, Location, import_step  # noqa: E402  (import after shim)
 # from lib.params import ...                     # noqa: E402  the real interface dims
 
 NAME = pathlib.Path(__file__).stem
 COTS = True
 MASS_G = 0.0   # [DATASHEET] grams
 VENDOR_STEP = pathlib.Path(__file__).resolve().parent.parent / "vendor" / f"{NAME}.step"
+# Rigid transform vendor-file frame -> the SolidWorks frame placements.json assumes (identity while
+# vendor/<name>.step is the SolidWorks re-export; set it after swapping in a step.parts model).
+VENDOR_TO_REF = Location()
 
 
 def _envelope():
@@ -33,7 +36,7 @@ def _envelope():
 
 def gen_step():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
-    part = import_step(str(VENDOR_STEP)) if VENDOR_STEP.exists() else _envelope()
+    part = import_step(str(VENDOR_STEP)).moved(VENDOR_TO_REF) if VENDOR_STEP.exists() else _envelope()
     part.label = NAME
     return part
 

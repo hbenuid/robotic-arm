@@ -1,13 +1,14 @@
-"""Copy the SolidWorks per-part STEP exports into reference/ (custom parts) and vendor/
-(purchased parts) under clean snake_case names, and write reference/manifest.json.
+"""Copy the SolidWorks per-part STEP exports into reference/ under clean snake_case names
+(every part, custom and purchased - the immutable frame/size reference), seed vendor/ for
+purchased parts, and write reference/manifest.json.
 
     ./cadtool python tools/import_reference.py [--src DIR] [--force]
 
 Copies go through the explicit map in lib/reference.py - never shell globs: the source
 names contain spaces, parentheses, a trailing space and a Cyrillic configuration name.
-reference/*.step and vendor/*.step are immutable inputs; parts/*.step are regenerated from
-Python. Re-run (without --force) after tools/extract_placements.py so the manifest also
-describes the extracted vendor/nema17_pancake.step.
+reference/*.step are immutable inputs; vendor/*.step may be replaced by better models (see
+vendor/README.md); parts/*.step are regenerated from Python. Re-run (without --force) after
+tools/extract_placements.py and after replacing a vendor file, so the manifest is current.
 """
 from __future__ import annotations
 
@@ -64,8 +65,8 @@ def main(argv=None) -> int:
 
     R.REF_DIR.mkdir(exist_ok=True)
     R.VENDOR_DIR.mkdir(exist_ok=True)
-    jobs = [(name, prod, rel, R.REF_DIR / f"{name}.step", "reference") for name, (prod, rel) in R.CUSTOM.items()]
-    jobs += [(name, prod, rel, R.VENDOR_DIR / f"{name}.step", "vendor") for name, (prod, rel) in R.COTS.items()]
+    jobs = [(name, prod, rel, "custom") for name, (prod, rel) in R.CUSTOM.items()]
+    jobs += [(name, prod, rel, "cots") for name, (prod, rel) in R.COTS.items()]
 
     manifest = {
         "source_dir": str(args.src),
@@ -77,34 +78,50 @@ def main(argv=None) -> int:
         manifest["monolith"] = {"file": R.MONOLITH_NAME, "bytes": monolith.stat().st_size, "sha256": sha256(monolith)}
 
     missing: list[str] = []
-    for name, prod, rel, dst, kind in jobs:
-        if rel is None:  # extracted from the full assembly by tools/extract_placements.py
-            if not dst.exists():
-                print(f"{name:24s} {kind:9s} (not yet extracted - run tools/extract_placements.py)")
+    for name, prod, rel, kind in jobs:
+        ref = R.REF_DIR / f"{name}.step"          # immutable SolidWorks geometry (frame + size reference)
+        vendor = R.VENDOR_DIR / f"{name}.step"    # COTS only: the current best vendor model (may be replaced)
+        if rel is None:
+            # Extracted from the full assembly by tools/extract_placements.py into vendor/; that
+            # extraction IS the SolidWorks reference, so mirror it into reference/ once.
+            if not vendor.exists():
+                print(f"{name:24s} {kind:7s} (not yet extracted - run tools/extract_placements.py)")
                 continue
+            if not ref.exists() or args.force:
+                shutil.copyfile(vendor, ref)
             action = "extracted"
         else:
             src = args.src / rel
             if not src.exists():
                 missing.append(f"{name}: {src}")
                 continue
-            if dst.exists() and not args.force:
+            if ref.exists() and not args.force:
                 action = "kept"
             else:
-                shutil.copyfile(src, dst)
+                shutil.copyfile(src, ref)
                 action = "copied"
+            if kind == "cots" and not vendor.exists():
+                shutil.copyfile(src, vendor)   # seed the vendor model; step.parts downloads replace it
         entry = {
             "kind": kind,
             "product": prod,
             "source": rel,
-            "bytes": dst.stat().st_size,
-            "sha256": sha256(dst),
-            "units": step_units(dst),
-            **describe(dst),
+            "bytes": ref.stat().st_size,
+            "sha256": sha256(ref),
+            "units": step_units(ref),
+            **describe(ref),
         }
+        if kind == "cots":
+            entry["vendor"] = {
+                "bytes": vendor.stat().st_size,
+                "sha256": sha256(vendor),
+                "same_as_reference": sha256(vendor) == entry["sha256"],
+                **describe(vendor),
+            }
         manifest["parts"][name] = entry
-        print(f"{name:24s} {kind:9s} {action:9s} {entry['units']:4s} solids={entry['solids']:2d} "
-              f"vol={entry['solid_volume']:12.1f}  size={entry['bbox_size']}")
+        vend = "" if kind != "cots" else ("  vendor=reference" if entry["vendor"]["same_as_reference"] else "  vendor=REPLACED")
+        print(f"{name:24s} {kind:7s} {action:9s} {entry['units']:4s} solids={entry['solids']:2d} "
+              f"vol={entry['solid_volume']:12.1f}  size={entry['bbox_size']}{vend}")
 
     MANIFEST_PATH.write_text(json.dumps(manifest, indent=1, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
     print(f"wrote {MANIFEST_PATH} ({len(manifest['parts'])} entries)")
