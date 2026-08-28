@@ -22,6 +22,12 @@ MULTI_BODY = {
     "gt2_pulley_20t": 3,
     "mg996r_servo": 4,
     "nema17_pancake": 11,
+    # cycloidal drive fastener / pin patterns (one compound per pattern)
+    "cycloidal_ring_pins": 21,
+    "cycloidal_output_pins": 4,
+    "cycloidal_motor_bolts": 4,
+    "cycloidal_housing_bolts": 8,
+    "cycloidal_housing_nuts": 8,
 }
 
 

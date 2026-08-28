@@ -84,6 +84,16 @@ DESIGNED: dict[str, str] = {
 # Purchased parts of the cycloidal drive: clean name -> CadQuery builder of the simplified model
 # (its export is reference/<name>.step; a step.parts model may live in vendor/<name>.step).
 CYCLOIDAL_COTS: dict[str, str] = {
+    "bearing_6003":                "src/purchased_parts.py:build_bearing_6003()",
+    "bearing_6814":                "src/purchased_parts.py:build_bearing_6814()",
+    "bearing_625":                 "src/purchased_parts.py:build_bearing_625()",
+    "nema17_48mm":                 "src/purchased_parts.py:build_nema17_motor()",
+    "cycloidal_ring_pins":         "src/purchased_parts.py:build_ring_pins()",
+    "cycloidal_output_pins":       "src/purchased_parts.py:build_output_pins()",
+    "cycloidal_shaft_support_pin": "src/purchased_parts.py:build_shaft_support_pin()",
+    "cycloidal_motor_bolts":       "src/purchased_parts.py:build_motor_bolts()",
+    "cycloidal_housing_bolts":     "src/purchased_parts.py:build_housing_bolts()",
+    "cycloidal_housing_nuts":      "src/purchased_parts.py:build_housing_nuts()",
 }
 COTS.update({name: (f"cycloidal_drive {builder}", None) for name, builder in CYCLOIDAL_COTS.items()})
 CYCLOIDAL_PARTS: set[str] = set(DESIGNED) | set(CYCLOIDAL_COTS)

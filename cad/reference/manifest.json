@@ -25,6 +25,86 @@
    "source": "step/base of robot arm 62126.STEP",
    "units": "mm"
   },
+  "bearing_6003": {
+   "bbox_min": [
+    -17.5,
+    -17.5,
+    0.0
+   ],
+   "bbox_size": [
+    35.0,
+    35.0,
+    10.0
+   ],
+   "bytes": 9578,
+   "kind": "cots",
+   "origin": "cycloidal_drive@2f1f67d",
+   "product": "6003-2RS deep-groove ball bearing 17x35x10",
+   "sha256": "92f6fd8278c2a89a57535a49e59bae8825b21c8dcdb40886223c3e61e425ffee",
+   "solid_volume": 7351.327,
+   "solids": 1,
+   "source": "src/purchased_parts.py:build_bearing_6003()",
+   "units": "mm"
+  },
+  "bearing_625": {
+   "bbox_min": [
+    -8.0,
+    -8.0,
+    0.0
+   ],
+   "bbox_size": [
+    16.0,
+    16.0,
+    5.0
+   ],
+   "bytes": 9555,
+   "kind": "cots",
+   "origin": "cycloidal_drive@2f1f67d",
+   "product": "625-2RS deep-groove ball bearing 5x16x5",
+   "sha256": "76d1933658502fc7ec6aacc8a3f09ec9544d25f85e3106853a6b0dc83a14e3b7",
+   "solid_volume": 907.135,
+   "solids": 1,
+   "source": "src/purchased_parts.py:build_bearing_625()",
+   "units": "mm",
+   "vendor": {
+    "bbox_min": [
+     -8.0,
+     -8.0,
+     0.0
+    ],
+    "bbox_size": [
+     16.0,
+     16.0,
+     5.0
+    ],
+    "bytes": 38864,
+    "same_as_reference": false,
+    "sha256": "a790c7a900a61a7e1ca6d564ad073c5c6dd387751fee71474d267b51c16f50da",
+    "solid_volume": 875.053,
+    "solids": 1
+   }
+  },
+  "bearing_6814": {
+   "bbox_min": [
+    -45.0,
+    -45.0,
+    0.0
+   ],
+   "bbox_size": [
+    90.0,
+    90.0,
+    10.0
+   ],
+   "bytes": 9570,
+   "kind": "cots",
+   "origin": "cycloidal_drive@2f1f67d",
+   "product": "6814-2RS deep-groove ball bearing 70x90x10",
+   "sha256": "39e488500b130ddb6b456aa67b1b52cdf4557ce2668088c9e7235ff1913e7e00",
+   "solid_volume": 25132.741,
+   "solids": 1,
+   "source": "src/purchased_parts.py:build_bearing_6814()",
+   "units": "mm"
+  },
   "cycloidal_disc_1": {
    "bbox_min": [
     -52.942,
@@ -88,6 +168,69 @@
    "source": "src/eccentric_shaft.py:build_eccentric_shaft()",
    "units": "mm"
   },
+  "cycloidal_housing_bolts": {
+   "bbox_min": [
+    -66.0,
+    -66.0,
+    0.0
+   ],
+   "bbox_size": [
+    132.0,
+    132.0,
+    59.0
+   ],
+   "bytes": 82236,
+   "kind": "cots",
+   "origin": "cycloidal_drive@2f1f67d",
+   "product": "8x M4x55 SHCS (housing)",
+   "sha256": "8b7606b49d91ca51ce354e26df6dae8b9ecfc603fc40bc12e9f7acad9f3cacd4",
+   "solid_volume": 6760.707,
+   "solids": 8,
+   "source": "src/purchased_parts.py:build_housing_bolts()",
+   "units": "mm"
+  },
+  "cycloidal_housing_nuts": {
+   "bbox_min": [
+    -66.541,
+    -66.541,
+    0.0
+   ],
+   "bbox_size": [
+    133.083,
+    133.083,
+    3.2
+   ],
+   "bytes": 200495,
+   "kind": "cots",
+   "origin": "cycloidal_drive@2f1f67d",
+   "product": "8x M4 hex nuts (housing)",
+   "sha256": "d9bfaecf8c6447d1935d696c85d9d00bcd8067c651cfb2f99bc2472abb7d8eb5",
+   "solid_volume": 1086.342,
+   "solids": 8,
+   "source": "src/purchased_parts.py:build_housing_nuts()",
+   "units": "mm"
+  },
+  "cycloidal_motor_bolts": {
+   "bbox_min": [
+    -18.15,
+    -18.15,
+    0.0
+   ],
+   "bbox_size": [
+    36.3,
+    36.3,
+    13.0
+   ],
+   "bytes": 40260,
+   "kind": "cots",
+   "origin": "cycloidal_drive@2f1f67d",
+   "product": "4x M3x10 SHCS (motor)",
+   "sha256": "7b2c290cf9819bee5319d71e2cfb7833ad858008d29605c08f8c05c76cc89645",
+   "solid_volume": 547.485,
+   "solids": 4,
+   "source": "src/purchased_parts.py:build_motor_bolts()",
+   "units": "mm"
+  },
   "cycloidal_motor_plate": {
    "bbox_min": [
     -70.0,
@@ -130,6 +273,27 @@
    "source": "src/output_hub.py:build_output_hub()",
    "units": "mm"
   },
+  "cycloidal_output_pins": {
+   "bbox_min": [
+    -32.0,
+    -32.0,
+    0.0
+   ],
+   "bbox_size": [
+    64.0,
+    64.0,
+    45.0
+   ],
+   "bytes": 24845,
+   "kind": "cots",
+   "origin": "cycloidal_drive@2f1f67d",
+   "product": "4x 4x45 mm h6 dowel pins (output pins)",
+   "sha256": "f607814fae4f03a2759f453d7524300e49f94b29512e2a3a502f2d92e85bb0d8",
+   "solid_volume": 2261.947,
+   "solids": 4,
+   "source": "src/purchased_parts.py:build_output_pins()",
+   "units": "mm"
+  },
   "cycloidal_ring_gear_body": {
    "bbox_min": [
     -70.0,
@@ -149,6 +313,48 @@
    "solid_volume": 158114.513,
    "solids": 1,
    "source": "src/ring_gear_body.py:build_ring_gear_body()",
+   "units": "mm"
+  },
+  "cycloidal_ring_pins": {
+   "bbox_min": [
+    -55.397,
+    -55.849,
+    0.0
+   ],
+   "bbox_size": [
+    111.397,
+    111.698,
+    35.0
+   ],
+   "bytes": 129783,
+   "kind": "cots",
+   "origin": "cycloidal_drive@2f1f67d",
+   "product": "21x 4x35 mm h6 dowel pins (ring pins)",
+   "sha256": "540d8783e43081c5db45cb4ab765de902506afe6ed31aad83a9d3318d0e80db5",
+   "solid_volume": 9236.282,
+   "solids": 21,
+   "source": "src/purchased_parts.py:build_ring_pins()",
+   "units": "mm"
+  },
+  "cycloidal_shaft_support_pin": {
+   "bbox_min": [
+    -2.5,
+    -2.5,
+    0.0
+   ],
+   "bbox_size": [
+    5.0,
+    5.0,
+    20.0
+   ],
+   "bytes": 5756,
+   "kind": "cots",
+   "origin": "cycloidal_drive@2f1f67d",
+   "product": "5x20 mm h6 dowel pin (eccentric-shaft support)",
+   "sha256": "701aec5a5708374f34c37483255e26d3763ebeff3f44156d9da5e7e560c32ac1",
+   "solid_volume": 392.699,
+   "solids": 1,
+   "source": "src/purchased_parts.py:build_shaft_support_pin()",
    "units": "mm"
   },
   "gripper_clamp_bracket": {
@@ -638,6 +844,27 @@
     "solid_volume": 33161.289,
     "solids": 4
    }
+  },
+  "nema17_48mm": {
+   "bbox_min": [
+    -21.15,
+    -21.15,
+    -48.0
+   ],
+   "bbox_size": [
+    42.3,
+    42.3,
+    70.0
+   ],
+   "bytes": 47842,
+   "kind": "cots",
+   "origin": "cycloidal_drive@2f1f67d",
+   "product": "NEMA 17 stepper, 48 mm body, 5 mm D shaft",
+   "sha256": "812b2cbc35c1cc461bb07c0212ca6d490bc8e78515837a995f0fd15a47a7f5f7",
+   "solid_volume": 86905.043,
+   "solids": 1,
+   "source": "src/purchased_parts.py:build_nema17_motor()",
+   "units": "mm"
   },
   "nema17_pancake": {
    "bbox_min": [

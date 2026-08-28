@@ -55,7 +55,6 @@ def test_exporter_name_map_matches_registry():
     ex = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(ex)
     expected = {**R.DESIGNED, **R.CYCLOIDAL_COTS}
-    # TODO(commit 4): tighten to equality once the purchased parts are registered in CYCLOIDAL_COTS
-    assert set(expected) <= set(ex.BUILDERS), set(expected) - set(ex.BUILDERS)
+    assert set(ex.BUILDERS) == set(expected), set(ex.BUILDERS) ^ set(expected)
     for name, label in expected.items():
         assert ex.builder_label(name) == label, name
