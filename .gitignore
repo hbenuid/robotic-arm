@@ -15,7 +15,8 @@ __pycache__/
 *.glb
 *.step
 # EXCEPT: each part's primary STEP beside its gen_step() source, purchased-part
-# vendor STEPs, and the SolidWorks reference exports (none regenerable from Python).
+# vendor STEPs, and the reference exports (none regenerable from Python). These committed
+# STEP/STL files are Git LFS objects (see /.gitattributes): clone with git-lfs installed.
 !/cad/parts/**/*.step
 !/cad/vendor/*.step
 !/cad/reference/**/*.step
