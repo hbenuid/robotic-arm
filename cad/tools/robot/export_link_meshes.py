@@ -1,6 +1,6 @@
 """Export robot/meshes/<link>.stl for every physical link in robot/frames.py.
 
-    ./cadtool python tools/export_link_meshes.py [--links link1 link2 ...] [--tolerance 0.1] [--angular 0.3]
+    ./cadtool python tools/robot/export_link_meshes.py [--links link1 link2 ...] [--tolerance 0.1] [--angular 0.3]
 
 Meshes are written in MILLIMETRES in each link's own frame (robot/arm.urdf references them
 with scale="0.001 0.001 0.001" and an identity origin). Binary STL via build123d; coarse
@@ -12,14 +12,14 @@ import argparse
 import pathlib
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
 
 from build123d import export_stl  # noqa: E402
 from lib import reference as R  # noqa: E402
 from robot import frames as F  # noqa: E402
 from robot._links import build_link  # noqa: E402
 
-MESH_DIR = pathlib.Path(__file__).resolve().parent.parent / "robot" / "meshes"
+MESH_DIR = pathlib.Path(__file__).resolve().parents[2] / "robot" / "meshes"
 
 
 def main(argv=None) -> int:

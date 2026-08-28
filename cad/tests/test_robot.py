@@ -3,7 +3,6 @@ stays consistent with the CAD and with itself."""
 import math
 import pathlib
 import subprocess
-import sys
 import xml.etree.ElementTree as ET
 
 import pytest
@@ -12,14 +11,13 @@ from lib import params as PARAMS
 from lib import placements as P
 from lib import reference as R
 from robot import frames as F
+from tools.robot import frames as RF
 
 CAD_DIR = pathlib.Path(__file__).resolve().parent.parent
 ROBOT_DIR = CAD_DIR / "robot"
 URDF, SRDF, SDF = ROBOT_DIR / "arm.urdf", ROBOT_DIR / "arm.srdf", ROBOT_DIR / "arm.sdf"
 PHYSICAL_LINKS = [l for l in F.LINK_ORDER if F.LINKS[l]]
 
-sys.path.insert(0, str(CAD_DIR / "tools"))
-import robot_frames as RF  # noqa: E402
 
 
 # --- fast: structure ---------------------------------------------------------------------------

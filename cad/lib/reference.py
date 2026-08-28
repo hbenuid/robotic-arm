@@ -1,9 +1,9 @@
 """SolidWorks reference geometry: the naming map, loaders and the reference-match check.
 
 The originals live outside the repo (~/Documents/arm_assembly_organized/, SolidWorks 2026
-AP214 exports of 2026-08-27). `tools/import_reference.py` copies the per-part exports into
+AP214 exports of 2026-08-27). `tools/reference/import_reference.py` copies the per-part exports into
 reference/<clean_name>.step (immutable inputs) and vendor/<clean_name>.step (purchased
-parts); `tools/extract_placements.py` extracts the assembly placements from the
+parts); `tools/reference/extract_placements.py` extracts the assembly placements from the
 full-assembly STEP into reference/placements.json.
 
 `lib/` never imports `parts/`.
@@ -59,7 +59,7 @@ COTS: dict[str, tuple[str, str | None]] = {
     "gripper_rail_6mm": ("Gripper rail 6mm_Gripper rail 6mm",                        "step/Gripper rail 6mm_Gripper rail 6mm.STEP"),
     "mg996r_servo":     ("Servo Motor MG996R 3D Model_Servo Motor MG996R 3D Model",  "step/Servo Motor MG996R 3D Model_Servo Motor MG996R 3D Model.STEP"),
     "mg996r_horn":      ("Servo MG996R Horn_Servo MG996R Horn",                      "step/Servo MG996R Horn_Servo MG996R Horn.STEP"),
-    "nema17_pancake":   ("nema17_pancake", None),   # 7-part sub-assembly, flattened by tools/extract_placements.py
+    "nema17_pancake":   ("nema17_pancake", None),   # 7-part sub-assembly, flattened by tools/reference/extract_placements.py
 }
 
 # Sub-assemblies kept as modules under assemblies/: clean name -> product name.
@@ -69,8 +69,8 @@ MODULES: dict[str, str] = {
 
 # Designed (parametric build123d) parts ported from the cycloidal_drive repo. Their reference
 # is NOT a SolidWorks export but the CadQuery builder's own STEP export at CYCLOIDAL_REV
-# (reference/<name>.step, manifest kind "designed"; tools/export_cycloidal_cadquery.py +
-# tools/import_cycloidal_reference.py). Values: the builder label the exporter uses.
+# (reference/<name>.step, manifest kind "designed"; tools/cycloidal/export_cadquery.py +
+# tools/cycloidal/import_reference.py). Values: the builder label the exporter uses.
 CYCLOIDAL_REV = "2f1f67d"
 DESIGNED: dict[str, str] = {
     "cycloidal_disc_1":          "src/cycloidal_disc.py:build_cycloidal_disc()",
@@ -161,7 +161,7 @@ def load(name: str, *, label: str | None = None) -> Shape:
     A Solid for one-body parts, a flat Compound for multi-body ones."""
     path = path_of(name)
     if not path.exists():
-        raise FileNotFoundError(f"missing reference STEP {path} - run tools/import_reference.py")
+        raise FileNotFoundError(f"missing reference STEP {path} - run tools/reference/import_reference.py")
     shape = import_step(str(path))
     shape.label = label or name
     return shape

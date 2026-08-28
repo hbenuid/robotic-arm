@@ -3,10 +3,10 @@
   arm: 3-joint desktop arm (MKS SERVO42D on J1..J3) + 20:1 cycloidal shoulder drive (rigid in link1,
   not a joint yet) + NEMA17-pancake wrist roll + MG996R parallel gripper.
 
-  SOURCE OF TRUTH: this file. Every number is derived from the CAD by cad/tools/robot_frames.py
+  SOURCE OF TRUTH: this file. Every number is derived from the CAD by cad/tools/robot/frames.py
   (cad/robot/frames.py = link partition + joint frames; cad/reference/placements.json = the
-  SolidWorks capture) and verified with `./cadtool python tools/robot_frames.py`, check mode
-  (tests/test_robot.py runs it). Regenerate meshes with cad/tools/export_link_meshes.py.
+  SolidWorks capture) and verified with `./cadtool python tools/robot/frames.py`, check mode
+  (tests/test_robot.py runs it). Regenerate meshes with cad/tools/robot/export_link_meshes.py.
 
   FRAMES (REP-103): base_link on the base's bottom face at the J1 axis, Z up, X forward (the
   direction the arm extends). Every joint frame has Z on the joint axis and X along the child

@@ -35,8 +35,8 @@ def test_reference_and_vendor_files_match_manifest():
             if "vendor" in entry:
                 assert vendor.exists(), f"{vendor} missing"
                 assert R.sha256(vendor) == entry["vendor"]["sha256"], (
-                    f"{vendor} differs from manifest.json - run tools/import_reference.py "
-                    f"(tools/import_cycloidal_reference.py for the drive) after replacing a vendor file"
+                    f"{vendor} differs from manifest.json - run tools/reference/import_reference.py "
+                    f"(tools/cycloidal/import_reference.py for the drive) after replacing a vendor file"
                 )
             else:   # envelope in use - a vendor file must not appear without being recorded
                 assert not vendor.exists(), f"{vendor} exists but manifest.json has no vendor entry - re-run the import tool"

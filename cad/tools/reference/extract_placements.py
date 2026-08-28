@@ -2,7 +2,7 @@
 reference/placements.json, and flatten the NEMA 17 pancake sub-assembly into ONE vendor
 part (vendor/nema17_pancake.step).
 
-    ./cadtool python tools/extract_placements.py \
+    ./cadtool python tools/reference/extract_placements.py \
         [--monolith "~/Documents/arm_assembly_organized/final Arm Assembly Fully Movable.STEP"] \
         [--out reference/placements.json] [--pancake-out vendor/nema17_pancake.step]
 
@@ -22,7 +22,7 @@ import json
 import pathlib
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
 
 import build123d  # noqa: E402
 from build123d import BoundBox, Compound, Location, export_step, import_step  # noqa: E402

@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 from build123d import Pos
 
-from cycloidal_helpers import annulus, end_face, interference, is_inside, radial_extent, ring_pins
+from tests.cycloidal.helpers import annulus, end_face, interference, is_inside, radial_extent, ring_pins
 from lib import reference as R
 from lib.cycloidal import DEFAULT_CONFIG, stack_positions
 from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii, profile_points

@@ -1,10 +1,10 @@
 """Export the cycloidal_drive repo's CadQuery builders as house-named STEP files - the reference
 geometry the build123d port is verified against (reference/<name>.step via
-tools/import_cycloidal_reference.py).
+tools/cycloidal/import_reference.py).
 
 RUNS IN THE cycloidal_drive REPO'S OWN VENV (CadQuery), never in cad/'s:
 
-    cd ../cycloidal_drive && uv run python ../robotic-arm/cad/tools/export_cycloidal_cadquery.py [--out export/step/house]
+    cd ../cycloidal_drive && uv run python ../robotic-arm/cad/tools/cycloidal/export_cadquery.py [--out export/step/house]
 
 Writes <out>/<name>.step for every entry of BUILDERS plus <out>/manifest.json (git rev, cadquery
 version, per-part builder label / solids / volume). `export/` is git-ignored in that repo, so

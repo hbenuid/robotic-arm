@@ -7,7 +7,7 @@ import math
 
 import pytest
 
-from cycloidal_helpers import probe_volume, section_area
+from tests.cycloidal.helpers import probe_volume, section_area
 from lib import reference as R
 from lib.cycloidal import DEFAULT_CONFIG, compute_housing_bolt_angles, ring_pin_engagement, ring_pin_hole_dia
 from lib.cycloidal.housing import PILLAR_OVERSHOOT

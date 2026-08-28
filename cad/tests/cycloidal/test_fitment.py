@@ -10,7 +10,7 @@ import math
 import pytest
 from build123d import Pos
 
-from cycloidal_helpers import interference
+from tests.cycloidal.helpers import interference
 from lib.cycloidal import DEFAULT_CONFIG, stack_positions
 from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii
 from parts import bearing_6003, cycloidal_disc_1, cycloidal_eccentric_shaft

@@ -1,15 +1,15 @@
 """Copy the SolidWorks per-part STEP exports into reference/ under clean snake_case names
 (every part, custom and purchased - the immutable frame/size reference), seed vendor/ for
 purchased parts, and write reference/manifest.json. The cycloidal drive's parts are not
-SolidWorks exports: tools/import_cycloidal_reference.py owns them (their entries are kept).
+SolidWorks exports: tools/cycloidal/import_reference.py owns them (their entries are kept).
 
-    ./cadtool python tools/import_reference.py [--src DIR] [--force]
+    ./cadtool python tools/reference/import_reference.py [--src DIR] [--force]
 
 Copies go through the explicit map in lib/reference.py - never shell globs: the source
 names contain spaces, parentheses, a trailing space and a Cyrillic configuration name.
 reference/*.step are immutable inputs; vendor/*.step may be replaced by better models (see
 vendor/README.md); parts/*.step are regenerated from Python. Re-run (without --force) after
-tools/extract_placements.py and after replacing a vendor file, so the manifest is current.
+tools/reference/extract_placements.py and after replacing a vendor file, so the manifest is current.
 """
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ import pathlib
 import shutil
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
 
 from lib import reference as R  # noqa: E402
 
@@ -45,7 +45,7 @@ def main(argv=None) -> int:
     jobs = [(name, prod, rel, "custom") for name, (prod, rel) in R.CUSTOM.items()]
     jobs += [(name, prod, rel, "cots") for name, (prod, rel) in R.COTS.items() if name not in R.CYCLOIDAL_PARTS]
 
-    # The cycloidal drive's entries are owned by tools/import_cycloidal_reference.py - keep them.
+    # The cycloidal drive's entries are owned by tools/cycloidal/import_reference.py - keep them.
     existing = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))["parts"] if MANIFEST_PATH.exists() else {}
     manifest = {
         "source_dir": str(args.src),
@@ -61,10 +61,10 @@ def main(argv=None) -> int:
         ref = R.REF_DIR / f"{name}.step"          # immutable SolidWorks geometry (frame + size reference)
         vendor = R.VENDOR_DIR / f"{name}.step"    # COTS only: the current best vendor model (may be replaced)
         if rel is None:
-            # Extracted from the full assembly by tools/extract_placements.py into vendor/; that
+            # Extracted from the full assembly by tools/reference/extract_placements.py into vendor/; that
             # extraction IS the SolidWorks reference, so mirror it into reference/ once.
             if not vendor.exists():
-                print(f"{name:24s} {kind:7s} (not yet extracted - run tools/extract_placements.py)")
+                print(f"{name:24s} {kind:7s} (not yet extracted - run tools/reference/extract_placements.py)")
                 continue
             if not ref.exists() or args.force:
                 shutil.copyfile(vendor, ref)

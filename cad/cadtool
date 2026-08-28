@@ -20,6 +20,9 @@ cadtool - cad@text-to-cad plugin CLIs inside this uv project (paths relative to 
   ./cadtool viewer [--port N]                       CAD Viewer for this dir: http://127.0.0.1:3245/<abs cad>?file=<rel path>
   ./cadtool pytest [-m "not slow"]                  test suite
   ./cadtool python -m assemblies.arm                any python in the venv
+  ./cadtool clean [--all]                           delete the regenerable caches under cad/: every __cadgen__/ (viewer packages,
+                                                    hundreds of MB), __pycache__/, .pytest_cache/; --all also empties snapshots/ and
+                                                    exports/ (keeps .gitkeep) and deletes assemblies/*.step, robot/links/*.step
 Env: CAD_PLUGIN=<plugin dir> overrides detection; CADGEN_WARM=1 uses the plugin's warm cadgen daemon.
 USAGE
 }
@@ -93,6 +96,15 @@ case "$cmd" in
     exec uv run --frozen python "$@" ;;
   pytest)
     exec uv run --frozen pytest "$@" ;;
+  clean)
+    # Regenerable caches only; --all also drops the git-ignored review artifacts. Never touches .venv,
+    # the committed STEP/STL files or vendor/.
+    find "$CAD_DIR" -name .venv -prune -o -type d \( -name __cadgen__ -o -name __pycache__ -o -name .pytest_cache \) -prune -print -exec rm -rf {} +
+    if [[ "${1:-}" == "--all" ]]; then
+      [[ -d snapshots ]] && find snapshots -mindepth 1 -prune -exec rm -rf {} +
+      [[ -d exports ]] && find exports -mindepth 1 ! -name .gitkeep -prune -exec rm -rf {} +
+      rm -f assemblies/*.step robot/links/*.step
+    fi ;;
   help|-h|--help)
     usage ;;
   *)

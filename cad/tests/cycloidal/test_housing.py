@@ -8,7 +8,7 @@ import math
 
 import pytest
 
-from cycloidal_helpers import is_inside, no_chamfer
+from tests.cycloidal.helpers import is_inside, no_chamfer
 from lib import reference as R
 from lib.cycloidal import DEFAULT_CONFIG, compute_housing_bolt_angles
 from lib.cycloidal.housing import chamfer_outer_silhouette, reveal_window_cutter

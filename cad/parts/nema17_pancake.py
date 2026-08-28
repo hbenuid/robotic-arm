@@ -1,7 +1,7 @@
 """nema17_pancake - purchased (COTS) part; source of truth is vendor/nema17_pancake.step.
 
 NEMA 17 pancake stepper. The SolidWorks model is a 7-part sub-assembly of the motor's
-internals (stator, rotor, plates, connector, 2x 625ZZ, 4x M3); tools/extract_placements.py
+internals (stator, rotor, plates, connector, 2x 625ZZ, 4x M3); tools/reference/extract_placements.py
 flattens it into vendor/nema17_pancake.step (11 solids) in the sub-assembly's own frame.
 
 SolidWorks product: 'nema17_pancake'

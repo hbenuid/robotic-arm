@@ -1,12 +1,12 @@
-"""Copy the CadQuery exports of the cycloidal drive (tools/export_cycloidal_cadquery.py, run in
+"""Copy the CadQuery exports of the cycloidal drive (tools/cycloidal/export_cadquery.py, run in
 the cycloidal_drive repo) into reference/<name>.step and merge their entries into
 reference/manifest.json (kind "designed" for the printed parts, "cots" for the purchased ones).
 
-    ./cadtool python tools/import_cycloidal_reference.py [--src ../cycloidal_drive/export/step/house]
+    ./cadtool python tools/cycloidal/import_reference.py [--src ../cycloidal_drive/export/step/house]
                                                           [--force] [--only NAME ...]
 
 Owns exactly the manifest entries of lib/reference.py DESIGNED | CYCLOIDAL_COTS;
-tools/import_reference.py owns the SolidWorks ones and keeps these untouched. Re-run after
+tools/reference/import_reference.py owns the SolidWorks ones and keeps these untouched. Re-run after
 replacing a vendor/<name>.step (the entry's `vendor` block records the current file).
 """
 from __future__ import annotations
@@ -17,7 +17,7 @@ import pathlib
 import shutil
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
 
 from lib import reference as R  # noqa: E402
 
@@ -52,7 +52,7 @@ def main(argv=None) -> int:
     ap.add_argument("--only", nargs="*", default=None, help="subset of names")
     args = ap.parse_args(argv)
     if not args.src.is_dir():
-        print(f"source dir not found: {args.src} - run tools/export_cycloidal_cadquery.py in the cycloidal_drive repo", file=sys.stderr)
+        print(f"source dir not found: {args.src} - run tools/cycloidal/export_cadquery.py in the cycloidal_drive repo", file=sys.stderr)
         return 1
     src_manifest = json.loads((args.src / "manifest.json").read_text()) if (args.src / "manifest.json").exists() else {}
     rev = src_manifest.get("rev", R.CYCLOIDAL_REV)

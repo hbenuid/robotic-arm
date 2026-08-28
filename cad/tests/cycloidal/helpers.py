@@ -1,4 +1,4 @@
-"""Shared helpers for the ported cycloidal-drive tests (tests/test_cycloidal_*.py).
+"""Shared helpers for the ported cycloidal-drive tests (tests/cycloidal/test_*.py).
 
 CadQuery -> build123d idioms used by the port (see docs/cycloidal_drive.md "Port notes"):
   .val().isInside(v, tol)       -> is_inside(solid, x, y, z)

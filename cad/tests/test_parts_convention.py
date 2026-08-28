@@ -57,7 +57,7 @@ def test_part_declares_its_contract(name):
         assert name in R.CUSTOM or name in R.DESIGNED, f"{name} is not in lib.reference.CUSTOM / DESIGNED (and not COTS)"
         assert getattr(mod, "REFERENCE", None) == name, f"{name}.REFERENCE must name reference/{name}.step"
         assert isinstance(getattr(mod, "CONVERTED", None), bool), f"{name} must declare CONVERTED = True/False"
-        assert R.path_of(mod.REFERENCE).exists(), f"missing reference/{name}.step (run tools/import_reference.py)"
+        assert R.path_of(mod.REFERENCE).exists(), f"missing reference/{name}.step (run tools/reference/import_reference.py)"
 
 
 @pytest.mark.slow

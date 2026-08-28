@@ -17,7 +17,7 @@ from build123d import GeomType, Location, Vector
 
 from assemblies import cycloidal_drive
 from assemblies._occurrences import place_world
-from cycloidal_helpers import interference
+from tests.cycloidal.helpers import interference
 from lib import placements as P
 from lib import reference as R
 from lib.cycloidal import DEFAULT_CONFIG, compute_housing_bolt_angles, hex_circumdiameter, hub_height, stack_positions

@@ -1,6 +1,6 @@
 """Kinematic decomposition of the arm: rigid links and joint frames, derived from the
 SolidWorks capture (reference/placements.json). Single source for robot/links/*.py,
-tools/robot_frames.py, tools/export_link_meshes.py and tests/test_robot.py.
+tools/robot/frames.py, tools/robot/export_link_meshes.py and tests/test_robot.py.
 
 LINKS holds placement keys: part occurrences and designed-module keys ("cycloidal_drive#1"),
 which assemblies/_occurrences.world_rows expands into the module's world-placed parts.

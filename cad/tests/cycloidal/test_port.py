@@ -3,18 +3,16 @@ the house reference-match: identical face sets and identical tessellations, plus
 analytic volume for the parts whose faces OCCT integrates reliably (everything but the two
 spline discs, whose analytic volume wobbles by ~0.3 % on both sides of the comparison)."""
 import importlib
-import importlib.util
 import json
-import pathlib
 
 import pytest
 
-from cycloidal_helpers import fingerprint, mesh_volume
 from lib import reference as R
+from tests.cycloidal.helpers import fingerprint, mesh_volume
+from tools.cycloidal import export_cadquery as EX     # stdlib-only at module level (runs in the CadQuery venv)
 
 DESIGNED = sorted(R.DESIGNED)
 SPLINE_PARTS = {"cycloidal_disc_1", "cycloidal_disc_2"}
-CAD = pathlib.Path(__file__).resolve().parent.parent
 
 
 @pytest.mark.slow
@@ -49,12 +47,9 @@ def test_manifest_records_the_cadquery_origin():
 
 
 def test_exporter_name_map_matches_registry():
-    """tools/export_cycloidal_cadquery.py (run in the CadQuery venv) and lib/reference.py must
+    """tools/cycloidal/export_cadquery.py (run in the CadQuery venv) and lib/reference.py must
     name the same parts and builders."""
-    spec = importlib.util.spec_from_file_location("export_cycloidal_cadquery", CAD / "tools" / "export_cycloidal_cadquery.py")
-    ex = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(ex)
     expected = {**R.DESIGNED, **R.CYCLOIDAL_COTS}
-    assert set(ex.BUILDERS) == set(expected), set(ex.BUILDERS) ^ set(expected)
+    assert set(EX.BUILDERS) == set(expected), set(EX.BUILDERS) ^ set(expected)
     for name, label in expected.items():
-        assert ex.builder_label(name) == label, name
+        assert EX.builder_label(name) == label, name
