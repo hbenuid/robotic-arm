@@ -25,12 +25,15 @@
 - `cad/` is a **separate uv project** (Python 3.12, build123d) — the motor-control
   project above never depends on it, and `launch.bat` never installs it. Never run
   CAD code with the root venv.
-- Work from `cad/` via `./cadtool …` (`setup|gen|export|inspect|snapshot|validate|parts|skill|viewer|pytest|python`);
+- Work from `cad/` via `./cadtool …` (`setup|gen|export|inspect|snapshot|validate|parts|skill|viewer|pytest|python|clean`);
   it runs the `cad@text-to-cad` plugin (v0.4.x) CLIs inside the CAD venv. Conventions, the
   wrapper → parametric conversion workflow and the reference-match tests: `cad/CLAUDE.md`.
 - The 20:1 cycloidal shoulder drive was imported from the `cycloidal_drive` repo (history kept
-  via a subtree merge) and ported to build123d: `cad/lib/cycloidal/`, `cad/parts/cycloidal_*.py`,
+  via a subtree merge) and ported to build123d: `cad/lib/cycloidal/`, `cad/parts/cycloidal/`,
   `cad/assemblies/cycloidal_drive.py`; spec + port notes in `cad/docs/cycloidal_drive.md`.
+- Parts are grouped by subsystem (`cad/parts/{base,joints,wrist,gripper,cycloidal}/`) and reached
+  only through `parts.load(name)`; references sit in `cad/reference/{solidworks,cycloidal}/`; the
+  committed STEP/STL files are Git LFS objects (`git lfs pull` if a checkout shows pointer files).
 
 ## Docs
 - `CHANGELOG.md` is the dated record of changes: add an entry (date, what changed, commit) with

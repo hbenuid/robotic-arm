@@ -125,4 +125,4 @@ JAW_VELOCITY_M_S = 0.05         # [ESTIMATE]
 # --- Joint stack -----------------------------------------------------------------------
 # TODO: add J1/J2/J3 stack dimensions (bearing seats, link lengths, bolt patterns) as the
 # joint parts are converted; measure them with
-#   ./cadtool inspect refs reference/<name>.step --facts --planes --positioning
+#   ./cadtool inspect refs reference/solidworks/<name>.step --facts --planes --positioning

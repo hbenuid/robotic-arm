@@ -26,7 +26,11 @@ cd cad
 ./cadtool gen assemblies/arm.py      # build the arm STEP
 ./cadtool viewer                     # CAD Viewer: http://127.0.0.1:3245/<abs cad>?file=assemblies/arm.step
 ./cadtool pytest                     # convention + reference-match tests
+./cadtool clean                      # drop the viewer/import caches (regenerable, hundreds of MB)
 ```
+
+The committed CAD binaries (`cad/**/*.step`, `cad/**/*.stl`) are **Git LFS** objects: install
+`git-lfs` and run `git lfs install` before cloning (or `git lfs pull` afterwards).
 
 The same CAD also produces the arm's robot description — [`cad/robot/arm.urdf`](cad/robot/arm.urdf)
 (+ SRDF for MoveIt2, SDF for Gazebo) with per-link meshes, validated by the plugin's checkers.
@@ -115,7 +119,7 @@ src/
   config.py              joint table, CAN bus settings, motion defaults
   can_interface.py       thin python-can wrapper
   motor_driver.py        MKS CAN protocol (CRC, encode/decode, commands)
-cad/                     parametric build123d CAD, separate uv project (see cad/README.md)
+cad/                     parametric build123d CAD, separate uv project (see cad/README.md); STEP/STL via Git LFS
 old_stm32_tests/         archived STM32 firmware experiments (separate from Python)
 tests/                   pytest suite (currently broken — see Known issues)
 pyproject.toml, uv.lock  uv-managed project metadata

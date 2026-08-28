@@ -3,28 +3,30 @@
 **Last updated:** 2026-08-28 — see the root `CHANGELOG.md` for dated changes.
 
 **Purpose:** the original design, as exported from SolidWorks, renamed to the clean part
-names used everywhere in `cad/` — plus, for the cycloidal drive, the CadQuery exports of the
-`cycloidal_drive` repo the build123d parts were ported from. These files are **immutable inputs**:
-each custom part's wrapper returns them until it is converted, and `tests/test_reference_match.py`
-compares every converted part against them (checksums locked in `manifest.json`). Regenerate —
-never edit.
+names used everywhere in `cad/` (`solidworks/`) — plus, for the cycloidal drive, the CadQuery
+exports of the `cycloidal_drive` repo the build123d parts were ported from (`cycloidal/`). These
+files are **immutable inputs** (committed as Git LFS objects): each custom part's wrapper returns
+them until it is converted, and `tests/test_reference_match.py` compares every converted part
+against them (checksums locked in `manifest.json`, whose `file` field names each file's origin
+directory; `lib.reference.path_of(name)` resolves it). Regenerate — never edit.
 
 ## Provenance
 - Source tree: `/home/hben09/Documents/arm_assembly_organized` (SolidWorks 2026, STEP AP214 exports of 2026-08-27; not in git).
 - Full assembly: `final Arm Assembly Fully Movable.STEP` (13.5 MB, inch units, sha256 `67c39d5dc9ff1d7b…`) —
   not committed; `placements.json` captures its structure.
-- Regenerate: `./cadtool python tools/import_reference.py` (copies + `manifest.json`), then
-  `./cadtool python tools/extract_placements.py` (`placements.json` + `vendor/nema17_pancake.step`),
+- Regenerate: `./cadtool python tools/reference/import_reference.py` (copies + `manifest.json`), then
+  `./cadtool python tools/reference/extract_placements.py` (`placements.json` + `vendor/nema17_pancake.step`),
   then `import_reference.py` once more so the manifest describes the extracted pancake.
 - Cycloidal drive (manifest `origin: cycloidal_drive@2f1f67d`, kind `designed` / `cots`): in the old
-  repo `cd ../cycloidal_drive && uv run python ../robotic-arm/cad/tools/export_cycloidal_cadquery.py`
+  repo `cd ../cycloidal_drive && uv run python ../robotic-arm/cad/tools/cycloidal/export_cadquery.py`
   (CadQuery venv, writes its git-ignored `export/step/house/`), then here
-  `./cadtool python tools/import_cycloidal_reference.py` (copies + merges its manifest entries;
+  `./cadtool python tools/cycloidal/import_reference.py` (copies + merges its manifest entries;
   `import_reference.py` leaves them alone).
 
 ## Naming map
-Clean name ← SolidWorks product (source file under the source tree). Sizes are the bounding
-box in mm after OCCT's import (inch-unit files are converted automatically).
+Clean name ← SolidWorks product (source file under the source tree); every row lives in
+`solidworks/<name>.step`. Sizes are the bounding box in mm after OCCT's import (inch-unit files
+are converted automatically).
 
 | Part | Kind | SolidWorks product | Source export | Units | Solids | Bbox size (mm) | In arm |
 |---|---|---|---|---|---|---|---|
@@ -54,8 +56,8 @@ box in mm after OCCT's import (inch-unit files are converted automatically).
 | `mg996r_horn` | COTS | `Servo MG996R Horn_Servo MG996R Horn` | `step/Servo MG996R Horn_Servo MG996R Horn.STEP` | mm | 1 | 32 × 2.5 × 12 | ×1 |
 | `nema17_pancake` | COTS | `nema17_pancake` | `(extracted from the full assembly)` | mm | 11 | 41.5 × 47 × 43 | ×1 |
 
-Cycloidal drive (the reference is the named CadQuery builder's export at `cycloidal_drive@2f1f67d`;
-"in arm" counts inside the `cycloidal_drive#1` module):
+Cycloidal drive (`cycloidal/<name>.step`: the named CadQuery builder's export at
+`cycloidal_drive@2f1f67d`; "in arm" counts inside the `cycloidal_drive#1` module):
 
 | Part | Kind | CadQuery builder | Units | Solids | Bbox size (mm) | In arm |
 |---|---|---|---|---|---|---|
@@ -93,7 +95,7 @@ Notes:
   (1.84, 85.01, 31.45) mm, rotation XYZ (-180.00, -3.69, 180.00)° — places
   `assemblies/cycloidal_drive.py`, whose contents come from code (`lib/cycloidal`), not from the
   SolidWorks node. The node's own totals / bbox stay in the record's `solidworks` block as a
-  cross-check (`tests/test_cycloidal_assembly.py`); the walker does not descend into it.
+  cross-check (`tests/cycloidal/test_assembly.py`); the walker does not descend into it.
 
 ## Skipped from the SolidWorks assembly
 - The 6 zero-geometry assembly-skeleton STEPs, the `base/step/` re-exports and the pancake

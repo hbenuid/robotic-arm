@@ -1,5 +1,5 @@
 """TEMPLATE - an import WRAPPER: parts/<group>/<name>.py that returns the SolidWorks reference
-geometry (reference/<name>.step) until the part is converted to parametric build123d.
+geometry (reference/solidworks/<name>.step) until the part is converted to parametric build123d.
 
 This is the day-one state of every custom part. The part's LOCAL frame is the SolidWorks
 part-file frame (identity LOCAL_FROM_REF): reference/placements.json places it in the arm

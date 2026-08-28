@@ -1,5 +1,5 @@
 """Export the cycloidal_drive repo's CadQuery builders as house-named STEP files - the reference
-geometry the build123d port is verified against (reference/<name>.step via
+geometry the build123d port is verified against (reference/cycloidal/<name>.step via
 tools/cycloidal/import_reference.py).
 
 RUNS IN THE cycloidal_drive REPO'S OWN VENV (CadQuery), never in cad/'s:
@@ -9,7 +9,7 @@ RUNS IN THE cycloidal_drive REPO'S OWN VENV (CadQuery), never in cad/'s:
 Writes <out>/<name>.step for every entry of BUILDERS plus <out>/manifest.json (git rev, cadquery
 version, per-part builder label / solids / volume). `export/` is git-ignored in that repo, so
 this never changes it. The name map must equal lib/reference.py's DESIGNED | CYCLOIDAL_COTS
-(tests/test_cycloidal_port.py checks the two agree) - keep them in step.
+(tests/cycloidal/test_port.py checks the two agree) - keep them in step.
 """
 from __future__ import annotations
 

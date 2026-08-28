@@ -51,7 +51,7 @@ OCCURRENCES = [
     ("cycloidal_housing_nuts",     None, _at(z=S["z_housing_nuts"])),
 ]
 
-# Totals of gen_step() (tests/test_cycloidal_assembly.py locks them; refresh with --totals after a
+# Totals of gen_step() (tests/cycloidal/test_assembly.py locks them; refresh with --totals after a
 # geometry change): 18 leaves, 38 SolidWorks-equivalent solids + 20 fasteners.
 EXPECTED = {"leaves": 18, "solids": 58, "solid_volume": 691936.788}
 

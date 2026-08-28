@@ -28,7 +28,7 @@ DEFAULT_SOURCE_DIR = pathlib.Path.home() / "Documents" / "arm_assembly_organized
 MONOLITH_NAME = "final Arm Assembly Fully Movable.STEP"   # 13 MB, inch units, the full positioned assembly
 
 # Custom / printed parts: clean name -> (SolidWorks product name, export path under the source dir).
-# Each gets parts/<group>/<name>.py (an import wrapper until converted) + reference/<name>.step.
+# Each gets parts/<group>/<name>.py (an import wrapper until converted) + reference/solidworks/<name>.step.
 CUSTOM: dict[str, tuple[str, str]] = {
     "base":                  ("base of robot arm 62126",                 "step/base of robot arm 62126.STEP"),
     "j1_coupler":            ("Base couple updated 62126 _J1 coupler",   "step/Base couple updated 62126 _J1 coupler.STEP"),
@@ -72,7 +72,7 @@ MODULES: dict[str, str] = {
 
 # Designed (parametric build123d) parts ported from the cycloidal_drive repo. Their reference
 # is NOT a SolidWorks export but the CadQuery builder's own STEP export at CYCLOIDAL_REV
-# (reference/<name>.step, manifest kind "designed"; tools/cycloidal/export_cadquery.py +
+# (reference/cycloidal/<name>.step, manifest kind "designed"; tools/cycloidal/export_cadquery.py +
 # tools/cycloidal/import_reference.py). Values: the builder label the exporter uses.
 CYCLOIDAL_REV = "2f1f67d"
 DESIGNED: dict[str, str] = {
@@ -85,7 +85,7 @@ DESIGNED: dict[str, str] = {
 }
 
 # Purchased parts of the cycloidal drive: clean name -> CadQuery builder of the simplified model
-# (its export is reference/<name>.step; a step.parts model may live in vendor/<name>.step).
+# (its export is reference/cycloidal/<name>.step; a step.parts model may live in vendor/<name>.step).
 CYCLOIDAL_COTS: dict[str, str] = {
     "bearing_6003":                "src/purchased_parts.py:build_bearing_6003()",
     "bearing_6814":                "src/purchased_parts.py:build_bearing_6814()",

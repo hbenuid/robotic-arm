@@ -3,6 +3,52 @@
 Dated record of notable changes to this repository (newest first). Every commit that changes
 behaviour, layout or tooling gets an entry here; the commit hashes are on branch `cad-setup`.
 
+## 2026-08-28 — `cad/` reorganised: grouped parts, split references, packaged tests/tools, `cadtool clean`, Git LFS
+
+The folder had outgrown its flat directories (87 files in `parts/`, 44 in `reference/`, 17 test
+modules). Parts are now grouped by subsystem, references by origin, the drive's tests and the
+tools are packages, and the 95 committed STEP/STL binaries are Git LFS objects. No part was
+renamed: every name still keys the manifest, the reference file, `placements.json` and the URDF
+links. Baseline suite 410 + 9 skipped → 412 + 9 skipped (two new discovery locks).
+
+### Changed — tests/tools packages, robot/links stubs, `cadtool clean` (`35dbdc5`)
+- `cad/tests/cycloidal/` (the drive's 10 modules + `helpers.py`, imported as
+  `tests.cycloidal.helpers`) and `cad/tools/{reference,cycloidal,robot}/` as packages
+  (`robot_frames.py` → `tools/robot/frames.py`, `export_cycloidal_cadquery.py` →
+  `tools/cycloidal/export_cadquery.py`, …); `test_robot` imports `tools.robot.frames` instead of
+  hacking `sys.path`. `robot/links/*.py` are 4-line stubs (a literal `def gen_step()`, which the
+  plugin's AST lookup needs). `./cadtool clean [--all]` deletes `__cadgen__/` (261 MB of viewer
+  caches), `__pycache__/`, `.pytest_cache/` (and, with `--all`, the git-ignored review artifacts).
+
+### Changed — `parts/` grouped by subsystem (`843eaf6`)
+- `cad/parts/{base,joints,wrist,gripper,cycloidal}/` — each part module moved *with* its
+  committed STEP (the viewer pairs siblings and scans recursively); templates in
+  `parts/_templates/`, the drive's shared COTS body in `parts/cycloidal/_cots.py`; path shims
+  `parents[2]`. `parts/__init__.py` scans the groups (`MODULES`, `GROUPS`, `names()`, `load()`,
+  duplicate stems raise) and every part import goes through `parts.load()`.
+- Root `.gitignore`: the STEP re-admits are recursive (`!/cad/parts/**/*.step`,
+  `!/cad/reference/**/*.step`) — the old single-level globs would have silently un-committed any
+  new STEP in a group directory. `test_reference_match` gains a discovery guard,
+  `test_parts_convention` a `parts/cycloidal == CYCLOIDAL_PARTS` lock.
+
+### Changed — `reference/` split by origin (`ced1497`)
+- `cad/reference/solidworks/` (25 SolidWorks exports) and `cad/reference/cycloidal/` (16 CadQuery
+  exports of the drive); `lib.reference.path_of()` resolves the origin from the registries; both
+  import tools write there and record a `file` field in `manifest.json` (added to all 41 entries
+  without re-running the importers — every checksum unchanged).
+
+### Changed — Git LFS for the `cad/` binaries (`c4fa78e`)
+- `/.gitattributes`: `cad/**/*.step` and `cad/**/*.stl` use the LFS filter; `git add --renormalize`
+  converted the 95 tracked files (40 MB: parts 41, reference 41, vendor 6, robot meshes 7) into
+  pointers in one commit — history untouched. Clones need `git-lfs` (`git lfs install`; `git lfs pull`
+  on a checkout that shows pointer files); every regenerated STEP is a new LFS object against the
+  GitHub LFS quota.
+
+### Changed — docs (`pending-r5`)
+- `cad/README.md` (setup / LFS, cadtool table incl. `clean`, the layout tree, part conventions,
+  converting, purchased parts, references, robot, tests), `cad/CLAUDE.md`, `cad/docs/cycloidal_drive.md`,
+  `cad/reference/README.md`, `cad/vendor/README.md`, root `README.md` / `CLAUDE.md` follow the new paths.
+
 ## 2026-08-28 — the cycloidal drive: imported, ported to build123d, attached
 
 The 20:1 cycloidal shoulder drive designed in the separate `cycloidal_drive` CadQuery repo now
