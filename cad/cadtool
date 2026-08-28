@@ -8,9 +8,9 @@ usage() {
   cat <<'USAGE'
 cadtool - cad@text-to-cad plugin CLIs inside this uv project (paths relative to cad/)
   ./cadtool setup                                   one-time: uv sync + Playwright Chromium (for snapshots)
-  ./cadtool gen parts/<name>.py [--force]           build + write parts/<name>.step (+ parts/__cadgen__/ viewer package)
+  ./cadtool gen parts/<group>/<name>.py [--force]   build + write parts/<group>/<name>.step (+ parts/<group>/__cadgen__/ viewer package)
   ./cadtool step ...                                alias of gen
-  ./cadtool export parts/<name>.py --stl [exports/<name>.stl] [--3mf [..]] [--glb [..]]
+  ./cadtool export parts/<group>/<name>.py --stl [exports/<name>.stl] [--3mf [..]] [--glb [..]]
   ./cadtool artifact <file.step> --kind part|assembly      viewer package for an imported STEP
   ./cadtool inspect refs <file.step> --facts --planes --positioning   (also measure|align|frame|diff|interfere)
   ./cadtool snapshot --input <file.step> --output snapshots/x.png [--size-profile assembly --view-labels]

@@ -2,11 +2,11 @@
 the house reference-match: identical face sets and identical tessellations, plus the exact
 analytic volume for the parts whose faces OCCT integrates reliably (everything but the two
 spline discs, whose analytic volume wobbles by ~0.3 % on both sides of the comparison)."""
-import importlib
 import json
 
 import pytest
 
+import parts
 from lib import reference as R
 from tests.cycloidal.helpers import fingerprint, mesh_volume
 from tools.cycloidal import export_cadquery as EX     # stdlib-only at module level (runs in the CadQuery venv)
@@ -18,7 +18,7 @@ SPLINE_PARTS = {"cycloidal_disc_1", "cycloidal_disc_2"}
 @pytest.mark.slow
 @pytest.mark.parametrize("name", DESIGNED)
 def test_designed_part_reproduces_cadquery_export(name):
-    mod = importlib.import_module(f"parts.{name}")
+    mod = parts.load(name)
     mine, ref = mod.gen_step(), R.load(name)
     assert all(abs(a - b) <= 0.01 for a, b in zip(R.bbox_min(mine), R.bbox_min(ref))), (R.bbox_min(mine), R.bbox_min(ref))
     assert all(abs(a - b) <= 0.01 for a, b in zip(R.bbox_size(mine), R.bbox_size(ref))), (R.bbox_size(mine), R.bbox_size(ref))

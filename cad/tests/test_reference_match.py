@@ -6,9 +6,7 @@ bounding box (size + position in its local frame, after LOCAL_FROM_REF) so a con
 that drifts from the original design fails here. Per-part tolerances: REF_VOL_TOL
 (relative) and REF_BBOX_TOL (mm) module attributes.
 """
-import importlib
 import json
-import pkgutil
 
 import pytest
 from build123d import Location
@@ -16,10 +14,12 @@ from build123d import Location
 import parts
 from lib import reference as R
 
-CUSTOM_PARTS = sorted(
-    mi.name for mi in pkgutil.iter_modules(parts.__path__)
-    if not mi.name.startswith("_") and (mi.name in R.CUSTOM or mi.name in R.DESIGNED)
-)
+CUSTOM_PARTS = [n for n in parts.names() if n in R.CUSTOM or n in R.DESIGNED]
+
+
+def test_some_custom_parts_were_discovered():
+    """An empty parametrize list would only *skip* the reference match - guard the discovery."""
+    assert len(CUSTOM_PARTS) == len(R.CUSTOM) + len(R.DESIGNED)
 
 
 def test_reference_and_vendor_files_match_manifest():
@@ -46,7 +46,7 @@ def test_reference_and_vendor_files_match_manifest():
 @pytest.mark.slow
 @pytest.mark.parametrize("name", CUSTOM_PARTS)
 def test_part_matches_reference(name):
-    mod = importlib.import_module(f"parts.{name}")
+    mod = parts.load(name)
     ok, report = R.matches_reference(
         mod.gen_step(),
         mod.REFERENCE,

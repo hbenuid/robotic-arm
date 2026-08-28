@@ -7,6 +7,7 @@ import xml.etree.ElementTree as ET
 
 import pytest
 
+import parts
 from lib import params as PARAMS
 from lib import placements as P
 from lib import reference as R
@@ -162,14 +163,12 @@ def test_link_builds_from_its_occurrences(link):
 def test_link_masses_add_up():
     """Every part of every link counted once: SolidWorks part keys from placements.json, the
     designed module's parts from a fresh build."""
-    import importlib
-
     from assemblies._occurrences import world_rows
 
     expected_g = 0.0
     for k in P.keys(kind="part") + P.keys(kind="module", designed=True):
         for part, _, _ in world_rows(k):
-            mod = importlib.import_module(f"parts.{part}")
+            mod = parts.load(part)
             if part in R.COTS:
                 expected_g += mod.MASS_G
             elif P.OCCURRENCES[k]["kind"] == "part":

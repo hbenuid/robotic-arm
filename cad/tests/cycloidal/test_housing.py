@@ -12,7 +12,7 @@ from tests.cycloidal.helpers import is_inside, no_chamfer
 from lib import reference as R
 from lib.cycloidal import DEFAULT_CONFIG, compute_housing_bolt_angles
 from lib.cycloidal.housing import chamfer_outer_silhouette, reveal_window_cutter
-from parts import cycloidal_motor_plate, cycloidal_ring_gear_body
+from parts.cycloidal import cycloidal_motor_plate, cycloidal_ring_gear_body
 
 CFG = DEFAULT_CONFIG
 

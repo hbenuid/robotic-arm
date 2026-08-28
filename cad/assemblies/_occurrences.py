@@ -14,13 +14,14 @@ import sys
 
 from build123d import Location
 
+import parts  # noqa: E402  (stdlib-only package index; parts.load() imports a part lazily)
 from lib import placements as P
 
 CAD_DIR = str(pathlib.Path(__file__).resolve().parent.parent)
 
 
 def place(part_name: str, key: str):
-    """A fresh copy of parts/<part_name>.gen_step() placed at occurrence `key`.
+    """A fresh copy of parts.load(part_name).gen_step() placed at occurrence `key`.
 
     The part is modelled in its LOCAL frame (= LOCAL_FROM_REF * reference frame); the
     extracted placement maps the REFERENCE frame into the parent frame, so compose
@@ -29,7 +30,7 @@ def place(part_name: str, key: str):
     # module and does not seed the cwd, so this lazy import must re-assert the cad/ root itself.
     if CAD_DIR not in sys.path:
         sys.path.insert(0, CAD_DIR)
-    mod = importlib.import_module(f"parts.{part_name}")
+    mod = parts.load(part_name)
     local_from_ref = getattr(mod, "LOCAL_FROM_REF", None) or Location()
     return mod.gen_step().moved(P.location(key, "rel") * local_from_ref.inverse())
 
@@ -52,11 +53,11 @@ def add_occurrences(asm, rows, modules: dict | None = None) -> None:
 
 
 def place_at(part_name: str, loc: Location):
-    """A fresh copy of parts/<part_name>.gen_step() at an explicit placement of its reference
+    """A fresh copy of parts.load(part_name).gen_step() at an explicit placement of its reference
     frame (the rows of a code-driven module such as assemblies/cycloidal_drive.py)."""
     if CAD_DIR not in sys.path:
         sys.path.insert(0, CAD_DIR)
-    mod = importlib.import_module(f"parts.{part_name}")
+    mod = parts.load(part_name)
     local_from_ref = getattr(mod, "LOCAL_FROM_REF", None) or Location()
     return mod.gen_step().moved(loc * local_from_ref.inverse())
 
@@ -93,12 +94,12 @@ def world_rows(key: str) -> list:
 
 
 def place_world_at(part_name: str, world: Location, into=None):
-    """A fresh copy of parts/<part_name>.gen_step() at a WORLD placement of its reference frame,
+    """A fresh copy of parts.load(part_name).gen_step() at a WORLD placement of its reference frame,
     optionally re-expressed in another frame (`into` = that frame's world Location, so the result
     is `into^-1 * world * LOCAL_FROM_REF^-1 * local`). Used for per-link meshes."""
     if CAD_DIR not in sys.path:
         sys.path.insert(0, CAD_DIR)
-    mod = importlib.import_module(f"parts.{part_name}")
+    mod = parts.load(part_name)
     local_from_ref = getattr(mod, "LOCAL_FROM_REF", None) or Location()
     loc = world * local_from_ref.inverse()
     if into is not None:

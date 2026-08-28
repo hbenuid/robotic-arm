@@ -9,7 +9,7 @@ import pytest
 
 from lib import reference as R
 from lib.cycloidal import DEFAULT_CONFIG, motor_bolt_counterbore_depth, ring_pin_hole_dia
-from parts import cycloidal_motor_plate
+from parts.cycloidal import cycloidal_motor_plate
 
 CFG = DEFAULT_CONFIG
 PLATE_T = CFG.stack_up.motor_plate_wall + CFG.stack_up.motor_plate_inner_wall    # 9

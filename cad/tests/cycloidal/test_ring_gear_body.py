@@ -12,7 +12,7 @@ from lib import reference as R
 from lib.cycloidal import DEFAULT_CONFIG, compute_housing_bolt_angles, ring_pin_engagement, ring_pin_hole_dia
 from lib.cycloidal.housing import PILLAR_OVERSHOOT
 from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii
-from parts import cycloidal_ring_gear_body
+from parts.cycloidal import cycloidal_ring_gear_body
 
 CFG = DEFAULT_CONFIG
 BODY_H = CFG.stack_up.ring_gear_body_height      # 51

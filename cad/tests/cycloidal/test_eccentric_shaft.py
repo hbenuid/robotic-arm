@@ -10,7 +10,7 @@ import pytest
 
 from lib import reference as R
 from lib.cycloidal import DEFAULT_CONFIG
-from parts import cycloidal_eccentric_shaft
+from parts.cycloidal import cycloidal_eccentric_shaft
 
 CFG = DEFAULT_CONFIG
 

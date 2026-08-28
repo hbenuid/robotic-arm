@@ -16,7 +16,7 @@ from tests.cycloidal.helpers import annulus, end_face, interference, is_inside, 
 from lib import reference as R
 from lib.cycloidal import DEFAULT_CONFIG, stack_positions
 from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii, profile_points
-from parts import cycloidal_disc_1, cycloidal_disc_2
+from parts.cycloidal import cycloidal_disc_1, cycloidal_disc_2
 
 CFG = DEFAULT_CONFIG
 

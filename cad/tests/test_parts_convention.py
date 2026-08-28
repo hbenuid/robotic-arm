@@ -1,19 +1,17 @@
-"""The gen_step() convention, enforced automatically for every parts/*.py.
+"""The gen_step() convention, enforced automatically for every parts/<group>/<name>.py.
 
-Auto-discovers parts exactly like the assemblies do (every parts/*.py not starting with
-'_') and checks each honours the plugin-native contract: importable with no side effects,
-a callable gen_step() returning a valid, non-empty, labelled shape, plus the wrapper /
-designed / COTS metadata this repo adds. New parts are covered the moment they land.
+Auto-discovers parts exactly like the assemblies do (parts.names(): every module under a group
+package that does not start with '_') and checks each honours the plugin-native contract:
+importable with no side effects, a callable gen_step() returning a valid, non-empty, labelled
+shape, plus the wrapper / designed / COTS metadata this repo adds. New parts are covered the
+moment they land.
 """
-import importlib
-import pkgutil
-
 import pytest
 
 import parts
 from lib import reference as R
 
-PART_NAMES = sorted(mi.name for mi in pkgutil.iter_modules(parts.__path__) if not mi.name.startswith("_"))
+PART_NAMES = parts.names()
 
 # Parts that are DELIBERATELY several disjoint solids (multi-body SolidWorks parts / vendor
 # files): name -> expected solid count. Everything else must be exactly one solid.
@@ -43,10 +41,16 @@ def test_naming_map_matches_part_files():
     )
 
 
+def test_cycloidal_group_is_the_drive():
+    """parts/cycloidal/ holds exactly the drive's parts (their references live in reference/cycloidal/)."""
+    assert {n for n, g in parts.GROUPS.items() if g == "cycloidal"} == R.CYCLOIDAL_PARTS
+    assert set(parts.GROUPS.values()) == {"base", "joints", "wrist", "gripper", "cycloidal"}
+
+
 @pytest.mark.parametrize("name", PART_NAMES)
 def test_part_declares_its_contract(name):
     """Fast: metadata only, no geometry."""
-    mod = importlib.import_module(f"parts.{name}")
+    mod = parts.load(name)
     assert callable(getattr(mod, "gen_step", None)), f"parts.{name} must expose a callable gen_step()"
     if getattr(mod, "COTS", False):
         assert name in R.COTS, f"{name} declares COTS but is not in lib.reference.COTS"
@@ -63,7 +67,7 @@ def test_part_declares_its_contract(name):
 @pytest.mark.slow
 @pytest.mark.parametrize("name", PART_NAMES)
 def test_part_builds_valid_labelled_geometry(name):
-    mod = importlib.import_module(f"parts.{name}")
+    mod = parts.load(name)
     shape = mod.gen_step()
     assert shape is not None, f"{name}.gen_step() returned None"
     assert shape.label == name, f"{name} must label its result with its own name, got {shape.label!r}"
@@ -85,7 +89,7 @@ def test_cots_envelope_tracks_reference_bbox(name):
     """The fallback envelope must occupy the vendor geometry's bounding box (same frame)."""
     import json
 
-    mod = importlib.import_module(f"parts.{name}")
+    mod = parts.load(name)
     entry = json.loads((R.REF_DIR / "manifest.json").read_text(encoding="utf-8"))["parts"][name]
     env = mod._envelope()
     assert env.is_valid
@@ -101,7 +105,7 @@ COTS_FRAME_TOL_MM = 1.5   # catalog models differ slightly from the SolidWorks r
 def test_cots_vendor_matches_reference_frame(name):
     """The vendor geometry (after VENDOR_TO_REF) must occupy the SolidWorks reference's bounding
     box - guards the re-orientation of a swapped-in step.parts model."""
-    mod = importlib.import_module(f"parts.{name}")
+    mod = parts.load(name)
     if not mod.VENDOR_STEP.exists():
         pytest.skip(f"no vendor/{name}.step - envelope in use")
     shape = mod.gen_step()

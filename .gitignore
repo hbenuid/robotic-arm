@@ -16,9 +16,9 @@ __pycache__/
 *.step
 # EXCEPT: each part's primary STEP beside its gen_step() source, purchased-part
 # vendor STEPs, and the SolidWorks reference exports (none regenerable from Python).
-!/cad/parts/*.step
+!/cad/parts/**/*.step
 !/cad/vendor/*.step
-!/cad/reference/*.step
+!/cad/reference/**/*.step
 # per-link meshes of the robot description (URDF/SDF reference them; regenerable with
 # cad/tools/export_link_meshes.py but committed so the URDF is usable on its own)
 !/cad/robot/meshes/*.stl

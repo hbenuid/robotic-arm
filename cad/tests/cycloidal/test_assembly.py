@@ -22,7 +22,7 @@ from lib import placements as P
 from lib import reference as R
 from lib.cycloidal import DEFAULT_CONFIG, compute_housing_bolt_angles, hex_circumdiameter, hub_height, stack_positions
 from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii
-from parts import cycloidal_disc_1, cycloidal_motor_plate, cycloidal_output_hub, cycloidal_ring_gear_body
+from parts.cycloidal import cycloidal_disc_1, cycloidal_motor_plate, cycloidal_output_hub, cycloidal_ring_gear_body
 from robot import frames as F
 
 CFG = DEFAULT_CONFIG

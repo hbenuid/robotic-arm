@@ -25,7 +25,7 @@ DEFAULT_SOURCE_DIR = pathlib.Path.home() / "Documents" / "arm_assembly_organized
 MONOLITH_NAME = "final Arm Assembly Fully Movable.STEP"   # 13 MB, inch units, the full positioned assembly
 
 # Custom / printed parts: clean name -> (SolidWorks product name, export path under the source dir).
-# Each gets parts/<name>.py (an import wrapper until converted) + reference/<name>.step.
+# Each gets parts/<group>/<name>.py (an import wrapper until converted) + reference/<name>.step.
 CUSTOM: dict[str, tuple[str, str]] = {
     "base":                  ("base of robot arm 62126",                 "step/base of robot arm 62126.STEP"),
     "j1_coupler":            ("Base couple updated 62126 _J1 coupler",   "step/Base couple updated 62126 _J1 coupler.STEP"),
@@ -53,7 +53,7 @@ CUSTOM: dict[str, tuple[str, str]] = {
 }
 
 # Purchased (COTS) parts: clean name -> (product name, export path, or None when extracted
-# from the full assembly). Each gets parts/<name>.py (COTS = True) + vendor/<name>.step.
+# from the full assembly). Each gets parts/<group>/<name>.py (COTS = True) + vendor/<name>.step.
 COTS: dict[str, tuple[str, str | None]] = {
     "gt2_pulley_20t":   ("GT2_20T_Конфигурация1",                                    "step/GT2_20T_Конфигурация1.STEP"),
     "gripper_rail_6mm": ("Gripper rail 6mm_Gripper rail 6mm",                        "step/Gripper rail 6mm_Gripper rail 6mm.STEP"),

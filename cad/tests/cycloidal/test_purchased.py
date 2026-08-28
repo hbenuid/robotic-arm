@@ -9,7 +9,7 @@ import pytest
 
 from lib import reference as R
 from lib.cycloidal import DEFAULT_CONFIG
-from parts import (
+from parts.cycloidal import (
     bearing_625, bearing_6003, bearing_6814, cycloidal_housing_bolts, cycloidal_housing_nuts,
     cycloidal_motor_bolts, cycloidal_output_pins, cycloidal_ring_pins, nema17_48mm,
 )

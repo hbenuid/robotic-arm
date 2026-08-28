@@ -19,7 +19,6 @@ and re-centred on the link COM.
 from __future__ import annotations
 
 import argparse
-import importlib
 import math
 import pathlib
 import sys
@@ -30,6 +29,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
 from OCP.BRepGProp import BRepGProp  # noqa: E402
 from OCP.GProp import GProp_GProps  # noqa: E402
 
+import parts  # noqa: E402
 from assemblies._occurrences import place_world_at, world_rows  # noqa: E402
 from lib import params as PARAMS  # noqa: E402
 from lib import placements as P  # noqa: E402
@@ -84,7 +84,7 @@ def joint_origin(j: F.Joint):
 def row_props(link: str, part: str, world):
     """(mass g, COM mm in link frame, inertia about COM in g.mm^2, volume mm^3) of one part placed
     at `world` (the placement of its reference frame)."""
-    mod = importlib.import_module(f"parts.{part}")
+    mod = parts.load(part)
     shape = place_world_at(part, world, into=F.link_frame_world(link))
     props = GProp_GProps()
     BRepGProp.VolumeProperties_s(shape.wrapped, props)
