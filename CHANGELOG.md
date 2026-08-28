@@ -80,6 +80,11 @@ arm at its SolidWorks pose and included in the robot description. Spec, port not
 - `src/config.py` is untouched: J1 `gear_ratio` stays 1.0 while the CAD says
   `CYCLOIDAL_RATIO = 20` — which MKS motor drives which joint is still to be confirmed.
 
+### Changed — docs: how to view the drive and the URDF (`pending-c9`)
+- `cad/docs/cycloidal_drive.md` "Viewing the drive" (CAD Viewer URLs, snapshots, orbit GIF, OCP
+  viewer) and `cad/README.md` robot section (the URDF in the viewer: meshes + joint sliders, the
+  drive moves with `link1`).
+
 ### Changed — docs; `cad/cycloidal_import/` removed (`f055a1a`)
 - `cad/docs/cycloidal_drive.md`: the drive's spec carried over and corrected (its old §10 claimed
   "both discs are identical, the 180° offset is applied in the assembly" — wrong; 7.6 mm → 7.4 mm

@@ -203,9 +203,13 @@ reproduces `assemblies/arm.py`. Limits, effort/velocity and axis signs are place
 ./cadtool python tools/robot_frames.py --check robot/arm.urdf robot/arm.sdf   # files vs CAD (tests run this)
 ./cadtool python tools/export_link_meshes.py           # regenerate meshes after converting a part
 ./cadtool validate robot/arm.urdf --strict             # also .srdf / .sdf
-./cadtool skill urdf snapshot --input robot/arm.urdf --output snapshots/arm_urdf.png
-./cadtool viewer                                       # then ?file=robot/arm.urdf
+./cadtool skill urdf snapshot --input robot/arm.urdf --output snapshots/arm_urdf.png   # posed stills (--help lists the joint options)
+./cadtool viewer                                       # then ?file=robot/arm.urdf: meshes + joint sliders (j1, j2, j3, wrist_roll, jaw_a)
 ```
+
+In the viewer all joints read 0 at the SolidWorks capture pose; the cycloidal drive moves with
+`link1` (there is no shoulder-pitch slider until that joint is modelled). The drive on its own:
+`?file=assemblies/cycloidal_drive.step` (see `docs/cycloidal_drive.md`, "Viewing the drive").
 
 After any CAD change that moves geometry: re-export the meshes, re-run the check, and if a
 frame moved re-derive the affected `<origin>`/`<inertial>` values with `--urdf-draft` /

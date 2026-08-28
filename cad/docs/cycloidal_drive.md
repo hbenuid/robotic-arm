@@ -243,6 +243,20 @@ NEMA 17 48 mm (1, $10–15) · 6003-2RS (2, $4–8) · 6814-2RS (2, $16–40) ·
 | Tests | `tests/test_cycloidal_{disc,eccentric_shaft,motor_plate,ring_gear_body,output_hub,housing,purchased,fitment,assembly,port}.py` + `tests/cycloidal_helpers.py` (one module per part, geometry marked `slow`) |
 | Viewer / export | `./cadtool python -m assemblies.cycloidal_drive`, `./cadtool gen assemblies/cycloidal_drive.py`, `./cadtool export parts/<name>.py --stl` |
 
+## Viewing the drive
+
+```bash
+cd cad
+./cadtool gen assemblies/cycloidal_drive.py          # assemblies/cycloidal_drive.step (git-ignored) if missing
+./cadtool viewer                                     # then open the printed URL with ?file=assemblies/cycloidal_drive.step
+#   also ?file=assemblies/arm.step (the drive in the arm), ?file=parts/cycloidal_ring_gear_body.step (any part),
+#   ?file=robot/arm.urdf (the robot with joint sliders - the drive moves with link1, no shoulder slider yet)
+./cadtool snapshot --input assemblies/cycloidal_drive.step --output snapshots/cycloidal_drive.png --size-profile assembly --view-labels
+./cadtool snapshot --input assemblies/cycloidal_drive.step --output snapshots/cycloidal_drive_x.png --display transparent --camera "30:20"
+./cadtool snapshot --input assemblies/cycloidal_drive.step --output snapshots/cycloidal_drive.gif --mode orbit   # turntable
+./cadtool python -m assemblies.cycloidal_drive       # OCP CAD Viewer (VS Code extension); parts: ./cadtool python parts/cycloidal_disc_1.py
+```
+
 ## 11. Port notes (CadQuery → build123d)
 
 | CadQuery | build123d (here) |
