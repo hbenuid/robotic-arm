@@ -85,11 +85,31 @@ Changing a shared dimension — touchpoints in order:
 - When adding source-level joints, use `cadgen.assembly.AssemblyHelper` frames/mates, keep
   placements parameter-driven, and validate with `inspect align/measure/frame`.
 
+## Robot description (`robot/`)
+- `robot/arm.urdf` is the **source of truth** (hand-authored XML, ledger comment on top);
+  `arm.srdf` pairs by colocation + robot name; `arm.sdf` is derived from the URDF. Never build a
+  Python generator for them - `tools/robot_frames.py --urdf-draft/--sdf-draft` only prints scaffolding
+  to copy numbers from, and `--check` (run by `tests/test_robot.py`) catches drift.
+- `robot/frames.py` is the kinematic SSOT: `LINKS` (occurrence keys per rigid link) and `JOINTS`
+  (axis point/direction in the SolidWorks capture frame, limits from `lib/params.py`). Joint frame:
+  Z on the axis, X along the child link; child link frame = joint frame at capture, so **all joints
+  are 0 at the capture pose** and mesh origins are identity. Moving an occurrence between links or
+  changing an axis = edit `frames.py`, re-export meshes, re-derive the affected numbers, re-check.
+- Meshes: `tools/export_link_meshes.py` (mm STL per link, `scale 0.001` in the XML); never hand-edit.
+  Inertials come from OCP `BRepGProp` (printed parts at `PETG_DENSITY`, COTS at `MASS_G`).
+- Validate with `./cadtool validate <file> --strict` and snapshot with
+  `./cadtool skill urdf snapshot --input robot/arm.urdf --output snapshots/x.png` after every edit;
+  hand `.urdf` files to the viewer (`?file=robot/arm.urdf`).
+- Placeholders to confirm before real use: joint limits/effort/velocity (`lib/params.py`), axis signs,
+  jaw travel, the link-membership assumptions listed in the URDF ledger. The cycloidal drive (J1
+  actuator) is not modelled; wrist_roll and the jaws are not driven by `src/config.py`.
+
 ## Tests (`./cadtool pytest`)
 `test_parts_convention.py` (contract + geometry for every part, COTS envelopes + vendor frames),
 `test_reference_match.py` (manifest checksums; converted parts vs reference), `test_placements.py`
 (JSON integrity, tables cover every key once), `test_assembly.py` (34 leaves / 50 solids /
-volume / bbox vs SolidWorks), `test_params_invariants.py` (locks). Geometry tests are `slow`.
+volume / bbox vs SolidWorks), `test_params_invariants.py` (locks), `test_robot.py` (link partition, frames, FK at zero = capture,
+meshes, inertials, URDF/SRDF/SDF consistency + plugin validators). Geometry tests are `slow`.
 
 ## Gotchas (all verified)
 - `Compound.volume` skips nested sub-assemblies in build123d 0.10 — use `lib.reference.solid_volume()`.

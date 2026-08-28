@@ -26,6 +26,9 @@ cd cad
 ./cadtool pytest                     # convention + reference-match tests
 ```
 
+The same CAD also produces the arm's robot description — [`cad/robot/arm.urdf`](cad/robot/arm.urdf)
+(+ SRDF for MoveIt2, SDF for Gazebo) with per-link meshes, validated by the plugin's checkers.
+
 See [`cad/README.md`](cad/README.md) for the workflow and [`cad/CLAUDE.md`](cad/CLAUDE.md)
 for the conventions.
 

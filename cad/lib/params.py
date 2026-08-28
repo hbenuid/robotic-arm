@@ -63,6 +63,21 @@ PANCAKE_MASS_G = 180.0          # [ESTIMATE] typical 17HS08-type pancake 150-200
 # Its world pose in the SolidWorks arm assembly is recorded under "skipped" in
 # reference/placements.json for re-attaching it later.
 
+# --- Robot description (robot/frames.py, robot/arm.urdf) --------------------------------------
+# Joint limits and actuator ratings are PLACEHOLDERS until measured on the hardware; the URDF
+# and SDF are checked against these by tools/robot_frames.py --check.
+J1_LIMIT_DEG = 175.0            # [ESTIMATE] symmetric +/- range, cycloidal-drive base yaw
+J2_LIMIT_DEG = 120.0            # [ESTIMATE] shoulder pitch
+J3_LIMIT_DEG = 120.0            # [ESTIMATE] elbow pitch
+WRIST_ROLL_LIMIT_DEG = 180.0    # [ESTIMATE] NEMA17 pancake wrist roll (not CAN-driven yet)
+JAW_TRAVEL_MM = 10.0            # [ESTIMATE] symmetric +/- jaw travel about the capture pose
+ARM_JOINT_EFFORT_NM = 5.0       # [ESTIMATE] MKS SERVO42D through the reductions
+ARM_JOINT_VELOCITY_RAD_S = 1.0  # [ESTIMATE]
+WRIST_EFFORT_NM = 1.0           # [ESTIMATE]
+WRIST_VELOCITY_RAD_S = 2.0      # [ESTIMATE]
+JAW_EFFORT_N = 20.0             # [ESTIMATE] MG996R through the crank linkage
+JAW_VELOCITY_M_S = 0.05         # [ESTIMATE]
+
 # --- Joint stack -----------------------------------------------------------------------
 # TODO: add J1/J2/J3 stack dimensions (bearing seats, link lengths, bolt patterns) as the
 # joint parts are converted; measure them with

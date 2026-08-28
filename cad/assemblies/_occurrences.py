@@ -47,3 +47,17 @@ def add_occurrences(asm, rows, modules: dict | None = None) -> None:
             asm.add(place(name, key), name)
         else:
             asm.add(place(name, key), name, role)
+
+
+def place_world(part_name: str, key: str, into=None):
+    """A fresh copy of parts/<part_name>.gen_step() at occurrence `key`'s WORLD placement,
+    optionally re-expressed in another frame (`into` = that frame's world Location, so the
+    result is `into^-1 * world * LOCAL_FROM_REF^-1 * local`). Used for per-link meshes."""
+    if CAD_DIR not in sys.path:
+        sys.path.insert(0, CAD_DIR)
+    mod = importlib.import_module(f"parts.{part_name}")
+    local_from_ref = getattr(mod, "LOCAL_FROM_REF", None) or Location()
+    loc = P.location(key, "world") * local_from_ref.inverse()
+    if into is not None:
+        loc = into.inverse() * loc
+    return mod.gen_step().moved(loc)

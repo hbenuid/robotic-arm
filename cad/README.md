@@ -76,8 +76,9 @@ cad/
 │   └── _occurrences.py    # place()/add_occurrences() helpers
 ├── reference/             # SolidWorks per-part exports for ALL parts (immutable, committed) + manifest + placements
 ├── vendor/                # purchased-part STEPs (committed; replaceable by better catalog models)
-├── tools/                 # import_reference.py, extract_placements.py (regenerate reference/, vendor/, placements)
-├── tests/                 # pytest: conventions, reference match, placements, assembly totals, params locks
+├── robot/                 # URDF / SRDF / SDF + per-link meshes and generators (see below)
+├── tools/                 # import_reference.py, extract_placements.py, export_link_meshes.py, robot_frames.py
+├── tests/                 # pytest: conventions, reference match, placements, assembly totals, params locks, robot description
 ├── exports/               # STL/3MF sidecars (git-ignored)
 └── snapshots/             # snapshot PNGs (git-ignored)
 ```
@@ -152,6 +153,41 @@ now. `tests/test_assembly.py` checks the rebuilt arm against the SolidWorks tota
 STEP. Both are **immutable inputs** (a checksum test guards them); regenerate with
 `./cadtool python tools/import_reference.py` and `./cadtool python tools/extract_placements.py`
 if the SolidWorks design changes.
+
+## Robot description (URDF / SRDF / SDF)
+
+`robot/` holds the arm's robot description, derived from the CAD:
+
+```
+robot/
+├── frames.py          # THE kinematic decomposition: LINKS (which occurrences move together) + JOINTS
+│                      # (axis point/direction, parent/child, limits from lib/params.py)
+├── links/<link>.py    # gen_step() per rigid link, in the link's own frame (./cadtool gen robot/links/link1.py)
+├── meshes/<link>.stl  # per-link meshes in mm (committed) - tools/export_link_meshes.py
+├── arm.urdf           # SOURCE OF TRUTH (hand-edited ledger + numbers from tools/robot_frames.py)
+├── arm.srdf           # MoveIt2 semantics: chain base_link->tool0, gripper group, home/open/closed states
+└── arm.sdf            # model-level SDF 1.12 derived from the URDF
+```
+
+Links: `base_link → j1 → link1 → j2 → link2 → j3 → link3 → wrist_roll → wrist_roll_link → jaw_a / jaw_b
+(prismatic, jaw_b mimics jaw_a) + tool0` (frame-only). Frames are REP-103 (`base_link` on the base's
+bottom face at the J1 axis, Z up, X forward); every joint frame has Z on its axis; **all joints are 0
+at the SolidWorks capture pose**, so every mesh has an identity origin and the URDF at zero
+reproduces `assemblies/arm.py`. Limits, effort/velocity and axis signs are placeholders
+(`lib/params.py` `J*_LIMIT_DEG …`, tagged `[ESTIMATE]`) — confirm with viewer sweeps and hardware.
+
+```bash
+./cadtool python tools/robot_frames.py                 # joint origins + link inertials (m, kg, rad)
+./cadtool python tools/robot_frames.py --check robot/arm.urdf robot/arm.sdf   # files vs CAD (tests run this)
+./cadtool python tools/export_link_meshes.py           # regenerate meshes after converting a part
+./cadtool validate robot/arm.urdf --strict             # also .srdf / .sdf
+./cadtool skill urdf snapshot --input robot/arm.urdf --output snapshots/arm_urdf.png
+./cadtool viewer                                       # then ?file=robot/arm.urdf
+```
+
+After any CAD change that moves geometry: re-export the meshes, re-run the check, and if a
+frame moved re-derive the affected `<origin>`/`<inertial>` values with `--urdf-draft` /
+`--sdf-draft` (the drafts are scaffolding; the checked-in XML stays canonical).
 
 ## Tests
 

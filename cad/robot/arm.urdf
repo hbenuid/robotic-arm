@@ -1,0 +1,213 @@
+<?xml version="1.0"?>
+<!--
+  arm: 3-joint desktop arm (MKS SERVO42D on J1..J3) + NEMA17-pancake wrist roll + MG996R parallel gripper.
+
+  SOURCE OF TRUTH: this file. Every number is derived from the CAD by cad/tools/robot_frames.py
+  (cad/robot/frames.py = link partition + joint frames; cad/reference/placements.json = the
+  SolidWorks capture) and verified with `./cadtool python tools/robot_frames.py`, check mode
+  (tests/test_robot.py runs it). Regenerate meshes with cad/tools/export_link_meshes.py.
+
+  FRAMES (REP-103): base_link on the base's bottom face at the J1 axis, Z up, X forward (the
+  direction the arm extends). Every joint frame has Z on the joint axis and X along the child
+  link's long direction at the capture pose. A child link's frame IS its joint frame at the
+  SolidWorks capture pose: ALL JOINTS ARE 0 AT THE CAPTURE POSE and every mesh origin is
+  identity. In that pose link1 is yawed +3.694 deg about j1 relative to base X (a captured
+  pose, not a design offset); j2 and j3 axes are parallel (210.0 mm apart, 42 mm axis offset).
+
+  UNITS: metres, kilograms, radians. MESHES: meshes/<link>.stl in millimetres (scale 0.001),
+  one per link in the link frame (visual and collision reuse them; simplified collision
+  primitives are a TODO). INERTIALS: OCP BRepGProp on the CAD solids, printed parts at PETG
+  1.27 g/cm3, purchased parts at their datasheet/estimated mass (cad/lib/params.py).
+
+  PLACEHOLDERS [ESTIMATE] (cad/lib/params.py): all limits, effort and velocity values; the
+  positive-motion sign of every axis (confirm with viewer sweeps); jaw travel range.
+  ASSUMPTIONS: j1_coupler rotates with j1; the GT2 90T pulleys + J3 couplers are bolted to
+  the driven links (link2 at j2, link3 at j3); the MG996R crank linkage is merged into
+  wrist_roll_link; jaw_b mirrors jaw_a (mimic, multiplier -1); positive jaw_a = opening.
+  NOT MODELLED: the cycloidal drive (J1 actuator, lives in the cycloidal_drive repo).
+  wrist_roll and the jaws are not driven by src/config.py yet (J1..J3 only).
+-->
+<robot name="arm">
+  <link name="base_link">
+    <inertial>
+      <origin xyz="-0.023537 -0.000065 0.054693" rpy="0 0 0" />
+      <mass value="0.363435" />
+      <inertia ixx="8.183245e-04" ixy="6.639409e-07" ixz="-1.629800e-04" iyy="1.305486e-03" iyz="9.081833e-08" izz="1.532189e-03" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/base_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/base_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="link1">
+    <inertial>
+      <origin xyz="0.054728 -0.032255 0.03648" rpy="0 0 0" />
+      <mass value="0.894546" />
+      <inertia ixx="7.685251e-03" ixy="4.921781e-04" ixz="-4.139602e-03" iyy="1.078835e-02" iyz="1.150675e-03" izz="4.284353e-03" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/link1.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/link1.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="link2">
+    <inertial>
+      <origin xyz="0.097142 0.000002 0.010186" rpy="0 0 0" />
+      <mass value="0.684302" />
+      <inertia ixx="7.271294e-04" ixy="-6.577201e-08" ixz="-2.825096e-04" iyy="5.606360e-03" iyz="-2.817914e-09" izz="6.007771e-03" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/link2.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/link2.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="link3">
+    <inertial>
+      <origin xyz="0.060735 0.000068 -0.014763" rpy="0 0 0" />
+      <mass value="0.440548" />
+      <inertia ixx="2.099885e-04" ixy="-7.021730e-07" ixz="4.137442e-05" iyy="8.819831e-04" iyz="5.963427e-08" izz="9.360178e-04" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/link3.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/link3.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="wrist_roll_link">
+    <inertial>
+      <origin xyz="0.000012 -0.008443 0.053776" rpy="0 0 0" />
+      <mass value="0.16664" />
+      <inertia ixx="1.259933e-04" ixy="-1.888508e-09" ixz="3.634024e-08" iyy="1.739991e-04" iyz="1.495119e-05" izz="1.150603e-04" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/wrist_roll_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/wrist_roll_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="jaw_a_link">
+    <inertial>
+      <origin xyz="0.021644 0 -0.001923" rpy="0 0 0" />
+      <mass value="0.058661" />
+      <inertia ixx="7.006318e-06" ixy="2.243133e-13" ixz="3.571123e-06" iyy="6.252591e-05" iyz="-3.357013e-13" izz="6.325509e-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/jaw_a_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/jaw_a_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="jaw_b_link">
+    <inertial>
+      <origin xyz="0.021643 0.000001 0.001924" rpy="0 0 0" />
+      <mass value="0.058661" />
+      <inertia ixx="7.006321e-06" ixy="1.955510e-12" ixz="-3.571150e-06" iyy="6.252591e-05" iyz="-7.337480e-14" izz="6.325509e-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/jaw_b_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/jaw_b_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="tool0" />
+  <joint name="j1" type="revolute">
+    <parent link="base_link" />
+    <child link="link1" />
+    <origin xyz="0 0 0.18591" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <limit lower="-3.054326" upper="3.054326" effort="5" velocity="1" />
+  </joint>
+  <joint name="j2" type="revolute">
+    <parent link="link1" />
+    <child link="link2" />
+    <origin xyz="0.14315 -0.01581 0.15504" rpy="-1.570796 -0.820277 0.064484" />
+    <axis xyz="0 0 1" />
+    <limit lower="-2.094395" upper="2.094395" effort="5" velocity="1" />
+  </joint>
+  <joint name="j3" type="revolute">
+    <parent link="link2" />
+    <child link="link3" />
+    <origin xyz="0.21 0 0.041998" rpy="0 0 0.299075" />
+    <axis xyz="0 0 1" />
+    <limit lower="-2.094395" upper="2.094395" effort="5" velocity="1" />
+  </joint>
+  <joint name="wrist_roll" type="revolute">
+    <parent link="link3" />
+    <child link="wrist_roll_link" />
+    <origin xyz="0.109643 0.000005 -0.016998" rpy="-1.570799 -0.055534 -1.570796" />
+    <axis xyz="0 0 1" />
+    <limit lower="-3.141593" upper="3.141593" effort="1" velocity="2" />
+  </joint>
+  <joint name="jaw_a" type="prismatic">
+    <parent link="wrist_roll_link" />
+    <child link="jaw_a_link" />
+    <origin xyz="-0.053464 0 0.05495" rpy="0 -1.570796 0" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.01" upper="0.01" effort="20" velocity="0.05" />
+  </joint>
+  <joint name="jaw_b" type="prismatic">
+    <parent link="wrist_roll_link" />
+    <child link="jaw_b_link" />
+    <origin xyz="0.053465 -0.000001 0.054951" rpy="0 -1.570796 0" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.01" upper="0.01" effort="20" velocity="0.05" />
+    <mimic joint="jaw_a" multiplier="-1" offset="0" />
+  </joint>
+  <joint name="tool0_joint" type="fixed">
+    <parent link="wrist_roll_link" />
+    <child link="tool0" />
+    <origin xyz="-0.000001 0 0.116951" rpy="0 0 0" />
+  </joint>
+</robot>

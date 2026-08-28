@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<!--
+  arm SRDF (MoveIt2 semantics). Pairs with robot/arm.urdf by colocation and robot name.
+
+  URDF table (copied, keep in sync): links base_link, link1, link2, link3, wrist_roll_link,
+  jaw_a_link, jaw_b_link, tool0 (frame-only); joints j1, j2, j3, wrist_roll (revolute),
+  jaw_a (prismatic), jaw_b (prismatic, mimics jaw_a), tool0_joint (fixed).
+  Group "arm" = the serial chain base_link -> tool0 (j1, j2, j3, wrist_roll); group "gripper"
+  = the jaw joint(s) and links; end effector "gripper" hangs off wrist_roll_link (the jaws' parent).
+  Group states: radians / metres. "home" = the SolidWorks capture pose (all joints 0, see the
+  URDF ledger); "open"/"closed" use the placeholder jaw travel (cad/lib/params.py JAW_TRAVEL_MM).
+  Disabled collisions: adjacent pairs only; add Never/Default pairs after a viewer sweep.
+-->
+<robot name="arm">
+  <virtual_joint name="world_joint" type="fixed" parent_frame="world" child_link="base_link" />
+  <group name="arm">
+    <chain base_link="base_link" tip_link="tool0" />
+  </group>
+  <group name="gripper">
+    <joint name="jaw_a" />
+    <joint name="jaw_b" />
+    <link name="jaw_a_link" />
+    <link name="jaw_b_link" />
+  </group>
+  <group_state name="home" group="arm">
+    <joint name="j1" value="0" />
+    <joint name="j2" value="0" />
+    <joint name="j3" value="0" />
+    <joint name="wrist_roll" value="0" />
+  </group_state>
+  <group_state name="open" group="gripper">
+    <joint name="jaw_a" value="0.01" />
+  </group_state>
+  <group_state name="closed" group="gripper">
+    <joint name="jaw_a" value="-0.01" />
+  </group_state>
+  <end_effector name="gripper" parent_link="wrist_roll_link" group="gripper" parent_group="arm" />
+  <passive_joint name="jaw_b" />
+  <disable_collisions link1="base_link" link2="link1" reason="Adjacent" />
+  <disable_collisions link1="link1" link2="link2" reason="Adjacent" />
+  <disable_collisions link1="link2" link2="link3" reason="Adjacent" />
+  <disable_collisions link1="link3" link2="wrist_roll_link" reason="Adjacent" />
+  <disable_collisions link1="wrist_roll_link" link2="jaw_a_link" reason="Adjacent" />
+  <disable_collisions link1="wrist_roll_link" link2="jaw_b_link" reason="Adjacent" />
+</robot>
