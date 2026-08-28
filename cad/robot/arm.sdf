@@ -33,11 +33,11 @@
     <link name="link1">
       <pose relative_to="j1">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.054728 -0.032255 0.03648 0 0 0</pose>
-        <mass>0.894546</mass>
+        <pose>0.019849 -0.003568 0.013522 0 0 0</pose>
+        <mass>2.415794</mass>
         <inertia>
-          <ixx>7.685251e-03</ixx><ixy>4.921781e-04</ixy><ixz>-4.139602e-03</ixz>
-          <iyy>1.078835e-02</iyy><iyz>1.150675e-03</iyz><izz>4.284353e-03</izz>
+          <ixx>1.207881e-02</ixx><ixy>1.927411e-03</ixy><ixz>-5.278210e-03</ixz>
+          <iyy>1.548873e-02</iyy><iyz>2.086566e-03</iyz><izz>9.655779e-03</izz>
         </inertia>
       </inertial>
       <visual name="link1_visual">

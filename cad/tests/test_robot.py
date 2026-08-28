@@ -26,7 +26,8 @@ import robot_frames as RF  # noqa: E402
 def test_links_partition_every_placement_once():
     keys = F.all_keys()
     assert len(keys) == len(set(keys)), "a placement key is in two links"
-    assert sorted(keys) == sorted(P.keys(kind="part"))
+    assert sorted(keys) == sorted(P.keys(kind="part") + P.keys(kind="module", designed=True))
+    assert "cycloidal_drive#1" in F.LINKS["link1"]
 
 
 def test_joint_tree_is_a_tree_rooted_at_base_link():
@@ -140,21 +141,43 @@ def test_forward_kinematics_at_zero_reproduces_the_capture_frames():
 def test_link_builds_from_its_occurrences(link):
     from robot._links import build_link
 
+    from assemblies import cycloidal_drive
+
     shape = build_link(link)
     assert shape.label == link
-    keys = F.LINKS[link]
-    assert len(shape.solids()) == sum(P.OCCURRENCES[k]["solids"] for k in keys)
-    assert math.isclose(R.solid_volume(shape), sum(P.OCCURRENCES[k]["solid_volume"] for k in keys), rel_tol=1e-6)
+    solids = volume = 0.0
+    for k in F.LINKS[link]:
+        o = P.OCCURRENCES[k]
+        if o.get("designed"):     # a code-driven module: its own totals lock
+            assert o["part"] == "cycloidal_drive"
+            solids += cycloidal_drive.EXPECTED["solids"]
+            volume += cycloidal_drive.EXPECTED["solid_volume"]
+        else:
+            solids += o["solids"]
+            volume += o["solid_volume"]
+    assert len(shape.solids()) == solids
+    assert abs(R.solid_volume(shape) - volume) <= 0.5
     assert shape.is_valid
 
 
 @pytest.mark.slow
 def test_link_masses_add_up():
-    cots = {k for k in P.keys(kind="part") if P.OCCURRENCES[k]["part"] in R.COTS}
+    """Every part of every link counted once: SolidWorks part keys from placements.json, the
+    designed module's parts from a fresh build."""
     import importlib
 
-    expected_g = sum(PARAMS.PETG_DENSITY * P.OCCURRENCES[k]["solid_volume"] for k in P.keys(kind="part") if k not in cots)
-    expected_g += sum(importlib.import_module(f"parts.{P.OCCURRENCES[k]['part']}").MASS_G for k in cots)
+    from assemblies._occurrences import world_rows
+
+    expected_g = 0.0
+    for k in P.keys(kind="part") + P.keys(kind="module", designed=True):
+        for part, _, _ in world_rows(k):
+            mod = importlib.import_module(f"parts.{part}")
+            if part in R.COTS:
+                expected_g += mod.MASS_G
+            elif P.OCCURRENCES[k]["kind"] == "part":
+                expected_g += PARAMS.PETG_DENSITY * P.OCCURRENCES[k]["solid_volume"]
+            else:
+                expected_g += PARAMS.PETG_DENSITY * R.solid_volume(mod.gen_step())
     total = sum(RF.link_inertial(l)[0] for l in PHYSICAL_LINKS)
     assert math.isclose(total, expected_g * 1e-3, rel_tol=1e-6)
 

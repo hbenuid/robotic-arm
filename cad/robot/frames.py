@@ -2,6 +2,9 @@
 SolidWorks capture (reference/placements.json). Single source for robot/links/*.py,
 tools/robot_frames.py, tools/export_link_meshes.py and tests/test_robot.py.
 
+LINKS holds placement keys: part occurrences and designed-module keys ("cycloidal_drive#1"),
+which assemblies/_occurrences.world_rows expands into the module's world-placed parts.
+
 Frames (all in the SolidWorks WORLD frame W, millimetres; W is +Y up, the arm extends toward
 -X, see reference/README.md):
   * base_link frame B: REP-103 (Z up, X forward) at the J1 axis foot on the base's bottom
@@ -36,7 +39,7 @@ PJ = (0.499699, 0.865884, 0.023354)          # jaw travel: the two Ø6 gripper r
 BASE_FORWARD = (-1.0, 0.0, 0.0)              # the arm extends toward -X_W
 
 BASE_BOTTOM_Y = -100.9                       # [REFERENCE] base world bbox min Y (mounting face)
-J1_ORIGIN = (0.0, 85.010435, 0.0)            # [REFERENCE] on the J1 axis at the link1 / cycloidal-output height
+J1_ORIGIN = (0.0, 85.010435, 0.0)            # [REFERENCE] on the J1 axis at the cycloidal drive's axis height (its node's Y)
 J2_ORIGIN = (-143.15, 240.05, -15.81)        # [REFERENCE] j2_link#1 / j3_coupler#1 origin (on the J2 axis)
 J3_ORIGIN = (-283.37, 393.63, 35.33)         # [REFERENCE] j3_coupler#2 origin (on the J3 axis)
 WRIST_ORIGIN = (-379.355, 448.22, 24.495)    # [REFERENCE] 20T pulley origin, on the pancake shaft axis
@@ -49,8 +52,11 @@ J2_TO_J3_INPLANE = (-142.926, 153.58, 9.229) # [REFERENCE] link2 long direction 
 LINK_ORDER = ["base_link", "link1", "link2", "link3", "wrist_roll_link", "jaw_a_link", "jaw_b_link", "tool0"]
 LINKS: dict[str, list[str]] = {
     "base_link": ["base#1"],
-    # j1_coupler assumed to rotate with J1 (couples the cycloidal output to link1)  [ASSUMPTION]
-    "link1": ["j1_coupler#1", "j1_link#1", "j1_cap#1"],
+    # j1_coupler assumed to rotate with J1 [ASSUMPTION]. The cycloidal drive sits between the
+    # coupler (housing in its yoke) and j1_link (output hub bolted to it): physically a
+    # shoulder-pitch joint about -N through the drive centre, NOT modelled as a joint yet - its
+    # 18 parts ride rigidly in link1 [ASSUMPTION]. See docs/cycloidal_drive.md "Attachment".
+    "link1": ["j1_coupler#1", "cycloidal_drive#1", "j1_link#1", "j1_cap#1"],
     # the J2 90T pulley + J3-coupler assumed bolted to link2 (the driven side)  [ASSUMPTION]
     "link2": ["j2_link#1", "j2_cap_1#1", "j2_cap_2#1", "gt2_pulley_90t#1", "j3_coupler#1"],
     "link3": ["wrist_link#1", "gripper_clamp_bracket#1", "nema17_pancake#1", "gt2_pulley_90t#2", "j3_coupler#2"],
@@ -87,7 +93,8 @@ DEG = math.pi / 180.0
 JOINTS: list[Joint] = [
     Joint("j1", "revolute", "base_link", "link1", J1_ORIGIN, U, BASE_FORWARD,
           -PARAMS.J1_LIMIT_DEG * DEG, PARAMS.J1_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
-          notes="cycloidal-drive output; MKS SERVO42D J1"),
+          notes="base yaw; MKS SERVO42D J1 [ASSUMPTION: motor->joint mapping unconfirmed - the cycloidal "
+                "drive is the shoulder-pitch actuator between j1_coupler and j1_link, not this joint's]"),
     Joint("j2", "revolute", "link1", "link2", J2_ORIGIN, N, J2_TO_J3_INPLANE,
           -PARAMS.J2_LIMIT_DEG * DEG, PARAMS.J2_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
           notes="GT2 90T pulley + J3-coupler at the shoulder; MKS J2"),

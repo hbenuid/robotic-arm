@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <!--
-  arm: 3-joint desktop arm (MKS SERVO42D on J1..J3) + NEMA17-pancake wrist roll + MG996R parallel gripper.
+  arm: 3-joint desktop arm (MKS SERVO42D on J1..J3) + 20:1 cycloidal shoulder drive (rigid in link1,
+  not a joint yet) + NEMA17-pancake wrist roll + MG996R parallel gripper.
 
   SOURCE OF TRUTH: this file. Every number is derived from the CAD by cad/tools/robot_frames.py
   (cad/robot/frames.py = link partition + joint frames; cad/reference/placements.json = the
@@ -21,11 +22,14 @@
 
   PLACEHOLDERS [ESTIMATE] (cad/lib/params.py): all limits, effort and velocity values; the
   positive-motion sign of every axis (confirm with viewer sweeps); jaw travel range.
-  ASSUMPTIONS: j1_coupler rotates with j1; the GT2 90T pulleys + J3 couplers are bolted to
-  the driven links (link2 at j2, link3 at j3); the MG996R crank linkage is merged into
+  ASSUMPTIONS: the cycloidal drive (cad/docs/cycloidal_drive.md) sits between j1_coupler (housing
+  in its yoke) and j1_link (output hub bolted to it) - physically a shoulder-pitch joint about an
+  axis parallel to j2 that is NOT a joint here: its 18 parts ride rigidly in link1 (inertial
+  included); j1_coupler rotates with j1; the GT2 90T pulleys + J3 couplers are bolted to the
+  driven links (link2 at j2, link3 at j3); the MG996R crank linkage is merged into
   wrist_roll_link; jaw_b mirrors jaw_a (mimic, multiplier -1); positive jaw_a = opening.
-  NOT MODELLED: the cycloidal drive (J1 actuator, lives in the cycloidal_drive repo).
-  wrist_roll and the jaws are not driven by src/config.py yet (J1..J3 only).
+  UNCONFIRMED: which MKS motor (src/config.py J1..J3) drives which joint - the drive's own NEMA 17
+  is the shoulder-pitch motor, not j1's. wrist_roll and the jaws are not driven by src/config.py.
 -->
 <robot name="arm">
   <link name="base_link">
@@ -49,9 +53,9 @@
   </link>
   <link name="link1">
     <inertial>
-      <origin xyz="0.054728 -0.032255 0.03648" rpy="0 0 0" />
-      <mass value="0.894546" />
-      <inertia ixx="7.685251e-03" ixy="4.921781e-04" ixz="-4.139602e-03" iyy="1.078835e-02" iyz="1.150675e-03" izz="4.284353e-03" />
+      <origin xyz="0.019849 -0.003568 0.013522" rpy="0 0 0" />
+      <mass value="2.415794" />
+      <inertia ixx="1.207881e-02" ixy="1.927411e-03" ixz="-5.278210e-03" iyy="1.548873e-02" iyz="2.086566e-03" izz="9.655779e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />

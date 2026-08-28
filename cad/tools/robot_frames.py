@@ -11,7 +11,8 @@ drift after a part is converted or a frame changes.
 
 Units: URDF/SDF metres, kilograms, radians. Rotations are URDF fixed-axis roll/pitch/yaw
 (R = Rz(yaw) Ry(pitch) Rx(roll)). Inertials: OCP BRepGProp volume properties of every part
-occurrence in the link frame; printed parts use PETG_DENSITY, COTS parts their MASS_G;
+occurrence in the link frame (a designed module key expands into its parts); printed parts use
+PETG_DENSITY, COTS parts their MASS_G;
 per-occurrence inertia (about its own COM) is parallel-axis-shifted to the link origin, summed,
 and re-centred on the link COM.
 """
@@ -29,7 +30,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 from OCP.BRepGProp import BRepGProp  # noqa: E402
 from OCP.GProp import GProp_GProps  # noqa: E402
 
-from assemblies._occurrences import place_world  # noqa: E402
+from assemblies._occurrences import place_world_at, world_rows  # noqa: E402
 from lib import params as PARAMS  # noqa: E402
 from lib import placements as P  # noqa: E402
 from robot import frames as F  # noqa: E402
@@ -80,11 +81,11 @@ def joint_origin(j: F.Joint):
 
 
 # --- inertials -----------------------------------------------------------------------------
-def occurrence_props(link: str, key: str):
-    """(mass g, COM mm in link frame, inertia about COM in g.mm^2, volume mm^3) of one occurrence."""
-    part = P.OCCURRENCES[key]["part"]
+def row_props(link: str, part: str, world):
+    """(mass g, COM mm in link frame, inertia about COM in g.mm^2, volume mm^3) of one part placed
+    at `world` (the placement of its reference frame)."""
     mod = importlib.import_module(f"parts.{part}")
-    shape = place_world(part, key, into=F.link_frame_world(link))
+    shape = place_world_at(part, world, into=F.link_frame_world(link))
     props = GProp_GProps()
     BRepGProp.VolumeProperties_s(shape.wrapped, props)
     volume = props.Mass()
@@ -117,15 +118,17 @@ def link_inertial(link: str):
     I_o = [[0.0] * 3 for _ in range(3)]
     rows = []
     for key in F.LINKS[link]:
-        m, c, I_c, v = occurrence_props(link, key)
-        M += m
-        for i in range(3):
-            S[i] += m * c[i]
-        I_at_o = _shift(I_c, m, c, +1)
-        for i in range(3):
-            for k in range(3):
-                I_o[i][k] += I_at_o[i][k]
-        rows.append((key, m, v))
+        for part, role, world in world_rows(key):
+            m, c, I_c, v = row_props(link, part, world)
+            M += m
+            for i in range(3):
+                S[i] += m * c[i]
+            I_at_o = _shift(I_c, m, c, +1)
+            for i in range(3):
+                for k in range(3):
+                    I_o[i][k] += I_at_o[i][k]
+            label = key if P.OCCURRENCES[key]["kind"] == "part" else f"{key}/{part}" + (f":{role}" if role else "")
+            rows.append((label, m, v))
     C = [s / M for s in S]
     I_C = _shift(I_o, M, C, -1)
     mass_kg = M * 1e-3
