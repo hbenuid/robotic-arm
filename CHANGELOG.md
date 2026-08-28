@@ -70,7 +70,7 @@ arm at its SolidWorks pose and included in the robot description. Spec, port not
   the 7 designed overlaps: 6814/hub press fits, bolts through the solid nuts, motor-bolt heads /
   tips, 6003/lobe press fits) and the pose checks; `test_placements` / `test_assembly` updated.
 
-### Changed — robot description: the drive rides in `link1` (`pending-c6`)
+### Changed — robot description: the drive rides in `link1` (`646e762`)
 - The drive is physically the **shoulder-pitch joint** between `j1_coupler` (housing in its yoke)
   and `j1_link` (hub bolted to it) — the earlier "J1 base-yaw actuator" wording was wrong. It is
   **not modelled as a joint yet**: `LINKS["link1"]` carries the module key, `robot/_links.py` and
@@ -80,7 +80,7 @@ arm at its SolidWorks pose and included in the robot description. Spec, port not
 - `src/config.py` is untouched: J1 `gear_ratio` stays 1.0 while the CAD says
   `CYCLOIDAL_RATIO = 20` — which MKS motor drives which joint is still to be confirmed.
 
-### Changed — docs; `cad/cycloidal_import/` removed (`pending-c7`)
+### Changed — docs; `cad/cycloidal_import/` removed (`f055a1a`)
 - `cad/docs/cycloidal_drive.md`: the drive's spec carried over and corrected (its old §10 claimed
   "both discs are identical, the 180° offset is applied in the assembly" — wrong; 7.6 mm → 7.4 mm
   disc holes; rotted 67 / 134 / 120 mm comments), where things live in `cad/`, port notes
