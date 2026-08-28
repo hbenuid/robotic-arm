@@ -1,5 +1,5 @@
 """Copy the CadQuery exports of the cycloidal drive (tools/cycloidal/export_cadquery.py, run in
-the cycloidal_drive repo) into reference/<name>.step and merge their entries into
+the cycloidal_drive repo) into reference/cycloidal/<name>.step and merge their entries into
 reference/manifest.json (kind "designed" for the printed parts, "cots" for the purchased ones).
 
     ./cadtool python tools/cycloidal/import_reference.py [--src ../cycloidal_drive/export/step/house]
@@ -60,6 +60,7 @@ def main(argv=None) -> int:
         print(f"WARNING: exports are from rev {rev}{' (dirty)' if src_manifest.get('dirty') else ''}, "
               f"lib/reference.py says {R.CYCLOIDAL_REV}", file=sys.stderr)
 
+    R.REF_CYCLOIDAL_DIR.mkdir(parents=True, exist_ok=True)
     manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8")) if MANIFEST_PATH.exists() else {"parts": {}}
     jobs = [(n, "designed", b) for n, b in R.DESIGNED.items()] + [(n, "cots", b) for n, b in R.CYCLOIDAL_COTS.items()]
     missing = []
@@ -77,7 +78,8 @@ def main(argv=None) -> int:
             shutil.copyfile(src, ref)
             action = "copied"
         entry = {
-            "kind": kind, "origin": f"cycloidal_drive@{rev}", "product": PRODUCTS.get(name, name),
+            "kind": kind, "file": ref.relative_to(R.REF_DIR).as_posix(),
+            "origin": f"cycloidal_drive@{rev}", "product": PRODUCTS.get(name, name),
             "source": builder, "bytes": ref.stat().st_size, "sha256": R.sha256(ref), "units": R.step_units(ref),
             **R.describe(ref),
         }

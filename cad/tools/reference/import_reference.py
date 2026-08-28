@@ -1,4 +1,4 @@
-"""Copy the SolidWorks per-part STEP exports into reference/ under clean snake_case names
+"""Copy the SolidWorks per-part STEP exports into reference/solidworks/ under clean snake_case names
 (every part, custom and purchased - the immutable frame/size reference), seed vendor/ for
 purchased parts, and write reference/manifest.json. The cycloidal drive's parts are not
 SolidWorks exports: tools/cycloidal/import_reference.py owns them (their entries are kept).
@@ -40,7 +40,7 @@ def main(argv=None) -> int:
         print(f"source dir not found: {args.src}", file=sys.stderr)
         return 1
 
-    R.REF_DIR.mkdir(exist_ok=True)
+    R.REF_SOLIDWORKS_DIR.mkdir(parents=True, exist_ok=True)
     R.VENDOR_DIR.mkdir(exist_ok=True)
     jobs = [(name, prod, rel, "custom") for name, (prod, rel) in R.CUSTOM.items()]
     jobs += [(name, prod, rel, "cots") for name, (prod, rel) in R.COTS.items() if name not in R.CYCLOIDAL_PARTS]
@@ -58,7 +58,7 @@ def main(argv=None) -> int:
 
     missing: list[str] = []
     for name, prod, rel, kind in jobs:
-        ref = R.REF_DIR / f"{name}.step"          # immutable SolidWorks geometry (frame + size reference)
+        ref = R.path_of(name)                     # immutable SolidWorks geometry (frame + size reference), reference/solidworks/
         vendor = R.VENDOR_DIR / f"{name}.step"    # COTS only: the current best vendor model (may be replaced)
         if rel is None:
             # Extracted from the full assembly by tools/reference/extract_placements.py into vendor/; that
@@ -83,6 +83,7 @@ def main(argv=None) -> int:
                 shutil.copyfile(src, vendor)   # seed the vendor model; step.parts downloads replace it
         entry = {
             "kind": kind,
+            "file": ref.relative_to(R.REF_DIR).as_posix(),
             "product": prod,
             "source": rel,
             "bytes": ref.stat().st_size,

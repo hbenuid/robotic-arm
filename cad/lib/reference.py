@@ -2,9 +2,10 @@
 
 The originals live outside the repo (~/Documents/arm_assembly_organized/, SolidWorks 2026
 AP214 exports of 2026-08-27). `tools/reference/import_reference.py` copies the per-part exports into
-reference/<clean_name>.step (immutable inputs) and vendor/<clean_name>.step (purchased
+reference/solidworks/<clean_name>.step (immutable inputs) and vendor/<clean_name>.step (purchased
 parts); `tools/reference/extract_placements.py` extracts the assembly placements from the
-full-assembly STEP into reference/placements.json.
+full-assembly STEP into reference/placements.json. The cycloidal drive's references are CadQuery
+exports in reference/cycloidal/ (tools/cycloidal/import_reference.py); path_of() resolves the origin.
 
 `lib/` never imports `parts/`.
 """
@@ -17,7 +18,9 @@ import unicodedata
 from build123d import Location, Shape, import_step
 
 CAD_DIR = pathlib.Path(__file__).resolve().parent.parent
-REF_DIR = CAD_DIR / "reference"
+REF_DIR = CAD_DIR / "reference"              # manifest.json, placements.json + the two origin dirs
+REF_SOLIDWORKS_DIR = REF_DIR / "solidworks"  # the SolidWorks per-part exports (CUSTOM + the SolidWorks COTS)
+REF_CYCLOIDAL_DIR = REF_DIR / "cycloidal"    # the CadQuery exports of the drive (DESIGNED | CYCLOIDAL_COTS)
 VENDOR_DIR = CAD_DIR / "vendor"
 
 # Where the SolidWorks export tree lives on this machine (override: --src / ARM_REFERENCE_SRC).
@@ -127,8 +130,13 @@ SKIPPED_LABELS: dict[str, str] = {clean_label(p): why for p, why in SKIPPED_PROD
 LABEL_TO_DESIGNED_MODULE: dict[str, str] = {clean_label(p): n for n, p in DESIGNED_MODULES.items()}
 
 
+def reference_dir(name: str) -> pathlib.Path:
+    """Origin directory of reference/<origin>/<name>.step."""
+    return REF_CYCLOIDAL_DIR if name in CYCLOIDAL_PARTS else REF_SOLIDWORKS_DIR
+
+
 def path_of(name: str) -> pathlib.Path:
-    return REF_DIR / f"{name}.step"
+    return reference_dir(name) / f"{name}.step"
 
 
 def sha256(path: pathlib.Path) -> str:
@@ -157,11 +165,11 @@ def describe(path: pathlib.Path) -> dict:
 
 
 def load(name: str, *, label: str | None = None) -> Shape:
-    """Fresh import of reference/<name>.step in the SolidWorks part-file frame.
+    """Fresh import of reference/<origin>/<name>.step in its part-file frame.
     A Solid for one-body parts, a flat Compound for multi-body ones."""
     path = path_of(name)
     if not path.exists():
-        raise FileNotFoundError(f"missing reference STEP {path} - run tools/reference/import_reference.py")
+        raise FileNotFoundError(f"missing reference STEP {path} - run tools/reference/import_reference.py (or tools/cycloidal/import_reference.py)")
     shape = import_step(str(path))
     shape.label = label or name
     return shape
@@ -192,7 +200,7 @@ def matches_reference(
     bbox_tol: float = 0.2,
     check_position: bool = True,
 ) -> tuple[bool, dict]:
-    """Compare `shape` (in its part-local frame) with reference/<name>.step moved by
+    """Compare `shape` (in its part-local frame) with reference/<origin>/<name>.step moved by
     `local_from_ref`. Volume must agree within `vol_tol` (relative); bounding-box size and,
     if `check_position`, bounding-box min within `bbox_tol` mm. Returns (ok, report)."""
     ref = load(name).moved(local_from_ref or Location())

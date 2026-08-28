@@ -17,6 +17,7 @@
     106.679
    ],
    "bytes": 205516,
+   "file": "solidworks/base.step",
    "kind": "custom",
    "product": "base of robot arm 62126",
    "sha256": "abeb196d0655dc47a40a666b0ef4a8240cb04d186cc6110ede61cde8d546cabb",
@@ -37,6 +38,7 @@
     10.0
    ],
    "bytes": 9578,
+   "file": "cycloidal/bearing_6003.step",
    "kind": "cots",
    "origin": "cycloidal_drive@2f1f67d",
    "product": "6003-2RS deep-groove ball bearing 17x35x10",
@@ -58,6 +60,7 @@
     5.0
    ],
    "bytes": 9555,
+   "file": "cycloidal/bearing_625.step",
    "kind": "cots",
    "origin": "cycloidal_drive@2f1f67d",
    "product": "625-2RS deep-groove ball bearing 5x16x5",
@@ -96,6 +99,7 @@
     10.0
    ],
    "bytes": 9570,
+   "file": "cycloidal/bearing_6814.step",
    "kind": "cots",
    "origin": "cycloidal_drive@2f1f67d",
    "product": "6814-2RS deep-groove ball bearing 70x90x10",
@@ -117,6 +121,7 @@
     10.0
    ],
    "bytes": 1223383,
+   "file": "cycloidal/cycloidal_disc_1.step",
    "kind": "designed",
    "origin": "cycloidal_drive@2f1f67d",
    "product": "cycloidal disc 1 (20 lobes, 0 deg phase)",
@@ -138,6 +143,7 @@
     10.0
    ],
    "bytes": 1222615,
+   "file": "cycloidal/cycloidal_disc_2.step",
    "kind": "designed",
    "origin": "cycloidal_drive@2f1f67d",
    "product": "cycloidal disc 2 (20 lobes, -9 deg phase)",
@@ -159,6 +165,7 @@
     26.0
    ],
    "bytes": 31895,
+   "file": "cycloidal/cycloidal_eccentric_shaft.step",
    "kind": "designed",
    "origin": "cycloidal_drive@2f1f67d",
    "product": "eccentric shaft (two 17.1 mm lobes, D-bore input)",
@@ -180,6 +187,7 @@
     59.0
    ],
    "bytes": 82236,
+   "file": "cycloidal/cycloidal_housing_bolts.step",
    "kind": "cots",
    "origin": "cycloidal_drive@2f1f67d",
    "product": "8x M4x55 SHCS (housing)",
@@ -201,6 +209,7 @@
     3.2
    ],
    "bytes": 200495,
+   "file": "cycloidal/cycloidal_housing_nuts.step",
    "kind": "cots",
    "origin": "cycloidal_drive@2f1f67d",
    "product": "8x M4 hex nuts (housing)",
@@ -222,6 +231,7 @@
     13.0
    ],
    "bytes": 40260,
+   "file": "cycloidal/cycloidal_motor_bolts.step",
    "kind": "cots",
    "origin": "cycloidal_drive@2f1f67d",
    "product": "4x M3x10 SHCS (motor)",
@@ -243,6 +253,7 @@
     9.0
    ],
    "bytes": 524751,
+   "file": "cycloidal/cycloidal_motor_plate.step",
    "kind": "designed",
    "origin": "cycloidal_drive@2f1f67d",
    "product": "motor plate (NEMA 17 side housing half)",
@@ -264,6 +275,7 @@
     28.0
    ],
    "bytes": 145394,
+   "file": "cycloidal/cycloidal_output_hub.step",
    "kind": "designed",
    "origin": "cycloidal_drive@2f1f67d",
    "product": "output hub (arm mount, 4x M4 on 50 mm)",
@@ -285,6 +297,7 @@
     45.0
    ],
    "bytes": 24845,
+   "file": "cycloidal/cycloidal_output_pins.step",
    "kind": "cots",
    "origin": "cycloidal_drive@2f1f67d",
    "product": "4x 4x45 mm h6 dowel pins (output pins)",
@@ -306,6 +319,7 @@
     51.0
    ],
    "bytes": 759577,
+   "file": "cycloidal/cycloidal_ring_gear_body.step",
    "kind": "designed",
    "origin": "cycloidal_drive@2f1f67d",
    "product": "ring gear body (housing, 6814 seat, nut pockets)",
@@ -327,6 +341,7 @@
     35.0
    ],
    "bytes": 129783,
+   "file": "cycloidal/cycloidal_ring_pins.step",
    "kind": "cots",
    "origin": "cycloidal_drive@2f1f67d",
    "product": "21x 4x35 mm h6 dowel pins (ring pins)",
@@ -348,6 +363,7 @@
     20.0
    ],
    "bytes": 5756,
+   "file": "cycloidal/cycloidal_shaft_support_pin.step",
    "kind": "cots",
    "origin": "cycloidal_drive@2f1f67d",
    "product": "5x20 mm h6 dowel pin (eccentric-shaft support)",
@@ -369,6 +385,7 @@
     43.2
    ],
    "bytes": 106221,
+   "file": "solidworks/gripper_clamp_bracket.step",
    "kind": "custom",
    "product": "brack for hand cmap",
    "sha256": "d6a8775816cef9211919a151fa99b9fd5d2ff5a9836edb668734bf0174813055",
@@ -389,6 +406,7 @@
     70.0
    ],
    "bytes": 77996,
+   "file": "solidworks/gripper_cover.step",
    "kind": "custom",
    "product": "Gripper Cover_Gripper Cover",
    "sha256": "3e257b1ddda456d92653747242441d64a6906527813b89196c1146f98ad57c46",
@@ -409,6 +427,7 @@
     25.123
    ],
    "bytes": 47904,
+   "file": "solidworks/gripper_end.step",
    "kind": "custom",
    "product": "Gripper End_Gripper End",
    "sha256": "2929c51aea59171ba16ca5ec4ccb843e67e1be51c7ae55b1419c30f97031ec5a",
@@ -429,6 +448,7 @@
     105.0
    ],
    "bytes": 46176,
+   "file": "solidworks/gripper_finger_left.step",
    "kind": "custom",
    "product": "Gripper Hand Left_Gripper Hand Left",
    "sha256": "4babea7bf94b7c1273b91e0d313bf1c46e9167c1305be3810081ce28ceb85fa6",
@@ -449,6 +469,7 @@
     105.0
    ],
    "bytes": 46136,
+   "file": "solidworks/gripper_finger_right.step",
    "kind": "custom",
    "product": "Gripper Hand Right_Gripper Hand Left",
    "sha256": "b063c579dfb38f18fe6a4dd445e1fe98156c9419d3fb3e3e9d8763c6eb291f57",
@@ -469,6 +490,7 @@
     46.0
    ],
    "bytes": 325526,
+   "file": "solidworks/gripper_j3_connector.step",
    "kind": "custom",
    "product": "Gripper to J3 connector 7726_Gripper to J3 connector",
    "sha256": "994ce3dcc15f4540d350c5f7fd377dc07fd8109f23ffde510d85f8f6500f7e6a",
@@ -489,6 +511,7 @@
     7.2
    ],
    "bytes": 24606,
+   "file": "solidworks/gripper_link_1.step",
    "kind": "custom",
    "product": "Gripper link 1_Gripper link 1",
    "sha256": "18b02fc9317640fed13175a46bfde89aa77520f982de9c36a935bf770a033d60",
@@ -509,6 +532,7 @@
     7.2
    ],
    "bytes": 33886,
+   "file": "solidworks/gripper_link_2.step",
    "kind": "custom",
    "product": "Gripper link 2_Gripper link 2",
    "sha256": "fccc9dd028cb990e453d14cca1c9dc1f5a47c51e26b0af43019784d2c408eb91",
@@ -529,6 +553,7 @@
     6.0
    ],
    "bytes": 9463,
+   "file": "solidworks/gripper_rail_6mm.step",
    "kind": "cots",
    "product": "Gripper rail 6mm_Gripper rail 6mm",
    "sha256": "54dc6e9691fd24d93462e9a17bb7a29717af3976444c94c6aabfceb91576f947",
@@ -566,6 +591,7 @@
     60.0
    ],
    "bytes": 72693,
+   "file": "solidworks/gripper_slider.step",
    "kind": "custom",
    "product": "Gripper Mechanism Slider_Gripper Mechanism Slider",
    "sha256": "aa14b167f96f53080755a9c894be6f9bce1d3e77a5e52a27ed51c6dd19af68a8",
@@ -586,6 +612,7 @@
     16.0
    ],
    "bytes": 661715,
+   "file": "solidworks/gt2_pulley_20t.step",
    "kind": "cots",
    "product": "GT2_20T_Конфигурация1",
    "sha256": "e1dd5c81ed7179a111b42af77a9baf96aa7de60c7acce1887480163560d42b33",
@@ -623,6 +650,7 @@
     59.188
    ],
    "bytes": 2255780,
+   "file": "solidworks/gt2_pulley_90t.step",
    "kind": "custom",
    "product": "GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric",
    "sha256": "f6d47a48c9b5ab0dfaf893f669fe4e02531cd3149267c32650bce1923f1caa1d",
@@ -643,6 +671,7 @@
     27.228
    ],
    "bytes": 112539,
+   "file": "solidworks/j1_cap.step",
    "kind": "custom",
    "product": "first joint cap 8726",
    "sha256": "695547567e95414497753a901ea47905758a9bf3405ef64587b89e5b3e3ac72f",
@@ -663,6 +692,7 @@
     106.264
    ],
    "bytes": 290769,
+   "file": "solidworks/j1_coupler.step",
    "kind": "custom",
    "product": "Base couple updated 62126 _J1 coupler",
    "sha256": "6013455ea063a8643764c7ab287b86f6fe40b62c122551da0231c1540546a137",
@@ -683,6 +713,7 @@
     90.0
    ],
    "bytes": 363199,
+   "file": "solidworks/j1_link.step",
    "kind": "custom",
    "product": "first joint edit 62126",
    "sha256": "8a771424c7f99e19f52c3f28c73af7eceb7394c184e0e2fdc7423321109e24bb",
@@ -703,6 +734,7 @@
     14.5
    ],
    "bytes": 85762,
+   "file": "solidworks/j2_cap_1.step",
    "kind": "custom",
    "product": "cap 1 joint 2 8726",
    "sha256": "7e485f41735be289de4720c809dca8d987d69842b308fc05bd3ab9216ba76000",
@@ -723,6 +755,7 @@
     13.5
    ],
    "bytes": 96673,
+   "file": "solidworks/j2_cap_2.step",
    "kind": "custom",
    "product": "cap of joint 2 piece 2 8526",
    "sha256": "c983497013105196e6d670a65c29651fd16a3ad5c0fa8ebe10aafa6f468828ac",
@@ -743,6 +776,7 @@
     33.5
    ],
    "bytes": 279070,
+   "file": "solidworks/j2_link.step",
    "kind": "custom",
    "product": "Joint 2 change 8126",
    "sha256": "9a0a94b8db390b51438a89dfb65cb77969e2d83cf5133762ff12261143e2de42",
@@ -763,6 +797,7 @@
     78.0
    ],
    "bytes": 163964,
+   "file": "solidworks/j3_coupler.step",
    "kind": "custom",
    "product": "Joint 2 coupler 62226_J3 Coupler",
    "sha256": "2783762d6ca83ff398a17d14b0b0aa373768d09d6c1f759ede60057b02628859",
@@ -783,6 +818,7 @@
     12.0
    ],
    "bytes": 44713,
+   "file": "solidworks/mg996r_horn.step",
    "kind": "cots",
    "product": "Servo MG996R Horn_Servo MG996R Horn",
    "sha256": "e17722d40d4377ac7c36b937c7a681499cdffb144bdcfa8ca620496f126972a5",
@@ -820,6 +856,7 @@
     20.5
    ],
    "bytes": 321776,
+   "file": "solidworks/mg996r_servo.step",
    "kind": "cots",
    "product": "Servo Motor MG996R 3D Model_Servo Motor MG996R 3D Model",
    "sha256": "fc8ca8d9d80066cce57f711b4871627790e31cd86654098f4ae81dd3f5e43af7",
@@ -857,6 +894,7 @@
     70.0
    ],
    "bytes": 47842,
+   "file": "cycloidal/nema17_48mm.step",
    "kind": "cots",
    "origin": "cycloidal_drive@2f1f67d",
    "product": "NEMA 17 stepper, 48 mm body, 5 mm D shaft",
@@ -878,6 +916,7 @@
     43.0
    ],
    "bytes": 1566078,
+   "file": "solidworks/nema17_pancake.step",
    "kind": "cots",
    "product": "nema17_pancake",
    "sha256": "1cefcd61f031f576fce126590ba43bd1d518b519bf6f5411da82a7e401428d7a",
@@ -915,6 +954,7 @@
     72.5
    ],
    "bytes": 137377,
+   "file": "solidworks/servo_holder.step",
    "kind": "custom",
    "product": "Servo Holder_Servo Holder",
    "sha256": "39442a0b270499bfbb7cec0d1b5ee1a78a11910965532eb21bd735505b70dd41",
@@ -935,6 +975,7 @@
     44.0
    ],
    "bytes": 434090,
+   "file": "solidworks/wrist_link.step",
    "kind": "custom",
    "product": "final component arm qwrist movement",
    "sha256": "0c6cbabc96ade3515ad94ccd2e0b32d1f7f642668a9f5cbc41cb5ee1de7af13b",

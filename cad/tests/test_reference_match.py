@@ -23,12 +23,15 @@ def test_some_custom_parts_were_discovered():
 
 
 def test_reference_and_vendor_files_match_manifest():
-    """reference/*.step are immutable inputs and vendor/*.step must match what the manifest
+    """reference/{solidworks,cycloidal}/*.step are immutable inputs and vendor/*.step must match what the manifest
     describes - detect edits/corruption or a vendor swap without re-running import_reference."""
     manifest = json.loads((R.REF_DIR / "manifest.json").read_text(encoding="utf-8"))
     for name, entry in manifest["parts"].items():
-        ref = R.REF_DIR / f"{name}.step"
+        ref = R.path_of(name)
         assert ref.exists(), f"{ref} listed in manifest.json but missing"
+        assert entry.get("file") == ref.relative_to(R.REF_DIR).as_posix(), (
+            f"{name}: manifest 'file' {entry.get('file')!r} != {ref.relative_to(R.REF_DIR).as_posix()!r}"
+        )
         assert R.sha256(ref) == entry["sha256"], f"{ref} differs from reference/manifest.json"
         if entry["kind"] == "cots":
             vendor = R.VENDOR_DIR / f"{name}.step"
