@@ -3,7 +3,7 @@
 Auto-discovers parts exactly like the assemblies do (every parts/*.py not starting with
 '_') and checks each honours the plugin-native contract: importable with no side effects,
 a callable gen_step() returning a valid, non-empty, labelled shape, plus the wrapper /
-COTS metadata this repo adds. New parts are covered the moment they land.
+designed / COTS metadata this repo adds. New parts are covered the moment they land.
 """
 import importlib
 import pkgutil
@@ -30,7 +30,7 @@ def test_some_parts_were_discovered():
 
 
 def test_naming_map_matches_part_files():
-    expected = set(R.CUSTOM) | set(R.COTS)
+    expected = set(R.CUSTOM) | set(R.COTS) | set(R.DESIGNED)
     assert set(PART_NAMES) == expected, (
         f"parts/ and lib/reference.py disagree: only in parts/: {set(PART_NAMES) - expected}; "
         f"only in the map: {expected - set(PART_NAMES)}"
@@ -48,7 +48,7 @@ def test_part_declares_its_contract(name):
         assert isinstance(mass, (int, float)) and mass > 0, f"COTS part {name} must set MASS_G > 0"
         assert mod.VENDOR_STEP == R.VENDOR_DIR / f"{name}.step", f"{name}.VENDOR_STEP must be vendor/{name}.step"
     else:
-        assert name in R.CUSTOM, f"{name} is not in lib.reference.CUSTOM (and not COTS)"
+        assert name in R.CUSTOM or name in R.DESIGNED, f"{name} is not in lib.reference.CUSTOM / DESIGNED (and not COTS)"
         assert getattr(mod, "REFERENCE", None) == name, f"{name}.REFERENCE must name reference/{name}.step"
         assert isinstance(getattr(mod, "CONVERTED", None), bool), f"{name} must declare CONVERTED = True/False"
         assert R.path_of(mod.REFERENCE).exists(), f"missing reference/{name}.step (run tools/import_reference.py)"

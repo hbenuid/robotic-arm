@@ -1,6 +1,7 @@
 """Copy the SolidWorks per-part STEP exports into reference/ under clean snake_case names
 (every part, custom and purchased - the immutable frame/size reference), seed vendor/ for
-purchased parts, and write reference/manifest.json.
+purchased parts, and write reference/manifest.json. The cycloidal drive's parts are not
+SolidWorks exports: tools/import_cycloidal_reference.py owns them (their entries are kept).
 
     ./cadtool python tools/import_reference.py [--src DIR] [--force]
 
@@ -13,7 +14,6 @@ tools/extract_placements.py and after replacing a vendor file, so the manifest i
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import pathlib
@@ -22,34 +22,11 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from build123d import import_step  # noqa: E402
 from lib import reference as R  # noqa: E402
 
+sha256, step_units, describe = R.sha256, R.step_units, R.describe
+
 MANIFEST_PATH = R.REF_DIR / "manifest.json"
-
-
-def sha256(path: pathlib.Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as fh:
-        for chunk in iter(lambda: fh.read(1 << 20), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def step_units(path: pathlib.Path) -> str:
-    data = path.read_bytes()
-    return "inch" if (b"CONVERSION_BASED_UNIT" in data and b"'INCH'" in data) else "mm"
-
-
-def describe(path: pathlib.Path) -> dict:
-    shape = import_step(str(path))
-    bb = shape.bounding_box()
-    return {
-        "solids": len(shape.solids()),
-        "solid_volume": round(R.solid_volume(shape), 3),
-        "bbox_min": [round(v, 3) for v in (bb.min.X, bb.min.Y, bb.min.Z)],
-        "bbox_size": [round(v, 3) for v in (bb.size.X, bb.size.Y, bb.size.Z)],
-    }
 
 
 def main(argv=None) -> int:
@@ -66,12 +43,14 @@ def main(argv=None) -> int:
     R.REF_DIR.mkdir(exist_ok=True)
     R.VENDOR_DIR.mkdir(exist_ok=True)
     jobs = [(name, prod, rel, "custom") for name, (prod, rel) in R.CUSTOM.items()]
-    jobs += [(name, prod, rel, "cots") for name, (prod, rel) in R.COTS.items()]
+    jobs += [(name, prod, rel, "cots") for name, (prod, rel) in R.COTS.items() if name not in R.CYCLOIDAL_PARTS]
 
+    # The cycloidal drive's entries are owned by tools/import_cycloidal_reference.py - keep them.
+    existing = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))["parts"] if MANIFEST_PATH.exists() else {}
     manifest = {
         "source_dir": str(args.src),
         "monolith": None,
-        "parts": {},
+        "parts": {name: entry for name, entry in existing.items() if name in R.CYCLOIDAL_PARTS},
     }
     monolith = args.src / R.MONOLITH_NAME
     if monolith.exists():

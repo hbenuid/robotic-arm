@@ -1,11 +1,11 @@
-"""Every custom part must match its SolidWorks reference geometry.
+"""Every custom part must match its reference geometry (the SolidWorks export, or for the
+designed cycloidal-drive parts the CadQuery export they were ported from).
 
 Wrappers pass trivially (they ARE the reference); a converted part is gated by volume and
 bounding box (size + position in its local frame, after LOCAL_FROM_REF) so a conversion
 that drifts from the original design fails here. Per-part tolerances: REF_VOL_TOL
 (relative) and REF_BBOX_TOL (mm) module attributes.
 """
-import hashlib
 import importlib
 import json
 import pkgutil
@@ -17,16 +17,9 @@ import parts
 from lib import reference as R
 
 CUSTOM_PARTS = sorted(
-    mi.name for mi in pkgutil.iter_modules(parts.__path__) if not mi.name.startswith("_") and mi.name in R.CUSTOM
+    mi.name for mi in pkgutil.iter_modules(parts.__path__)
+    if not mi.name.startswith("_") and (mi.name in R.CUSTOM or mi.name in R.DESIGNED)
 )
-
-
-def _sha256(path):
-    h = hashlib.sha256()
-    with path.open("rb") as fh:
-        for chunk in iter(lambda: fh.read(1 << 20), b""):
-            h.update(chunk)
-    return h.hexdigest()
 
 
 def test_reference_and_vendor_files_match_manifest():
@@ -36,14 +29,18 @@ def test_reference_and_vendor_files_match_manifest():
     for name, entry in manifest["parts"].items():
         ref = R.REF_DIR / f"{name}.step"
         assert ref.exists(), f"{ref} listed in manifest.json but missing"
-        assert _sha256(ref) == entry["sha256"], f"{ref} differs from reference/manifest.json"
+        assert R.sha256(ref) == entry["sha256"], f"{ref} differs from reference/manifest.json"
         if entry["kind"] == "cots":
             vendor = R.VENDOR_DIR / f"{name}.step"
-            assert vendor.exists(), f"{vendor} missing"
-            assert _sha256(vendor) == entry["vendor"]["sha256"], (
-                f"{vendor} differs from manifest.json - run tools/import_reference.py after replacing a vendor file"
-            )
-    assert set(manifest["parts"]) == set(R.CUSTOM) | set(R.COTS)
+            if "vendor" in entry:
+                assert vendor.exists(), f"{vendor} missing"
+                assert R.sha256(vendor) == entry["vendor"]["sha256"], (
+                    f"{vendor} differs from manifest.json - run tools/import_reference.py "
+                    f"(tools/import_cycloidal_reference.py for the drive) after replacing a vendor file"
+                )
+            else:   # envelope in use - a vendor file must not appear without being recorded
+                assert not vendor.exists(), f"{vendor} exists but manifest.json has no vendor entry - re-run the import tool"
+    assert set(manifest["parts"]) == set(R.CUSTOM) | set(R.COTS) | set(R.DESIGNED)
 
 
 @pytest.mark.slow

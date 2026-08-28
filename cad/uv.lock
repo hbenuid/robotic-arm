@@ -1545,6 +1545,8 @@ source = { virtual = "." }
 dependencies = [
     { name = "build123d" },
     { name = "cadgen" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "numpy", version = "2.5.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "ocp-vscode" },
 ]
 
@@ -1558,6 +1560,7 @@ dev = [
 requires-dist = [
     { name = "build123d", specifier = "==0.10.0" },
     { name = "cadgen", specifier = "==0.4.28" },
+    { name = "numpy", specifier = ">=2.4.6" },
     { name = "ocp-vscode", specifier = "==3.4.0" },
 ]
 

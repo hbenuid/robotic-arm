@@ -12,6 +12,7 @@ dependencies = [
     # Same version as the installed cad@text-to-cad plugin: gives `cadgen.assembly` to plain
     # `uv run` and satisfies the CAD Viewer's Python-backend check. Bump together with the plugin.
     "cadgen==0.4.28",
+    "numpy>=2.4.6",
     "ocp-vscode==3.4.0",
 ]
 

@@ -59,14 +59,58 @@ PANCAKE_BODY_D = 47.0           # [REFERENCE] body depth incl. connector
 PANCAKE_BODY_H = 43.0           # [REFERENCE] height incl. shaft
 PANCAKE_MASS_G = 180.0          # [ESTIMATE] typical 17HS08-type pancake 150-200 g - replace with the datasheet value
 
-# --- Cycloidal drive (NOT modelled here; source lives in the cycloidal_drive repo) ----------
-# Its world pose in the SolidWorks arm assembly is recorded under "skipped" in
-# reference/placements.json for re-attaching it later.
+# --- Cycloidal drive (lib/cycloidal/, assemblies/cycloidal_drive.py, docs/cycloidal_drive.md) -----
+# The drive's own dimensions live in lib/cycloidal/params.py (DriveConfig, ported from the
+# cycloidal_drive repo). These are the interface values the rest of the arm needs, re-exported
+# from that config so every number exists exactly once. Drive frame: Z = motor axis, z=0 = the
+# motor-plate outer face, +Z toward the output hub; it sits in the arm at placements.json
+# "cycloidal_drive#1" (housing in the j1_coupler yoke, hub output face bolted to j1_link).
+from lib.cycloidal.params import DEFAULT_CONFIG as _DRIVE  # noqa: E402
+
+CYCLOIDAL_RATIO = _DRIVE.gear.gear_ratio                          # 20:1 [DESIGN] 20 lobes / 21 ring pins.
+#   NOTE: src/config.py JOINTS still carries J1 gear_ratio 1.0 - the motor->joint mapping is unconfirmed.
+CYCLOIDAL_HOUSING_OD = _DRIVE.housing.od                          # 140 [DESIGN]
+CYCLOIDAL_STACK_DEPTH = _DRIVE.stack_up.total_housing_depth       # 60 [DESIGN] motor-plate outer face -> housing output face
+CYCLOIDAL_MOTOR_BODY_LEN = _DRIVE.motor.body_length               # 48 [DATASHEET] NEMA 17 body behind the plate (-Z)
+CYCLOIDAL_HUB_OD = _DRIVE.output_hub.od                           # 70.3 [DESIGN]
+CYCLOIDAL_HUB_PROUD = _DRIVE.output_hub.proud_above_housing       # 5 [DESIGN] hub face past the housing output face
+CYCLOIDAL_OUTPUT_FACE_Z = CYCLOIDAL_STACK_DEPTH + CYCLOIDAL_HUB_PROUD   # 65 [DESIGN] the j1_link mounting face
+CYCLOIDAL_ARM_MOUNT_BOLT_CIRCLE = _DRIVE.output_hub.arm_mount_bolt_circle_dia       # 50 [DESIGN]
+CYCLOIDAL_ARM_MOUNT_BOLT_COUNT = _DRIVE.output_hub.arm_mount_bolt_count             # 4x M4 into captive nuts
+CYCLOIDAL_ARM_MOUNT_ANGLE_OFFSET_DEG = _DRIVE.output_hub.arm_mount_angle_offset_deg # 45 (between the output pins)
+CYCLOIDAL_ARM_MOUNT_BOLT_DIA = _DRIVE.housing.bolt_dia            # 4 (M4)
+
+# Purchased parts of the drive (parts/bearing_*.py, nema17_48mm, cycloidal_*_pins/bolts/nuts).
+STEEL_DENSITY = 7.85e-3          # [DATASHEET] g/mm^3 - dowel pins, bolts, nuts
+CYCLOIDAL_MOTOR_MASS_G = 400.0   # [DATASHEET] 48 mm-body NEMA 17 (17HS19-2004S1 class); verify on the unit in hand
+BEARING_6003_MASS_G = 39.0       # [DATASHEET] 6003-2RS 17x35x10
+BEARING_6814_MASS_G = 110.0      # [DATASHEET] 6814-2RS (61814) 70x90x10; verify
+BEARING_625_MASS_G = 5.0         # [DATASHEET] 625-2RS 5x16x5
+
+
+def _cyl_vol(radius, height):
+    return math.pi * radius * radius * height
+
+
+def _hex_vol(across_flats, height):
+    r = across_flats / math.cos(math.radians(30)) / 2.0      # circumradius
+    return 1.5 * math.sqrt(3) * r * r * height
+
+
+# [ESTIMATE] simplified-geometry volumes x steel density (the parts are plain cylinders / hex prisms)
+CYCLOIDAL_RING_PINS_MASS_G = STEEL_DENSITY * _DRIVE.gear.num_ring_pins * _cyl_vol(_DRIVE.gear.ring_pin_radius, _DRIVE.gear.ring_pin_length)            # 72.5, 21x
+CYCLOIDAL_OUTPUT_PINS_MASS_G = STEEL_DENSITY * _DRIVE.disc.output_pin_count * _cyl_vol(_DRIVE.disc.output_pin_dia / 2, _DRIVE.disc.output_pin_length)   # 17.8, 4x
+CYCLOIDAL_SUPPORT_PIN_MASS_G = STEEL_DENSITY * _cyl_vol(_DRIVE.shaft.support_pin_dia / 2, _DRIVE.shaft.support_pin_length)                             # 3.1
+CYCLOIDAL_HOUSING_BOLTS_MASS_G = STEEL_DENSITY * _DRIVE.housing.bolt_count * (
+    _cyl_vol(_DRIVE.housing.bolt_head_dia / 2, _DRIVE.housing.bolt_head_height) + _cyl_vol(_DRIVE.housing.bolt_dia / 2, _DRIVE.housing.bolt_length))    # 53.1, 8x M4x55
+CYCLOIDAL_HOUSING_NUTS_MASS_G = STEEL_DENSITY * _DRIVE.housing.bolt_count * _hex_vol(_DRIVE.housing.bolt_nut_af, _DRIVE.housing.bolt_nut_thickness)     # 8.5, 8x M4
+CYCLOIDAL_MOTOR_BOLTS_MASS_G = STEEL_DENSITY * 4 * (
+    _cyl_vol(_DRIVE.motor.bolt_dia / 2, _DRIVE.motor.motor_bolt_thread_length) + _cyl_vol(_DRIVE.motor.motor_bolt_head_dia / 2, _DRIVE.motor.motor_bolt_head_height))   # 4.3, 4x M3x10
 
 # --- Robot description (robot/frames.py, robot/arm.urdf) --------------------------------------
 # Joint limits and actuator ratings are PLACEHOLDERS until measured on the hardware; the URDF
 # and SDF are checked against these by tools/robot_frames.py --check.
-J1_LIMIT_DEG = 175.0            # [ESTIMATE] symmetric +/- range, cycloidal-drive base yaw
+J1_LIMIT_DEG = 175.0            # [ESTIMATE] symmetric +/- range, base yaw (the cycloidal drive is the shoulder-pitch actuator, not yet a joint)
 J2_LIMIT_DEG = 120.0            # [ESTIMATE] shoulder pitch
 J3_LIMIT_DEG = 120.0            # [ESTIMATE] elbow pitch
 WRIST_ROLL_LIMIT_DEG = 180.0    # [ESTIMATE] NEMA17 pancake wrist roll (not CAN-driven yet)

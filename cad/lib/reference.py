@@ -10,6 +10,7 @@ full-assembly STEP into reference/placements.json.
 """
 from __future__ import annotations
 
+import hashlib
 import pathlib
 import unicodedata
 
@@ -66,6 +67,32 @@ MODULES: dict[str, str] = {
     "gripper": "Gripper Mechanism_Gripper Mechanism",
 }
 
+# Designed (parametric build123d) parts ported from the cycloidal_drive repo. Their reference
+# is NOT a SolidWorks export but the CadQuery builder's own STEP export at CYCLOIDAL_REV
+# (reference/<name>.step, manifest kind "designed"; tools/export_cycloidal_cadquery.py +
+# tools/import_cycloidal_reference.py). Values: the builder label the exporter uses.
+CYCLOIDAL_REV = "2f1f67d"
+DESIGNED: dict[str, str] = {
+    "cycloidal_disc_1":          "src/cycloidal_disc.py:build_cycloidal_disc()",
+    "cycloidal_disc_2":          "src/cycloidal_disc.py:build_cycloidal_disc(phase_offset_deg=disc2_phase)",
+    "cycloidal_eccentric_shaft": "src/eccentric_shaft.py:build_eccentric_shaft()",
+    "cycloidal_motor_plate":     "src/motor_plate.py:build_motor_plate()",
+    "cycloidal_ring_gear_body":  "src/ring_gear_body.py:build_ring_gear_body()",
+    "cycloidal_output_hub":      "src/output_hub.py:build_output_hub()",
+}
+
+# Purchased parts of the cycloidal drive: clean name -> CadQuery builder of the simplified model
+# (its export is reference/<name>.step; a step.parts model may live in vendor/<name>.step).
+CYCLOIDAL_COTS: dict[str, str] = {
+}
+COTS.update({name: (f"cycloidal_drive {builder}", None) for name, builder in CYCLOIDAL_COTS.items()})
+CYCLOIDAL_PARTS: set[str] = set(DESIGNED) | set(CYCLOIDAL_COTS)
+
+# Sub-assemblies whose placement comes from SolidWorks but whose contents are code-driven
+# (assemblies/<name>.py places its parts from lib/cycloidal StackUp): clean name -> product name.
+DESIGNED_MODULES: dict[str, str] = {
+}
+
 # Full-assembly nodes deliberately not modelled here (whole subtree skipped).
 SKIPPED_PRODUCTS: dict[str, str] = {
     "New cyloidal assembly":    "cycloidal drive lives in the cycloidal_drive repo (CadQuery); re-attach later",
@@ -73,7 +100,9 @@ SKIPPED_PRODUCTS: dict[str, str] = {
     "nema17_pancake(2)":        "pancake internals are flattened into vendor/nema17_pancake.step",
 }
 
-PRODUCT_TO_PART: dict[str, str] = {prod: name for name, (prod, _) in {**CUSTOM, **COTS}.items()}
+PRODUCT_TO_PART: dict[str, str] = {
+    prod: name for name, (prod, _) in {**CUSTOM, **COTS}.items() if name not in CYCLOIDAL_PARTS
+}
 
 
 def clean_label(product_name: str) -> str:
@@ -86,10 +115,36 @@ def clean_label(product_name: str) -> str:
 LABEL_TO_PART: dict[str, str] = {clean_label(p): n for p, n in PRODUCT_TO_PART.items()}
 LABEL_TO_MODULE: dict[str, str] = {clean_label(p): n for n, p in MODULES.items()}
 SKIPPED_LABELS: dict[str, str] = {clean_label(p): why for p, why in SKIPPED_PRODUCTS.items()}
+LABEL_TO_DESIGNED_MODULE: dict[str, str] = {clean_label(p): n for n, p in DESIGNED_MODULES.items()}
 
 
 def path_of(name: str) -> pathlib.Path:
     return REF_DIR / f"{name}.step"
+
+
+def sha256(path: pathlib.Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def step_units(path: pathlib.Path) -> str:
+    data = path.read_bytes()
+    return "inch" if (b"CONVERSION_BASED_UNIT" in data and b"'INCH'" in data) else "mm"
+
+
+def describe(path: pathlib.Path) -> dict:
+    """solids / solid_volume / bbox of a STEP file - the manifest.json geometry facts."""
+    shape = import_step(str(path))
+    bb = shape.bounding_box()
+    return {
+        "solids": len(shape.solids()),
+        "solid_volume": round(solid_volume(shape), 3),
+        "bbox_min": [round(v, 3) for v in (bb.min.X, bb.min.Y, bb.min.Z)],
+        "bbox_size": [round(v, 3) for v in (bb.size.X, bb.size.Y, bb.size.Z)],
+    }
 
 
 def load(name: str, *, label: str | None = None) -> Shape:

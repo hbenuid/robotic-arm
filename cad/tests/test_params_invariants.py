@@ -43,3 +43,79 @@ def test_mg996r_fits_its_reference_envelope():
     assert p.MG996R_BODY_L <= size[1] + 0.5
     assert p.MG996R_TAB_L <= size[2] + 1.5
     assert p.MG996R_MASS_G > 0
+
+
+# --- cycloidal drive interface (lib/cycloidal re-exported through lib/params.py) --------------------
+def test_cycloidal_interface():
+    assert p.CYCLOIDAL_RATIO == 20
+    assert p.CYCLOIDAL_HOUSING_OD == 140.0
+    assert p.CYCLOIDAL_STACK_DEPTH == 60.0
+    assert p.CYCLOIDAL_MOTOR_BODY_LEN == 48.0
+    assert p.CYCLOIDAL_HUB_OD == 70.3
+    assert p.CYCLOIDAL_HUB_PROUD == 5.0
+    assert p.CYCLOIDAL_OUTPUT_FACE_Z == 65.0
+    assert (p.CYCLOIDAL_ARM_MOUNT_BOLT_CIRCLE, p.CYCLOIDAL_ARM_MOUNT_BOLT_COUNT) == (50.0, 4)
+    assert (p.CYCLOIDAL_ARM_MOUNT_ANGLE_OFFSET_DEG, p.CYCLOIDAL_ARM_MOUNT_BOLT_DIA) == (45.0, 4.0)
+
+
+def test_cycloidal_config_agrees_with_nema17_constants():
+    from lib.cycloidal import DEFAULT_CONFIG as cfg
+
+    assert cfg.motor.body_width == p.NEMA17_FACE
+    assert cfg.motor.bolt_pattern_square == p.NEMA17_BOLT_SP
+    assert cfg.motor.pilot_dia == p.NEMA17_PILOT_DIA
+    assert cfg.motor.shaft_dia == p.NEMA17_SHAFT_DIA
+
+
+def test_cycloidal_stack_positions():
+    """The module layout (assemblies/cycloidal_drive.py) - the drive repo's assembly.py numbers."""
+    from lib.cycloidal import DEFAULT_CONFIG, stack_positions
+
+    got = stack_positions(DEFAULT_CONFIG)
+    expected = {
+        "x_disc1": 1.5, "x_disc2": -1.5, "z_motor_plate": 0.0, "z_motor": 0.0, "z_eccentric_shaft": 0.0,
+        "z_ring_gear_body": 9.0, "z_disc1": 13.0, "z_disc2": 25.0, "z_6814_1": 37.0, "z_6814_2": 47.0,
+        "z_hub": 37.0, "z_625": 37.0, "z_ring_pins": 5.5, "z_output_pins": 11.0, "z_support_pin": 24.0,
+        "z_motor_bolts": -5.0, "z_housing_bolts": 0.5, "z_housing_nuts": 56.0, "hub_top": 65.0,
+    }
+    assert got.keys() == expected.keys()
+    for key, value in expected.items():
+        assert math.isclose(got[key], value, abs_tol=1e-9), key
+
+
+def test_cycloidal_derived_numbers():
+    from lib.cycloidal import DEFAULT_CONFIG as cfg
+    from lib.cycloidal import hex_circumdiameter, hub_height, motor_bolt_counterbore_depth, ring_pin_engagement, ring_pin_hole_depth, ring_pin_hole_dia
+
+    assert cfg.stack_up.bore_zone == 28.0
+    assert cfg.stack_up.ring_gear_body_height == 51.0
+    assert math.isclose(cfg.housing.lip_bore_dia, 86.15)
+    assert math.isclose(cfg.shaft.bridge_flange_od, 23.10)
+    assert math.isclose(ring_pin_hole_dia(cfg), 4.20)
+    assert ring_pin_engagement(cfg) == 3.5 and ring_pin_hole_depth(cfg) == 31.5
+    assert motor_bolt_counterbore_depth(cfg) == 3.0
+    assert hub_height(cfg) == 28.0
+    assert math.isclose(hex_circumdiameter(7.2), 8.3138, abs_tol=1e-3)
+    assert cfg.gear.disc2_phase_deg == -9.0
+
+
+def test_cycloidal_steel_masses_track_volumes():
+    assert math.isclose(p.CYCLOIDAL_RING_PINS_MASS_G, 72.5, abs_tol=0.1)
+    assert math.isclose(p.CYCLOIDAL_OUTPUT_PINS_MASS_G, 17.8, abs_tol=0.1)
+    assert math.isclose(p.CYCLOIDAL_SUPPORT_PIN_MASS_G, 3.1, abs_tol=0.1)
+    assert math.isclose(p.CYCLOIDAL_HOUSING_BOLTS_MASS_G, 53.1, abs_tol=0.1)
+    assert math.isclose(p.CYCLOIDAL_HOUSING_NUTS_MASS_G, 8.5, abs_tol=0.1)
+    assert math.isclose(p.CYCLOIDAL_MOTOR_BOLTS_MASS_G, 4.3, abs_tol=0.1)
+    for mass in (p.CYCLOIDAL_MOTOR_MASS_G, p.BEARING_6003_MASS_G, p.BEARING_6814_MASS_G, p.BEARING_625_MASS_G):
+        assert mass > 0
+
+
+def test_cycloidal_dead_params_gone():
+    from lib.cycloidal import DEFAULT_CONFIG as cfg
+
+    for group, name in (
+        (cfg.profile, "spline_tolerance"), (cfg.tolerances, "bearing_inner_shaft_sub"),
+        (cfg.tolerances, "sliding_clearance_add"), (cfg.housing, "wall_thickness"),
+        (cfg.housing, "motor_plate_wall"), (cfg.bearings, "ecc_qty"), (cfg.bearings, "inp_qty"),
+    ):
+        assert not hasattr(group, name), name
