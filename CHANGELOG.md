@@ -1,7 +1,8 @@
 # Changelog
 
 Dated record of notable changes to this repository (newest first). Every commit that changes
-behaviour, layout or tooling gets an entry here; the commit hashes are on branch `cad-setup`.
+behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
+`cad-setup` working branch was fast-forward-only and has been retired).
 
 ## 2026-08-31 — arm assembly grouped into link components, per-group viewer tints (`bdb69d0`)
 
