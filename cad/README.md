@@ -1,6 +1,6 @@
 # robotic-arm — CAD (build123d)
 
-**Last updated:** 2026-08-28 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-08-31 — see the root `CHANGELOG.md` for dated changes.
 
 Parametric CAD-as-code for the 3-joint arm, converted part-by-part from the original
 SolidWorks design. This folder is a **separate uv project** (Python 3.12) — the motor-control
@@ -83,10 +83,10 @@ cad/
 │   └── cycloidal/             # the drive: 6 designed parts + 10 COTS (bearings, nema17_48mm, pins, bolts, nuts), _cots.py helper
 │       └── <name>.py + <name>.step   # every group: the .step is generated beside its source and committed (Git LFS)
 ├── assemblies/
-│   ├── arm.py             # the whole arm (16 top-level occurrences + the gripper and cycloidal_drive modules = 52 leaves)
+│   ├── arm.py             # the whole arm, grouped arm -> base_link/link1/link2/link3/wrist (GROUPS; 52 leaves, tinted per group)
 │   ├── gripper.py         # the gripper mechanism module (19 occurrences, placed from placements.json)
 │   ├── cycloidal_drive.py # the drive module (18 rows placed from lib/cycloidal stack_positions - code-driven)
-│   └── _occurrences.py    # place()/add_occurrences() (placement keys), place_at()/add_located() (Locations), world_rows()
+│   └── _occurrences.py    # place()/add_occurrences()/add_grouped_occurrences() (placement keys), place_at()/add_located() (Locations), world_rows()
 ├── docs/cycloidal_drive.md  # the drive's spec, port notes and attachment
 ├── reference/             # immutable per-part reference STEPs (Git LFS) + manifest.json + placements.json + README
 │   ├── solidworks/            # the 25 SolidWorks exports (custom parts + the SolidWorks purchased parts)
@@ -171,8 +171,13 @@ duplicate parts' labels unique (`j3_coupler:j2`, `gripper_end:1`); they are posi
 now. `assemblies/cycloidal_drive.py` is a **code-driven module**: its rows are
 `(part, role, Location)` computed from `lib/cycloidal` (`stack_positions`), and `arm.py` locates
 the whole module at the SolidWorks node's pose (`placements.json` `cycloidal_drive#1`, a
-`designed` module record). `tests/test_assembly.py` checks the rebuilt arm against the
-SolidWorks totals plus the module's own lock (34 + 18 leaves, 50 + 58 solids, volumes, bbox).
+`designed` module record). `arm.py GROUPS` buckets the occurrences into the component tree
+`arm -> base_link/link1/link2/link3/wrist` — the rigid-link partition of `robot/frames.py LINKS`
+with the gripper module kept whole — so each component toggles as one node in the viewers, and
+every subtree is tinted with its group's color (the gripper and cycloidal_drive modules keep
+their own). `tests/test_assembly.py` checks the rebuilt arm against the SolidWorks totals plus
+the module's own lock (34 + 18 leaves, 50 + 58 solids, volumes, bbox), the group labels and the
+`LINKS` mirror.
 
 ## Reference geometry and placements
 

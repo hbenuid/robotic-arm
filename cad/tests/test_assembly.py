@@ -47,12 +47,29 @@ def test_cycloidal_drive_module_builds():
     assert d.is_valid
 
 
+def test_arm_groups_mirror_links():
+    """GROUPS covers every occurrence key exactly once and mirrors robot/frames.py LINKS
+    (gripper module kept whole: wrist = wrist_roll_link + jaw_a_link + jaw_b_link)."""
+    from robot import frames
+
+    group_keys = [key for _, _, keys in arm.GROUPS for key in keys]
+    assert sorted(group_keys) == sorted(key for _, _, key in arm.OCCURRENCES)
+    groups = {label: set(keys) for label, _, keys in arm.GROUPS}
+    for link in ("base_link", "link1", "link2", "link3"):
+        assert groups[link] == set(frames.LINKS[link]), link
+    wrist = (groups["wrist"] - {arm.GRIPPER_KEY}) | {key for _, _, key in gripper.OCCURRENCES}
+    assert wrist == set(
+        frames.LINKS["wrist_roll_link"] + frames.LINKS["jaw_a_link"] + frames.LINKS["jaw_b_link"]
+    )
+
+
 @pytest.mark.slow
 def test_arm_assembly_matches_reference_totals():
-    """SolidWorks totals for the SolidWorks-driven occurrences + the drive module's own totals."""
+    """SolidWorks totals for the SolidWorks-driven occurrences + the drive module's own totals,
+    under the GROUPS component tree (arm -> base_link/link1/link2/link3/wrist)."""
     a = arm.gen_step()
     assert a.label == "arm"
-    assert len(a.children) == len(arm.OCCURRENCES) == 17
+    assert [c.label for c in a.children] == [label for label, _, _ in arm.GROUPS]
     leaves = _leaves(a)
     assert len(leaves) == EXPECTED["leaf_occurrences"] + DRIVE["leaves"] == 52
     labels = [leaf.label for leaf in leaves]

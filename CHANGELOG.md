@@ -3,6 +3,21 @@
 Dated record of notable changes to this repository (newest first). Every commit that changes
 behaviour, layout or tooling gets an entry here; the commit hashes are on branch `cad-setup`.
 
+## 2026-08-31 — arm assembly grouped into link components, per-group viewer tints
+
+`assemblies/arm.py gen_step()` now builds the component tree `arm → base_link/link1/link2/
+link3/wrist` — the rigid-link partition of `robot/frames.py LINKS`, with the `gripper` and
+`cycloidal_drive` modules kept whole (`wrist` = wrist_roll_link + the jaw links) — so each
+component toggles as one node in the OCP CAD Viewer / CAD Viewer trees, and every subtree is
+tinted with its group's color (`arm.py GROUPS`; `MODULE_TINTS` keeps the two named modules
+distinct). New `assemblies/_occurrences.py add_grouped_occurrences()` does the bucketing and
+tinting and raises unless the groups cover the occurrence keys exactly once;
+`tests/test_assembly.py` locks the group labels and the LINKS mirror
+(`test_arm_groups_mirror_links`). Totals unchanged: 52 leaves / 108 solids / volume / bbox.
+Note: the tints ride the in-memory compound and the regenerated (git-ignored)
+`assemblies/arm.step`; a few COTS/multi-solid leaves lose their color in the STEP round-trip —
+the live `./cadtool python -m assemblies.arm` preview shows all of them.
+
 ## 2026-08-28 — `cad/` reorganised: grouped parts, split references, packaged tests/tools, `cadtool clean`, Git LFS
 
 The folder had outgrown its flat directories (87 files in `parts/`, 44 in `reference/`, 17 test

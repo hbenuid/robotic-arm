@@ -4,7 +4,7 @@
 conversion workflow, shared-dimension rules, assembly placements, purchased parts, tests, tooling.
 **Audience:** agent. Human docs: `README.md`. Reference provenance: `reference/README.md`. The
 cycloidal drive (spec, port notes, attachment): `docs/cycloidal_drive.md`.
-**Last updated:** 2026-08-28. Every commit that changes behaviour, layout or tooling gets a dated entry in the
+**Last updated:** 2026-08-31. Every commit that changes behaviour, layout or tooling gets a dated entry in the
 root `CHANGELOG.md` and bumps the `Last updated` line of the docs it touches.
 
 `cad/` is a **separate uv project** (Python 3.12, build123d 0.10, cadgen 0.4.x) inside the
@@ -109,6 +109,14 @@ Changing a shared dimension — touchpoints in order:
   document order; `assemblies/_occurrences.py` places a **fresh** `gen_step()` copy per occurrence
   with `.moved(rel * LOCAL_FROM_REF⁻¹)` and locates the modules **in place** (`.locate`).
   Roles (`j2`/`j3`, `1`/`2`) only disambiguate duplicates; rename when joint semantics arrive.
+- `arm.py GROUPS` buckets the occurrences into the component tree
+  `arm → base_link/link1/link2/link3/wrist` — the `robot/frames.py LINKS` partition with the
+  gripper module kept whole (`wrist` = wrist_roll_link + jaw links) — via
+  `_occurrences.add_grouped_occurrences()`, which tints each subtree with its group's color
+  (`MODULE_TINTS` overrides for the two modules) and raises unless the groups cover the keys
+  exactly once. `test_assembly.py` locks the group labels + the LINKS mirror. The tints are
+  per-leaf (a compound-level color doesn't cascade in ocp_tessellate); some COTS/multi-solid
+  leaves drop theirs in the STEP round-trip — the live OCP preview shows all of them.
 - `assemblies/cycloidal_drive.py` is **code-driven**: rows are `(part, role, Location)` from
   `lib/cycloidal stack_positions` (`add_located`); its placement key `cycloidal_drive#1` is a
   `designed` module record in `placements.json` (pose from the SolidWorks node, no leaf records,

@@ -12,9 +12,10 @@ import importlib
 import pathlib
 import sys
 
-from build123d import Location
+from build123d import Color, Location
 
 import parts  # noqa: E402  (stdlib-only package index; parts.load() imports a part lazily)
+from lib.assembly import label_shape
 from lib import placements as P
 
 CAD_DIR = str(pathlib.Path(__file__).resolve().parent.parent)
@@ -50,6 +51,46 @@ def add_occurrences(asm, rows, modules: dict | None = None) -> None:
             asm.add(place(name, key), name)
         else:
             asm.add(place(name, key), name, role)
+
+
+def _tint(shape, color: Color) -> None:
+    """Set `color` on `shape` and every descendant. ocp_tessellate renders a leaf's own
+    color (a compound-level color does not cascade), so tint the whole subtree."""
+    shape.color = color
+    for child in getattr(shape, "children", ()) or ():
+        _tint(child, color)
+
+
+def add_grouped_occurrences(asm, rows, groups, modules: dict | None = None,
+                            module_tints: dict | None = None) -> None:
+    """add_occurrences(), but bucketed into labelled group Compounds (viewer/STEP tree nodes).
+
+    `groups` rows are (group_label, tint, occurrence keys); together the keys must cover the
+    OCCURRENCES rows' keys exactly once. Every shape in a group is tinted with the group's
+    color, except a key in `module_tints` which keeps its own (the named modules stay visually
+    distinct inside their group). Tints overwrite imported-STEP colors on the fresh per-build
+    copies only — standalone part/module previews are untouched."""
+    modules = modules or {}
+    module_tints = module_tints or {}
+    row_keys = sorted(key for _, _, key in rows)
+    group_keys = sorted(key for _, _, keys in groups for key in keys)
+    if group_keys != row_keys:
+        raise ValueError(f"groups must cover the occurrence keys exactly once:\n{group_keys}\n{row_keys}")
+    shapes = {}
+    for name, role, key in rows:
+        if name in modules:
+            shape = modules[name]()
+            shape.locate(P.location(key, "rel"))   # in place: .located() would deep-copy the tree
+            label_shape(shape, name)
+        else:
+            shape = label_shape(place(name, key), name, *(() if role is None else (role,)))
+        shapes[key] = shape
+    for group_label, tint, keys in groups:
+        members = []
+        for key in keys:
+            _tint(shapes[key], Color(module_tints.get(key, tint)))
+            members.append(shapes[key])
+        asm.add_module(group_label, members, color=Color(tint))
 
 
 def place_at(part_name: str, loc: Location):
