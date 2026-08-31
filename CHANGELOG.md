@@ -3,7 +3,7 @@
 Dated record of notable changes to this repository (newest first). Every commit that changes
 behaviour, layout or tooling gets an entry here; the commit hashes are on branch `cad-setup`.
 
-## 2026-08-31 — arm assembly grouped into link components, per-group viewer tints
+## 2026-08-31 — arm assembly grouped into link components, per-group viewer tints (`bdb69d0`)
 
 `assemblies/arm.py gen_step()` now builds the component tree `arm → base_link/link1/link2/
 link3/wrist` — the rigid-link partition of `robot/frames.py LINKS`, with the `gripper` and
