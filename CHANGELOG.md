@@ -83,7 +83,7 @@ LFS churn kept out of the review diff).
   `./cadtool export assemblies/cycloidal_drive.step stl` writes 5.5 MB through Node; `./cadtool doctor`
   → pin OK, node 22, chromium OK.
 
-### Changed — every committed part STEP regenerated with cadgen 0.5.1
+### Changed — every committed part STEP regenerated with cadgen 0.5.1 (`d0cffaa`)
 - The 41 `cad/parts/<group>/<name>.step` files rewritten by `./cadtool gen assemblies/arm.py` (each
   part a child job of the arm) — new Git LFS objects. The 0.4 writer embedded provenance
   (`cadgen:sourceHash`, the generator path) and a build timestamp in every STEP; 0.5 writes none and
