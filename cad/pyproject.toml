@@ -3,15 +3,20 @@ name = "robotic-arm-cad"
 version = "0.1.0"
 description = "Parametric build123d CAD for the 3-joint arm (converted from SolidWorks STEP exports)."
 readme = "README.md"
-# build123d caps at <3.14 and vtk 9.3.1 (pulled by build123d 0.10) ships wheels only up
-# to cp312, while the system Python is 3.14 -> the venv is pinned to 3.12 (.python-version).
-# cadgen (the text-to-cad plugin's Python runtime) needs >=3.11.
+# The venv is pinned to 3.12 (.python-version): the system Python is 3.14, ocp-vscode / the OCP
+# wheels are verified on 3.12, and cadgen (the text-to-cad runtime) needs >=3.11.
 requires-python = ">=3.11,<3.14"
 dependencies = [
-    "build123d==0.10.0",
-    # Same version as the installed cad@text-to-cad plugin: gives `cadgen.assembly` to plain
-    # `uv run` and satisfies the CAD Viewer's Python-backend check. Bump together with the plugin.
-    "cadgen==0.4.28",
+    # cadgen 0.5.x is developed against build123d 0.11 / OCP 7.9 (LazyCompound needs 0.11's
+    # `wrapped` property, its STEP writer needs OCP 7.9's HArray1.Value, and OCCT 7.8.1 mis-read
+    # its BinTools VERSION_4 component objects). build123d pulls cadquery-ocp-novtk; cadgen pulls
+    # cadquery-ocp unconstrained - pin it to the SAME release or two OCP builds land in the venv.
+    "build123d==0.11.1",
+    "cadquery-ocp==7.9.3.1.1",
+    # The text-to-cad runtime (decorators, `cadgen` CLI, viewer, snapshots via the [snapshot]
+    # extra = playwright). Same version as the installed cad@text-to-cad plugin, whose
+    # skills/cad/requirements.txt pins it: bump both together (`./cadtool doctor` checks).
+    "cadgen[snapshot]==0.5.1",
     "numpy>=2.4.6",
     "ocp-vscode==3.4.0",
 ]
@@ -19,9 +24,6 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=8.0",
-    # Needed by the plugin's scripts/snapshot. Declared here (not `uv pip install`-ed)
-    # so `uv sync` never prunes it; browser: `./cadtool setup` (playwright install chromium).
-    "playwright>=1.50",
 ]
 
 [tool.pytest.ini_options]

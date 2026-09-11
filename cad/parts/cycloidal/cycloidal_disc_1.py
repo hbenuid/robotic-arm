@@ -5,13 +5,12 @@ reference/cycloidal_disc_1.step is that CadQuery builder's own export (manifest 
 Local frame: profile centred on the disc axis, z 0..thickness (10); in the drive it orbits at
 (+e, 0) at stack z_disc1 (13) with a 6003 bearing in its 35.10 bore. PETG, 100 % infill.
 """
-# --- path shim -------------------------------------------------------------------------
-import sys, pathlib
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+import pathlib
 
-from build123d import Location  # noqa: E402  (import after shim)
-from lib.cycloidal import DEFAULT_CONFIG, DriveConfig  # noqa: E402
-from lib.cycloidal.disc import build_disc  # noqa: E402
+from build123d import Location
+from cadgen import step
+from lib.cycloidal import DEFAULT_CONFIG, DriveConfig
+from lib.cycloidal.disc import build_disc
 
 NAME = pathlib.Path(__file__).stem
 REFERENCE = NAME
@@ -31,14 +30,13 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     return build_disc(cfg, phase_deg(cfg))
 
 
-def gen_step():
+@step
+def cycloidal_disc_1():
     """Return the disc at its LOCAL origin."""
     part = build()
     part.label = NAME
     return part
 
 
-# --- preview: guarded so importing this part has NO side effects ----------------------
 if __name__ == "__main__":
-    from ocp_vscode import show
-    show(gen_step())
+    cycloidal_disc_1()   # build: writes the sibling cycloidal_disc_1.step (preview: ./cadtool show parts/cycloidal/cycloidal_disc_1.py)

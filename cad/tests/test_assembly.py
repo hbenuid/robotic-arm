@@ -3,6 +3,7 @@ code-driven cycloidal_drive module's own totals."""
 import pytest
 
 from assemblies import arm, cycloidal_drive, gripper
+from lib.models import raw
 from lib import placements as P
 from lib import reference as R
 
@@ -31,7 +32,7 @@ def _expected_bbox():
 
 @pytest.mark.slow
 def test_gripper_module_builds():
-    g = gripper.gen_step()
+    g = raw(gripper.gripper)
     assert g.label == "gripper"
     assert len(_leaves(g)) == len(gripper.OCCURRENCES) == 19
     assert g.is_valid
@@ -39,7 +40,7 @@ def test_gripper_module_builds():
 
 @pytest.mark.slow
 def test_cycloidal_drive_module_builds():
-    d = cycloidal_drive.gen_step()
+    d = raw(cycloidal_drive.cycloidal_drive)
     assert d.label == "cycloidal_drive"
     assert len(_leaves(d)) == len(cycloidal_drive.OCCURRENCES) == DRIVE["leaves"] == 18
     assert len(d.solids()) == DRIVE["solids"]
@@ -67,7 +68,7 @@ def test_arm_groups_mirror_links():
 def test_arm_assembly_matches_reference_totals():
     """SolidWorks totals for the SolidWorks-driven occurrences + the drive module's own totals,
     under the GROUPS component tree (arm -> base_link/link1/link2/link3/wrist)."""
-    a = arm.gen_step()
+    a = raw(arm.arm)
     assert a.label == "arm"
     assert [c.label for c in a.children] == [label for label, _, _ in arm.GROUPS]
     leaves = _leaves(a)

@@ -51,7 +51,7 @@ def test_reference_and_vendor_files_match_manifest():
 def test_part_matches_reference(name):
     mod = parts.load(name)
     ok, report = R.matches_reference(
-        mod.gen_step(),
+        parts.build(name),
         mod.REFERENCE,
         local_from_ref=getattr(mod, "LOCAL_FROM_REF", None) or Location(),
         vol_tol=getattr(mod, "REF_VOL_TOL", 0.005),

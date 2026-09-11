@@ -8,14 +8,13 @@ Reference: mm units, 3 solid(s), volume 1878.6 mm^3,
            bbox size (14.45, 16, 16) mm, bbox min (0, -8, -8) mm.
 In the arm: x1 (gt2_pulley_20t#1).
 
-COTS convention (parts/_templates/cots.py): gen_step() returns the vendor STEP when present,
+COTS convention (parts/_templates/cots.py): gt2_pulley_20t() returns the vendor STEP when present,
 else the parametric envelope below - both in the SolidWorks frame placements.json assumes.
 """
-# --- path shim -------------------------------------------------------------------------
-import sys, pathlib
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+import pathlib
 
-from build123d import Align, Cylinder, Location, import_step  # noqa: E402
+from build123d import Align, Cylinder, Location
+from cadgen import read_step, step
 
 NAME = pathlib.Path(__file__).stem
 COTS = True
@@ -32,14 +31,13 @@ def _envelope():
     return Cylinder(8.0, 14.45, rotation=(0, 90, 0), align=(Align.CENTER, Align.CENTER, Align.MIN)).moved(Location((0.0, 0.0, 0.0)))
 
 
-def gen_step():
+@step
+def gt2_pulley_20t():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
-    part = import_step(str(VENDOR_STEP)).moved(VENDOR_TO_REF) if VENDOR_STEP.exists() else _envelope()
+    part = read_step(VENDOR_STEP).moved(VENDOR_TO_REF) if VENDOR_STEP.exists() else _envelope()
     part.label = NAME
     return part
 
 
-# --- preview: guarded so importing this part has NO side effects ----------------------
 if __name__ == "__main__":
-    from ocp_vscode import show
-    show(gen_step())
+    gt2_pulley_20t()   # build: writes the sibling gt2_pulley_20t.step (preview: ./cadtool show parts/wrist/gt2_pulley_20t.py)

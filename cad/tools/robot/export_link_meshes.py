@@ -10,14 +10,11 @@ from __future__ import annotations
 
 import argparse
 import pathlib
-import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
-
-from build123d import export_stl  # noqa: E402
-from lib import reference as R  # noqa: E402
-from robot import frames as F  # noqa: E402
-from robot._links import build_link  # noqa: E402
+from build123d import export_stl
+from lib import reference as R
+from robot import frames as F
+from robot._links import build_link
 
 MESH_DIR = pathlib.Path(__file__).resolve().parents[2] / "robot" / "meshes"
 

@@ -10,15 +10,14 @@ Reference: mm units, 11 solid(s), volume 33013.8 mm^3,
            bbox size (41.5, 47, 43) mm, bbox min (-20.75, -13.591, 12.659) mm.
 In the arm: x1 (nema17_pancake#1).
 
-COTS convention (parts/_templates/cots.py): gen_step() returns the vendor STEP when present,
+COTS convention (parts/_templates/cots.py): nema17_pancake() returns the vendor STEP when present,
 else the parametric envelope below - both in the SolidWorks frame placements.json assumes.
 """
-# --- path shim -------------------------------------------------------------------------
-import sys, pathlib
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+import pathlib
 
-from build123d import Align, Box, Location, import_step  # noqa: E402
-from lib.params import PANCAKE_BODY_D, PANCAKE_BODY_H, PANCAKE_BODY_W, PANCAKE_MASS_G  # noqa: E402
+from build123d import Align, Box, Location
+from cadgen import read_step, step
+from lib.params import PANCAKE_BODY_D, PANCAKE_BODY_H, PANCAKE_BODY_W, PANCAKE_MASS_G
 
 NAME = pathlib.Path(__file__).stem
 COTS = True
@@ -35,14 +34,13 @@ def _envelope():
     return Box(PANCAKE_BODY_W, PANCAKE_BODY_D, PANCAKE_BODY_H, align=(Align.MIN, Align.MIN, Align.MIN)).moved(Location((-20.75, -13.591, 12.659)))
 
 
-def gen_step():
+@step
+def nema17_pancake():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
-    part = import_step(str(VENDOR_STEP)).moved(VENDOR_TO_REF) if VENDOR_STEP.exists() else _envelope()
+    part = read_step(VENDOR_STEP).moved(VENDOR_TO_REF) if VENDOR_STEP.exists() else _envelope()
     part.label = NAME
     return part
 
 
-# --- preview: guarded so importing this part has NO side effects ----------------------
 if __name__ == "__main__":
-    from ocp_vscode import show
-    show(gen_step())
+    nema17_pancake()   # build: writes the sibling nema17_pancake.step (preview: ./cadtool show parts/wrist/nema17_pancake.py)

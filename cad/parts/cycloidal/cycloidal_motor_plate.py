@@ -9,18 +9,17 @@ circle (pins are inserted one at a time from this face); 8x M4 through-holes wit
 on the 125 mm circle; the shared 8-pillar reveal-window silhouette; outer silhouette chamfered.
 The inner face z=9 seats on the ring gear body and stays sharp.
 """
-# --- path shim -------------------------------------------------------------------------
-import sys, pathlib
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+import pathlib
 
-from build123d import Location  # noqa: E402  (import after shim)
-from lib.cycloidal import (  # noqa: E402
+from build123d import Location
+from cadgen import step
+from lib.cycloidal import (
     DEFAULT_CONFIG, DriveConfig, housing_bolt_points, motor_bolt_counterbore_depth, motor_bolt_points,
     ring_pin_hole_dia, ring_pin_points,
 )
-from lib.cycloidal.geom import cylinder, through  # noqa: E402
-from lib.cycloidal.housing import chamfer_outer_silhouette, reveal_window_cutter  # noqa: E402
-from lib.params import NUDGE  # noqa: E402
+from lib.cycloidal.geom import cylinder, through
+from lib.cycloidal.housing import chamfer_outer_silhouette, reveal_window_cutter
+from lib.params import NUDGE
 
 NAME = pathlib.Path(__file__).stem
 REFERENCE = NAME
@@ -59,14 +58,13 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     return chamfer_outer_silhouette(result, cfg, external_z=0.0)
 
 
-def gen_step():
+@step
+def cycloidal_motor_plate():
     """Return the plate at its LOCAL origin (= its stack position: outer face at z=0)."""
     part = build()
     part.label = NAME
     return part
 
 
-# --- preview: guarded so importing this part has NO side effects ----------------------
 if __name__ == "__main__":
-    from ocp_vscode import show
-    show(gen_step())
+    cycloidal_motor_plate()   # build: writes the sibling cycloidal_motor_plate.step (preview: ./cadtool show parts/cycloidal/cycloidal_motor_plate.py)

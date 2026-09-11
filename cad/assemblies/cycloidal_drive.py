@@ -7,19 +7,19 @@ mounting face), the motor body in -Z, the housing z 0..60 and the output hub's a
 z=65. assemblies/arm.py places the module at placements.json "cycloidal_drive#1" (the SolidWorks
 node's pose: horizontal axis, housing in the j1_coupler yoke, hub face bolted to j1_link).
 
-Run:  ./cadtool step assemblies/cycloidal_drive.py            -> assemblies/cycloidal_drive.step (git-ignored)
-      ./cadtool python -m assemblies.cycloidal_drive          -> preview in the OCP CAD Viewer
-      ./cadtool python -m assemblies.cycloidal_drive --totals -> leaves / solids / volume / bbox (the EXPECTED lock)
+Run:  ./cadtool gen assemblies/cycloidal_drive.py             -> assemblies/cycloidal_drive.step (git-ignored)
+      ./cadtool show assemblies/cycloidal_drive.py            -> preview in the OCP CAD Viewer (no build)
+      ./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals())"
+                                                              -> leaves / solids / volume / bbox (the EXPECTED lock)
 """
-# --- path shim: files inside assemblies/ -> parent.parent (= cad/) --------------------
-import sys, pathlib
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from build123d import Location  # noqa: E402
+from build123d import Location
+from cadgen import step
 
-from assemblies._occurrences import add_located  # noqa: E402
-from lib.assembly import AssemblyHelper  # noqa: E402
-from lib.cycloidal import DEFAULT_CONFIG, stack_positions  # noqa: E402
+from assemblies._occurrences import add_located
+from lib.assembly import AssemblyHelper
+from lib.models import raw
+from lib.cycloidal import DEFAULT_CONFIG, stack_positions
 
 S = stack_positions(DEFAULT_CONFIG)
 
@@ -51,12 +51,13 @@ OCCURRENCES = [
     ("cycloidal_housing_nuts",     None, _at(z=S["z_housing_nuts"])),
 ]
 
-# Totals of gen_step() (tests/cycloidal/test_assembly.py locks them; refresh with --totals after a
+# Totals of the model (tests/cycloidal/test_assembly.py locks them; refresh with totals() after a
 # geometry change): 18 leaves, 38 SolidWorks-equivalent solids + 20 fasteners.
 EXPECTED = {"leaves": 18, "solids": 58, "solid_volume": 691936.788}
 
 
-def gen_step():
+@step
+def cycloidal_drive():
     """The drive as a labelled Compound 'cycloidal_drive' in the module frame."""
     asm = AssemblyHelper("cycloidal_drive")
     add_located(asm, OCCURRENCES)
@@ -66,7 +67,7 @@ def gen_step():
 def totals():
     from lib import reference as R
 
-    shape = gen_step()
+    shape = raw(cycloidal_drive)   # the model BODY, in-process - never the model (that builds)
     leaves = [n for n in shape.children]
     bb = shape.bounding_box()
     return {
@@ -77,8 +78,4 @@ def totals():
 
 
 if __name__ == "__main__":
-    if "--totals" in sys.argv:
-        print(totals())
-    else:
-        from ocp_vscode import show
-        show(gen_step())
+    cycloidal_drive()   # build: writes the sibling cycloidal_drive.step (preview: ./cadtool show assemblies/cycloidal_drive.py)

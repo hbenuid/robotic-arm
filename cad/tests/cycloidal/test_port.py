@@ -19,7 +19,7 @@ SPLINE_PARTS = {"cycloidal_disc_1", "cycloidal_disc_2"}
 @pytest.mark.parametrize("name", DESIGNED)
 def test_designed_part_reproduces_cadquery_export(name):
     mod = parts.load(name)
-    mine, ref = mod.gen_step(), R.load(name)
+    mine, ref = parts.build(name), R.load(name)
     assert all(abs(a - b) <= 0.01 for a, b in zip(R.bbox_min(mine), R.bbox_min(ref))), (R.bbox_min(mine), R.bbox_min(ref))
     assert all(abs(a - b) <= 0.01 for a, b in zip(R.bbox_size(mine), R.bbox_size(ref))), (R.bbox_size(mine), R.bbox_size(ref))
     fm, fr = fingerprint(mine), fingerprint(ref)

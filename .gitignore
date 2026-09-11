@@ -14,7 +14,7 @@ __pycache__/
 *.3mf
 *.glb
 *.step
-# EXCEPT: each part's primary STEP beside its gen_step() source, purchased-part
+# EXCEPT: each part's primary STEP beside its model source (cadgen writes it there), purchased-part
 # vendor STEPs, and the reference exports (none regenerable from Python). These committed
 # STEP/STL files are Git LFS objects (see /.gitattributes): clone with git-lfs installed.
 !/cad/parts/**/*.step
@@ -23,12 +23,6 @@ __pycache__/
 # per-link meshes of the robot description (URDF/SDF reference them; regenerable with
 # cad/tools/export_link_meshes.py but committed so the URDF is usable on its own)
 !/cad/robot/meshes/*.stl
-# CAD Viewer render packages / STEP import caches written by the plugin (cadgen >= 0.4),
-# plus the pre-0.4 hidden sidecars (listed after the re-admits so they win).
-__cadgen__/
-.*.step.glb
-.*.step.js
-.*.step/
 # Bulk STL/3MF sidecars and snapshot packets - regenerable.
 /cad/exports/*
 !/cad/exports/.gitkeep

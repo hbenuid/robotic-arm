@@ -20,9 +20,7 @@ import pathlib
 import shutil
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
-
-from lib import reference as R  # noqa: E402
+from lib import reference as R
 
 sha256, step_units, describe = R.sha256, R.step_units, R.describe
 

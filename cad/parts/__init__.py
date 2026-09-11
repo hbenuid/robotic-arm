@@ -1,6 +1,8 @@
 """parts - one module per part, grouped by subsystem: parts/<group>/<name>.py + <name>.step
 (groups: base, joints, wrist, gripper, cycloidal). parts/_templates/ holds the three templates and
 parts/cycloidal/_cots.py the drive's shared purchased-part body (underscore = not a part).
+Every part module declares ONE cadgen model, `@step def <name>()` (NAME = stem = model name);
+running the file builds it, model(name) hands the function to assemblies, build(name) runs its body.
 
 A part's NAME is its module stem and must be unique across groups: it keys reference/manifest.json,
 reference/<origin>/<name>.step, placements.json and robot/frames.py LINKS. Discovery is a directory
@@ -50,3 +52,18 @@ def load(name: str) -> ModuleType:
 
 def source_of(name: str) -> pathlib.Path:
     return _ROOT / GROUPS[name] / f"{name}.py"
+
+
+def model(name: str):
+    """The part's cadgen model: the `@step` function named after its file (parts.load(name).<name>)."""
+    from lib.models import model_of
+
+    return model_of(load(name), name)
+
+
+def build(name: str):
+    """The part's geometry built in-process - the model BODY: no freshness gate, no store, nothing
+    written. What tests and tools want; assemblies call lib.models.geometry(model(name)) instead."""
+    from lib.models import raw
+
+    return raw(model(name))

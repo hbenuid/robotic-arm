@@ -6,16 +6,15 @@ Ported from cycloidal_drive@2f1f67d src/purchased_parts.py; reference/cycloidal_
 export (kind "cots"). No catalog model (the envelope is the geometry); a vendor/cycloidal_motor_bolts.step would be
 re-oriented by VENDOR_TO_REF into the same frame.
 """
-# --- path shim -------------------------------------------------------------------------
-import sys, pathlib
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+import pathlib
 
-from build123d import Location, Pos  # noqa: E402  (import after shim)
-from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, motor_bolt_points  # noqa: E402
-from lib.cycloidal.geom import cylinder  # noqa: E402
-from lib.cycloidal.housing import hex_prism  # noqa: E402,F401
-from lib.params import CYCLOIDAL_MOTOR_BOLTS_MASS_G  # noqa: E402
-from parts.cycloidal._cots import hybrid, pattern  # noqa: E402
+from build123d import Location, Pos
+from cadgen import step
+from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, motor_bolt_points
+from lib.cycloidal.geom import cylinder
+from lib.cycloidal.housing import hex_prism  # noqa: F401
+from lib.params import CYCLOIDAL_MOTOR_BOLTS_MASS_G
+from parts.cycloidal._cots import hybrid, pattern
 
 NAME = pathlib.Path(__file__).stem
 COTS = True
@@ -30,11 +29,10 @@ def _envelope(cfg: DriveConfig = DEFAULT_CONFIG):
                    for xy in motor_bolt_points(cfg))
 
 
-def gen_step():
+@step
+def cycloidal_motor_bolts():
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)
 
 
-# --- preview: guarded so importing this part has NO side effects ----------------------
 if __name__ == "__main__":
-    from ocp_vscode import show
-    show(gen_step())
+    cycloidal_motor_bolts()   # build: writes the sibling cycloidal_motor_bolts.step (preview: ./cadtool show parts/cycloidal/cycloidal_motor_bolts.py)

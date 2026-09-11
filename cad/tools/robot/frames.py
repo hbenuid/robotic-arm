@@ -24,16 +24,14 @@ import pathlib
 import sys
 import xml.etree.ElementTree as ET
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+from OCP.BRepGProp import BRepGProp
+from OCP.GProp import GProp_GProps
 
-from OCP.BRepGProp import BRepGProp  # noqa: E402
-from OCP.GProp import GProp_GProps  # noqa: E402
-
-import parts  # noqa: E402
-from assemblies._occurrences import place_world_at, world_rows  # noqa: E402
-from lib import params as PARAMS  # noqa: E402
-from lib import placements as P  # noqa: E402
-from robot import frames as F  # noqa: E402
+import parts
+from assemblies._occurrences import place_world_at, world_rows
+from lib import params as PARAMS
+from lib import placements as P
+from robot import frames as F
 
 MM = 1e-3
 ROBOT_DIR = pathlib.Path(__file__).resolve().parents[2] / "robot"

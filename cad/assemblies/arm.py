@@ -11,17 +11,17 @@ rigid link toggles as one node in the viewers:
     |- link3       gt2_pulley_90t:j3, j3_coupler:j3, wrist_link, gripper_clamp_bracket, nema17_pancake
     |- wrist       gt2_pulley_20t, gripper (19)
 
-Run:  ./cadtool step assemblies/arm.py           -> assemblies/arm.step (git-ignored)
+Run:  ./cadtool gen assemblies/arm.py            -> assemblies/arm.step (git-ignored); every stale
+                                                  child part is rebuilt and its committed STEP rewritten
       ./cadtool inspect refs assemblies/arm.step --facts --planes --positioning
-      ./cadtool python -m assemblies.arm         -> preview in the OCP CAD Viewer
+      ./cadtool show assemblies/arm.py           -> preview in the OCP CAD Viewer (no build)
 """
-# --- path shim: files inside assemblies/ -> parent.parent (= cad/) --------------------
-import sys, pathlib
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from assemblies import cycloidal_drive, gripper  # noqa: E402
-from assemblies._occurrences import add_grouped_occurrences  # noqa: E402
-from lib.assembly import AssemblyHelper  # noqa: E402
+from cadgen import step
+
+from assemblies import cycloidal_drive, gripper
+from assemblies._occurrences import add_grouped_occurrences
+from lib.assembly import AssemblyHelper
 
 GRIPPER_KEY = "gripper#1"
 DRIVE_KEY = "cycloidal_drive#1"
@@ -49,7 +49,7 @@ OCCURRENCES = [
     ("j1_cap",                None, "j1_cap#1"),
 ]
 
-MODULES = {"gripper": gripper.gen_step, "cycloidal_drive": cycloidal_drive.gen_step}
+MODULES = {"gripper": gripper.gripper, "cycloidal_drive": cycloidal_drive.cycloidal_drive}   # the child MODELS
 
 # The component tree: the rigid-link partition of robot/frames.py LINKS with the gripper module
 # kept whole (wrist = wrist_roll_link + jaw_a_link + jaw_b_link). Rows are
@@ -64,7 +64,8 @@ GROUPS = [
 MODULE_TINTS = {DRIVE_KEY: "#C44E52", GRIPPER_KEY: "#64B5CD"}  # the named modules stay distinct in their group
 
 
-def gen_step():
+@step
+def arm():
     """The arm as a labelled Compound: 'arm' -> the GROUPS component nodes -> parts + the
     'gripper' and 'cycloidal_drive' modules, each subtree tinted with its group's color."""
     asm = AssemblyHelper("arm")
@@ -73,5 +74,4 @@ def gen_step():
 
 
 if __name__ == "__main__":
-    from ocp_vscode import show
-    show(gen_step())
+    arm()   # build: writes the sibling arm.step (preview: ./cadtool show assemblies/arm.py)

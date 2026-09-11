@@ -8,15 +8,14 @@ Reference: mm units, 1 solid(s), volume 3534.3 mm^3,
            bbox size (6, 125, 6) mm, bbox min (-3, 0, -3) mm.
 In the arm: x2 (gripper_rail_6mm#1, gripper_rail_6mm#2).
 
-COTS convention (parts/_templates/cots.py): gen_step() returns the vendor STEP when present,
+COTS convention (parts/_templates/cots.py): gripper_rail_6mm() returns the vendor STEP when present,
 else the parametric envelope below - both in the SolidWorks frame placements.json assumes.
 """
-# --- path shim -------------------------------------------------------------------------
-import sys, pathlib
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+import pathlib
 
-from build123d import Align, Cylinder, Location, import_step  # noqa: E402
-from lib.params import RAIL_DIA, RAIL_LEN  # noqa: E402
+from build123d import Align, Cylinder, Location
+from cadgen import read_step, step
+from lib.params import RAIL_DIA, RAIL_LEN
 
 NAME = pathlib.Path(__file__).stem
 COTS = True
@@ -33,14 +32,13 @@ def _envelope():
     return Cylinder(RAIL_DIA / 2, RAIL_LEN, rotation=(-90, 0, 0), align=(Align.CENTER, Align.CENTER, Align.MIN)).moved(Location((0.0, 0.0, 0.0)))
 
 
-def gen_step():
+@step
+def gripper_rail_6mm():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
-    part = import_step(str(VENDOR_STEP)).moved(VENDOR_TO_REF) if VENDOR_STEP.exists() else _envelope()
+    part = read_step(VENDOR_STEP).moved(VENDOR_TO_REF) if VENDOR_STEP.exists() else _envelope()
     part.label = NAME
     return part
 
 
-# --- preview: guarded so importing this part has NO side effects ----------------------
 if __name__ == "__main__":
-    from ocp_vscode import show
-    show(gen_step())
+    gripper_rail_6mm()   # build: writes the sibling gripper_rail_6mm.step (preview: ./cadtool show parts/gripper/gripper_rail_6mm.py)

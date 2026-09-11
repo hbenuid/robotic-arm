@@ -10,15 +10,14 @@ M4 arm-mount clearance holes on the 50 mm circle at 45 deg from the pins. Output
 36 mm lightening recess. Print output-face-down; drop the 4 nuts in before pressing the hub
 through the 6814s.
 """
-# --- path shim -------------------------------------------------------------------------
-import sys, pathlib
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+import pathlib
 
-from build123d import Location  # noqa: E402  (import after shim)
-from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, arm_mount_angles, arm_mount_points, hub_height, output_pin_points  # noqa: E402
-from lib.cycloidal.geom import cylinder, single_solid, through  # noqa: E402
-from lib.cycloidal.housing import hex_pocket  # noqa: E402
-from lib.params import NUDGE  # noqa: E402
+from build123d import Location
+from cadgen import step
+from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, arm_mount_angles, arm_mount_points, hub_height, output_pin_points
+from lib.cycloidal.geom import cylinder, single_solid, through
+from lib.cycloidal.housing import hex_pocket
+from lib.params import NUDGE
 
 NAME = pathlib.Path(__file__).stem
 REFERENCE = NAME
@@ -50,14 +49,13 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     return single_solid(result)
 
 
-def gen_step():
+@step
+def cycloidal_output_hub():
     """Return the hub at its LOCAL origin (inner face at z=0; the assembly lifts it to z=37)."""
     part = build()
     part.label = NAME
     return part
 
 
-# --- preview: guarded so importing this part has NO side effects ----------------------
 if __name__ == "__main__":
-    from ocp_vscode import show
-    show(gen_step())
+    cycloidal_output_hub()   # build: writes the sibling cycloidal_output_hub.step (preview: ./cadtool show parts/cycloidal/cycloidal_output_hub.py)

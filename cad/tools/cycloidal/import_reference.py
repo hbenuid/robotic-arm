@@ -17,9 +17,7 @@ import pathlib
 import shutil
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
-
-from lib import reference as R  # noqa: E402
+from lib import reference as R
 
 MANIFEST_PATH = R.REF_DIR / "manifest.json"
 DEFAULT_SRC = R.CAD_DIR.parent.parent / "cycloidal_drive" / "export" / "step" / "house"

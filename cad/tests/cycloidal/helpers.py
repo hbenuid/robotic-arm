@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from build123d import Box, Cylinder, GeomType, Pos, Shape
+from build123d import Box, Cylinder, GeomType, Pos, Shape, Compound
 
 from lib import reference as R
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, ring_pin_points
@@ -24,9 +24,14 @@ def is_inside(solid: Shape, x: float, y: float, z: float, tol: float = 1e-6) -> 
 
 
 def interference(a: Shape, b: Shape) -> float:
-    """Volume of a ∩ b (0 when the boolean is empty)."""
-    common = a.intersect(b)
-    return 0.0 if common is None else R.solid_volume(common)
+    """Volume of a ∩ b (0 when the boolean is empty) - the kernel's Common directly, because
+    build123d 0.11 reworked `Shape.intersect` for composite operands (a placed module of 18
+    solids against a part reported whole solids as "common")."""
+    from OCP.BRepAlgoAPI import BRepAlgoAPI_Common
+
+    op = BRepAlgoAPI_Common(a.wrapped, b.wrapped)
+    op.Build()
+    return R.solid_volume(Compound(op.Shape())) if op.IsDone() else 0.0
 
 
 def end_face(shape: Shape, which: str):

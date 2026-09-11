@@ -8,14 +8,13 @@ Reference: mm units, 1 solid(s), volume 531.8 mm^3,
            bbox size (32, 2.5, 12) mm, bbox min (-16, 0, -6) mm.
 In the arm: x1 (mg996r_horn#1).
 
-COTS convention (parts/_templates/cots.py): gen_step() returns the vendor STEP when present,
+COTS convention (parts/_templates/cots.py): mg996r_horn() returns the vendor STEP when present,
 else the parametric envelope below - both in the SolidWorks frame placements.json assumes.
 """
-# --- path shim -------------------------------------------------------------------------
-import sys, pathlib
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+import pathlib
 
-from build123d import Align, Box, Location, import_step  # noqa: E402
+from build123d import Align, Box, Location
+from cadgen import read_step, step
 
 NAME = pathlib.Path(__file__).stem
 COTS = True
@@ -32,14 +31,13 @@ def _envelope():
     return Box(32.0, 2.5, 12.0, align=(Align.MIN, Align.MIN, Align.MIN)).moved(Location((-16.0, 0.0, -6.0)))
 
 
-def gen_step():
+@step
+def mg996r_horn():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
-    part = import_step(str(VENDOR_STEP)).moved(VENDOR_TO_REF) if VENDOR_STEP.exists() else _envelope()
+    part = read_step(VENDOR_STEP).moved(VENDOR_TO_REF) if VENDOR_STEP.exists() else _envelope()
     part.label = NAME
     return part
 
 
-# --- preview: guarded so importing this part has NO side effects ----------------------
 if __name__ == "__main__":
-    from ocp_vscode import show
-    show(gen_step())
+    mg996r_horn()   # build: writes the sibling mg996r_horn.step (preview: ./cadtool show parts/gripper/mg996r_horn.py)

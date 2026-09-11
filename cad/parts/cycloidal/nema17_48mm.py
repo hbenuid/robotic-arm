@@ -7,15 +7,14 @@ datum. reference/nema17_48mm.step is that builder's export (kind "cots"); vendor
 when present, is a step.parts catalog model re-oriented by VENDOR_TO_REF into this frame.
 Not the wrist's pancake motor (parts/nema17_pancake.py).
 """
-# --- path shim -------------------------------------------------------------------------
-import sys, pathlib
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+import pathlib
 
-from build123d import Align, Box, Location, Pos  # noqa: E402  (import after shim)
-from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, motor_bolt_points  # noqa: E402
-from lib.cycloidal.geom import cylinder, single_solid  # noqa: E402
-from lib.params import CYCLOIDAL_MOTOR_MASS_G, NUDGE  # noqa: E402
-from parts.cycloidal._cots import hybrid  # noqa: E402
+from build123d import Align, Box, Location, Pos
+from cadgen import step
+from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, motor_bolt_points
+from lib.cycloidal.geom import cylinder, single_solid
+from lib.params import CYCLOIDAL_MOTOR_MASS_G, NUDGE
+from parts.cycloidal._cots import hybrid
 
 NAME = pathlib.Path(__file__).stem
 COTS = True
@@ -40,11 +39,10 @@ def _envelope(cfg: DriveConfig = DEFAULT_CONFIG):
     return single_solid(result)
 
 
-def gen_step():
+@step
+def nema17_48mm():
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)
 
 
-# --- preview: guarded so importing this part has NO side effects ----------------------
 if __name__ == "__main__":
-    from ocp_vscode import show
-    show(gen_step())
+    nema17_48mm()   # build: writes the sibling nema17_48mm.step (preview: ./cadtool show parts/cycloidal/nema17_48mm.py)

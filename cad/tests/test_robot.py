@@ -174,7 +174,7 @@ def test_link_masses_add_up():
             elif P.OCCURRENCES[k]["kind"] == "part":
                 expected_g += PARAMS.PETG_DENSITY * P.OCCURRENCES[k]["solid_volume"]
             else:
-                expected_g += PARAMS.PETG_DENSITY * R.solid_volume(mod.gen_step())
+                expected_g += PARAMS.PETG_DENSITY * R.solid_volume(parts.build(part))
     total = sum(RF.link_inertial(l)[0] for l in PHYSICAL_LINKS)
     assert math.isclose(total, expected_g * 1e-3, rel_tol=1e-6)
 
@@ -188,9 +188,7 @@ def test_urdf_and_sdf_match_the_frames_and_cad():
 @pytest.mark.slow
 @pytest.mark.parametrize("target", ["robot/arm.urdf", "robot/arm.srdf", "robot/arm.sdf"])
 def test_plugin_validators_pass(target):
-    """The text-to-cad urdf/srdf/sdf validators (strict) accept the checked-in files."""
+    """cadgen's urdf/srdf/sdf validators (strict) accept the checked-in files."""
     args = ["./cadtool", "validate", target] + (["--strict"] if not target.endswith(".sdf") else ["--gz-check", "never"])
     proc = subprocess.run(args, cwd=CAD_DIR, capture_output=True, text=True)
-    if "plugin not found" in proc.stderr:
-        pytest.skip("cad@text-to-cad plugin not installed")
     assert proc.returncode == 0, proc.stdout[-2000:] + proc.stderr[-2000:]

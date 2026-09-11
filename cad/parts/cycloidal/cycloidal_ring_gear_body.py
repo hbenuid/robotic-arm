@@ -10,18 +10,17 @@ Stepped bore: 116 mm (z 0..28, disc orbit + clearance), 90.15 mm 6814 press-fit 
 nut pockets on the output face; the shared 8-pillar reveal-window silhouette; the output face
 (z=51, external) and barrel edges chamfered, the motor-plate face (z=0) sharp.
 """
-# --- path shim -------------------------------------------------------------------------
-import sys, pathlib
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+import pathlib
 
-from build123d import Cone, Location, Pos  # noqa: E402  (import after shim)
-from lib.cycloidal import (  # noqa: E402
+from build123d import Cone, Location, Pos
+from cadgen import step
+from lib.cycloidal import (
     DEFAULT_CONFIG, DriveConfig, compute_housing_bolt_angles, housing_bolt_points, ring_pin_hole_depth,
     ring_pin_hole_dia, ring_pin_points,
 )
-from lib.cycloidal.geom import MIN, cylinder, through  # noqa: E402
-from lib.cycloidal.housing import chamfer_outer_silhouette, hex_pocket, reveal_window_cutter  # noqa: E402
-from lib.params import NUDGE  # noqa: E402
+from lib.cycloidal.geom import MIN, cylinder, through
+from lib.cycloidal.housing import chamfer_outer_silhouette, hex_pocket, reveal_window_cutter
+from lib.params import NUDGE
 
 NAME = pathlib.Path(__file__).stem
 REFERENCE = NAME
@@ -60,14 +59,13 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     return chamfer_outer_silhouette(result, cfg, external_z=height)
 
 
-def gen_step():
+@step
+def cycloidal_ring_gear_body():
     """Return the body at its LOCAL origin (input face at z=0; the assembly lifts it to z=9)."""
     part = build()
     part.label = NAME
     return part
 
 
-# --- preview: guarded so importing this part has NO side effects ----------------------
 if __name__ == "__main__":
-    from ocp_vscode import show
-    show(gen_step())
+    cycloidal_ring_gear_body()   # build: writes the sibling cycloidal_ring_gear_body.step (preview: ./cadtool show parts/cycloidal/cycloidal_ring_gear_body.py)

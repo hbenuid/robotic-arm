@@ -3,7 +3,7 @@
 **Purpose:** the specification of the drive (carried over from the `cycloidal_drive` repo, corrected
 where the code disagreed with it), where it lives in `cad/`, what changed in the build123d port, and
 how it is attached to the arm.
-**Last updated:** 2026-08-28 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-11 — see the root `CHANGELOG.md` for dated changes.
 
 ## Provenance
 - Designed in CadQuery in [`hbenuid/cycloidal_drive`](https://github.com/hbenuid/cycloidal_drive);
@@ -236,12 +236,12 @@ NEMA 17 48 mm (1, $10–15) · 6003-2RS (2, $4–8) · 6814-2RS (2, $16–40) ·
 | Derived numbers | `lib/cycloidal/layout.py` — hole patterns, `hex_circumdiameter`, `ring_pin_engagement`, `motor_bolt_counterbore_depth`, `hub_height`, `stack_positions` |
 | Profile maths | `lib/cycloidal/profiles.py` (numpy) |
 | Shared builders | `lib/cycloidal/housing.py` (reveal-window cutter, outer-silhouette chamfer, hex prisms), `lib/cycloidal/disc.py` (`build_disc`), `lib/cycloidal/geom.py` (cylinders with `NUDGE` overshoot, `single_solid`) |
-| Printed parts (designed, `CONVERTED = True`) | `parts/cycloidal/`: `cycloidal_disc_1.py`, `cycloidal_disc_2.py`, `cycloidal_eccentric_shaft.py`, `cycloidal_motor_plate.py`, `cycloidal_ring_gear_body.py`, `cycloidal_output_hub.py` — each exposes `build(cfg)` for tests and `gen_step()` |
+| Printed parts (designed, `CONVERTED = True`) | `parts/cycloidal/`: `cycloidal_disc_1.py`, `cycloidal_disc_2.py`, `cycloidal_eccentric_shaft.py`, `cycloidal_motor_plate.py`, `cycloidal_ring_gear_body.py`, `cycloidal_output_hub.py` — each exposes `build(cfg)` for tests and its `@step` model |
 | Purchased parts (COTS) | `parts/cycloidal/`: `bearing_6003.py`, `bearing_6814.py`, `bearing_625.py`, `nema17_48mm.py`, `cycloidal_ring_pins.py` (21), `cycloidal_output_pins.py` (4), `cycloidal_shaft_support_pin.py`, `cycloidal_motor_bolts.py` (4), `cycloidal_housing_bolts.py` (8), `cycloidal_housing_nuts.py` (8) — shared body `parts/cycloidal/_cots.py`; the multi-body ones are registered in `MULTI_BODY` |
-| Assembly | `assemblies/cycloidal_drive.py` — 18 rows `(part, role, Location)` from `stack_positions`; `EXPECTED` = 18 leaves / 58 solids / 691 936.8 mm³; `./cadtool python -m assemblies.cycloidal_drive --totals` |
+| Assembly | `assemblies/cycloidal_drive.py` — 18 rows `(part, role, Location)` from `stack_positions`; `EXPECTED` = 18 leaves / 58 solids / 691 936.8 mm³; `./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals())"` |
 | References | `reference/cycloidal/<name>.step` × 16 (CadQuery exports, Git LFS), `reference/manifest.json` entries (`file` field); `tools/cycloidal/export_cadquery.py` + `tools/cycloidal/import_reference.py` |
 | Tests | `tests/cycloidal/test_{disc,eccentric_shaft,motor_plate,ring_gear_body,output_hub,housing,purchased,fitment,assembly,port}.py` + `tests/cycloidal/helpers.py` (one module per part, geometry marked `slow`) |
-| Viewer / export | `./cadtool python -m assemblies.cycloidal_drive`, `./cadtool gen assemblies/cycloidal_drive.py`, `./cadtool export parts/cycloidal/<name>.py --stl` |
+| Viewer / export | `./cadtool show assemblies/cycloidal_drive.py`, `./cadtool gen assemblies/cycloidal_drive.py`, `./cadtool export parts/cycloidal/<name>.step stl` |
 
 ## Viewing the drive
 
@@ -251,10 +251,10 @@ cd cad
 ./cadtool viewer                                     # then open the printed URL with ?file=assemblies/cycloidal_drive.step
 #   also ?file=assemblies/arm.step (the drive in the arm), ?file=parts/cycloidal/cycloidal_ring_gear_body.step (any part),
 #   ?file=robot/arm.urdf (the robot with joint sliders - the drive moves with link1, no shoulder slider yet)
-./cadtool snapshot --input assemblies/cycloidal_drive.step --output snapshots/cycloidal_drive.png --size-profile assembly --view-labels
-./cadtool snapshot --input assemblies/cycloidal_drive.step --output snapshots/cycloidal_drive_x.png --display transparent --camera "30:20"
-./cadtool snapshot --input assemblies/cycloidal_drive.step --output snapshots/cycloidal_drive.gif --mode orbit   # turntable
-./cadtool python -m assemblies.cycloidal_drive       # OCP CAD Viewer (VS Code extension); parts: ./cadtool python parts/cycloidal/cycloidal_disc_1.py
+./cadtool snapshot assemblies/cycloidal_drive.step snapshots/cycloidal_drive.png --size-profile assembly --view-labels
+./cadtool snapshot assemblies/cycloidal_drive.step snapshots/cycloidal_drive_x.png --display '{"mode": "transparent"}' --camera "30:20"
+#   (no turntable GIF in cadgen 0.5 - motion review is the CAD Viewer)
+./cadtool show assemblies/cycloidal_drive.py          # OCP CAD Viewer (VS Code extension); parts: ./cadtool show parts/cycloidal/cycloidal_disc_1.py
 ```
 
 ## 11. Port notes (CadQuery → build123d)
@@ -327,5 +327,5 @@ cd cad
 Every change to the drive must update (1) the tests — one `tests/cycloidal/test_<part>.py` per part
 plus `tests/cycloidal/test_assembly.py` for the stack-up, (2) this document, and (3) run `./cadtool pytest`
 green before it is done. Geometry changes also regenerate the committed STEPs (`./cadtool gen`), the
-module totals lock (`--totals`), `robot/meshes/link1.stl` and the URDF/SDF inertials
+module totals lock (`totals()`), `robot/meshes/link1.stl` and the URDF/SDF inertials
 (`tools/robot/frames.py --urdf-draft` / `--check`).

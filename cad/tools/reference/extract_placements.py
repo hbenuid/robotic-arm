@@ -22,11 +22,9 @@ import json
 import pathlib
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
-
-import build123d  # noqa: E402
-from build123d import BoundBox, Compound, Location, export_step, import_step  # noqa: E402
-from lib import reference as R  # noqa: E402
+import build123d
+from build123d import BoundBox, Compound, Location, export_step, import_step
+from lib import reference as R
 
 ROOT_LABEL = R.clean_label("final Arm Assembly Fully Movable")
 COLLAPSED = {"nema17_pancake"}   # sub-assemblies flattened into ONE COTS part

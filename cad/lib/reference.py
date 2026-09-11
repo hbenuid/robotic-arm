@@ -16,6 +16,7 @@ import pathlib
 import unicodedata
 
 from build123d import Location, Shape, import_step
+from cadgen import read_step
 
 CAD_DIR = pathlib.Path(__file__).resolve().parent.parent
 REF_DIR = CAD_DIR / "reference"              # manifest.json, placements.json + the two origin dirs
@@ -165,12 +166,13 @@ def describe(path: pathlib.Path) -> dict:
 
 
 def load(name: str, *, label: str | None = None) -> Shape:
-    """Fresh import of reference/<origin>/<name>.step in its part-file frame.
+    """Fresh read of reference/<origin>/<name>.step in its part-file frame (cadgen.read_step:
+    inside a build the file joins the model's closure, so an updated reference makes it stale).
     A Solid for one-body parts, a flat Compound for multi-body ones."""
     path = path_of(name)
     if not path.exists():
         raise FileNotFoundError(f"missing reference STEP {path} - run tools/reference/import_reference.py (or tools/cycloidal/import_reference.py)")
-    shape = import_step(str(path))
+    shape = read_step(path)          # cadgen: store-cached; a tracked input of the model that calls it
     shape.label = label or name
     return shape
 

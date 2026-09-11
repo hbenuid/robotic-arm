@@ -8,15 +8,14 @@ Reference: mm units, 4 solid(s), volume 33161.3 mm^3,
            bbox size (55.8, 45.2, 20.5) mm, bbox min (-28.5, -0, -10.25) mm.
 In the arm: x1 (mg996r_servo#1).
 
-COTS convention (parts/_templates/cots.py): gen_step() returns the vendor STEP when present,
+COTS convention (parts/_templates/cots.py): mg996r_servo() returns the vendor STEP when present,
 else the parametric envelope below - both in the SolidWorks frame placements.json assumes.
 """
-# --- path shim -------------------------------------------------------------------------
-import sys, pathlib
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+import pathlib
 
-from build123d import Align, Box, Location, import_step  # noqa: E402
-from lib.params import MG996R_MASS_G  # noqa: E402
+from build123d import Align, Box, Location
+from cadgen import read_step, step
+from lib.params import MG996R_MASS_G
 
 NAME = pathlib.Path(__file__).stem
 COTS = True
@@ -33,14 +32,13 @@ def _envelope():
     return Box(55.8, 45.2, 20.5, align=(Align.MIN, Align.MIN, Align.MIN)).moved(Location((-28.5, -0.0, -10.25)))
 
 
-def gen_step():
+@step
+def mg996r_servo():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
-    part = import_step(str(VENDOR_STEP)).moved(VENDOR_TO_REF) if VENDOR_STEP.exists() else _envelope()
+    part = read_step(VENDOR_STEP).moved(VENDOR_TO_REF) if VENDOR_STEP.exists() else _envelope()
     part.label = NAME
     return part
 
 
-# --- preview: guarded so importing this part has NO side effects ----------------------
 if __name__ == "__main__":
-    from ocp_vscode import show
-    show(gen_step())
+    mg996r_servo()   # build: writes the sibling mg996r_servo.step (preview: ./cadtool show parts/gripper/mg996r_servo.py)

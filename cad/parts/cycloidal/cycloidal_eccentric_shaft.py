@@ -9,14 +9,13 @@ D-bore, and a blind hole for the output-side 5 mm support dowel. Like the source
 built at its STACK position (z 9..35, datum = the motor-plate outer face), so the assembly places
 it with an identity Location.
 """
-# --- path shim -------------------------------------------------------------------------
-import sys, pathlib
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+import pathlib
 
-from build123d import Box, Circle, Location, Pos, loft  # noqa: E402  (import after shim)
-from lib.cycloidal import DEFAULT_CONFIG, DriveConfig  # noqa: E402
-from lib.cycloidal.geom import cylinder, single_solid  # noqa: E402
-from lib.params import NUDGE  # noqa: E402
+from build123d import Box, Circle, Location, Pos, loft
+from cadgen import step
+from lib.cycloidal import DEFAULT_CONFIG, DriveConfig
+from lib.cycloidal.geom import cylinder, single_solid
+from lib.params import NUDGE
 
 NAME = pathlib.Path(__file__).stem
 REFERENCE = NAME
@@ -65,14 +64,13 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     return single_solid(result)
 
 
-def gen_step():
+@step
+def cycloidal_eccentric_shaft():
     """Return the shaft at its stack position (z 9..35 - see the module docstring)."""
     part = build()
     part.label = NAME
     return part
 
 
-# --- preview: guarded so importing this part has NO side effects ----------------------
 if __name__ == "__main__":
-    from ocp_vscode import show
-    show(gen_step())
+    cycloidal_eccentric_shaft()   # build: writes the sibling cycloidal_eccentric_shaft.step (preview: ./cadtool show parts/cycloidal/cycloidal_eccentric_shaft.py)

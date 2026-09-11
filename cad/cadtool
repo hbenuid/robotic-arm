@@ -1,43 +1,61 @@
 #!/usr/bin/env bash
-# cadtool - run the cad@text-to-cad plugin (v0.4.x) CLIs and the usual dev commands inside THIS
-# uv project (Python 3.12 + build123d + cadgen), always from cad/ so cwd-relative paths resolve.
-# CAD_PLUGIN=<dir> overrides plugin auto-detection (newest installed version wins).
+# cadtool - the one entry point for cad/: the cadgen 0.5 toolchain (a model is a plain script you
+# RUN; every other verb is the `cadgen` console script) plus the usual dev commands, all inside THIS
+# uv project (Python 3.12 + build123d + cadgen), always from cad/ with PYTHONPATH=cad/ so `lib`,
+# `parts`, `assemblies` and `robot` import the same way for you, for cadgen's closure scan and for
+# its daemon workers. Only `parts`, `skill` and `doctor` need the cad@text-to-cad plugin itself
+# (CAD_PLUGIN=<dir> overrides its auto-detection).
 set -euo pipefail
 
 usage() {
   cat <<'USAGE'
-cadtool - cad@text-to-cad plugin CLIs inside this uv project (paths relative to cad/)
+cadtool - cadgen 0.5 + this uv project (paths relative to cad/)
   ./cadtool setup                                   one-time: uv sync + Playwright Chromium (for snapshots)
-  ./cadtool gen parts/<group>/<name>.py [--force]   build + write parts/<group>/<name>.step (+ parts/<group>/__cadgen__/ viewer package)
+  ./cadtool doctor                                  installed cadgen vs the plugin's pin, node, chromium
+  ./cadtool gen <model.py>... [--force] [--verbose] [--json] [--mesh-tolerance X]
+                                                    build: run the model script(s) -> the sibling <name>.step
+                                                    (an assembly rebuilds + rewrites its stale child parts too)
   ./cadtool step ...                                alias of gen
-  ./cadtool export parts/<group>/<name>.py --stl [exports/<name>.stl] [--3mf [..]] [--glb [..]]
-  ./cadtool artifact <file.step> --kind part|assembly      viewer package for an imported STEP
-  ./cadtool inspect refs <file.step> --facts --planes --positioning   (also measure|align|frame|diff|interfere)
-  ./cadtool snapshot --input <file.step> --output snapshots/x.png [--size-profile assembly --view-labels]
-  ./cadtool validate <file.urdf|.srdf|.sdf> [--strict]     robot-description validators (urdf/srdf/sdf skills)
+  ./cadtool show <model.py | dotted.name>           OCP CAD Viewer preview of the model body (no build)
+  ./cadtool why <model.py>                          freshness verdict, clause by clause (cadgen store why)
+  ./cadtool inspect refs <file.step> --facts --planes --positioning   (also measure|align|frame|diff|interfere|validate)
+  ./cadtool snapshot <file.step|.urdf|.sdf|.stl> <out.png> [--size-profile assembly --view-labels --job job.json]
+  ./cadtool export <file.step> stl|3mf|glb [out]    one mesh file per call (needs node >= 20 on PATH)
+  ./cadtool validate <file.urdf|.srdf|.sdf> [--strict] [--gz-check never]
+  ./cadtool viewer [--port N]                       CAD Viewer serving cad/: http://127.0.0.1:3245/?file=<rel path>
   ./cadtool parts "<query>" [--download] [--id <id>] [--filename <name>.step]   step.parts search / download into vendor/
-  ./cadtool skill <skill> <tool> [args]             any skill CLI: skills/<skill>/scripts/<tool>
-  ./cadtool viewer [--port N]                       CAD Viewer for this dir: http://127.0.0.1:3245/<abs cad>?file=<rel path>
+  ./cadtool skill <skill> <tool> [args]             a plugin skill script: skills/<skill>/scripts/<tool>
+  ./cadtool cadgen|store|daemon ...                 any cadgen subcommand (`./cadtool cadgen --help`)
+  ./cadtool daemon stop                             stop the warm build daemon + its workers (a fresh one starts on the next gen)
   ./cadtool pytest [-m "not slow"]                  test suite
-  ./cadtool python -m assemblies.arm                any python in the venv
-  ./cadtool clean [--all]                           delete the regenerable caches under cad/: every __cadgen__/ (viewer packages,
-                                                    hundreds of MB), __pycache__/, .pytest_cache/; --all also empties snapshots/ and
-                                                    exports/ (keeps .gitkeep) and deletes assemblies/*.step, robot/links/*.step
-Env: CAD_PLUGIN=<plugin dir> overrides detection; CADGEN_WARM=1 uses the plugin's warm cadgen daemon.
+  ./cadtool python -m assemblies.arm ...            any python in the venv (PYTHONPATH=cad/)
+  ./cadtool clean [--all]                           delete __pycache__/, .pytest_cache/ (and any stray __cadgen__/);
+                                                    --all also empties snapshots/ and exports/ (keeps .gitkeep) and
+                                                    deletes assemblies/*.step, robot/links/*.step
+Env: CAD_PLUGIN=<plugin dir> overrides detection; CADGEN_DAEMON=0 builds on transient workers (no warm daemon);
+     CADGEN_CACHE_DIR relocates the store (default ~/.cache/cadgen; `./cadtool store gc` sweeps it).
 USAGE
 }
 
 CAD_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$CAD_DIR"   # the plugin resolves targets from cwd; the viewer serves cwd
+cd "$CAD_DIR"   # cadgen resolves targets from cwd; the viewer serves cwd
+export PYTHONPATH="$CAD_DIR${PYTHONPATH:+:$PYTHONPATH}"
 
-CAD_PLUGIN="${CAD_PLUGIN:-$(ls -d "$HOME"/.claude/plugins/cache/text-to-cad/cad/*/ 2>/dev/null | sort -V | tail -1 || true)}"
-CAD_PLUGIN="${CAD_PLUGIN%/}"
-SKILLS="$CAD_PLUGIN/skills"
-CAD_SKILL="$SKILLS/cad"
-VIEWER_DIR="$SKILLS/cad-viewer/scripts/viewer"
+cadgen_version() { uv run --frozen cadgen --version 2>/dev/null | awk '{print $NF}'; }
 
+plugin_dir() {  # the plugin cache entry whose version matches the venv's cadgen, else the newest (warned)
+  local cache="$HOME/.claude/plugins/cache/text-to-cad/cad" ver newest
+  ver="$(cadgen_version || true)"
+  if [[ -n "$ver" && -d "$cache/$ver" ]]; then echo "$cache/$ver"; return; fi
+  newest="$(ls -d "$cache"/*/ 2>/dev/null | sort -V | tail -1 || true)"; newest="${newest%/}"
+  [[ -n "$newest" ]] && echo "cadtool: warning: no plugin cache for cadgen ${ver:-?}; using $newest" >&2
+  echo "$newest"
+}
+
+CAD_PLUGIN="${CAD_PLUGIN:-}"
 need_plugin() {
-  if [[ -z "${CAD_PLUGIN:-}" || ! -d "$CAD_SKILL/scripts" ]]; then
+  [[ -n "$CAD_PLUGIN" ]] || CAD_PLUGIN="$(plugin_dir)"
+  if [[ -z "$CAD_PLUGIN" || ! -d "$CAD_PLUGIN/skills" ]]; then
     echo "cadtool: cad@text-to-cad plugin not found under ~/.claude/plugins/cache/text-to-cad" >&2
     echo "  install:  claude plugin marketplace add https://github.com/earthtojake/text-to-cad.git" >&2
     echo "            claude plugin install cad@text-to-cad      (needs git-lfs on PATH)" >&2
@@ -45,16 +63,10 @@ need_plugin() {
   fi
 }
 
-# cadgen is a locked dependency of this project (same version as the plugin). If the venv lacks it
-# (e.g. the plugin was bumped before pyproject.toml), expose the plugin's vendored copy instead.
-if ! ls .venv/lib/python3.*/site-packages/cadgen >/dev/null 2>&1 && [[ -d "$CAD_SKILL/scripts/packages/cadgen/src" ]]; then
-  export PYTHONPATH="$CAD_SKILL/scripts/packages/cadgen/src${PYTHONPATH:+:$PYTHONPATH}"
-fi
-
 run_skill() {  # run_skill <skill> <tool> [args...]  ->  python skills/<skill>/scripts/<tool> args
   local skill="$1" tool="$2"; shift 2
   need_plugin
-  local target="$SKILLS/$skill/scripts/$tool"
+  local target="$CAD_PLUGIN/skills/$skill/scripts/$tool"
   if [[ ! -e "$target" ]]; then
     echo "cadtool: no such plugin tool: $target" >&2
     exit 1
@@ -62,33 +74,69 @@ run_skill() {  # run_skill <skill> <tool> [args...]  ->  python skills/<skill>/s
   exec uv run --frozen python "$target" "$@"
 }
 
+cg() { exec uv run --frozen cadgen "$@"; }
+
 cmd="${1:-help}"
 shift || true
 case "$cmd" in
   gen|step)
-    run_skill cad gen "$@" --write ;;
-  export|artifact|inspect|snapshot)
-    run_skill cad "$cmd" "$@" ;;
+    files=(); flags=()
+    for a in "$@"; do if [[ "$a" == *.py ]]; then files+=("$a"); else flags+=("$a"); fi; done
+    if [[ ${#files[@]} -eq 0 ]]; then echo "usage: cadtool gen <model.py>... [--force --verbose --json --mesh-tolerance X]" >&2; exit 2; fi
+    for f in "${files[@]}"; do uv run --frozen python "$f" "${flags[@]}"; done ;;
+  show)
+    exec uv run --frozen python tools/preview.py "$@" ;;
+  why)
+    cg store why "$@" ;;
+  inspect)
+    cg step inspect "$@" ;;
+  snapshot)
+    cg snapshot "$@" ;;
+  export)
+    doc="${1:?usage: cadtool export <file.step> stl|3mf|glb [out]}"; fmt="${2:?usage: cadtool export <file.step> stl|3mf|glb [out]}"; shift 2
+    case "$fmt" in stl|3mf|glb) ;; *) echo "cadtool: export format must be stl|3mf|glb (got '$fmt')" >&2; exit 2 ;; esac
+    cg "$fmt" build "$doc" "$@" ;;
   validate)
     file="${1:-}"
     case "$file" in
-      *.urdf) run_skill urdf validate "$@" ;;
-      *.srdf) run_skill srdf validate "$@" ;;
-      *.sdf)  run_skill sdf validate "$@" ;;
-      *) echo "usage: cadtool validate <file.urdf|.srdf|.sdf> [--strict] [--format json]" >&2; exit 2 ;;
+      *.urdf) cg urdf validate "$@" ;;
+      *.srdf) cg srdf validate "$@" ;;
+      *.sdf)  cg sdf validate "$@" ;;
+      *) echo "usage: cadtool validate <file.urdf|.srdf|.sdf> [--strict] [--gz-check never] [--json]" >&2; exit 2 ;;
     esac ;;
+  viewer)
+    port=3245; prev=""; for a in "$@"; do [[ "$prev" == "--port" ]] && port="$a"; prev="$a"; done
+    echo "CAD Viewer: http://127.0.0.1:$port/?file=assemblies/arm.step   (auto-stops after 12h; Ctrl+C to stop)"
+    exec timeout --foreground 12h uv run --frozen cadgen viewer --host 127.0.0.1 "$@" ;;
+  cadgen)
+    cg "$@" ;;
+  store)
+    cg store "$@" ;;
+  daemon)
+    if [[ "${1:-}" == "stop" ]]; then   # cadgen has no stop verb: SIGTERM the daemon (it shuts its pool down), then sweep
+      pids="$(pgrep -f "^$CAD_DIR/.venv/bin/python3 -m cadgen\.daemon" || true)"
+      if [[ -z "$pids" ]]; then echo "cadtool: no cadgen daemon running for this venv"; exit 0; fi
+      pkill -TERM -f "^$CAD_DIR/.venv/bin/python3 -m cadgen\.daemon$" || true
+      for _ in 1 2 3 4 5 6 7 8 9 10; do pgrep -f "^$CAD_DIR/.venv/bin/python3 -m cadgen\.daemon" >/dev/null || break; sleep 0.5; done
+      pkill -KILL -f "^$CAD_DIR/.venv/bin/python3 -m cadgen\.daemon" 2>/dev/null || true
+      echo "cadtool: cadgen daemon stopped (the next gen starts a fresh one)"; exit 0
+    fi
+    cg daemon "$@" ;;
   parts)
     run_skill step-parts download_step_part.py --out-dir "$CAD_DIR/vendor" "$@" ;;
   skill)
     skill="${1:?usage: cadtool skill <skill> <tool> [args]}"; tool="${2:?usage: cadtool skill <skill> <tool> [args]}"; shift 2
     run_skill "$skill" "$tool" "$@" ;;
-  viewer)
+  doctor)
+    rc=0
     need_plugin
-    export VIEWER_CAD_PYTHON="$CAD_DIR/.venv/bin/python"          # the viewer's Python backend runs in our venv
-    [[ -n "${PYTHONPATH:-}" ]] && export VIEWER_CAD_PYTHONPATH="$PYTHONPATH"
-    port=3245; prev=""; for a in "$@"; do [[ "$prev" == "--port" ]] && port="$a"; prev="$a"; done
-    echo "CAD Viewer: http://127.0.0.1:$port$CAD_DIR?file=assemblies/arm.step   (auto-stops after 12h; Ctrl+C to stop)"
-    exec timeout --foreground 12h npm --prefix "$VIEWER_DIR" run start -- --host 127.0.0.1 "$@" ;;
+    uv run --frozen cadgen doctor "$CAD_PLUGIN/skills/cad" || rc=$?
+    if command -v node >/dev/null 2>&1; then echo "node $(node --version)   (mesh export needs >= 20)"
+    else echo "node: NOT on PATH - ./cadtool export needs node >= 20"; rc=1; fi
+    loc="$(uv run --frozen python -m playwright install --dry-run chromium 2>/dev/null | awk -F': +' '/Install location/ {print $2; exit}')"
+    if [[ -n "$loc" && -d "$loc" ]]; then echo "playwright chromium: ok   ($loc)"
+    else echo "playwright chromium: MISSING - run ./cadtool setup   (${loc:-playwright not installed})"; rc=1; fi
+    exit $rc ;;
   setup)
     uv sync
     uv run --frozen python -m playwright install chromium ;;
@@ -98,7 +146,7 @@ case "$cmd" in
     exec uv run --frozen pytest "$@" ;;
   clean)
     # Regenerable caches only; --all also drops the git-ignored review artifacts. Never touches .venv,
-    # the committed STEP/STL files or vendor/.
+    # the committed STEP/STL files, vendor/ or the cadgen store (`./cadtool store gc` for that).
     find "$CAD_DIR" -name .venv -prune -o -type d \( -name __cadgen__ -o -name __pycache__ -o -name .pytest_cache \) -prune -print -exec rm -rf {} +
     if [[ "${1:-}" == "--all" ]]; then
       [[ -d snapshots ]] && find snapshots -mindepth 1 -prune -exec rm -rf {} +

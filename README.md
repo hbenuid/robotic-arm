@@ -1,6 +1,6 @@
 # robotic-arm
 
-**Last updated:** 2026-08-28 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-11 — see the root `CHANGELOG.md` for dated changes.
 
 Robot arm control software for a 3-motor MKS SERVO42D/57D arm over CAN bus.
 
@@ -15,7 +15,7 @@ Robot arm control software for a 3-motor MKS SERVO42D/57D arm over CAN bus.
 The arm's mechanical design lives in [`cad/`](cad/README.md) as parametric
 [build123d](https://github.com/gumyr/build123d) code — a **separate uv project**
 (Python 3.12) that the control software never depends on, driven by the
-[`text-to-cad`](https://github.com/earthtojake/text-to-cad) CAD skills plugin (v0.4.x). It is being converted
+[`text-to-cad`](https://github.com/earthtojake/text-to-cad) CAD skills plugin (v0.5.x, runtime `cadgen`). It is being converted
 part-by-part from the original SolidWorks STEP exports (kept in `cad/reference/`);
 until a part is converted it is an import wrapper around its reference geometry, so
 the whole arm already assembles and renders:
@@ -23,17 +23,17 @@ the whole arm already assembles and renders:
 ```
 cd cad
 ./cadtool setup                      # one-time: venv + Playwright Chromium (snapshots)
-./cadtool gen assemblies/arm.py      # build the arm STEP
-./cadtool viewer                     # CAD Viewer: http://127.0.0.1:3245/<abs cad>?file=assemblies/arm.step
+./cadtool gen assemblies/arm.py      # build the arm STEP (rebuilds any stale part and its committed STEP)
+./cadtool viewer                     # CAD Viewer: http://127.0.0.1:3245/?file=assemblies/arm.step
 ./cadtool pytest                     # convention + reference-match tests
-./cadtool clean                      # drop the viewer/import caches (regenerable, hundreds of MB)
+./cadtool clean                      # drop __pycache__/pytest caches (cadgen's store lives in ~/.cache/cadgen)
 ```
 
 The committed CAD binaries (`cad/**/*.step`, `cad/**/*.stl`) are **Git LFS** objects: install
 `git-lfs` and run `git lfs install` before cloning (or `git lfs pull` afterwards).
 
 The same CAD also produces the arm's robot description — [`cad/robot/arm.urdf`](cad/robot/arm.urdf)
-(+ SRDF for MoveIt2, SDF for Gazebo) with per-link meshes, validated by the plugin's checkers.
+(+ SRDF for MoveIt2, SDF for Gazebo) with per-link meshes, validated by cadgen's checkers.
 The 20:1 cycloidal shoulder drive (formerly the separate `cycloidal_drive` CadQuery repo) is fully
 parametric build123d here — see [`cad/docs/cycloidal_drive.md`](cad/docs/cycloidal_drive.md).
 

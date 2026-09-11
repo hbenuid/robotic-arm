@@ -16,6 +16,7 @@ import pytest
 from build123d import GeomType, Location, Vector
 
 from assemblies import cycloidal_drive
+from lib.models import raw
 from assemblies._occurrences import place_world
 from tests.cycloidal.helpers import interference
 from lib import placements as P
@@ -282,7 +283,7 @@ def hub(stack):
 
 @pytest.fixture(scope="module")
 def drive():
-    return cycloidal_drive.gen_step()
+    return raw(cycloidal_drive.cycloidal_drive)
 
 
 @pytest.fixture(scope="module")

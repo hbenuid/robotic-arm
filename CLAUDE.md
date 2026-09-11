@@ -25,9 +25,11 @@
 - `cad/` is a **separate uv project** (Python 3.12, build123d) — the motor-control
   project above never depends on it, and `launch.bat` never installs it. Never run
   CAD code with the root venv.
-- Work from `cad/` via `./cadtool …` (`setup|gen|export|inspect|snapshot|validate|parts|skill|viewer|pytest|python|clean`);
-  it runs the `cad@text-to-cad` plugin (v0.4.x) CLIs inside the CAD venv. Conventions, the
-  wrapper → parametric conversion workflow and the reference-match tests: `cad/CLAUDE.md`.
+- Work from `cad/` via `./cadtool …` (`setup|doctor|gen|show|why|inspect|snapshot|export|validate|viewer|parts|skill|cadgen|pytest|python|clean`);
+  it runs the `cadgen` 0.5 toolchain (the `cad@text-to-cad` plugin v0.5.x's PyPI runtime, locked in
+  `cad/pyproject.toml`) inside the CAD venv with `PYTHONPATH=cad/`. A model is a plain script with one
+  `@step def <name>()`; `./cadtool gen <model.py>` runs it. Conventions, the wrapper → parametric
+  conversion workflow and the reference-match tests: `cad/CLAUDE.md`.
 - The 20:1 cycloidal shoulder drive was imported from the `cycloidal_drive` repo (history kept
   via a subtree merge) and ported to build123d: `cad/lib/cycloidal/`, `cad/parts/cycloidal/`,
   `cad/assemblies/cycloidal_drive.py`; spec + port notes in `cad/docs/cycloidal_drive.md`.

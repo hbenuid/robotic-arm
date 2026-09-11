@@ -1,15 +1,14 @@
 """Gripper mechanism - the 'Gripper Mechanism' SolidWorks sub-assembly (19 occurrences),
 built in its own frame; assemblies/arm.py places the whole module at "gripper#1".
 
-Run:  ./cadtool step assemblies/gripper.py      -> assemblies/gripper.step (git-ignored)
-      ./cadtool python -m assemblies.gripper    -> preview in the OCP CAD Viewer
+Run:  ./cadtool gen assemblies/gripper.py       -> assemblies/gripper.step (git-ignored)
+      ./cadtool show assemblies/gripper.py      -> preview in the OCP CAD Viewer (no build)
 """
-# --- path shim: files inside assemblies/ -> parent.parent (= cad/) --------------------
-import sys, pathlib
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from assemblies._occurrences import add_occurrences  # noqa: E402
-from lib.assembly import AssemblyHelper  # noqa: E402
+from cadgen import step
+
+from assemblies._occurrences import add_occurrences
+from lib.assembly import AssemblyHelper
 
 # (part, role, placements.json key) in SolidWorks document order. Duplicate parts carry an
 # ordinal role (finger/rail/end/slider/link pairs): labels gripper_end:1, gripper_end:2, ...
@@ -36,7 +35,8 @@ OCCURRENCES = [
 ]
 
 
-def gen_step():
+@step
+def gripper():
     """The gripper module in its own (SolidWorks sub-assembly) frame."""
     asm = AssemblyHelper("gripper")
     add_occurrences(asm, OCCURRENCES)
@@ -44,5 +44,4 @@ def gen_step():
 
 
 if __name__ == "__main__":
-    from ocp_vscode import show
-    show(gen_step())
+    gripper()   # build: writes the sibling gripper.step (preview: ./cadtool show assemblies/gripper.py)
