@@ -14,7 +14,7 @@ the `cadgen` PyPI package, which is developed against build123d 0.11 / OCP 7.9 �
 moved too. Migration in two commits: the code/tooling/tests/docs, then the regenerated STEPs (Git
 LFS churn kept out of the review diff).
 
-### Changed — cadgen 0.5.1: `@step` models, `cadtool` over the `cadgen` CLI, linked assemblies, build123d 0.11.1 / OCP 7.9.3
+### Changed — cadgen 0.5.1: `@step` models, `cadtool` over the `cadgen` CLI, linked assemblies, build123d 0.11.1 / OCP 7.9.3 (`44cf9be`)
 - Plugin updated 0.4.28 → 0.5.1 (user + project scope). `cad/pyproject.toml`: `cadgen[snapshot]==0.5.1`
   (the `playwright` dev dep folded into the extra), **`build123d==0.11.1` and `cadquery-ocp==7.9.3.1.1`**
   (build123d pulls `cadquery-ocp-novtk`, cadgen pulls `cadquery-ocp` unconstrained — pinned to the same
@@ -82,6 +82,14 @@ LFS churn kept out of the review diff).
   `./cadtool viewer` serves `?file=assemblies/arm.step` (HTTP 200, `viewer list|stop` work);
   `./cadtool export assemblies/cycloidal_drive.step stl` writes 5.5 MB through Node; `./cadtool doctor`
   → pin OK, node 22, chromium OK.
+
+### Changed — every committed part STEP regenerated with cadgen 0.5.1
+- The 41 `cad/parts/<group>/<name>.step` files rewritten by `./cadtool gen assemblies/arm.py` (each
+  part a child job of the arm) — new Git LFS objects. The 0.4 writer embedded provenance
+  (`cadgen:sourceHash`, the generator path) and a build timestamp in every STEP; 0.5 writes none and
+  pins the timestamp, so `--force` rebuilds are byte-identical from here on. Geometry facts (faces,
+  edges, occurrences, bounds) identical to the 0.4 files for all 41; `assemblies/*.step` and
+  `robot/links/*.step` stay git-ignored and regenerate the same way.
 
 ## 2026-08-31 — arm assembly grouped into link components, per-group viewer tints (`bdb69d0`)
 
