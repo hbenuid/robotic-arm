@@ -30,35 +30,62 @@
         </geometry>
       </collision>
     </link>
-    <link name="link1">
-      <pose relative_to="j1">0 0 0 0 0 0</pose>
+    <link name="shoulder_link">
+      <pose relative_to="base_yaw">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.019849 -0.003568 0.013522 0 0 0</pose>
-        <mass>2.415794</mass>
+        <pose>-0.000726 0.013853 -0.011441 0 0 0</pose>
+        <mass>1.629416</mass>
         <inertia>
-          <ixx>1.207881e-02</ixx><ixy>1.927411e-03</ixy><ixz>-5.278210e-03</ixz>
-          <iyy>1.548873e-02</iyy><iyz>2.086566e-03</iyz><izz>9.655779e-03</izz>
+          <ixx>3.663759e-03</ixx><ixy>3.487923e-06</ixy><ixz>1.260652e-05</ixz>
+          <iyy>3.561365e-03</iyy><iyz>-2.610875e-04</iyz><izz>2.701054e-03</izz>
         </inertia>
       </inertial>
-      <visual name="link1_visual">
+      <visual name="shoulder_link_visual">
         <geometry>
           <mesh>
-            <uri>meshes/link1.stl</uri>
+            <uri>meshes/shoulder_link.stl</uri>
             <scale>0.001 0.001 0.001</scale>
           </mesh>
         </geometry>
       </visual>
-      <collision name="link1_collision">
+      <collision name="shoulder_link_collision">
         <geometry>
           <mesh>
-            <uri>meshes/link1.stl</uri>
+            <uri>meshes/shoulder_link.stl</uri>
             <scale>0.001 0.001 0.001</scale>
           </mesh>
         </geometry>
       </collision>
     </link>
-    <link name="link2">
-      <pose relative_to="j2">0 0 0 0 0 0</pose>
+    <link name="upper_arm_link">
+      <pose relative_to="shoulder_pitch">0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0.088378 0 -0.008608 0 0 0</pose>
+        <mass>0.786378</mass>
+        <inertia>
+          <ixx>8.468129e-04</ixx><ixy>-1.259123e-08</ixy><ixz>4.683250e-04</ixz>
+          <iyy>6.275076e-03</iyy><iyz>3.607455e-09</iyz><izz>6.660124e-03</izz>
+        </inertia>
+      </inertial>
+      <visual name="upper_arm_link_visual">
+        <geometry>
+          <mesh>
+            <uri>meshes/upper_arm_link.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="upper_arm_link_collision">
+        <geometry>
+          <mesh>
+            <uri>meshes/upper_arm_link.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+    <link name="forearm_link">
+      <pose relative_to="elbow_pitch">0 0 0 0 0 0</pose>
       <inertial>
         <pose>0.097142 0.000002 0.010186 0 0 0</pose>
         <mass>0.684302</mass>
@@ -67,25 +94,25 @@
           <iyy>5.606360e-03</iyy><iyz>-2.817914e-09</iyz><izz>6.007771e-03</izz>
         </inertia>
       </inertial>
-      <visual name="link2_visual">
+      <visual name="forearm_link_visual">
         <geometry>
           <mesh>
-            <uri>meshes/link2.stl</uri>
+            <uri>meshes/forearm_link.stl</uri>
             <scale>0.001 0.001 0.001</scale>
           </mesh>
         </geometry>
       </visual>
-      <collision name="link2_collision">
+      <collision name="forearm_link_collision">
         <geometry>
           <mesh>
-            <uri>meshes/link2.stl</uri>
+            <uri>meshes/forearm_link.stl</uri>
             <scale>0.001 0.001 0.001</scale>
           </mesh>
         </geometry>
       </collision>
     </link>
-    <link name="link3">
-      <pose relative_to="j3">0 0 0 0 0 0</pose>
+    <link name="wrist_pitch_link">
+      <pose relative_to="wrist_pitch">0 0 0 0 0 0</pose>
       <inertial>
         <pose>0.060735 0.000068 -0.014763 0 0 0</pose>
         <mass>0.440548</mass>
@@ -94,18 +121,18 @@
           <iyy>8.819831e-04</iyy><iyz>5.963427e-08</iyz><izz>9.360178e-04</izz>
         </inertia>
       </inertial>
-      <visual name="link3_visual">
+      <visual name="wrist_pitch_link_visual">
         <geometry>
           <mesh>
-            <uri>meshes/link3.stl</uri>
+            <uri>meshes/wrist_pitch_link.stl</uri>
             <scale>0.001 0.001 0.001</scale>
           </mesh>
         </geometry>
       </visual>
-      <collision name="link3_collision">
+      <collision name="wrist_pitch_link_collision">
         <geometry>
           <mesh>
-            <uri>meshes/link3.stl</uri>
+            <uri>meshes/wrist_pitch_link.stl</uri>
             <scale>0.001 0.001 0.001</scale>
           </mesh>
         </geometry>
@@ -195,36 +222,48 @@
     <link name="tool0">
       <pose relative_to="tool0_joint">0 0 0 0 0 0</pose>
     </link>
-    <joint name="j1" type="revolute">
+    <joint name="base_yaw" type="revolute">
       <pose relative_to="base_link">0 0 0.18591 0 0 0</pose>
       <parent>base_link</parent>
-      <child>link1</child>
+      <child>shoulder_link</child>
       <axis>
-        <xyz expressed_in="j1">0 0 1</xyz>
+        <xyz expressed_in="base_yaw">0 0 1</xyz>
         <limit>
           <lower>-3.054326</lower><upper>3.054326</upper>
           <effort>5</effort><velocity>1</velocity>
         </limit>
       </axis>
     </joint>
-    <joint name="j2" type="revolute">
-      <pose relative_to="link1">0.14315 -0.01581 0.15504 -1.570796 -0.820277 0.064484</pose>
-      <parent>link1</parent>
-      <child>link2</child>
+    <joint name="shoulder_pitch" type="revolute">
+      <pose relative_to="shoulder_link">0.002441 -0.034915 0 -1.570796 -0.830504 0.064484</pose>
+      <parent>shoulder_link</parent>
+      <child>upper_arm_link</child>
       <axis>
-        <xyz expressed_in="j2">0 0 1</xyz>
+        <xyz expressed_in="shoulder_pitch">0 0 1</xyz>
         <limit>
           <lower>-2.094395</lower><upper>2.094395</upper>
           <effort>5</effort><velocity>1</velocity>
         </limit>
       </axis>
     </joint>
-    <joint name="j3" type="revolute">
-      <pose relative_to="link2">0.21 0 0.041998 0 0 0.299075</pose>
-      <parent>link2</parent>
-      <child>link3</child>
+    <joint name="elbow_pitch" type="revolute">
+      <pose relative_to="upper_arm_link">0.210003 0 0.009998 0 0 0.010227</pose>
+      <parent>upper_arm_link</parent>
+      <child>forearm_link</child>
       <axis>
-        <xyz expressed_in="j3">0 0 1</xyz>
+        <xyz expressed_in="elbow_pitch">0 0 1</xyz>
+        <limit>
+          <lower>-2.094395</lower><upper>2.094395</upper>
+          <effort>5</effort><velocity>1</velocity>
+        </limit>
+      </axis>
+    </joint>
+    <joint name="wrist_pitch" type="revolute">
+      <pose relative_to="forearm_link">0.21 0 0.041998 0 0 0.299075</pose>
+      <parent>forearm_link</parent>
+      <child>wrist_pitch_link</child>
+      <axis>
+        <xyz expressed_in="wrist_pitch">0 0 1</xyz>
         <limit>
           <lower>-2.094395</lower><upper>2.094395</upper>
           <effort>5</effort><velocity>1</velocity>
@@ -232,8 +271,8 @@
       </axis>
     </joint>
     <joint name="wrist_roll" type="revolute">
-      <pose relative_to="link3">0.109643 0.000005 -0.016998 -1.570799 -0.055534 -1.570796</pose>
-      <parent>link3</parent>
+      <pose relative_to="wrist_pitch_link">0.109643 0.000005 -0.016998 -1.570799 -0.055534 -1.570796</pose>
+      <parent>wrist_pitch_link</parent>
       <child>wrist_roll_link</child>
       <axis>
         <xyz expressed_in="wrist_roll">0 0 1</xyz>

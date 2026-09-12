@@ -3,7 +3,7 @@
 **Purpose:** the specification of the drive (carried over from the `cycloidal_drive` repo, corrected
 where the code disagreed with it), where it lives in `cad/`, what changed in the build123d port, and
 how it is attached to the arm.
-**Last updated:** 2026-09-11 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-12 — see the root `CHANGELOG.md` for dated changes.
 
 ## Provenance
 - Designed in CadQuery in [`hbenuid/cycloidal_drive`](https://github.com/hbenuid/cycloidal_drive);
@@ -22,7 +22,7 @@ how it is attached to the arm.
 
 | Parameter | Value |
 |---|---|
-| Application | Shoulder pitch of the 3-DOF arm (~400 mm reach) — between `j1_coupler` and `j1_link` (§12) |
+| Application | The arm's `shoulder_pitch` joint (~400 mm reach) — between `j1_coupler` and `j1_link` (§12) |
 | Type | Two-disc cycloidal drive, discs 180° apart |
 | Gear ratio | 20:1 (20 lobes, 21 ring pins) — `lib/params.py CYCLOIDAL_RATIO` |
 | Motor | NEMA 17, 48 mm body, 22 mm × Ø5 D-shaft (`parts/cycloidal/nema17_48mm.py`) |
@@ -250,7 +250,7 @@ cd cad
 ./cadtool gen assemblies/cycloidal_drive.py          # assemblies/cycloidal_drive.step (git-ignored) if missing
 ./cadtool viewer                                     # then open the printed URL with ?file=assemblies/cycloidal_drive.step
 #   also ?file=assemblies/arm.step (the drive in the arm), ?file=parts/cycloidal/cycloidal_ring_gear_body.step (any part),
-#   ?file=robot/arm.urdf (the robot with joint sliders - the drive moves with link1, no shoulder slider yet)
+#   ?file=robot/arm.urdf (the robot with joint sliders - shoulder_pitch turns the drive's rotor with j1_link)
 ./cadtool snapshot assemblies/cycloidal_drive.step snapshots/cycloidal_drive.png --size-profile assembly --view-labels
 ./cadtool snapshot assemblies/cycloidal_drive.step snapshots/cycloidal_drive_x.png --display '{"mode": "transparent"}' --camera "30:20"
 #   (no turntable GIF in cadgen 0.5 - motion review is the CAD Viewer)
@@ -315,17 +315,24 @@ cd cad
   In the arm the axis is horizontal (module +Z → world −N, N = the J2/J3 pitch direction): the housing
   sits in the `j1_coupler` yoke (its pads touch the motor-plate outer face) and the hub's arm-mount
   face is coplanar with `j1_link`'s big mounting face — verified by `TestPoseInTheArm`.
-- **Kinematics:** the drive is physically the **shoulder-pitch joint** between the yawing coupler and
-  `j1_link`. `robot/frames.py` does not model that joint yet: all 18 parts ride rigidly in **`link1`**
-  (`LINKS["link1"]` holds the module key; `world_rows` expands it for meshes and inertials — link1 is
-  now 61 solids / 2.416 kg). Splitting it into `link1` = coupler + housing side and a new link =
-  `j1_link` + hub + output pins is the follow-up. Which MKS motor (`src/config.py` J1..J3) drives
-  which joint is unconfirmed; `src/config.py` J1 `gear_ratio` is still 1.0 while `CYCLOIDAL_RATIO` = 20.
+- **Kinematics:** the drive **is the `shoulder_pitch` joint** of `robot/frames.py` (axis `N` = the
+  drive's −Z; origin `SHOULDER_ORIGIN` = `j1_link#1`'s origin, on the drive axis; limits
+  `SHOULDER_PITCH_LIMIT_DEG`). `assemblies/cycloidal_drive.py BODIES` splits the 18 rows into two rigid
+  bodies and `LINKS` places them with a `:<body>` key suffix (`_occurrences.split_key` / `world_rows`):
+  the **stator** (`cycloidal_drive#1:stator` — motor plate, ring gear body, ring pins, housing bolts +
+  nuts, NEMA 17 + bolts, and the gear train: eccentric shaft, support pin, discs, 6003s, 6814s; 15
+  leaves / 52 solids) rides in `shoulder_link` with the yawing `j1_coupler`; the **rotor**
+  (`cycloidal_drive#1:rotor` — output hub, output pins, 625; 3 leaves / 6 solids) rides in
+  `upper_arm_link` with `j1_link` + `j1_cap`. `EXPECTED["bodies"]` locks the per-body totals and
+  `TestPoseInTheArm` checks the joint origin sits on the drive axis. The arm STEP's viewer tree keeps
+  the module whole under `shoulder_link` (one linked child); the per-link meshes split it. Which MKS
+  motor (`src/config.py` J1..J3) drives which joint is unconfirmed; `src/config.py` still carries
+  `gear_ratio` 1.0 while `CYCLOIDAL_RATIO` = 20.
 
 ## 13. Change policy (carried over)
 
 Every change to the drive must update (1) the tests — one `tests/cycloidal/test_<part>.py` per part
 plus `tests/cycloidal/test_assembly.py` for the stack-up, (2) this document, and (3) run `./cadtool pytest`
 green before it is done. Geometry changes also regenerate the committed STEPs (`./cadtool gen`), the
-module totals lock (`totals()`), `robot/meshes/link1.stl` and the URDF/SDF inertials
+module totals lock (`totals()` / `totals(body)`), `robot/meshes/shoulder_link.stl` + `upper_arm_link.stl` and the URDF/SDF inertials
 (`tools/robot/frames.py --urdf-draft` / `--check`).

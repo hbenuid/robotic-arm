@@ -64,11 +64,13 @@ PANCAKE_MASS_G = 180.0          # [ESTIMATE] typical 17HS08-type pancake 150-200
 # cycloidal_drive repo). These are the interface values the rest of the arm needs, re-exported
 # from that config so every number exists exactly once. Drive frame: Z = motor axis, z=0 = the
 # motor-plate outer face, +Z toward the output hub; it sits in the arm at placements.json
-# "cycloidal_drive#1" (housing in the j1_coupler yoke, hub output face bolted to j1_link).
+# "cycloidal_drive#1" (housing in the j1_coupler yoke, hub output face bolted to j1_link) and IS
+# the robot's shoulder_pitch joint (robot/frames.py: stator in shoulder_link, rotor in upper_arm_link).
 from lib.cycloidal.params import DEFAULT_CONFIG as _DRIVE  # noqa: E402
 
 CYCLOIDAL_RATIO = _DRIVE.gear.gear_ratio                          # 20:1 [DESIGN] 20 lobes / 21 ring pins.
-#   NOTE: src/config.py JOINTS still carries J1 gear_ratio 1.0 - the motor->joint mapping is unconfirmed.
+#   NOTE: src/config.py JOINTS still carries gear_ratio 1.0 on J1..J3 - which MKS motor drives the
+#   shoulder_pitch joint (if any of them) is unconfirmed.
 CYCLOIDAL_HOUSING_OD = _DRIVE.housing.od                          # 140 [DESIGN]
 CYCLOIDAL_STACK_DEPTH = _DRIVE.stack_up.total_housing_depth       # 60 [DESIGN] motor-plate outer face -> housing output face
 CYCLOIDAL_MOTOR_BODY_LEN = _DRIVE.motor.body_length               # 48 [DATASHEET] NEMA 17 body behind the plate (-Z)
@@ -110,10 +112,11 @@ CYCLOIDAL_MOTOR_BOLTS_MASS_G = STEEL_DENSITY * 4 * (
 # --- Robot description (robot/frames.py, robot/arm.urdf) --------------------------------------
 # Joint limits and actuator ratings are PLACEHOLDERS until measured on the hardware; the URDF
 # and SDF are checked against these by tools/robot/frames.py --check.
-J1_LIMIT_DEG = 175.0            # [ESTIMATE] symmetric +/- range, base yaw (the cycloidal drive is the shoulder-pitch actuator, not yet a joint)
-J2_LIMIT_DEG = 120.0            # [ESTIMATE] shoulder pitch
-J3_LIMIT_DEG = 120.0            # [ESTIMATE] elbow pitch
-WRIST_ROLL_LIMIT_DEG = 180.0    # [ESTIMATE] NEMA17 pancake wrist roll (not CAN-driven yet)
+BASE_YAW_LIMIT_DEG = 175.0        # [ESTIMATE] symmetric +/- range; j1_coupler (carrying the drive's stator) turns on the base
+SHOULDER_PITCH_LIMIT_DEG = 120.0  # [ESTIMATE] the 20:1 cycloidal drive (CYCLOIDAL_RATIO) between j1_coupler and j1_link
+ELBOW_PITCH_LIMIT_DEG = 120.0     # [ESTIMATE] GT2 belt at j2_link
+WRIST_PITCH_LIMIT_DEG = 120.0     # [ESTIMATE] GT2 belt at wrist_link
+WRIST_ROLL_LIMIT_DEG = 180.0      # [ESTIMATE] NEMA17 pancake wrist roll (not CAN-driven yet)
 JAW_TRAVEL_MM = 10.0            # [ESTIMATE] symmetric +/- jaw travel about the capture pose
 ARM_JOINT_EFFORT_NM = 5.0       # [ESTIMATE] MKS SERVO42D through the reductions
 ARM_JOINT_VELOCITY_RAD_S = 1.0  # [ESTIMATE]

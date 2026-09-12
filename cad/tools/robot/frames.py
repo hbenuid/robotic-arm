@@ -11,8 +11,8 @@ drift after a part is converted or a frame changes.
 
 Units: URDF/SDF metres, kilograms, radians. Rotations are URDF fixed-axis roll/pitch/yaw
 (R = Rz(yaw) Ry(pitch) Rx(roll)). Inertials: OCP BRepGProp volume properties of every part
-occurrence in the link frame (a designed module key expands into its parts); printed parts use
-PETG_DENSITY, COTS parts their MASS_G;
+occurrence in the link frame (a designed module key expands into its parts, a ":<body>"-suffixed
+one into one rigid body of it); printed parts use PETG_DENSITY, COTS parts their MASS_G;
 per-occurrence inertia (about its own COM) is parallel-axis-shifted to the link origin, summed,
 and re-centred on the link COM.
 """
@@ -28,7 +28,7 @@ from OCP.BRepGProp import BRepGProp
 from OCP.GProp import GProp_GProps
 
 import parts
-from assemblies._occurrences import place_world_at, world_rows
+from assemblies._occurrences import place_world_at, split_key, world_rows
 from lib import params as PARAMS
 from lib import placements as P
 from robot import frames as F
@@ -125,7 +125,7 @@ def link_inertial(link: str):
             for i in range(3):
                 for k in range(3):
                     I_o[i][k] += I_at_o[i][k]
-            label = key if P.OCCURRENCES[key]["kind"] == "part" else f"{key}/{part}" + (f":{role}" if role else "")
+            label = key if P.OCCURRENCES[split_key(key)[0]]["kind"] == "part" else f"{key}/{part}" + (f":{role}" if role else "")
             rows.append((label, m, v))
     C = [s / M for s in S]
     I_C = _shift(I_o, M, C, -1)

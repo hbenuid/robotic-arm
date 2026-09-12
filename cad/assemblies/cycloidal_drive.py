@@ -9,8 +9,8 @@ node's pose: horizontal axis, housing in the j1_coupler yoke, hub face bolted to
 
 Run:  ./cadtool gen assemblies/cycloidal_drive.py             -> assemblies/cycloidal_drive.step (git-ignored)
       ./cadtool show assemblies/cycloidal_drive.py            -> preview in the OCP CAD Viewer (no build)
-      ./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals())"
-                                                              -> leaves / solids / volume / bbox (the EXPECTED lock)
+      ./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals(), totals('rotor'))"
+                                                              -> leaves / solids / volume / bbox (the EXPECTED lock, whole or per body)
 """
 
 from build123d import Location
@@ -51,9 +51,27 @@ OCCURRENCES = [
     ("cycloidal_housing_nuts",     None, _at(z=S["z_housing_nuts"])),
 ]
 
-# Totals of the model (tests/cycloidal/test_assembly.py locks them; refresh with totals() after a
-# geometry change): 18 leaves, 38 SolidWorks-equivalent solids + 20 fasteners.
-EXPECTED = {"leaves": 18, "solids": 58, "solid_volume": 691936.788}
+# Rigid bodies of the drive for the robot description (robot/frames.py LINKS keys
+# "cycloidal_drive#1:stator" / "cycloidal_drive#1:rotor", expanded by
+# assemblies/_occurrences.world_rows): the drive IS the shoulder_pitch joint. rotor = what
+# j1_link is bolted to: the output hub, its 4 output pins and the 625 seated in the hub pocket.
+# stator = everything else: the housing (motor plate, ring gear body, ring pins, housing bolts +
+# nuts), the NEMA 17 + its bolts, and the gear train that spins about the axis at intermediate
+# speeds (eccentric shaft, support pin, discs, 6003s, 6814s) - lumped with the housing, the
+# usual URDF-inertial convention (axisymmetric about the joint axis).
+ROTOR = frozenset({"cycloidal_output_hub", "cycloidal_output_pins", "bearing_625"})
+BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES) - ROTOR}
+
+# Totals of the model (tests/cycloidal/test_assembly.py locks them; refresh with totals() /
+# totals(body) after a geometry change): 18 leaves, 38 SolidWorks-equivalent solids + 20
+# fasteners, and the same per rigid body.
+EXPECTED = {
+    "leaves": 18, "solids": 58, "solid_volume": 691936.788,
+    "bodies": {
+        "stator": {"leaves": 15, "solids": 52, "solid_volume": 591928.362},
+        "rotor": {"leaves": 3, "solids": 6, "solid_volume": 100008.427},
+    },
+}
 
 
 @step
@@ -64,16 +82,22 @@ def cycloidal_drive():
     return asm.build()
 
 
-def totals():
+def totals(body: str | None = None):
+    """leaves / solids / volume / bbox of the module (in-process), or of one rigid body
+    (`body` in BODIES: the leaves whose part name - the label before ':role' - is in it)."""
     from lib import reference as R
 
     shape = raw(cycloidal_drive)   # the model BODY, in-process - never the model (that builds)
-    leaves = [n for n in shape.children]
-    bb = shape.bounding_box()
+    leaves = [n for n in shape.children if body is None or n.label.split(":")[0] in BODIES[body]]
+    boxes = [n.bounding_box() for n in leaves]
+    lo = [min(getattr(b.min, ax) for b in boxes) for ax in "XYZ"]
+    hi = [max(getattr(b.max, ax) for b in boxes) for ax in "XYZ"]
     return {
-        "leaves": len(leaves), "solids": len(shape.solids()), "solid_volume": round(R.solid_volume(shape), 3),
-        "bbox_min": [round(v, 3) for v in (bb.min.X, bb.min.Y, bb.min.Z)],
-        "bbox_size": [round(v, 3) for v in (bb.size.X, bb.size.Y, bb.size.Z)],
+        "leaves": len(leaves),
+        "solids": sum(len(n.solids()) for n in leaves),
+        "solid_volume": round(sum(R.solid_volume(n) for n in leaves), 3),
+        "bbox_min": [round(v, 3) for v in lo],
+        "bbox_size": [round(h - l, 3) for h, l in zip(hi, lo)],
     }
 
 

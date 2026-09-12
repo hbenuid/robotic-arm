@@ -4,7 +4,9 @@ An OCCURRENCES table row is (part_or_module_name, role_or_None, placement_key), 
 SolidWorks document order. Roles make duplicate parts' labels unique (`j3_coupler:j2`);
 they are positional/ordinal for now - rename them when the joint semantics are modelled.
 Code-driven modules (assemblies/cycloidal_drive.py) use (part, role, Location) rows instead:
-their placement key is a SolidWorks node, their contents are not (add_located / world_rows).
+their placement key is a SolidWorks node, their contents are not (add_located / world_rows), and
+their BODIES split the rows into rigid bodies ("cycloidal_drive#1:rotor", split_key) for the
+robot description.
 
 A child is a cadgen MODEL (parts.model(name), assemblies.<module>.<module>) reached through
 lib.models.geometry(): inside a cadgen build that is the linked child (built in parallel, the
@@ -120,19 +122,43 @@ def module_rows(module_name: str) -> list:
     return list(importlib.import_module(f"assemblies.{module_name}").OCCURRENCES)
 
 
+def module_bodies(module_name: str) -> dict:
+    """The {body: frozenset(part names)} partition of a code-driven module's rows into rigid
+    bodies (assemblies/<module>.py BODIES)."""
+    return dict(importlib.import_module(f"assemblies.{module_name}").BODIES)
+
+
+def split_key(key: str) -> tuple[str, str | None]:
+    """"<occurrence key>[:<body>]" -> (occurrence key, body). A body suffix names one rigid body
+    of a designed module (module_bodies); robot/frames.py LINKS uses it to put the cycloidal
+    drive's stator and rotor in different links."""
+    occ, _, body = key.partition(":")
+    return occ, (body or None)
+
+
 def world_rows(key: str) -> list:
     """(part, role, WORLD placement of the part's reference frame) for a placement key.
 
     A part key gives one row. A designed module key (placements.json kind "module",
     designed: true - the cycloidal drive) expands to its module's rows composed with the
-    module's world pose, so links and inertials see every part inside it."""
-    o = P.OCCURRENCES[key]
-    if o["kind"] == "module":
-        if not o.get("designed"):
-            raise ValueError(f"{key}: only designed (code-driven) modules expand into world rows")
-        world = P.location(key, "world")
-        return [(part, role, world * loc) for part, role, loc in module_rows(o["part"])]
-    return [(o["part"], None, P.location(key, "world"))]
+    module's world pose, so links and inertials see every part inside it; with a ":<body>"
+    suffix (split_key) only the rows of that rigid body."""
+    occ, body = split_key(key)
+    o = P.OCCURRENCES[occ]
+    if o["kind"] != "module":
+        if body is not None:
+            raise ValueError(f"{key}: only a designed module has bodies")
+        return [(o["part"], None, P.location(occ, "world"))]
+    if not o.get("designed"):
+        raise ValueError(f"{key}: only designed (code-driven) modules expand into world rows")
+    rows = module_rows(o["part"])
+    if body is not None:
+        bodies = module_bodies(o["part"])
+        if body not in bodies:
+            raise ValueError(f"{key}: unknown body {body!r} (have {sorted(bodies)})")
+        rows = [r for r in rows if r[0] in bodies[body]]
+    world = P.location(occ, "world")
+    return [(part, role, world * loc) for part, role, loc in rows]
 
 
 def place_world_at(part_name: str, world: Location, into=None):

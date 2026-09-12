@@ -49,14 +49,23 @@ def test_cycloidal_drive_module_builds():
 
 
 def test_arm_groups_mirror_links():
-    """GROUPS covers every occurrence key exactly once and mirrors robot/frames.py LINKS
-    (gripper module kept whole: wrist = wrist_roll_link + jaw_a_link + jaw_b_link)."""
+    """GROUPS covers every occurrence key exactly once and mirrors robot/frames.py LINKS with the
+    two modules kept whole: wrist = wrist_roll_link + jaw_a_link + jaw_b_link, and the cycloidal
+    drive sits under shoulder_link although LINKS puts its rotor body in upper_arm_link."""
+    from assemblies._occurrences import split_key
     from robot import frames
 
     group_keys = [key for _, _, keys in arm.GROUPS for key in keys]
     assert sorted(group_keys) == sorted(key for _, _, key in arm.OCCURRENCES)
     groups = {label: set(keys) for label, _, keys in arm.GROUPS}
-    for link in ("base_link", "link1", "link2", "link3"):
+
+    def whole(link):
+        return {split_key(k)[0] for k in frames.LINKS[link]}
+
+    assert groups["base_link"] == whole("base_link")
+    assert groups["shoulder_link"] == whole("shoulder_link")
+    assert groups["upper_arm_link"] == whole("upper_arm_link") - {arm.DRIVE_KEY}
+    for link in ("forearm_link", "wrist_pitch_link"):
         assert groups[link] == set(frames.LINKS[link]), link
     wrist = (groups["wrist"] - {arm.GRIPPER_KEY}) | {key for _, _, key in gripper.OCCURRENCES}
     assert wrist == set(
@@ -67,7 +76,8 @@ def test_arm_groups_mirror_links():
 @pytest.mark.slow
 def test_arm_assembly_matches_reference_totals():
     """SolidWorks totals for the SolidWorks-driven occurrences + the drive module's own totals,
-    under the GROUPS component tree (arm -> base_link/link1/link2/link3/wrist)."""
+    under the GROUPS component tree (arm -> base_link/shoulder_link/upper_arm_link/forearm_link/
+    wrist_pitch_link/wrist)."""
     a = raw(arm.arm)
     assert a.label == "arm"
     assert [c.label for c in a.children] == [label for label, _, _ in arm.GROUPS]

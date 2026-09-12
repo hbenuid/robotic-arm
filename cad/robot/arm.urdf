@@ -1,19 +1,21 @@
 <?xml version="1.0"?>
 <!--
-  arm: 3-joint desktop arm (MKS SERVO42D on J1..J3) + 20:1 cycloidal shoulder drive (rigid in link1,
-  not a joint yet) + NEMA17-pancake wrist roll + MG996R parallel gripper.
+  arm: 4-joint desktop arm - base yaw, shoulder pitch (20:1 cycloidal drive), elbow pitch and
+  wrist pitch (GT2 belts) - + NEMA17-pancake wrist roll + MG996R parallel gripper. Three joints
+  are driven by MKS SERVO42D steppers (src/config.py J1..J3; which drives which is unconfirmed).
 
   SOURCE OF TRUTH: this file. Every number is derived from the CAD by cad/tools/robot/frames.py
   (cad/robot/frames.py = link partition + joint frames; cad/reference/placements.json = the
   SolidWorks capture) and verified with `./cadtool python tools/robot/frames.py`, check mode
   (tests/test_robot.py runs it). Regenerate meshes with cad/tools/robot/export_link_meshes.py.
 
-  FRAMES (REP-103): base_link on the base's bottom face at the J1 axis, Z up, X forward (the
-  direction the arm extends). Every joint frame has Z on the joint axis and X along the child
-  link's long direction at the capture pose. A child link's frame IS its joint frame at the
-  SolidWorks capture pose: ALL JOINTS ARE 0 AT THE CAPTURE POSE and every mesh origin is
-  identity. In that pose link1 is yawed +3.694 deg about j1 relative to base X (a captured
-  pose, not a design offset); j2 and j3 axes are parallel (210.0 mm apart, 42 mm axis offset).
+  FRAMES (REP-103): base_link on the base's bottom face at the base_yaw axis, Z up, X forward
+  (the direction the arm extends). Every joint frame has Z on the joint axis and X along the
+  child link's long direction at the capture pose. A child link's frame IS its joint frame at
+  the SolidWorks capture pose: ALL JOINTS ARE 0 AT THE CAPTURE POSE and every mesh origin is
+  identity. In that pose shoulder_link is yawed +3.694 deg about base_yaw relative to base X (a
+  captured pose, not a design offset); the shoulder_pitch, elbow_pitch and wrist_pitch axes are
+  parallel (210.0 mm apart each in the pitch plane, with 10 mm and 42 mm offsets along the axis).
 
   UNITS: metres, kilograms, radians. MESHES: meshes/<link>.stl in millimetres (scale 0.001),
   one per link in the link frame (visual and collision reuse them; simplified collision
@@ -22,14 +24,16 @@
 
   PLACEHOLDERS [ESTIMATE] (cad/lib/params.py): all limits, effort and velocity values; the
   positive-motion sign of every axis (confirm with viewer sweeps); jaw travel range.
-  ASSUMPTIONS: the cycloidal drive (cad/docs/cycloidal_drive.md) sits between j1_coupler (housing
-  in its yoke) and j1_link (output hub bolted to it) - physically a shoulder-pitch joint about an
-  axis parallel to j2 that is NOT a joint here: its 18 parts ride rigidly in link1 (inertial
-  included); j1_coupler rotates with j1; the GT2 90T pulleys + J3 couplers are bolted to the
-  driven links (link2 at j2, link3 at j3); the MG996R crank linkage is merged into
-  wrist_roll_link; jaw_b mirrors jaw_a (mimic, multiplier -1); positive jaw_a = opening.
-  UNCONFIRMED: which MKS motor (src/config.py J1..J3) drives which joint - the drive's own NEMA 17
-  is the shoulder-pitch motor, not j1's. wrist_roll and the jaws are not driven by src/config.py.
+  ASSUMPTIONS: j1_coupler (the holder) turns on the base and carries the cycloidal drive's
+  stator (housing, motor, gear train) in its yoke - together shoulder_link; the drive's rotor
+  (output hub + pins) is bolted to j1_link - with j1_cap, upper_arm_link - so the drive IS the
+  shoulder_pitch joint (cad/docs/cycloidal_drive.md, cad/assemblies/cycloidal_drive.py BODIES);
+  the GT2 90T pulleys + J3 couplers are bolted to the driven links (forearm_link at elbow_pitch,
+  wrist_pitch_link at wrist_pitch); the MG996R crank linkage is merged into wrist_roll_link;
+  jaw_b mirrors jaw_a (mimic, multiplier -1); positive jaw_a = opening.
+  UNCONFIRMED: which MKS motor (src/config.py J1..J3) drives which joint - the shoulder_pitch
+  motor is the drive's own NEMA 17 at 20:1 (cad/lib/params.py CYCLOIDAL_RATIO; src/config.py
+  still carries gear_ratio 1.0 everywhere). wrist_roll and the jaws are not driven by src/config.py.
 -->
 <robot name="arm">
   <link name="base_link">
@@ -51,26 +55,45 @@
       </geometry>
     </collision>
   </link>
-  <link name="link1">
+  <link name="shoulder_link">
     <inertial>
-      <origin xyz="0.019849 -0.003568 0.013522" rpy="0 0 0" />
-      <mass value="2.415794" />
-      <inertia ixx="1.207881e-02" ixy="1.927411e-03" ixz="-5.278210e-03" iyy="1.548873e-02" iyz="2.086566e-03" izz="9.655779e-03" />
+      <origin xyz="-0.000726 0.013853 -0.011441" rpy="0 0 0" />
+      <mass value="1.629416" />
+      <inertia ixx="3.663759e-03" ixy="3.487923e-06" ixz="1.260652e-05" iyy="3.561365e-03" iyz="-2.610875e-04" izz="2.701054e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/link1.stl" scale="0.001 0.001 0.001" />
+        <mesh filename="meshes/shoulder_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/link1.stl" scale="0.001 0.001 0.001" />
+        <mesh filename="meshes/shoulder_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
   </link>
-  <link name="link2">
+  <link name="upper_arm_link">
+    <inertial>
+      <origin xyz="0.088378 0 -0.008608" rpy="0 0 0" />
+      <mass value="0.786378" />
+      <inertia ixx="8.468129e-04" ixy="-1.259123e-08" ixz="4.683250e-04" iyy="6.275076e-03" iyz="3.607455e-09" izz="6.660124e-03" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/upper_arm_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/upper_arm_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="forearm_link">
     <inertial>
       <origin xyz="0.097142 0.000002 0.010186" rpy="0 0 0" />
       <mass value="0.684302" />
@@ -79,17 +102,17 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/link2.stl" scale="0.001 0.001 0.001" />
+        <mesh filename="meshes/forearm_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/link2.stl" scale="0.001 0.001 0.001" />
+        <mesh filename="meshes/forearm_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
   </link>
-  <link name="link3">
+  <link name="wrist_pitch_link">
     <inertial>
       <origin xyz="0.060735 0.000068 -0.014763" rpy="0 0 0" />
       <mass value="0.440548" />
@@ -98,13 +121,13 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/link3.stl" scale="0.001 0.001 0.001" />
+        <mesh filename="meshes/wrist_pitch_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/link3.stl" scale="0.001 0.001 0.001" />
+        <mesh filename="meshes/wrist_pitch_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
   </link>
@@ -166,29 +189,36 @@
     </collision>
   </link>
   <link name="tool0" />
-  <joint name="j1" type="revolute">
+  <joint name="base_yaw" type="revolute">
     <parent link="base_link" />
-    <child link="link1" />
+    <child link="shoulder_link" />
     <origin xyz="0 0 0.18591" rpy="0 0 0" />
     <axis xyz="0 0 1" />
     <limit lower="-3.054326" upper="3.054326" effort="5" velocity="1" />
   </joint>
-  <joint name="j2" type="revolute">
-    <parent link="link1" />
-    <child link="link2" />
-    <origin xyz="0.14315 -0.01581 0.15504" rpy="-1.570796 -0.820277 0.064484" />
+  <joint name="shoulder_pitch" type="revolute">
+    <parent link="shoulder_link" />
+    <child link="upper_arm_link" />
+    <origin xyz="0.002441 -0.034915 0" rpy="-1.570796 -0.830504 0.064484" />
     <axis xyz="0 0 1" />
     <limit lower="-2.094395" upper="2.094395" effort="5" velocity="1" />
   </joint>
-  <joint name="j3" type="revolute">
-    <parent link="link2" />
-    <child link="link3" />
+  <joint name="elbow_pitch" type="revolute">
+    <parent link="upper_arm_link" />
+    <child link="forearm_link" />
+    <origin xyz="0.210003 0 0.009998" rpy="0 0 0.010227" />
+    <axis xyz="0 0 1" />
+    <limit lower="-2.094395" upper="2.094395" effort="5" velocity="1" />
+  </joint>
+  <joint name="wrist_pitch" type="revolute">
+    <parent link="forearm_link" />
+    <child link="wrist_pitch_link" />
     <origin xyz="0.21 0 0.041998" rpy="0 0 0.299075" />
     <axis xyz="0 0 1" />
     <limit lower="-2.094395" upper="2.094395" effort="5" velocity="1" />
   </joint>
   <joint name="wrist_roll" type="revolute">
-    <parent link="link3" />
+    <parent link="wrist_pitch_link" />
     <child link="wrist_roll_link" />
     <origin xyz="0.109643 0.000005 -0.016998" rpy="-1.570799 -0.055534 -1.570796" />
     <axis xyz="0 0 1" />

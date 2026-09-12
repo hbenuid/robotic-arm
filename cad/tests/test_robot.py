@@ -23,10 +23,32 @@ PHYSICAL_LINKS = [l for l in F.LINK_ORDER if F.LINKS[l]]
 
 # --- fast: structure ---------------------------------------------------------------------------
 def test_links_partition_every_placement_once():
+    from assemblies._occurrences import module_bodies, split_key
+
     keys = F.all_keys()
     assert len(keys) == len(set(keys)), "a placement key is in two links"
-    assert sorted(keys) == sorted(P.keys(kind="part") + P.keys(kind="module", designed=True))
-    assert "cycloidal_drive#1" in F.LINKS["link1"]
+    whole = sorted({split_key(k)[0] for k in keys})
+    assert whole == sorted(P.keys(kind="part") + P.keys(kind="module", designed=True))
+    for mkey in P.keys(kind="module", designed=True):    # a designed module: whole once, or every body once
+        used = [split_key(k)[1] for k in keys if split_key(k)[0] == mkey]
+        bodies = module_bodies(P.OCCURRENCES[mkey]["part"])
+        assert used == [None] or (None not in used and sorted(used) == sorted(bodies)), (mkey, used)
+    assert "cycloidal_drive#1:stator" in F.LINKS["shoulder_link"]   # housing + motor ride with the holder
+    assert "cycloidal_drive#1:rotor" in F.LINKS["upper_arm_link"]    # output hub + pins ride with j1_link
+
+
+def test_world_rows_expands_a_designed_module_whole_or_per_body():
+    from assemblies import cycloidal_drive
+    from assemblies._occurrences import world_rows
+
+    rows = {body: world_rows(f"cycloidal_drive#1:{body}") for body in cycloidal_drive.BODIES}
+    whole = world_rows("cycloidal_drive#1")
+    assert len(whole) == len(cycloidal_drive.OCCURRENCES) == sum(len(r) for r in rows.values())
+    assert {p for p, _, _ in rows["rotor"]} == cycloidal_drive.ROTOR
+    assert {r[:2] for r in whole} == {r[:2] for body_rows in rows.values() for r in body_rows}
+    for bad in ("base#1:rotor", "gripper#1:rotor", "cycloidal_drive#1:nope"):
+        with pytest.raises(ValueError):
+            world_rows(bad)
 
 
 def test_joint_tree_is_a_tree_rooted_at_base_link():
@@ -97,8 +119,10 @@ def test_urdf_srdf_sdf_are_consistent():
 
 def test_urdf_limits_track_params():
     root = ET.parse(URDF).getroot()
-    lim = root.find("joint[@name='j1']/limit")
-    assert math.isclose(float(lim.get("upper")), math.radians(PARAMS.J1_LIMIT_DEG), abs_tol=1e-6)
+    lim = root.find("joint[@name='base_yaw']/limit")
+    assert math.isclose(float(lim.get("upper")), math.radians(PARAMS.BASE_YAW_LIMIT_DEG), abs_tol=1e-6)
+    lim = root.find("joint[@name='shoulder_pitch']/limit")
+    assert math.isclose(float(lim.get("upper")), math.radians(PARAMS.SHOULDER_PITCH_LIMIT_DEG), abs_tol=1e-6)
     lim = root.find("joint[@name='jaw_a']/limit")
     assert math.isclose(float(lim.get("upper")), PARAMS.JAW_TRAVEL_MM * 1e-3, abs_tol=1e-9)
     mimic = root.find("joint[@name='jaw_b']/mimic")
@@ -125,13 +149,17 @@ def test_forward_kinematics_at_zero_reproduces_the_capture_frames():
     for j in F.JOINTS:  # JOINTS is in tree order (parents first)
         xyz, rpy = origins[j.name]
         world[j.child] = _mul(world[j.parent], _hom(xyz, rpy))
+    # The URDF carries six decimals (1 um / 1 urad per joint origin); composing the five joints
+    # down to the wrist legitimately accumulates a few um, so this is a per-chain tolerance
+    # (tools/robot/frames.py --check holds every joint to 1e-6 individually).
+    tol = 5e-6
     for link in F.LINK_ORDER:
         M = RF.matrix(F.link_frame_world(link))
         want = [[*M[i][:3], M[i][3] * 1e-3] for i in range(3)]
         got = world[link]
         for i in range(3):
             for k in range(4):
-                assert abs(got[i][k] - want[i][k]) < 1e-6, f"{link} [{i}][{k}]: {got[i][k]} vs {want[i][k]}"
+                assert abs(got[i][k] - want[i][k]) < tol, f"{link} [{i}][{k}]: {got[i][k]} vs {want[i][k]}"
 
 
 # --- slow: geometry ----------------------------------------------------------------------------
@@ -141,16 +169,19 @@ def test_link_builds_from_its_occurrences(link):
     from robot._links import build_link
 
     from assemblies import cycloidal_drive
+    from assemblies._occurrences import split_key
 
     shape = build_link(link)
     assert shape.label == link
     solids = volume = 0.0
     for k in F.LINKS[link]:
-        o = P.OCCURRENCES[k]
-        if o.get("designed"):     # a code-driven module: its own totals lock
+        okey, body = split_key(k)
+        o = P.OCCURRENCES[okey]
+        if o.get("designed"):     # a code-driven module: its own totals lock (whole or one rigid body)
             assert o["part"] == "cycloidal_drive"
-            solids += cycloidal_drive.EXPECTED["solids"]
-            volume += cycloidal_drive.EXPECTED["solid_volume"]
+            lock = cycloidal_drive.EXPECTED["bodies"][body] if body else cycloidal_drive.EXPECTED
+            solids += lock["solids"]
+            volume += lock["solid_volume"]
         else:
             solids += o["solids"]
             volume += o["solid_volume"]

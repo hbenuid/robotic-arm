@@ -333,6 +333,16 @@ class TestModuleLocks:
         for name, role, loc in cycloidal_drive.OCCURRENCES:      # translations only - never a rotation
             assert all(math.isclose(v, 0.0, abs_tol=1e-9) for v in loc.orientation), name
 
+    def test_bodies_partition_the_rows(self):
+        """stator + rotor (the robot description's rigid bodies) cover every row's part exactly
+        once; the rotor is the hub side that j1_link is bolted to."""
+        names = {name for name, _, _ in cycloidal_drive.OCCURRENCES}
+        bodies = cycloidal_drive.BODIES
+        assert set(bodies) == {"stator", "rotor"}
+        assert bodies["stator"] | bodies["rotor"] == names
+        assert not (bodies["stator"] & bodies["rotor"])
+        assert bodies["rotor"] == {"cycloidal_output_hub", "cycloidal_output_pins", "bearing_625"}
+
     @pytest.mark.slow
     def test_module_totals_match_lock(self):
         totals = cycloidal_drive.totals()
@@ -340,6 +350,15 @@ class TestModuleLocks:
             assert totals[key] == cycloidal_drive.EXPECTED[key], key
         assert abs(totals["solid_volume"] - cycloidal_drive.EXPECTED["solid_volume"]) <= 0.5
         assert totals["bbox_size"] == [140.0, 140.0, 113.0]
+        bodies = {body: cycloidal_drive.totals(body) for body in cycloidal_drive.BODIES}
+        for body, got in bodies.items():
+            want = cycloidal_drive.EXPECTED["bodies"][body]
+            for key in ("leaves", "solids"):
+                assert got[key] == want[key], (body, key)
+            assert abs(got["solid_volume"] - want["solid_volume"]) <= 0.5, body
+        for key in ("leaves", "solids"):
+            assert sum(t[key] for t in bodies.values()) == totals[key], key
+        assert abs(sum(t["solid_volume"] for t in bodies.values()) - totals["solid_volume"]) <= 0.01
 
     @pytest.mark.slow
     def test_module_interference_budget(self, drive):
@@ -373,7 +392,7 @@ class TestModuleLocks:
 @pytest.mark.slow
 class TestPoseInTheArm:
     """The drive attached at the SolidWorks node's pose: axis horizontal (along -N), housing in
-    the j1_coupler yoke, hub face on j1_link."""
+    the j1_coupler yoke, hub face on j1_link - and it IS the robot's shoulder_pitch joint."""
 
     def test_module_world_bbox_matches_solidworks_node(self, drive_world):
         sw = P.OCCURRENCES[DRIVE_KEY]["solidworks"]
@@ -400,3 +419,7 @@ class TestPoseInTheArm:
         distance = abs((hub_centre - face.center()).dot(face.normal_at()))
         assert distance < 0.1, f"hub face is {distance:.3f} mm off j1_link's mounting plane"
         assert axis.dot(Vector(*F.N)) < -0.99, "the drive axis should point along -N (toward j1_link)"
+        joint = F.JOINT_BY_NAME["shoulder_pitch"]                       # the drive IS this joint
+        off_axis = (Vector(*joint.origin_w) - world.position).cross(axis).length
+        assert off_axis < 1e-3, f"shoulder_pitch origin is {off_axis:.4f} mm off the drive axis"
+        assert Vector(*joint.axis_w).dot(axis) < -0.99, "shoulder_pitch turns about N = the drive's -Z"

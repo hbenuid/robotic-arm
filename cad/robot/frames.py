@@ -2,20 +2,27 @@
 SolidWorks capture (reference/placements.json). Single source for robot/links/*.py,
 tools/robot/frames.py, tools/robot/export_link_meshes.py and tests/test_robot.py.
 
-LINKS holds placement keys: part occurrences and designed-module keys ("cycloidal_drive#1"),
-which assemblies/_occurrences.world_rows expands into the module's world-placed parts.
+LINKS holds placement keys: part occurrences and designed-module keys - "cycloidal_drive#1", or
+one rigid body of it, "cycloidal_drive#1:stator" / ":rotor" (assemblies/cycloidal_drive.py
+BODIES) - which assemblies/_occurrences.world_rows expands into world-placed parts.
+
+Chain: base_link -base_yaw-> shoulder_link -shoulder_pitch-> upper_arm_link -elbow_pitch->
+forearm_link -wrist_pitch-> wrist_pitch_link -wrist_roll-> wrist_roll_link -jaw_a/jaw_b->
+jaw_*_link, + tool0 (frame-only). The cycloidal drive IS the shoulder_pitch joint: its stator
+(housing + motor, bolted into the j1_coupler yoke) rides in shoulder_link, its rotor (output
+hub + pins, bolted to j1_link) in upper_arm_link (docs/cycloidal_drive.md "Attachment").
 
 Frames (all in the SolidWorks WORLD frame W, millimetres; W is +Y up, the arm extends toward
 -X, see reference/README.md):
-  * base_link frame B: REP-103 (Z up, X forward) at the J1 axis foot on the base's bottom
+  * base_link frame B: REP-103 (Z up, X forward) at the base_yaw axis foot on the base's bottom
     face: origin (0, BASE_BOTTOM_Y, 0), X_B = -X_W, Y_B = +Z_W, Z_B = +Y_W.
   * Every joint frame has Z along the joint axis and X along the child link's long direction
     at the capture pose (projected perpendicular to Z); Y = Z x X.
   * A child link's frame IS its joint frame at the capture pose, so ALL JOINT VALUES ARE 0 AT
     THE CAPTURE POSE and every link mesh (exported in the link frame) has an identity origin.
-    Note: in that pose link1 is yawed +3.694 deg about J1 relative to the base's forward axis
-    (the captured J2/J3 axes are not exactly parallel to Y_B) - this is a POSE, not a design
-    offset.
+    Note: in that pose shoulder_link is yawed +3.694 deg about base_yaw relative to the base's
+    forward axis (the captured pitch axes are not exactly parallel to Y_B) - this is a POSE,
+    not a design offset.
 Axis signs (positive-motion direction) and all limits are placeholders [ESTIMATE] until
 confirmed by viewer sweeps / on hardware.
 """
@@ -32,34 +39,40 @@ from lib import placements as P
 ROBOT_NAME = "arm"
 
 # --- unit vectors of the capture pose (W frame) -----------------------------------------------
-U = (0.0, 1.0, 0.0)                          # J1 axis: world up
-N = (0.064439, 0.0, 0.997922)                # J2 and J3 axes (parallel): 90T pulley / J3-coupler bore direction
+U = (0.0, 1.0, 0.0)                          # base_yaw axis: world up
+N = (0.064439, 0.0, 0.997922)                # the three pitch axes (parallel): 90T pulley / J3-coupler bore direction; the cycloidal drive's +Z is -N
 F = (-0.865419, 0.497923, 0.055880)          # wrist-roll axis: NEMA17 pancake shaft / 20T pulley bore (toward the tool)
 PJ = (0.499699, 0.865884, 0.023354)          # jaw travel: the two Ø6 gripper rails (slider#1 -> slider#2)
 BASE_FORWARD = (-1.0, 0.0, 0.0)              # the arm extends toward -X_W
 
 BASE_BOTTOM_Y = -100.9                       # [REFERENCE] base world bbox min Y (mounting face)
-J1_ORIGIN = (0.0, 85.010435, 0.0)            # [REFERENCE] on the J1 axis at the cycloidal drive's axis height (its node's Y)
-J2_ORIGIN = (-143.15, 240.05, -15.81)        # [REFERENCE] j2_link#1 / j3_coupler#1 origin (on the J2 axis)
-J3_ORIGIN = (-283.37, 393.63, 35.33)         # [REFERENCE] j3_coupler#2 origin (on the J3 axis)
-WRIST_ORIGIN = (-379.355, 448.22, 24.495)    # [REFERENCE] 20T pulley origin, on the pancake shaft axis
+BASE_YAW_ORIGIN = (0.0, 85.010435, 0.0)      # [REFERENCE] on the base_yaw axis at the cycloidal drive's axis height (its node's Y)
+SHOULDER_ORIGIN = (-2.440595, 85.010435, -34.915297)   # [REFERENCE] j1_link#1 origin: on the cycloidal drive's axis, 66.5 mm along it from the
+#                                                        motor-plate face (1.5 past the hub's arm-mount face, CYCLOIDAL_OUTPUT_FACE_Z)
+ELBOW_ORIGIN = (-143.15, 240.05, -15.81)     # [REFERENCE] j2_link#1 / j3_coupler#1 origin (on the elbow_pitch axis)
+WRIST_PITCH_ORIGIN = (-283.37, 393.63, 35.33)   # [REFERENCE] j3_coupler#2 origin (on the wrist_pitch axis)
+WRIST_ROLL_ORIGIN = (-379.355, 448.22, 24.495)  # [REFERENCE] 20T pulley origin, on the pancake shaft axis
 JAW_A_ORIGIN = (-453.626, 429.287, 26.317)   # [REFERENCE] gripper_slider#1 world bbox centre
 JAW_B_ORIGIN = (-400.194, 521.876, 28.815)   # [REFERENCE] gripper_slider#2 world bbox centre
 TOOL0_ORIGIN = (-480.567, 506.452, 31.03)    # [REFERENCE] midpoint between the two finger ends
-J2_TO_J3_INPLANE = (-142.926, 153.58, 9.229) # [REFERENCE] link2 long direction (J2 -> J3, perpendicular to N)
+SHOULDER_TO_ELBOW_INPLANE = (-141.353693, 155.039565, 9.127651)   # [REFERENCE] upper_arm_link long direction: ELBOW_ORIGIN - SHOULDER_ORIGIN
+#                                                                   minus its 10.0 mm component along N (210.0 mm in the pitch plane)
+ELBOW_TO_WRIST_INPLANE = (-142.926, 153.58, 9.229)   # [REFERENCE] forearm_link long direction (elbow -> wrist_pitch, perpendicular to N)
 
 # --- rigid links: placement keys that move together -----------------------------------------
-LINK_ORDER = ["base_link", "link1", "link2", "link3", "wrist_roll_link", "jaw_a_link", "jaw_b_link", "tool0"]
+LINK_ORDER = ["base_link", "shoulder_link", "upper_arm_link", "forearm_link", "wrist_pitch_link",
+              "wrist_roll_link", "jaw_a_link", "jaw_b_link", "tool0"]
 LINKS: dict[str, list[str]] = {
     "base_link": ["base#1"],
-    # j1_coupler assumed to rotate with J1 [ASSUMPTION]. The cycloidal drive sits between the
-    # coupler (housing in its yoke) and j1_link (output hub bolted to it): physically a
-    # shoulder-pitch joint about -N through the drive centre, NOT modelled as a joint yet - its
-    # 18 parts ride rigidly in link1 [ASSUMPTION]. See docs/cycloidal_drive.md "Attachment".
-    "link1": ["j1_coupler#1", "cycloidal_drive#1", "j1_link#1", "j1_cap#1"],
-    # the J2 90T pulley + J3-coupler assumed bolted to link2 (the driven side)  [ASSUMPTION]
-    "link2": ["j2_link#1", "j2_cap_1#1", "j2_cap_2#1", "gt2_pulley_90t#1", "j3_coupler#1"],
-    "link3": ["wrist_link#1", "gripper_clamp_bracket#1", "nema17_pancake#1", "gt2_pulley_90t#2", "j3_coupler#2"],
+    # j1_coupler (the holder) turns on the base; the cycloidal drive's stator - housing, motor
+    # and the gear train - is bolted into its yoke (assemblies/cycloidal_drive.py BODIES).
+    "shoulder_link": ["j1_coupler#1", "cycloidal_drive#1:stator"],
+    # the drive's rotor (output hub + output pins) is bolted to j1_link: the shoulder_pitch output.
+    "upper_arm_link": ["cycloidal_drive#1:rotor", "j1_link#1", "j1_cap#1"],
+    # the elbow 90T pulley + J3-coupler assumed bolted to the forearm (the driven side)  [ASSUMPTION]
+    "forearm_link": ["j2_link#1", "j2_cap_1#1", "j2_cap_2#1", "gt2_pulley_90t#1", "j3_coupler#1"],
+    # likewise the wrist 90T pulley + J3-coupler ride with the wrist-pitch body  [ASSUMPTION]
+    "wrist_pitch_link": ["wrist_link#1", "gripper_clamp_bracket#1", "nema17_pancake#1", "gt2_pulley_90t#2", "j3_coupler#2"],
     # the gripper base rolls with the 20T pulley; the servo crank linkage is merged in  [ASSUMPTION]
     "wrist_roll_link": [
         "gt2_pulley_20t#1", "gripper_j3_connector#1", "servo_holder#1", "mg996r_servo#1", "mg996r_horn#1",
@@ -91,17 +104,21 @@ class Joint:
 
 DEG = math.pi / 180.0
 JOINTS: list[Joint] = [
-    Joint("j1", "revolute", "base_link", "link1", J1_ORIGIN, U, BASE_FORWARD,
-          -PARAMS.J1_LIMIT_DEG * DEG, PARAMS.J1_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
-          notes="base yaw; MKS SERVO42D J1 [ASSUMPTION: motor->joint mapping unconfirmed - the cycloidal "
-                "drive is the shoulder-pitch actuator between j1_coupler and j1_link, not this joint's]"),
-    Joint("j2", "revolute", "link1", "link2", J2_ORIGIN, N, J2_TO_J3_INPLANE,
-          -PARAMS.J2_LIMIT_DEG * DEG, PARAMS.J2_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
-          notes="GT2 90T pulley + J3-coupler at the shoulder; MKS J2"),
-    Joint("j3", "revolute", "link2", "link3", J3_ORIGIN, N, F,
-          -PARAMS.J3_LIMIT_DEG * DEG, PARAMS.J3_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
-          notes="GT2 90T pulley + J3-coupler at the elbow; MKS J3"),
-    Joint("wrist_roll", "revolute", "link3", "wrist_roll_link", WRIST_ORIGIN, F, PJ,
+    Joint("base_yaw", "revolute", "base_link", "shoulder_link", BASE_YAW_ORIGIN, U, BASE_FORWARD,
+          -PARAMS.BASE_YAW_LIMIT_DEG * DEG, PARAMS.BASE_YAW_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
+          notes="j1_coupler (carrying the cycloidal drive's stator) turns on the base "
+                "[which MKS motor (src/config.py J1..J3) drives it: unconfirmed]"),
+    Joint("shoulder_pitch", "revolute", "shoulder_link", "upper_arm_link", SHOULDER_ORIGIN, N, SHOULDER_TO_ELBOW_INPLANE,
+          -PARAMS.SHOULDER_PITCH_LIMIT_DEG * DEG, PARAMS.SHOULDER_PITCH_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
+          notes="the 20:1 cycloidal drive (CYCLOIDAL_RATIO, its own NEMA 17): stator in the j1_coupler yoke, "
+                "output hub bolted to j1_link [which MKS motor: unconfirmed]"),
+    Joint("elbow_pitch", "revolute", "upper_arm_link", "forearm_link", ELBOW_ORIGIN, N, ELBOW_TO_WRIST_INPLANE,
+          -PARAMS.ELBOW_PITCH_LIMIT_DEG * DEG, PARAMS.ELBOW_PITCH_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
+          notes="GT2 90T pulley + J3-coupler at the elbow; belt-driven [which MKS motor: unconfirmed]"),
+    Joint("wrist_pitch", "revolute", "forearm_link", "wrist_pitch_link", WRIST_PITCH_ORIGIN, N, F,
+          -PARAMS.WRIST_PITCH_LIMIT_DEG * DEG, PARAMS.WRIST_PITCH_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
+          notes="GT2 90T pulley + J3-coupler at the wrist; belt-driven [which MKS motor: unconfirmed]"),
+    Joint("wrist_roll", "revolute", "wrist_pitch_link", "wrist_roll_link", WRIST_ROLL_ORIGIN, F, PJ,
           -PARAMS.WRIST_ROLL_LIMIT_DEG * DEG, PARAMS.WRIST_ROLL_LIMIT_DEG * DEG, PARAMS.WRIST_EFFORT_NM, PARAMS.WRIST_VELOCITY_RAD_S,
           notes="NEMA17 pancake + 20T pulley; NOT driven by src/config.py yet"),
     Joint("jaw_a", "prismatic", "wrist_roll_link", "jaw_a_link", JAW_A_ORIGIN, tuple(-v for v in PJ), F,

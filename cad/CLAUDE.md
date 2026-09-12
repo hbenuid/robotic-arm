@@ -149,8 +149,10 @@ Changing a shared dimension — touchpoints in order:
   through links are lost (verified by snapshot).
   Roles (`j2`/`j3`, `1`/`2`) only disambiguate duplicates; rename when joint semantics arrive.
 - `arm.py GROUPS` buckets the occurrences into the component tree
-  `arm → base_link/link1/link2/link3/wrist` — the `robot/frames.py LINKS` partition with the
-  gripper module kept whole (`wrist` = wrist_roll_link + jaw links) — via
+  `arm → base_link/shoulder_link/upper_arm_link/forearm_link/wrist_pitch_link/wrist` — the
+  `robot/frames.py LINKS` partition with the two modules kept whole (`wrist` = wrist_roll_link + jaw
+  links; the cycloidal drive under `shoulder_link` although `LINKS` puts its rotor body in
+  `upper_arm_link`) — via
   `_occurrences.add_grouped_occurrences()`, which tints each subtree with its group's color
   (`MODULE_TINTS` overrides for the two modules) and raises unless the groups cover the keys
   exactly once. `test_assembly.py` locks the group labels + the LINKS mirror. The tints are
@@ -170,8 +172,12 @@ Changing a shared dimension — touchpoints in order:
   `arm.srdf` pairs by colocation + robot name; `arm.sdf` is derived from the URDF. Never build a
   Python generator for them - `tools/robot/frames.py --urdf-draft/--sdf-draft` only prints scaffolding
   to copy numbers from, and `--check` (run by `tests/test_robot.py`) catches drift.
-- `robot/frames.py` is the kinematic SSOT: `LINKS` (occurrence keys per rigid link) and `JOINTS`
-  (axis point/direction in the SolidWorks capture frame, limits from `lib/params.py`). Joint frame:
+- `robot/frames.py` is the kinematic SSOT: `LINKS` (occurrence keys per rigid link; a designed-module
+  key may carry a `:<body>` suffix — `cycloidal_drive#1:stator` / `:rotor` from
+  `assemblies/cycloidal_drive.py BODIES`, expanded by `_occurrences.world_rows`) and `JOINTS` (axis
+  point/direction in the SolidWorks capture frame, limits from `lib/params.py`). Chain: `base_link →
+  base_yaw → shoulder_link → shoulder_pitch → upper_arm_link → elbow_pitch → forearm_link → wrist_pitch →
+  wrist_pitch_link → wrist_roll → wrist_roll_link → jaw_a/jaw_b` (+ `tool0`). Joint frame:
   Z on the axis, X along the child link; child link frame = joint frame at capture, so **all joints
   are 0 at the capture pose** and mesh origins are identity. Moving an occurrence between links or
   changing an axis = edit `frames.py`, re-export meshes, re-derive the affected numbers, re-check.
@@ -183,9 +189,9 @@ Changing a shared dimension — touchpoints in order:
   `./cadtool snapshot robot/arm.urdf snapshots/x.png` after every edit; hand `.urdf` files to the
   viewer (`?file=robot/arm.urdf`).
 - Placeholders to confirm before real use: joint limits/effort/velocity (`lib/params.py`), axis signs,
-  jaw travel, the link-membership assumptions listed in the URDF ledger. The cycloidal drive is
-  physically the shoulder-pitch joint between `j1_coupler` and `j1_link` but is NOT a joint yet: its
-  module key rides in `LINKS["link1"]`; which MKS motor drives which joint is unconfirmed;
+  jaw travel, the link-membership assumptions listed in the URDF ledger. The cycloidal drive IS the
+  `shoulder_pitch` joint (stator with the yawing `j1_coupler` in `shoulder_link`, rotor with `j1_link`
+  in `upper_arm_link`); which MKS motor (`src/config.py` J1..J3) drives which joint is unconfirmed;
   wrist_roll and the jaws are not driven by `src/config.py`.
 
 ## Tests (`./cadtool pytest`)

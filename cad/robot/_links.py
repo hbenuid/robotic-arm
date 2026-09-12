@@ -1,10 +1,10 @@
 """Build one rigid link of the robot as a labelled Compound in the LINK's own frame.
 
 A link is the set of part occurrences that move together (robot/frames.py LINKS; a designed
-module key such as "cycloidal_drive#1" contributes all of its parts). Every occurrence is
-placed at its world placement and re-expressed in the link frame
-(= the frame of the joint whose child the link is, at the capture pose), so the exported
-mesh needs an identity <origin> in the URDF.
+module key such as "cycloidal_drive#1" contributes all of its parts, "cycloidal_drive#1:rotor"
+one rigid body of it). Every occurrence is placed at its world placement and re-expressed in
+the link frame (= the frame of the joint whose child the link is, at the capture pose), so the
+exported mesh needs an identity <origin> in the URDF.
 """
 from __future__ import annotations
 
@@ -15,7 +15,8 @@ from robot import frames as F
 
 def link_rows(link: str) -> list:
     """(key, part, role, world Location) for every part in the link - part keys give one row,
-    designed-module keys (the cycloidal drive) expand into their parts."""
+    designed-module keys (the cycloidal drive, or one of its ":<body>" rigid bodies) expand into
+    their parts."""
     return [(key, part, role, world) for key in F.LINKS[link] for part, role, world in world_rows(key)]
 
 

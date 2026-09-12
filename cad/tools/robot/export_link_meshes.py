@@ -1,6 +1,6 @@
 """Export robot/meshes/<link>.stl for every physical link in robot/frames.py.
 
-    ./cadtool python tools/robot/export_link_meshes.py [--links link1 link2 ...] [--tolerance 0.1] [--angular 0.3]
+    ./cadtool python tools/robot/export_link_meshes.py [--links shoulder_link upper_arm_link ...] [--tolerance 0.1] [--angular 0.3]
 
 Meshes are written in MILLIMETRES in each link's own frame (robot/arm.urdf references them
 with scale="0.001 0.001 0.001" and an identity origin). Binary STL via build123d; coarse
