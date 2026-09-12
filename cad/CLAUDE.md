@@ -4,7 +4,7 @@
 conversion workflow, shared-dimension rules, assembly placements, purchased parts, tests, tooling.
 **Audience:** agent. Human docs: `README.md`. Reference provenance: `reference/README.md`. The
 cycloidal drive (spec, port notes, attachment): `docs/cycloidal_drive.md`.
-**Last updated:** 2026-09-11. Every commit that changes behaviour, layout or tooling gets a dated entry in the
+**Last updated:** 2026-09-12. Every commit that changes behaviour, layout or tooling gets a dated entry in the
 root `CHANGELOG.md` and bumps the `Last updated` line of the docs it touches.
 
 `cad/` is a **separate uv project** (Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.5.x) inside the
@@ -47,8 +47,9 @@ robotic-arm repo; the root motor-control project never depends on it.
 - `uv add <pkg>` for deps (commit `pyproject.toml` + `uv.lock`); never `pip install`.
 - Every committed STEP/STL under `cad/` is a **Git LFS** object (`/.gitattributes`): a checkout
   showing ~130-byte pointer files (checksum tests, `read_step`/`import_step` and cadgen fail on them)
-  needs `git lfs pull`; every regenerated STEP is a new LFS object (cadgen writes deterministic bytes:
-  an unchanged model rewrites an identical file).
+  needs `git lfs pull`; every regenerated STEP is a new LFS object (cadgen writes deterministic bytes
+  per kernel: an unchanged model rewrites an identical file, but the STEP header names the OCCT
+  version, so a kernel bump rewrites every file once — stop the daemon first, see Gotchas).
 - Cycloidal references: `cd ../cycloidal_drive && uv run python ../robotic-arm/cad/tools/cycloidal/export_cadquery.py`
   (the OLD repo's CadQuery venv — never ours), then `./cadtool python tools/cycloidal/import_reference.py`.
 - Expected noise: every `gen` prints cadgen's "kernel imported eagerly" hint on stderr (the model files
