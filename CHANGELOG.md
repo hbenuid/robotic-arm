@@ -6,7 +6,7 @@ behaviour, layout or tooling gets an entry here; the commit hashes are on `main`
 
 ## 2026-09-12 — the cycloidal drive is the `shoulder_pitch` joint; descriptive link/joint names
 
-### Changed — robot description: `link1` split at the drive's output, chain renamed
+### Changed — robot description: `link1` split at the drive's output, chain renamed (`63fdc96`)
 - Confirmed structure: `j1_coupler` (the holder) yaws on the base and carries the drive's housing +
   motor in its yoke; the drive's output hub is bolted to `j1_link`. The drive is therefore a joint,
   not a rigid part of `link1`. `cad/robot/frames.py LINKS`: `shoulder_link` = `j1_coupler#1` +
