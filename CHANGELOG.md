@@ -6,7 +6,7 @@ behaviour, layout or tooling gets an entry here; the commit hashes are on `main`
 
 ## 2026-09-12 — every committed part STEP regenerated on OCP 7.9.3 (writer formatting only, geometry unchanged)
 
-### Changed — the 41 `cad/parts/<group>/<name>.step` files rewritten on the locked kernel (`<hash>`)
+### Changed — the 41 `cad/parts/<group>/<name>.step` files rewritten on the locked kernel (`4284a3a`)
 - `d0cffaa`'s STEPs were written by warm daemon workers that still had OCP 7.8.1 loaded (their header
   line read `Open CASCADE STEP processor 7.8` although `cad/uv.lock` already pinned 7.9.3.1.1 — the
   `./cadtool daemon stop` gotcha), so its "byte-identical from here on" held only per kernel: any part
