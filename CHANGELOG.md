@@ -6,7 +6,7 @@ behaviour, layout or tooling gets an entry here; the commit hashes are on `main`
 
 ## 2026-09-12 — cadgen 0.5.x URDF renderer patched: robots render again in the viewer and in snapshots
 
-### Fixed — `./cadtool patch` (`cad/tools/cadgen_patches.py`), branch `fix/urdf-viewer-render`
+### Fixed — `./cadtool patch` (`cad/tools/cadgen_patches.py`), branch `fix/urdf-viewer-render` (`2da0ea4`)
 - Symptom: `?file=robot/arm.urdf` / `.srdf` in the CAD Viewer and `./cadtool snapshot robot/arm.urdf`
   drew the robot as a pile of huge overlapping shards, and the joint sliders / `--joint-values` changed
   nothing. Root cause (cadgen's shipped source, `packages/cadgen-js/src`): the robot loader composes
