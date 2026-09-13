@@ -6,7 +6,7 @@ behaviour, layout or tooling gets an entry here; the commit hashes are on `main`
 
 ## 2026-09-13 — docs: robot description tables, `./cadtool patch` in every guide; cleanup
 
-### Changed — Markdown only
+### Changed — Markdown only (`81858ba`)
 - Root `README.md` / `CLAUDE.md`: the robot description chain (links, joints, the cycloidal drive as
   `shoulder_pitch`), the unconfirmed MKS motor → joint mapping, `./cadtool patch` in the verb list and
   the setup line, the cadgen 0.5.x renderer regression under Known issues.
