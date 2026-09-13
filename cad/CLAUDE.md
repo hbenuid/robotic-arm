@@ -4,7 +4,7 @@
 conversion workflow, shared-dimension rules, assembly placements, purchased parts, tests, tooling.
 **Audience:** agent. Human docs: `README.md`. Reference provenance: `reference/README.md`. The
 cycloidal drive (spec, port notes, attachment): `docs/cycloidal_drive.md`.
-**Last updated:** 2026-09-12. Every commit that changes behaviour, layout or tooling gets a dated entry in the
+**Last updated:** 2026-09-13. Every commit that changes behaviour, layout or tooling gets a dated entry in the
 root `CHANGELOG.md` and bumps the `Last updated` line of the docs it touches.
 
 `cad/` is a **separate uv project** (Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.5.x) inside the
@@ -152,7 +152,8 @@ Changing a shared dimension — touchpoints in order:
   `geometry(model, inline=True)`: the child is still called (pinned, rebuilt, its STEP rewritten) but
   the arm owns a recoloured copy — cadgen's packager keeps a linked child's own colours, so tints
   through links are lost (verified by snapshot).
-  Roles (`j2`/`j3`, `1`/`2`) only disambiguate duplicates; rename when joint semantics arrive.
+  Roles (`j2`/`j3` = the elbow_pitch / wrist_pitch pulley + coupler pairs, `1`/`2`) only disambiguate
+  duplicates; renaming them after the joints is a follow-up.
 - `arm.py GROUPS` buckets the occurrences into the component tree
   `arm → base_link/shoulder_link/upper_arm_link/forearm_link/wrist_pitch_link/wrist` — the
   `robot/frames.py LINKS` partition with the two modules kept whole (`wrist` = wrist_roll_link + jaw
@@ -167,7 +168,9 @@ Changing a shared dimension — touchpoints in order:
   `designed` module record in `placements.json` (pose from the SolidWorks node, no leaf records,
   `solidworks` cross-check block; `tools/reference/extract_placements.py` never descends into
   `DESIGNED_MODULES`). `world_rows(key)` expands a designed-module key into world-placed parts for
-  links and inertials. Keep `EXPECTED` in step with the geometry (`totals()`).
+  links and inertials; `BODIES` names the drive's rigid bodies (`stator` / `rotor`) and a `:<body>`
+  key suffix (`"cycloidal_drive#1:rotor"`, `_occurrences.split_key`) selects one. Keep `EXPECTED`
+  (whole module + `bodies`) in step with the geometry (`totals()` / `totals(body)`).
 - When adding source-level joints, use `cadgen.assembly.AssemblyHelper` frames/mates (persisted
   motion is `@step(kinematics=…)` — viewer sliders, posed snapshots), keep placements
   parameter-driven, and validate with `inspect align/measure/frame`.
@@ -208,8 +211,9 @@ parts vs reference), `test_placements.py` (JSON integrity, tables cover every ke
 module record), `test_assembly.py` (34 + 18 leaves / 50 + 58 solids / volume / bbox vs SolidWorks + the
 module lock), `test_params_invariants.py` (locks), `test_robot.py` (link partition, frames, FK at
 zero = capture, meshes, inertials, URDF/SRDF/SDF consistency + cadgen's validators via
-`./cadtool validate`), `tests/cycloidal/` (the drive: one module per part + housing / purchased /
-fitment / assembly / port, ~230 tests, `from tests.cycloidal.helpers import …`). Geometry tests are
+`./cadtool validate`), `test_tooling.py` (the cadgen runtime patch is applied - `./cadtool patch`),
+`tests/cycloidal/` (the drive: one module per part + housing / purchased / fitment / assembly / port,
+~230 tests, `from tests.cycloidal.helpers import …`). Geometry tests are
 `slow`. Run pytest only through `./cadtool pytest` (rootdir `cad/`; the repo-root `tests/` is the
 unrelated, broken motor-control suite).
 

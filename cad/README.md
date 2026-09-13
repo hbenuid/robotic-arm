@@ -1,8 +1,9 @@
 # robotic-arm — CAD (build123d)
 
-**Last updated:** 2026-09-12 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-13 — see the root `CHANGELOG.md` for dated changes.
 
-Parametric CAD-as-code for the 3-joint arm, converted part-by-part from the original
+Parametric CAD-as-code for the desktop arm (base yaw, 20:1 cycloidal shoulder pitch, belt-driven
+elbow and wrist pitch, wrist roll, MG996R parallel gripper), converted part-by-part from the original
 SolidWorks design. This folder is a **separate uv project** (Python 3.12) — the motor-control
 software in the repo root never depends on it.
 
@@ -251,6 +252,29 @@ identity origin and the URDF at zero reproduces `assemblies/arm.py`. Limits, eff
 signs are placeholders (`lib/params.py` `*_LIMIT_DEG …`, tagged `[ESTIMATE]`) — confirm with viewer
 sweeps and hardware.
 
+| joint | type | parent → child | actuator | notes |
+|---|---|---|---|---|
+| `base_yaw` | revolute, world up | `base_link → shoulder_link` | MKS stepper (which one: unconfirmed) | the holder `j1_coupler` turns on the base |
+| `shoulder_pitch` | revolute, `N` | `shoulder_link → upper_arm_link` | the 20:1 cycloidal drive, its own NEMA 17 (`CYCLOIDAL_RATIO`) | stator with the holder, rotor with `j1_link` |
+| `elbow_pitch` | revolute, `N` | `upper_arm_link → forearm_link` | GT2 90T belt, MKS stepper (unconfirmed) | pulley + J3 coupler on the forearm |
+| `wrist_pitch` | revolute, `N` | `forearm_link → wrist_pitch_link` | GT2 90T belt, MKS stepper (unconfirmed) | pulley + J3 coupler on the wrist body |
+| `wrist_roll` | revolute, `F` | `wrist_pitch_link → wrist_roll_link` | NEMA17 pancake + 20T pulley (not CAN-driven) | |
+| `jaw_a`, `jaw_b` (mimic, −1) | prismatic | `wrist_roll_link → jaw_*_link` | MG996R crank linkage | `open` / `closed` SRDF states |
+| `tool0_joint` | fixed | `wrist_roll_link → tool0` | — | fingertip midpoint, Z = approach |
+
+| link | occurrences (`robot/frames.py LINKS`) |
+|---|---|
+| `base_link` | `base` |
+| `shoulder_link` | `j1_coupler` + the drive's **stator** (`cycloidal_drive#1:stator`: motor plate, ring gear body, ring pins, housing bolts/nuts, NEMA 17, gear train) |
+| `upper_arm_link` | the drive's **rotor** (`cycloidal_drive#1:rotor`: output hub, output pins, 625) + `j1_link` + `j1_cap` |
+| `forearm_link` | `j2_link`, `j2_cap_1`, `j2_cap_2`, `gt2_pulley_90t#1`, `j3_coupler#1` |
+| `wrist_pitch_link` | `wrist_link`, `gripper_clamp_bracket`, `nema17_pancake`, `gt2_pulley_90t#2`, `j3_coupler#2` |
+| `wrist_roll_link` | `gt2_pulley_20t` + the gripper base (connector, servo holder, servo + horn, cover, rails, crank links) |
+| `jaw_a_link` / `jaw_b_link` | slider + two fingers + end, each side |
+
+All limits, efforts, velocities, axis signs and the jaw travel are `[ESTIMATE]` placeholders in
+`lib/params.py`; the URDF ledger lists the link-membership assumptions.
+
 ```bash
 ./cadtool python tools/robot/frames.py                 # joint origins + link inertials (m, kg, rad)
 ./cadtool python tools/robot/frames.py --check robot/arm.urdf robot/arm.sdf   # files vs CAD (tests run this)
@@ -275,7 +299,7 @@ frame moved re-derive the affected `<origin>`/`<inertial>` values with `--urdf-d
 
 ```bash
 ./cadtool pytest                 # everything (~460 tests; the geometry builds take ~2 min; never writes a STEP)
-./cadtool pytest -m "not slow"   # fast lane: metadata, params, placements JSON
+./cadtool pytest -m "not slow"   # fast lane: metadata, params, placements JSON, tooling (the cadgen runtime patch is applied)
 ./cadtool pytest tests/cycloidal # the cycloidal drive's tests only (tests/cycloidal/test_<part>.py + helpers.py)
 uv run pytest                    # equivalent (cadgen is a normal dependency)
 ```

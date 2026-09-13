@@ -4,6 +4,18 @@ Dated record of notable changes to this repository (newest first). Every commit 
 behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
 `cad-setup` working branch was fast-forward-only and has been retired).
 
+## 2026-09-13 — docs: robot description tables, `./cadtool patch` in every guide; cleanup
+
+### Changed — Markdown only
+- Root `README.md` / `CLAUDE.md`: the robot description chain (links, joints, the cycloidal drive as
+  `shoulder_pitch`), the unconfirmed MKS motor → joint mapping, `./cadtool patch` in the verb list and
+  the setup line, the cadgen 0.5.x renderer regression under Known issues.
+- `cad/README.md`: joint and link tables in the robot section, the arm described by its joints instead
+  of "3-joint", the tooling test in the fast lane; `cad/CLAUDE.md`: `BODIES` / `split_key` in the drive
+  bullet, the roles note, `test_tooling.py` in the test list.
+- Cleanup: the merged `fix/urdf-viewer-render` branch deleted (its commits are on `main`), caches
+  dropped (`./cadtool clean`).
+
 ## 2026-09-12 — cadgen 0.5.x URDF renderer patched: robots render again in the viewer and in snapshots
 
 ### Fixed — `./cadtool patch` (`cad/tools/cadgen_patches.py`), branch `fix/urdf-viewer-render` (`2da0ea4`)

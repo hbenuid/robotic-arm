@@ -1,12 +1,13 @@
 # robotic-arm
 
-**Last updated:** 2026-09-11 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-13 — see the root `CHANGELOG.md` for dated changes.
 
 Robot arm control software for a 3-motor MKS SERVO42D/57D arm over CAN bus.
 
 ## Hardware
 
-- 3× MKS SERVO42D/57D stepper drivers (one per joint: J1, J2, J3)
+- 3× MKS SERVO42D/57D stepper drivers (`src/config.py` J1..J3 = CAN ids 1..3; which arm joint each one
+  drives is still to be confirmed against the CAD's robot description below)
 - CANable / slcan-compatible USB-to-CAN adapter
 - 500 kbit/s CAN bus (MKS factory default)
 
@@ -22,9 +23,9 @@ the whole arm already assembles and renders:
 
 ```
 cd cad
-./cadtool setup                      # one-time: venv + Playwright Chromium (snapshots)
+./cadtool setup                      # one-time: venv + the cadgen runtime patch (./cadtool patch) + Playwright Chromium (snapshots)
 ./cadtool gen assemblies/arm.py      # build the arm STEP (rebuilds any stale part and its committed STEP)
-./cadtool viewer                     # CAD Viewer: http://127.0.0.1:3245/?file=assemblies/arm.step
+./cadtool viewer                     # CAD Viewer: http://127.0.0.1:3245/?file=assemblies/arm.step (or ?file=robot/arm.urdf: joint sliders)
 ./cadtool pytest                     # convention + reference-match tests
 ./cadtool clean                      # drop __pycache__/pytest caches (cadgen's store lives in ~/.cache/cadgen)
 ```
@@ -33,7 +34,15 @@ The committed CAD binaries (`cad/**/*.step`, `cad/**/*.stl`) are **Git LFS** obj
 `git-lfs` and run `git lfs install` before cloning (or `git lfs pull` afterwards).
 
 The same CAD also produces the arm's robot description — [`cad/robot/arm.urdf`](cad/robot/arm.urdf)
-(+ SRDF for MoveIt2, SDF for Gazebo) with per-link meshes, validated by cadgen's checkers.
+(+ SRDF for MoveIt2, SDF for Gazebo) with per-link meshes, validated by cadgen's checkers. Its chain:
+`base_link → base_yaw → shoulder_link → shoulder_pitch → upper_arm_link → elbow_pitch → forearm_link →
+wrist_pitch → wrist_pitch_link → wrist_roll → wrist_roll_link → jaw_a / jaw_b (+ tool0)`, where
+`shoulder_pitch` **is** the 20:1 cycloidal drive (its housing turns with the base-yaw holder, its output
+hub carries the upper arm), `elbow_pitch` / `wrist_pitch` are the GT2 belt joints, `wrist_roll` the
+NEMA17 pancake and the jaws the MG996R gripper. Which MKS motor drives which joint is not confirmed
+yet. cadgen 0.5.x needs the small runtime patch `./cadtool patch` (applied by `setup`) to draw robots
+in its viewer and snapshots — see `cad/tools/cadgen_patches.py`.
+
 The 20:1 cycloidal shoulder drive (formerly the separate `cycloidal_drive` CadQuery repo) is fully
 parametric build123d here — see [`cad/docs/cycloidal_drive.md`](cad/docs/cycloidal_drive.md).
 
