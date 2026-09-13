@@ -10,8 +10,10 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 cadtool - cadgen 0.5 + this uv project (paths relative to cad/)
-  ./cadtool setup                                   one-time: uv sync + Playwright Chromium (for snapshots)
-  ./cadtool doctor                                  installed cadgen vs the plugin's pin, node, chromium
+  ./cadtool setup                                   one-time: uv sync + ./cadtool patch + Playwright Chromium (for snapshots)
+  ./cadtool doctor                                  installed cadgen vs the plugin's pin, the runtime patch, node, chromium
+  ./cadtool patch [apply|check|revert] [--force]    patch the installed cadgen runtime (tools/cadgen_patches.py): the
+                                                    0.5.x URDF renderer fix; re-run after uv sync (setup does), doctor checks
   ./cadtool gen <model.py>... [--force] [--verbose] [--json] [--mesh-tolerance X]
                                                     build: run the model script(s) -> the sibling <name>.step
                                                     (an assembly rebuilds + rewrites its stale child parts too)
@@ -76,6 +78,18 @@ run_skill() {  # run_skill <skill> <tool> [args...]  ->  python skills/<skill>/s
 
 cg() { exec uv run --frozen cadgen "$@"; }
 
+# cadgen 0.5.x draws robots (URDF/SRDF/SDF) as a pile of shards unless tools/cadgen_patches.py has
+# patched its browser bundles (./cadtool patch). A grep, so the viewer/snapshot path pays nothing.
+urdf_patch_warn() {  # urdf_patch_warn <bundle glob under cadgen/_runtime>
+  local f
+  for f in "$CAD_DIR"/.venv/lib/python3.*/site-packages/cadgen/_runtime/$1; do
+    [[ -f "$f" ]] || continue
+    grep -q 'partTransformsBaked:!1,lightweightGeometry:!0' "$f" && return 0
+    echo "cadtool: warning: cadgen's URDF renderer is unpatched ($(basename "$f")) - robots render as a pile; run ./cadtool patch" >&2
+    return 0
+  done
+}
+
 cmd="${1:-help}"
 shift || true
 case "$cmd" in
@@ -91,6 +105,7 @@ case "$cmd" in
   inspect)
     cg step inspect "$@" ;;
   snapshot)
+    case "${1:-}" in *.urdf|*.srdf|*.sdf) urdf_patch_warn "browser/snapshot-render.js" ;; esac
     cg snapshot "$@" ;;
   export)
     doc="${1:?usage: cadtool export <file.step> stl|3mf|glb [out]}"; fmt="${2:?usage: cadtool export <file.step> stl|3mf|glb [out]}"; shift 2
@@ -106,6 +121,7 @@ case "$cmd" in
     esac ;;
   viewer)
     port=3245; prev=""; for a in "$@"; do [[ "$prev" == "--port" ]] && port="$a"; prev="$a"; done
+    urdf_patch_warn "viewer/assets/index-*.js"
     echo "CAD Viewer: http://127.0.0.1:$port/?file=assemblies/arm.step   (auto-stops after 12h; Ctrl+C to stop)"
     exec timeout --foreground 12h uv run --frozen cadgen viewer --host 127.0.0.1 "$@" ;;
   cadgen)
@@ -131,6 +147,7 @@ case "$cmd" in
     rc=0
     need_plugin
     uv run --frozen cadgen doctor "$CAD_PLUGIN/skills/cad" || rc=$?
+    uv run --frozen python tools/cadgen_patches.py check || rc=$?
     if command -v node >/dev/null 2>&1; then echo "node $(node --version)   (mesh export needs >= 20)"
     else echo "node: NOT on PATH - ./cadtool export needs node >= 20"; rc=1; fi
     loc="$(uv run --frozen python -m playwright install --dry-run chromium 2>/dev/null | awk -F': +' '/Install location/ {print $2; exit}')"
@@ -139,7 +156,10 @@ case "$cmd" in
     exit $rc ;;
   setup)
     uv sync
+    uv run --frozen python tools/cadgen_patches.py apply
     uv run --frozen python -m playwright install chromium ;;
+  patch)
+    exec uv run --frozen python tools/cadgen_patches.py "$@" ;;
   python)
     exec uv run --frozen python "$@" ;;
   pytest)

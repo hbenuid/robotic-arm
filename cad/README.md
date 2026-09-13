@@ -30,7 +30,8 @@ itself is the [`cadgen`](https://pypi.org/project/cadgen/) package installed int
 
 ```bash
 cd cad
-./cadtool setup        # uv sync (build123d/OCP/cadgen into ./.venv) + Playwright Chromium (~150 MB, snapshots only)
+./cadtool setup        # uv sync (build123d/OCP/cadgen into ./.venv) + the cadgen runtime patch (./cadtool patch)
+                       # + Playwright Chromium (~150 MB, snapshots only)
 ./cadtool pytest       # everything green?
 ```
 
@@ -55,6 +56,7 @@ cadgen 0.5 has **no compatibility with 0.4** (see the 2026-09-11 CHANGELOG entry
 | `./cadtool inspect refs <file.step> --facts --planes --positioning` | geometry facts, selector refs, planes; also `measure`, `align`, `frame`, `diff`, `interfere`, `validate` |
 | `./cadtool snapshot assemblies/arm.step snapshots/arm.png --size-profile assembly --view-labels` | PNG review still (`--job job.json` for a multi-view packet; the path you name is the file written) — also `.urdf`/`.sdf`/`.stl` inputs |
 | `./cadtool viewer [--port N]` | CAD Viewer serving this folder — `http://127.0.0.1:3245/?file=assemblies/arm.step` (ships inside cadgen; stops after 12 h or Ctrl+C; `./cadtool cadgen viewer list\|stop --port N`) |
+| `./cadtool patch [apply\|check\|revert]` | patch the installed cadgen runtime (`tools/cadgen_patches.py`): cadgen 0.5.0/0.5.1 otherwise draw every URDF/SRDF/SDF as a pile of shards in the viewer and in snapshots; `setup` applies it, `doctor` checks it, re-run after `uv sync` |
 | `./cadtool validate robot/arm.urdf --strict` (`.srdf`, `.sdf --gz-check never`) | robot-description validators |
 | `./cadtool parts "<query>" [--download --id <id> --filename <name>.step]` | step.parts search / download into `vendor/` |
 | `./cadtool skill <skill> <tool> [args]` | a plugin skill script (`dfam-check dfam_tool.py`, `gcode gcode_tool.py`, …) |
@@ -258,7 +260,10 @@ sweeps and hardware.
 ./cadtool viewer                                       # then ?file=robot/arm.urdf: meshes + joint sliders (base_yaw, shoulder_pitch, elbow_pitch, wrist_pitch, wrist_roll, jaw_a)
 ```
 
-In the viewer all joints read 0 at the SolidWorks capture pose; the `shoulder_pitch` slider turns the
+The viewer and `snapshot` need the cadgen runtime patch (`./cadtool patch`, applied by `setup`): cadgen
+0.5.0/0.5.1 otherwise draw every robot description as a pile of shards and ignore the joint values —
+`tools/cadgen_patches.py` documents the bug and the upstream one-line fix. With it, all joints read 0 at
+the SolidWorks capture pose and the `shoulder_pitch` slider turns the
 drive's rotor with `j1_link` while its housing stays with `j1_coupler`. The drive on its own:
 `?file=assemblies/cycloidal_drive.step` (see `docs/cycloidal_drive.md`, "Viewing the drive").
 

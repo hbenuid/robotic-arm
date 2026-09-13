@@ -39,6 +39,11 @@ robotic-arm repo; the root motor-control project never depends on it.
 - `./cadtool viewer` — CAD Viewer serving `cad/`: `http://127.0.0.1:3245/?file=<rel path>` (ships in
   cadgen, no Node; 12 h auto-stop; `./cadtool cadgen viewer list|stop --port N`). Hand every
   created/updated STEP to it.
+- `./cadtool patch [apply|check|revert]` — `tools/cadgen_patches.py`: inserts the one flag cadgen 0.5.x's
+  browser bundles lack (`partTransformsBaked:!1` on URDF mesh data); without it the viewer and
+  `snapshot` draw every URDF/SRDF/SDF as a pile of shards and the joint sliders do nothing. `setup`
+  applies it, `doctor` and `tests/test_tooling.py` check it, `viewer`/`snapshot` warn; re-run after
+  `uv sync` or a cadgen reinstall (then restart the viewer and hard-reload the page once).
 - `./cadtool daemon stop` — stop cadgen's warm build daemon and its workers (they only reload code when
   restarted; `./cadtool cadgen daemon status` shows them).
 - `./cadtool validate <file.urdf|.srdf|.sdf> [--strict]`, `./cadtool parts "<query>"`,
@@ -187,7 +192,8 @@ Changing a shared dimension — touchpoints in order:
   Inertials come from OCP `BRepGProp` (printed parts at `PETG_DENSITY`, COTS at `MASS_G`).
 - Validate with `./cadtool validate <file> --strict` and snapshot with
   `./cadtool snapshot robot/arm.urdf snapshots/x.png` after every edit; hand `.urdf` files to the
-  viewer (`?file=robot/arm.urdf`).
+  viewer (`?file=robot/arm.urdf`). Both renderers need the runtime patch (`./cadtool patch`, see
+  Running things) on cadgen 0.5.x.
 - Placeholders to confirm before real use: joint limits/effort/velocity (`lib/params.py`), axis signs,
   jaw travel, the link-membership assumptions listed in the URDF ledger. The cycloidal drive IS the
   `shoulder_pitch` joint (stator with the yawing `j1_coupler` in `shoulder_link`, rotor with `j1_link`
@@ -232,6 +238,7 @@ unrelated, broken motor-control suite).
 - After `uv sync` changes cadgen / build123d / OCP, `./cadtool daemon stop`: the warm daemon's workers
   keep the old code loaded (its identity token only tracks cadgen's version and file mtimes; cadgen
   has no stop verb of its own and the daemon shrugs off a bare SIGTERM). The next `gen` starts a fresh one.
+  A cadgen reinstall also drops the runtime patch: `./cadtool patch` (or `setup`), then restart the viewer.
 - A model run accepts only `--force --mesh-tolerance --mesh-angular-tolerance --verbose --json`;
   anything else (`--totals`, a preview flag) is an argparse error — use `./cadtool show` / `python -c`.
 - Cycloidal discs: chamfer the lobe edges BEFORE cutting holes (the end face must carry only the
