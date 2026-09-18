@@ -13,7 +13,7 @@ how it is attached to the arm.
   complete — `git log` keeps every original commit. The old repo is untouched.
 - **Reference geometry** = the CadQuery builders' own STEP exports at that revision, produced by
   `tools/cycloidal/export_cadquery.py` (run inside the old repo's venv) and copied by
-  `tools/cycloidal/import_reference.py` into `reference/cycloidal/<name>.step` (manifest kind `designed` for
+  `tools/cycloidal/import_cadquery.py` into `reference/cycloidal/<name>.step` (manifest kind `designed` for
   the 6 printed parts, `cots` for the 10 purchased ones, `origin: cycloidal_drive@2f1f67d`).
   `tests/cycloidal/test_port.py` proves the port reproduces them: identical face sets and
   tessellations, and the exact analytic volume for every part but the two spline discs (§11).
@@ -239,7 +239,7 @@ NEMA 17 48 mm (1, $10–15) · 6003-2RS (2, $4–8) · 6814-2RS (2, $16–40) ·
 | Printed parts (designed, `CONVERTED = True`) | `parts/cycloidal/`: `cycloidal_disc_1.py`, `cycloidal_disc_2.py`, `cycloidal_eccentric_shaft.py`, `cycloidal_motor_plate.py`, `cycloidal_ring_gear_body.py`, `cycloidal_output_hub.py` — each exposes `build(cfg)` for tests and its `@step` model |
 | Purchased parts (COTS) | `parts/cycloidal/`: `bearing_6003.py`, `bearing_6814.py`, `bearing_625.py`, `nema17_48mm.py`, `cycloidal_ring_pins.py` (21), `cycloidal_output_pins.py` (4), `cycloidal_shaft_support_pin.py`, `cycloidal_motor_bolts.py` (4), `cycloidal_housing_bolts.py` (8), `cycloidal_housing_nuts.py` (8) — shared body `parts/cycloidal/_cots.py`; the multi-body ones are registered in `MULTI_BODY` |
 | Assembly | `assemblies/cycloidal_drive.py` — 18 rows `(part, role, Location)` from `stack_positions`; `EXPECTED` = 18 leaves / 58 solids / 691 936.8 mm³; `./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals())"` |
-| References | `reference/cycloidal/<name>.step` × 16 (CadQuery exports, Git LFS), `reference/manifest.json` entries (`file` field); `tools/cycloidal/export_cadquery.py` + `tools/cycloidal/import_reference.py` |
+| References | `reference/cycloidal/<name>.step` × 16 (CadQuery exports, Git LFS), `reference/manifest.json` entries (`file` field); `tools/cycloidal/export_cadquery.py` + `tools/cycloidal/import_cadquery.py` |
 | Tests | `tests/cycloidal/test_{disc,eccentric_shaft,motor_plate,ring_gear_body,output_hub,housing,purchased,fitment,assembly,port}.py` + `tests/cycloidal/helpers.py` (one module per part, geometry marked `slow`) |
 | Viewer / export | `./cadtool show assemblies/cycloidal_drive.py`, `./cadtool gen assemblies/cycloidal_drive.py`, `./cadtool export parts/cycloidal/<name>.step stl` |
 
@@ -335,4 +335,4 @@ Every change to the drive must update (1) the tests — one `tests/cycloidal/tes
 plus `tests/cycloidal/test_assembly.py` for the stack-up, (2) this document, and (3) run `./cadtool pytest`
 green before it is done. Geometry changes also regenerate the committed STEPs (`./cadtool gen`), the
 module totals lock (`totals()` / `totals(body)`), `robot/meshes/shoulder_link.stl` + `upper_arm_link.stl` and the URDF/SDF inertials
-(`tools/robot/frames.py --urdf-draft` / `--check`).
+(`tools/robot/derive.py --urdf-draft` / `--check`).

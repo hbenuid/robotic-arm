@@ -91,6 +91,7 @@ cad/
 │   ├── units.py           # IN, NUDGE - a leaf module (lib/cycloidal/ imports it; params.py re-exports it)
 │   ├── datum.py           # capture frame W -> base_link frame B: frame(), BASE_FRAME (arm.py ARM_FROM_W, robot/frames.py)
 │   ├── reference.py       # naming maps (SolidWorks custom/COTS, designed cycloidal parts, modules), loaders, path_of(), matches_reference()
+│   ├── manifest.py        # reference/manifest.json: read() / write() / entry() - shared by the two import tools and the tests
 │   ├── placements.py      # reference/placements.json -> build123d Location
 │   ├── models.py          # model_of() / raw() / geometry(inline=): the @step model of a module, its body, a child for an assembly
 │   ├── assembly.py        # AssemblyHelper / label_shape / label_text re-exported from cadgen
@@ -115,8 +116,8 @@ cad/
 │   └── cycloidal/             # the 16 CadQuery exports the drive was ported from
 ├── vendor/                # purchased-part STEPs (committed via Git LFS; replaceable by better catalog models)
 ├── robot/                 # URDF / SRDF / SDF + per-link meshes and generators (see below)
-├── tools/                 # preview.py (./cadtool show), cadgen_patches.py (./cadtool patch), reference/{import_reference,extract_placements}.py (SolidWorks),
-│                          # cycloidal/{export_cadquery,import_reference}.py (the drive's references), robot/{frames,export_link_meshes}.py
+├── tools/                 # preview.py (./cadtool show), cadgen_patches.py (./cadtool patch), reference/{import_solidworks,extract_placements}.py (SolidWorks),
+│                          # cycloidal/{export_cadquery,import_cadquery}.py (the drive's references), robot/{derive,export_link_meshes}.py
 ├── tests/                 # pytest: conventions, reference match, placements, assembly totals, params locks, robot description, package layering;
 │   ├── conftest.py            # CADGEN_DAEMON=0 + a guard that fails any test calling a model at top level (tests call bodies)
 │   └── cycloidal/             # the drive's own tests (one module per part + housing / purchased / fitment / assembly / port) + helpers.py (CFG, geometry helpers), conftest.py (stack fixture)
@@ -191,8 +192,8 @@ and size reference; the drive's purchased parts keep their CadQuery export in
 <name>.step --overwrite` → `./cadtool inspect refs vendor/<name>.step --facts --planes --positioning`
 → set `VENDOR_TO_REF` in `parts/<group>/<name>.py` so the model lands in the SolidWorks frame →
 `./cadtool pytest -k <name>` (`test_cots_vendor_matches_reference_frame`: bbox within 1.5 mm of
-the reference) → `./cadtool gen parts/<group>/<name>.py` → `./cadtool python tools/reference/import_reference.py`
-(updates `manifest.json`; `tools/cycloidal/import_reference.py` for the drive's parts). If the
+the reference) → `./cadtool gen parts/<group>/<name>.py` → `./cadtool python tools/reference/import_solidworks.py`
+(updates `manifest.json`; `tools/cycloidal/import_cadquery.py` for the drive's parts). If the
 catalog model is worse, restore the reference copy. See `vendor/README.md` for what has been tried.
 
 ## Assembly
@@ -229,10 +230,10 @@ the module's own lock (34 + 18 leaves, 50 + 58 solids, volumes, bbox), the group
 (`lib.reference.path_of(name)` resolves the origin, `manifest.json` records it in `file`).
 `reference/placements.json` holds every occurrence's placement extracted from the full-assembly
 STEP. Both are **immutable inputs** (a checksum test guards them); regenerate with
-`./cadtool python tools/reference/import_reference.py` and `./cadtool python tools/reference/extract_placements.py`
+`./cadtool python tools/reference/import_solidworks.py` and `./cadtool python tools/reference/extract_placements.py`
 if the SolidWorks design changes. The cycloidal drive's 16 references are the CadQuery exports of
 the `cycloidal_drive` repo at `2f1f67d` (`tools/cycloidal/export_cadquery.py` in that repo's venv,
-then `./cadtool python tools/cycloidal/import_reference.py`), and its SolidWorks node is recorded
+then `./cadtool python tools/cycloidal/import_cadquery.py`), and its SolidWorks node is recorded
 in `placements.json` as a designed module (pose only; the contents come from code).
 
 ## Robot description (URDF / SRDF / SDF)
@@ -246,7 +247,7 @@ robot/
 ├── _links.py          # link_rows() / build_link(): one link's occurrences placed in the link frame (models, meshes, tests)
 ├── links/<link>.py    # a @step model per rigid link, in the link's own frame (./cadtool gen robot/links/shoulder_link.py)
 ├── meshes/<link>.stl  # per-link meshes in mm (committed) - tools/robot/export_link_meshes.py
-├── arm.urdf           # SOURCE OF TRUTH (hand-edited ledger + numbers from tools/robot/frames.py)
+├── arm.urdf           # SOURCE OF TRUTH (hand-edited ledger + numbers from tools/robot/derive.py)
 ├── arm.srdf           # MoveIt2 semantics: chain base_link->tool0, gripper group, home/open/closed states
 └── arm.sdf            # model-level SDF 1.12 derived from the URDF
 ```
@@ -289,8 +290,8 @@ All limits, efforts, velocities, axis signs and the jaw travel are `[ESTIMATE]` 
 `lib/params.py`; the URDF ledger lists the link-membership assumptions.
 
 ```bash
-./cadtool python tools/robot/frames.py                 # joint origins + link inertials (m, kg, rad)
-./cadtool python tools/robot/frames.py --check robot/arm.urdf robot/arm.sdf   # files vs CAD (tests run this)
+./cadtool python tools/robot/derive.py                 # joint origins + link inertials (m, kg, rad)
+./cadtool python tools/robot/derive.py --check robot/arm.urdf robot/arm.sdf   # files vs CAD (tests run this)
 ./cadtool python tools/robot/export_link_meshes.py           # regenerate meshes after converting a part
 ./cadtool validate robot/arm.urdf --strict             # also .srdf / .sdf --gz-check never
 ./cadtool snapshot robot/arm.urdf snapshots/arm_urdf.png --joint-values '{"shoulder_pitch": 45}'   # posed stills

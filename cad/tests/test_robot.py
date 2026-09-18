@@ -13,7 +13,7 @@ from lib import placements as P
 from lib import reference as R
 from robot import frames as F
 from tests.source_checks import runs_its_model
-from tools.robot import frames as RF
+from tools.robot import derive as RF
 
 CAD_DIR = pathlib.Path(__file__).resolve().parent.parent
 ROBOT_DIR = CAD_DIR / "robot"
@@ -162,7 +162,7 @@ def test_forward_kinematics_at_zero_reproduces_the_capture_frames():
         world[j.child] = _mul(world[j.parent], _hom(xyz, rpy))
     # The URDF carries six decimals (1 um / 1 urad per joint origin); composing the five joints
     # down to the wrist legitimately accumulates a few um, so this is a per-chain tolerance
-    # (tools/robot/frames.py --check holds every joint to 1e-6 individually).
+    # (tools/robot/derive.py --check holds every joint to 1e-6 individually).
     tol = 5e-6
     for link in F.LINK_ORDER:
         M = RF.matrix(F.link_frame_world(link))

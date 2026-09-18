@@ -4,9 +4,9 @@
   wrist pitch (GT2 belts) - + NEMA17-pancake wrist roll + MG996R parallel gripper. Three joints
   are driven by MKS SERVO42D steppers (src/config.py J1..J3; which drives which is unconfirmed).
 
-  SOURCE OF TRUTH: this file. Every number is derived from the CAD by cad/tools/robot/frames.py
+  SOURCE OF TRUTH: this file. Every number is derived from the CAD by cad/tools/robot/derive.py
   (cad/robot/frames.py = link partition + joint frames; cad/reference/placements.json = the
-  SolidWorks capture) and verified with `./cadtool python tools/robot/frames.py`, check mode
+  SolidWorks capture) and verified with `./cadtool python tools/robot/derive.py`, check mode
   (tests/test_robot.py runs it). Regenerate meshes with cad/tools/robot/export_link_meshes.py.
 
   FRAMES (REP-103): base_link on the base's bottom face at the base_yaw axis, Z up, X forward

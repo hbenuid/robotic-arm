@@ -6,12 +6,11 @@ bounding box (size + position in its local frame, after LOCAL_FROM_REF) so a con
 that drifts from the original design fails here. Per-part tolerances: REF_VOL_TOL
 (relative) and REF_BBOX_TOL (mm) module attributes.
 """
-import json
-
 import pytest
 from build123d import Location
 
 import parts
+from lib import manifest as M
 from lib import reference as R
 
 CUSTOM_PARTS = [n for n in parts.names() if n in R.CUSTOM or n in R.DESIGNED]
@@ -24,8 +23,9 @@ def test_some_custom_parts_were_discovered():
 
 def test_reference_and_vendor_files_match_manifest():
     """reference/{solidworks,cycloidal}/*.step are immutable inputs and vendor/*.step must match what the manifest
-    describes - detect edits/corruption or a vendor swap without re-running import_reference."""
-    manifest = json.loads((R.REF_DIR / "manifest.json").read_text(encoding="utf-8"))
+    describes - detect edits/corruption or a vendor swap without re-running the import tools."""
+    manifest = M.read()
+    assert manifest["parts"], f"{M.MANIFEST_PATH} is missing or empty - run the import tools"
     for name, entry in manifest["parts"].items():
         ref = R.path_of(name)
         assert ref.exists(), f"{ref} listed in manifest.json but missing"
@@ -38,8 +38,8 @@ def test_reference_and_vendor_files_match_manifest():
             if "vendor" in entry:
                 assert vendor.exists(), f"{vendor} missing"
                 assert R.sha256(vendor) == entry["vendor"]["sha256"], (
-                    f"{vendor} differs from manifest.json - run tools/reference/import_reference.py "
-                    f"(tools/cycloidal/import_reference.py for the drive) after replacing a vendor file"
+                    f"{vendor} differs from manifest.json - run tools/reference/import_solidworks.py "
+                    f"(tools/cycloidal/import_cadquery.py for the drive) after replacing a vendor file"
                 )
             else:   # envelope in use - a vendor file must not appear without being recorded
                 assert not vendor.exists(), f"{vendor} exists but manifest.json has no vendor entry - re-run the import tool"

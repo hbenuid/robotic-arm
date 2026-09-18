@@ -55,8 +55,16 @@ robotic-arm repo; the root motor-control project never depends on it.
   needs `git lfs pull`; every regenerated STEP is a new LFS object (cadgen writes deterministic bytes
   per kernel: an unchanged model rewrites an identical file, but the STEP header names the OCCT
   version, so a kernel bump rewrites every file once — stop the daemon first, see Gotchas).
+  Editing `lib/reference.py` (even a comment) makes every wrapper + COTS part stale; the rebuild is
+  byte-identical except that a file can come back with different numerical-zero terms (2026-09-18:
+  `j1_link`, `gripper_clamp_bracket` — 12 values ≤ 1e-17, same solids / faces / volume / bbox, and
+  `--force` then reproduces the new bytes). Check with `import_step` + `lib.reference.solid_volume`
+  / `bbox_*` and commit the rewritten file: restoring the old bytes leaves it `stale` in `why`.
 - Cycloidal references: `cd ../cycloidal_drive && uv run python ../robotic-arm/cad/tools/cycloidal/export_cadquery.py`
-  (the OLD repo's CadQuery venv — never ours), then `./cadtool python tools/cycloidal/import_reference.py`.
+  (the OLD repo's CadQuery venv — never ours), then `./cadtool python tools/cycloidal/import_cadquery.py`.
+  SolidWorks references: `./cadtool python tools/reference/import_solidworks.py`. Each tool owns its own
+  `reference/manifest.json` entries and keeps the other's; both build them with `lib/manifest.py`
+  (`read()` / `write()` / `entry()` — no part imports it, so editing it never makes a part stale).
 - Expected noise: every `gen` prints cadgen's "kernel imported eagerly" hint on stderr (the model files
   import build123d at module top) and pays the ~2.5 s import — accepted for now.
 - **build123d 0.11.1 / OCP 7.9.3 are required by cadgen 0.5.x** (`pyproject.toml` pins `cadquery-ocp`
@@ -204,7 +212,7 @@ Changing a shared dimension — touchpoints in order:
 ## Robot description (`robot/`)
 - `robot/arm.urdf` is the **source of truth** (hand-authored XML, ledger comment on top);
   `arm.srdf` pairs by colocation + robot name; `arm.sdf` is derived from the URDF. Never build a
-  Python generator for them - `tools/robot/frames.py --urdf-draft/--sdf-draft` only prints scaffolding
+  Python generator for them - `tools/robot/derive.py --urdf-draft/--sdf-draft` only prints scaffolding
   to copy numbers from, and `--check` (run by `tests/test_robot.py`) catches drift.
 - `robot/frames.py` is the kinematic SSOT: `LINKS` (occurrence keys per rigid link; a designed-module
   key may carry a `:<body>` suffix — `cycloidal_drive#1:stator` / `:rotor` from

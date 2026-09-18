@@ -10,6 +10,7 @@ repo adds. New parts are covered the moment they land.
 import pytest
 
 import parts
+from lib import manifest as M
 from lib import reference as R
 from tests.source_checks import runs_its_model
 
@@ -69,7 +70,7 @@ def test_part_declares_its_contract(name):
         assert name in R.CUSTOM or name in R.DESIGNED, f"{name} is not in lib.reference.CUSTOM / DESIGNED (and not COTS)"
         assert getattr(mod, "REFERENCE", None) == name, f"{name}.REFERENCE must name reference/<origin>/{name}.step"
         assert isinstance(getattr(mod, "CONVERTED", None), bool), f"{name} must declare CONVERTED = True/False"
-        assert R.path_of(mod.REFERENCE).exists(), f"missing {R.path_of(name)} (run tools/reference/import_reference.py or tools/cycloidal/import_reference.py)"
+        assert R.path_of(mod.REFERENCE).exists(), f"missing {R.path_of(name)} (run tools/reference/import_solidworks.py or tools/cycloidal/import_cadquery.py)"
 
 
 @pytest.mark.slow
@@ -109,10 +110,8 @@ COTS_PARTS = [n for n in PART_NAMES if n in R.COTS]
 @pytest.mark.parametrize("name", COTS_PARTS)
 def test_cots_envelope_tracks_reference_bbox(name):
     """The fallback envelope must occupy the vendor geometry's bounding box (same frame)."""
-    import json
-
     mod = parts.load(name)
-    entry = json.loads((R.REF_DIR / "manifest.json").read_text(encoding="utf-8"))["parts"][name]
+    entry = M.read()["parts"][name]
     env = mod._envelope()
     assert env.is_valid
     for got, exp in ((R.bbox_min(env), entry["bbox_min"]), (R.bbox_size(env), entry["bbox_size"])):

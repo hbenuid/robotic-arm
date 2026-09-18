@@ -39,10 +39,10 @@ skips them):
 # set VENDOR_TO_REF in parts/<group>/<name>.py so the model lands in the reference frame (reference/<origin>/<name>.step)
 ./cadtool pytest -k <name>                                  # vendor-frame + envelope + convention tests
 ./cadtool gen parts/<group>/<name>.py                       # regenerate the committed STEP
-./cadtool python tools/reference/import_reference.py                  # refresh manifest.json (vendor sha/bbox)
+./cadtool python tools/reference/import_solidworks.py                 # refresh manifest.json (vendor sha/bbox)
 ```
 If the catalog model is worse than the SolidWorks re-export, restore it:
-`cp reference/solidworks/<name>.step vendor/<name>.step && ./cadtool python tools/reference/import_reference.py`.
-For the cycloidal drive's parts the manifest is owned by `tools/cycloidal/import_reference.py`
-(run it instead of `import_reference.py`), and a worse catalog model is simply deleted — the
+`cp reference/solidworks/<name>.step vendor/<name>.step && ./cadtool python tools/reference/import_solidworks.py`.
+For the cycloidal drive's parts the manifest is owned by `tools/cycloidal/import_cadquery.py`
+(run that one for them), and a worse catalog model is simply deleted — the
 envelope takes over and the manifest entry loses its `vendor` block.

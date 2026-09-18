@@ -2,11 +2,11 @@
 the cycloidal_drive repo) into reference/cycloidal/<name>.step and merge their entries into
 reference/manifest.json (kind "designed" for the printed parts, "cots" for the purchased ones).
 
-    ./cadtool python tools/cycloidal/import_reference.py [--src ../cycloidal_drive/export/step/house]
+    ./cadtool python tools/cycloidal/import_cadquery.py [--src ../cycloidal_drive/export/step/house]
                                                           [--force] [--only NAME ...]
 
 Owns exactly the manifest entries of lib/reference.py DESIGNED | CYCLOIDAL_COTS;
-tools/reference/import_reference.py owns the SolidWorks ones and keeps these untouched. Re-run after
+tools/reference/import_solidworks.py owns the SolidWorks ones and keeps these untouched. Re-run after
 replacing a vendor/<name>.step (the entry's `vendor` block records the current file).
 """
 from __future__ import annotations
@@ -17,9 +17,9 @@ import pathlib
 import shutil
 import sys
 
+from lib import manifest as M
 from lib import reference as R
 
-MANIFEST_PATH = R.REF_DIR / "manifest.json"
 DEFAULT_SRC = R.CAD_DIR.parent.parent / "cycloidal_drive" / "export" / "step" / "house"
 
 # Human-readable product names for the manifest / reference README.
@@ -59,7 +59,7 @@ def main(argv=None) -> int:
               f"lib/reference.py says {R.CYCLOIDAL_REV}", file=sys.stderr)
 
     R.REF_CYCLOIDAL_DIR.mkdir(parents=True, exist_ok=True)
-    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8")) if MANIFEST_PATH.exists() else {"parts": {}}
+    manifest = M.read()
     jobs = [(n, "designed", b) for n, b in R.DESIGNED.items()] + [(n, "cots", b) for n, b in R.CYCLOIDAL_COTS.items()]
     missing = []
     for name, kind, builder in jobs:
@@ -75,24 +75,16 @@ def main(argv=None) -> int:
         else:
             shutil.copyfile(src, ref)
             action = "copied"
-        entry = {
-            "kind": kind, "file": ref.relative_to(R.REF_DIR).as_posix(),
-            "origin": f"cycloidal_drive@{rev}", "product": PRODUCTS.get(name, name),
-            "source": builder, "bytes": ref.stat().st_size, "sha256": R.sha256(ref), "units": R.step_units(ref),
-            **R.describe(ref),
-        }
-        vendor = R.VENDOR_DIR / f"{name}.step"
-        if kind == "cots" and vendor.exists():
-            entry["vendor"] = {
-                "bytes": vendor.stat().st_size, "sha256": R.sha256(vendor),
-                "same_as_reference": R.sha256(vendor) == entry["sha256"], **R.describe(vendor),
-            }
+        vendor = R.VENDOR_DIR / f"{name}.step"      # optional: without one the part's envelope is the geometry
+        entry = M.entry(kind, ref, product=PRODUCTS.get(name, name), source=builder,
+                        vendor=vendor if kind == "cots" and vendor.exists() else None,
+                        origin=f"cycloidal_drive@{rev}")
         manifest["parts"][name] = entry
         vend = "" if kind != "cots" else ("  vendor=" + ("reference" if entry.get("vendor", {}).get("same_as_reference") else "step.parts" if "vendor" in entry else "envelope"))
         print(f"{name:28s} {kind:8s} {action:7s} solids={entry['solids']:2d} vol={entry['solid_volume']:12.1f}  size={entry['bbox_size']}{vend}")
 
-    MANIFEST_PATH.write_text(json.dumps(manifest, indent=1, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
-    print(f"wrote {MANIFEST_PATH} ({len(manifest['parts'])} entries)")
+    M.write(manifest)
+    print(f"wrote {M.MANIFEST_PATH} ({len(manifest['parts'])} entries)")
     if missing:
         print("MISSING exports:\n  " + "\n  ".join(missing), file=sys.stderr)
         return 1

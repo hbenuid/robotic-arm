@@ -14,14 +14,14 @@ directory; `lib.reference.path_of(name)` resolves it). Regenerate — never edit
 - Source tree: `/home/hben09/Documents/arm_assembly_organized` (SolidWorks 2026, STEP AP214 exports of 2026-08-27; not in git).
 - Full assembly: `final Arm Assembly Fully Movable.STEP` (13.5 MB, inch units, sha256 `67c39d5dc9ff1d7b…`) —
   not committed; `placements.json` captures its structure.
-- Regenerate: `./cadtool python tools/reference/import_reference.py` (copies + `manifest.json`), then
+- Regenerate: `./cadtool python tools/reference/import_solidworks.py` (copies + `manifest.json`), then
   `./cadtool python tools/reference/extract_placements.py` (`placements.json` + `vendor/nema17_pancake.step`),
-  then `import_reference.py` once more so the manifest describes the extracted pancake.
+  then `import_solidworks.py` once more so the manifest describes the extracted pancake.
 - Cycloidal drive (manifest `origin: cycloidal_drive@2f1f67d`, kind `designed` / `cots`): in the old
   repo `cd ../cycloidal_drive && uv run python ../robotic-arm/cad/tools/cycloidal/export_cadquery.py`
   (CadQuery venv, writes its git-ignored `export/step/house/`), then here
-  `./cadtool python tools/cycloidal/import_reference.py` (copies + merges its manifest entries;
-  `import_reference.py` leaves them alone).
+  `./cadtool python tools/cycloidal/import_cadquery.py` (copies + merges its manifest entries;
+  `import_solidworks.py` leaves them alone).
 
 ## Naming map
 Clean name ← SolidWorks product (source file under the source tree); every row lives in

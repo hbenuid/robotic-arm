@@ -115,7 +115,7 @@ CYCLOIDAL_MOTOR_BOLTS_MASS_G = STEEL_DENSITY * 4 * (
 
 # --- Robot description (robot/frames.py, robot/arm.urdf) --------------------------------------
 # Joint limits and actuator ratings are PLACEHOLDERS until measured on the hardware; the URDF
-# and SDF are checked against these by tools/robot/frames.py --check.
+# and SDF are checked against these by tools/robot/derive.py --check.
 BASE_YAW_LIMIT_DEG = 175.0        # [ESTIMATE] symmetric +/- range; j1_coupler (carrying the drive's stator) turns on the base
 SHOULDER_PITCH_LIMIT_DEG = 120.0  # [ESTIMATE] the 20:1 cycloidal drive (CYCLOIDAL_RATIO) between j1_coupler and j1_link
 ELBOW_PITCH_LIMIT_DEG = 120.0     # [ESTIMATE] GT2 belt at j2_link

@@ -1,6 +1,6 @@
 """Kinematic decomposition of the arm: rigid links and joint frames, derived from the
 SolidWorks capture (reference/placements.json). Single source for robot/links/*.py,
-tools/robot/frames.py, tools/robot/export_link_meshes.py and tests/test_robot.py.
+tools/robot/derive.py, tools/robot/export_link_meshes.py and tests/test_robot.py.
 
 LINKS holds placement keys: part occurrences and designed-module keys - "cycloidal_drive#1", or
 one rigid body of it, "cycloidal_drive#1:stator" / ":rotor" (assemblies/cycloidal_drive.py
@@ -42,7 +42,7 @@ from lib.datum import BASE_BOTTOM_Y, BASE_FORWARD, BASE_FRAME, U, frame  # noqa:
 ROBOT_NAME = "arm"
 
 # --- unit vectors of the capture pose (W frame); U (world up) and BASE_FORWARD are lib/datum.py's ---
-N = (0.064439, 0.0, 0.997922)               # the three pitch axes (parallel): 90T pulley / J3-coupler bore direction; the cycloidal drive's +Z is -N
+N = (0.064439, 0.0, 0.997922)                # the three pitch axes (parallel): 90T pulley / J3-coupler bore direction; the cycloidal drive's +Z is -N
 F = (-0.865419, 0.497923, 0.055880)          # wrist-roll axis: NEMA17 pancake shaft / 20T pulley bore (toward the tool)
 PJ = (0.499699, 0.865884, 0.023354)          # jaw travel: the two Ø6 gripper rails (slider#1 -> slider#2)
 

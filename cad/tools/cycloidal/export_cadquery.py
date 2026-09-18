@@ -1,6 +1,6 @@
 """Export the cycloidal_drive repo's CadQuery builders as house-named STEP files - the reference
 geometry the build123d port is verified against (reference/cycloidal/<name>.step via
-tools/cycloidal/import_reference.py).
+tools/cycloidal/import_cadquery.py).
 
 RUNS IN THE cycloidal_drive REPO'S OWN VENV (CadQuery), never in cad/'s:
 
