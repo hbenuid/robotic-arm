@@ -88,6 +88,8 @@ cad/
 ├── .env                   # PYTHONPATH=. for the VS Code Python extension (cadtool/pytest set it themselves)
 ├── lib/
 │   ├── params.py          # single source of truth for shared dimensions (tagged provenance)
+│   ├── units.py           # IN, NUDGE - a leaf module (lib/cycloidal/ imports it; params.py re-exports it)
+│   ├── datum.py           # capture frame W -> base_link frame B: frame(), BASE_FRAME (arm.py ARM_FROM_W, robot/frames.py)
 │   ├── reference.py       # naming maps (SolidWorks custom/COTS, designed cycloidal parts, modules), loaders, path_of(), matches_reference()
 │   ├── placements.py      # reference/placements.json -> build123d Location
 │   ├── models.py          # model_of() / raw() / geometry(inline=): the @step model of a module, its body, a child for an assembly
@@ -115,7 +117,7 @@ cad/
 ├── robot/                 # URDF / SRDF / SDF + per-link meshes and generators (see below)
 ├── tools/                 # preview.py (./cadtool show), cadgen_patches.py (./cadtool patch), reference/{import_reference,extract_placements}.py (SolidWorks),
 │                          # cycloidal/{export_cadquery,import_reference}.py (the drive's references), robot/{frames,export_link_meshes}.py
-├── tests/                 # pytest: conventions, reference match, placements, assembly totals, params locks, robot description;
+├── tests/                 # pytest: conventions, reference match, placements, assembly totals, params locks, robot description, package layering;
 │   ├── conftest.py            # CADGEN_DAEMON=0 + a guard that fails any test calling a model at top level (tests call bodies)
 │   └── cycloidal/             # the drive's own tests (one module per part + housing / purchased / fitment / assembly / port) + helpers.py
 └── snapshots/             # snapshot PNGs (git-ignored)

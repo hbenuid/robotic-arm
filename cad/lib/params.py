@@ -12,15 +12,17 @@ Every constant carries a provenance tag:
 Units: millimetres and grams. Datum: the SolidWorks capture frame of reference/placements.json
 - **+Y is up** (the J1 axis), the arm extends toward -X, Z is the pitch-axis direction. Each part
 keeps its SolidWorks part-file frame until it is converted (see CLAUDE.md). The URDF's REP-103
-base frame (Z up, X forward) is defined in robot/frames.py; assemblies/arm.py EMITS the arm in that
-frame (ARM_FROM_W - cadgen's viewer and snapshots are Z-up), the placements themselves stay in the
-capture frame. `lib/` never imports `parts/`.
+base frame (Z up, X forward) is lib/datum.py BASE_FRAME (robot/frames.py builds the kinematics on
+it); assemblies/arm.py EMITS the arm in that frame (ARM_FROM_W - cadgen's viewer and snapshots are
+Z-up), the placements themselves stay in the capture frame. `lib/` never imports `parts/`.
 """
 import math
 
 # --- Units / print globals ----------------------------------------------------
-IN = 25.4               # mm per inch (some SolidWorks exports are inch-unit; OCCT converts on import)
-NUDGE = 0.01            # tiny overshoot so boolean cuts punch fully through a face
+# IN and NUDGE are defined in lib/units.py (a leaf module: lib/cycloidal/ needs NUDGE and this
+# module imports lib/cycloidal/params.py below - it must not import back up) and re-exported here.
+from lib.units import IN, NUDGE  # noqa: F401
+
 PETG_DENSITY = 1.27e-3  # [DESIGN] g/mm^3 - printed-part mass estimates
 
 # --- Fasteners ----------------------------------------------------------------

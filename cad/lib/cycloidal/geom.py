@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from build123d import Align, Cylinder, Pos, Shape, Solid
 
-from lib.params import NUDGE
+from lib.units import NUDGE   # not lib.params: that module imports lib.cycloidal.params (no import back up)
 
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)   # footprint centred, extends +Z from z0
 

@@ -15,7 +15,9 @@ hub + pins, bolted to j1_link) in upper_arm_link (docs/cycloidal_drive.md "Attac
 Frames (all in the SolidWorks WORLD frame W, millimetres; W is +Y up, the arm extends toward
 -X, see reference/README.md):
   * base_link frame B: REP-103 (Z up, X forward) at the base_yaw axis foot on the base's bottom
-    face: origin (0, BASE_BOTTOM_Y, 0), X_B = -X_W, Y_B = +Z_W, Z_B = +Y_W.
+    face: origin (0, BASE_BOTTOM_Y, 0), X_B = -X_W, Y_B = +Z_W, Z_B = +Y_W. BASE_FRAME, frame()
+    and the U / BASE_FORWARD vectors are defined in lib/datum.py (assemblies/arm.py needs them too
+    and assemblies/ never imports robot/) and re-exported here.
   * Every joint frame has Z along the joint axis and X along the child link's long direction
     at the capture pose (projected perpendicular to Z); Y = Z x X.
   * A child link's frame IS its joint frame at the capture pose, so ALL JOINT VALUES ARE 0 AT
@@ -31,21 +33,19 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 
-from build123d import Location, Plane, Vector
+from build123d import Location
 
 from lib import params as PARAMS
 from lib import placements as P
+from lib.datum import BASE_BOTTOM_Y, BASE_FORWARD, BASE_FRAME, U, frame  # noqa: F401  (the datum frames live below assemblies/)
 
 ROBOT_NAME = "arm"
 
-# --- unit vectors of the capture pose (W frame) -----------------------------------------------
-U = (0.0, 1.0, 0.0)                          # base_yaw axis: world up
-N = (0.064439, 0.0, 0.997922)                # the three pitch axes (parallel): 90T pulley / J3-coupler bore direction; the cycloidal drive's +Z is -N
+# --- unit vectors of the capture pose (W frame); U (world up) and BASE_FORWARD are lib/datum.py's ---
+N = (0.064439, 0.0, 0.997922)               # the three pitch axes (parallel): 90T pulley / J3-coupler bore direction; the cycloidal drive's +Z is -N
 F = (-0.865419, 0.497923, 0.055880)          # wrist-roll axis: NEMA17 pancake shaft / 20T pulley bore (toward the tool)
 PJ = (0.499699, 0.865884, 0.023354)          # jaw travel: the two Ø6 gripper rails (slider#1 -> slider#2)
-BASE_FORWARD = (-1.0, 0.0, 0.0)              # the arm extends toward -X_W
 
-BASE_BOTTOM_Y = -100.9                       # [REFERENCE] base world bbox min Y (mounting face)
 BASE_YAW_ORIGIN = (0.0, 85.010435, 0.0)      # [REFERENCE] on the base_yaw axis at the cycloidal drive's axis height (its node's Y)
 SHOULDER_ORIGIN = (-2.440595, 85.010435, -34.915297)   # [REFERENCE] j1_link#1 origin: on the cycloidal drive's axis, 66.5 mm along it from the
 #                                                        motor-plate face (1.5 past the hub's arm-mount face, CYCLOIDAL_OUTPUT_FACE_Z)
@@ -132,23 +132,6 @@ JOINTS: list[Joint] = [
 ]
 JOINT_BY_NAME = {j.name: j for j in JOINTS}
 JOINT_OF_CHILD = {j.child: j for j in JOINTS}
-
-
-def _unit(v):
-    n = math.sqrt(sum(x * x for x in v))
-    return tuple(x / n for x in v)
-
-
-def frame(origin_w, z_w, x_hint_w) -> Location:
-    """World Location of a right-handed frame: Z along z_w, X along x_hint_w projected
-    perpendicular to Z, origin at origin_w (mm)."""
-    z = _unit(z_w)
-    d = sum(a * b for a, b in zip(x_hint_w, z))
-    x = _unit(tuple(a - d * b for a, b in zip(x_hint_w, z)))
-    return Location(Plane(origin=Vector(*origin_w), x_dir=Vector(*x), z_dir=Vector(*z)))
-
-
-BASE_FRAME: Location = frame((0.0, BASE_BOTTOM_Y, 0.0), U, BASE_FORWARD)
 
 
 def joint_frame_world(name: str) -> Location:

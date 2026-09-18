@@ -17,8 +17,8 @@ own MODULE_TINTS colour) although its rotor body (output hub + pins) belongs to 
 in robot/frames.py LINKS - the kinematic truth, which the per-link meshes follow.
 
 Frame: the placements are in the SolidWorks capture frame W (+Y up), but the arm is EMITTED in
-the base_link frame B of robot/frames.py (REP-103: Z up, X forward, the base's mounting face on
-z = 0) - ARM_FROM_W, composed into every occurrence's placement. cadgen's viewer and snapshots
+the base_link frame B (lib/datum.py BASE_FRAME, the frame robot/frames.py gives base_link - REP-103:
+Z up, X forward, the base's mounting face on z = 0) - ARM_FROM_W, composed into every occurrence's placement. cadgen's viewer and snapshots
 are Z-up with no up-axis option, so a W-frame STEP renders lying on its side; in B arm.step and
 robot/arm.urdf open in the same pose. placements.json, the parts and the modules stay in W.
 
@@ -33,7 +33,7 @@ from cadgen import step
 from assemblies import cycloidal_drive, gripper
 from assemblies._occurrences import add_grouped_occurrences
 from lib.assembly import AssemblyHelper
-from robot.frames import BASE_FRAME
+from lib.datum import BASE_FRAME
 
 # W (SolidWorks capture frame, +Y up, arm toward -X) -> base_link frame B (REP-103: Z up, X forward,
 # origin on the base's mounting face at the base_yaw axis): the frame the arm is emitted in.

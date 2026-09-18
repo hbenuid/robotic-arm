@@ -86,8 +86,16 @@ across groups (`import parts` raises on a duplicate), and it keys the manifest,
 - import `lib` / `parts` plainly — **no `sys.path` shim**: `cadtool` exports `PYTHONPATH=cad/`, pytest
   has `pythonpath = ["."]`, `.env` covers VS Code. cadgen loads `parts/<group>/<name>.py` as the package
   module `parts.<group>.<name>` (it walks the `__init__.py` chain) — the same object `parts.load()`
-  returns. **Never add `cad/__init__.py`** (the package root would become the repo root);
+  returns. **Never add `cad/__init__.py`** (the package root would become the repo root). The one
+  `sys.path` line in the tree is `tools/cycloidal/export_cadquery.py` (it runs in the OTHER repo's venv);
 - pull shared dims from `lib/params.py`.
+
+**Layering** (locked by `tests/test_layering.py`, an AST scan — function-local imports count):
+`lib ← parts ← assemblies ← robot ← tools ← tests`; a package imports only itself and the ones to its
+left. So `assemblies/` never imports `robot/` (the base frame both need is `lib/datum.py`), `robot/`
+builds on `assemblies/_occurrences.py` (`world_rows` reads a designed module's `OCCURRENCES` / `BODIES`),
+and `lib/cycloidal/` never imports `lib/params.py` (which re-exports from it) — its globals come from
+the leaf `lib/units.py` (`IN`, `NUDGE`; `lib/params.py` re-exports those too).
 
 **Never call a model to get its geometry outside a build**: with no cadgen build on the thread the
 call runs the whole pipeline (gate, writes the STEP, talks to the warm daemon). `parts.build(name)` /
@@ -129,7 +137,8 @@ swaps. Swap procedure and what has been tried: `vendor/README.md` (`./cadtool pa
 `lib/params.py` is the single source of truth: mm and grams, every constant tagged
 `[MEASURE] / [DATASHEET] / [DESIGN] / [REFERENCE] / [ESTIMATE]` with a derivation comment.
 `lib/` never imports `parts/`. Docs name constants, never numbers. Datum: the SolidWorks capture
-frame is **Y up** (J1 axis); the URDF base frame (REP-103) lives in `robot/frames.py` — and
+frame is **Y up** (J1 axis); the URDF base frame (REP-103) is `lib/datum.py BASE_FRAME` (with `frame()`,
+`U`, `BASE_FORWARD`; `robot/frames.py` re-exports them and builds the kinematics on top) — and
 `assemblies/arm.py` emits the arm in it (`ARM_FROM_W`, see Assembly), so `arm.step` is **Z up**.
 The cycloidal drive's own dimensions are `lib/cycloidal/params.py` (`DriveConfig`, frozen
 dataclasses, variants via `dataclasses.replace`); `lib/params.py` re-exports the interface values
@@ -160,7 +169,7 @@ Changing a shared dimension — touchpoints in order:
 - **The arm is emitted Z up.** `placements.json` is Y up, but cadgen's viewer and snapshot renderer
   hardcode +Z as up and have no up-axis option (no `@step` kwarg, sidecar field, URL parameter or
   flag), so a capture-frame `arm.step` renders lying on its side. `arm.py ARM_FROM_W` =
-  `robot/frames.py BASE_FRAME⁻¹` (capture frame → `base_link` frame: Z up, X forward, the base's
+  `lib/datum.py BASE_FRAME⁻¹` (capture frame → `base_link` frame: Z up, X forward, the base's
   mounting face on z = 0 — the frame `arm.urdf` uses, so both open in the same pose) goes into
   `add_grouped_occurrences(…, root=)`, which composes `root * rel` into **every occurrence's
   placement**. Never `.moved()` the built root Compound instead: cadgen's STEP packager reads only the
@@ -228,6 +237,8 @@ module record), `test_assembly.py` (34 + 18 leaves / 50 + 58 solids / volume / b
 module lock), `test_params_invariants.py` (locks), `test_robot.py` (link partition, frames, FK at
 zero = capture, meshes, inertials, URDF/SRDF/SDF consistency + cadgen's validators via
 `./cadtool validate`), `test_tooling.py` (the cadgen runtime patch is applied - `./cadtool patch`),
+`test_layering.py` (the package layering, no `sys.path`, no direct part-module imports — AST scan),
+`source_checks.py` (the shared `runs_its_model()` check that a model file ends with its build call),
 `tests/cycloidal/` (the drive: one module per part + housing / purchased / fitment / assembly / port,
 ~230 tests, `from tests.cycloidal.helpers import …`). Geometry tests are
 `slow`. Run pytest only through `./cadtool pytest` (rootdir `cad/`; the repo-root `tests/` is the
