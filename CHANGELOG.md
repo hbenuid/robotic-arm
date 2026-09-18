@@ -4,6 +4,75 @@ Dated record of notable changes to this repository (newest first). Every commit 
 behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
 `cad-setup` working branch was fast-forward-only and has been retired).
 
+## 2026-09-18 — cad/ upgraded to text-to-cad v0.6.5 / cadgen 0.6.5 (branch `cad/cadgen-0.6.5`)
+
+Upstream shipped v0.6.0 → v0.6.5 (2026-09-16 … 09-18). What mattered here: the URDF renderer bug this
+repo patched locally is **fixed upstream** (0.6.0, `fd566e3e` — `buildUrdfMeshGeometry` now declares
+`partTransformsBaked: false`), `cadgen step inspect` was **removed** (0.6.5, hard cutover, no
+replacement command), cadgen now depends on `cadquery-ocp-novtk` instead of `cadquery-ocp`, and the
+0.6.0 cache / sidecar schema cut makes every model read stale once. Kernel unchanged (build123d 0.11.1 /
+OCP 7.9.3); no geometry, placement or robot-description number changed.
+
+### Changed — cadgen 0.6.5, the runtime patch retired, a local `./cadtool inspect` (`bf039e6`)
+- Plugin updated 0.5.1 → 0.6.5 (user + project scope). `cad/pyproject.toml`: `cadgen[snapshot]==0.6.5`;
+  `cadquery-ocp==7.9.3.1.1` replaced by an explicit `cadquery-ocp-novtk==7.9.3.1.1` (cadgen 0.6 requires
+  `build123d>=0.11.1,<0.12` + `cadquery-ocp-novtk>=7.9,<8`; the pin freezes the kernel behind the
+  committed STEPs). `uv.lock`: `cadquery-ocp`, `vtk` 9.6.2, `matplotlib` + `contourpy`, `cycler`,
+  `kiwisolver` removed.
+- **Lesson — `uv sync` gutted the kernel.** `cadquery-ocp` and `cadquery-ocp-novtk` own the same 322
+  `OCP/` files (the 162 MB `.so` included); removing the first deleted them while uv still counted
+  novtk as installed, so the sync reported success and `OCP/*.so` was gone. Repair:
+  `uv sync --reinstall-package cadquery-ocp-novtk` (398 files, 0 missing). `./cadtool setup` now does
+  that whenever `import OCP` fails, and `tests/test_tooling.py` checks every RECORD file exists and
+  that `cadquery-ocp` is absent. cadgen's own `doctor` does not flag an absent kernel.
+- Removed `cad/tools/cadgen_patches.py`, the `./cadtool patch` verb, the `viewer` / `snapshot`
+  warnings and the `setup` / `doctor` hooks (the patch was reverted before the sync so no `.orig`
+  bundle was orphaned in site-packages). `robot/arm.urdf` renders assembled on the unpatched runtime.
+- New `cad/tools/step_facts.py` behind `./cadtool inspect <file.step> [--planes] [--json]` (leaf refs,
+  solids, faces, volume, bbox; `--planes` = planar faces as normal / offset / area, for frame-finding)
+  and `./cadtool inspect diff <a.step> <b.step> [--tol X]` (exit 1 when the geometry differs) — the two
+  jobs the old verb did here, on `cadgen.read_scene`. The retired first arguments
+  (`refs|measure|align|frame|interfere|validate`) exit 2 with the new syntax; distances and overlaps
+  are `cadgen.geometry.closest_points` / `overlap_volume` in a test.
+- `cad/tests/test_tooling.py` rewritten: installed cadgen == the pyproject pin, one complete pinned OCP
+  distribution, the retired-verb message, and (slow) `step_facts` totals == `lib.reference.describe()`.
+- Docs: 0.5 → 0.6 in both READMEs, both CLAUDE.md, `cad/vendor/README.md`,
+  `cad/docs/cycloidal_drive.md`, `cad/.env` and five source comments; the Known-issues cadgen bullet is
+  gone from the root `CLAUDE.md`; `cad/CLAUDE.md` Gotchas gained the OCP overlap and the list of
+  private cadgen names to re-check on a bump.
+- Verified still present in 0.6.5 (all private): `cadgen.authoring.build_in_progress` (thread-local),
+  `_build(defn)`, `ModelDef.func/fmt/script_path/out`, `__cadgen_model__`, `__wrapped__`,
+  `_internal.component_package._shape_brep_bytes` / `_build123d_shape_from_brep_bytes`,
+  `AssemblyHelper.add/add_module(color=)/build`, the `python3 -m cadgen.daemon` cmdline. Unchanged:
+  model-run flags, snapshot flags, `store why|gc`, viewer port, no up-axis option (`ARM_FROM_W` stays),
+  no upstream `daemon stop` verb.
+- **Follow-up:** cadgen 0.6.5 deprecates `AssemblyHelper` (`FutureWarning` on every assembly / link
+  build and 15 times in the suite; "existing models still build"). `assemblies/_occurrences.py` and
+  `robot/_links.py` should move to native build123d `Compound(children=…)`. Not adopted: `@memo`,
+  `declare_input`, `@step(materials=/animation=/kinematics=)`, linked-child tints.
+
+### Changed — the 41 part STEPs regenerated: canonical sign-of-zero only (`816a2a5`)
+- cadgen 0.6 writes a canonical zero, so every `-0.` in the STEP text became `0.` and all 41 LFS
+  objects changed. After normalising that, old and new `gripper_link_1` (72 changed lines) and
+  `j1_link` (464) are line-identical. No sidecar (`*.step.json`) appeared.
+
+Verified: baseline on 0.5.1 — fast lane 349 passed, full suite 582 passed + 9 skipped, `doctor` clean,
+arm `current` with 54 children pinned. On 0.6.5 — `./cadtool doctor` clean (`kernel OK`, pin
+`cadgen==0.6.5` against the plugin); fast lane 351 passed, full suite **585 passed + 9 skipped** (−1 patch
+test, +4 tooling tests); `--force` rebuild of the 41 parts (1 m 29 s) then parts + 3 assemblies + 8 robot
+links (daemon stopped first): kernel facts (solids, faces, volume, bbox via `import_step`) of all 41
+STEPs equal the 0.5.1 files, 0 of 41 byte-identical, a second 0.6.5 build reproduces the new bytes
+41 / 41, `./cadtool inspect diff <old> <new>` = same geometry; `./cadtool why assemblies/arm.py` =
+`current`, 54 children pinned, tree `components 50 occurrences 52 links 0` as before (gripper 19 links,
+drive 18), second `gen` = `current`; `validate robot/arm.urdf --strict` and `arm.srdf --strict` OK,
+`arm.sdf --gz-check never` OK (its `--strict` fails on the 8 `collision_reuses_visual_mesh` warnings,
+which 0.5.1 raises too — the test and the docs never used it); snapshots compared with the 0.5.1 ones:
+`robot/arm.urdf` assembled with no patch, a posed one (`shoulder_pitch` 45, `elbow_pitch` −30) moves the
+rotor + upper arm and leaves the stator, `assemblies/arm.step` keeps its tints and Z-up pose; viewer
+HTTP 200 for `?file=robot/arm.urdf` and `?file=assemblies/arm.step` (sliders not clicked — the posed
+snapshot runs the same kinematics code); `./cadtool export parts/base/base.step stl` OK (Node);
+`./cadtool store gc` removed 660 dead 0.5 objects (91.1 MB), models still `current`.
+
 ## 2026-09-18 — `cad/` organization cleanup (branch `cad/organization-cleanup`)
 
 An audit of `cad/` (layout, docs vs. tree, import graph) found the structure sound — `lib/` never
