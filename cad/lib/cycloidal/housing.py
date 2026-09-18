@@ -13,11 +13,9 @@ from __future__ import annotations
 
 import math
 
-from build123d import (
-    Cylinder, Face, GeomType, Polyline, Pos, RegularPolygon, Shape, Solid, extrude, make_face,
-)
+from cadgen import build123d as bd
 
-from lib.cycloidal.geom import MIN, single_solid
+from lib.cycloidal.geom import align_min, single_solid
 from lib.cycloidal.layout import hex_circumdiameter
 from lib.cycloidal.params import DEFAULT_CONFIG, DriveConfig, compute_housing_bolt_angles
 
@@ -32,7 +30,7 @@ def reveal_window_cutter(cfg: DriveConfig = DEFAULT_CONFIG, height: float = 0.0,
     h = cfg.housing
     housing_r, bore_r = h.od / 2.0, h.bore_dia / 2.0
     inner_r, outer_r = bore_r - PILLAR_OVERSHOOT, housing_r + PILLAR_OVERSHOOT
-    cutter = Cylinder(housing_r + CUTTER_OVERSHOOT, height, align=MIN) - Cylinder(bore_r, height, align=MIN)
+    cutter = bd.Cylinder(housing_r + CUTTER_OVERSHOOT, height, align=align_min()) - bd.Cylinder(bore_r, height, align=align_min())
     for a in compute_housing_bolt_angles(cfg):
         c, s = math.cos(a), math.sin(a)
         local = [
@@ -42,15 +40,15 @@ def reveal_window_cutter(cfg: DriveConfig = DEFAULT_CONFIG, height: float = 0.0,
             (inner_r, +h.pillar_inner_w / 2.0),
         ]
         pts = [(lx * c - ly * s, lx * s + ly * c) for lx, ly in local]
-        pillar = extrude(make_face(Polyline(*pts, close=True)), amount=height, dir=(0, 0, 1))
+        pillar = bd.extrude(bd.make_face(bd.Polyline(*pts, close=True)), amount=height, dir=(0, 0, 1))
         cutter = cutter - pillar
-    return Pos(0, 0, z_offset) * cutter
+    return bd.Pos(0, 0, z_offset) * cutter
 
 
-def end_face(solid: Shape, z: float, tol: float = 1e-4) -> Face:
+def end_face(solid: bd.Shape, z: float, tol: float = 1e-4) -> bd.Face:
     """The largest planar face lying in the plane z (normal along +/-Z)."""
     faces = [
-        f for f in solid.faces().filter_by(GeomType.PLANE)
+        f for f in solid.faces().filter_by(bd.GeomType.PLANE)
         if abs(f.center().Z - z) <= tol and abs(abs(f.normal_at().Z) - 1.0) <= 1e-6
     ]
     if not faces:
@@ -58,7 +56,7 @@ def end_face(solid: Shape, z: float, tol: float = 1e-4) -> Face:
     return max(faces, key=lambda f: f.area)
 
 
-def chamfer_outer_silhouette(shape: Shape, cfg: DriveConfig = DEFAULT_CONFIG, external_z: float | None = None) -> Solid:
+def chamfer_outer_silhouette(shape: bd.Shape, cfg: DriveConfig = DEFAULT_CONFIG, external_z: float | None = None) -> bd.Solid:
     """Bevel the outer silhouette of a finished housing part (call AFTER the windows are cut).
 
     Always chamfers the 8 pillar outer vertical corners (the barrel edges). When ``external_z``
@@ -72,7 +70,7 @@ def chamfer_outer_silhouette(shape: Shape, cfg: DriveConfig = DEFAULT_CONFIG, ex
     rmin = cfg.housing.od / 2.0 - BARREL_EDGE_MARGIN
     sel = []
     for e in solid.edges():
-        if e.geom_type != GeomType.LINE:
+        if e.geom_type != bd.GeomType.LINE:
             continue
         p0, p1 = e.position_at(0.0), e.position_at(1.0)
         vertical = abs(p1.Z - p0.Z) > 1e-6 and math.hypot(p0.X - p1.X, p0.Y - p1.Y) < 1e-6
@@ -87,9 +85,9 @@ def hex_prism(across_flats: float, angle_rad: float, height: float):
     """A hexagonal prism standing on z=0, first vertex on +X rotated by ``angle_rad`` (the
     CadQuery ``polygon(6, d)`` + ``transformed(rotate=...)`` convention)."""
     r = hex_circumdiameter(across_flats) / 2.0
-    return extrude(RegularPolygon(r, 6, rotation=math.degrees(angle_rad)), amount=height, dir=(0, 0, 1))
+    return bd.extrude(bd.RegularPolygon(r, 6, rotation=math.degrees(angle_rad)), amount=height, dir=(0, 0, 1))
 
 
 def hex_pocket(cfg: DriveConfig, xy, angle_rad: float, depth: float, z0: float = 0.0):
     """Captive M4 nut pocket (pocket AF) at xy, from z0 up by ``depth``, hex keyed along ``angle_rad``."""
-    return Pos(xy[0], xy[1], z0) * hex_prism(cfg.housing.bolt_nut_pocket_af, angle_rad, depth)
+    return bd.Pos(xy[0], xy[1], z0) * hex_prism(cfg.housing.bolt_nut_pocket_af, angle_rad, depth)

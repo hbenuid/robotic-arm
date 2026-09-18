@@ -12,17 +12,17 @@ through the 6814s.
 """
 import pathlib
 
-from build123d import Location
 from cadgen import step
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, arm_mount_angles, arm_mount_points, hub_height, output_pin_points
 from lib.cycloidal.geom import cylinder, single_solid, through
 from lib.cycloidal.housing import hex_pocket
+from lib.datum import IDENTITY
 from lib.params import NUDGE
 
 NAME = pathlib.Path(__file__).stem
 REFERENCE = NAME
 CONVERTED = True
-LOCAL_FROM_REF = Location()
+LOCAL_FROM_REF = IDENTITY
 REF_VOL_TOL = 1e-4
 REF_BBOX_TOL = 0.02
 

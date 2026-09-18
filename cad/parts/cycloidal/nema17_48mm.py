@@ -9,10 +9,11 @@ Not the wrist's pancake motor (parts/nema17_pancake.py).
 """
 import pathlib
 
-from build123d import Align, Box, Location, Pos
+from cadgen import build123d as bd
 from cadgen import step
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, motor_bolt_points
 from lib.cycloidal.geom import cylinder, single_solid
+from lib.datum import IDENTITY
 from lib.params import CYCLOIDAL_MOTOR_MASS_G, NUDGE
 from parts.cycloidal._cots import hybrid
 
@@ -20,19 +21,19 @@ NAME = pathlib.Path(__file__).stem
 COTS = True
 MASS_G = CYCLOIDAL_MOTOR_MASS_G
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
-VENDOR_TO_REF = Location()   # set after inspecting a step.parts model (see vendor/README.md)
+VENDOR_TO_REF = IDENTITY   # set after inspecting a step.parts model (see vendor/README.md)
 
 
 def _envelope(cfg: DriveConfig = DEFAULT_CONFIG):
     m = cfg.motor
     shaft_r = m.shaft_dia / 2.0
-    body = Box(m.body_width, m.body_width, m.body_length, align=(Align.CENTER, Align.CENTER, Align.MAX))
+    body = bd.Box(m.body_width, m.body_width, m.body_length, align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MAX))
     pilot = cylinder(m.pilot_dia / 2.0, m.pilot_height)
     round_len = m.shaft_length - m.shaft_dcut_length                      # 4
     shaft_round = cylinder(shaft_r, round_len)
     dcut = cylinder(shaft_r, m.shaft_dcut_length, z0=round_len)
     flat_y = m.shaft_dcut_flat / 2.0                                       # 2.25: material beyond it removed
-    dcut = dcut - Pos(0, flat_y + 5.0, round_len + m.shaft_dcut_length / 2.0) * Box(10.0, 10.0, m.shaft_dcut_length + 4 * NUDGE)
+    dcut = dcut - bd.Pos(0, flat_y + 5.0, round_len + m.shaft_dcut_length / 2.0) * bd.Box(10.0, 10.0, m.shaft_dcut_length + 4 * NUDGE)
     result = body + pilot + shaft_round + dcut
     for xy in motor_bolt_points(cfg):
         result = result - cylinder(m.bolt_dia / 2.0, m.bolt_hole_depth + NUDGE, xy, z0=-m.bolt_hole_depth)

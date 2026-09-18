@@ -8,11 +8,12 @@ re-oriented by VENDOR_TO_REF into the same frame.
 """
 import pathlib
 
-from build123d import Location, Pos
+from cadgen import build123d as bd
 from cadgen import step
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, compute_housing_bolt_angles, housing_bolt_points
 from lib.cycloidal.geom import cylinder
 from lib.cycloidal.housing import hex_prism
+from lib.datum import IDENTITY
 from lib.params import CYCLOIDAL_HOUSING_NUTS_MASS_G
 from parts.cycloidal._cots import hybrid, pattern
 
@@ -20,12 +21,12 @@ NAME = pathlib.Path(__file__).stem
 COTS = True
 MASS_G = CYCLOIDAL_HOUSING_NUTS_MASS_G
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
-VENDOR_TO_REF = Location()
+VENDOR_TO_REF = IDENTITY
 
 
 def _envelope(cfg: DriveConfig = DEFAULT_CONFIG):
     h = cfg.housing
-    return pattern(Pos(xy[0], xy[1], 0) * hex_prism(h.bolt_nut_af, angle, h.bolt_nut_thickness)
+    return pattern(bd.Pos(xy[0], xy[1], 0) * hex_prism(h.bolt_nut_af, angle, h.bolt_nut_thickness)
                    for angle, xy in zip(compute_housing_bolt_angles(cfg), housing_bolt_points(cfg)))
 
 

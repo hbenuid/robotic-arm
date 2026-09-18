@@ -12,20 +12,21 @@ nut pockets on the output face; the shared 8-pillar reveal-window silhouette; th
 """
 import pathlib
 
-from build123d import Cone, Location, Pos
+from cadgen import build123d as bd
 from cadgen import step
 from lib.cycloidal import (
     DEFAULT_CONFIG, DriveConfig, compute_housing_bolt_angles, housing_bolt_points, ring_pin_hole_depth,
     ring_pin_hole_dia, ring_pin_points,
 )
-from lib.cycloidal.geom import MIN, cylinder, through
+from lib.cycloidal.geom import align_min, cylinder, through
 from lib.cycloidal.housing import chamfer_outer_silhouette, hex_pocket, reveal_window_cutter
+from lib.datum import IDENTITY
 from lib.params import NUDGE
 
 NAME = pathlib.Path(__file__).stem
 REFERENCE = NAME
 CONVERTED = True
-LOCAL_FROM_REF = Location()
+LOCAL_FROM_REF = IDENTITY
 REF_VOL_TOL = 1e-4
 REF_BBOX_TOL = 0.02
 
@@ -47,7 +48,7 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     slope = (funnel_r - pin_dia / 2.0) / funnel_d
     for xy in ring_pin_points(cfg):
         result = result - cylinder(pin_dia / 2.0, depth + NUDGE, xy, z0=-NUDGE)
-        result = result - Pos(xy[0], xy[1], bore_zone - NUDGE) * Cone(funnel_r + slope * NUDGE, pin_dia / 2.0, funnel_d + NUDGE, align=MIN)
+        result = result - bd.Pos(xy[0], xy[1], bore_zone - NUDGE) * bd.Cone(funnel_r + slope * NUDGE, pin_dia / 2.0, funnel_d + NUDGE, align=align_min())
     # 8x M4 through-holes
     m4_r = (h.bolt_dia + tol.bolt_clearance_add) / 2.0
     for xy in housing_bolt_points(cfg):

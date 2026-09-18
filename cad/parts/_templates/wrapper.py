@@ -12,21 +12,22 @@ runs it and writes the sibling <name>.step. Tests call parts.build(name), never 
 To CONVERT the part:
   1. rewrite the model body with BuildPart/... pulling shared dims from lib.params;
   2. set CONVERTED = True; if you choose a nicer local origin, set LOCAL_FROM_REF to the
-     rigid transform reference-frame -> new-local-frame (the assemblies compose
-     placement * LOCAL_FROM_REF.inverse(), so placements.json never changes);
+     rigid transform reference-frame -> new-local-frame as DATA, ((x, y, z), (rx, ry, rz)) in mm /
+     degrees (the assemblies compose placement * to_location(LOCAL_FROM_REF).inverse(), so
+     placements.json never changes); import the kernel lazily - see _templates/designed.py;
   3. ./cadtool pytest tests/test_reference_match.py -k <name>   (volume + bbox vs reference)
   4. ./cadtool gen parts/<group>/<name>.py                              (regenerate the committed STEP)
 """
 import pathlib
 
-from build123d import Location
 from cadgen import step
 from lib import reference
+from lib.datum import IDENTITY, to_location
 
 NAME = pathlib.Path(__file__).stem
 REFERENCE = NAME              # reference/<NAME>.step
 CONVERTED = False             # True once the model is parametric build123d
-LOCAL_FROM_REF = Location()   # reference frame -> this part's local frame (identity = SolidWorks frame)
+LOCAL_FROM_REF = IDENTITY   # reference frame -> this part's local frame (identity = SolidWorks frame)
 # Optional per-part tolerances for tests/test_reference_match.py:
 # REF_VOL_TOL = 0.005   (relative)     REF_BBOX_TOL = 0.2   (mm)
 
@@ -34,7 +35,7 @@ LOCAL_FROM_REF = Location()   # reference frame -> this part's local frame (iden
 @step
 def wrapper():
     """Return the reference geometry as a labelled Solid/Compound in this part's local frame."""
-    shape = reference.load(REFERENCE).moved(LOCAL_FROM_REF)
+    shape = reference.load(REFERENCE).moved(to_location(LOCAL_FROM_REF))
     shape.label = NAME
     return shape
 

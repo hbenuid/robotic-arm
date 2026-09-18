@@ -13,7 +13,8 @@ Run:  ./cadtool gen assemblies/cycloidal_drive.py             -> assemblies/cycl
                                                               -> leaves / solids / volume / bbox (the EXPECTED lock, whole or per body)
 """
 
-from build123d import Location
+from __future__ import annotations
+
 from cadgen import step
 
 from assemblies._occurrences import located_children
@@ -24,12 +25,13 @@ from lib.cycloidal import DEFAULT_CONFIG, stack_positions
 S = stack_positions(DEFAULT_CONFIG)
 
 
-def _at(x: float = 0.0, z: float = 0.0) -> Location:
-    return Location((x, 0.0, z))
+def _at(x: float = 0.0, z: float = 0.0) -> tuple[float, float, float]:
+    return (x, 0.0, z)
 
 
-# (part, role, Location in the module frame) in the drive repo's assembly.py order. Every number
-# comes from stack_positions() - never type one here.
+# (part, role, position in the module frame - mm, translations only: data, so importing this module
+# never touches the kernel) in the drive repo's assembly.py order. Every number comes from
+# stack_positions() - never type one here.
 OCCURRENCES = [
     ("cycloidal_disc_1",           None, _at(S["x_disc1"], S["z_disc1"])),
     ("bearing_6003",               "1",  _at(S["x_disc1"], S["z_disc1"])),

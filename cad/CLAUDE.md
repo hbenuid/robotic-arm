@@ -66,8 +66,9 @@ robotic-arm repo; the root motor-control project never depends on it.
   SolidWorks references: `./cadtool python tools/reference/import_solidworks.py`. Each tool owns its own
   `reference/manifest.json` entries and keeps the other's; both build them with `lib/manifest.py`
   (`read()` / `write()` / `entry()` — no part imports it, so editing it never makes a part stale).
-- Expected noise: every `gen` prints cadgen's "kernel imported eagerly" hint on stderr (the model files
-  import build123d at module top) and pays the ~2.5 s import — accepted for now.
+- **Model files never load the CAD kernel at import** (`tests/test_lazy_kernel.py`, fast lane): cadgen gates a
+  model before paying for OCP, so an unchanged part re-runs in ~0.1 s (1.5 s with an eager import, which also
+  prints cadgen's "kernel was imported before …" hint — that hint now means a regression). See Authoring.
 - **build123d 0.11.1 / OCP 7.9.3**: cadgen 0.6.x requires `build123d>=0.11.1,<0.12` and
   `cadquery-ocp-novtk>=7.9,<8`; `pyproject.toml` pins the exact kernel (`cadquery-ocp-novtk==…`, the committed
   STEP bytes are per-kernel) and must never gain `cadquery-ocp`, the VTK build (see Gotchas). On 0.10 / 7.8.1 cadgen could not
@@ -98,7 +99,16 @@ across groups (`import parts` raises on a duplicate), and it keys the manifest,
   module `parts.<group>.<name>` (it walks the `__init__.py` chain) — the same object `parts.load()`
   returns. **Never add `cad/__init__.py`** (the package root would become the repo root). The one
   `sys.path` line in the tree is `tools/cycloidal/export_cadquery.py` (it runs in the OTHER repo's venv);
-- pull shared dims from `lib/params.py`.
+- pull shared dims from `lib/params.py`;
+- **keep the kernel lazy**: `from cadgen import build123d as bd` (a PEP 562 proxy — never
+  `from build123d import …`, never `from cadgen.build123d import X`, both import it) and use `bd.<name>`
+  **inside function bodies only**. No kernel object in a module-level constant, a class body, a decorator or
+  an argument default (`align=bd.Align.MIN` as a default is eager — `lib/cycloidal/geom.align_min()` is a
+  function for that reason); kernel types in annotations need `from __future__ import annotations`. The rule
+  covers the model's whole import closure (`lib/`, `assemblies/_occurrences.py`, `robot/`). Frames a module
+  declares are **data** — `(position mm, rotation_xyz_deg)`, `lib.datum.IDENTITY` for none — turned into a
+  `Location` by `lib.datum.to_location()` inside a body; `lib.datum.base_frame()` and
+  `assemblies.arm.arm_from_w()` are functions, the drive's `OCCURRENCES` rows carry positions.
 
 **Layering** (locked by `tests/test_layering.py`, an AST scan — function-local imports count):
 `lib ← parts ← assemblies ← robot ← tools ← tests`; a package imports only itself and the ones to its
@@ -119,7 +129,8 @@ otherwise. `tests/conftest.py` makes an accidental top-level call under pytest f
   in the SolidWorks part-file frame — the day-one state of all 20 custom parts;
 - *parametric* (`CONVERTED = True`, from `_templates/designed.py`): real build123d. To convert: rewrite
   the model body, set `CONVERTED = True`, optionally set `LOCAL_FROM_REF` (reference frame → new
-  local frame; the assemblies compose `placement * LOCAL_FROM_REF⁻¹`, so `placements.json` never
+  local frame, as frame data `((x, y, z), (rx, ry, rz))` — `IDENTITY` until then; the assemblies
+  compose `placement * to_location(LOCAL_FROM_REF)⁻¹`, so `placements.json` never
   changes), then `./cadtool pytest tests/test_reference_match.py -k <name>` (volume ±0.5 %,
   bbox ±0.2 mm; per-part `REF_VOL_TOL` / `REF_BBOX_TOL`) and `./cadtool gen parts/<group>/<name>.py`.
 - *designed* (`CONVERTED = True`, `REFERENCE = NAME`, registered in `lib/reference.py DESIGNED`):
@@ -134,7 +145,7 @@ otherwise. `tests/conftest.py` makes an accidental top-level call under pytest f
 
 ## Purchased (COTS) parts (`parts/_templates/cots.py`)
 `COTS = True`, `MASS_G` (datasheet grams), `VENDOR_STEP = vendor/<name>.step`, `VENDOR_TO_REF`
-(vendor-file frame → SolidWorks frame; identity for the SolidWorks re-exports); the model is
+(vendor-file frame → SolidWorks frame, as frame data; `IDENTITY` for the SolidWorks re-exports); the model is
 hybrid (`cadgen.read_step(VENDOR_STEP)` if present — a tracked input, so a swapped vendor file makes
 the part stale — else `_envelope()` from `lib.params`, both in the SolidWorks frame `placements.json`
 assumes). `reference/solidworks/<name>.step` keeps the SolidWorks re-export of every COTS part as the
@@ -148,9 +159,9 @@ swaps. Swap procedure and what has been tried: `vendor/README.md` (`./cadtool pa
 `lib/params.py` is the single source of truth: mm and grams, every constant tagged
 `[MEASURE] / [DATASHEET] / [DESIGN] / [REFERENCE] / [ESTIMATE]` with a derivation comment.
 `lib/` never imports `parts/`. Docs name constants, never numbers. Datum: the SolidWorks capture
-frame is **Y up** (J1 axis); the URDF base frame (REP-103) is `lib/datum.py BASE_FRAME` (with `frame()`,
+frame is **Y up** (J1 axis); the URDF base frame (REP-103) is `lib/datum.py base_frame()` (with `frame()`,
 `U`, `BASE_FORWARD`; `robot/frames.py` re-exports them and builds the kinematics on top) — and
-`assemblies/arm.py` emits the arm in it (`ARM_FROM_W`, see Assembly), so `arm.step` is **Z up**.
+`assemblies/arm.py` emits the arm in it (`arm_from_w()`, see Assembly), so `arm.step` is **Z up**.
 The cycloidal drive's own dimensions are `lib/cycloidal/params.py` (`DriveConfig`, frozen
 dataclasses, variants via `dataclasses.replace`); `lib/params.py` re-exports the interface values
 (`CYCLOIDAL_*`, masses) from it - never retype a drive number.
@@ -179,15 +190,15 @@ Changing a shared dimension — touchpoints in order:
   through links are lost (verified by snapshot).
 - **The arm is emitted Z up.** `placements.json` is Y up, but cadgen's viewer and snapshot renderer
   hardcode +Z as up and have no up-axis option (no `@step` kwarg, sidecar field, URL parameter or
-  flag), so a capture-frame `arm.step` renders lying on its side. `arm.py ARM_FROM_W` =
-  `lib/datum.py BASE_FRAME⁻¹` (capture frame → `base_link` frame: Z up, X forward, the base's
+  flag), so a capture-frame `arm.step` renders lying on its side. `arm.py arm_from_w()` =
+  `lib/datum.py base_frame()⁻¹` (capture frame → `base_link` frame: Z up, X forward, the base's
   mounting face on z = 0 — the frame `arm.urdf` uses, so both open in the same pose) goes into
   `grouped_children(…, root=)`, which composes `root * rel` into **every occurrence's
   placement**. Never `.moved()` the built root Compound instead: cadgen's STEP packager reads only the
   children's locations, so the in-process shape would rotate and the written STEP would not. The
   gripper and the drive keep their own module frames (both already have their axis on +Z), and
   `robot/` never reads the arm compound (it goes `placements.json world` → `world_rows`).
-  `test_assembly.py` compares the SolidWorks world bbox through `ARM_FROM_W`.
+  `test_assembly.py` compares the SolidWorks world bbox through `arm_from_w()`.
 - Roles (`j2`/`j3` = the elbow_pitch / wrist_pitch pulley + coupler pairs, `1`/`2`) only disambiguate
   duplicates; renaming them after the joints is a follow-up.
 - `arm.py GROUPS` buckets the occurrences into the component tree
@@ -199,7 +210,7 @@ Changing a shared dimension — touchpoints in order:
   (`MODULE_TINTS` overrides for the two modules) and raises unless the groups cover the keys
   exactly once. `test_assembly.py` locks the group labels + the LINKS mirror. The tints are
   per-leaf (a compound-level color doesn't cascade in ocp_tessellate) — hence the inline copies above.
-- `assemblies/cycloidal_drive.py` is **code-driven**: rows are `(part, role, Location)` from
+- `assemblies/cycloidal_drive.py` is **code-driven**: rows are `(part, role, position)` (data) from
   `lib/cycloidal stack_positions` (`located_children`); its placement key `cycloidal_drive#1` is a
   `designed` module record in `placements.json` (pose from the SolidWorks node, no leaf records,
   `solidworks` cross-check block; `tools/reference/extract_placements.py` never descends into
@@ -258,6 +269,8 @@ zero = capture, meshes, inertials, URDF/SRDF/SDF consistency + cadgen's validato
 `./cadtool validate`), `test_tooling.py` (the installed cadgen and OCP kernel are the pinned ones, one complete OCP distribution,
 `./cadtool inspect` agrees with the kernel),
 `test_layering.py` (the package layering, no `sys.path`, no direct part-module imports — AST scan),
+`test_lazy_kernel.py` (a fresh interpreter imports every template, part, assembly and link model without
+loading `build123d` / `OCP`; names the first offender),
 `source_checks.py` (the shared `runs_its_model()` check that a model file ends with its build call),
 `tests/cycloidal/` (the drive: one module per part + housing / purchased / fitment / assembly / port,
 ~230 tests; `from tests.cycloidal.helpers import CFG, …` for the shared config + geometry helpers, the

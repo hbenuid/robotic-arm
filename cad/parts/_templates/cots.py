@@ -17,8 +17,9 @@ Generate the committed STEP:   ./cadtool gen parts/<group>/<name>.py
 """
 import pathlib
 
-from build123d import Align, Box, Location
+from cadgen import build123d as bd
 from cadgen import read_step, step
+from lib.datum import IDENTITY, to_location
 # from lib.params import ...  the real interface dims
 
 NAME = pathlib.Path(__file__).stem
@@ -27,18 +28,18 @@ MASS_G = 0.0   # [DATASHEET] grams
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 # Rigid transform vendor-file frame -> the SolidWorks frame placements.json assumes (identity while
 # vendor/<name>.step is the SolidWorks re-export; set it after swapping in a step.parts model).
-VENDOR_TO_REF = Location()
+VENDOR_TO_REF = IDENTITY
 
 
 def _envelope():
     """Parametric stand-in built from lib.params - replace the placeholder box."""
-    return Box(10, 10, 10, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    return bd.Box(10, 10, 10, align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MIN))
 
 
 @step
 def cots():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
-    part = read_step(VENDOR_STEP).moved(VENDOR_TO_REF) if VENDOR_STEP.exists() else _envelope()
+    part = read_step(VENDOR_STEP).moved(to_location(VENDOR_TO_REF)) if VENDOR_STEP.exists() else _envelope()
     part.label = NAME
     return part
 

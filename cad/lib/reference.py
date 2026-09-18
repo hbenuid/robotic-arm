@@ -15,7 +15,7 @@ import hashlib
 import pathlib
 import unicodedata
 
-from build123d import Location, Shape, import_step
+from cadgen import build123d as bd
 from cadgen import read_step
 
 CAD_DIR = pathlib.Path(__file__).resolve().parent.parent
@@ -155,7 +155,7 @@ def step_units(path: pathlib.Path) -> str:
 
 def describe(path: pathlib.Path) -> dict:
     """solids / solid_volume / bbox of a STEP file - the manifest.json geometry facts."""
-    shape = import_step(str(path))
+    shape = bd.import_step(str(path))
     bb = shape.bounding_box()
     return {
         "solids": len(shape.solids()),
@@ -165,7 +165,7 @@ def describe(path: pathlib.Path) -> dict:
     }
 
 
-def load(name: str, *, label: str | None = None) -> Shape:
+def load(name: str, *, label: str | None = None) -> bd.Shape:
     """Fresh read of reference/<origin>/<name>.step in its part-file frame (cadgen.read_step:
     inside a build the file joins the model's closure, so an updated reference makes it stale).
     A Solid for one-body parts, a flat Compound for multi-body ones."""
@@ -177,27 +177,27 @@ def load(name: str, *, label: str | None = None) -> Shape:
     return shape
 
 
-def solid_volume(shape: Shape) -> float:
+def solid_volume(shape: bd.Shape) -> float:
     """Sum of solid volumes. Never use Compound.volume: in build123d 0.10 it skips nested
     sub-assembly compounds."""
     return sum(s.volume for s in shape.solids())
 
 
-def bbox_size(shape: Shape) -> tuple[float, float, float]:
+def bbox_size(shape: bd.Shape) -> tuple[float, float, float]:
     bb = shape.bounding_box()
     return (bb.size.X, bb.size.Y, bb.size.Z)
 
 
-def bbox_min(shape: Shape) -> tuple[float, float, float]:
+def bbox_min(shape: bd.Shape) -> tuple[float, float, float]:
     bb = shape.bounding_box()
     return (bb.min.X, bb.min.Y, bb.min.Z)
 
 
 def matches_reference(
-    shape: Shape,
+    shape: bd.Shape,
     name: str,
     *,
-    local_from_ref: Location | None = None,
+    local_from_ref: bd.Location | None = None,
     vol_tol: float = 0.005,
     bbox_tol: float = 0.2,
     check_position: bool = True,
@@ -205,7 +205,7 @@ def matches_reference(
     """Compare `shape` (in its part-local frame) with reference/<origin>/<name>.step moved by
     `local_from_ref`. Volume must agree within `vol_tol` (relative); bounding-box size and,
     if `check_position`, bounding-box min within `bbox_tol` mm. Returns (ok, report)."""
-    ref = load(name).moved(local_from_ref or Location())
+    ref = load(name).moved(local_from_ref or bd.Location())
     vol, ref_vol = solid_volume(shape), solid_volume(ref)
     size, ref_size = bbox_size(shape), bbox_size(ref)
     lo, ref_lo = bbox_min(shape), bbox_min(ref)

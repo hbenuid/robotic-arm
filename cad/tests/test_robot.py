@@ -155,7 +155,7 @@ def test_forward_kinematics_at_zero_reproduces_the_capture_frames():
     root = ET.parse(URDF).getroot()
     origins = {j.get("name"): (RF._floats(j.find("origin").get("xyz")), RF._floats(j.find("origin").get("rpy")))
                for j in root.findall("joint")}
-    Mb = RF.matrix(F.BASE_FRAME)
+    Mb = RF.matrix(F.base_frame())
     world = {"base_link": [[*Mb[i][:3], Mb[i][3] * 1e-3] for i in range(3)] + [[0, 0, 0, 1]]}
     for j in F.JOINTS:  # JOINTS is in tree order (parents first)
         xyz, rpy = origins[j.name]

@@ -15,8 +15,9 @@ else the parametric envelope below - both in the SolidWorks frame placements.jso
 """
 import pathlib
 
-from build123d import Align, Box, Location
+from cadgen import build123d as bd
 from cadgen import read_step, step
+from lib.datum import IDENTITY, to_location
 from lib.params import PANCAKE_BODY_D, PANCAKE_BODY_H, PANCAKE_BODY_W, PANCAKE_MASS_G
 
 NAME = pathlib.Path(__file__).stem
@@ -25,19 +26,19 @@ MASS_G = PANCAKE_MASS_G   # [ESTIMATE] see lib/params.py
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 # Rigid transform vendor-file frame -> the SolidWorks frame placements.json assumes (identity while
 # vendor/<name>.step is the SolidWorks re-export; set it after swapping in a step.parts model).
-VENDOR_TO_REF = Location()
+VENDOR_TO_REF = IDENTITY
 
 
 def _envelope():
     """Parametric stand-in used only when the vendor STEP is missing."""
     # Envelope: body box from lib.params at the reference bounding box.
-    return Box(PANCAKE_BODY_W, PANCAKE_BODY_D, PANCAKE_BODY_H, align=(Align.MIN, Align.MIN, Align.MIN)).moved(Location((-20.75, -13.591, 12.659)))
+    return bd.Box(PANCAKE_BODY_W, PANCAKE_BODY_D, PANCAKE_BODY_H, align=(bd.Align.MIN, bd.Align.MIN, bd.Align.MIN)).moved(bd.Location((-20.75, -13.591, 12.659)))
 
 
 @step
 def nema17_pancake():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
-    part = read_step(VENDOR_STEP).moved(VENDOR_TO_REF) if VENDOR_STEP.exists() else _envelope()
+    part = read_step(VENDOR_STEP).moved(to_location(VENDOR_TO_REF)) if VENDOR_STEP.exists() else _envelope()
     part.label = NAME
     return part
 

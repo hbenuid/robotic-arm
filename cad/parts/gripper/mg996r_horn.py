@@ -13,8 +13,9 @@ else the parametric envelope below - both in the SolidWorks frame placements.jso
 """
 import pathlib
 
-from build123d import Align, Box, Location
+from cadgen import build123d as bd
 from cadgen import read_step, step
+from lib.datum import IDENTITY, to_location
 
 NAME = pathlib.Path(__file__).stem
 COTS = True
@@ -22,19 +23,19 @@ MASS_G = 3.0     # [ESTIMATE] nylon horn
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 # Rigid transform vendor-file frame -> the SolidWorks frame placements.json assumes (identity while
 # vendor/<name>.step is the SolidWorks re-export; set it after swapping in a step.parts model).
-VENDOR_TO_REF = Location()
+VENDOR_TO_REF = IDENTITY
 
 
 def _envelope():
     """Parametric stand-in used only when the vendor STEP is missing."""
     # Envelope: the reference bounding box.
-    return Box(32.0, 2.5, 12.0, align=(Align.MIN, Align.MIN, Align.MIN)).moved(Location((-16.0, 0.0, -6.0)))
+    return bd.Box(32.0, 2.5, 12.0, align=(bd.Align.MIN, bd.Align.MIN, bd.Align.MIN)).moved(bd.Location((-16.0, 0.0, -6.0)))
 
 
 @step
 def mg996r_horn():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
-    part = read_step(VENDOR_STEP).moved(VENDOR_TO_REF) if VENDOR_STEP.exists() else _envelope()
+    part = read_step(VENDOR_STEP).moved(to_location(VENDOR_TO_REF)) if VENDOR_STEP.exists() else _envelope()
     part.label = NAME
     return part
 

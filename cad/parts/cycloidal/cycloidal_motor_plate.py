@@ -11,7 +11,6 @@ The inner face z=9 seats on the ring gear body and stays sharp.
 """
 import pathlib
 
-from build123d import Location
 from cadgen import step
 from lib.cycloidal import (
     DEFAULT_CONFIG, DriveConfig, housing_bolt_points, motor_bolt_counterbore_depth, motor_bolt_points,
@@ -19,12 +18,13 @@ from lib.cycloidal import (
 )
 from lib.cycloidal.geom import cylinder, through
 from lib.cycloidal.housing import chamfer_outer_silhouette, reveal_window_cutter
+from lib.datum import IDENTITY
 from lib.params import NUDGE
 
 NAME = pathlib.Path(__file__).stem
 REFERENCE = NAME
 CONVERTED = True
-LOCAL_FROM_REF = Location()
+LOCAL_FROM_REF = IDENTITY
 REF_VOL_TOL = 1e-4
 REF_BBOX_TOL = 0.02
 

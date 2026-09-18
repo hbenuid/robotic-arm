@@ -13,20 +13,20 @@ frame. See parts/_templates/wrapper.py for how to convert it to build123d.
 """
 import pathlib
 
-from build123d import Location
 from cadgen import step
 from lib import reference
+from lib.datum import IDENTITY, to_location
 
 NAME = pathlib.Path(__file__).stem
 REFERENCE = NAME              # reference/<NAME>.step
 CONVERTED = False             # True once j3_coupler() is parametric build123d
-LOCAL_FROM_REF = Location()   # reference frame -> this part's local frame (identity = SolidWorks frame)
+LOCAL_FROM_REF = IDENTITY   # reference frame -> this part's local frame (identity = SolidWorks frame)
 
 
 @step
 def j3_coupler():
     """Return the reference geometry as a labelled Solid/Compound in this part's local frame."""
-    shape = reference.load(REFERENCE).moved(LOCAL_FROM_REF)
+    shape = reference.load(REFERENCE).moved(to_location(LOCAL_FROM_REF))
     shape.label = NAME
     return shape
 

@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 import pathlib
 
-from build123d import Location
+from cadgen import build123d as bd
 
 PLACEMENTS_PATH = pathlib.Path(__file__).resolve().parent.parent / "reference" / "placements.json"
 
@@ -30,11 +30,11 @@ DATA: dict = _load()
 OCCURRENCES: dict[str, dict] = {o["key"]: o for o in DATA["occurrences"]}
 
 
-def to_location(record: dict) -> Location:
-    return Location(tuple(record["position"]), tuple(record["rotation_xyz_deg"]))
+def to_location(record: dict) -> bd.Location:
+    return bd.Location(tuple(record["position"]), tuple(record["rotation_xyz_deg"]))
 
 
-def location(key: str, frame: str = "rel") -> Location:
+def location(key: str, frame: str = "rel") -> bd.Location:
     """Location of occurrence `key`; frame = "rel" (to its parent node) or "world"."""
     return to_location(OCCURRENCES[key][frame])
 

@@ -13,8 +13,9 @@ else the parametric envelope below - both in the SolidWorks frame placements.jso
 """
 import pathlib
 
-from build123d import Align, Cylinder, Location
+from cadgen import build123d as bd
 from cadgen import read_step, step
+from lib.datum import IDENTITY, to_location
 
 NAME = pathlib.Path(__file__).stem
 COTS = True
@@ -22,19 +23,19 @@ MASS_G = 8.0     # [ESTIMATE] aluminium 20T GT2 pulley, 6 mm bore, ~8-10 g
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 # Rigid transform vendor-file frame -> the SolidWorks frame placements.json assumes (identity while
 # vendor/<name>.step is the SolidWorks re-export; set it after swapping in a step.parts model).
-VENDOR_TO_REF = Location()
+VENDOR_TO_REF = IDENTITY
 
 
 def _envelope():
     """Parametric stand-in used only when the vendor STEP is missing."""
     # Envelope: OD 16 cylinder built along +Z then rotated onto +X, placed at the reference bounding box.
-    return Cylinder(8.0, 14.45, rotation=(0, 90, 0), align=(Align.CENTER, Align.CENTER, Align.MIN)).moved(Location((0.0, 0.0, 0.0)))
+    return bd.Cylinder(8.0, 14.45, rotation=(0, 90, 0), align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MIN)).moved(bd.Location((0.0, 0.0, 0.0)))
 
 
 @step
 def gt2_pulley_20t():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
-    part = read_step(VENDOR_STEP).moved(VENDOR_TO_REF) if VENDOR_STEP.exists() else _envelope()
+    part = read_step(VENDOR_STEP).moved(to_location(VENDOR_TO_REF)) if VENDOR_STEP.exists() else _envelope()
     part.label = NAME
     return part
 

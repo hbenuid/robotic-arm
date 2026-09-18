@@ -15,7 +15,7 @@ hub + pins, bolted to j1_link) in upper_arm_link (docs/cycloidal_drive.md "Attac
 Frames (all in the SolidWorks WORLD frame W, millimetres; W is +Y up, the arm extends toward
 -X, see reference/README.md):
   * base_link frame B: REP-103 (Z up, X forward) at the base_yaw axis foot on the base's bottom
-    face: origin (0, BASE_BOTTOM_Y, 0), X_B = -X_W, Y_B = +Z_W, Z_B = +Y_W. BASE_FRAME, frame()
+    face: origin (0, BASE_BOTTOM_Y, 0), X_B = -X_W, Y_B = +Z_W, Z_B = +Y_W. base_frame(), frame()
     and the U / BASE_FORWARD vectors are defined in lib/datum.py (assemblies/arm.py needs them too
     and assemblies/ never imports robot/) and re-exported here.
   * Every joint frame has Z along the joint axis and X along the child link's long direction
@@ -33,11 +33,11 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 
-from build123d import Location
+from cadgen import build123d as bd
 
 from lib import params as PARAMS
 from lib import placements as P
-from lib.datum import BASE_BOTTOM_Y, BASE_FORWARD, BASE_FRAME, U, frame  # noqa: F401  (the datum frames live below assemblies/)
+from lib.datum import BASE_BOTTOM_Y, BASE_FORWARD, U, base_frame, frame  # noqa: F401  (the datum frames live below assemblies/)
 
 ROBOT_NAME = "arm"
 
@@ -134,15 +134,15 @@ JOINT_BY_NAME = {j.name: j for j in JOINTS}
 JOINT_OF_CHILD = {j.child: j for j in JOINTS}
 
 
-def joint_frame_world(name: str) -> Location:
+def joint_frame_world(name: str) -> bd.Location:
     j = JOINT_BY_NAME[name]
     return frame(j.origin_w, j.axis_w, j.x_hint_w)
 
 
-def link_frame_world(link: str) -> Location:
-    """The link's frame in W: base_link -> BASE_FRAME; any other link -> its parent joint's frame."""
+def link_frame_world(link: str) -> bd.Location:
+    """The link's frame in W: base_link -> base_frame(); any other link -> its parent joint's frame."""
     if link == "base_link":
-        return BASE_FRAME
+        return base_frame()
     return joint_frame_world(JOINT_OF_CHILD[link].name)
 
 

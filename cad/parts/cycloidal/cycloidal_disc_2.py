@@ -9,15 +9,15 @@ a 180 deg assembly rotation would be a no-op on a 20-lobe disc, so disc 2 is its
 """
 import pathlib
 
-from build123d import Location
 from cadgen import step
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig
 from lib.cycloidal.disc import build_disc
+from lib.datum import IDENTITY
 
 NAME = pathlib.Path(__file__).stem
 REFERENCE = NAME
 CONVERTED = True
-LOCAL_FROM_REF = Location()
+LOCAL_FROM_REF = IDENTITY
 # OCCT's basic volume integration is ~0.3 % off on the 2000-knot spline face (both for this part
 # and its reference); tests/cycloidal/test_port.py compares the adaptive-precision volume to 1e-4.
 REF_VOL_TOL = 0.005

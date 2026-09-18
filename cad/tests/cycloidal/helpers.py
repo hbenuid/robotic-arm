@@ -16,7 +16,7 @@ from build123d import Box, Cylinder, GeomType, Pos, Shape, Compound
 
 from lib import reference as R
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, ring_pin_points
-from lib.cycloidal.geom import MIN
+from lib.cycloidal.geom import align_min
 
 CFG = DEFAULT_CONFIG   # the configuration every drive test checks (variants: dataclasses.replace, see no_chamfer)
 
@@ -56,7 +56,7 @@ def section_area(solid: Shape, z: float, size: float = 400.0, slab: float = 0.02
 
 def probe_volume(solid: Shape, xy, z: float, size: float = 1.0, height: float = 0.5) -> float:
     """Material volume inside a small box standing on z at xy."""
-    return interference(solid, Pos(xy[0], xy[1], z) * Box(size, size, height, align=MIN))
+    return interference(solid, Pos(xy[0], xy[1], z) * Box(size, size, height, align=align_min()))
 
 
 def mesh_volume(shape: Shape, tolerance: float = 0.002, angular: float = 0.2):
@@ -85,7 +85,7 @@ def no_chamfer(cfg: DriveConfig = DEFAULT_CONFIG) -> DriveConfig:
 
 def annulus(od: float, bore: float, width: float):
     """A plain bearing stand-in (the drive's simplified purchased-part model)."""
-    return Cylinder(od / 2.0, width, align=MIN) - Cylinder(bore / 2.0, width, align=MIN)
+    return Cylinder(od / 2.0, width, align=align_min()) - Cylinder(bore / 2.0, width, align=align_min())
 
 
 def ring_pins(cfg: DriveConfig = DEFAULT_CONFIG, z0: float = 0.0):
@@ -93,6 +93,6 @@ def ring_pins(cfg: DriveConfig = DEFAULT_CONFIG, z0: float = 0.0):
     g = cfg.gear
     pins = None
     for x, y in ring_pin_points(cfg):
-        pin = Pos(x, y, z0) * Cylinder(g.ring_pin_radius, g.ring_pin_length, align=MIN)
+        pin = Pos(x, y, z0) * Cylinder(g.ring_pin_radius, g.ring_pin_length, align=align_min())
         pins = pin if pins is None else pins + pin
     return pins

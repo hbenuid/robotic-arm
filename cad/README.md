@@ -92,7 +92,7 @@ cad/
 ├── lib/
 │   ├── params.py          # single source of truth for shared dimensions (tagged provenance)
 │   ├── units.py           # IN, NUDGE - a leaf module (lib/cycloidal/ imports it; params.py re-exports it)
-│   ├── datum.py           # capture frame W -> base_link frame B: frame(), BASE_FRAME (arm.py ARM_FROM_W, robot/frames.py)
+│   ├── datum.py           # capture frame W -> base_link frame B: frame(), base_frame() (arm.py arm_from_w(), robot/frames.py); frames as data: IDENTITY, to_location()
 │   ├── reference.py       # naming maps (SolidWorks custom/COTS, designed cycloidal parts, modules), loaders, path_of(), matches_reference()
 │   ├── manifest.py        # reference/manifest.json: read() / write() / entry() - shared by the two import tools and the tests
 │   ├── placements.py      # reference/placements.json -> build123d Location
@@ -154,9 +154,13 @@ links; code never imports a part statically but goes through `parts.load(name)` 
   tools call the body instead (`parts.build(name)` / `lib.models.raw(model)`), assemblies call
   `lib.models.geometry(model)` (linked child inside a build, body otherwise);
 - the result is labelled with the part name; shared dimensions come from `lib/params.py`;
+- the CAD kernel is imported **lazily** — `from cadgen import build123d as bd`, `bd.<name>` inside function
+  bodies only, no kernel object at module level — so cadgen can tell an unchanged model is current without
+  paying for OCP (~0.1 s instead of ~1.5 s per run; `tests/test_lazy_kernel.py` locks it for every model);
 - **custom parts** declare `REFERENCE` (their `reference/solidworks/<name>.step`), `CONVERTED`
   (`False` while the file is a wrapper) and `LOCAL_FROM_REF` (rigid transform from the
-  SolidWorks part-file frame to the part's local frame; identity for wrappers);
+  SolidWorks part-file frame to the part's local frame, as data `((x, y, z), (rx, ry, rz))` in mm / degrees;
+  `lib.datum.IDENTITY` for wrappers — `lib.datum.to_location()` makes the Location inside the model);
 - **designed parts** (the cycloidal drive's printed parts, `lib/reference.py DESIGNED`) are the
   same contract with `CONVERTED = True` and a reference that is the CadQuery export they were
   ported from — the strict `tests/cycloidal/test_port.py` checks them beyond the reference match;
@@ -178,8 +182,8 @@ part and its STEP always live in the same directory; upstream's `src/` + `STEP/`
    with a provenance tag (`[MEASURE]`, `[DATASHEET]`, `[DESIGN]`, `[REFERENCE]`, `[ESTIMATE]`)
    and a lock in `tests/test_params_invariants.py`.
 3. Set `CONVERTED = True`. If you pick a nicer local origin than the SolidWorks one, set
-   `LOCAL_FROM_REF` to the transform *reference frame → new local frame*; the assemblies compose
-   `placement * LOCAL_FROM_REF⁻¹`, so `reference/placements.json` never changes.
+   `LOCAL_FROM_REF` to the transform *reference frame → new local frame* (frame data, see above); the
+   assemblies compose `placement * to_location(LOCAL_FROM_REF)⁻¹`, so `reference/placements.json` never changes.
    (`j1_cap` and `j2_cap_2` have their geometry ~1 m from the SolidWorks origin — they are the
    ones that want this.)
 4. `./cadtool pytest tests/test_reference_match.py -k <name>` — volume within 0.5 % and bounding
@@ -208,13 +212,13 @@ catalog model is worse, restore the reference copy. See `vendor/README.md` for w
 model is called — built in parallel, its STEP rewritten when stale — and the gripper links its tree
 while the tinted arm keeps an inline copy; outside a build it is a fresh in-process copy). The
 placements are in the SolidWorks capture frame (+Y up), but the arm is **emitted Z up**, in the
-`base_link` frame of `robot/frames.py` (`arm.py ARM_FROM_W`, composed into every occurrence's
+`base_link` frame of `robot/frames.py` (`arm.py arm_from_w()`, composed into every occurrence's
 placement): cadgen's viewer and snapshots treat +Z as up and have no up-axis setting, so a
 capture-frame `arm.step` would lie on its side. `arm.step` and `robot/arm.urdf` therefore open in the
 same pose, the base standing on z = 0. Roles make
 duplicate parts' labels unique (`j3_coupler:j2`, `gripper_end:1`); they are positional for
 now. `assemblies/cycloidal_drive.py` is a **code-driven module**: its rows are
-`(part, role, Location)` computed from `lib/cycloidal` (`stack_positions`), and `arm.py` locates
+`(part, role, position)` computed from `lib/cycloidal` (`stack_positions`), and `arm.py` locates
 the whole module at the SolidWorks node's pose (`placements.json` `cycloidal_drive#1`, a
 `designed` module record). `arm.py GROUPS` buckets the occurrences into the component tree
 `arm -> base_link/shoulder_link/upper_arm_link/forearm_link/wrist_pitch_link/wrist` — the rigid-link

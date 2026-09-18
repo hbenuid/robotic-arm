@@ -324,12 +324,12 @@ class TestModuleLocks:
             "cycloidal_ring_gear_body": (0, 0, 9), "cycloidal_output_hub": (0, 0, 37), "cycloidal_shaft_support_pin": (0, 0, 24),
             "bearing_625": (0, 0, 37), "cycloidal_housing_bolts": (0, 0, 0.5), "cycloidal_housing_nuts": (0, 0, 56),
         }
-        got = {name if role is None else f"{name}:{role}": tuple(loc.position) for name, role, loc in cycloidal_drive.OCCURRENCES}
+        got = {name if role is None else f"{name}:{role}": pos for name, role, pos in cycloidal_drive.OCCURRENCES}
         assert got.keys() == want.keys()
         for label, pos in want.items():
             assert all(math.isclose(a, b, abs_tol=1e-9) for a, b in zip(got[label], pos)), label
-        for name, role, loc in cycloidal_drive.OCCURRENCES:      # translations only - never a rotation
-            assert all(math.isclose(v, 0.0, abs_tol=1e-9) for v in loc.orientation), name
+        for name, role, pos in cycloidal_drive.OCCURRENCES:      # rows are positions (data): translations only
+            assert isinstance(pos, tuple) and len(pos) == 3 and all(isinstance(v, float) for v in pos), name
 
     def test_bodies_partition_the_rows(self):
         """stator + rotor (the robot description's rigid bodies) cover every row's part exactly

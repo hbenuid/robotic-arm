@@ -7,18 +7,20 @@ which normalises the tokens. cadgen 0.6.5 deprecated its `AssemblyHelper` wrappe
 `add_module` / `build` were exactly these three lines); joints are `@step(kinematics=...)` data
 (`cadgen.revolute(...)` mates between `#label` refs), not helper frames.
 """
-from build123d import Compound
+
+from __future__ import annotations
+from cadgen import build123d as bd
 from cadgen.assembly import label_shape, label_text  # noqa: F401
 
 __all__ = ["assembly", "label_shape", "label_text"]
 
 
-def assembly(name: str, children, *details, color=None) -> Compound:
+def assembly(name: str, children, *details, color=None) -> bd.Compound:
     """`Compound(label=label_text(name, *details), children=children)`, optionally colored.
 
     The children keep their own locations (cadgen's STEP packager reads those, never a location on
     the node), labels and colors; a compound-level color does not cascade to them."""
-    node = Compound(label=label_text(name, *details), children=list(children))
+    node = bd.Compound(label=label_text(name, *details), children=list(children))
     if color is not None:
         node.color = color
     return node

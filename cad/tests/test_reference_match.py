@@ -7,11 +7,11 @@ that drifts from the original design fails here. Per-part tolerances: REF_VOL_TO
 (relative) and REF_BBOX_TOL (mm) module attributes.
 """
 import pytest
-from build123d import Location
 
 import parts
 from lib import manifest as M
 from lib import reference as R
+from lib.datum import IDENTITY, to_location
 
 CUSTOM_PARTS = [n for n in parts.names() if n in R.CUSTOM or n in R.DESIGNED]
 
@@ -53,7 +53,7 @@ def test_part_matches_reference(name):
     ok, report = R.matches_reference(
         parts.build(name),
         mod.REFERENCE,
-        local_from_ref=getattr(mod, "LOCAL_FROM_REF", None) or Location(),
+        local_from_ref=to_location(getattr(mod, "LOCAL_FROM_REF", IDENTITY)),
         vol_tol=getattr(mod, "REF_VOL_TOL", 0.005),
         bbox_tol=getattr(mod, "REF_BBOX_TOL", 0.2),
     )

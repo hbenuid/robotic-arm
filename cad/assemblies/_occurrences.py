@@ -3,7 +3,7 @@
 An OCCURRENCES table row is (part_or_module_name, role_or_None, placement_key), in the
 SolidWorks document order. Roles make duplicate parts' labels unique (`j3_coupler:j2`);
 they are positional/ordinal for now - rename them when the joint semantics are modelled.
-Code-driven modules (assemblies/cycloidal_drive.py) use (part, role, Location) rows instead:
+Code-driven modules (assemblies/cycloidal_drive.py) use (part, role, position) rows instead:
 their placement key is a SolidWorks node, their contents are not (located_children / world_rows), and
 their BODIES split the rows into rigid bodies ("cycloidal_drive#1:rotor", split_key) for the
 robot description.
@@ -18,12 +18,18 @@ from __future__ import annotations
 
 import importlib
 
-from build123d import Color, Location
+from cadgen import build123d as bd
 
 import parts  # noqa: E402  (stdlib-only package index; parts.load() imports a part lazily)
 from lib import placements as P
 from lib.assembly import assembly, label_shape
+from lib.datum import IDENTITY, to_location
 from lib.models import geometry
+
+
+def _local_from_ref(part_name: str) -> bd.Location:
+    """The part's LOCAL_FROM_REF (frame data, lib.datum) as a Location; identity when it declares none."""
+    return to_location(getattr(parts.load(part_name), "LOCAL_FROM_REF", IDENTITY))
 
 
 def _part(part_name: str, *, inline: bool = False):
@@ -32,17 +38,15 @@ def _part(part_name: str, *, inline: bool = False):
     return geometry(parts.model(part_name), inline=inline)
 
 
-def place(part_name: str, key: str, *, inline: bool = False, root: Location | None = None):
+def place(part_name: str, key: str, *, inline: bool = False, root: bd.Location | None = None):
     """parts.model(part_name) placed at occurrence `key`.
 
     The part is modelled in its LOCAL frame (= LOCAL_FROM_REF * reference frame); the
     extracted placement maps the REFERENCE frame into the parent frame, so compose
     rel * LOCAL_FROM_REF^-1 and MOVE (compose) rather than locate (replace). `root` (parent
     frame -> output frame) re-expresses the occurrence in another frame: root * rel * ..."""
-    mod = parts.load(part_name)
-    local_from_ref = getattr(mod, "LOCAL_FROM_REF", None) or Location()
     return _part(part_name, inline=inline).moved(
-        (root or Location()) * P.location(key, "rel") * local_from_ref.inverse())
+        (root or bd.Location()) * P.location(key, "rel") * _local_from_ref(part_name).inverse())
 
 
 def _details(role) -> tuple:
@@ -65,7 +69,7 @@ def occurrence_children(rows, modules: dict | None = None) -> list:
     return children
 
 
-def _tint(shape, color: Color) -> None:
+def _tint(shape, color: bd.Color) -> None:
     """Set `color` on `shape` and every descendant. ocp_tessellate renders a leaf's own
     color (a compound-level color does not cascade), so tint the whole subtree - which is why the
     grouped occurrences are inline copies: a linked child keeps its own (untinted) leaves."""
@@ -75,7 +79,7 @@ def _tint(shape, color: Color) -> None:
 
 
 def grouped_children(rows, groups, modules: dict | None = None,
-                     module_tints: dict | None = None, root: Location | None = None) -> list:
+                     module_tints: dict | None = None, root: bd.Location | None = None) -> list:
     """occurrence_children(), but bucketed into labelled group Compounds (viewer/STEP tree nodes).
 
     `groups` rows are (group_label, tint, occurrence keys); together the keys must cover the
@@ -93,7 +97,7 @@ def grouped_children(rows, groups, modules: dict | None = None,
     would move the in-process shape but not the written STEP."""
     modules = modules or {}
     module_tints = module_tints or {}
-    root = root or Location()
+    root = root or bd.Location()
     row_keys = sorted(key for _, _, key in rows)
     group_keys = sorted(key for _, _, keys in groups for key in keys)
     if group_keys != row_keys:
@@ -109,27 +113,25 @@ def grouped_children(rows, groups, modules: dict | None = None,
     for group_label, tint, keys in groups:
         members = []
         for key in keys:
-            _tint(shapes[key], Color(module_tints.get(key, tint)))
+            _tint(shapes[key], bd.Color(module_tints.get(key, tint)))
             members.append(shapes[key])
-        nodes.append(assembly(group_label, members, color=Color(tint)))
+        nodes.append(assembly(group_label, members, color=bd.Color(tint)))
     return nodes
 
 
-def place_at(part_name: str, loc: Location):
+def place_at(part_name: str, loc: bd.Location):
     """parts.model(part_name) at an explicit placement of its reference frame (the rows of a
     code-driven module such as assemblies/cycloidal_drive.py)."""
-    mod = parts.load(part_name)
-    local_from_ref = getattr(mod, "LOCAL_FROM_REF", None) or Location()
-    return _part(part_name).moved(loc * local_from_ref.inverse())
+    return _part(part_name).moved(loc * _local_from_ref(part_name).inverse())
 
 
 def located_children(rows) -> list:
-    """Every (part, role|None, Location) row of a code-driven module table as a placed, labelled child."""
-    return [label_shape(place_at(name, loc), name, *_details(role)) for name, role, loc in rows]
+    """Every (part, role|None, position) row of a code-driven module table as a placed, labelled child."""
+    return [label_shape(place_at(name, bd.Location(tuple(pos))), name, *_details(role)) for name, role, pos in rows]
 
 
 def module_rows(module_name: str) -> list:
-    """The (part, role, Location-in-module-frame) rows of a code-driven assemblies/<module>.py."""
+    """The (part, role, position-in-module-frame) rows of a code-driven assemblies/<module>.py."""
     return list(importlib.import_module(f"assemblies.{module_name}").OCCURRENCES)
 
 
@@ -169,16 +171,14 @@ def world_rows(key: str) -> list:
             raise ValueError(f"{key}: unknown body {body!r} (have {sorted(bodies)})")
         rows = [r for r in rows if r[0] in bodies[body]]
     world = P.location(occ, "world")
-    return [(part, role, world * loc) for part, role, loc in rows]
+    return [(part, role, world * bd.Location(tuple(pos))) for part, role, pos in rows]
 
 
-def place_world_at(part_name: str, world: Location, into=None):
+def place_world_at(part_name: str, world: bd.Location, into=None):
     """parts.model(part_name) at a WORLD placement of its reference frame, optionally
     re-expressed in another frame (`into` = that frame's world Location, so the result is
     `into^-1 * world * LOCAL_FROM_REF^-1 * local`). Used for per-link meshes."""
-    mod = parts.load(part_name)
-    local_from_ref = getattr(mod, "LOCAL_FROM_REF", None) or Location()
-    loc = world * local_from_ref.inverse()
+    loc = world * _local_from_ref(part_name).inverse()
     if into is not None:
         loc = into.inverse() * loc
     return _part(part_name).moved(loc)

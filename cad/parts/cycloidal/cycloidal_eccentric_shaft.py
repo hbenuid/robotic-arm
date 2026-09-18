@@ -11,16 +11,17 @@ it with an identity Location.
 """
 import pathlib
 
-from build123d import Box, Circle, Location, Pos, loft
+from cadgen import build123d as bd
 from cadgen import step
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig
 from lib.cycloidal.geom import cylinder, single_solid
+from lib.datum import IDENTITY
 from lib.params import NUDGE
 
 NAME = pathlib.Path(__file__).stem
 REFERENCE = NAME
 CONVERTED = True
-LOCAL_FROM_REF = Location()
+LOCAL_FROM_REF = IDENTITY
 REF_VOL_TOL = 1e-4
 REF_BBOX_TOL = 0.02
 
@@ -41,8 +42,8 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     # inter-disc spacer, oversized so the two 6003 bearings cannot slide toward each other.
     z_bridge = z_lobe1 + disc_t
     flange_r = shaft.bridge_flange_od / 2.0
-    bridge = loft(
-        [Pos(+e, 0, z_bridge) * Circle(flange_r), Pos(-e, 0, z_bridge + cfg.disc.inter_disc_spacer) * Circle(flange_r)],
+    bridge = bd.loft(
+        [bd.Pos(+e, 0, z_bridge) * bd.Circle(flange_r), bd.Pos(-e, 0, z_bridge + cfg.disc.inter_disc_spacer) * bd.Circle(flange_r)],
         ruled=True,
     )
     result = spine + collar + lobe1 + lobe2 + bridge
@@ -58,7 +59,7 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     flat_y = shaft.d_bore_flat / 2.0 + tol.d_bore_clearance_add          # 2.315, flat on +Y
     bore = cylinder(bore_r, shaft.d_bore_depth + NUDGE, z0=z_start - NUDGE)
     if bore_r > flat_y:
-        keep = Pos(0, flat_y + 5.0, z_start + shaft.d_bore_depth / 2.0) * Box(10.0, 10.0, shaft.d_bore_depth + 4 * NUDGE)
+        keep = bd.Pos(0, flat_y + 5.0, z_start + shaft.d_bore_depth / 2.0) * bd.Box(10.0, 10.0, shaft.d_bore_depth + 4 * NUDGE)
         bore = bore - keep
     result = result - bore
     return single_solid(result)

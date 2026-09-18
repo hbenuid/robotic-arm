@@ -7,17 +7,20 @@ the `@step` model); the geometry of the envelopes is the drive repo's simplified
 """
 from __future__ import annotations
 
-from build123d import Compound, Location
+from cadgen import build123d as bd
 from cadgen import read_step
 
+from lib.datum import to_location
 
-def hybrid(name: str, vendor_step, vendor_to_ref: Location, envelope):
-    """Vendor geometry if vendor/<name>.step exists, else the envelope - labelled."""
-    part = read_step(vendor_step).moved(vendor_to_ref) if vendor_step.exists() else envelope()
+
+def hybrid(name: str, vendor_step, vendor_to_ref, envelope):
+    """Vendor geometry if vendor/<name>.step exists (moved by the VENDOR_TO_REF frame data), else the
+    envelope - labelled."""
+    part = read_step(vendor_step).moved(to_location(vendor_to_ref)) if vendor_step.exists() else envelope()
     part.label = name
     return part
 
 
-def pattern(solids) -> Compound:
+def pattern(solids) -> bd.Compound:
     """A multi-body pattern part (pins, bolts, nuts) as one compound of separate solids."""
-    return Compound([s for shape in solids for s in shape.solids()])
+    return bd.Compound([s for shape in solids for s in shape.solids()])

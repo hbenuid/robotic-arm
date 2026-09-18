@@ -6,7 +6,7 @@ pattern and chamfer but disc 2's epitrochoid is phase-rotated by ``cfg.gear.disc
 """
 from __future__ import annotations
 
-from build123d import Edge, Face, GeomType, Solid, Vector, Wire
+from cadgen import build123d as bd
 
 from lib.cycloidal.geom import single_solid, through
 from lib.cycloidal.layout import output_pin_points
@@ -14,21 +14,21 @@ from lib.cycloidal.params import DEFAULT_CONFIG, DriveConfig
 from lib.cycloidal.profiles import profile_points
 
 
-def build_disc(cfg: DriveConfig = DEFAULT_CONFIG, phase_offset_deg: float = 0.0) -> Solid:
+def build_disc(cfg: DriveConfig = DEFAULT_CONFIG, phase_offset_deg: float = 0.0) -> bd.Solid:
     """One disc at its local origin (profile centred, z 0..thickness)."""
     disc = cfg.disc
     points = profile_points(cfg, phase_offset_deg)
 
     # Periodic interpolating spline through every profile point (exact lobe peaks - never an
     # approximating spline), one closed edge -> face -> prism.
-    edge = Edge.make_spline([Vector(x, y, 0.0) for x, y in points], periodic=True)
-    solid = Solid.extrude(Face(Wire([edge])), Vector(0, 0, disc.thickness))
+    edge = bd.Edge.make_spline([bd.Vector(x, y, 0.0) for x, y in points], periodic=True)
+    solid = bd.Solid.extrude(bd.Face(bd.Wire([edge])), bd.Vector(0, 0, disc.thickness))
 
     # Chamfer the outer lobe edges BEFORE the holes: the top/bottom faces then carry only the
     # epitrochoid boundary, so "all edges of that face" is exactly the outer edge.
-    top = max(solid.faces().filter_by(GeomType.PLANE), key=lambda f: f.center().Z)
+    top = max(solid.faces().filter_by(bd.GeomType.PLANE), key=lambda f: f.center().Z)
     solid = solid.chamfer(disc.lobe_chamfer, None, top.edges())
-    bottom = min(solid.faces().filter_by(GeomType.PLANE), key=lambda f: f.center().Z)
+    bottom = min(solid.faces().filter_by(bd.GeomType.PLANE), key=lambda f: f.center().Z)
     solid = solid.chamfer(disc.lobe_chamfer, None, bottom.edges())
 
     # Centre bore for the 6003 bearing, then the 4 output-pin clearance holes on the 60 mm circle.

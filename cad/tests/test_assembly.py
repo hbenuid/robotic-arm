@@ -19,7 +19,7 @@ def _leaves(node):
 def _expected_bbox():
     """Union of the world bounding boxes of every part occurrence in placements.json and of the
     designed modules' SolidWorks nodes (the drive's fasteners sit inside that envelope),
-    re-expressed in the frame the arm is emitted in (arm.ARM_FROM_W: W, +Y up -> base_link, Z up).
+    re-expressed in the frame the arm is emitted in (arm.arm_from_w(): W, +Y up -> base_link, Z up).
     That map is an axis permutation with signs, so two opposite corners carry the whole box."""
     lo = [float("inf")] * 3
     hi = [float("-inf")] * 3
@@ -30,7 +30,7 @@ def _expected_bbox():
         for i in range(3):
             lo[i] = min(lo[i], bmin[i])
             hi[i] = max(hi[i], bmin[i] + bsize[i])
-    corners = [tuple((arm.ARM_FROM_W * Location(tuple(p))).position) for p in (lo, hi)]
+    corners = [tuple((arm.arm_from_w() * Location(tuple(p))).position) for p in (lo, hi)]
     lo = [min(c[i] for c in corners) for i in range(3)]
     hi = [max(c[i] for c in corners) for i in range(3)]
     return lo, [h - l for h, l in zip(hi, lo)]
@@ -86,11 +86,11 @@ def test_arm_is_emitted_z_up():
     from robot import frames
 
     def direction(v):
-        return (arm.ARM_FROM_W * Location(v)).position - arm.ARM_FROM_W.position
+        return (arm.arm_from_w() * Location(v)).position - arm.arm_from_w().position
 
     assert (direction(frames.U) - Vector(0, 0, 1)).length < 1e-9
     assert (direction(frames.BASE_FORWARD) - Vector(1, 0, 0)).length < 1e-9
-    assert (arm.ARM_FROM_W * Location((0.0, frames.BASE_BOTTOM_Y, 0.0))).position.length < 1e-9
+    assert (arm.arm_from_w() * Location((0.0, frames.BASE_BOTTOM_Y, 0.0))).position.length < 1e-9
 
 
 @pytest.mark.slow

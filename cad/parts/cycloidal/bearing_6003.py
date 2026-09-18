@@ -6,10 +6,10 @@ re-oriented by VENDOR_TO_REF into the same frame: axis Z, standing on z=0. In th
 """
 import pathlib
 
-from build123d import Location
 from cadgen import step
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig
 from lib.cycloidal.geom import cylinder
+from lib.datum import IDENTITY
 from lib.params import BEARING_6003_MASS_G
 from parts.cycloidal._cots import hybrid
 
@@ -17,7 +17,7 @@ NAME = pathlib.Path(__file__).stem
 COTS = True
 MASS_G = BEARING_6003_MASS_G
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
-VENDOR_TO_REF = Location()   # set after inspecting a step.parts model (see vendor/README.md)
+VENDOR_TO_REF = IDENTITY   # set after inspecting a step.parts model (see vendor/README.md)
 
 
 def _envelope(cfg: DriveConfig = DEFAULT_CONFIG):

@@ -17,8 +17,8 @@ own MODULE_TINTS colour) although its rotor body (output hub + pins) belongs to 
 in robot/frames.py LINKS - the kinematic truth, which the per-link meshes follow.
 
 Frame: the placements are in the SolidWorks capture frame W (+Y up), but the arm is EMITTED in
-the base_link frame B (lib/datum.py BASE_FRAME, the frame robot/frames.py gives base_link - REP-103:
-Z up, X forward, the base's mounting face on z = 0) - ARM_FROM_W, composed into every occurrence's placement. cadgen's viewer and snapshots
+the base_link frame B (lib/datum.py base_frame(), the frame robot/frames.py gives base_link - REP-103:
+Z up, X forward, the base's mounting face on z = 0) - arm_from_w(), composed into every occurrence's placement. cadgen's viewer and snapshots
 are Z-up with no up-axis option, so a W-frame STEP renders lying on its side; in B arm.step and
 robot/arm.urdf open in the same pose. placements.json, the parts and the modules stay in W.
 
@@ -33,11 +33,14 @@ from cadgen import step
 from assemblies import cycloidal_drive, gripper
 from assemblies._occurrences import grouped_children
 from lib.assembly import assembly
-from lib.datum import BASE_FRAME
+from lib.datum import base_frame
 
-# W (SolidWorks capture frame, +Y up, arm toward -X) -> base_link frame B (REP-103: Z up, X forward,
-# origin on the base's mounting face at the base_yaw axis): the frame the arm is emitted in.
-ARM_FROM_W = BASE_FRAME.inverse()
+def arm_from_w():
+    """W (SolidWorks capture frame, +Y up, arm toward -X) -> base_link frame B (REP-103: Z up, X
+    forward, origin on the base's mounting face at the base_yaw axis): the frame the arm is emitted in.
+    A function: a Location at module level would import the kernel with this model file."""
+    return base_frame().inverse()
+
 
 GRIPPER_KEY = "gripper#1"
 DRIVE_KEY = "cycloidal_drive#1"
@@ -85,8 +88,8 @@ MODULE_TINTS = {DRIVE_KEY: "#C44E52", GRIPPER_KEY: "#64B5CD"}  # the named modul
 def arm():
     """The arm as a labelled Compound: 'arm' -> the GROUPS component nodes -> parts + the
     'gripper' and 'cycloidal_drive' modules, each subtree tinted with its group's color, in the
-    base_link frame (Z up - ARM_FROM_W)."""
-    return assembly("arm", grouped_children(OCCURRENCES, GROUPS, MODULES, MODULE_TINTS, root=ARM_FROM_W))
+    base_link frame (Z up - arm_from_w())."""
+    return assembly("arm", grouped_children(OCCURRENCES, GROUPS, MODULES, MODULE_TINTS, root=arm_from_w()))
 
 
 if __name__ == "__main__":

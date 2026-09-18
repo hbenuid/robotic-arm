@@ -13,8 +13,9 @@ else the parametric envelope below - both in the SolidWorks frame placements.jso
 """
 import pathlib
 
-from build123d import Align, Box, Location
+from cadgen import build123d as bd
 from cadgen import read_step, step
+from lib.datum import IDENTITY, to_location
 from lib.params import MG996R_MASS_G
 
 NAME = pathlib.Path(__file__).stem
@@ -23,19 +24,19 @@ MASS_G = MG996R_MASS_G   # [DATASHEET] 55 g
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 # Rigid transform vendor-file frame -> the SolidWorks frame placements.json assumes (identity while
 # vendor/<name>.step is the SolidWorks re-export; set it after swapping in a step.parts model).
-VENDOR_TO_REF = Location()
+VENDOR_TO_REF = IDENTITY
 
 
 def _envelope():
     """Parametric stand-in used only when the vendor STEP is missing."""
     # Envelope: the reference bounding box (tabs along X, height along Y, thickness along Z).
-    return Box(55.8, 45.2, 20.5, align=(Align.MIN, Align.MIN, Align.MIN)).moved(Location((-28.5, -0.0, -10.25)))
+    return bd.Box(55.8, 45.2, 20.5, align=(bd.Align.MIN, bd.Align.MIN, bd.Align.MIN)).moved(bd.Location((-28.5, -0.0, -10.25)))
 
 
 @step
 def mg996r_servo():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
-    part = read_step(VENDOR_STEP).moved(VENDOR_TO_REF) if VENDOR_STEP.exists() else _envelope()
+    part = read_step(VENDOR_STEP).moved(to_location(VENDOR_TO_REF)) if VENDOR_STEP.exists() else _envelope()
     part.label = NAME
     return part
 

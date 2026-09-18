@@ -8,10 +8,10 @@ re-oriented by VENDOR_TO_REF into the same frame.
 """
 import pathlib
 
-from build123d import Location, Pos
 from cadgen import step
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, ring_pin_points
 from lib.cycloidal.geom import cylinder
+from lib.datum import IDENTITY
 from lib.params import CYCLOIDAL_RING_PINS_MASS_G
 from parts.cycloidal._cots import hybrid, pattern
 
@@ -19,7 +19,7 @@ NAME = pathlib.Path(__file__).stem
 COTS = True
 MASS_G = CYCLOIDAL_RING_PINS_MASS_G
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
-VENDOR_TO_REF = Location()
+VENDOR_TO_REF = IDENTITY
 
 
 def _envelope(cfg: DriveConfig = DEFAULT_CONFIG):
