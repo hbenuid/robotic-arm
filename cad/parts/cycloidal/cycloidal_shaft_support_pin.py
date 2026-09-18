@@ -12,7 +12,6 @@ from build123d import Location, Pos
 from cadgen import step
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, stack_positions
 from lib.cycloidal.geom import cylinder
-from lib.cycloidal.housing import hex_prism  # noqa: F401
 from lib.params import CYCLOIDAL_SUPPORT_PIN_MASS_G
 from parts.cycloidal._cots import hybrid, pattern
 

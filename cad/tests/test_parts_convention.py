@@ -11,6 +11,7 @@ import pytest
 
 import parts
 from lib import reference as R
+from tests.source_checks import runs_its_model
 
 PART_NAMES = parts.names()
 
@@ -57,6 +58,8 @@ def test_part_declares_its_contract(name):
     assert m.__name__ == name
     assert m.__cadgen_model__.fmt == "step", f"parts.{name}: the model must be a @step model"
     assert m.__cadgen_model__.out is None, f"parts.{name}: no out= - the STEP is the sibling parts/<group>/{name}.step"
+    assert runs_its_model(parts.source_of(name), name), (
+        f"parts.{name}: the file must end with `if __name__ == \"__main__\": {name}()` - without it `./cadtool gen` builds nothing")
     if getattr(mod, "COTS", False):
         assert name in R.COTS, f"{name} declares COTS but is not in lib.reference.COTS"
         mass = getattr(mod, "MASS_G", None)

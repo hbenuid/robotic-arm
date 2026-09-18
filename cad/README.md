@@ -65,7 +65,7 @@ cadgen 0.5 has **no compatibility with 0.4** (see the 2026-09-11 CHANGELOG entry
 | `./cadtool doctor` | installed cadgen vs the plugin's pin, Node, Playwright Chromium |
 | `./cadtool pytest [-m "not slow"]` | test suite (the fast lane skips geometry builds) |
 | `./cadtool python …` | any python in the venv with `PYTHONPATH=cad/` (`-c "from assemblies.cycloidal_drive import totals; print(totals())"`) |
-| `./cadtool clean [--all]` | delete `__pycache__/`, `.pytest_cache/`; `--all` also empties `snapshots/`, `exports/` and removes the git-ignored `assemblies/*.step`, `robot/links/*.step` |
+| `./cadtool clean [--all]` | delete `__pycache__/`, `.pytest_cache/` (and any stray `__cadgen__/`); `--all` also empties `snapshots/` and removes the git-ignored `assemblies/*.step`, `robot/links/*.step` |
 
 `cadtool` always `cd`s to `cad/` (cadgen resolves paths from the working directory and the viewer
 serves it) and exports `PYTHONPATH=cad/` so `lib`, `parts`, `assemblies`, `robot` import the same way
@@ -92,7 +92,6 @@ cad/
 │   ├── placements.py      # reference/placements.json -> build123d Location
 │   ├── models.py          # model_of() / raw() / geometry(inline=): the @step model of a module, its body, a child for an assembly
 │   ├── assembly.py        # AssemblyHelper / label_shape / label_text re-exported from cadgen
-│   ├── export.py          # build123d STL/STEP export into exports/ (ad-hoc sidecars)
 │   └── cycloidal/         # the cycloidal drive: DriveConfig (params.py), layout.py, profiles.py, housing.py, disc.py, geom.py
 ├── parts/                 # one part per file, grouped by subsystem; parts.names() / parts.load(name) discover them
 │   ├── __init__.py            # the directory scan: MODULES / GROUPS, names(), load(), model(), build(), source_of()
@@ -100,7 +99,7 @@ cad/
 │   ├── base/                  # base, j1_coupler, j1_link, j1_cap                                  (SolidWorks wrappers)
 │   ├── joints/                # j2_link, j2_cap_1, j2_cap_2, j3_coupler, gt2_pulley_90t            (SolidWorks wrappers)
 │   ├── wrist/                 # wrist_link, gripper_clamp_bracket, gripper_j3_connector + COTS nema17_pancake, gt2_pulley_20t
-│   ├── gripper/               # gripper_* (8), servo_holder + COTS gripper_rail_6mm, mg996r_servo, mg996r_horn
+│   ├── gripper/               # gripper_* (7), servo_holder + COTS gripper_rail_6mm, mg996r_servo, mg996r_horn
 │   └── cycloidal/             # the drive: 6 designed parts + 10 COTS (bearings, nema17_48mm, pins, bolts, nuts), _cots.py helper
 │       └── <name>.py + <name>.step   # every group: running the .py writes the .step beside it; committed (Git LFS)
 ├── assemblies/
@@ -114,14 +113,19 @@ cad/
 │   └── cycloidal/             # the 16 CadQuery exports the drive was ported from
 ├── vendor/                # purchased-part STEPs (committed via Git LFS; replaceable by better catalog models)
 ├── robot/                 # URDF / SRDF / SDF + per-link meshes and generators (see below)
-├── tools/                 # preview.py (./cadtool show), reference/{import_reference,extract_placements}.py (SolidWorks),
+├── tools/                 # preview.py (./cadtool show), cadgen_patches.py (./cadtool patch), reference/{import_reference,extract_placements}.py (SolidWorks),
 │                          # cycloidal/{export_cadquery,import_reference}.py (the drive's references), robot/{frames,export_link_meshes}.py
 ├── tests/                 # pytest: conventions, reference match, placements, assembly totals, params locks, robot description;
 │   ├── conftest.py            # CADGEN_DAEMON=0 + a guard that fails any test calling a model at top level (tests call bodies)
 │   └── cycloidal/             # the drive's own tests (one module per part + housing / purchased / fitment / assembly / port) + helpers.py
-├── exports/               # STL/3MF sidecars (git-ignored)
 └── snapshots/             # snapshot PNGs (git-ignored)
 ```
+The `parts/` groups follow the **physical stage along the arm** (`base` → `joints` → `wrist` →
+`gripper`, plus the `cycloidal` drive) — not the name prefix and not the URDF links: the `j1_*` parts
+sit in `base/` with the stage they build, and `gripper_clamp_bracket` / `gripper_j3_connector` sit in
+`wrist/` because they are the wrist-side mount (`gripper_j3_connector` is nevertheless placed by
+`assemblies/gripper.py`). A group is only a directory — the part's name is the key everywhere.
+
 Nothing derived lands in the tree: cadgen keeps trees, tessellations and freshness records in its
 content-addressed store (`~/.cache/cadgen`). A `<name>.step.json` sidecar appears beside a STEP only
 when its model declares `kinematics=` (none does yet); it would be committed with the STEP.
@@ -237,6 +241,7 @@ in `placements.json` as a designed module (pose only; the contents come from cod
 robot/
 ├── frames.py          # THE kinematic decomposition: LINKS (which occurrences move together) + JOINTS
 │                      # (axis point/direction, parent/child, limits from lib/params.py)
+├── _links.py          # link_rows() / build_link(): one link's occurrences placed in the link frame (models, meshes, tests)
 ├── links/<link>.py    # a @step model per rigid link, in the link's own frame (./cadtool gen robot/links/shoulder_link.py)
 ├── meshes/<link>.stl  # per-link meshes in mm (committed) - tools/robot/export_link_meshes.py
 ├── arm.urdf           # SOURCE OF TRUTH (hand-edited ledger + numbers from tools/robot/frames.py)

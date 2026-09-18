@@ -2,6 +2,8 @@
 
 3-motor MKS SERVO42D/57D arm controlled over CAN bus via a CANable / slcan-compatible USB adapter. Runs on macOS, Linux, and Windows.
 
+**Last updated:** 2026-09-18 — see `CHANGELOG.md` for dated changes.
+
 ## Toolchain
 - Always use `uv` — never `pip install` directly. `uv add <pkg>` for new deps;
   commit `pyproject.toml` and `uv.lock`.
@@ -28,7 +30,7 @@
 - `cad/` is a **separate uv project** (Python 3.12, build123d) — the motor-control
   project above never depends on it, and `launch.bat` never installs it. Never run
   CAD code with the root venv.
-- Work from `cad/` via `./cadtool …` (`setup|doctor|patch|gen|show|why|inspect|snapshot|export|validate|viewer|parts|skill|cadgen|pytest|python|clean`);
+- Work from `cad/` via `./cadtool …` (`setup|doctor|patch|gen|step|show|why|inspect|snapshot|export|validate|viewer|parts|skill|cadgen|store|daemon|pytest|python|clean`; `step` = `gen`);
   it runs the `cadgen` 0.5 toolchain (the `cad@text-to-cad` plugin v0.5.x's PyPI runtime, locked in
   `cad/pyproject.toml`) inside the CAD venv with `PYTHONPATH=cad/`. A model is a plain script with one
   `@step def <name>()`; `./cadtool gen <model.py>` runs it. Conventions, the wrapper → parametric

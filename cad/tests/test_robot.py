@@ -12,6 +12,7 @@ from lib import params as PARAMS
 from lib import placements as P
 from lib import reference as R
 from robot import frames as F
+from tests.source_checks import runs_its_model
 from tools.robot import frames as RF
 
 CAD_DIR = pathlib.Path(__file__).resolve().parent.parent
@@ -20,8 +21,18 @@ URDF, SRDF, SDF = ROBOT_DIR / "arm.urdf", ROBOT_DIR / "arm.srdf", ROBOT_DIR / "a
 PHYSICAL_LINKS = [l for l in F.LINK_ORDER if F.LINKS[l]]
 
 
-
 # --- fast: structure ---------------------------------------------------------------------------
+def test_every_physical_link_has_a_runnable_model():
+    """robot/links/ holds exactly one model file per physical link, and each ends with the
+    `__main__` call of its model - without it `./cadtool gen robot/links/<link>.py` builds nothing."""
+    files = {p.stem: p for p in (ROBOT_DIR / "links").glob("*.py") if p.stem != "__init__"}
+    assert sorted(files) == sorted(PHYSICAL_LINKS)
+    for link, path in files.items():
+        assert f"@step\ndef {link}():" in path.read_text(encoding="utf-8"), f"{path.name}: expected `@step def {link}()`"
+        assert runs_its_model(path, link), f"{path.name}: must end with `if __name__ == \"__main__\": {link}()`"
+
+
+
 def test_links_partition_every_placement_once():
     from assemblies._occurrences import module_bodies, split_key
 

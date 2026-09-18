@@ -32,8 +32,8 @@ cadtool - cadgen 0.5 + this uv project (paths relative to cad/)
   ./cadtool pytest [-m "not slow"]                  test suite
   ./cadtool python -m assemblies.arm ...            any python in the venv (PYTHONPATH=cad/)
   ./cadtool clean [--all]                           delete __pycache__/, .pytest_cache/ (and any stray __cadgen__/);
-                                                    --all also empties snapshots/ and exports/ (keeps .gitkeep) and
-                                                    deletes assemblies/*.step, robot/links/*.step
+                                                    --all also empties snapshots/ and deletes
+                                                    assemblies/*.step, robot/links/*.step
 Env: CAD_PLUGIN=<plugin dir> overrides detection; CADGEN_DAEMON=0 builds on transient workers (no warm daemon);
      CADGEN_CACHE_DIR relocates the store (default ~/.cache/cadgen; `./cadtool store gc` sweeps it).
 USAGE
@@ -170,7 +170,6 @@ case "$cmd" in
     find "$CAD_DIR" -name .venv -prune -o -type d \( -name __cadgen__ -o -name __pycache__ -o -name .pytest_cache \) -prune -print -exec rm -rf {} +
     if [[ "${1:-}" == "--all" ]]; then
       [[ -d snapshots ]] && find snapshots -mindepth 1 -prune -exec rm -rf {} +
-      [[ -d exports ]] && find exports -mindepth 1 ! -name .gitkeep -prune -exec rm -rf {} +
       rm -f assemblies/*.step robot/links/*.step
     fi ;;
   help|-h|--help)

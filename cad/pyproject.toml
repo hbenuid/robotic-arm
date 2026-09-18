@@ -1,7 +1,7 @@
 [project]
 name = "robotic-arm-cad"
 version = "0.1.0"
-description = "Parametric build123d CAD for the 3-joint arm (converted from SolidWorks STEP exports)."
+description = "Parametric build123d CAD for the desktop robotic arm (converted from SolidWorks STEP exports)."
 readme = "README.md"
 # The venv is pinned to 3.12 (.python-version): the system Python is 3.14, ocp-vscode / the OCP
 # wheels are verified on 3.12, and cadgen (the text-to-cad runtime) needs >=3.11.
@@ -28,7 +28,7 @@ dev = [
 
 [tool.pytest.ini_options]
 # rootdir is cad/; put it on sys.path so `import parts` / `from lib ...` resolve
-# (each part's path shim still covers Ctrl+F5, `python -m`, and the plugin CLI).
+# (cadtool exports PYTHONPATH=cad/ for everything else, .env covers VS Code - no path shims).
 pythonpath = ["."]
 testpaths = ["tests"]
 markers = [

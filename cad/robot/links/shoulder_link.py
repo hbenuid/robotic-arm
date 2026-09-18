@@ -8,3 +8,7 @@ from robot._links import build_link
 @step
 def shoulder_link():
     return build_link("shoulder_link")
+
+
+if __name__ == "__main__":
+    shoulder_link()

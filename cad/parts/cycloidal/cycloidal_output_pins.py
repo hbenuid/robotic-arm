@@ -12,7 +12,6 @@ from build123d import Location, Pos
 from cadgen import step
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, output_pin_points
 from lib.cycloidal.geom import cylinder
-from lib.cycloidal.housing import hex_prism  # noqa: F401
 from lib.params import CYCLOIDAL_OUTPUT_PINS_MASS_G
 from parts.cycloidal._cots import hybrid, pattern
 

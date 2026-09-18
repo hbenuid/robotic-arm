@@ -8,3 +8,7 @@ from robot._links import build_link
 @step
 def forearm_link():
     return build_link("forearm_link")
+
+
+if __name__ == "__main__":
+    forearm_link()

@@ -67,7 +67,10 @@ robotic-arm repo; the root motor-control project never depends on it.
 
 ## Authoring a part (`parts/<group>/<name>.py`)
 Parts live in subsystem groups (`base`, `joints`, `wrist`, `gripper`, `cycloidal`; templates in
-`parts/_templates/`). The group is only a directory: the part's NAME is its module stem, unique
+`parts/_templates/`). Groups follow the **physical stage along the arm**, not the name prefix and not
+the URDF links (`j1_*` sit in `base/`; `gripper_clamp_bracket` / `gripper_j3_connector` sit in `wrist/`
+as the wrist-side mount, the latter although `assemblies/gripper.py` places it) — put a new part with
+the stage it bolts to. The group is only a directory: the part's NAME is its module stem, unique
 across groups (`import parts` raises on a duplicate), and it keys the manifest,
 `reference/<origin>/<name>.step`, `placements.json` and the URDF links. `parts.names()` /
 `parts.load(name)` / `parts.model(name)` / `parts.build(name)` (a stdlib-only directory scan in
@@ -78,7 +81,8 @@ across groups (`import parts` raises on a duplicate), and it keys the manifest,
   name; no parameters, no `out=` — the STEP is the sibling file), that **returns** a valid, labelled
   Part/Compound at its **local origin** — the assembly owns placement; label == module name;
 - end with `if __name__ == "__main__": <name>()` — that call IS the build (`./cadtool gen` runs the
-  file); no `show()` in the file, no import side effects;
+  file; without it `gen` silently builds nothing — source-checked for every part and every
+  `robot/links/<link>.py`); no `show()` in the file, no import side effects;
 - import `lib` / `parts` plainly — **no `sys.path` shim**: `cadtool` exports `PYTHONPATH=cad/`, pytest
   has `pythonpath = ["."]`, `.env` covers VS Code. cadgen loads `parts/<group>/<name>.py` as the package
   module `parts.<group>.<name>` (it walks the `__init__.py` chain) — the same object `parts.load()`

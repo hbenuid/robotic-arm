@@ -8,7 +8,7 @@ __pycache__/
 *.egg-info/
 
 # --- CAD (cad/ is its own uv project; see cad/README.md) ---
-# Meshes and bulk exports are regenerated from the .py source - never committed.
+# Meshes and STEPs are regenerated from the .py source - never committed.
 *.stl
 *.stp
 *.3mf
@@ -21,11 +21,9 @@ __pycache__/
 !/cad/vendor/*.step
 !/cad/reference/**/*.step
 # per-link meshes of the robot description (URDF/SDF reference them; regenerable with
-# cad/tools/export_link_meshes.py but committed so the URDF is usable on its own)
+# cad/tools/robot/export_link_meshes.py but committed so the URDF is usable on its own)
 !/cad/robot/meshes/*.stl
-# Bulk STL/3MF sidecars and snapshot packets - regenerable.
-/cad/exports/*
-!/cad/exports/.gitkeep
+# Snapshot PNGs / packets - regenerable.
 /cad/snapshots/
 
 # --- Claude Code ---

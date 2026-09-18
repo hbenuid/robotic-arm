@@ -12,7 +12,7 @@ from build123d import Location, Pos
 from cadgen import step
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, compute_housing_bolt_angles, housing_bolt_points
 from lib.cycloidal.geom import cylinder
-from lib.cycloidal.housing import hex_prism  # noqa: F401
+from lib.cycloidal.housing import hex_prism
 from lib.params import CYCLOIDAL_HOUSING_NUTS_MASS_G
 from parts.cycloidal._cots import hybrid, pattern
 
