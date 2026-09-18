@@ -7,8 +7,8 @@ Run:  ./cadtool gen assemblies/gripper.py       -> assemblies/gripper.step (git-
 
 from cadgen import step
 
-from assemblies._occurrences import add_occurrences
-from lib.assembly import AssemblyHelper
+from assemblies._occurrences import occurrence_children
+from lib.assembly import assembly
 
 # (part, role, placements.json key) in SolidWorks document order. Duplicate parts carry an
 # ordinal role (finger/rail/end/slider/link pairs): labels gripper_end:1, gripper_end:2, ...
@@ -38,9 +38,7 @@ OCCURRENCES = [
 @step
 def gripper():
     """The gripper module in its own (SolidWorks sub-assembly) frame."""
-    asm = AssemblyHelper("gripper")
-    add_occurrences(asm, OCCURRENCES)
-    return asm.build()
+    return assembly("gripper", occurrence_children(OCCURRENCES))
 
 
 if __name__ == "__main__":

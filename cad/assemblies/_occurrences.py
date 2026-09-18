@@ -4,7 +4,7 @@ An OCCURRENCES table row is (part_or_module_name, role_or_None, placement_key), 
 SolidWorks document order. Roles make duplicate parts' labels unique (`j3_coupler:j2`);
 they are positional/ordinal for now - rename them when the joint semantics are modelled.
 Code-driven modules (assemblies/cycloidal_drive.py) use (part, role, Location) rows instead:
-their placement key is a SolidWorks node, their contents are not (add_located / world_rows), and
+their placement key is a SolidWorks node, their contents are not (located_children / world_rows), and
 their BODIES split the rows into rigid bodies ("cycloidal_drive#1:rotor", split_key) for the
 robot description.
 
@@ -22,7 +22,7 @@ from build123d import Color, Location
 
 import parts  # noqa: E402  (stdlib-only package index; parts.load() imports a part lazily)
 from lib import placements as P
-from lib.assembly import label_shape
+from lib.assembly import assembly, label_shape
 from lib.models import geometry
 
 
@@ -45,19 +45,24 @@ def place(part_name: str, key: str, *, inline: bool = False, root: Location | No
         (root or Location()) * P.location(key, "rel") * local_from_ref.inverse())
 
 
-def add_occurrences(asm, rows, modules: dict | None = None) -> None:
-    """Add every row of an OCCURRENCES table to AssemblyHelper `asm`.
+def _details(role) -> tuple:
+    """The label details of a row: its role, if it has one (`j3_coupler:j2`)."""
+    return () if role is None else (role,)
+
+
+def occurrence_children(rows, modules: dict | None = None) -> list:
+    """Every row of an OCCURRENCES table as a placed, labelled child (for lib.assembly.assembly()).
 
     `modules` maps a module name to its MODEL (a zero-arg cadgen model returning the module
     Compound in its own frame); it is moved to the module's placement key."""
     modules = modules or {}
+    children = []
     for name, role, key in rows:
         if name in modules:
-            asm.add(geometry(modules[name]).moved(P.location(key, "rel")), name)
-        elif role is None:
-            asm.add(place(name, key), name)
+            children.append(label_shape(geometry(modules[name]).moved(P.location(key, "rel")), name))
         else:
-            asm.add(place(name, key), name, role)
+            children.append(label_shape(place(name, key), name, *_details(role)))
+    return children
 
 
 def _tint(shape, color: Color) -> None:
@@ -69,9 +74,9 @@ def _tint(shape, color: Color) -> None:
         _tint(child, color)
 
 
-def add_grouped_occurrences(asm, rows, groups, modules: dict | None = None,
-                            module_tints: dict | None = None, root: Location | None = None) -> None:
-    """add_occurrences(), but bucketed into labelled group Compounds (viewer/STEP tree nodes).
+def grouped_children(rows, groups, modules: dict | None = None,
+                     module_tints: dict | None = None, root: Location | None = None) -> list:
+    """occurrence_children(), but bucketed into labelled group Compounds (viewer/STEP tree nodes).
 
     `groups` rows are (group_label, tint, occurrence keys); together the keys must cover the
     OCCURRENCES rows' keys exactly once. Every shape in a group is tinted with the group's
@@ -98,14 +103,16 @@ def add_grouped_occurrences(asm, rows, groups, modules: dict | None = None,
         if name in modules:
             shape = label_shape(geometry(modules[name], inline=True).moved(root * P.location(key, "rel")), name)
         else:
-            shape = label_shape(place(name, key, inline=True, root=root), name, *(() if role is None else (role,)))
+            shape = label_shape(place(name, key, inline=True, root=root), name, *_details(role))
         shapes[key] = shape
+    nodes = []
     for group_label, tint, keys in groups:
         members = []
         for key in keys:
             _tint(shapes[key], Color(module_tints.get(key, tint)))
             members.append(shapes[key])
-        asm.add_module(group_label, members, color=Color(tint))
+        nodes.append(assembly(group_label, members, color=Color(tint)))
+    return nodes
 
 
 def place_at(part_name: str, loc: Location):
@@ -116,13 +123,9 @@ def place_at(part_name: str, loc: Location):
     return _part(part_name).moved(loc * local_from_ref.inverse())
 
 
-def add_located(asm, rows) -> None:
-    """Add every (part, role|None, Location) row of a code-driven module table to `asm`."""
-    for name, role, loc in rows:
-        if role is None:
-            asm.add(place_at(name, loc), name)
-        else:
-            asm.add(place_at(name, loc), name, role)
+def located_children(rows) -> list:
+    """Every (part, role|None, Location) row of a code-driven module table as a placed, labelled child."""
+    return [label_shape(place_at(name, loc), name, *_details(role)) for name, role, loc in rows]
 
 
 def module_rows(module_name: str) -> list:

@@ -97,7 +97,7 @@ cad/
 │   ├── manifest.py        # reference/manifest.json: read() / write() / entry() - shared by the two import tools and the tests
 │   ├── placements.py      # reference/placements.json -> build123d Location
 │   ├── models.py          # model_of() / raw() / geometry(inline=): the @step model of a module, its body, a child for an assembly
-│   ├── assembly.py        # AssemblyHelper / label_shape / label_text re-exported from cadgen
+│   ├── assembly.py        # assembly(name, children): the native labelled Compound node; label_shape / label_text from cadgen
 │   └── cycloidal/         # the cycloidal drive: DriveConfig (params.py), layout.py, profiles.py, housing.py, disc.py, geom.py
 ├── parts/                 # one part per file, grouped by subsystem; parts.names() / parts.load(name) discover them
 │   ├── __init__.py            # the directory scan: MODULES / GROUPS, names(), load(), model(), build(), source_of()
@@ -112,7 +112,7 @@ cad/
 │   ├── arm.py             # the whole arm, grouped arm -> base_link/shoulder_link/upper_arm_link/forearm_link/wrist_pitch_link/wrist (GROUPS; 52 leaves, tinted per group)
 │   ├── gripper.py         # the gripper mechanism module (19 occurrences, placed from placements.json)
 │   ├── cycloidal_drive.py # the drive module (18 rows placed from lib/cycloidal stack_positions - code-driven)
-│   └── _occurrences.py    # place()/add_occurrences()/add_grouped_occurrences() (placement keys), place_at()/add_located() (Locations), world_rows() - children via lib.models.geometry()
+│   └── _occurrences.py    # place()/occurrence_children()/grouped_children() (placement keys), place_at()/located_children() (Locations), world_rows() - children via lib.models.geometry()
 ├── docs/cycloidal_drive.md  # the drive's spec, port notes and attachment
 ├── reference/             # immutable per-part reference STEPs (Git LFS) + manifest.json + placements.json + README
 │   ├── solidworks/            # the 25 SolidWorks exports (custom parts + the SolidWorks purchased parts)

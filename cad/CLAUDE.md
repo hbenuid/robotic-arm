@@ -182,7 +182,7 @@ Changing a shared dimension — touchpoints in order:
   flag), so a capture-frame `arm.step` renders lying on its side. `arm.py ARM_FROM_W` =
   `lib/datum.py BASE_FRAME⁻¹` (capture frame → `base_link` frame: Z up, X forward, the base's
   mounting face on z = 0 — the frame `arm.urdf` uses, so both open in the same pose) goes into
-  `add_grouped_occurrences(…, root=)`, which composes `root * rel` into **every occurrence's
+  `grouped_children(…, root=)`, which composes `root * rel` into **every occurrence's
   placement**. Never `.moved()` the built root Compound instead: cadgen's STEP packager reads only the
   children's locations, so the in-process shape would rotate and the written STEP would not. The
   gripper and the drive keep their own module frames (both already have their axis on +Z), and
@@ -195,25 +195,27 @@ Changing a shared dimension — touchpoints in order:
   `robot/frames.py LINKS` partition with the two modules kept whole (`wrist` = wrist_roll_link + jaw
   links; the cycloidal drive under `shoulder_link` although `LINKS` puts its rotor body in
   `upper_arm_link`) — via
-  `_occurrences.add_grouped_occurrences()`, which tints each subtree with its group's color
+  `_occurrences.grouped_children()`, which tints each subtree with its group's color
   (`MODULE_TINTS` overrides for the two modules) and raises unless the groups cover the keys
   exactly once. `test_assembly.py` locks the group labels + the LINKS mirror. The tints are
   per-leaf (a compound-level color doesn't cascade in ocp_tessellate) — hence the inline copies above.
 - `assemblies/cycloidal_drive.py` is **code-driven**: rows are `(part, role, Location)` from
-  `lib/cycloidal stack_positions` (`add_located`); its placement key `cycloidal_drive#1` is a
+  `lib/cycloidal stack_positions` (`located_children`); its placement key `cycloidal_drive#1` is a
   `designed` module record in `placements.json` (pose from the SolidWorks node, no leaf records,
   `solidworks` cross-check block; `tools/reference/extract_placements.py` never descends into
   `DESIGNED_MODULES`). `world_rows(key)` expands a designed-module key into world-placed parts for
   links and inertials; `BODIES` names the drive's rigid bodies (`stator` / `rotor`) and a `:<body>`
   key suffix (`"cycloidal_drive#1:rotor"`, `_occurrences.split_key`) selects one. Keep `EXPECTED`
   (whole module + `bodies`) in step with the geometry (`totals()` / `totals(body)`).
-- cadgen 0.6.5 **deprecates `cadgen.assembly.AssemblyHelper`** (a `FutureWarning` on every assembly / link build:
-  "migrate to native build123d `Compound(children=…, label=…)`, `shape.label/color`, `Location` transforms or
-  joints. Existing models still build"). `lib/assembly.py` re-exports it for `assemblies/_occurrences.py`
-  (`add` / `add_module(color=)` / `build`) and `robot/_links.py`; migrating them is a follow-up — check the tints
-  and the component tree by snapshot when you do.
-- When adding source-level joints, use `cadgen.assembly.AssemblyHelper` frames/mates (persisted
-  motion is `@step(kinematics=…)` — viewer sliders, posed snapshots), keep placements
+- **Assemblies are native build123d**: a model body returns `lib.assembly.assembly(name, children)` =
+  `Compound(label=…, children=[…])`, and the `_occurrences` helpers (`occurrence_children`,
+  `grouped_children`, `located_children`) RETURN the placed children, each labelled with cadgen's
+  `label_shape` (`j3_coupler:j2`; `label_shape` / `label_text` are not deprecated). cadgen 0.6.5 deprecated
+  its `AssemblyHelper` wrapper (a `FutureWarning` per build) — never reintroduce it; the 2026-09-18 migration
+  rewrote all 11 assembly / link STEPs byte-identically.
+- When adding source-level joints, declare them as data — `@step(kinematics={"mates": [cadgen.revolute(name,
+  parent="#label", child="#label", …)]})` (viewer sliders, posed snapshots; the plugin's
+  `skills/cad/references/kinematics.md`) — not as helper frames; keep placements
   parameter-driven, and validate with `cadgen.geometry.closest_points` / `overlap_volume` on
   `read_scene(…).resolve(ref).shape()` (the `inspect align/measure/frame` verbs went with cadgen 0.6.5).
 

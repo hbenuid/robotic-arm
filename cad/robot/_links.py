@@ -9,7 +9,7 @@ exported mesh needs an identity <origin> in the URDF.
 from __future__ import annotations
 
 from assemblies._occurrences import place_world_at, world_rows
-from lib.assembly import AssemblyHelper
+from lib.assembly import assembly, label_shape
 from robot import frames as F
 
 
@@ -26,13 +26,13 @@ def build_link(link: str):
     counts: dict[str, int] = {}
     for _, part, _, _ in rows:
         counts[part] = counts.get(part, 0) + 1
-    asm = AssemblyHelper(link)
+    children = []
     for key, part, role, world in rows:
         shape = place_world_at(part, world, into=frame)
         if role is not None:                      # module rows carry their own role (bearing_6003:1)
-            asm.add(shape, part, role)
+            children.append(label_shape(shape, part, role))
         elif counts[part] > 1:
-            asm.add(shape, part, key.rsplit("#", 1)[1])
+            children.append(label_shape(shape, part, key.rsplit("#", 1)[1]))
         else:
-            asm.add(shape, part)
-    return asm.build()
+            children.append(label_shape(shape, part))
+    return assembly(link, children)

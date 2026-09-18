@@ -16,8 +16,8 @@ Run:  ./cadtool gen assemblies/cycloidal_drive.py             -> assemblies/cycl
 from build123d import Location
 from cadgen import step
 
-from assemblies._occurrences import add_located
-from lib.assembly import AssemblyHelper
+from assemblies._occurrences import located_children
+from lib.assembly import assembly
 from lib.models import raw
 from lib.cycloidal import DEFAULT_CONFIG, stack_positions
 
@@ -77,9 +77,7 @@ EXPECTED = {
 @step
 def cycloidal_drive():
     """The drive as a labelled Compound 'cycloidal_drive' in the module frame."""
-    asm = AssemblyHelper("cycloidal_drive")
-    add_located(asm, OCCURRENCES)
-    return asm.build()
+    return assembly("cycloidal_drive", located_children(OCCURRENCES))
 
 
 def totals(body: str | None = None):

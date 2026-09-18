@@ -31,8 +31,8 @@ Run:  ./cadtool gen assemblies/arm.py            -> assemblies/arm.step (git-ign
 from cadgen import step
 
 from assemblies import cycloidal_drive, gripper
-from assemblies._occurrences import add_grouped_occurrences
-from lib.assembly import AssemblyHelper
+from assemblies._occurrences import grouped_children
+from lib.assembly import assembly
 from lib.datum import BASE_FRAME
 
 # W (SolidWorks capture frame, +Y up, arm toward -X) -> base_link frame B (REP-103: Z up, X forward,
@@ -86,9 +86,7 @@ def arm():
     """The arm as a labelled Compound: 'arm' -> the GROUPS component nodes -> parts + the
     'gripper' and 'cycloidal_drive' modules, each subtree tinted with its group's color, in the
     base_link frame (Z up - ARM_FROM_W)."""
-    asm = AssemblyHelper("arm")
-    add_grouped_occurrences(asm, OCCURRENCES, GROUPS, MODULES, MODULE_TINTS, root=ARM_FROM_W)
-    return asm.build()
+    return assembly("arm", grouped_children(OCCURRENCES, GROUPS, MODULES, MODULE_TINTS, root=ARM_FROM_W))
 
 
 if __name__ == "__main__":
