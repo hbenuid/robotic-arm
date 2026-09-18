@@ -7,12 +7,12 @@ import math
 
 import pytest
 
-from tests.cycloidal.helpers import is_inside
+from tests.cycloidal.helpers import CFG, is_inside
 from lib import reference as R
-from lib.cycloidal import DEFAULT_CONFIG, hub_height
-from parts.cycloidal import cycloidal_output_hub
+from lib.cycloidal import hub_height
+import parts
 
-CFG = DEFAULT_CONFIG
+cycloidal_output_hub = parts.load("cycloidal_output_hub")
 
 
 class TestOutputHubDimensions:

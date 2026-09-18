@@ -12,13 +12,13 @@ import numpy as np
 import pytest
 from build123d import Pos
 
-from tests.cycloidal.helpers import annulus, end_face, interference, is_inside, radial_extent, ring_pins
+from tests.cycloidal.helpers import CFG, annulus, end_face, interference, is_inside, radial_extent, ring_pins
 from lib import reference as R
-from lib.cycloidal import DEFAULT_CONFIG, stack_positions
 from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii, profile_points
-from parts.cycloidal import cycloidal_disc_1, cycloidal_disc_2
+import parts
 
-CFG = DEFAULT_CONFIG
+cycloidal_disc_1 = parts.load("cycloidal_disc_1")
+cycloidal_disc_2 = parts.load("cycloidal_disc_2")
 
 
 @pytest.fixture(scope="module")
@@ -321,11 +321,6 @@ class TestAssemblyMeshing:
             hole_xy = (pin_circle_r * math.cos(a) - e, pin_circle_r * math.sin(a))
             margin = hole_r - pin_r - math.hypot(pin_xy[0] - hole_xy[0], pin_xy[1] - hole_xy[1])
             assert margin >= 0.2 - 1e-6, f"Pin {k}/disc-2 hole margin {margin:.2f}mm < 0.2mm"
-
-
-@pytest.fixture(scope="module")
-def stack():
-    return stack_positions(CFG)
 
 
 @pytest.fixture(scope="module")

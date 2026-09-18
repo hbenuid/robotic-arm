@@ -18,6 +18,8 @@ from lib import reference as R
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, ring_pin_points
 from lib.cycloidal.geom import MIN
 
+CFG = DEFAULT_CONFIG   # the configuration every drive test checks (variants: dataclasses.replace, see no_chamfer)
+
 
 def is_inside(solid: Shape, x: float, y: float, z: float, tol: float = 1e-6) -> bool:
     return solid.is_inside((x, y, z), tol)

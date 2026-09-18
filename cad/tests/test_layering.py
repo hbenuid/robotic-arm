@@ -23,9 +23,9 @@ ALLOWED = {pkg: set(ORDER[: i + 1]) for i, pkg in enumerate(ORDER)}
 # and puts THAT repo's root on the path - a cross-repo bootstrap, not a cad/ import shim.
 SYS_PATH_ALLOWED = {"tools/cycloidal/export_cadquery.py"}
 
-# Packages that may name a part module directly (`parts.<group>.<name>`); everyone else goes
-# through parts.load() / parts.model() / parts.build() / parts.names().
-PART_MODULE_IMPORT_ALLOWED = {"parts", "tests"}
+# Packages that may name a part module directly (`parts.<group>.<name>`); everyone else - tests
+# included - goes through parts.load() / parts.model() / parts.build() / parts.names().
+PART_MODULE_IMPORT_ALLOWED = {"parts"}
 
 SOURCES = sorted(p for pkg in ORDER for p in (CAD_DIR / pkg).rglob("*.py") if "__pycache__" not in p.parts)
 

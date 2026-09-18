@@ -10,12 +10,14 @@ import math
 import pytest
 from build123d import Pos
 
-from tests.cycloidal.helpers import interference
-from lib.cycloidal import DEFAULT_CONFIG, stack_positions
+from tests.cycloidal.helpers import CFG, interference
+from lib.cycloidal import stack_positions
 from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii
-from parts.cycloidal import bearing_6003, cycloidal_disc_1, cycloidal_eccentric_shaft
+import parts
 
-CFG = DEFAULT_CONFIG
+bearing_6003 = parts.load("bearing_6003")
+cycloidal_disc_1 = parts.load("cycloidal_disc_1")
+cycloidal_eccentric_shaft = parts.load("cycloidal_eccentric_shaft")
 
 
 class TestLobeBearingFitment:
@@ -71,11 +73,6 @@ class TestEccentricOrbit:
     def test_lobe_fills_bearing_bore(self):
         oversize = CFG.shaft.bearing_seat_od - CFG.bearings.ecc_bore
         assert 0 <= oversize <= 0.2
-
-
-@pytest.fixture(scope="module")
-def stack():
-    return stack_positions(CFG)
 
 
 @pytest.fixture(scope="module")

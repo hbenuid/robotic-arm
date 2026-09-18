@@ -8,13 +8,18 @@ import math
 import pytest
 
 from lib import reference as R
-from lib.cycloidal import DEFAULT_CONFIG
-from parts.cycloidal import (
-    bearing_625, bearing_6003, bearing_6814, cycloidal_housing_bolts, cycloidal_housing_nuts,
-    cycloidal_motor_bolts, cycloidal_output_pins, cycloidal_ring_pins, nema17_48mm,
-)
+import parts
+from tests.cycloidal.helpers import CFG
 
-CFG = DEFAULT_CONFIG
+bearing_625 = parts.load("bearing_625")
+bearing_6003 = parts.load("bearing_6003")
+bearing_6814 = parts.load("bearing_6814")
+cycloidal_housing_bolts = parts.load("cycloidal_housing_bolts")
+cycloidal_housing_nuts = parts.load("cycloidal_housing_nuts")
+cycloidal_motor_bolts = parts.load("cycloidal_motor_bolts")
+cycloidal_output_pins = parts.load("cycloidal_output_pins")
+cycloidal_ring_pins = parts.load("cycloidal_ring_pins")
+nema17_48mm = parts.load("nema17_48mm")
 pytestmark = pytest.mark.slow
 
 

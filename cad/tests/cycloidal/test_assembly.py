@@ -18,15 +18,18 @@ from build123d import GeomType, Location, Vector
 from assemblies import cycloidal_drive
 from lib.models import raw
 from assemblies._occurrences import place_world
-from tests.cycloidal.helpers import interference
+from tests.cycloidal.helpers import CFG, interference
 from lib import placements as P
 from lib import reference as R
-from lib.cycloidal import DEFAULT_CONFIG, compute_housing_bolt_angles, hex_circumdiameter, hub_height, stack_positions
+from lib.cycloidal import compute_housing_bolt_angles, hex_circumdiameter, hub_height, stack_positions
 from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii
-from parts.cycloidal import cycloidal_disc_1, cycloidal_motor_plate, cycloidal_output_hub, cycloidal_ring_gear_body
+import parts
 from robot import frames as F
 
-CFG = DEFAULT_CONFIG
+cycloidal_disc_1 = parts.load("cycloidal_disc_1")
+cycloidal_motor_plate = parts.load("cycloidal_motor_plate")
+cycloidal_output_hub = parts.load("cycloidal_output_hub")
+cycloidal_ring_gear_body = parts.load("cycloidal_ring_gear_body")
 DRIVE_KEY = "cycloidal_drive#1"
 
 
@@ -264,11 +267,6 @@ class TestHousingBoltEngagement:
 # ===================================================================
 # 8. Booleans on the key mating pairs, module locks, the pose in the arm
 # ===================================================================
-
-
-@pytest.fixture(scope="module")
-def stack():
-    return stack_positions(CFG)
 
 
 @pytest.fixture(scope="module")

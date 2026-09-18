@@ -115,7 +115,8 @@ otherwise. `tests/conftest.py` makes an accidental top-level call under pytest f
 - *designed* (`CONVERTED = True`, `REFERENCE = NAME`, registered in `lib/reference.py DESIGNED`):
   the cycloidal drive's printed parts — the reference is the CadQuery export they were ported
   from; `tests/cycloidal/test_port.py` additionally demands identical face sets / tessellations.
-  Their geometry helpers live in `lib/cycloidal/` and each module exposes `build(cfg)` for tests.
+  Their geometry helpers live in `lib/cycloidal/` and each module exposes `build(cfg)` for tests
+  (reached like any part: `parts.load(name).build(cfg)` — tests never import `parts.<group>` either).
 - Multi-body parts are registered in `MULTI_BODY` in `tests/test_parts_convention.py`.
 - Keep the importable `parts/<group>/<name>.py` naming (tests/assemblies reach them through
   `parts.load` / `parts.model`); upstream's `src/` + `STEP/` layout is deliberately not used. A part and
@@ -240,7 +241,8 @@ zero = capture, meshes, inertials, URDF/SRDF/SDF consistency + cadgen's validato
 `test_layering.py` (the package layering, no `sys.path`, no direct part-module imports — AST scan),
 `source_checks.py` (the shared `runs_its_model()` check that a model file ends with its build call),
 `tests/cycloidal/` (the drive: one module per part + housing / purchased / fitment / assembly / port,
-~230 tests, `from tests.cycloidal.helpers import …`). Geometry tests are
+~230 tests; `from tests.cycloidal.helpers import CFG, …` for the shared config + geometry helpers, the
+`stack` fixture is `tests/cycloidal/conftest.py`). Geometry tests are
 `slow`. Run pytest only through `./cadtool pytest` (rootdir `cad/`; the repo-root `tests/` is the
 unrelated, broken motor-control suite).
 

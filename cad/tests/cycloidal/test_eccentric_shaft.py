@@ -9,10 +9,10 @@ import math
 import pytest
 
 from lib import reference as R
-from lib.cycloidal import DEFAULT_CONFIG
-from parts.cycloidal import cycloidal_eccentric_shaft
+import parts
+from tests.cycloidal.helpers import CFG
 
-CFG = DEFAULT_CONFIG
+cycloidal_eccentric_shaft = parts.load("cycloidal_eccentric_shaft")
 
 
 class TestShaftDimensions:

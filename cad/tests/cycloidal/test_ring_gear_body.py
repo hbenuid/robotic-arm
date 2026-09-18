@@ -7,14 +7,14 @@ import math
 
 import pytest
 
-from tests.cycloidal.helpers import probe_volume, section_area
+from tests.cycloidal.helpers import CFG, probe_volume, section_area
 from lib import reference as R
-from lib.cycloidal import DEFAULT_CONFIG, compute_housing_bolt_angles, ring_pin_engagement, ring_pin_hole_dia
+from lib.cycloidal import compute_housing_bolt_angles, ring_pin_engagement, ring_pin_hole_dia
 from lib.cycloidal.housing import PILLAR_OVERSHOOT
 from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii
-from parts.cycloidal import cycloidal_ring_gear_body
+import parts
 
-CFG = DEFAULT_CONFIG
+cycloidal_ring_gear_body = parts.load("cycloidal_ring_gear_body")
 BODY_H = CFG.stack_up.ring_gear_body_height      # 51
 
 

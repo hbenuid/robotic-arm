@@ -119,7 +119,7 @@ cad/
 │                          # cycloidal/{export_cadquery,import_reference}.py (the drive's references), robot/{frames,export_link_meshes}.py
 ├── tests/                 # pytest: conventions, reference match, placements, assembly totals, params locks, robot description, package layering;
 │   ├── conftest.py            # CADGEN_DAEMON=0 + a guard that fails any test calling a model at top level (tests call bodies)
-│   └── cycloidal/             # the drive's own tests (one module per part + housing / purchased / fitment / assembly / port) + helpers.py
+│   └── cycloidal/             # the drive's own tests (one module per part + housing / purchased / fitment / assembly / port) + helpers.py (CFG, geometry helpers), conftest.py (stack fixture)
 └── snapshots/             # snapshot PNGs (git-ignored)
 ```
 The `parts/` groups follow the **physical stage along the arm** (`base` → `joints` → `wrist` →
