@@ -4,6 +4,32 @@ Dated record of notable changes to this repository (newest first). Every commit 
 behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
 `cad-setup` working branch was fast-forward-only and has been retired).
 
+## 2026-09-18 — assemblies are native build123d Compounds (branch `cad/assemblyhelper-migration`)
+
+The follow-up of the cadgen 0.6.5 upgrade below: 0.6.5 deprecated `cadgen.assembly.AssemblyHelper`
+(a `FutureWarning` on every assembly / link build, 15 in the suite). Its `add` / `add_module` /
+`build` were three lines over native build123d, so the migration changes no output.
+
+### Changed — `AssemblyHelper` replaced by `lib.assembly.assembly()` + children-returning helpers (`a55a516`)
+- `cad/lib/assembly.py` is no longer a re-export: `assembly(name, children, *details, color=None)` =
+  `Compound(label=label_text(…), children=list(children))`; it still re-exports cadgen's `label_shape` /
+  `label_text` (not deprecated — they normalise the label tokens).
+- `cad/assemblies/_occurrences.py`: `add_occurrences(asm, …)` → `occurrence_children(…)`,
+  `add_grouped_occurrences(asm, …)` → `grouped_children(…)`, `add_located(asm, …)` →
+  `located_children(…)` — each RETURNS its placed, labelled children (the group nodes are
+  `assembly(group_label, members, color=…)`). The three model bodies (`arm`, `gripper`,
+  `cycloidal_drive`) and `robot/_links.build_link` are one `return assembly(name, children)`.
+- Docs: `cad/CLAUDE.md` (Assembly: the native convention, "never reintroduce `AssemblyHelper`"; joints are
+  `@step(kinematics=…)` data with `cadgen.revolute(…)` mates, not helper frames), `cad/README.md` trees.
+
+Verified: `./cadtool gen` of the 3 assemblies + 8 robot links (daemon stopped first) wrote 11 STEPs with
+0 `FutureWarning`s, and **all 11 are byte-identical** (`sha256sum -c`) to the files the `AssemblyHelper`
+code wrote on the same cadgen — same component tree, labels, tints, placements and links, so no
+snapshot differs; `./cadtool why assemblies/arm.py` = `current`, 54 children pinned, tree `components 50
+occurrences 52 links 0` (gripper 19 links, drive 18) as before; no committed part STEP changed (parts
+never import these modules). `./cadtool pytest -q -W error::FutureWarning`: 585 passed + 9 skipped
+(the 15 warnings of the previous entry are gone).
+
 ## 2026-09-18 — cad/ upgraded to text-to-cad v0.6.5 / cadgen 0.6.5 (branch `cad/cadgen-0.6.5`)
 
 Upstream shipped v0.6.0 → v0.6.5 (2026-09-16 … 09-18). What mattered here: the URDF renderer bug this
