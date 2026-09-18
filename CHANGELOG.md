@@ -4,6 +4,72 @@ Dated record of notable changes to this repository (newest first). Every commit 
 behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
 `cad-setup` working branch was fast-forward-only and has been retired).
 
+## 2026-09-18 — `cad/` organization cleanup (branch `cad/organization-cleanup`)
+
+An audit of `cad/` (layout, docs vs. tree, import graph) found the structure sound — `lib/` never
+imported upward, 41 parts ↔ 41 STEPs ↔ 41 references, LFS and ignore rules consistent — plus the
+defects and smells below. No geometry, placement or robot-description number changed.
+
+### Fixed — models that could not be built, dead code, stale docs (`a2204e0`)
+- `cad/robot/links/{forearm,shoulder,upper_arm,wrist_pitch}_link.py` lacked the
+  `if __name__ == "__main__": <name>()` build call, so `./cadtool gen` on them was a silent no-op (only
+  four of the eight link STEPs had ever been written). New `cad/tests/source_checks.py
+  runs_its_model()` (AST) is asserted for every part (`test_part_declares_its_contract`) and every
+  link model (`test_every_physical_link_has_a_runnable_model`) — the guard was untested before.
+- Removed `cad/lib/export.py` (no importers, superseded by `./cadtool gen` / `export`) and the
+  `cad/exports/` directory only it used, with their `.gitignore` rules, `cadtool clean --all` branch and
+  README lines. Dropped five unused `hex_prism` imports in `cad/parts/cycloidal/` (STEPs byte-identical).
+- Stale text: the "path shim" note and "3-joint arm" in `cad/pyproject.toml`; the mesh-tool path in the
+  root `.gitignore`; `cad/README.md` (`gripper_*` count 8 → 7, `cadgen_patches.py` and `robot/_links.py`
+  missing from the trees, `__cadgen__/` in the `clean` row); root `CLAUDE.md` (verbs `store`, `daemon`,
+  `step`; it now carries a `Last updated` line like every other doc).
+- Documented what the `parts/` groups mean — the physical stage along the arm, not the name prefix
+  and not the URDF links (`j1_*` in `base/`; `gripper_clamp_bracket` / `gripper_j3_connector` in
+  `wrist/`, the latter although `assemblies/gripper.py` places it). No part moved.
+
+### Changed — the two import cycles are gone and the layering is locked (`82613bb`)
+- `assemblies ↔ robot`: new `cad/lib/datum.py` owns `frame()`, `U`, `BASE_FORWARD`, `BASE_BOTTOM_Y`
+  and `BASE_FRAME`; `robot/frames.py` re-exports them and `assemblies/arm.py` takes `BASE_FRAME` from
+  `lib/`. The other direction stays: `robot/_links.py` builds on `assemblies/_occurrences.py`, whose
+  `world_rows()` reads a designed module's `OCCURRENCES` / `BODIES`.
+- `lib.params ↔ lib.cycloidal`: new leaf `cad/lib/units.py` (`IN`, `NUDGE`); `lib/cycloidal/geom.py`
+  imports it instead of `lib/params.py`, which re-exports both (every `from lib.params import NUDGE`
+  is unchanged).
+- New `cad/tests/test_layering.py` (AST scan, function-local imports count):
+  `lib ← parts ← assemblies ← robot ← tools ← tests`, `lib/cycloidal/` never imports `lib/params.py`,
+  no direct `parts.<group>` imports outside `parts/`, no `sys.path` outside
+  `tools/cycloidal/export_cadquery.py` (it runs in the other repo's venv), no `cad/__init__.py`.
+
+### Changed — `tests/cycloidal/` follows the part-access rule (`cae3ed5`)
+- The nine modules that did `from parts.cycloidal import …` now bind `<name> = parts.load("<name>")`.
+  `CFG` lives once in `tests/cycloidal/helpers.py` (was pasted into nine files) and the identical
+  `stack` fixture moved to the new `tests/cycloidal/conftest.py` (was in three).
+
+### Changed — distinct tool names, shared manifest code (`d0df451`, `2515d37`)
+- Renamed (history kept): `tools/robot/frames.py` → `tools/robot/derive.py` (two `frames.py` with
+  different jobs), `tools/reference/import_reference.py` → `import_solidworks.py`,
+  `tools/cycloidal/import_reference.py` → `import_cadquery.py` (two scripts with one name writing one
+  manifest). Docs, docstrings, test messages and the URDF / SDF header comments follow; the older
+  entries of this changelog keep the old names.
+- New `cad/lib/manifest.py` (`read()` / `write()` / `entry()`) replaces the manifest code both import
+  tools duplicated; `test_reference_match.py` and `test_parts_convention.py` read through it.
+  Re-running both tools leaves `reference/manifest.json` byte-identical.
+- `2515d37`: editing `lib/reference.py` made every wrapper / COTS part stale; all rebuilt
+  byte-identical except `parts/base/j1_link.step` and `parts/wrist/gripper_clamp_bracket.step`, which
+  came back with 12 numerical-zero terms (≤ 1e-17) written differently — same solids, faces, volume
+  and bbox; `--force` reproduces the new bytes (noted in `cad/CLAUDE.md`).
+
+Verified: `./cadtool pytest` 582 passed / 9 skipped (the COTS parts without a vendor file);
+`tools/robot/derive.py --check` OK for the URDF and SDF; `./cadtool validate` OK (`.urdf` / `.srdf`
+`--strict`, `.sdf --gz-check never`); `./cadtool gen robot/links/forearm_link.py` now writes its STEP;
+arm snapshot upright with its tints; `./cadtool doctor` clean.
+
+Left for later (not organization): three COTS envelopes hard-code numbers instead of using
+`lib/params.py` (`mg996r_servo` — whose 55.8 disagrees with `MG996R_TAB_L` 54.5 — `mg996r_horn`,
+`gt2_pulley_20t`); `parts/_templates/` has no `__init__.py`; `tests/` and `tests/cycloidal/` both hold a
+`test_assembly.py`; `robot/arm.sdf` fails `validate --strict` on 8 `collision_reuses_visual_mesh`
+warnings (the tests deliberately run it without `--strict`).
+
 ## 2026-09-18 — `assemblies/arm.step` is emitted Z up (it rendered lying on its side)
 
 ### Fixed — the arm assembly's output frame, branch `cad/arm-step-z-up` (`4328d61`)

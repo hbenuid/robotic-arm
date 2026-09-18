@@ -1,6 +1,6 @@
 # vendor/ — purchased-part STEP files (current best model per part)
 
-**Last updated:** 2026-08-28 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-18 — see the root `CHANGELOG.md` for dated changes.
 
 **Purpose:** the geometry each `COTS = True` part in `parts/<group>/` imports. Committed via the
 `!/cad/vendor/*.step` gitignore exception as Git LFS objects (not regenerable from Python). Unlike

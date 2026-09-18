@@ -1,6 +1,6 @@
 # reference/ — SolidWorks reference geometry
 
-**Last updated:** 2026-08-28 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-18 — see the root `CHANGELOG.md` for dated changes.
 
 **Purpose:** the original design, as exported from SolidWorks, renamed to the clean part
 names used everywhere in `cad/` (`solidworks/`) — plus, for the cycloidal drive, the CadQuery
