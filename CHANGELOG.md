@@ -6,7 +6,7 @@ behaviour, layout or tooling gets an entry here; the commit hashes are on `main`
 
 ## 2026-09-18 — `assemblies/arm.step` is emitted Z up (it rendered lying on its side)
 
-### Fixed — the arm assembly's output frame, branch `cad/arm-step-z-up` (commit pending)
+### Fixed — the arm assembly's output frame, branch `cad/arm-step-z-up` (`4328d61`)
 - Symptom: `?file=assemblies/arm.step` in the CAD Viewer (and `./cadtool snapshot assemblies/arm.step`)
   showed the arm on its side. Cause: the arm was composed and written in the SolidWorks capture frame
   of `reference/placements.json` (**+Y up**), while cadgen 0.5.1's viewer and snapshot renderer
