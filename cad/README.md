@@ -22,7 +22,7 @@ Requirements: [`uv`](https://docs.astral.sh/uv/), Node 20+ on `PATH` (only for S
 `git-lfs` on `PATH` — the plugin marketplace uses LFS **and so does this folder**: every committed
 STEP/STL (`parts/`, `reference/`, `vendor/`, `robot/meshes/`) is a Git LFS object, so `git lfs install`
 once per machine before cloning (a clone that shows ~130-byte pointer files needs `git lfs pull`) — and
-the [`cad@text-to-cad`](https://github.com/earthtojake/text-to-cad) Claude Code plugin **v0.5.x**
+the [`cad@text-to-cad`](https://github.com/earthtojake/text-to-cad) Claude Code plugin **v0.6.x**
 (the repo's `.claude/settings.json` enables its marketplace; install/update with
 `claude plugin marketplace add https://github.com/earthtojake/text-to-cad.git`,
 `claude plugin install cad@text-to-cad`, later `claude plugin marketplace update text-to-cad &&
@@ -31,7 +31,7 @@ itself is the [`cadgen`](https://pypi.org/project/cadgen/) package installed int
 
 ```bash
 cd cad
-./cadtool setup        # uv sync (build123d/OCP/cadgen into ./.venv) + the cadgen runtime patch (./cadtool patch)
+./cadtool setup        # uv sync (build123d/OCP/cadgen into ./.venv; reinstalls the OCP kernel if it does not import)
                        # + Playwright Chromium (~150 MB, snapshots only)
 ./cadtool pytest       # everything green?
 ```
@@ -42,8 +42,9 @@ always `./cadtool …` or `uv run …` from `cad/`.
 
 `cadgen` (the text-to-cad runtime, on PyPI) is a **locked dependency** pinned to the installed
 plugin version (`cadgen[snapshot]==…` in `pyproject.toml`; the plugin's `skills/cad/requirements.txt`
-pins the same) — bump both together; `./cadtool doctor` checks the pair, Node and Chromium.
-cadgen 0.5 has **no compatibility with 0.4** (see the 2026-09-11 CHANGELOG entry for the migration).
+pins the same) — bump both together; `./cadtool doctor` checks the pair, the CAD kernel, Node and
+Chromium. cadgen makes hard cutovers: 0.5 had **no compatibility with 0.4** (2026-09-11 CHANGELOG entry),
+0.6 cut the cache / sidecar schemas and 0.6.5 removed `cadgen step inspect` (2026-09-18 entry).
 
 ## `./cadtool` — the one entry point
 
@@ -54,10 +55,10 @@ cadgen 0.5 has **no compatibility with 0.4** (see the 2026-09-11 CHANGELOG entry
 | `./cadtool why <model.py>` | why the model is current or stale, clause by clause (`cadgen store why`) |
 | `./cadtool show <model.py>` | preview the model body in the OCP CAD Viewer VS Code extension (`ocp_vscode`) — no build, nothing written |
 | `./cadtool export <file.step> stl\|3mf\|glb [out]` | one mesh file per call from a STEP document (Node 20+; `--mesh-tolerance` is *relative*, default 1.5e-3 of the bounding diagonal) |
-| `./cadtool inspect refs <file.step> --facts --planes --positioning` | geometry facts, selector refs, planes; also `measure`, `align`, `frame`, `diff`, `interfere`, `validate` |
+| `./cadtool inspect <file.step> [--planes] [--json]` | leaf refs, solids, faces, volume, bbox of a saved STEP (`--planes`: its planar faces as normal / offset / area) — a **local** tool, `tools/step_facts.py`: cadgen 0.6.5 removed `cadgen step inspect`; distances and overlaps are `cadgen.geometry.closest_points` / `overlap_volume` in a test |
+| `./cadtool inspect diff <a.step> <b.step> [--tol X]` | same geometry leaf by leaf? exit 1 if not (checking a regenerated STEP against the committed one) |
 | `./cadtool snapshot assemblies/arm.step snapshots/arm.png --size-profile assembly --view-labels` | PNG review still (`--job job.json` for a multi-view packet; the path you name is the file written) — also `.urdf`/`.sdf`/`.stl` inputs |
 | `./cadtool viewer [--port N]` | CAD Viewer serving this folder — `http://127.0.0.1:3245/?file=assemblies/arm.step` (ships inside cadgen; stops after 12 h or Ctrl+C; `./cadtool cadgen viewer list\|stop --port N`) |
-| `./cadtool patch [apply\|check\|revert]` | patch the installed cadgen runtime (`tools/cadgen_patches.py`): cadgen 0.5.0/0.5.1 otherwise draw every URDF/SRDF/SDF as a pile of shards in the viewer and in snapshots; `setup` applies it, `doctor` checks it, re-run after `uv sync` |
 | `./cadtool validate robot/arm.urdf --strict` (`.srdf`, `.sdf --gz-check never`) | robot-description validators |
 | `./cadtool parts "<query>" [--download --id <id> --filename <name>.step]` | step.parts search / download into `vendor/` |
 | `./cadtool skill <skill> <tool> [args]` | a plugin skill script (`dfam-check dfam_tool.py`, `gcode gcode_tool.py`, …) |
@@ -73,10 +74,12 @@ for you, for cadgen's dependency scan and for its warm build daemon. Everything 
 tessellations, the freshness records — lives in `~/.cache/cadgen` (`./cadtool store gc` sweeps it;
 deleting it is always safe). `CADGEN_DAEMON=0` runs a build on transient workers instead of the daemon.
 
-This project runs cadgen 0.5.1 on **build123d 0.11.1 / OCP 7.9.3** — the pair cadgen is developed
-against. build123d pulls `cadquery-ocp-novtk`, cadgen pulls `cadquery-ocp` unconstrained, so
-`pyproject.toml` pins both to the same release (two OCP builds in one venv otherwise). On the previous
-pair (build123d 0.10.0 / OCP 7.8.1) cadgen 0.5.1 could not build 11 of the 41 parts (OCCT 7.8.1
+This project runs cadgen 0.6.5 on **build123d 0.11.1 / OCP 7.9.3** — cadgen 0.6 requires
+`build123d>=0.11.1,<0.12` and `cadquery-ocp-novtk>=7.9,<8`, and `pyproject.toml` pins the exact kernel
+(the committed STEP bytes are deterministic per kernel). Never add `cadquery-ocp` (the VTK build cadgen
+0.5 pulled): both distributions own the same `OCP/` files, so uv removing one guts the other —
+`uv sync --reinstall-package cadquery-ocp-novtk` repairs it (`setup` does, `tests/test_tooling.py`
+checks). On the older pair (build123d 0.10.0 / OCP 7.8.1) cadgen could not build 11 of the 41 parts (OCCT 7.8.1
 mis-read its BinTools VERSION_4 component objects), could not export a linked child (`wrapped` is a
 property only since build123d 0.11) and its STEP writer needs OCP 7.9's `HArray1.Value`.
 
@@ -116,7 +119,7 @@ cad/
 │   └── cycloidal/             # the 16 CadQuery exports the drive was ported from
 ├── vendor/                # purchased-part STEPs (committed via Git LFS; replaceable by better catalog models)
 ├── robot/                 # URDF / SRDF / SDF + per-link meshes and generators (see below)
-├── tools/                 # preview.py (./cadtool show), cadgen_patches.py (./cadtool patch), reference/{import_solidworks,extract_placements}.py (SolidWorks),
+├── tools/                 # preview.py (./cadtool show), step_facts.py (./cadtool inspect), reference/{import_solidworks,extract_placements}.py (SolidWorks),
 │                          # cycloidal/{export_cadquery,import_cadquery}.py (the drive's references), robot/{derive,export_link_meshes}.py
 ├── tests/                 # pytest: conventions, reference match, placements, assembly totals, params locks, robot description, package layering;
 │   ├── conftest.py            # CADGEN_DAEMON=0 + a guard that fails any test calling a model at top level (tests call bodies)
@@ -167,8 +170,9 @@ part and its STEP always live in the same directory; upstream's `src/` + `STEP/`
 
 ## Converting a part (wrapper → parametric)
 
-1. Inspect the reference: `./cadtool inspect refs reference/solidworks/<name>.step --facts --planes --positioning`
-   (and `measure` for the dimensions you need); `parts/<group>/<name>.py`'s docstring lists units,
+1. Inspect the reference: `./cadtool inspect reference/solidworks/<name>.step --planes`
+   (dimensions: the CAD Viewer's measure tool, or build123d on `cadgen.read_scene(…).resolve("#o1.f7").shape()`);
+   `parts/<group>/<name>.py`'s docstring lists units,
    solids, bounding box and where it is used.
 2. Rewrite the model body with `BuildPart`/… code. Put every shared dimension in `lib/params.py`
    with a provenance tag (`[MEASURE]`, `[DATASHEET]`, `[DESIGN]`, `[REFERENCE]`, `[ESTIMATE]`)
@@ -189,7 +193,7 @@ Each COTS part keeps its SolidWorks re-export in `reference/solidworks/<name>.st
 and size reference; the drive's purchased parts keep their CadQuery export in
 `reference/cycloidal/`) and its current best model in `vendor/<name>.step`. To try a catalog model:
 `./cadtool parts "<query>"` → pick an id → `./cadtool parts --id <id> --download --filename
-<name>.step --overwrite` → `./cadtool inspect refs vendor/<name>.step --facts --planes --positioning`
+<name>.step --overwrite` → `./cadtool inspect vendor/<name>.step --planes`
 → set `VENDOR_TO_REF` in `parts/<group>/<name>.py` so the model lands in the SolidWorks frame →
 `./cadtool pytest -k <name>` (`test_cots_vendor_matches_reference_frame`: bbox within 1.5 mm of
 the reference) → `./cadtool gen parts/<group>/<name>.py` → `./cadtool python tools/reference/import_solidworks.py`
@@ -298,9 +302,8 @@ All limits, efforts, velocities, axis signs and the jaw travel are `[ESTIMATE]` 
 ./cadtool viewer                                       # then ?file=robot/arm.urdf: meshes + joint sliders (base_yaw, shoulder_pitch, elbow_pitch, wrist_pitch, wrist_roll, jaw_a)
 ```
 
-The viewer and `snapshot` need the cadgen runtime patch (`./cadtool patch`, applied by `setup`): cadgen
-0.5.0/0.5.1 otherwise draw every robot description as a pile of shards and ignore the joint values —
-`tools/cadgen_patches.py` documents the bug and the upstream one-line fix. With it, all joints read 0 at
+(cadgen 0.5.0/0.5.1 drew every robot description as a pile of shards and needed a local runtime patch;
+fixed upstream in 0.6.0, the patch is gone.) All joints read 0 at
 the SolidWorks capture pose and the `shoulder_pitch` slider turns the
 drive's rotor with `j1_link` while its housing stays with `j1_coupler`. The drive on its own:
 `?file=assemblies/cycloidal_drive.step` (see `docs/cycloidal_drive.md`, "Viewing the drive").
@@ -313,7 +316,7 @@ frame moved re-derive the affected `<origin>`/`<inertial>` values with `--urdf-d
 
 ```bash
 ./cadtool pytest                 # everything (~460 tests; the geometry builds take ~2 min; never writes a STEP)
-./cadtool pytest -m "not slow"   # fast lane: metadata, params, placements JSON, tooling (the cadgen runtime patch is applied)
+./cadtool pytest -m "not slow"   # fast lane: metadata, params, placements JSON, tooling (the pinned cadgen + one complete OCP kernel)
 ./cadtool pytest tests/cycloidal # the cycloidal drive's tests only (tests/cycloidal/test_<part>.py + helpers.py)
 uv run pytest                    # equivalent (cadgen is a normal dependency)
 ```

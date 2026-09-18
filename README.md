@@ -1,6 +1,6 @@
 # robotic-arm
 
-**Last updated:** 2026-09-13 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-18 — see the root `CHANGELOG.md` for dated changes.
 
 Robot arm control software for a 3-motor MKS SERVO42D/57D arm over CAN bus.
 
@@ -16,14 +16,14 @@ Robot arm control software for a 3-motor MKS SERVO42D/57D arm over CAN bus.
 The arm's mechanical design lives in [`cad/`](cad/README.md) as parametric
 [build123d](https://github.com/gumyr/build123d) code — a **separate uv project**
 (Python 3.12) that the control software never depends on, driven by the
-[`text-to-cad`](https://github.com/earthtojake/text-to-cad) CAD skills plugin (v0.5.x, runtime `cadgen`). It is being converted
+[`text-to-cad`](https://github.com/earthtojake/text-to-cad) CAD skills plugin (v0.6.x, runtime `cadgen`). It is being converted
 part-by-part from the original SolidWorks STEP exports (kept in `cad/reference/`);
 until a part is converted it is an import wrapper around its reference geometry, so
 the whole arm already assembles and renders:
 
 ```
 cd cad
-./cadtool setup                      # one-time: venv + the cadgen runtime patch (./cadtool patch) + Playwright Chromium (snapshots)
+./cadtool setup                      # one-time: venv + Playwright Chromium (snapshots)
 ./cadtool gen assemblies/arm.py      # build the arm STEP (rebuilds any stale part and its committed STEP)
 ./cadtool viewer                     # CAD Viewer: http://127.0.0.1:3245/?file=assemblies/arm.step (or ?file=robot/arm.urdf: joint sliders)
 ./cadtool pytest                     # convention + reference-match tests
@@ -40,8 +40,7 @@ wrist_pitch → wrist_pitch_link → wrist_roll → wrist_roll_link → jaw_a / 
 `shoulder_pitch` **is** the 20:1 cycloidal drive (its housing turns with the base-yaw holder, its output
 hub carries the upper arm), `elbow_pitch` / `wrist_pitch` are the GT2 belt joints, `wrist_roll` the
 NEMA17 pancake and the jaws the MG996R gripper. Which MKS motor drives which joint is not confirmed
-yet. cadgen 0.5.x needs the small runtime patch `./cadtool patch` (applied by `setup`) to draw robots
-in its viewer and snapshots — see `cad/tools/cadgen_patches.py`.
+yet.
 
 The 20:1 cycloidal shoulder drive (formerly the separate `cycloidal_drive` CadQuery repo) is fully
 parametric build123d here — see [`cad/docs/cycloidal_drive.md`](cad/docs/cycloidal_drive.md).

@@ -1,20 +1,20 @@
 # CAD — build123d models (robotic arm)
 
-**Purpose:** CAD-scoped agent guide — the `@step` model convention (cadgen 0.5), the wrapper → parametric
+**Purpose:** CAD-scoped agent guide — the `@step` model convention (cadgen 0.6), the wrapper → parametric
 conversion workflow, shared-dimension rules, assembly placements, purchased parts, tests, tooling.
 **Audience:** agent. Human docs: `README.md`. Reference provenance: `reference/README.md`. The
 cycloidal drive (spec, port notes, attachment): `docs/cycloidal_drive.md`.
 **Last updated:** 2026-09-18. Every commit that changes behaviour, layout or tooling gets a dated entry in the
 root `CHANGELOG.md` and bumps the `Last updated` line of the docs it touches.
 
-`cad/` is a **separate uv project** (Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.5.x) inside the
+`cad/` is a **separate uv project** (Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.6.x) inside the
 robotic-arm repo; the root motor-control project never depends on it.
 
 ## Running things (always via `./cadtool` or `uv run`, from `cad/`)
 - **Never call bare `python`** — the system Python is 3.14 without build123d. Python is pinned
   to **3.12** (`.python-version`; bump only with the full suite green). Never run CAD code with the root repo's venv.
 - Toolchain: the `cadgen` PyPI package (`cadgen[snapshot]==<ver>`, a locked dependency) is the whole
-  runtime — decorators, the `cadgen` CLI, viewer, snapshots. The `cad@text-to-cad` plugin **v0.5.x**
+  runtime — decorators, the `cadgen` CLI, viewer, snapshots. The `cad@text-to-cad` plugin **v0.6.x**
   (`~/.claude/plugins/cache/text-to-cad/cad/<ver>/skills/`) ships only the `/cad:*` skill docs (+ the
   step.parts script); its `skills/cad/requirements.txt` pins the same cadgen version — bump both
   together, `./cadtool doctor` checks (plugin updates need `git-lfs` on `PATH`).
@@ -32,18 +32,19 @@ robotic-arm repo; the root motor-control project never depends on it.
   written. `./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals())"`.
 - `./cadtool export <file.step> stl|3mf|glb [out]` — one mesh file per call from a document
   (`node` ≥ 20 on `PATH`; relative `--mesh-tolerance`, default 1.5e-3 of the bounding diagonal).
-- `./cadtool inspect refs <file.step> --facts --planes --positioning` (+ `measure|align|frame|diff|interfere|validate`).
+- `./cadtool inspect <file.step> [--planes] [--json]` (leaf refs, solids, faces, volume, bbox; `--planes` = the
+  planar faces as normal / offset / area) and `./cadtool inspect diff <a.step> <b.step> [--tol X]` (same geometry?
+  exit 1 if not) — a **local** tool, `tools/step_facts.py`: cadgen 0.6.5 removed `cadgen step inspect` and ships no
+  replacement command (the old `refs|measure|align|…` first argument exits 2 with the new syntax). Anything else
+  is Python over `cadgen.read_scene(path)` (`.leaves()`, `.resolve("#o1.2.f7").shape()` — world-frame build123d
+  geometry, the refs the viewer shows) + `cadgen.geometry` (`closest_points`, `overlap_volume`, `topology_errors`),
+  kept as a test when it is worth re-running.
 - `./cadtool snapshot assemblies/arm.step snapshots/arm.png --size-profile assembly --view-labels`
   (`--job job.json` for a multi-view packet; the path you name is the file you get - no timestamp).
   Snapshot review is mandatory after visible geometry changes.
 - `./cadtool viewer` — CAD Viewer serving `cad/`: `http://127.0.0.1:3245/?file=<rel path>` (ships in
   cadgen, no Node; 12 h auto-stop; `./cadtool cadgen viewer list|stop --port N`). Hand every
   created/updated STEP to it.
-- `./cadtool patch [apply|check|revert]` — `tools/cadgen_patches.py`: inserts the one flag cadgen 0.5.x's
-  browser bundles lack (`partTransformsBaked:!1` on URDF mesh data); without it the viewer and
-  `snapshot` draw every URDF/SRDF/SDF as a pile of shards and the joint sliders do nothing. `setup`
-  applies it, `doctor` and `tests/test_tooling.py` check it, `viewer`/`snapshot` warn; re-run after
-  `uv sync` or a cadgen reinstall (then restart the viewer and hard-reload the page once).
 - `./cadtool daemon stop` — stop cadgen's warm build daemon and its workers (they only reload code when
   restarted; `./cadtool cadgen daemon status` shows them).
 - `./cadtool validate <file.urdf|.srdf|.sdf> [--strict]`, `./cadtool parts "<query>"`,
@@ -67,8 +68,9 @@ robotic-arm repo; the root motor-control project never depends on it.
   (`read()` / `write()` / `entry()` — no part imports it, so editing it never makes a part stale).
 - Expected noise: every `gen` prints cadgen's "kernel imported eagerly" hint on stderr (the model files
   import build123d at module top) and pays the ~2.5 s import — accepted for now.
-- **build123d 0.11.1 / OCP 7.9.3 are required by cadgen 0.5.x** (`pyproject.toml` pins `cadquery-ocp`
-  to build123d's `cadquery-ocp-novtk` release — keep them equal). On 0.10 / 7.8.1 cadgen could not
+- **build123d 0.11.1 / OCP 7.9.3**: cadgen 0.6.x requires `build123d>=0.11.1,<0.12` and
+  `cadquery-ocp-novtk>=7.9,<8`; `pyproject.toml` pins the exact kernel (`cadquery-ocp-novtk==…`, the committed
+  STEP bytes are per-kernel) and must never gain `cadquery-ocp`, the VTK build (see Gotchas). On 0.10 / 7.8.1 cadgen could not
   build 11 parts (OCCT 7.8.1 mis-read BinTools VERSION_4 component objects), could not export a linked
   child (`LazyCompound` needs 0.11's `wrapped` property) and its STEP writer needs `HArray1.Value`.
   `test_part_survives_cadgen_component_round_trip` locks the first.
@@ -205,9 +207,15 @@ Changing a shared dimension — touchpoints in order:
   links and inertials; `BODIES` names the drive's rigid bodies (`stator` / `rotor`) and a `:<body>`
   key suffix (`"cycloidal_drive#1:rotor"`, `_occurrences.split_key`) selects one. Keep `EXPECTED`
   (whole module + `bodies`) in step with the geometry (`totals()` / `totals(body)`).
+- cadgen 0.6.5 **deprecates `cadgen.assembly.AssemblyHelper`** (a `FutureWarning` on every assembly / link build:
+  "migrate to native build123d `Compound(children=…, label=…)`, `shape.label/color`, `Location` transforms or
+  joints. Existing models still build"). `lib/assembly.py` re-exports it for `assemblies/_occurrences.py`
+  (`add` / `add_module(color=)` / `build`) and `robot/_links.py`; migrating them is a follow-up — check the tints
+  and the component tree by snapshot when you do.
 - When adding source-level joints, use `cadgen.assembly.AssemblyHelper` frames/mates (persisted
   motion is `@step(kinematics=…)` — viewer sliders, posed snapshots), keep placements
-  parameter-driven, and validate with `inspect align/measure/frame`.
+  parameter-driven, and validate with `cadgen.geometry.closest_points` / `overlap_volume` on
+  `read_scene(…).resolve(ref).shape()` (the `inspect align/measure/frame` verbs went with cadgen 0.6.5).
 
 ## Robot description (`robot/`)
 - `robot/arm.urdf` is the **source of truth** (hand-authored XML, ledger comment on top);
@@ -229,8 +237,8 @@ Changing a shared dimension — touchpoints in order:
   Inertials come from OCP `BRepGProp` (printed parts at `PETG_DENSITY`, COTS at `MASS_G`).
 - Validate with `./cadtool validate <file> --strict` and snapshot with
   `./cadtool snapshot robot/arm.urdf snapshots/x.png` after every edit; hand `.urdf` files to the
-  viewer (`?file=robot/arm.urdf`). Both renderers need the runtime patch (`./cadtool patch`, see
-  Running things) on cadgen 0.5.x.
+  viewer (`?file=robot/arm.urdf`). (The 0.5.x renderers needed a local runtime patch; fixed upstream in
+  0.6.0 and retired here.)
 - Placeholders to confirm before real use: joint limits/effort/velocity (`lib/params.py`), axis signs,
   jaw travel, the link-membership assumptions listed in the URDF ledger. The cycloidal drive IS the
   `shoulder_pitch` joint (stator with the yawing `j1_coupler` in `shoulder_link`, rotor with `j1_link`
@@ -245,7 +253,8 @@ parts vs reference), `test_placements.py` (JSON integrity, tables cover every ke
 module record), `test_assembly.py` (34 + 18 leaves / 50 + 58 solids / volume / bbox vs SolidWorks + the
 module lock), `test_params_invariants.py` (locks), `test_robot.py` (link partition, frames, FK at
 zero = capture, meshes, inertials, URDF/SRDF/SDF consistency + cadgen's validators via
-`./cadtool validate`), `test_tooling.py` (the cadgen runtime patch is applied - `./cadtool patch`),
+`./cadtool validate`), `test_tooling.py` (the installed cadgen and OCP kernel are the pinned ones, one complete OCP distribution,
+`./cadtool inspect` agrees with the kernel),
 `test_layering.py` (the package layering, no `sys.path`, no direct part-module imports — AST scan),
 `source_checks.py` (the shared `runs_its_model()` check that a model file ends with its build call),
 `tests/cycloidal/` (the drive: one module per part + housing / purchased / fitment / assembly / port,
@@ -279,7 +288,18 @@ unrelated, broken motor-control suite).
 - After `uv sync` changes cadgen / build123d / OCP, `./cadtool daemon stop`: the warm daemon's workers
   keep the old code loaded (its identity token only tracks cadgen's version and file mtimes; cadgen
   has no stop verb of its own and the daemon shrugs off a bare SIGTERM). The next `gen` starts a fresh one.
-  A cadgen reinstall also drops the runtime patch: `./cadtool patch` (or `setup`), then restart the viewer.
+- `cadquery-ocp` (VTK) and `cadquery-ocp-novtk` own the same 322 `OCP/` files (the 162 MB kernel `.so`
+  included). When uv removes one (2026-09-18: cadgen 0.5 → 0.6 dropped `cadquery-ocp`) it deletes them and
+  still counts the other as installed: `uv sync` reports success and `import OCP` fails. Repair with
+  `uv sync --reinstall-package cadquery-ocp-novtk` (`./cadtool setup` does it when OCP does not import;
+  `test_tooling.py` checks every RECORD file exists). cadgen's `doctor` does NOT flag an absent kernel.
+- cadgen makes hard cutovers (0.6.0: cache / sidecar schemas, so every model read stale once; 0.6.5: the
+  inspect CLI): a retired interface fails with a teaching error, never an alias. On a bump re-check the
+  private names this repo leans on — `cadgen.authoring.build_in_progress` / `_build` / `ModelDef.func|fmt|script_path|out`
+  (`lib/models.py`, `tests/conftest.py`, `test_parts_convention.py`), `cadgen._internal.component_package`
+  (`_shape_brep_bytes`, `_build123d_shape_from_brep_bytes`), the `python3 -m cadgen.daemon` cmdline
+  (`./cadtool daemon stop`) — and that `./cadtool why assemblies/arm.py` still lists the 54 children as
+  pinned (a `build_in_progress` that silently read False would inline every child and still build).
 - A model run accepts only `--force --mesh-tolerance --mesh-angular-tolerance --verbose --json`;
   anything else (`--totals`, a preview flag) is an argparse error — use `./cadtool show` / `python -c`.
 - Cycloidal discs: chamfer the lobe edges BEFORE cutting holes (the end face must carry only the

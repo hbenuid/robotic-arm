@@ -22,16 +22,13 @@
 
 ## Known issues
 - `tests/` still imports `from arctos.*` and is broken. CLI runs fine without it.
-- cadgen 0.5.0/0.5.1 draw every URDF/SRDF/SDF as a pile of shards (its renderer drops the per-link
-  transform). `cad/tools/cadgen_patches.py` patches the installed bundles: `./cadtool patch` (run by
-  `setup`, checked by `doctor` and `cad/tests/test_tooling.py`); re-run after `uv sync`. Upstream fix pending.
 
 ## CAD (`cad/`)
 - `cad/` is a **separate uv project** (Python 3.12, build123d) — the motor-control
   project above never depends on it, and `launch.bat` never installs it. Never run
   CAD code with the root venv.
-- Work from `cad/` via `./cadtool …` (`setup|doctor|patch|gen|step|show|why|inspect|snapshot|export|validate|viewer|parts|skill|cadgen|store|daemon|pytest|python|clean`; `step` = `gen`);
-  it runs the `cadgen` 0.5 toolchain (the `cad@text-to-cad` plugin v0.5.x's PyPI runtime, locked in
+- Work from `cad/` via `./cadtool …` (`setup|doctor|gen|step|show|why|inspect|snapshot|export|validate|viewer|parts|skill|cadgen|store|daemon|pytest|python|clean`; `step` = `gen`);
+  it runs the `cadgen` 0.6 toolchain (the `cad@text-to-cad` plugin v0.6.x's PyPI runtime, locked in
   `cad/pyproject.toml`) inside the CAD venv with `PYTHONPATH=cad/`. A model is a plain script with one
   `@step def <name>()`; `./cadtool gen <model.py>` runs it. Conventions, the wrapper → parametric
   conversion workflow and the reference-match tests: `cad/CLAUDE.md`.

@@ -1,7 +1,7 @@
 """The `@step` model convention, enforced automatically for every parts/<group>/<name>.py.
 
 Auto-discovers parts exactly like the assemblies do (parts.names(): every module under a group
-package that does not start with '_') and checks each honours the cadgen 0.5 contract: importable
+package that does not start with '_') and checks each honours the cadgen `@step` contract: importable
 with no side effects, ONE `@step def <name>()` model named after the file whose STEP is the
 sibling file (no out=), whose body (parts.build(name) - never the model itself, that would start a
 build) returns a valid, non-empty, labelled shape, plus the wrapper / designed / COTS metadata this

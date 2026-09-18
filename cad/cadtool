@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# cadtool - the one entry point for cad/: the cadgen 0.5 toolchain (a model is a plain script you
+# cadtool - the one entry point for cad/: the cadgen 0.6 toolchain (a model is a plain script you
 # RUN; every other verb is the `cadgen` console script) plus the usual dev commands, all inside THIS
 # uv project (Python 3.12 + build123d + cadgen), always from cad/ with PYTHONPATH=cad/ so `lib`,
 # `parts`, `assemblies` and `robot` import the same way for you, for cadgen's closure scan and for
@@ -9,18 +9,18 @@ set -euo pipefail
 
 usage() {
   cat <<'USAGE'
-cadtool - cadgen 0.5 + this uv project (paths relative to cad/)
-  ./cadtool setup                                   one-time: uv sync + ./cadtool patch + Playwright Chromium (for snapshots)
-  ./cadtool doctor                                  installed cadgen vs the plugin's pin, the runtime patch, node, chromium
-  ./cadtool patch [apply|check|revert] [--force]    patch the installed cadgen runtime (tools/cadgen_patches.py): the
-                                                    0.5.x URDF renderer fix; re-run after uv sync (setup does), doctor checks
+cadtool - cadgen 0.6 + this uv project (paths relative to cad/)
+  ./cadtool setup                                   one-time: uv sync (+ the OCP kernel check) + Playwright Chromium (for snapshots)
+  ./cadtool doctor                                  installed cadgen vs the plugin's pin, the CAD kernel, node, chromium
   ./cadtool gen <model.py>... [--force] [--verbose] [--json] [--mesh-tolerance X]
                                                     build: run the model script(s) -> the sibling <name>.step
                                                     (an assembly rebuilds + rewrites its stale child parts too)
   ./cadtool step ...                                alias of gen
   ./cadtool show <model.py | dotted.name>           OCP CAD Viewer preview of the model body (no build)
   ./cadtool why <model.py>                          freshness verdict, clause by clause (cadgen store why)
-  ./cadtool inspect refs <file.step> --facts --planes --positioning   (also measure|align|frame|diff|interfere|validate)
+  ./cadtool inspect <file.step> [--planes] [--json] leaf refs, solids, faces, volume, bbox (+ planar faces) of a saved STEP
+  ./cadtool inspect diff <a.step> <b.step> [--tol X] same geometry? (exit 1 if not) - a LOCAL tool, tools/step_facts.py:
+                                                    cadgen 0.6.5 removed `cadgen step inspect`
   ./cadtool snapshot <file.step|.urdf|.sdf|.stl> <out.png> [--size-profile assembly --view-labels --job job.json]
   ./cadtool export <file.step> stl|3mf|glb [out]    one mesh file per call (needs node >= 20 on PATH)
   ./cadtool validate <file.urdf|.srdf|.sdf> [--strict] [--gz-check never]
@@ -78,18 +78,6 @@ run_skill() {  # run_skill <skill> <tool> [args...]  ->  python skills/<skill>/s
 
 cg() { exec uv run --frozen cadgen "$@"; }
 
-# cadgen 0.5.x draws robots (URDF/SRDF/SDF) as a pile of shards unless tools/cadgen_patches.py has
-# patched its browser bundles (./cadtool patch). A grep, so the viewer/snapshot path pays nothing.
-urdf_patch_warn() {  # urdf_patch_warn <bundle glob under cadgen/_runtime>
-  local f
-  for f in "$CAD_DIR"/.venv/lib/python3.*/site-packages/cadgen/_runtime/$1; do
-    [[ -f "$f" ]] || continue
-    grep -q 'partTransformsBaked:!1,lightweightGeometry:!0' "$f" && return 0
-    echo "cadtool: warning: cadgen's URDF renderer is unpatched ($(basename "$f")) - robots render as a pile; run ./cadtool patch" >&2
-    return 0
-  done
-}
-
 cmd="${1:-help}"
 shift || true
 case "$cmd" in
@@ -103,9 +91,8 @@ case "$cmd" in
   why)
     cg store why "$@" ;;
   inspect)
-    cg step inspect "$@" ;;
+    exec uv run --frozen python tools/step_facts.py "$@" ;;
   snapshot)
-    case "${1:-}" in *.urdf|*.srdf|*.sdf) urdf_patch_warn "browser/snapshot-render.js" ;; esac
     cg snapshot "$@" ;;
   export)
     doc="${1:?usage: cadtool export <file.step> stl|3mf|glb [out]}"; fmt="${2:?usage: cadtool export <file.step> stl|3mf|glb [out]}"; shift 2
@@ -121,7 +108,6 @@ case "$cmd" in
     esac ;;
   viewer)
     port=3245; prev=""; for a in "$@"; do [[ "$prev" == "--port" ]] && port="$a"; prev="$a"; done
-    urdf_patch_warn "viewer/assets/index-*.js"
     echo "CAD Viewer: http://127.0.0.1:$port/?file=assemblies/arm.step   (auto-stops after 12h; Ctrl+C to stop)"
     exec timeout --foreground 12h uv run --frozen cadgen viewer --host 127.0.0.1 "$@" ;;
   cadgen)
@@ -147,7 +133,6 @@ case "$cmd" in
     rc=0
     need_plugin
     uv run --frozen cadgen doctor "$CAD_PLUGIN/skills/cad" || rc=$?
-    uv run --frozen python tools/cadgen_patches.py check || rc=$?
     if command -v node >/dev/null 2>&1; then echo "node $(node --version)   (mesh export needs >= 20)"
     else echo "node: NOT on PATH - ./cadtool export needs node >= 20"; rc=1; fi
     loc="$(uv run --frozen python -m playwright install --dry-run chromium 2>/dev/null | awk -F': +' '/Install location/ {print $2; exit}')"
@@ -156,10 +141,13 @@ case "$cmd" in
     exit $rc ;;
   setup)
     uv sync
-    uv run --frozen python tools/cadgen_patches.py apply
+    # A venv that ever held cadquery-ocp (cadgen 0.5.x's VTK build) loses OCP/ when uv removes it: both
+    # distributions own the same files and uv still counts cadquery-ocp-novtk as installed.
+    if ! uv run --frozen python -c "import OCP" 2>/dev/null; then
+      echo "cadtool: the OCP kernel does not import - reinstalling cadquery-ocp-novtk" >&2
+      uv sync --reinstall-package cadquery-ocp-novtk
+    fi
     uv run --frozen python -m playwright install chromium ;;
-  patch)
-    exec uv run --frozen python tools/cadgen_patches.py "$@" ;;
   python)
     exec uv run --frozen python "$@" ;;
   pytest)

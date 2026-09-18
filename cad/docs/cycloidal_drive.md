@@ -253,7 +253,8 @@ cd cad
 #   ?file=robot/arm.urdf (the robot with joint sliders - shoulder_pitch turns the drive's rotor with j1_link)
 ./cadtool snapshot assemblies/cycloidal_drive.step snapshots/cycloidal_drive.png --size-profile assembly --view-labels
 ./cadtool snapshot assemblies/cycloidal_drive.step snapshots/cycloidal_drive_x.png --display '{"mode": "transparent"}' --camera "30:20"
-#   (no turntable GIF in cadgen 0.5 - motion review is the CAD Viewer)
+#   (no turntable GIF: cadgen 0.6's `snapshot --video` renders a model's `@step(animation=…)` clip, and the
+#    drive declares none - motion review is the CAD Viewer)
 ./cadtool show assemblies/cycloidal_drive.py          # OCP CAD Viewer (VS Code extension); parts: ./cadtool show parts/cycloidal/cycloidal_disc_1.py
 ```
 

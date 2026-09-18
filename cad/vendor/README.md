@@ -35,7 +35,7 @@ skips them):
 ```bash
 ./cadtool parts "GT2 20" --limit 20                         # search (ANDed tokens; facets --tag/--family/--standard)
 ./cadtool parts --id <id> --download --filename <name>.step --overwrite   # -> vendor/<name>.step (sha256 verified)
-./cadtool inspect refs vendor/<name>.step --facts --planes --positioning   # frame of the new model
+./cadtool inspect vendor/<name>.step --planes   # frame of the new model (leaf bbox + planar faces)
 # set VENDOR_TO_REF in parts/<group>/<name>.py so the model lands in the reference frame (reference/<origin>/<name>.step)
 ./cadtool pytest -k <name>                                  # vendor-frame + envelope + convention tests
 ./cadtool gen parts/<group>/<name>.py                       # regenerate the committed STEP

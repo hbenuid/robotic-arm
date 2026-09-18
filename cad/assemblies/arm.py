@@ -24,7 +24,7 @@ robot/arm.urdf open in the same pose. placements.json, the parts and the modules
 
 Run:  ./cadtool gen assemblies/arm.py            -> assemblies/arm.step (git-ignored); every stale
                                                   child part is rebuilt and its committed STEP rewritten
-      ./cadtool inspect refs assemblies/arm.step --facts --planes --positioning
+      ./cadtool inspect assemblies/arm.step      -> leaf refs, solids, faces, volume, bbox
       ./cadtool show assemblies/arm.py           -> preview in the OCP CAD Viewer (no build)
 """
 

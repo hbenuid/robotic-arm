@@ -1,6 +1,6 @@
 """TEMPLATE - a DESIGNED (parametric) part. Copy to parts/<group>/<name>.py and edit.
 
-cadgen 0.5 convention: ONE module-level `@step def <name>()` (rename `designed` to the part NAME
+cadgen convention: ONE module-level `@step def <name>()` (rename `designed` to the part NAME
 when you copy the template - NAME = file stem = model name) that RETURNS the final Part/Compound
 at the part's LOCAL origin - the assembly owns placement. Every part MUST:
   * return a valid, labelled solid/compound from the model (label == NAME);

@@ -1,4 +1,4 @@
-"""cadgen 0.5 model access - the one place that knows what a model function is.
+"""cadgen model access - the one place that knows what a model function is.
 
 Every parts/<group>/<name>.py, assemblies/<name>.py and robot/links/<link>.py declares ONE
 `@step` model (cadgen.step) named after its file stem; running the file builds it (writes the
