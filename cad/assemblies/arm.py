@@ -16,6 +16,12 @@ The drive module is one linked child, so this tree keeps it whole under shoulder
 own MODULE_TINTS colour) although its rotor body (output hub + pins) belongs to upper_arm_link
 in robot/frames.py LINKS - the kinematic truth, which the per-link meshes follow.
 
+Frame: the placements are in the SolidWorks capture frame W (+Y up), but the arm is EMITTED in
+the base_link frame B of robot/frames.py (REP-103: Z up, X forward, the base's mounting face on
+z = 0) - ARM_FROM_W, composed into every occurrence's placement. cadgen's viewer and snapshots
+are Z-up with no up-axis option, so a W-frame STEP renders lying on its side; in B arm.step and
+robot/arm.urdf open in the same pose. placements.json, the parts and the modules stay in W.
+
 Run:  ./cadtool gen assemblies/arm.py            -> assemblies/arm.step (git-ignored); every stale
                                                   child part is rebuilt and its committed STEP rewritten
       ./cadtool inspect refs assemblies/arm.step --facts --planes --positioning
@@ -27,6 +33,11 @@ from cadgen import step
 from assemblies import cycloidal_drive, gripper
 from assemblies._occurrences import add_grouped_occurrences
 from lib.assembly import AssemblyHelper
+from robot.frames import BASE_FRAME
+
+# W (SolidWorks capture frame, +Y up, arm toward -X) -> base_link frame B (REP-103: Z up, X forward,
+# origin on the base's mounting face at the base_yaw axis): the frame the arm is emitted in.
+ARM_FROM_W = BASE_FRAME.inverse()
 
 GRIPPER_KEY = "gripper#1"
 DRIVE_KEY = "cycloidal_drive#1"
@@ -73,9 +84,10 @@ MODULE_TINTS = {DRIVE_KEY: "#C44E52", GRIPPER_KEY: "#64B5CD"}  # the named modul
 @step
 def arm():
     """The arm as a labelled Compound: 'arm' -> the GROUPS component nodes -> parts + the
-    'gripper' and 'cycloidal_drive' modules, each subtree tinted with its group's color."""
+    'gripper' and 'cycloidal_drive' modules, each subtree tinted with its group's color, in the
+    base_link frame (Z up - ARM_FROM_W)."""
     asm = AssemblyHelper("arm")
-    add_grouped_occurrences(asm, OCCURRENCES, GROUPS, MODULES, MODULE_TINTS)
+    add_grouped_occurrences(asm, OCCURRENCES, GROUPS, MODULES, MODULE_TINTS, root=ARM_FROM_W)
     return asm.build()
 
 

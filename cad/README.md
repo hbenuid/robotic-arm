@@ -1,6 +1,6 @@
 # robotic-arm — CAD (build123d)
 
-**Last updated:** 2026-09-13 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-18 — see the root `CHANGELOG.md` for dated changes.
 
 Parametric CAD-as-code for the desktop arm (base yaw, 20:1 cycloidal shoulder pitch, belt-driven
 elbow and wrist pitch, wrist roll, MG996R parallel gripper), converted part-by-part from the original
@@ -195,7 +195,12 @@ catalog model is worse, restore the reference copy. See `vendor/README.md` for w
 `(part, role, placement_key)` in SolidWorks document order — and place each part model with
 `lib.placements` (`"j3_coupler#2"` = second occurrence of that part; inside a cadgen build the child
 model is called — built in parallel, its STEP rewritten when stale — and the gripper links its tree
-while the tinted arm keeps an inline copy; outside a build it is a fresh in-process copy). Roles make
+while the tinted arm keeps an inline copy; outside a build it is a fresh in-process copy). The
+placements are in the SolidWorks capture frame (+Y up), but the arm is **emitted Z up**, in the
+`base_link` frame of `robot/frames.py` (`arm.py ARM_FROM_W`, composed into every occurrence's
+placement): cadgen's viewer and snapshots treat +Z as up and have no up-axis setting, so a
+capture-frame `arm.step` would lie on its side. `arm.step` and `robot/arm.urdf` therefore open in the
+same pose, the base standing on z = 0. Roles make
 duplicate parts' labels unique (`j3_coupler:j2`, `gripper_end:1`); they are positional for
 now. `assemblies/cycloidal_drive.py` is a **code-driven module**: its rows are
 `(part, role, Location)` computed from `lib/cycloidal` (`stack_positions`), and `arm.py` locates
@@ -248,7 +253,8 @@ with the yawing `j1_coupler` and its rotor (`cycloidal_drive#1:rotor` — output
 `assemblies/_occurrences.world_rows`; see the URDF ledger and `docs/cycloidal_drive.md` §12). Frames
 are REP-103 (`base_link` on the base's bottom face at the base_yaw axis, Z up, X forward); every joint
 frame has Z on its axis; **all joints are 0 at the SolidWorks capture pose**, so every mesh has an
-identity origin and the URDF at zero reproduces `assemblies/arm.py`. Limits, effort/velocity and axis
+identity origin and the URDF at zero reproduces `assemblies/arm.py` (which is emitted in the same
+`base_link` frame — see Assembly). Limits, effort/velocity and axis
 signs are placeholders (`lib/params.py` `*_LIMIT_DEG …`, tagged `[ESTIMATE]`) — confirm with viewer
 sweeps and hardware.
 

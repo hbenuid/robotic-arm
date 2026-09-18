@@ -4,7 +4,7 @@
 conversion workflow, shared-dimension rules, assembly placements, purchased parts, tests, tooling.
 **Audience:** agent. Human docs: `README.md`. Reference provenance: `reference/README.md`. The
 cycloidal drive (spec, port notes, attachment): `docs/cycloidal_drive.md`.
-**Last updated:** 2026-09-13. Every commit that changes behaviour, layout or tooling gets a dated entry in the
+**Last updated:** 2026-09-18. Every commit that changes behaviour, layout or tooling gets a dated entry in the
 root `CHANGELOG.md` and bumps the `Last updated` line of the docs it touches.
 
 `cad/` is a **separate uv project** (Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.5.x) inside the
@@ -125,7 +125,8 @@ swaps. Swap procedure and what has been tried: `vendor/README.md` (`./cadtool pa
 `lib/params.py` is the single source of truth: mm and grams, every constant tagged
 `[MEASURE] / [DATASHEET] / [DESIGN] / [REFERENCE] / [ESTIMATE]` with a derivation comment.
 `lib/` never imports `parts/`. Docs name constants, never numbers. Datum: the SolidWorks capture
-frame is **Y up** (J1 axis); the URDF base frame (REP-103) lives in `robot/frames.py`.
+frame is **Y up** (J1 axis); the URDF base frame (REP-103) lives in `robot/frames.py` — and
+`assemblies/arm.py` emits the arm in it (`ARM_FROM_W`, see Assembly), so `arm.step` is **Z up**.
 The cycloidal drive's own dimensions are `lib/cycloidal/params.py` (`DriveConfig`, frozen
 dataclasses, variants via `dataclasses.replace`); `lib/params.py` re-exports the interface values
 (`CYCLOIDAL_*`, masses) from it - never retype a drive number.
@@ -152,7 +153,18 @@ Changing a shared dimension — touchpoints in order:
   `geometry(model, inline=True)`: the child is still called (pinned, rebuilt, its STEP rewritten) but
   the arm owns a recoloured copy — cadgen's packager keeps a linked child's own colours, so tints
   through links are lost (verified by snapshot).
-  Roles (`j2`/`j3` = the elbow_pitch / wrist_pitch pulley + coupler pairs, `1`/`2`) only disambiguate
+- **The arm is emitted Z up.** `placements.json` is Y up, but cadgen's viewer and snapshot renderer
+  hardcode +Z as up and have no up-axis option (no `@step` kwarg, sidecar field, URL parameter or
+  flag), so a capture-frame `arm.step` renders lying on its side. `arm.py ARM_FROM_W` =
+  `robot/frames.py BASE_FRAME⁻¹` (capture frame → `base_link` frame: Z up, X forward, the base's
+  mounting face on z = 0 — the frame `arm.urdf` uses, so both open in the same pose) goes into
+  `add_grouped_occurrences(…, root=)`, which composes `root * rel` into **every occurrence's
+  placement**. Never `.moved()` the built root Compound instead: cadgen's STEP packager reads only the
+  children's locations, so the in-process shape would rotate and the written STEP would not. The
+  gripper and the drive keep their own module frames (both already have their axis on +Z), and
+  `robot/` never reads the arm compound (it goes `placements.json world` → `world_rows`).
+  `test_assembly.py` compares the SolidWorks world bbox through `ARM_FROM_W`.
+- Roles (`j2`/`j3` = the elbow_pitch / wrist_pitch pulley + coupler pairs, `1`/`2`) only disambiguate
   duplicates; renaming them after the joints is a follow-up.
 - `arm.py GROUPS` buckets the occurrences into the component tree
   `arm → base_link/shoulder_link/upper_arm_link/forearm_link/wrist_pitch_link/wrist` — the

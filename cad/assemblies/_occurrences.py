@@ -32,15 +32,17 @@ def _part(part_name: str, *, inline: bool = False):
     return geometry(parts.model(part_name), inline=inline)
 
 
-def place(part_name: str, key: str, *, inline: bool = False):
+def place(part_name: str, key: str, *, inline: bool = False, root: Location | None = None):
     """parts.model(part_name) placed at occurrence `key`.
 
     The part is modelled in its LOCAL frame (= LOCAL_FROM_REF * reference frame); the
     extracted placement maps the REFERENCE frame into the parent frame, so compose
-    rel * LOCAL_FROM_REF^-1 and MOVE (compose) rather than locate (replace)."""
+    rel * LOCAL_FROM_REF^-1 and MOVE (compose) rather than locate (replace). `root` (parent
+    frame -> output frame) re-expresses the occurrence in another frame: root * rel * ..."""
     mod = parts.load(part_name)
     local_from_ref = getattr(mod, "LOCAL_FROM_REF", None) or Location()
-    return _part(part_name, inline=inline).moved(P.location(key, "rel") * local_from_ref.inverse())
+    return _part(part_name, inline=inline).moved(
+        (root or Location()) * P.location(key, "rel") * local_from_ref.inverse())
 
 
 def add_occurrences(asm, rows, modules: dict | None = None) -> None:
@@ -68,7 +70,7 @@ def _tint(shape, color: Color) -> None:
 
 
 def add_grouped_occurrences(asm, rows, groups, modules: dict | None = None,
-                            module_tints: dict | None = None) -> None:
+                            module_tints: dict | None = None, root: Location | None = None) -> None:
     """add_occurrences(), but bucketed into labelled group Compounds (viewer/STEP tree nodes).
 
     `groups` rows are (group_label, tint, occurrence keys); together the keys must cover the
@@ -78,9 +80,15 @@ def add_grouped_occurrences(asm, rows, groups, modules: dict | None = None,
     copies only — standalone part/module previews are untouched. Because of the tints the
     members are INLINE copies (geometry(..., inline=True)): inside a cadgen build the child models
     are still called - pinned, rebuilt in parallel, their committed STEPs rewritten when stale -
-    but the assembly's STEP carries its own recoloured geometry instead of links."""
+    but the assembly's STEP carries its own recoloured geometry instead of links.
+
+    `root` (placements' parent frame -> output frame) re-expresses the whole assembly in another
+    frame by composing into every occurrence's placement (root * rel). It has to go there: cadgen's
+    STEP packager reads the children's locations only, so a .moved() on the built root Compound
+    would move the in-process shape but not the written STEP."""
     modules = modules or {}
     module_tints = module_tints or {}
+    root = root or Location()
     row_keys = sorted(key for _, _, key in rows)
     group_keys = sorted(key for _, _, keys in groups for key in keys)
     if group_keys != row_keys:
@@ -88,9 +96,9 @@ def add_grouped_occurrences(asm, rows, groups, modules: dict | None = None,
     shapes = {}
     for name, role, key in rows:
         if name in modules:
-            shape = label_shape(geometry(modules[name], inline=True).moved(P.location(key, "rel")), name)
+            shape = label_shape(geometry(modules[name], inline=True).moved(root * P.location(key, "rel")), name)
         else:
-            shape = label_shape(place(name, key, inline=True), name, *(() if role is None else (role,)))
+            shape = label_shape(place(name, key, inline=True, root=root), name, *(() if role is None else (role,)))
         shapes[key] = shape
     for group_label, tint, keys in groups:
         members = []

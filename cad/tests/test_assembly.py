@@ -1,6 +1,7 @@
 """The arm assembly rebuilt from parts + placements reproduces the SolidWorks totals, plus the
 code-driven cycloidal_drive module's own totals."""
 import pytest
+from build123d import Location, Vector
 
 from assemblies import arm, cycloidal_drive, gripper
 from lib.models import raw
@@ -17,7 +18,9 @@ def _leaves(node):
 
 def _expected_bbox():
     """Union of the world bounding boxes of every part occurrence in placements.json and of the
-    designed modules' SolidWorks nodes (the drive's fasteners sit inside that envelope)."""
+    designed modules' SolidWorks nodes (the drive's fasteners sit inside that envelope),
+    re-expressed in the frame the arm is emitted in (arm.ARM_FROM_W: W, +Y up -> base_link, Z up).
+    That map is an axis permutation with signs, so two opposite corners carry the whole box."""
     lo = [float("inf")] * 3
     hi = [float("-inf")] * 3
     boxes = [(P.OCCURRENCES[k]["world_bbox_min"], P.OCCURRENCES[k]["world_bbox_size"]) for k in P.keys(kind="part")]
@@ -27,6 +30,9 @@ def _expected_bbox():
         for i in range(3):
             lo[i] = min(lo[i], bmin[i])
             hi[i] = max(hi[i], bmin[i] + bsize[i])
+    corners = [tuple((arm.ARM_FROM_W * Location(tuple(p))).position) for p in (lo, hi)]
+    lo = [min(c[i] for c in corners) for i in range(3)]
+    hi = [max(c[i] for c in corners) for i in range(3)]
     return lo, [h - l for h, l in zip(hi, lo)]
 
 
@@ -71,6 +77,20 @@ def test_arm_groups_mirror_links():
     assert wrist == set(
         frames.LINKS["wrist_roll_link"] + frames.LINKS["jaw_a_link"] + frames.LINKS["jaw_b_link"]
     )
+
+
+def test_arm_is_emitted_z_up():
+    """The arm leaves the SolidWorks capture frame W (+Y up) for the base_link frame of
+    robot/frames.py (REP-103) - cadgen's viewer and snapshots are Z-up, a W-frame arm.step lies on
+    its side: world up -> +Z, the arm's forward -> +X, the base's mounting face centre -> origin."""
+    from robot import frames
+
+    def direction(v):
+        return (arm.ARM_FROM_W * Location(v)).position - arm.ARM_FROM_W.position
+
+    assert (direction(frames.U) - Vector(0, 0, 1)).length < 1e-9
+    assert (direction(frames.BASE_FORWARD) - Vector(1, 0, 0)).length < 1e-9
+    assert (arm.ARM_FROM_W * Location((0.0, frames.BASE_BOTTOM_Y, 0.0))).position.length < 1e-9
 
 
 @pytest.mark.slow

@@ -4,6 +4,28 @@ Dated record of notable changes to this repository (newest first). Every commit 
 behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
 `cad-setup` working branch was fast-forward-only and has been retired).
 
+## 2026-09-18 — `assemblies/arm.step` is emitted Z up (it rendered lying on its side)
+
+### Fixed — the arm assembly's output frame, branch `cad/arm-step-z-up` (commit pending)
+- Symptom: `?file=assemblies/arm.step` in the CAD Viewer (and `./cadtool snapshot assemblies/arm.step`)
+  showed the arm on its side. Cause: the arm was composed and written in the SolidWorks capture frame
+  of `reference/placements.json` (**+Y up**), while cadgen 0.5.1's viewer and snapshot renderer
+  hardcode +Z as world up, load STEP coordinates verbatim (only GLB gets a Y→Z correction) and expose
+  no up-axis option — no `@step` argument, sidecar section, viewer URL parameter, CLI flag or env var.
+  `robot/arm.urdf` was already upright because `robot/frames.py` converts to the REP-103 `base_link` frame.
+- `cad/assemblies/arm.py`: `ARM_FROM_W = robot.frames.BASE_FRAME.inverse()` (capture frame → `base_link`
+  frame: Z up, X forward, the base's mounting face on z = 0), passed as
+  `add_grouped_occurrences(…, root=ARM_FROM_W)`. `cad/assemblies/_occurrences.py`: `place()` and
+  `add_grouped_occurrences()` take `root` and compose `root * rel` into every occurrence's placement —
+  a `.moved()` on the built root Compound would not reach the file (cadgen's STEP packager reads only
+  the children's locations). `arm.step` and `arm.urdf` now open in the same pose.
+- Unchanged: `placements.json`, every part and committed STEP, `assemblies/gripper.py` /
+  `cycloidal_drive.py` (their own module frames, already axis-on-+Z), all of `cad/robot/` (it reads
+  `placements.json` `world`, never the arm compound).
+- `cad/tests/test_assembly.py`: the SolidWorks world bbox is compared through `ARM_FROM_W` (which also
+  locks "the base stands on z = 0"); new fast `test_arm_is_emitted_z_up`. Docs: `cad/README.md`,
+  `cad/CLAUDE.md`, the `lib/params.py` datum note.
+
 ## 2026-09-13 — docs: robot description tables, `./cadtool patch` in every guide; cleanup
 
 ### Changed — Markdown only (`81858ba`)
