@@ -123,11 +123,14 @@ case "$cmd" in
     cg store "$@" ;;
   daemon)
     if [[ "${1:-}" == "stop" ]]; then   # cadgen has no stop verb: SIGTERM the daemon (it shuts its pool down), then sweep
-      pids="$(pgrep -f "^$CAD_DIR/.venv/bin/python3 -m cadgen\.daemon" || true)"
+      # the daemon + its workers (`… -m cadgen.daemon.worker`). The interpreter's name is per platform: the venv's
+      # `python3` on Linux, `python` on macOS (where python3 is the symlink) - [0-9.]* takes both, and python3.12
+      daemon="^$CAD_DIR/.venv/bin/python[0-9.]* -m cadgen\.daemon"
+      pids="$(pgrep -f "$daemon" || true)"
       if [[ -z "$pids" ]]; then echo "cadtool: no cadgen daemon running for this venv"; exit 0; fi
-      pkill -TERM -f "^$CAD_DIR/.venv/bin/python3 -m cadgen\.daemon$" || true
-      for _ in 1 2 3 4 5 6 7 8 9 10; do pgrep -f "^$CAD_DIR/.venv/bin/python3 -m cadgen\.daemon" >/dev/null || break; sleep 0.5; done
-      pkill -KILL -f "^$CAD_DIR/.venv/bin/python3 -m cadgen\.daemon" 2>/dev/null || true
+      pkill -TERM -f "$daemon\$" || true
+      for _ in 1 2 3 4 5 6 7 8 9 10; do pgrep -f "$daemon" >/dev/null || break; sleep 0.5; done
+      pkill -KILL -f "$daemon" 2>/dev/null || true
       echo "cadtool: cadgen daemon stopped (the next gen starts a fresh one)"; exit 0
     fi
     cg daemon "$@" ;;

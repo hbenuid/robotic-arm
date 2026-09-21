@@ -52,3 +52,20 @@ def test_step_facts_agree_with_the_kernel():
     assert totals["bbox_size"] == pytest.approx(expected["bbox_size"], abs=1e-3)
     assert [p["ref"] for p in step_facts.planes(path)], "a printed link has planar faces"
     assert step_facts.diff(path, path) == []
+
+
+def test_daemon_stop_finds_the_daemon_on_both_platforms():
+    """./cadtool daemon stop greps the process list for the venv interpreter running cadgen.daemon. That
+    interpreter is named per platform - `.venv/bin/python3` on Linux, `.venv/bin/python` on macOS (where
+    python3 is the symlink) - and a pattern that knows only one of them reports "no cadgen daemon running"
+    while the daemon keeps its old code loaded (2026-09-21, the arm64 Mac)."""
+    source = (CAD_DIR / "cadtool").read_text()
+    match = re.search(r'^\s*daemon="\^\$CAD_DIR(?P<tail>[^"]+)"$', source, re.MULTILINE)
+    assert match, "cadtool: the daemon= process pattern of `daemon stop` moved - update this test"
+    pattern = re.compile("^/repo/cad" + match.group("tail"))
+    for exe in ("python", "python3", "python3.12"):
+        assert pattern.search(f"/repo/cad/.venv/bin/{exe} -m cadgen.daemon"), exe
+        assert pattern.search(f"/repo/cad/.venv/bin/{exe} -m cadgen.daemon.worker"), exe
+    assert not pattern.search("/repo/cad/.venv/bin/python -m cadgen viewer")
+    assert not pattern.search("/other/cad/.venv/bin/python3 -m cadgen.daemon"), "another checkout's daemon"
+    assert source.count("-m cadgen\\.daemon") == 1, "one pattern, reused by pgrep and both pkills"

@@ -367,8 +367,9 @@ unrelated, broken motor-control suite).
   inspect CLI): a retired interface fails with a teaching error, never an alias. On a bump re-check the
   private names this repo leans on — `cadgen.authoring.build_in_progress` / `_build` / `ModelDef.func|fmt|script_path|out`
   (`lib/models.py`, `tests/conftest.py`, `test_parts_convention.py`), `cadgen._internal.component_package`
-  (`_shape_brep_bytes`, `_build123d_shape_from_brep_bytes`), the `python3 -m cadgen.daemon` cmdline
-  (`./cadtool daemon stop`) — and that `./cadtool why assemblies/arm.py` still lists the 54 children as
+  (`_shape_brep_bytes`, `_build123d_shape_from_brep_bytes`), the `-m cadgen.daemon` cmdline
+  of the venv interpreter (`./cadtool daemon stop`; it is `.venv/bin/python3` on Linux and `.venv/bin/python` on macOS —
+  the pattern takes both, `test_tooling.py`) — and that `./cadtool why assemblies/arm.py` still lists the 54 children as
   pinned (a `build_in_progress` that silently read False would inline every child and still build).
 - A model run accepts only `--force --mesh-tolerance --mesh-angular-tolerance --verbose --json`;
   anything else (`--totals`, a preview flag) is an argparse error — use `./cadtool show` / `python -c`.
