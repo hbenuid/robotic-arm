@@ -9,7 +9,8 @@ behaviour, layout or tooling gets an entry here; the commit hashes are on `main`
 An audit of the cycloidal drive's purchased parts found all 10 modelled ones consistent (module, occurrence,
 mass, reference, manifest — quantities match the spec), and one gap: the 4 arm-mount M4 bolts + 4 captive
 nuts (and grease) are bought but were tracked only in the doc's hand-written shopping list. The make/buy label
-already existed once per part (`COTS = True`); nothing used it. One commit: `f8b1c8d`.
+already existed once per part (`COTS = True`); nothing used it. Commits: `f8b1c8d`, then `8f23614` (the removal
+of the redundant arm view).
 
 ### Added — what to order, on every purchased part
 - The 15 COTS modules (+ `parts/_templates/cots.py`) declare `PURCHASE_SPEC`, `PURCHASE_QTY` (pieces per
@@ -26,17 +27,20 @@ already existed once per part (`COTS = True`); nothing used it. One commit: `f8b
   buy list, absent from the model, the totals and the inertials. `docs/cycloidal_drive.md` §9 now points at the
   command instead of retyping the list.
 
-### Added — `cad/assemblies/arm_make_buy.py`, `cycloidal_drive_make_buy.py`: the split in the viewer
-- Working views (the `arm_no_caps.py` precedent — not the robot / the module): the same leaves, poses and frame
-  under two nodes, `printed` / `bought`, flattened through the modules and tinted
-  (`_occurrences.make_buy_children()`, `MAKE_BUY_TINTS`; `place_world_at()` gained `inline=`). Hiding `bought` in
-  the viewer leaves what has to be printed. `arm.py`, `cycloidal_drive.py`, `robot/` and every total are untouched.
+### Added — `cad/assemblies/cycloidal_drive_make_buy.py`: the drive's split in the viewer
+- A working view (the `arm_no_caps.py` precedent — not the module): the drive's 18 rows, same poses and frame, under
+  two nodes, `printed` / `bought`, tinted (`_occurrences.make_buy_children()`, `MAKE_BUY_TINTS`;
+  `place_world_at()` gained `inline=`). Hiding `bought` in the viewer leaves what has to be printed. Needed because
+  the standalone `cycloidal_drive.step` links its parts and so stays uncoloured; `cycloidal_drive.py`, `robot/` and
+  every total are untouched.
+- `f8b1c8d` also added the same view of the whole arm (`arm_make_buy.py`); it was removed in `8f23614`: once
+  the arm itself shows purchased parts in grey (below) that second 17 MB arm STEP only duplicated it.
 
 ### Changed — the arm itself shows what was bought (`assemblies/_occurrences.py`, `arm.py`)
 - `grouped_children()` now tints through `_tint_parts()`: every purchased part, inside the gripper and the drive
   too, gets the one `BOUGHT_TINT` grey; printed parts keep their link / module colour. `base_link` moved from grey
   to brown so grey only ever means bought (`test_grey_means_bought`). `arm.step` and `arm_no_caps.step` change
-  colours only — same tree, leaves, solids, volume and bbox; the make/buy views share the colour.
+  colours only — same tree, leaves, solids, volume and bbox; the drive's make/buy view shares the colour.
 
 ### Added — `cad/tools/export_printables.py`: one STL per printed part
 - Writes `cad/print/<name>.stl` (git-ignored by the root `*.stl` rule; mm, part-local frame, 0.01 mm / 0.1 rad)
@@ -44,8 +48,9 @@ already existed once per part (`COTS = True`); nothing used it. One commit: `f8b
 
 ### Tests
 - `test_bom.py` (new, fast), `test_parts_convention.py` (the `PURCHASE_*` contract; a printed part declares
-  none), `test_assembly.py` (the two views: leaves / solids / volume / bbox equal to the models', every leaf under
-  the node its flag names, tinted), `test_lazy_kernel.py` (probes the two new models). Passed on the arm64 Mac;
+  none), `test_assembly.py` (grey is reserved for purchased parts, the arm's leaf colours; the drive's view: leaves /
+  solids / volume equal to the module's, every leaf under the node its flag names, tinted), `test_lazy_kernel.py`
+  (probes the new model). Passed on the arm64 Mac;
   the Fedora run is still owed.
 
 ## 2026-09-21 — a caps-off working view of the arm (branch `cad/arm-no-caps`)
