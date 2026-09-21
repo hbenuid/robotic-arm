@@ -1,13 +1,13 @@
 """The arm assembly rebuilt from parts + placements reproduces the SolidWorks totals, plus the
-code-driven cycloidal_drive module's own totals, the caps-off working view (arm_no_caps) and the two
-make/buy working views (arm_make_buy, cycloidal_drive_make_buy: the same leaves under printed / bought)."""
+code-driven cycloidal_drive module's own totals, the caps-off working view (arm_no_caps) and the drive's
+make/buy working view (cycloidal_drive_make_buy: the same leaves under printed / bought)."""
 import pathlib
 
 import pytest
 from build123d import Color, Location, Vector
 
 import parts
-from assemblies import arm, arm_make_buy, arm_no_caps, cycloidal_drive, cycloidal_drive_make_buy, gripper
+from assemblies import arm, arm_no_caps, cycloidal_drive, cycloidal_drive_make_buy, gripper
 from assemblies._occurrences import BOUGHT_TINT, MAKE_BUY_TINTS
 from lib.models import raw
 from lib import placements as P
@@ -108,7 +108,7 @@ def test_arm_groups_mirror_links():
 
 def test_grey_means_bought():
     """BOUGHT_TINT is reserved for the purchased parts: no link group or module may be tinted with it
-    (base_link used to be grey), and the make/buy views use the same color for their 'bought' node."""
+    (base_link used to be grey), and the drive's make/buy view uses the same color for its 'bought' node."""
     tints = [tint for _, tint, _ in arm.GROUPS] + list(arm.MODULE_TINTS.values()) + [MAKE_BUY_TINTS["printed"]]
     assert BOUGHT_TINT.lower() not in {t.lower() for t in tints}
     assert len({t.lower() for t in tints}) == len(tints), "two groups / modules share a tint"
@@ -183,7 +183,7 @@ def test_arm_no_caps_builds_the_arm_without_its_caps():
 
 
 def _check_make_buy_nodes(root, n_leaves):
-    """The two nodes of a make/buy view: every leaf sits under the node its part's COTS flag names
+    """The two nodes of the make/buy view: every leaf sits under the node its part's COTS flag names
     (parts.bought()) and carries that node's tint; returns the leaf labels."""
     assert [c.label for c in root.children] == list(MAKE_BUY_TINTS) == ["printed", "bought"]
     labels = []
@@ -198,8 +198,7 @@ def _check_make_buy_nodes(root, n_leaves):
     return labels
 
 
-def test_make_buy_views_end_with_their_build_call():
-    assert runs_its_model(pathlib.Path(arm_make_buy.__file__), "arm_make_buy")
+def test_make_buy_view_ends_with_its_build_call():
     assert runs_its_model(pathlib.Path(cycloidal_drive_make_buy.__file__), "cycloidal_drive_make_buy")
 
 
@@ -212,19 +211,3 @@ def test_cycloidal_drive_make_buy_is_the_drive_sorted_by_the_cots_flag():
     assert len(d.solids()) == DRIVE["solids"]
     assert abs(R.solid_volume(d) - DRIVE["solid_volume"]) <= 0.5
     assert d.is_valid
-
-
-@pytest.mark.slow
-def test_arm_make_buy_is_the_arm_sorted_by_the_cots_flag():
-    """Same leaves, totals and base_link-frame bounding box as arm.arm() - only the tree (printed /
-    bought instead of the links, modules flattened) and the tints differ."""
-    a = raw(arm_make_buy.arm_make_buy)
-    assert a.label == "arm_make_buy"
-    labels = _check_make_buy_nodes(a, EXPECTED["leaf_occurrences"] + DRIVE["leaves"])
-    assert sorted(labels) == sorted(leaf.label for leaf in _leaves(raw(arm.arm)))
-    assert len(a.solids()) == EXPECTED["solids"] + DRIVE["solids"] == 108
-    assert abs(R.solid_volume(a) - (EXPECTED["solid_volume"] + DRIVE["solid_volume"])) <= 0.5
-    exp_min, exp_size = _expected_bbox()
-    assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_min(a), exp_min)), (R.bbox_min(a), exp_min)
-    assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_size(a), exp_size)), (R.bbox_size(a), exp_size)
-    assert a.is_valid

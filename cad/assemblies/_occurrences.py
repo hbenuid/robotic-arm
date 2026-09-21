@@ -79,7 +79,7 @@ def _tint(shape, color: bd.Color) -> None:
 
 
 # The one color of a PURCHASED part (parts.bought(): COTS = True) wherever an assembly tints its
-# leaves - the arm's link GROUPS and the make/buy views. No group / module tint may reuse it.
+# leaves - the arm's link GROUPS and the drive's make/buy view. No group / module tint may reuse it.
 BOUGHT_TINT = "#9AA0A6"
 
 
@@ -106,10 +106,10 @@ def grouped_children(rows, groups, modules: dict | None = None,
     distinct inside their group); every PURCHASED part, inside the modules too, gets BOUGHT_TINT
     (_tint_parts) - so the assembly shows at a glance what was bought. Tints overwrite
     imported-STEP colors on the per-build copies only — standalone part/module previews are
-    untouched. Because of the tints the
-    members are INLINE copies (geometry(..., inline=True)): inside a cadgen build the child models
-    are still called - pinned, rebuilt in parallel, their committed STEPs rewritten when stale -
-    but the assembly's STEP carries its own recoloured geometry instead of links.
+    untouched. Because of the tints the members are INLINE copies (geometry(..., inline=True)):
+    inside a cadgen build the child models are still called - pinned, rebuilt in parallel, their
+    committed STEPs rewritten when stale - but the assembly's STEP carries its own recoloured
+    geometry instead of links.
 
     `root` (placements' parent frame -> output frame) re-expresses the whole assembly in another
     frame by composing into every occurrence's placement (root * rel). It has to go there: cadgen's
@@ -198,27 +198,26 @@ def place_world_at(part_name: str, world: bd.Location, into=None, *, inline: boo
     """parts.model(part_name) at a WORLD placement of its reference frame, optionally
     re-expressed in another frame (`into` = that frame's world Location, so the result is
     `into^-1 * world * LOCAL_FROM_REF^-1 * local`). Used for per-link meshes and, as `inline`
-    copies (they get tinted), for the make/buy views."""
+    copies (they get tinted), for the drive's make/buy view."""
     loc = world * _local_from_ref(part_name).inverse()
     if into is not None:
         loc = into.inverse() * loc
     return _part(part_name, inline=inline).moved(loc)
 
 
-# The make/buy views (assemblies/arm_make_buy.py, cycloidal_drive_make_buy.py): node label -> tint.
+# The make/buy view of the drive (assemblies/cycloidal_drive_make_buy.py): node label -> tint.
 MAKE_BUY_TINTS = {"printed": "#E8833A", "bought": BOUGHT_TINT}
 
 
-def make_buy_children(rows, into=None) -> list:
+def make_buy_children(rows) -> list:
     """(part, role|None, placement Location of the part's reference frame) rows as the two nodes
     'printed' / 'bought' (parts.bought(part): the module declares COTS = True), every leaf tinted with
     its node's MAKE_BUY_TINTS color - so a viewer tells them apart and hides either in one click.
-    Inline copies, like the arm's tinted GROUPS: a tint does not survive a linked child. `into`
-    re-expresses the placements in another frame (place_world_at)."""
+    Inline copies, like the arm's tinted GROUPS: a tint does not survive a linked child."""
     members = {node: [] for node in MAKE_BUY_TINTS}
     for name, role, loc in rows:
         node = "bought" if parts.bought(name) else "printed"
-        shape = label_shape(place_world_at(name, loc, into, inline=True), name, *_details(role))
+        shape = label_shape(place_world_at(name, loc, inline=True), name, *_details(role))
         _tint(shape, bd.Color(MAKE_BUY_TINTS[node]))
         members[node].append(shape)
     return [assembly(node, shapes, color=bd.Color(MAKE_BUY_TINTS[node])) for node, shapes in members.items()]

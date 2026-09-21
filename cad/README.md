@@ -55,7 +55,7 @@ Chromium. cadgen makes hard cutovers: 0.5 had **no compatibility with 0.4** (202
 | `./cadtool gen parts/<group>/<name>.py` (alias `step`) | **run the model script**: writes `parts/<group>/<name>.step` beside it (git-ignored); a second run prints `current …` (freshness gate), `--force` rebuilds |
 | `./cadtool gen assemblies/arm.py` | build `assemblies/arm.step` (git-ignored) — calls every part model, so each stale part is rebuilt (in parallel) and its STEP rewritten |
 | `./cadtool gen assemblies/arm_no_caps.py` | build `assemblies/arm_no_caps.step` — the same arm without `j1_cap`, `j2_cap_1`, `j2_cap_2` (a working view for the links under them; `arm.step` stays the robot). One-off image instead: `./cadtool snapshot assemblies/arm.step out.png --hide '#j1_cap' --hide '#j2_cap_1' --hide '#j2_cap_2'` |
-| `./cadtool gen assemblies/arm_make_buy.py` (`cycloidal_drive_make_buy.py`) | build the **printed vs. bought** working views: the same leaves under two nodes, `printed` / `bought` (`COTS = True`), each in its own colour — hide `bought` in the viewer to see what has to be printed. `arm.step` / `cycloidal_drive.step` stay the models |
+| `./cadtool gen assemblies/cycloidal_drive_make_buy.py` | build the drive's **printed vs. bought** working view: its 18 rows under two nodes, `printed` / `bought` (`COTS = True`), each in its own colour — hide `bought` in the viewer to see what has to be printed. `cycloidal_drive.step` stays the module; the arm needs no such view (`arm.step` already shows purchased parts in grey) |
 | `./cadtool python tools/bom.py [--module cycloidal_drive\|gripper] [--md\|--json]` | the **print list** and the **buy list** (what to order, pieces, mass), generated from the assembly tables + each part's `COTS` flag; ends with the purchased items that are not modelled (`EXTRAS`). No CAD kernel, instant |
 | `./cadtool python tools/export_printables.py [--parts …]` | one STL per **printed** part into `print/` (git-ignored; mm, part-local frame) with the quantity to print; bought parts are refused |
 | `./cadtool why <model.py>` | why the model is current or stale, clause by clause (`cadgen store why`) |
@@ -117,7 +117,6 @@ cad/
 ├── assemblies/
 │   ├── arm.py             # the whole arm, grouped arm -> base_link/shoulder_link/upper_arm_link/forearm_link/wrist_pitch_link/wrist (GROUPS; 52 leaves, printed parts tinted per group, purchased parts grey)
 │   ├── arm_no_caps.py     # working view: arm.py's tables minus HIDDEN (the three link caps) - 49 leaves, not the robot
-│   ├── arm_make_buy.py    # working view: the arm's 52 leaves under printed / bought (parts.bought()), tinted - not the robot
 │   ├── cycloidal_drive_make_buy.py  # working view: the drive's 18 rows under printed / bought, tinted - not the module
 │   ├── gripper.py         # the gripper mechanism module (19 occurrences, placed from placements.json)
 │   ├── cycloidal_drive.py # the drive module (18 rows placed from lib/cycloidal stack_positions - code-driven)
@@ -230,9 +229,9 @@ stages, not make/buy:
 - **Colours, in the arm itself** — `assemblies/arm.py` (and `arm_no_caps.py`) tint every purchased part with the one
   `_occurrences.BOUGHT_TINT` grey, inside the gripper and the drive too; a printed part carries its link's (or its
   module's) colour. Grey always means bought — no link or module tint reuses it.
-- **Colours, as a tree** — `assemblies/arm_make_buy.py` and `assemblies/cycloidal_drive_make_buy.py` are working views
-  (not the robot / the module): the same leaves under `printed` and `bought`, tinted with
-  `_occurrences.MAKE_BUY_TINTS`, so the viewer hides either side in one click.
+- **Colours, the drive on its own** — `cycloidal_drive.step` links its parts and so stays uncoloured;
+  `assemblies/cycloidal_drive_make_buy.py` is a working view of it (not the module): the same 18 rows under
+  `printed` and `bought`, tinted with `_occurrences.MAKE_BUY_TINTS`, so the viewer hides either side in one click.
 - **STLs** — `./cadtool python tools/export_printables.py` writes `print/<name>.stl` for every printed part.
 
 ## Assembly

@@ -34,7 +34,7 @@ robotic-arm repo; the root motor-control project never depends on it.
   else generated from it: `./cadtool python tools/bom.py [--module cycloidal_drive|gripper] [--md|--json]` (print
   list + buy list from the assembly tables, kernel-free; its `EXTRAS` = purchased items with no geometry),
   `./cadtool python tools/export_printables.py [--parts …]` (`print/<name>.stl` per printed part, git-ignored, mm,
-  part-local frame), and the two make/buy views (see Assembly).
+  part-local frame), the arm's grey purchased parts and the drive's make/buy view (see Assembly).
 - `./cadtool export <file.step> stl|3mf|glb [out]` — one mesh file per call from a document
   (`node` ≥ 20 on `PATH`; relative `--mesh-tolerance`, default 1.5e-3 of the bounding diagonal).
 - `./cadtool inspect <file.step> [--planes] [--json]` (leaf refs, solids, faces, volume, bbox; `--planes` = the
@@ -239,15 +239,15 @@ Changing a shared dimension — touchpoints in order:
   `j2_link`, `./cadtool gen assemblies/arm.py` + snapshot too. For a one-off image no model is needed:
   `./cadtool snapshot assemblies/arm.step out.png --hide '#j1_cap' --hide '#j2_cap_1' --hide '#j2_cap_2'`
   (label refs; STEP input only, not with `--render` / `--focus`; the viewer has no `?hide=` parameter).
-- `assemblies/arm_make_buy.py` / `cycloidal_drive_make_buy.py` are **working views, not the robot / the module**: the
-  same leaves (52 / 18), poses and frame, but the tree is `printed` / `bought` (`parts.bought()` — the arm itself
-  already shows bought parts in grey; these views add the one-click hide and color the standalone drive), flattened (the
-  gripper's and the drive's parts sit directly under the two nodes — `world_rows` for the drive, the gripper table's
-  `world` placements) and tinted with `_occurrences.MAKE_BUY_TINTS` by `make_buy_children()` — inline copies, for
-  the same reason as the arm's tints. Rows are derived from `arm.py` / `cycloidal_drive.py`, never retyped; never
-  feed them to `robot/` or the totals. A purchased item that is **not modelled** (the drive's 4 arm-mount bolts + 4
-  captive nuts, grease) lives only in `tools/bom.py EXTRAS` — it is on the buy list and absent from the model, the
-  totals and the inertials; model it as a COTS pattern part (`cycloidal_housing_bolts` is the pattern) to change that.
+- `assemblies/cycloidal_drive_make_buy.py` is a **working view, not the module**: `cycloidal_drive.py`'s 18 rows
+  (derived, never retyped), same poses and module frame, under two nodes `printed` / `bought` (`parts.bought()`) tinted
+  with `_occurrences.MAKE_BUY_TINTS` by `make_buy_children()` — inline copies, for the same reason as the arm's tints
+  (the standalone `cycloidal_drive.step` links its parts and so stays uncoloured). Never feed it to `robot/` or the
+  totals. The ARM needs no such view — it shows purchased parts in grey itself (next bullet); an `arm_make_buy` model
+  existed for one commit (`f8b1c8d`) and was removed as redundant. A purchased item that is **not modelled** (the
+  drive's 4 arm-mount bolts + 4 captive nuts, grease) lives only in `tools/bom.py EXTRAS` — it is on the buy list and
+  absent from the model, the totals and the inertials; model it as a COTS pattern part (`cycloidal_housing_bolts` is
+  the pattern) to change that.
 - `arm.py GROUPS` buckets the occurrences into the component tree
   `arm → base_link/shoulder_link/upper_arm_link/forearm_link/wrist_pitch_link/wrist` — the
   `robot/frames.py LINKS` partition with the two modules kept whole (`wrist` = wrist_roll_link + jaw
@@ -313,8 +313,9 @@ Changing a shared dimension — touchpoints in order:
 every part, COTS envelopes + vendor frames), `test_reference_match.py` (manifest checksums; converted
 parts vs reference), `test_placements.py` (JSON integrity, tables cover every key once, the designed
 module record), `test_assembly.py` (34 + 18 leaves / 50 + 58 solids / volume / bbox vs SolidWorks + the
-module lock; `arm_no_caps` = the arm's tables minus `HIDDEN`, 49 leaves / 105 solids; the two make/buy views = the
-same leaves and totals, every leaf under the node its `COTS` flag names, tinted), `test_bom.py` (the print / buy lists
+module lock; `arm_no_caps` = the arm's tables minus `HIDDEN`, 49 leaves / 105 solids; the arm's leaf colours -
+purchased = `BOUGHT_TINT`, which no group / module may reuse; the drive's make/buy view = the module's leaves and
+totals, every leaf under the node its `COTS` flag names, tinted), `test_bom.py` (the print / buy lists
 partition `parts.names()` by the flag, 34 + 18 occurrences, the drive's pieces follow `DEFAULT_CONFIG`, `EXTRAS`
 well-formed), `test_params_invariants.py` (locks), `test_robot.py` (link partition, frames, FK at
 zero = capture, meshes, inertials, URDF/SRDF/SDF consistency + cadgen's validators via
