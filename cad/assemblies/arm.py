@@ -84,7 +84,7 @@ GROUPS = [
     ("wrist_pitch_link", "#55A868", ("gt2_pulley_90t#2", "j3_coupler#2", "wrist_link#1", "gripper_clamp_bracket#1", "nema17_pancake#1")),
     ("wrist",            "#8172B3", ("gt2_pulley_20t#1", GRIPPER_KEY)),
 ]
-MODULE_TINTS = {DRIVE_KEY: "#C44E52", GRIPPER_KEY: "#64B5CD"}  # the named modules stay distinct in their group
+MODULE_TINTS = {DRIVE_KEY: cycloidal_drive.TINT, GRIPPER_KEY: gripper.TINT}  # the modules keep their own color in their group
 
 
 @step

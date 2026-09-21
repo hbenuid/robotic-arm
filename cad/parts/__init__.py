@@ -52,7 +52,7 @@ def load(name: str) -> ModuleType:
 
 def bought(name: str) -> bool:
     """True for a purchased part (the module declares COTS = True), False for a printed one - the one
-    make/buy label the lists (tools/bom.py), the assemblies' tints and the STL export read."""
+    make/buy label the lists (tools/bom.py), the assemblies' colors and the STL export read."""
     return bool(getattr(load(name), "COTS", False))
 
 

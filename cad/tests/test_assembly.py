@@ -1,14 +1,14 @@
 """The arm assembly rebuilt from parts + placements reproduces the SolidWorks totals, plus the
-code-driven cycloidal_drive module's own totals, the caps-off working view (arm_no_caps) and the drive's
-make/buy working view (cycloidal_drive_make_buy: the same leaves under printed / bought)."""
+code-driven cycloidal_drive module's own totals, the caps-off working view (arm_no_caps) and the colors:
+in every assembly a purchased part is BOUGHT_TINT grey, a printed one its link's / module's tint."""
 import pathlib
 
 import pytest
 from build123d import Color, Location, Vector
 
 import parts
-from assemblies import arm, arm_no_caps, cycloidal_drive, cycloidal_drive_make_buy, gripper
-from assemblies._occurrences import BOUGHT_TINT, MAKE_BUY_TINTS
+from assemblies import arm, arm_no_caps, cycloidal_drive, gripper
+from assemblies._occurrences import BOUGHT_TINT
 from lib.models import raw
 from lib import placements as P
 from lib import reference as R
@@ -24,6 +24,17 @@ def _leaves(node):
 
 def _same_color(shape, tint: str) -> bool:
     return all(abs(x - y) < 1e-6 for x, y in zip(tuple(shape.color), tuple(Color(tint))))
+
+
+def _check_module_tints(module, tint):
+    """A standalone module: purchased parts BOUGHT_TINT, printed parts the module's TINT; returns the
+    bought / printed leaf counts."""
+    seen = {True: 0, False: 0}
+    for leaf in _leaves(module):
+        bought = parts.bought(leaf.label.split(":")[0])
+        assert _same_color(leaf, BOUGHT_TINT if bought else tint), f"{module.label}/{leaf.label}: {tuple(leaf.color)}"
+        seen[bought] += 1
+    return seen
 
 
 def _check_link_tints(root):
@@ -69,6 +80,7 @@ def test_gripper_module_builds():
     assert g.label == "gripper"
     assert len(_leaves(g)) == len(gripper.OCCURRENCES) == 19
     assert g.is_valid
+    assert _check_module_tints(g, gripper.TINT) == {True: 4, False: 15}   # servo, horn, 2 rails
 
 
 @pytest.mark.slow
@@ -79,6 +91,7 @@ def test_cycloidal_drive_module_builds():
     assert len(d.solids()) == DRIVE["solids"]
     assert abs(R.solid_volume(d) - DRIVE["solid_volume"]) <= 0.5
     assert d.is_valid
+    assert _check_module_tints(d, cycloidal_drive.TINT) == {True: 12, False: 6}
 
 
 def test_arm_groups_mirror_links():
@@ -108,11 +121,11 @@ def test_arm_groups_mirror_links():
 
 def test_grey_means_bought():
     """BOUGHT_TINT is reserved for the purchased parts: no link group or module may be tinted with it
-    (base_link used to be grey), and the drive's make/buy view uses the same color for its 'bought' node."""
-    tints = [tint for _, tint, _ in arm.GROUPS] + list(arm.MODULE_TINTS.values()) + [MAKE_BUY_TINTS["printed"]]
+    (base_link used to be grey); the two modules are the same color standalone and in the arm."""
+    tints = [tint for _, tint, _ in arm.GROUPS] + list(arm.MODULE_TINTS.values())
     assert BOUGHT_TINT.lower() not in {t.lower() for t in tints}
     assert len({t.lower() for t in tints}) == len(tints), "two groups / modules share a tint"
-    assert MAKE_BUY_TINTS["bought"] == BOUGHT_TINT
+    assert arm.MODULE_TINTS == {arm.DRIVE_KEY: cycloidal_drive.TINT, arm.GRIPPER_KEY: gripper.TINT}
 
 
 def test_arm_is_emitted_z_up():
@@ -180,34 +193,3 @@ def test_arm_no_caps_builds_the_arm_without_its_caps():
     assert abs(R.solid_volume(a) - volume) <= 0.5
     assert a.is_valid
     assert _check_link_tints(a) == {True: 18, False: 34 - len(arm_no_caps.HIDDEN)}   # the caps are printed
-
-
-def _check_make_buy_nodes(root, n_leaves):
-    """The two nodes of the make/buy view: every leaf sits under the node its part's COTS flag names
-    (parts.bought()) and carries that node's tint; returns the leaf labels."""
-    assert [c.label for c in root.children] == list(MAKE_BUY_TINTS) == ["printed", "bought"]
-    labels = []
-    for node in root.children:
-        assert node.children, f"{root.label}: empty {node.label} node"
-        for leaf in _leaves(node):
-            part = leaf.label.split(":")[0]
-            assert parts.bought(part) == (node.label == "bought"), f"{leaf.label} under {node.label}"
-            assert _same_color(leaf, MAKE_BUY_TINTS[node.label]), leaf.label
-            labels.append(leaf.label)
-    assert len(labels) == n_leaves and len(set(labels)) == n_leaves, labels
-    return labels
-
-
-def test_make_buy_view_ends_with_its_build_call():
-    assert runs_its_model(pathlib.Path(cycloidal_drive_make_buy.__file__), "cycloidal_drive_make_buy")
-
-
-@pytest.mark.slow
-def test_cycloidal_drive_make_buy_is_the_drive_sorted_by_the_cots_flag():
-    d = raw(cycloidal_drive_make_buy.cycloidal_drive_make_buy)
-    assert d.label == "cycloidal_drive_make_buy"
-    labels = _check_make_buy_nodes(d, DRIVE["leaves"])
-    assert sorted(labels) == sorted(leaf.label for leaf in _leaves(raw(cycloidal_drive.cycloidal_drive)))
-    assert len(d.solids()) == DRIVE["solids"]
-    assert abs(R.solid_volume(d) - DRIVE["solid_volume"]) <= 0.5
-    assert d.is_valid

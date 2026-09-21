@@ -39,7 +39,7 @@ own) — rules in `cad/CLAUDE.md` "Two machines". Scripts must run on macOS's ba
   conversion workflow and the reference-match tests: `cad/CLAUDE.md`.
 - Printed vs. bought is one label per part — `COTS = True` in the part module = bought, anything else = printed
   (`parts.bought(name)`); the print list, the buy list (`./cadtool python tools/bom.py`), the grey of purchased parts
-  in `arm.step` (+ the drive's `assemblies/cycloidal_drive_make_buy.py` view) and the STL export (`tools/export_printables.py` → git-ignored `cad/print/`) are all
+  in `arm.step` / `gripper.step` / `cycloidal_drive.step` (one STEP per assembly, never a make/buy copy) and the STL export (`tools/export_printables.py` → git-ignored `cad/print/`) are all
   generated from it. Never sort parts into make/buy folders or keep a second list by hand.
 - The 20:1 cycloidal shoulder drive was imported from the `cycloidal_drive` repo (history kept
   via a subtree merge) and ported to build123d: `cad/lib/cycloidal/`, `cad/parts/cycloidal/`,

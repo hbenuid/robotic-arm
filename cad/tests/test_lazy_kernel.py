@@ -21,8 +21,7 @@ def loaded():
 
 modules = [f"parts._templates.{p.stem}" for p in sorted(pathlib.Path("parts/_templates").glob("*.py")) if p.stem != "__init__"]
 modules += [parts.load(name).__name__ for name in parts.names()]
-modules += ["assemblies.gripper", "assemblies.cycloidal_drive", "assemblies.arm", "assemblies.arm_no_caps",
-            "assemblies.cycloidal_drive_make_buy"]
+modules += ["assemblies.gripper", "assemblies.cycloidal_drive", "assemblies.arm", "assemblies.arm_no_caps"]
 modules += [f"robot.links.{p.stem}" for p in sorted(pathlib.Path("robot/links").glob("*.py")) if p.stem != "__init__"]
 assert not loaded(), f"the parts index itself loaded {loaded()}"
 for name in modules:

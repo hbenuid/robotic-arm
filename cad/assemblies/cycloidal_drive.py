@@ -24,6 +24,10 @@ from lib.cycloidal import DEFAULT_CONFIG, stack_positions
 
 S = stack_positions(DEFAULT_CONFIG)
 
+# The color of the drive's PRINTED parts, here and in the arm (arm.py MODULE_TINTS); its purchased
+# parts are _occurrences.BOUGHT_TINT grey in both.
+TINT = "#C44E52"
+
 
 def _at(x: float = 0.0, z: float = 0.0) -> tuple[float, float, float]:
     return (x, 0.0, z)
@@ -78,8 +82,9 @@ EXPECTED = {
 
 @step
 def cycloidal_drive():
-    """The drive as a labelled Compound 'cycloidal_drive' in the module frame."""
-    return assembly("cycloidal_drive", located_children(OCCURRENCES))
+    """The drive as a labelled Compound 'cycloidal_drive' in the module frame: printed parts TINT,
+    purchased parts BOUGHT_TINT grey."""
+    return assembly("cycloidal_drive", located_children(OCCURRENCES, tint=TINT))
 
 
 def totals(body: str | None = None):

@@ -54,11 +54,12 @@ def _details(role) -> tuple:
     return () if role is None else (role,)
 
 
-def occurrence_children(rows, modules: dict | None = None) -> list:
+def occurrence_children(rows, modules: dict | None = None, tint: str | None = None) -> list:
     """Every row of an OCCURRENCES table as a placed, labelled child (for lib.assembly.assembly()).
 
     `modules` maps a module name to its MODEL (a zero-arg cadgen model returning the module
-    Compound in its own frame); it is moved to the module's placement key."""
+    Compound in its own frame); it is moved to the module's placement key. With `tint` the module
+    is colored like the arm: printed parts `tint`, purchased parts BOUGHT_TINT (_tint_parts)."""
     modules = modules or {}
     children = []
     for name, role, key in rows:
@@ -66,6 +67,9 @@ def occurrence_children(rows, modules: dict | None = None) -> list:
             children.append(label_shape(geometry(modules[name]).moved(P.location(key, "rel")), name))
         else:
             children.append(label_shape(place(name, key), name, *_details(role)))
+    if tint is not None:
+        for child in children:
+            _tint_parts(child, bd.Color(tint))
     return children
 
 
@@ -79,7 +83,7 @@ def _tint(shape, color: bd.Color) -> None:
 
 
 # The one color of a PURCHASED part (parts.bought(): COTS = True) wherever an assembly tints its
-# leaves - the arm's link GROUPS and the drive's make/buy view. No group / module tint may reuse it.
+# leaves - the arm's link GROUPS, the gripper and the drive. No group / module tint may reuse it.
 BOUGHT_TINT = "#9AA0A6"
 
 
@@ -145,9 +149,14 @@ def place_at(part_name: str, loc: bd.Location):
     return _part(part_name).moved(loc * _local_from_ref(part_name).inverse())
 
 
-def located_children(rows) -> list:
-    """Every (part, role|None, position) row of a code-driven module table as a placed, labelled child."""
-    return [label_shape(place_at(name, bd.Location(tuple(pos))), name, *_details(role)) for name, role, pos in rows]
+def located_children(rows, tint: str | None = None) -> list:
+    """Every (part, role|None, position) row of a code-driven module table as a placed, labelled child.
+    With `tint` the module is colored like the arm: printed parts `tint`, purchased parts BOUGHT_TINT."""
+    children = [label_shape(place_at(name, bd.Location(tuple(pos))), name, *_details(role)) for name, role, pos in rows]
+    if tint is not None:
+        for child in children:
+            _tint_parts(child, bd.Color(tint))
+    return children
 
 
 def module_rows(module_name: str) -> list:
@@ -194,33 +203,14 @@ def world_rows(key: str) -> list:
     return [(part, role, world * bd.Location(tuple(pos))) for part, role, pos in rows]
 
 
-def place_world_at(part_name: str, world: bd.Location, into=None, *, inline: bool = False):
+def place_world_at(part_name: str, world: bd.Location, into=None):
     """parts.model(part_name) at a WORLD placement of its reference frame, optionally
     re-expressed in another frame (`into` = that frame's world Location, so the result is
-    `into^-1 * world * LOCAL_FROM_REF^-1 * local`). Used for per-link meshes and, as `inline`
-    copies (they get tinted), for the drive's make/buy view."""
+    `into^-1 * world * LOCAL_FROM_REF^-1 * local`). Used for per-link meshes."""
     loc = world * _local_from_ref(part_name).inverse()
     if into is not None:
         loc = into.inverse() * loc
-    return _part(part_name, inline=inline).moved(loc)
-
-
-# The make/buy view of the drive (assemblies/cycloidal_drive_make_buy.py): node label -> tint.
-MAKE_BUY_TINTS = {"printed": "#E8833A", "bought": BOUGHT_TINT}
-
-
-def make_buy_children(rows) -> list:
-    """(part, role|None, placement Location of the part's reference frame) rows as the two nodes
-    'printed' / 'bought' (parts.bought(part): the module declares COTS = True), every leaf tinted with
-    its node's MAKE_BUY_TINTS color - so a viewer tells them apart and hides either in one click.
-    Inline copies, like the arm's tinted GROUPS: a tint does not survive a linked child."""
-    members = {node: [] for node in MAKE_BUY_TINTS}
-    for name, role, loc in rows:
-        node = "bought" if parts.bought(name) else "printed"
-        shape = label_shape(place_world_at(name, loc, inline=True), name, *_details(role))
-        _tint(shape, bd.Color(MAKE_BUY_TINTS[node]))
-        members[node].append(shape)
-    return [assembly(node, shapes, color=bd.Color(MAKE_BUY_TINTS[node])) for node, shapes in members.items()]
+    return _part(part_name).moved(loc)
 
 
 def place_world(part_name: str, key: str, into=None):
