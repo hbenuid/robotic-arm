@@ -4,6 +4,20 @@ Dated record of notable changes to this repository (newest first). Every commit 
 behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
 `cad-setup` working branch was fast-forward-only and has been retired).
 
+## 2026-09-21 — `./cadtool daemon stop` did nothing on the Mac (branch `cad/daemon-stop-macos`)
+
+### Fixed — `cad/cadtool`: the daemon's process pattern knew only `python3` (`ef3abb3`)
+- `daemon stop` greps the process list for `<cad>/.venv/bin/python3 -m cadgen.daemon`. On the arm64 Mac the venv's
+  `python3` is a symlink to `python` and the daemon runs as `.venv/bin/python -m cadgen.daemon`, so the command
+  printed "no cadgen daemon running for this venv" and left the daemon and its workers alive - with whatever code
+  they had loaded. The pattern is now `python[0-9.]*` (python, python3, python3.12), defined once and reused by
+  the `pgrep` and both `pkill`s. Found while cleaning up after the printed-vs-bought work: every `daemon stop` of
+  that session had been a no-op (its results stand - the rebuilds picked the changes up, the 41 part STEPs matched
+  their checksums and the tests build in-process).
+- Verified on the Mac: a forced build starts the daemon + 3 workers, `daemon stop` ends all four, a second stop
+  reports none. `tests/test_tooling.py` locks the pattern against both interpreter names (and against matching
+  another checkout's daemon). Linux behaviour is unchanged by construction; the Fedora run is still owed.
+
 ## 2026-09-21 — printed vs. bought: lists, colours and STLs from the one `COTS` label (branch `cad/printed-vs-bought`)
 
 An audit of the cycloidal drive's purchased parts found all 10 modelled ones consistent (module, occurrence,
