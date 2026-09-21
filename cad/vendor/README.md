@@ -1,6 +1,6 @@
 # vendor/ — purchased-part STEP files (current best model per part)
 
-**Last updated:** 2026-09-18 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-21 — see the root `CHANGELOG.md` for dated changes.
 
 **Purpose:** the geometry each `COTS = True` part in `parts/<group>/` imports. Committed via the
 `!/cad/vendor/*.step` gitignore exception as Git LFS objects (not regenerable from Python). Unlike
@@ -30,6 +30,10 @@ skips them):
 | `parts/cycloidal/bearing_6814.py` | no 6814 / 61814 entry in the catalog (search and direct ids 404) |
 | `parts/cycloidal/nema17_48mm.py` | `stepper_motor_nema17_l0048_single_shaft` **tried and rejected**: 42.3² × 48 body but a 14.8 mm shaft — the drive needs the 22 mm D-shaft (13 mm engagement past the 9 mm plate) |
 | `cycloidal_ring_pins`, `cycloidal_output_pins`, `cycloidal_shaft_support_pin`, `cycloidal_motor_bolts`, `cycloidal_housing_bolts`, `cycloidal_housing_nuts` | pattern parts (21 / 4 / 1 / 4 / 8 / 8 solids); the catalog has single fasteners only |
+
+What to **order** for each purchased part is not here: it is `PURCHASE_SPEC` / `PURCHASE_QTY` /
+`PURCHASE_NOTE` in the part module, printed as the buy list by `./cadtool python tools/bom.py` (which also
+lists the purchased items that have no geometry at all).
 
 ## Swapping in a catalog model
 ```bash

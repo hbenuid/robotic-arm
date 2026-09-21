@@ -18,6 +18,8 @@ from parts.cycloidal._cots import hybrid, pattern
 NAME = pathlib.Path(__file__).stem
 COTS = True
 MASS_G = CYCLOIDAL_MOTOR_BOLTS_MASS_G
+PURCHASE_SPEC = "M{0.bolt_dia:g} x {0.motor_bolt_thread_length:g} socket head cap screw (ISO 4762)".format(DEFAULT_CONFIG.motor)
+PURCHASE_QTY = len(motor_bolt_points())    # pieces per occurrence (the whole pattern)
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 

@@ -2,7 +2,9 @@
 reference/placements.json - 15 part occurrences + the gripper module (SolidWorks-driven)
 + the cycloidal_drive module (code-driven, placed at the SolidWorks node's pose) = 52 leaves,
 bucketed into the GROUPS component tree (arm -> base_link/shoulder_link/upper_arm_link/
-forearm_link/wrist_pitch_link/wrist) so each rigid link toggles as one node in the viewers:
+forearm_link/wrist_pitch_link/wrist) so each rigid link toggles as one node in the viewers. Colors: a PRINTED part carries its link's
+(or its module's) tint, every PURCHASED part (COTS = True - motors, servo, bearings, pins, bolts, nuts,
+rails, the 20T pulley) is _occurrences.BOUGHT_TINT grey, inside the two modules too:
 
     arm
     |- base_link         base
@@ -73,8 +75,9 @@ MODULES = {"gripper": gripper.gripper, "cycloidal_drive": cycloidal_drive.cycloi
 # The component tree: the rigid-link partition of robot/frames.py LINKS with the two modules
 # kept whole (wrist = wrist_roll_link + jaw_a_link + jaw_b_link; the drive under shoulder_link).
 # Rows are (group label, tint, occurrence keys in document order); tests lock the LINKS mirror.
+# The tints color the PRINTED parts; grey is reserved for the purchased ones (BOUGHT_TINT).
 GROUPS = [
-    ("base_link",        "#8C8C8C", ("base#1",)),
+    ("base_link",        "#937860", ("base#1",)),
     ("shoulder_link",    "#4C72B0", ("j1_coupler#1", DRIVE_KEY)),
     ("upper_arm_link",   "#CCB974", ("j1_link#1", "j1_cap#1")),
     ("forearm_link",     "#DD8452", ("gt2_pulley_90t#1", "j3_coupler#1", "j2_link#1", "j2_cap_1#1", "j2_cap_2#1")),
@@ -87,8 +90,8 @@ MODULE_TINTS = {DRIVE_KEY: "#C44E52", GRIPPER_KEY: "#64B5CD"}  # the named modul
 @step
 def arm():
     """The arm as a labelled Compound: 'arm' -> the GROUPS component nodes -> parts + the
-    'gripper' and 'cycloidal_drive' modules, each subtree tinted with its group's color, in the
-    base_link frame (Z up - arm_from_w())."""
+    'gripper' and 'cycloidal_drive' modules, printed parts tinted with their group's color and
+    purchased parts BOUGHT_TINT grey, in the base_link frame (Z up - arm_from_w())."""
     return assembly("arm", grouped_children(OCCURRENCES, GROUPS, MODULES, MODULE_TINTS, root=arm_from_w()))
 
 

@@ -16,10 +16,14 @@ import pathlib
 from cadgen import build123d as bd
 from cadgen import read_step, step
 from lib.datum import IDENTITY, to_location
+from lib.params import GT2_PULLEY_20T_TEETH
 
 NAME = pathlib.Path(__file__).stem
 COTS = True
 MASS_G = 8.0     # [ESTIMATE] aluminium 20T GT2 pulley, 6 mm bore, ~8-10 g
+PURCHASE_SPEC = f"GT2 {GT2_PULLEY_20T_TEETH}T timing pulley, 5 mm bore, 6 mm belt"
+PURCHASE_QTY = 1    # pieces per occurrence
+PURCHASE_NOTE = "bore and belt width read off the vendor model - confirm against the motor shaft"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 # Rigid transform vendor-file frame -> the SolidWorks frame placements.json assumes (identity while
 # vendor/<name>.step is the SolidWorks re-export; set it after swapping in a step.parts model).

@@ -20,6 +20,9 @@ from lib.datum import IDENTITY, to_location
 NAME = pathlib.Path(__file__).stem
 COTS = True
 MASS_G = 3.0     # [ESTIMATE] nylon horn
+PURCHASE_SPEC = "MG996R servo horn, single arm"
+PURCHASE_QTY = 1    # pieces per occurrence
+PURCHASE_NOTE = "ships with the servo - nothing extra to buy"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 # Rigid transform vendor-file frame -> the SolidWorks frame placements.json assumes (identity while
 # vendor/<name>.step is the SolidWorks re-export; set it after swapping in a step.parts model).

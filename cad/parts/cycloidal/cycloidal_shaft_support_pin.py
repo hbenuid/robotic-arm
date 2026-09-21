@@ -18,6 +18,8 @@ from parts.cycloidal._cots import hybrid, pattern
 NAME = pathlib.Path(__file__).stem
 COTS = True
 MASS_G = CYCLOIDAL_SUPPORT_PIN_MASS_G
+PURCHASE_SPEC = "{0.support_pin_dia:g} x {0.support_pin_length:g} mm h6 ground dowel pin".format(DEFAULT_CONFIG.shaft)
+PURCHASE_QTY = 1    # pieces per occurrence
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 

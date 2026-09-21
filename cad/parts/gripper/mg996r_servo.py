@@ -21,6 +21,8 @@ from lib.params import MG996R_MASS_G
 NAME = pathlib.Path(__file__).stem
 COTS = True
 MASS_G = MG996R_MASS_G   # [DATASHEET] 55 g
+PURCHASE_SPEC = "TowerPro MG996R servo"
+PURCHASE_QTY = 1    # pieces per occurrence
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 # Rigid transform vendor-file frame -> the SolidWorks frame placements.json assumes (identity while
 # vendor/<name>.step is the SolidWorks re-export; set it after swapping in a step.parts model).

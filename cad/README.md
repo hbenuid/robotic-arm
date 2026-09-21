@@ -55,6 +55,9 @@ Chromium. cadgen makes hard cutovers: 0.5 had **no compatibility with 0.4** (202
 | `./cadtool gen parts/<group>/<name>.py` (alias `step`) | **run the model script**: writes `parts/<group>/<name>.step` beside it (git-ignored); a second run prints `current …` (freshness gate), `--force` rebuilds |
 | `./cadtool gen assemblies/arm.py` | build `assemblies/arm.step` (git-ignored) — calls every part model, so each stale part is rebuilt (in parallel) and its STEP rewritten |
 | `./cadtool gen assemblies/arm_no_caps.py` | build `assemblies/arm_no_caps.step` — the same arm without `j1_cap`, `j2_cap_1`, `j2_cap_2` (a working view for the links under them; `arm.step` stays the robot). One-off image instead: `./cadtool snapshot assemblies/arm.step out.png --hide '#j1_cap' --hide '#j2_cap_1' --hide '#j2_cap_2'` |
+| `./cadtool gen assemblies/arm_make_buy.py` (`cycloidal_drive_make_buy.py`) | build the **printed vs. bought** working views: the same leaves under two nodes, `printed` / `bought` (`COTS = True`), each in its own colour — hide `bought` in the viewer to see what has to be printed. `arm.step` / `cycloidal_drive.step` stay the models |
+| `./cadtool python tools/bom.py [--module cycloidal_drive\|gripper] [--md\|--json]` | the **print list** and the **buy list** (what to order, pieces, mass), generated from the assembly tables + each part's `COTS` flag; ends with the purchased items that are not modelled (`EXTRAS`). No CAD kernel, instant |
+| `./cadtool python tools/export_printables.py [--parts …]` | one STL per **printed** part into `print/` (git-ignored; mm, part-local frame) with the quantity to print; bought parts are refused |
 | `./cadtool why <model.py>` | why the model is current or stale, clause by clause (`cadgen store why`) |
 | `./cadtool show <model.py>` | preview the model body in the OCP CAD Viewer VS Code extension (`ocp_vscode`) — no build, nothing written |
 | `./cadtool export <file.step> stl\|3mf\|glb [out]` | one mesh file per call from a STEP document (Node 20+; `--mesh-tolerance` is *relative*, default 1.5e-3 of the bounding diagonal) |
@@ -103,7 +106,7 @@ cad/
 │   ├── assembly.py        # assembly(name, children): the native labelled Compound node; label_shape / label_text from cadgen
 │   └── cycloidal/         # the cycloidal drive: DriveConfig (params.py), layout.py, profiles.py, housing.py, disc.py, geom.py
 ├── parts/                 # one part per file, grouped by subsystem; parts.names() / parts.load(name) discover them
-│   ├── __init__.py            # the directory scan: MODULES / GROUPS, names(), load(), model(), build(), source_of()
+│   ├── __init__.py            # the directory scan: MODULES / GROUPS, names(), load(), model(), build(), bought(), source_of()
 │   ├── _templates/            # designed.py (parametric), wrapper.py (import wrapper), cots.py (purchased) templates
 │   ├── base/                  # base, j1_coupler, j1_link, j1_cap                                  (SolidWorks wrappers)
 │   ├── joints/                # j2_link, j2_cap_1, j2_cap_2, j3_coupler, gt2_pulley_90t            (SolidWorks wrappers)
@@ -112,18 +115,21 @@ cad/
 │   └── cycloidal/             # the drive: 6 designed parts + 10 COTS (bearings, nema17_48mm, pins, bolts, nuts), _cots.py helper
 │       └── <name>.py + <name>.step   # every group: running the .py writes the .step beside it (git-ignored, per machine)
 ├── assemblies/
-│   ├── arm.py             # the whole arm, grouped arm -> base_link/shoulder_link/upper_arm_link/forearm_link/wrist_pitch_link/wrist (GROUPS; 52 leaves, tinted per group)
+│   ├── arm.py             # the whole arm, grouped arm -> base_link/shoulder_link/upper_arm_link/forearm_link/wrist_pitch_link/wrist (GROUPS; 52 leaves, printed parts tinted per group, purchased parts grey)
 │   ├── arm_no_caps.py     # working view: arm.py's tables minus HIDDEN (the three link caps) - 49 leaves, not the robot
+│   ├── arm_make_buy.py    # working view: the arm's 52 leaves under printed / bought (parts.bought()), tinted - not the robot
+│   ├── cycloidal_drive_make_buy.py  # working view: the drive's 18 rows under printed / bought, tinted - not the module
 │   ├── gripper.py         # the gripper mechanism module (19 occurrences, placed from placements.json)
 │   ├── cycloidal_drive.py # the drive module (18 rows placed from lib/cycloidal stack_positions - code-driven)
-│   └── _occurrences.py    # place()/occurrence_children()/grouped_children() (placement keys), place_at()/located_children() (Locations), world_rows() - children via lib.models.geometry()
+│   └── _occurrences.py    # place()/occurrence_children()/grouped_children() (placement keys), place_at()/located_children() (Locations), world_rows(), make_buy_children() - children via lib.models.geometry()
 ├── docs/cycloidal_drive.md  # the drive's spec, port notes and attachment
 ├── reference/             # immutable per-part reference STEPs (Git LFS) + manifest.json + placements.json + README
 │   ├── solidworks/            # the 25 SolidWorks exports (custom parts + the SolidWorks purchased parts)
 │   └── cycloidal/             # the 16 CadQuery exports the drive was ported from
 ├── vendor/                # purchased-part STEPs (committed via Git LFS; replaceable by better catalog models)
 ├── robot/                 # URDF / SRDF / SDF + per-link meshes and generators (see below)
-├── tools/                 # preview.py (./cadtool show), step_facts.py (./cadtool inspect), reference/{import_solidworks,extract_placements}.py (SolidWorks),
+├── print/                 # git-ignored: one STL per printed part (tools/export_printables.py)
+├── tools/                 # preview.py (./cadtool show), step_facts.py (./cadtool inspect), bom.py (print list + buy list), export_printables.py, reference/{import_solidworks,extract_placements}.py (SolidWorks),
 │                          # cycloidal/{export_cadquery,import_cadquery}.py (the drive's references), robot/{derive,export_link_meshes}.py
 ├── tests/                 # pytest: conventions, reference match, placements, assembly totals, params locks, robot description, package layering;
 │   ├── conftest.py            # CADGEN_DAEMON=0 + a guard that fails any test calling a model at top level (tests call bodies)
@@ -170,7 +176,9 @@ links; code never imports a part statically but goes through `parts.load(name)` 
   ported from — the strict `tests/cycloidal/test_port.py` checks them beyond the reference match;
 - **COTS parts** declare `COTS = True`, `MASS_G`, `VENDOR_STEP` and `VENDOR_TO_REF`, and the model
   returns the vendor STEP (`cadgen.read_step` — a tracked input, so swapping the file makes the part
-  stale — re-oriented by `VENDOR_TO_REF`) when present, else a parametric `_envelope()`.
+  stale — re-oriented by `VENDOR_TO_REF`) when present, else a parametric `_envelope()`. They also say
+  what to order: `PURCHASE_SPEC`, `PURCHASE_QTY` (pieces per occurrence — a whole pattern for the drive's
+  pin and fastener parts) and an optional `PURCHASE_NOTE`.
 
 `tests/test_parts_convention.py` enforces all of this automatically for every discovered part.
 (cadgen's default output is the sibling `<name>.step` and the viewer pairs the two — which is why a
@@ -207,6 +215,25 @@ and size reference; the drive's purchased parts keep their CadQuery export in
 the reference) → `./cadtool gen parts/<group>/<name>.py` → `./cadtool python tools/reference/import_solidworks.py`
 (updates `manifest.json`; `tools/cycloidal/import_cadquery.py` for the drive's parts). If the
 catalog model is worse, restore the reference copy. See `vendor/README.md` for what has been tried.
+
+## Printed vs. bought
+
+Every part carries the make/buy label once: `COTS = True` in its module means **bought**, anything else is
+**printed** (`parts.bought(name)`). Nothing else is kept by hand — the folders follow the arm's physical
+stages, not make/buy:
+
+- **Lists** — `./cadtool python tools/bom.py` prints what to print (part, quantity) and what to buy
+  (`PURCHASE_SPEC`, pieces = occurrences × `PURCHASE_QTY`, mass, vendor file or envelope), counted from
+  the assembly tables; `--module cycloidal_drive` for the drive alone. Purchased items that are **not
+  modelled** (the drive's arm-mount bolts and nuts, grease) are the one hand-kept table, `EXTRAS` in that
+  tool: they are on the buy list, not in the model, the totals or the inertials.
+- **Colours, in the arm itself** — `assemblies/arm.py` (and `arm_no_caps.py`) tint every purchased part with the one
+  `_occurrences.BOUGHT_TINT` grey, inside the gripper and the drive too; a printed part carries its link's (or its
+  module's) colour. Grey always means bought — no link or module tint reuses it.
+- **Colours, as a tree** — `assemblies/arm_make_buy.py` and `assemblies/cycloidal_drive_make_buy.py` are working views
+  (not the robot / the module): the same leaves under `printed` and `bought`, tinted with
+  `_occurrences.MAKE_BUY_TINTS`, so the viewer hides either side in one click.
+- **STLs** — `./cadtool python tools/export_printables.py` writes `print/<name>.stl` for every printed part.
 
 ## Assembly
 

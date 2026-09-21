@@ -23,6 +23,9 @@ from lib.params import PANCAKE_BODY_D, PANCAKE_BODY_H, PANCAKE_BODY_W, PANCAKE_M
 NAME = pathlib.Path(__file__).stem
 COTS = True
 MASS_G = PANCAKE_MASS_G   # [ESTIMATE] see lib/params.py
+PURCHASE_SPEC = "NEMA 17 pancake stepper (17HS08 class)"
+PURCHASE_QTY = 1    # pieces per occurrence
+PURCHASE_NOTE = "exact model unconfirmed - MASS_G stays an estimate until it is"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 # Rigid transform vendor-file frame -> the SolidWorks frame placements.json assumes (identity while
 # vendor/<name>.step is the SolidWorks re-export; set it after swapping in a step.parts model).

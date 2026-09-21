@@ -25,6 +25,9 @@ from lib.datum import IDENTITY, to_location
 NAME = pathlib.Path(__file__).stem
 COTS = True
 MASS_G = 0.0   # [DATASHEET] grams
+PURCHASE_SPEC = ""   # what to order: designation + size, e.g. "625-2RS miniature ball bearing, 5 x 16 x 5"
+PURCHASE_QTY = 1    # pieces per occurrence (a pattern part: the whole pattern)
+# PURCHASE_NOTE = ""  # optional: spares, a fit to confirm, "ships with ..." (tools/bom.py prints it)
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 # Rigid transform vendor-file frame -> the SolidWorks frame placements.json assumes (identity while
 # vendor/<name>.step is the SolidWorks re-export; set it after swapping in a step.parts model).

@@ -20,6 +20,9 @@ from parts.cycloidal._cots import hybrid
 NAME = pathlib.Path(__file__).stem
 COTS = True
 MASS_G = CYCLOIDAL_MOTOR_MASS_G
+PURCHASE_SPEC = "NEMA 17 stepper, {0.body_length:g} mm body, {0.shaft_dia:g} mm D-shaft {0.shaft_length:g} mm long (17HS19-2004S1 class)".format(DEFAULT_CONFIG.motor)
+PURCHASE_QTY = 1    # pieces per occurrence
+PURCHASE_NOTE = "check the shaft length from the mounting face before ordering: shorter catalog shafts leave too little D-bore engagement"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY   # set after inspecting a step.parts model (see vendor/README.md)
 

@@ -3,7 +3,7 @@
 **Purpose:** the specification of the drive (carried over from the `cycloidal_drive` repo, corrected
 where the code disagreed with it), where it lives in `cad/`, what changed in the build123d port, and
 how it is attached to the arm.
-**Last updated:** 2026-09-18 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-21 — see the root `CHANGELOG.md` for dated changes.
 
 ## Provenance
 - Designed in CadQuery in [`hbenuid/cycloidal_drive`](https://github.com/hbenuid/cycloidal_drive);
@@ -115,7 +115,7 @@ The output bearings (z 37..57) and the discs (z 13..35) are axially separated; t
 | Housing bolts | M4 × 55 SHCS (ISO 4762), Ø7 × 4 head; counterbored in the motor plate, captive nut in the ring gear body | 8 | `cycloidal_housing_bolts` |
 | Housing nuts | M4 hex, 7.0 AF × 3.2 (pocket 7.2 AF) | 8 | `cycloidal_housing_nuts` |
 | Motor bolts | M3 × 10 SHCS, Ø5.3 × 3 head (13 total): 6 through the plate + 4 engagement, head flush in the 3 mm inner-face pocket | 4 | `cycloidal_motor_bolts` |
-| Arm-mount bolts + nuts | 4 × M4 (≈40–50 long: link + 28 hub) into captive M4 nuts on the hub inner face — install the nuts before pressing the hub through the 6814s | 4 + 4 | not modelled |
+| Arm-mount bolts + nuts | 4 × M4 (≈40–50 long: link + 28 hub) into captive M4 nuts on the hub inner face — install the nuts before pressing the hub through the 6814s | 4 + 4 | not modelled — on the buy list through `tools/bom.py EXTRAS` |
 
 The purchased parts are modelled as the drive repo's simplified solids (annuli, cylinders, hex
 prisms): each module's `_envelope()`, which is also its reference STEP. `vendor/bearing_625.step`
@@ -224,9 +224,14 @@ interpolating** B-spline (`Edge.make_spline(..., periodic=True)` — never an ap
 
 ## 9. Shopping list
 
-NEMA 17 48 mm (1, $10–15) · 6003-2RS (2, $4–8) · 6814-2RS (2, $16–40) · 625-2RS (1, $1–2) ·
-4 × 35 dowels (25, $8–12) · 4 × 45 dowels (4, $2–4) · M3 × 10 (4, $1–2) · M4 × 55 (8, $2–4) · M4 nuts
-(8 + 4, $2) · 5 × 20 dowel (1, $0.5–1) · M4 × 40–50 arm bolts (4, $1–2) — **~$47–87**.
+Generated, never retyped: `./cadtool python tools/bom.py --module cycloidal_drive` prints what to order
+(each purchased module's `PURCHASE_SPEC` × pieces, from `assemblies/cycloidal_drive.py OCCURRENCES`) and,
+under "not modelled", the items that have no geometry (`tools/bom.py EXTRAS`: the arm-mount bolts and nuts,
+grease). `assemblies/cycloidal_drive_make_buy.py` shows the same split in the viewer (printed / bought).
+
+Budget (2f1f67d estimate): NEMA 17 48 mm $10–15 · 6003-2RS ×2 $4–8 · 6814-2RS ×2 $16–40 · 625-2RS $1–2 ·
+ring-pin dowels (pack of 25) $8–12 · output-pin dowels $2–4 · motor bolts $1–2 · housing bolts $2–4 · M4 nuts
+(housing + arm mount) $2 · support dowel $0.5–1 · arm-mount bolts $1–2 — **~$47–87**.
 
 ## 10. Where things live in `cad/`
 
@@ -237,8 +242,9 @@ NEMA 17 48 mm (1, $10–15) · 6003-2RS (2, $4–8) · 6814-2RS (2, $16–40) ·
 | Profile maths | `lib/cycloidal/profiles.py` (numpy) |
 | Shared builders | `lib/cycloidal/housing.py` (reveal-window cutter, outer-silhouette chamfer, hex prisms), `lib/cycloidal/disc.py` (`build_disc`), `lib/cycloidal/geom.py` (cylinders with `NUDGE` overshoot, `single_solid`) |
 | Printed parts (designed, `CONVERTED = True`) | `parts/cycloidal/`: `cycloidal_disc_1.py`, `cycloidal_disc_2.py`, `cycloidal_eccentric_shaft.py`, `cycloidal_motor_plate.py`, `cycloidal_ring_gear_body.py`, `cycloidal_output_hub.py` — each exposes `build(cfg)` for tests and its `@step` model |
-| Purchased parts (COTS) | `parts/cycloidal/`: `bearing_6003.py`, `bearing_6814.py`, `bearing_625.py`, `nema17_48mm.py`, `cycloidal_ring_pins.py` (21), `cycloidal_output_pins.py` (4), `cycloidal_shaft_support_pin.py`, `cycloidal_motor_bolts.py` (4), `cycloidal_housing_bolts.py` (8), `cycloidal_housing_nuts.py` (8) — shared body `parts/cycloidal/_cots.py`; the multi-body ones are registered in `MULTI_BODY` |
+| Purchased parts (COTS) | `parts/cycloidal/`: `bearing_6003.py`, `bearing_6814.py`, `bearing_625.py`, `nema17_48mm.py`, `cycloidal_ring_pins.py` (21), `cycloidal_output_pins.py` (4), `cycloidal_shaft_support_pin.py`, `cycloidal_motor_bolts.py` (4), `cycloidal_housing_bolts.py` (8), `cycloidal_housing_nuts.py` (8) — shared body `parts/cycloidal/_cots.py`; the multi-body ones are registered in `MULTI_BODY`; each says what to order (`PURCHASE_SPEC` / `PURCHASE_QTY`, built from `DEFAULT_CONFIG`) |
 | Assembly | `assemblies/cycloidal_drive.py` — 18 rows `(part, role, position)` from `stack_positions`; `EXPECTED` = 18 leaves / 58 solids / 691 936.8 mm³; `./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals())"` |
+| Printed vs. bought | `./cadtool python tools/bom.py --module cycloidal_drive` (print list, buy list, the purchased items not modelled — `EXTRAS`); `assemblies/cycloidal_drive_make_buy.py` — the same 18 rows under `printed` / `bought`, tinted (a working view; `EXPECTED` and `BODIES` describe `cycloidal_drive.py`); `./cadtool python tools/export_printables.py` → `print/<name>.stl` |
 | References | `reference/cycloidal/<name>.step` × 16 (CadQuery exports, Git LFS), `reference/manifest.json` entries (`file` field); `tools/cycloidal/export_cadquery.py` + `tools/cycloidal/import_cadquery.py` |
 | Tests | `tests/cycloidal/test_{disc,eccentric_shaft,motor_plate,ring_gear_body,output_hub,housing,purchased,fitment,assembly,port}.py` + `tests/cycloidal/helpers.py` (one module per part, geometry marked `slow`) |
 | Viewer / export | `./cadtool show assemblies/cycloidal_drive.py`, `./cadtool gen assemblies/cycloidal_drive.py`, `./cadtool export parts/cycloidal/<name>.step stl` |

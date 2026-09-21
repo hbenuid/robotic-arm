@@ -21,6 +21,9 @@ from lib.params import RAIL_DIA, RAIL_LEN
 NAME = pathlib.Path(__file__).stem
 COTS = True
 MASS_G = 27.7    # [ESTIMATE] steel, from the reference volume (3534 mm^3 x 7.85e-3 g/mm^3)
+PURCHASE_SPEC = f"{RAIL_DIA:g} mm round steel linear shaft, {RAIL_LEN:g} mm long"
+PURCHASE_QTY = 1    # pieces per occurrence (the gripper places it twice)
+PURCHASE_NOTE = "confirm material / tolerance (h6 linear shaft vs plain rod); cut to length"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 # Rigid transform vendor-file frame -> the SolidWorks frame placements.json assumes (identity while
 # vendor/<name>.step is the SolidWorks re-export; set it after swapping in a step.parts model).

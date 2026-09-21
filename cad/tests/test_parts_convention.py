@@ -66,7 +66,15 @@ def test_part_declares_its_contract(name):
         mass = getattr(mod, "MASS_G", None)
         assert isinstance(mass, (int, float)) and mass > 0, f"COTS part {name} must set MASS_G > 0"
         assert mod.VENDOR_STEP == R.VENDOR_DIR / f"{name}.step", f"{name}.VENDOR_STEP must be vendor/{name}.step"
+        spec, qty = getattr(mod, "PURCHASE_SPEC", None), getattr(mod, "PURCHASE_QTY", None)
+        assert isinstance(spec, str) and spec.strip(), f"COTS part {name} must set PURCHASE_SPEC (what to order - tools/bom.py)"
+        assert isinstance(qty, int) and qty >= 1, f"COTS part {name} must set PURCHASE_QTY (pieces per occurrence)"
+        assert isinstance(getattr(mod, "PURCHASE_NOTE", ""), str)
+        if parts.GROUPS[name] == "cycloidal" and name in MULTI_BODY:   # a fastener / pin pattern: one piece per solid
+            assert qty == MULTI_BODY[name], f"{name}.PURCHASE_QTY {qty} != its {MULTI_BODY[name]} solids"
     else:
+        assert not any(hasattr(mod, a) for a in ("PURCHASE_SPEC", "PURCHASE_QTY", "PURCHASE_NOTE")), (
+            f"{name} is printed (no COTS = True) but declares PURCHASE_* - it would never reach the buy list")
         assert name in R.CUSTOM or name in R.DESIGNED, f"{name} is not in lib.reference.CUSTOM / DESIGNED (and not COTS)"
         assert getattr(mod, "REFERENCE", None) == name, f"{name}.REFERENCE must name reference/<origin>/{name}.step"
         assert isinstance(getattr(mod, "CONVERTED", None), bool), f"{name} must declare CONVERTED = True/False"

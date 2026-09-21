@@ -50,6 +50,12 @@ def load(name: str) -> ModuleType:
     return importlib.import_module(MODULES[name])
 
 
+def bought(name: str) -> bool:
+    """True for a purchased part (the module declares COTS = True), False for a printed one - the one
+    make/buy label the lists (tools/bom.py), the make/buy views and the STL export read."""
+    return bool(getattr(load(name), "COTS", False))
+
+
 def source_of(name: str) -> pathlib.Path:
     return _ROOT / GROUPS[name] / f"{name}.py"
 

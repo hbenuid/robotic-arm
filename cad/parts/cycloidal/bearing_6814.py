@@ -16,6 +16,8 @@ from parts.cycloidal._cots import hybrid
 NAME = pathlib.Path(__file__).stem
 COTS = True
 MASS_G = BEARING_6814_MASS_G
+PURCHASE_SPEC = "6814-2RS (61814) thin-section ball bearing, {0.out_bore:g} x {0.out_od:g} x {0.out_width:g}".format(DEFAULT_CONFIG.bearings)
+PURCHASE_QTY = 1    # pieces per occurrence (the drive places it twice)
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY   # set after inspecting a step.parts model (see vendor/README.md)
 
