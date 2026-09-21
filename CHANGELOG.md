@@ -4,6 +4,24 @@ Dated record of notable changes to this repository (newest first). Every commit 
 behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
 `cad-setup` working branch was fast-forward-only and has been retired).
 
+## 2026-09-21 — a caps-off working view of the arm (branch `cad/arm-no-caps`)
+
+### Added — `cad/assemblies/arm_no_caps.py` (`c5cc196`)
+- `j1_cap`, `j2_cap_1` and `j2_cap_2` cover `j1_link` / `j2_link`, the parts being worked on. The new model is
+  `arm.py`'s `OCCURRENCES` / `GROUPS` minus `HIDDEN` (derived, never retyped), in the same base_link frame,
+  component tree and tints, writing its own git-ignored `assemblies/arm_no_caps.step` (49 leaves / 105 solids,
+  51 pinned children). `arm.py`, `robot/`, the URDF, the meshes and every existing total are untouched — the
+  caps stay part of the robot.
+- A second model rather than a switch: `@step` models take no parameters, the freshness gate does not hash
+  environment variables, and the build daemon strips unlisted ones from its workers.
+- Link edits land in the shared part file, so each arm picks them up on its own next `gen`; the caps are
+  wrappers that do not follow a link change — check `assemblies/arm.py` after changing `j1_link` / `j2_link`.
+- Tests: `test_assembly.py` (tables = the arm's minus `HIDDEN`, no group emptied, the file ends with its build
+  call; slow: the build has 49 leaves / 105 solids / the arm's volume minus the caps'), `test_lazy_kernel.py`
+  probes the new module. Passed on the arm64 Mac; the Fedora run is still owed.
+- Docs: the zero-code alternative for images is verified and documented —
+  `./cadtool snapshot assemblies/arm.step out.png --hide '#j1_cap' --hide '#j2_cap_1' --hide '#j2_cap_2'`.
+
 ## 2026-09-21 — the repo also runs on the arm64 Mac; part STEPs are no longer committed (branch `cad/two-machines`)
 
 The repo is now worked on from the Fedora PC **and** an arm64 Mac. Fedora never exercised three platform
