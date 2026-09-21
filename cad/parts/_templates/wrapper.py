@@ -16,7 +16,7 @@ To CONVERT the part:
      degrees (the assemblies compose placement * to_location(LOCAL_FROM_REF).inverse(), so
      placements.json never changes); import the kernel lazily - see _templates/designed.py;
   3. ./cadtool pytest tests/test_reference_match.py -k <name>   (volume + bbox vs reference)
-  4. ./cadtool gen parts/<group>/<name>.py                              (regenerate the committed STEP)
+  4. ./cadtool gen parts/<group>/<name>.py                              (regenerate the STEP)
 """
 import pathlib
 

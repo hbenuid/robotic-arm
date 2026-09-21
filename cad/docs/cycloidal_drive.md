@@ -334,6 +334,6 @@ cd cad
 
 Every change to the drive must update (1) the tests — one `tests/cycloidal/test_<part>.py` per part
 plus `tests/cycloidal/test_assembly.py` for the stack-up, (2) this document, and (3) run `./cadtool pytest`
-green before it is done. Geometry changes also regenerate the committed STEPs (`./cadtool gen`), the
+green before it is done. Geometry changes also regenerate the STEPs (`./cadtool gen`), the
 module totals lock (`totals()` / `totals(body)`), `robot/meshes/shoulder_link.stl` + `upper_arm_link.stl` and the URDF/SDF inertials
 (`tools/robot/derive.py --urdf-draft` / `--check`).

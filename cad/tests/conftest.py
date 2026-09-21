@@ -1,7 +1,7 @@
 """Session guards for the CAD suite.
 
 Tests call model BODIES (lib.models.raw / parts.build), never a model: calling a `@step` model
-outside a cadgen build runs the whole pipeline - it rewrites the committed STEP and talks to the
+outside a cadgen build runs the whole pipeline - it rewrites the part STEP and talks to the
 warm daemon. CADGEN_DAEMON=0 keeps any build transient (belt) and `_build` is replaced so an
 accidental top-level call fails loudly instead (braces).
 """

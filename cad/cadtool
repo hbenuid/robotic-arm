@@ -85,7 +85,8 @@ case "$cmd" in
     files=(); flags=()
     for a in "$@"; do if [[ "$a" == *.py ]]; then files+=("$a"); else flags+=("$a"); fi; done
     if [[ ${#files[@]} -eq 0 ]]; then echo "usage: cadtool gen <model.py>... [--force --verbose --json --mesh-tolerance X]" >&2; exit 2; fi
-    for f in "${files[@]}"; do uv run --frozen python "$f" "${flags[@]}"; done ;;
+    # ${flags[@]+…}: bash 3.2 (macOS /bin/bash) treats an empty array as unset under `set -u`
+    for f in "${files[@]}"; do uv run --frozen python "$f" ${flags[@]+"${flags[@]}"}; done ;;
   show)
     exec uv run --frozen python tools/preview.py "$@" ;;
   why)
@@ -108,8 +109,14 @@ case "$cmd" in
     esac ;;
   viewer)
     port=3245; prev=""; for a in "$@"; do [[ "$prev" == "--port" ]] && port="$a"; prev="$a"; done
+    # GNU timeout: `timeout` on Linux, `gtimeout` from Homebrew coreutils on macOS (which ships neither)
+    tmo="$(command -v timeout || command -v gtimeout || true)"
+    if [[ -z "$tmo" ]]; then
+      echo "CAD Viewer: http://127.0.0.1:$port/?file=assemblies/arm.step   (NO auto-stop: GNU timeout not on PATH - brew install coreutils; Ctrl+C or ./cadtool cadgen viewer stop --port $port)"
+      exec uv run --frozen cadgen viewer --host 127.0.0.1 "$@"
+    fi
     echo "CAD Viewer: http://127.0.0.1:$port/?file=assemblies/arm.step   (auto-stops after 12h; Ctrl+C to stop)"
-    exec timeout --foreground 12h uv run --frozen cadgen viewer --host 127.0.0.1 "$@" ;;
+    exec "$tmo" --foreground 12h uv run --frozen cadgen viewer --host 127.0.0.1 "$@" ;;
   cadgen)
     cg "$@" ;;
   store)
@@ -142,8 +149,9 @@ case "$cmd" in
   setup)
     uv sync
     # A venv that ever held cadquery-ocp (cadgen 0.5.x's VTK build) loses OCP/ when uv removes it: both
-    # distributions own the same files and uv still counts cadquery-ocp-novtk as installed.
-    if ! uv run --frozen python -c "import OCP" 2>/dev/null; then
+    # distributions own the same files and uv still counts cadquery-ocp-novtk as installed. Probe a
+    # submodule: the hollowed-out OCP/ directory still imports, as an empty namespace package.
+    if ! uv run --frozen python -c "import OCP.gp" 2>/dev/null; then
       echo "cadtool: the OCP kernel does not import - reinstalling cadquery-ocp-novtk" >&2
       uv sync --reinstall-package cadquery-ocp-novtk
     fi
@@ -154,7 +162,7 @@ case "$cmd" in
     exec uv run --frozen pytest "$@" ;;
   clean)
     # Regenerable caches only; --all also drops the git-ignored review artifacts. Never touches .venv,
-    # the committed STEP/STL files, vendor/ or the cadgen store (`./cadtool store gc` for that).
+    # the part STEPs, the committed reference/vendor/mesh files or the cadgen store (`./cadtool store gc` for that).
     find "$CAD_DIR" -name .venv -prune -o -type d \( -name __cadgen__ -o -name __pycache__ -o -name .pytest_cache \) -prune -print -exec rm -rf {} +
     if [[ "${1:-}" == "--all" ]]; then
       [[ -d snapshots ]] && find snapshots -mindepth 1 -prune -exec rm -rf {} +

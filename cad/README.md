@@ -1,6 +1,6 @@
 # robotic-arm — CAD (build123d)
 
-**Last updated:** 2026-09-18 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-21 — see the root `CHANGELOG.md` for dated changes.
 
 Parametric CAD-as-code for the desktop arm (base yaw, 20:1 cycloidal shoulder pitch, belt-driven
 elbow and wrist pitch, wrist roll, MG996R parallel gripper), converted part-by-part from the original
@@ -20,8 +20,10 @@ CadQuery exports — see [`docs/cycloidal_drive.md`](docs/cycloidal_drive.md).
 
 Requirements: [`uv`](https://docs.astral.sh/uv/), Node 20+ on `PATH` (only for STL/3MF/GLB export),
 `git-lfs` on `PATH` — the plugin marketplace uses LFS **and so does this folder**: every committed
-STEP/STL (`parts/`, `reference/`, `vendor/`, `robot/meshes/`) is a Git LFS object, so `git lfs install`
-once per machine before cloning (a clone that shows ~130-byte pointer files needs `git lfs pull`) — and
+STEP/STL (the inputs in `reference/` and `vendor/`, plus `robot/meshes/`) is a Git LFS object, so `git lfs
+install` once per machine before cloning (a clone that shows ~130-byte pointer files needs `git lfs pull`).
+Generated STEPs — each part's `parts/<group>/<name>.step` included — are **git-ignored**: their bytes differ
+per machine, so every machine builds its own (`./cadtool gen assemblies/arm.py`, ~35 s the first time) — and
 the [`cad@text-to-cad`](https://github.com/earthtojake/text-to-cad) Claude Code plugin **v0.6.x**
 (the repo's `.claude/settings.json` enables its marketplace; install/update with
 `claude plugin marketplace add https://github.com/earthtojake/text-to-cad.git`,
@@ -50,13 +52,13 @@ Chromium. cadgen makes hard cutovers: 0.5 had **no compatibility with 0.4** (202
 
 | Command | What it does |
 |---|---|
-| `./cadtool gen parts/<group>/<name>.py` (alias `step`) | **run the model script**: writes the committed `parts/<group>/<name>.step`; a second run prints `current …` (freshness gate), `--force` rebuilds |
-| `./cadtool gen assemblies/arm.py` | build `assemblies/arm.step` (git-ignored) — calls every part model, so each stale part is rebuilt (in parallel) and its committed STEP rewritten |
+| `./cadtool gen parts/<group>/<name>.py` (alias `step`) | **run the model script**: writes `parts/<group>/<name>.step` beside it (git-ignored); a second run prints `current …` (freshness gate), `--force` rebuilds |
+| `./cadtool gen assemblies/arm.py` | build `assemblies/arm.step` (git-ignored) — calls every part model, so each stale part is rebuilt (in parallel) and its STEP rewritten |
 | `./cadtool why <model.py>` | why the model is current or stale, clause by clause (`cadgen store why`) |
 | `./cadtool show <model.py>` | preview the model body in the OCP CAD Viewer VS Code extension (`ocp_vscode`) — no build, nothing written |
 | `./cadtool export <file.step> stl\|3mf\|glb [out]` | one mesh file per call from a STEP document (Node 20+; `--mesh-tolerance` is *relative*, default 1.5e-3 of the bounding diagonal) |
 | `./cadtool inspect <file.step> [--planes] [--json]` | leaf refs, solids, faces, volume, bbox of a saved STEP (`--planes`: its planar faces as normal / offset / area) — a **local** tool, `tools/step_facts.py`: cadgen 0.6.5 removed `cadgen step inspect`; distances and overlaps are `cadgen.geometry.closest_points` / `overlap_volume` in a test |
-| `./cadtool inspect diff <a.step> <b.step> [--tol X]` | same geometry leaf by leaf? exit 1 if not (checking a regenerated STEP against the committed one) |
+| `./cadtool inspect diff <a.step> <b.step> [--tol X]` | same geometry leaf by leaf? exit 1 if not (checking a regenerated STEP against a copy kept from before the change) |
 | `./cadtool snapshot assemblies/arm.step snapshots/arm.png --size-profile assembly --view-labels` | PNG review still (`--job job.json` for a multi-view packet; the path you name is the file written) — also `.urdf`/`.sdf`/`.stl` inputs |
 | `./cadtool viewer [--port N]` | CAD Viewer serving this folder — `http://127.0.0.1:3245/?file=assemblies/arm.step` (ships inside cadgen; stops after 12 h or Ctrl+C; `./cadtool cadgen viewer list\|stop --port N`) |
 | `./cadtool validate robot/arm.urdf --strict` (`.srdf`, `.sdf --gz-check never`) | robot-description validators |
@@ -76,7 +78,7 @@ deleting it is always safe). `CADGEN_DAEMON=0` runs a build on transient workers
 
 This project runs cadgen 0.6.5 on **build123d 0.11.1 / OCP 7.9.3** — cadgen 0.6 requires
 `build123d>=0.11.1,<0.12` and `cadquery-ocp-novtk>=7.9,<8`, and `pyproject.toml` pins the exact kernel
-(the committed STEP bytes are deterministic per kernel). Never add `cadquery-ocp` (the VTK build cadgen
+(the STEP bytes are deterministic per kernel and per machine). Never add `cadquery-ocp` (the VTK build cadgen
 0.5 pulled): both distributions own the same `OCP/` files, so uv removing one guts the other —
 `uv sync --reinstall-package cadquery-ocp-novtk` repairs it (`setup` does, `tests/test_tooling.py`
 checks). On the older pair (build123d 0.10.0 / OCP 7.8.1) cadgen could not build 11 of the 41 parts (OCCT 7.8.1
@@ -107,7 +109,7 @@ cad/
 │   ├── wrist/                 # wrist_link, gripper_clamp_bracket, gripper_j3_connector + COTS nema17_pancake, gt2_pulley_20t
 │   ├── gripper/               # gripper_* (7), servo_holder + COTS gripper_rail_6mm, mg996r_servo, mg996r_horn
 │   └── cycloidal/             # the drive: 6 designed parts + 10 COTS (bearings, nema17_48mm, pins, bolts, nuts), _cots.py helper
-│       └── <name>.py + <name>.step   # every group: running the .py writes the .step beside it; committed (Git LFS)
+│       └── <name>.py + <name>.step   # every group: running the .py writes the .step beside it (git-ignored, per machine)
 ├── assemblies/
 │   ├── arm.py             # the whole arm, grouped arm -> base_link/shoulder_link/upper_arm_link/forearm_link/wrist_pitch_link/wrist (GROUPS; 52 leaves, tinted per group)
 │   ├── gripper.py         # the gripper mechanism module (19 occurrences, placed from placements.json)
@@ -134,7 +136,7 @@ sit in `base/` with the stage they build, and `gripper_clamp_bracket` / `gripper
 
 Nothing derived lands in the tree: cadgen keeps trees, tessellations and freshness records in its
 content-addressed store (`~/.cache/cadgen`). A `<name>.step.json` sidecar appears beside a STEP only
-when its model declares `kinematics=` (none does yet); it would be committed with the STEP.
+when its model declares `kinematics=` (none does yet); it would be committed beside the model.
 
 ## Part conventions
 
@@ -188,7 +190,7 @@ part and its STEP always live in the same directory; upstream's `src/` + `STEP/`
    ones that want this.)
 4. `./cadtool pytest tests/test_reference_match.py -k <name>` — volume within 0.5 % and bounding
    box within 0.2 mm of the reference (per-part overrides: `REF_VOL_TOL`, `REF_BBOX_TOL`).
-5. `./cadtool gen parts/<group>/<name>.py` to regenerate the committed STEP, then
+5. `./cadtool gen parts/<group>/<name>.py` to regenerate the STEP, then
    `./cadtool gen assemblies/arm.py` + `./cadtool snapshot …` to eyeball it in place.
 
 ## Purchased parts and step.parts

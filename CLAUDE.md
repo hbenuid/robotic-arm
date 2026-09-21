@@ -2,7 +2,12 @@
 
 3-motor MKS SERVO42D/57D arm controlled over CAN bus via a CANable / slcan-compatible USB adapter. Runs on macOS, Linux, and Windows.
 
-**Last updated:** 2026-09-18 — see `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-21 — see `CHANGELOG.md` for dated changes.
+
+## Two development machines
+Worked on from a **Fedora Linux PC and an arm64 Mac**; git is the only sync channel, venvs / plugin / caches are
+per machine. In `cad/` no generated STEP is committed (its bytes differ per machine; each machine builds its
+own) — rules in `cad/CLAUDE.md` "Two machines". Scripts must run on macOS's bash 3.2 without GNU coreutils.
 
 ## Toolchain
 - Always use `uv` — never `pip install` directly. `uv add <pkg>` for new deps;
@@ -37,7 +42,8 @@
   `cad/assemblies/cycloidal_drive.py`; spec + port notes in `cad/docs/cycloidal_drive.md`.
 - Parts are grouped by subsystem (`cad/parts/{base,joints,wrist,gripper,cycloidal}/`) and reached
   only through `parts.load(name)`; references sit in `cad/reference/{solidworks,cycloidal}/`; the
-  committed STEP/STL files are Git LFS objects (`git lfs pull` if a checkout shows pointer files).
+  committed STEP/STL files (the inputs in `reference/` + `vendor/`, and `robot/meshes/`) are Git LFS objects
+  (`git lfs pull` if a checkout shows pointer files) — part STEPs are generated and git-ignored.
 - The robot description (`cad/robot/`: `arm.urdf` is the source of truth, `arm.srdf`, `arm.sdf`, per-link
   meshes) is derived from `cad/robot/frames.py` — links `base_link, shoulder_link, upper_arm_link,
   forearm_link, wrist_pitch_link, wrist_roll_link, jaw_a_link, jaw_b_link, tool0`; joints `base_yaw,

@@ -13,7 +13,7 @@ Local frame: for parts seeded from the SolidWorks exports it is the SolidWorks f
 (reference/placements.json assumes it) - transform a differently oriented vendor file
 inside the model to keep that frame.
 
-Generate the committed STEP:   ./cadtool gen parts/<group>/<name>.py
+Generate the STEP:   ./cadtool gen parts/<group>/<name>.py
 """
 import pathlib
 

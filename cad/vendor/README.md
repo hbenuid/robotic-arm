@@ -38,7 +38,7 @@ skips them):
 ./cadtool inspect vendor/<name>.step --planes   # frame of the new model (leaf bbox + planar faces)
 # set VENDOR_TO_REF in parts/<group>/<name>.py so the model lands in the reference frame (reference/<origin>/<name>.step)
 ./cadtool pytest -k <name>                                  # vendor-frame + envelope + convention tests
-./cadtool gen parts/<group>/<name>.py                       # regenerate the committed STEP
+./cadtool gen parts/<group>/<name>.py                       # regenerate the STEP (git-ignored)
 ./cadtool python tools/reference/import_solidworks.py                 # refresh manifest.json (vendor sha/bbox)
 ```
 If the catalog model is worse than the SolidWorks re-export, restore it:

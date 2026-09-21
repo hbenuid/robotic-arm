@@ -15,7 +15,7 @@ at the part's LOCAL origin - the assembly owns placement. Every part MUST:
 If the part replaces a SolidWorks reference, keep REFERENCE / LOCAL_FROM_REF (see
 _templates/wrapper.py) so tests/test_reference_match.py gates the conversion.
 
-Generate the committed STEP:   ./cadtool gen parts/<group>/<name>.py
+Generate the STEP:   ./cadtool gen parts/<group>/<name>.py
 """
 import pathlib
 

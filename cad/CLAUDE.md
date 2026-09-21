@@ -4,7 +4,7 @@
 conversion workflow, shared-dimension rules, assembly placements, purchased parts, tests, tooling.
 **Audience:** agent. Human docs: `README.md`. Reference provenance: `reference/README.md`. The
 cycloidal drive (spec, port notes, attachment): `docs/cycloidal_drive.md`.
-**Last updated:** 2026-09-18. Every commit that changes behaviour, layout or tooling gets a dated entry in the
+**Last updated:** 2026-09-21. Every commit that changes behaviour, layout or tooling gets a dated entry in the
 root `CHANGELOG.md` and bumps the `Last updated` line of the docs it touches.
 
 `cad/` is a **separate uv project** (Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.6.x) inside the
@@ -19,12 +19,12 @@ robotic-arm repo; the root motor-control project never depends on it.
   step.parts script); its `skills/cad/requirements.txt` pins the same cadgen version — bump both
   together, `./cadtool doctor` checks (plugin updates need `git-lfs` on `PATH`).
 - **A model is a script you run.** `./cadtool gen parts/<group>/<name>.py` (alias `step`) runs it
-  and writes the **committed** sibling `parts/<group>/<name>.step`; a second run prints `current …`
+  and writes the sibling `parts/<group>/<name>.step` (git-ignored); a second run prints `current …`
   (freshness gate: source closure + tracked inputs + outputs hashed); `./cadtool why <model.py>`
   explains a verdict clause by clause; `--force` rebuilds. Every derived artefact lives in the
   content-addressed store `~/.cache/cadgen` (`./cadtool store gc`) — nothing in the tree.
 - `./cadtool gen assemblies/arm.py` — `assemblies/arm.step` (git-ignored). The arm **calls its child
-  models**: every stale part is rebuilt in parallel and its committed STEP rewritten; the gripper, the
+  models**: every stale part is rebuilt in parallel and its STEP rewritten; the gripper, the
   drive and the robot links link their children's trees, the arm inlines tinted copies (see Assembly).
   Pull semantics: a rebuilt part does not update the arm until the arm is rebuilt (`why` shows the
   pinned child).
@@ -51,16 +51,19 @@ robotic-arm repo; the root motor-control project never depends on it.
   `./cadtool skill <skill> <tool> …`, `./cadtool cadgen <anything>`.
 - `./cadtool pytest [-m "not slow"]`.
 - `uv add <pkg>` for deps (commit `pyproject.toml` + `uv.lock`); never `pip install`.
-- Every committed STEP/STL under `cad/` is a **Git LFS** object (`/.gitattributes`): a checkout
-  showing ~130-byte pointer files (checksum tests, `read_step`/`import_step` and cadgen fail on them)
-  needs `git lfs pull`; every regenerated STEP is a new LFS object (cadgen writes deterministic bytes
-  per kernel: an unchanged model rewrites an identical file, but the STEP header names the OCCT
-  version, so a kernel bump rewrites every file once — stop the daemon first, see Gotchas).
-  Editing `lib/reference.py` (even a comment) makes every wrapper + COTS part stale; the rebuild is
-  byte-identical except that a file can come back with different numerical-zero terms (2026-09-18:
-  `j1_link`, `gripper_clamp_bracket` — 12 values ≤ 1e-17, same solids / faces / volume / bbox, and
-  `--force` then reproduces the new bytes). Check with `import_step` + `lib.reference.solid_volume`
-  / `bbox_*` and commit the rewritten file: restoring the old bytes leaves it `stale` in `why`.
+- **Generated STEPs are never committed** — part STEPs included (git-ignored since 2026-09-21, like
+  `assemblies/*.step` and `robot/links/*.step`): a fresh clone has none until `./cadtool gen assemblies/arm.py`
+  (~35 s cold). Committed are only the **inputs** — `reference/**/*.step`, `vendor/*.step` — and
+  `robot/meshes/*.stl`, all **Git LFS** objects (`/.gitattributes`): a checkout showing ~130-byte pointer
+  files (checksum tests, `read_step`/`import_step` and cadgen fail on them) needs `git lfs pull`.
+  cadgen writes deterministic bytes per kernel **and per machine**: an unchanged model rewrites an identical
+  file on the machine that built it, another machine writes the same geometry with other float noise
+  (arm64 Mac vs the Fedora PC: 17 of 41 parts, ≤ 2e-10 mm apart), and the STEP header names the OCCT version.
+  To prove a refactor changed no geometry: `shasum -a 256 parts/*/*.step > /tmp/before`, change, rebuild
+  (daemon stopped first), `shasum -a 256 -c /tmp/before` on the SAME machine; a file may still come back with
+  different numerical-zero terms (2026-09-18: `j1_link`, `gripper_clamp_bracket`, 12 values ≤ 1e-17 after a
+  `lib/reference.py` edit, which makes every wrapper + COTS part stale) — settle those with
+  `./cadtool inspect diff <old.step> <new.step>`.
 - Cycloidal references: `cd ../cycloidal_drive && uv run python ../robotic-arm/cad/tools/cycloidal/export_cadquery.py`
   (the OLD repo's CadQuery venv — never ours), then `./cadtool python tools/cycloidal/import_cadquery.py`.
   SolidWorks references: `./cadtool python tools/reference/import_solidworks.py`. Each tool owns its own
@@ -70,11 +73,25 @@ robotic-arm repo; the root motor-control project never depends on it.
   model before paying for OCP, so an unchanged part re-runs in ~0.1 s (1.5 s with an eager import, which also
   prints cadgen's "kernel was imported before …" hint — that hint now means a regression). See Authoring.
 - **build123d 0.11.1 / OCP 7.9.3**: cadgen 0.6.x requires `build123d>=0.11.1,<0.12` and
-  `cadquery-ocp-novtk>=7.9,<8`; `pyproject.toml` pins the exact kernel (`cadquery-ocp-novtk==…`, the committed
+  `cadquery-ocp-novtk>=7.9,<8`; `pyproject.toml` pins the exact kernel (`cadquery-ocp-novtk==…`, the
   STEP bytes are per-kernel) and must never gain `cadquery-ocp`, the VTK build (see Gotchas). On 0.10 / 7.8.1 cadgen could not
   build 11 parts (OCCT 7.8.1 mis-read BinTools VERSION_4 component objects), could not export a linked
   child (`LazyCompound` needs 0.11's `wrapped` property) and its STEP writer needs `HArray1.Value`.
   `test_part_survives_cadgen_component_round_trip` locks the first.
+
+## Two machines (Fedora Linux PC + arm64 Mac)
+The repo is worked on from both; git is the only sync channel (push before leaving a machine, pull on arrival).
+- **Per-machine state git does not carry** — after a pull that changes `pyproject.toml` / `uv.lock`:
+  `./cadtool daemon stop && ./cadtool setup`, `claude plugin marketplace update text-to-cad && claude plugin
+  update cad@text-to-cad` (each scope; restart Claude Code), then `./cadtool doctor` must be clean. No
+  `CAD_PLUGIN` in a shell profile (it overrides the plugin detection).
+- **No generated STEP is committed**, because its bytes differ per machine (see "Running things"): each
+  machine builds its own, nothing to restore or avoid staging. Only `robot/meshes/*.stl` is generated AND
+  committed — re-export those on one machine per change, never as a side effect.
+- `cadtool` must stay runnable on macOS's stock **bash 3.2** (under `set -u` an empty array is unset: expand
+  optional arrays as `${arr[@]+"${arr[@]}"}`) and without GNU coreutils on `PATH`. No exact-equality asserts on
+  floating-point results (tessellations of spline geometry differ per architecture). A change is verified once
+  `./cadtool pytest` has passed on **both** machines.
 
 ## Authoring a part (`parts/<group>/<name>.py`)
 Parts live in subsystem groups (`base`, `joints`, `wrist`, `gripper`, `cycloidal`; templates in
@@ -135,7 +152,9 @@ otherwise. `tests/conftest.py` makes an accidental top-level call under pytest f
   bbox ±0.2 mm; per-part `REF_VOL_TOL` / `REF_BBOX_TOL`) and `./cadtool gen parts/<group>/<name>.py`.
 - *designed* (`CONVERTED = True`, `REFERENCE = NAME`, registered in `lib/reference.py DESIGNED`):
   the cycloidal drive's printed parts — the reference is the CadQuery export they were ported
-  from; `tests/cycloidal/test_port.py` additionally demands identical face sets / tessellations.
+  from; `tests/cycloidal/test_port.py` additionally demands identical face sets / tessellations (the two
+  spline discs: the lobe profile within 1e-6 mm of the reference spline, `helpers.spline_deviation`, and the
+  mesh within its chordal error — see "Two machines").
   Their geometry helpers live in `lib/cycloidal/` and each module exposes `build(cfg)` for tests
   (reached like any part: `parts.load(name).build(cfg)` — tests never import `parts.<group>` either).
 - Multi-body parts are registered in `MULTI_BODY` in `tests/test_parts_convention.py`.
@@ -172,7 +191,7 @@ Changing a shared dimension — touchpoints in order:
 |---|---|---|
 | 1 | `lib/params.py` | the value (keep tag + derivation) |
 | 2 | `tests/test_params_invariants.py` | the lock; `./cadtool pytest -m "not slow"` |
-| 3 | `./cadtool gen parts/<group>/<affected>.py` | regenerate the committed STEP(s) (or just the arm: it rebuilds every stale part) |
+| 3 | `./cadtool gen parts/<group>/<affected>.py` | regenerate the STEP(s) (or just the arm: it rebuilds every stale part) |
 | 4 | `./cadtool pytest` + `./cadtool gen assemblies/arm.py` + snapshot | verify geometry and fit |
 
 ## Assembly & placements
@@ -296,17 +315,18 @@ unrelated, broken motor-control suite).
 - Don't compare large STEP artifacts with `git diff`; compare source, `inspect` output and snapshots.
   A STEP edited by anything but its model (or built under another `CADGEN_CACHE_DIR`) reads as stale
   in `./cadtool why` — rebuild it.
-- New STEPs in a group directory are committed thanks to the recursive `!/cad/parts/**/*.step`
-  re-admit in the root `.gitignore` (`git check-ignore -v --no-index cad/parts/<group>/<name>.step`
-  from the repo root must print that line). Nothing else lands in the tree: no `__cadgen__/`, no
-  sidecar unless a model declares `kinematics=` (then `<name>.step.json`, committed beside it).
+- A part's STEP is git-ignored by the root `.gitignore`'s `*.step` (`git check-ignore -v
+  cad/parts/<group>/<name>.step` from the repo root must print that rule; only `vendor/` and `reference/`
+  are re-admitted). Nothing else lands in the tree: no `__cadgen__/`, no sidecar unless a model declares
+  `kinematics=` (then `<name>.step.json`, committed beside the model).
 - After `uv sync` changes cadgen / build123d / OCP, `./cadtool daemon stop`: the warm daemon's workers
   keep the old code loaded (its identity token only tracks cadgen's version and file mtimes; cadgen
   has no stop verb of its own and the daemon shrugs off a bare SIGTERM). The next `gen` starts a fresh one.
 - `cadquery-ocp` (VTK) and `cadquery-ocp-novtk` own the same 322 `OCP/` files (the 162 MB kernel `.so`
   included). When uv removes one (2026-09-18: cadgen 0.5 → 0.6 dropped `cadquery-ocp`) it deletes them and
-  still counts the other as installed: `uv sync` reports success and `import OCP` fails. Repair with
-  `uv sync --reinstall-package cadquery-ocp-novtk` (`./cadtool setup` does it when OCP does not import;
+  still counts the other as installed: `uv sync` reports success and `import OCP.gp` fails (a bare `import OCP`
+  can still succeed: the leftover `OCP/` directory is an empty namespace package). Repair with
+  `uv sync --reinstall-package cadquery-ocp-novtk` (`./cadtool setup` does it when `OCP.gp` does not import;
   `test_tooling.py` checks every RECORD file exists). cadgen's `doctor` does NOT flag an absent kernel.
 - cadgen makes hard cutovers (0.6.0: cache / sidecar schemas, so every model read stale once; 0.6.5: the
   inspect CLI): a retired interface fails with a teaching error, never an alias. On a bump re-check the

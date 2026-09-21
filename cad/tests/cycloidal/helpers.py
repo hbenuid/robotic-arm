@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from build123d import Box, Cylinder, GeomType, Pos, Shape, Compound
+from build123d import Box, Cylinder, GeomType, Pos, PositionMode, Shape, Compound, Vertex
 
 from lib import reference as R
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, ring_pin_points
@@ -72,6 +72,18 @@ def mesh_volume(shape: Shape, tolerance: float = 0.002, angular: float = 0.2):
         cy += t * (p.Y + q.Y + r.Y) / 4.0
         cz += t * (p.Z + q.Z + r.Z) / 4.0
     return v, (cx / v, cy / v, cz / v), len(tris)
+
+
+def spline_deviation(shape: Shape, ref: Shape, samples: int = 200) -> float:
+    """Largest distance (mm) from `shape`'s B-spline edges to the matching edges of `ref` (paired by
+    height, then length) - the lobe profile itself, independent of how a platform's mesher discretises it."""
+    def splines(s: Shape):
+        return sorted((e for e in s.edges() if e.geom_type == GeomType.BSPLINE),
+                      key=lambda e: (round(e.center().Z, 3), round(e.length, 3)))
+    mine, theirs = splines(shape), splines(ref)
+    assert mine and len(mine) == len(theirs), f"{len(mine)} B-spline edges vs {len(theirs)} in the reference"
+    return max(b.distance_to(Vertex(*a.position_at(i / samples, position_mode=PositionMode.PARAMETER)))
+               for a, b in zip(mine, theirs) for i in range(samples))
 
 
 def fingerprint(shape: Shape) -> list[tuple[str, float]]:

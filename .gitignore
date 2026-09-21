@@ -8,16 +8,17 @@ __pycache__/
 *.egg-info/
 
 # --- CAD (cad/ is its own uv project; see cad/README.md) ---
-# Meshes and STEPs are regenerated from the .py source - never committed.
+# Meshes and STEPs are regenerated from the .py source - never committed. That includes each part's
+# STEP beside its model (cad/parts/<group>/<name>.step): `./cadtool gen` writes it, and its bytes differ
+# per machine (float noise), so a committed copy would be rewritten by every other machine's build.
 *.stl
 *.stp
 *.3mf
 *.glb
 *.step
-# EXCEPT: each part's primary STEP beside its model source (cadgen writes it there), purchased-part
-# vendor STEPs, and the reference exports (none regenerable from Python). These committed
-# STEP/STL files are Git LFS objects (see /.gitattributes): clone with git-lfs installed.
-!/cad/parts/**/*.step
+# EXCEPT the INPUTS, none regenerable from Python: purchased-part vendor STEPs and the reference
+# exports. These committed STEP/STL files are Git LFS objects (see /.gitattributes): clone with
+# git-lfs installed.
 !/cad/vendor/*.step
 !/cad/reference/**/*.step
 # per-link meshes of the robot description (URDF/SDF reference them; regenerable with
