@@ -54,6 +54,7 @@ Chromium. cadgen makes hard cutovers: 0.5 had **no compatibility with 0.4** (202
 |---|---|
 | `./cadtool gen parts/<group>/<name>.py` (alias `step`) | **run the model script**: writes `parts/<group>/<name>.step` beside it (git-ignored); a second run prints `current …` (freshness gate), `--force` rebuilds |
 | `./cadtool gen assemblies/arm.py` | build `assemblies/arm.step` (git-ignored) — calls every part model, so each stale part is rebuilt (in parallel) and its STEP rewritten |
+| `./cadtool gen assemblies/arm_no_caps.py` | build `assemblies/arm_no_caps.step` — the same arm without `j1_cap`, `j2_cap_1`, `j2_cap_2` (a working view for the links under them; `arm.step` stays the robot). One-off image instead: `./cadtool snapshot assemblies/arm.step out.png --hide '#j1_cap' --hide '#j2_cap_1' --hide '#j2_cap_2'` |
 | `./cadtool why <model.py>` | why the model is current or stale, clause by clause (`cadgen store why`) |
 | `./cadtool show <model.py>` | preview the model body in the OCP CAD Viewer VS Code extension (`ocp_vscode`) — no build, nothing written |
 | `./cadtool export <file.step> stl\|3mf\|glb [out]` | one mesh file per call from a STEP document (Node 20+; `--mesh-tolerance` is *relative*, default 1.5e-3 of the bounding diagonal) |
@@ -112,6 +113,7 @@ cad/
 │       └── <name>.py + <name>.step   # every group: running the .py writes the .step beside it (git-ignored, per machine)
 ├── assemblies/
 │   ├── arm.py             # the whole arm, grouped arm -> base_link/shoulder_link/upper_arm_link/forearm_link/wrist_pitch_link/wrist (GROUPS; 52 leaves, tinted per group)
+│   ├── arm_no_caps.py     # working view: arm.py's tables minus HIDDEN (the three link caps) - 49 leaves, not the robot
 │   ├── gripper.py         # the gripper mechanism module (19 occurrences, placed from placements.json)
 │   ├── cycloidal_drive.py # the drive module (18 rows placed from lib/cycloidal stack_positions - code-driven)
 │   └── _occurrences.py    # place()/occurrence_children()/grouped_children() (placement keys), place_at()/located_children() (Locations), world_rows() - children via lib.models.geometry()

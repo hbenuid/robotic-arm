@@ -1,12 +1,15 @@
 """The arm assembly rebuilt from parts + placements reproduces the SolidWorks totals, plus the
-code-driven cycloidal_drive module's own totals."""
+code-driven cycloidal_drive module's own totals and the caps-off working view (arm_no_caps)."""
+import pathlib
+
 import pytest
 from build123d import Location, Vector
 
-from assemblies import arm, cycloidal_drive, gripper
+from assemblies import arm, arm_no_caps, cycloidal_drive, gripper
 from lib.models import raw
 from lib import placements as P
 from lib import reference as R
+from tests.source_checks import runs_its_model
 
 EXPECTED = P.DATA["expected"]
 DRIVE = cycloidal_drive.EXPECTED
@@ -110,4 +113,35 @@ def test_arm_assembly_matches_reference_totals():
     exp_min, exp_size = _expected_bbox()
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_min(a), exp_min)), (R.bbox_min(a), exp_min)
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_size(a), exp_size)), (R.bbox_size(a), exp_size)
+    assert a.is_valid
+
+
+def test_arm_no_caps_tables_are_the_arms_minus_hidden():
+    """The caps-off working view derives its tables from arm.py: every HIDDEN key is an occurrence of
+    the arm (a renamed key must not silently bring a cap back), everything else is kept in order, and
+    the file ends with its build call (without it `./cadtool gen` builds nothing)."""
+    hidden = set(arm_no_caps.HIDDEN)
+    assert len(hidden) == len(arm_no_caps.HIDDEN) == 3
+    assert hidden <= {key for _, _, key in arm.OCCURRENCES}
+    assert all(P.OCCURRENCES[key]["part"].endswith(("_cap", "_cap_1", "_cap_2")) for key in hidden)
+    assert arm_no_caps.OCCURRENCES == [row for row in arm.OCCURRENCES if row[2] not in hidden]
+    assert [(label, tint) for label, tint, _ in arm_no_caps.GROUPS] == [(label, tint) for label, tint, _ in arm.GROUPS]
+    for (label, _, keys), (_, _, full_keys) in zip(arm_no_caps.GROUPS, arm.GROUPS):
+        assert keys == tuple(key for key in full_keys if key not in hidden), label
+        assert keys, f"{label}: hiding must not empty a group"
+    assert runs_its_model(pathlib.Path(arm_no_caps.__file__), "arm_no_caps")
+
+
+@pytest.mark.slow
+def test_arm_no_caps_builds_the_arm_without_its_caps():
+    a = raw(arm_no_caps.arm_no_caps)
+    assert a.label == "arm_no_caps"
+    assert [c.label for c in a.children] == [label for label, _, _ in arm.GROUPS]
+    labels = [leaf.label for leaf in _leaves(a)]
+    assert len(labels) == EXPECTED["leaf_occurrences"] + DRIVE["leaves"] - len(arm_no_caps.HIDDEN) == 49
+    hidden = [P.OCCURRENCES[key] for key in arm_no_caps.HIDDEN]
+    assert not {o["part"] for o in hidden} & set(labels), labels
+    assert len(a.solids()) == EXPECTED["solids"] + DRIVE["solids"] - sum(o["solids"] for o in hidden) == 105
+    volume = EXPECTED["solid_volume"] + DRIVE["solid_volume"] - sum(o["solid_volume"] for o in hidden)
+    assert abs(R.solid_volume(a) - volume) <= 0.5
     assert a.is_valid

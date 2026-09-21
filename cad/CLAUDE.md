@@ -220,6 +220,17 @@ Changing a shared dimension — touchpoints in order:
   `test_assembly.py` compares the SolidWorks world bbox through `arm_from_w()`.
 - Roles (`j2`/`j3` = the elbow_pitch / wrist_pitch pulley + coupler pairs, `1`/`2`) only disambiguate
   duplicates; renaming them after the joints is a follow-up.
+- `assemblies/arm_no_caps.py` is a **working view, not the robot**: `arm.py`'s `OCCURRENCES` / `GROUPS` minus
+  `HIDDEN` (`j1_cap#1`, `j2_cap_1#1`, `j2_cap_2#1` — the covers over `j1_link` / `j2_link`), same frame, tree and
+  tints, its own git-ignored `arm_no_caps.step` (49 leaves / 105 solids). `HIDDEN` is the one place to edit;
+  never feed it to `robot/` or the SolidWorks totals. It is a second model because a model takes no
+  parameters and the freshness gate sees no environment variable (an env switch in `arm()` would read
+  `current` across a flip, and the daemon strips unlisted variables from its workers). Link edits land in
+  the shared part file, so both arms pick them up on their **own** next `gen`; the caps are wrappers that do
+  not follow a link change and this view cannot show a cap that no longer fits — after changing `j1_link` /
+  `j2_link`, `./cadtool gen assemblies/arm.py` + snapshot too. For a one-off image no model is needed:
+  `./cadtool snapshot assemblies/arm.step out.png --hide '#j1_cap' --hide '#j2_cap_1' --hide '#j2_cap_2'`
+  (label refs; STEP input only, not with `--render` / `--focus`; the viewer has no `?hide=` parameter).
 - `arm.py GROUPS` buckets the occurrences into the component tree
   `arm → base_link/shoulder_link/upper_arm_link/forearm_link/wrist_pitch_link/wrist` — the
   `robot/frames.py LINKS` partition with the two modules kept whole (`wrist` = wrist_roll_link + jaw
@@ -283,7 +294,7 @@ Changing a shared dimension — touchpoints in order:
 every part, COTS envelopes + vendor frames), `test_reference_match.py` (manifest checksums; converted
 parts vs reference), `test_placements.py` (JSON integrity, tables cover every key once, the designed
 module record), `test_assembly.py` (34 + 18 leaves / 50 + 58 solids / volume / bbox vs SolidWorks + the
-module lock), `test_params_invariants.py` (locks), `test_robot.py` (link partition, frames, FK at
+module lock; `arm_no_caps` = the arm's tables minus `HIDDEN`, 49 leaves / 105 solids), `test_params_invariants.py` (locks), `test_robot.py` (link partition, frames, FK at
 zero = capture, meshes, inertials, URDF/SRDF/SDF consistency + cadgen's validators via
 `./cadtool validate`), `test_tooling.py` (the installed cadgen and OCP kernel are the pinned ones, one complete OCP distribution,
 `./cadtool inspect` agrees with the kernel),
