@@ -4,6 +4,50 @@ Dated record of notable changes to this repository (newest first). Every commit 
 behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
 `cad-setup` working branch was fast-forward-only and has been retired).
 
+## 2026-09-21 — printed vs. bought: lists, colours and STLs from the one `COTS` label (branch `cad/printed-vs-bought`)
+
+An audit of the cycloidal drive's purchased parts found all 10 modelled ones consistent (module, occurrence,
+mass, reference, manifest — quantities match the spec), and one gap: the 4 arm-mount M4 bolts + 4 captive
+nuts (and grease) are bought but were tracked only in the doc's hand-written shopping list. The make/buy label
+already existed once per part (`COTS = True`); nothing used it. One commit: `f8b1c8d`.
+
+### Added — what to order, on every purchased part
+- The 15 COTS modules (+ `parts/_templates/cots.py`) declare `PURCHASE_SPEC`, `PURCHASE_QTY` (pieces per
+  occurrence; the whole pattern for the drive's pin / fastener parts) and an optional `PURCHASE_NOTE`, next to
+  `MASS_G`. The drive's are built from `DEFAULT_CONFIG` (never retyped). `parts.bought(name)` is the one reader of
+  the label. Specs of the five SolidWorks-era parts are read off `vendor/README.md` / `lib/params.py` and flagged
+  "confirm" where the repo names no exact model (pancake motor, 6 mm rail, 20T pulley bore).
+- No geometry changed: all 41 part STEPs rebuilt byte-identical (`shasum -a 256 -c`, arm64 Mac).
+
+### Added — `cad/tools/bom.py`: the print list and the buy list
+- `./cadtool python tools/bom.py [--module cycloidal_drive|gripper] [--md|--json]`, counted from the assembly
+  tables (kernel-free): 26 printed parts / 34 to print; 15 bought parts / 18 occurrences / 58 pieces. `EXTRAS`
+  is the one hand-kept table — purchased items with no geometry (the arm-mount bolts and nuts, grease): on the
+  buy list, absent from the model, the totals and the inertials. `docs/cycloidal_drive.md` §9 now points at the
+  command instead of retyping the list.
+
+### Added — `cad/assemblies/arm_make_buy.py`, `cycloidal_drive_make_buy.py`: the split in the viewer
+- Working views (the `arm_no_caps.py` precedent — not the robot / the module): the same leaves, poses and frame
+  under two nodes, `printed` / `bought`, flattened through the modules and tinted
+  (`_occurrences.make_buy_children()`, `MAKE_BUY_TINTS`; `place_world_at()` gained `inline=`). Hiding `bought` in
+  the viewer leaves what has to be printed. `arm.py`, `cycloidal_drive.py`, `robot/` and every total are untouched.
+
+### Changed — the arm itself shows what was bought (`assemblies/_occurrences.py`, `arm.py`)
+- `grouped_children()` now tints through `_tint_parts()`: every purchased part, inside the gripper and the drive
+  too, gets the one `BOUGHT_TINT` grey; printed parts keep their link / module colour. `base_link` moved from grey
+  to brown so grey only ever means bought (`test_grey_means_bought`). `arm.step` and `arm_no_caps.step` change
+  colours only — same tree, leaves, solids, volume and bbox; the make/buy views share the colour.
+
+### Added — `cad/tools/export_printables.py`: one STL per printed part
+- Writes `cad/print/<name>.stl` (git-ignored by the root `*.stl` rule; mm, part-local frame, 0.01 mm / 0.1 rad)
+  from the in-process body, with the quantity to print; a bought part is refused, a stale STL is removed.
+
+### Tests
+- `test_bom.py` (new, fast), `test_parts_convention.py` (the `PURCHASE_*` contract; a printed part declares
+  none), `test_assembly.py` (the two views: leaves / solids / volume / bbox equal to the models', every leaf under
+  the node its flag names, tinted), `test_lazy_kernel.py` (probes the two new models). Passed on the arm64 Mac;
+  the Fedora run is still owed.
+
 ## 2026-09-21 — a caps-off working view of the arm (branch `cad/arm-no-caps`)
 
 ### Added — `cad/assemblies/arm_no_caps.py` (`c5cc196`)
