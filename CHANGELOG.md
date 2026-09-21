@@ -4,6 +4,50 @@ Dated record of notable changes to this repository (newest first). Every commit 
 behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
 `cad-setup` working branch was fast-forward-only and has been retired).
 
+## 2026-09-21 — the repo also runs on the arm64 Mac; part STEPs are no longer committed (branch `cad/two-machines`)
+
+The repo is now worked on from the Fedora PC **and** an arm64 Mac. Fedora never exercised three platform
+assumptions in the tooling, and the committed part STEPs turned out to be per-machine files.
+
+### Changed — the 41 generated part STEPs leave git (`cad/parts/**/*.step`) (`aaa9193`)
+- cadgen's STEP bytes are deterministic per kernel **and per machine**: an arm build on the Mac rewrote 17 of
+  the 41 committed part STEPs with float noise (≤ 2e-10 mm, `same geometry` in `./cadtool inspect diff`,
+  `--force` reproduces the Mac bytes), so either machine's build dirtied the other's files — a new LFS object
+  per file per switch. They are build outputs (nothing reads them: the assemblies call the part models, every
+  test builds in-process), so they are now git-ignored like `assemblies/*.step` and `robot/links/*.step`:
+  the `!/cad/parts/**/*.step` re-admit is gone from `.gitignore`, the files were `git rm --cached` (kept on
+  disk). Still committed (Git LFS): the inputs `reference/` (41) + `vendor/` (6), and `robot/meshes/` (8).
+- What replaces "`git status`: 0 of 41 changed" as the refactor check: `shasum -a 256 parts/*/*.step` before /
+  `-c` after on the same machine (what the assembly STEPs already used), `./cadtool inspect diff` for a file
+  that only moved numerical-zero terms.
+- **On the next pull git deletes the 41 files from that working tree** (the commit removes them);
+  `./cadtool gen assemblies/arm.py` recreates them (a missing STEP reads `STALE (output missing)`).
+  A fresh clone has no part STEP until that first build (~35 s).
+
+### Fixed — `cad/cadtool` on macOS's stock bash 3.2 / without GNU coreutils (`aaa9193`)
+- `./cadtool gen <model.py>` without flags died with `flags[@]: unbound variable` (bash 3.2 treats an empty
+  array as unset under `set -u`): the flags expand as `${flags[@]+"${flags[@]}"}`.
+- `./cadtool viewer` uses `timeout`, else `gtimeout`, else runs without the 12 h auto-stop and says so.
+- `./cadtool setup` probes `import OCP.gp`: after uv removed the old VTK kernel the hollow `OCP/` directory
+  still imported as an empty namespace package, so the `import OCP` probe passed and the repair never ran.
+
+### Changed — `cad/tests/cycloidal/test_port.py`, the two spline discs only (`aaa9193`)
+- arm64 meshes the lobe spline into 4–6 more / fewer of ~22 000 triangles (mesh volume 4e-5, centroid
+  2e-3 mm) on a profile that matches the reference to 1e-11 mm. The discs now lock the profile itself (new
+  `helpers.spline_deviation`, ≤ 1e-6 mm; a 0.01° rotation reads 9e-3 mm) and hold the mesh to its chordal
+  error (triangles 0.1 %, volume 1e-4, centroid 5e-3 mm). The other 14 designed parts are unchanged.
+
+### Docs
+- `cad/CLAUDE.md` "Two machines" (+ a pointer in the root `CLAUDE.md`): git is the only sync channel, the
+  per-machine steps after a toolchain bump, no generated STEP is committed. "committed STEP" reworded in
+  `cad/CLAUDE.md`, `cad/README.md`, `cad/docs/cycloidal_drive.md`, `cad/vendor/README.md`, the three
+  `parts/_templates/`, `tests/conftest.py` and a `cadtool` comment.
+
+Verified on the Mac: `./cadtool pytest` 587 passed + 9 skipped (before: 2 failed), `gen` without flags,
+viewer under `timeout`; with one part STEP removed the arm build recreated it, and after that build
+`git status` lists no STEP. **Still to run on Fedora:** pull, `./cadtool gen assemblies/arm.py`,
+`./cadtool pytest` (expect the same 587 + 9).
+
 ## 2026-09-18 — model files no longer load the CAD kernel at import (branch `cad/lazy-kernel-import`)
 
 cadgen gates a model (freshness check, warm-daemon dispatch) before paying for OCP — but only while
