@@ -16,12 +16,13 @@ directory; `lib.reference.path_of(name)` resolves it). Regenerate — never edit
   not committed; `placements.json` captures its structure.
 - NEMA 17 x 40 + MKS SERVO42D kit: `mks/nema17x40_with_mks.step` under the source tree (SolidWorks 2026 export of
   2026-09-21, mm, 15 solids, 521 236 bytes, sha256 `4e51a1591030…`; `lib.reference.MKS_EXPORT_NAME`) — not committed;
-  `tools/reference/split_mks_motor.py` splits it into `vendor/nema17_40mm.step` (body + D-shaft, shaft trimmed 23 → 22)
-  and `vendor/mks_servo42d.step` (board kit), which are committed and mirrored into `solidworks/`. The sibling
+  `tools/reference/split_mks_motor.py` splits it into `vendor/nema17_40mm.step` (the body, with the drive's pilot + shaft
+  from `lib/cycloidal/motor.py` in place of the export's) and `vendor/mks_servo42d.step` (board kit), which are committed
+  and mirrored into `solidworks/`. The sibling
   `mks/nema17x48_with_mks.step` (cm units, 24 solids, 3 345 264 bytes, sha256 `c1958e60a14f…`; `MKS48_EXPORT_NAME`) is
   the same kit with the 48 mm motor - a 17HS19-2004S1 with the datasheet's 24 mm / 15 mm-D-cut shaft, not the drive's
-  22 mm one - so `split_mks_motor.py --write drive` composes `vendor/nema17_48mm.step` from its body and the x40's
-  shaft; the drive motor's reference stays `cycloidal/nema17_48mm.step` (`import_cadquery.py --only nema17_48mm`
+  22 mm one - so `split_mks_motor.py --write drive` composes `vendor/nema17_48mm.step` from its body and the drive's
+  own pilot + shaft; the drive motor's reference stays `cycloidal/nema17_48mm.step` (`import_cadquery.py --only nema17_48mm`
   records the vendor block).
 - Regenerate: `./cadtool python tools/reference/split_mks_motor.py` (once, on one machine — STEP bytes are per machine),
   `./cadtool python tools/reference/import_solidworks.py` (copies + `manifest.json`), then

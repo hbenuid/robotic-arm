@@ -2,11 +2,12 @@
 
 NEMA 17 stepper, 40 mm body: the motor of the MKS SERVO42D closed-loop kit that drives the arm's three
 belt joints (base_yaw, elbow_pitch, wrist_pitch - lib/mounts.py places it on the NEMA 17 pads the
-SolidWorks links carry). The vendor file is the motor body + D-shaft of the "nema17x40_with_mks"
-SolidWorks export, split off by tools/reference/split_mks_motor.py (the board is parts/joints/mks_servo42d),
-re-framed like the drive motor (parts/cycloidal/nema17_48mm: mounting face z=0, body -Z, pilot boss and
-shaft +Z, D-flat +Y) and its 23 mm shaft trimmed to the drive motor's 22 mm (MotorParams.shaft_length).
-The cable connector is a 7 mm boss on the -Y side of the body's rear.
+SolidWorks links carry). The vendor file is the motor body of the "nema17x40_with_mks" SolidWorks export,
+split off by tools/reference/split_mks_motor.py (the board is parts/joints/mks_servo42d) and re-framed like
+the drive motor (parts/cycloidal/nema17_48mm: mounting face z=0, body -Z, pilot boss and shaft +Z, D-flat
++Y), with the export's own boss and 23 mm shaft cut off and the drive's pilot() + shaft() (lib/cycloidal/motor.py,
+MotorParams: Ø22 x 2, Ø5 x 22 with the 18 mm D-cut) fused on - every motor in the arm carries the same
+interface. The cable connector is a 7 mm boss on the -Y side of the body's rear.
 
 SolidWorks product: 'nema17x40_with_mks' (motor body + shaft)
 Source export:      ~/Documents/arm_assembly_organized/mks/nema17x40_with_mks.step (lib.reference.MKS_EXPORT_NAME)
@@ -35,8 +36,8 @@ COTS = True
 MASS_G = NEMA17_40_MASS_G   # [ESTIMATE] see lib/params.py
 PURCHASE_SPEC = "NEMA 17 stepper, 40 mm body, 5 mm D-shaft 22 mm (the motor of the MKS SERVO42D closed-loop kit, 17HS4401 class)"
 PURCHASE_QTY = 1    # pieces per occurrence
-PURCHASE_NOTE = ("ordered as MKS SERVO42D closed-loop kits (motor + board, parts/joints/mks_servo42d); the vendor file is the kit "
-                 "export with its 23 mm shaft trimmed to 22 - confirm the shaft length and the mass on the unit in hand")
+PURCHASE_NOTE = ("ordered as MKS SERVO42D closed-loop kits (motor + board, parts/joints/mks_servo42d); the model carries the drive "
+                 "motor's shaft (22 mm, 18 mm D-cut) - the kit export had 23 mm; confirm the shaft length and the mass on the unit in hand")
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 # Rigid transform vendor-file frame -> the part frame (identity: split_mks_motor.py writes the vendor file
 # already re-framed; set it after swapping in a differently oriented catalog model).

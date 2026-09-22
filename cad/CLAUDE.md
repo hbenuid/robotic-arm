@@ -183,12 +183,13 @@ file - the envelope is then the geometry) and `test_cots_envelope_tracks_referen
 swaps. Swap procedure and what has been tried: `vendor/README.md` (`./cadtool parts …`, step.parts).
 The third producer of vendor files is `tools/reference/split_mks_motor.py`: it splits the "NEMA 17 x 40 + MKS SERVO42D"
 kit export (`lib/reference.py MKS_EXPORT_NAME`, outside the repo next to the monolith) by GEOMETRY into
-`vendor/nema17_40mm.step` (body + D-shaft, re-framed like the drive motor - face z=0, body −Z, shaft +Z, D-flat +Y -
-and the shaft trimmed to `MotorParams.shaft_length`) and `vendor/mks_servo42d.step` (board + cover + standoffs + M3x30,
+`vendor/nema17_40mm.step` (the motor body, re-framed like the drive motor - face z=0, body −Z, shaft +Z, D-flat +Y -
+with the drive's `lib/cycloidal/motor.py pilot()` + `shaft()` fused on in place of the export's own) and `vendor/mks_servo42d.step` (board + cover + standoffs + M3x30,
 z=0 at the motor's REAR face, stack −Z); `import_solidworks.py` then mirrors both into `reference/solidworks/`
 (`rel=None`, the `nema17_pancake` pattern). `--write drive` composes `vendor/nema17_48mm.step` for the drive motor from
-the x48 export's real 48 mm body (`MKS48_EXPORT_NAME`; 7 solids, tie rods left out) with the x40's shaft fused on -
-the drive keeps its parametric envelope as the reference (`tools/cycloidal/import_cadquery.py --only nema17_48mm`
+the x48 export's real 48 mm body (`MKS48_EXPORT_NAME`; 7 solids, tie rods left out) with the same `pilot()` + `shaft()`
+fused on - **every motor carries the drive motor's interface** (`MotorParams`: Ø22 × 2 pilot, Ø5 × 22 shaft, 18 mm D-cut,
+the D-flat at `shaft_dcut_flat / 2` from the axis like the eccentric shaft's D-bore); the drive keeps its parametric envelope as the reference (`tools/cycloidal/import_cadquery.py --only nema17_48mm`
 writes its `vendor` block). build123d's STEP writer stamps the time into the header: written once, committed as LFS -
 never regenerated on the other machine, and a NEW vendor file needs `gen --force` on its part (the gate only tracks
 inputs the last build read).

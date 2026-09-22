@@ -13,7 +13,7 @@
  "expected": {
   "leaf_occurrences": 40,
   "solids": 95,
-  "solid_volume": 2178468.73
+  "solid_volume": 2178854.455
  },
  "designed_modules": [
   "cycloidal_drive#1"
@@ -3084,7 +3084,7 @@
     "note": "under the base plate, shaft up through it; connector toward the yaw axis (-X) [ESTIMATE]"
    },
    "solids": 2,
-   "solid_volume": 66320.645,
+   "solid_volume": 66449.22,
    "rel": {
     "position": [
      78.971,
@@ -3290,7 +3290,7 @@
     "note": "on j1_link's pad, on the shoulder axis (the pad's holes are 0.38 mm off), shaft +N; connector toward the elbow [ESTIMATE]"
    },
    "solids": 2,
-   "solid_volume": 66320.645,
+   "solid_volume": 66449.22,
    "rel": {
     "position": [
      -4.534756,
@@ -3496,7 +3496,7 @@
     "note": "on j2_link's web (+Z face), shaft -N; slide position J2_MOTOR_SLIDE_X [ESTIMATE]; connector toward the elbow [ESTIMATE]"
    },
    "solids": 2,
-   "solid_volume": 66320.645,
+   "solid_volume": 66449.22,
    "rel": {
     "position": [
      -222.236058,

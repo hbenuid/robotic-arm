@@ -1,17 +1,20 @@
 """Turn the two "NEMA 17 + MKS SERVO42D" kit exports (one SolidWorks assembly each: motor body, D-shaft,
 driver board + cover, 4 standoffs, 4 screws) into the vendor files the parts import:
 
-    vendor/nema17_40mm.step   (from the x40 export) the motor body + shaft (parts/joints/nema17_40mm.py) - re-framed
-                              like the drive motor (mounting face z=0, body -Z, pilot + shaft +Z, D-flat +Y) and the
-                              shaft trimmed to MotorParams.shaft_length (22; the export's is 23)
+    vendor/nema17_40mm.step   (from the x40 export) the motor body (parts/joints/nema17_40mm.py), re-framed like
+                              the drive motor (mounting face z=0, body -Z, pilot + shaft +Z, D-flat +Y)
     vendor/mks_servo42d.step  (from the x40 export) the board kit (parts/joints/mks_servo42d.py) - same orientation,
                               z=0 at the motor's REAR face, the board stack in -Z
-    vendor/nema17_48mm.step   (from BOTH) the drive motor (parts/cycloidal/nema17_48mm.py): the x48 export's 48 mm
-                              body - front plate, housing, back plate, its two Ø22 x 7 bearings, cable connector and
-                              rotor (7 solids); not its leads, its tie-rod screws (the kit's M3x30 replace them) or its
-                              board - with the rotor's 24 mm / 15 mm-D-cut shaft (a 17HS19-2004S1's) cut off at the
-                              mounting face and the x40's shaft (the drive-spec Ø5 / 4.5 flat / 18 mm D-cut, trimmed
-                              to 22) fused on instead, in the same frame
+    vendor/nema17_48mm.step   (from the x48 export) the drive motor (parts/cycloidal/nema17_48mm.py): its 48 mm
+                              body - front plate, housing, back plate, its two Ø22 x 7 bearings, cable connector
+                              and rotor (7 solids); not its leads, its tie-rod screws (the kit's M3x30 replace
+                              them) or its board
+
+Every motor gets THE SAME pilot boss and shaft: the exports' own bosses and shafts (23 mm on the x40; 24 mm with
+a 15 mm D-cut on the x48 - a 17HS19-2004S1's) are cut off at the mounting face, and the drive's
+lib/cycloidal/motor.py pilot() (Ø22 x 2, bored for the shaft) is fused onto the front plate and its shaft()
+(Ø5 x 22: 4 round + 18 D-cut, flat +Y - MotorParams, what the eccentric shaft's D-bore was designed around)
+onto the rotor (x48) or added as the motor's second solid (x40).
 
     ./cadtool python tools/reference/split_mks_motor.py [--write all|kit|drive]
             [--src  ~/Documents/arm_assembly_organized/mks/nema17x40_with_mks.step]
@@ -19,16 +22,16 @@ driver board + cover, 4 standoffs, 4 screws) into the vendor files the parts imp
             [--motor-out vendor/nema17_40mm.step] [--board-out vendor/mks_servo42d.step] [--drive-out vendor/nema17_48mm.step]
     ./cadtool python tools/reference/import_solidworks.py               # then: the kit parts' reference copies + manifest entries
     ./cadtool python tools/cycloidal/import_cadquery.py --only nema17_48mm   # and the drive motor's vendor block
+    ./cadtool gen parts/<group>/<name>.py --force                       # a NEW vendor file is not yet a tracked input
 
 The solids are told apart by GEOMETRY, not by the exports' product labels (NAUO ids): the shaft is the Ø5
 solid, the body the largest one (x40) / the three 42-square solids (x48), the kit everything behind the body,
-the tie rods the solids centred on the bolt pattern. The x40's shaft carries its D-flat spun ~3.44 deg about
-the axis (the rotor was modelled at an angle) - only the shaft is un-spun, the bodies' squares stay
-axis-aligned. The x48 export is authored in centimetres and sits ~(673, 881, 1302) mm off the origin; OCCT
-converts, the tool re-frames from the measured axis and mounting face. build123d's STEP writer stamps the
-time into the header, so every run writes new bytes: the files are written ONCE (here) and committed as Git
-LFS inputs - `--write drive` leaves the two kit files alone. The raw exports stay outside the repo next to
-the monolith (lib.reference.MKS_EXPORT_NAME / MKS48_EXPORT_NAME); reference/README.md records their sha256.
+the tie rods the solids centred on the bolt pattern, the front plate the solid with the mounting face. The x48
+export is authored in centimetres and sits ~(673, 881, 1302) mm off the origin; OCCT converts, the tool
+re-frames from the measured axis and mounting face. build123d's STEP writer stamps the time into the header,
+so every run writes new bytes: the files are written ONCE (here) and committed as Git LFS inputs - `--write
+kit|drive` leaves the others alone. The raw exports stay outside the repo next to the monolith
+(lib.reference.MKS_EXPORT_NAME / MKS48_EXPORT_NAME); reference/README.md records their sha256.
 """
 from __future__ import annotations
 
@@ -44,6 +47,8 @@ from OCP.GeomAbs import GeomAbs_Cylinder
 
 from lib import reference as R
 from lib.cycloidal import DEFAULT_CONFIG, motor_bolt_points
+from lib.cycloidal.geom import single_solid
+from lib.cycloidal.motor import pilot, shaft
 
 MOTOR_NAME, BOARD_NAME, DRIVE_NAME = "nema17_40mm", "mks_servo42d", "nema17_48mm"
 TO_PART = Location((0.0, 0.0, 0.0), (-90.0, 0.0, 0.0))   # export frame (face y=0, body +Y, shaft -Y) -> part frame (body -Z, shaft +Z)
@@ -89,28 +94,42 @@ def planar_faces(shape, normal, min_area=1.0):
     return sorted(out, key=lambda f: f.area, reverse=True)
 
 
-def unspun_shaft(shaft, m):
-    """The export's D-shaft in the part frame: its D-flat un-spun onto +Z (-> +Y after TO_PART), the tip trimmed
-    to m.shaft_length. Returns (solid, spin_deg, tip_before)."""
-    flats = [f for f in shaft.faces().filter_by(GeomType.PLANE) if abs(f.normal_at().Y) < 0.5 and f.area > 5.0]
-    if len(flats) != 1:
-        raise SystemExit(f"expected one D-flat on the shaft, found {len(flats)}")
-    n = flats[0].normal_at()
-    spin = math.degrees(math.atan2(-n.X, n.Z))
-    part = shaft.moved(Location((0.0, 0.0, 0.0), (-90.0, spin, 0.0)))
-    tip = part.bounding_box().max.Z
-    if tip > m.shaft_length + 1e-6:
-        trim = Box(4 * m.shaft_dia, 4 * m.shaft_dia, tip - m.shaft_length + 1.0,
-                   align=(Align.CENTER, Align.CENTER, Align.MIN)).moved(Location((0.0, 0.0, m.shaft_length)))
-        part = part - trim
-    flat_n = [f.normal_at() for f in part.faces().filter_by(GeomType.PLANE) if abs(f.normal_at().Z) < 0.5 and f.area > 5.0][0]
-    if max(abs(flat_n.X), abs(flat_n.Y - 1.0), abs(flat_n.Z)) > 1e-6:
-        raise SystemExit(f"D-flat normal after re-framing {tuple(flat_n)} != (0, 1, 0)")
-    return part, spin, tip
+def face_area_at(shape, z: float) -> float:
+    """Total area of the +Z planar faces of `shape` on the plane z."""
+    return sum(f.area for f in planar_faces(shape, (0, 0, 1)) if abs(f.center().Z - z) < 1e-3)
+
+
+def with_drive_interface(solids, m):
+    """`solids` (part frame): everything above the mounting face - the export's own pilot boss and shaft - cut
+    off, the drive's pilot() fused onto the front plate (the solid carrying the mounting face). Returns the new
+    list (same order) and the front plate's index."""
+    cutter = Box(3 * m.body_width, 3 * m.body_width, 3 * m.body_length, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    out = [single_solid(s - cutter) if bbox(s)[0][2] + bbox(s)[1][2] > 1e-6 else s for s in solids]
+    front = max(range(len(out)), key=lambda i: face_area_at(out[i], 0.0))
+    if face_area_at(out[front], 0.0) < 800:
+        raise SystemExit("no mounting face on z = 0 after the cut")
+    out[front] = single_solid(out[front] + pilot(m, bore=m.shaft_dia))
+    return out, front
+
+
+def check_interface(shape, m, what: str):
+    """The drive's interface: shaft tip at +shaft_length, the D-flat on +Y, the pilot face at +pilot_height."""
+    lo, size = bbox(shape)
+    if abs(lo[2] + size[2] - m.shaft_length) > 1e-6:
+        raise SystemExit(f"{what}: shaft tip at {lo[2] + size[2]:.3f}, expected {m.shaft_length:g}")
+    flats = [f for f in shape.faces().filter_by(GeomType.PLANE)
+             if abs(f.normal_at().Z) < 1e-6 and abs(f.center().X) < 2.6 and abs(f.center().Y) < 2.6 and f.area > 5]
+    if len(flats) != 1 or max(abs(flats[0].normal_at().X), abs(flats[0].normal_at().Y - 1.0)) > 1e-6:
+        raise SystemExit(f"{what}: expected one D-flat facing +Y, found {len(flats)}")
+    zs = [v.Z for v in flats[0].vertices()]
+    if abs(max(zs) - min(zs) - m.shaft_dcut_length) > 1e-6 or abs(max(zs) - m.shaft_length) > 1e-6:
+        raise SystemExit(f"{what}: D-cut z {min(zs):.3f}..{max(zs):.3f}, expected the last {m.shaft_dcut_length:g} mm")
+    if face_area_at(shape, m.pilot_height) < math.pi * ((m.pilot_dia / 2.0) ** 2 - (m.shaft_dia / 2.0) ** 2) - 1.0:
+        raise SystemExit(f"{what}: no Ø{m.pilot_dia:g} pilot face at z = {m.pilot_height:g}")
 
 
 def split_kit(src: pathlib.Path, m):
-    """The x40 export -> (motor Compound, board Compound, the re-framed shaft solid)."""
+    """The x40 export -> (motor Compound, board Compound)."""
     print(f"importing {src.name} ({src.stat().st_size / 1e3:.0f} kB, sha256 {R.sha256(src)[:12]}) ...")
     solids = import_step(str(src)).solids()
 
@@ -120,10 +139,11 @@ def split_kit(src: pathlib.Path, m):
     shafts = [s for s in solids if all(abs(v - m.shaft_dia) < 0.05 for v in across(s)) and s.volume < 1000]
     if len(shafts) != 1:
         raise SystemExit(f"expected one Ø{m.shaft_dia:g} shaft solid, found {len(shafts)}")
-    shaft = shafts[0]
-    body = max((s for s in solids if s is not shaft), key=lambda s: s.volume)
-    kit = [s for s in solids if s is not shaft and s is not body]
-    print(f"  {len(solids)} solids: body {body.volume:.1f} mm^3 {fmt(bbox(body)[1])}, shaft {shaft.volume:.1f} mm^3, kit {len(kit)} solids")
+    export_shaft = shafts[0]
+    body = max((s for s in solids if s is not export_shaft), key=lambda s: s.volume)
+    kit = [s for s in solids if s is not export_shaft and s is not body]
+    print(f"  {len(solids)} solids: body {body.volume:.1f} mm^3 {fmt(bbox(body)[1])}, export shaft {export_shaft.volume:.1f} mm^3 "
+          f"(tip {-bbox(export_shaft)[0][1]:.3f} from the face - replaced), kit {len(kit)} solids")
 
     # The export's frame: the mounting face is the body's largest -Y face and must sit at y = 0.
     face_y = planar_faces(body, (0, -1, 0))[0].center().Y
@@ -132,28 +152,25 @@ def split_kit(src: pathlib.Path, m):
         raise SystemExit(f"the export's mounting face is at y = {face_y}, expected 0 - re-export with the origin on it")
     print(f"  mounting face y = {face_y:.6f}, rear face y = {rear_y:.3f} (body length {rear_y - face_y:.3f})")
 
-    motor_shaft, spin, tip = unspun_shaft(shaft, m)
-    print(f"  D-flat spun {spin:.6f} deg about the axis; shaft tip {tip:.3f} -> {motor_shaft.bounding_box().max.Z:g}")
-    motor = Compound([body.moved(TO_PART), motor_shaft])
+    (body_part,), _ = with_drive_interface([body.moved(TO_PART)], m)
+    motor = Compound([body_part, shaft(m)])
     motor.label = MOTOR_NAME
+    check_interface(motor, m, MOTOR_NAME)
     board = Compound([s.moved(Location((0.0, 0.0, rear_y)) * TO_PART) for s in kit])
     board.label = BOARD_NAME
 
-    # The part frames: motor mounting face z=0, shaft tip at +shaft_length, body below z=0 (rear at -rear_y);
-    # board kit centred on the axis, its stack in -Z, its screws reaching into the motor (+Z).
     lo, size = bbox(motor)
-    if not (len(motor.solids()) == 2 and abs(lo[2] + size[2] - m.shaft_length) < 1e-6 and lo[2] < -rear_y
-            and abs(lo[0] + size[0] / 2.0) < 1e-6):
+    if not (len(motor.solids()) == 2 and lo[2] < -rear_y and abs(lo[0] + size[0] / 2.0) < 1e-6):
         raise SystemExit(f"motor geometry check failed: {len(motor.solids())} solids, bbox min {fmt(lo)} size {fmt(size)}")
     lo, size = bbox(board)
     if not (len(board.solids()) == len(kit) and lo[2] < 0 < lo[2] + size[2]
             and abs(lo[0] + size[0] / 2.0) < 1e-6 and abs(lo[1] + size[1] / 2.0) < 1e-6):
         raise SystemExit(f"board geometry check failed: {len(board.solids())} solids, bbox min {fmt(lo)} size {fmt(size)}")
-    return motor, board, motor_shaft
+    return motor, board
 
 
-def compose_drive_motor(src48: pathlib.Path, shaft, m):
-    """The x48 export's motor body + `shaft` (the x40's, already in the part frame) -> the drive motor Compound."""
+def compose_drive_motor(src48: pathlib.Path, m):
+    """The x48 export's motor body with the drive's pilot and shaft -> the drive motor Compound."""
     print(f"importing {src48.name} ({src48.stat().st_size / 1e6:.1f} MB, sha256 {R.sha256(src48)[:12]}) ...")
     solids = import_step(str(src48)).solids()
     rotors = [(s, shaft_axis(s, m)) for s in solids]
@@ -164,11 +181,12 @@ def compose_drive_motor(src48: pathlib.Path, shaft, m):
     bodies = [s for s in solids if all(abs(v - m.body_width) < BODY_TOL for v in (bbox(s)[1][0], bbox(s)[1][2]))]
     if len(bodies) != 3:
         raise SystemExit(f"expected the 3 square body solids (front plate, housing, back plate), found {len(bodies)}")
-    mount_y = min(bbox(s)[0][1] for s in bodies) + m.pilot_height     # the pilot boss stands on the mounting face
+    mount_y = min(bbox(s)[0][1] for s in bodies) + m.pilot_height     # the export's pilot boss stands on the mounting face
     rear_y = max(bbox(s)[0][1] + bbox(s)[1][1] for s in bodies)
     if abs(rear_y - mount_y - m.body_length) > 0.05:
         raise SystemExit(f"body length {rear_y - mount_y:.3f} != {m.body_length:g}")
-    print(f"  {len(solids)} solids; axis x={ax:.3f} z={az:.3f}, mounting face y={mount_y:.3f}, rear y={rear_y:.3f}")
+    print(f"  {len(solids)} solids; axis x={ax:.3f} z={az:.3f}, mounting face y={mount_y:.3f}, rear y={rear_y:.3f}; "
+          f"export shaft tip {mount_y - bbox(rotor)[0][1]:.3f} from the face - replaced")
 
     half = m.body_width / 2.0 + BODY_TOL
     bolts = motor_bolt_points()
@@ -184,26 +202,22 @@ def compose_drive_motor(src48: pathlib.Path, shaft, m):
 
     to_part = TO_PART * Location((-ax, -mount_y, -az))
     kept = [s.moved(to_part) for s in solids if s is not rotor and keep(s)]
-    # the rotor: everything on the body side of the mounting face, with the x40's shaft fused on
-    rotor_part = rotor.moved(to_part) - Box(3 * m.body_width, 3 * m.body_width, 2 * m.body_length,
-                                            align=(Align.CENTER, Align.CENTER, Align.MIN))
-    rotor_shaft = rotor_part + shaft
-    if len(rotor_shaft.solids()) != 1:
-        raise SystemExit(f"rotor + shaft fused into {len(rotor_shaft.solids())} solids, expected 1")
-    drive = Compound(kept + [rotor_shaft.solids()[0]])
+    kept, _ = with_drive_interface(kept, m)
+    rotor_part = single_solid(rotor.moved(to_part) - Box(3 * m.body_width, 3 * m.body_width, 3 * m.body_length,
+                                                         align=(Align.CENTER, Align.CENTER, Align.MIN)))
+    rotor_shaft = single_solid(rotor_part + shaft(m))
+    drive = Compound(kept + [rotor_shaft])
     drive.label = DRIVE_NAME
-    print(f"  kept {len(kept)} body solids + the rotor with the x40 shaft = {len(drive.solids())} solids, "
+    print(f"  kept {len(kept)} body solids + the rotor with the drive shaft = {len(drive.solids())} solids, "
           f"dropped {len(solids) - len(kept) - 1}")
+    check_interface(drive, m, DRIVE_NAME)
 
-    # Checks: the frame of parts/cycloidal/nema17_48mm.py (face z=0, shaft tip +22, body to -48) and the
-    # reference's bounding box (tests/test_parts_convention.py::test_cots_vendor_matches_reference_frame, 1.5 mm).
+    # The reference's bounding box (tests/test_parts_convention.py::test_cots_vendor_matches_reference_frame, 1.5 mm).
     lo, size = bbox(drive)
     ref_lo, ref_size = bbox(R.load(DRIVE_NAME))
-    if not (abs(lo[2] + size[2] - m.shaft_length) < 1e-6 and abs(lo[2] + m.body_length) < 1e-6
+    if not (abs(lo[2] + m.body_length) < 1e-6
             and all(abs(a - b) <= 1.5 for a, b in zip(lo, ref_lo)) and all(abs(a - b) <= 1.5 for a, b in zip(size, ref_size))):
         raise SystemExit(f"drive motor bbox min {fmt(lo)} size {fmt(size)} vs reference {fmt(ref_lo)} {fmt(ref_size)}")
-    if not planar_faces(drive, (0, 0, 1), min_area=800):
-        raise SystemExit("no mounting face on z = 0")
     return drive
 
 
@@ -219,15 +233,18 @@ def main(argv=None) -> int:
     ap.add_argument("--drive-out", type=pathlib.Path, default=R.VENDOR_DIR / f"{DRIVE_NAME}.step")
     args = ap.parse_args(argv)
     m = DEFAULT_CONFIG.motor
-    for src in (args.src,) + ((args.src48,) if args.write != "kit" else ()):
+    sources = ((args.src,) if args.write != "drive" else ()) + ((args.src48,) if args.write != "kit" else ())
+    for src in sources:
         if not src.expanduser().exists():
             print(f"kit export not found: {src}", file=sys.stderr)
             return 1
 
-    motor, board, shaft = split_kit(args.src.expanduser(), m)
-    outputs = [] if args.write == "drive" else [(motor, args.motor_out), (board, args.board_out)]
+    outputs = []
+    if args.write != "drive":
+        motor, board = split_kit(args.src.expanduser(), m)
+        outputs += [(motor, args.motor_out), (board, args.board_out)]
     if args.write != "kit":
-        outputs.append((compose_drive_motor(args.src48.expanduser(), shaft, m), args.drive_out))
+        outputs.append((compose_drive_motor(args.src48.expanduser(), m), args.drive_out))
     for shape, out in outputs:
         lo, size = bbox(shape)
         print(f"  {shape.label}: {len(shape.solids())} solids, volume {R.solid_volume(shape):.3f} mm^3, bbox min {fmt(lo)} size {fmt(size)}")

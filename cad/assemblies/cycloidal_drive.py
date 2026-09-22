@@ -75,9 +75,9 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 # totals(body) after a geometry change): 19 leaves, 37 SolidWorks-equivalent solids + the 7-solid
 # vendor motor + 20 fasteners + the 13-solid board kit, and the same per rigid body.
 EXPECTED = {
-    "leaves": 19, "solids": 77, "solid_volume": 679444.829,
+    "leaves": 19, "solids": 77, "solid_volume": 679467.512,
     "bodies": {
-        "stator": {"leaves": 16, "solids": 71, "solid_volume": 579436.402},
+        "stator": {"leaves": 16, "solids": 71, "solid_volume": 579459.085},
         "rotor": {"leaves": 3, "solids": 6, "solid_volume": 100008.427},
     },
 }
