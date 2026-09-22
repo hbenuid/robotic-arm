@@ -19,11 +19,10 @@ shaft with the 18 mm D-cut, flat on +Y — and the other motors must have exactl
 - Regenerated: the three vendor files (+ their `reference/solidworks/` mirrors and manifest entries), the mounted
   records (`mount_placements.py`), the drive's `EXPECTED` volume (679 467.5), the four links' inertials and meshes.
   `./cadtool pytest`: 631 passed, 8 skipped.
-- **Open point (flagged, not changed):** the drive repo's code puts the D-flat `shaft_dcut_flat / 2` = 2.25 mm from
-  the axis (flat-to-round 4.75) although the parameter reads "4.5 flat-to-round"; the eccentric shaft's D-bore is
-  cut the same way (2.315), so the pair fits as designed. A standard 5 mm D-shaft — and both kit exports — has the
-  flat at 2.0 (4.5). All motors now share the 4.75 convention; adopting 4.5 is one line in `motor.py flat_offset()`
-  and one in `cycloidal_eccentric_shaft.py` (which breaks that part's port lock against the CadQuery reference).
+- **Ruled:** `reference/cycloidal/nema17_48mm.step` defines the shaft — D-flat 2.25 mm from the axis (the parameter's
+  "4.5" is `shaft_dcut_flat`, the flat sits at half of it), D-cut z 4..22, tip 22 — and the eccentric shaft fits over
+  it: its D-bore flat at 2.315 (0.065 clearance), bore z 9..23, 13 mm engagement, 1 mm above the floor, 0 mm³
+  interference in the assembly. Every motor now carries exactly that shaft; the kit exports' 2.0 flat is not used.
 
 ## 2026-09-21 — the drive motor's vendor file: the real 48 mm body with the 22 mm drive-spec shaft (`3e667e0`)
 
