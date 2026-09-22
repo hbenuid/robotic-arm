@@ -80,7 +80,7 @@ the monolith — as `.STEP` at `cad/` root they matched neither the `*.step` ign
   `test_mounted_records_follow_lib_mounts`, `test_params_invariants.py` locks; counts bumped everywhere
   (59 leaves / 166 solids, `arm_no_caps` 56 / 163, 17 bought parts / 25 pieces, drive 19 / 71, the manifest's two
   entries, `MULTI_BODY` 2 / 13); the drive's SolidWorks-node bbox cross-check now excludes the board (the node
-  never had one). `./cadtool pytest`: 630 passed, 9 skipped (Fedora; the Mac run is owed).
+  never had one). `./cadtool pytest`: 630 passed, 9 skipped.
 - Docs: `cad/CLAUDE.md` (mounted occurrences, the split tool, the counts), `cad/README.md` (layout, joints and
   links tables), `reference/README.md` (provenance + sha256 of the export, the regenerate sequence, the naming
   rows, `mounted[]`), `vendor/README.md`, `docs/cycloidal_drive.md`, the root README / CLAUDE.md wording.
