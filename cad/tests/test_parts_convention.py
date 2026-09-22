@@ -25,6 +25,7 @@ MULTI_BODY = {
     "nema17_pancake": 11,
     "nema17_40mm": 2,       # body + D-shaft (the kit export split by tools/reference/split_mks_motor.py)
     "mks_servo42d": 13,     # PCB (4) + cover + 4 standoffs + 4 M3x30 - the kit's board half, one piece per occurrence
+    "nema17_48mm": 7,       # the drive motor: front plate, housing, back plate, 2 bearings, connector, rotor + shaft (composed by the same tool)
     # cycloidal drive fastener / pin patterns (one compound per pattern)
     "cycloidal_ring_pins": 21,
     "cycloidal_output_pins": 4,
@@ -72,7 +73,7 @@ def test_part_declares_its_contract(name):
         assert isinstance(spec, str) and spec.strip(), f"COTS part {name} must set PURCHASE_SPEC (what to order - tools/bom.py)"
         assert isinstance(qty, int) and qty >= 1, f"COTS part {name} must set PURCHASE_QTY (pieces per occurrence)"
         assert isinstance(getattr(mod, "PURCHASE_NOTE", ""), str)
-        if parts.GROUPS[name] == "cycloidal" and name in MULTI_BODY:   # a fastener / pin pattern: one piece per solid
+        if name.startswith("cycloidal_") and name in MULTI_BODY:   # a fastener / pin pattern: one piece per solid (not a multi-body vendor motor)
             assert qty == MULTI_BODY[name], f"{name}.PURCHASE_QTY {qty} != its {MULTI_BODY[name]} solids"
     else:
         assert not any(hasattr(mod, a) for a in ("PURCHASE_SPEC", "PURCHASE_QTY", "PURCHASE_NOTE")), (

@@ -978,7 +978,24 @@
    "solid_volume": 86905.043,
    "solids": 1,
    "source": "src/purchased_parts.py:build_nema17_motor()",
-   "units": "mm"
+   "units": "mm",
+   "vendor": {
+    "bbox_min": [
+     -21.0,
+     -21.0,
+     -48.0
+    ],
+    "bbox_size": [
+     42.0,
+     43.0,
+     70.0
+    ],
+    "bytes": 1228897,
+    "same_as_reference": false,
+    "sha256": "a37f96bfdfb6f1f8ed42ebaaf82681c3d57742cf3fc15dc5f599269f22eebe5a",
+    "solid_volume": 60633.749,
+    "solids": 7
+   }
   },
   "nema17_pancake": {
    "bbox_min": [

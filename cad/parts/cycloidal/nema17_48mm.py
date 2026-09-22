@@ -1,10 +1,15 @@
 """nema17_48mm - NEMA 17 stepper, 48 mm body, 5 mm D-shaft (the drive's input motor).
 
-Simplified model from cycloidal_drive@2f1f67d src/purchased_parts.py (build_nema17_motor):
-42.3 mm square body in -Z, 22 mm pilot boss and the 22 mm shaft (4 mm round + 18 mm D-cut, flat
+Frame: 42.3 mm square body in -Z, 22 mm pilot boss and the 22 mm shaft (4 mm round + 18 mm D-cut, flat
 on +Y) in +Z, 4x M3 blind holes on the 31 mm square. Mounting face at z=0 - the drive's stack
-datum. reference/nema17_48mm.step is that builder's export (kind "cots"); vendor/nema17_48mm.step,
-when present, is a step.parts catalog model re-oriented by VENDOR_TO_REF into this frame.
+datum. reference/nema17_48mm.step is the drive repo's simplified builder export (cycloidal_drive@2f1f67d
+src/purchased_parts.py build_nema17_motor, kind "cots") - the envelope below reproduces it.
+vendor/nema17_48mm.step (the geometry the drive shows) is composed by tools/reference/split_mks_motor.py
+from the user's SolidWorks kit exports: the x48 export's real 48 mm body (plates, housing, bearings,
+connector, rotor - 7 solids, the tie rods left out because the MKS kit's M3x30 replace them) with the
+x40 export's drive-spec shaft fused on, trimmed to 22 mm, already in this frame (VENDOR_TO_REF identity).
+The datasheet 48 mm motor (17HS19-2004S1) ships a 24 mm shaft with a 15 mm D-cut - the user's motor is
+the 22 mm one; measure before ordering.
 Not the wrist's pancake motor (parts/nema17_pancake.py) nor the belt joints' 40 mm motors
 (parts/joints/nema17_40mm.py - same builder, lib/cycloidal/motor.py, other MotorParams). The MKS SERVO42D
 board on its rear face is its own part (parts/joints/mks_servo42d.py, placed by assemblies/cycloidal_drive.py).

@@ -33,6 +33,8 @@ DEFAULT_SOURCE_DIR = pathlib.Path.home() / "Documents" / "arm_assembly_organized
 MONOLITH_NAME = "final Arm Assembly Fully Movable.STEP"   # 13 MB, inch units, the full positioned assembly
 MKS_EXPORT_NAME = "mks/nema17x40_with_mks.step"           # 0.5 MB, mm, SolidWorks 2026 export of the NEMA 17 x 40 + MKS SERVO42D kit
 #   (sha256 4e51a159...; tools/reference/split_mks_motor.py splits it into vendor/nema17_40mm.step + vendor/mks_servo42d.step)
+MKS48_EXPORT_NAME = "mks/nema17x48_with_mks.step"         # 3.3 MB, cm, the same kit with a 48 mm motor (a 17HS19-2004S1: 24 mm shaft, 15 mm D-cut)
+#   (sha256 c1958e60...; the same tool composes vendor/nema17_48mm.step from its body + the x40's shaft trimmed to 22)
 
 # Custom / printed parts: clean name -> (SolidWorks product name, export path under the source dir).
 # Each gets parts/<group>/<name>.py (an import wrapper until converted) + reference/solidworks/<name>.step.

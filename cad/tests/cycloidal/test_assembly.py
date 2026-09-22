@@ -361,15 +361,16 @@ class TestModuleLocks:
     @pytest.mark.slow
     def test_module_interference_budget(self, drive):
         """Only the designed overlaps exist (mm^3): the two 6814/hub press fits, the bolts
-        through the solid nuts, the motor-bolt heads/tips, the two 6003/lobe press fits, and the MKS
-        kit's four M3x30 inside the simplified motor (the envelope has blind holes, the real motor through-holes)."""
+        through the solid nuts, the motor-bolt heads in the plate, the two 6003/lobe press fits, and the
+        thread engagement of the motor bolts (front) and the MKS kit's M3x30 (rear) in the vendor motor's
+        tapped holes (its holes are modelled at the M3 minor diameter, the bolts at the major)."""
         leaves = {c.label: c for c in drive.children}
         budget = {
             ("bearing_6814:1", "cycloidal_output_hub"): 331.0, ("bearing_6814:2", "cycloidal_output_hub"): 331.0,
             ("cycloidal_housing_bolts", "cycloidal_housing_nuts"): 322.0,
-            ("cycloidal_motor_bolts", "cycloidal_motor_plate"): 52.0, ("nema17_48mm", "cycloidal_motor_bolts"): 14.2,
+            ("cycloidal_motor_bolts", "cycloidal_motor_plate"): 52.0, ("nema17_48mm", "cycloidal_motor_bolts"): 46.4,
             ("bearing_6003:1", "cycloidal_eccentric_shaft"): 27.0, ("bearing_6003:2", "cycloidal_eccentric_shaft"): 27.0,
-            ("mks_servo42d", "nema17_48mm"): 554.2,
+            ("mks_servo42d", "nema17_48mm"): 159.4,
         }
         for (a, b), limit in budget.items():
             vol = interference(leaves[a], leaves[b])

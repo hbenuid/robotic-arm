@@ -37,7 +37,7 @@ def test_drive_buy_list_matches_the_drive_config():
         "cycloidal_housing_bolts": CFG.housing.bolt_count, "cycloidal_housing_nuts": CFG.housing.bolt_count,
     }
     assert {r["part"] for r in bom.print_rows("cycloidal_drive")} == set(R.DESIGNED)
-    assert [r["part"] for r in bom.buy_rows("cycloidal_drive") if r["geometry"] == "vendor"] == ["bearing_625", "mks_servo42d"]
+    assert [r["part"] for r in bom.buy_rows("cycloidal_drive") if r["geometry"] == "vendor"] == ["bearing_625", "mks_servo42d", "nema17_48mm"]
 
 
 def test_extras_are_well_formed_and_scoped_to_a_module():

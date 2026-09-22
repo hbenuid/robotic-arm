@@ -186,7 +186,12 @@ kit export (`lib/reference.py MKS_EXPORT_NAME`, outside the repo next to the mon
 `vendor/nema17_40mm.step` (body + D-shaft, re-framed like the drive motor - face z=0, body −Z, shaft +Z, D-flat +Y -
 and the shaft trimmed to `MotorParams.shaft_length`) and `vendor/mks_servo42d.step` (board + cover + standoffs + M3x30,
 z=0 at the motor's REAR face, stack −Z); `import_solidworks.py` then mirrors both into `reference/solidworks/`
-(`rel=None`, the `nema17_pancake` pattern). Written once, committed as LFS - never regenerated on the other machine.
+(`rel=None`, the `nema17_pancake` pattern). `--write drive` composes `vendor/nema17_48mm.step` for the drive motor from
+the x48 export's real 48 mm body (`MKS48_EXPORT_NAME`; 7 solids, tie rods left out) with the x40's shaft fused on -
+the drive keeps its parametric envelope as the reference (`tools/cycloidal/import_cadquery.py --only nema17_48mm`
+writes its `vendor` block). build123d's STEP writer stamps the time into the header: written once, committed as LFS -
+never regenerated on the other machine, and a NEW vendor file needs `gen --force` on its part (the gate only tracks
+inputs the last build read).
 The two parts live in `parts/joints/` (`parts/cycloidal/` is locked to `CYCLOIDAL_COTS`); the drive motor's envelope
 builder is `lib/cycloidal/motor.py nema17_motor()`, which the 40 mm envelope reuses with other `MotorParams`.
 
@@ -251,7 +256,7 @@ Changing a shared dimension — touchpoints in order:
   duplicates; renaming them after the joints is a follow-up.
 - `assemblies/arm_no_caps.py` is a **working view, not the robot**: `arm.py`'s `OCCURRENCES` / `GROUPS` minus
   `HIDDEN` (`j1_cap#1`, `j2_cap_1#1`, `j2_cap_2#1` — the covers over `j1_link` / `j2_link`), same frame, tree and
-  tints, its own git-ignored `arm_no_caps.step` (56 leaves / 163 solids). `HIDDEN` is the one place to edit;
+  tints, its own git-ignored `arm_no_caps.step` (56 leaves / 169 solids). `HIDDEN` is the one place to edit;
   never feed it to `robot/` or the SolidWorks totals. It is a second model because a model takes no
   parameters and the freshness gate sees no environment variable (an env switch in `arm()` would read
   `current` across a flip, and the daemon strips unlisted variables from its workers). Link edits land in
@@ -335,8 +340,8 @@ Changing a shared dimension — touchpoints in order:
 `parts.build(name)`, `lib.models.raw(model)`). `test_parts_convention.py` (contract + geometry for
 every part, COTS envelopes + vendor frames), `test_reference_match.py` (manifest checksums; converted
 parts vs reference), `test_placements.py` (JSON integrity, tables cover every key once, the designed
-module record + the 6 mounted records vs `lib/mounts.py`), `test_assembly.py` (40 + 19 leaves / 95 + 71 solids / volume / bbox
-vs SolidWorks + the module lock; `arm_no_caps` = the arm's tables minus `HIDDEN`, 56 leaves / 163 solids; the arm's leaf colours -
+module record + the 6 mounted records vs `lib/mounts.py`), `test_assembly.py` (40 + 19 leaves / 95 + 77 solids / volume / bbox
+vs SolidWorks + the module lock; `arm_no_caps` = the arm's tables minus `HIDDEN`, 56 leaves / 169 solids; the arm's leaf colours -
 purchased = `BOUGHT_TINT`, which no group / module may reuse, printed = the link's / module's tint, in the arm and in
 the standalone gripper and drive), `test_bom.py` (the print / buy lists
 partition `parts.names()` by the flag, 34 + 25 occurrences, the drive's pieces follow `DEFAULT_CONFIG`, `EXTRAS`

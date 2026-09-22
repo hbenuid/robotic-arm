@@ -18,7 +18,11 @@ directory; `lib.reference.path_of(name)` resolves it). Regenerate — never edit
   2026-09-21, mm, 15 solids, 521 236 bytes, sha256 `4e51a1591030…`; `lib.reference.MKS_EXPORT_NAME`) — not committed;
   `tools/reference/split_mks_motor.py` splits it into `vendor/nema17_40mm.step` (body + D-shaft, shaft trimmed 23 → 22)
   and `vendor/mks_servo42d.step` (board kit), which are committed and mirrored into `solidworks/`. The sibling
-  `mks/nema17x48_with_mks.step` (cm units, a wrong 24 mm / 15 mm D-cut shaft) is archive only — no tool reads it.
+  `mks/nema17x48_with_mks.step` (cm units, 24 solids, 3 345 264 bytes, sha256 `c1958e60a14f…`; `MKS48_EXPORT_NAME`) is
+  the same kit with the 48 mm motor - a 17HS19-2004S1 with the datasheet's 24 mm / 15 mm-D-cut shaft, not the drive's
+  22 mm one - so `split_mks_motor.py --write drive` composes `vendor/nema17_48mm.step` from its body and the x40's
+  shaft; the drive motor's reference stays `cycloidal/nema17_48mm.step` (`import_cadquery.py --only nema17_48mm`
+  records the vendor block).
 - Regenerate: `./cadtool python tools/reference/split_mks_motor.py` (once, on one machine — STEP bytes are per machine),
   `./cadtool python tools/reference/import_solidworks.py` (copies + `manifest.json`), then
   `./cadtool python tools/reference/extract_placements.py --no-pancake` (`placements.json`, the mounted records of

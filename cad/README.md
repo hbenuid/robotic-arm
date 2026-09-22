@@ -111,7 +111,7 @@ cad/
 │   ├── joints/                # j2_link, j2_cap_1, j2_cap_2, j3_coupler, gt2_pulley_90t (SolidWorks wrappers) + COTS nema17_40mm, mks_servo42d (the belt joints' MKS kits)
 │   ├── wrist/                 # wrist_link, gripper_clamp_bracket, gripper_j3_connector + COTS nema17_pancake, gt2_pulley_20t
 │   ├── gripper/               # gripper_* (7), servo_holder + COTS gripper_rail_6mm, mg996r_servo, mg996r_horn
-│   └── cycloidal/             # the drive: 6 designed parts + 10 COTS (bearings, nema17_48mm, pins, bolts, nuts), _cots.py helper
+│   └── cycloidal/             # the drive: 6 designed parts + 10 COTS (bearings, nema17_48mm - vendor file composed from the kit exports -, pins, bolts, nuts), _cots.py helper
 │       └── <name>.py + <name>.step   # every group: running the .py writes the .step beside it (git-ignored, per machine)
 ├── assemblies/
 │   ├── arm.py             # the whole arm, grouped arm -> base_link/shoulder_link/upper_arm_link/forearm_link/wrist_pitch_link/wrist (GROUPS; 59 leaves incl. the 6 mounted motors + boards of lib/mounts.py, printed parts tinted per group, purchased parts grey)
@@ -253,7 +253,7 @@ partition of `robot/frames.py LINKS` with the two modules kept whole (the cycloi
 toggles as one node in the viewers, and
 every subtree is tinted with its group's color (the gripper and cycloidal_drive modules keep
 their own). `tests/test_assembly.py` checks the rebuilt arm against the SolidWorks totals plus
-the module's own lock (40 + 19 leaves, 95 + 71 solids, volumes, bbox), the group labels and the
+the module's own lock (40 + 19 leaves, 95 + 77 solids, volumes, bbox), the group labels and the
 `LINKS` mirror. The six leaves the SolidWorks capture never had - the belt joints' NEMA 17 x 40 motors
 and their MKS SERVO42D boards - are declared in `lib/mounts.py` and materialised into `placements.json`
 by `tools/reference/mount_placements.py` (see `CLAUDE.md` "Mounted occurrences").
