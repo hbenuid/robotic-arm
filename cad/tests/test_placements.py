@@ -22,7 +22,7 @@ def test_record_counts_match_expected():
     assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 40      # 34 SolidWorks + 6 mounted
     assert P.keys(kind="module") == ["cycloidal_drive#1", "gripper#1"]
     assert P.keys(kind="module", designed=True) == P.DATA["designed_modules"] == ["cycloidal_drive#1"]
-    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 95   # 50 + 3 x (2 + 13)
+    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 100   # 50 + (7 + 13) + 2 x (2 + 13)
     assert len(P.keys(kind="part", mounted=False)) == 34
 
 
@@ -34,7 +34,7 @@ def test_mounted_records_follow_lib_mounts():
 
     keys = P.keys(mounted=True)
     assert keys == P.DATA["mounted"] == mounts.keys() == [
-        "nema17_40mm#1", "mks_servo42d#1", "nema17_40mm#2", "mks_servo42d#2", "nema17_40mm#3", "mks_servo42d#3"]
+        "nema17_48mm#1", "mks_servo42d#1", "nema17_40mm#2", "mks_servo42d#2", "nema17_40mm#3", "mks_servo42d#3"]
     assert P.keys(kind="part", mounted=True) == keys
     for key in keys:
         o, m = P.OCCURRENCES[key], mounts.BY_KEY[key]

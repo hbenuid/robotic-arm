@@ -6,11 +6,11 @@
     <link name="base_link">
       <pose>0 0 0 0 0 0</pose>
       <inertial>
-        <pose>-0.049145 0.000014 0.044927 0 0 0</pose>
-        <mass>0.678435</mass>
+        <pose>-0.053669 0.000025 0.041293 0 0 0</pose>
+        <mass>0.798435</mass>
         <inertia>
-          <ixx>9.989056e-04</ixx><ixy>2.287672e-06</ixy><ixz>-3.566957e-04</ixz>
-          <iyy>1.999563e-03</iyy><iyz>8.649818e-07</iyz><izz>2.131647e-03</izz>
+          <ixx>1.118423e-03</ixx><ixy>2.503259e-06</ixy><ixz>-4.304256e-04</ixz>
+          <iyy>2.210742e-03</iyy><iyz>1.094254e-06</iyz><izz>2.264635e-03</izz>
         </inertia>
       </inertial>
       <visual name="base_link_visual">

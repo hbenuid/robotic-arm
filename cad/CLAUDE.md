@@ -220,8 +220,9 @@ Changing a shared dimension — touchpoints in order:
 - `reference/placements.json` (from `tools/reference/extract_placements.py`) holds every occurrence:
   `rel` (to its parent node) and `world`, as `Location(position, rotation_xyz_deg)`; keys
   `"<part>#<n>"`, module `"gripper#1"`. Treat it as an immutable input.
-- **Mounted occurrences** (`lib/mounts.py`): the belt joints' motors - `nema17_40mm#1..3` + `mks_servo42d#1..3` on the
-  NEMA 17 pads `base` / `j1_link` / `j2_link` carry - never existed in the SolidWorks capture. They are declared as
+- **Mounted occurrences** (`lib/mounts.py`): the belt joints' motors - `nema17_48mm#1` (the 48 mm motor, under the base;
+  motor + board hang `BASE_MOTOR_STACK_PROUD` = 6.1 mm below the base's bottom face) and `nema17_40mm#2..3`, + `mks_servo42d#1..3`,
+  on the NEMA 17 pads `base` / `j1_link` / `j2_link` carry - never existed in the SolidWorks capture. They are declared as
   frames-as-data in the host occurrence's frame (`Mount(key, part, host, link, joint, frame)`; a board's host is its
   motor) and `tools/reference/mount_placements.py` materialises them into `placements.json` as ordinary part records
   (parent `None`, `rel == world = host world * frame`, solids / volume / bbox from `parts.build`, a `mount` block; keys
@@ -332,7 +333,7 @@ Changing a shared dimension — touchpoints in order:
 - Placeholders to confirm before real use: joint limits/effort/velocity (`lib/params.py`), axis signs,
   jaw travel, the link-membership assumptions listed in the URDF ledger. The cycloidal drive IS the
   `shoulder_pitch` joint (stator with the yawing `j1_coupler` in `shoulder_link`, rotor with `j1_link`
-  in `upper_arm_link`); the base_yaw / elbow_pitch / wrist_pitch motors are the mounted `nema17_40mm#1..3` +
+  in `upper_arm_link`); the base_yaw / elbow_pitch / wrist_pitch motors are the mounted `nema17_48mm#1`, `nema17_40mm#2..3` +
   `mks_servo42d#1..3` (`lib/mounts.py`, see Assembly); which CAN id (`src/config.py` J1..J3) drives which joint is unconfirmed;
   wrist_roll and the jaws are not driven by `src/config.py`.
 

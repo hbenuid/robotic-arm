@@ -12,14 +12,14 @@
  "root_label": "final_Arm_Assembly_Fully_Movable",
  "expected": {
   "leaf_occurrences": 40,
-  "solids": 95,
-  "solid_volume": 2178854.455
+  "solids": 100,
+  "solid_volume": 2173061.667
  },
  "designed_modules": [
   "cycloidal_drive#1"
  ],
  "mounted": [
-  "nema17_40mm#1",
+  "nema17_48mm#1",
   "mks_servo42d#1",
   "nema17_40mm#2",
   "mks_servo42d#2",
@@ -3058,8 +3058,8 @@
    ]
   },
   {
-   "key": "nema17_40mm#1",
-   "part": "nema17_40mm",
+   "key": "nema17_48mm#1",
+   "part": "nema17_48mm",
    "kind": "part",
    "path": null,
    "parent": null,
@@ -3081,10 +3081,10 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "under the base plate, shaft up through it; connector toward the yaw axis (-X) [ESTIMATE]"
+    "note": "the 48 mm motor under the base plate, shaft up through it; motor + board hang BASE_MOTOR_STACK_PROUD below the base's bottom face; connector toward +X [ESTIMATE]"
    },
-   "solids": 2,
-   "solid_volume": 66449.22,
+   "solids": 7,
+   "solid_volume": 60656.432,
    "rel": {
     "position": [
      78.971,
@@ -3150,13 +3150,13 @@
     ]
    },
    "world_bbox_min": [
-    50.971,
-    -85.3,
+    57.971,
+    -92.9,
     -20.916
    ],
    "world_bbox_size": [
-    49.0,
-    62.4,
+    43.0,
+    70.0,
     42.0
    ]
   },
@@ -3168,14 +3168,14 @@
    "parent": null,
    "label_in_monolith": null,
    "mount": {
-    "host": "nema17_40mm#1",
+    "host": "nema17_48mm#1",
     "link": "base_link",
     "joint": "base_yaw",
     "frame_in_host": {
      "position": [
       0.0,
       0.0,
-      -39.5
+      -48.0
      ],
      "rotation_xyz_deg": [
       0.0,
@@ -3191,7 +3191,7 @@
    "rel": {
     "position": [
      78.971,
-     -84.4,
+     -92.9,
      0.084
     ],
     "rotation_xyz_deg": [
@@ -3210,7 +3210,7 @@
       -0.0,
       0.0,
       1.0,
-      -84.4
+      -92.9
      ],
      [
       1.0,
@@ -3223,7 +3223,7 @@
    "world": {
     "position": [
      78.971,
-     -84.4,
+     -92.9,
      0.084
     ],
     "rotation_xyz_deg": [
@@ -3242,7 +3242,7 @@
       -0.0,
       0.0,
       1.0,
-      -84.4
+      -92.9
      ],
      [
       1.0,
@@ -3254,7 +3254,7 @@
    },
    "world_bbox_min": [
     57.471,
-    -98.5,
+    -107.0,
     -21.416
    ],
    "world_bbox_size": [

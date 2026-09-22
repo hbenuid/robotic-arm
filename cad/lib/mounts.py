@@ -2,8 +2,9 @@
 
 The SolidWorks arm cut a NEMA 17 pad into `base` (base_yaw), `j1_link` (elbow_pitch) and `j2_link`
 (wrist_pitch) but never placed the motors, so reference/placements.json has no record for them.
-This module DECLARES them: one 40 mm kit motor (parts/joints/nema17_40mm) on each pad and its MKS
-SERVO42D board (parts/joints/mks_servo42d) on the motor's rear face. Each mount is a frame AS DATA
+This module DECLARES them: the 48 mm kit motor (parts/cycloidal/nema17_48mm, the drive's) on the base's pad,
+a 40 mm kit motor (parts/joints/nema17_40mm) on each of the two link pads, and each motor's MKS SERVO42D board
+(parts/joints/mks_servo42d) on its rear face. Each mount is a frame AS DATA
 (`(position mm, rotation_xyz_deg)`, lib.datum.to_location - kernel-free, like every frame a module
 declares) in the HOST occurrence's frame; tools/reference/mount_placements.py turns them into ordinary
 placements.json part records (world = host world * frame; solids / volume / bbox from the built part),
@@ -17,8 +18,9 @@ on the pad face at the bolt-pattern centre; the spin about the axis (90 deg step
 only sets which way the connector faces [ESTIMATE]. The board's frame is the motor's, shifted to the rear face.
 
 Geometry (lib/params.py, kernel-verified 2026-09-21 - tests/test_mounts.py re-checks it):
-  base_yaw     base plate -Y face, pattern centre BASE_MOTOR_PATTERN_CENTRE; body hangs in -Y (2.4 mm above
-               the base's bottom face with the board), shaft +Y through the plate, belt slot toward the yaw axis
+  base_yaw     base plate -Y face, pattern centre BASE_MOTOR_PATTERN_CENTRE; the 48 mm body hangs in -Y, shaft +Y
+               through the plate, belt slot toward the yaw axis; motor + board reach BASE_MOTOR_STACK_PROUD (6.1 mm)
+               BELOW the base's bottom face (56 mm of depth under the plate) - the base needs feet or a cut-out
   elbow_pitch  j1_link's 48 x 48 pad (outer face y = J1_MOTOR_PAD_FACE_Y, the -N side), pattern on the
                shoulder axis; shaft +N through the pad opening, the 20T in the elbow 90T's plane, 210 mm centres
   wrist_pitch  j2_link's web (+Z face z = J2_MOTOR_WEB_FACE_Z), motor axis at x = J2_MOTOR_SLIDE_X on the two
@@ -29,11 +31,21 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from lib.params import (
-    BASE_MOTOR_PATTERN_CENTRE, J1_MOTOR_PAD_FACE_Y, J2_MOTOR_SLIDE_X, J2_MOTOR_WEB_FACE_Z, NEMA17_40_BODY_LEN,
+    BASE_MOTOR_PATTERN_CENTRE, CYCLOIDAL_MOTOR_BODY_LEN, J1_MOTOR_PAD_FACE_Y, J2_MOTOR_SLIDE_X, J2_MOTOR_WEB_FACE_Z,
+    NEMA17_40_BODY_LEN,
 )
 
-MOTOR, BOARD = "nema17_40mm", "mks_servo42d"
-BOARD_FRAME = ((0.0, 0.0, -NEMA17_40_BODY_LEN), (0.0, 0.0, 0.0))   # board frame in the motor's: z=0 at the rear face
+MOTOR_48, MOTOR_40, BOARD = "nema17_48mm", "nema17_40mm", "mks_servo42d"
+MOTORS = (MOTOR_48, MOTOR_40)
+
+
+def board_frame(body_length: float) -> tuple:
+    """The board's frame in its motor's: z=0 at the motor's rear face (the board stack in -Z)."""
+    return ((0.0, 0.0, -body_length), (0.0, 0.0, 0.0))
+
+
+BOARD_FRAME_48 = board_frame(CYCLOIDAL_MOTOR_BODY_LEN)   # behind a 48 mm motor
+BOARD_FRAME_40 = board_frame(NEMA17_40_BODY_LEN)          # behind a 40 mm motor
 
 
 @dataclass(frozen=True)
@@ -48,18 +60,19 @@ class Mount:
 
 
 MOUNTS: tuple[Mount, ...] = (
-    Mount("nema17_40mm#1", MOTOR, "base#1", "base_link", "base_yaw",
+    Mount("nema17_48mm#1", MOTOR_48, "base#1", "base_link", "base_yaw",
           (BASE_MOTOR_PATTERN_CENTRE, (-90.0, 0.0, 270.0)),
-          "under the base plate, shaft up through it; connector toward the yaw axis (-X) [ESTIMATE]"),
-    Mount("mks_servo42d#1", BOARD, "nema17_40mm#1", "base_link", "base_yaw", BOARD_FRAME),
-    Mount("nema17_40mm#2", MOTOR, "j1_link#1", "upper_arm_link", "elbow_pitch",
+          "the 48 mm motor under the base plate, shaft up through it; motor + board hang BASE_MOTOR_STACK_PROUD below "
+          "the base's bottom face; connector toward +X [ESTIMATE]"),
+    Mount("mks_servo42d#1", BOARD, "nema17_48mm#1", "base_link", "base_yaw", BOARD_FRAME_48),
+    Mount("nema17_40mm#2", MOTOR_40, "j1_link#1", "upper_arm_link", "elbow_pitch",
           ((0.0, J1_MOTOR_PAD_FACE_Y, 0.0), (-90.0, 0.0, 90.0)),
           "on j1_link's pad, on the shoulder axis (the pad's holes are 0.38 mm off), shaft +N; connector toward the elbow [ESTIMATE]"),
-    Mount("mks_servo42d#2", BOARD, "nema17_40mm#2", "upper_arm_link", "elbow_pitch", BOARD_FRAME),
-    Mount("nema17_40mm#3", MOTOR, "j2_link#1", "forearm_link", "wrist_pitch",
+    Mount("mks_servo42d#2", BOARD, "nema17_40mm#2", "upper_arm_link", "elbow_pitch", BOARD_FRAME_40),
+    Mount("nema17_40mm#3", MOTOR_40, "j2_link#1", "forearm_link", "wrist_pitch",
           ((J2_MOTOR_SLIDE_X, 0.0, J2_MOTOR_WEB_FACE_Z), (180.0, 0.0, 90.0)),
           "on j2_link's web (+Z face), shaft -N; slide position J2_MOTOR_SLIDE_X [ESTIMATE]; connector toward the elbow [ESTIMATE]"),
-    Mount("mks_servo42d#3", BOARD, "nema17_40mm#3", "forearm_link", "wrist_pitch", BOARD_FRAME),
+    Mount("mks_servo42d#3", BOARD, "nema17_40mm#3", "forearm_link", "wrist_pitch", BOARD_FRAME_40),
 )
 BY_KEY: dict[str, Mount] = {m.key: m for m in MOUNTS}
 

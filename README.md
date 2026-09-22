@@ -39,8 +39,8 @@ The same CAD also produces the arm's robot description — [`cad/robot/arm.urdf`
 wrist_pitch → wrist_pitch_link → wrist_roll → wrist_roll_link → jaw_a / jaw_b (+ tool0)`, where
 `shoulder_pitch` **is** the 20:1 cycloidal drive (its housing turns with the base-yaw holder, its output
 hub carries the upper arm), `elbow_pitch` / `wrist_pitch` are the GT2 belt joints, `wrist_roll` the
-NEMA17 pancake and the jaws the MG996R gripper. The CAD now places the three belt-joint motors (NEMA 17 x 40 +
-MKS SERVO42D kits on the pads the links carry, `cad/lib/mounts.py`) and the drive's own 48 mm kit; which CAN id
+NEMA17 pancake and the jaws the MG996R gripper. The CAD now places the three belt-joint motors (MKS SERVO42D kits on the pads
+the links carry, `cad/lib/mounts.py`: a 48 mm NEMA 17 under the base, 40 mm ones at the elbow and wrist) and the drive's own 48 mm kit; which CAN id
 (`src/config.py` J1..J3) drives which joint is not confirmed yet.
 
 The 20:1 cycloidal shoulder drive (formerly the separate `cycloidal_drive` CadQuery repo) is fully

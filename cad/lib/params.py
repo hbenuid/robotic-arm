@@ -85,8 +85,11 @@ MKS_SERVO42D_W = 43.0           # [REFERENCE] cover square
 MKS_SERVO42D_SCREW_REACH = 19.6 # [REFERENCE] the 4x M3x30 reach this far into the motor's through-holes (+Z of the rear face)
 MKS_SERVO42D_MASS_G = 35.0      # [ESTIMATE] PCB + cover + 4 screws + 4 standoffs; verify on the unit
 
-# The mounts (host-part frames, mm): where the pads sit in the SolidWorks links.
+# The mounts (host-part frames, mm): where the pads sit in the SolidWorks links. base_yaw takes the 48 mm motor
+# (parts/cycloidal/nema17_48mm, the drive's), elbow_pitch / wrist_pitch the 40 mm one.
 BASE_MOTOR_PATTERN_CENTRE = (78.971, -44.9, 0.084)   # [REFERENCE] base: 4x M3 on 31 x 31 through the 5 mm plate, on its -Y face
+BASE_MOTOR_STACK_PROUD = 6.1    # [DESIGN] the 48 mm motor + board (48 + 14.1) hang this far BELOW the base's bottom face
+#                                 (56.0 mm of depth under the plate): the base needs feet / a cut-out at least this deep
 J1_MOTOR_PAD_FACE_Y = -32.5     # [REFERENCE] j1_link: the 48 x 48 pad's outer face (the -N side), pattern on the shoulder axis
 J2_MOTOR_WEB_FACE_Z = 19.0      # [REFERENCE] j2_link: the web's +Z face; the motor bolts through its two 110 mm slots
 J2_MOTOR_SLIDE_RANGE = (-141.5, -62.5)   # [REFERENCE] j2_link: motor-axis x range the slots allow (belt tension slide)

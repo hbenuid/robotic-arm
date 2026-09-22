@@ -50,7 +50,7 @@ def mounted_records(records: list[dict]) -> list[dict]:
         if m.host not in worlds:
             raise SystemExit(f"{m.key}: host {m.host!r} has no placement record (declare the motor before its board)")
         world = worlds[m.host] * to_location(m.frame)
-        if m.part == mounts.MOTOR:
+        if m.part in mounts.MOTORS:
             z, axis = _axis_z(world), joints[m.joint].axis_w
             if abs(abs(sum(a * b for a, b in zip(z, axis))) - 1.0) > AXIS_TOL:
                 raise SystemExit(f"{m.key}: motor +Z {z} is not parallel to the {m.joint} axis {axis}")

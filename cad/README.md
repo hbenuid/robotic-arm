@@ -304,7 +304,7 @@ sweeps and hardware.
 
 | joint | type | parent → child | actuator | notes |
 |---|---|---|---|---|
-| `base_yaw` | revolute, world up | `base_link → shoulder_link` | NEMA 17 x 40 + MKS SERVO42D (`nema17_40mm#1` + `mks_servo42d#1` under the base plate; CAN id unconfirmed) | the holder `j1_coupler` turns on the base |
+| `base_yaw` | revolute, world up | `base_link → shoulder_link` | NEMA 17 x 48 + MKS SERVO42D (`nema17_48mm#1` + `mks_servo42d#1` under the base plate, hanging `BASE_MOTOR_STACK_PROUD` = 6.1 mm below the base's bottom face; CAN id unconfirmed) | the holder `j1_coupler` turns on the base |
 | `shoulder_pitch` | revolute, `N` | `shoulder_link → upper_arm_link` | the 20:1 cycloidal drive, its own NEMA 17 (`CYCLOIDAL_RATIO`) | stator with the holder, rotor with `j1_link` |
 | `elbow_pitch` | revolute, `N` | `upper_arm_link → forearm_link` | GT2 90T belt, NEMA 17 x 40 + MKS SERVO42D (`nema17_40mm#2` + `mks_servo42d#2` on `j1_link`'s pad; CAN id unconfirmed) | pulley + J3 coupler on the forearm |
 | `wrist_pitch` | revolute, `N` | `forearm_link → wrist_pitch_link` | GT2 90T belt, NEMA 17 x 40 + MKS SERVO42D (`nema17_40mm#3` + `mks_servo42d#3` on `j2_link`'s web slots; CAN id unconfirmed) | pulley + J3 coupler on the wrist body |
@@ -314,7 +314,7 @@ sweeps and hardware.
 
 | link | occurrences (`robot/frames.py LINKS`) |
 |---|---|
-| `base_link` | `base` + `nema17_40mm#1`, `mks_servo42d#1` (the base_yaw motor + board under the plate) |
+| `base_link` | `base` + `nema17_48mm#1`, `mks_servo42d#1` (the base_yaw 48 mm motor + board under the plate) |
 | `shoulder_link` | `j1_coupler` + the drive's **stator** (`cycloidal_drive#1:stator`: motor plate, ring gear body, ring pins, housing bolts/nuts, NEMA 17 + its MKS board, gear train) |
 | `upper_arm_link` | the drive's **rotor** (`cycloidal_drive#1:rotor`: output hub, output pins, 625) + `j1_link` + `j1_cap` + `nema17_40mm#2`, `mks_servo42d#2` (the elbow_pitch motor + board on the pad) |
 | `forearm_link` | `j2_link`, `j2_cap_1`, `j2_cap_2`, `gt2_pulley_90t#1`, `j3_coupler#1` + `nema17_40mm#3`, `mks_servo42d#3` (the wrist_pitch motor + board on the web) |

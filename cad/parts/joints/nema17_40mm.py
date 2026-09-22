@@ -1,8 +1,8 @@
 """nema17_40mm - purchased (COTS) part; source of truth is vendor/nema17_40mm.step.
 
-NEMA 17 stepper, 40 mm body: the motor of the MKS SERVO42D closed-loop kit that drives the arm's three
-belt joints (base_yaw, elbow_pitch, wrist_pitch - lib/mounts.py places it on the NEMA 17 pads the
-SolidWorks links carry). The vendor file is the motor body of the "nema17x40_with_mks" SolidWorks export,
+NEMA 17 stepper, 40 mm body: the motor of the MKS SERVO42D closed-loop kit that drives the elbow_pitch and
+wrist_pitch belt joints (lib/mounts.py places it on the NEMA 17 pads j1_link and j2_link carry; base_yaw takes
+the 48 mm motor, parts/cycloidal/nema17_48mm). The vendor file is the motor body of the "nema17x40_with_mks" SolidWorks export,
 split off by tools/reference/split_mks_motor.py (the board is parts/joints/mks_servo42d) and re-framed like
 the drive motor (parts/cycloidal/nema17_48mm: mounting face z=0, body -Z, pilot boss and shaft +Z, D-flat
 +Y), with the export's own boss and 23 mm shaft cut off and the drive's pilot() + shaft() (lib/cycloidal/motor.py,
@@ -12,7 +12,7 @@ interface. The cable connector is a 7 mm boss on the -Y side of the body's rear.
 SolidWorks product: 'nema17x40_with_mks' (motor body + shaft)
 Source export:      ~/Documents/arm_assembly_organized/mks/nema17x40_with_mks.step (lib.reference.MKS_EXPORT_NAME)
 Reference: mm units, 2 solid(s), bbox size (42, 49, 62.4) mm, bbox min (-21, -28, -40.4) mm.
-In the arm: x3 (nema17_40mm#1 base_yaw, #2 elbow_pitch, #3 wrist_pitch).
+In the arm: x2 (nema17_40mm#2 elbow_pitch, #3 wrist_pitch).
 
 COTS convention (parts/_templates/cots.py): nema17_40mm() returns the vendor STEP when present,
 else the parametric envelope below - both in the part frame lib/mounts.py places.

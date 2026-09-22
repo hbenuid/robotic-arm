@@ -17,7 +17,7 @@ from lib.models import raw
 from robot import frames as F
 from tests.cycloidal.helpers import interference
 
-MOTORS = [m for m in mounts.MOUNTS if m.part == mounts.MOTOR]
+MOTORS = [m for m in mounts.MOUNTS if m.part in mounts.MOTORS]
 BOARDS = {m.host: m for m in mounts.MOUNTS if m.part == mounts.BOARD}
 
 
@@ -34,7 +34,8 @@ def test_every_motor_has_its_board_and_they_sit_in_the_same_link():
     for m in MOTORS:
         b = BOARDS[m.key]
         assert (b.link, b.joint) == (m.link, m.joint)
-        assert b.frame == mounts.BOARD_FRAME == ((0.0, 0.0, -PARAMS.NEMA17_40_BODY_LEN), (0.0, 0.0, 0.0))
+        body = PARAMS.CYCLOIDAL_MOTOR_BODY_LEN if m.part == mounts.MOTOR_48 else PARAMS.NEMA17_40_BODY_LEN
+        assert b.frame == mounts.board_frame(body) == ((0.0, 0.0, -body), (0.0, 0.0, 0.0))
         assert m.key in F.LINKS[m.link] and b.key in F.LINKS[m.link], m.link
         assert P.OCCURRENCES[m.host]["kind"] == "part" and "mount" not in P.OCCURRENCES[m.host]   # a SolidWorks host
 
@@ -47,7 +48,7 @@ def test_motor_shaft_is_on_its_joint_axis(m):
     assert abs(abs(z.dot(Vector(*joint.axis_w))) - 1.0) < 1e-6, (m.key, tuple(z))
     # the board is the motor frame shifted to the rear face
     board = _world(BOARDS[m.key].key)
-    want = _world(m.key) * to_location(mounts.BOARD_FRAME)
+    want = _world(m.key) * to_location(BOARDS[m.key].frame)
     assert (board.position - want.position).length < 1e-4 and (_dir(board) - _dir(want)).length < 1e-6
 
 
@@ -90,11 +91,12 @@ def test_motors_and_boards_clear_their_neighbours():
 
 
 @pytest.mark.slow
-def test_base_motor_stack_stays_above_the_base_bottom():
-    """Under the base plate the motor + board stack (53.6) must not reach the base's mounting face (56 mm below)."""
+def test_base_motor_stack_hangs_below_the_base_by_the_documented_amount():
+    """Under the base plate the 48 mm motor + board stack (62.1) reaches BASE_MOTOR_STACK_PROUD below the base's
+    mounting face (56 mm of depth) - a known, documented protrusion, not a silent one."""
     lowest = min(place_world(m.part, m.key).bounding_box().min.Y for m in mounts.MOUNTS if m.joint == "base_yaw")
-    assert lowest > BASE_BOTTOM_Y + 1.0, lowest
-    assert math.isclose(PARAMS.BASE_MOTOR_PATTERN_CENTRE[1] - lowest, PARAMS.NEMA17_40_BODY_LEN + PARAMS.MKS_SERVO42D_STACK, abs_tol=0.05)
+    assert math.isclose(PARAMS.BASE_MOTOR_PATTERN_CENTRE[1] - lowest, PARAMS.CYCLOIDAL_MOTOR_BODY_LEN + PARAMS.MKS_SERVO42D_STACK, abs_tol=0.05)
+    assert math.isclose(BASE_BOTTOM_Y - lowest, PARAMS.BASE_MOTOR_STACK_PROUD, abs_tol=0.05), BASE_BOTTOM_Y - lowest
 
 
 @pytest.mark.slow
@@ -116,3 +118,8 @@ def test_wrist_pitch_slide_position_is_inside_the_slots_and_the_cap_window():
     assert lo < PARAMS.J2_MOTOR_SLIDE_X < hi
     m = mounts.BY_KEY["nema17_40mm#3"]
     assert m.frame[0][0] == PARAMS.J2_MOTOR_SLIDE_X and m.frame[0][2] == PARAMS.J2_MOTOR_WEB_FACE_Z
+
+
+def test_the_base_takes_the_48mm_motor_and_the_links_the_40mm_one():
+    by_joint = {m.joint: m.part for m in mounts.MOUNTS if m.part in mounts.MOTORS}
+    assert by_joint == {"base_yaw": "nema17_48mm", "elbow_pitch": "nema17_40mm", "wrist_pitch": "nema17_40mm"}

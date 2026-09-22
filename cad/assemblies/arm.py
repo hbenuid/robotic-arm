@@ -1,6 +1,6 @@
 """The whole arm: every part of the SolidWorks 'final Arm Assembly Fully Movable' placed from
 reference/placements.json - 15 part occurrences + the 6 mounted ones (lib/mounts.py: the belt joints'
-NEMA 17 x 40 motors and their MKS SERVO42D boards, on the pads the links carry) + the gripper module
+NEMA 17 motors - 48 mm at the base, 40 mm at the elbow and wrist - and their MKS SERVO42D boards, on the pads the links carry) + the gripper module
 (SolidWorks-driven) + the cycloidal_drive module (code-driven, placed at the SolidWorks node's pose)
 = 59 leaves, bucketed into the GROUPS component tree (arm -> base_link/shoulder_link/upper_arm_link/
 forearm_link/wrist_pitch_link/wrist) so each rigid link toggles as one node in the viewers. Colors: a PRINTED part carries its link's
@@ -8,7 +8,7 @@ forearm_link/wrist_pitch_link/wrist) so each rigid link toggles as one node in t
 rails, the 20T pulley) is _occurrences.BOUGHT_TINT grey, inside the two modules too:
 
     arm
-    |- base_link         base, nema17_40mm:base_yaw, mks_servo42d:base_yaw
+    |- base_link         base, nema17_48mm:base_yaw, mks_servo42d:base_yaw
     |- shoulder_link     j1_coupler, cycloidal_drive (19, kept whole - see below)
     |- upper_arm_link    j1_link, nema17_40mm:elbow_pitch, mks_servo42d:elbow_pitch, j1_cap
     |- forearm_link      gt2_pulley_90t:j2, j3_coupler:j2, j2_link, nema17_40mm:wrist_pitch, mks_servo42d:wrist_pitch, j2_cap_1, j2_cap_2
@@ -54,7 +54,7 @@ MODULE_KEYS = (DRIVE_KEY, GRIPPER_KEY)
 # pulley + coupler are positional (elbow_pitch vs wrist_pitch, in that order).
 OCCURRENCES = [
     ("base",                  None, "base#1"),
-    ("nema17_40mm",           "base_yaw", "nema17_40mm#1"),        # mounted: under the base plate
+    ("nema17_48mm",           "base_yaw", "nema17_48mm#1"),        # mounted: the 48 mm motor under the base plate
     ("mks_servo42d",          "base_yaw", "mks_servo42d#1"),
     ("j1_coupler",            None, "j1_coupler#1"),
     ("cycloidal_drive",       None, DRIVE_KEY),            # module: assemblies/cycloidal_drive.py (the shoulder_pitch joint)
@@ -85,7 +85,7 @@ MODULES = {"gripper": gripper.gripper, "cycloidal_drive": cycloidal_drive.cycloi
 # Rows are (group label, tint, occurrence keys in document order); tests lock the LINKS mirror.
 # The tints color the PRINTED parts; grey is reserved for the purchased ones (BOUGHT_TINT).
 GROUPS = [
-    ("base_link",        "#937860", ("base#1", "nema17_40mm#1", "mks_servo42d#1")),
+    ("base_link",        "#937860", ("base#1", "nema17_48mm#1", "mks_servo42d#1")),
     ("shoulder_link",    "#4C72B0", ("j1_coupler#1", DRIVE_KEY)),
     ("upper_arm_link",   "#CCB974", ("j1_link#1", "nema17_40mm#2", "mks_servo42d#2", "j1_cap#1")),
     ("forearm_link",     "#DD8452", ("gt2_pulley_90t#1", "j3_coupler#1", "j2_link#1", "nema17_40mm#3", "mks_servo42d#3", "j2_cap_1#1", "j2_cap_2#1")),

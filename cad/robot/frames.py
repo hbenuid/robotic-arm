@@ -64,7 +64,7 @@ LINK_ORDER = ["base_link", "shoulder_link", "upper_arm_link", "forearm_link", "w
               "wrist_roll_link", "jaw_a_link", "jaw_b_link", "tool0"]
 LINKS: dict[str, list[str]] = {
     # the base_yaw motor + its MKS board hang under the base plate (lib/mounts.py) - they turn nothing themselves
-    "base_link": ["base#1", "nema17_40mm#1", "mks_servo42d#1"],
+    "base_link": ["base#1", "nema17_48mm#1", "mks_servo42d#1"],
     # j1_coupler (the holder) turns on the base; the cycloidal drive's stator - housing, motor (+ its
     # MKS board) and the gear train - is bolted into its yoke (assemblies/cycloidal_drive.py BODIES).
     "shoulder_link": ["j1_coupler#1", "cycloidal_drive#1:stator"],
@@ -110,7 +110,7 @@ JOINTS: list[Joint] = [
     Joint("base_yaw", "revolute", "base_link", "shoulder_link", BASE_YAW_ORIGIN, U, BASE_FORWARD,
           -PARAMS.BASE_YAW_LIMIT_DEG * DEG, PARAMS.BASE_YAW_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
           notes="j1_coupler (carrying the cycloidal drive's stator) turns on the base; driven by "
-                "nema17_40mm#1 + mks_servo42d#1 under the base plate (lib/mounts.py) "
+                "nema17_48mm#1 (the 48 mm motor) + mks_servo42d#1 under the base plate (lib/mounts.py) "
                 "[which CAN id (src/config.py J1..J3) it is: unconfirmed]"),
     Joint("shoulder_pitch", "revolute", "shoulder_link", "upper_arm_link", SHOULDER_ORIGIN, N, SHOULDER_TO_ELBOW_INPLANE,
           -PARAMS.SHOULDER_PITCH_LIMIT_DEG * DEG, PARAMS.SHOULDER_PITCH_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,

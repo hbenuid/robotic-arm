@@ -156,7 +156,7 @@ def test_arm_assembly_matches_reference_totals():
     assert len(leaves) == EXPECTED["leaf_occurrences"] + DRIVE["leaves"] == 59
     labels = [leaf.label for leaf in leaves]
     assert len(set(labels)) == len(labels), f"duplicate leaf labels: {labels}"
-    assert len(a.solids()) == EXPECTED["solids"] + DRIVE["solids"] == 172
+    assert len(a.solids()) == EXPECTED["solids"] + DRIVE["solids"] == 177
     assert abs(R.solid_volume(a) - (EXPECTED["solid_volume"] + DRIVE["solid_volume"])) <= 0.5
     exp_min, exp_size = _expected_bbox()
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_min(a), exp_min)), (R.bbox_min(a), exp_min)
@@ -190,7 +190,7 @@ def test_arm_no_caps_builds_the_arm_without_its_caps():
     assert len(labels) == EXPECTED["leaf_occurrences"] + DRIVE["leaves"] - len(arm_no_caps.HIDDEN) == 56
     hidden = [P.OCCURRENCES[key] for key in arm_no_caps.HIDDEN]
     assert not {o["part"] for o in hidden} & set(labels), labels
-    assert len(a.solids()) == EXPECTED["solids"] + DRIVE["solids"] - sum(o["solids"] for o in hidden) == 169
+    assert len(a.solids()) == EXPECTED["solids"] + DRIVE["solids"] - sum(o["solids"] for o in hidden) == 174
     volume = EXPECTED["solid_volume"] + DRIVE["solid_volume"] - sum(o["solid_volume"] for o in hidden)
     assert abs(R.solid_volume(a) - volume) <= 0.5
     assert a.is_valid

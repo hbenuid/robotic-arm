@@ -46,9 +46,10 @@ def test_belt_motor_and_mks_board_track_reference():
     assert board["bbox_min"] == [-p.MKS_SERVO42D_W / 2, -p.MKS_SERVO42D_W / 2, -p.MKS_SERVO42D_STACK]
     assert math.isclose(p.MKS_SERVO42D_STACK, 14.1) and p.MKS_SERVO42D_SCREW_REACH < p.NEMA17_40_BODY_LEN
     assert p.NEMA17_40_MASS_G > 0 and p.MKS_SERVO42D_MASS_G > 0
-    # the base_yaw motor hangs under the base's 5 mm plate: motor + board must stay above the base's bottom face
-    stack = p.NEMA17_40_BODY_LEN + p.MKS_SERVO42D_STACK                       # 53.6
-    assert p.BASE_MOTOR_PATTERN_CENTRE[1] - stack > BASE_BOTTOM_Y + 1.0        # 2.4 mm margin
+    # the base_yaw motor is the 48 mm one, hanging under the base's 5 mm plate: motor + board (62.1) reach
+    # BASE_MOTOR_STACK_PROUD below the base's bottom face (56 mm of depth) - documented, not silent
+    stack = p.CYCLOIDAL_MOTOR_BODY_LEN + p.MKS_SERVO42D_STACK                 # 62.1
+    assert math.isclose(BASE_BOTTOM_Y - (p.BASE_MOTOR_PATTERN_CENTRE[1] - stack), p.BASE_MOTOR_STACK_PROUD, abs_tol=0.05)
     # the wrist_pitch motor slides along j2_link's slots; the chosen position keeps the body inside j2_cap_1's window
     lo, hi = p.J2_MOTOR_SLIDE_RANGE
     assert lo < p.J2_MOTOR_SLIDE_X < hi and -127.0 <= p.J2_MOTOR_SLIDE_X <= -109.0

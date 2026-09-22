@@ -3,7 +3,8 @@
   arm: 4-joint desktop arm - base yaw, shoulder pitch (20:1 cycloidal drive), elbow pitch and
   wrist pitch (GT2 belts) - + NEMA17-pancake wrist roll + MG996R parallel gripper. Four joints
   are driven by NEMA 17 + MKS SERVO42D kits: the base_yaw / elbow_pitch / wrist_pitch motors are
-  40 mm NEMA 17s on the pads the links carry (cad/lib/mounts.py: nema17_40mm#1..3 + mks_servo42d#1..3,
+  NEMA 17s on the pads the links carry (cad/lib/mounts.py: the 48 mm nema17_48mm#1 under the base,
+  nema17_40mm#2..3 on the links, + mks_servo42d#1..3,
   in base_link / upper_arm_link / forearm_link), the shoulder_pitch one the drive's own 48 mm motor
   + board; which CAN id (src/config.py J1..J3) drives which joint is unconfirmed.
 
@@ -43,9 +44,9 @@
 <robot name="arm">
   <link name="base_link">
     <inertial>
-      <origin xyz="-0.049145 0.000014 0.044927" rpy="0 0 0" />
-      <mass value="0.678435" />
-      <inertia ixx="9.989056e-04" ixy="2.287672e-06" ixz="-3.566957e-04" iyy="1.999563e-03" iyz="8.649818e-07" izz="2.131647e-03" />
+      <origin xyz="-0.053669 0.000025 0.041293" rpy="0 0 0" />
+      <mass value="0.798435" />
+      <inertia ixx="1.118423e-03" ixy="2.503259e-06" ixz="-4.304256e-04" iyy="2.210742e-03" iyz="1.094254e-06" izz="2.264635e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
