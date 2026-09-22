@@ -104,7 +104,7 @@ the monolith — as `.STEP` at `cad/` root they matched neither the `*.step` ign
   their checksums and the tests build in-process).
 - Verified on the Mac: a forced build starts the daemon + 3 workers, `daemon stop` ends all four, a second stop
   reports none. `tests/test_tooling.py` locks the pattern against both interpreter names (and against matching
-  another checkout's daemon). Linux behaviour is unchanged by construction; the Fedora run is still owed.
+  another checkout's daemon). Linux behaviour is unchanged by construction.
 
 ## 2026-09-21 — printed vs. bought: lists, colours and STLs from the one `COTS` label (branch `cad/printed-vs-bought`)
 
@@ -148,8 +148,7 @@ already existed once per part (`COTS = True`); nothing used it. Commits: `f8b1c8
 ### Tests
 - `test_bom.py` (new, fast), `test_parts_convention.py` (the `PURCHASE_*` contract; a printed part declares
   none), `test_assembly.py` (grey is reserved for purchased parts; leaf colours of the arm, `arm_no_caps`, the
-  gripper and the drive). Passed on the arm64 Mac;
-  the Fedora run is still owed.
+  gripper and the drive).
 
 ## 2026-09-21 — a caps-off working view of the arm (branch `cad/arm-no-caps`)
 
@@ -165,7 +164,7 @@ already existed once per part (`COTS = True`); nothing used it. Commits: `f8b1c8
   wrappers that do not follow a link change — check `assemblies/arm.py` after changing `j1_link` / `j2_link`.
 - Tests: `test_assembly.py` (tables = the arm's minus `HIDDEN`, no group emptied, the file ends with its build
   call; slow: the build has 49 leaves / 105 solids / the arm's volume minus the caps'), `test_lazy_kernel.py`
-  probes the new module. Passed on the arm64 Mac; the Fedora run is still owed.
+  probes the new module.
 - Docs: the zero-code alternative for images is verified and documented —
   `./cadtool snapshot assemblies/arm.step out.png --hide '#j1_cap' --hide '#j2_cap_1' --hide '#j2_cap_2'`.
 

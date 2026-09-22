@@ -95,8 +95,8 @@ The repo is worked on from both; git is the only sync channel (push before leavi
   committed — re-export those on one machine per change, never as a side effect.
 - `cadtool` must stay runnable on macOS's stock **bash 3.2** (under `set -u` an empty array is unset: expand
   optional arrays as `${arr[@]+"${arr[@]}"}`) and without GNU coreutils on `PATH`. No exact-equality asserts on
-  floating-point results (tessellations of spline geometry differ per architecture). A change is verified once
-  `./cadtool pytest` has passed on **both** machines.
+  floating-point results (tessellations of spline geometry differ per architecture). Changes must work on both
+  machines by construction; there is no per-machine sign-off to track or report.
 
 ## Authoring a part (`parts/<group>/<name>.py`)
 Parts live in subsystem groups (`base`, `joints`, `wrist`, `gripper`, `cycloidal`; templates in
