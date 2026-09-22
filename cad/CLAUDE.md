@@ -4,7 +4,7 @@
 conversion workflow, shared-dimension rules, assembly placements, purchased parts, tests, tooling.
 **Audience:** agent. Human docs: `README.md`. Reference provenance: `reference/README.md`. The
 cycloidal drive (spec, port notes, attachment): `docs/cycloidal_drive.md`.
-**Last updated:** 2026-09-21 (navigation pass). Every commit that changes behaviour, layout or tooling gets a dated entry in the
+**Last updated:** 2026-09-22 (cadgen 0.6.6). Every commit that changes behaviour, layout or tooling gets a dated entry in the
 root `CHANGELOG.md` and bumps the `Last updated` line of the docs it touches.
 
 `cad/` is a **separate uv project** (Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.6.x) inside the
@@ -155,7 +155,8 @@ the CAD keeps is the derived, committed copy (`reference/`, `vendor/`) — the r
 The repo is worked on from both; git is the only sync channel (push before leaving a machine, pull on arrival).
 - **Per-machine state git does not carry** — after a pull that changes `pyproject.toml` / `uv.lock`:
   `./cadtool daemon stop && ./cadtool setup`, `claude plugin marketplace update text-to-cad && claude plugin
-  update cad@text-to-cad` (each scope; restart Claude Code), then `./cadtool doctor` must be clean. No
+  update cad@text-to-cad` (each scope — `--scope project` too; `~/.claude/plugins/installed_plugins.json` must show
+  the new version for both, `doctor` cannot tell — see Gotchas; restart Claude Code), then `./cadtool doctor` must be clean. No
   `CAD_PLUGIN` in a shell profile (it overrides the plugin detection).
 - **No generated STEP is committed**, because its bytes differ per machine (see "Running things"): each
   machine builds its own, nothing to restore or avoid staging. Only `robot/meshes/*.stl` is generated AND
@@ -473,7 +474,8 @@ unrelated, broken motor-control suite).
 - `lib.reference.step_units()` only tells inch from mm: a centimetre file (the x48 kit export) is reported as mm.
   OCCT converts every unit correctly on import; the manifest's `units` field is the one that would lie.
 - cadgen makes hard cutovers (0.6.0: cache / sidecar schemas, so every model read stale once; 0.6.5: the
-  inspect CLI): a retired interface fails with a teaching error, never an alias. On a bump re-check the
+  inspect CLI; 0.6.6 was additive only — `cadgen.eng_drawing` and matplotlib / pillow as hard deps, nothing
+  retired, no stale wave, same STEP bytes): a retired interface fails with a teaching error, never an alias. On a bump re-check the
   private names this repo leans on — `cadgen.authoring.build_in_progress` / `_build` / `ModelDef.func|fmt|script_path|out`
   (`lib/models.py`, `tests/conftest.py`, `test_parts_convention.py`), `cadgen._internal.component_package`
   (`_shape_brep_bytes`, `_build123d_shape_from_brep_bytes`), the `-m cadgen.daemon` cmdline
@@ -481,6 +483,13 @@ unrelated, broken motor-control suite).
   the pattern takes both, `test_tooling.py`) — and that `./cadtool why assemblies/arm.py` still lists every child (one per
   occurrence of `arm.py OCCURRENCES`, the modules' rows included) as
   pinned (a `build_in_progress` that silently read False would inline every child and still build).
+- `./cadtool doctor` never reads `~/.claude/plugins/installed_plugins.json`: `plugin_dir()` pairs the venv's cadgen
+  version with the plugin cache directory of the same name, so after `uv sync` to a new cadgen it reports `pin OK`
+  while the plugin may still be INSTALLED at the old version (verified 2026-09-22: `claude plugin marketplace update`
+  alone had created the `0.6.6` cache directory while both scopes still recorded 0.6.5). Update the plugin in BOTH
+  scopes (`claude plugin update cad@text-to-cad`, then `--scope project`), check that file shows the new `version` +
+  `installPath` for each, and restart Claude Code; the marketplace clone's LFS pointers (`assets/**`, `models/**`)
+  are excluded by its own `.lfsconfig` and need no `git lfs pull`.
 - A model run accepts only `--force --mesh-tolerance --mesh-angular-tolerance --verbose --json`;
   anything else (`--totals`, a preview flag) is an argparse error — use `./cadtool show` / `python -c`.
 - Cycloidal discs: chamfer the lobe edges BEFORE cutting holes (the end face must carry only the

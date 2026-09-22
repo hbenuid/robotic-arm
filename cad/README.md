@@ -1,6 +1,6 @@
 # robotic-arm — CAD (build123d)
 
-**Last updated:** 2026-09-21 (navigation pass) — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-22 (cadgen 0.6.6) — see the root `CHANGELOG.md` for dated changes.
 
 Parametric CAD-as-code for the desktop arm (base yaw, 20:1 cycloidal shoulder pitch, belt-driven
 elbow and wrist pitch, wrist roll, MG996R parallel gripper), converted part-by-part from the original
@@ -28,7 +28,7 @@ the [`cad@text-to-cad`](https://github.com/earthtojake/text-to-cad) Claude Code 
 (the repo's `.claude/settings.json` enables its marketplace; install/update with
 `claude plugin marketplace add https://github.com/earthtojake/text-to-cad.git`,
 `claude plugin install cad@text-to-cad`, later `claude plugin marketplace update text-to-cad &&
-claude plugin update cad@text-to-cad`). The plugin only carries the `/cad:*` skill docs; the toolchain
+claude plugin update cad@text-to-cad` — once per scope, `--scope project` for the repo's own install). The plugin only carries the `/cad:*` skill docs; the toolchain
 itself is the [`cadgen`](https://pypi.org/project/cadgen/) package installed into this venv.
 
 ```bash
@@ -46,7 +46,8 @@ always `./cadtool …` or `uv run …` from `cad/`.
 plugin version (`cadgen[snapshot]==…` in `pyproject.toml`; the plugin's `skills/cad/requirements.txt`
 pins the same) — bump both together; `./cadtool doctor` checks the pair, the CAD kernel, Node and
 Chromium. cadgen makes hard cutovers: 0.5 had **no compatibility with 0.4** (2026-09-11 CHANGELOG entry),
-0.6 cut the cache / sidecar schemas and 0.6.5 removed `cadgen step inspect` (2026-09-18 entry).
+0.6 cut the cache / sidecar schemas and 0.6.5 removed `cadgen step inspect` (2026-09-18 entry); 0.6.6 was
+additive (2026-09-22 entry).
 
 ## `./cadtool` — the one entry point
 
@@ -79,7 +80,7 @@ for you, for cadgen's dependency scan and for its warm build daemon. Everything 
 tessellations, the freshness records — lives in `~/.cache/cadgen` (`./cadtool store gc` sweeps it;
 deleting it is always safe). `CADGEN_DAEMON=0` runs a build on transient workers instead of the daemon.
 
-This project runs cadgen 0.6.5 on **build123d 0.11.1 / OCP 7.9.3** — cadgen 0.6 requires
+This project runs cadgen 0.6.6 on **build123d 0.11.1 / OCP 7.9.3** — cadgen 0.6 requires
 `build123d>=0.11.1,<0.12` and `cadquery-ocp-novtk>=7.9,<8`, and `pyproject.toml` pins the exact kernel
 (the STEP bytes are deterministic per kernel and per machine). Never add `cadquery-ocp` (the VTK build cadgen
 0.5 pulled): both distributions own the same `OCP/` files, so uv removing one guts the other —
