@@ -4,6 +4,18 @@ Dated record of notable changes to this repository (newest first). Every commit 
 behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
 `cad-setup` working branch was fast-forward-only and has been retired).
 
+## 2026-09-21 — the base_yaw motor is the 48 mm one (`d9662a3`)
+
+`lib/mounts.py` places `nema17_48mm#1` (the drive's motor, `parts/cycloidal/`) on the base's pad; the elbow and
+wrist keep `nema17_40mm#2..3`; `MOTORS` / `board_frame(body_length)` replace the single `MOTOR` / `BOARD_FRAME`.
+- **Consequence, locked rather than hidden:** the 48 mm motor + board stack (48 + 14.1 = 62.1) reaches
+  `BASE_MOTOR_STACK_PROUD` = **6.1 mm below the base's bottom face** (the plate has 56 mm of depth under it) —
+  `lib/params.py` [DESIGN], `test_params_invariants`, `tests/test_mounts.py` — the base needs feet or a cut-out at
+  least that deep. Clearance to the base itself stays 0 mm³.
+- Mounted records regenerated (100 solids), arm 177 / no-caps 174 solids, `base_link` inertials + mesh re-derived
+  (total 5.288 kg), purchase notes 2 × 40 mm + 2 × 48 mm kits, joints / links tables. `./cadtool pytest`: 632 passed,
+  8 skipped.
+
 ## 2026-09-21 — every motor carries the drive motor's pilot and shaft (`492c958`)
 
 The drive's original motor (`lib/cycloidal/params.py MotorParams`) is the correct interface — Ø22 × 2 pilot, Ø5 × 22
