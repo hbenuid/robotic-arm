@@ -11,11 +11,14 @@ against them (checksums locked in `manifest.json`, whose `file` field names each
 directory; `lib.reference.path_of(name)` resolves it). Regenerate — never edit.
 
 ## Provenance
-- Source tree: `/home/hben09/Documents/arm_assembly_organized` (SolidWorks 2026, STEP AP214 exports of 2026-08-27; not in git).
+- Source tree: the SolidWorks 2026 STEP AP214 exports of 2026-08-27 (the tools' default `--src`, `lib/reference.py
+  DEFAULT_SOURCE_DIR`, or `ARM_REFERENCE_SRC`); **not in git and not needed on a machine** — the committed copies here
+  are the inputs, the raw tree only for re-running the derivation tools.
 - Full assembly: `final Arm Assembly Fully Movable.STEP` (13.5 MB, inch units, sha256 `67c39d5dc9ff1d7b…`) —
   not committed; `placements.json` captures its structure.
 - NEMA 17 x 40 + MKS SERVO42D kit: `mks/nema17x40_with_mks.step` under the source tree (SolidWorks 2026 export of
-  2026-09-21, mm, 15 solids, 521 236 bytes, sha256 `4e51a1591030…`; `lib.reference.MKS_EXPORT_NAME`) — not committed;
+  2026-09-21, mm, 15 solids, 521 236 bytes, sha256 `4e51a1591030…`; `lib.reference.MKS_EXPORT_NAME`) — not committed
+  and no longer kept anywhere (re-export from SolidWorks if the split must be redone; the sha256 identifies it);
   `tools/reference/split_mks_motor.py` splits it into `vendor/nema17_40mm.step` (the body, with the drive's pilot + shaft
   from `lib/cycloidal/motor.py` in place of the export's) and `vendor/mks_servo42d.step` (board kit), which are committed
   and mirrored into `solidworks/`. The sibling

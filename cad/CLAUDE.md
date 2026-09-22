@@ -4,11 +4,78 @@
 conversion workflow, shared-dimension rules, assembly placements, purchased parts, tests, tooling.
 **Audience:** agent. Human docs: `README.md`. Reference provenance: `reference/README.md`. The
 cycloidal drive (spec, port notes, attachment): `docs/cycloidal_drive.md`.
-**Last updated:** 2026-09-21 (motor mounts). Every commit that changes behaviour, layout or tooling gets a dated entry in the
+**Last updated:** 2026-09-21 (navigation pass). Every commit that changes behaviour, layout or tooling gets a dated entry in the
 root `CHANGELOG.md` and bumps the `Last updated` line of the docs it touches.
 
 `cad/` is a **separate uv project** (Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.6.x) inside the
 robotic-arm repo; the root motor-control project never depends on it.
+
+## Start here — task → where to look
+| you want to … | read | then follow |
+|---|---|---|
+| run / build / inspect / snapshot anything | Running things | — |
+| add or convert a printed part | Authoring a part | Recipe C after the geometry |
+| add a purchased part | Purchased (COTS) parts | Recipe A |
+| place something the SolidWorks capture never had (a motor, a board) | Assembly & placements → Mounted occurrences | Recipe B |
+| produce or swap a vendor STEP | Purchased (COTS) parts + `vendor/README.md` | Recipe D |
+| a new SolidWorks / vendor export was handed over | `reference/README.md` Provenance | Recipe E |
+| changed any geometry, mass or placement | — | **Recipe C** (the regeneration checklist) |
+| change a shared dimension | Shared dimensions (its own table) | Recipe C |
+| touch the URDF / links / inertials | Robot description | Recipe C steps 7–9 |
+| know what is unsettled (fit problems, estimates, unmodelled hardware) | `docs/open_issues.md` | add / remove rows as you go |
+| something behaves oddly | Gotchas (all verified) | — |
+Totals (leaves / solids / bought pieces / pinned children) are **never** quoted in this file or `README.md`: they live
+in the locks — `tests/test_assembly.py`, `assemblies/cycloidal_drive.py EXPECTED`, `reference/placements.json
+expected`, `tests/test_bom.py`, `tests/test_placements.py` — and the dated CHANGELOG entries.
+
+## Recipes
+**A — add a purchased part** (`parts/<group>/<name>.py`): copy `parts/_templates/cots.py` → declare `COTS`, `MASS_G`,
+`PURCHASE_SPEC` / `PURCHASE_QTY` / `PURCHASE_NOTE`, an `_envelope()` from `lib/params.py` → register in `lib/reference.py
+COTS` (`rel=None` when the vendor file IS the reference) → put `vendor/<name>.step` in place (Recipe D) →
+`./cadtool python tools/reference/import_solidworks.py` (mirrors it into `reference/solidworks/`, manifest entry) →
+`tests/test_parts_convention.py MULTI_BODY` if it is several solids → give it an occurrence (a SolidWorks key, a
+module row, or Recipe B) → Recipe C.
+
+**B — add a mounted occurrence** (something SolidWorks never placed): `lib/mounts.py` `Mount(key, part, host, link,
+joint, frame)` — the frame as data in the HOST's frame, +Z on the joint axis → `./cadtool python
+tools/reference/mount_placements.py` (writes the `placements.json` record, checks the axis) → the key into
+`assemblies/arm.py OCCURRENCES` + `GROUPS` and `robot/frames.py LINKS` → a case in `tests/test_mounts.py` (face on the
+host, interference budget) → Recipe C.
+
+**C — the regeneration checklist, after ANY geometry / mass / placement change, in this order**
+1. `./cadtool daemon stop` when `lib/reference.py`, `pyproject.toml` or the kernel changed (workers keep old code).
+2. `shasum -a 256 parts/*/*.step assemblies/*.step robot/links/*.step > /tmp/before.txt` (the hash gate).
+3. `./cadtool gen assemblies/arm.py` and `./cadtool gen assemblies/arm_no_caps.py` (every stale child rebuilds);
+   a part whose vendor file is NEW needs `./cadtool gen parts/<group>/<name>.py --force` first (see Gotchas).
+4. `shasum -a 256 -c /tmp/before.txt` — only the STEPs you meant to change may fail; settle float noise with
+   `./cadtool inspect diff`.
+5. `./cadtool pytest -m "not slow"`, then `./cadtool pytest`; bump the locks the failures name — `EXPECTED` from
+   `./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals(), totals('stator'))"`, the
+   count literals in `tests/test_assembly.py` / `test_bom.py` / `test_placements.py`, `MULTI_BODY`, interference
+   budgets (measure, never guess).
+6. A mounted part's geometry changed → `./cadtool python tools/reference/mount_placements.py` (its records carry
+   solids / volume / bbox); a SolidWorks-derived change → `extract_placements.py --no-pancake`.
+7. `./cadtool python tools/robot/derive.py --check robot/arm.urdf robot/arm.sdf`; for every link it names, copy that
+   link's `<inertial>` block from `--urdf-draft` / `--sdf-draft` into `robot/arm.urdf` / `arm.sdf` (never a generator).
+8. `./cadtool python tools/robot/export_link_meshes.py --links <those links>` and `./cadtool gen robot/links/<link>.py`.
+9. `./cadtool validate robot/arm.urdf --strict` (and `arm.srdf --strict`, `arm.sdf --gz-check never`); `--check` again.
+10. `./cadtool snapshot assemblies/arm.step snapshots/arm.png --size-profile assembly --view-labels` (+ the drive,
+    `robot/arm.urdf`) and LOOK at them.
+11. Docs: the section that describes what changed, `Last updated` on every doc touched, `docs/open_issues.md`
+    rows added / closed, a dated `CHANGELOG.md` entry naming the branch. Then commit on the branch (root `CLAUDE.md` Git workflow).
+
+**D — produce or swap a vendor STEP**: from an export → `./cadtool python tools/reference/split_mks_motor.py --write
+kit|drive|all` (the motor kits); from the catalog → `./cadtool parts "<query>"` then `--id … --download` (`vendor/README.md`);
+`./cadtool inspect vendor/<name>.step --planes` and set `VENDOR_TO_REF` if the frame differs → `import_solidworks.py`
+(SolidWorks-origin parts) or `tools/cycloidal/import_cadquery.py --only <name>` (drive parts) for the manifest →
+`./cadtool gen parts/<group>/<name>.py --force` → Recipe C. Vendor STEP bytes are written once, on one machine.
+
+**E — a new SolidWorks / vendor export arrives**: keep it OUTSIDE the tree with a lowercase `.step` name (the raw
+exports are never committed; the tools take `--src` / `--monolith`, default `lib/reference.py DEFAULT_SOURCE_DIR`
+or `ARM_REFERENCE_SRC`); record file, size, sha256 and what it is under `reference/README.md` Provenance; name it
+in `lib/reference.py` (`MONOLITH_NAME`, `MKS_EXPORT_NAME`, … or a `CUSTOM` / `COTS` row); measure before trusting
+it (`./cadtool inspect <file> --planes` — units, frame, shaft / pilot / bolt pattern); then Recipe A or D. What
+the CAD keeps is the derived, committed copy (`reference/`, `vendor/`) — the raw file can be discarded afterwards.
 
 ## Running things (always via `./cadtool` or `uv run`, from `cad/`)
 - **Never call bare `python`** — the system Python is 3.14 without build123d. Python is pinned
@@ -258,7 +325,7 @@ Changing a shared dimension — touchpoints in order:
   duplicates; renaming them after the joints is a follow-up.
 - `assemblies/arm_no_caps.py` is a **working view, not the robot**: `arm.py`'s `OCCURRENCES` / `GROUPS` minus
   `HIDDEN` (`j1_cap#1`, `j2_cap_1#1`, `j2_cap_2#1` — the covers over `j1_link` / `j2_link`), same frame, tree and
-  tints, its own git-ignored `arm_no_caps.step` (56 leaves / 169 solids). `HIDDEN` is the one place to edit;
+  tints, its own git-ignored `arm_no_caps.step` (its totals: `tests/test_assembly.py`). `HIDDEN` is the one place to edit;
   never feed it to `robot/` or the SolidWorks totals. It is a second model because a model takes no
   parameters and the freshness gate sees no environment variable (an env switch in `arm()` would read
   `current` across a flip, and the daemon strips unlisted variables from its workers). Link edits land in
@@ -342,11 +409,11 @@ Changing a shared dimension — touchpoints in order:
 `parts.build(name)`, `lib.models.raw(model)`). `test_parts_convention.py` (contract + geometry for
 every part, COTS envelopes + vendor frames), `test_reference_match.py` (manifest checksums; converted
 parts vs reference), `test_placements.py` (JSON integrity, tables cover every key once, the designed
-module record + the 6 mounted records vs `lib/mounts.py`), `test_assembly.py` (40 + 19 leaves / 95 + 77 solids / volume / bbox
-vs SolidWorks + the module lock; `arm_no_caps` = the arm's tables minus `HIDDEN`, 56 leaves / 169 solids; the arm's leaf colours -
+module record + the mounted records vs `lib/mounts.py`), `test_assembly.py` (the arm's leaves / solids / volume / bbox
+vs SolidWorks + the module lock — the numbers are IN that file; `arm_no_caps` = the arm's tables minus `HIDDEN`; the arm's leaf colours -
 purchased = `BOUGHT_TINT`, which no group / module may reuse, printed = the link's / module's tint, in the arm and in
 the standalone gripper and drive), `test_bom.py` (the print / buy lists
-partition `parts.names()` by the flag, 34 + 25 occurrences, the drive's pieces follow `DEFAULT_CONFIG`, `EXTRAS`
+partition `parts.names()` by the flag, the occurrence counts, the drive's pieces follow `DEFAULT_CONFIG`, `EXTRAS`
 well-formed), `test_params_invariants.py` (locks), `test_robot.py` (link partition, frames, FK at
 zero = capture, meshes, inertials, URDF/SRDF/SDF consistency + cadgen's validators via
 `./cadtool validate`), `test_tooling.py` (the installed cadgen and OCP kernel are the pinned ones, one complete OCP distribution,
@@ -394,13 +461,25 @@ unrelated, broken motor-control suite).
   can still succeed: the leftover `OCP/` directory is an empty namespace package). Repair with
   `uv sync --reinstall-package cadquery-ocp-novtk` (`./cadtool setup` does it when `OCP.gp` does not import;
   `test_tooling.py` checks every RECORD file exists). cadgen's `doctor` does NOT flag an absent kernel.
+- cadgen's freshness gate tracks only the inputs the LAST build actually read: a part whose vendor file appears after
+  its last build still reads `current` (its body never called `read_step` on that file) — `./cadtool gen <part> --force`
+  once; the assemblies then follow. Verified 2026-09-21 (`nema17_48mm` kept its envelope STEP until forced).
+- build123d's `export_step` writes the time into the STEP header, so re-running a vendor-producing tool changes the
+  file's bytes (and its manifest sha) with identical geometry — write vendor files once, on one machine, and use
+  the tools' selectors (`split_mks_motor.py --write kit|drive`) to leave the others alone.
+- `Face.center()` on a cylindrical face is the SURFACE midpoint (a half-cylinder reports axis ± r), not the axis:
+  measure axes with `BRepAdaptor_Surface(face.wrapped).Cylinder().Axis()` (`tools/reference/split_mks_motor.py
+  cylinders()`) or `Face.axis_of_rotation`, and bolt patterns from those, never from face centres.
+- `lib.reference.step_units()` only tells inch from mm: a centimetre file (the x48 kit export) is reported as mm.
+  OCCT converts every unit correctly on import; the manifest's `units` field is the one that would lie.
 - cadgen makes hard cutovers (0.6.0: cache / sidecar schemas, so every model read stale once; 0.6.5: the
   inspect CLI): a retired interface fails with a teaching error, never an alias. On a bump re-check the
   private names this repo leans on — `cadgen.authoring.build_in_progress` / `_build` / `ModelDef.func|fmt|script_path|out`
   (`lib/models.py`, `tests/conftest.py`, `test_parts_convention.py`), `cadgen._internal.component_package`
   (`_shape_brep_bytes`, `_build123d_shape_from_brep_bytes`), the `-m cadgen.daemon` cmdline
   of the venv interpreter (`./cadtool daemon stop`; it is `.venv/bin/python3` on Linux and `.venv/bin/python` on macOS —
-  the pattern takes both, `test_tooling.py`) — and that `./cadtool why assemblies/arm.py` still lists the 61 children as
+  the pattern takes both, `test_tooling.py`) — and that `./cadtool why assemblies/arm.py` still lists every child (one per
+  occurrence of `arm.py OCCURRENCES`, the modules' rows included) as
   pinned (a `build_in_progress` that silently read False would inline every child and still build).
 - A model run accepts only `--force --mesh-tolerance --mesh-angular-tolerance --verbose --json`;
   anything else (`--totals`, a preview flag) is an argparse error — use `./cadtool show` / `python -c`.

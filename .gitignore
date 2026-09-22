@@ -16,6 +16,12 @@ __pycache__/
 *.3mf
 *.glb
 *.step
+# ... and their uppercase spellings (git matches case-sensitively; SolidWorks exports as .STEP). Nothing in
+# the tree is ever uppercase - a dropped export belongs OUTSIDE the repo (root CLAUDE.md "Where the SolidWorks
+# sources are") - so these only stop one from slipping in as a raw blob.
+*.STL
+*.STP
+*.STEP
 # EXCEPT the INPUTS, none regenerable from Python: purchased-part vendor STEPs and the reference
 # exports. These committed STEP/STL files are Git LFS objects (see /.gitattributes): clone with
 # git-lfs installed.

@@ -1,6 +1,6 @@
 # robotic-arm — CAD (build123d)
 
-**Last updated:** 2026-09-21 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-21 (navigation pass) — see the root `CHANGELOG.md` for dated changes.
 
 Parametric CAD-as-code for the desktop arm (base yaw, 20:1 cycloidal shoulder pitch, belt-driven
 elbow and wrist pitch, wrist roll, MG996R parallel gripper), converted part-by-part from the original
@@ -98,12 +98,13 @@ cad/
 │   ├── params.py          # single source of truth for shared dimensions (tagged provenance)
 │   ├── units.py           # IN, NUDGE - a leaf module (lib/cycloidal/ imports it; params.py re-exports it)
 │   ├── datum.py           # capture frame W -> base_link frame B: frame(), base_frame() (arm.py arm_from_w(), robot/frames.py); frames as data: IDENTITY, to_location()
+│   ├── mounts.py          # the motor mounts the SolidWorks capture never had (base_yaw / elbow_pitch / wrist_pitch motors + MKS boards) as frames-as-data
 │   ├── reference.py       # naming maps (SolidWorks custom/COTS, designed cycloidal parts, modules), loaders, path_of(), matches_reference()
 │   ├── manifest.py        # reference/manifest.json: read() / write() / entry() - shared by the two import tools and the tests
 │   ├── placements.py      # reference/placements.json -> build123d Location
 │   ├── models.py          # model_of() / raw() / geometry(inline=): the @step model of a module, its body, a child for an assembly
 │   ├── assembly.py        # assembly(name, children): the native labelled Compound node; label_shape / label_text from cadgen
-│   └── cycloidal/         # the cycloidal drive: DriveConfig (params.py), layout.py, profiles.py, housing.py, disc.py, geom.py
+│   └── cycloidal/         # the cycloidal drive: DriveConfig (params.py), layout.py, profiles.py, housing.py, disc.py, geom.py, motor.py (THE NEMA 17 pilot + shaft, every motor's)
 ├── parts/                 # one part per file, grouped by subsystem; parts.names() / parts.load(name) discover them
 │   ├── __init__.py            # the directory scan: MODULES / GROUPS, names(), load(), model(), build(), bought(), source_of()
 │   ├── _templates/            # designed.py (parametric), wrapper.py (import wrapper), cots.py (purchased) templates
@@ -114,21 +115,22 @@ cad/
 │   └── cycloidal/             # the drive: 6 designed parts + 10 COTS (bearings, nema17_48mm - vendor file composed from the kit exports -, pins, bolts, nuts), _cots.py helper
 │       └── <name>.py + <name>.step   # every group: running the .py writes the .step beside it (git-ignored, per machine)
 ├── assemblies/
-│   ├── arm.py             # the whole arm, grouped arm -> base_link/shoulder_link/upper_arm_link/forearm_link/wrist_pitch_link/wrist (GROUPS; 59 leaves incl. the 6 mounted motors + boards of lib/mounts.py, printed parts tinted per group, purchased parts grey)
-│   ├── arm_no_caps.py     # working view: arm.py's tables minus HIDDEN (the three link caps) - 56 leaves, not the robot
-│   ├── gripper.py         # the gripper mechanism module (19 occurrences, placed from placements.json)
-│   ├── cycloidal_drive.py # the drive module (19 rows placed from lib/cycloidal stack_positions - code-driven, the MKS board included)
+│   ├── arm.py             # the whole arm, grouped arm -> base_link/shoulder_link/upper_arm_link/forearm_link/wrist_pitch_link/wrist (GROUPS; the SolidWorks occurrences + the mounted motors and boards of lib/mounts.py + the two modules, printed parts tinted per group, purchased parts grey)
+│   ├── arm_no_caps.py     # working view: arm.py's tables minus HIDDEN (the three link caps) - not the robot
+│   ├── gripper.py         # the gripper mechanism module (its occurrences placed from placements.json)
+│   ├── cycloidal_drive.py # the drive module (rows placed from lib/cycloidal stack_positions - code-driven, the MKS board included; totals in EXPECTED)
 │   └── _occurrences.py    # place()/occurrence_children()/grouped_children() (placement keys), place_at()/located_children() (Locations), world_rows(); BOUGHT_TINT / _tint_parts (purchased parts grey) - children via lib.models.geometry()
 ├── docs/cycloidal_drive.md  # the drive's spec, port notes and attachment
+├── docs/open_issues.md      # THE list of unsettled fits, estimates, unmodelled hardware and unconfirmed mappings
 ├── reference/             # immutable per-part reference STEPs (Git LFS) + manifest.json + placements.json + README
 │   ├── solidworks/            # the 25 SolidWorks exports (custom parts + the SolidWorks purchased parts)
 │   └── cycloidal/             # the 16 CadQuery exports the drive was ported from
 ├── vendor/                # purchased-part STEPs (committed via Git LFS; replaceable by better catalog models)
 ├── robot/                 # URDF / SRDF / SDF + per-link meshes and generators (see below)
 ├── print/                 # git-ignored: one STL per printed part (tools/export_printables.py)
-├── tools/                 # preview.py (./cadtool show), step_facts.py (./cadtool inspect), bom.py (print list + buy list), export_printables.py, reference/{import_solidworks,extract_placements}.py (SolidWorks),
+├── tools/                 # preview.py (./cadtool show), step_facts.py (./cadtool inspect), bom.py (print list + buy list), export_printables.py, reference/{import_solidworks,extract_placements,mount_placements,split_mks_motor}.py (SolidWorks exports -> reference/vendor/placements),
 │                          # cycloidal/{export_cadquery,import_cadquery}.py (the drive's references), robot/{derive,export_link_meshes}.py
-├── tests/                 # pytest: conventions, reference match, placements, assembly totals, params locks, robot description, package layering;
+├── tests/                 # pytest: conventions, reference match, placements, assembly totals, params locks, robot description, package layering, the motor mounts (test_mounts.py);
 │   ├── conftest.py            # CADGEN_DAEMON=0 + a guard that fails any test calling a model at top level (tests call bodies)
 │   └── cycloidal/             # the drive's own tests (one module per part + housing / purchased / fitment / assembly / port) + helpers.py (CFG, geometry helpers), conftest.py (stack fixture)
 └── snapshots/             # snapshot PNGs (git-ignored)
@@ -253,9 +255,10 @@ partition of `robot/frames.py LINKS` with the two modules kept whole (the cycloi
 toggles as one node in the viewers, and
 every subtree is tinted with its group's color (the gripper and cycloidal_drive modules keep
 their own). `tests/test_assembly.py` checks the rebuilt arm against the SolidWorks totals plus
-the module's own lock (40 + 19 leaves, 95 + 77 solids, volumes, bbox), the group labels and the
-`LINKS` mirror. The six leaves the SolidWorks capture never had - the belt joints' NEMA 17 x 40 motors
-and their MKS SERVO42D boards - are declared in `lib/mounts.py` and materialised into `placements.json`
+the module's own lock (leaves, solids, volumes, bbox - the numbers live in the test and in
+`assemblies/cycloidal_drive.py EXPECTED`, never in the docs), the group labels and the `LINKS` mirror. The
+leaves the SolidWorks capture never had - the belt joints' motors (48 mm at the base, 40 mm at the elbow and
+wrist) and their MKS SERVO42D boards - are declared in `lib/mounts.py` and materialised into `placements.json`
 by `tools/reference/mount_placements.py` (see `CLAUDE.md` "Mounted occurrences").
 
 ## Reference geometry and placements
@@ -266,8 +269,9 @@ by `tools/reference/mount_placements.py` (see `CLAUDE.md` "Mounted occurrences")
 (`lib.reference.path_of(name)` resolves the origin, `manifest.json` records it in `file`).
 `reference/placements.json` holds every occurrence's placement extracted from the full-assembly
 STEP. Both are **immutable inputs** (a checksum test guards them); regenerate with
-`./cadtool python tools/reference/import_solidworks.py` and `./cadtool python tools/reference/extract_placements.py`
-if the SolidWorks design changes. The cycloidal drive's 16 references are the CadQuery exports of
+`./cadtool python tools/reference/import_solidworks.py` and `./cadtool python tools/reference/extract_placements.py --no-pancake`
+if the SolidWorks design changes (the exact sequence, the motor-kit exports and `split_mks_motor.py` /
+`mount_placements.py`: `reference/README.md` "Provenance"; the mounted occurrences: `lib/mounts.py`). The cycloidal drive's 16 references are the CadQuery exports of
 the `cycloidal_drive` repo at `2f1f67d` (`tools/cycloidal/export_cadquery.py` in that repo's venv,
 then `./cadtool python tools/cycloidal/import_cadquery.py`), and its SolidWorks node is recorded
 in `placements.json` as a designed module (pose only; the contents come from code).

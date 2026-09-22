@@ -1,19 +1,19 @@
 """The whole arm: every part of the SolidWorks 'final Arm Assembly Fully Movable' placed from
-reference/placements.json - 15 part occurrences + the 6 mounted ones (lib/mounts.py: the belt joints'
+reference/placements.json - the SolidWorks part occurrences + the mounted ones (lib/mounts.py: the belt joints'
 NEMA 17 motors - 48 mm at the base, 40 mm at the elbow and wrist - and their MKS SERVO42D boards, on the pads the links carry) + the gripper module
-(SolidWorks-driven) + the cycloidal_drive module (code-driven, placed at the SolidWorks node's pose)
-= 59 leaves, bucketed into the GROUPS component tree (arm -> base_link/shoulder_link/upper_arm_link/
+(SolidWorks-driven) + the cycloidal_drive module (code-driven, placed at the SolidWorks node's pose) - the
+totals are locked in tests/test_assembly.py - bucketed into the GROUPS component tree (arm -> base_link/shoulder_link/upper_arm_link/
 forearm_link/wrist_pitch_link/wrist) so each rigid link toggles as one node in the viewers. Colors: a PRINTED part carries its link's
 (or its module's) tint, every PURCHASED part (COTS = True - motors, boards, servo, bearings, pins, bolts, nuts,
 rails, the 20T pulley) is _occurrences.BOUGHT_TINT grey, inside the two modules too:
 
     arm
     |- base_link         base, nema17_48mm:base_yaw, mks_servo42d:base_yaw
-    |- shoulder_link     j1_coupler, cycloidal_drive (19, kept whole - see below)
+    |- shoulder_link     j1_coupler, cycloidal_drive (kept whole - see below)
     |- upper_arm_link    j1_link, nema17_40mm:elbow_pitch, mks_servo42d:elbow_pitch, j1_cap
     |- forearm_link      gt2_pulley_90t:j2, j3_coupler:j2, j2_link, nema17_40mm:wrist_pitch, mks_servo42d:wrist_pitch, j2_cap_1, j2_cap_2
     |- wrist_pitch_link  gt2_pulley_90t:j3, j3_coupler:j3, wrist_link, gripper_clamp_bracket, nema17_pancake
-    |- wrist             gt2_pulley_20t, gripper (19)
+    |- wrist             gt2_pulley_20t, gripper
 
 The drive module is one linked child, so this tree keeps it whole under shoulder_link (in its
 own MODULE_TINTS colour) although its rotor body (output hub + pins) belongs to upper_arm_link

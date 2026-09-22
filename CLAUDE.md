@@ -4,10 +4,29 @@
 
 **Last updated:** 2026-09-21 — see `CHANGELOG.md` for dated changes.
 
+## Git workflow
+- Work on a branch — `cad/<topic>` for CAD work, `<area>/<topic>` otherwise — and push the **branch**. `main` is
+  fast-forwarded to it only when the user says so; never commit to or push `main` directly (an approved plan
+  that says "commit + push" means the branch). Every commit that changes behaviour, layout or tooling gets a
+  dated `CHANGELOG.md` entry naming the branch and the commit.
+- Case matters: git and the `*.step` / `*.stl` rules are case-sensitive. `.gitignore` and `.gitattributes` also
+  match `*.STEP` / `*.STP` now, but keep every file in the tree lowercase — the tests and tools assume it.
+
 ## Two development machines
 Worked on from a **Fedora Linux PC and an arm64 Mac**; git is the only sync channel, venvs / plugin / caches are
 per machine. In `cad/` no generated STEP is committed (its bytes differ per machine; each machine builds its
 own) — rules in `cad/CLAUDE.md` "Two machines". Scripts must run on macOS's bash 3.2 without GNU coreutils.
+
+## The SolidWorks inputs are in the repo; the raw exports are not
+The CAD reads only committed files: `cad/reference/solidworks/*.step` (every part's SolidWorks export, renamed),
+`cad/reference/cycloidal/*.step`, `cad/vendor/*.step`, `reference/placements.json` and `manifest.json` — all Git
+LFS. The raw exports they were derived from (the full-assembly monolith, the per-part exports, the motor-kit
+exports) are **not kept anywhere in git** and need not exist on a machine; they are only needed to re-run the
+derivation tools (`cad/tools/reference/extract_placements.py --monolith …`, `import_solidworks.py --src …`,
+`split_mks_motor.py --src …`; the default directory is `cad/lib/reference.py DEFAULT_SOURCE_DIR`, overridable
+with `ARM_REFERENCE_SRC`). A new export the user hands over is fed to those tools from wherever it sits (lowercase
+`.step`, outside the tree — never committed raw); its sha256 goes into `cad/reference/README.md`. Recipe E in
+`cad/CLAUDE.md` "Start here".
 
 ## Toolchain
 - Always use `uv` — never `pip install` directly. `uv add <pkg>` for new deps;
@@ -61,3 +80,6 @@ own) — rules in `cad/CLAUDE.md` "Two machines". Scripts must run on macOS's ba
 - `CHANGELOG.md` is the dated record of changes: add an entry (date, what changed, commit) with
   every commit that changes behaviour, layout or tooling, and bump the `Last updated` line of any
   README/CLAUDE.md you touch.
+- `cad/docs/open_issues.md` is the ONE list of what is not settled (fit problems, estimates to confirm on
+  hardware, unmodelled hardware, unconfirmed mappings): add a row when you flag something, remove it when you
+  close it. `cad/CLAUDE.md` opens with a "Start here" task index and the regeneration checklist.
