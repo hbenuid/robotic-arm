@@ -4,6 +4,27 @@ Dated record of notable changes to this repository (newest first). Every commit 
 behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
 `cad-setup` working branch was fast-forward-only and has been retired).
 
+## 2026-09-21 — every motor carries the drive motor's pilot and shaft (`492c958`)
+
+The drive's original motor (`lib/cycloidal/params.py MotorParams`) is the correct interface — Ø22 × 2 pilot, Ø5 × 22
+shaft with the 18 mm D-cut, flat on +Y — and the other motors must have exactly the same, not the kit exports'
+(23 mm on the x40, 24 mm / 15 mm D-cut on the x48; the earlier trim left a 17 mm D-cut).
+- `lib/cycloidal/motor.py` exposes `pilot(m, bore=)` and `shaft(m)`; `nema17_motor()` is built from them (envelope
+  unchanged). `tools/reference/split_mks_motor.py` cuts every export's own boss and shaft off at the mounting face
+  and fuses those on — onto the x40 body (`vendor/nema17_40mm.step`, 2 solids) and the x48 body
+  (`vendor/nema17_48mm.step`, 7 solids) — and refuses to write unless the tip is at `shaft_length`, the D-cut
+  spans the last `shaft_dcut_length`, the flat faces +Y and the Ø22 pilot face sits at `pilot_height`.
+  Measured on all three models afterwards: identical (tip 22.000, pilot z 0..2, D-cut z 4..22, flat 2.25 from
+  the axis).
+- Regenerated: the three vendor files (+ their `reference/solidworks/` mirrors and manifest entries), the mounted
+  records (`mount_placements.py`), the drive's `EXPECTED` volume (679 467.5), the four links' inertials and meshes.
+  `./cadtool pytest`: 631 passed, 8 skipped.
+- **Open point (flagged, not changed):** the drive repo's code puts the D-flat `shaft_dcut_flat / 2` = 2.25 mm from
+  the axis (flat-to-round 4.75) although the parameter reads "4.5 flat-to-round"; the eccentric shaft's D-bore is
+  cut the same way (2.315), so the pair fits as designed. A standard 5 mm D-shaft — and both kit exports — has the
+  flat at 2.0 (4.5). All motors now share the 4.75 convention; adopting 4.5 is one line in `motor.py flat_offset()`
+  and one in `cycloidal_eccentric_shaft.py` (which breaks that part's port lock against the CadQuery reference).
+
 ## 2026-09-21 — the drive motor's vendor file: the real 48 mm body with the 22 mm drive-spec shaft (`3e667e0`)
 
 "Can't you find a NEMA 17 48 mm with a 22 mm shaft?" — not in the step.parts catalog (its one 48 mm model is a
