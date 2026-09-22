@@ -25,7 +25,7 @@ how it is attached to the arm.
 | Application | The arm's `shoulder_pitch` joint (~400 mm reach) — between `j1_coupler` and `j1_link` (§12) |
 | Type | Two-disc cycloidal drive, discs 180° apart |
 | Gear ratio | 20:1 (20 lobes, 21 ring pins) — `lib/params.py CYCLOIDAL_RATIO` |
-| Motor | NEMA 17, 48 mm body, 22 mm × Ø5 D-shaft (`parts/cycloidal/nema17_48mm.py`) |
+| Motor | NEMA 17, 48 mm body, 22 mm × Ø5 D-shaft (`parts/cycloidal/nema17_48mm.py`) + its MKS SERVO42D board kit on the rear face (`parts/joints/mks_servo42d.py`, `z_mks_board` = −48) |
 | Eccentricity | 1.5 mm |
 | Housing OD | 140 mm (`CYCLOIDAL_HOUSING_OD`) |
 | Print material | PETG, 100 % infill on the discs |
@@ -141,7 +141,7 @@ Derived: `disc_zone` 26, `bore_zone` 28 (the 116 mm bore length), `ring_gear_bod
 arm-mount face sits at **z = 65**, 5 mm proud of the housing (`CYCLOIDAL_OUTPUT_FACE_Z`). **Housing
 depth follows the bolt:** M4 × 55 in the 4.5 counterbore ends at 59.5 — inside the 60 mm depth with full
 nut engagement (`test_bolt_does_not_protrude`); M4 × 50 would not reach the nut, so 60 is the floor.
-**Total envelope with the motor:** 60 + 48 = 108 (the pilot recesses 2 mm into the plate); the hub adds 5.
+**Total envelope with the motor:** 60 + 48 = 108 (the pilot recesses 2 mm into the plate); the hub adds 5, the MKS board kit behind the motor 14.1 (module z −62.1 … 65 = 127.1).
 
 The module layout (`lib/cycloidal/layout.py stack_positions`, the drive repo's `assembly.py`
 numbers) places: discs at (±1.5, 0, 13 / 25) with their 6003s, 6814s at 37 / 47, hub and 625 at 37,
@@ -229,7 +229,7 @@ Generated, never retyped: `./cadtool python tools/bom.py --module cycloidal_driv
 under "not modelled", the items that have no geometry (`tools/bom.py EXTRAS`: the arm-mount bolts and nuts,
 grease). `cycloidal_drive.step` shows the same split: purchased parts grey, printed parts the drive's `TINT`.
 
-Budget (2f1f67d estimate): NEMA 17 48 mm $10–15 · 6003-2RS ×2 $4–8 · 6814-2RS ×2 $16–40 · 625-2RS $1–2 ·
+Budget (2f1f67d estimate): NEMA 17 48 mm $10–15 (as the MKS SERVO42D closed-loop kit with the board: ~$30–40) · 6003-2RS ×2 $4–8 · 6814-2RS ×2 $16–40 · 625-2RS $1–2 ·
 ring-pin dowels (pack of 25) $8–12 · output-pin dowels $2–4 · motor bolts $1–2 · housing bolts $2–4 · M4 nuts
 (housing + arm mount) $2 · support dowel $0.5–1 · arm-mount bolts $1–2 — **~$47–87**.
 
@@ -242,8 +242,8 @@ ring-pin dowels (pack of 25) $8–12 · output-pin dowels $2–4 · motor bolts 
 | Profile maths | `lib/cycloidal/profiles.py` (numpy) |
 | Shared builders | `lib/cycloidal/housing.py` (reveal-window cutter, outer-silhouette chamfer, hex prisms), `lib/cycloidal/disc.py` (`build_disc`), `lib/cycloidal/geom.py` (cylinders with `NUDGE` overshoot, `single_solid`) |
 | Printed parts (designed, `CONVERTED = True`) | `parts/cycloidal/`: `cycloidal_disc_1.py`, `cycloidal_disc_2.py`, `cycloidal_eccentric_shaft.py`, `cycloidal_motor_plate.py`, `cycloidal_ring_gear_body.py`, `cycloidal_output_hub.py` — each exposes `build(cfg)` for tests and its `@step` model |
-| Purchased parts (COTS) | `parts/cycloidal/`: `bearing_6003.py`, `bearing_6814.py`, `bearing_625.py`, `nema17_48mm.py`, `cycloidal_ring_pins.py` (21), `cycloidal_output_pins.py` (4), `cycloidal_shaft_support_pin.py`, `cycloidal_motor_bolts.py` (4), `cycloidal_housing_bolts.py` (8), `cycloidal_housing_nuts.py` (8) — shared body `parts/cycloidal/_cots.py`; the multi-body ones are registered in `MULTI_BODY`; each says what to order (`PURCHASE_SPEC` / `PURCHASE_QTY`, built from `DEFAULT_CONFIG`) |
-| Assembly | `assemblies/cycloidal_drive.py` — 18 rows `(part, role, position)` from `stack_positions`; `EXPECTED` = 18 leaves / 58 solids / 691 936.8 mm³; `./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals())"` |
+| Purchased parts (COTS) | `parts/cycloidal/`: `bearing_6003.py`, `bearing_6814.py`, `bearing_625.py`, `nema17_48mm.py` (+ the board kit `parts/joints/mks_servo42d.py`, shared with the belt joints' motors), `cycloidal_ring_pins.py` (21), `cycloidal_output_pins.py` (4), `cycloidal_shaft_support_pin.py`, `cycloidal_motor_bolts.py` (4), `cycloidal_housing_bolts.py` (8), `cycloidal_housing_nuts.py` (8) — shared body `parts/cycloidal/_cots.py`; the multi-body ones are registered in `MULTI_BODY`; each says what to order (`PURCHASE_SPEC` / `PURCHASE_QTY`, built from `DEFAULT_CONFIG`) |
+| Assembly | `assemblies/cycloidal_drive.py` — 19 rows `(part, role, position)` from `stack_positions` (the MKS board at `z_mks_board`); `EXPECTED` = 19 leaves / 71 solids / 705 716.1 mm³ (stator 16 / 65); `./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals())"` |
 | Printed vs. bought | `./cadtool python tools/bom.py --module cycloidal_drive` (print list, buy list, the purchased items not modelled — `EXTRAS`); in `cycloidal_drive.step` (and in the arm) purchased parts are `_occurrences.BOUGHT_TINT` grey, printed parts `cycloidal_drive.TINT`; `./cadtool python tools/export_printables.py` → `print/<name>.stl` |
 | References | `reference/cycloidal/<name>.step` × 16 (CadQuery exports, Git LFS), `reference/manifest.json` entries (`file` field); `tools/cycloidal/export_cadquery.py` + `tools/cycloidal/import_cadquery.py` |
 | Tests | `tests/cycloidal/test_{disc,eccentric_shaft,motor_plate,ring_gear_body,output_hub,housing,purchased,fitment,assembly,port}.py` + `tests/cycloidal/helpers.py` (one module per part, geometry marked `slow`) |
@@ -301,8 +301,10 @@ cd cad
   1–2 mm off ours (cosmetic, inside their holes); it is kept in `placements.json` as a cross-check.
 - **Designed interference budget** (`test_module_interference_budget`, mm³): 6814 inner race / hub
   press fit 330.6 × 2; housing bolts through the solid nuts 321.7; motor-bolt heads in the plate 51.9
-  and tips 0.5 mm past the motor's blind holes 14.1; 6003 / lobe press fits 26.8 × 2. Everything else
-  is < 1 mm³; the whole module vs the arm: base / j1_link / j1_cap 0, j1_coupler yoke contact ≤ 150.
+  and tips 0.5 mm past the motor's blind holes 14.1; 6003 / lobe press fits 26.8 × 2; the MKS kit's four M3x30
+  inside the simplified motor 554.2 (the envelope has blind holes, the real motor through-holes). Everything else
+  is < 1 mm³; the whole module vs the arm: base / j1_link / j1_cap 0, j1_coupler yoke contact ≤ 150 (the board
+  behind the motor has 55 mm of free air).
 - **Corrections to the drive repo's spec:** its §10 said "both discs are identical — the 180° offset is
   applied in the assembly": wrong (disc 2 carries the −9° phase, §1.2); §3.3's "7.6 mm disc holes"
   → 7.4; stale 67 / 134 / 120 mm comments (the OD is 140) and other rotted numbers in comments.

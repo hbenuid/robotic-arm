@@ -1,6 +1,6 @@
 # reference/ — SolidWorks reference geometry
 
-**Last updated:** 2026-09-18 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-21 — see the root `CHANGELOG.md` for dated changes.
 
 **Purpose:** the original design, as exported from SolidWorks, renamed to the clean part
 names used everywhere in `cad/` (`solidworks/`) — plus, for the cycloidal drive, the CadQuery
@@ -14,9 +14,17 @@ directory; `lib.reference.path_of(name)` resolves it). Regenerate — never edit
 - Source tree: `/home/hben09/Documents/arm_assembly_organized` (SolidWorks 2026, STEP AP214 exports of 2026-08-27; not in git).
 - Full assembly: `final Arm Assembly Fully Movable.STEP` (13.5 MB, inch units, sha256 `67c39d5dc9ff1d7b…`) —
   not committed; `placements.json` captures its structure.
-- Regenerate: `./cadtool python tools/reference/import_solidworks.py` (copies + `manifest.json`), then
-  `./cadtool python tools/reference/extract_placements.py` (`placements.json` + `vendor/nema17_pancake.step`),
-  then `import_solidworks.py` once more so the manifest describes the extracted pancake.
+- NEMA 17 x 40 + MKS SERVO42D kit: `mks/nema17x40_with_mks.step` under the source tree (SolidWorks 2026 export of
+  2026-09-21, mm, 15 solids, 521 236 bytes, sha256 `4e51a1591030…`; `lib.reference.MKS_EXPORT_NAME`) — not committed;
+  `tools/reference/split_mks_motor.py` splits it into `vendor/nema17_40mm.step` (body + D-shaft, shaft trimmed 23 → 22)
+  and `vendor/mks_servo42d.step` (board kit), which are committed and mirrored into `solidworks/`. The sibling
+  `mks/nema17x48_with_mks.step` (cm units, a wrong 24 mm / 15 mm D-cut shaft) is archive only — no tool reads it.
+- Regenerate: `./cadtool python tools/reference/split_mks_motor.py` (once, on one machine — STEP bytes are per machine),
+  `./cadtool python tools/reference/import_solidworks.py` (copies + `manifest.json`), then
+  `./cadtool python tools/reference/extract_placements.py --no-pancake` (`placements.json`, the mounted records of
+  `lib/mounts.py` appended; without the flag also `vendor/nema17_pancake.step`, whose bytes would then change),
+  then `import_solidworks.py` once more so the manifest describes the extracted pancake. A changed mount alone:
+  `./cadtool python tools/reference/mount_placements.py` (merge mode, no monolith needed).
 - Cycloidal drive (manifest `origin: cycloidal_drive@2f1f67d`, kind `designed` / `cots`): in the old
   repo `cd ../cycloidal_drive && uv run python ../robotic-arm/cad/tools/cycloidal/export_cadquery.py`
   (CadQuery venv, writes its git-ignored `export/step/house/`), then here
@@ -55,6 +63,8 @@ are converted automatically).
 | `mg996r_servo` | COTS | `Servo Motor MG996R 3D Model_Servo Motor MG996R 3D Model` | `step/Servo Motor MG996R 3D Model_Servo Motor MG996R 3D Model.STEP` | mm | 4 | 55.8 × 45.2 × 20.5 | ×1 |
 | `mg996r_horn` | COTS | `Servo MG996R Horn_Servo MG996R Horn` | `step/Servo MG996R Horn_Servo MG996R Horn.STEP` | mm | 1 | 32 × 2.5 × 12 | ×1 |
 | `nema17_pancake` | COTS | `nema17_pancake` | `(extracted from the full assembly)` | mm | 11 | 41.5 × 47 × 43 | ×1 |
+| `nema17_40mm` | COTS | `nema17x40_with_mks` (body + shaft) | `(split from mks/nema17x40_with_mks.step)` | mm | 2 | 42 × 49 × 62.4 | ×3 (mounted) |
+| `mks_servo42d` | COTS | `nema17x40_with_mks` (Servo42D_Assem + standoffs + M3x30) | `(split from mks/nema17x40_with_mks.step)` | mm | 13 | 43 × 43 × 33.7 | ×3 (mounted) + 1 in the drive |
 
 Cycloidal drive (`cycloidal/<name>.step`: the named CadQuery builder's export at
 `cycloidal_drive@2f1f67d`; "in arm" counts inside the `cycloidal_drive#1` module):
@@ -106,7 +116,9 @@ Notes:
 with `key` (`<part>#<n>`), `path` (SolidWorks tree path), `parent` (module key or null),
 `rel` / `world` placements as `{position, rotation_xyz_deg, matrix_3x4}`
 (`Location(position, rotation_xyz_deg)` reproduces them; intrinsic XYZ Euler, degrees),
-world bounding boxes, solid counts and volumes; `expected` totals (SolidWorks parts only) for the
-assembly test; `designed_modules[]` (the keys of `kind: module, designed: true` records, which carry
-`rel`/`world`, a `solidworks` cross-check block and `source` instead of solids/volume);
-`skipped[]` (currently empty).
+world bounding boxes, solid counts and volumes; `expected` totals (every `kind: part` record, the mounted ones
+included) for the assembly test; `designed_modules[]` (the keys of `kind: module, designed: true` records, which carry
+`rel`/`world`, a `solidworks` cross-check block and `source` instead of solids/volume); `mounted[]` (the keys of the
+part records with a `mount` block — the belt joints' motors and boards declared in `lib/mounts.py`, written by
+`tools/reference/mount_placements.py`: `path` / `parent` / `label_in_monolith` null, `rel == world = host world *
+mount.frame_in_host`, `mount.host` a SolidWorks key or the motor key for a board); `skipped[]` (currently empty).

@@ -53,7 +53,9 @@ own) — rules in `cad/CLAUDE.md` "Two machines". Scripts must run on macOS's ba
   forearm_link, wrist_pitch_link, wrist_roll_link, jaw_a_link, jaw_b_link, tool0`; joints `base_yaw,
   shoulder_pitch` (the cycloidal drive: stator in `shoulder_link`, rotor in `upper_arm_link`),
   `elbow_pitch, wrist_pitch, wrist_roll, jaw_a, jaw_b`. Which MKS motor (`src/config.py` J1..J3, all
-  `gear_ratio` 1.0) drives which joint is unconfirmed — `CYCLOIDAL_RATIO` = 20 applies to `shoulder_pitch`.
+  `gear_ratio` 1.0) drives which joint is unconfirmed — `CYCLOIDAL_RATIO` = 20 applies to `shoulder_pitch`. The
+  motors themselves are placed: NEMA 17 x 40 + MKS SERVO42D kits on `base` / `j1_link` / `j2_link` (`cad/lib/mounts.py`,
+  `nema17_40mm#n` + `mks_servo42d#n`) and the drive's 48 mm kit (its board is a `cycloidal_drive.py` row).
 
 ## Docs
 - `CHANGELOG.md` is the dated record of changes: add an entry (date, what changed, commit) with

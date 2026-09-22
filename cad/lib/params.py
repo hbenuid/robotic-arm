@@ -63,6 +63,35 @@ PANCAKE_BODY_D = 47.0           # [REFERENCE] body depth incl. connector
 PANCAKE_BODY_H = 43.0           # [REFERENCE] height incl. shaft
 PANCAKE_MASS_G = 180.0          # [ESTIMATE] typical 17HS08-type pancake 150-200 g - replace with the datasheet value
 
+# --- Belt-drive motors: NEMA 17 x 40 mm + MKS SERVO42D (parts/joints/nema17_40mm, mks_servo42d) ----
+# The base_yaw / elbow_pitch / wrist_pitch motors of the arm: the "nema17x40_with_mks" SolidWorks export
+# (a kit: motor + driver board, split by tools/reference/split_mks_motor.py into vendor/nema17_40mm.step
+# and vendor/mks_servo42d.step). Part frame like the drive motor's (mounting face z=0, body -Z, shaft +Z,
+# D-flat +Y); the board's frame has z=0 at the motor's REAR face, its stack in -Z. The mounts are the
+# NEMA 17 pads the SolidWorks links already carry (lib/mounts.py places the motors on them).
+NEMA17_40_BODY_W = 42.0         # [REFERENCE] the export's body square (datasheet NEMA17_FACE 42.3)
+NEMA17_40_BODY_LEN = 39.5       # [REFERENCE] mounting face -> rear face ("40 mm" class)
+NEMA17_40_REAR_STUB_DIA = 8.0   # [REFERENCE] rear bearing boss proud of the rear face
+NEMA17_40_REAR_STUB_LEN = 0.9   # [REFERENCE]
+NEMA17_40_CONNECTOR_W = 16.0    # [REFERENCE] cable-connector boss on the -Y side, 7 mm proud of the body ...
+NEMA17_40_CONNECTOR_D = 7.0     # [REFERENCE]
+NEMA17_40_CONNECTOR_Z0 = -39.5  # [REFERENCE] ... spanning z -39.5..-29.9 (the rear 9.6 mm of the body)
+NEMA17_40_CONNECTOR_Z1 = -29.9  # [REFERENCE]
+NEMA17_40_MASS_G = 280.0        # [ESTIMATE] 17HS4401 / 17HS15 class 40 mm NEMA 17 (bare motor); verify on the unit
+MKS_SERVO42D_STANDOFF = 3.0     # [REFERENCE] 4x 7x3 standoffs between the rear face and the board
+MKS_SERVO42D_BOARD_STACK = 11.1 # [REFERENCE] PCB + cover
+MKS_SERVO42D_STACK = MKS_SERVO42D_STANDOFF + MKS_SERVO42D_BOARD_STACK   # 14.1 rear face -> cover face
+MKS_SERVO42D_W = 43.0           # [REFERENCE] cover square
+MKS_SERVO42D_SCREW_REACH = 19.6 # [REFERENCE] the 4x M3x30 reach this far into the motor's through-holes (+Z of the rear face)
+MKS_SERVO42D_MASS_G = 35.0      # [ESTIMATE] PCB + cover + 4 screws + 4 standoffs; verify on the unit
+
+# The mounts (host-part frames, mm): where the pads sit in the SolidWorks links.
+BASE_MOTOR_PATTERN_CENTRE = (78.971, -44.9, 0.084)   # [REFERENCE] base: 4x M3 on 31 x 31 through the 5 mm plate, on its -Y face
+J1_MOTOR_PAD_FACE_Y = -32.5     # [REFERENCE] j1_link: the 48 x 48 pad's outer face (the -N side), pattern on the shoulder axis
+J2_MOTOR_WEB_FACE_Z = 19.0      # [REFERENCE] j2_link: the web's +Z face; the motor bolts through its two 110 mm slots
+J2_MOTOR_SLIDE_RANGE = (-141.5, -62.5)   # [REFERENCE] j2_link: motor-axis x range the slots allow (belt tension slide)
+J2_MOTOR_SLIDE_X = -118.0       # [ESTIMATE] j2_cap_1's window centre - the body clears the cap for -127..-109; set with the belt
+
 # --- Cycloidal drive (lib/cycloidal/, assemblies/cycloidal_drive.py, docs/cycloidal_drive.md) -----
 # The drive's own dimensions live in lib/cycloidal/params.py (DriveConfig, ported from the
 # cycloidal_drive repo). These are the interface values the rest of the arm needs, re-exported

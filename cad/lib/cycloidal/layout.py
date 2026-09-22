@@ -101,6 +101,7 @@ def stack_positions(cfg: DriveConfig = DEFAULT_CONFIG) -> dict[str, float]:
         "x_disc1": +e, "x_disc2": -e,
         "z_motor_plate": 0.0,
         "z_motor": 0.0,
+        "z_mks_board": -m.body_length,                                               # -48: the MKS SERVO42D kit on the motor's rear face
         "z_eccentric_shaft": 0.0,
         "z_ring_gear_body": s.z_motor_plate_inner,                                   # 9
         "z_disc1": s.z_disc1,                                                        # 13

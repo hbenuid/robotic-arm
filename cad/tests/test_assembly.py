@@ -55,15 +55,17 @@ def _check_link_tints(root):
 
 
 def _expected_bbox():
-    """Union of the world bounding boxes of every part occurrence in placements.json and of the
-    designed modules' SolidWorks nodes (the drive's fasteners sit inside that envelope),
-    re-expressed in the frame the arm is emitted in (arm.arm_from_w(): W, +Y up -> base_link, Z up).
-    That map is an axis permutation with signs, so two opposite corners carry the whole box."""
+    """Union of the world bounding boxes of every part occurrence in placements.json (the mounted
+    motors + boards included) and of the designed modules built in-process at their world pose (the
+    SolidWorks node's box predates the drive's MKS board), re-expressed in the frame the arm is emitted
+    in (arm.arm_from_w(): W, +Y up -> base_link, Z up). That map is an axis permutation with signs, so
+    two opposite corners carry the whole box."""
     lo = [float("inf")] * 3
     hi = [float("-inf")] * 3
     boxes = [(P.OCCURRENCES[k]["world_bbox_min"], P.OCCURRENCES[k]["world_bbox_size"]) for k in P.keys(kind="part")]
-    boxes += [(P.OCCURRENCES[k]["solidworks"]["world_bbox_min"], P.OCCURRENCES[k]["solidworks"]["world_bbox_size"])
-              for k in P.keys(kind="module", designed=True)]
+    for k in P.keys(kind="module", designed=True):
+        bb = raw(arm.MODULES[P.OCCURRENCES[k]["part"]]).moved(P.location(k, "world")).bounding_box()
+        boxes.append(((bb.min.X, bb.min.Y, bb.min.Z), (bb.size.X, bb.size.Y, bb.size.Z)))
     for bmin, bsize in boxes:
         for i in range(3):
             lo[i] = min(lo[i], bmin[i])
@@ -87,11 +89,11 @@ def test_gripper_module_builds():
 def test_cycloidal_drive_module_builds():
     d = raw(cycloidal_drive.cycloidal_drive)
     assert d.label == "cycloidal_drive"
-    assert len(_leaves(d)) == len(cycloidal_drive.OCCURRENCES) == DRIVE["leaves"] == 18
+    assert len(_leaves(d)) == len(cycloidal_drive.OCCURRENCES) == DRIVE["leaves"] == 19
     assert len(d.solids()) == DRIVE["solids"]
     assert abs(R.solid_volume(d) - DRIVE["solid_volume"]) <= 0.5
     assert d.is_valid
-    assert _check_module_tints(d, cycloidal_drive.TINT) == {True: 12, False: 6}
+    assert _check_module_tints(d, cycloidal_drive.TINT) == {True: 13, False: 6}   # + the MKS board
 
 
 def test_arm_groups_mirror_links():
@@ -151,16 +153,16 @@ def test_arm_assembly_matches_reference_totals():
     assert a.label == "arm"
     assert [c.label for c in a.children] == [label for label, _, _ in arm.GROUPS]
     leaves = _leaves(a)
-    assert len(leaves) == EXPECTED["leaf_occurrences"] + DRIVE["leaves"] == 52
+    assert len(leaves) == EXPECTED["leaf_occurrences"] + DRIVE["leaves"] == 59
     labels = [leaf.label for leaf in leaves]
     assert len(set(labels)) == len(labels), f"duplicate leaf labels: {labels}"
-    assert len(a.solids()) == EXPECTED["solids"] + DRIVE["solids"] == 108
+    assert len(a.solids()) == EXPECTED["solids"] + DRIVE["solids"] == 166
     assert abs(R.solid_volume(a) - (EXPECTED["solid_volume"] + DRIVE["solid_volume"])) <= 0.5
     exp_min, exp_size = _expected_bbox()
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_min(a), exp_min)), (R.bbox_min(a), exp_min)
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_size(a), exp_size)), (R.bbox_size(a), exp_size)
     assert a.is_valid
-    assert _check_link_tints(a) == {True: 18, False: 34}   # bought / printed leaves (tools/bom.py counts the same)
+    assert _check_link_tints(a) == {True: 25, False: 34}   # bought / printed leaves (tools/bom.py counts the same)
 
 
 def test_arm_no_caps_tables_are_the_arms_minus_hidden():
@@ -185,11 +187,11 @@ def test_arm_no_caps_builds_the_arm_without_its_caps():
     assert a.label == "arm_no_caps"
     assert [c.label for c in a.children] == [label for label, _, _ in arm.GROUPS]
     labels = [leaf.label for leaf in _leaves(a)]
-    assert len(labels) == EXPECTED["leaf_occurrences"] + DRIVE["leaves"] - len(arm_no_caps.HIDDEN) == 49
+    assert len(labels) == EXPECTED["leaf_occurrences"] + DRIVE["leaves"] - len(arm_no_caps.HIDDEN) == 56
     hidden = [P.OCCURRENCES[key] for key in arm_no_caps.HIDDEN]
     assert not {o["part"] for o in hidden} & set(labels), labels
-    assert len(a.solids()) == EXPECTED["solids"] + DRIVE["solids"] - sum(o["solids"] for o in hidden) == 105
+    assert len(a.solids()) == EXPECTED["solids"] + DRIVE["solids"] - sum(o["solids"] for o in hidden) == 163
     volume = EXPECTED["solid_volume"] + DRIVE["solid_volume"] - sum(o["solid_volume"] for o in hidden)
     assert abs(R.solid_volume(a) - volume) <= 0.5
     assert a.is_valid
-    assert _check_link_tints(a) == {True: 18, False: 34 - len(arm_no_caps.HIDDEN)}   # the caps are printed
+    assert _check_link_tints(a) == {True: 25, False: 34 - len(arm_no_caps.HIDDEN)}   # the caps are printed

@@ -108,16 +108,16 @@ cad/
 │   ├── __init__.py            # the directory scan: MODULES / GROUPS, names(), load(), model(), build(), bought(), source_of()
 │   ├── _templates/            # designed.py (parametric), wrapper.py (import wrapper), cots.py (purchased) templates
 │   ├── base/                  # base, j1_coupler, j1_link, j1_cap                                  (SolidWorks wrappers)
-│   ├── joints/                # j2_link, j2_cap_1, j2_cap_2, j3_coupler, gt2_pulley_90t            (SolidWorks wrappers)
+│   ├── joints/                # j2_link, j2_cap_1, j2_cap_2, j3_coupler, gt2_pulley_90t (SolidWorks wrappers) + COTS nema17_40mm, mks_servo42d (the belt joints' MKS kits)
 │   ├── wrist/                 # wrist_link, gripper_clamp_bracket, gripper_j3_connector + COTS nema17_pancake, gt2_pulley_20t
 │   ├── gripper/               # gripper_* (7), servo_holder + COTS gripper_rail_6mm, mg996r_servo, mg996r_horn
 │   └── cycloidal/             # the drive: 6 designed parts + 10 COTS (bearings, nema17_48mm, pins, bolts, nuts), _cots.py helper
 │       └── <name>.py + <name>.step   # every group: running the .py writes the .step beside it (git-ignored, per machine)
 ├── assemblies/
-│   ├── arm.py             # the whole arm, grouped arm -> base_link/shoulder_link/upper_arm_link/forearm_link/wrist_pitch_link/wrist (GROUPS; 52 leaves, printed parts tinted per group, purchased parts grey)
-│   ├── arm_no_caps.py     # working view: arm.py's tables minus HIDDEN (the three link caps) - 49 leaves, not the robot
+│   ├── arm.py             # the whole arm, grouped arm -> base_link/shoulder_link/upper_arm_link/forearm_link/wrist_pitch_link/wrist (GROUPS; 59 leaves incl. the 6 mounted motors + boards of lib/mounts.py, printed parts tinted per group, purchased parts grey)
+│   ├── arm_no_caps.py     # working view: arm.py's tables minus HIDDEN (the three link caps) - 56 leaves, not the robot
 │   ├── gripper.py         # the gripper mechanism module (19 occurrences, placed from placements.json)
-│   ├── cycloidal_drive.py # the drive module (18 rows placed from lib/cycloidal stack_positions - code-driven)
+│   ├── cycloidal_drive.py # the drive module (19 rows placed from lib/cycloidal stack_positions - code-driven, the MKS board included)
 │   └── _occurrences.py    # place()/occurrence_children()/grouped_children() (placement keys), place_at()/located_children() (Locations), world_rows(); BOUGHT_TINT / _tint_parts (purchased parts grey) - children via lib.models.geometry()
 ├── docs/cycloidal_drive.md  # the drive's spec, port notes and attachment
 ├── reference/             # immutable per-part reference STEPs (Git LFS) + manifest.json + placements.json + README
@@ -253,8 +253,10 @@ partition of `robot/frames.py LINKS` with the two modules kept whole (the cycloi
 toggles as one node in the viewers, and
 every subtree is tinted with its group's color (the gripper and cycloidal_drive modules keep
 their own). `tests/test_assembly.py` checks the rebuilt arm against the SolidWorks totals plus
-the module's own lock (34 + 18 leaves, 50 + 58 solids, volumes, bbox), the group labels and the
-`LINKS` mirror.
+the module's own lock (40 + 19 leaves, 95 + 71 solids, volumes, bbox), the group labels and the
+`LINKS` mirror. The six leaves the SolidWorks capture never had - the belt joints' NEMA 17 x 40 motors
+and their MKS SERVO42D boards - are declared in `lib/mounts.py` and materialised into `placements.json`
+by `tools/reference/mount_placements.py` (see `CLAUDE.md` "Mounted occurrences").
 
 ## Reference geometry and placements
 
@@ -302,20 +304,20 @@ sweeps and hardware.
 
 | joint | type | parent → child | actuator | notes |
 |---|---|---|---|---|
-| `base_yaw` | revolute, world up | `base_link → shoulder_link` | MKS stepper (which one: unconfirmed) | the holder `j1_coupler` turns on the base |
+| `base_yaw` | revolute, world up | `base_link → shoulder_link` | NEMA 17 x 40 + MKS SERVO42D (`nema17_40mm#1` + `mks_servo42d#1` under the base plate; CAN id unconfirmed) | the holder `j1_coupler` turns on the base |
 | `shoulder_pitch` | revolute, `N` | `shoulder_link → upper_arm_link` | the 20:1 cycloidal drive, its own NEMA 17 (`CYCLOIDAL_RATIO`) | stator with the holder, rotor with `j1_link` |
-| `elbow_pitch` | revolute, `N` | `upper_arm_link → forearm_link` | GT2 90T belt, MKS stepper (unconfirmed) | pulley + J3 coupler on the forearm |
-| `wrist_pitch` | revolute, `N` | `forearm_link → wrist_pitch_link` | GT2 90T belt, MKS stepper (unconfirmed) | pulley + J3 coupler on the wrist body |
+| `elbow_pitch` | revolute, `N` | `upper_arm_link → forearm_link` | GT2 90T belt, NEMA 17 x 40 + MKS SERVO42D (`nema17_40mm#2` + `mks_servo42d#2` on `j1_link`'s pad; CAN id unconfirmed) | pulley + J3 coupler on the forearm |
+| `wrist_pitch` | revolute, `N` | `forearm_link → wrist_pitch_link` | GT2 90T belt, NEMA 17 x 40 + MKS SERVO42D (`nema17_40mm#3` + `mks_servo42d#3` on `j2_link`'s web slots; CAN id unconfirmed) | pulley + J3 coupler on the wrist body |
 | `wrist_roll` | revolute, `F` | `wrist_pitch_link → wrist_roll_link` | NEMA17 pancake + 20T pulley (not CAN-driven) | |
 | `jaw_a`, `jaw_b` (mimic, −1) | prismatic | `wrist_roll_link → jaw_*_link` | MG996R crank linkage | `open` / `closed` SRDF states |
 | `tool0_joint` | fixed | `wrist_roll_link → tool0` | — | fingertip midpoint, Z = approach |
 
 | link | occurrences (`robot/frames.py LINKS`) |
 |---|---|
-| `base_link` | `base` |
-| `shoulder_link` | `j1_coupler` + the drive's **stator** (`cycloidal_drive#1:stator`: motor plate, ring gear body, ring pins, housing bolts/nuts, NEMA 17, gear train) |
-| `upper_arm_link` | the drive's **rotor** (`cycloidal_drive#1:rotor`: output hub, output pins, 625) + `j1_link` + `j1_cap` |
-| `forearm_link` | `j2_link`, `j2_cap_1`, `j2_cap_2`, `gt2_pulley_90t#1`, `j3_coupler#1` |
+| `base_link` | `base` + `nema17_40mm#1`, `mks_servo42d#1` (the base_yaw motor + board under the plate) |
+| `shoulder_link` | `j1_coupler` + the drive's **stator** (`cycloidal_drive#1:stator`: motor plate, ring gear body, ring pins, housing bolts/nuts, NEMA 17 + its MKS board, gear train) |
+| `upper_arm_link` | the drive's **rotor** (`cycloidal_drive#1:rotor`: output hub, output pins, 625) + `j1_link` + `j1_cap` + `nema17_40mm#2`, `mks_servo42d#2` (the elbow_pitch motor + board on the pad) |
+| `forearm_link` | `j2_link`, `j2_cap_1`, `j2_cap_2`, `gt2_pulley_90t#1`, `j3_coupler#1` + `nema17_40mm#3`, `mks_servo42d#3` (the wrist_pitch motor + board on the web) |
 | `wrist_pitch_link` | `wrist_link`, `gripper_clamp_bracket`, `nema17_pancake`, `gt2_pulley_90t#2`, `j3_coupler#2` |
 | `wrist_roll_link` | `gt2_pulley_20t` + the gripper base (connector, servo holder, servo + horn, cover, rails, crank links) |
 | `jaw_a_link` / `jaw_b_link` | slider + two fingers + end, each side |

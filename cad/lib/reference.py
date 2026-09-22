@@ -4,8 +4,12 @@ The originals live outside the repo (~/Documents/arm_assembly_organized/, SolidW
 AP214 exports of 2026-08-27). `tools/reference/import_solidworks.py` copies the per-part exports into
 reference/solidworks/<clean_name>.step (immutable inputs) and vendor/<clean_name>.step (purchased
 parts); `tools/reference/extract_placements.py` extracts the assembly placements from the
-full-assembly STEP into reference/placements.json. The cycloidal drive's references are CadQuery
-exports in reference/cycloidal/ (tools/cycloidal/import_cadquery.py); path_of() resolves the origin.
+full-assembly STEP into reference/placements.json (and the motor mounts declared in lib/mounts.py,
+tools/reference/mount_placements.py). The cycloidal drive's references are CadQuery exports in
+reference/cycloidal/ (tools/cycloidal/import_cadquery.py); path_of() resolves the origin. The third
+producer of vendor files is tools/reference/split_mks_motor.py: it splits the "NEMA 17 x 40 + MKS
+SERVO42D" kit export (MKS_EXPORT_NAME, next to the monolith) into vendor/nema17_40mm.step and
+vendor/mks_servo42d.step, which import_solidworks.py then mirrors into reference/solidworks/.
 
 `lib/` never imports `parts/`.
 """
@@ -27,6 +31,8 @@ VENDOR_DIR = CAD_DIR / "vendor"
 # Where the SolidWorks export tree lives on this machine (override: --src / ARM_REFERENCE_SRC).
 DEFAULT_SOURCE_DIR = pathlib.Path.home() / "Documents" / "arm_assembly_organized"
 MONOLITH_NAME = "final Arm Assembly Fully Movable.STEP"   # 13 MB, inch units, the full positioned assembly
+MKS_EXPORT_NAME = "mks/nema17x40_with_mks.step"           # 0.5 MB, mm, SolidWorks 2026 export of the NEMA 17 x 40 + MKS SERVO42D kit
+#   (sha256 4e51a159...; tools/reference/split_mks_motor.py splits it into vendor/nema17_40mm.step + vendor/mks_servo42d.step)
 
 # Custom / printed parts: clean name -> (SolidWorks product name, export path under the source dir).
 # Each gets parts/<group>/<name>.py (an import wrapper until converted) + reference/solidworks/<name>.step.
@@ -64,6 +70,9 @@ COTS: dict[str, tuple[str, str | None]] = {
     "mg996r_servo":     ("Servo Motor MG996R 3D Model_Servo Motor MG996R 3D Model",  "step/Servo Motor MG996R 3D Model_Servo Motor MG996R 3D Model.STEP"),
     "mg996r_horn":      ("Servo MG996R Horn_Servo MG996R Horn",                      "step/Servo MG996R Horn_Servo MG996R Horn.STEP"),
     "nema17_pancake":   ("nema17_pancake", None),   # 7-part sub-assembly, flattened by tools/reference/extract_placements.py
+    # The NEMA 17 x 40 + MKS SERVO42D kit export (MKS_EXPORT_NAME), split by tools/reference/split_mks_motor.py:
+    "nema17_40mm":      ("nema17x40_with_mks: motor body + D-shaft (shaft trimmed to the drive motor's 22 mm)", None),
+    "mks_servo42d":     ("nema17x40_with_mks: Servo42D_Assem (PCB + cover) + 4 standoffs + 4 M3x30", None),
 }
 
 # Sub-assemblies kept as modules under assemblies/: clean name -> product name.

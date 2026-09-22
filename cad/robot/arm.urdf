@@ -1,8 +1,11 @@
 <?xml version="1.0"?>
 <!--
   arm: 4-joint desktop arm - base yaw, shoulder pitch (20:1 cycloidal drive), elbow pitch and
-  wrist pitch (GT2 belts) - + NEMA17-pancake wrist roll + MG996R parallel gripper. Three joints
-  are driven by MKS SERVO42D steppers (src/config.py J1..J3; which drives which is unconfirmed).
+  wrist pitch (GT2 belts) - + NEMA17-pancake wrist roll + MG996R parallel gripper. Four joints
+  are driven by NEMA 17 + MKS SERVO42D kits: the base_yaw / elbow_pitch / wrist_pitch motors are
+  40 mm NEMA 17s on the pads the links carry (cad/lib/mounts.py: nema17_40mm#1..3 + mks_servo42d#1..3,
+  in base_link / upper_arm_link / forearm_link), the shoulder_pitch one the drive's own 48 mm motor
+  + board; which CAN id (src/config.py J1..J3) drives which joint is unconfirmed.
 
   SOURCE OF TRUTH: this file. Every number is derived from the CAD by cad/tools/robot/derive.py
   (cad/robot/frames.py = link partition + joint frames; cad/reference/placements.json = the
@@ -31,16 +34,18 @@
   the GT2 90T pulleys + J3 couplers are bolted to the driven links (forearm_link at elbow_pitch,
   wrist_pitch_link at wrist_pitch); the MG996R crank linkage is merged into wrist_roll_link;
   jaw_b mirrors jaw_a (mimic, multiplier -1); positive jaw_a = opening.
-  UNCONFIRMED: which MKS motor (src/config.py J1..J3) drives which joint - the shoulder_pitch
-  motor is the drive's own NEMA 17 at 20:1 (cad/lib/params.py CYCLOIDAL_RATIO; src/config.py
-  still carries gear_ratio 1.0 everywhere). wrist_roll and the jaws are not driven by src/config.py.
+  UNCONFIRMED: which CAN id (src/config.py J1..J3) drives which joint - the motors are placed
+  (cad/lib/mounts.py) but not mapped; the shoulder_pitch motor is the drive's own NEMA 17 at 20:1
+  (cad/lib/params.py CYCLOIDAL_RATIO; src/config.py still carries gear_ratio 1.0 everywhere). The
+  belt motors' masses (280 g) and boards (35 g) are estimates, the wrist_pitch motor's slide position
+  (J2_MOTOR_SLIDE_X) too. wrist_roll and the jaws are not driven by src/config.py.
 -->
 <robot name="arm">
   <link name="base_link">
     <inertial>
-      <origin xyz="-0.023537 -0.000065 0.054693" rpy="0 0 0" />
-      <mass value="0.363435" />
-      <inertia ixx="8.183245e-04" ixy="6.639409e-07" ixz="-1.629800e-04" iyy="1.305486e-03" iyz="9.081833e-08" izz="1.532189e-03" />
+      <origin xyz="-0.049145 0.000014 0.04491" rpy="0 0 0" />
+      <mass value="0.678435" />
+      <inertia ixx="9.989843e-04" ixy="2.287661e-06" ixz="-3.570432e-04" iyy="1.999633e-03" iyz="8.657926e-07" izz="2.131775e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -57,9 +62,9 @@
   </link>
   <link name="shoulder_link">
     <inertial>
-      <origin xyz="-0.000726 0.013853 -0.011441" rpy="0 0 0" />
-      <mass value="1.629416" />
-      <inertia ixx="3.663759e-03" ixy="3.487923e-06" ixz="1.260652e-05" iyy="3.561365e-03" iyz="-2.610875e-04" izz="2.701054e-03" />
+      <origin xyz="-0.00082 0.015376 -0.011234" rpy="0 0 0" />
+      <mass value="1.664416" />
+      <inertia ixx="3.853132e-03" ixy="1.424321e-05" ixz="1.403681e-05" iyy="3.576646e-03" iyz="-2.851599e-04" izz="2.888365e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -76,9 +81,9 @@
   </link>
   <link name="upper_arm_link">
     <inertial>
-      <origin xyz="0.088378 0 -0.008608" rpy="0 0 0" />
-      <mass value="0.786378" />
-      <inertia ixx="8.468129e-04" ixy="-1.259123e-08" ixz="4.683250e-04" iyy="6.275076e-03" iyz="3.607455e-09" izz="6.660124e-03" />
+      <origin xyz="0.063182 0.000006 -0.021842" rpy="0 0 0" />
+      <mass value="1.101378" />
+      <inertia ixx="1.434060e-03" ixy="4.401700e-07" ixz="-4.464273e-04" iyy="8.608089e-03" iyz="3.895218e-07" izz="8.491979e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -95,9 +100,9 @@
   </link>
   <link name="forearm_link">
     <inertial>
-      <origin xyz="0.097142 0.000002 0.010186" rpy="0 0 0" />
-      <mass value="0.684302" />
-      <inertia ixx="7.271294e-04" ixy="-6.577201e-08" ixz="-2.825096e-04" iyy="5.606360e-03" iyz="-2.817914e-09" izz="6.007771e-03" />
+      <origin xyz="0.103628 0.000009 0.020019" rpy="0 0 0" />
+      <mass value="0.999302" />
+      <inertia ixx="1.042743e-03" ixy="-2.059101e-07" ixz="-4.188917e-04" iyy="6.013471e-03" iyz="-3.188502e-07" izz="6.185358e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />

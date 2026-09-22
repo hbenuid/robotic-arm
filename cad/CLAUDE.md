@@ -4,7 +4,7 @@
 conversion workflow, shared-dimension rules, assembly placements, purchased parts, tests, tooling.
 **Audience:** agent. Human docs: `README.md`. Reference provenance: `reference/README.md`. The
 cycloidal drive (spec, port notes, attachment): `docs/cycloidal_drive.md`.
-**Last updated:** 2026-09-21. Every commit that changes behaviour, layout or tooling gets a dated entry in the
+**Last updated:** 2026-09-21 (motor mounts). Every commit that changes behaviour, layout or tooling gets a dated entry in the
 root `CHANGELOG.md` and bumps the `Last updated` line of the docs it touches.
 
 `cad/` is a **separate uv project** (Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.6.x) inside the
@@ -181,6 +181,14 @@ in `reference/cycloidal/`, `lib/reference.py CYCLOIDAL_COTS`; `path_of()` resolv
 `test_cots_vendor_matches_reference_frame` (bbox within 1.5 mm, skipped when there is no vendor
 file - the envelope is then the geometry) and `test_cots_envelope_tracks_reference_bbox` guard vendor
 swaps. Swap procedure and what has been tried: `vendor/README.md` (`./cadtool parts …`, step.parts).
+The third producer of vendor files is `tools/reference/split_mks_motor.py`: it splits the "NEMA 17 x 40 + MKS SERVO42D"
+kit export (`lib/reference.py MKS_EXPORT_NAME`, outside the repo next to the monolith) by GEOMETRY into
+`vendor/nema17_40mm.step` (body + D-shaft, re-framed like the drive motor - face z=0, body −Z, shaft +Z, D-flat +Y -
+and the shaft trimmed to `MotorParams.shaft_length`) and `vendor/mks_servo42d.step` (board + cover + standoffs + M3x30,
+z=0 at the motor's REAR face, stack −Z); `import_solidworks.py` then mirrors both into `reference/solidworks/`
+(`rel=None`, the `nema17_pancake` pattern). Written once, committed as LFS - never regenerated on the other machine.
+The two parts live in `parts/joints/` (`parts/cycloidal/` is locked to `CYCLOIDAL_COTS`); the drive motor's envelope
+builder is `lib/cycloidal/motor.py nema17_motor()`, which the 40 mm envelope reuses with other `MotorParams`.
 
 ## Shared dimensions (DRY)
 `lib/params.py` is the single source of truth: mm and grams, every constant tagged
@@ -206,6 +214,19 @@ Changing a shared dimension — touchpoints in order:
 - `reference/placements.json` (from `tools/reference/extract_placements.py`) holds every occurrence:
   `rel` (to its parent node) and `world`, as `Location(position, rotation_xyz_deg)`; keys
   `"<part>#<n>"`, module `"gripper#1"`. Treat it as an immutable input.
+- **Mounted occurrences** (`lib/mounts.py`): the belt joints' motors - `nema17_40mm#1..3` + `mks_servo42d#1..3` on the
+  NEMA 17 pads `base` / `j1_link` / `j2_link` carry - never existed in the SolidWorks capture. They are declared as
+  frames-as-data in the host occurrence's frame (`Mount(key, part, host, link, joint, frame)`; a board's host is its
+  motor) and `tools/reference/mount_placements.py` materialises them into `placements.json` as ordinary part records
+  (parent `None`, `rel == world = host world * frame`, solids / volume / bbox from `parts.build`, a `mount` block; keys
+  under top-level `mounted`, `P.keys(mounted=True)`), checking each motor's +Z against its joint axis. The extractor
+  appends them on every run (`extract_placements.py --no-pancake` - the flag keeps this machine's bytes out of
+  `vendor/nema17_pancake.step`); `mount_placements.py` alone is the merge mode that needs no monolith (change a spin or
+  `J2_MOTOR_SLIDE_X` in `lib/params.py` → run it → re-derive the inertials). `assemblies/arm.py OCCURRENCES` /
+  `GROUPS` and `robot/frames.py LINKS` list the keys like any other (roles = the joint names). `tests/test_mounts.py`
+  re-checks the geometry: axis on the joint, mounting face on the host's pad, zero interference with the neighbours
+  (the one budget: the Ø22 pilot in `j2_link`'s Ø20 slot). The drive's own board is a `cycloidal_drive.py` row
+  (`stack_positions["z_mks_board"]`).
 - `assemblies/arm.py` / `gripper.py`: `OCCURRENCES = [(part, role|None, key), …]` in SolidWorks
   document order; `assemblies/_occurrences.py` places each occurrence as
   `lib.models.geometry(parts.model(part)).moved(rel * LOCAL_FROM_REF⁻¹)` — inside a build the linked
@@ -230,7 +251,7 @@ Changing a shared dimension — touchpoints in order:
   duplicates; renaming them after the joints is a follow-up.
 - `assemblies/arm_no_caps.py` is a **working view, not the robot**: `arm.py`'s `OCCURRENCES` / `GROUPS` minus
   `HIDDEN` (`j1_cap#1`, `j2_cap_1#1`, `j2_cap_2#1` — the covers over `j1_link` / `j2_link`), same frame, tree and
-  tints, its own git-ignored `arm_no_caps.step` (49 leaves / 105 solids). `HIDDEN` is the one place to edit;
+  tints, its own git-ignored `arm_no_caps.step` (56 leaves / 163 solids). `HIDDEN` is the one place to edit;
   never feed it to `robot/` or the SolidWorks totals. It is a second model because a model takes no
   parameters and the freshness gate sees no environment variable (an env switch in `arm()` would read
   `current` across a flip, and the daemon strips unlisted variables from its workers). Link edits land in
@@ -305,7 +326,8 @@ Changing a shared dimension — touchpoints in order:
 - Placeholders to confirm before real use: joint limits/effort/velocity (`lib/params.py`), axis signs,
   jaw travel, the link-membership assumptions listed in the URDF ledger. The cycloidal drive IS the
   `shoulder_pitch` joint (stator with the yawing `j1_coupler` in `shoulder_link`, rotor with `j1_link`
-  in `upper_arm_link`); which MKS motor (`src/config.py` J1..J3) drives which joint is unconfirmed;
+  in `upper_arm_link`); the base_yaw / elbow_pitch / wrist_pitch motors are the mounted `nema17_40mm#1..3` +
+  `mks_servo42d#1..3` (`lib/mounts.py`, see Assembly); which CAN id (`src/config.py` J1..J3) drives which joint is unconfirmed;
   wrist_roll and the jaws are not driven by `src/config.py`.
 
 ## Tests (`./cadtool pytest`)
@@ -313,15 +335,17 @@ Changing a shared dimension — touchpoints in order:
 `parts.build(name)`, `lib.models.raw(model)`). `test_parts_convention.py` (contract + geometry for
 every part, COTS envelopes + vendor frames), `test_reference_match.py` (manifest checksums; converted
 parts vs reference), `test_placements.py` (JSON integrity, tables cover every key once, the designed
-module record), `test_assembly.py` (34 + 18 leaves / 50 + 58 solids / volume / bbox vs SolidWorks + the
-module lock; `arm_no_caps` = the arm's tables minus `HIDDEN`, 49 leaves / 105 solids; the arm's leaf colours -
+module record + the 6 mounted records vs `lib/mounts.py`), `test_assembly.py` (40 + 19 leaves / 95 + 71 solids / volume / bbox
+vs SolidWorks + the module lock; `arm_no_caps` = the arm's tables minus `HIDDEN`, 56 leaves / 163 solids; the arm's leaf colours -
 purchased = `BOUGHT_TINT`, which no group / module may reuse, printed = the link's / module's tint, in the arm and in
 the standalone gripper and drive), `test_bom.py` (the print / buy lists
-partition `parts.names()` by the flag, 34 + 18 occurrences, the drive's pieces follow `DEFAULT_CONFIG`, `EXTRAS`
+partition `parts.names()` by the flag, 34 + 25 occurrences, the drive's pieces follow `DEFAULT_CONFIG`, `EXTRAS`
 well-formed), `test_params_invariants.py` (locks), `test_robot.py` (link partition, frames, FK at
 zero = capture, meshes, inertials, URDF/SRDF/SDF consistency + cadgen's validators via
 `./cadtool validate`), `test_tooling.py` (the installed cadgen and OCP kernel are the pinned ones, one complete OCP distribution,
 `./cadtool inspect` agrees with the kernel),
+`test_mounts.py` (the mounted motors: axis on the joint, face on the pad, board on the rear face, interference budget,
+the base stack above the base bottom, the 90T planes within the shafts),
 `test_layering.py` (the package layering, no `sys.path`, no direct part-module imports — AST scan),
 `test_lazy_kernel.py` (a fresh interpreter imports every template, part, assembly and link model without
 loading `build123d` / `OCP`; names the first offender — a new assembly model goes in its module list),
@@ -369,7 +393,7 @@ unrelated, broken motor-control suite).
   (`lib/models.py`, `tests/conftest.py`, `test_parts_convention.py`), `cadgen._internal.component_package`
   (`_shape_brep_bytes`, `_build123d_shape_from_brep_bytes`), the `-m cadgen.daemon` cmdline
   of the venv interpreter (`./cadtool daemon stop`; it is `.venv/bin/python3` on Linux and `.venv/bin/python` on macOS —
-  the pattern takes both, `test_tooling.py`) — and that `./cadtool why assemblies/arm.py` still lists the 54 children as
+  the pattern takes both, `test_tooling.py`) — and that `./cadtool why assemblies/arm.py` still lists the 61 children as
   pinned (a `build_in_progress` that silently read False would inline every child and still build).
 - A model run accepts only `--force --mesh-tolerance --mesh-angular-tolerance --verbose --json`;
   anything else (`--totals`, a preview flag) is an argparse error — use `./cadtool show` / `python -c`.

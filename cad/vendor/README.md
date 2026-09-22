@@ -19,6 +19,8 @@ occupies the reference's bounding box (±1.5 mm) after the part's `VENDOR_TO_REF
 | `mg996r_horn.step` | `parts/gripper/mg996r_horn.py` | idem; original `…/gripper/Servo MG996R Horn.step` | not a catalog part |
 | `nema17_pancake.step` | `parts/wrist/nema17_pancake.py` | the 7-part pancake-motor sub-assembly of the SolidWorks arm, flattened into one 11-solid part by `tools/reference/extract_placements.py` | `stepper_motor_nema17_l0020_single_shaft` exists but is analytic simplified — keep |
 | `bearing_625.step` | `parts/cycloidal/bearing_625.py` | step.parts `bearing_625_2rs_sealed_simple` (1 solid, 16 faces, Ø16 × 5, axis Z standing on z=0 — identity `VENDOR_TO_REF`) | adopted 2026-08-28; the reference is the drive repo's annulus |
+| `nema17_40mm.step` | `parts/joints/nema17_40mm.py` | the motor body + D-shaft of the SolidWorks "nema17x40_with_mks" kit export, split off by `tools/reference/split_mks_motor.py` (2 solids; re-framed like the drive motor — face z=0, body −Z, shaft +Z, D-flat +Y — and the shaft trimmed 23 → 22 mm; identity `VENDOR_TO_REF`) | added 2026-09-21; the split IS the reference (`same_as_reference`); the user's own export, not a catalog part |
+| `mks_servo42d.step` | `parts/joints/mks_servo42d.py` | the Servo42D_Assem (PCB 4 solids + cover) + 4 standoffs + 4 M3x30 of the same export (13 solids; z=0 at the motor's rear face, stack −Z, screws to z +19.6) | added 2026-09-21; one board kit per MKS motor — the three 40 mm ones and the drive's 48 mm |
 
 Cycloidal-drive purchased parts **without** a vendor file (their `_envelope()` — the drive repo's
 simplified model, also the reference STEP — is the geometry; `test_cots_vendor_matches_reference_frame`

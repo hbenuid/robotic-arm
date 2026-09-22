@@ -882,6 +882,82 @@
     "solids": 4
    }
   },
+  "mks_servo42d": {
+   "bbox_min": [
+    -21.5,
+    -21.5,
+    -14.1
+   ],
+   "bbox_size": [
+    43.0,
+    43.0,
+    33.7
+   ],
+   "bytes": 897090,
+   "file": "solidworks/mks_servo42d.step",
+   "kind": "cots",
+   "product": "nema17x40_with_mks: Servo42D_Assem (PCB + cover) + 4 standoffs + 4 M3x30",
+   "sha256": "4ee63e5389eace90c3cf3c6f3c32ee8132402e2a4564a2cd7b2ff01f535f65d7",
+   "solid_volume": 13779.335,
+   "solids": 13,
+   "source": null,
+   "units": "mm",
+   "vendor": {
+    "bbox_min": [
+     -21.5,
+     -21.5,
+     -14.1
+    ],
+    "bbox_size": [
+     43.0,
+     43.0,
+     33.7
+    ],
+    "bytes": 897090,
+    "same_as_reference": true,
+    "sha256": "4ee63e5389eace90c3cf3c6f3c32ee8132402e2a4564a2cd7b2ff01f535f65d7",
+    "solid_volume": 13779.335,
+    "solids": 13
+   }
+  },
+  "nema17_40mm": {
+   "bbox_min": [
+    -21.0,
+    -28.0,
+    -40.4
+   ],
+   "bbox_size": [
+    42.0,
+    49.0,
+    62.4
+   ],
+   "bytes": 292637,
+   "file": "solidworks/nema17_40mm.step",
+   "kind": "cots",
+   "product": "nema17x40_with_mks: motor body + D-shaft (shaft trimmed to the drive motor's 22 mm)",
+   "sha256": "ddebcb5005207b2bca556b0b08e19fee6086d866d5c8f997ec4f9a41808f40ae",
+   "solid_volume": 66320.645,
+   "solids": 2,
+   "source": null,
+   "units": "mm",
+   "vendor": {
+    "bbox_min": [
+     -21.0,
+     -28.0,
+     -40.4
+    ],
+    "bbox_size": [
+     42.0,
+     49.0,
+     62.4
+    ],
+    "bytes": 292637,
+    "same_as_reference": true,
+    "sha256": "ddebcb5005207b2bca556b0b08e19fee6086d866d5c8f997ec4f9a41808f40ae",
+    "solid_volume": 66320.645,
+    "solids": 2
+   }
+  },
   "nema17_48mm": {
    "bbox_min": [
     -21.15,

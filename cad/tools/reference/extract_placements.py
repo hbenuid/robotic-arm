@@ -11,33 +11,26 @@ is a Compound whose .label is the (mangled) product name and whose .location is 
 placement RELATIVE to its parent; world = parent_world * rel. The full assembly is an
 inch-unit file; OCCT converts it to mm on import. Designed modules (the cycloidal drive,
 lib/reference.py DESIGNED_MODULES) are recorded with their world pose and the node's totals but
-not descended into: assemblies/<module>.py builds their contents from code.
+not descended into: assemblies/<module>.py builds their contents from code. The motor mounts the
+capture never contained (lib/mounts.py) are appended as part records by
+tools/reference/mount_placements.py (whose own main() re-materialises them without the monolith).
 """
 from __future__ import annotations
 
 import argparse
 import datetime
 import hashlib
-import json
 import pathlib
 import sys
 
 import build123d
 from build123d import BoundBox, Compound, Location, export_step, import_step
 from lib import reference as R
+from lib.placements import to_record as loc_json
+from tools.reference.mount_placements import mounted_records, with_mounted, write
 
 ROOT_LABEL = R.clean_label("final Arm Assembly Fully Movable")
 COLLAPSED = {"nema17_pancake"}   # sub-assemblies flattened into ONE COTS part
-
-
-def loc_json(loc: Location) -> dict:
-    pos, rot = (tuple(v) for v in tuple(loc))   # (position Vector, XYZ-Euler-degrees Vector)
-    t = loc.wrapped.Transformation()
-    return {
-        "position": [round(v, 6) for v in pos],
-        "rotation_xyz_deg": [round(v, 6) for v in rot],
-        "matrix_3x4": [[round(t.Value(i, j), 9) for j in (1, 2, 3, 4)] for i in (1, 2, 3)],
-    }
 
 
 def world_bbox(node, parent_world: Location):
@@ -152,12 +145,8 @@ def main(argv=None) -> int:
     for i, child in enumerate(root.children, 1):
         ex.walk(child, root.location, None, (1, i))
 
-    parts = [o for o in ex.records if o["kind"] == "part"]
-    expected = {
-        "leaf_occurrences": len(parts),
-        "solids": sum(o["solids"] for o in parts),
-        "solid_volume": round(sum(o["solid_volume"] for o in parts), 3),
-    }
+    # The motor mounts (lib/mounts.py) join the SolidWorks records as ordinary part records.
+    mounted = mounted_records(ex.records)
     out = {
         "source": {
             "file": monolith.name, "bytes": monolith.stat().st_size,
@@ -169,23 +158,28 @@ def main(argv=None) -> int:
         "rotation_convention": "build123d Location.to_tuple(): intrinsic XYZ Euler angles, degrees; "
                                "rebuild with Location(position, rotation_xyz_deg). matrix_3x4 = rows of the "
                                "gp_Trsf (rotation | translation) for other consumers.",
-        "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame.",
+        "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. "
+                  "A record with a `mount` block (keys under `mounted`) is a motor mount declared in lib/mounts.py, "
+                  "not a SolidWorks node: parent None, rel == world = host world * mount frame.",
         "root_label": root.label,
-        "expected": expected,
+        "expected": None,
         "designed_modules": [o["key"] for o in ex.records if o.get("designed")],
-        "occurrences": ex.records,
+        "occurrences": None,
         "skipped": ex.skipped,
     }
+    out = with_mounted(out, ex.records, mounted)   # fills expected / occurrences / mounted (mount_placements' key order)
+    expected, records = out["expected"], out["occurrences"]
     args.out.parent.mkdir(exist_ok=True)
-    args.out.write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    write(args.out, out)
 
-    print(f"wrote {args.out}: {len(ex.records)} records "
-          f"({expected['leaf_occurrences']} parts, {len(ex.records) - expected['leaf_occurrences']} modules), "
+    print(f"wrote {args.out}: {len(records)} records "
+          f"({expected['leaf_occurrences']} parts incl. {len(mounted)} mounted, {len(records) - expected['leaf_occurrences']} modules), "
           f"{len(ex.skipped)} skipped; solids={expected['solids']} volume={expected['solid_volume']}")
-    for o in ex.records:
+    for o in records:
         p = o["world"]["position"]
-        print(f"  {o['key']:26s} {o['kind']:6s} path={o['path']:8s} parent={str(o['parent']):10s} "
-              f"solids={o['solids']:2d} world=({p[0]:8.2f},{p[1]:8.2f},{p[2]:8.2f})")
+        solids = o["solids"] if "solids" in o else o["solidworks"]["solids"]   # a designed module keeps the node's totals
+        print(f"  {o['key']:26s} {o['kind']:6s} path={str(o['path'] or 'mount'):8s} parent={str(o['parent']):10s} "
+              f"solids={solids:2d} world=({p[0]:8.2f},{p[1]:8.2f},{p[2]:8.2f})")
     for s in ex.skipped:
         p = s["world"]["position"]
         print(f"  SKIPPED {s['label']} path={s['path']} leaves={s['leaves']} solids={s['solids']} "

@@ -1,0 +1,69 @@
+"""The motor mounts of the belt joints - occurrences the SolidWorks capture never contained.
+
+The SolidWorks arm cut a NEMA 17 pad into `base` (base_yaw), `j1_link` (elbow_pitch) and `j2_link`
+(wrist_pitch) but never placed the motors, so reference/placements.json has no record for them.
+This module DECLARES them: one 40 mm kit motor (parts/joints/nema17_40mm) on each pad and its MKS
+SERVO42D board (parts/joints/mks_servo42d) on the motor's rear face. Each mount is a frame AS DATA
+(`(position mm, rotation_xyz_deg)`, lib.datum.to_location - kernel-free, like every frame a module
+declares) in the HOST occurrence's frame; tools/reference/mount_placements.py turns them into ordinary
+placements.json part records (world = host world * frame; solids / volume / bbox from the built part),
+which tools/reference/extract_placements.py appends on every extraction, so everything downstream
+(assemblies/arm.py OCCURRENCES + GROUPS, robot/frames.py LINKS, the inertials, tools/bom.py) reads them
+like any SolidWorks occurrence. The drive's own board is placed by assemblies/cycloidal_drive.py.
+
+Part frame of the motor: mounting face z=0, body -Z, shaft +Z, D-flat +Y, cable connector on -Y. So a
+mount frame puts +Z on the joint axis (the shaft through the pad toward the driven pulley) and its origin
+on the pad face at the bolt-pattern centre; the spin about the axis (90 deg steps, the pattern is square)
+only sets which way the connector faces [ESTIMATE]. The board's frame is the motor's, shifted to the rear face.
+
+Geometry (lib/params.py, kernel-verified 2026-09-21 - tests/test_mounts.py re-checks it):
+  base_yaw     base plate -Y face, pattern centre BASE_MOTOR_PATTERN_CENTRE; body hangs in -Y (2.4 mm above
+               the base's bottom face with the board), shaft +Y through the plate, belt slot toward the yaw axis
+  elbow_pitch  j1_link's 48 x 48 pad (outer face y = J1_MOTOR_PAD_FACE_Y, the -N side), pattern on the
+               shoulder axis; shaft +N through the pad opening, the 20T in the elbow 90T's plane, 210 mm centres
+  wrist_pitch  j2_link's web (+Z face z = J2_MOTOR_WEB_FACE_Z), motor axis at x = J2_MOTOR_SLIDE_X on the two
+               110 mm slots; body +N through j2_cap_1's window, shaft -N through the web, 20T under j2_cap_2
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+from lib.params import (
+    BASE_MOTOR_PATTERN_CENTRE, J1_MOTOR_PAD_FACE_Y, J2_MOTOR_SLIDE_X, J2_MOTOR_WEB_FACE_Z, NEMA17_40_BODY_LEN,
+)
+
+MOTOR, BOARD = "nema17_40mm", "mks_servo42d"
+BOARD_FRAME = ((0.0, 0.0, -NEMA17_40_BODY_LEN), (0.0, 0.0, 0.0))   # board frame in the motor's: z=0 at the rear face
+
+
+@dataclass(frozen=True)
+class Mount:
+    key: str        # occurrence key "<part>#<n>" (placements.json, assemblies/arm.py, robot/frames.py LINKS)
+    part: str
+    host: str       # the occurrence it is bolted to: a placements.json key, or the motor key for a board
+    link: str       # the robot/frames.py link it rides with
+    joint: str      # the joint it drives
+    frame: tuple    # ((x, y, z), (rx, ry, rz)) in the host's frame - lib.datum.to_location(frame)
+    note: str = ""
+
+
+MOUNTS: tuple[Mount, ...] = (
+    Mount("nema17_40mm#1", MOTOR, "base#1", "base_link", "base_yaw",
+          (BASE_MOTOR_PATTERN_CENTRE, (-90.0, 0.0, 270.0)),
+          "under the base plate, shaft up through it; connector toward the yaw axis (-X) [ESTIMATE]"),
+    Mount("mks_servo42d#1", BOARD, "nema17_40mm#1", "base_link", "base_yaw", BOARD_FRAME),
+    Mount("nema17_40mm#2", MOTOR, "j1_link#1", "upper_arm_link", "elbow_pitch",
+          ((0.0, J1_MOTOR_PAD_FACE_Y, 0.0), (-90.0, 0.0, 90.0)),
+          "on j1_link's pad, on the shoulder axis (the pad's holes are 0.38 mm off), shaft +N; connector toward the elbow [ESTIMATE]"),
+    Mount("mks_servo42d#2", BOARD, "nema17_40mm#2", "upper_arm_link", "elbow_pitch", BOARD_FRAME),
+    Mount("nema17_40mm#3", MOTOR, "j2_link#1", "forearm_link", "wrist_pitch",
+          ((J2_MOTOR_SLIDE_X, 0.0, J2_MOTOR_WEB_FACE_Z), (180.0, 0.0, 90.0)),
+          "on j2_link's web (+Z face), shaft -N; slide position J2_MOTOR_SLIDE_X [ESTIMATE]; connector toward the elbow [ESTIMATE]"),
+    Mount("mks_servo42d#3", BOARD, "nema17_40mm#3", "forearm_link", "wrist_pitch", BOARD_FRAME),
+)
+BY_KEY: dict[str, Mount] = {m.key: m for m in MOUNTS}
+
+
+def keys() -> list[str]:
+    """The mounted occurrence keys, in declaration order (motor, its board, ...)."""
+    return [m.key for m in MOUNTS]

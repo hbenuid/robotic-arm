@@ -31,6 +31,30 @@ def test_pancake_envelope_tracks_reference():
     assert p.PANCAKE_MASS_G > 0
 
 
+def test_belt_motor_and_mks_board_track_reference():
+    """The 40 mm kit motor + its MKS SERVO42D board (parts/joints/): envelopes at the split vendor files' bboxes,
+    the stack behind a mounting face, and the mounts the SolidWorks links carry (lib/mounts.py)."""
+    from lib.datum import BASE_BOTTOM_Y
+
+    motor, board = MANIFEST["nema17_40mm"], MANIFEST["mks_servo42d"]
+    assert motor["bbox_size"] == [p.NEMA17_40_BODY_W, p.NEMA17_40_BODY_W + p.NEMA17_40_CONNECTOR_D,
+                                  p.NEMA17_40_BODY_LEN + p.NEMA17_40_REAR_STUB_LEN + 22.0]
+    assert motor["bbox_min"] == [-p.NEMA17_40_BODY_W / 2, -(p.NEMA17_40_BODY_W / 2 + p.NEMA17_40_CONNECTOR_D),
+                                 -(p.NEMA17_40_BODY_LEN + p.NEMA17_40_REAR_STUB_LEN)]
+    assert p.NEMA17_40_CONNECTOR_Z0 == -p.NEMA17_40_BODY_LEN and p.NEMA17_40_CONNECTOR_Z0 < p.NEMA17_40_CONNECTOR_Z1 < 0
+    assert board["bbox_size"] == [p.MKS_SERVO42D_W, p.MKS_SERVO42D_W, p.MKS_SERVO42D_STACK + p.MKS_SERVO42D_SCREW_REACH]
+    assert board["bbox_min"] == [-p.MKS_SERVO42D_W / 2, -p.MKS_SERVO42D_W / 2, -p.MKS_SERVO42D_STACK]
+    assert math.isclose(p.MKS_SERVO42D_STACK, 14.1) and p.MKS_SERVO42D_SCREW_REACH < p.NEMA17_40_BODY_LEN
+    assert p.NEMA17_40_MASS_G > 0 and p.MKS_SERVO42D_MASS_G > 0
+    # the base_yaw motor hangs under the base's 5 mm plate: motor + board must stay above the base's bottom face
+    stack = p.NEMA17_40_BODY_LEN + p.MKS_SERVO42D_STACK                       # 53.6
+    assert p.BASE_MOTOR_PATTERN_CENTRE[1] - stack > BASE_BOTTOM_Y + 1.0        # 2.4 mm margin
+    # the wrist_pitch motor slides along j2_link's slots; the chosen position keeps the body inside j2_cap_1's window
+    lo, hi = p.J2_MOTOR_SLIDE_RANGE
+    assert lo < p.J2_MOTOR_SLIDE_X < hi and -127.0 <= p.J2_MOTOR_SLIDE_X <= -109.0
+    assert p.J1_MOTOR_PAD_FACE_Y < 0 < p.J2_MOTOR_WEB_FACE_Z
+
+
 def test_gripper_rail_tracks_reference():
     size = sorted(MANIFEST["gripper_rail_6mm"]["bbox_size"])
     assert math.isclose(p.RAIL_DIA, size[0], abs_tol=0.01)
@@ -73,7 +97,7 @@ def test_cycloidal_stack_positions():
 
     got = stack_positions(DEFAULT_CONFIG)
     expected = {
-        "x_disc1": 1.5, "x_disc2": -1.5, "z_motor_plate": 0.0, "z_motor": 0.0, "z_eccentric_shaft": 0.0,
+        "x_disc1": 1.5, "x_disc2": -1.5, "z_motor_plate": 0.0, "z_motor": 0.0, "z_mks_board": -48.0, "z_eccentric_shaft": 0.0,
         "z_ring_gear_body": 9.0, "z_disc1": 13.0, "z_disc2": 25.0, "z_6814_1": 37.0, "z_6814_2": 47.0,
         "z_hub": 37.0, "z_625": 37.0, "z_ring_pins": 5.5, "z_output_pins": 11.0, "z_support_pin": 24.0,
         "z_motor_bolts": -5.0, "z_housing_bolts": 0.5, "z_housing_nuts": 56.0, "hub_top": 65.0,

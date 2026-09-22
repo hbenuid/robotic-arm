@@ -13,7 +13,7 @@ tests/test_assembly_clearances.py) plus the module's own locks and its attachmen
 import math
 
 import pytest
-from build123d import GeomType, Location, Vector
+from build123d import Compound, GeomType, Location, Vector
 
 from assemblies import cycloidal_drive
 from lib.models import raw
@@ -320,7 +320,7 @@ class TestModuleLocks:
             "cycloidal_disc_2": (stack["x_disc2"], 0, stack["z_disc2"]), "bearing_6003:2": (stack["x_disc2"], 0, stack["z_disc2"]),
             "bearing_6814:1": (0, 0, stack["z_6814_1"]), "bearing_6814:2": (0, 0, stack["z_6814_2"]),
             "cycloidal_eccentric_shaft": (0, 0, 0), "cycloidal_ring_pins": (0, 0, 5.5), "cycloidal_output_pins": (0, 0, 11),
-            "nema17_48mm": (0, 0, 0), "cycloidal_motor_bolts": (0, 0, -5), "cycloidal_motor_plate": (0, 0, 0),
+            "nema17_48mm": (0, 0, 0), "mks_servo42d": (0, 0, stack["z_mks_board"]), "cycloidal_motor_bolts": (0, 0, -5), "cycloidal_motor_plate": (0, 0, 0),
             "cycloidal_ring_gear_body": (0, 0, 9), "cycloidal_output_hub": (0, 0, 37), "cycloidal_shaft_support_pin": (0, 0, 24),
             "bearing_625": (0, 0, 37), "cycloidal_housing_bolts": (0, 0, 0.5), "cycloidal_housing_nuts": (0, 0, 56),
         }
@@ -347,7 +347,7 @@ class TestModuleLocks:
         for key in ("leaves", "solids"):
             assert totals[key] == cycloidal_drive.EXPECTED[key], key
         assert abs(totals["solid_volume"] - cycloidal_drive.EXPECTED["solid_volume"]) <= 0.5
-        assert totals["bbox_size"] == [140.0, 140.0, 113.0]
+        assert totals["bbox_size"] == [140.0, 140.0, 127.1]   # 48 motor + 14.1 MKS board behind the plate, 65 to the hub face
         bodies = {body: cycloidal_drive.totals(body) for body in cycloidal_drive.BODIES}
         for body, got in bodies.items():
             want = cycloidal_drive.EXPECTED["bodies"][body]
@@ -361,13 +361,15 @@ class TestModuleLocks:
     @pytest.mark.slow
     def test_module_interference_budget(self, drive):
         """Only the designed overlaps exist (mm^3): the two 6814/hub press fits, the bolts
-        through the solid nuts, the motor-bolt heads/tips, the two 6003/lobe press fits."""
+        through the solid nuts, the motor-bolt heads/tips, the two 6003/lobe press fits, and the MKS
+        kit's four M3x30 inside the simplified motor (the envelope has blind holes, the real motor through-holes)."""
         leaves = {c.label: c for c in drive.children}
         budget = {
             ("bearing_6814:1", "cycloidal_output_hub"): 331.0, ("bearing_6814:2", "cycloidal_output_hub"): 331.0,
             ("cycloidal_housing_bolts", "cycloidal_housing_nuts"): 322.0,
             ("cycloidal_motor_bolts", "cycloidal_motor_plate"): 52.0, ("nema17_48mm", "cycloidal_motor_bolts"): 14.2,
             ("bearing_6003:1", "cycloidal_eccentric_shaft"): 27.0, ("bearing_6003:2", "cycloidal_eccentric_shaft"): 27.0,
+            ("mks_servo42d", "nema17_48mm"): 554.2,
         }
         for (a, b), limit in budget.items():
             vol = interference(leaves[a], leaves[b])
@@ -381,6 +383,7 @@ class TestModuleLocks:
             ("cycloidal_shaft_support_pin", "cycloidal_eccentric_shaft"), ("nema17_48mm", "cycloidal_motor_plate"),
             ("cycloidal_eccentric_shaft", "cycloidal_motor_plate"), ("bearing_6814:1", "cycloidal_ring_gear_body"),
             ("bearing_6814:2", "cycloidal_ring_gear_body"), ("bearing_6814:1", "bearing_6814:2"),
+            ("mks_servo42d", "cycloidal_motor_bolts"), ("mks_servo42d", "cycloidal_motor_plate"),
         ]
         for a, b in clean:
             vol = interference(leaves[a], leaves[b])
@@ -393,9 +396,12 @@ class TestPoseInTheArm:
     the j1_coupler yoke, hub face on j1_link - and it IS the robot's shoulder_pitch joint."""
 
     def test_module_world_bbox_matches_solidworks_node(self, drive_world):
+        """The SolidWorks node never carried the MKS board (2026-09-21): compare the module without it."""
         sw = P.OCCURRENCES[DRIVE_KEY]["solidworks"]
-        assert all(abs(a - b) <= 1.5 for a, b in zip(R.bbox_min(drive_world), sw["world_bbox_min"])), (R.bbox_min(drive_world), sw["world_bbox_min"])
-        assert all(abs(a - b) <= 1.5 for a, b in zip(R.bbox_size(drive_world), sw["world_bbox_size"])), (R.bbox_size(drive_world), sw["world_bbox_size"])
+        # the children keep their module-frame locations; the module's world pose sits on the Compound
+        node = Compound([c for c in drive_world.children if c.label.split(":")[0] != "mks_servo42d"]).moved(drive_world.location)
+        assert all(abs(a - b) <= 1.5 for a, b in zip(R.bbox_min(node), sw["world_bbox_min"])), (R.bbox_min(node), sw["world_bbox_min"])
+        assert all(abs(a - b) <= 1.5 for a, b in zip(R.bbox_size(node), sw["world_bbox_size"])), (R.bbox_size(node), sw["world_bbox_size"])
 
     def test_drive_clears_arm_neighbours(self, drive_world):
         """No intersection with the base, j1_link or j1_cap; only contact-level overlap with the

@@ -1,11 +1,13 @@
-"""The 20:1 cycloidal drive (the shoulder-pitch actuator) as a code-driven module: 18 parts
+"""The 20:1 cycloidal drive (the shoulder-pitch actuator) as a code-driven module: 19 parts
 placed from lib/cycloidal stack_positions, i.e. the drive repo's assembly.py layout (ring pins
-z 5.5, output pins z 11 - not its export.py's), fasteners included.
+z 5.5, output pins z 11 - not its export.py's), fasteners included, plus the MKS SERVO42D board
+kit on the motor's rear face (parts/joints/mks_servo42d, "z_mks_board").
 
 Frame: the drive repo's frame - Z is the motor axis, z=0 the motor-plate OUTER face (NEMA 17
-mounting face), the motor body in -Z, the housing z 0..60 and the output hub's arm-mount face at
-z=65. assemblies/arm.py places the module at placements.json "cycloidal_drive#1" (the SolidWorks
-node's pose: horizontal axis, housing in the j1_coupler yoke, hub face bolted to j1_link).
+mounting face), the motor body in -Z (its board to z=-62.1), the housing z 0..60 and the output
+hub's arm-mount face at z=65. assemblies/arm.py places the module at placements.json
+"cycloidal_drive#1" (the SolidWorks node's pose: horizontal axis, housing in the j1_coupler yoke, hub
+face bolted to j1_link).
 
 Run:  ./cadtool gen assemblies/cycloidal_drive.py             -> assemblies/cycloidal_drive.step (git-ignored)
       ./cadtool show assemblies/cycloidal_drive.py            -> preview in the OCP CAD Viewer (no build)
@@ -47,6 +49,7 @@ OCCURRENCES = [
     ("cycloidal_ring_pins",        None, _at(z=S["z_ring_pins"])),
     ("cycloidal_output_pins",      None, _at(z=S["z_output_pins"])),
     ("nema17_48mm",                None, _at(z=S["z_motor"])),             # mounting face at z=0
+    ("mks_servo42d",               None, _at(z=S["z_mks_board"])),         # the kit's board on the motor's rear face (z=-48)
     ("cycloidal_motor_bolts",      None, _at(z=S["z_motor_bolts"])),
     ("cycloidal_motor_plate",      None, _at(z=S["z_motor_plate"])),
     ("cycloidal_ring_gear_body",   None, _at(z=S["z_ring_gear_body"])),
@@ -62,19 +65,19 @@ OCCURRENCES = [
 # assemblies/_occurrences.world_rows): the drive IS the shoulder_pitch joint. rotor = what
 # j1_link is bolted to: the output hub, its 4 output pins and the 625 seated in the hub pocket.
 # stator = everything else: the housing (motor plate, ring gear body, ring pins, housing bolts +
-# nuts), the NEMA 17 + its bolts, and the gear train that spins about the axis at intermediate
+# nuts), the NEMA 17 + its bolts + its MKS board, and the gear train that spins about the axis at intermediate
 # speeds (eccentric shaft, support pin, discs, 6003s, 6814s) - lumped with the housing, the
 # usual URDF-inertial convention (axisymmetric about the joint axis).
 ROTOR = frozenset({"cycloidal_output_hub", "cycloidal_output_pins", "bearing_625"})
 BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES) - ROTOR}
 
 # Totals of the model (tests/cycloidal/test_assembly.py locks them; refresh with totals() /
-# totals(body) after a geometry change): 18 leaves, 38 SolidWorks-equivalent solids + 20
-# fasteners, and the same per rigid body.
+# totals(body) after a geometry change): 19 leaves, 38 SolidWorks-equivalent solids + 20
+# fasteners + the 13-solid board kit, and the same per rigid body.
 EXPECTED = {
-    "leaves": 18, "solids": 58, "solid_volume": 691936.788,
+    "leaves": 19, "solids": 71, "solid_volume": 705716.123,
     "bodies": {
-        "stator": {"leaves": 15, "solids": 52, "solid_volume": 591928.362},
+        "stator": {"leaves": 16, "solids": 65, "solid_volume": 605707.696},
         "rotor": {"leaves": 3, "solids": 6, "solid_volume": 100008.427},
     },
 }

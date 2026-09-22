@@ -5,16 +5,17 @@ Simplified model from cycloidal_drive@2f1f67d src/purchased_parts.py (build_nema
 on +Y) in +Z, 4x M3 blind holes on the 31 mm square. Mounting face at z=0 - the drive's stack
 datum. reference/nema17_48mm.step is that builder's export (kind "cots"); vendor/nema17_48mm.step,
 when present, is a step.parts catalog model re-oriented by VENDOR_TO_REF into this frame.
-Not the wrist's pancake motor (parts/nema17_pancake.py).
+Not the wrist's pancake motor (parts/nema17_pancake.py) nor the belt joints' 40 mm motors
+(parts/joints/nema17_40mm.py - same builder, lib/cycloidal/motor.py, other MotorParams). The MKS SERVO42D
+board on its rear face is its own part (parts/joints/mks_servo42d.py, placed by assemblies/cycloidal_drive.py).
 """
 import pathlib
 
-from cadgen import build123d as bd
 from cadgen import step
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, motor_bolt_points
-from lib.cycloidal.geom import cylinder, single_solid
+from lib.cycloidal.motor import nema17_motor
 from lib.datum import IDENTITY
-from lib.params import CYCLOIDAL_MOTOR_MASS_G, NUDGE
+from lib.params import CYCLOIDAL_MOTOR_MASS_G
 from parts.cycloidal._cots import hybrid
 
 NAME = pathlib.Path(__file__).stem
@@ -22,25 +23,14 @@ COTS = True
 MASS_G = CYCLOIDAL_MOTOR_MASS_G
 PURCHASE_SPEC = "NEMA 17 stepper, {0.body_length:g} mm body, {0.shaft_dia:g} mm D-shaft {0.shaft_length:g} mm long (17HS19-2004S1 class)".format(DEFAULT_CONFIG.motor)
 PURCHASE_QTY = 1    # pieces per occurrence
-PURCHASE_NOTE = "check the shaft length from the mounting face before ordering: shorter catalog shafts leave too little D-bore engagement"
+PURCHASE_NOTE = ("ordered as the MKS SERVO42D closed-loop kit with the 48 mm motor (the board is parts/joints/mks_servo42d); "
+                 "check the shaft length from the mounting face before ordering: shorter catalog shafts leave too little D-bore engagement")
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY   # set after inspecting a step.parts model (see vendor/README.md)
 
 
 def _envelope(cfg: DriveConfig = DEFAULT_CONFIG):
-    m = cfg.motor
-    shaft_r = m.shaft_dia / 2.0
-    body = bd.Box(m.body_width, m.body_width, m.body_length, align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MAX))
-    pilot = cylinder(m.pilot_dia / 2.0, m.pilot_height)
-    round_len = m.shaft_length - m.shaft_dcut_length                      # 4
-    shaft_round = cylinder(shaft_r, round_len)
-    dcut = cylinder(shaft_r, m.shaft_dcut_length, z0=round_len)
-    flat_y = m.shaft_dcut_flat / 2.0                                       # 2.25: material beyond it removed
-    dcut = dcut - bd.Pos(0, flat_y + 5.0, round_len + m.shaft_dcut_length / 2.0) * bd.Box(10.0, 10.0, m.shaft_dcut_length + 4 * NUDGE)
-    result = body + pilot + shaft_round + dcut
-    for xy in motor_bolt_points(cfg):
-        result = result - cylinder(m.bolt_dia / 2.0, m.bolt_hole_depth + NUDGE, xy, z0=-m.bolt_hole_depth)
-    return single_solid(result)
+    return nema17_motor(cfg.motor, motor_bolt_points(cfg))
 
 
 @step

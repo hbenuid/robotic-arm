@@ -1,0 +1,69 @@
+"""nema17_40mm - purchased (COTS) part; source of truth is vendor/nema17_40mm.step.
+
+NEMA 17 stepper, 40 mm body: the motor of the MKS SERVO42D closed-loop kit that drives the arm's three
+belt joints (base_yaw, elbow_pitch, wrist_pitch - lib/mounts.py places it on the NEMA 17 pads the
+SolidWorks links carry). The vendor file is the motor body + D-shaft of the "nema17x40_with_mks"
+SolidWorks export, split off by tools/reference/split_mks_motor.py (the board is parts/joints/mks_servo42d),
+re-framed like the drive motor (parts/cycloidal/nema17_48mm: mounting face z=0, body -Z, pilot boss and
+shaft +Z, D-flat +Y) and its 23 mm shaft trimmed to the drive motor's 22 mm (MotorParams.shaft_length).
+The cable connector is a 7 mm boss on the -Y side of the body's rear.
+
+SolidWorks product: 'nema17x40_with_mks' (motor body + shaft)
+Source export:      ~/Documents/arm_assembly_organized/mks/nema17x40_with_mks.step (lib.reference.MKS_EXPORT_NAME)
+Reference: mm units, 2 solid(s), bbox size (42, 49, 62.4) mm, bbox min (-21, -28, -40.4) mm.
+In the arm: x3 (nema17_40mm#1 base_yaw, #2 elbow_pitch, #3 wrist_pitch).
+
+COTS convention (parts/_templates/cots.py): nema17_40mm() returns the vendor STEP when present,
+else the parametric envelope below - both in the part frame lib/mounts.py places.
+"""
+import pathlib
+from dataclasses import replace
+
+from cadgen import build123d as bd
+from cadgen import read_step, step
+from lib.cycloidal import DEFAULT_CONFIG, motor_bolt_points
+from lib.cycloidal.geom import cylinder, single_solid
+from lib.cycloidal.motor import nema17_motor
+from lib.datum import IDENTITY, to_location
+from lib.params import (
+    NEMA17_40_BODY_LEN, NEMA17_40_BODY_W, NEMA17_40_CONNECTOR_D, NEMA17_40_CONNECTOR_W, NEMA17_40_CONNECTOR_Z0,
+    NEMA17_40_CONNECTOR_Z1, NEMA17_40_MASS_G, NEMA17_40_REAR_STUB_DIA, NEMA17_40_REAR_STUB_LEN, NUDGE,
+)
+
+NAME = pathlib.Path(__file__).stem
+COTS = True
+MASS_G = NEMA17_40_MASS_G   # [ESTIMATE] see lib/params.py
+PURCHASE_SPEC = "NEMA 17 stepper, 40 mm body, 5 mm D-shaft 22 mm (the motor of the MKS SERVO42D closed-loop kit, 17HS4401 class)"
+PURCHASE_QTY = 1    # pieces per occurrence
+PURCHASE_NOTE = ("ordered as MKS SERVO42D closed-loop kits (motor + board, parts/joints/mks_servo42d); the vendor file is the kit "
+                 "export with its 23 mm shaft trimmed to 22 - confirm the shaft length and the mass on the unit in hand")
+VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
+# Rigid transform vendor-file frame -> the part frame (identity: split_mks_motor.py writes the vendor file
+# already re-framed; set it after swapping in a differently oriented catalog model).
+VENDOR_TO_REF = IDENTITY
+
+# The drive motor's parameters with the 40 mm body (same 31 mm bolt square, Ø22 x 2 pilot, Ø5 x 22 shaft).
+MOTOR = replace(DEFAULT_CONFIG.motor, body_width=NEMA17_40_BODY_W, body_length=NEMA17_40_BODY_LEN)
+
+
+def _envelope():
+    """Parametric stand-in used only when the vendor STEP is missing: the simplified motor + the rear
+    bearing stub + the connector boss, at the vendor geometry's bounding box."""
+    motor = nema17_motor(MOTOR, motor_bolt_points())
+    stub = cylinder(NEMA17_40_REAR_STUB_DIA / 2.0, NEMA17_40_REAR_STUB_LEN + NUDGE, z0=-(MOTOR.body_length + NEMA17_40_REAR_STUB_LEN))
+    connector = bd.Box(NEMA17_40_CONNECTOR_W, NEMA17_40_CONNECTOR_D + NUDGE, NEMA17_40_CONNECTOR_Z1 - NEMA17_40_CONNECTOR_Z0,
+                       align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.MIN)
+                       ).moved(bd.Location((0.0, -(MOTOR.body_width / 2.0 + NEMA17_40_CONNECTOR_D), NEMA17_40_CONNECTOR_Z0)))
+    return single_solid(motor + stub + connector)
+
+
+@step
+def nema17_40mm():
+    """Vendor geometry if present, else the envelope - always a labelled shape."""
+    part = read_step(VENDOR_STEP).moved(to_location(VENDOR_TO_REF)) if VENDOR_STEP.exists() else _envelope()
+    part.label = NAME
+    return part
+
+
+if __name__ == "__main__":
+    nema17_40mm()   # build: writes the sibling nema17_40mm.step (preview: ./cadtool show parts/joints/nema17_40mm.py)

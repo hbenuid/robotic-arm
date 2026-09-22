@@ -19,10 +19,32 @@ def _close(a, b, tol=1e-6):
 
 def test_record_counts_match_expected():
     parts_ = P.keys(kind="part")
-    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 34
+    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 40      # 34 SolidWorks + 6 mounted
     assert P.keys(kind="module") == ["cycloidal_drive#1", "gripper#1"]
     assert P.keys(kind="module", designed=True) == P.DATA["designed_modules"] == ["cycloidal_drive#1"]
-    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 50
+    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 95   # 50 + 3 x (2 + 13)
+    assert len(P.keys(kind="part", mounted=False)) == 34
+
+
+def test_mounted_records_follow_lib_mounts():
+    """The motor mounts (lib/mounts.py) are part records written by tools/reference/mount_placements.py:
+    parent None, rel == world = host world * the declared frame, the `mount` block naming the declaration."""
+    from lib import mounts
+    from lib.datum import to_location
+
+    keys = P.keys(mounted=True)
+    assert keys == P.DATA["mounted"] == mounts.keys() == [
+        "nema17_40mm#1", "mks_servo42d#1", "nema17_40mm#2", "mks_servo42d#2", "nema17_40mm#3", "mks_servo42d#3"]
+    assert P.keys(kind="part", mounted=True) == keys
+    for key in keys:
+        o, m = P.OCCURRENCES[key], mounts.BY_KEY[key]
+        assert (o["kind"], o["parent"], o["path"], o["part"]) == ("part", None, None, m.part)
+        assert (o["mount"]["host"], o["mount"]["link"], o["mount"]["joint"], o["mount"]["source"]) == (m.host, m.link, m.joint, "lib/mounts.py")
+        assert o["mount"]["frame_in_host"] == {"position": list(m.frame[0]), "rotation_xyz_deg": list(m.frame[1])}
+        assert o["rel"] == o["world"]
+        host_world = P.location(m.host, "world")           # a SolidWorks record, or the motor declared before its board
+        assert _close(_matrix(host_world * to_location(m.frame)), _matrix(P.location(key, "world")), tol=1e-4), key
+        assert o["solids"] > 0 and o["solid_volume"] > 0 and len(o["world_bbox_min"]) == 3
 
 
 def test_keys_unique_and_parts_known():

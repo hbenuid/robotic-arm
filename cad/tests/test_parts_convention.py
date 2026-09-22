@@ -23,6 +23,8 @@ MULTI_BODY = {
     "gt2_pulley_20t": 3,
     "mg996r_servo": 4,
     "nema17_pancake": 11,
+    "nema17_40mm": 2,       # body + D-shaft (the kit export split by tools/reference/split_mks_motor.py)
+    "mks_servo42d": 13,     # PCB (4) + cover + 4 standoffs + 4 M3x30 - the kit's board half, one piece per occurrence
     # cycloidal drive fastener / pin patterns (one compound per pattern)
     "cycloidal_ring_pins": 21,
     "cycloidal_output_pins": 4,

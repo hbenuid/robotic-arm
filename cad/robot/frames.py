@@ -63,14 +63,17 @@ ELBOW_TO_WRIST_INPLANE = (-142.926, 153.58, 9.229)   # [REFERENCE] forearm_link 
 LINK_ORDER = ["base_link", "shoulder_link", "upper_arm_link", "forearm_link", "wrist_pitch_link",
               "wrist_roll_link", "jaw_a_link", "jaw_b_link", "tool0"]
 LINKS: dict[str, list[str]] = {
-    "base_link": ["base#1"],
-    # j1_coupler (the holder) turns on the base; the cycloidal drive's stator - housing, motor
-    # and the gear train - is bolted into its yoke (assemblies/cycloidal_drive.py BODIES).
+    # the base_yaw motor + its MKS board hang under the base plate (lib/mounts.py) - they turn nothing themselves
+    "base_link": ["base#1", "nema17_40mm#1", "mks_servo42d#1"],
+    # j1_coupler (the holder) turns on the base; the cycloidal drive's stator - housing, motor (+ its
+    # MKS board) and the gear train - is bolted into its yoke (assemblies/cycloidal_drive.py BODIES).
     "shoulder_link": ["j1_coupler#1", "cycloidal_drive#1:stator"],
-    # the drive's rotor (output hub + output pins) is bolted to j1_link: the shoulder_pitch output.
-    "upper_arm_link": ["cycloidal_drive#1:rotor", "j1_link#1", "j1_cap#1"],
-    # the elbow 90T pulley + J3-coupler assumed bolted to the forearm (the driven side)  [ASSUMPTION]
-    "forearm_link": ["j2_link#1", "j2_cap_1#1", "j2_cap_2#1", "gt2_pulley_90t#1", "j3_coupler#1"],
+    # the drive's rotor (output hub + output pins) is bolted to j1_link: the shoulder_pitch output;
+    # the elbow_pitch motor + board bolt to j1_link's pad (lib/mounts.py)
+    "upper_arm_link": ["cycloidal_drive#1:rotor", "j1_link#1", "j1_cap#1", "nema17_40mm#2", "mks_servo42d#2"],
+    # the elbow 90T pulley + J3-coupler assumed bolted to the forearm (the driven side)  [ASSUMPTION];
+    # the wrist_pitch motor + board bolt to j2_link's web (lib/mounts.py)
+    "forearm_link": ["j2_link#1", "j2_cap_1#1", "j2_cap_2#1", "gt2_pulley_90t#1", "j3_coupler#1", "nema17_40mm#3", "mks_servo42d#3"],
     # likewise the wrist 90T pulley + J3-coupler ride with the wrist-pitch body  [ASSUMPTION]
     "wrist_pitch_link": ["wrist_link#1", "gripper_clamp_bracket#1", "nema17_pancake#1", "gt2_pulley_90t#2", "j3_coupler#2"],
     # the gripper base rolls with the 20T pulley; the servo crank linkage is merged in  [ASSUMPTION]
@@ -106,18 +109,21 @@ DEG = math.pi / 180.0
 JOINTS: list[Joint] = [
     Joint("base_yaw", "revolute", "base_link", "shoulder_link", BASE_YAW_ORIGIN, U, BASE_FORWARD,
           -PARAMS.BASE_YAW_LIMIT_DEG * DEG, PARAMS.BASE_YAW_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
-          notes="j1_coupler (carrying the cycloidal drive's stator) turns on the base "
-                "[which MKS motor (src/config.py J1..J3) drives it: unconfirmed]"),
+          notes="j1_coupler (carrying the cycloidal drive's stator) turns on the base; driven by "
+                "nema17_40mm#1 + mks_servo42d#1 under the base plate (lib/mounts.py) "
+                "[which CAN id (src/config.py J1..J3) it is: unconfirmed]"),
     Joint("shoulder_pitch", "revolute", "shoulder_link", "upper_arm_link", SHOULDER_ORIGIN, N, SHOULDER_TO_ELBOW_INPLANE,
           -PARAMS.SHOULDER_PITCH_LIMIT_DEG * DEG, PARAMS.SHOULDER_PITCH_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
-          notes="the 20:1 cycloidal drive (CYCLOIDAL_RATIO, its own NEMA 17): stator in the j1_coupler yoke, "
-                "output hub bolted to j1_link [which MKS motor: unconfirmed]"),
+          notes="the 20:1 cycloidal drive (CYCLOIDAL_RATIO, its own NEMA 17 x 48 + MKS board): stator in the j1_coupler yoke, "
+                "output hub bolted to j1_link [which CAN id: unconfirmed]"),
     Joint("elbow_pitch", "revolute", "upper_arm_link", "forearm_link", ELBOW_ORIGIN, N, ELBOW_TO_WRIST_INPLANE,
           -PARAMS.ELBOW_PITCH_LIMIT_DEG * DEG, PARAMS.ELBOW_PITCH_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
-          notes="GT2 90T pulley + J3-coupler at the elbow; belt-driven [which MKS motor: unconfirmed]"),
+          notes="GT2 90T pulley + J3-coupler at the elbow; belt-driven by nema17_40mm#2 + mks_servo42d#2 on "
+                "j1_link's pad (lib/mounts.py) [which CAN id: unconfirmed]"),
     Joint("wrist_pitch", "revolute", "forearm_link", "wrist_pitch_link", WRIST_PITCH_ORIGIN, N, F,
           -PARAMS.WRIST_PITCH_LIMIT_DEG * DEG, PARAMS.WRIST_PITCH_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
-          notes="GT2 90T pulley + J3-coupler at the wrist; belt-driven [which MKS motor: unconfirmed]"),
+          notes="GT2 90T pulley + J3-coupler at the wrist; belt-driven by nema17_40mm#3 + mks_servo42d#3 on "
+                "j2_link's web (lib/mounts.py) [which CAN id: unconfirmed]"),
     Joint("wrist_roll", "revolute", "wrist_pitch_link", "wrist_roll_link", WRIST_ROLL_ORIGIN, F, PJ,
           -PARAMS.WRIST_ROLL_LIMIT_DEG * DEG, PARAMS.WRIST_ROLL_LIMIT_DEG * DEG, PARAMS.WRIST_EFFORT_NM, PARAMS.WRIST_VELOCITY_RAD_S,
           notes="NEMA17 pancake + 20T pulley; NOT driven by src/config.py yet"),
