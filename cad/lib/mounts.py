@@ -31,8 +31,9 @@ Geometry (lib/params.py, kernel-verified 2026-09-21 - tests/test_mounts.py re-ch
                BELOW the base's bottom face (56 mm of depth under the plate) - the base needs feet or a cut-out
   elbow_pitch  j1_link's 48 x 48 pad (outer face y = J1_MOTOR_PAD_FACE_Y, the -N side), pattern on the
                shoulder axis; shaft +N through the pad opening, the 20T in the elbow 90T's plane, 210 mm centres
-  wrist_pitch  j2_link's web (+Z face z = J2_MOTOR_WEB_FACE_Z), motor axis at x = J2_MOTOR_SLIDE_X on the two
-               110 mm slots; body +N through j2_cap_1's window, shaft -N through the web, 20T under j2_cap_2
+  wrist_pitch  j2_link's web (+Z face z = J2_MOTOR_WEB_FACE_Z), motor axis at x = J2_MOTOR_SLIDE_X on the side
+               slots (lib/forearm/params.py: where the stock wrist belt puts it, its plug clear of the roll wall);
+               body +N through j2_cap_1's window, shaft -N through the web, 20T under j2_cap_2
 """
 from __future__ import annotations
 

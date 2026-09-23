@@ -69,9 +69,16 @@ J1_MOTOR_PAD_FACE_Y = -32.5     # [REFERENCE] j1_link: the 48 x 48 pad's outer f
 # pad face and slide come from its DEFAULT configuration.
 from lib.forearm.params import DEFAULT as _FOREARM  # noqa: E402
 
-J2_MOTOR_WEB_FACE_Z = _FOREARM.web.z1              # 19 [REFERENCE] j2_link: the web's +Z face; the motor bolts through its two 110 mm slots
-J2_MOTOR_SLIDE_RANGE = _FOREARM.slide_range        # (-141.5, -62.5) [REFERENCE] motor-axis x range the slots allow (belt tension slide)
-J2_MOTOR_SLIDE_X = _FOREARM.motor_x                # -118 [ESTIMATE] j2_cap_1's window centre - the body clears the cap for -127..-109; set with the belt
+J2_MOTOR_WEB_FACE_Z = _FOREARM.web.z1              # 19 [REFERENCE] j2_link: the web's +Z face; the motor bolts through its slots
+J2_MOTOR_SLIDE_RANGE = _FOREARM.slide_range        # (-141.5, -130) [DESIGN] motor-axis x range the (shortened) slots allow
+J2_MOTOR_SLIDE_X = _FOREARM.motor_x                # -136.37: set by the stock WRIST_BELT_LENGTH (lib/belts.py centre_distance) [ESTIMATE]
+WRIST_BELT_LENGTH = _FOREARM.roll_end.wrist_belt   # 264-2GT [ESTIMATE] the wrist-pitch belt (90T at the wrist, 20T on the motor)
+# The forearm roll (lib/forearm/params.py RollEndParams; the rotor's wall on j2_link, the elbow block + shaft in M3):
+FOREARM_ROLL_AXIS_Z = _FOREARM.roll_end.axis_z     # 25 [REFERENCE] the roll axis' N-station in j2_link's frame = the wrist centre's (42 - 17)
+FOREARM_WALL_X = _FOREARM.roll_end.wall_x          # (-96, -88) [DESIGN] the flange wall: wrist face .. elbow face
+FOREARM_WALL_Z = _FOREARM.roll_end.wall_z          # (-10, 60) [DESIGN]
+FOREARM_PLUG_CLEARANCE = _FOREARM.roll_end.plug_clearance   # 10 [DESIGN] the wrist motor's connector plug to the wall
+FOREARM_FLANGE_DIA = _FOREARM.roll_end.flange_dia  # 60 [DESIGN] the rotor flange
 
 # --- Cycloidal drive (lib/cycloidal/, assemblies/cycloidal_drive.py, docs/cycloidal_drive.md) -----
 # The drive's own dimensions live in lib/cycloidal/params.py (DriveConfig, ported from the
@@ -130,6 +137,7 @@ BASE_YAW_LIMIT_DEG = 175.0        # [ESTIMATE] symmetric +/- range; j1_coupler (
 SHOULDER_PITCH_LIMIT_DEG = 120.0  # [ESTIMATE] the 20:1 cycloidal drive (CYCLOIDAL_RATIO) between j1_coupler and j1_link
 ELBOW_PITCH_LIMIT_DEG = 120.0     # [ESTIMATE] GT2 belt at j2_link
 WRIST_PITCH_LIMIT_DEG = 120.0     # [ESTIMATE] GT2 belt at wrist_link
+FOREARM_ROLL_LIMIT_DEG = 170.0    # [ESTIMATE] the forearm roll (GT2 belt in the elbow block): a hard stop keeps the cables from winding
 WRIST_ROLL_LIMIT_DEG = 180.0      # [ESTIMATE] NEMA17 pancake wrist roll (not CAN-driven yet)
 JAW_TRAVEL_MM = 10.0            # [ESTIMATE] symmetric +/- jaw travel about the capture pose
 ARM_JOINT_EFFORT_NM = 5.0       # [ESTIMATE] MKS SERVO42D through the reductions

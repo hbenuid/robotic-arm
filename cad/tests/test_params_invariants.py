@@ -50,9 +50,16 @@ def test_belt_motor_and_mks_board_track_reference():
     # BASE_MOTOR_STACK_PROUD below the base's bottom face (56 mm of depth) - documented, not silent
     stack = p.CYCLOIDAL_MOTOR_BODY_LEN + p.MKS_SERVO42D_STACK                 # 62.1
     assert math.isclose(BASE_BOTTOM_Y - (p.BASE_MOTOR_PATTERN_CENTRE[1] - stack), p.BASE_MOTOR_STACK_PROUD, abs_tol=0.05)
-    # the wrist_pitch motor slides along j2_link's slots; the chosen position keeps the body inside j2_cap_1's window
+    # the wrist_pitch motor slides along j2_link's slots to where the stock wrist belt puts it (lib/belts.py), its
+    # connector plug clear of the forearm roll's flange wall and its body clear of the wrist boss
+    from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, STANDARD_2GT_LENGTHS, closed_belt_length
     lo, hi = p.J2_MOTOR_SLIDE_RANGE
-    assert lo < p.J2_MOTOR_SLIDE_X < hi and -127.0 <= p.J2_MOTOR_SLIDE_X <= -109.0
+    assert lo < p.J2_MOTOR_SLIDE_X < hi
+    assert p.WRIST_BELT_LENGTH in STANDARD_2GT_LENGTHS
+    assert math.isclose(closed_belt_length(p.J2_MOTOR_SLIDE_X + 210.0, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH), p.WRIST_BELT_LENGTH, abs_tol=1e-6)
+    assert p.J2_MOTOR_SLIDE_X + p.NEMA17_40_BODY_W / 2 + p.NEMA17_40_CONNECTOR_D + p.FOREARM_PLUG_CLEARANCE <= p.FOREARM_WALL_X[0]
+    assert p.J2_MOTOR_SLIDE_X - p.NEMA17_40_BODY_W / 2 >= -210.0 + 45.0
+    assert p.FOREARM_WALL_X[0] < p.FOREARM_WALL_X[1] < 0 and p.FOREARM_ROLL_AXIS_Z == 42.0 - 17.0
     assert p.J1_MOTOR_PAD_FACE_Y < 0 < p.J2_MOTOR_WEB_FACE_Z
 
 

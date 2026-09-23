@@ -16,7 +16,9 @@ Units mm, degrees where named *_deg. Frozen dataclasses; variants via dataclasse
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+
+from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, centre_distance
 
 
 @dataclass(frozen=True)
@@ -101,7 +103,8 @@ class Cap1Params:
     pocket_elbow_r: float = 35.0     # the pocket wraps the elbow axis (its wall is an arc about it) ...
     pocket_wrist_r: float = 55.0     # ... and stops at an arc about the wrist axis
     outer_wrist_r: float = 46.0
-    window_len: float = 60.0         # the motor window, centred on the motor axis (ForearmConfig.motor_x)
+    window_len: float = 60.0         # the motor window, window_len long centred window_offset from the motor axis
+    window_offset: float = 0.0       # (ForearmConfig.motor_x; DEFAULT: past the body and the connector by 2 mm)
     window_half_w: float = 24.0
 
 
@@ -123,8 +126,31 @@ class Cap2Params:
 
 
 @dataclass(frozen=True)
+class RollEndParams:
+    """The forearm roll's rotor side (roll=True): the forearm ends at a flange wall instead of the elbow disc.
+    The roll axis runs along -X through (y 0, z axis_z) - the wrist centre, where the wrist_pitch and wrist_roll
+    axes meet (42 − 17 along N from the elbow origin), so the three wrist axes stay concurrent. The rotor (the
+    hollow roll shaft, parts/joints/forearm_roll_shaft) bolts its Ø60 flange into a shallow locating recess on the
+    wall's elbow face; the cables pass through the bore. Elbow block + shaft: lib/forearm/roll.py (M3)."""
+
+    axis_z: float = 25.0                  # [REFERENCE] the wrist centre's N-station above the elbow origin (42 − 17)
+    wall_x: tuple = (-96.0, -88.0)        # [DESIGN] the wall's wrist face .. elbow face (8 thick)
+    wall_z: tuple = (-10.0, 60.0)         # [DESIGN] full width y +/- half_w; below the tray, above the lid - nothing swings there
+    flange_dia: float = 60.0              # [DESIGN] the rotor flange (<= the block's Ø60 tube: the elbow end stays above j1_link)
+    flange_recess_add: float = 0.3        # [DESIGN] PETG mating clearance on the recess diameter
+    flange_recess_depth: float = 2.0      # [DESIGN] a locating spigot, not a load path
+    bolt_circle_dia: float = 46.0         # [DESIGN] 4x M3 on the axes (0 / 90 / 180 / 270 about the roll axis)
+    bolt_count: int = 4
+    bolt_angle_deg: float = 0.0
+    bolt_dia: float = 3.4                 # [DESIGN] M3 clearance (heads on the wrist face, nuts captive in the flange)
+    cable_bore: float = 28.0              # [DESIGN] = the shaft's bore
+    plug_clearance: float = 10.0          # [DESIGN] the wrist motor's connector plug needs this much room to the wall
+    wrist_belt: int = 264                 # [ESTIMATE] 264-2GT closed belt, 6 mm: sets the motor slide (motor_x)
+
+
+@dataclass(frozen=True)
 class ForearmConfig:
-    roll: bool = False                     # M2: end the forearm at the roll flange wall instead of the elbow disc
+    roll: bool = False                     # end the forearm at the roll flange wall instead of the elbow disc
     motor_x: float = -118.0                # the wrist-pitch motor's axis on the slide [ESTIMATE] (lib/params.py J2_MOTOR_SLIDE_X)
     slide_range: tuple = (-141.5, -62.5)   # motor-axis x the slots allow (bolt pattern inside the side slots)
     web: WebParams = WebParams()
@@ -134,7 +160,19 @@ class ForearmConfig:
     sockets: SocketParams = SocketParams()
     cap1: Cap1Params = Cap1Params()
     cap2: Cap2Params = Cap2Params()
+    roll_end: RollEndParams = RollEndParams()
 
 
 LEGACY = ForearmConfig()     # the three SolidWorks parts, exactly
-DEFAULT = LEGACY             # what the parts build (M2: replace(LEGACY, roll=True, ...))
+
+# The forearm with the roll joint: the wall replaces the elbow disc; the wrist-pitch motor slides toward the wrist
+# so its connector plug clears the wall - its position is what a stock 264-2GT belt sets (lib/belts.py) -, the slots
+# shorten to that range (>= 4 mm before the wall) and the central one widens to pass the Ø22 pilot boss; the lid's
+# window follows the motor (2 mm past the body toward the wrist, 2 mm past the connector).
+DEFAULT = replace(
+    LEGACY, roll=True,
+    motor_x=LEGACY.web.wrist_x + centre_distance(RollEndParams().wrist_belt, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH),   # -136.37
+    slide_range=(-141.5, -130.0),
+    slot=SlotParams(centre_w=22.3, centre_x=(-148.0, -124.0), side_x=(-157.0, -114.5)),
+    cap1=replace(LEGACY.cap1, window_len=53.0, window_offset=3.5, pocket_wrist_r=50.0),   # the body's wrist face clears the pocket wall
+)

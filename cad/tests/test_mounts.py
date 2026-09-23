@@ -69,13 +69,13 @@ def test_mounting_face_lies_on_the_host_pad(m):
 
 @pytest.mark.slow
 def test_motors_and_boards_clear_their_neighbours():
-    """Interference budget (mm^3) against the host, the caps, the pulleys and the placed drive: zero except the
-    Ø22 pilot boss standing in j2_link's Ø20 central slot (a wrapper defect of j2_link, ~25 mm^3)."""
+    """Interference budget (mm^3) against the host, the caps, the pulleys and the placed drive: zero everywhere
+    (the Ø22 pilot boss used to stand in j2_link's Ø20 central slot - the parametric forearm's slot is 22.3 wide)."""
     neighbours = ["base#1", "j1_coupler#1", "j1_link#1", "j1_cap#1", "j2_link#1", "j2_cap_1#1", "j2_cap_2#1",
                   "gt2_pulley_90t#1", "gt2_pulley_90t#2", "j3_coupler#1", "j3_coupler#2", "wrist_link#1"]
     shapes = {k: place_world(P.OCCURRENCES[k]["part"], k) for k in neighbours}
     shapes["cycloidal_drive#1"] = raw(cycloidal_drive.cycloidal_drive).moved(_world("cycloidal_drive#1"))
-    budget = {("nema17_40mm#3", "j2_link#1"): 30.0}
+    budget = {}
     for m in mounts.MOUNTS:
         part = place_world(m.part, m.key)
         for key, other in shapes.items():

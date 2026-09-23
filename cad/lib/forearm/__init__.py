@@ -5,9 +5,10 @@ lib/forearm/link.py and caps.py (imported explicitly by the parts that need them
 never pulls in OCCT). Never imports lib/params.py - that module re-exports the interface values from here.
 """
 from lib.forearm.layout import (  # noqa: F401
-    cap1_socket_points, cap2_socket_points, disc_bolt_angles, disc_bolt_points, link_socket_points, motor_window,
+    cap1_socket_points, cap2_socket_points, disc_bolt_angles, disc_bolt_points, elbow_end_x, flange_bolt_points,
+    link_socket_points, motor_window,
 )
 from lib.forearm.params import (  # noqa: F401
-    DEFAULT, LEGACY, Cap1Params, Cap2Params, ElbowDiscParams, ForearmConfig, SlotParams, SocketParams,
+    DEFAULT, LEGACY, Cap1Params, Cap2Params, ElbowDiscParams, ForearmConfig, RollEndParams, SlotParams, SocketParams,
     WebParams, WristBossParams,
 )

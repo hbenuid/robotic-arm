@@ -2,11 +2,15 @@
 lib/forearm/link.py build_link(cfg), in the SolidWorks part frame - origin on the elbow pivot, the wrist pivot at
 x = -210, +Z = N toward the motor-body side).
 
-Elbow end: the Ø90 disc whose z=0 face bolts to j3_coupler#1 (Ø54.89 bore, 4x M4 into captive hex nuts dropped in
-from the top). Web z 8..19 with the wrist-pitch motor's slide (a 20 mm central slot for the pilot boss, two 3.2 mm
-side slots for the 31 mm bolt square; lib/mounts.py places nema17_40mm#3 on it) and the Ø5.18 x 2 locating sockets
-the caps mirror. Wrist end: the Ø90 boss with the Ø42.2 wrist_pitch bearing seat (lipped) and the Ø80 recess.
-Every number: lib/forearm/params.py (ForearmConfig; measured on the reference 2026-09-22).
+Elbow end (DEFAULT, the forearm roll): the flange wall at x -96..-88 - full width, z -10..60 - with the rotor
+flange's Ø60.3 x 2 locating recess on its elbow face, 4x M3 on Ø46 and the Ø28 cable bore on the roll axis (y 0,
+z 25 = the wrist centre's N-station); the elbow block (parts/joints/forearm_roll_block) carries the SolidWorks disc's
+j3_coupler interface instead. LEGACY: the Ø90 disc whose z=0 face bolts to j3_coupler#1 (Ø54.89 bore, 4x M4 into
+captive hex nuts dropped in from the top). Web z 8..19 with the wrist-pitch motor's slide (a central slot for the
+pilot boss - 22.3 wide in DEFAULT, 20 in LEGACY -, two 3.2 mm side slots for the 31 mm bolt square, shortened in
+DEFAULT to the slide range the stock wrist belt allows; lib/mounts.py places nema17_40mm#3 on it) and the Ø5.18 x 2
+locating sockets the caps mirror. Wrist end: the Ø90 boss with the Ø42.2 wrist_pitch bearing seat (lipped) and the
+Ø80 recess. Every number: lib/forearm/params.py (ForearmConfig; measured on the reference 2026-09-22).
 
 SolidWorks product: 'Joint 2 change 8126'
 Source export:      step/Joint 2 change 8126.STEP

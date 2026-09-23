@@ -3,12 +3,8 @@ volume / bbox match is tests/test_reference_match.py's; here the features are pr
 regression names what moved)."""
 import pytest
 
-from lib import reference as R
-from lib.datum import to_location
 from lib.forearm import LEGACY, cap1_socket_points, cap2_socket_points, link_socket_points, motor_window
 from tests.forearm.helpers import is_inside
-
-import parts
 
 
 def test_legacy_layout():
@@ -75,11 +71,3 @@ def test_cap_2_features(cap2):
     assert not is_inside(cap2, -235, 0, 2) and is_inside(cap2, -250, 0, 2)      # the pocket wraps the wrist axis
     assert not is_inside(cap2, -120, 40, 7) and is_inside(cap2, -120, 40, 5)    # a socket
 
-
-@pytest.mark.slow
-@pytest.mark.parametrize("name", ["j2_link", "j2_cap_1", "j2_cap_2"])
-def test_default_is_legacy_for_now(name):
-    """M1: DEFAULT == LEGACY - the part's own build matches its reference too."""
-    mod = parts.load(name)
-    ok, report = R.matches_reference(parts.build(name), name, local_from_ref=to_location(mod.LOCAL_FROM_REF), bbox_tol=mod.REF_BBOX_TOL)
-    assert ok, report
