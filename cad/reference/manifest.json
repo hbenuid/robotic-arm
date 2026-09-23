@@ -87,6 +87,28 @@
     "solids": 1
    }
   },
+  "bearing_6808": {
+   "bbox_min": [
+    -26.0,
+    -26.0,
+    0.0
+   ],
+   "bbox_size": [
+    52.0,
+    52.0,
+    7.0
+   ],
+   "bytes": 9245,
+   "file": "native/bearing_6808.step",
+   "kind": "cots",
+   "origin": "native",
+   "product": "bearing_6808 - purchased (COTS) part: 6808-2RS (61808) thin-section deep-groove ball bearing, 40 x 52 x 7 - the",
+   "sha256": "b31a5880fb7e8b6f39b6ebd99dfc3d70001a95f105ab88876bf87ed99de61c86",
+   "solid_volume": 6069.557,
+   "solids": 1,
+   "source": "parts/joints/bearing_6808.py:_envelope()",
+   "units": "mm"
+  },
   "bearing_6814": {
    "bbox_min": [
     -45.0,
@@ -371,6 +393,72 @@
    "solid_volume": 392.699,
    "solids": 1,
    "source": "src/purchased_parts.py:build_shaft_support_pin()",
+   "units": "mm"
+  },
+  "forearm_roll_block": {
+   "bbox_min": [
+    -30.0,
+    -45.0,
+    -45.0
+   ],
+   "bbox_size": [
+    108.5,
+    90.0,
+    108.0
+   ],
+   "bytes": 350891,
+   "file": "native/forearm_roll_block.step",
+   "kind": "native",
+   "origin": "native",
+   "product": "forearm_roll_block - the forearm roll drive's STATOR - the elbow block: the SolidWorks disc's j3_coupler#1 interface (Ø54.89 bore, 4x M4 into captive hex nuts), the Ø60 tube round the roll axis with the closed elbow end (cable exit through its top), the lip bearing 1 stops on and the common Ø52.15 seat for both 6808s, the two retainer lugs, the motor pad tower (slotted along X for belt tension, the Ø22.3 pilot slot) for the 40 mm kit motor.",
+   "sha256": "7516332690f96217b43a7911b2313d96d211bce9c470b451abaf498e744d7be6",
+   "solid_volume": 103039.021,
+   "solids": 1,
+   "source": "lib/forearm/roll.py:build_block(DEFAULT)",
+   "units": "mm"
+  },
+  "forearm_roll_retainer": {
+   "bbox_min": [
+    -30.0,
+    -36.0,
+    0.0
+   ],
+   "bbox_size": [
+    60.0,
+    72.0,
+    22.0
+   ],
+   "bytes": 53287,
+   "file": "native/forearm_roll_retainer.step",
+   "kind": "native",
+   "origin": "native",
+   "product": "forearm_roll_retainer - the forearm roll drive's bearing retainer: an annulus over bearing 2's outer race (ID 48 clears the shaft's Ø44 core), two ears for the M3s into the block's lugs, the hard-stop post on the +Y ear rising past the ring to the pin's station.",
+   "sha256": "5bf2982d0412881f0763cf95a97bffd572c128d82127ffebff53bcfa258bf442",
+   "solid_volume": 4933.093,
+   "solids": 1,
+   "source": "lib/forearm/roll.py:build_retainer(DEFAULT)",
+   "units": "mm"
+  },
+  "forearm_roll_shaft": {
+   "bbox_min": [
+    -30.0,
+    -30.0,
+    43.5
+   ],
+   "bbox_size": [
+    62.0,
+    60.0,
+    46.5
+   ],
+   "bytes": 1653777,
+   "file": "native/forearm_roll_shaft.step",
+   "kind": "native",
+   "origin": "native",
+   "product": "forearm_roll_shaft - the forearm roll drive's ROTOR - the hollow roll shaft: two Ø40.3 journals (bearing 1 goes on from the elbow end up to the middle shoulder, bearing 2 from the wrist end), the Ø44 core through the retainer, the integral 90T GT2 ring with two flanges, the hard-stop pin boss, the Ø60 flange with 4x M3 (nuts captive from its elbow face) and the 2 mm spigot into the forearm wall's recess, the Ø28 cable bore end to end.",
+   "sha256": "af598d4c8bffb047a6140034d3cbf58f33555c8be941145d43603a172c827e10",
+   "solid_volume": 55287.527,
+   "solids": 1,
+   "source": "lib/forearm/roll.py:build_shaft(DEFAULT)",
    "units": "mm"
   },
   "gripper_clamp_bracket": {

@@ -119,11 +119,17 @@ CYCLOIDAL_PARTS: set[str] = set(DESIGNED) | set(CYCLOIDAL_COTS)
 # is their own ACCEPTED build - reference/native/<name>.step, written once by
 # tools/reference/import_native.py (manifest kind "native"; re-run it to accept a changed design) - so
 # tests/test_reference_match.py locks their geometry like every other part's. Values: the builder label.
-NATIVE: dict[str, str] = {}
+NATIVE: dict[str, str] = {
+    "forearm_roll_block":    "lib/forearm/roll.py:build_block(DEFAULT)",
+    "forearm_roll_shaft":    "lib/forearm/roll.py:build_shaft(DEFAULT)",
+    "forearm_roll_retainer": "lib/forearm/roll.py:build_retainer(DEFAULT)",
+}
 
 # Purchased parts with neither a SolidWorks export nor a catalog model (their envelope IS the geometry):
 # clean name -> builder label. The same tool writes their reference (kind "cots") from the envelope.
-NATIVE_COTS: dict[str, str] = {}
+NATIVE_COTS: dict[str, str] = {
+    "bearing_6808": "parts/joints/bearing_6808.py:_envelope()",
+}
 COTS.update({name: (f"native {builder}", None) for name, builder in NATIVE_COTS.items()})
 NATIVE_PARTS: set[str] = set(NATIVE) | set(NATIVE_COTS)
 
@@ -132,6 +138,7 @@ NATIVE_PARTS: set[str] = set(NATIVE) | set(NATIVE_COTS)
 # declared in lib/mounts.py MODULE_MOUNTS instead (tools/reference/mount_placements.py writes the record).
 DESIGNED_MODULES: dict[str, str] = {
     "cycloidal_drive": "New cyloidal assembly",   # sic - the SolidWorks node is misspelled
+    "forearm_roll_drive": "forearm roll drive (no SolidWorks node: lib/mounts.py MODULE_MOUNTS places it on j2_link#1)",
 }
 
 # Full-assembly nodes deliberately not modelled here (whole subtree skipped).

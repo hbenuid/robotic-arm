@@ -79,6 +79,10 @@ FOREARM_WALL_X = _FOREARM.roll_end.wall_x          # (-96, -88) [DESIGN] the fla
 FOREARM_WALL_Z = _FOREARM.roll_end.wall_z          # (-10, 60) [DESIGN]
 FOREARM_PLUG_CLEARANCE = _FOREARM.roll_end.plug_clearance   # 10 [DESIGN] the wrist motor's connector plug to the wall
 FOREARM_FLANGE_DIA = _FOREARM.roll_end.flange_dia  # 60 [DESIGN] the rotor flange
+FOREARM_ROLL_BELT_LENGTH = _FOREARM.drive.roll_belt          # 230-2GT [ESTIMATE] the roll belt (90T ring on the shaft, 20T on the motor)
+FOREARM_ROLL_MOTOR_OFFSET = _FOREARM.drive.motor_offset      # 55.5 [DESIGN] the roll motor's axis off the roll axis (module +X = N): what the belt sets
+FOREARM_ROLL_RATIO = _FOREARM.drive.ring_teeth / GT2_PULLEY_20T_TEETH   # 4.5:1 [DESIGN] like the other belt joints
+FOREARM_ROLL_TUBE_OD = _FOREARM.drive.tube_od                # 60 [DESIGN] the elbow block's tube (its bottom stays above the upper arm's slab)
 
 # --- Cycloidal drive (lib/cycloidal/, assemblies/cycloidal_drive.py, docs/cycloidal_drive.md) -----
 # The drive's own dimensions live in lib/cycloidal/params.py (DriveConfig, ported from the
@@ -109,6 +113,7 @@ CYCLOIDAL_MOTOR_MASS_G = 400.0   # [DATASHEET] 48 mm-body NEMA 17 (17HS19-2004S1
 BEARING_6003_MASS_G = 39.0       # [DATASHEET] 6003-2RS 17x35x10
 BEARING_6814_MASS_G = 110.0      # [DATASHEET] 6814-2RS (61814) 70x90x10; verify
 BEARING_625_MASS_G = 5.0         # [DATASHEET] 625-2RS 5x16x5
+BEARING_6808_MASS_G = 33.0       # [DATASHEET] 6808-2RS (61808) 40x52x7 - the forearm roll's ring bearings (parts/joints/bearing_6808); verify
 
 
 def _cyl_vol(radius, height):

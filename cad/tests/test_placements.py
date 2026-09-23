@@ -3,7 +3,7 @@ import math
 
 from build123d import Location
 
-from assemblies import arm, cycloidal_drive, gripper
+from assemblies import arm, cycloidal_drive, forearm_roll_drive, gripper
 from lib import placements as P
 from lib import reference as R
 
@@ -20,8 +20,8 @@ def _close(a, b, tol=1e-6):
 def test_record_counts_match_expected():
     parts_ = P.keys(kind="part")
     assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 40      # 34 SolidWorks + 6 mounted
-    assert P.keys(kind="module") == ["cycloidal_drive#1", "gripper#1"]
-    assert P.keys(kind="module", designed=True) == P.DATA["designed_modules"] == ["cycloidal_drive#1"]
+    assert P.keys(kind="module") == ["cycloidal_drive#1", "gripper#1", "forearm_roll_drive#1"]
+    assert P.keys(kind="module", designed=True) == P.DATA["designed_modules"] == ["cycloidal_drive#1", "forearm_roll_drive#1"]
     assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 100   # 50 + (7 + 13) + 2 x (2 + 13)
     assert len(P.keys(kind="part", mounted=False)) == 34
 
@@ -32,10 +32,10 @@ def test_mounted_records_follow_lib_mounts():
     from lib import mounts
     from lib.datum import to_location
 
-    keys = P.keys(mounted=True)
-    assert keys == P.DATA["mounted"] == mounts.keys() == [
+    keys = P.keys(kind="part", mounted=True)
+    assert keys == mounts.keys() == [
         "nema17_48mm#1", "mks_servo42d#1", "nema17_40mm#2", "mks_servo42d#2", "nema17_40mm#3", "mks_servo42d#3"]
-    assert P.keys(kind="part", mounted=True) == keys
+    assert P.keys(mounted=True) == P.DATA["mounted"] == mounts.keys() + mounts.module_keys()
     for key in keys:
         o, m = P.OCCURRENCES[key], mounts.BY_KEY[key]
         assert (o["kind"], o["parent"], o["path"], o["part"]) == ("part", None, None, m.part)
@@ -45,6 +45,29 @@ def test_mounted_records_follow_lib_mounts():
         host_world = P.location(m.host, "world")           # a SolidWorks record, or the motor declared before its board
         assert _close(_matrix(host_world * to_location(m.frame)), _matrix(P.location(key, "world")), tol=1e-4), key
         assert o["solids"] > 0 and o["solid_volume"] > 0 and len(o["world_bbox_min"]) == 3
+
+
+def test_mounted_module_record_follows_lib_mounts():
+    """A designed module the capture never placed (lib/mounts.py MODULE_MOUNTS): a module record with a `mount`
+    block, listed under designed_modules AND mounted, rel == world = host world * the declared frame, no totals
+    (its own EXPECTED is the lock), and its +Z on its joint's axis."""
+    from lib import mounts
+    from lib.datum import to_location
+    from robot import frames as F
+
+    assert mounts.module_keys() == ["forearm_roll_drive#1"]
+    for key in mounts.module_keys():
+        o, m = P.OCCURRENCES[key], mounts.MODULES_BY_KEY[key]
+        assert (o["kind"], o["designed"], o["parent"], o["path"], o["part"], o["source"]) == ("module", True, None, None, m.module, f"assemblies/{m.module}.py")
+        assert (o["mount"]["host"], o["mount"]["joint"], o["mount"]["source"]) == (m.host, m.joint, "lib/mounts.py") and "link" not in o["mount"]
+        assert o["mount"]["frame_in_host"] == {"position": list(m.frame[0]), "rotation_xyz_deg": list(m.frame[1])}
+        assert o["rel"] == o["world"] and "solids" not in o and "solid_volume" not in o
+        world = P.location(key, "world")
+        assert _close(_matrix(P.location(m.host, "world") * to_location(m.frame)), _matrix(world), tol=1e-4), key
+        joint = F.JOINT_BY_NAME[m.joint]
+        z = (world * Location((0.0, 0.0, 1.0))).position - world.position
+        assert abs(abs(z.dot(Location((0, 0, 0)).position + __import__("build123d").Vector(*joint.axis_w))) - 1.0) < 1e-6
+        assert key in P.DATA["designed_modules"] and key in P.DATA["mounted"]
 
 
 def test_keys_unique_and_parts_known():
@@ -75,7 +98,7 @@ def test_world_equals_parent_world_times_rel():
 def test_assembly_tables_claim_every_part_key_exactly_once():
     used = [key for _, _, key in arm.OCCURRENCES if key not in arm.MODULE_KEYS] + [key for _, _, key in gripper.OCCURRENCES]
     assert sorted(used) == sorted(P.keys(kind="part"))
-    assert [key for _, _, key in arm.OCCURRENCES if key in arm.MODULE_KEYS] == ["cycloidal_drive#1", "gripper#1"]
+    assert [key for _, _, key in arm.OCCURRENCES if key in arm.MODULE_KEYS] == ["cycloidal_drive#1", "forearm_roll_drive#1", "gripper#1"]
     assert all(P.OCCURRENCES[key]["parent"] == "gripper#1" for _, _, key in gripper.OCCURRENCES)
     assert all(P.OCCURRENCES[key]["parent"] is None for _, _, key in arm.OCCURRENCES)
     for name, _, key in arm.OCCURRENCES + gripper.OCCURRENCES:
@@ -83,7 +106,7 @@ def test_assembly_tables_claim_every_part_key_exactly_once():
 
 
 def test_duplicate_parts_have_unique_labels():
-    for rows in (arm.OCCURRENCES, gripper.OCCURRENCES, cycloidal_drive.OCCURRENCES):
+    for rows in (arm.OCCURRENCES, gripper.OCCURRENCES, cycloidal_drive.OCCURRENCES, forearm_roll_drive.OCCURRENCES):
         labels = [name if role is None else f"{name}:{role}" for name, role, _ in rows]
         assert len(labels) == len(set(labels)), f"duplicate labels: {labels}"
 

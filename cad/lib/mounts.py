@@ -39,6 +39,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from lib.forearm import module_frame_in_host
 from lib.params import (
     BASE_MOTOR_PATTERN_CENTRE, CYCLOIDAL_MOTOR_BODY_LEN, J1_MOTOR_PAD_FACE_Y, J2_MOTOR_SLIDE_X, J2_MOTOR_WEB_FACE_Z,
     NEMA17_40_BODY_LEN,
@@ -96,7 +97,11 @@ class ModuleMount:
     note: str = ""
 
 
-MODULE_MOUNTS: tuple[ModuleMount, ...] = ()
+MODULE_MOUNTS: tuple[ModuleMount, ...] = (
+    ModuleMount("forearm_roll_drive#1", "forearm_roll_drive", "j2_link#1", "forearm_roll", module_frame_in_host(),
+                "the roll drive on j2_link's roll axis (y 0, z FOREARM_ROLL_AXIS_Z): module +Z = host -X toward the wrist, "
+                "module +X = host +Z (the motor side); the stator bolts to j3_coupler#1 where j2_link's disc did"),
+)
 MODULES_BY_KEY: dict[str, ModuleMount] = {m.key: m for m in MODULE_MOUNTS}
 
 

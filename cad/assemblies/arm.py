@@ -1,23 +1,26 @@
 """The whole arm: every part of the SolidWorks 'final Arm Assembly Fully Movable' placed from
 reference/placements.json - the SolidWorks part occurrences + the mounted ones (lib/mounts.py: the belt joints'
 NEMA 17 motors - 48 mm at the base, 40 mm at the elbow and wrist - and their MKS SERVO42D boards, on the pads the links carry) + the gripper module
-(SolidWorks-driven) + the cycloidal_drive module (code-driven, placed at the SolidWorks node's pose) - the
-totals are locked in tests/test_assembly.py - bucketed into the GROUPS component tree (arm -> base_link/shoulder_link/upper_arm_link/
-forearm_link/wrist_pitch_link/wrist) so each rigid link toggles as one node in the viewers. Colors: a PRINTED part carries its link's
+(SolidWorks-driven) + the cycloidal_drive module (code-driven, placed at the SolidWorks node's pose) + the
+forearm_roll_drive module (code-driven, placed by lib/mounts.py MODULE_MOUNTS) - the totals are locked in
+tests/test_assembly.py - bucketed into the GROUPS component tree (arm -> base_link/shoulder_link/upper_arm_link/
+elbow_link/forearm_link/wrist_pitch_link/wrist) so each rigid link toggles as one node in the viewers. Colors: a PRINTED part carries its link's
 (or its module's) tint, every PURCHASED part (COTS = True - motors, boards, servo, bearings, pins, bolts, nuts,
-rails, the 20T pulley) is _occurrences.BOUGHT_TINT grey, inside the two modules too:
+rails, the 20T pulleys) is _occurrences.BOUGHT_TINT grey, inside the modules too:
 
     arm
     |- base_link         base, nema17_48mm:base_yaw, mks_servo42d:base_yaw
     |- shoulder_link     j1_coupler, cycloidal_drive (kept whole - see below)
     |- upper_arm_link    j1_link, nema17_40mm:elbow_pitch, mks_servo42d:elbow_pitch, j1_cap
-    |- forearm_link      gt2_pulley_90t:j2, j3_coupler:j2, j2_link, nema17_40mm:wrist_pitch, mks_servo42d:wrist_pitch, j2_cap_1, j2_cap_2
+    |- elbow_link        gt2_pulley_90t:j2, j3_coupler:j2, forearm_roll_drive (kept whole - see below)
+    |- forearm_link      j2_link, nema17_40mm:wrist_pitch, mks_servo42d:wrist_pitch, j2_cap_1, j2_cap_2
     |- wrist_pitch_link  gt2_pulley_90t:j3, j3_coupler:j3, wrist_link, gripper_clamp_bracket, nema17_pancake
     |- wrist             gt2_pulley_20t, gripper
 
-The drive module is one linked child, so this tree keeps it whole under shoulder_link (in its
-own MODULE_TINTS colour) although its rotor body (output hub + pins) belongs to upper_arm_link
-in robot/frames.py LINKS - the kinematic truth, which the per-link meshes follow.
+A drive module is one linked child, so this tree keeps it whole - the cycloidal drive under shoulder_link
+although its rotor body (output hub + pins) belongs to upper_arm_link, the forearm roll drive under elbow_link
+although its rotor (the roll shaft) belongs to forearm_link - in robot/frames.py LINKS, the kinematic truth,
+which the per-link meshes follow (each in its own MODULE_TINTS colour).
 
 Frame: the placements are in the SolidWorks capture frame W (+Y up), but the arm is EMITTED in
 the base_link frame B (lib/datum.py base_frame(), the frame robot/frames.py gives base_link - REP-103:
@@ -33,7 +36,7 @@ Run:  ./cadtool gen assemblies/arm.py            -> assemblies/arm.step (git-ign
 
 from cadgen import step
 
-from assemblies import cycloidal_drive, gripper
+from assemblies import cycloidal_drive, forearm_roll_drive, gripper
 from assemblies._occurrences import grouped_children
 from lib.assembly import assembly
 from lib.datum import base_frame
@@ -47,7 +50,8 @@ def arm_from_w():
 
 GRIPPER_KEY = "gripper#1"
 DRIVE_KEY = "cycloidal_drive#1"
-MODULE_KEYS = (DRIVE_KEY, GRIPPER_KEY)
+ROLL_KEY = "forearm_roll_drive#1"
+MODULE_KEYS = (DRIVE_KEY, ROLL_KEY, GRIPPER_KEY)
 
 # (part or module, role, placements.json key) in SolidWorks document order, each mounted motor + board
 # (lib/mounts.py, role = the joint it drives) right after its host. The j2/j3 roles of the duplicated
@@ -63,6 +67,7 @@ OCCURRENCES = [
     ("mks_servo42d",          "elbow_pitch", "mks_servo42d#2"),
     ("gt2_pulley_90t",        "j2", "gt2_pulley_90t#1"),
     ("j3_coupler",            "j2", "j3_coupler#1"),
+    ("forearm_roll_drive",    None, ROLL_KEY),             # module: assemblies/forearm_roll_drive.py (the forearm_roll joint; lib/mounts.py MODULE_MOUNTS)
     ("j2_link",               None, "j2_link#1"),
     ("nema17_40mm",           "wrist_pitch", "nema17_40mm#3"),     # mounted: j2_link's web slots
     ("mks_servo42d",          "wrist_pitch", "mks_servo42d#3"),
@@ -78,21 +83,24 @@ OCCURRENCES = [
     ("j1_cap",                None, "j1_cap#1"),
 ]
 
-MODULES = {"gripper": gripper.gripper, "cycloidal_drive": cycloidal_drive.cycloidal_drive}   # the child MODELS
+MODULES = {"gripper": gripper.gripper, "cycloidal_drive": cycloidal_drive.cycloidal_drive,
+           "forearm_roll_drive": forearm_roll_drive.forearm_roll_drive}   # the child MODELS
 
-# The component tree: the rigid-link partition of robot/frames.py LINKS with the two modules
-# kept whole (wrist = wrist_roll_link + jaw_a_link + jaw_b_link; the drive under shoulder_link).
+# The component tree: the rigid-link partition of robot/frames.py LINKS with the three modules
+# kept whole (wrist = wrist_roll_link + jaw_a_link + jaw_b_link; the cycloidal drive under shoulder_link;
+# the forearm roll drive under elbow_link although LINKS puts its rotor in forearm_link).
 # Rows are (group label, tint, occurrence keys in document order); tests lock the LINKS mirror.
 # The tints color the PRINTED parts; grey is reserved for the purchased ones (BOUGHT_TINT).
 GROUPS = [
     ("base_link",        "#937860", ("base#1", "nema17_48mm#1", "mks_servo42d#1")),
     ("shoulder_link",    "#4C72B0", ("j1_coupler#1", DRIVE_KEY)),
     ("upper_arm_link",   "#CCB974", ("j1_link#1", "nema17_40mm#2", "mks_servo42d#2", "j1_cap#1")),
-    ("forearm_link",     "#DD8452", ("gt2_pulley_90t#1", "j3_coupler#1", "j2_link#1", "nema17_40mm#3", "mks_servo42d#3", "j2_cap_1#1", "j2_cap_2#1")),
+    ("elbow_link",       "#DA8BC3", ("gt2_pulley_90t#1", "j3_coupler#1", ROLL_KEY)),
+    ("forearm_link",     "#DD8452", ("j2_link#1", "nema17_40mm#3", "mks_servo42d#3", "j2_cap_1#1", "j2_cap_2#1")),
     ("wrist_pitch_link", "#55A868", ("gt2_pulley_90t#2", "j3_coupler#2", "wrist_link#1", "gripper_clamp_bracket#1", "nema17_pancake#1")),
     ("wrist",            "#8172B3", ("gt2_pulley_20t#1", GRIPPER_KEY)),
 ]
-MODULE_TINTS = {DRIVE_KEY: cycloidal_drive.TINT, GRIPPER_KEY: gripper.TINT}  # the modules keep their own color in their group
+MODULE_TINTS = {DRIVE_KEY: cycloidal_drive.TINT, ROLL_KEY: forearm_roll_drive.TINT, GRIPPER_KEY: gripper.TINT}  # the modules keep their own color in their group
 
 
 @step

@@ -38,7 +38,8 @@ from lib import reference as R
 from lib.datum import to_location
 from robot import frames as RF
 
-AXIS_TOL = 1e-6
+AXIS_TOL = 1e-6        # direction cosine
+ORIGIN_TOL = 0.01      # mm: a module's origin off its joint's axis (the six-decimal placements round to ~1 um)
 
 
 def _axis_z(loc: Location) -> tuple[float, float, float]:
@@ -64,8 +65,8 @@ def _check_axis(key: str, world: Location, joint, *, on_axis: bool) -> None:
     if on_axis:
         d = tuple(a - b for a, b in zip(world.position, joint.origin_w))
         off = tuple(a - sum(x * y for x, y in zip(d, axis)) * b for a, b in zip(d, axis))
-        if sum(v * v for v in off) ** 0.5 > 1e-3:
-            raise SystemExit(f"{key}: origin {tuple(world.position)} is {sum(v * v for v in off) ** 0.5:.3f} mm off the {joint.name} axis")
+        if sum(v * v for v in off) ** 0.5 > ORIGIN_TOL:
+            raise SystemExit(f"{key}: origin {tuple(world.position)} is {sum(v * v for v in off) ** 0.5:.4f} mm off the {joint.name} axis")
 
 
 def mounted_records(records: list[dict]) -> list[dict]:

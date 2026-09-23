@@ -8,7 +8,7 @@ import pytest
 from build123d import Color, Location, Vector
 
 import parts
-from assemblies import arm, arm_no_caps, cycloidal_drive, gripper
+from assemblies import arm, arm_no_caps, cycloidal_drive, forearm_roll_drive, gripper
 from assemblies._occurrences import BOUGHT_TINT
 from lib.models import raw
 from lib import placements as P
@@ -17,6 +17,7 @@ from tests.source_checks import runs_its_model
 from tests.totals import part_totals, world_bbox
 
 DRIVE = cycloidal_drive.EXPECTED
+ROLL = forearm_roll_drive.EXPECTED
 
 
 def _leaves(node):
@@ -110,10 +111,22 @@ def test_cycloidal_drive_module_builds():
     assert _check_module_tints(d, cycloidal_drive.TINT) == {True: 13, False: 6}   # + the MKS board
 
 
+@pytest.mark.slow
+def test_forearm_roll_drive_module_builds():
+    d = raw(forearm_roll_drive.forearm_roll_drive)
+    assert d.label == "forearm_roll_drive"
+    assert len(_leaves(d)) == len(forearm_roll_drive.OCCURRENCES) == ROLL["leaves"] == 8
+    assert len(d.solids()) == ROLL["solids"]
+    assert abs(R.solid_volume(d) - ROLL["solid_volume"]) <= 0.5
+    assert d.is_valid
+    assert _check_module_tints(d, forearm_roll_drive.TINT) == {True: 5, False: 3}   # 2 bearings, motor, board, 20T / block, shaft, retainer
+
+
 def test_arm_groups_mirror_links():
     """GROUPS covers every occurrence key exactly once and mirrors robot/frames.py LINKS with the
-    two modules kept whole: wrist = wrist_roll_link + jaw_a_link + jaw_b_link, and the cycloidal
-    drive sits under shoulder_link although LINKS puts its rotor body in upper_arm_link."""
+    three modules kept whole: wrist = wrist_roll_link + jaw_a_link + jaw_b_link, the cycloidal
+    drive sits under shoulder_link although LINKS puts its rotor body in upper_arm_link, the forearm
+    roll drive under elbow_link although LINKS puts its rotor (the shaft) in forearm_link."""
     from assemblies._occurrences import split_key
     from robot import frames
 
@@ -127,8 +140,9 @@ def test_arm_groups_mirror_links():
     assert groups["base_link"] == whole("base_link")
     assert groups["shoulder_link"] == whole("shoulder_link")
     assert groups["upper_arm_link"] == whole("upper_arm_link") - {arm.DRIVE_KEY}
-    for link in ("forearm_link", "wrist_pitch_link"):
-        assert groups[link] == set(frames.LINKS[link]), link
+    assert groups["elbow_link"] == whole("elbow_link")
+    assert groups["forearm_link"] == whole("forearm_link") - {arm.ROLL_KEY}
+    assert groups["wrist_pitch_link"] == set(frames.LINKS["wrist_pitch_link"])
     wrist = (groups["wrist"] - {arm.GRIPPER_KEY}) | {key for _, _, key in gripper.OCCURRENCES}
     assert wrist == set(
         frames.LINKS["wrist_roll_link"] + frames.LINKS["jaw_a_link"] + frames.LINKS["jaw_b_link"]
@@ -141,7 +155,7 @@ def test_grey_means_bought():
     tints = [tint for _, tint, _ in arm.GROUPS] + list(arm.MODULE_TINTS.values())
     assert BOUGHT_TINT.lower() not in {t.lower() for t in tints}
     assert len({t.lower() for t in tints}) == len(tints), "two groups / modules share a tint"
-    assert arm.MODULE_TINTS == {arm.DRIVE_KEY: cycloidal_drive.TINT, arm.GRIPPER_KEY: gripper.TINT}
+    assert arm.MODULE_TINTS == {arm.DRIVE_KEY: cycloidal_drive.TINT, arm.ROLL_KEY: forearm_roll_drive.TINT, arm.GRIPPER_KEY: gripper.TINT}
 
 
 def test_arm_is_emitted_z_up():
@@ -168,16 +182,16 @@ def test_arm_assembly_matches_reference_totals():
     assert [c.label for c in a.children] == [label for label, _, _ in arm.GROUPS]
     leaves = _leaves(a)
     exp_leaves, exp_solids, exp_volume = _expected_totals()
-    assert len(leaves) == exp_leaves == 59
+    assert len(leaves) == exp_leaves == 67
     labels = [leaf.label for leaf in leaves]
     assert len(set(labels)) == len(labels), f"duplicate leaf labels: {labels}"
-    assert len(a.solids()) == exp_solids == 177
+    assert len(a.solids()) == exp_solids == 200
     assert abs(R.solid_volume(a) - exp_volume) <= 0.5
     exp_min, exp_size = _expected_bbox()
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_min(a), exp_min)), (R.bbox_min(a), exp_min)
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_size(a), exp_size)), (R.bbox_size(a), exp_size)
     assert a.is_valid
-    assert _check_link_tints(a) == {True: 25, False: 34}   # bought / printed leaves (tools/bom.py counts the same)
+    assert _check_link_tints(a) == {True: 30, False: 37}   # bought / printed leaves (tools/bom.py counts the same)
 
 
 def test_arm_no_caps_tables_are_the_arms_minus_hidden():
@@ -203,10 +217,10 @@ def test_arm_no_caps_builds_the_arm_without_its_caps():
     assert [c.label for c in a.children] == [label for label, _, _ in arm.GROUPS]
     labels = [leaf.label for leaf in _leaves(a)]
     exp_leaves, exp_solids, exp_volume = _expected_totals(hidden=arm_no_caps.HIDDEN)
-    assert len(labels) == exp_leaves == 56
+    assert len(labels) == exp_leaves == 64
     hidden = [P.OCCURRENCES[key] for key in arm_no_caps.HIDDEN]
     assert not {o["part"] for o in hidden} & set(labels), labels
-    assert len(a.solids()) == exp_solids == 174
+    assert len(a.solids()) == exp_solids == 197
     assert abs(R.solid_volume(a) - exp_volume) <= 0.5
     assert a.is_valid
-    assert _check_link_tints(a) == {True: 25, False: 34 - len(arm_no_caps.HIDDEN)}   # the caps are printed
+    assert _check_link_tints(a) == {True: 30, False: 37 - len(arm_no_caps.HIDDEN)}   # the caps are printed

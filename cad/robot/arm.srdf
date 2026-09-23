@@ -2,13 +2,13 @@
 <!--
   arm SRDF (MoveIt2 semantics). Pairs with robot/arm.urdf by colocation and robot name.
 
-  URDF table (copied, keep in sync): links base_link, shoulder_link, upper_arm_link, forearm_link,
+  URDF table (copied, keep in sync): links base_link, shoulder_link, upper_arm_link, elbow_link, forearm_link,
   wrist_pitch_link, wrist_roll_link, jaw_a_link, jaw_b_link, tool0 (frame-only); joints base_yaw,
-  shoulder_pitch, elbow_pitch, wrist_pitch, wrist_roll (revolute), jaw_a (prismatic), jaw_b
+  shoulder_pitch, elbow_pitch, forearm_roll, wrist_pitch, wrist_roll (revolute), jaw_a (prismatic), jaw_b
   (prismatic, mimics jaw_a), tool0_joint (fixed).
-  Group "arm" = the serial chain base_link -> tool0 (base_yaw, shoulder_pitch, elbow_pitch,
-  wrist_pitch, wrist_roll); group "gripper" = the jaw joint(s) and links; end effector "gripper"
-  hangs off wrist_roll_link (the jaws' parent).
+  Group "arm" = the serial chain base_link -> tool0 (base_yaw, shoulder_pitch, elbow_pitch, forearm_roll,
+  wrist_pitch, wrist_roll - six revolute joints, the last three concurrent at the wrist centre); group
+  "gripper" = the jaw joint(s) and links; end effector "gripper" hangs off wrist_roll_link (the jaws' parent).
   Group states: radians / metres. "home" = the SolidWorks capture pose (all joints 0, see the
   URDF ledger); "open"/"closed" use the placeholder jaw travel (cad/lib/params.py JAW_TRAVEL_MM).
   Disabled collisions: adjacent pairs only; add Never/Default pairs after a viewer sweep.
@@ -28,6 +28,7 @@
     <joint name="base_yaw" value="0" />
     <joint name="shoulder_pitch" value="0" />
     <joint name="elbow_pitch" value="0" />
+    <joint name="forearm_roll" value="0" />
     <joint name="wrist_pitch" value="0" />
     <joint name="wrist_roll" value="0" />
   </group_state>
@@ -41,7 +42,8 @@
   <passive_joint name="jaw_b" />
   <disable_collisions link1="base_link" link2="shoulder_link" reason="Adjacent" />
   <disable_collisions link1="shoulder_link" link2="upper_arm_link" reason="Adjacent" />
-  <disable_collisions link1="upper_arm_link" link2="forearm_link" reason="Adjacent" />
+  <disable_collisions link1="upper_arm_link" link2="elbow_link" reason="Adjacent" />
+  <disable_collisions link1="elbow_link" link2="forearm_link" reason="Adjacent" />
   <disable_collisions link1="forearm_link" link2="wrist_pitch_link" reason="Adjacent" />
   <disable_collisions link1="wrist_pitch_link" link2="wrist_roll_link" reason="Adjacent" />
   <disable_collisions link1="wrist_roll_link" link2="jaw_a_link" reason="Adjacent" />

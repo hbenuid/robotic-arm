@@ -6,8 +6,8 @@ LINKS holds placement keys: part occurrences and designed-module keys - "cycloid
 one rigid body of it, "cycloidal_drive#1:stator" / ":rotor" (assemblies/cycloidal_drive.py
 BODIES) - which assemblies/_occurrences.world_rows expands into world-placed parts.
 
-Chain: base_link -base_yaw-> shoulder_link -shoulder_pitch-> upper_arm_link -elbow_pitch->
-forearm_link -wrist_pitch-> wrist_pitch_link -wrist_roll-> wrist_roll_link -jaw_a/jaw_b->
+Chain: base_link -base_yaw-> shoulder_link -shoulder_pitch-> upper_arm_link -elbow_pitch-> elbow_link
+-forearm_roll-> forearm_link -wrist_pitch-> wrist_pitch_link -wrist_roll-> wrist_roll_link -jaw_a/jaw_b->
 jaw_*_link, + tool0 (frame-only). The cycloidal drive IS the shoulder_pitch joint: its stator
 (housing + motor, bolted into the j1_coupler yoke) rides in shoulder_link, its rotor (output
 hub + pins, bolted to j1_link) in upper_arm_link (docs/cycloidal_drive.md "Attachment").
@@ -59,8 +59,19 @@ SHOULDER_TO_ELBOW_INPLANE = (-141.353693, 155.039565, 9.127651)   # [REFERENCE] 
 #                                                                   minus its 10.0 mm component along N (210.0 mm in the pitch plane)
 ELBOW_TO_WRIST_INPLANE = (-142.926, 153.58, 9.229)   # [REFERENCE] forearm_link long direction (elbow -> wrist_pitch, perpendicular to N)
 
+# --- the forearm roll (the 6th joint, assemblies/forearm_roll_drive.py): its axis runs along the forearm through the
+# WRIST CENTRE - the point where the wrist_pitch and wrist_roll axes meet (the wrist_roll origin sits
+# WRIST_CENTRE_ALONG_N back along N from WRIST_PITCH_ORIGIN: the URDF's wrist_roll z = -0.016998) - so the last three
+# axes stay concurrent (a spherical wrist). It crosses the elbow axis FOREARM_ROLL_AXIS_Z along N from the elbow
+# origin (42 - 17 = 25, lib/params.py); tests/forearm/test_roll_drive.py checks WRIST_CENTRE lies on it.
+WRIST_CENTRE_ALONG_N = -17.0                 # [REFERENCE] see above
+_len = math.sqrt(sum(v * v for v in ELBOW_TO_WRIST_INPLANE))
+FOREARM_ROLL_AXIS = tuple(v / _len for v in ELBOW_TO_WRIST_INPLANE)                    # unit, elbow -> wrist
+FOREARM_ROLL_ORIGIN = tuple(o + PARAMS.FOREARM_ROLL_AXIS_Z * n for o, n in zip(ELBOW_ORIGIN, N))   # on the elbow axis
+WRIST_CENTRE = tuple(o + WRIST_CENTRE_ALONG_N * n for o, n in zip(WRIST_PITCH_ORIGIN, N))
+
 # --- rigid links: placement keys that move together -----------------------------------------
-LINK_ORDER = ["base_link", "shoulder_link", "upper_arm_link", "forearm_link", "wrist_pitch_link",
+LINK_ORDER = ["base_link", "shoulder_link", "upper_arm_link", "elbow_link", "forearm_link", "wrist_pitch_link",
               "wrist_roll_link", "jaw_a_link", "jaw_b_link", "tool0"]
 LINKS: dict[str, list[str]] = {
     # the base_yaw motor + its MKS board hang under the base plate (lib/mounts.py) - they turn nothing themselves
@@ -71,9 +82,13 @@ LINKS: dict[str, list[str]] = {
     # the drive's rotor (output hub + output pins) is bolted to j1_link: the shoulder_pitch output;
     # the elbow_pitch motor + board bolt to j1_link's pad (lib/mounts.py)
     "upper_arm_link": ["cycloidal_drive#1:rotor", "j1_link#1", "j1_cap#1", "nema17_40mm#2", "mks_servo42d#2"],
-    # the elbow 90T pulley + J3-coupler assumed bolted to the forearm (the driven side)  [ASSUMPTION];
+    # the elbow 90T pulley + J3-coupler (the elbow_pitch output, assumed the driven side  [ASSUMPTION]) carry the
+    # forearm roll drive's STATOR - the elbow block bolted where j2_link's disc was, both bearings, the retainer,
+    # the roll motor + board and its 20T (assemblies/forearm_roll_drive.py BODIES)
+    "elbow_link": ["gt2_pulley_90t#1", "j3_coupler#1", "forearm_roll_drive#1:stator"],
+    # the drive's ROTOR - the hollow roll shaft - IS the forearm's elbow end (its flange bolts to j2_link's wall);
     # the wrist_pitch motor + board bolt to j2_link's web (lib/mounts.py)
-    "forearm_link": ["j2_link#1", "j2_cap_1#1", "j2_cap_2#1", "gt2_pulley_90t#1", "j3_coupler#1", "nema17_40mm#3", "mks_servo42d#3"],
+    "forearm_link": ["forearm_roll_drive#1:rotor", "j2_link#1", "j2_cap_1#1", "j2_cap_2#1", "nema17_40mm#3", "mks_servo42d#3"],
     # likewise the wrist 90T pulley + J3-coupler ride with the wrist-pitch body  [ASSUMPTION]
     "wrist_pitch_link": ["wrist_link#1", "gripper_clamp_bracket#1", "nema17_pancake#1", "gt2_pulley_90t#2", "j3_coupler#2"],
     # the gripper base rolls with the 20T pulley; the servo crank linkage is merged in  [ASSUMPTION]
@@ -116,10 +131,16 @@ JOINTS: list[Joint] = [
           -PARAMS.SHOULDER_PITCH_LIMIT_DEG * DEG, PARAMS.SHOULDER_PITCH_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
           notes="the 20:1 cycloidal drive (CYCLOIDAL_RATIO, its own NEMA 17 x 48 + MKS board): stator in the j1_coupler yoke, "
                 "output hub bolted to j1_link [which CAN id: unconfirmed]"),
-    Joint("elbow_pitch", "revolute", "upper_arm_link", "forearm_link", ELBOW_ORIGIN, N, ELBOW_TO_WRIST_INPLANE,
+    Joint("elbow_pitch", "revolute", "upper_arm_link", "elbow_link", ELBOW_ORIGIN, N, ELBOW_TO_WRIST_INPLANE,
           -PARAMS.ELBOW_PITCH_LIMIT_DEG * DEG, PARAMS.ELBOW_PITCH_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
-          notes="GT2 90T pulley + J3-coupler at the elbow; belt-driven by nema17_40mm#2 + mks_servo42d#2 on "
-                "j1_link's pad (lib/mounts.py) [which CAN id: unconfirmed]"),
+          notes="GT2 90T pulley + J3-coupler at the elbow (carrying the roll drive's stator); belt-driven by nema17_40mm#2 + "
+                "mks_servo42d#2 on j1_link's pad (lib/mounts.py) [which CAN id: unconfirmed]"),
+    # the roll: Z along the forearm (its child link's long direction IS the axis), so X = N, the pitch-axis direction
+    Joint("forearm_roll", "revolute", "elbow_link", "forearm_link", FOREARM_ROLL_ORIGIN, FOREARM_ROLL_AXIS, N,
+          -PARAMS.FOREARM_ROLL_LIMIT_DEG * DEG, PARAMS.FOREARM_ROLL_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
+          notes="the forearm roll drive (assemblies/forearm_roll_drive.py, FOREARM_ROLL_RATIO 4.5): the hollow roll shaft's "
+                "flange bolts to j2_link's wall; belt-driven by the drive's own nema17_40mm + mks_servo42d on the elbow "
+                "block's pad [a 4th CAN id - src/config.py has three: unconfirmed]; hard stop +/- FOREARM_ROLL_LIMIT_DEG"),
     Joint("wrist_pitch", "revolute", "forearm_link", "wrist_pitch_link", WRIST_PITCH_ORIGIN, N, F,
           -PARAMS.WRIST_PITCH_LIMIT_DEG * DEG, PARAMS.WRIST_PITCH_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
           notes="GT2 90T pulley + J3-coupler at the wrist; belt-driven by nema17_40mm#3 + mks_servo42d#3 on "

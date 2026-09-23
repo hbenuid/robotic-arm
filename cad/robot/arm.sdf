@@ -84,14 +84,41 @@
         </geometry>
       </collision>
     </link>
-    <link name="forearm_link">
+    <link name="elbow_link">
       <pose relative_to="elbow_pitch">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.132906 0.000011 0.02163 0 0 0</pose>
-        <mass>0.807053</mass>
+        <pose>0.027625 0.000044 0.045354 0 0 0</pose>
+        <mass>0.628206</mass>
         <inertia>
-          <ixx>8.488255e-04</ixx><ixy>-1.052752e-07</ixy><ixz>-4.129878e-04</ixz>
-          <iyy>3.706266e-03</iyy><iyz>-3.085075e-07</iyz><izz>3.695153e-03</izz>
+          <ixx>1.222342e-03</ixx><ixy>4.192455e-06</ixy><ixz>-3.119782e-04</ixz>
+          <iyy>1.467586e-03</iyy><iyz>-3.280840e-06</iyz><izz>5.929107e-04</izz>
+        </inertia>
+      </inertial>
+      <visual name="elbow_link_visual">
+        <geometry>
+          <mesh>
+            <uri>meshes/elbow_link.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="elbow_link_collision">
+        <geometry>
+          <mesh>
+            <uri>meshes/elbow_link.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+  <link name="forearm_link">
+      <pose relative_to="forearm_roll">0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0.001895 -0.000011 0.144833 0 0 0</pose>
+        <mass>0.775187</mass>
+        <inertia>
+          <ixx>2.014860e-03</ixx><ixy>2.655163e-07</ixy><ixz>1.606057e-04</ixz>
+          <iyy>1.869348e-03</iyy><iyz>2.658572e-09</iyz><izz>6.633385e-04</izz>
         </inertia>
       </inertial>
       <visual name="forearm_link_visual">
@@ -249,7 +276,7 @@
     <joint name="elbow_pitch" type="revolute">
       <pose relative_to="upper_arm_link">0.210003 0 0.009998 0 0 0.010227</pose>
       <parent>upper_arm_link</parent>
-      <child>forearm_link</child>
+      <child>elbow_link</child>
       <axis>
         <xyz expressed_in="elbow_pitch">0 0 1</xyz>
         <limit>
@@ -258,8 +285,20 @@
         </limit>
       </axis>
     </joint>
-    <joint name="wrist_pitch" type="revolute">
-      <pose relative_to="forearm_link">0.21 0 0.041998 0 0 0.299075</pose>
+    <joint name="forearm_roll" type="revolute">
+      <pose relative_to="elbow_link">0 0 0.025 3.141593 -1.570795 0</pose>
+      <parent>elbow_link</parent>
+      <child>forearm_link</child>
+      <axis>
+        <xyz expressed_in="forearm_roll">0 0 1</xyz>
+        <limit>
+          <lower>-2.96706</lower><upper>2.96706</upper>
+          <effort>5</effort><velocity>1</velocity>
+        </limit>
+      </axis>
+    </joint>
+  <joint name="wrist_pitch" type="revolute">
+      <pose relative_to="forearm_link">0.016998 0 0.21 -1.570799 -1.271722 -1.570793</pose>
       <parent>forearm_link</parent>
       <child>wrist_pitch_link</child>
       <axis>

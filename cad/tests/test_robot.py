@@ -48,6 +48,8 @@ def test_links_partition_every_placement_once():
         assert used == [None] or (None not in used and sorted(used) == sorted(bodies)), (mkey, used)
     assert "cycloidal_drive#1:stator" in F.LINKS["shoulder_link"]   # housing + motor ride with the holder
     assert "cycloidal_drive#1:rotor" in F.LINKS["upper_arm_link"]    # output hub + pins ride with j1_link
+    assert "forearm_roll_drive#1:stator" in F.LINKS["elbow_link"]    # the elbow block rides with the elbow pulley
+    assert "forearm_roll_drive#1:rotor" in F.LINKS["forearm_link"]   # the roll shaft IS the forearm's elbow end
 
 
 def test_world_rows_expands_a_designed_module_whole_or_per_body():
@@ -136,6 +138,8 @@ def test_urdf_limits_track_params():
     assert math.isclose(float(lim.get("upper")), math.radians(PARAMS.BASE_YAW_LIMIT_DEG), abs_tol=1e-6)
     lim = root.find("joint[@name='shoulder_pitch']/limit")
     assert math.isclose(float(lim.get("upper")), math.radians(PARAMS.SHOULDER_PITCH_LIMIT_DEG), abs_tol=1e-6)
+    lim = root.find("joint[@name='forearm_roll']/limit")
+    assert math.isclose(float(lim.get("upper")), math.radians(PARAMS.FOREARM_ROLL_LIMIT_DEG), abs_tol=1e-6)
     lim = root.find("joint[@name='jaw_a']/limit")
     assert math.isclose(float(lim.get("upper")), PARAMS.JAW_TRAVEL_MM * 1e-3, abs_tol=1e-9)
     mimic = root.find("joint[@name='jaw_b']/mimic")

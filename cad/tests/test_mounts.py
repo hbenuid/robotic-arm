@@ -6,7 +6,7 @@ import math
 import pytest
 from build123d import GeomType, Location, Vector
 
-from assemblies import cycloidal_drive
+from assemblies import cycloidal_drive, forearm_roll_drive
 from assemblies._occurrences import place_world
 from lib import mounts
 from lib.cycloidal import DEFAULT_CONFIG
@@ -75,6 +75,7 @@ def test_motors_and_boards_clear_their_neighbours():
                   "gt2_pulley_90t#1", "gt2_pulley_90t#2", "j3_coupler#1", "j3_coupler#2", "wrist_link#1"]
     shapes = {k: place_world(P.OCCURRENCES[k]["part"], k) for k in neighbours}
     shapes["cycloidal_drive#1"] = raw(cycloidal_drive.cycloidal_drive).moved(_world("cycloidal_drive#1"))
+    shapes["forearm_roll_drive#1"] = raw(forearm_roll_drive.forearm_roll_drive).moved(_world("forearm_roll_drive#1"))
     budget = {}
     for m in mounts.MOUNTS:
         part = place_world(m.part, m.key)

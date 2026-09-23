@@ -16,7 +16,8 @@
   "solid_volume": 2173061.667
  },
  "designed_modules": [
-  "cycloidal_drive#1"
+  "cycloidal_drive#1",
+  "forearm_roll_drive#1"
  ],
  "mounted": [
   "nema17_48mm#1",
@@ -24,7 +25,8 @@
   "nema17_40mm#2",
   "mks_servo42d#2",
   "nema17_40mm#3",
-  "mks_servo42d#3"
+  "mks_servo42d#3",
+  "forearm_roll_drive#1"
  ],
  "occurrences": [
   {
@@ -3674,6 +3676,98 @@
     55.318,
     36.591
    ]
+  },
+  {
+   "key": "forearm_roll_drive#1",
+   "part": "forearm_roll_drive",
+   "kind": "module",
+   "designed": true,
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j2_link#1",
+    "joint": "forearm_roll",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      0.0,
+      25.0
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      -90.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the roll drive on j2_link's roll axis (y 0, z FOREARM_ROLL_AXIS_Z): module +Z = host -X toward the wrist, module +X = host +Z (the motor side); the stator bolts to j3_coupler#1 where j2_link's disc did"
+   },
+   "rel": {
+    "position": [
+     -141.537332,
+     240.046921,
+     9.139053
+    ],
+    "rotation_xyz_deg": [
+     -86.561103,
+     -42.891417,
+     -84.954347
+    ],
+    "matrix_3x4": [
+     [
+      0.064435731,
+      0.729805824,
+      -0.68061112,
+      -141.537331721
+     ],
+     [
+      -0.0,
+      0.682028471,
+      0.731325622,
+      240.046921
+     ],
+     [
+      0.997921859,
+      -0.047123501,
+      0.043947003,
+      9.139053473
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -141.537332,
+     240.046921,
+     9.139053
+    ],
+    "rotation_xyz_deg": [
+     -86.561103,
+     -42.891417,
+     -84.954347
+    ],
+    "matrix_3x4": [
+     [
+      0.064435731,
+      0.729805824,
+      -0.68061112,
+      -141.537331721
+     ],
+     [
+      -0.0,
+      0.682028471,
+      0.731325622,
+      240.046921
+     ],
+     [
+      0.997921859,
+      -0.047123501,
+      0.043947003,
+      9.139053473
+     ]
+    ]
+   },
+   "source": "assemblies/forearm_roll_drive.py"
   }
  ],
  "skipped": []

@@ -19,6 +19,8 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 
 from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, centre_distance
+from lib.cycloidal.params import MotorParams
+from lib.motors import MOTOR_40, NEMA17_40_BODY_LEN
 
 
 @dataclass(frozen=True)
@@ -149,6 +151,75 @@ class RollEndParams:
 
 
 @dataclass(frozen=True)
+class RollDriveParams:
+    """The forearm roll drive (assemblies/forearm_roll_drive.py): the elbow block (stator - bolted to j3_coupler#1
+    through the SolidWorks disc's interface), the hollow roll shaft (rotor - its flange bolts to the forearm's wall)
+    in two 6808 ring bearings, a bolted retainer, the 40 mm kit motor beside the axis with its 20T and a belt to the
+    shaft's integral 90T ring. MODULE FRAME: origin at the roll axis' crossing with the elbow axis (host (0, 0,
+    axis_z)); +Z along the roll axis toward the wrist (host −X); +X = host +Z (the motor side, N); +Y = host +Y.
+    Stations in that frame are layout.stack_positions(); the shaft goes in from the wrist end, bearing 1 already on
+    its elbow-end journal (up to the middle shoulder), then bearing 2 and the retainer."""
+
+    # bearings: 2x 6808-2RS in one seat, bearing 1 against the block's lip, bearing 2 held by the retainer
+    bearing_bore: float = 40.0            # [DATASHEET] 6808-2RS (61808)
+    bearing_od: float = 52.0
+    bearing_width: float = 7.0
+    seat_add: float = 0.15                # [DESIGN] PETG press allowance on the seat diameter (cf. the drive's 6814 seat)
+    journal_add: float = 0.3              # [DESIGN] the printed journal's interference in the inner race (cf. the drive's hub)
+    inner_race_od: float = 44.5           # [ESTIMATE] 6808 inner-race outer edge - the shaft shoulders (Ø44) must not touch the outer race
+    # the block (stator)
+    tube_od: float = 60.0                 # [DESIGN] round the seat; its bottom stays above the upper arm's slab (host z >= -5)
+    z_end: float = 40.0                   # [DESIGN] the closed elbow end (>= 1 mm past the disc's M4 nut pocket, clear of j3_coupler)
+    end_wall: float = 3.0                 # [DESIGN] 40..43
+    lip: float = 3.0                      # [DESIGN] 43..46, ID lip_id: bearing 1's outer race stops on it
+    lip_id: float = 46.0
+    bearing_gap: float = 3.0              # [DESIGN] between the two bearings (the shaft's middle shoulder)
+    cable_window_w: float = 20.0          # [DESIGN] the bore's exit through the tube top (+X), z_end .. z_end + cable_window_len
+    cable_window_len: float = 7.0
+    # the retainer (bolted to the block's wrist face: an annulus over bearing 2's outer race + two ears)
+    retainer_t: float = 3.0               # [DESIGN]
+    retainer_id: float = 48.0             # [DESIGN] covers the outer race (r 24..26), clears the shaft's Ø44 shoulder
+    retainer_ear_y: float = 31.0          # [DESIGN] 2x M3 at (0, +/- retainer_ear_y) into the block's wrist face
+    retainer_ear_w: float = 10.0
+    retainer_bolt_dia: float = 3.4
+    retainer_clear: float = 0.8           # [DESIGN] retainer face .. ring flange
+    # the shaft (rotor)
+    bore: float = 28.0                    # [DESIGN] the cable bore (= the wall's)
+    shoulder_od: float = 44.0             # [DESIGN] < inner_race_od
+    shaft_end_clear: float = 0.5          # [DESIGN] the shaft's elbow end .. the block's end wall
+    flange_dia: float = 60.0              # [DESIGN] = RollEndParams.flange_dia
+    flange_t: float = 4.0                 # [DESIGN] 84..88, against the wall's elbow face
+    spigot_len: float = 2.0               # [DESIGN] = RollEndParams.flange_recess_depth
+    flange_nut_af: float = 5.5            # [DESIGN] M3 nuts captive in the flange (pockets from its elbow face)
+    flange_nut_depth: float = 2.8
+    stop_pin_z: float = 80.0              # [DESIGN] the hard-stop pin boss on the bare shaft (pin = EXTRAS)
+    stop_pin_boss_dia: float = 6.0             # [DESIGN] 77..83: 1 mm clear of the ring flange (76.2) and the flange (84)
+    stop_r: float = 36.0                  # [DESIGN] the pin's reach and the retainer post's radius
+    # the 90T ring (integral; the 20T is flanged on its hub side only, so the ring carries two flanges)
+    ring_teeth: int = 90
+    ring_width: float = 7.0               # [DATASHEET] 6 mm belt
+    ring_flange_dia: float = 59.19        # [REFERENCE] the SolidWorks 90T's flanges
+    ring_flange_t: float = 1.2
+    # the motor: beside the axis at module +X, body toward the elbow (-Z), shaft toward the wrist; slotted for tension
+    motor: MotorParams = MOTOR_40
+    motor_offset: float = 55.5            # [DESIGN] module x of the motor axis: what a 230-2GT belt sets (centre_distance 55.53)
+    roll_belt: int = 230                  # [ESTIMATE] 230-2GT closed belt, 6 mm
+    t20_hub: float = 10.95                # [REFERENCE] vendor 20T: its tooth band's centre from its hub face (7.45 + 3.5)
+    pulley_lift: float = 0.5              # [DESIGN] the 20T's hub face above the pad plate's top
+    pad_t: float = 3.0                    # [DESIGN] the motor pad plate (on the shaft side of the mounting face; the Ø22 x 2 pilot boss centres in it)
+    pad_w: float = 46.0                   # [DESIGN] square, centred on the motor axis
+    pad_slot_len: float = 5.0             # [DESIGN] +/- 2.5 belt-tension slide along module X
+    pad_bolt_dia: float = 3.4
+    pad_pilot_w: float = 22.3             # [DESIGN] the pilot boss slot
+    stop_deg: float = 170.0               # [ESTIMATE] = FOREARM_ROLL_LIMIT_DEG
+
+    @property
+    def t20(self) -> float:
+        """The 20T's tooth-band centre from the motor's mounting face: through the pad plate, the lift, the hub."""
+        return self.pad_t + self.pulley_lift + self.t20_hub
+
+
+@dataclass(frozen=True)
 class ForearmConfig:
     roll: bool = False                     # end the forearm at the roll flange wall instead of the elbow disc
     motor_x: float = -118.0                # the wrist-pitch motor's axis on the slide [ESTIMATE] (lib/params.py J2_MOTOR_SLIDE_X)
@@ -161,6 +232,7 @@ class ForearmConfig:
     cap1: Cap1Params = Cap1Params()
     cap2: Cap2Params = Cap2Params()
     roll_end: RollEndParams = RollEndParams()
+    drive: RollDriveParams = RollDriveParams()
 
 
 LEGACY = ForearmConfig()     # the three SolidWorks parts, exactly

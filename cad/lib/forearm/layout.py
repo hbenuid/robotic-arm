@@ -59,3 +59,60 @@ def flange_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]
     return [(rad * math.cos(math.radians(r.bolt_angle_deg + i * 360.0 / r.bolt_count)),
              r.axis_z + rad * math.sin(math.radians(r.bolt_angle_deg + i * 360.0 / r.bolt_count)))
             for i in range(r.bolt_count)]
+
+
+def module_frame_in_host(cfg: ForearmConfig = DEFAULT) -> tuple:
+    """The roll drive's module frame as data in j2_link's frame (lib/mounts.py ModuleMount): origin on the roll axis
+    at the elbow-axis crossing, module +Z = host -X (toward the wrist), module +X = host +Z."""
+    return ((0.0, 0.0, cfg.roll_end.axis_z), (0.0, -90.0, 0.0))
+
+
+def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
+    """Module-frame Z stations of the roll drive (RollDriveParams; the shaft and block builders emit their geometry
+    at these stations - their rows are at 0). Every number a row or a test needs comes from here."""
+    d, w = cfg.drive, cfg.roll_end
+    z_lip = d.z_end + d.end_wall                                   # 43
+    z_seat = z_lip + d.lip                                        # 46: bearing 1
+    z_bearing_2 = z_seat + d.bearing_width + d.bearing_gap        # 56
+    z_face = z_bearing_2 + d.bearing_width                        # 63: the block's wrist face
+    z_retainer_top = z_face + d.retainer_t                        # 66
+    z_ring_flange = z_retainer_top + d.retainer_clear             # 66.8
+    z_ring = z_ring_flange + d.ring_flange_t                      # 68: the teeth
+    z_ring_mid = z_ring + d.ring_width / 2.0                      # 71.5
+    z_wall = -w.wall_x[1]                                         # 88: the forearm wall's elbow face
+    return {
+        "z_block": 0.0, "z_shaft": 0.0,
+        "z_end": d.z_end, "z_lip": z_lip, "z_seat": z_seat,
+        "z_bearing_1": z_seat, "z_bearing_2": z_bearing_2,
+        "z_shaft_end": z_lip + d.shaft_end_clear,                 # 43.5
+        "z_shoulder_mid": z_seat + d.bearing_width,               # 53..56
+        "z_face": z_face, "z_retainer": z_face,
+        "z_shoulder_2": z_face,                                   # 63..66.8 (up to the ring flange)
+        "z_ring_flange_1": z_ring_flange, "z_ring": z_ring, "z_ring_mid": z_ring_mid,
+        "z_ring_flange_2": z_ring + d.ring_width,
+        "z_stop_pin": d.stop_pin_z,
+        "z_flange": z_wall - d.flange_t,                          # 84
+        "z_wall": z_wall,                                         # 88
+        "z_spigot_end": z_wall + d.spigot_len,                    # 90
+        "z_motor_face": z_ring_mid - d.t20,                       # 57.05: the motor's mounting face (the pad plate above it, the body below)
+        "z_motor_board": z_ring_mid - d.t20 - d.motor.body_length,   # 17.55
+        "z_pad_top": z_ring_mid - d.t20 + d.pad_t,                # 60.05
+        "z_20t": z_ring_mid - d.t20 + d.pad_t + d.pulley_lift,    # 60.55: the 20T's hub face, pulley_lift above the pad
+        "x_motor": d.motor_offset,
+    }
+
+
+def pad_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
+    """The motor pad's 4 bolt slots (centres) in the module x-y plane."""
+    from lib.cycloidal.layout import motor_bolt_points
+    return [(cfg.drive.motor_offset + x, y) for x, y in motor_bolt_points()]
+
+
+def retainer_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
+    return [(0.0, cfg.drive.retainer_ear_y), (0.0, -cfg.drive.retainer_ear_y)]
+
+
+def flange_bolt_points_module(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
+    """The flange bolts in the module x-y plane: the wall's (y, z) pattern seen from the module (module x = host z -
+    axis_z, module y = host y)."""
+    return [(z - cfg.roll_end.axis_z, y) for y, z in flange_bolt_points(cfg)]
