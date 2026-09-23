@@ -4,6 +4,45 @@ Dated record of notable changes to this repository (newest first). Every commit 
 behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
 `cad-setup` working branch was fast-forward-only and has been retired).
 
+## 2026-09-23 — forearm roll, M6: the elbow block is the elbow coupler (branch `cad/forearm-roll`)
+
+The user rejected the M5 block (the Ø90 elbow disc and the Ø70 housing meeting along a sliver, the motor on a pad
+tower 47 mm out, the forearm starting 88 mm from the elbow axis) and asked for the diagram's block: the shaft crossing
+the elbow axis, the forearm attached just past the coupler, the motor low and close to the upper arm. Measured on
+`reference/solidworks/j3_coupler.step` (in `j2_link`'s frame): the coupler sits at host z −22…0 - Ø78 flange −10…0,
+Ø62 boss, Ø40 journal, Ø30 stub −22…−15.3, 4× M4 at r 11 from the pulley - so its flange top is 25 mm under the roll
+axis and nothing on the shaft larger than Ø50 (the Ø59 ring, the Ø52 6808s) could sit within 39 mm of the elbow
+axis while the block bolted on top of it. Decided (three options offered, mock-up rendered first): **the block
+absorbs the coupler**; motor body behind the elbow axis flush with the block's rear; cable exit through the rear end
+wall on the axis; the caps ignored (slated for removal).
+
+### Changed — the elbow block, the shaft, the cap, the forearm wall, the retired coupler (`13f2ad5`)
+- **`lib/forearm/params.py RollDriveParams` re-cut**: a rounded box 66 × 72 × 76 (x −33…33 - 0.5 mm above the upper
+  arm's slab -, y ±36, z −40…36, r 8) whose underside repeats the coupler (Ø72 lip in `j1_link`'s Ø80 recess, Ø62 boss,
+  Ø40 journal, Ø30 stub, the Ø12.5 pin bore) with the elbow 90T's 4× M4 at r 11 up into **heat-set inserts**; the bore:
+  rear end wall with a Ø26 cable exit, lip, bearing 1's seat −35…−28, a Ø52.6 core bore bearing 1 rides through, the
+  Ø62 cavity 16…36 open through the front face; the ring 18…25; the belt window ±22 through the top wall; the cap on the
+  front face (seat 36…43, lip, 4× M3 at the corners, the stop post); the shaft's Ø38 neck 43…48, the stop lug, the
+  Ø39.7 spigot 48…50; the motor at (x 0, y 60.9 = the 240-2GT's C), body −32.45…7.05, spun 90° so its connector points
+  +N, on a vertical plate with two cheeks. `RollEndParams.wall_x` (−96, −88) → **(−56, −48)**: the forearm starts 48 mm
+  from the elbow axis (≥ 45 + 3: its rolling ±45 wall clears `j1_link`'s r 45 end) and its web gains 40 mm and the
+  −75 socket column. `lib/forearm/layout.py`: `stack_positions` re-derived, `pulley_bolt_points`, `cap_bolt_points`
+  (4 corners), `coupler_steps`, `belt_window`; `pad_slot_angle_deg` gone. `lib/forearm/roll.py`: the three builders.
+- **`j3_coupler#1` retired** - `lib/placements.py RETIRED` + `keys(retired=)`: the record stays, `keys()` leaves it out,
+  `assemblies/arm.py` / `robot/frames.py LINKS` (`elbow_link` = the pulley + the stator) no longer claim it; the wrist's
+  `j3_coupler#2` untouched. `tools/bom.py EXTRAS`: 4× M4 × 40 + 4× M4 inserts (pulley → block) replace the disc's
+  M4 × 25 + nuts, 4× M3 × 16 for the cap (was 2). `lib/params.py`: `FOREARM_ROLL_MOTOR_XY` (0, 60.9), `FOREARM_ROLL_BLOCK_X`
+  replaces `FOREARM_ROLL_HOUSING_OD`.
+- Native references re-accepted (`import_native.py --force`, this machine); `EXPECTED` 8 / 23 / 422609.743
+  (stator 327367.302, rotor 95242.441); the arm 66 leaves / 199 solids; `elbow_link` + `forearm_link` inertials and
+  meshes re-derived; `robot/arm.urdf` / `arm.sdf` updated.
+- Tests: `tests/forearm/test_roll_drive.py` rewritten for the stack (the block round the elbow axis, the coupler
+  features in `j1_link`'s recess / bore, the inserts' walls, the open cavity, the motor above the top at the slot's
+  low end, the stub end ON the pulley's face) + a **roll sweep** (`j2_link` at 0 / ±90 / ±170° vs the upper arm, its cap,
+  the pulley and the stator: < 1 mm³); `test_roll_end.py`, `test_placements.py`, `test_assembly.py`, `test_bom.py`,
+  `test_mounts.py` follow. Docs: `docs/forearm_roll.md` §2–§5, `docs/open_issues.md` (the inserts, the print
+  orientation, the elbow bearings on the stub, the cable exit), `cad/CLAUDE.md`, `cad/README.md`, root `CLAUDE.md`.
+
 ## 2026-09-23 — forearm roll, M5: the drive laid out like the diagram (branch `cad/forearm-roll`)
 
 The user compared the M3 build with the original diagram and wanted its silhouette: the roll motor on top of the block
