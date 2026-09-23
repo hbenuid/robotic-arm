@@ -65,9 +65,13 @@ BASE_MOTOR_PATTERN_CENTRE = (78.971, -44.9, 0.084)   # [REFERENCE] base: 4x M3 o
 BASE_MOTOR_STACK_PROUD = 6.1    # [DESIGN] the 48 mm motor + board (48 + 14.1) hang this far BELOW the base's bottom face
 #                                 (56.0 mm of depth under the plate): the base needs feet / a cut-out at least this deep
 J1_MOTOR_PAD_FACE_Y = -32.5     # [REFERENCE] j1_link: the 48 x 48 pad's outer face (the -N side), pattern on the shoulder axis
-J2_MOTOR_WEB_FACE_Z = 19.0      # [REFERENCE] j2_link: the web's +Z face; the motor bolts through its two 110 mm slots
-J2_MOTOR_SLIDE_RANGE = (-141.5, -62.5)   # [REFERENCE] j2_link: motor-axis x range the slots allow (belt tension slide)
-J2_MOTOR_SLIDE_X = -118.0       # [ESTIMATE] j2_cap_1's window centre - the body clears the cap for -127..-109; set with the belt
+# j2_link is parametric (lib/forearm/params.py ForearmConfig, a leaf like lib/cycloidal/params.py): the motor's
+# pad face and slide come from its DEFAULT configuration.
+from lib.forearm.params import DEFAULT as _FOREARM  # noqa: E402
+
+J2_MOTOR_WEB_FACE_Z = _FOREARM.web.z1              # 19 [REFERENCE] j2_link: the web's +Z face; the motor bolts through its two 110 mm slots
+J2_MOTOR_SLIDE_RANGE = _FOREARM.slide_range        # (-141.5, -62.5) [REFERENCE] motor-axis x range the slots allow (belt tension slide)
+J2_MOTOR_SLIDE_X = _FOREARM.motor_x                # -118 [ESTIMATE] j2_cap_1's window centre - the body clears the cap for -127..-109; set with the belt
 
 # --- Cycloidal drive (lib/cycloidal/, assemblies/cycloidal_drive.py, docs/cycloidal_drive.md) -----
 # The drive's own dimensions live in lib/cycloidal/params.py (DriveConfig, ported from the

@@ -1,6 +1,6 @@
 # robotic-arm — CAD (build123d)
 
-**Last updated:** 2026-09-22 (cadgen 0.6.6) — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-22 (cadgen 0.6.6; the forearm is parametric) — see the root `CHANGELOG.md` for dated changes.
 
 Parametric CAD-as-code for the desktop arm (base yaw, 20:1 cycloidal shoulder pitch, belt-driven
 elbow and wrist pitch, wrist roll, MG996R parallel gripper), converted part-by-part from the original
@@ -110,7 +110,7 @@ cad/
 │   ├── __init__.py            # the directory scan: MODULES / GROUPS, names(), load(), model(), build(), bought(), source_of()
 │   ├── _templates/            # designed.py (parametric), wrapper.py (import wrapper), cots.py (purchased) templates
 │   ├── base/                  # base, j1_coupler, j1_link, j1_cap                                  (SolidWorks wrappers)
-│   ├── joints/                # j2_link, j2_cap_1, j2_cap_2, j3_coupler, gt2_pulley_90t (SolidWorks wrappers) + COTS nema17_40mm, mks_servo42d (the belt joints' MKS kits)
+│   ├── joints/                # j2_link, j2_cap_1, j2_cap_2 (parametric - lib/forearm/), j3_coupler, gt2_pulley_90t (SolidWorks wrappers) + COTS nema17_40mm, mks_servo42d (the belt joints' MKS kits)
 │   ├── wrist/                 # wrist_link, gripper_clamp_bracket, gripper_j3_connector + COTS nema17_pancake, gt2_pulley_20t
 │   ├── gripper/               # gripper_* (7), servo_holder + COTS gripper_rail_6mm, mg996r_servo, mg996r_horn
 │   └── cycloidal/             # the drive: 6 designed parts + 10 COTS (bearings, nema17_48mm - vendor file composed from the kit exports -, pins, bolts, nuts), _cots.py helper

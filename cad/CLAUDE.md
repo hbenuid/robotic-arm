@@ -217,7 +217,8 @@ otherwise. `tests/conftest.py` makes an accidental top-level call under pytest f
 **Part states.** Custom parts declare `REFERENCE = NAME`, `CONVERTED` and `LOCAL_FROM_REF`:
 - *wrapper* (`CONVERTED = False`, from `_templates/wrapper.py`): the model returns
   `reference/solidworks/<name>.step` (via `lib.reference.load` → `cadgen.read_step`, a tracked input)
-  in the SolidWorks part-file frame — the day-one state of all 20 custom parts;
+  in the SolidWorks part-file frame — the day-one state of all 20 custom parts (17 remain; the forearm's three
+  are parametric: `lib/forearm/`, a `ForearmConfig` with `LEGACY` = the SolidWorks parts and `DEFAULT` = what is built);
 - *parametric* (`CONVERTED = True`, from `_templates/designed.py`): real build123d. To convert: rewrite
   the model body, set `CONVERTED = True`, optionally set `LOCAL_FROM_REF` (reference frame → new
   local frame, as frame data `((x, y, z), (rx, ry, rz))` — `IDENTITY` until then; the assemblies
@@ -347,9 +348,10 @@ Changing a shared dimension — touchpoints in order:
   never feed it to `robot/` or the SolidWorks totals. It is a second model because a model takes no
   parameters and the freshness gate sees no environment variable (an env switch in `arm()` would read
   `current` across a flip, and the daemon strips unlisted variables from its workers). Link edits land in
-  the shared part file, so both arms pick them up on their **own** next `gen`; the caps are wrappers that do
-  not follow a link change and this view cannot show a cap that no longer fits — after changing `j1_link` /
-  `j2_link`, `./cadtool gen assemblies/arm.py` + snapshot too. For a one-off image no model is needed:
+  the shared part file, so both arms pick them up on their **own** next `gen`; `j1_cap` is a wrapper that does
+  not follow a link change (the forearm's caps are built from the same `ForearmConfig` as `j2_link` and do) and
+  this view cannot show a cap that no longer fits — after changing `j1_link` / `j2_link`, `./cadtool gen
+  assemblies/arm.py` + snapshot too. For a one-off image no model is needed:
   `./cadtool snapshot assemblies/arm.step out.png --hide '#j1_cap' --hide '#j2_cap_1' --hide '#j2_cap_2'`
   (label refs; STEP input only, not with `--render` / `--focus`; the viewer has no `?hide=` parameter).
 - **Printed vs. bought is a colour in every assembly, never a second model.** `gripper.py` and `cycloidal_drive.py`
