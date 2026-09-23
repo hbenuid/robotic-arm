@@ -4,6 +4,65 @@ Dated record of notable changes to this repository (newest first). Every commit 
 behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
 `cad-setup` working branch was fast-forward-only and has been retired).
 
+## 2026-09-22 — forearm roll, M3: the roll drive and the 6th joint (branch `cad/forearm-roll`)
+
+The arm is a 6-axis arm: `base_yaw → shoulder_pitch → elbow_pitch → forearm_roll → wrist_pitch → wrist_roll` (+ the
+gripper), the last three axes concurrent at the wrist centre. The forearm roll is a belt-driven code-driven module
+between the elbow's driven side (a new `elbow_link`) and the forearm.
+
+### Added — `assemblies/forearm_roll_drive.py`, its parts, `elbow_link` + `forearm_roll` (`c11f7a7`, labels `2ade5b0`)
+- **The drive** (`lib/forearm/params.py RollDriveParams`, stations from `lib/forearm/layout.py stack_positions()`, module frame:
+  origin on the roll axis at the elbow-axis crossing, +Z toward the wrist, +X = the motor side). Stator: the **elbow block**
+  (`parts/joints/forearm_roll_block.py`, `lib/forearm/roll.py build_block`) = the SolidWorks disc's `j3_coupler#1` interface
+  (Ø54.89 bore, 4× M4 into hex nut pockets - `lib/forearm/link.py elbow_disc`, re-expressed in the module frame) + a Ø60 tube
+  round the roll axis (closed elbow end at z 40 with the cable exit window through its top, a 3 mm lip bearing 1 stops on, ONE
+  Ø52.15 seat for both bearings, two lugs for the retainer, the motor pad tower - a 3 mm plate on the shaft side of the motor's
+  face, four radial tension slots, the Ø22.3 pilot slot); **2× 6808-2RS** (`parts/joints/bearing_6808.py` - envelope-only,
+  `NATIVE_COTS`: nothing above a 17 mm bore in the catalog); the bolted **retainer** (`forearm_roll_retainer.py`: an annulus over
+  bearing 2's outer race, two ears, the hard-stop post on the +Y ear); the 40 mm kit motor + MKS board on the pad and its 20T
+  (rows with the `forearm_roll` role, so every leaf label in the arm is unique - the fix-up commit). Rotor: the **hollow roll
+  shaft** (`forearm_roll_shaft.py`, `build_shaft`): Ø40.3 journals (+0.3 in the inner races - bearing 1 goes on from the elbow
+  end up to the middle shoulder, bearing 2 from the wrist end), Ø44 shoulders, the **integral flanged 90T GT2 ring**
+  (`lib/forearm/pulley.py gt2_ring`: 90 round-bottom grooves from `lib/belts.py`'s tooth constants, an annulus fused onto
+  the core last - a boolean through the teeth is what ran the machine out of memory), the stop-pin boss, the Ø60 flange with
+  4× M3 (nuts captive from its elbow face) and its 2 mm spigot into the forearm wall's recess, the Ø28 cable bore. Ratio
+  90 / 20 = 4.5 (`FOREARM_ROLL_RATIO`); the roll belt 230-2GT sets the motor offset 55.5 (`centre_distance`). Assembly: bearing 1
+  onto the shaft, shaft into the block from the wrist end, bearing 2, the retainer. The ring sits OUTSIDE the block (between
+  the retainer and the flange), so the tube stays Ø60 and the block's bottom clears the upper arm's slab.
+- The three printed parts are **native** (`lib/reference.py NATIVE`; `reference/native/*.step` accepted with
+  `tools/reference/import_native.py`, LFS; manifest 47 entries); `bearing_6808` is `NATIVE_COTS` (`BEARING_6808_MASS_G` 33 g).
+- **Placement**: `lib/mounts.py MODULE_MOUNTS` = `ModuleMount("forearm_roll_drive#1", …, host "j2_link#1", joint "forearm_roll",
+  ((0, 0, 25), (0, −90, 0)))`; `mount_placements.py` wrote the record (origin-on-axis tolerance 10 µm: the six-decimal
+  placements round to ~1 µm); `lib/reference.py DESIGNED_MODULES`; `assemblies/arm.py`: the module row after `j3_coupler#1`,
+  `MODULES`, `MODULE_TINTS` (`TINT "#2A9D8F"`), the new `elbow_link` group (`"#DA8BC3"`: the elbow 90T + coupler + the module),
+  `forearm_link` = `j2_link` + caps + the wrist motor.
+- **Robot description**: `robot/frames.py` - `WRIST_CENTRE = WRIST_PITCH_ORIGIN − 17·N`, `FOREARM_ROLL_ORIGIN = ELBOW_ORIGIN +
+  25·N`, `FOREARM_ROLL_AXIS = unit(ELBOW_TO_WRIST_INPLANE)`; `LINK_ORDER` / `LINKS` gain `elbow_link` (`gt2_pulley_90t#1`,
+  `j3_coupler#1`, `forearm_roll_drive#1:stator`), `forearm_link` = `:rotor` + `j2_link` + caps + `nema17_40mm#3` + `mks_servo42d#3`;
+  `elbow_pitch.child = elbow_link`; `Joint("forearm_roll", …, x_hint N, ±FOREARM_ROLL_LIMIT_DEG)`. `robot/links/elbow_link.py`;
+  `arm.urdf` (the `elbow_link` block, `elbow_pitch` / `forearm_roll` / `wrist_pitch` joints, `forearm_link`'s inertial, the
+  ledger: "6-axis desktop arm", five kits, the roll's frame, a 4th CAN id), `arm.srdf` (table, `home`, adjacent pairs),
+  `arm.sdf`; meshes `elbow_link.stl` (24 solids) + `forearm_link.stl` (19). `derive.py --check` clean; `validate` ×3 OK
+  (10 links, 9 joints, 5.692 kg).
+- `tools/bom.py EXTRAS`: the roll belt, the 4 flange M3 + nuts, the retainer's 2 M3, the motor's 4 M3, the stop pin, the home
+  sensor, the block's 4× M4 + nuts (owner `forearm_roll_drive`), the wrist belt 264-2GT (owner the arm).
+- Tests: `tests/forearm/test_roll_drive.py` (the axis through `WRIST_CENTRE`, the three wrist axes concurrent ≤ 0.05 mm, the
+  module frame vs the record, the stack, `totals()` == `EXPECTED` per body, press fits 0.9–1.0× 132 mm³ on the journals and
+  0 in the seat, every other pair < 1 mm³, feature probes, the module clear of every neighbour at the capture pose and of the
+  upper arm swung to ±60° / ±120° about the elbow); the locks: `test_assembly.py` (67 leaves / 200 solids, tints {30, 37};
+  no_caps 64 / 197; `elbow_link` mirror; three module tints), `test_placements.py` (the mounted module record,
+  `designed_modules` two, `mounted` = parts + module), `test_bom.py` (29 printed / 37, 18 bought / 30, the drive's rows),
+  `test_robot.py` (stator / rotor links, the `forearm_roll` limit), `test_mounts.py` (the placed module among the neighbours),
+  `test_lazy_kernel.py` (the module).
+- `docs/open_issues.md`: the open belt / hard-stop post, the roll belt + limit + 6808 + `t20_hub` + fit estimates, the stop
+  pin + home sensor + belts + cable route not modelled, a 4th CAN id, the elbow driven-side assumption.
+
+Verified (Fedora PC): fast lane 418 passed; full suite 693 passed + 9 skipped with one failure - the duplicate leaf labels
+(`gt2_pulley_20t` twice) - fixed in `2ade5b0` and the assembly / forearm / placements / BOM tests re-run (44 passed);
+rebuild after `daemon stop` (58 models; the six new STEPs); snapshots `forearm_roll_drive.png`, `arm.png`, `arm_no_caps.png`,
+`arm_urdf.png` and `arm_urdf_roll90.png` (`--joint-values '{"forearm_roll": 90}'`: the forearm, wrist and gripper turn about the
+forearm, the block stays with the elbow) looked at. Gotcha: cadgen's snapshot renderer (playwright) fails under `ulimit -v`.
+
 ## 2026-09-22 — forearm roll, M2: the forearm's roll end (branch `cad/forearm-roll`)
 
 Still five joints: the forearm just gets its new elbow end. `DEFAULT` now differs from `LEGACY` (the reference lock
