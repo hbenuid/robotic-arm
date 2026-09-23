@@ -4,6 +4,42 @@ Dated record of notable changes to this repository (newest first). Every commit 
 behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
 `cad-setup` working branch was fast-forward-only and has been retired).
 
+## 2026-09-22 — forearm roll, M2: the forearm's roll end (branch `cad/forearm-roll`)
+
+Still five joints: the forearm just gets its new elbow end. `DEFAULT` now differs from `LEGACY` (the reference lock
+runs through `REFERENCE_BUILD`); the roll drive module and the joint follow in M3.
+
+### Changed — the flange wall, the wrist motor's slide, the caps (`8c8c264`)
+- `lib/forearm/params.py RollEndParams`: the roll axis along −X through (y 0, **z 25**) - the wrist centre's N-station
+  (42 − 17), so the three wrist axes stay concurrent; the wall at x −96…−88 (8 thick, full width, z −10…60 - nothing
+  swings there); on its elbow face the rotor flange's Ø60.3 × 2 locating recess, 4× M3 on Ø46 (0 / 90 / 180 / 270)
+  and the Ø28 cable bore; `plug_clearance` 10; `wrist_belt` 264-2GT. `DEFAULT = replace(LEGACY, roll=True, …)`:
+  `motor_x = wrist_x + centre_distance(264)` = **−136.37** (what the stock belt sets - "set with the belt length"
+  closed), slide (−141.5, −130), the central slot **22.3** wide (the Ø22 pilot boss passes; the open-issues row and
+  the 30 mm³ budget in `tests/test_mounts.py` are gone), both slots shortened to end ≥ 4 mm before the wall, the
+  lid's window following the motor (2 mm past the body and the connector) and its pocket arc r55 → r50 (the body's
+  wrist FACE - not its corner - was what met the wall). `link.py roll_wall()` (+ `x_cylinder` for the roll-axis
+  features) replaces the elbow disc when `roll=True`; `caps.py`: both caps end flush at the wall - **the caps are
+  slated for removal** (user, 2026-09-22): they follow the configuration so the assembly stays consistent and get no
+  further design work (`docs/open_issues.md`).
+- `lib/params.py`: `WRIST_BELT_LENGTH`, `FOREARM_ROLL_AXIS_Z`, `FOREARM_WALL_X/Z`, `FOREARM_PLUG_CLEARANCE`,
+  `FOREARM_FLANGE_DIA` re-exported; `FOREARM_ROLL_LIMIT_DEG = 170` [ESTIMATE] in the robot section (the joint itself
+  is M3). `tests/test_params_invariants.py`: the −127…−109 literal became the derivation (belt length in
+  `STANDARD_2GT_LENGTHS`, `closed_belt_length(210 + X)` == the belt, the plug rule, the boss rule).
+- `tests/forearm/test_roll_end.py` (new): the layout rules, the wall's recess / bore / bolt holes, the slots, the
+  wrist end unchanged vs LEGACY (probe-box volumes within 0.5 mm³), the wrist motor + board clear of the link and
+  the lid (0 mm³) with the window 2 mm clear all round, the caps ending at the wall.
+- `mount_placements.py` moved `nema17_40mm#3` / `mks_servo42d#3` 18.4 mm toward the wrist (`placements.json`);
+  `forearm_link`'s inertial re-derived (0.999 → **0.807 kg** - the disc and the caps' elbow ends are gone) and pasted
+  into `arm.urdf` + `arm.sdf`; `robot/meshes/forearm_link.stl` re-exported (1.94 MB, 38 726 triangles).
+- Docs: `lib/mounts.py` and `parts/joints/j2_link.py` docstrings; `docs/open_issues.md` (slot row closed, slide row
+  rewritten, the caps' removal row).
+
+Verified (Fedora PC): fast lane 399 passed; full suite 653 passed + 8 skipped (2 m 01 s); rebuild after `daemon stop`
+changed exactly `j2_link`, `j2_cap_1`, `j2_cap_2`, `arm`, `arm_no_caps`, `forearm_link`; `derive.py --check` clean
+after the paste; `validate` ×3 OK (total mass 5.096 kg); snapshots `arm.png` / `arm_no_caps.png` looked at - the
+forearm starts at the wall, the elbow pulley + coupler float until M3's block connects them.
+
 ## 2026-09-22 — forearm roll, M1: the forearm is parametric (branch `cad/forearm-roll`)
 
 The first conversion of a SolidWorks wrapper: `j2_link`, `j2_cap_1` and `j2_cap_2` are now build123d, built from one
