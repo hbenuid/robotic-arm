@@ -4,6 +4,46 @@ Dated record of notable changes to this repository (newest first). Every commit 
 behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
 `cad-setup` working branch was fast-forward-only and has been retired).
 
+## 2026-09-23 — forearm roll, M5: the drive laid out like the diagram (branch `cad/forearm-roll`)
+
+The user compared the M3 build with the original diagram and wanted its silhouette: the roll motor on top of the block
+in the side view, the drive compact around the elbow, the 90T inside the block between the two bearings (the cutaway).
+Decided: the motor UP in the arm's swing plane; the roll axis stays at the wrist centre (25 mm along N - the spherical
+wrist, and the minimum that keeps the housing out of the upper arm's swing space); the ring inside the housing with a
+bolt-on end cap.
+
+### Changed — `RollDriveParams` re-cut, the three printed parts, the wall interface (`0bc4aa0`)
+- **The housing**: Ø70 round a Ø62 cavity the shaft's flanged ring runs in (bearing 1's seat + lip at the elbow end, the
+  belt window in the +Y wall, the cable window in the +X wall - free of the motor now -, two lugs at +X and −Y), and a
+  **flat underneath** at host z −8: a Ø70 housing centred 25 mm out would have dipped 1.5 mm into the upper arm's slab
+  (the ±120° folded-arm test is the arbiter; it passes). **The end cap** (`forearm_roll_retainer`, name kept): bearing 2's
+  seat and lip, the same flat, two ears, the hard-stop post on its outer face. **The motor**: up in the swing plane at
+  (`motor_x` 18, `motor_y` 58.2) - lifted 18 mm along N because level with the axis its body ran into the elbow disc's
+  rim and top nut pocket; a **240-2GT** belt sets the centre distance (60.9), `motor_y` is derived from it; the pad
+  plate, filler and tension slots follow the axis → motor direction.
+- **The shaft**: a journal each side of the ring, a **Ø38 neck** bearing 2 slides over, the stop lug on it (+X, 10°, 1 mm
+  of overlap with the post → contact at ±170°), and a **Ø39.7 end spigot the forearm wall bolts straight onto** (4× M3
+  self-tapped on Ø32 into its 8 mm end wall, bore Ø24). No separate flange: with the ring AND a Ø60 flange both integral,
+  bearing 2 could never have been mounted - the M3 layout's documented sequence was impossible. `RollEndParams` (the
+  wall side) follows: recess Ø40, bolt circle Ø32, cable bore Ø24 - `j2_link`'s DEFAULT build changes with it.
+- `lib/forearm/layout.py stack_positions` per the plan's table (`z_cavity`, `z_face` 70 = the cap = bearing 2, `z_neck`,
+  `z_cap_outer` 79, the stop stations, the motor at `x_motor` / `y_motor`), `cap_bolt_points`, `pad_slot_angle_deg`;
+  `lib/params.py`: `FOREARM_ROLL_MOTOR_XY`, `FOREARM_ROLL_HOUSING_OD` (were `_MOTOR_OFFSET`, `_TUBE_OD`), `FOREARM_FLANGE_DIA`
+  now the spigot. `tests/forearm/test_roll_drive.py`: the stack's rules (everything beyond journal 2 < the bearing bore,
+  the flat vs the slab, the motor body above the disc, the spigot's walls round its tap holes, the lugs' overlap), the
+  cap's seat / lip / post / flat, the belt window, the press fits (bearing 2 now into the cap). `tools/bom.py EXTRAS`
+  (240 belt, the spigot's and the cap's M3s, no stop pin - printed lugs), `docs/forearm_roll.md` §2–5,
+  `docs/open_issues.md` (the belt runs inside now - the guard row went; the printed lugs' strength and the spigot's
+  self-tapped M3s are new rows), the part docstrings.
+- The three native references re-accepted (`import_native.py --force`); `elbow_link` + `forearm_link` inertials
+  re-derived into `arm.urdf` / `arm.sdf`, both meshes re-exported; `EXPECTED` 8 leaves / 23 solids / 277 984.1 mm³.
+
+Verified (Fedora PC): fast lane 418 passed; full suite **694 passed + 9 skipped** (2 m 57 s); rebuild after `daemon stop`
+changed exactly the three roll parts, `j2_link`, the module, both arms, both links; `derive.py --check` clean;
+`validate` ×3 OK (5.723 kg); snapshots `forearm_roll_drive.png`, `arm.png`, `arm_no_caps.png`, `arm_urdf.png`,
+`arm_urdf_roll90.png` and `arm_side.png` (`--camera 0:0` - the swing plane face-on: the housing in line with the elbow
+pulley, the motor on top of it, the diagram's silhouette) looked at. Gotcha: `--camera 90:0` is the FRONT view.
+
 ## 2026-09-23 — forearm roll, M4: the docs (branch `cad/forearm-roll`)
 
 ### Docs — `docs/forearm_roll.md`, every guide on the 6-axis chain (`bb199a8`)
