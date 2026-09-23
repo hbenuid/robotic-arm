@@ -36,9 +36,10 @@ OCCURRENCES = [
     ("forearm_roll_shaft",    None, _at()),
     ("bearing_6808",          "2",  _at(z=S["z_bearing_2"])),
     ("forearm_roll_retainer", None, _at(z=S["z_retainer"])),
-    ("nema17_40mm",           None, _at(x=S["x_motor"], z=S["z_motor_face"])),
-    ("mks_servo42d",          None, _at(x=S["x_motor"], z=S["z_motor_board"])),
-    ("gt2_pulley_20t",        None, ((S["x_motor"], 0.0, S["z_20t"]), (0.0, -90.0, 0.0))),   # hub face on the pad + pilot boss, bore axis along +Z
+    # the roll motor, its board and its 20T carry the joint as their role (labels unique in the arm, like the mounted motors')
+    ("nema17_40mm",           "forearm_roll", _at(x=S["x_motor"], z=S["z_motor_face"])),
+    ("mks_servo42d",          "forearm_roll", _at(x=S["x_motor"], z=S["z_motor_board"])),
+    ("gt2_pulley_20t",        "forearm_roll", ((S["x_motor"], 0.0, S["z_20t"]), (0.0, -90.0, 0.0))),   # hub face pulley_lift above the pad, bore axis along +Z
 ]
 
 # The module's rigid bodies (robot/frames.py LINKS: "forearm_roll_drive#1:stator" in elbow_link, ":rotor" in forearm_link).
