@@ -68,51 +68,61 @@ def module_frame_in_host(cfg: ForearmConfig = DEFAULT) -> tuple:
 
 
 def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
-    """Module-frame Z stations of the roll drive (RollDriveParams; the shaft and block builders emit their geometry
-    at these stations - their rows are at 0). Every number a row or a test needs comes from here."""
+    """Module-frame stations of the roll drive (RollDriveParams; the housing, the shaft and the cap builders emit their
+    geometry at these stations - the housing's and the shaft's rows are at 0, the cap's at z_cap). Every number a
+    row or a test needs comes from here."""
     d, w = cfg.drive, cfg.roll_end
     z_lip = d.z_end + d.end_wall                                   # 43
     z_seat = z_lip + d.lip                                        # 46: bearing 1
-    z_bearing_2 = z_seat + d.bearing_width + d.bearing_gap        # 56
-    z_face = z_bearing_2 + d.bearing_width                        # 63: the block's wrist face
-    z_retainer_top = z_face + d.retainer_t                        # 66
-    z_ring_flange = z_retainer_top + d.retainer_clear             # 66.8
-    z_ring = z_ring_flange + d.ring_flange_t                      # 68: the teeth
-    z_ring_mid = z_ring + d.ring_width / 2.0                      # 71.5
-    z_wall = -w.wall_x[1]                                         # 88: the forearm wall's elbow face
+    z_cavity = z_seat + d.bearing_width                           # 53: the cavity (the shaft's shoulder 1)
+    z_ring_flange_1 = z_cavity + d.ring_gap                       # 56.8
+    z_ring = z_ring_flange_1 + d.ring_flange_t                    # 58: the teeth
+    z_ring_mid = z_ring + d.ring_width / 2.0                      # 61.5
+    z_ring_end = z_ring + d.ring_width + d.ring_flange_t          # 66.2: the second flange's face (shoulder 2)
+    z_face = z_ring_end + d.ring_gap                              # 70: the housing's wrist face = the cap = bearing 2
+    z_neck = z_face + d.bearing_width                             # 77
+    z_cap_outer = z_neck + d.cap_lip                              # 79
+    z_wall = -w.wall_x[1]                                         # 88: the forearm wall's elbow face = the shaft's end
+    z_motor_face = z_ring_mid - d.t20                             # 47.05
     return {
         "z_block": 0.0, "z_shaft": 0.0,
-        "z_end": d.z_end, "z_lip": z_lip, "z_seat": z_seat,
-        "z_bearing_1": z_seat, "z_bearing_2": z_bearing_2,
+        "z_end": d.z_end, "z_lip": z_lip, "z_seat": z_seat, "z_cavity": z_cavity,
+        "z_bearing_1": z_seat, "z_bearing_2": z_face,
         "z_shaft_end": z_lip + d.shaft_end_clear,                 # 43.5
-        "z_shoulder_mid": z_seat + d.bearing_width,               # 53..56
-        "z_face": z_face, "z_retainer": z_face,
-        "z_shoulder_2": z_face,                                   # 63..66.8 (up to the ring flange)
-        "z_ring_flange_1": z_ring_flange, "z_ring": z_ring, "z_ring_mid": z_ring_mid,
-        "z_ring_flange_2": z_ring + d.ring_width,
-        "z_stop_pin": d.stop_pin_z,
-        "z_flange": z_wall - d.flange_t,                          # 84
-        "z_wall": z_wall,                                         # 88
-        "z_spigot_end": z_wall + d.spigot_len,                    # 90
-        "z_motor_face": z_ring_mid - d.t20,                       # 57.05: the motor's mounting face (the pad plate above it, the body below)
-        "z_motor_board": z_ring_mid - d.t20 - d.motor.body_length,   # 17.55
-        "z_pad_top": z_ring_mid - d.t20 + d.pad_t,                # 60.05
-        "z_20t": z_ring_mid - d.t20 + d.pad_t + d.pulley_lift,    # 60.55: the 20T's hub face, pulley_lift above the pad
-        "x_motor": d.motor_offset,
+        "z_shoulder_1": z_cavity, "z_ring_flange_1": z_ring_flange_1, "z_ring": z_ring, "z_ring_mid": z_ring_mid,
+        "z_ring_end": z_ring_end, "z_shoulder_2": z_ring_end,
+        "z_face": z_face, "z_cap": z_face, "z_neck": z_neck, "z_cap_outer": z_cap_outer,
+        "z_stop_post": z_cap_outer,                               # 79..82 on the cap's outer face
+        "z_stop_lug": z_cap_outer + d.stop_t - 1.0,               # 81..84 on the neck (1 mm overlap with the post)
+        "z_wall": z_wall,                                         # 88: the spigot starts here
+        "z_spigot_end": z_wall + w.flange_recess_depth,           # 90
+        "z_motor_face": z_motor_face,
+        "z_motor_board": z_motor_face - d.motor.body_length,      # 7.55
+        "z_pad_top": z_motor_face + d.pad_t,                      # 50.05
+        "z_20t": z_motor_face + d.pad_t + d.pulley_lift,          # 50.55: the 20T's hub face
+        "x_motor": d.motor_x, "y_motor": d.motor_y,
     }
 
 
 def pad_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
-    """The motor pad's 4 bolt slots (centres) in the module x-y plane."""
+    """The motor pad's 4 bolt slots (centres) in the module x-y plane (the motor's 31 mm square, axis-aligned)."""
     from lib.cycloidal.layout import motor_bolt_points
-    return [(cfg.drive.motor_offset + x, y) for x, y in motor_bolt_points()]
+    d = cfg.drive
+    return [(d.motor_x + x, d.motor_y + y) for x, y in motor_bolt_points()]
 
 
-def retainer_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
-    return [(0.0, cfg.drive.retainer_ear_y), (0.0, -cfg.drive.retainer_ear_y)]
+def pad_slot_angle_deg(cfg: ForearmConfig = DEFAULT) -> float:
+    """The tension slots' direction: from the roll axis toward the motor axis, from +X toward +Y."""
+    d = cfg.drive
+    return math.degrees(math.atan2(d.motor_y, d.motor_x))
+
+
+def cap_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
+    """The end cap's 2x M3 into the housing's lugs: the top face side (+X) and below in the swing plane (-Y)."""
+    return [(cfg.drive.lug_y, 0.0), (0.0, -cfg.drive.lug_y)]
 
 
 def flange_bolt_points_module(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
-    """The flange bolts in the module x-y plane: the wall's (y, z) pattern seen from the module (module x = host z -
-    axis_z, module y = host y)."""
+    """The wall's bolts in the module x-y plane (they run into the shaft's end wall): the wall's (y, z) pattern seen
+    from the module (module x = host z - axis_z, module y = host y)."""
     return [(z - cfg.roll_end.axis_z, y) for y, z in flange_bolt_points(cfg)]

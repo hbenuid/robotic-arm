@@ -1,4 +1,6 @@
-"""forearm_roll_retainer - the forearm roll drive's bearing retainer: an annulus over bearing 2's outer race (ID 48 clears the shaft's Ø44 core), two ears for the M3s into the block's lugs, the hard-stop post on the +Y ear rising past the ring to the pin's station.
+"""forearm_roll_retainer - the forearm roll drive's END CAP: bearing 2's Ø52.15 seat and the lip its outer race stops on, the
+housing's Ø70 outline with the same flat underneath, two ears for the M3s into the housing's lugs (+X and -Y), the hard-stop post on
+its outer face at -X that the shaft's lug meets at +/- FOREARM_ROLL_LIMIT_DEG.
 
 NATIVE part (lib/reference.py NATIVE): designed here in build123d (lib/forearm/roll.py build_retainer(cfg), every number
 lib/forearm/params.py RollDriveParams, in the drive's MODULE frame at its stack station - assemblies/forearm_roll_drive.py

@@ -78,11 +78,11 @@ FOREARM_ROLL_AXIS_Z = _FOREARM.roll_end.axis_z     # 25 [REFERENCE] the roll axi
 FOREARM_WALL_X = _FOREARM.roll_end.wall_x          # (-96, -88) [DESIGN] the flange wall: wrist face .. elbow face
 FOREARM_WALL_Z = _FOREARM.roll_end.wall_z          # (-10, 60) [DESIGN]
 FOREARM_PLUG_CLEARANCE = _FOREARM.roll_end.plug_clearance   # 10 [DESIGN] the wrist motor's connector plug to the wall
-FOREARM_FLANGE_DIA = _FOREARM.roll_end.flange_dia  # 60 [DESIGN] the rotor flange
-FOREARM_ROLL_BELT_LENGTH = _FOREARM.drive.roll_belt          # 230-2GT [ESTIMATE] the roll belt (90T ring on the shaft, 20T on the motor)
-FOREARM_ROLL_MOTOR_OFFSET = _FOREARM.drive.motor_offset      # 55.5 [DESIGN] the roll motor's axis off the roll axis (module +X = N): what the belt sets
+FOREARM_FLANGE_DIA = _FOREARM.roll_end.flange_dia  # 39.7 [DESIGN] the roll shaft's end spigot the forearm wall bolts onto
+FOREARM_ROLL_BELT_LENGTH = _FOREARM.drive.roll_belt          # 240-2GT [ESTIMATE] the roll belt (90T ring on the shaft, 20T on the motor)
+FOREARM_ROLL_MOTOR_XY = (_FOREARM.drive.motor_x, _FOREARM.drive.motor_y)   # (18, 58.2) [DESIGN] the roll motor's axis in the module frame: up in the swing plane, what the belt sets
 FOREARM_ROLL_RATIO = _FOREARM.drive.ring_teeth / GT2_PULLEY_20T_TEETH   # 4.5:1 [DESIGN] like the other belt joints
-FOREARM_ROLL_TUBE_OD = _FOREARM.drive.tube_od                # 60 [DESIGN] the elbow block's tube (its bottom stays above the upper arm's slab)
+FOREARM_ROLL_HOUSING_OD = _FOREARM.drive.housing_od          # 70 [DESIGN] the elbow block's housing (a flat on its underside keeps it above the upper arm's slab)
 
 # --- Cycloidal drive (lib/cycloidal/, assemblies/cycloidal_drive.py, docs/cycloidal_drive.md) -----
 # The drive's own dimensions live in lib/cycloidal/params.py (DriveConfig, ported from the

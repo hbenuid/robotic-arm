@@ -14,7 +14,6 @@ are quoted from the code they live in — the code wins if they drift.
 | The base_yaw motor (48 mm) + its MKS board reach **6.1 mm below the base's bottom face** (62.1 mm stack, 56 mm of depth under the plate) | `lib/params.py BASE_MOTOR_STACK_PROUD`, `tests/test_mounts.py`, `test_params_invariants.py` | feet / a cut-out ≥ 6.1 mm under the base, or the plate moved up when `base` is converted | 2026-09-21 (`d9662a3`) |
 | `j1_link`'s pad holes are 0.38 mm off the shoulder axis and uneven (30.8 / 31.2 mm); the elbow motor is placed on the axis, not on the holes | `lib/mounts.py` note on `nema17_40mm#2` | fix the pattern when `j1_link` is converted | 2026-09-21 (`2abdb0b`) |
 | The drive motor's tie rods are not modelled (the MKS kit's M3x30 replace them); bolt shanks overlap the export's tapped holes in the model (46 / 159 mm³, thread engagement) | `tests/cycloidal/test_assembly.py` interference budget | nothing — a modelling representation; re-measure if the vendor file changes | 2026-09-21 (`3e667e0`) |
-| The forearm roll's belt runs in the open between the elbow block's retainer and the shaft's flange (the ring at module z 68…75, the 20T above the pad tower) - no belt guard, and the retainer's hard-stop post passes ~3 mm from the belt's +Y run | `lib/forearm/roll.py build_retainer` (`stop_r`), `assemblies/forearm_roll_drive.py` | a printed guard on the retainer once the belt path is confirmed on the print; move the post if it rubs | 2026-09-22 (M3) |
 
 ## Estimates to confirm on the hardware (`[ESTIMATE]` in `lib/params.py` unless noted)
 | value | where | how to confirm |
@@ -25,10 +24,11 @@ are quoted from the code they live in — the code wins if they drift.
 | The wrist-pitch motor's position on `j2_link`'s slide, `J2_MOTOR_SLIDE_X` = −136.37: what a stock **264-2GT** belt sets (`lib/forearm/params.py RollEndParams.wrist_belt`, `lib/belts.py`) - the belt length itself is the estimate | `lib/forearm/params.py` | confirm the belt on the hardware; 260-2GT would put it at −138.5 |
 | The forearm's two caps (`j2_cap_1`, `j2_cap_2`) are **slated for removal** (2026-09-22): they follow the roll-end configuration so the assembly stays consistent, but get no further design work | `parts/joints/j2_cap_*.py`, `assemblies/arm.py` | drop them from `OCCURRENCES` / `GROUPS` / `LINKS` / `placements.json` (with `arm_no_caps.py`'s `HIDDEN`) when the time comes |
 | Joint limits, efforts, velocities, axis signs, jaw travel | `lib/params.py` `*_LIMIT_DEG`, `ARM_JOINT_*`, `JAW_*` | viewer sweeps + hardware; `robot/arm.urdf` follows via `derive.py --check` |
-| The roll belt, 230-2GT (`RollDriveParams.roll_belt`) - it sets the roll motor's offset `motor_offset` = 55.5 | `lib/forearm/params.py` | confirm on the hardware; the pad's slots give +/- 2.5 mm |
-| `FOREARM_ROLL_LIMIT_DEG` = 170 (the hard stop: the shaft's pin boss at `stop_pin_z` against the retainer's post) | `lib/params.py`, `lib/forearm/params.py stop_deg` | the pin and post widths set the exact angle - measure on the print |
+| The roll belt, 240-2GT (`RollDriveParams.roll_belt`) - it sets the roll motor's centre distance (60.9) and so its height above the block | `lib/forearm/params.py` | confirm on the hardware; the pad's slots give +/- 2.5 mm |
+| `FOREARM_ROLL_LIMIT_DEG` = 170 (the hard stop: the shaft's lug on its neck against the end cap's post - printed, 10° wide each, 1 mm of axial overlap) | `lib/params.py`, `lib/forearm/params.py stop_*` | the overlap and widths on the print; the lugs are small - a steel pin if PETG shears |
 | 6808-2RS: mass 33 g, inner-race OD ≈ 44.5 (the shaft's Ø44 shoulders must not touch the outer race) | `lib/params.py BEARING_6808_MASS_G`, `RollDriveParams.inner_race_od` | datasheet / calipers on the bearing in hand |
 | The vendor 20T's tooth-band centre 10.95 from its hub face (`t20_hub`) and the 0.5 mm lift above the pad | `lib/forearm/params.py` | the pulley slides on the motor shaft (set screw): align it with the ring on assembly |
+| The roll shaft's Ø40 end spigot + 4x M3 self-tapped into an 8 mm PETG wall carry the forearm's bending moment (no separate flange: bearing 2 must slide over the end) | `lib/forearm/params.py RollEndParams` | check for creep on the print; heat-set inserts or a bolted steel flange if it moves |
 | The roll shaft's journals: +0.3 mm interference in the 6808 inner races, the seat +0.15 (PETG, like the drive's) | `RollDriveParams.journal_add / seat_add` | print a fit gauge first (docs/cycloidal_drive.md §6) |
 
 ## Not modelled yet
@@ -37,9 +37,9 @@ are quoted from the code they live in — the code wins if they drift.
 | Belt-side hardware of the three belt joints: 3 × GT2 20T pulleys on the motor shafts, the belts, the base-yaw driven pulley / what `j1_coupler` is driven by | candidate `tools/bom.py EXTRAS` rows until modelled |
 | The arm's own fasteners and the electronics (CAN adapter, wiring) | `tools/bom.py EXTRAS` lists only the drive's arm-mount bolts, nuts and grease |
 | Simplified collision primitives in the URDF (visual meshes are reused for collision) | `robot/arm.urdf` TODO |
-| The forearm roll's hard-stop **pin** (M3 in the shaft's boss) and the **home sensor** (on the retainer's post, magnet / flag in the flange, to the MKS board's limit input) | `tools/bom.py EXTRAS`; the boss and the post are modelled |
-| The roll belt (230-2GT) and the wrist belt (264-2GT) | `tools/bom.py EXTRAS`; their lengths set `motor_offset` / `J2_MOTOR_SLIDE_X` |
-| The roll drive's cable route: through the shaft's Ø28 bore, out of the block's top window (module +X) behind the motor tower, then over the elbow to the upper arm | nothing modelled; the window is |
+| The forearm roll's **home sensor** (on the end cap's outer face, a magnet in the shaft's stop lug, to the MKS board's limit input) | `tools/bom.py EXTRAS`; the lug and the post are modelled |
+| The roll belt (240-2GT) and the wrist belt (264-2GT) | `tools/bom.py EXTRAS`; their lengths set the roll motor's centre distance / `J2_MOTOR_SLIDE_X` |
+| The roll drive's cable route: through the shaft's Ø24 bore, out of the housing's +X window (the top-face side, now free of the motor), then over the elbow to the upper arm | nothing modelled; the window is |
 
 ## Not confirmed
 | item | where |

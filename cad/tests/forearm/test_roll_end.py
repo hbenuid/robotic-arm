@@ -41,7 +41,7 @@ def test_default_layout():
     assert link_socket_points(DEFAULT) == ([(-120.0, 40.0), (-120.0, -40.0), (-165.0, 40.0), (-165.0, -40.0)],
                                            [(-120.0, 40.0), (-120.0, -40.0), (-165.0, 40.0), (-165.0, -40.0), (-244.64, 20.0), (-244.64, -20.0)])
     assert cap1_socket_points(DEFAULT) == link_socket_points(DEFAULT)[0] and cap2_socket_points(DEFAULT) == link_socket_points(DEFAULT)[1]
-    assert len(flange_bolt_points(DEFAULT)) == 4 and (23.0, 25.0) in flange_bolt_points(DEFAULT)
+    assert len(flange_bolt_points(DEFAULT)) == 4 and (R.bolt_circle_dia / 2.0, 25.0) in flange_bolt_points(DEFAULT)
     assert PARAMS.J2_MOTOR_SLIDE_X == x and PARAMS.FOREARM_ROLL_AXIS_Z == R.axis_z
 
 
@@ -63,9 +63,10 @@ def test_link_ends_at_the_wall_and_keeps_its_wrist_end(link):
     assert abs(interference(link, probe) - interference(build_link(LEGACY), probe)) < 0.5
     # the wall: solid, the flange recess on its elbow face, the cable bore and the bolt holes through it
     assert is_inside(link, -92, 40, 50) and is_inside(link, -92, 0, -8)
-    assert not is_inside(link, -89, 0, 25 + 29) and is_inside(link, -91, 0, 25 + 29)      # recess 2 deep, Ø60.3
-    assert not is_inside(link, -92, 0, 25) and not is_inside(link, -92, 0, 25 + 13)      # cable bore Ø28
-    assert is_inside(link, -92, 0, 25 + 15.5)
+    rr, rb = (R.flange_dia + R.flange_recess_add) / 2.0, R.cable_bore / 2.0
+    assert not is_inside(link, -89, 0, 25 + rr - 1.0) and is_inside(link, -91, 0, 25 + rr - 1.0)      # the spigot recess, 2 deep
+    assert not is_inside(link, -92, 0, 25) and not is_inside(link, -92, 0, 25 + rb - 1.0)             # the cable bore
+    assert is_inside(link, -92, 0, 25 + rb + 1.5)
     for y, z in flange_bolt_points(DEFAULT):
         assert not is_inside(link, -92, y, z) and not is_inside(link, -95.9, y, z)
     # the slots: the central one passes the pilot, both stop before the wall

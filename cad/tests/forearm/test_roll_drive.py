@@ -54,20 +54,31 @@ def test_module_frame_and_record():
 
 
 def test_stack():
+    w = DEFAULT.roll_end
     assert S["z_seat"] - S["z_end"] == D.end_wall + D.lip
-    assert S["z_bearing_2"] == S["z_bearing_1"] + D.bearing_width + D.bearing_gap
-    assert S["z_face"] == S["z_bearing_2"] + D.bearing_width == S["z_retainer"]
+    assert S["z_cavity"] == S["z_seat"] + D.bearing_width
+    assert S["z_face"] == S["z_cavity"] + 2 * D.ring_gap + 2 * D.ring_flange_t + D.ring_width == S["z_bearing_2"] == S["z_cap"]
+    assert S["z_cap_outer"] == S["z_face"] + D.bearing_width + D.cap_lip
+    assert S["z_stop_lug"] < S["z_stop_post"] + D.stop_t and S["z_stop_lug"] + D.stop_t <= S["z_wall"] - 2.0   # 1 mm overlap, clear of the wall
     assert math.isclose(S["z_ring_mid"] - S["z_motor_face"], D.t20) and S["z_20t"] - S["z_pad_top"] == D.pulley_lift
-    assert S["z_wall"] == -DEFAULT.roll_end.wall_x[1] and S["z_flange"] + D.flange_t == S["z_wall"]
-    assert S["z_spigot_end"] - S["z_wall"] == D.spigot_len == DEFAULT.roll_end.flange_recess_depth
+    assert S["z_wall"] == -w.wall_x[1] and S["z_spigot_end"] - S["z_wall"] == w.flange_recess_depth
     assert S["z_end"] >= 35.0 + DEFAULT.disc.nut_af / math.cos(math.radians(30)) / 2.0 + 0.5   # past the disc's (-35, 0) nut pocket
-    assert D.shoulder_od < D.inner_race_od < D.bearing_od
-    assert D.tube_od / 2.0 - (D.bearing_od + D.seat_add) / 2.0 >= 3.0                       # the seat's wall
-    assert D.tube_od / 2.0 - DEFAULT.roll_end.axis_z <= 5.5 + 3.0                           # the tube bottom stays 3 mm above the upper arm's slab (host z -8.5)
-    assert math.isclose(centre_distance(D.roll_belt, D.ring_teeth, GT2_PULLEY_20T_TEETH), D.motor_offset, abs_tol=0.1)
-    assert D.flange_dia == DEFAULT.roll_end.flange_dia and D.bore == DEFAULT.roll_end.cable_bore
-    assert D.stop_deg == PARAMS.FOREARM_ROLL_LIMIT_DEG
-    assert D.stop_r > D.ring_flange_dia / 2.0 + 2.0 and D.retainer_id > D.shoulder_od
+    # bearing 2 slides on from the wrist end: everything beyond journal 2 is smaller than its bore
+    assert D.shoulder_od < D.inner_race_od < D.bearing_od and D.neck_od < D.bearing_bore and w.flange_dia < D.bearing_bore
+    assert D.cavity_dia >= D.ring_flange_dia + 2.0 and D.housing_od / 2.0 - D.cavity_dia / 2.0 >= 3.0
+    # the flat: the underside (host z = axis_z + flat_x) stays >= 0.5 mm above the upper arm's slab (-8.5), 2 mm of wall under the cavity
+    assert w.axis_z + D.flat_x >= -8.5 + 0.5 and -D.flat_x - D.cavity_dia / 2.0 >= 2.0
+    # the motor: up in the swing plane, its body 1 mm above the elbow disc's top face, the belt setting its distance
+    assert D.motor_x - D.motor.body_width / 2.0 >= (DEFAULT.disc.z1 + 1.0) - w.axis_z
+    assert math.isclose(math.hypot(D.motor_x, D.motor_y), D.centre_distance, abs_tol=1e-9)
+    assert math.isclose(D.centre_distance, centre_distance(D.roll_belt, D.ring_teeth, GT2_PULLEY_20T_TEETH), abs_tol=1e-9)
+    assert D.motor_y > D.housing_od / 2.0 + 2.0
+    # the wall bolts into the shaft's end wall: 2 mm of PETG round each tap hole, between the bore and the spigot
+    assert D.bore == w.cable_bore
+    assert w.bolt_circle_dia / 2.0 - D.end_bolt_tap_dia / 2.0 >= D.bore / 2.0 + 2.0
+    assert w.bolt_circle_dia / 2.0 + D.end_bolt_tap_dia / 2.0 <= w.flange_dia / 2.0 - 2.0
+    assert D.stop_deg == PARAMS.FOREARM_ROLL_LIMIT_DEG == 180.0 - D.stop_deg_width
+    assert D.stop_lug_r[1] > D.stop_post_r[0] and D.stop_lug_r[0] < D.neck_od / 2.0 < D.stop_post_r[0]
 
 
 @pytest.fixture(scope="module")
@@ -93,14 +104,16 @@ def test_totals_and_bodies(module):
 
 @pytest.mark.slow
 def test_bearings_press_on_the_journals_and_slip_in_the_seat(module):
-    block, shaft = _leaf(module, "forearm_roll_block"), _leaf(module, "forearm_roll_shaft")
+    block, shaft, cap = _leaf(module, "forearm_roll_block"), _leaf(module, "forearm_roll_shaft"), _leaf(module, "forearm_roll_retainer")
     press = math.pi / 4.0 * ((D.bearing_bore + D.journal_add) ** 2 - D.bearing_bore ** 2) * D.bearing_width   # ~132 mm^3
-    for label in ("bearing_6808:1", "bearing_6808:2"):
+    for label, seat_part in (("bearing_6808:1", block), ("bearing_6808:2", cap)):
         b = _leaf(module, label)
-        assert interference(b, block) < 1.0, label                         # the seat is the bearing OD + seat_add
+        assert interference(b, seat_part) < 1.0, label                     # the seat is the bearing OD + seat_add
         assert 0.9 * press <= interference(b, shaft) <= press + 0.5, label   # the journal's interference in the inner race
     bb = _leaf(module, "bearing_6808:1").bounding_box()
     assert math.isclose(bb.min.Z, S["z_bearing_1"], abs_tol=1e-6) and math.isclose(bb.max.Z, S["z_bearing_1"] + D.bearing_width, abs_tol=1e-6)
+    bb = _leaf(module, "bearing_6808:2").bounding_box()
+    assert math.isclose(bb.min.Z, S["z_bearing_2"], abs_tol=1e-6) and math.isclose(bb.max.Z, S["z_neck"], abs_tol=1e-6)
 
 
 @pytest.mark.slow
@@ -119,23 +132,37 @@ def test_everything_else_in_the_module_is_clean(module):
 
 @pytest.mark.slow
 def test_block_and_shaft_features(module):
-    block, shaft = _leaf(module, "forearm_roll_block"), _leaf(module, "forearm_roll_shaft")
+    block, shaft, cap = _leaf(module, "forearm_roll_block"), _leaf(module, "forearm_roll_shaft"), _leaf(module, "forearm_roll_retainer")
     r_seat = (D.bearing_od + D.seat_add) / 2.0
-    assert not is_inside(block, r_seat - 0.5, 0, S["z_seat"] + 3) and is_inside(block, r_seat + 0.5, 0, S["z_seat"] + 3)    # the seat
-    assert is_inside(block, -(D.lip_id / 2.0 + 0.5), 0, S["z_lip"] + 1.5) and not is_inside(block, -(D.lip_id / 2.0 - 0.5), 0, S["z_lip"] + 1.5)   # the lip (-X: away from the cable window)
-    assert is_inside(block, -5, 0, S["z_end"] + 1.5) and not is_inside(block, 5, 0, S["z_end"] + 1.5)   # the end wall, its cable window (+X side)
+    zs = S["z_seat"] + 3.0
+    assert not is_inside(block, -(r_seat - 0.5), 0, zs) and is_inside(block, -(r_seat + 0.5), 0, zs)              # bearing 1's seat
+    assert is_inside(block, -(D.lip_id / 2.0 + 0.5), 0, S["z_lip"] + 1.5) and not is_inside(block, -(D.lip_id / 2.0 - 0.5), 0, S["z_lip"] + 1.5)   # the lip
+    assert is_inside(block, -5, 0, S["z_end"] + 1.5) and not is_inside(block, 5, 0, S["z_end"] + 1.5)             # the end wall, its cable window (+X)
     assert is_inside(block, 0, 20, S["z_end"] + 1.5)
-    assert not is_inside(block, 0, 0, 0) and is_inside(block, -15, 0, 30)                                # the disc's bore, the disc
-    assert is_inside(block, S["x_motor"] + 10, 10, S["z_motor_face"] + 1.5)                              # the pad plate (above the mounting face)
-    assert not is_inside(block, S["x_motor"], 0, S["z_motor_face"] + 1.5)                                # its pilot slot
-    assert not is_inside(block, S["x_motor"] + 10, 10, S["z_motor_face"] - 1.5)                          # the motor body's space below
-    assert not is_inside(shaft, 0, 0, S["z_ring_mid"]) and is_inside(shaft, D.bore / 2.0 + 1, 0, S["z_ring_mid"])   # the bore, the core
-    assert is_inside(shaft, 27.0, 0, S["z_ring_mid"]) and not is_inside(shaft, 28.3, 0, S["z_ring_mid"])   # a tooth land vs a groove at angle 0? land at 0 deg:
-    assert is_inside(shaft, 0, 27.5, S["z_ring_mid"])                                                       # the ring exists all round
-    assert not is_inside(shaft, 0, 23, S["z_flange"] + 1) and is_inside(shaft, 10, 10, S["z_flange"] + 1)   # a flange bolt hole, the flange
-    assert not is_inside(shaft, 0, 23, S["z_flange"] + 4.5)                                                 # ... through the spigot
+    zm = S["z_ring_mid"]
+    assert not is_inside(block, 0, -(D.cavity_dia / 2.0 - 2.0), zm) and is_inside(block, 0, -(D.cavity_dia / 2.0 + 1.5), zm)   # the cavity, the -Y wall
+    assert not is_inside(block, 0, D.cavity_dia / 2.0 + 1.5, zm) and is_inside(block, 0, D.cavity_dia / 2.0 + 1.5, S["z_seat"] + 4.0)   # the belt window in the +Y wall
+    assert not is_inside(block, D.flat_x - 1.0, 0, zm) and is_inside(block, D.flat_x + 1.0, 0, zm)               # the flat underneath
+    assert not is_inside(block, 0, 0, 0) and is_inside(block, -15, 0, 30)                                          # the disc's bore, the disc
+    assert is_inside(block, S["x_motor"] + 10, S["y_motor"] + 10, S["z_motor_face"] + 1.5)                        # the pad plate (above the mounting face)
+    assert not is_inside(block, S["x_motor"], S["y_motor"], S["z_motor_face"] + 1.5)                              # its pilot slot
+    assert not is_inside(block, S["x_motor"] + 10, S["y_motor"] + 10, S["z_motor_face"] - 1.5)                    # the motor body's space below
+    assert is_inside(block, D.lug_y, 2.5, S["z_face"] - 5.0) and not is_inside(block, D.lug_y, 0, S["z_face"] - 5.0)   # a lug, its tap hole
+    assert not is_inside(shaft, 0, 0, zm) and is_inside(shaft, D.bore / 2.0 + 1.0, 0, zm)                         # the bore, the core
+    assert is_inside(shaft, 27.0, 0, zm) and not is_inside(shaft, 28.3, 0, zm) and is_inside(shaft, 0, 27.5, zm)   # a tooth land, a groove, the ring all round
+    assert is_inside(shaft, 0, D.neck_od / 2.0 - 1.0, S["z_stop_lug"] - 1.0) and not is_inside(shaft, 0, D.neck_od / 2.0 + 1.0, S["z_stop_lug"] - 1.0)   # the neck
+    assert is_inside(shaft, (D.stop_lug_r[0] + D.stop_lug_r[1]) / 2.0, 0, S["z_stop_lug"] + 1.5)                   # the stop lug (+X)
+    assert is_inside(shaft, DEFAULT.roll_end.flange_dia / 2.0 - 0.5, 0, S["z_wall"] + 1.0)                          # the spigot
+    assert not is_inside(shaft, DEFAULT.roll_end.bolt_circle_dia / 2.0, 0, S["z_wall"] + 1.0)                       # an end tap hole
     bb = shaft.bounding_box()
     assert math.isclose(bb.max.Z, S["z_spigot_end"], abs_tol=1e-6) and math.isclose(bb.min.Z, S["z_shaft_end"], abs_tol=1e-6)
+    # the cap: seat 2, the lip, the stop post (-X), the flat, an ear
+    zc = S["z_cap"] + 3.0
+    assert not is_inside(cap, 0, -(r_seat - 0.5), zc) and is_inside(cap, 0, -(r_seat + 0.5), zc)
+    assert is_inside(cap, 0, -(D.lip_id / 2.0 + 0.5), S["z_neck"] + 1.0) and not is_inside(cap, 0, -(D.lip_id / 2.0 - 0.5), S["z_neck"] + 1.0)
+    assert is_inside(cap, -(D.stop_post_r[0] + D.stop_post_r[1]) / 2.0, 0, S["z_stop_post"] + 1.5)
+    assert not is_inside(cap, D.flat_x - 1.0, 0, zc) and is_inside(cap, 0, -D.lug_y, zc - 1.0) is False           # the flat; the ear's hole
+    assert is_inside(cap, 2.5, -D.lug_y, zc)
 
 
 def _placed_module():

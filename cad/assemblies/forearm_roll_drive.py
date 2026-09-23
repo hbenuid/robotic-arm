@@ -1,13 +1,14 @@
 """forearm_roll_drive - the belt-driven forearm roll (the 6th joint), a code-driven module like the cycloidal drive.
 
 Stator: the elbow block (bolted to j3_coupler#1 through the SolidWorks disc's interface, riding with the elbow
-pulley in elbow_link), both 6808 bearings in its one seat, the bolted retainer, the 40 mm kit motor + MKS board on
-the block's pad tower and the 20T on the motor shaft. Rotor: the hollow roll shaft with its integral 90T ring and
-the flange that bolts to the forearm's wall (forearm_link). MODULE FRAME (lib/forearm/params.py RollDriveParams):
-origin on the roll axis at the elbow-axis crossing, +Z along the roll axis toward the wrist, +X = the motor side (N);
-the arm places it through lib/mounts.py MODULE_MOUNTS ("forearm_roll_drive#1" on j2_link#1). Every station comes
-from lib/forearm stack_positions() - never type one here. Gear ratio 90 / 20 = 4.5 (FOREARM_ROLL_RATIO); the
-belt (230-2GT), the fasteners and the stop pin are tools/bom.py EXTRAS.
+pulley in elbow_link) - the housing with bearing 1's seat and the cavity the ring runs in -, bearing 1, the bolt-on
+end cap with bearing 2, the 40 mm kit motor + MKS board on the housing's pad tower UP in the swing plane and the
+20T on the motor shaft. Rotor: the hollow roll shaft with its integral 90T ring between the bearings and the end
+spigot the forearm's wall bolts onto (forearm_link). MODULE FRAME (lib/forearm/params.py RollDriveParams): origin
+on the roll axis at the elbow-axis crossing, +Z along the roll axis toward the wrist, +X = host +Z (N), +Y = up in
+the arm's swing plane; the arm places it through lib/mounts.py MODULE_MOUNTS ("forearm_roll_drive#1" on j2_link#1).
+Every station comes from lib/forearm stack_positions() - never type one here. Gear ratio 90 / 20 = 4.5
+(FOREARM_ROLL_RATIO); the belt (240-2GT) and the fasteners are tools/bom.py EXTRAS.
 """
 from cadgen import step
 
@@ -35,11 +36,11 @@ OCCURRENCES = [
     ("bearing_6808",          "1",  _at(z=S["z_bearing_1"])),
     ("forearm_roll_shaft",    None, _at()),
     ("bearing_6808",          "2",  _at(z=S["z_bearing_2"])),
-    ("forearm_roll_retainer", None, _at(z=S["z_retainer"])),
-    # the roll motor, its board and its 20T carry the joint as their role (labels unique in the arm, like the mounted motors')
-    ("nema17_40mm",           "forearm_roll", _at(x=S["x_motor"], z=S["z_motor_face"])),
-    ("mks_servo42d",          "forearm_roll", _at(x=S["x_motor"], z=S["z_motor_board"])),
-    ("gt2_pulley_20t",        "forearm_roll", ((S["x_motor"], 0.0, S["z_20t"]), (0.0, -90.0, 0.0))),   # hub face pulley_lift above the pad, bore axis along +Z
+    ("forearm_roll_retainer", None, _at(z=S["z_cap"])),                                             # the end cap on the housing's wrist face
+    # the roll motor, its board and its 20T - up in the swing plane (+Y) - carry the joint as their role (labels unique in the arm)
+    ("nema17_40mm",           "forearm_roll", _at(x=S["x_motor"], y=S["y_motor"], z=S["z_motor_face"])),
+    ("mks_servo42d",          "forearm_roll", _at(x=S["x_motor"], y=S["y_motor"], z=S["z_motor_board"])),
+    ("gt2_pulley_20t",        "forearm_roll", ((S["x_motor"], S["y_motor"], S["z_20t"]), (0.0, -90.0, 0.0))),   # hub face pulley_lift above the pad, bore axis along +Z
 ]
 
 # The module's rigid bodies (robot/frames.py LINKS: "forearm_roll_drive#1:stator" in elbow_link, ":rotor" in forearm_link).
@@ -49,9 +50,9 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("stator") after any geometry change.
 EXPECTED = {
-    "leaves": 8, "solids": 23, "solid_volume": 257505.936,
-    "bodies": {"stator": {"leaves": 7, "solids": 22, "solid_volume": 202218.409},
-               "rotor": {"leaves": 1, "solids": 1, "solid_volume": 55287.527}},
+    "leaves": 8, "solids": 23, "solid_volume": 277984.122,
+    "bodies": {"stator": {"leaves": 7, "solids": 22, "solid_volume": 227597.049},
+               "rotor": {"leaves": 1, "solids": 1, "solid_volume": 50387.073}},
 }
 
 

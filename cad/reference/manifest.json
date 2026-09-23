@@ -397,66 +397,66 @@
   },
   "forearm_roll_block": {
    "bbox_min": [
-    -30.0,
+    -33.0,
     -45.0,
     -45.0
    ],
    "bbox_size": [
-    108.5,
-    90.0,
-    108.0
+    75.0,
+    126.206,
+    115.0
    ],
-   "bytes": 350891,
+   "bytes": 372773,
    "file": "native/forearm_roll_block.step",
    "kind": "native",
    "origin": "native",
    "product": "forearm_roll_block - the forearm roll drive's STATOR - the elbow block: the SolidWorks disc's j3_coupler#1 interface (Ø54.89 bore, 4x M4 into captive hex nuts), the Ø60 tube round the roll axis with the closed elbow end (cable exit through its top), the lip bearing 1 stops on and the common Ø52.15 seat for both 6808s, the two retainer lugs, the motor pad tower (slotted along X for belt tension, the Ø22.3 pilot slot) for the 40 mm kit motor.",
-   "sha256": "7516332690f96217b43a7911b2313d96d211bce9c470b451abaf498e744d7be6",
-   "solid_volume": 103039.021,
+   "sha256": "4b67ec44eb05822bcb68a7b64276a7cd53107106f9dd16cc000dac65a462d35c",
+   "solid_volume": 116451.508,
    "solids": 1,
    "source": "lib/forearm/roll.py:build_block(DEFAULT)",
    "units": "mm"
   },
   "forearm_roll_retainer": {
    "bbox_min": [
-    -30.0,
-    -36.0,
+    -33.0,
+    -42.0,
     0.0
    ],
    "bbox_size": [
-    60.0,
-    72.0,
-    22.0
+    75.0,
+    77.0,
+    12.0
    ],
-   "bytes": 53287,
+   "bytes": 67919,
    "file": "native/forearm_roll_retainer.step",
    "kind": "native",
    "origin": "native",
    "product": "forearm_roll_retainer - the forearm roll drive's bearing retainer: an annulus over bearing 2's outer race (ID 48 clears the shaft's Ø44 core), two ears for the M3s into the block's lugs, the hard-stop post on the +Y ear rising past the ring to the pin's station.",
-   "sha256": "5bf2982d0412881f0763cf95a97bffd572c128d82127ffebff53bcfa258bf442",
-   "solid_volume": 4933.093,
+   "sha256": "1492004b5f70d9f814534e677682eafd38fc020d2b7f22cd3953b306fc8e3f49",
+   "solid_volume": 16899.246,
    "solids": 1,
    "source": "lib/forearm/roll.py:build_retainer(DEFAULT)",
    "units": "mm"
   },
   "forearm_roll_shaft": {
    "bbox_min": [
-    -30.0,
-    -30.0,
+    -29.595,
+    -29.595,
     43.5
    ],
    "bbox_size": [
-    62.0,
-    60.0,
+    59.19,
+    59.19,
     46.5
    ],
-   "bytes": 1653777,
+   "bytes": 1514221,
    "file": "native/forearm_roll_shaft.step",
    "kind": "native",
    "origin": "native",
    "product": "forearm_roll_shaft - the forearm roll drive's ROTOR - the hollow roll shaft: two Ø40.3 journals (bearing 1 goes on from the elbow end up to the middle shoulder, bearing 2 from the wrist end), the Ø44 core through the retainer, the integral 90T GT2 ring with two flanges, the hard-stop pin boss, the Ø60 flange with 4x M3 (nuts captive from its elbow face) and the 2 mm spigot into the forearm wall's recess, the Ø28 cable bore end to end.",
-   "sha256": "af598d4c8bffb047a6140034d3cbf58f33555c8be941145d43603a172c827e10",
-   "solid_volume": 55287.527,
+   "sha256": "51bd2948192785d316b5e0d80718d849c4fc1c172bda36dc5b79f1db2c78db98",
+   "solid_volume": 50387.073,
    "solids": 1,
    "source": "lib/forearm/roll.py:build_shaft(DEFAULT)",
    "units": "mm"
