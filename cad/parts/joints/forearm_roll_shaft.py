@@ -1,7 +1,7 @@
-"""forearm_roll_shaft - the forearm roll drive's ROTOR - the hollow roll shaft: a Ø40.3 journal each side of the integral flanged
-90T GT2 ring (bearing 1 goes on from the elbow end, bearing 2 from the wrist end over the Ø38 neck), the Ø44 shoulders between, the
-hard-stop lug on the neck, the Ø39.7 end spigot the forearm's wall bolts onto (4x M3 self-tapping in its end wall, on Ø32), the Ø24
-cable bore end to end.
+"""forearm_roll_shaft - the forearm roll drive's ROTOR - the hollow roll shaft that crosses the elbow axis: a Ø40.3 journal at each
+end of its Ø44 core (bearing 1 in the block's rear seat, bearing 2 in the cap over the Ø38 neck), the integral flanged 90T GT2 ring
+on the core 18..25 mm past the elbow axis, the hard-stop lug on the neck, the Ø39.7 end spigot the forearm's wall bolts onto (4x M3
+self-tapping in its end wall, on Ø32), the Ø24 cable bore end to end (the cables leave through the block's rear end wall).
 
 NATIVE part (lib/reference.py NATIVE): designed here in build123d (lib/forearm/roll.py build_shaft(cfg), every number
 lib/forearm/params.py RollDriveParams, in the drive's MODULE frame at its stack station - assemblies/forearm_roll_drive.py

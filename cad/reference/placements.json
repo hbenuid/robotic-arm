@@ -3701,7 +3701,7 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the roll drive on j2_link's roll axis (y 0, z FOREARM_ROLL_AXIS_Z): module +Z = host -X toward the wrist, module +X = host +Z (the motor side); the stator bolts to j3_coupler#1 where j2_link's disc did"
+    "note": "the roll drive on j2_link's roll axis (y 0, z FOREARM_ROLL_AXIS_Z): module +Z = host -X toward the wrist, module +X = host +Z (N), +Y = up in the swing plane (the motor side); the block IS the elbow coupler: its stub turns in j1_link's bore and the elbow 90T bolts into it (j3_coupler#1 retired, lib/placements.py RETIRED)"
    },
    "rel": {
     "position": [

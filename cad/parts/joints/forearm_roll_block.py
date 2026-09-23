@@ -1,13 +1,15 @@
-"""forearm_roll_block - the forearm roll drive's STATOR - the elbow block: the SolidWorks disc's j3_coupler#1 interface (Ø54.89 bore,
-4x M4 into captive hex nuts), the Ø70 housing round the roll axis - the closed elbow end (cable exit through its +X wall), the lip
-bearing 1 stops on, its Ø52.15 seat, the Ø62 cavity the shaft's 90T ring runs in with the belt window in its +Y wall, a flat
-underneath above the upper arm's slab, two lugs for the end cap - and the motor pad tower UP in the swing plane (slotted for belt
-tension, the Ø22.3 pilot slot) for the 40 mm kit motor.
+"""forearm_roll_block - the forearm roll drive's STATOR - the elbow block, which is also the elbow's output flange: a rounded box
+round the roll axis (66 x 72 x 76) whose underside repeats the SolidWorks j3_coupler's lip, Ø62 boss, Ø40 journal and Ø30 stub down
+into j1_link's recess and bore (the elbow 90T pulley bolts up through the stub into 4x M4 heat-set inserts - j3_coupler#1 is retired),
+the housing bore that CROSSES the elbow axis - the rear end wall with the Ø26 cable exit on the axis, the lip bearing 1 stops on,
+its Ø52.15 seat, the clearance bore round the shaft's core, the Ø62 cavity the shaft's 90T ring runs in (open through the front
+face, the belt window in the top wall), the end cap's 4x M3 in the front face - and, on the block's top UP in the swing plane, the
+vertical motor plate (slotted for belt tension, the Ø22.3 pilot slot) with two cheeks for the 40 mm kit motor.
 
 NATIVE part (lib/reference.py NATIVE): designed here in build123d (lib/forearm/roll.py build_block(cfg), every number
 lib/forearm/params.py RollDriveParams, in the drive's MODULE frame at its stack station - assemblies/forearm_roll_drive.py
 places it at 0); its reference is its accepted build, reference/native/forearm_roll_block.step (tools/reference/import_native.py).
-PETG. In the arm: x1, inside forearm_roll_drive#1 - elbow_link (the stator rides with the elbow pulley + coupler).
+PETG. In the arm: x1, inside forearm_roll_drive#1 - elbow_link (the stator rides with the elbow pulley; it IS the elbow coupler).
 """
 import pathlib
 

@@ -75,14 +75,14 @@ J2_MOTOR_SLIDE_X = _FOREARM.motor_x                # -136.37: set by the stock W
 WRIST_BELT_LENGTH = _FOREARM.roll_end.wrist_belt   # 264-2GT [ESTIMATE] the wrist-pitch belt (90T at the wrist, 20T on the motor)
 # The forearm roll (lib/forearm/params.py RollEndParams; the rotor's wall on j2_link, the elbow block + shaft in M3):
 FOREARM_ROLL_AXIS_Z = _FOREARM.roll_end.axis_z     # 25 [REFERENCE] the roll axis' N-station in j2_link's frame = the wrist centre's (42 - 17)
-FOREARM_WALL_X = _FOREARM.roll_end.wall_x          # (-96, -88) [DESIGN] the flange wall: wrist face .. elbow face
+FOREARM_WALL_X = _FOREARM.roll_end.wall_x          # (-56, -48) [DESIGN] the flange wall: wrist face .. elbow face (48 from the elbow axis)
 FOREARM_WALL_Z = _FOREARM.roll_end.wall_z          # (-10, 60) [DESIGN]
 FOREARM_PLUG_CLEARANCE = _FOREARM.roll_end.plug_clearance   # 10 [DESIGN] the wrist motor's connector plug to the wall
 FOREARM_FLANGE_DIA = _FOREARM.roll_end.flange_dia  # 39.7 [DESIGN] the roll shaft's end spigot the forearm wall bolts onto
 FOREARM_ROLL_BELT_LENGTH = _FOREARM.drive.roll_belt          # 240-2GT [ESTIMATE] the roll belt (90T ring on the shaft, 20T on the motor)
-FOREARM_ROLL_MOTOR_XY = (_FOREARM.drive.motor_x, _FOREARM.drive.motor_y)   # (18, 58.2) [DESIGN] the roll motor's axis in the module frame: up in the swing plane, what the belt sets
+FOREARM_ROLL_MOTOR_XY = (0.0, _FOREARM.drive.motor_y)        # (0, 60.9) [DESIGN] the roll motor's axis in the module frame: on the roll axis in X, up in the swing plane by what the belt sets
 FOREARM_ROLL_RATIO = _FOREARM.drive.ring_teeth / GT2_PULLEY_20T_TEETH   # 4.5:1 [DESIGN] like the other belt joints
-FOREARM_ROLL_HOUSING_OD = _FOREARM.drive.housing_od          # 70 [DESIGN] the elbow block's housing (a flat on its underside keeps it above the upper arm's slab)
+FOREARM_ROLL_BLOCK_X = _FOREARM.drive.block_x       # (-33, 33) [DESIGN] the elbow block's extent along N: its underside 0.5 mm above the upper arm's slab (host z -8.5)
 
 # --- Cycloidal drive (lib/cycloidal/, assemblies/cycloidal_drive.py, docs/cycloidal_drive.md) -----
 # The drive's own dimensions live in lib/cycloidal/params.py (DriveConfig, ported from the

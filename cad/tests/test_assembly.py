@@ -182,16 +182,16 @@ def test_arm_assembly_matches_reference_totals():
     assert [c.label for c in a.children] == [label for label, _, _ in arm.GROUPS]
     leaves = _leaves(a)
     exp_leaves, exp_solids, exp_volume = _expected_totals()
-    assert len(leaves) == exp_leaves == 67
+    assert len(leaves) == exp_leaves == 66
     labels = [leaf.label for leaf in leaves]
     assert len(set(labels)) == len(labels), f"duplicate leaf labels: {labels}"
-    assert len(a.solids()) == exp_solids == 200
+    assert len(a.solids()) == exp_solids == 199
     assert abs(R.solid_volume(a) - exp_volume) <= 0.5
     exp_min, exp_size = _expected_bbox()
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_min(a), exp_min)), (R.bbox_min(a), exp_min)
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_size(a), exp_size)), (R.bbox_size(a), exp_size)
     assert a.is_valid
-    assert _check_link_tints(a) == {True: 30, False: 37}   # bought / printed leaves (tools/bom.py counts the same)
+    assert _check_link_tints(a) == {True: 30, False: 36}   # bought / printed leaves (tools/bom.py counts the same)
 
 
 def test_arm_no_caps_tables_are_the_arms_minus_hidden():
@@ -217,10 +217,10 @@ def test_arm_no_caps_builds_the_arm_without_its_caps():
     assert [c.label for c in a.children] == [label for label, _, _ in arm.GROUPS]
     labels = [leaf.label for leaf in _leaves(a)]
     exp_leaves, exp_solids, exp_volume = _expected_totals(hidden=arm_no_caps.HIDDEN)
-    assert len(labels) == exp_leaves == 64
+    assert len(labels) == exp_leaves == 63
     hidden = [P.OCCURRENCES[key] for key in arm_no_caps.HIDDEN]
     assert not {o["part"] for o in hidden} & set(labels), labels
-    assert len(a.solids()) == exp_solids == 197
+    assert len(a.solids()) == exp_solids == 196
     assert abs(R.solid_volume(a) - exp_volume) <= 0.5
     assert a.is_valid
-    assert _check_link_tints(a) == {True: 30, False: 37 - len(arm_no_caps.HIDDEN)}   # the caps are printed
+    assert _check_link_tints(a) == {True: 30, False: 36 - len(arm_no_caps.HIDDEN)}   # the caps are printed

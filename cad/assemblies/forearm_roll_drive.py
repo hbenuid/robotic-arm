@@ -1,14 +1,17 @@
 """forearm_roll_drive - the belt-driven forearm roll (the 6th joint), a code-driven module like the cycloidal drive.
 
-Stator: the elbow block (bolted to j3_coupler#1 through the SolidWorks disc's interface, riding with the elbow
-pulley in elbow_link) - the housing with bearing 1's seat and the cavity the ring runs in -, bearing 1, the bolt-on
-end cap with bearing 2, the 40 mm kit motor + MKS board on the housing's pad tower UP in the swing plane and the
-20T on the motor shaft. Rotor: the hollow roll shaft with its integral 90T ring between the bearings and the end
-spigot the forearm's wall bolts onto (forearm_link). MODULE FRAME (lib/forearm/params.py RollDriveParams): origin
-on the roll axis at the elbow-axis crossing, +Z along the roll axis toward the wrist, +X = host +Z (N), +Y = up in
-the arm's swing plane; the arm places it through lib/mounts.py MODULE_MOUNTS ("forearm_roll_drive#1" on j2_link#1).
-Every station comes from lib/forearm stack_positions() - never type one here. Gear ratio 90 / 20 = 4.5
-(FOREARM_ROLL_RATIO); the belt (240-2GT) and the fasteners are tools/bom.py EXTRAS.
+Stator: the elbow block - ONE printed part that is the elbow's output flange (its underside repeats the SolidWorks
+j3_coupler's lip, boss, journal and stub down into j1_link's bore; the elbow 90T pulley bolts straight into it, so
+j3_coupler#1 is retired, lib/placements.py RETIRED) and the roll housing round the shaft that crosses the elbow axis
+(bearing 1's seat in its rear end, the Ø62 cavity the ring runs in, open to the front face) -, bearing 1, the bolt-on
+end cap with bearing 2 on the front face, the 40 mm kit motor + MKS board on the vertical plate standing on the
+block's top UP in the swing plane (its body behind the elbow axis) and the 20T on the motor shaft. Rotor: the hollow
+roll shaft with its integral 90T ring between the bearings and the end spigot the forearm's wall bolts onto
+(forearm_link). MODULE FRAME (lib/forearm/params.py RollDriveParams): origin on the roll axis at the elbow-axis
+crossing, +Z along the roll axis toward the wrist, +X = host +Z (N), +Y = up in the arm's swing plane; the arm places
+it through lib/mounts.py MODULE_MOUNTS ("forearm_roll_drive#1" on j2_link#1). Every station comes from
+lib/forearm stack_positions() - never type one here. Gear ratio 90 / 20 = 4.5 (FOREARM_ROLL_RATIO); the belt
+(240-2GT) and the fasteners are tools/bom.py EXTRAS.
 """
 from cadgen import step
 
@@ -29,18 +32,19 @@ def _at(x: float = 0.0, y: float = 0.0, z: float = 0.0):
 
 
 # (part, role | None, placement in the module frame) - a position, or ((x, y, z), (rx, ry, rz)) when the part's own
-# frame is not the module's (the 20T's vendor axis is +X). The block, the shaft and the retainer are built at their
-# stations (their rows are at 0); the bearings stand on their seats; the motor's mounting face is the pad's top.
+# frame is not the module's (the 20T's vendor axis is +X). The block and the shaft are built at their stations (their
+# rows are at 0), the cap at its local origin (placed on the block's front face); the bearings stand on their seats;
+# the motor's mounting face is the plate's rear face, centred on the roll axis in X, spun so its connector points +X.
 OCCURRENCES = [
     ("forearm_roll_block",    None, _at()),
     ("bearing_6808",          "1",  _at(z=S["z_bearing_1"])),
     ("forearm_roll_shaft",    None, _at()),
     ("bearing_6808",          "2",  _at(z=S["z_bearing_2"])),
-    ("forearm_roll_retainer", None, _at(z=S["z_cap"])),                                             # the end cap on the housing's wrist face
+    ("forearm_roll_retainer", None, _at(z=S["z_cap"])),                                             # the end cap on the block's front face
     # the roll motor, its board and its 20T - up in the swing plane (+Y) - carry the joint as their role (labels unique in the arm)
-    ("nema17_40mm",           "forearm_roll", _at(x=S["x_motor"], y=S["y_motor"], z=S["z_motor_face"])),
-    ("mks_servo42d",          "forearm_roll", _at(x=S["x_motor"], y=S["y_motor"], z=S["z_motor_board"])),
-    ("gt2_pulley_20t",        "forearm_roll", ((S["x_motor"], S["y_motor"], S["z_20t"]), (0.0, -90.0, 0.0))),   # hub face pulley_lift above the pad, bore axis along +Z
+    ("nema17_40mm",           "forearm_roll", ((S["x_motor"], S["y_motor"], S["z_motor_face"]), (0.0, 0.0, DEFAULT.drive.motor_spin_deg))),    # spun: connector toward +X
+    ("mks_servo42d",          "forearm_roll", ((S["x_motor"], S["y_motor"], S["z_motor_board"]), (0.0, 0.0, DEFAULT.drive.motor_spin_deg))),
+    ("gt2_pulley_20t",        "forearm_roll", ((S["x_motor"], S["y_motor"], S["z_20t"]), (0.0, -90.0, 0.0))),   # hub face pulley_lift above the plate, bore axis along +Z
 ]
 
 # The module's rigid bodies (robot/frames.py LINKS: "forearm_roll_drive#1:stator" in elbow_link, ":rotor" in forearm_link).
@@ -50,9 +54,9 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("stator") after any geometry change.
 EXPECTED = {
-    "leaves": 8, "solids": 23, "solid_volume": 277984.122,
-    "bodies": {"stator": {"leaves": 7, "solids": 22, "solid_volume": 227597.049},
-               "rotor": {"leaves": 1, "solids": 1, "solid_volume": 50387.073}},
+    "leaves": 8, "solids": 23, "solid_volume": 422609.743,
+    "bodies": {"stator": {"leaves": 7, "solids": 22, "solid_volume": 327367.302},
+               "rotor": {"leaves": 1, "solids": 1, "solid_volume": 95242.441}},
 }
 
 

@@ -72,8 +72,8 @@ with `ARM_REFERENCE_SRC`). A new export the user hands over is fed to those tool
   elbow_link, forearm_link, wrist_pitch_link, wrist_roll_link, jaw_a_link, jaw_b_link, tool0`; joints `base_yaw,
   shoulder_pitch` (the cycloidal drive: stator in `shoulder_link`, rotor in `upper_arm_link`),
   `elbow_pitch, forearm_roll` (the belt-driven roll drive, `cad/assemblies/forearm_roll_drive.py`: stator in
-  `elbow_link`, rotor - the hollow roll shaft - in `forearm_link`; `cad/docs/forearm_roll.md`), `wrist_pitch,
-  wrist_roll, jaw_a, jaw_b`. Which MKS motor (`src/config.py` J1..J3, all `gear_ratio` 1.0) drives which joint is
+  `elbow_link` - its block is also the elbow's output flange, the SolidWorks `j3_coupler#1` is retired -, rotor - the
+  hollow roll shaft - in `forearm_link`; `cad/docs/forearm_roll.md`), `wrist_pitch, wrist_roll, jaw_a, jaw_b`. Which MKS motor (`src/config.py` J1..J3, all `gear_ratio` 1.0) drives which joint is
   unconfirmed — `CYCLOIDAL_RATIO` = 20 applies to `shoulder_pitch`, `FOREARM_ROLL_RATIO` = 4.5 to `forearm_roll`, and the
   arm now carries five kits for three configured CAN ids. The motors themselves are placed: MKS SERVO42D kits on `base`
   (48 mm, `nema17_48mm#1`) / `j1_link` / `j2_link` (40 mm, `nema17_40mm#2..3`) with `mks_servo42d#1..3`

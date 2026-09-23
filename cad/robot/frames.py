@@ -49,7 +49,7 @@ PJ = (0.499699, 0.865884, 0.023354)          # jaw travel: the two Ø6 gripper r
 BASE_YAW_ORIGIN = (0.0, 85.010435, 0.0)      # [REFERENCE] on the base_yaw axis at the cycloidal drive's axis height (its node's Y)
 SHOULDER_ORIGIN = (-2.440595, 85.010435, -34.915297)   # [REFERENCE] j1_link#1 origin: on the cycloidal drive's axis, 66.5 mm along it from the
 #                                                        motor-plate face (1.5 past the hub's arm-mount face, CYCLOIDAL_OUTPUT_FACE_Z)
-ELBOW_ORIGIN = (-143.15, 240.05, -15.81)     # [REFERENCE] j2_link#1 / j3_coupler#1 origin (on the elbow_pitch axis)
+ELBOW_ORIGIN = (-143.15, 240.05, -15.81)     # [REFERENCE] j2_link#1's origin (on the elbow_pitch axis; the retired j3_coupler#1 shared it)
 WRIST_PITCH_ORIGIN = (-283.37, 393.63, 35.33)   # [REFERENCE] j3_coupler#2 origin (on the wrist_pitch axis)
 WRIST_ROLL_ORIGIN = (-379.355, 448.22, 24.495)  # [REFERENCE] 20T pulley origin, on the pancake shaft axis
 JAW_A_ORIGIN = (-453.626, 429.287, 26.317)   # [REFERENCE] gripper_slider#1 world bbox centre
@@ -82,10 +82,10 @@ LINKS: dict[str, list[str]] = {
     # the drive's rotor (output hub + output pins) is bolted to j1_link: the shoulder_pitch output;
     # the elbow_pitch motor + board bolt to j1_link's pad (lib/mounts.py)
     "upper_arm_link": ["cycloidal_drive#1:rotor", "j1_link#1", "j1_cap#1", "nema17_40mm#2", "mks_servo42d#2"],
-    # the elbow 90T pulley + J3-coupler (the elbow_pitch output, assumed the driven side  [ASSUMPTION]) carry the
-    # forearm roll drive's STATOR - the elbow block bolted where j2_link's disc was, both bearings, the retainer,
-    # the roll motor + board and its 20T (assemblies/forearm_roll_drive.py BODIES)
-    "elbow_link": ["gt2_pulley_90t#1", "j3_coupler#1", "forearm_roll_drive#1:stator"],
+    # the elbow 90T pulley (the elbow_pitch output, assumed the driven side  [ASSUMPTION]) carries the forearm roll
+    # drive's STATOR - the elbow block that IS the elbow coupler now (j3_coupler#1 is retired, lib/placements.py),
+    # both bearings, the end cap, the roll motor + board and its 20T (assemblies/forearm_roll_drive.py BODIES)
+    "elbow_link": ["gt2_pulley_90t#1", "forearm_roll_drive#1:stator"],
     # the drive's ROTOR - the hollow roll shaft - IS the forearm's elbow end (its flange bolts to j2_link's wall);
     # the wrist_pitch motor + board bolt to j2_link's web (lib/mounts.py)
     "forearm_link": ["forearm_roll_drive#1:rotor", "j2_link#1", "j2_cap_1#1", "j2_cap_2#1", "nema17_40mm#3", "mks_servo42d#3"],

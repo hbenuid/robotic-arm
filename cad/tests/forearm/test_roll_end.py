@@ -38,8 +38,8 @@ def test_default_layout():
     assert x0 <= x - NEMA17_40_BODY_W / 2.0 - 2.0 and x1 >= x + NEMA17_40_BODY_W / 2.0 + NEMA17_40_CONNECTOR_D + 2.0
     assert math.hypot(x0 - DEFAULT.web.wrist_x, half_w) > DEFAULT.cap1.pocket_wrist_r
     # sockets: the columns the wall took stay out
-    assert link_socket_points(DEFAULT) == ([(-120.0, 40.0), (-120.0, -40.0), (-165.0, 40.0), (-165.0, -40.0)],
-                                           [(-120.0, 40.0), (-120.0, -40.0), (-165.0, 40.0), (-165.0, -40.0), (-244.64, 20.0), (-244.64, -20.0)])
+    grid = [(-75.0, 40.0), (-75.0, -40.0), (-120.0, 40.0), (-120.0, -40.0), (-165.0, 40.0), (-165.0, -40.0)]
+    assert link_socket_points(DEFAULT) == (grid, grid + [(-244.64, 20.0), (-244.64, -20.0)])
     assert cap1_socket_points(DEFAULT) == link_socket_points(DEFAULT)[0] and cap2_socket_points(DEFAULT) == link_socket_points(DEFAULT)[1]
     assert len(flange_bolt_points(DEFAULT)) == 4 and (R.bolt_circle_dia / 2.0, 25.0) in flange_bolt_points(DEFAULT)
     assert PARAMS.J2_MOTOR_SLIDE_X == x and PARAMS.FOREARM_ROLL_AXIS_Z == R.axis_z
@@ -62,16 +62,17 @@ def test_link_ends_at_the_wall_and_keeps_its_wrist_end(link):
     probe = Pos(-210.0, 0.0, 15.0) * Box(90.0, 100.0, 60.0)
     assert abs(interference(link, probe) - interference(build_link(LEGACY), probe)) < 0.5
     # the wall: solid, the flange recess on its elbow face, the cable bore and the bolt holes through it
-    assert is_inside(link, -92, 40, 50) and is_inside(link, -92, 0, -8)
+    xm, x_face = (R.wall_x[0] + R.wall_x[1]) / 2.0, R.wall_x[1]
+    assert is_inside(link, xm, 40, 50) and is_inside(link, xm, 0, -8)
     rr, rb = (R.flange_dia + R.flange_recess_add) / 2.0, R.cable_bore / 2.0
-    assert not is_inside(link, -89, 0, 25 + rr - 1.0) and is_inside(link, -91, 0, 25 + rr - 1.0)      # the spigot recess, 2 deep
-    assert not is_inside(link, -92, 0, 25) and not is_inside(link, -92, 0, 25 + rb - 1.0)             # the cable bore
-    assert is_inside(link, -92, 0, 25 + rb + 1.5)
+    assert not is_inside(link, x_face - 1.0, 0, 25 + rr - 1.0) and is_inside(link, x_face - 3.0, 0, 25 + rr - 1.0)   # the spigot recess, 2 deep
+    assert not is_inside(link, xm, 0, 25) and not is_inside(link, xm, 0, 25 + rb - 1.0)               # the cable bore
+    assert is_inside(link, xm, 0, 25 + rb + 1.5)
     for y, z in flange_bolt_points(DEFAULT):
-        assert not is_inside(link, -92, y, z) and not is_inside(link, -95.9, y, z)
+        assert not is_inside(link, xm, y, z) and not is_inside(link, R.wall_x[0] + 0.1, y, z)
     # the slots: the central one passes the pilot, both stop before the wall
     assert not is_inside(link, DEFAULT.motor_x, 11.0, 13.5) and is_inside(link, DEFAULT.motor_x, 11.3, 13.5)
-    assert is_inside(link, -100, 0, 13.5)
+    assert is_inside(link, R.wall_x[0] - 4.0, 0, 13.5)
 
 
 @pytest.mark.slow

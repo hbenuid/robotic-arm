@@ -1,11 +1,11 @@
-"""forearm_roll_retainer - the forearm roll drive's END CAP: bearing 2's Ø52.15 seat and the lip its outer race stops on, the
-housing's Ø70 outline with the same flat underneath, two ears for the M3s into the housing's lugs (+X and -Y), the hard-stop post on
+"""forearm_roll_retainer - the forearm roll drive's END CAP on the block's front face: bearing 2's Ø52.15 seat and the lip its
+outer race stops on, the block's rounded outline (66 x 72), 4x M3 at its corners into the block's front face, the hard-stop post on
 its outer face at -X that the shaft's lug meets at +/- FOREARM_ROLL_LIMIT_DEG.
 
 NATIVE part (lib/reference.py NATIVE): designed here in build123d (lib/forearm/roll.py build_retainer(cfg), every number
 lib/forearm/params.py RollDriveParams, in the drive's MODULE frame at its stack station - assemblies/forearm_roll_drive.py
 places it at 0); its reference is its accepted build, reference/native/forearm_roll_retainer.step (tools/reference/import_native.py).
-PETG. In the arm: x1, inside forearm_roll_drive#1 - elbow_link (bolted to the block's wrist face).
+PETG. In the arm: x1, inside forearm_roll_drive#1 - elbow_link (bolted to the block's front face).
 """
 import pathlib
 

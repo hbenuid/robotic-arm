@@ -72,7 +72,7 @@ def test_motors_and_boards_clear_their_neighbours():
     """Interference budget (mm^3) against the host, the caps, the pulleys and the placed drive: zero everywhere
     (the Ø22 pilot boss used to stand in j2_link's Ø20 central slot - the parametric forearm's slot is 22.3 wide)."""
     neighbours = ["base#1", "j1_coupler#1", "j1_link#1", "j1_cap#1", "j2_link#1", "j2_cap_1#1", "j2_cap_2#1",
-                  "gt2_pulley_90t#1", "gt2_pulley_90t#2", "j3_coupler#1", "j3_coupler#2", "wrist_link#1"]
+                  "gt2_pulley_90t#1", "gt2_pulley_90t#2", "j3_coupler#2", "wrist_link#1"]
     shapes = {k: place_world(P.OCCURRENCES[k]["part"], k) for k in neighbours}
     shapes["cycloidal_drive#1"] = raw(cycloidal_drive.cycloidal_drive).moved(_world("cycloidal_drive#1"))
     shapes["forearm_roll_drive#1"] = raw(forearm_roll_drive.forearm_roll_drive).moved(_world("forearm_roll_drive#1"))

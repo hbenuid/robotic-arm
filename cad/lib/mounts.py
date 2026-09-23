@@ -100,7 +100,8 @@ class ModuleMount:
 MODULE_MOUNTS: tuple[ModuleMount, ...] = (
     ModuleMount("forearm_roll_drive#1", "forearm_roll_drive", "j2_link#1", "forearm_roll", module_frame_in_host(),
                 "the roll drive on j2_link's roll axis (y 0, z FOREARM_ROLL_AXIS_Z): module +Z = host -X toward the wrist, "
-                "module +X = host +Z (N), +Y = up in the swing plane (the motor side); the stator bolts to j3_coupler#1 where j2_link's disc did"),
+                "module +X = host +Z (N), +Y = up in the swing plane (the motor side); the block IS the elbow coupler: its stub turns in "
+                "j1_link's bore and the elbow 90T bolts into it (j3_coupler#1 retired, lib/placements.py RETIRED)"),
 )
 MODULES_BY_KEY: dict[str, ModuleMount] = {m.key: m for m in MODULE_MOUNTS}
 

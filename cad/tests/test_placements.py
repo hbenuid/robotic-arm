@@ -18,12 +18,14 @@ def _close(a, b, tol=1e-6):
 
 
 def test_record_counts_match_expected():
-    parts_ = P.keys(kind="part")
-    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 40      # 34 SolidWorks + 6 mounted
+    parts_ = P.keys(kind="part", retired=True)
+    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 40      # 34 SolidWorks + 6 mounted (j3_coupler#1 retired, still a record)
     assert P.keys(kind="module") == ["cycloidal_drive#1", "gripper#1", "forearm_roll_drive#1"]
     assert P.keys(kind="module", designed=True) == P.DATA["designed_modules"] == ["cycloidal_drive#1", "forearm_roll_drive#1"]
     assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 100   # 50 + (7 + 13) + 2 x (2 + 13)
-    assert len(P.keys(kind="part", mounted=False)) == 34
+    assert len(P.keys(kind="part", mounted=False, retired=True)) == 34
+    assert P.RETIRED == ("j3_coupler#1",) and set(P.RETIRED) <= set(P.OCCURRENCES)
+    assert len(P.keys(kind="part")) == 40 - len(P.RETIRED)
 
 
 def test_mounted_records_follow_lib_mounts():
@@ -98,6 +100,7 @@ def test_world_equals_parent_world_times_rel():
 def test_assembly_tables_claim_every_part_key_exactly_once():
     used = [key for _, _, key in arm.OCCURRENCES if key not in arm.MODULE_KEYS] + [key for _, _, key in gripper.OCCURRENCES]
     assert sorted(used) == sorted(P.keys(kind="part"))
+    assert not set(P.RETIRED) & set(used), "a retired occurrence is back in a table"
     assert [key for _, _, key in arm.OCCURRENCES if key in arm.MODULE_KEYS] == ["cycloidal_drive#1", "forearm_roll_drive#1", "gripper#1"]
     assert all(P.OCCURRENCES[key]["parent"] == "gripper#1" for _, _, key in gripper.OCCURRENCES)
     assert all(P.OCCURRENCES[key]["parent"] is None for _, _, key in arm.OCCURRENCES)

@@ -4,7 +4,8 @@ SolidWorks product: 'Joint 2 coupler 62226_J3 Coupler'
 Source export:      step/Joint 2 coupler 62226_J3 Coupler.STEP
 Reference: mm units, 1 solid(s), volume 55568.5 mm^3,
            bbox size (78, 22, 78) mm, bbox min (-39, 0, -39) mm.
-In the arm: x2 (j3_coupler#1, j3_coupler#2).
+In the arm: x1 (j3_coupler#2, the wrist; j3_coupler#1 at the elbow is RETIRED - lib/placements.py: the forearm roll drive's
+block carries its lip / boss / journal / stub since 2026-09-23).
 
 SolidWorks config name 'J3 Coupler'; used at J2 and J3.
 

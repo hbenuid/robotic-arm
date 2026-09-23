@@ -40,6 +40,12 @@ def _load() -> dict:
 DATA: dict = _load()
 OCCURRENCES: dict[str, dict] = {o["key"]: o for o in DATA["occurrences"]}
 
+# Occurrences of the capture the DESIGN has replaced: their records stay (the file is an immutable input) but no
+# assembly table, link or total claims them - keys() leaves them out unless asked (retired=True).
+#   j3_coupler#1  the elbow coupler: since 2026-09-23 the forearm roll drive's block carries its lip, boss, journal
+#                 and stub (lib/forearm/params.py RollDriveParams) and the elbow 90T bolts straight into the block.
+RETIRED: tuple[str, ...] = ("j3_coupler#1",)
+
 
 def to_location(record: dict) -> bd.Location:
     return bd.Location(tuple(record["position"]), tuple(record["rotation_xyz_deg"]))
@@ -65,16 +71,18 @@ def location(key: str, frame: str = "rel") -> bd.Location:
 
 
 def keys(*, part: str | None = None, parent: str | None = None, kind: str | None = None,
-         designed: bool | None = None, mounted: bool | None = None) -> list[str]:
+         designed: bool | None = None, mounted: bool | None = None, retired: bool = False) -> list[str]:
     """Occurrence keys, optionally filtered by part name, parent key, kind (part|module),
     whether the record is a designed (code-driven) module, or whether it is a mounted occurrence
-    (lib/mounts.py: a part record with a `mount` block)."""
+    (lib/mounts.py: a part record with a `mount` block). The RETIRED keys are left out unless
+    retired=True (then every record of the file is listed)."""
     if not OCCURRENCES:
         raise FileNotFoundError(MISSING_HINT)
     return [
         k
         for k, o in OCCURRENCES.items()
-        if (part is None or o["part"] == part)
+        if (retired or k not in RETIRED)
+        and (part is None or o["part"] == part)
         and (parent is None or o.get("parent") == parent)
         and (kind is None or o["kind"] == kind)
         and (designed is None or bool(o.get("designed", False)) == designed)

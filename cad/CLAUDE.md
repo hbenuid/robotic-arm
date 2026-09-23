@@ -4,7 +4,7 @@
 conversion workflow, shared-dimension rules, assembly placements, purchased parts, tests, tooling.
 **Audience:** agent. Human docs: `README.md`. Reference provenance: `reference/README.md`. The
 cycloidal drive (spec, port notes, attachment): `docs/cycloidal_drive.md`; the forearm roll drive: `docs/forearm_roll.md`.
-**Last updated:** 2026-09-23 (cadgen 0.6.6; the forearm roll — a 6-axis arm: `docs/forearm_roll.md`). Every commit that changes behaviour, layout or tooling gets a dated entry in the
+**Last updated:** 2026-09-23 (cadgen 0.6.6; the forearm roll's elbow block is the elbow coupler now, `j3_coupler#1` retired: `docs/forearm_roll.md`). Every commit that changes behaviour, layout or tooling gets a dated entry in the
 root `CHANGELOG.md` and bumps the `Last updated` line of the docs it touches.
 
 `cad/` is a **separate uv project** (Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.6.x) inside the
@@ -305,7 +305,10 @@ Changing a shared dimension — touchpoints in order:
 ## Assembly & placements
 - `reference/placements.json` (from `tools/reference/extract_placements.py`) holds every occurrence:
   `rel` (to its parent node) and `world`, as `Location(position, rotation_xyz_deg)`; keys
-  `"<part>#<n>"`, module `"gripper#1"`. Treat it as an immutable input.
+  `"<part>#<n>"`, module `"gripper#1"`. Treat it as an immutable input. An occurrence the DESIGN has replaced is
+  **retired** in `lib/placements.py RETIRED` (`j3_coupler#1`: the roll drive's block carries the coupler's lip / boss /
+  journal / stub): its record stays, `P.keys()` leaves it out (`retired=True` lists the file), no table / link / total
+  claims it (`test_placements.py`, `test_assembly.py`, `test_robot.py` follow `keys()`).
 - **Mounted occurrences** (`lib/mounts.py`): the belt joints' motors - `nema17_48mm#1` (the 48 mm motor, under the base;
   motor + board hang `BASE_MOTOR_STACK_PROUD` = 6.1 mm below the base's bottom face) and `nema17_40mm#2..3`, + `mks_servo42d#1..3`,
   on the NEMA 17 pads `base` / `j1_link` / `j2_link` carry - never existed in the SolidWorks capture. They are declared as
@@ -426,8 +429,8 @@ Changing a shared dimension — touchpoints in order:
 - Placeholders to confirm before real use: joint limits/effort/velocity (`lib/params.py`), axis signs,
   jaw travel, the link-membership assumptions listed in the URDF ledger. The cycloidal drive IS the
   `shoulder_pitch` joint (stator with the yawing `j1_coupler` in `shoulder_link`, rotor with `j1_link`
-  in `upper_arm_link`); the forearm roll drive IS the `forearm_roll` joint (stator with the elbow pulley + coupler in
-  `elbow_link`, rotor - the shaft - with `j2_link` in `forearm_link`; `docs/forearm_roll.md`); the base_yaw / elbow_pitch /
+  in `upper_arm_link`); the forearm roll drive IS the `forearm_roll` joint (stator with the elbow pulley in
+  `elbow_link` - its block is the elbow coupler, `j3_coupler#1` retired -, rotor - the shaft - with `j2_link` in `forearm_link`; `docs/forearm_roll.md`); the base_yaw / elbow_pitch /
   wrist_pitch motors are the mounted `nema17_48mm#1`, `nema17_40mm#2..3` + `mks_servo42d#1..3` (`lib/mounts.py`, see
   Assembly), the two drives' motors are module rows; which CAN id (`src/config.py` J1..J3 - three ids for five boards)
   drives which joint is unconfirmed; wrist_roll and the jaws are not driven by `src/config.py`.

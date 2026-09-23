@@ -12,12 +12,14 @@ rails, the 20T pulleys) is _occurrences.BOUGHT_TINT grey, inside the modules too
     |- base_link         base, nema17_48mm:base_yaw, mks_servo42d:base_yaw
     |- shoulder_link     j1_coupler, cycloidal_drive (kept whole - see below)
     |- upper_arm_link    j1_link, nema17_40mm:elbow_pitch, mks_servo42d:elbow_pitch, j1_cap
-    |- elbow_link        gt2_pulley_90t:j2, j3_coupler:j2, forearm_roll_drive (kept whole - see below)
+    |- elbow_link        gt2_pulley_90t:j2, forearm_roll_drive (kept whole - see below; its block IS the elbow coupler)
     |- forearm_link      j2_link, nema17_40mm:wrist_pitch, mks_servo42d:wrist_pitch, j2_cap_1, j2_cap_2
     |- wrist_pitch_link  gt2_pulley_90t:j3, j3_coupler:j3, wrist_link, gripper_clamp_bracket, nema17_pancake
     |- wrist             gt2_pulley_20t, gripper
 
-A drive module is one linked child, so this tree keeps it whole - the cycloidal drive under shoulder_link
+j3_coupler#1 (the elbow's SolidWorks coupler) is RETIRED (lib/placements.py): the roll drive's block carries its
+lip / boss / journal / stub and the elbow 90T bolts straight into it - the record stays in placements.json, no
+table claims it. A drive module is one linked child, so this tree keeps it whole - the cycloidal drive under shoulder_link
 although its rotor body (output hub + pins) belongs to upper_arm_link, the forearm roll drive under elbow_link
 although its rotor (the roll shaft) belongs to forearm_link - in robot/frames.py LINKS, the kinematic truth,
 which the per-link meshes follow (each in its own MODULE_TINTS colour).
@@ -55,7 +57,7 @@ MODULE_KEYS = (DRIVE_KEY, ROLL_KEY, GRIPPER_KEY)
 
 # (part or module, role, placements.json key) in SolidWorks document order, each mounted motor + board
 # (lib/mounts.py, role = the joint it drives) right after its host. The j2/j3 roles of the duplicated
-# pulley + coupler are positional (elbow_pitch vs wrist_pitch, in that order).
+# pulley (+ the wrist's coupler) are positional (elbow_pitch vs wrist_pitch, in that order).
 OCCURRENCES = [
     ("base",                  None, "base#1"),
     ("nema17_48mm",           "base_yaw", "nema17_48mm#1"),        # mounted: the 48 mm motor under the base plate
@@ -66,7 +68,7 @@ OCCURRENCES = [
     ("nema17_40mm",           "elbow_pitch", "nema17_40mm#2"),     # mounted: j1_link's pad
     ("mks_servo42d",          "elbow_pitch", "mks_servo42d#2"),
     ("gt2_pulley_90t",        "j2", "gt2_pulley_90t#1"),
-    ("j3_coupler",            "j2", "j3_coupler#1"),
+    # j3_coupler#1 (the elbow coupler) is retired: the roll drive's block bolts to the elbow pulley in its place
     ("forearm_roll_drive",    None, ROLL_KEY),             # module: assemblies/forearm_roll_drive.py (the forearm_roll joint; lib/mounts.py MODULE_MOUNTS)
     ("j2_link",               None, "j2_link#1"),
     ("nema17_40mm",           "wrist_pitch", "nema17_40mm#3"),     # mounted: j2_link's web slots
@@ -95,7 +97,7 @@ GROUPS = [
     ("base_link",        "#937860", ("base#1", "nema17_48mm#1", "mks_servo42d#1")),
     ("shoulder_link",    "#4C72B0", ("j1_coupler#1", DRIVE_KEY)),
     ("upper_arm_link",   "#CCB974", ("j1_link#1", "nema17_40mm#2", "mks_servo42d#2", "j1_cap#1")),
-    ("elbow_link",       "#DA8BC3", ("gt2_pulley_90t#1", "j3_coupler#1", ROLL_KEY)),
+    ("elbow_link",       "#DA8BC3", ("gt2_pulley_90t#1", ROLL_KEY)),
     ("forearm_link",     "#DD8452", ("j2_link#1", "nema17_40mm#3", "mks_servo42d#3", "j2_cap_1#1", "j2_cap_2#1")),
     ("wrist_pitch_link", "#55A868", ("gt2_pulley_90t#2", "j3_coupler#2", "wrist_link#1", "gripper_clamp_bracket#1", "nema17_pancake#1")),
     ("wrist",            "#8172B3", ("gt2_pulley_20t#1", GRIPPER_KEY)),
