@@ -1,6 +1,7 @@
 """The arm assembly rebuilt from parts + placements reproduces the SolidWorks totals, plus the
 code-driven cycloidal_drive module's own totals, the caps-off working view (arm_no_caps) and the colors:
 in every assembly a purchased part is BOUGHT_TINT grey, a printed one its link's / module's tint."""
+import importlib
 import pathlib
 
 import pytest
@@ -13,8 +14,8 @@ from lib.models import raw
 from lib import placements as P
 from lib import reference as R
 from tests.source_checks import runs_its_model
+from tests.totals import part_totals, world_bbox
 
-EXPECTED = P.DATA["expected"]
 DRIVE = cycloidal_drive.EXPECTED
 
 
@@ -54,15 +55,28 @@ def _check_link_tints(root):
     return seen
 
 
+def _expected_totals(hidden=()):
+    """(leaves, solids, volume) of the arm: every part occurrence of placements.json (tests.totals: the
+    SolidWorks record, or the part's own build once converted) but the `hidden` keys, plus the designed
+    modules' own totals (their EXPECTED)."""
+    keys = [k for k in P.keys(kind="part") if k not in set(hidden)]
+    solids, volume = part_totals(keys)
+    leaves = len(keys)
+    for k in P.keys(kind="module", designed=True):
+        lock = importlib.import_module(f"assemblies.{P.OCCURRENCES[k]['part']}").EXPECTED
+        leaves, solids, volume = leaves + lock["leaves"], solids + lock["solids"], volume + lock["solid_volume"]
+    return leaves, solids, volume
+
+
 def _expected_bbox():
     """Union of the world bounding boxes of every part occurrence in placements.json (the mounted
-    motors + boards included) and of the designed modules built in-process at their world pose (the
-    SolidWorks node's box predates the drive's MKS board), re-expressed in the frame the arm is emitted
-    in (arm.arm_from_w(): W, +Y up -> base_link, Z up). That map is an axis permutation with signs, so
-    two opposite corners carry the whole box."""
+    motors + boards included; a converted part's from its build - tests.totals) and of the designed
+    modules built in-process at their world pose (the SolidWorks node's box predates the drive's MKS
+    board), re-expressed in the frame the arm is emitted in (arm.arm_from_w(): W, +Y up -> base_link,
+    Z up). That map is an axis permutation with signs, so two opposite corners carry the whole box."""
     lo = [float("inf")] * 3
     hi = [float("-inf")] * 3
-    boxes = [(P.OCCURRENCES[k]["world_bbox_min"], P.OCCURRENCES[k]["world_bbox_size"]) for k in P.keys(kind="part")]
+    boxes = [world_bbox(k) for k in P.keys(kind="part")]
     for k in P.keys(kind="module", designed=True):
         bb = raw(arm.MODULES[P.OCCURRENCES[k]["part"]]).moved(P.location(k, "world")).bounding_box()
         boxes.append(((bb.min.X, bb.min.Y, bb.min.Z), (bb.size.X, bb.size.Y, bb.size.Z)))
@@ -153,11 +167,12 @@ def test_arm_assembly_matches_reference_totals():
     assert a.label == "arm"
     assert [c.label for c in a.children] == [label for label, _, _ in arm.GROUPS]
     leaves = _leaves(a)
-    assert len(leaves) == EXPECTED["leaf_occurrences"] + DRIVE["leaves"] == 59
+    exp_leaves, exp_solids, exp_volume = _expected_totals()
+    assert len(leaves) == exp_leaves == 59
     labels = [leaf.label for leaf in leaves]
     assert len(set(labels)) == len(labels), f"duplicate leaf labels: {labels}"
-    assert len(a.solids()) == EXPECTED["solids"] + DRIVE["solids"] == 177
-    assert abs(R.solid_volume(a) - (EXPECTED["solid_volume"] + DRIVE["solid_volume"])) <= 0.5
+    assert len(a.solids()) == exp_solids == 177
+    assert abs(R.solid_volume(a) - exp_volume) <= 0.5
     exp_min, exp_size = _expected_bbox()
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_min(a), exp_min)), (R.bbox_min(a), exp_min)
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_size(a), exp_size)), (R.bbox_size(a), exp_size)
@@ -187,11 +202,11 @@ def test_arm_no_caps_builds_the_arm_without_its_caps():
     assert a.label == "arm_no_caps"
     assert [c.label for c in a.children] == [label for label, _, _ in arm.GROUPS]
     labels = [leaf.label for leaf in _leaves(a)]
-    assert len(labels) == EXPECTED["leaf_occurrences"] + DRIVE["leaves"] - len(arm_no_caps.HIDDEN) == 56
+    exp_leaves, exp_solids, exp_volume = _expected_totals(hidden=arm_no_caps.HIDDEN)
+    assert len(labels) == exp_leaves == 56
     hidden = [P.OCCURRENCES[key] for key in arm_no_caps.HIDDEN]
     assert not {o["part"] for o in hidden} & set(labels), labels
-    assert len(a.solids()) == EXPECTED["solids"] + DRIVE["solids"] - sum(o["solids"] for o in hidden) == 174
-    volume = EXPECTED["solid_volume"] + DRIVE["solid_volume"] - sum(o["solid_volume"] for o in hidden)
-    assert abs(R.solid_volume(a) - volume) <= 0.5
+    assert len(a.solids()) == exp_solids == 174
+    assert abs(R.solid_volume(a) - exp_volume) <= 0.5
     assert a.is_valid
     assert _check_link_tints(a) == {True: 25, False: 34 - len(arm_no_caps.HIDDEN)}   # the caps are printed

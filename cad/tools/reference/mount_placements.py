@@ -1,4 +1,5 @@
-"""Materialise the motor mounts declared in lib/mounts.py as reference/placements.json part records.
+"""Materialise the mounts declared in lib/mounts.py - the belt joints' motors and the pose of a code-driven
+module - as reference/placements.json records.
 
     ./cadtool python tools/reference/mount_placements.py [--out reference/placements.json]
 
@@ -13,8 +14,14 @@ extraction; this tool's own main() is the MERGE mode: it replaces the mounted re
 placements.json and leaves every SolidWorks record byte-for-byte alone - it needs no monolith, so a
 changed mount (a spin, the wrist slide position) is regenerated on either machine.
 
-Checks: every motor's +Z must be parallel to its joint's axis (robot/frames.py JOINTS) - a wrong
-rotation convention in a mount fails here, not silently in the assembly.
+A ModuleMount (lib/mounts.py MODULE_MOUNTS - the forearm roll drive, which no SolidWorks node places) becomes
+a `kind: "module", designed: true` record with the same `mount` block and no solids / volume (the module's
+own totals are its EXPECTED; expected_totals() counts part records only), listed under `designed_modules`
+AND `mounted`, exactly like the drive's SolidWorks-placed record otherwise.
+
+Checks: every motor's +Z must be parallel to its joint's axis (robot/frames.py JOINTS), a module's +Z must
+lie ON that axis (parallel, origin on the line) - a wrong rotation convention in a mount fails here, not
+silently in the assembly.
 """
 from __future__ import annotations
 
@@ -40,33 +47,63 @@ def _axis_z(loc: Location) -> tuple[float, float, float]:
     return tuple(a - b for a, b in zip(tip, loc.position))
 
 
+def _mount_block(m) -> dict:
+    """The `mount` block of a record (key order = the file's: a part mount has a link, a module mount is
+    split over links by its bodies)."""
+    return {
+        "host": m.host, **({"link": m.link} if hasattr(m, "link") else {}), "joint": m.joint,
+        "frame_in_host": {"position": list(m.frame[0]), "rotation_xyz_deg": list(m.frame[1])},
+        "source": "lib/mounts.py", "note": m.note,
+    }
+
+
+def _check_axis(key: str, world: Location, joint, *, on_axis: bool) -> None:
+    z, axis = _axis_z(world), joint.axis_w
+    if abs(abs(sum(a * b for a, b in zip(z, axis))) - 1.0) > AXIS_TOL:
+        raise SystemExit(f"{key}: +Z {z} is not parallel to the {joint.name} axis {axis}")
+    if on_axis:
+        d = tuple(a - b for a, b in zip(world.position, joint.origin_w))
+        off = tuple(a - sum(x * y for x, y in zip(d, axis)) * b for a, b in zip(d, axis))
+        if sum(v * v for v in off) ** 0.5 > 1e-3:
+            raise SystemExit(f"{key}: origin {tuple(world.position)} is {sum(v * v for v in off) ** 0.5:.3f} mm off the {joint.name} axis")
+
+
 def mounted_records(records: list[dict]) -> list[dict]:
-    """The lib/mounts.py occurrences as placements.json part records, resolved against `records`
-    (the SolidWorks occurrences; the boards resolve against the motors declared before them)."""
+    """The lib/mounts.py occurrences as placements.json records, resolved against `records` (the SolidWorks
+    occurrences; the boards resolve against the motors declared before them): the part mounts first, then the
+    module mounts."""
     worlds = {o["key"]: P.to_location(o["world"]) for o in records}
-    joints = {j.name: j for j in RF.JOINTS}
+    joints = RF.JOINT_BY_NAME
     out = []
     for m in mounts.MOUNTS:
         if m.host not in worlds:
             raise SystemExit(f"{m.key}: host {m.host!r} has no placement record (declare the motor before its board)")
         world = worlds[m.host] * to_location(m.frame)
         if m.part in mounts.MOTORS:
-            z, axis = _axis_z(world), joints[m.joint].axis_w
-            if abs(abs(sum(a * b for a, b in zip(z, axis))) - 1.0) > AXIS_TOL:
-                raise SystemExit(f"{m.key}: motor +Z {z} is not parallel to the {m.joint} axis {axis}")
+            _check_axis(m.key, world, joints[m.joint], on_axis=False)
         shape = parts.build(m.part).moved(world)
         bb = shape.bounding_box()
         out.append({
             "key": m.key, "part": m.part, "kind": "part", "path": None, "parent": None, "label_in_monolith": None,
-            "mount": {
-                "host": m.host, "link": m.link, "joint": m.joint,
-                "frame_in_host": {"position": list(m.frame[0]), "rotation_xyz_deg": list(m.frame[1])},
-                "source": "lib/mounts.py", "note": m.note,
-            },
+            "mount": _mount_block(m),
             "solids": len(shape.solids()), "solid_volume": round(R.solid_volume(shape), 3),
             "rel": P.to_record(world), "world": P.to_record(world),
             "world_bbox_min": [round(v, 3) for v in (bb.min.X, bb.min.Y, bb.min.Z)],
             "world_bbox_size": [round(v, 3) for v in (bb.size.X, bb.size.Y, bb.size.Z)],
+        })
+        worlds[m.key] = world
+    for m in mounts.MODULE_MOUNTS:
+        if m.host not in worlds:
+            raise SystemExit(f"{m.key}: host {m.host!r} has no placement record")
+        if m.module not in R.DESIGNED_MODULES:
+            raise SystemExit(f"{m.key}: {m.module!r} is not in lib/reference.py DESIGNED_MODULES")
+        world = worlds[m.host] * to_location(m.frame)
+        _check_axis(m.key, world, joints[m.joint], on_axis=True)
+        out.append({
+            "key": m.key, "part": m.module, "kind": "module", "designed": True, "path": None, "parent": None,
+            "label_in_monolith": None, "mount": _mount_block(m),
+            "rel": P.to_record(world), "world": P.to_record(world),
+            "source": f"assemblies/{m.module}.py",
         })
         worlds[m.key] = world
     return out
@@ -83,14 +120,17 @@ def expected_totals(records: list[dict]) -> dict:
 
 
 def with_mounted(data: dict, records: list[dict], mounted: list[dict]) -> dict:
-    """The placements document with `records` + `mounted` as its occurrences, `expected` recomputed and the
-    `mounted` key list right after `designed_modules` (the same key order whichever tool writes it)."""
+    """The placements document with `records` + `mounted` as its occurrences, `expected` and
+    `designed_modules` recomputed (a mounted module is a designed module too) and the `mounted` key list
+    right after `designed_modules` (the same key order whichever tool writes it)."""
     out = {}
     for key, value in data.items():
         if key == "mounted":
             continue
         if key == "expected":
             value = expected_totals(records + mounted)
+        elif key == "designed_modules":
+            value = [o["key"] for o in records + mounted if o["kind"] == "module" and o.get("designed")]
         elif key == "occurrences":
             value = records + mounted
         out[key] = value
@@ -116,7 +156,8 @@ def main(argv=None) -> int:
           f"parts={ex['leaf_occurrences']} solids={ex['solids']} volume={ex['solid_volume']}")
     for o in mounted:
         p = o["world"]["position"]
-        print(f"  {o['key']:16s} on {o['mount']['host']:14s} {o['mount']['link']:15s} solids={o['solids']:2d} "
+        what = f"solids={o['solids']:2d}" if o["kind"] == "part" else f"module {o['mount']['joint']}"
+        print(f"  {o['key']:20s} on {o['mount']['host']:14s} {o['mount'].get('link', '-'):15s} {what} "
               f"world=({p[0]:8.2f},{p[1]:8.2f},{p[2]:8.2f})")
     return 0
 

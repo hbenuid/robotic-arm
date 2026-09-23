@@ -1,9 +1,10 @@
 """reference/manifest.json - what every reference (and vendor) STEP is: kind, origin, checksum,
 units and geometry facts.
 
-Two tools write it and each owns its entries, keeping the other's untouched:
-tools/reference/import_solidworks.py (the SolidWorks exports: kinds "custom" / "cots") and
-tools/cycloidal/import_cadquery.py (the cycloidal drive's CadQuery exports: "designed" / "cots").
+Three tools write it and each owns its entries, keeping the others' untouched:
+tools/reference/import_solidworks.py (the SolidWorks exports: kinds "custom" / "cots"),
+tools/cycloidal/import_cadquery.py (the cycloidal drive's CadQuery exports: "designed" / "cots") and
+tools/reference/import_native.py (the accepted builds of the parts designed here: "native" / "cots").
 tests/test_reference_match.py and tests/test_parts_convention.py read it to detect an edited
 reference or a swapped vendor file. No part imports this module, so editing it never makes a
 part stale.

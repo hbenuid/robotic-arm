@@ -40,7 +40,7 @@ def test_some_parts_were_discovered():
 
 
 def test_naming_map_matches_part_files():
-    expected = set(R.CUSTOM) | set(R.COTS) | set(R.DESIGNED)
+    expected = set(R.CUSTOM) | set(R.COTS) | set(R.DESIGNED) | set(R.NATIVE)
     assert set(PART_NAMES) == expected, (
         f"parts/ and lib/reference.py disagree: only in parts/: {set(PART_NAMES) - expected}; "
         f"only in the map: {expected - set(PART_NAMES)}"
@@ -78,10 +78,16 @@ def test_part_declares_its_contract(name):
     else:
         assert not any(hasattr(mod, a) for a in ("PURCHASE_SPEC", "PURCHASE_QTY", "PURCHASE_NOTE")), (
             f"{name} is printed (no COTS = True) but declares PURCHASE_* - it would never reach the buy list")
-        assert name in R.CUSTOM or name in R.DESIGNED, f"{name} is not in lib.reference.CUSTOM / DESIGNED (and not COTS)"
+        assert name in R.CUSTOM or name in R.DESIGNED or name in R.NATIVE, f"{name} is not in lib.reference.CUSTOM / DESIGNED / NATIVE (and not COTS)"
         assert getattr(mod, "REFERENCE", None) == name, f"{name}.REFERENCE must name reference/<origin>/{name}.step"
         assert isinstance(getattr(mod, "CONVERTED", None), bool), f"{name} must declare CONVERTED = True/False"
-        assert R.path_of(mod.REFERENCE).exists(), f"missing {R.path_of(name)} (run tools/reference/import_solidworks.py or tools/cycloidal/import_cadquery.py)"
+        if name in R.NATIVE:
+            assert mod.CONVERTED is True, f"{name} is native build123d - CONVERTED must be True"
+        assert R.path_of(mod.REFERENCE).exists(), (
+            f"missing {R.path_of(name)} (run tools/reference/import_solidworks.py, tools/cycloidal/import_cadquery.py "
+            f"or, for a native part, tools/reference/import_native.py)")
+        if hasattr(mod, "REFERENCE_BUILD"):
+            assert mod.CONVERTED is True and callable(mod.REFERENCE_BUILD), f"{name}.REFERENCE_BUILD is for a converted part's LEGACY build"
 
 
 @pytest.mark.slow

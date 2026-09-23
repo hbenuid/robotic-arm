@@ -18,17 +18,16 @@ COTS convention (parts/_templates/cots.py): nema17_40mm() returns the vendor STE
 else the parametric envelope below - both in the part frame lib/mounts.py places.
 """
 import pathlib
-from dataclasses import replace
 
 from cadgen import build123d as bd
 from cadgen import read_step, step
-from lib.cycloidal import DEFAULT_CONFIG, motor_bolt_points
+from lib.cycloidal import motor_bolt_points
 from lib.cycloidal.geom import cylinder, single_solid
 from lib.cycloidal.motor import nema17_motor
 from lib.datum import IDENTITY, to_location
 from lib.params import (
-    NEMA17_40_BODY_LEN, NEMA17_40_BODY_W, NEMA17_40_CONNECTOR_D, NEMA17_40_CONNECTOR_W, NEMA17_40_CONNECTOR_Z0,
-    NEMA17_40_CONNECTOR_Z1, NEMA17_40_MASS_G, NEMA17_40_REAR_STUB_DIA, NEMA17_40_REAR_STUB_LEN, NUDGE,
+    MOTOR_40, NEMA17_40_CONNECTOR_D, NEMA17_40_CONNECTOR_W, NEMA17_40_CONNECTOR_Z0, NEMA17_40_CONNECTOR_Z1,
+    NEMA17_40_MASS_G, NEMA17_40_REAR_STUB_DIA, NEMA17_40_REAR_STUB_LEN, NUDGE,
 )
 
 NAME = pathlib.Path(__file__).stem
@@ -43,8 +42,8 @@ VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.
 # already re-framed; set it after swapping in a differently oriented catalog model).
 VENDOR_TO_REF = IDENTITY
 
-# The drive motor's parameters with the 40 mm body (same 31 mm bolt square, Ø22 x 2 pilot, Ø5 x 22 shaft).
-MOTOR = replace(DEFAULT_CONFIG.motor, body_width=NEMA17_40_BODY_W, body_length=NEMA17_40_BODY_LEN)
+# The drive motor's parameters with the 40 mm body (same 31 mm bolt square, Ø22 x 2 pilot, Ø5 x 22 shaft) - lib/motors.py.
+MOTOR = MOTOR_40
 
 
 def _envelope():

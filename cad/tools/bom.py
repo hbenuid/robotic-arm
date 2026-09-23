@@ -47,6 +47,8 @@ def part_counts(module: str | None = None) -> Counter:
 def _state(name: str) -> str:
     if name in R.DESIGNED:
         return "designed"
+    if name in R.NATIVE:
+        return "native"
     return "parametric" if parts.load(name).CONVERTED else "wrapper"
 
 

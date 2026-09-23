@@ -6,9 +6,10 @@ reference/solidworks/<clean_name>.step (immutable inputs) and vendor/<clean_name
 parts); `tools/reference/extract_placements.py` extracts the assembly placements from the
 full-assembly STEP into reference/placements.json (and the motor mounts declared in lib/mounts.py,
 tools/reference/mount_placements.py). The cycloidal drive's references are CadQuery exports in
-reference/cycloidal/ (tools/cycloidal/import_cadquery.py); path_of() resolves the origin. The third
-producer of vendor files is tools/reference/split_mks_motor.py: it splits the "NEMA 17 x 40 + MKS
-SERVO42D" kit export (MKS_EXPORT_NAME, next to the monolith) into vendor/nema17_40mm.step and
+reference/cycloidal/ (tools/cycloidal/import_cadquery.py); the parts designed in this repo (NATIVE) keep
+their accepted build in reference/native/ (tools/reference/import_native.py); path_of() resolves the
+origin. The third producer of vendor files is tools/reference/split_mks_motor.py: it splits the "NEMA 17
+x 40 + MKS SERVO42D" kit export (MKS_EXPORT_NAME, next to the monolith) into vendor/nema17_40mm.step and
 vendor/mks_servo42d.step, which import_solidworks.py then mirrors into reference/solidworks/.
 
 `lib/` never imports `parts/`.
@@ -26,6 +27,7 @@ CAD_DIR = pathlib.Path(__file__).resolve().parent.parent
 REF_DIR = CAD_DIR / "reference"              # manifest.json, placements.json + the two origin dirs
 REF_SOLIDWORKS_DIR = REF_DIR / "solidworks"  # the SolidWorks per-part exports (CUSTOM + the SolidWorks COTS)
 REF_CYCLOIDAL_DIR = REF_DIR / "cycloidal"    # the CadQuery exports of the drive (DESIGNED | CYCLOIDAL_COTS)
+REF_NATIVE_DIR = REF_DIR / "native"          # accepted builds of the parts designed HERE (NATIVE | NATIVE_COTS)
 VENDOR_DIR = CAD_DIR / "vendor"
 
 # Where the SolidWorks export tree lives on this machine (override: --src / ARM_REFERENCE_SRC).
@@ -113,8 +115,21 @@ CYCLOIDAL_COTS: dict[str, str] = {
 COTS.update({name: (f"cycloidal_drive {builder}", None) for name, builder in CYCLOIDAL_COTS.items()})
 CYCLOIDAL_PARTS: set[str] = set(DESIGNED) | set(CYCLOIDAL_COTS)
 
-# Sub-assemblies whose placement comes from SolidWorks but whose contents are code-driven
-# (assemblies/<name>.py places its parts from lib/cycloidal StackUp): clean name -> product name.
+# Native parts: designed in this repo in build123d, with no SolidWorks or CadQuery origin. Their reference
+# is their own ACCEPTED build - reference/native/<name>.step, written once by
+# tools/reference/import_native.py (manifest kind "native"; re-run it to accept a changed design) - so
+# tests/test_reference_match.py locks their geometry like every other part's. Values: the builder label.
+NATIVE: dict[str, str] = {}
+
+# Purchased parts with neither a SolidWorks export nor a catalog model (their envelope IS the geometry):
+# clean name -> builder label. The same tool writes their reference (kind "cots") from the envelope.
+NATIVE_COTS: dict[str, str] = {}
+COTS.update({name: (f"native {builder}", None) for name, builder in NATIVE_COTS.items()})
+NATIVE_PARTS: set[str] = set(NATIVE) | set(NATIVE_COTS)
+
+# Sub-assemblies whose contents are code-driven (assemblies/<name>.py places its parts from a lib/ stack):
+# clean name -> product name of the SolidWorks node that places it, or a description when the pose is
+# declared in lib/mounts.py MODULE_MOUNTS instead (tools/reference/mount_placements.py writes the record).
 DESIGNED_MODULES: dict[str, str] = {
     "cycloidal_drive": "New cyloidal assembly",   # sic - the SolidWorks node is misspelled
 }
@@ -125,7 +140,7 @@ SKIPPED_PRODUCTS: dict[str, str] = {
 }
 
 PRODUCT_TO_PART: dict[str, str] = {
-    prod: name for name, (prod, _) in {**CUSTOM, **COTS}.items() if name not in CYCLOIDAL_PARTS
+    prod: name for name, (prod, _) in {**CUSTOM, **COTS}.items() if name not in CYCLOIDAL_PARTS | NATIVE_PARTS
 }
 
 
@@ -144,7 +159,9 @@ LABEL_TO_DESIGNED_MODULE: dict[str, str] = {clean_label(p): n for n, p in DESIGN
 
 def reference_dir(name: str) -> pathlib.Path:
     """Origin directory of reference/<origin>/<name>.step."""
-    return REF_CYCLOIDAL_DIR if name in CYCLOIDAL_PARTS else REF_SOLIDWORKS_DIR
+    if name in CYCLOIDAL_PARTS:
+        return REF_CYCLOIDAL_DIR
+    return REF_NATIVE_DIR if name in NATIVE_PARTS else REF_SOLIDWORKS_DIR
 
 
 def path_of(name: str) -> pathlib.Path:
@@ -182,7 +199,8 @@ def load(name: str, *, label: str | None = None) -> bd.Shape:
     A Solid for one-body parts, a flat Compound for multi-body ones."""
     path = path_of(name)
     if not path.exists():
-        raise FileNotFoundError(f"missing reference STEP {path} - run tools/reference/import_solidworks.py (or tools/cycloidal/import_cadquery.py)")
+        raise FileNotFoundError(f"missing reference STEP {path} - run tools/reference/import_solidworks.py "
+                                f"(tools/cycloidal/import_cadquery.py for the drive, tools/reference/import_native.py for a native part)")
     shape = read_step(path)          # cadgen: store-cached; a tracked input of the model that calls it
     shape.label = label or name
     return shape

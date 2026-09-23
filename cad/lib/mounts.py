@@ -1,4 +1,5 @@
-"""The motor mounts of the belt joints - occurrences the SolidWorks capture never contained.
+"""The motor mounts of the belt joints, and the pose of a code-driven module the SolidWorks capture never
+placed - occurrences declared here, not extracted.
 
 The SolidWorks arm cut a NEMA 17 pad into `base` (base_yaw), `j1_link` (elbow_pitch) and `j2_link`
 (wrist_pitch) but never placed the motors, so reference/placements.json has no record for them.
@@ -16,6 +17,13 @@ Part frame of the motor: mounting face z=0, body -Z, shaft +Z, D-flat +Y, cable 
 mount frame puts +Z on the joint axis (the shaft through the pad toward the driven pulley) and its origin
 on the pad face at the bolt-pattern centre; the spin about the axis (90 deg steps, the pattern is square)
 only sets which way the connector faces [ESTIMATE]. The board's frame is the motor's, shifted to the rear face.
+
+A MODULE mount (ModuleMount, MODULE_MOUNTS) does the same for a designed module (assemblies/<module>.py,
+lib/reference.py DESIGNED_MODULES) whose pose no SolidWorks node gives - the forearm roll drive: its frame in
+the host's frame puts the module's +Z on the joint axis it drives; mount_placements.py writes a
+`kind: "module", designed: true` record with a `mount` block (no solids / volume: the module's own
+totals are its EXPECTED), listed under both `designed_modules` and `mounted`, which world_rows() expands
+like the drive's SolidWorks-placed record.
 
 Geometry (lib/params.py, kernel-verified 2026-09-21 - tests/test_mounts.py re-checks it):
   base_yaw     base plate -Y face, pattern centre BASE_MOTOR_PATTERN_CENTRE; the 48 mm body hangs in -Y, shaft +Y
@@ -77,6 +85,25 @@ MOUNTS: tuple[Mount, ...] = (
 BY_KEY: dict[str, Mount] = {m.key: m for m in MOUNTS}
 
 
+@dataclass(frozen=True)
+class ModuleMount:
+    key: str        # occurrence key "<module>#<n>" (placements.json designed_modules, assemblies/arm.py, LINKS with ":<body>")
+    module: str     # the designed module (assemblies/<module>.py, lib/reference.py DESIGNED_MODULES)
+    host: str       # the SolidWorks occurrence the module's stator is bolted to
+    joint: str      # the joint the module IS (robot/frames.py): the module's +Z lies on its axis
+    frame: tuple    # ((x, y, z), (rx, ry, rz)) in the host's frame - lib.datum.to_location(frame)
+    note: str = ""
+
+
+MODULE_MOUNTS: tuple[ModuleMount, ...] = ()
+MODULES_BY_KEY: dict[str, ModuleMount] = {m.key: m for m in MODULE_MOUNTS}
+
+
 def keys() -> list[str]:
-    """The mounted occurrence keys, in declaration order (motor, its board, ...)."""
+    """The mounted part occurrence keys, in declaration order (motor, its board, ...)."""
     return [m.key for m in MOUNTS]
+
+
+def module_keys() -> list[str]:
+    """The mounted designed-module keys, in declaration order."""
+    return [m.key for m in MODULE_MOUNTS]

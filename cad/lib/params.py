@@ -30,13 +30,11 @@ M3_CLEAR = 3.4          # [DESIGN] close clearance hole for an M3 screw
 M4_CLEAR = 4.5          # [DESIGN] close clearance hole for an M4 screw
 M5_CLEAR = 5.5          # [DESIGN] close clearance hole for an M5 screw
 
-# --- Belt drive (GT2) ---------------------------------------------------------
-GT2_PITCH = 2.0                                     # [DATASHEET] GT2 tooth pitch
-GT2_PULLEY_90T_TEETH = 90                           # [REFERENCE] printed 90T pulley (parts/gt2_pulley_90t), used x2
-GT2_PULLEY_20T_TEETH = 20                           # [REFERENCE] purchased 20T pulley (parts/gt2_pulley_20t)
-GT2_PULLEY_90T_PITCH_DIA = GT2_PULLEY_90T_TEETH * GT2_PITCH / math.pi   # 57.30 mm pitch diameter
-GT2_PULLEY_20T_PITCH_DIA = GT2_PULLEY_20T_TEETH * GT2_PITCH / math.pi   # 12.73 mm
-GT2_RATIO = GT2_PULLEY_90T_TEETH / GT2_PULLEY_20T_TEETH                 # 4.5:1 [REFERENCE] candidate gear_ratio for src/config.py JOINTS
+# --- Belt drive (GT2) - lib/belts.py (a leaf: lib/forearm/ imports it directly) ------------------
+from lib.belts import (  # noqa: F401
+    GT2_BELT_W, GT2_GROOVE_R, GT2_PITCH, GT2_PLD, GT2_PULLEY_20T_PITCH_DIA, GT2_PULLEY_20T_TEETH,
+    GT2_PULLEY_90T_PITCH_DIA, GT2_PULLEY_90T_TEETH, GT2_RATIO, GT2_TOOTH_DEPTH, STANDARD_2GT_LENGTHS,
+)
 
 # --- Gripper hardware ---------------------------------------------------------
 RAIL_DIA = 6.0          # [REFERENCE] round linear rail (parts/gripper_rail_6mm), used x2
@@ -51,39 +49,15 @@ MG996R_MOUNT_HOLE_SP = 49.5     # [DATASHEET] mounting-hole spacing along the ta
 MG996R_MOUNT_HOLE_SP_W = 10.0   # [DATASHEET] mounting-hole spacing across the tabs
 MG996R_MASS_G = 55.0            # [DATASHEET]
 
-# --- NEMA 17 pancake stepper (parts/nema17_pancake) ---------------------------------
-# The SolidWorks model is a 7-part sub-assembly of the motor's internals, flattened into
-# one vendor STEP (vendor/nema17_pancake.step). Envelope from its reference bounding box.
-NEMA17_FACE = 42.3              # [DATASHEET] NEMA 17 square face
-NEMA17_BOLT_SP = 31.0           # [DATASHEET] mounting-hole square pattern
-NEMA17_PILOT_DIA = 22.0         # [DATASHEET] locating boss
-NEMA17_SHAFT_DIA = 5.0          # [DATASHEET]
-PANCAKE_BODY_W = 41.5           # [REFERENCE] body width  (reference bbox 41.5 x 47.0 x 43.0 incl. connector + shaft)
-PANCAKE_BODY_D = 47.0           # [REFERENCE] body depth incl. connector
-PANCAKE_BODY_H = 43.0           # [REFERENCE] height incl. shaft
-PANCAKE_MASS_G = 180.0          # [ESTIMATE] typical 17HS08-type pancake 150-200 g - replace with the datasheet value
-
-# --- Belt-drive motors: NEMA 17 x 40 mm + MKS SERVO42D (parts/joints/nema17_40mm, mks_servo42d) ----
-# The base_yaw / elbow_pitch / wrist_pitch motors of the arm: the "nema17x40_with_mks" SolidWorks export
-# (a kit: motor + driver board, split by tools/reference/split_mks_motor.py into vendor/nema17_40mm.step
-# and vendor/mks_servo42d.step). Part frame like the drive motor's (mounting face z=0, body -Z, shaft +Z,
-# D-flat +Y); the board's frame has z=0 at the motor's REAR face, its stack in -Z. The mounts are the
-# NEMA 17 pads the SolidWorks links already carry (lib/mounts.py places the motors on them).
-NEMA17_40_BODY_W = 42.0         # [REFERENCE] the export's body square (datasheet NEMA17_FACE 42.3)
-NEMA17_40_BODY_LEN = 39.5       # [REFERENCE] mounting face -> rear face ("40 mm" class)
-NEMA17_40_REAR_STUB_DIA = 8.0   # [REFERENCE] rear bearing boss proud of the rear face
-NEMA17_40_REAR_STUB_LEN = 0.9   # [REFERENCE]
-NEMA17_40_CONNECTOR_W = 16.0    # [REFERENCE] cable-connector boss on the -Y side, 7 mm proud of the body ...
-NEMA17_40_CONNECTOR_D = 7.0     # [REFERENCE]
-NEMA17_40_CONNECTOR_Z0 = -39.5  # [REFERENCE] ... spanning z -39.5..-29.9 (the rear 9.6 mm of the body)
-NEMA17_40_CONNECTOR_Z1 = -29.9  # [REFERENCE]
-NEMA17_40_MASS_G = 280.0        # [ESTIMATE] 17HS4401 / 17HS15 class 40 mm NEMA 17 (bare motor); verify on the unit
-MKS_SERVO42D_STANDOFF = 3.0     # [REFERENCE] 4x 7x3 standoffs between the rear face and the board
-MKS_SERVO42D_BOARD_STACK = 11.1 # [REFERENCE] PCB + cover
-MKS_SERVO42D_STACK = MKS_SERVO42D_STANDOFF + MKS_SERVO42D_BOARD_STACK   # 14.1 rear face -> cover face
-MKS_SERVO42D_W = 43.0           # [REFERENCE] cover square
-MKS_SERVO42D_SCREW_REACH = 19.6 # [REFERENCE] the 4x M3x30 reach this far into the motor's through-holes (+Z of the rear face)
-MKS_SERVO42D_MASS_G = 35.0      # [ESTIMATE] PCB + cover + 4 screws + 4 standoffs; verify on the unit
+# --- Motors - lib/motors.py (a leaf: the NEMA 17 interface, the pancake, the 40 mm kit motor + its MKS
+# SERVO42D board; lib/forearm/ imports it directly) -----------------------------------------------------
+from lib.motors import (  # noqa: F401
+    MKS_SERVO42D_BOARD_STACK, MKS_SERVO42D_MASS_G, MKS_SERVO42D_SCREW_REACH, MKS_SERVO42D_STACK, MKS_SERVO42D_STANDOFF,
+    MKS_SERVO42D_W, MOTOR_40, NEMA17_40_BODY_LEN, NEMA17_40_BODY_W, NEMA17_40_CONNECTOR_D, NEMA17_40_CONNECTOR_W,
+    NEMA17_40_CONNECTOR_Z0, NEMA17_40_CONNECTOR_Z1, NEMA17_40_MASS_G, NEMA17_40_REAR_STUB_DIA, NEMA17_40_REAR_STUB_LEN,
+    NEMA17_BOLT_SP, NEMA17_FACE, NEMA17_PILOT_DIA, NEMA17_SHAFT_DIA, PANCAKE_BODY_D, PANCAKE_BODY_H, PANCAKE_BODY_W,
+    PANCAKE_MASS_G,
+)
 
 # The mounts (host-part frames, mm): where the pads sit in the SolidWorks links. base_yaw takes the 48 mm motor
 # (parts/cycloidal/nema17_48mm, the drive's), elbow_pitch / wrist_pitch the 40 mm one.

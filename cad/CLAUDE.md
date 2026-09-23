@@ -4,7 +4,7 @@
 conversion workflow, shared-dimension rules, assembly placements, purchased parts, tests, tooling.
 **Audience:** agent. Human docs: `README.md`. Reference provenance: `reference/README.md`. The
 cycloidal drive (spec, port notes, attachment): `docs/cycloidal_drive.md`.
-**Last updated:** 2026-09-22 (cadgen 0.6.6). Every commit that changes behaviour, layout or tooling gets a dated entry in the
+**Last updated:** 2026-09-22 (cadgen 0.6.6; forearm roll M0: native parts, module mounts, `lib/motors.py` / `lib/belts.py`). Every commit that changes behaviour, layout or tooling gets a dated entry in the
 root `CHANGELOG.md` and bumps the `Last updated` line of the docs it touches.
 
 `cad/` is a **separate uv project** (Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.6.x) inside the
@@ -16,6 +16,7 @@ robotic-arm repo; the root motor-control project never depends on it.
 | run / build / inspect / snapshot anything | Running things | — |
 | add or convert a printed part | Authoring a part | Recipe C after the geometry |
 | add a purchased part | Purchased (COTS) parts | Recipe A |
+| add a part designed HERE (no SolidWorks / CadQuery origin), or a purchased part with no model at all | Authoring a part → *native* | `tools/reference/import_native.py` once, then Recipe C |
 | place something the SolidWorks capture never had (a motor, a board) | Assembly & placements → Mounted occurrences | Recipe B |
 | produce or swap a vendor STEP | Purchased (COTS) parts + `vendor/README.md` | Recipe D |
 | a new SolidWorks / vendor export was handed over | `reference/README.md` Provenance | Recipe E |
@@ -230,6 +231,19 @@ otherwise. `tests/conftest.py` makes an accidental top-level call under pytest f
   mesh within its chordal error — see "Two machines").
   Their geometry helpers live in `lib/cycloidal/` and each module exposes `build(cfg)` for tests
   (reached like any part: `parts.load(name).build(cfg)` — tests never import `parts.<group>` either).
+- *native* (`CONVERTED = True`, `REFERENCE = NAME`, registered in `lib/reference.py NATIVE`; a purchased part
+  with neither a SolidWorks export nor a catalog model goes in `NATIVE_COTS`, its envelope IS the geometry):
+  designed in this repo with no external origin, so the reference is the build the author ACCEPTED —
+  `reference/native/<name>.step` + the manifest entry, written by `./cadtool python
+  tools/reference/import_native.py [--only NAME] [--force]` ONCE on one machine (LFS, like a vendor file;
+  `--force` = accept a changed design; `import_solidworks.py` keeps the entries). The reference-match test then
+  locks the geometry like every other part's; a native part's own tests hold its design intent.
+- *diverged conversion*: a converted CUSTOM part whose DEFAULT build deliberately leaves its SolidWorks
+  reference (the forearm parts, whose elbow end gave way to the roll joint) declares `REFERENCE_BUILD`, a
+  zero-arg callable returning the LEGACY configuration that still reproduces the reference —
+  `tests/test_reference_match.py` matches THAT build; the default one is locked by the part's own tests.
+  A converted CUSTOM part contributes its own build (volume, bbox) to the arm / link totals locks
+  (`tests/totals.py`) instead of its SolidWorks record — the record stays in `placements.json` untouched.
 - Multi-body parts are registered in `MULTI_BODY` in `tests/test_parts_convention.py`.
 - Keep the importable `parts/<group>/<name>.py` naming (tests/assemblies reach them through
   `parts.load` / `parts.model`); upstream's `src/` + `STEP/` layout is deliberately not used. A part and
@@ -267,7 +281,10 @@ builder is `lib/cycloidal/motor.py nema17_motor()`, which the 40 mm envelope reu
 ## Shared dimensions (DRY)
 `lib/params.py` is the single source of truth: mm and grams, every constant tagged
 `[MEASURE] / [DATASHEET] / [DESIGN] / [REFERENCE] / [ESTIMATE]` with a derivation comment.
-`lib/` never imports `parts/`. Docs name constants, never numbers. Datum: the SolidWorks capture
+`lib/` never imports `parts/`. Two leaves sit below it and are re-exported unchanged: `lib/motors.py` (the
+NEMA 17 interface, the pancake, the 40 mm kit motor + MKS board, `MOTOR_40`) and `lib/belts.py` (the GT2
+constants, `pulley_od`, `closed_belt_length` / `centre_distance`, the stock belt lengths) — a `lib/` package
+that `lib/params.py` re-exports from (`lib/cycloidal/`, `lib/forearm/`) imports THOSE, never `lib.params`. Docs name constants, never numbers. Datum: the SolidWorks capture
 frame is **Y up** (J1 axis); the URDF base frame (REP-103) is `lib/datum.py base_frame()` (with `frame()`,
 `U`, `BASE_FORWARD`; `robot/frames.py` re-exports them and builds the kinematics on top) — and
 `assemblies/arm.py` emits the arm in it (`arm_from_w()`, see Assembly), so `arm.step` is **Z up**.
@@ -356,12 +373,17 @@ Changing a shared dimension — touchpoints in order:
   `test_grey_means_bought`), and raises unless the groups cover the keys
   exactly once. `test_assembly.py` locks the group labels + the LINKS mirror. The tints are
   per-leaf (a compound-level color doesn't cascade in ocp_tessellate) — hence the inline copies above.
-- `assemblies/cycloidal_drive.py` is **code-driven**: rows are `(part, role, position)` (data) from
-  `lib/cycloidal stack_positions` (`located_children`); its placement key `cycloidal_drive#1` is a
-  `designed` module record in `placements.json` (pose from the SolidWorks node, no leaf records,
-  `solidworks` cross-check block; `tools/reference/extract_placements.py` never descends into
-  `DESIGNED_MODULES`). `world_rows(key)` expands a designed-module key into world-placed parts for
-  links and inertials; `BODIES` names the drive's rigid bodies (`stator` / `rotor`) and a `:<body>`
+- `assemblies/cycloidal_drive.py` is **code-driven**: rows are `(part, role, placement)` (data) from
+  `lib/cycloidal stack_positions` (`located_children`) — the placement a position `(x, y, z)` when the part's
+  frame is the module's shifted, or a frame `((x, y, z), (rx, ry, rz))` when it needs a rotation
+  (`_occurrences.row_location`, used by `located_children` and `world_rows` alike); its placement key
+  `cycloidal_drive#1` is a `designed` module record in `placements.json` (pose from the SolidWorks node, no
+  leaf records, `solidworks` cross-check block; `tools/reference/extract_placements.py` never descends into
+  `DESIGNED_MODULES`). A designed module the capture never placed declares its pose in `lib/mounts.py`
+  `MODULE_MOUNTS` (`ModuleMount(key, module, host, joint, frame)`: module +Z ON the joint's axis, checked) and
+  `mount_placements.py` writes its record (`kind: module, designed: true`, a `mount` block, no totals — listed
+  under `designed_modules` AND `mounted`). `world_rows(key)` expands a designed-module key into world-placed
+  parts for links and inertials; `BODIES` names the drive's rigid bodies (`stator` / `rotor`) and a `:<body>`
   key suffix (`"cycloidal_drive#1:rotor"`, `_occurrences.split_key`) selects one. Keep `EXPECTED`
   (whole module + `bodies`) in step with the geometry (`totals()` / `totals(body)`).
 - **Assemblies are native build123d**: a model body returns `lib.assembly.assembly(name, children)` =
@@ -425,6 +447,8 @@ the base stack above the base bottom, the 90T planes within the shafts),
 `test_lazy_kernel.py` (a fresh interpreter imports every template, part, assembly and link model without
 loading `build123d` / `OCP`; names the first offender — a new assembly model goes in its module list),
 `source_checks.py` (the shared `runs_its_model()` check that a model file ends with its build call),
+`totals.py` (what an occurrence contributes to the arm / link totals: its SolidWorks record, or its own build once
+converted — shared by `test_assembly.py` and `test_robot.py`),
 `tests/cycloidal/` (the drive: one module per part + housing / purchased / fitment / assembly / port,
 ~230 tests; `from tests.cycloidal.helpers import CFG, …` for the shared config + geometry helpers, the
 `stack` fixture is `tests/cycloidal/conftest.py`). Geometry tests are

@@ -3,10 +3,12 @@
 An OCCURRENCES table row is (part_or_module_name, role_or_None, placement_key), in the
 SolidWorks document order. Roles make duplicate parts' labels unique (`j3_coupler:j2`);
 they are positional/ordinal for now - rename them when the joint semantics are modelled.
-Code-driven modules (assemblies/cycloidal_drive.py) use (part, role, position) rows instead:
-their placement key is a SolidWorks node, their contents are not (located_children / world_rows), and
-their BODIES split the rows into rigid bodies ("cycloidal_drive#1:rotor", split_key) for the
-robot description.
+Code-driven modules (assemblies/cycloidal_drive.py, forearm_roll_drive.py) use (part, role, placement)
+rows instead - the placement in the MODULE frame, as data: a position `(x, y, z)` for a part whose own
+frame is already aligned with the module's, or a frame `((x, y, z), (rx, ry, rz))` (lib.datum) when it
+needs a rotation (row_location). Their placement key is a SolidWorks node or a lib/mounts.py
+ModuleMount, their contents are not (located_children / world_rows), and their BODIES split the rows
+into rigid bodies ("cycloidal_drive#1:rotor", split_key) for the robot description.
 
 A child is a cadgen MODEL (parts.model(name), assemblies.<module>.<module>) reached through
 lib.models.geometry(): inside a cadgen build that is the linked child (built in parallel, the
@@ -149,10 +151,19 @@ def place_at(part_name: str, loc: bd.Location):
     return _part(part_name).moved(loc * _local_from_ref(part_name).inverse())
 
 
+def row_location(placement) -> bd.Location:
+    """The Location of a module row's placement: a position `(x, y, z)` (no rotation - the part's
+    frame is the module's, shifted) or a frame `((x, y, z), (rx, ry, rz))` (lib.datum.to_location)."""
+    if len(placement) == 2 and not isinstance(placement[0], (int, float)):
+        return to_location(placement)
+    return bd.Location(tuple(placement))
+
+
 def located_children(rows, tint: str | None = None) -> list:
-    """Every (part, role|None, position) row of a code-driven module table as a placed, labelled child.
-    With `tint` the module is colored like the arm: printed parts `tint`, purchased parts BOUGHT_TINT."""
-    children = [label_shape(place_at(name, bd.Location(tuple(pos))), name, *_details(role)) for name, role, pos in rows]
+    """Every (part, role|None, placement) row of a code-driven module table as a placed, labelled child
+    (row_location). With `tint` the module is colored like the arm: printed parts `tint`, purchased
+    parts BOUGHT_TINT."""
+    children = [label_shape(place_at(name, row_location(pos)), name, *_details(role)) for name, role, pos in rows]
     if tint is not None:
         for child in children:
             _tint_parts(child, bd.Color(tint))
@@ -160,7 +171,7 @@ def located_children(rows, tint: str | None = None) -> list:
 
 
 def module_rows(module_name: str) -> list:
-    """The (part, role, position-in-module-frame) rows of a code-driven assemblies/<module>.py."""
+    """The (part, role, placement-in-module-frame) rows of a code-driven assemblies/<module>.py."""
     return list(importlib.import_module(f"assemblies.{module_name}").OCCURRENCES)
 
 
@@ -182,9 +193,9 @@ def world_rows(key: str) -> list:
     """(part, role, WORLD placement of the part's reference frame) for a placement key.
 
     A part key gives one row. A designed module key (placements.json kind "module",
-    designed: true - the cycloidal drive) expands to its module's rows composed with the
-    module's world pose, so links and inertials see every part inside it; with a ":<body>"
-    suffix (split_key) only the rows of that rigid body."""
+    designed: true - the cycloidal drive, the forearm roll drive) expands to its module's rows
+    composed with the module's world pose, so links and inertials see every part inside it; with a
+    ":<body>" suffix (split_key) only the rows of that rigid body."""
     occ, body = split_key(key)
     o = P.OCCURRENCES[occ]
     if o["kind"] != "module":
@@ -200,7 +211,7 @@ def world_rows(key: str) -> list:
             raise ValueError(f"{key}: unknown body {body!r} (have {sorted(bodies)})")
         rows = [r for r in rows if r[0] in bodies[body]]
     world = P.location(occ, "world")
-    return [(part, role, world * bd.Location(tuple(pos))) for part, role, pos in rows]
+    return [(part, role, world * row_location(pos)) for part, role, pos in rows]
 
 
 def place_world_at(part_name: str, world: bd.Location, into=None):

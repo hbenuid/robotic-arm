@@ -1,10 +1,13 @@
-"""Every custom part must match its reference geometry (the SolidWorks export, or for the
-designed cycloidal-drive parts the CadQuery export they were ported from).
+"""Every custom part must match its reference geometry (the SolidWorks export, for the designed
+cycloidal-drive parts the CadQuery export they were ported from, for a native part its accepted build).
 
 Wrappers pass trivially (they ARE the reference); a converted part is gated by volume and
 bounding box (size + position in its local frame, after LOCAL_FROM_REF) so a conversion
 that drifts from the original design fails here. Per-part tolerances: REF_VOL_TOL
-(relative) and REF_BBOX_TOL (mm) module attributes.
+(relative) and REF_BBOX_TOL (mm) module attributes. A converted part whose DEFAULT build deliberately
+diverges from its reference (the forearm parts: the SolidWorks elbow end gave way to the roll joint)
+declares REFERENCE_BUILD, a zero-arg callable returning the LEGACY configuration that reproduces the
+reference - that build is matched here, the default one is locked by the part's own tests.
 """
 import pytest
 
@@ -13,12 +16,12 @@ from lib import manifest as M
 from lib import reference as R
 from lib.datum import IDENTITY, to_location
 
-CUSTOM_PARTS = [n for n in parts.names() if n in R.CUSTOM or n in R.DESIGNED]
+CUSTOM_PARTS = [n for n in parts.names() if n in R.CUSTOM or n in R.DESIGNED or n in R.NATIVE]
 
 
 def test_some_custom_parts_were_discovered():
     """An empty parametrize list would only *skip* the reference match - guard the discovery."""
-    assert len(CUSTOM_PARTS) == len(R.CUSTOM) + len(R.DESIGNED)
+    assert len(CUSTOM_PARTS) == len(R.CUSTOM) + len(R.DESIGNED) + len(R.NATIVE)
 
 
 def test_reference_and_vendor_files_match_manifest():
@@ -43,15 +46,16 @@ def test_reference_and_vendor_files_match_manifest():
                 )
             else:   # envelope in use - a vendor file must not appear without being recorded
                 assert not vendor.exists(), f"{vendor} exists but manifest.json has no vendor entry - re-run the import tool"
-    assert set(manifest["parts"]) == set(R.CUSTOM) | set(R.COTS) | set(R.DESIGNED)
+    assert set(manifest["parts"]) == set(R.CUSTOM) | set(R.COTS) | set(R.DESIGNED) | set(R.NATIVE)
 
 
 @pytest.mark.slow
 @pytest.mark.parametrize("name", CUSTOM_PARTS)
 def test_part_matches_reference(name):
     mod = parts.load(name)
+    reference_build = getattr(mod, "REFERENCE_BUILD", None)   # a diverged conversion: match its LEGACY build
     ok, report = R.matches_reference(
-        parts.build(name),
+        reference_build() if reference_build else parts.build(name),
         mod.REFERENCE,
         local_from_ref=to_location(getattr(mod, "LOCAL_FROM_REF", IDENTITY)),
         vol_tol=getattr(mod, "REF_VOL_TOL", 0.005),

@@ -37,14 +37,16 @@ def main(argv=None) -> int:
     R.REF_SOLIDWORKS_DIR.mkdir(parents=True, exist_ok=True)
     R.VENDOR_DIR.mkdir(exist_ok=True)
     jobs = [(name, prod, rel, "custom") for name, (prod, rel) in R.CUSTOM.items()]
-    jobs += [(name, prod, rel, "cots") for name, (prod, rel) in R.COTS.items() if name not in R.CYCLOIDAL_PARTS]
+    others = R.CYCLOIDAL_PARTS | R.NATIVE_PARTS
+    jobs += [(name, prod, rel, "cots") for name, (prod, rel) in R.COTS.items() if name not in others]
 
-    # The cycloidal drive's entries are owned by tools/cycloidal/import_cadquery.py - keep them.
+    # The cycloidal drive's entries are owned by tools/cycloidal/import_cadquery.py, the native parts' by
+    # tools/reference/import_native.py - keep them.
     existing = M.read()["parts"]
     manifest = {
         "source_dir": str(args.src),
         "monolith": None,
-        "parts": {name: entry for name, entry in existing.items() if name in R.CYCLOIDAL_PARTS},
+        "parts": {name: entry for name, entry in existing.items() if name in others},
     }
     monolith = args.src / R.MONOLITH_NAME
     if monolith.exists():

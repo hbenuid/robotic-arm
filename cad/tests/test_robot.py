@@ -1,5 +1,6 @@
 """The robot description (robot/frames.py, robot/links/*, robot/meshes/*, robot/arm.{urdf,srdf,sdf})
 stays consistent with the CAD and with itself."""
+import importlib
 import math
 import pathlib
 import subprocess
@@ -13,6 +14,7 @@ from lib import placements as P
 from lib import reference as R
 from robot import frames as F
 from tests.source_checks import runs_its_model
+from tests.totals import solids_and_volume
 from tools.robot import derive as RF
 
 CAD_DIR = pathlib.Path(__file__).resolve().parent.parent
@@ -179,7 +181,6 @@ def test_forward_kinematics_at_zero_reproduces_the_capture_frames():
 def test_link_builds_from_its_occurrences(link):
     from robot._links import build_link
 
-    from assemblies import cycloidal_drive
     from assemblies._occurrences import split_key
 
     shape = build_link(link)
@@ -189,13 +190,14 @@ def test_link_builds_from_its_occurrences(link):
         okey, body = split_key(k)
         o = P.OCCURRENCES[okey]
         if o.get("designed"):     # a code-driven module: its own totals lock (whole or one rigid body)
-            assert o["part"] == "cycloidal_drive"
-            lock = cycloidal_drive.EXPECTED["bodies"][body] if body else cycloidal_drive.EXPECTED
+            expected = importlib.import_module(f"assemblies.{o['part']}").EXPECTED
+            lock = expected["bodies"][body] if body else expected
             solids += lock["solids"]
             volume += lock["solid_volume"]
-        else:
-            solids += o["solids"]
-            volume += o["solid_volume"]
+        else:                     # a SolidWorks record, or the part's own build once converted (tests.totals)
+            s, v = solids_and_volume(okey)
+            solids += s
+            volume += v
     assert len(shape.solids()) == solids
     assert abs(R.solid_volume(shape) - volume) <= 0.5
     assert shape.is_valid
@@ -214,7 +216,7 @@ def test_link_masses_add_up():
             if part in R.COTS:
                 expected_g += mod.MASS_G
             elif P.OCCURRENCES[k]["kind"] == "part":
-                expected_g += PARAMS.PETG_DENSITY * P.OCCURRENCES[k]["solid_volume"]
+                expected_g += PARAMS.PETG_DENSITY * solids_and_volume(k)[1]
             else:
                 expected_g += PARAMS.PETG_DENSITY * R.solid_volume(parts.build(part))
     total = sum(RF.link_inertial(l)[0] for l in PHYSICAL_LINKS)

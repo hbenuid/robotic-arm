@@ -23,8 +23,9 @@ def test_the_two_lists_partition_the_parts_by_the_cots_flag():
     assert {r["part"] for r in bought} == set(R.COTS)
     assert (len(printed), sum(r["qty"] for r in printed)) == (26, 34)
     assert (len(bought), sum(bom.part_counts()[r["part"]] for r in bought)) == (17, 25)
-    assert {r["state"] for r in printed} <= {"wrapper", "parametric", "designed"}
+    assert {r["state"] for r in printed} <= {"wrapper", "parametric", "designed", "native"}
     assert {r["part"] for r in printed if r["state"] == "designed"} == set(R.DESIGNED)
+    assert {r["part"] for r in printed if r["state"] == "native"} == set(R.NATIVE)
 
 
 def test_drive_buy_list_matches_the_drive_config():
