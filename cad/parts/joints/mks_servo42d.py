@@ -14,7 +14,7 @@ and its edges are parallel to the motor's (the connector side of the PCB on -Y, 
 SolidWorks product: 'nema17x40_with_mks' (Servo42D_Assem + standoffs + screws)
 Source export:      ~/Documents/arm_assembly_organized/mks/nema17x40_with_mks.step (lib.reference.MKS_EXPORT_NAME)
 Reference: mm units, 13 solid(s), bbox size (43, 43, 33.7) mm, bbox min (-21.5, -21.5, -14.1) mm.
-In the arm: x4 (mks_servo42d#1 behind nema17_48mm#1 under the base, #2..3 behind nema17_40mm#2..3, one inside cycloidal_drive#1).
+In the arm: x5 (mks_servo42d#1 behind nema17_48mm#1 under the base, #2..3 behind nema17_40mm#2..3, one inside cycloidal_drive#1, one inside forearm_roll_drive#1).
 
 COTS convention (parts/_templates/cots.py): mks_servo42d() returns the vendor STEP when present,
 else the parametric envelope below - both in the frame above.
@@ -33,7 +33,7 @@ COTS = True
 MASS_G = MKS_SERVO42D_MASS_G   # [ESTIMATE] see lib/params.py
 PURCHASE_SPEC = "MKS SERVO42D closed-loop stepper driver board + cover, with 4x M3x30 and 4x 3 mm standoffs (the kit's board half)"
 PURCHASE_QTY = 1    # pieces per occurrence: one board kit behind one motor
-PURCHASE_NOTE = ("ordered as MKS SERVO42D closed-loop kits (motor + board): 2 kits with a 40 mm motor (parts/joints/nema17_40mm, "
+PURCHASE_NOTE = ("ordered as MKS SERVO42D closed-loop kits (motor + board): 3 kits with a 40 mm motor (parts/joints/nema17_40mm, "
                  "elbow + wrist pitch) + 2 kits with the 48 mm motor (parts/cycloidal/nema17_48mm: base_yaw and the drive); "
                  "CAN ids src/config.py J1..J3")
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"

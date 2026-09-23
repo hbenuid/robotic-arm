@@ -23,14 +23,15 @@ occupies the reference's bounding box (±1.5 mm) after the part's `VENDOR_TO_REF
 | `nema17_48mm.step` | `parts/cycloidal/nema17_48mm.py` | composed by `tools/reference/split_mks_motor.py --write drive`: the x48 kit export's real 48 mm body (front plate, housing, back plate, its two Ø22 bearings, connector, rotor - 7 solids; tie rods left out, the kit's M3x30 replace them) with its own boss + shaft cut off and the drive's `lib/cycloidal/motor.py pilot()` + `shaft()` fused on (the envelope's exact interface); identity `VENDOR_TO_REF` | added 2026-09-21; the reference stays the drive repo's envelope (the vendor's bbox is within 1.5 mm: connector +0.85 on +Y). The datasheet 17HS19-2004S1 ships a 24 mm / 15 mm-D-cut shaft (the x48 export's own) - the user's motor is the 22 mm one |
 | `mks_servo42d.step` | `parts/joints/mks_servo42d.py` | the Servo42D_Assem (PCB 4 solids + cover) + 4 standoffs + 4 M3x30 of the same export (13 solids; z=0 at the motor's rear face, stack −Z, screws to z +19.6) | added 2026-09-21; one board kit per MKS motor — the three 40 mm ones and the drive's 48 mm |
 
-Cycloidal-drive purchased parts **without** a vendor file (their `_envelope()` — the drive repo's
-simplified model, also the reference STEP — is the geometry; `test_cots_vendor_matches_reference_frame`
-skips them):
+Purchased parts **without** a vendor file (their `_envelope()` — the drive repo's simplified model or, for a
+native COTS part, the envelope accepted by `tools/reference/import_native.py` - also the reference STEP — is the
+geometry; `test_cots_vendor_matches_reference_frame` skips them):
 
 | Part module | Why no catalog model (2026-08-28) |
 |---|---|
 | `parts/cycloidal/bearing_6003.py` | `bearing_6003_2rs_sealed_simple` **tried and rejected**: the file is a Ø24 × 8 bearing (a 628 size), not 17 × 35 × 10 |
 | `parts/cycloidal/bearing_6814.py` | no 6814 / 61814 entry in the catalog (search and direct ids 404) |
+| `parts/joints/bearing_6808.py` | no 6808 / 61808 / 6908 entry (2026-09-22: nothing above a 17 mm bore in the catalog) - a native COTS part (`lib/reference.py NATIVE_COTS`, reference `reference/native/`) |
 | `cycloidal_ring_pins`, `cycloidal_output_pins`, `cycloidal_shaft_support_pin`, `cycloidal_motor_bolts`, `cycloidal_housing_bolts`, `cycloidal_housing_nuts` | pattern parts (21 / 4 / 1 / 4 / 8 / 8 solids); the catalog has single fasteners only |
 
 What to **order** for each purchased part is not here: it is `PURCHASE_SPEC` / `PURCHASE_QTY` /

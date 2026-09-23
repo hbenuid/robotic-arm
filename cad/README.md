@@ -1,6 +1,6 @@
 # robotic-arm — CAD (build123d)
 
-**Last updated:** 2026-09-22 (cadgen 0.6.6; the forearm is parametric) — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-23 (cadgen 0.6.6; the forearm roll — a 6-axis arm) — see the root `CHANGELOG.md` for dated changes.
 
 Parametric CAD-as-code for the desktop arm (base yaw, 20:1 cycloidal shoulder pitch, belt-driven
 elbow and wrist pitch, wrist roll, MG996R parallel gripper), converted part-by-part from the original
@@ -98,6 +98,9 @@ cad/
 ├── lib/
 │   ├── params.py          # single source of truth for shared dimensions (tagged provenance)
 │   ├── units.py           # IN, NUDGE - a leaf module (lib/cycloidal/ imports it; params.py re-exports it)
+│   ├── motors.py          # the arm's motors (NEMA 17 interface, pancake, the 40 mm kit motor + MKS board, MOTOR_40) - a leaf, re-exported by params.py
+│   ├── belts.py           # GT2: the pulleys, pulley_od(), closed_belt_length() / centre_distance(), stock belt lengths - a leaf
+│   ├── forearm/           # the forearm (ForearmConfig: LEGACY = the SolidWorks j2_link + caps, DEFAULT = the roll end) and the roll drive (RollDriveParams, stack_positions, the block / shaft / retainer / 90T ring builders)
 │   ├── datum.py           # capture frame W -> base_link frame B: frame(), base_frame() (arm.py arm_from_w(), robot/frames.py); frames as data: IDENTITY, to_location()
 │   ├── mounts.py          # the motor mounts the SolidWorks capture never had (base_yaw / elbow_pitch / wrist_pitch motors + MKS boards) as frames-as-data
 │   ├── reference.py       # naming maps (SolidWorks custom/COTS, designed cycloidal parts, modules), loaders, path_of(), matches_reference()
@@ -110,18 +113,20 @@ cad/
 │   ├── __init__.py            # the directory scan: MODULES / GROUPS, names(), load(), model(), build(), bought(), source_of()
 │   ├── _templates/            # designed.py (parametric), wrapper.py (import wrapper), cots.py (purchased) templates
 │   ├── base/                  # base, j1_coupler, j1_link, j1_cap                                  (SolidWorks wrappers)
-│   ├── joints/                # j2_link, j2_cap_1, j2_cap_2 (parametric - lib/forearm/), j3_coupler, gt2_pulley_90t (SolidWorks wrappers) + COTS nema17_40mm, mks_servo42d (the belt joints' MKS kits)
+│   ├── joints/                # j2_link, j2_cap_1, j2_cap_2 (parametric - lib/forearm/), j3_coupler, gt2_pulley_90t (SolidWorks wrappers) + COTS nema17_40mm, mks_servo42d (the belt joints' MKS kits) + the roll drive: forearm_roll_block / _shaft / _retainer (native), bearing_6808 (native COTS)
 │   ├── wrist/                 # wrist_link, gripper_clamp_bracket, gripper_j3_connector + COTS nema17_pancake, gt2_pulley_20t
 │   ├── gripper/               # gripper_* (7), servo_holder + COTS gripper_rail_6mm, mg996r_servo, mg996r_horn
 │   └── cycloidal/             # the drive: 6 designed parts + 10 COTS (bearings, nema17_48mm - vendor file composed from the kit exports -, pins, bolts, nuts), _cots.py helper
 │       └── <name>.py + <name>.step   # every group: running the .py writes the .step beside it (git-ignored, per machine)
 ├── assemblies/
-│   ├── arm.py             # the whole arm, grouped arm -> base_link/shoulder_link/upper_arm_link/forearm_link/wrist_pitch_link/wrist (GROUPS; the SolidWorks occurrences + the mounted motors and boards of lib/mounts.py + the two modules, printed parts tinted per group, purchased parts grey)
+│   ├── arm.py             # the whole arm, grouped arm -> base_link/shoulder_link/upper_arm_link/elbow_link/forearm_link/wrist_pitch_link/wrist (GROUPS; the SolidWorks occurrences + the mounted motors and boards of lib/mounts.py + the three modules, printed parts tinted per group, purchased parts grey)
 │   ├── arm_no_caps.py     # working view: arm.py's tables minus HIDDEN (the three link caps) - not the robot
 │   ├── gripper.py         # the gripper mechanism module (its occurrences placed from placements.json)
 │   ├── cycloidal_drive.py # the drive module (rows placed from lib/cycloidal stack_positions - code-driven, the MKS board included; totals in EXPECTED)
+│   ├── forearm_roll_drive.py # the forearm roll module (rows from lib/forearm stack_positions; placed by lib/mounts.py MODULE_MOUNTS; stator / rotor BODIES; totals in EXPECTED)
 │   └── _occurrences.py    # place()/occurrence_children()/grouped_children() (placement keys), place_at()/located_children() (Locations), world_rows(); BOUGHT_TINT / _tint_parts (purchased parts grey) - children via lib.models.geometry()
 ├── docs/cycloidal_drive.md  # the drive's spec, port notes and attachment
+├── docs/forearm_roll.md     # the forearm roll drive's spec, fits, assembly sequence and attachment
 ├── docs/open_issues.md      # THE list of unsettled fits, estimates, unmodelled hardware and unconfirmed mappings
 ├── reference/             # immutable per-part reference STEPs (Git LFS) + manifest.json + placements.json + README
 │   ├── solidworks/            # the 25 SolidWorks exports (custom parts + the SolidWorks purchased parts)
@@ -133,7 +138,8 @@ cad/
 │                          # cycloidal/{export_cadquery,import_cadquery}.py (the drive's references), robot/{derive,export_link_meshes}.py
 ├── tests/                 # pytest: conventions, reference match, placements, assembly totals, params locks, robot description, package layering, the motor mounts (test_mounts.py);
 │   ├── conftest.py            # CADGEN_DAEMON=0 + a guard that fails any test calling a model at top level (tests call bodies)
-│   └── cycloidal/             # the drive's own tests (one module per part + housing / purchased / fitment / assembly / port) + helpers.py (CFG, geometry helpers), conftest.py (stack fixture)
+│   ├── cycloidal/             # the drive's own tests (one module per part + housing / purchased / fitment / assembly / port) + helpers.py (CFG, geometry helpers), conftest.py (stack fixture)
+│   └── forearm/               # the forearm's tests: the LEGACY builds vs the SolidWorks parts, the roll end, the roll drive (fits, clearances at the capture pose and with the elbow folded)
 └── snapshots/             # snapshot PNGs (git-ignored)
 ```
 The `parts/` groups follow the **physical stage along the arm** (`base` → `joints` → `wrist` →
@@ -246,15 +252,17 @@ placement): cadgen's viewer and snapshots treat +Z as up and have no up-axis set
 capture-frame `arm.step` would lie on its side. `arm.step` and `robot/arm.urdf` therefore open in the
 same pose, the base standing on z = 0. Roles make
 duplicate parts' labels unique (`j3_coupler:j2`, `gripper_end:1`); they are positional for
-now. `assemblies/cycloidal_drive.py` is a **code-driven module**: its rows are
-`(part, role, position)` computed from `lib/cycloidal` (`stack_positions`), and `arm.py` locates
-the whole module at the SolidWorks node's pose (`placements.json` `cycloidal_drive#1`, a
-`designed` module record). `arm.py GROUPS` buckets the occurrences into the component tree
-`arm -> base_link/shoulder_link/upper_arm_link/forearm_link/wrist_pitch_link/wrist` — the rigid-link
-partition of `robot/frames.py LINKS` with the two modules kept whole (the cycloidal drive under
-`shoulder_link` although `LINKS` puts its rotor body in `upper_arm_link`) — so each component
+now. `assemblies/cycloidal_drive.py` and `assemblies/forearm_roll_drive.py` are **code-driven modules**: their rows are
+`(part, role, placement)` computed from `lib/cycloidal` / `lib/forearm` (`stack_positions`), and `arm.py` locates
+the whole module at its pose (`placements.json` `cycloidal_drive#1`, a `designed` module record from the
+SolidWorks node; `forearm_roll_drive#1`, the same kind of record written from `lib/mounts.py MODULE_MOUNTS`).
+`arm.py GROUPS` buckets the occurrences into the component tree
+`arm -> base_link/shoulder_link/upper_arm_link/elbow_link/forearm_link/wrist_pitch_link/wrist` — the rigid-link
+partition of `robot/frames.py LINKS` with the three modules kept whole (the cycloidal drive under
+`shoulder_link` although `LINKS` puts its rotor body in `upper_arm_link`, the roll drive under `elbow_link`
+although its rotor - the shaft - belongs to `forearm_link`) — so each component
 toggles as one node in the viewers, and
-every subtree is tinted with its group's color (the gripper and cycloidal_drive modules keep
+every subtree is tinted with its group's color (the gripper and the two drive modules keep
 their own). `tests/test_assembly.py` checks the rebuilt arm against the SolidWorks totals plus
 the module's own lock (leaves, solids, volumes, bbox - the numbers live in the test and in
 `assemblies/cycloidal_drive.py EXPECTED`, never in the docs), the group labels and the `LINKS` mirror. The
@@ -293,9 +301,10 @@ robot/
 └── arm.sdf            # model-level SDF 1.12 derived from the URDF
 ```
 
-Links: `base_link → base_yaw → shoulder_link → shoulder_pitch → upper_arm_link → elbow_pitch →
-forearm_link → wrist_pitch → wrist_pitch_link → wrist_roll → wrist_roll_link → jaw_a / jaw_b
-(prismatic, jaw_b mimics jaw_a) + tool0` (frame-only). The cycloidal drive **is** `shoulder_pitch`:
+Links: `base_link → base_yaw → shoulder_link → shoulder_pitch → upper_arm_link → elbow_pitch → elbow_link →
+forearm_roll → forearm_link → wrist_pitch → wrist_pitch_link → wrist_roll → wrist_roll_link → jaw_a / jaw_b
+(prismatic, jaw_b mimics jaw_a) + tool0` (frame-only) — six revolute joints, the last three concurrent at the
+wrist centre (`docs/forearm_roll.md`). The cycloidal drive **is** `shoulder_pitch`:
 `LINKS` places its stator (`cycloidal_drive#1:stator` — housing, motor, gear train) in `shoulder_link`
 with the yawing `j1_coupler` and its rotor (`cycloidal_drive#1:rotor` — output hub + pins) in
 `upper_arm_link` with `j1_link` (`assemblies/cycloidal_drive.py BODIES`, expanded by
@@ -311,7 +320,8 @@ sweeps and hardware.
 |---|---|---|---|---|
 | `base_yaw` | revolute, world up | `base_link → shoulder_link` | NEMA 17 x 48 + MKS SERVO42D (`nema17_48mm#1` + `mks_servo42d#1` under the base plate, hanging `BASE_MOTOR_STACK_PROUD` = 6.1 mm below the base's bottom face; CAN id unconfirmed) | the holder `j1_coupler` turns on the base |
 | `shoulder_pitch` | revolute, `N` | `shoulder_link → upper_arm_link` | the 20:1 cycloidal drive, its own NEMA 17 (`CYCLOIDAL_RATIO`) | stator with the holder, rotor with `j1_link` |
-| `elbow_pitch` | revolute, `N` | `upper_arm_link → forearm_link` | GT2 90T belt, NEMA 17 x 40 + MKS SERVO42D (`nema17_40mm#2` + `mks_servo42d#2` on `j1_link`'s pad; CAN id unconfirmed) | pulley + J3 coupler on the forearm |
+| `elbow_pitch` | revolute, `N` | `upper_arm_link → elbow_link` | GT2 90T belt, NEMA 17 x 40 + MKS SERVO42D (`nema17_40mm#2` + `mks_servo42d#2` on `j1_link`'s pad; CAN id unconfirmed) | pulley + J3 coupler carry the roll drive's block |
+| `forearm_roll` | revolute, along the forearm through the wrist centre | `elbow_link → forearm_link` | GT2 90T ring on the hollow roll shaft, NEMA 17 x 40 + MKS SERVO42D on the elbow block's pad (`assemblies/forearm_roll_drive.py`; a 4th CAN id) | the shaft's flange bolts to `j2_link`'s wall; hard stop ±`FOREARM_ROLL_LIMIT_DEG` |
 | `wrist_pitch` | revolute, `N` | `forearm_link → wrist_pitch_link` | GT2 90T belt, NEMA 17 x 40 + MKS SERVO42D (`nema17_40mm#3` + `mks_servo42d#3` on `j2_link`'s web slots; CAN id unconfirmed) | pulley + J3 coupler on the wrist body |
 | `wrist_roll` | revolute, `F` | `wrist_pitch_link → wrist_roll_link` | NEMA17 pancake + 20T pulley (not CAN-driven) | |
 | `jaw_a`, `jaw_b` (mimic, −1) | prismatic | `wrist_roll_link → jaw_*_link` | MG996R crank linkage | `open` / `closed` SRDF states |
@@ -322,7 +332,8 @@ sweeps and hardware.
 | `base_link` | `base` + `nema17_48mm#1`, `mks_servo42d#1` (the base_yaw 48 mm motor + board under the plate) |
 | `shoulder_link` | `j1_coupler` + the drive's **stator** (`cycloidal_drive#1:stator`: motor plate, ring gear body, ring pins, housing bolts/nuts, NEMA 17 + its MKS board, gear train) |
 | `upper_arm_link` | the drive's **rotor** (`cycloidal_drive#1:rotor`: output hub, output pins, 625) + `j1_link` + `j1_cap` + `nema17_40mm#2`, `mks_servo42d#2` (the elbow_pitch motor + board on the pad) |
-| `forearm_link` | `j2_link`, `j2_cap_1`, `j2_cap_2`, `gt2_pulley_90t#1`, `j3_coupler#1` + `nema17_40mm#3`, `mks_servo42d#3` (the wrist_pitch motor + board on the web) |
+| `elbow_link` | `gt2_pulley_90t#1`, `j3_coupler#1` + the roll drive's **stator** (`forearm_roll_drive#1:stator`: the elbow block, 2× 6808, the retainer, its NEMA 17 x 40 + MKS board, the 20T) |
+| `forearm_link` | the roll drive's **rotor** (`forearm_roll_drive#1:rotor`: the hollow roll shaft with its 90T ring and flange) + `j2_link`, `j2_cap_1`, `j2_cap_2` + `nema17_40mm#3`, `mks_servo42d#3` (the wrist_pitch motor + board on the web) |
 | `wrist_pitch_link` | `wrist_link`, `gripper_clamp_bracket`, `nema17_pancake`, `gt2_pulley_90t#2`, `j3_coupler#2` |
 | `wrist_roll_link` | `gt2_pulley_20t` + the gripper base (connector, servo holder, servo + horn, cover, rails, crank links) |
 | `jaw_a_link` / `jaw_b_link` | slider + two fingers + end, each side |
@@ -336,14 +347,16 @@ All limits, efforts, velocities, axis signs and the jaw travel are `[ESTIMATE]` 
 ./cadtool python tools/robot/export_link_meshes.py           # regenerate meshes after converting a part
 ./cadtool validate robot/arm.urdf --strict             # also .srdf / .sdf --gz-check never
 ./cadtool snapshot robot/arm.urdf snapshots/arm_urdf.png --joint-values '{"shoulder_pitch": 45}'   # posed stills
-./cadtool viewer                                       # then ?file=robot/arm.urdf: meshes + joint sliders (base_yaw, shoulder_pitch, elbow_pitch, wrist_pitch, wrist_roll, jaw_a)
+./cadtool viewer                                       # then ?file=robot/arm.urdf: meshes + joint sliders (base_yaw, shoulder_pitch, elbow_pitch, forearm_roll, wrist_pitch, wrist_roll, jaw_a)
 ```
 
 (cadgen 0.5.0/0.5.1 drew every robot description as a pile of shards and needed a local runtime patch;
 fixed upstream in 0.6.0, the patch is gone.) All joints read 0 at
 the SolidWorks capture pose and the `shoulder_pitch` slider turns the
-drive's rotor with `j1_link` while its housing stays with `j1_coupler`. The drive on its own:
-`?file=assemblies/cycloidal_drive.step` (see `docs/cycloidal_drive.md`, "Viewing the drive").
+drive's rotor with `j1_link` while its housing stays with `j1_coupler`; the `forearm_roll` slider turns the
+forearm, wrist and gripper about the forearm while the elbow block stays with the elbow pulley. The drives on
+their own: `?file=assemblies/cycloidal_drive.step` (see `docs/cycloidal_drive.md`, "Viewing the drive") and
+`?file=assemblies/forearm_roll_drive.step` (`docs/forearm_roll.md`).
 
 After any CAD change that moves geometry: re-export the meshes, re-run the check, and if a
 frame moved re-derive the affected `<origin>`/`<inertial>` values with `--urdf-draft` /

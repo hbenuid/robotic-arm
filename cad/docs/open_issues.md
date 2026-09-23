@@ -1,6 +1,6 @@
 # Open issues — what the CAD knows is not settled
 
-**Last updated:** 2026-09-22 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-23 — see the root `CHANGELOG.md` for dated changes.
 
 **Purpose:** the ONE list of unsettled things a session should know before trusting a number or a fit: fit problems
 the model carries knowingly, `[ESTIMATE]` values waiting for a measurement, hardware not modelled yet, mappings

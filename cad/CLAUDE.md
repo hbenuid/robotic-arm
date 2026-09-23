@@ -3,8 +3,8 @@
 **Purpose:** CAD-scoped agent guide — the `@step` model convention (cadgen 0.6), the wrapper → parametric
 conversion workflow, shared-dimension rules, assembly placements, purchased parts, tests, tooling.
 **Audience:** agent. Human docs: `README.md`. Reference provenance: `reference/README.md`. The
-cycloidal drive (spec, port notes, attachment): `docs/cycloidal_drive.md`.
-**Last updated:** 2026-09-22 (cadgen 0.6.6; forearm roll M0: native parts, module mounts, `lib/motors.py` / `lib/belts.py`). Every commit that changes behaviour, layout or tooling gets a dated entry in the
+cycloidal drive (spec, port notes, attachment): `docs/cycloidal_drive.md`; the forearm roll drive: `docs/forearm_roll.md`.
+**Last updated:** 2026-09-23 (cadgen 0.6.6; the forearm roll — a 6-axis arm: `docs/forearm_roll.md`). Every commit that changes behaviour, layout or tooling gets a dated entry in the
 root `CHANGELOG.md` and bumps the `Last updated` line of the docs it touches.
 
 `cad/` is a **separate uv project** (Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.6.x) inside the
@@ -365,12 +365,12 @@ Changing a shared dimension — touchpoints in order:
   absent from the model, the totals and the inertials; model it as a COTS pattern part (`cycloidal_housing_bolts` is
   the pattern) to change that.
 - `arm.py GROUPS` buckets the occurrences into the component tree
-  `arm → base_link/shoulder_link/upper_arm_link/forearm_link/wrist_pitch_link/wrist` — the
-  `robot/frames.py LINKS` partition with the two modules kept whole (`wrist` = wrist_roll_link + jaw
+  `arm → base_link/shoulder_link/upper_arm_link/elbow_link/forearm_link/wrist_pitch_link/wrist` — the
+  `robot/frames.py LINKS` partition with the three modules kept whole (`wrist` = wrist_roll_link + jaw
   links; the cycloidal drive under `shoulder_link` although `LINKS` puts its rotor body in
-  `upper_arm_link`) — via
+  `upper_arm_link`; the forearm roll drive under `elbow_link` although its rotor is in `forearm_link`) — via
   `_occurrences.grouped_children()`, which tints each subtree's **printed** parts with its group's color
-  (`MODULE_TINTS` overrides for the two modules), every **purchased** part — inside the modules too — with the one
+  (`MODULE_TINTS` overrides for the modules), every **purchased** part — inside the modules too — with the one
   `_occurrences.BOUGHT_TINT` grey (`_tint_parts`: grey always means bought, so no group / module tint may reuse it;
   `test_grey_means_bought`), and raises unless the groups cover the keys
   exactly once. `test_assembly.py` locks the group labels + the LINKS mirror. The tints are
@@ -409,9 +409,10 @@ Changing a shared dimension — touchpoints in order:
   key may carry a `:<body>` suffix — `cycloidal_drive#1:stator` / `:rotor` from
   `assemblies/cycloidal_drive.py BODIES`, expanded by `_occurrences.world_rows`) and `JOINTS` (axis
   point/direction in the SolidWorks capture frame, limits from `lib/params.py`). Chain: `base_link →
-  base_yaw → shoulder_link → shoulder_pitch → upper_arm_link → elbow_pitch → forearm_link → wrist_pitch →
-  wrist_pitch_link → wrist_roll → wrist_roll_link → jaw_a/jaw_b` (+ `tool0`). Joint frame:
-  Z on the axis, X along the child link; child link frame = joint frame at capture, so **all joints
+  base_yaw → shoulder_link → shoulder_pitch → upper_arm_link → elbow_pitch → elbow_link → forearm_roll →
+  forearm_link → wrist_pitch → wrist_pitch_link → wrist_roll → wrist_roll_link → jaw_a/jaw_b` (+ `tool0`);
+  `forearm_roll`'s axis runs along the forearm through `WRIST_CENTRE` (the last three axes concurrent). Joint frame:
+  Z on the axis, X along the child link (`forearm_roll`: X = N, its child lies along the axis); child link frame = joint frame at capture, so **all joints
   are 0 at the capture pose** and mesh origins are identity. Moving an occurrence between links or
   changing an axis = edit `frames.py`, re-export meshes, re-derive the affected numbers, re-check.
 - `robot/links/<link>.py` are `@step` models of each rigid link (`robot/_links.build_link`, in the link
@@ -425,9 +426,11 @@ Changing a shared dimension — touchpoints in order:
 - Placeholders to confirm before real use: joint limits/effort/velocity (`lib/params.py`), axis signs,
   jaw travel, the link-membership assumptions listed in the URDF ledger. The cycloidal drive IS the
   `shoulder_pitch` joint (stator with the yawing `j1_coupler` in `shoulder_link`, rotor with `j1_link`
-  in `upper_arm_link`); the base_yaw / elbow_pitch / wrist_pitch motors are the mounted `nema17_48mm#1`, `nema17_40mm#2..3` +
-  `mks_servo42d#1..3` (`lib/mounts.py`, see Assembly); which CAN id (`src/config.py` J1..J3) drives which joint is unconfirmed;
-  wrist_roll and the jaws are not driven by `src/config.py`.
+  in `upper_arm_link`); the forearm roll drive IS the `forearm_roll` joint (stator with the elbow pulley + coupler in
+  `elbow_link`, rotor - the shaft - with `j2_link` in `forearm_link`; `docs/forearm_roll.md`); the base_yaw / elbow_pitch /
+  wrist_pitch motors are the mounted `nema17_48mm#1`, `nema17_40mm#2..3` + `mks_servo42d#1..3` (`lib/mounts.py`, see
+  Assembly), the two drives' motors are module rows; which CAN id (`src/config.py` J1..J3 - three ids for five boards)
+  drives which joint is unconfirmed; wrist_roll and the jaws are not driven by `src/config.py`.
 
 ## Tests (`./cadtool pytest`)
 `tests/conftest.py` sets `CADGEN_DAEMON=0` and blocks top-level model builds (tests call bodies:
@@ -453,7 +456,9 @@ loading `build123d` / `OCP`; names the first offender — a new assembly model g
 converted — shared by `test_assembly.py` and `test_robot.py`),
 `tests/cycloidal/` (the drive: one module per part + housing / purchased / fitment / assembly / port,
 ~230 tests; `from tests.cycloidal.helpers import CFG, …` for the shared config + geometry helpers, the
-`stack` fixture is `tests/cycloidal/conftest.py`). Geometry tests are
+`stack` fixture is `tests/cycloidal/conftest.py`), `tests/forearm/` (the forearm: the LEGACY builds vs the SolidWorks
+parts + feature probes, the roll end, the roll drive - axis through the wrist centre, stack, press fits, clean pairs,
+clearances in the arm with the elbow folded; `helpers.in_host()` places any occurrence in `j2_link`'s frame). Geometry tests are
 `slow`. Run pytest only through `./cadtool pytest` (rootdir `cad/`; the repo-root `tests/` is the
 unrelated, broken motor-control suite).
 

@@ -1,13 +1,14 @@
 # robotic-arm
 
-**Last updated:** 2026-09-21 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-23 — see the root `CHANGELOG.md` for dated changes.
 
-Robot arm control software for a 3-motor MKS SERVO42D/57D arm over CAN bus.
+Robot arm control software for a 3-motor MKS SERVO42D/57D arm over CAN bus (the CAD's arm is now a 6-axis one that needs five boards - see the CAD section).
 
 ## Hardware
 
 - 3× MKS SERVO42D/57D stepper drivers (`src/config.py` J1..J3 = CAN ids 1..3; which arm joint each one
-  drives is still to be confirmed against the CAD's robot description below)
+  drives is still to be confirmed against the CAD's robot description below - which now places five kits:
+  base yaw, elbow pitch, wrist pitch, the shoulder's cycloidal drive and the forearm roll)
 - CANable / slcan-compatible USB-to-CAN adapter
 - 500 kbit/s CAN bus (MKS factory default)
 
@@ -35,13 +36,17 @@ The committed CAD binaries (`cad/**/*.step`, `cad/**/*.stl`) are **Git LFS** obj
 
 The same CAD also produces the arm's robot description — [`cad/robot/arm.urdf`](cad/robot/arm.urdf)
 (+ SRDF for MoveIt2, SDF for Gazebo) with per-link meshes, validated by cadgen's checkers. Its chain:
-`base_link → base_yaw → shoulder_link → shoulder_pitch → upper_arm_link → elbow_pitch → forearm_link →
-wrist_pitch → wrist_pitch_link → wrist_roll → wrist_roll_link → jaw_a / jaw_b (+ tool0)`, where
+`base_link → base_yaw → shoulder_link → shoulder_pitch → upper_arm_link → elbow_pitch → elbow_link →
+forearm_roll → forearm_link → wrist_pitch → wrist_pitch_link → wrist_roll → wrist_roll_link → jaw_a / jaw_b
+(+ tool0)` — six revolute joints, the last three concurrent at the wrist centre — where
 `shoulder_pitch` **is** the 20:1 cycloidal drive (its housing turns with the base-yaw holder, its output
-hub carries the upper arm), `elbow_pitch` / `wrist_pitch` are the GT2 belt joints, `wrist_roll` the
-NEMA17 pancake and the jaws the MG996R gripper. The CAD now places the three belt-joint motors (MKS SERVO42D kits on the pads
-the links carry, `cad/lib/mounts.py`: a 48 mm NEMA 17 under the base, 40 mm ones at the elbow and wrist) and the drive's own 48 mm kit; which CAN id
-(`src/config.py` J1..J3) drives which joint is not confirmed yet.
+hub carries the upper arm), `elbow_pitch` / `wrist_pitch` are the GT2 belt joints, `forearm_roll` the
+belt-driven roll drive in the elbow block ([`cad/docs/forearm_roll.md`](cad/docs/forearm_roll.md): a hollow
+printed shaft with a 90T ring in two 6808 bearings, the forearm bolted to its flange), `wrist_roll` the
+NEMA17 pancake and the jaws the MG996R gripper. The CAD places the three belt-joint motors (MKS SERVO42D kits on the pads
+the links carry, `cad/lib/mounts.py`: a 48 mm NEMA 17 under the base, 40 mm ones at the elbow and wrist), the drive's own
+48 mm kit and the roll drive's 40 mm kit; which CAN id (`src/config.py` J1..J3 - three of the five) drives which joint is
+not confirmed yet.
 
 The 20:1 cycloidal shoulder drive (formerly the separate `cycloidal_drive` CadQuery repo) is fully
 parametric build123d here — see [`cad/docs/cycloidal_drive.md`](cad/docs/cycloidal_drive.md).

@@ -1,10 +1,13 @@
 # reference/ — SolidWorks reference geometry
 
-**Last updated:** 2026-09-21 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-23 — see the root `CHANGELOG.md` for dated changes.
 
 **Purpose:** the original design, as exported from SolidWorks, renamed to the clean part
 names used everywhere in `cad/` (`solidworks/`) — plus, for the cycloidal drive, the CadQuery
-exports of the `cycloidal_drive` repo the build123d parts were ported from (`cycloidal/`). These
+exports of the `cycloidal_drive` repo the build123d parts were ported from (`cycloidal/`) — and, for the parts
+designed here with no external origin (`lib/reference.py NATIVE` / `NATIVE_COTS`: the forearm roll drive's block,
+shaft, retainer and its 6808 bearing envelope), their **accepted builds** (`native/`, written once by
+`tools/reference/import_native.py`; `--force` accepts a changed design). These
 files are **immutable inputs** (committed as Git LFS objects): each custom part's wrapper returns
 them until it is converted, and `tests/test_reference_match.py` compares every converted part
 against them (checksums locked in `manifest.json`, whose `file` field names each file's origin
@@ -38,6 +41,9 @@ directory; `lib.reference.path_of(name)` resolves it). Regenerate — never edit
   (CadQuery venv, writes its git-ignored `export/step/house/`), then here
   `./cadtool python tools/cycloidal/import_cadquery.py` (copies + merges its manifest entries;
   `import_solidworks.py` leaves them alone).
+- Native parts (manifest `origin: native`, kind `native` / `cots`): `./cadtool python tools/reference/import_native.py
+  [--only NAME] [--force]` builds the part in-process and exports it to `native/<name>.step` (build123d's STEP header
+  carries the time: written once, on one machine, committed as LFS); both other tools keep the entries.
 
 ## Naming map
 Clean name ← SolidWorks product (source file under the source tree); every row lives in

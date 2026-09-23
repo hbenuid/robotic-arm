@@ -2,7 +2,7 @@
 
 3-motor MKS SERVO42D/57D arm controlled over CAN bus via a CANable / slcan-compatible USB adapter. Runs on macOS, Linux, and Windows.
 
-**Last updated:** 2026-09-21 — see `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-23 — see `CHANGELOG.md` for dated changes.
 
 ## Git workflow
 - Work on a branch — `cad/<topic>` for CAD work, `<area>/<topic>` otherwise — and push the **branch**. `main` is
@@ -69,12 +69,15 @@ with `ARM_REFERENCE_SRC`). A new export the user hands over is fed to those tool
   (`git lfs pull` if a checkout shows pointer files) — part STEPs are generated and git-ignored.
 - The robot description (`cad/robot/`: `arm.urdf` is the source of truth, `arm.srdf`, `arm.sdf`, per-link
   meshes) is derived from `cad/robot/frames.py` — links `base_link, shoulder_link, upper_arm_link,
-  forearm_link, wrist_pitch_link, wrist_roll_link, jaw_a_link, jaw_b_link, tool0`; joints `base_yaw,
+  elbow_link, forearm_link, wrist_pitch_link, wrist_roll_link, jaw_a_link, jaw_b_link, tool0`; joints `base_yaw,
   shoulder_pitch` (the cycloidal drive: stator in `shoulder_link`, rotor in `upper_arm_link`),
-  `elbow_pitch, wrist_pitch, wrist_roll, jaw_a, jaw_b`. Which MKS motor (`src/config.py` J1..J3, all
-  `gear_ratio` 1.0) drives which joint is unconfirmed — `CYCLOIDAL_RATIO` = 20 applies to `shoulder_pitch`. The
-  motors themselves are placed: MKS SERVO42D kits on `base` (48 mm, `nema17_48mm#1`) / `j1_link` / `j2_link` (40 mm,
-  `nema17_40mm#2..3`) with `mks_servo42d#1..3` (`cad/lib/mounts.py`) and the drive's 48 mm kit (its board is a `cycloidal_drive.py` row).
+  `elbow_pitch, forearm_roll` (the belt-driven roll drive, `cad/assemblies/forearm_roll_drive.py`: stator in
+  `elbow_link`, rotor - the hollow roll shaft - in `forearm_link`; `cad/docs/forearm_roll.md`), `wrist_pitch,
+  wrist_roll, jaw_a, jaw_b`. Which MKS motor (`src/config.py` J1..J3, all `gear_ratio` 1.0) drives which joint is
+  unconfirmed — `CYCLOIDAL_RATIO` = 20 applies to `shoulder_pitch`, `FOREARM_ROLL_RATIO` = 4.5 to `forearm_roll`, and the
+  arm now carries five kits for three configured CAN ids. The motors themselves are placed: MKS SERVO42D kits on `base`
+  (48 mm, `nema17_48mm#1`) / `j1_link` / `j2_link` (40 mm, `nema17_40mm#2..3`) with `mks_servo42d#1..3`
+  (`cad/lib/mounts.py`), the drive's 48 mm kit and the roll drive's 40 mm kit (their boards are module rows).
 
 ## Docs
 - `CHANGELOG.md` is the dated record of changes: add an entry (date, what changed, commit) with

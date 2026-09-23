@@ -12,7 +12,7 @@ interface. The cable connector is a 7 mm boss on the -Y side of the body's rear.
 SolidWorks product: 'nema17x40_with_mks' (motor body + shaft)
 Source export:      ~/Documents/arm_assembly_organized/mks/nema17x40_with_mks.step (lib.reference.MKS_EXPORT_NAME)
 Reference: mm units, 2 solid(s), bbox size (42, 49, 62.4) mm, bbox min (-21, -28, -40.4) mm.
-In the arm: x2 (nema17_40mm#2 elbow_pitch, #3 wrist_pitch).
+In the arm: x3 (nema17_40mm#2 elbow_pitch, #3 wrist_pitch, one inside forearm_roll_drive#1 for forearm_roll).
 
 COTS convention (parts/_templates/cots.py): nema17_40mm() returns the vendor STEP when present,
 else the parametric envelope below - both in the part frame lib/mounts.py places.

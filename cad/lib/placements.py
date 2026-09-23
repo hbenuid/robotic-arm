@@ -11,7 +11,9 @@ assemblies/<module>.py from code, and its `solidworks` block keeps the SolidWork
 totals / bbox as a cross-check. A part record with a `mount` block (keys listed under `mounted`) is
 an occurrence the SolidWorks capture never contained - the belt joints' motors and their MKS boards,
 declared as frames in lib/mounts.py and materialised by tools/reference/mount_placements.py
-(parent None, rel == world = host world * mount frame).
+(parent None, rel == world = host world * mount frame). A MODULE record with a `mount` block
+("forearm_roll_drive#1", listed under both `designed_modules` and `mounted`) is a designed module the capture
+never placed - its pose is a lib/mounts.py ModuleMount, its contents assemblies/<module>.py.
 """
 from __future__ import annotations
 
