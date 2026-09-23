@@ -8,6 +8,23 @@ RollEndParams` + `RollDriveParams`, `layout.py stack_positions`, `roll.py`, `pul
 the forearm starts 48 mm from it).
 Numbers below name the constants; the values live in `lib/forearm/params.py`.
 
+## 0. Specifications at a glance
+| item | value | where |
+|---|---|---|
+| joint | `forearm_roll`, revolute, `elbow_link → forearm_link`; axis along the forearm through the wrist centre, crossing the elbow axis 25 mm along N (`FOREARM_ROLL_AXIS_Z`) | `robot/frames.py` |
+| range | ±170° (`FOREARM_ROLL_LIMIT_DEG`), printed hard stop (lug on the shaft's neck, post on the cap); home sensor not modelled | `lib/params.py`, `RollDriveParams stop_*` |
+| drive | NEMA 17 × 40 mm + MKS SERVO42D (a 4th CAN id), GT2 20T on the motor, integral printed 90T ring on the shaft, **4.5 : 1**, 240-2GT × 6 mm belt (`roll_belt`, centre distance 60.9) | `RollDriveParams`, `lib/belts.py` |
+| torque | ≈ 1.1–1.8 N·m at the roll vs ≈ 0.9 N·m worst-case static load | §2 |
+| bearings | 2× 6808-2RS (40 × 52 × 7), 71 mm apart, straddling the elbow axis (seats Ø52.15, journals Ø40.3) | `RollDriveParams bearing_*` |
+| shaft (rotor, PETG) | hollow, Ø24 cable bore end to end, Ø44 core, Ø38 neck, Ø39.7 end spigot + 4× M3 on Ø32 into the forearm wall; 86 mm long (z −36…50) | `forearm_roll_shaft` |
+| block (stator, PETG) | 66 × 72 × 76 mm rounded box (x −33…33, y ±36, z −40…36, r 8), **also the elbow's output flange**: Ø72 lip, Ø62 boss, Ø40 journal, Ø30 stub down into `j1_link` (host z −22…−8), 4× M4 heat-set inserts at r 11 for the elbow 90T; Ø26 cable exit in the rear wall; the motor plate + cheeks on top | `forearm_roll_block` |
+| end cap (PETG) | the block's outline, 9 thick (seat + 2 lip), 4× M3 at the corners, the stop post | `forearm_roll_retainer` |
+| forearm interface | `j2_link`'s wall at 48…56 mm from the elbow axis (`wall_x` −56…−48): Ø40 × 2 recess, Ø24 bore, 4× M3 on Ø32 | `RollEndParams` |
+| clearances held by tests | block 0.5 mm above the upper arm's slab; the rolling ±45 forearm wall 3 mm off `j1_link`'s r 45 end; folded elbow (±120°) and rolled forearm (±170°) < 1 mm³ against every neighbour; journals 0.9–1.0 × the 132 mm³ press | `tests/forearm/test_roll_drive.py` |
+| link masses (URDF) | `elbow_link` 0.717 kg (pulley + stator), `forearm_link` 0.920 kg (shaft + forearm + wrist motor); arm total 5.93 kg | `robot/arm.urdf` |
+| purchased per drive | 2× 6808-2RS, 1× NEMA 17 × 40 kit + MKS SERVO42D, 1× GT2 20T (5 mm bore), 1× 240-2GT belt, 4× M4 × 40 + 4× M4 inserts, 4× M3 × 16, 4× M3 × 8, 4× M3 × 20 | `tools/bom.py` |
+| printed per drive | block, shaft, cap (`./cadtool python tools/export_printables.py --parts forearm_roll_block forearm_roll_shaft forearm_roll_retainer`) | `print/` |
+
 ## 1. Why a roll, and where
 The SolidWorks arm had five revolute joints — `base_yaw` and three parallel pitches (`shoulder_pitch`,
 `elbow_pitch`, `wrist_pitch`) plus `wrist_roll` — so the tool's approach axis could never leave the vertical

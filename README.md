@@ -41,8 +41,9 @@ forearm_roll → forearm_link → wrist_pitch → wrist_pitch_link → wrist_rol
 (+ tool0)` — six revolute joints, the last three concurrent at the wrist centre — where
 `shoulder_pitch` **is** the 20:1 cycloidal drive (its housing turns with the base-yaw holder, its output
 hub carries the upper arm), `elbow_pitch` / `wrist_pitch` are the GT2 belt joints, `forearm_roll` the
-belt-driven roll drive in the elbow block ([`cad/docs/forearm_roll.md`](cad/docs/forearm_roll.md): a hollow
-printed shaft with a 90T ring in two 6808 bearings, the forearm bolted to its flange), `wrist_roll` the
+belt-driven roll drive in the elbow block ([`cad/docs/forearm_roll.md`](cad/docs/forearm_roll.md): one printed block
+that is also the elbow's output flange, a hollow printed shaft crossing the elbow axis with a 90T ring in two 6808
+bearings, the forearm bolted to its end spigot 48 mm from the elbow axis), `wrist_roll` the
 NEMA17 pancake and the jaws the MG996R gripper. The CAD places the three belt-joint motors (MKS SERVO42D kits on the pads
 the links carry, `cad/lib/mounts.py`: a 48 mm NEMA 17 under the base, 40 mm ones at the elbow and wrist), the drive's own
 48 mm kit and the roll drive's 40 mm kit; which CAN id (`src/config.py` J1..J3 - three of the five) drives which joint is

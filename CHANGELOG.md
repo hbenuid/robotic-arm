@@ -43,6 +43,33 @@ wall on the axis; the caps ignored (slated for removal).
   `test_mounts.py` follow. Docs: `docs/forearm_roll.md` §2–§5, `docs/open_issues.md` (the inserts, the print
   orientation, the elbow bearings on the stub, the cable exit), `cad/CLAUDE.md`, `cad/README.md`, root `CLAUDE.md`.
 
+Verified (Fedora PC): fast lane 419 passed; full suite **699 passed + 9 skipped** (3 m 04 s); the rebuild changed exactly
+the three roll parts, `j2_link`, the two caps (they follow the wall), the module and both arms; `derive.py --check` clean
+after the `elbow_link` / `forearm_link` inertials; `validate` ×3 OK (5.926 kg); `forearm_roll_drive.png`, `arm.png`,
+`arm_no_caps.png`, `arm_side.png`, `arm_urdf.png`, `arm_urdf_roll90.png` looked at. The design was mocked up and reviewed
+before implementation (three layouts offered; the mock-up found nothing the tests did not, the tests found three things
+the mock-up missed: the connector, the belt window, bearing 1's path to its seat).
+
+### Branch summary — `cad/forearm-roll`, ready to merge (supersedes the M4 summary)
+Seven milestones on top of `753ba52` (main): M0 `642bcbb` the tooling (native parts, module mounts, `lib/motors.py` +
+`lib/belts.py`), M1 `ae7d74d` the parametric forearm (`lib/forearm/`, `j2_link` + caps from one `ForearmConfig`), M2
+`8c8c264` the roll end (the flange wall, the wrist motor on a 264-2GT), M3 `c11f7a7` + `2ade5b0` the roll drive and the
+6th joint (`assemblies/forearm_roll_drive.py`, `elbow_link` + `forearm_roll`), M4 `bb199a8` docs, M5 `0bc4aa0` the
+diagram layout (motor up, ring inside, end cap), M6 `13f2ad5` the elbow block as the elbow coupler. What `main` gains:
+- **A 6-axis arm**: `base_yaw → shoulder_pitch → elbow_pitch → forearm_roll → wrist_pitch → wrist_roll` (+ jaws), the last
+  three axes concurrent at the wrist centre; `robot/arm.urdf` / `.srdf` / `.sdf`, the per-link meshes and inertials follow.
+- **The forearm roll drive** (`docs/forearm_roll.md` §0 for the specs): one printed elbow block that is also the elbow's
+  output flange (the SolidWorks `j3_coupler#1` retired via `lib/placements.py RETIRED`), a hollow printed shaft crossing the
+  elbow axis with an integral 90T ring in two 6808s, a bolt-on cap, a NEMA 17 × 40 + MKS SERVO42D kit on the block's top,
+  4.5 : 1 on a 240-2GT; the forearm starts 48 mm from the elbow axis.
+- **The forearm is parametric** (`lib/forearm/`), LEGACY reproducing the SolidWorks parts, DEFAULT what is built; the
+  caps still build but are slated for removal (`docs/open_issues.md`).
+- **Tooling**: native parts (`reference/native/`, `import_native.py`), declared module poses (`lib/mounts.py
+  MODULE_MOUNTS`), retired occurrences (`P.keys(retired=)`), the motor / belt leaves, `tests/forearm/`.
+Out of scope, in `docs/open_issues.md`: the 4th CAN id in `src/config.py`, the elbow's own bearings on the block's stub,
+the block's print supports and its M4 inserts, the home sensor / belts / cable route, the caps' removal, the remaining 17
+SolidWorks wrappers.
+
 ## 2026-09-23 — forearm roll, M5: the drive laid out like the diagram (branch `cad/forearm-roll`)
 
 The user compared the M3 build with the original diagram and wanted its silhouette: the roll motor on top of the block
@@ -100,7 +127,7 @@ pulley, the motor on top of it, the diagram's silhouette) looked at. Gotcha: `--
 
 Verified: fast lane 418 passed; the full suite after M3's label fix **694 passed + 9 skipped** (2 m 54 s).
 
-Branch summary (`cad/forearm-roll`, five milestones, all on top of `753ba52`): M0 `642bcbb` tooling, M1 `ae7d74d` the
+Branch summary at M4 (superseded by the M6 summary above): M0 `642bcbb` tooling, M1 `ae7d74d` the
 parametric forearm, M2 `8c8c264` the roll end, M3 `c11f7a7` + `2ade5b0` the roll drive and the joint, M4 `bb199a8` docs.
 Out of scope, recorded in `docs/open_issues.md`: `src/config.py`'s 4th CAN id, the stop pin / home sensor / belt guard
 hardware, the caps' removal, converting the remaining 17 wrappers.
