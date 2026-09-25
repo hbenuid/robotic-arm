@@ -1,0 +1,43 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-22 — forearm roll, M0: the tooling a native part, a declared module pose and a diverged conversion need (branch `cad/forearm-roll`)
+
+The arm gets a 6th joint — a belt-driven **forearm roll** between `elbow_pitch` and `wrist_pitch` (NEMA 17 40 mm + MKS
+SERVO42D kit beside the axis, 20T → 90T ring on a hollow printed shaft in two 6808 ring bearings inside a printed elbow
+block; the forearm rewritten parametrically with a flange wall in place of its elbow disc; reach unchanged, all three
+wrist axes concurrent at the wrist centre). Plan: five milestones on this branch, each a green suite + Recipe C + commit.
+This first one changes NO geometry — it adds the repo mechanisms the later ones need.
+
+### Added / Changed — native parts, module mounts, `lib/motors.py` + `lib/belts.py` (`642bcbb`)
+- `lib/reference.py`: `NATIVE` / `NATIVE_COTS` / `NATIVE_PARTS` + `reference/native/` — a part designed HERE (no
+  SolidWorks or CadQuery origin) keeps its **accepted build** as its reference; `reference_dir()` / `path_of()` route
+  there; `PRODUCT_TO_PART` skips them. `tools/reference/import_native.py` (new) builds the part in-process (the COTS
+  envelope for `NATIVE_COTS`), writes `reference/native/<name>.step` ONCE (LFS, like a vendor file; `--force` = accept a
+  changed design) and the manifest entry (kind `native` / `cots`, origin `native`); `import_solidworks.py` keeps those
+  entries like the drive's; `lib/manifest.py` names the three tools. `tools/bom.py` state `native`.
+- `tests/test_reference_match.py`: a converted part may declare `REFERENCE_BUILD` (a zero-arg callable returning the
+  LEGACY configuration that still reproduces its reference) — that build is matched, the default one is the part's own
+  tests' business. `tests/test_parts_convention.py` admits `R.NATIVE` (and demands `CONVERTED = True` for it).
+- `tests/totals.py` (new): what an occurrence contributes to the arm / link totals — its SolidWorks record, or its own
+  build once the part is CONVERTED (the record stays in `placements.json`); `tests/test_assembly.py` and
+  `tests/test_robot.py` sum through it (`_expected_totals`, `solids_and_volume`), and a designed module's lock is now
+  `assemblies.<module>.EXPECTED` by name instead of the hard-coded drive.
+- `lib/mounts.py`: `ModuleMount(key, module, host, joint, frame)` + `MODULE_MOUNTS` (empty) + `module_keys()` — the pose
+  of a designed module no SolidWorks node places; `tools/reference/mount_placements.py` writes its record
+  (`kind: module, designed: true`, a `mount` block, no totals; module +Z must lie ON the joint's axis — parallel and
+  through the origin — checked against `robot/frames.py JOINT_BY_NAME`), listed under `designed_modules` (recomputed
+  over records + mounted) and `mounted`. `assemblies/_occurrences.py row_location()`: a module row's placement is a
+  position `(x, y, z)` or a frame `((x, y, z), (rx, ry, rz))` — `located_children` and `world_rows` accept both.
+- `lib/motors.py` (new leaf: the NEMA 17 interface, the pancake, the 40 mm kit motor + MKS SERVO42D board, `MOTOR_40`)
+  and `lib/belts.py` (new leaf: the GT2 constants, `GT2_PLD` / `GT2_BELT_W` / `GT2_TOOTH_DEPTH` / `GT2_GROOVE_R`
+  [ESTIMATE], `pitch_dia`, `pulley_od` — 90T: 56.79, the root land measured on the SolidWorks pulley —,
+  `closed_belt_length`, `centre_distance`, `STANDARD_2GT_LENGTHS`); `lib/params.py` re-exports every name unchanged
+  (`lib/forearm/` will import the leaves directly — it must not import `lib.params`, which imports it back);
+  `parts/joints/nema17_40mm.py` takes `MOTOR_40`.
+- Docs: `cad/CLAUDE.md` (Start here row, Part states *native* + *diverged conversion*, Shared dimensions leaves, the
+  module mount in Assembly & placements, `tests/totals.py`).
+
+Verified (Fedora PC): fast lane 388 passed (384 + the native / hook checks); full suite 636 passed + 8 skipped (2 m 06 s);
+`./cadtool daemon stop`, every model rebuilt (`gen assemblies/arm.py assemblies/arm_no_caps.py robot/links/*.py`) —
+`shasum -a 256 -c` **55 / 55 byte-identical**; `mount_placements.py` rewrites `placements.json` byte-identically
+(the `mount` block's key order is kept: host, link, joint).
