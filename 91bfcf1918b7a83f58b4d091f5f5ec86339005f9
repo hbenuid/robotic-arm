@@ -1,0 +1,19 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-08-27 — CAD workspace scaffold (`91bfcf1`)
+
+### Added
+- `cad/`: a separate uv project (Python 3.12, build123d 0.10) wired to the `cad@text-to-cad`
+  plugin: `cadtool` wrapper, `lib/` (`params.py` dimension SSOT, `reference.py`,
+  `placements.py`, `assembly.py`, `export.py`), part templates.
+- 20 custom parts as import wrappers around their renamed SolidWorks reference STEPs
+  (`cad/reference/`, immutable, with `manifest.json`) and 5 COTS parts with vendor STEPs; each
+  part's generated `.step` committed beside its source.
+- `assemblies/arm.py` + `gripper.py` placing all 34 occurrences from placements extracted
+  from the full SolidWorks assembly (`tools/extract_placements.py`, `reference/placements.json`);
+  the rebuilt arm matches SolidWorks exactly (50 solids, 1 938 168.8 mm³, same bbox).
+  The cycloidal drive is skipped (lives in the `cycloidal_drive` repo; pose recorded).
+- Tests (92): part convention, reference match, placements integrity, assembly totals,
+  params locks. Docs: `cad/README.md`, `cad/CLAUDE.md`, `cad/reference/README.md`,
+  `cad/vendor/README.md`; root `.gitignore`/`README.md`/`CLAUDE.md` updates;
+  `.claude/settings.json` enabling the plugin marketplace; `robotic-arm.code-workspace`.
