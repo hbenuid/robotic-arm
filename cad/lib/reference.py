@@ -44,10 +44,7 @@ CUSTOM: dict[str, tuple[str, str]] = {
     "base":                  ("base of robot arm 62126",                 "step/base of robot arm 62126.STEP"),
     "j1_coupler":            ("Base couple updated 62126 _J1 coupler",   "step/Base couple updated 62126 _J1 coupler.STEP"),
     "j1_link":               ("first joint edit 62126",                  "step/first joint edit 62126.STEP"),
-    "j1_cap":                ("first joint cap 8726",                    "step/first joint cap 8726.STEP"),   # inch-unit file; OCCT converts to mm
     "j2_link":               ("Joint 2 change 8126",                     "step/Joint 2 change 8126.STEP"),
-    "j2_cap_1":              ("cap 1 joint 2 8726",                      "step/cap 1 joint 2 8726.STEP"),
-    "j2_cap_2":              ("cap of joint 2 piece 2 8526",             "step/cap of joint 2 piece 2 8526.STEP"),
     "j3_coupler":            ("Joint 2 coupler 62226_J3 Coupler",        "step/Joint 2 coupler 62226_J3 Coupler.STEP"),
     "gt2_pulley_90t":        ("GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric",
                               "step/GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric.STEP"),
@@ -141,9 +138,14 @@ DESIGNED_MODULES: dict[str, str] = {
     "forearm_roll_drive": "forearm roll drive (no SolidWorks node: lib/mounts.py MODULE_MOUNTS places it on j2_link#1)",
 }
 
-# Full-assembly nodes deliberately not modelled here (whole subtree skipped).
+# Full-assembly nodes deliberately not modelled here (whole subtree skipped; a top-level one lands in placements.json
+# `skipped` with its pose - tools/reference/extract_placements.py, or mount_placements.py's merge mode for a record
+# that was an occurrence before).
 SKIPPED_PRODUCTS: dict[str, str] = {
     "nema17_pancake(2)":        "pancake internals are flattened into vendor/nema17_pancake.step",
+    "cap 1 joint 2 8726":       "j2_cap_1, the lid over j2_link's motor side - the link caps were removed 2026-09-25",
+    "cap of joint 2 piece 2 8526": "j2_cap_2, the belt tray under j2_link - the link caps were removed 2026-09-25",
+    "first joint cap 8726":     "j1_cap, the tray under j1_link - the link caps were removed 2026-09-25",
 }
 
 PRODUCT_TO_PART: dict[str, str] = {

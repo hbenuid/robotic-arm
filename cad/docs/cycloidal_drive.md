@@ -3,7 +3,7 @@
 **Purpose:** the specification of the drive (carried over from the `cycloidal_drive` repo, corrected
 where the code disagreed with it), where it lives in `cad/`, what changed in the build123d port, and
 how it is attached to the arm.
-**Last updated:** 2026-09-24 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-25 — see the root `CHANGELOG.md` for dated changes.
 
 ## Provenance
 - Designed in CadQuery in [`hbenuid/cycloidal_drive`](https://github.com/hbenuid/cycloidal_drive);
@@ -302,7 +302,7 @@ cd cad
   press fit 330.6 × 2; housing bolts through the solid nuts 321.7; motor-bolt heads in the plate 51.9
   and shanks in the vendor motor's tapped holes (modelled at the M3 minor diameter) 46.4; 6003 / lobe press fits
   26.8 × 2; the MKS kit's four M3x30 in the same holes from the rear 159.4. Everything else
-  is < 1 mm³; the whole module vs the arm: base / j1_link / j1_cap 0, j1_coupler yoke contact ≤ 150 (the board
+  is < 1 mm³; the whole module vs the arm: base / j1_link 0, j1_coupler yoke contact ≤ 150 (the board
   behind the motor has 55 mm of free air).
 - **Corrections to the drive repo's spec:** its §10 said "both discs are identical — the 180° offset is
   applied in the assembly": wrong (disc 2 carries the −9° phase, §1.2); §3.3's "7.6 mm disc holes"
@@ -322,7 +322,9 @@ cd cad
 - **Frame:** module Z = motor axis, z = 0 the motor-plate outer face, motor body in −Z, hub face at 65.
   In the arm the axis is horizontal (module +Z → world −N, N = the J2/J3 pitch direction): the housing
   sits in the `j1_coupler` yoke (its pads touch the motor-plate outer face) and the hub's arm-mount
-  face is coplanar with `j1_link`'s big mounting face — verified by `TestPoseInTheArm`.
+  face is coplanar with `j1_link`'s big mounting face — verified by `TestPoseInTheArm`. `j1_link` (parametric,
+  `lib/upper_arm/`) puts its 4 Ø4.4 holes on `arm_mount_points` as this pose places them (`HubParams.bolt_angle_deg`,
+  `tests/upper_arm/`): the SolidWorks holes sat 3.36° off, where the M4 bolts would not pass.
 - **Kinematics:** the drive **is the `shoulder_pitch` joint** of `robot/frames.py` (axis `N` = the
   drive's −Z; origin `SHOULDER_ORIGIN` = `j1_link#1`'s origin, on the drive axis; limits
   `SHOULDER_PITCH_LIMIT_DEG`). `assemblies/cycloidal_drive.py BODIES` splits the 18 rows into two rigid
@@ -331,7 +333,7 @@ cd cad
   nuts, NEMA 17 + bolts, and the gear train: eccentric shaft, support pin, discs, 6003s, 6814s; 15
   leaves / 52 solids) rides in `shoulder_link` with the yawing `j1_coupler`; the **rotor**
   (`cycloidal_drive#1:rotor` — output hub, output pins, 625; 3 leaves / 6 solids) rides in
-  `upper_arm_link` with `j1_link` + `j1_cap`. `EXPECTED["bodies"]` locks the per-body totals and
+  `upper_arm_link` with `j1_link`. `EXPECTED["bodies"]` locks the per-body totals and
   `TestPoseInTheArm` checks the joint origin sits on the drive axis. The arm STEP's viewer tree keeps
   the module whole under `shoulder_link` (one linked child); the per-link meshes split it. Which MKS
   motor (`software/control/src/config.py` J1..J3) drives which joint is unconfirmed; `software/control/src/config.py` still carries

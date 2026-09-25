@@ -229,7 +229,7 @@ def test_module_clears_its_neighbours_in_the_arm():
     module = _placed_module()
     link = parts.build("j2_link")
     assert interference(module, link) < 1.0
-    for key in ("gt2_pulley_90t#1", "j1_link#1", "j1_cap#1", "nema17_40mm#2", "mks_servo42d#2", "nema17_40mm#3", "mks_servo42d#3"):
+    for key in ("gt2_pulley_90t#1", "j1_link#1", "nema17_40mm#2", "mks_servo42d#2", "nema17_40mm#3", "mks_servo42d#3"):
         vol = interference(module, in_host(key))
         assert vol < 1.0, f"module x {key}: {vol:.1f} mm^3"
     block = next(c for c in raw(M.forearm_roll_drive).children if c.label == "forearm_roll_block").moved(to_location(module_frame_in_host(DEFAULT)))
@@ -243,11 +243,11 @@ def test_module_clears_its_neighbours_in_the_arm():
 @pytest.mark.slow
 @pytest.mark.parametrize("deg", [-PARAMS.ELBOW_PITCH_LIMIT_DEG, -60.0, 60.0, PARAMS.ELBOW_PITCH_LIMIT_DEG])
 def test_module_clears_the_folded_upper_arm(deg):
-    """The upper arm (j1_link, j1_cap, its motor + board) swung about the elbow axis (host z through the origin) by
-    the elbow's limits never runs into the block, its motor, the board or the cap."""
+    """The upper arm (j1_link, its motor + board) swung about the elbow axis (host z through the origin) by the
+    elbow's limits never runs into the block, its motor, the board or the end cap."""
     module = _placed_module()
     axis = Axis((0.0, 0.0, 0.0), (0.0, 0.0, 1.0))
-    for key in ("j1_link#1", "j1_cap#1", "nema17_40mm#2", "mks_servo42d#2"):
+    for key in ("j1_link#1", "nema17_40mm#2", "mks_servo42d#2"):
         vol = interference(module, in_host(key).rotate(axis, deg))
         assert vol < 1.0, f"elbow {deg:+.0f} deg: module x {key}: {vol:.1f} mm^3"
 
@@ -256,10 +256,10 @@ def test_module_clears_the_folded_upper_arm(deg):
 @pytest.mark.parametrize("deg", [-PARAMS.FOREARM_ROLL_LIMIT_DEG, -90.0, 90.0, PARAMS.FOREARM_ROLL_LIMIT_DEG])
 def test_forearm_clears_the_elbow_while_rolling(deg):
     """j2_link rolled about the roll axis (host: through (0, 0, axis_z) along -X) to its limits never runs into the
-    upper arm's round end, its cap, the elbow pulley or the stator's parts (the block, the cap, the motor, the board)."""
+    upper arm's round end, the elbow pulley or the stator's parts (the block, the end cap, the motor, the board)."""
     axis = Axis((0.0, 0.0, DEFAULT.roll_end.axis_z), (-1.0, 0.0, 0.0))
     link = parts.build("j2_link").rotate(axis, deg)
-    for key in ("j1_link#1", "j1_cap#1", "gt2_pulley_90t#1"):
+    for key in ("j1_link#1", "gt2_pulley_90t#1"):
         vol = interference(link, in_host(key))
         assert vol < 1.0, f"roll {deg:+.0f} deg: j2_link x {key}: {vol:.1f} mm^3"
     module = _placed_module()

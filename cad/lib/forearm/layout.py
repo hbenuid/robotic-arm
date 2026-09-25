@@ -18,8 +18,8 @@ def disc_bolt_angles(cfg: ForearmConfig = DEFAULT) -> list[float]:
 
 
 def elbow_end_x(cfg: ForearmConfig = DEFAULT) -> float:
-    """Where the web (and the caps) end toward the elbow: the wall's wrist face with the roll joint, else the
-    elbow pivot (the disc's round end continues to +45)."""
+    """Where the web ends toward the elbow: the wall's wrist face with the roll joint, else the elbow pivot (the
+    disc's round end continues to +45)."""
     return cfg.roll_end.wall_x[0] if cfg.roll else 0.0
 
 
@@ -30,25 +30,11 @@ def _grid(cfg: ForearmConfig, x_max: float) -> list[tuple[float, float]]:
 
 
 def link_socket_points(cfg: ForearmConfig = DEFAULT) -> tuple[list, list]:
-    """(top-face sockets, bottom-face sockets) of the web."""
+    """(top-face sockets, bottom-face sockets) of the web; both empty without sockets."""
+    if cfg.sockets is None:
+        return [], []
     grid = _grid(cfg, elbow_end_x(cfg))
     return grid, grid + list(cfg.sockets.wrist)
-
-
-def cap1_socket_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
-    return _grid(cfg, elbow_end_x(cfg))
-
-
-def cap2_socket_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
-    x_max = elbow_end_x(cfg) if cfg.roll else -(cfg.cap2.outer_elbow_r ** 2 - cfg.web.half_w ** 2) ** 0.5
-    return _grid(cfg, x_max) + list(cfg.sockets.wrist)
-
-
-def motor_window(cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float]:
-    """(x0, x1, half_w) of j2_cap_1's motor window: window_len long, window_offset from the motor axis."""
-    c = cfg.cap1
-    centre = cfg.motor_x + c.window_offset
-    return centre - c.window_len / 2.0, centre + c.window_len / 2.0, c.window_half_w
 
 
 def flange_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:

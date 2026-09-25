@@ -12,7 +12,10 @@ and the frame - so assemblies/arm.py, robot/frames.py LINKS, the inertials and t
 like any other occurrence. tools/reference/extract_placements.py calls mounted_records() on every
 extraction; this tool's own main() is the MERGE mode: it replaces the mounted records inside the current
 placements.json and leaves every SolidWorks record byte-for-byte alone - it needs no monolith, so a
-changed mount (a spin, the wrist slide position) is regenerated on either machine.
+changed mount (a spin, the wrist slide position) is regenerated on either machine. One exception: a part record
+whose SolidWorks product has since been put in lib/reference.py SKIPPED_PRODUCTS (a part the design dropped - the
+link caps, 2026-09-25) moves to `skipped` as the entry extract_placements.py would write for it, and every `skipped`
+entry's reason is re-read from there, so the document equals what a fresh extraction gives.
 
 A ModuleMount (lib/mounts.py MODULE_MOUNTS - the forearm roll drive, which no SolidWorks node places) becomes
 a `kind: "module", designed: true` record with the same `mount` block and no solids / volume (the module's
@@ -110,6 +113,18 @@ def mounted_records(records: list[dict]) -> list[dict]:
     return out
 
 
+def skipped_entry(o: dict) -> dict:
+    """A part record whose product is in lib/reference.py SKIPPED_PRODUCTS, as the `skipped` entry
+    tools/reference/extract_placements.py writes for that node (a part record is one leaf)."""
+    if o["kind"] != "part":
+        raise SystemExit(f"{o['key']}: only a part record can move to `skipped` here - re-run extract_placements.py")
+    return {
+        "path": o["path"], "label": o["label_in_monolith"], "reason": R.SKIPPED_LABELS[o["label_in_monolith"]],
+        "leaves": 1, "solids": o["solids"], "solid_volume": o["solid_volume"], "rel": o["rel"], "world": o["world"],
+        "world_bbox_min": o["world_bbox_min"], "world_bbox_size": o["world_bbox_size"],
+    }
+
+
 def expected_totals(records: list[dict]) -> dict:
     """The `expected` block: totals over the part records (mounted ones included)."""
     parts_ = [o for o in records if o["kind"] == "part"]
@@ -149,10 +164,16 @@ def main(argv=None) -> int:
     ap.add_argument("--out", type=pathlib.Path, default=P.PLACEMENTS_PATH)
     args = ap.parse_args(argv)
     data = json.loads(args.out.read_text(encoding="utf-8"))
-    kept = [o for o in data["occurrences"] if "mount" not in o]
+    solidworks = [o for o in data["occurrences"] if "mount" not in o]
+    kept = [o for o in solidworks if o["label_in_monolith"] not in R.SKIPPED_LABELS]
+    dropped = [skipped_entry(o) for o in solidworks if o["label_in_monolith"] in R.SKIPPED_LABELS]
+    known = [{**s, "reason": R.SKIPPED_LABELS.get(s["label"], s["reason"])} for s in data["skipped"]]   # reasons as lib/reference.py words them
+    data["skipped"] = sorted(known + dropped, key=lambda s: tuple(int(i) for i in s["path"].split(".")))
     mounted = mounted_records(kept)
     write(args.out, with_mounted(data, kept, mounted))
     ex = expected_totals(kept + mounted)
+    for s in dropped:
+        print(f"  {s['label']} (path {s['path']}) -> skipped: {s['reason']}")
     print(f"wrote {args.out}: {len(kept)} SolidWorks records kept, {len(mounted)} mounted records; "
           f"parts={ex['leaf_occurrences']} solids={ex['solids']} volume={ex['solid_volume']}")
     for o in mounted:

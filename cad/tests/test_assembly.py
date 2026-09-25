@@ -1,19 +1,17 @@
 """The arm assembly rebuilt from parts + placements reproduces the SolidWorks totals, plus the
-code-driven cycloidal_drive module's own totals, the caps-off working view (arm_no_caps) and the colors:
-in every assembly a purchased part is BOUGHT_TINT grey, a printed one its link's / module's tint."""
+code-driven cycloidal_drive module's own totals and the colors: in every assembly a purchased part is
+BOUGHT_TINT grey, a printed one its link's / module's tint."""
 import importlib
-import pathlib
 
 import pytest
 from build123d import Color, Location, Vector
 
 import parts
-from assemblies import arm, arm_no_caps, cycloidal_drive, forearm_roll_drive, gripper
+from assemblies import arm, cycloidal_drive, forearm_roll_drive, gripper
 from assemblies._occurrences import BOUGHT_TINT
 from lib import placements as P
 from lib import reference as R
 from lib.models import raw
-from tests.source_checks import runs_its_model
 from tests.totals import part_totals, world_bbox
 
 DRIVE = cycloidal_drive.EXPECTED
@@ -56,11 +54,11 @@ def _check_link_tints(root):
     return seen
 
 
-def _expected_totals(hidden=()):
+def _expected_totals():
     """(leaves, solids, volume) of the arm: every part occurrence of placements.json (tests.totals: the
-    SolidWorks record, or the part's own build once converted) but the `hidden` keys, plus the designed
-    modules' own totals (their EXPECTED)."""
-    keys = [k for k in P.keys(kind="part") if k not in set(hidden)]
+    SolidWorks record, or the part's own build once converted), plus the designed modules' own totals (their
+    EXPECTED)."""
+    keys = P.keys(kind="part")
     solids, volume = part_totals(keys)
     leaves = len(keys)
     for k in P.keys(kind="module", designed=True):
@@ -182,45 +180,13 @@ def test_arm_assembly_matches_reference_totals():
     assert [c.label for c in a.children] == [label for label, _, _ in arm.GROUPS]
     leaves = _leaves(a)
     exp_leaves, exp_solids, exp_volume = _expected_totals()
-    assert len(leaves) == exp_leaves == 66
+    assert len(leaves) == exp_leaves == 63
     labels = [leaf.label for leaf in leaves]
     assert len(set(labels)) == len(labels), f"duplicate leaf labels: {labels}"
-    assert len(a.solids()) == exp_solids == 199
+    assert len(a.solids()) == exp_solids == 196
     assert abs(R.solid_volume(a) - exp_volume) <= 0.5
     exp_min, exp_size = _expected_bbox()
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_min(a), exp_min, strict=True)), (R.bbox_min(a), exp_min)
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_size(a), exp_size, strict=True)), (R.bbox_size(a), exp_size)
     assert a.is_valid
-    assert _check_link_tints(a) == {True: 30, False: 36}   # bought / printed leaves (tools/bom.py counts the same)
-
-
-def test_arm_no_caps_tables_are_the_arms_minus_hidden():
-    """The caps-off working view derives its tables from arm.py: every HIDDEN key is an occurrence of
-    the arm (a renamed key must not silently bring a cap back), everything else is kept in order, and
-    the file ends with its build call (without it `./cadtool gen` builds nothing)."""
-    hidden = set(arm_no_caps.HIDDEN)
-    assert len(hidden) == len(arm_no_caps.HIDDEN) == 3
-    assert hidden <= {key for _, _, key in arm.OCCURRENCES}
-    assert all(P.OCCURRENCES[key]["part"].endswith(("_cap", "_cap_1", "_cap_2")) for key in hidden)
-    assert arm_no_caps.OCCURRENCES == [row for row in arm.OCCURRENCES if row[2] not in hidden]
-    assert [(label, tint) for label, tint, _ in arm_no_caps.GROUPS] == [(label, tint) for label, tint, _ in arm.GROUPS]
-    for (label, _, keys), (_, _, full_keys) in zip(arm_no_caps.GROUPS, arm.GROUPS, strict=True):
-        assert keys == tuple(key for key in full_keys if key not in hidden), label
-        assert keys, f"{label}: hiding must not empty a group"
-    assert runs_its_model(pathlib.Path(arm_no_caps.__file__), "arm_no_caps")
-
-
-@pytest.mark.slow
-def test_arm_no_caps_builds_the_arm_without_its_caps():
-    a = raw(arm_no_caps.arm_no_caps)
-    assert a.label == "arm_no_caps"
-    assert [c.label for c in a.children] == [label for label, _, _ in arm.GROUPS]
-    labels = [leaf.label for leaf in _leaves(a)]
-    exp_leaves, exp_solids, exp_volume = _expected_totals(hidden=arm_no_caps.HIDDEN)
-    assert len(labels) == exp_leaves == 63
-    hidden = [P.OCCURRENCES[key] for key in arm_no_caps.HIDDEN]
-    assert not {o["part"] for o in hidden} & set(labels), labels
-    assert len(a.solids()) == exp_solids == 196
-    assert abs(R.solid_volume(a) - exp_volume) <= 0.5
-    assert a.is_valid
-    assert _check_link_tints(a) == {True: 30, False: 36 - len(arm_no_caps.HIDDEN)}   # the caps are printed
+    assert _check_link_tints(a) == {True: 30, False: 33}   # bought / printed leaves (tools/bom.py counts the same)

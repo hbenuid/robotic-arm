@@ -405,9 +405,9 @@ class TestPoseInTheArm:
         assert all(abs(a - b) <= 1.5 for a, b in zip(R.bbox_size(node), sw["world_bbox_size"], strict=True)), (R.bbox_size(node), sw["world_bbox_size"])
 
     def test_drive_clears_arm_neighbours(self, drive_world):
-        """No intersection with the base, j1_link or j1_cap; only contact-level overlap with the
+        """No intersection with the base or j1_link; only contact-level overlap with the
         j1_coupler yoke it sits in (motor plate ~18 + ring gear body ~100 mm^3 measured)."""
-        for key, limit in (("base#1", 1.0), ("j1_link#1", 1.0), ("j1_cap#1", 1.0), ("j1_coupler#1", 150.0)):
+        for key, limit in (("base#1", 1.0), ("j1_link#1", 1.0), ("j1_coupler#1", 150.0)):
             part = P.OCCURRENCES[key]["part"]
             vol = interference(drive_world, place_world(part, key))
             assert vol <= limit, f"drive x {key}: {vol:.1f} mm^3 (limit {limit})"

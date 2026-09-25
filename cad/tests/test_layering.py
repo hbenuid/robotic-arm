@@ -29,7 +29,7 @@ PART_MODULE_IMPORT_ALLOWED = {"parts"}
 
 # lib/ packages lib/params.py re-exports from: they take their globals from the leaves (lib/units.py, lib/motors.py,
 # lib/belts.py) and never import lib.params back.
-LEAF_PACKAGES = ("cycloidal", "forearm")
+LEAF_PACKAGES = ("cycloidal", "forearm", "upper_arm")
 
 SOURCES = sorted(p for pkg in ORDER for p in (CAD_DIR / pkg).rglob("*.py") if "__pycache__" not in p.parts)
 

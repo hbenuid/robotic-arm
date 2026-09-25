@@ -1,6 +1,6 @@
 # robotic-arm — CAD (build123d)
 
-**Last updated:** 2026-09-24 (the OCP CAD Viewer / `ocp-vscode` and `./cadtool show` removed — the CAD Viewer is cadgen's; ruff lint via `./cadtool lint` + the pre-commit hook `./cadtool setup` installs; GitHub Actions CI, run by hand) — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-25 (the link caps removed, `j1_link` parametric; the OCP CAD Viewer / `ocp-vscode` and `./cadtool show` removed — the CAD Viewer is cadgen's; ruff lint via `./cadtool lint` + the pre-commit hook `./cadtool setup` installs; GitHub Actions CI, run by hand) — see the root `CHANGELOG.md` for dated changes.
 
 Parametric CAD-as-code for the desktop arm (base yaw, 20:1 cycloidal shoulder pitch, belt-driven
 elbow and wrist pitch, wrist roll, MG996R parallel gripper), converted part-by-part from the original
@@ -8,7 +8,8 @@ SolidWorks design. This folder is a **separate uv project** (Python 3.12) — th
 software in the repo root never depends on it.
 
 **Status:** every SolidWorks custom part exists as an *import wrapper* around its reference
-geometry (`reference/solidworks/<name>.step`), purchased parts use their vendor STEPs, and
+geometry (`reference/solidworks/<name>.step`) until it is converted (the two links are: `j1_link`,
+`j2_link`), purchased parts use their vendor STEPs, and
 `assemblies/arm.py` places all of them from placements extracted from the SolidWorks
 assembly — so the whole arm already assembles, renders and is tested. Converting a part means
 replacing its wrapper body with real build123d code (see "Converting a part"). The **20:1
@@ -59,7 +60,6 @@ additive (2026-09-22 entry).
 |---|---|
 | `./cadtool gen parts/<group>/<name>.py` (alias `step`) | **run the model script**: writes `parts/<group>/<name>.step` beside it (git-ignored); a second run prints `current …` (freshness gate), `--force` rebuilds |
 | `./cadtool gen assemblies/arm.py` | build `assemblies/arm.step` (git-ignored) — calls every part model, so each stale part is rebuilt (in parallel) and its STEP rewritten |
-| `./cadtool gen assemblies/arm_no_caps.py` | build `assemblies/arm_no_caps.step` — the same arm without `j1_cap`, `j2_cap_1`, `j2_cap_2` (a working view for the links under them; `arm.step` stays the robot). One-off image instead: `./cadtool snapshot assemblies/arm.step out.png --hide '#j1_cap' --hide '#j2_cap_1' --hide '#j2_cap_2'` |
 | `./cadtool python tools/bom.py [--module cycloidal_drive\|gripper] [--md\|--json]` | the **print list** and the **buy list** (what to order, pieces, mass), generated from the assembly tables + each part's `COTS` flag; ends with the purchased items that are not modelled (`EXTRAS`). No CAD kernel, instant |
 | `./cadtool python tools/export_printables.py [--parts …]` | one STL per **printed** part into `print/` (git-ignored; mm, part-local frame) with the quantity to print; bought parts are refused |
 | `./cadtool why <model.py>` | why the model is current or stale, clause by clause (`cadgen store why`) |
@@ -104,7 +104,8 @@ cad/
 │   ├── units.py           # IN, NUDGE - a leaf module (lib/cycloidal/ imports it; params.py re-exports it)
 │   ├── motors.py          # the arm's motors (NEMA 17 interface, pancake, the 40 mm kit motor + MKS board, MOTOR_40) - a leaf, re-exported by params.py
 │   ├── belts.py           # GT2: the pulleys, pulley_od(), closed_belt_length() / centre_distance(), stock belt lengths - a leaf
-│   ├── forearm/           # the forearm (ForearmConfig: LEGACY = the SolidWorks j2_link + caps, DEFAULT = the roll end) and the roll drive (RollDriveParams, stack_positions, the block / shaft / retainer / 90T ring builders)
+│   ├── upper_arm/         # the upper arm (UpperArmConfig: LEGACY = the SolidWorks j1_link, DEFAULT = no cap sockets, the motor's and the drive's hole patterns)
+│   ├── forearm/           # the forearm (ForearmConfig: LEGACY = the SolidWorks j2_link, DEFAULT = the roll end, no cap sockets) and the roll drive (RollDriveParams, stack_positions, the block / shaft / retainer / 90T ring builders)
 │   ├── datum.py           # capture frame W -> base_link frame B: frame(), base_frame() (arm.py arm_from_w(), robot/frames.py); frames as data: IDENTITY, to_location()
 │   ├── mounts.py          # the motor mounts the SolidWorks capture never had (base_yaw / elbow_pitch / wrist_pitch motors + MKS boards) as frames-as-data
 │   ├── reference.py       # naming maps (SolidWorks custom/COTS, designed cycloidal parts, modules), loaders, path_of(), matches_reference()
@@ -116,15 +117,14 @@ cad/
 ├── parts/                 # one part per file, grouped by subsystem; parts.names() / parts.load(name) discover them
 │   ├── __init__.py            # the directory scan: MODULES / GROUPS, names(), load(), model(), build(), bought(), source_of()
 │   ├── _templates/            # designed.py (parametric), wrapper.py (import wrapper), cots.py (purchased) templates
-│   ├── base/                  # base, j1_coupler, j1_link, j1_cap                                  (SolidWorks wrappers)
-│   ├── joints/                # j2_link, j2_cap_1, j2_cap_2 (parametric - lib/forearm/), j3_coupler, gt2_pulley_90t (SolidWorks wrappers) + COTS nema17_40mm, mks_servo42d (the belt joints' MKS kits) + the roll drive: forearm_roll_block / _shaft / _retainer (native), bearing_6808 (native COTS)
+│   ├── base/                  # base, j1_coupler (SolidWorks wrappers), j1_link (parametric - lib/upper_arm/)
+│   ├── joints/                # j2_link (parametric - lib/forearm/), j3_coupler, gt2_pulley_90t (SolidWorks wrappers) + COTS nema17_40mm, mks_servo42d (the belt joints' MKS kits) + the roll drive: forearm_roll_block / _shaft / _retainer (native), bearing_6808 (native COTS)
 │   ├── wrist/                 # wrist_link, gripper_clamp_bracket, gripper_j3_connector + COTS nema17_pancake, gt2_pulley_20t
 │   ├── gripper/               # gripper_* (7), servo_holder + COTS gripper_rail_6mm, mg996r_servo, mg996r_horn
 │   └── cycloidal/             # the drive: 6 designed parts + 10 COTS (bearings, nema17_48mm - vendor file composed from the kit exports -, pins, bolts, nuts), _cots.py helper
 │       └── <name>.py + <name>.step   # every group: running the .py writes the .step beside it (git-ignored, per machine)
 ├── assemblies/
 │   ├── arm.py             # the whole arm, grouped arm -> base_link/shoulder_link/upper_arm_link/elbow_link/forearm_link/wrist_pitch_link/wrist (GROUPS; the SolidWorks occurrences + the mounted motors and boards of lib/mounts.py + the three modules, printed parts tinted per group, purchased parts grey)
-│   ├── arm_no_caps.py     # working view: arm.py's tables minus HIDDEN (the three link caps) - not the robot
 │   ├── gripper.py         # the gripper mechanism module (its occurrences placed from placements.json)
 │   ├── cycloidal_drive.py # the drive module (rows placed from lib/cycloidal stack_positions - code-driven, the MKS board included; totals in EXPECTED)
 │   ├── forearm_roll_drive.py # the forearm roll module (rows from lib/forearm stack_positions; placed by lib/mounts.py MODULE_MOUNTS; stator / rotor BODIES; totals in EXPECTED)
@@ -206,8 +206,8 @@ part and its STEP always live in the same directory; upstream's `src/` + `STEP/`
 3. Set `CONVERTED = True`. If you pick a nicer local origin than the SolidWorks one, set
    `LOCAL_FROM_REF` to the transform *reference frame → new local frame* (frame data, see above); the
    assemblies compose `placement * to_location(LOCAL_FROM_REF)⁻¹`, so `reference/placements.json` never changes.
-   (`j1_cap` and `j2_cap_2` have their geometry ~1 m from the SolidWorks origin — they are the
-   ones that want this.)
+   (A SolidWorks part file can hold its geometry far from its own origin - the removed link caps did, ~1 m -:
+   such a part wants this.)
 4. `./cadtool pytest tests/test_reference_match.py -k <name>` — volume within 0.5 % and bounding
    box within 0.2 mm of the reference (per-part overrides: `REF_VOL_TOL`, `REF_BBOX_TOL`).
 5. `./cadtool gen parts/<group>/<name>.py` to regenerate the STEP, then
@@ -237,7 +237,7 @@ stages, not make/buy:
   the assembly tables; `--module cycloidal_drive` for the drive alone. Purchased items that are **not
   modelled** (the drive's arm-mount bolts and nuts, grease) are the one hand-kept table, `EXTRAS` in that
   tool: they are on the buy list, not in the model, the totals or the inertials.
-- **Colours** — every assembly (`arm.step`, `arm_no_caps.step`, `gripper.step`, `cycloidal_drive.step`) shows a
+- **Colours** — every assembly (`arm.step`, `gripper.step`, `cycloidal_drive.step`) shows a
   purchased part in the one `_occurrences.BOUGHT_TINT` grey; a printed part carries its link's or its module's colour
   (`gripper.TINT`, `cycloidal_drive.TINT`). Grey always means bought — no link or module tint reuses it. There is
   one STEP per assembly: no separate make/buy copies.
@@ -335,9 +335,9 @@ sweeps and hardware.
 |---|---|
 | `base_link` | `base` + `nema17_48mm#1`, `mks_servo42d#1` (the base_yaw 48 mm motor + board under the plate) |
 | `shoulder_link` | `j1_coupler` + the drive's **stator** (`cycloidal_drive#1:stator`: motor plate, ring gear body, ring pins, housing bolts/nuts, NEMA 17 + its MKS board, gear train) |
-| `upper_arm_link` | the drive's **rotor** (`cycloidal_drive#1:rotor`: output hub, output pins, 625) + `j1_link` + `j1_cap` + `nema17_40mm#2`, `mks_servo42d#2` (the elbow_pitch motor + board on the pad) |
+| `upper_arm_link` | the drive's **rotor** (`cycloidal_drive#1:rotor`: output hub, output pins, 625) + `j1_link` + `nema17_40mm#2`, `mks_servo42d#2` (the elbow_pitch motor + board on the pad) |
 | `elbow_link` | `gt2_pulley_90t#1` + the roll drive's **stator** (`forearm_roll_drive#1:stator`: the elbow block — the elbow coupler and the housing in one, `j3_coupler#1` retired —, 2× 6808, the end cap, its NEMA 17 x 40 + MKS board, the 20T) |
-| `forearm_link` | the roll drive's **rotor** (`forearm_roll_drive#1:rotor`: the hollow roll shaft with its 90T ring and end spigot) + `j2_link`, `j2_cap_1`, `j2_cap_2` + `nema17_40mm#3`, `mks_servo42d#3` (the wrist_pitch motor + board on the web) |
+| `forearm_link` | the roll drive's **rotor** (`forearm_roll_drive#1:rotor`: the hollow roll shaft with its 90T ring and end spigot) + `j2_link` + `nema17_40mm#3`, `mks_servo42d#3` (the wrist_pitch motor + board on the web) |
 | `wrist_pitch_link` | `wrist_link`, `gripper_clamp_bracket`, `nema17_pancake`, `gt2_pulley_90t#2`, `j3_coupler#2` |
 | `wrist_roll_link` | `gt2_pulley_20t` + the gripper base (connector, servo holder, servo + horn, cover, rails, crank links) |
 | `jaw_a_link` / `jaw_b_link` | slider + two fingers + end, each side |

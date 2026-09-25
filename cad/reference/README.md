@@ -1,6 +1,6 @@
 # reference/ — SolidWorks reference geometry
 
-**Last updated:** 2026-09-23 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-25 — see the root `CHANGELOG.md` for dated changes.
 
 **Purpose:** the original design, as exported from SolidWorks, renamed to the clean part
 names used everywhere in `cad/` (`solidworks/`) — plus, for the cycloidal drive, the CadQuery
@@ -55,10 +55,7 @@ are converted automatically).
 | `base` | custom | `base of robot arm 62126` | `step/base of robot arm 62126.STEP` | mm | 1 | 168.178 × 95.807 × 106.679 | ×1 |
 | `j1_coupler` | custom | `Base couple updated 62126 _J1 coupler` | `step/Base couple updated 62126 _J1 coupler.STEP` | mm | 1 | 96 × 63.976 × 106.264 | ×1 |
 | `j1_link` | custom | `first joint edit 62126` | `step/first joint edit 62126.STEP` | mm | 1 | 300 × 34 × 90 | ×1 |
-| `j1_cap` | custom | `first joint cap 8726` | `step/first joint cap 8726.STEP` | inch | 1 | 300 × 90 × 27.228 | ×1 |
 | `j2_link` | custom | `Joint 2 change 8126` | `step/Joint 2 change 8126.STEP` | mm | 1 | 300 × 90 × 33.5 | ×1 |
-| `j2_cap_1` | custom | `cap 1 joint 2 8726` | `step/cap 1 joint 2 8726.STEP` | mm | 1 | 245.461 × 90 × 14.5 | ×1 |
-| `j2_cap_2` | custom | `cap of joint 2 piece 2 8526` | `step/cap of joint 2 piece 2 8526.STEP` | mm | 1 | 223.377 × 90 × 13.5 | ×1 |
 | `j3_coupler` | custom | `Joint 2 coupler 62226_J3 Coupler` | `step/Joint 2 coupler 62226_J3 Coupler.STEP` | mm | 1 | 78 × 22 × 78 | ×2 |
 | `gt2_pulley_90t` | custom | `GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric` | `step/GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric.STEP` | mm | 1 | 59.188 × 21.4 × 59.188 | ×2 |
 | `gripper_clamp_bracket` | custom | `brack for hand cmap` | `step/brack for hand cmap.STEP` | mm | 1 | 26.2 × 64 × 43.2 | ×1 |
@@ -105,9 +102,10 @@ Cycloidal drive (`cycloidal/<name>.step`: the named CadQuery builder's export at
 Notes:
 - `gripper_finger_right` is the mirror configuration of `gripper_finger_left`; its SolidWorks
   export is still named `…_Gripper Hand Left` (stale configuration name, geometry is correct).
-- `j1_cap`, `j2_cap_1`, `j2_cap_2` were modelled in assembly context: their geometry sits far
-  from the part origin (up to ~1 m). `placements.json` compensates; choose a sane origin with
-  `LOCAL_FROM_REF` when converting them.
+- The link caps `j1_cap` (`first joint cap 8726`, inch), `j2_cap_1` (`cap 1 joint 2 8726`) and `j2_cap_2`
+  (`cap of joint 2 piece 2 8526`) were removed from the design 2026-09-25: their reference STEPs and manifest entries
+  are gone, their products are `lib/reference.py SKIPPED_PRODUCTS` and `placements.json` keeps their poses under
+  `skipped`. (They were modelled in assembly context, their geometry up to ~1 m from the part origin.)
 - `gt2_pulley_20t`'s product name carries the Cyrillic configuration name `Конфигурация1`
   ("Configuration1"); it never enters our labels.
 - `gt2_pulley_90t` is a printed parametric pulley (842 faces, ~1 s import); `gripper_j3_connector`

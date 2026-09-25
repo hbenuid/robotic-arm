@@ -19,13 +19,13 @@ def _close(a, b, tol=1e-6):
 
 def test_record_counts_match_expected():
     parts_ = P.keys(kind="part", retired=True)
-    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 40      # 34 SolidWorks + 6 mounted (j3_coupler#1 retired, still a record)
+    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 37      # 31 SolidWorks + 6 mounted (j3_coupler#1 retired, still a record)
     assert P.keys(kind="module") == ["cycloidal_drive#1", "gripper#1", "forearm_roll_drive#1"]
     assert P.keys(kind="module", designed=True) == P.DATA["designed_modules"] == ["cycloidal_drive#1", "forearm_roll_drive#1"]
-    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 100   # 50 + (7 + 13) + 2 x (2 + 13)
-    assert len(P.keys(kind="part", mounted=False, retired=True)) == 34
+    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 97   # 47 + (7 + 13) + 2 x (2 + 13)
+    assert len(P.keys(kind="part", mounted=False, retired=True)) == 31
     assert P.RETIRED == ("j3_coupler#1",) and set(P.RETIRED) <= set(P.OCCURRENCES)
-    assert len(P.keys(kind="part")) == 40 - len(P.RETIRED)
+    assert len(P.keys(kind="part")) == 37 - len(P.RETIRED)
 
 
 def test_mounted_records_follow_lib_mounts():
@@ -116,7 +116,7 @@ def test_duplicate_parts_have_unique_labels():
 
 def test_designed_module_records_the_cycloidal_drive():
     """The drive's SolidWorks node is a designed module: pose from SolidWorks (verbatim the
-    former skipped[0]), contents from assemblies/cycloidal_drive.py; nothing is skipped any more."""
+    former skipped[0]), contents from assemblies/cycloidal_drive.py."""
     o = P.OCCURRENCES["cycloidal_drive#1"]
     assert o["kind"] == "module" and o["designed"] is True and o["parent"] is None and o["path"] == "1.3"
     assert o["part"] == "cycloidal_drive" and o["label_in_monolith"] == "New_cyloidal_assembly"
@@ -128,4 +128,17 @@ def test_designed_module_records_the_cycloidal_drive():
     assert (sw["leaves"], sw["solids"], sw["solid_volume"]) == (15, 38, 674390.543)
     assert sw["world_bbox_min"] == [-71.78, 15.01, -35.683] and sw["world_bbox_size"] == [143.382, 140.0, 116.393]
     assert "solids" not in o and "solid_volume" not in o     # totals come from the module build, not SolidWorks
-    assert P.DATA["skipped"] == []
+    assert "cycloidal_drive" not in {s["label"] for s in P.DATA["skipped"]}
+
+
+def test_skipped_nodes_are_the_dropped_products():
+    """A SolidWorks node the design dropped (lib/reference.py SKIPPED_PRODUCTS - the link caps since 2026-09-25) is
+    no occurrence: its pose stays under `skipped` (tools/reference/mount_placements.py's merge mode moved them there,
+    as an extraction would write them)."""
+    skipped = P.DATA["skipped"]
+    assert [s["label"] for s in skipped] == ["cap_1_joint_2_8726", "cap_of_joint_2_piece_2_8526", "first_joint_cap_8726"]
+    assert [s["path"] for s in skipped] == ["1.15", "1.16", "1.17"]
+    assert all(s["reason"] == R.SKIPPED_LABELS[s["label"]] and (s["leaves"], s["solids"]) == (1, 1) for s in skipped)
+    assert not {o["label_in_monolith"] for o in P.DATA["occurrences"]} & set(R.SKIPPED_LABELS)
+    for s in skipped:
+        assert _close(_matrix(P.to_location(s["rel"])), s["rel"]["matrix_3x4"]) and s["rel"] == s["world"]   # top-level nodes

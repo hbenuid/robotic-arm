@@ -1,6 +1,6 @@
 # Open issues — what the CAD knows is not settled
 
-**Last updated:** 2026-09-23 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-25 — see the root `CHANGELOG.md` for dated changes.
 
 **Purpose:** the ONE list of unsettled things a session should know before trusting a number or a fit: fit problems
 the model carries knowingly, `[ESTIMATE]` values waiting for a measurement, hardware not modelled yet, mappings
@@ -12,7 +12,6 @@ are quoted from the code they live in — the code wins if they drift.
 | issue | where it lives | what closes it | raised |
 |---|---|---|---|
 | The base_yaw motor (48 mm) + its MKS board reach **6.1 mm below the base's bottom face** (62.1 mm stack, 56 mm of depth under the plate) | `lib/params.py BASE_MOTOR_STACK_PROUD`, `tests/test_mounts.py`, `test_params_invariants.py` | feet / a cut-out ≥ 6.1 mm under the base, or the plate moved up when `base` is converted | 2026-09-21 (`d9662a3`) |
-| `j1_link`'s pad holes are 0.38 mm off the shoulder axis and uneven (30.8 / 31.2 mm); the elbow motor is placed on the axis, not on the holes | `lib/mounts.py` note on `nema17_40mm#2` | fix the pattern when `j1_link` is converted | 2026-09-21 (`2abdb0b`) |
 | The drive motor's tie rods are not modelled (the MKS kit's M3x30 replace them); bolt shanks overlap the export's tapped holes in the model (46 / 159 mm³, thread engagement) | `tests/cycloidal/test_assembly.py` interference budget | nothing — a modelling representation; re-measure if the vendor file changes | 2026-09-21 (`3e667e0`) |
 
 ## Estimates to confirm on the hardware (`[ESTIMATE]` in `lib/params.py` unless noted)
@@ -22,7 +21,6 @@ are quoted from the code they live in — the code wins if they drift.
 | The 40 mm kit motors' real shaft length (the export said 23; the model carries the drive's 22) and the 48 mm one's (datasheet 17HS19-2004S1: 24 ± 1 with a 15 mm D-cut; the drive assumes 22 / 18 by ruling — `reference/cycloidal/nema17_48mm.step`) | `lib/cycloidal/params.py MotorParams`, `tools/reference/split_mks_motor.py` | measure from the mounting face; a 24 mm shaft bottoms the eccentric shaft's D-bore (`d_bore_depth` 14 → 16) |
 | Connector / cable direction of each mounted motor (the spin about its axis) | `lib/mounts.py` frames, `note` fields | decide on the bench; change the `rz`, run `mount_placements.py`, Recipe C |
 | The wrist-pitch motor's position on `j2_link`'s slide, `J2_MOTOR_SLIDE_X` = −136.37: what a stock **264-2GT** belt sets (`lib/forearm/params.py RollEndParams.wrist_belt`, `lib/belts.py`) - the belt length itself is the estimate | `lib/forearm/params.py` | confirm the belt on the hardware; 260-2GT would put it at −138.5 |
-| The forearm's two caps (`j2_cap_1`, `j2_cap_2`) are **slated for removal** (2026-09-22): they follow the roll-end configuration so the assembly stays consistent, but get no further design work | `parts/joints/j2_cap_*.py`, `assemblies/arm.py` | drop them from `OCCURRENCES` / `GROUPS` / `LINKS` / `placements.json` (with `arm_no_caps.py`'s `HIDDEN`) when the time comes |
 | Joint limits, efforts, velocities, axis signs, jaw travel | `lib/params.py` `*_LIMIT_DEG`, `ARM_JOINT_*`, `JAW_*` | viewer sweeps + hardware; `robot/arm.urdf` follows via `derive.py --check` |
 | The roll belt, 240-2GT (`RollDriveParams.roll_belt`) - it sets the roll motor's centre distance (60.9) and so its height above the block (its body 1.9 mm above the top at the nominal slot position) | `lib/forearm/params.py` | confirm on the hardware; the plate's slots give +/- 2.5 mm |
 | `FOREARM_ROLL_LIMIT_DEG` = 170 (the hard stop: the shaft's lug on its neck against the end cap's post - printed, 10° wide each, 1 mm of axial overlap) | `lib/params.py`, `lib/forearm/params.py stop_*` | the overlap and widths on the print; the lugs are small - a steel pin if PETG shears |
@@ -57,5 +55,5 @@ are quoted from the code they live in — the code wins if they drift.
 | item | where |
 |---|---|
 | The motor-control `software/control/tests/` imports `arctos.*` and does not run | root `CLAUDE.md` "Known issues" |
-| 17 custom parts are still SolidWorks wrappers (`CONVERTED = False`; the forearm's `j2_link` / `j2_cap_1` / `j2_cap_2` are parametric since 2026-09-22, `lib/forearm/`); the fit problems above are fixed at conversion | `parts/<group>/*.py`, `cad/CLAUDE.md` "Part states" |
+| 15 of the 17 custom parts are still SolidWorks wrappers (`CONVERTED = False`; the links are parametric: `j2_link` since 2026-09-22, `lib/forearm/`, `j1_link` since 2026-09-25, `lib/upper_arm/`); the fit problems above are fixed at conversion | `parts/<group>/*.py`, `cad/CLAUDE.md` "Part states" |
 | The drive's motor envelope cuts the D-flat at `shaft_dcut_flat / 2` (flat-to-round 4.75) — ruled correct 2026-09-21 (it is what `reference/cycloidal/nema17_48mm.step` defines and the eccentric shaft's D-bore matches); noted here only because the parameter's name reads like 4.5 | `lib/cycloidal/motor.py flat_offset()` |

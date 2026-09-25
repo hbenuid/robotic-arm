@@ -27,12 +27,14 @@ from lib.params import (
     FOREARM_ROLL_BELT_LENGTH,
     WRIST_BELT_LENGTH,
 )
+from lib.upper_arm import DEFAULT as _UPPER_ARM
 
 # (module or None = the arm itself, what to order, pieces, why it is not modelled). Seeded with what
 # docs/cycloidal_drive.md states; the elbow belt, the arm's own fasteners and the electronics are not listed yet.
 EXTRAS = [
     ("cycloidal_drive", f"M{CYCLOIDAL_ARM_MOUNT_BOLT_DIA:g} socket head cap screw (ISO 4762), 40-50 mm long - arm-mount bolts",
-     CYCLOIDAL_ARM_MOUNT_BOLT_COUNT, "length = the arm link + the hub; settle it once j1_link is parametric"),
+     CYCLOIDAL_ARM_MOUNT_BOLT_COUNT,
+     f"length = j1_link's plate ({_UPPER_ARM.slab.lip_top - _UPPER_ARM.slab.y0:.2f} mm, lib/upper_arm) + the hub to its captive nuts"),
     ("cycloidal_drive", f"M{CYCLOIDAL_ARM_MOUNT_BOLT_DIA:g} hex nut (ISO 4032) - captive in the output hub's inner face",
      CYCLOIDAL_ARM_MOUNT_BOLT_COUNT, "drop them in before pressing the hub through the 6814s"),
     ("cycloidal_drive", "bearing grease", 1, "the output pins are a greased sliding fit through the discs"),

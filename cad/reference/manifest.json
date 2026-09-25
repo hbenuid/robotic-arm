@@ -747,27 +747,6 @@
    "source": "step/GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric.STEP",
    "units": "mm"
   },
-  "j1_cap": {
-   "bbox_min": [
-    -838.697,
-    855.589,
-    -27.228
-   ],
-   "bbox_size": [
-    300.0,
-    90.0,
-    27.228
-   ],
-   "bytes": 112539,
-   "file": "solidworks/j1_cap.step",
-   "kind": "custom",
-   "product": "first joint cap 8726",
-   "sha256": "695547567e95414497753a901ea47905758a9bf3405ef64587b89e5b3e3ac72f",
-   "solid_volume": 150356.572,
-   "solids": 1,
-   "source": "step/first joint cap 8726.STEP",
-   "units": "inch"
-  },
   "j1_coupler": {
    "bbox_min": [
     -48.0,
@@ -808,48 +787,6 @@
    "solid_volume": 354048.813,
    "solids": 1,
    "source": "step/first joint edit 62126.STEP",
-   "units": "mm"
-  },
-  "j2_cap_1": {
-   "bbox_min": [
-    -200.461,
-    -45.0,
-    -14.5
-   ],
-   "bbox_size": [
-    245.461,
-    90.0,
-    14.5
-   ],
-   "bytes": 85762,
-   "file": "solidworks/j2_cap_1.step",
-   "kind": "custom",
-   "product": "cap 1 joint 2 8726",
-   "sha256": "7e485f41735be289de4720c809dca8d987d69842b308fc05bd3ab9216ba76000",
-   "solid_volume": 97819.467,
-   "solids": 1,
-   "source": "step/cap 1 joint 2 8726.STEP",
-   "units": "mm"
-  },
-  "j2_cap_2": {
-   "bbox_min": [
-    -753.703,
-    885.488,
-    -13.5
-   ],
-   "bbox_size": [
-    223.377,
-    90.0,
-    13.5
-   ],
-   "bytes": 96673,
-   "file": "solidworks/j2_cap_2.step",
-   "kind": "custom",
-   "product": "cap of joint 2 piece 2 8526",
-   "sha256": "c983497013105196e6d670a65c29651fd16a3ad5c0fa8ebe10aafa6f468828ac",
-   "solid_volume": 75151.405,
-   "solids": 1,
-   "source": "step/cap of joint 2 piece 2 8526.STEP",
    "units": "mm"
   },
   "j2_link": {

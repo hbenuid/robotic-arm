@@ -81,11 +81,12 @@ def build_link(cfg: ForearmConfig = DEFAULT):
     body = body - stadium(s.centre_x[1] - s.centre_x[0], s.centre_w, w.thickness + 2 * NUDGE, sum(s.centre_x) / 2.0, w.z0 - NUDGE)
     for sy in (s.side_y, -s.side_y):
         body = body - bd.Pos(0.0, sy, 0.0) * stadium(s.side_x[1] - s.side_x[0], s.side_w, w.thickness + 2 * NUDGE, sum(s.side_x) / 2.0, w.z0 - NUDGE)
-    # the locating sockets, both faces
-    top, bottom = link_socket_points(cfg)
-    r, depth = cfg.sockets.dia / 2.0, cfg.sockets.depth
-    for xy in top:
-        body = body - cylinder(r, depth + NUDGE, xy, z0=w.z1 - depth)
-    for xy in bottom:
-        body = body - cylinder(r, depth + NUDGE, xy, z0=w.z0 - NUDGE)
+    # the locating sockets, both faces (LEGACY)
+    if cfg.sockets is not None:
+        top, bottom = link_socket_points(cfg)
+        r, depth = cfg.sockets.dia / 2.0, cfg.sockets.depth
+        for xy in top:
+            body = body - cylinder(r, depth + NUDGE, xy, z0=w.z1 - depth)
+        for xy in bottom:
+            body = body - cylinder(r, depth + NUDGE, xy, z0=w.z0 - NUDGE)
     return single_solid(body)

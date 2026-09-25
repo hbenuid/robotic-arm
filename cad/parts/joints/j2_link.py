@@ -8,8 +8,8 @@ centre's N-station); the elbow block (parts/joints/forearm_roll_block) is the el
 j3_coupler#1. LEGACY: the Ø90 disc whose z=0 face bolts to j3_coupler#1 (Ø54.89 bore, 4x M4 into
 captive hex nuts dropped in from the top). Web z 8..19 with the wrist-pitch motor's slide (a central slot for the
 pilot boss - 22.3 wide in DEFAULT, 20 in LEGACY -, two 3.2 mm side slots for the 31 mm bolt square, shortened in
-DEFAULT to the slide range the stock wrist belt allows; lib/mounts.py places nema17_40mm#3 on it) and the Ø5.18 x 2
-locating sockets the caps mirror. Wrist end: the Ø90 boss with the Ø42.2 wrist_pitch bearing seat (lipped) and the
+DEFAULT to the slide range the stock wrist belt allows; lib/mounts.py places nema17_40mm#3 on it) and, in LEGACY only,
+the Ø5.18 x 2 locating sockets of the removed caps (j2_cap_1 / j2_cap_2, gone 2026-09-25). Wrist end: the Ø90 boss with the Ø42.2 wrist_pitch bearing seat (lipped) and the
 Ø80 recess. Every number: lib/forearm/params.py (ForearmConfig; measured on the reference 2026-09-22).
 
 SolidWorks product: 'Joint 2 change 8126'

@@ -4,7 +4,7 @@
 conversion workflow, shared-dimension rules, assembly placements, purchased parts, tests, tooling.
 **Audience:** agent. Human docs: `README.md`. Reference provenance: `reference/README.md`. The
 cycloidal drive (spec, port notes, attachment): `docs/cycloidal_drive.md`; the forearm roll drive: `docs/forearm_roll.md`.
-**Last updated:** 2026-09-24 (cadgen 0.6.6; the OCP CAD Viewer / `ocp-vscode` and `./cadtool show` removed; ruff lint, `./cadtool lint`, run automatically by a Claude Code hook + the git pre-commit hook; GitHub Actions CI, run by hand). Every commit that changes behaviour, layout or tooling gets a dated entry in the
+**Last updated:** 2026-09-25 (the link caps removed - `SKIPPED_PRODUCTS`, `arm_no_caps.py` gone; `j1_link` parametric, `lib/upper_arm/`; cadgen 0.6.6; ruff lint, `./cadtool lint`, run automatically by a Claude Code hook + the git pre-commit hook; GitHub Actions CI, run by hand). Every commit that changes behaviour, layout or tooling gets a dated entry in the
 root `CHANGELOG.md` and bumps the `Last updated` line of the docs it touches.
 
 `cad/` is a **separate uv project** (Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.6.x) inside the
@@ -46,7 +46,7 @@ host, interference budget) → Recipe C.
 **C — the regeneration checklist, after ANY geometry / mass / placement change, in this order**
 1. `./cadtool daemon stop` when `lib/reference.py`, `pyproject.toml` or the kernel changed (workers keep old code).
 2. `shasum -a 256 parts/*/*.step assemblies/*.step robot/links/*.step > /tmp/before.txt` (the hash gate).
-3. `./cadtool gen assemblies/arm.py` and `./cadtool gen assemblies/arm_no_caps.py` (every stale child rebuilds);
+3. `./cadtool gen assemblies/arm.py` (every stale child rebuilds);
    a part whose vendor file is NEW needs `./cadtool gen parts/<group>/<name>.py --force` first (see Gotchas).
 4. `shasum -a 256 -c /tmp/before.txt` — only the STEPs you meant to change may fail; settle float noise with
    `./cadtool inspect diff`.
@@ -97,7 +97,7 @@ the CAD keeps is the derived, committed copy (`reference/`, `vendor/`) — the r
   Pull semantics: a rebuilt part does not update the arm until the arm is rebuilt (`why` shows the
   pinned child).
 - To look at a model, build it and open its STEP in `./cadtool viewer` (below). The OCP CAD Viewer VS Code
-  extension (`ocp-vscode`, `./cadtool show`) was removed 2026-09-24 — cadgen's viewer and snapshots cover
+  extension (`ocp-vscode`, `./cadtool show`) was removed 2026-09-25 — cadgen's viewer and snapshots cover
   everything. Numbers without a build: `./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals())"`.
 - **Printed vs. bought** — one label per part (`COTS = True` = bought, else printed; `parts.bought(name)`), everything
   else generated from it: `./cadtool python tools/bom.py [--module cycloidal_drive|gripper] [--md|--json]` (print
@@ -233,8 +233,10 @@ otherwise. `tests/conftest.py` makes an accidental top-level call under pytest f
 **Part states.** Custom parts declare `REFERENCE = NAME`, `CONVERTED` and `LOCAL_FROM_REF`:
 - *wrapper* (`CONVERTED = False`, from `_templates/wrapper.py`): the model returns
   `reference/solidworks/<name>.step` (via `lib.reference.load` → `cadgen.read_step`, a tracked input)
-  in the SolidWorks part-file frame — the day-one state of all 20 custom parts (17 remain; the forearm's three
-  are parametric: `lib/forearm/`, a `ForearmConfig` with `LEGACY` = the SolidWorks parts and `DEFAULT` = what is built);
+  in the SolidWorks part-file frame — the day-one state of all 20 custom parts (17 custom parts since the link caps
+  were removed, 15 of them wrappers; the two links are parametric: `j2_link` in `lib/forearm/` - a `ForearmConfig` with
+  `LEGACY` = the SolidWorks part and `DEFAULT` = what is built -, `j1_link` in `lib/upper_arm/` - an `UpperArmConfig`, the
+  same pattern);
 - *parametric* (`CONVERTED = True`, from `_templates/designed.py`): real build123d. To convert: rewrite
   the model body, set `CONVERTED = True`, optionally set `LOCAL_FROM_REF` (reference frame → new
   local frame, as frame data `((x, y, z), (rx, ry, rz))` — `IDENTITY` until then; the assemblies
@@ -301,7 +303,7 @@ builder is `lib/cycloidal/motor.py nema17_motor()`, which the 40 mm envelope reu
 `lib/` never imports `parts/`. Two leaves sit below it and are re-exported unchanged: `lib/motors.py` (the
 NEMA 17 interface, the pancake, the 40 mm kit motor + MKS board, `MOTOR_40`) and `lib/belts.py` (the GT2
 constants, `pulley_od`, `closed_belt_length` / `centre_distance`, the stock belt lengths) — a `lib/` package
-that `lib/params.py` re-exports from (`lib/cycloidal/`, `lib/forearm/`) imports THOSE, never `lib.params`. Docs name constants, never numbers. Datum: the SolidWorks capture
+that `lib/params.py` re-exports from (`lib/cycloidal/`, `lib/forearm/`, `lib/upper_arm/`) imports THOSE, never `lib.params`. Docs name constants, never numbers. Datum: the SolidWorks capture
 frame is **Y up** (J1 axis); the URDF base frame (REP-103) is `lib/datum.py base_frame()` (with `frame()`,
 `U`, `BASE_FORWARD`; `robot/frames.py` re-exports them and builds the kinematics on top) — and
 `assemblies/arm.py` emits the arm in it (`arm_from_w()`, see Assembly), so `arm.step` is **Z up**.
@@ -324,7 +326,11 @@ Changing a shared dimension — touchpoints in order:
   `"<part>#<n>"`, module `"gripper#1"`. Treat it as an immutable input. An occurrence the DESIGN has replaced is
   **retired** in `lib/placements.py RETIRED` (`j3_coupler#1`: the roll drive's block carries the coupler's lip / boss /
   journal / stub): its record stays, `P.keys()` leaves it out (`retired=True` lists the file), no table / link / total
-  claims it (`test_placements.py`, `test_assembly.py`, `test_robot.py` follow `keys()`).
+  claims it (`test_placements.py`, `test_assembly.py`, `test_robot.py` follow `keys()`). A PART the design drops
+  entirely (the link caps `j1_cap` / `j2_cap_1` / `j2_cap_2`, removed 2026-09-25) cannot be retired - its part module,
+  `CUSTOM` row and manifest entry go, and a record must name a known part -: its SolidWorks product goes into
+  `lib/reference.py SKIPPED_PRODUCTS` and `tools/reference/mount_placements.py` (the merge mode, no monolith) moves the
+  record to `skipped` as the entry an extraction writes (pose, totals, reason) - `test_skipped_nodes_are_the_dropped_products`.
 - **Mounted occurrences** (`lib/mounts.py`): the belt joints' motors - `nema17_48mm#1` (the 48 mm motor, under the base;
   motor + board hang `BASE_MOTOR_STACK_PROUD` = 6.1 mm below the base's bottom face) and `nema17_40mm#2..3`, + `mks_servo42d#1..3`,
   on the NEMA 17 pads `base` / `j1_link` / `j2_link` carry - never existed in the SolidWorks capture. They are declared as
@@ -361,18 +367,10 @@ Changing a shared dimension — touchpoints in order:
   `test_assembly.py` compares the SolidWorks world bbox through `arm_from_w()`.
 - Roles (`j2`/`j3` = the elbow_pitch / wrist_pitch pulley + coupler pairs, `1`/`2`) only disambiguate
   duplicates; renaming them after the joints is a follow-up.
-- `assemblies/arm_no_caps.py` is a **working view, not the robot**: `arm.py`'s `OCCURRENCES` / `GROUPS` minus
-  `HIDDEN` (`j1_cap#1`, `j2_cap_1#1`, `j2_cap_2#1` — the covers over `j1_link` / `j2_link`), same frame, tree and
-  tints, its own git-ignored `arm_no_caps.step` (its totals: `tests/test_assembly.py`). `HIDDEN` is the one place to edit;
-  never feed it to `robot/` or the SolidWorks totals. It is a second model because a model takes no
-  parameters and the freshness gate sees no environment variable (an env switch in `arm()` would read
-  `current` across a flip, and the daemon strips unlisted variables from its workers). Link edits land in
-  the shared part file, so both arms pick them up on their **own** next `gen`; `j1_cap` is a wrapper that does
-  not follow a link change (the forearm's caps are built from the same `ForearmConfig` as `j2_link` and do) and
-  this view cannot show a cap that no longer fits — after changing `j1_link` / `j2_link`, `./cadtool gen
-  assemblies/arm.py` + snapshot too. For a one-off image no model is needed:
-  `./cadtool snapshot assemblies/arm.step out.png --hide '#j1_cap' --hide '#j2_cap_1' --hide '#j2_cap_2'`
-  (label refs; STEP input only, not with `--render` / `--focus`; the viewer has no `?hide=` parameter).
+- A view of the arm with some occurrences hidden needs no model: `./cadtool snapshot assemblies/arm.step out.png
+  --hide '#<label>'` (label refs; STEP input only, not with `--render` / `--focus`; the viewer has no `?hide=`
+  parameter). A second model would be the only way to get a STEP (a model takes no parameters, the freshness gate
+  sees no environment variable): `assemblies/arm_no_caps.py` was one until the caps it hid were removed (2026-09-25).
 - **Printed vs. bought is a colour in every assembly, never a second model.** `gripper.py` and `cycloidal_drive.py`
   declare a `TINT` (their printed parts' colour, reused by `arm.py MODULE_TINTS`) and pass it to
   `occurrence_children(…, tint=)` / `located_children(…, tint=)`; `_tint_parts` gives every purchased part
@@ -457,7 +455,7 @@ Changing a shared dimension — touchpoints in order:
 every part, COTS envelopes + vendor frames), `test_reference_match.py` (manifest checksums; converted
 parts vs reference), `test_placements.py` (JSON integrity, tables cover every key once, the designed
 module record + the mounted records vs `lib/mounts.py`), `test_assembly.py` (the arm's leaves / solids / volume / bbox
-vs SolidWorks + the module lock — the numbers are IN that file; `arm_no_caps` = the arm's tables minus `HIDDEN`; the arm's leaf colours -
+vs SolidWorks + the module lock — the numbers are IN that file; the arm's leaf colours -
 purchased = `BOUGHT_TINT`, which no group / module may reuse, printed = the link's / module's tint, in the arm and in
 the standalone gripper and drive), `test_bom.py` (the print / buy lists
 partition `parts.names()` by the flag, the occurrence counts, the drive's pieces follow `DEFAULT_CONFIG`, `EXTRAS`
@@ -475,8 +473,9 @@ loading `build123d` / `OCP`; names the first offender — a new assembly model g
 converted — shared by `test_assembly.py` and `test_robot.py`),
 `tests/cycloidal/` (the drive: one module per part + housing / purchased / fitment / assembly / port,
 ~230 tests; `from tests.cycloidal.helpers import CFG, …` for the shared config + geometry helpers, the
-`stack` fixture is `tests/cycloidal/conftest.py`), `tests/forearm/` (the forearm: the LEGACY builds vs the SolidWorks
-parts + feature probes, the roll end, the roll drive - axis through the wrist centre, stack, press fits, clean pairs,
+`stack` fixture is `tests/cycloidal/conftest.py`), `tests/upper_arm/` (`j1_link`: the LEGACY build's feature probes, DEFAULT's
+holes on the elbow motor's pattern and the drive's arm-mount bolts, no sockets), `tests/forearm/` (the forearm: the LEGACY
+build vs the SolidWorks part + feature probes, the roll end, the roll drive - axis through the wrist centre, stack, press fits, clean pairs,
 clearances in the arm with the elbow folded; `helpers.in_host()` places any occurrence in `j2_link`'s frame). Geometry tests are
 `slow`. Run pytest only through `./cadtool pytest` (rootdir `cad/`; `software/control/tests/` is the
 unrelated, broken motor-control suite).
@@ -492,8 +491,8 @@ unrelated, broken motor-control suite).
   one, each call to a child model is its own linked occurrence).
 - `read_step()` / `import_step()` convert inch-unit files to mm and keep the assembly hierarchy (labels
   mangle ` .()` → `_`; `lib.reference.clean_label` mirrors build123d's `import_step`, which the
-  reference tools keep using). `j1_cap`, `j2_cap_1`, `j2_cap_2` have geometry far from their part
-  origin — `placements.json` compensates; use `LOCAL_FROM_REF` when converting.
+  reference tools keep using). A SolidWorks part file can hold its geometry far from its own origin (the removed
+  link caps did, ~1 m) — `placements.json` compensates; use `LOCAL_FROM_REF` when converting such a part.
 - `uv sync` prunes anything `uv pip install`-ed; `uv run` doesn't — that's why `cadgen` is a
   pyproject dependency, not a manual install.
 - Don't compare large STEP artifacts with `git diff`; compare source, `inspect` output and snapshots.

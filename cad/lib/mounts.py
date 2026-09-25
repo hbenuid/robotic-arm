@@ -33,7 +33,7 @@ Geometry (lib/params.py, kernel-verified 2026-09-21 - tests/test_mounts.py re-ch
                shoulder axis; shaft +N through the pad opening, the 20T in the elbow 90T's plane, 210 mm centres
   wrist_pitch  j2_link's web (+Z face z = J2_MOTOR_WEB_FACE_Z), motor axis at x = J2_MOTOR_SLIDE_X on the side
                slots (lib/forearm/params.py: where the stock wrist belt puts it, its plug clear of the roll wall);
-               body +N through j2_cap_1's window, shaft -N through the web, 20T under j2_cap_2
+               body +N, shaft -N through the web, the 20T under it
 """
 from __future__ import annotations
 
@@ -81,7 +81,7 @@ MOUNTS: tuple[Mount, ...] = (
     Mount("mks_servo42d#1", BOARD, "nema17_48mm#1", "base_link", "base_yaw", BOARD_FRAME_48),
     Mount("nema17_40mm#2", MOTOR_40, "j1_link#1", "upper_arm_link", "elbow_pitch",
           ((0.0, J1_MOTOR_PAD_FACE_Y, 0.0), (-90.0, 0.0, 90.0)),
-          "on j1_link's pad, on the shoulder axis (the pad's holes are 0.38 mm off), shaft +N; connector toward the elbow [ESTIMATE]"),
+          "on j1_link's pad, on the shoulder axis (on its 4 holes), shaft +N; connector toward the elbow [ESTIMATE]"),
     Mount("mks_servo42d#2", BOARD, "nema17_40mm#2", "upper_arm_link", "elbow_pitch", BOARD_FRAME_40),
     Mount("nema17_40mm#3", MOTOR_40, "j2_link#1", "forearm_link", "wrist_pitch",
           ((J2_MOTOR_SLIDE_X, 0.0, J2_MOTOR_WEB_FACE_Z), (180.0, 0.0, 90.0)),

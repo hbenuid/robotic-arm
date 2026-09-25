@@ -64,9 +64,11 @@ from lib.motors import (  # noqa: E402, F401
 BASE_MOTOR_PATTERN_CENTRE = (78.971, -44.9, 0.084)   # [REFERENCE] base: 4x M3 on 31 x 31 through the 5 mm plate, on its -Y face
 BASE_MOTOR_STACK_PROUD = 6.1    # [DESIGN] the 48 mm motor + board (48 + 14.1) hang this far BELOW the base's bottom face
 #                                 (56.0 mm of depth under the plate): the base needs feet / a cut-out at least this deep
-J1_MOTOR_PAD_FACE_Y = -32.5     # [REFERENCE] j1_link: the 48 x 48 pad's outer face (the -N side), pattern on the shoulder axis
-# j2_link is parametric (lib/forearm/params.py ForearmConfig, a leaf like lib/cycloidal/params.py): the motor's
-# pad face and slide come from its DEFAULT configuration.
+# j1_link and j2_link are parametric (lib/upper_arm/params.py UpperArmConfig, lib/forearm/params.py ForearmConfig -
+# leaves like lib/cycloidal/params.py): the motors' pad faces and j2_link's slide come from their DEFAULT configurations.
+from lib.upper_arm.params import DEFAULT as _UPPER_ARM  # noqa: E402
+
+J1_MOTOR_PAD_FACE_Y = _UPPER_ARM.pad.face_y        # -32.5 [REFERENCE] j1_link: the 48 x 48 pad's outer face (the -N side), the holes on the shoulder axis
 from lib.forearm.params import DEFAULT as _FOREARM  # noqa: E402
 
 J2_MOTOR_WEB_FACE_Z = _FOREARM.web.z1              # 19 [REFERENCE] j2_link: the web's +Z face; the motor bolts through its slots

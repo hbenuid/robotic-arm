@@ -38,7 +38,7 @@
   positive-motion sign of every axis (confirm with viewer sweeps); jaw travel range.
   ASSUMPTIONS: j1_coupler (the holder) turns on the base and carries the cycloidal drive's
   stator (housing, motor, gear train) in its yoke - together shoulder_link; the drive's rotor
-  (output hub + pins) is bolted to j1_link - with j1_cap, upper_arm_link - so the drive IS the
+  (output hub + pins) is bolted to j1_link - together upper_arm_link - so the drive IS the
   shoulder_pitch joint (cad/docs/cycloidal_drive.md, cad/assemblies/cycloidal_drive.py BODIES);
   the GT2 90T pulleys + J3 couplers are bolted to the driven links (forearm_link at elbow_pitch,
   wrist_pitch_link at wrist_pitch); the MG996R crank linkage is merged into wrist_roll_link;
@@ -91,9 +91,9 @@
   </link>
   <link name="upper_arm_link">
     <inertial>
-      <origin xyz="0.063182 0.000006 -0.021831" rpy="0 0 0" />
-      <mass value="1.101378" />
-      <inertia ixx="1.433476e-03" ixy="4.401707e-07" ixz="-4.456958e-04" iyy="8.607524e-03" iyz="3.895962e-07" izz="8.491862e-03" />
+      <origin xyz="0.057873 0.000007 -0.020491" rpy="0 0 0" />
+      <mass value="0.910943" />
+      <inertia ixx="1.170612e-03" ixy="4.042278e-07" ixz="-5.219457e-04" iyy="6.983385e-03" iyz="3.973953e-07" izz="6.648278e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -129,9 +129,9 @@
   </link>
   <link name="forearm_link">
     <inertial>
-      <origin xyz="0.000507 -0.00001 0.122951" rpy="0 0 0" />
-      <mass value="0.920216" />
-      <inertia ixx="4.396218e-03" ixy="2.756449e-07" ixz="8.154494e-05" iyy="4.190102e-03" iyz="1.775442e-07" izz="7.830764e-04" />
+      <origin xyz="0.003677 -0.000011 0.118336" rpy="0 0 0" />
+      <mass value="0.759089" />
+      <inertia ixx="3.623068e-03" ixy="2.562328e-07" ixz="-1.993706e-05" iyy="3.537420e-03" iyz="2.033548e-07" izz="5.108902e-04" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />

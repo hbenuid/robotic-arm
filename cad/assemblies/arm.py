@@ -11,15 +11,16 @@ rails, the 20T pulleys) is _occurrences.BOUGHT_TINT grey, inside the modules too
     arm
     |- base_link         base, nema17_48mm:base_yaw, mks_servo42d:base_yaw
     |- shoulder_link     j1_coupler, cycloidal_drive (kept whole - see below)
-    |- upper_arm_link    j1_link, nema17_40mm:elbow_pitch, mks_servo42d:elbow_pitch, j1_cap
+    |- upper_arm_link    j1_link, nema17_40mm:elbow_pitch, mks_servo42d:elbow_pitch
     |- elbow_link        gt2_pulley_90t:j2, forearm_roll_drive (kept whole - see below; its block IS the elbow coupler)
-    |- forearm_link      j2_link, nema17_40mm:wrist_pitch, mks_servo42d:wrist_pitch, j2_cap_1, j2_cap_2
+    |- forearm_link      j2_link, nema17_40mm:wrist_pitch, mks_servo42d:wrist_pitch
     |- wrist_pitch_link  gt2_pulley_90t:j3, j3_coupler:j3, wrist_link, gripper_clamp_bracket, nema17_pancake
     |- wrist             gt2_pulley_20t, gripper
 
 j3_coupler#1 (the elbow's SolidWorks coupler) is RETIRED (lib/placements.py): the roll drive's block carries its
 lip / boss / journal / stub and the elbow 90T bolts straight into it - the record stays in placements.json, no
-table claims it. A drive module is one linked child, so this tree keeps it whole - the cycloidal drive under shoulder_link
+table claims it. The SolidWorks link caps (j1_cap, j2_cap_1, j2_cap_2) were removed 2026-09-25: their products are
+lib/reference.py SKIPPED_PRODUCTS, their poses sit in placements.json `skipped`. A drive module is one linked child, so this tree keeps it whole - the cycloidal drive under shoulder_link
 although its rotor body (output hub + pins) belongs to upper_arm_link, the forearm roll drive under elbow_link
 although its rotor (the roll shaft) belongs to forearm_link - in robot/frames.py LINKS, the kinematic truth,
 which the per-link meshes follow (each in its own MODULE_TINTS colour).
@@ -81,9 +82,6 @@ OCCURRENCES = [
     ("nema17_pancake",        None, "nema17_pancake#1"),
     ("gt2_pulley_20t",        None, "gt2_pulley_20t#1"),
     ("gripper",               None, GRIPPER_KEY),          # module: assemblies/gripper.py
-    ("j2_cap_1",              None, "j2_cap_1#1"),
-    ("j2_cap_2",              None, "j2_cap_2#1"),
-    ("j1_cap",                None, "j1_cap#1"),
 ]
 
 MODULES = {"gripper": gripper.gripper, "cycloidal_drive": cycloidal_drive.cycloidal_drive,
@@ -97,9 +95,9 @@ MODULES = {"gripper": gripper.gripper, "cycloidal_drive": cycloidal_drive.cycloi
 GROUPS = [
     ("base_link",        "#937860", ("base#1", "nema17_48mm#1", "mks_servo42d#1")),
     ("shoulder_link",    "#4C72B0", ("j1_coupler#1", DRIVE_KEY)),
-    ("upper_arm_link",   "#CCB974", ("j1_link#1", "nema17_40mm#2", "mks_servo42d#2", "j1_cap#1")),
+    ("upper_arm_link",   "#CCB974", ("j1_link#1", "nema17_40mm#2", "mks_servo42d#2")),
     ("elbow_link",       "#DA8BC3", ("gt2_pulley_90t#1", ROLL_KEY)),
-    ("forearm_link",     "#DD8452", ("j2_link#1", "nema17_40mm#3", "mks_servo42d#3", "j2_cap_1#1", "j2_cap_2#1")),
+    ("forearm_link",     "#DD8452", ("j2_link#1", "nema17_40mm#3", "mks_servo42d#3")),
     ("wrist_pitch_link", "#55A868", ("gt2_pulley_90t#2", "j3_coupler#2", "wrist_link#1", "gripper_clamp_bracket#1", "nema17_pancake#1")),
     ("wrist",            "#8172B3", ("gt2_pulley_20t#1", GRIPPER_KEY)),
 ]

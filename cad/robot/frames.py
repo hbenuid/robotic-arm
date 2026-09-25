@@ -86,14 +86,14 @@ LINKS: dict[str, list[str]] = {
     "shoulder_link": ["j1_coupler#1", "cycloidal_drive#1:stator"],
     # the drive's rotor (output hub + output pins) is bolted to j1_link: the shoulder_pitch output;
     # the elbow_pitch motor + board bolt to j1_link's pad (lib/mounts.py)
-    "upper_arm_link": ["cycloidal_drive#1:rotor", "j1_link#1", "j1_cap#1", "nema17_40mm#2", "mks_servo42d#2"],
+    "upper_arm_link": ["cycloidal_drive#1:rotor", "j1_link#1", "nema17_40mm#2", "mks_servo42d#2"],
     # the elbow 90T pulley (the elbow_pitch output, assumed the driven side  [ASSUMPTION]) carries the forearm roll
     # drive's STATOR - the elbow block that IS the elbow coupler now (j3_coupler#1 is retired, lib/placements.py),
     # both bearings, the end cap, the roll motor + board and its 20T (assemblies/forearm_roll_drive.py BODIES)
     "elbow_link": ["gt2_pulley_90t#1", "forearm_roll_drive#1:stator"],
     # the drive's ROTOR - the hollow roll shaft - IS the forearm's elbow end (its flange bolts to j2_link's wall);
     # the wrist_pitch motor + board bolt to j2_link's web (lib/mounts.py)
-    "forearm_link": ["forearm_roll_drive#1:rotor", "j2_link#1", "j2_cap_1#1", "j2_cap_2#1", "nema17_40mm#3", "mks_servo42d#3"],
+    "forearm_link": ["forearm_roll_drive#1:rotor", "j2_link#1", "nema17_40mm#3", "mks_servo42d#3"],
     # likewise the wrist 90T pulley + J3-coupler ride with the wrist-pitch body  [ASSUMPTION]
     "wrist_pitch_link": ["wrist_link#1", "gripper_clamp_bracket#1", "nema17_pancake#1", "gt2_pulley_90t#2", "j3_coupler#2"],
     # the gripper base rolls with the 20T pulley; the servo crank linkage is merged in  [ASSUMPTION]

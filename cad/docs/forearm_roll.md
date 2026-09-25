@@ -4,8 +4,9 @@
 `wrist_pitch`), the way `cycloidal_drive.md` documents the shoulder. Code: `lib/forearm/` (`params.py
 RollEndParams` + `RollDriveParams`, `layout.py stack_positions`, `roll.py`, `pulley.py`),
 `assemblies/forearm_roll_drive.py`, `parts/joints/forearm_roll_*.py` + `bearing_6808.py`; tests `tests/forearm/`.
-**Last updated:** 2026-09-23 (M6: the elbow block redone — it IS the elbow coupler, the shaft crosses the elbow axis,
-the forearm starts 48 mm from it).
+**Last updated:** 2026-09-25 (the link caps removed: `forearm_link` without `j2_cap_1` / `j2_cap_2`, `j2_link` without
+their sockets; before that M6: the elbow block redone — it IS the elbow coupler, the shaft crosses the elbow axis, the
+forearm starts 48 mm from it).
 Numbers below name the constants; the values live in `lib/forearm/params.py`.
 
 ## 0. Specifications at a glance
@@ -99,7 +100,7 @@ the shaft spigot down (the ring's grooves print vertically), the cap flat.
 ## 5. Attachment to the arm (`robot/`)
 `elbow_link` = `gt2_pulley_90t#1` + `forearm_roll_drive#1:stator` (the elbow's driven side: the block that is the
 coupler, both bearings, the end cap, the motor + board, the 20T); `forearm_link` = `forearm_roll_drive#1:rotor` (the
-shaft) + `j2_link` + the caps + the wrist-pitch motor. `Joint("forearm_roll")` has Z along the forearm and X = N
+shaft) + `j2_link` + the wrist-pitch motor. `Joint("forearm_roll")` has Z along the forearm and X = N
 (its child's long direction IS the axis). The forearm side of the interface is `lib/forearm/params.py
 RollEndParams`: the wall at `wall_x` (−56…−48), its Ø40 recess, the Ø32 bolt circle and the Ø24 cable bore —
 `j2_link`'s DEFAULT build (`lib/forearm/link.py roll_wall`); the web gained 40 mm and its −75 socket column. In

@@ -63,4 +63,4 @@ jobs:
         run: ./cadtool pytest -m slow -p no:cacheprovider -rs
       - name: CAD - build the arm
         working-directory: cad
-        run: ./cadtool gen assemblies/arm.py assemblies/arm_no_caps.py
+        run: ./cadtool gen assemblies/arm.py
