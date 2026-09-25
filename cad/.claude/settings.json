@@ -1,4 +1,15 @@
 {
+  "extraKnownMarketplaces": {
+    "text-to-cad": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/earthtojake/text-to-cad.git"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "cad@text-to-cad": true
+  },
   "hooks": {
     "PostToolUse": [
       {

@@ -47,7 +47,8 @@ through Recipe E in `cad/reference/README.md`.
   It runs by itself at three points: a Claude Code PostToolUse hook (`.claude/hooks/ruff-check.sh`) reports
   findings on every `.py` file Claude edits — fix them in the same turn. It is registered twice, in
   `.claude/settings.json` AND `cad/.claude/settings.json`: a session reads the shared settings file of the
-  directory it starts in only (not inherited like CLAUDE.md), so keep the two hook blocks identical;
+  directory it starts in only (not inherited like CLAUDE.md), so the cad/ file is a copy of the root one (edit the
+  root one, copy it; `cad/tests/test_tooling.py` checks);
   the git pre-commit hook (`.githooks/pre-commit`, installed per machine by `./cadtool setup`) blocks a commit
   with findings in the staged files; VS Code fixes / sorts imports on save (workspace settings, Ruff extension).
   `F401` is never auto-fixed (`unfixable`): an import written before its first use must survive a save.

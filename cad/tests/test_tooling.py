@@ -1,5 +1,6 @@
 """The local tooling stays healthy: the venv holds the cadgen and the OCP kernel pyproject.toml pins
 (and only ONE OCP distribution), and ./cadtool inspect (tools/step_facts.py) agrees with the kernel."""
+import json
 import pathlib
 import re
 import tomllib
@@ -69,3 +70,12 @@ def test_daemon_stop_finds_the_daemon_on_both_platforms():
     assert not pattern.search("/repo/cad/.venv/bin/python -m cadgen viewer")
     assert not pattern.search("/other/cad/.venv/bin/python3 -m cadgen.daemon"), "another checkout's daemon"
     assert source.count("-m cadgen\\.daemon") == 1, "one pattern, reused by pgrep and both pkills"
+
+
+def test_claude_settings_are_the_same_in_the_root_and_in_cad():
+    """A Claude Code session reads the shared .claude/settings.json of the directory it starts in only (it is not
+    inherited like CLAUDE.md), so cad/.claude/settings.json is a copy of the root one: the ruff hook and the
+    cad@text-to-cad plugin, whether the session starts in the repo root or in cad/."""
+    root = json.loads((CAD_DIR.parent / ".claude" / "settings.json").read_text())
+    cad = json.loads((CAD_DIR / ".claude" / "settings.json").read_text())
+    assert cad == root, "the two .claude/settings.json differ - edit the root one and copy it to cad/.claude/"
