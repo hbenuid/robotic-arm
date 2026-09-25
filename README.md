@@ -52,8 +52,10 @@ Edit [software/control/src/config.py](software/control/src/config.py):
 - `JOINTS` — three `(name, can_id, gear_ratio)` tuples. Defaults are placeholders
   (CAN IDs `0x01`/`0x02`/`0x03`, gear ratio `1.0`). Set CAN IDs to match what
   you've programmed into each motor's on-board menu. The CAD's reductions are
-  `cad/lib/params.py` `CYCLOIDAL_RATIO` (20:1, shoulder pitch) and `GT2_RATIO` (4.5:1, belts) —
-  which motor drives which joint is not confirmed yet, so the ratios here stay `1.0`.
+  `cad/lib/params.py` `CYCLOIDAL_RATIO` (20:1, shoulder pitch), `GT2_RATIO` (4.5:1, elbow and wrist-pitch belts)
+  and `FOREARM_ROLL_RATIO` (4.5:1, forearm roll); `gear_ratio` counts output turns per motor turn, so it takes their
+  reciprocal ([cad/robot/CLAUDE.md](cad/robot/CLAUDE.md)). Which motor drives which joint is not confirmed yet, so
+  the ratios here stay `1.0`.
 - `CAN_CHANNEL` — only needed if auto-detect fails. The launcher overrides this
   on every run.
 - `CAN_BITRATE`, `DEFAULT_SPEED`, `DEFAULT_ACC`, `ENCODER_COUNTS_PER_REV` —

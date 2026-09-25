@@ -27,7 +27,7 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   `J2_MOTOR_SLIDE_X` in `lib/params.py` → run it → re-derive the inertials). `assemblies/arm.py OCCURRENCES` /
   `GROUPS` and `robot/frames.py LINKS` list the keys like any other (roles = the joint names). `tests/test_mounts.py`
   re-checks the geometry: axis on the joint, mounting face on the host's pad, zero interference with the neighbours
-  (the one budget: the Ø22 pilot in `j2_link`'s Ø20 slot). The drive's own board is a `cycloidal_drive.py` row
+  (no budget left anywhere). The drive's own board is a `cycloidal_drive.py` row
   (`stack_positions["z_mks_board"]`).
 - `assemblies/arm.py` / `gripper.py`: `OCCURRENCES = [(part, role|None, key), …]` in SolidWorks
   document order; `assemblies/_occurrences.py` places each occurrence as
@@ -55,14 +55,14 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   --hide '#<label>'` (label refs; STEP input only, not with `--render` / `--focus`; the viewer has no `?hide=`
   parameter). A second model would be the only way to get a STEP (a model takes no parameters, the freshness gate
   sees no environment variable).
-- **Printed vs. bought is a colour in every assembly, never a second model.** `gripper.py` and `cycloidal_drive.py`
-  declare a `TINT` (their printed parts' colour, reused by `arm.py MODULE_TINTS`) and pass it to
+- **Printed vs. bought is a colour in every assembly, never a second model.** `gripper.py`, `cycloidal_drive.py` and
+  `forearm_roll_drive.py` declare a `TINT` (their printed parts' colour, reused by `arm.py MODULE_TINTS`) and pass it to
   `occurrence_children(…, tint=)` / `located_children(…, tint=)`; `_tint_parts` gives every purchased part
   (`parts.bought()`) the one `_occurrences.BOUGHT_TINT` grey instead. Verified by snapshot: a tint set on a
-  module's DIRECT linked children does reach its STEP, so both modules stay linked (the arm's inline copies predate
+  module's DIRECT linked children does reach its STEP, so the modules stay linked (the arm's inline copies predate
   that finding and were left alone). Separate make/buy models were tried and removed as duplicates — one STEP per
   assembly. A purchased item that is **not modelled** (the
-  drive's 4 arm-mount bolts + 4 captive nuts, grease) lives only in `tools/bom.py EXTRAS` — it is on the buy list and
+  drive's arm-mount bolts + captive nuts, the belts, the roll drive's screws and inserts) lives only in `tools/bom.py EXTRAS` — it is on the buy list and
   absent from the model, the totals and the inertials; model it as a COTS pattern part (`cycloidal_housing_bolts` is
   the pattern) to change that.
 - `arm.py GROUPS` buckets the occurrences into the component tree

@@ -21,7 +21,7 @@ of every bump is `git log -- pyproject.toml uv.lock` from `cad/` (the older bump
 ## After a pull that changes `pyproject.toml` / `uv.lock` (per-machine state git does not carry)
 `./cadtool daemon stop && ./cadtool setup` (it also (re)installs the ruff git pre-commit hook: a stub
 `.git/hooks/pre-commit` → the committed `.githooks/pre-commit`; never `core.hooksPath`, which would switch off
-git-lfs's hooks in `.git/hooks`), `claude plugin marketplace update text-to-cad && claude plugin
+git-lfs's hooks in `.git/hooks` — and makes `git fetch` bring the git notes), `claude plugin marketplace update text-to-cad && claude plugin
 update cad@text-to-cad` (each scope — `--scope project` too; `~/.claude/plugins/installed_plugins.json` must show
 the new version for both, `doctor` cannot tell — see Gotchas below; restart Claude Code), then `./cadtool doctor` must be clean. No
 `CAD_PLUGIN` in a shell profile (it overrides the plugin detection).

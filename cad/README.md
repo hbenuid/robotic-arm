@@ -1,7 +1,7 @@
 # robotic-arm — CAD (build123d)
 
 Parametric CAD-as-code for the desktop arm (base yaw, 20:1 cycloidal shoulder pitch, belt-driven
-elbow and wrist pitch, wrist roll, MG996R parallel gripper), converted part-by-part from the original
+elbow pitch, forearm roll and wrist pitch, wrist roll, MG996R parallel gripper), converted part-by-part from the original
 SolidWorks design. This folder is a **separate uv project** (Python 3.12) — the motor-control
 software (`software/control/`) never depends on it.
 
@@ -27,7 +27,8 @@ claude plugin marketplace add https://github.com/earthtojake/text-to-cad.git
 claude plugin install cad@text-to-cad
 cd cad
 ./cadtool setup                  # uv sync (build123d/OCP/cadgen into ./.venv; reinstalls the OCP kernel if it does not import)
-                                 # + the git pre-commit hook (ruff on staged .py files) + Playwright Chromium (~150 MB, snapshots only)
+                                 # + the git pre-commit hook (ruff on staged .py files) + git notes fetching
+                                 # + Playwright Chromium (~150 MB, snapshots only)
 ./cadtool gen assemblies/arm.py  # build the arm (~35 s the first time): generated STEPs are git-ignored, each machine builds its own
 ./cadtool pytest                 # everything green?
 ```
@@ -43,7 +44,7 @@ Always run through `./cadtool …` (or `uv run …`) from `cad/`; `./cadtool doc
 |---|---|
 | `./cadtool gen parts/<group>/<name>.py` (alias `step`) | **run the model script**: writes `parts/<group>/<name>.step` beside it (git-ignored), or prints `current …` when nothing changed; `--force` rebuilds |
 | `./cadtool gen assemblies/arm.py` | build `assemblies/arm.step` (git-ignored), rebuilding every stale part first |
-| `./cadtool python tools/bom.py [--module cycloidal_drive\|gripper] [--md\|--json]` | the **print list** and the **buy list** ([`parts/CLAUDE.md`](parts/CLAUDE.md) Printed vs. bought) |
+| `./cadtool python tools/bom.py [--module cycloidal_drive\|forearm_roll_drive\|gripper] [--md\|--json]` | the **print list** and the **buy list** ([`parts/CLAUDE.md`](parts/CLAUDE.md) Printed vs. bought) |
 | `./cadtool python tools/export_printables.py [--parts …]` | one STL per **printed** part into `print/` (git-ignored) |
 | `./cadtool why <model.py>` | why the model is current or stale, clause by clause (`cadgen store why`) |
 | `./cadtool export <file.step> stl\|3mf\|glb [out]` | one mesh file per call from a STEP document (Node 20+; `--mesh-tolerance` is *relative*, default 1.5e-3 of the bounding diagonal) |

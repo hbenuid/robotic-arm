@@ -110,11 +110,11 @@ Every part carries the make/buy label once: `COTS = True` in its module means **
 **printed** (`parts.bought(name)`). Nothing else is kept by hand — the folders follow the arm's physical
 stages, not make/buy: never sort parts into make/buy folders or keep a second list by hand. Everything else is
 generated from the label:
-- **Lists** — `./cadtool python tools/bom.py [--module cycloidal_drive|gripper] [--md|--json]` (kernel-free) prints
+- **Lists** — `./cadtool python tools/bom.py [--module <module>] [--md|--json]` (a module of `assemblies/arm.py MODULES`) (kernel-free) prints
   what to print (part, quantity) and what to buy (`PURCHASE_SPEC`, pieces = occurrences × `PURCHASE_QTY`, mass, vendor
   file or envelope), counted from the assembly tables. Purchased items that are **not modelled** are the one
   hand-kept table, `EXTRAS` in that tool (`assemblies/CLAUDE.md`).
 - **STLs** — `./cadtool python tools/export_printables.py [--parts …]` writes `print/<name>.stl` for every printed part
   (git-ignored, mm, part-local frame, with the quantity to print); bought parts are refused.
-- **Colours** — the grey of purchased parts in `arm.step`, `gripper.step` and `cycloidal_drive.step`
-  (`assemblies/CLAUDE.md`).
+- **Colours** — the grey of purchased parts in `arm.step` and every module's STEP (`gripper.step`,
+  `cycloidal_drive.step`, `forearm_roll_drive.step`; `assemblies/CLAUDE.md`).

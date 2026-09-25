@@ -85,7 +85,7 @@ fit, 6003 radial clearance, the 35.10 bore) or bushings/rollers on the pins — 
 | Eccentricity | 1.50 | lobe 1 at (+e, 0), lobe 2 at (−e, 0) |
 | Spine OD | 5.00 (`spine_od`) | |
 | Input collar OD | 10.00 (`input_collar_od`) | wall around the D-bore |
-| D-bore Ø | 5.13 (`d_bore_dia` + 2 × `tolerances.d_bore_clearance_add`) | receives the motor shaft directly, flat on +Y (`d_bore_flat` 4.5) |
+| D-bore Ø | 5.13 (`d_bore_dia` + 2 × `tolerances.d_bore_clearance_add`) | receives the motor shaft directly, flat on +Y (`d_bore_flat` 4.5, cut like the shaft's: flat-to-round 4.75, `lib/cycloidal/motor.py`) |
 | D-bore depth | 14.00 (`d_bore_depth`) | 13 mm engagement (22 shaft − 9 plate) + 1 mm clearance |
 | Support-pin hole | Ø5.15 × 11 blind (`support_pin_dia` + 2 × `dowel_bore_clearance_add`, `support_pin_hole_depth`) | keeps a 1 mm wall to the D-bore |
 | Support pin | 5 × 20 h6 dowel | 11 in the shaft + 2 gap + 5 in the 625 + 2 proud |
@@ -107,7 +107,7 @@ The output bearings (z 37..57) and the discs (z 13..35) are axially separated; t
 
 | Part | Spec | Qty | Module |
 |---|---|---|---|
-| Motor | NEMA 17, 42.3² × 48 body, Ø5 shaft 22 long (4 round + 18 D-cut, flat 4.5), Ø22 × 2 pilot, 4 × M3 on 31 mm square tapped 4.5, ~0.45 Nm | 1 | `nema17_48mm` |
+| Motor | NEMA 17, 42.3² × 48 body, Ø5 shaft 22 long (4 round + 18 D-cut, `shaft_dcut_flat` 4.5 = flat-to-round 4.75, not the standard 4.5), Ø22 × 2 pilot, 4 × M3 on 31 mm square tapped 4.5, ~0.45 Nm | 1 | `nema17_48mm` |
 | Ring pins | 4 × 35 h6 hardened dowel (buy 25) | 21 | `cycloidal_ring_pins` |
 | Output pins | 4 × 45 h6 hardened dowel; light press in the hub's 4.20 blind holes (printed ~4.00–4.10), hub ceiling / motor plate as backup capture, free through the discs' 7.4 holes | 4 | `cycloidal_output_pins` |
 | Shaft support pin | 5 × 20 h6 dowel | 1 | `cycloidal_shaft_support_pin` |
@@ -207,7 +207,7 @@ gauge first; PETG shrinks 0.3–0.5 % over 140 mm (the housing may need ~140.5 �
 
 Motor 0.45 Nm × 20 = 9.0 Nm theoretical; 55–65 % efficiency (printed, no pin bearings) →
 **5.0–5.9 Nm practical**, ~1.3–1.5 kg at 400 mm including the arm; 200–500 rpm in → 10–25 rpm out;
-not backdrivable; backlash ≈ ±0.38° (§1.3). **Torque budget warning:** marginal for a 3-DOF arm at
+not backdrivable; backlash ≈ ±0.38° (§1.3). **Torque budget warning:** marginal for this arm at
 400 mm reach — a lightweight demonstrator; NEMA 23 or a higher ratio for heavier payloads.
 
 ## 8. Disc profile (`lib/cycloidal/profiles.py`)
@@ -335,8 +335,8 @@ cd cad
   `EXPECTED["bodies"]` locks the per-body totals and `TestPoseInTheArm` checks the joint origin sits on the drive
   axis. The arm STEP's viewer tree keeps
   the module whole under `shoulder_link` (one linked child); the per-link meshes split it. Which MKS
-  motor (`software/control/src/config.py` J1..J3) drives which joint is unconfirmed; `software/control/src/config.py` still carries
-  `gear_ratio` 1.0 while `CYCLOIDAL_RATIO` = 20.
+  motor (`software/control/src/config.py` J1..J3) drives which joint is unconfirmed; `config.py` still carries
+  `gear_ratio` 1.0 where this joint needs `1 / CYCLOIDAL_RATIO` (the direction: `robot/CLAUDE.md`).
 
 ## 13. Change policy (carried over)
 

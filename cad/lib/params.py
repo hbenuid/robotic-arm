@@ -37,10 +37,10 @@ from lib.belts import (  # noqa: E402, F401
 )
 
 # --- Gripper hardware ---------------------------------------------------------
-RAIL_DIA = 6.0          # [REFERENCE] round linear rail (parts/gripper_rail_6mm), used x2
+RAIL_DIA = 6.0          # [REFERENCE] round linear rail (parts/gripper/gripper_rail_6mm), used x2
 RAIL_LEN = 125.0        # [REFERENCE] reference geometry length
 
-# MG996R standard servo (parts/mg996r_servo). [DATASHEET] TowerPro MG996R; verify on the unit in hand.
+# MG996R standard servo (parts/gripper/mg996r_servo). [DATASHEET] TowerPro MG996R; verify on the unit in hand.
 MG996R_BODY_L = 40.7            # [DATASHEET] body length (along the mounting tabs)
 MG996R_BODY_W = 19.7            # [DATASHEET] body width
 MG996R_BODY_H = 42.9            # [DATASHEET] body height incl. output boss, excl. horn
@@ -109,7 +109,7 @@ CYCLOIDAL_ARM_MOUNT_BOLT_COUNT = _DRIVE.output_hub.arm_mount_bolt_count         
 CYCLOIDAL_ARM_MOUNT_ANGLE_OFFSET_DEG = _DRIVE.output_hub.arm_mount_angle_offset_deg # 45 (between the output pins)
 CYCLOIDAL_ARM_MOUNT_BOLT_DIA = _DRIVE.housing.bolt_dia            # 4 (M4)
 
-# Purchased parts of the drive (parts/bearing_*.py, nema17_48mm, cycloidal_*_pins/bolts/nuts).
+# Purchased parts of the drive (parts/cycloidal/bearing_*.py, nema17_48mm, cycloidal_*_pins/bolts/nuts).
 STEEL_DENSITY = 7.85e-3          # [DATASHEET] g/mm^3 - dowel pins, bolts, nuts
 CYCLOIDAL_MOTOR_MASS_G = 400.0   # [DATASHEET] 48 mm-body NEMA 17 (17HS19-2004S1 class); verify on the unit in hand
 BEARING_6003_MASS_G = 39.0       # [DATASHEET] 6003-2RS 17x35x10
@@ -153,8 +153,3 @@ WRIST_EFFORT_NM = 1.0           # [ESTIMATE]
 WRIST_VELOCITY_RAD_S = 2.0      # [ESTIMATE]
 JAW_EFFORT_N = 20.0             # [ESTIMATE] MG996R through the crank linkage
 JAW_VELOCITY_M_S = 0.05         # [ESTIMATE]
-
-# --- Joint stack -----------------------------------------------------------------------
-# TODO: add J1/J2/J3 stack dimensions (bearing seats, link lengths, bolt patterns) as the
-# joint parts are converted; measure them with
-#   ./cadtool inspect reference/solidworks/<name>.step --planes

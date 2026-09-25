@@ -1,4 +1,4 @@
-"""The cycloidal disc - shared builder for parts/cycloidal_disc_1.py and cycloidal_disc_2.py.
+"""The cycloidal disc - shared builder for parts/cycloidal/cycloidal_disc_1.py and cycloidal_disc_2.py.
 
 Port of cycloidal_drive@2f1f67d src/cycloidal_disc.py. Disc 1 and disc 2 share the hole
 pattern and chamfer but disc 2's epitrochoid is phase-rotated by ``cfg.gear.disc2_phase_deg``

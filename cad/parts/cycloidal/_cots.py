@@ -1,4 +1,4 @@
-"""Shared body of the cycloidal drive's purchased-part modules (parts/bearing_*.py,
+"""Shared body of the cycloidal drive's purchased-part modules (parts/cycloidal/bearing_*.py,
 nema17_48mm.py, cycloidal_*_pins/bolts/nuts.py) - NOT a part (underscore: not discovered).
 
 Each module keeps the house COTS contract (COTS, MASS_G, VENDOR_STEP, VENDOR_TO_REF, _envelope,

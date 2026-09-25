@@ -114,7 +114,7 @@ def grouped_children(rows, groups, modules: dict | None = None,
     imported-STEP colors on the per-build copies only — standalone part/module previews are
     untouched. Because of the tints the members are INLINE copies (geometry(..., inline=True)):
     inside a cadgen build the child models are still called - pinned, rebuilt in parallel, their
-    committed STEPs rewritten when stale - but the assembly's STEP carries its own recoloured
+    git-ignored STEPs rewritten when stale - but the assembly's STEP carries its own recoloured
     geometry instead of links.
 
     `root` (placements' parent frame -> output frame) re-expresses the whole assembly in another

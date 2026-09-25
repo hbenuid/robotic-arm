@@ -19,8 +19,9 @@ table, the drive ratios) to agree with `software/control/src/config.py`, and one
   fits, lock values); one logical change per commit. History is `git log` (`--grep`, `-- <path>`, `-S <CONSTANT>`,
   `-p` on a lock file). The entries of the retired `CHANGELOG.md` (to 2026-09-25) are **git notes** on the commits
   they describe — `git log` prints them under the message; `./cadtool setup` makes a machine fetch them.
-- Case matters: git and the `*.step` / `*.stl` rules are case-sensitive. `.gitignore` and `.gitattributes` also
-  match `*.STEP` / `*.STP` now, but keep every file in the tree lowercase — the tests and tools assume it.
+- Case matters: git and the `*.step` / `*.stl` rules are case-sensitive. `.gitignore` also ignores `*.STEP` / `*.STP` /
+  `*.STL` and `.gitattributes` LFS-tracks `*.STEP` / `*.STL`, but keep every file in the tree lowercase — the tests
+  and tools assume it.
 
 ## Two development machines
 Worked on from a **Fedora Linux PC and an arm64 Mac**; git is the only sync channel, venvs / plugin / caches are
@@ -55,7 +56,7 @@ through Recipe E in `cad/reference/README.md`.
 `.github/workflows/ci.yml` runs **only by hand** (Actions tab → CI → Run workflow, or
 `gh workflow run ci.yml --ref <branch>`; `gh run watch` follows it): a fresh `ubuntu-24.04` runner clones the repo,
 pulls the LFS objects, lints both projects, imports the CLI, runs `cad/`'s fast lane and slow tests and `./cadtool
-gen`s both arms (~13 min, from the private repo's monthly Actions minutes). It is the **clean-clone check** neither
+gen`s the arm (~13 min, from the private repo's monthly Actions minutes). It is the **clean-clone check** neither
 machine can give — no `~/.cache/cadgen`, no raw exports, no generated STEPs — so a test or model that quietly needs
 a file outside git fails there first. Everyday pushes do not need it (the pre-commit hook and the local suite cover
 them); run it on the branch before fast-forwarding `main` after: a cadgen / build123d / OCP bump, a new SolidWorks
@@ -89,8 +90,9 @@ Paths in the first four bullets are relative to `software/control/`.
 - Work from `cad/` via `./cadtool …` (`./cadtool help` lists the commands). Start at `cad/CLAUDE.md` — the map and the
   rules for every folder; each folder's own CLAUDE.md (`parts/`, `assemblies/`, `robot/`, `lib/`, `tests/`) loads when
   you work there.
-- What the software has to match — the joints and links, the drive ratios (`CYCLOIDAL_RATIO`, `FOREARM_ROLL_RATIO` in
-  `cad/lib/params.py`), which motor sits on which joint — is `cad/robot/CLAUDE.md`; which CAN id drives which joint is
+- What the software has to match — the joints and links, the reductions (`CYCLOIDAL_RATIO`, `GT2_RATIO`,
+  `FOREARM_ROLL_RATIO` in `cad/lib/params.py`, and which way round `config.py`'s `gear_ratio` reads), which motor sits
+  on which joint — is `cad/robot/CLAUDE.md`; which CAN id drives which joint is
   unconfirmed (`cad/docs/open_issues.md`).
 
 ## Docs

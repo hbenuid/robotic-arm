@@ -40,7 +40,7 @@ def geometry(model, *, inline: bool = False):
     """A child for a composing body.
 
     While a cadgen build runs on this thread the child model is CALLED: its job is submitted
-    (built in parallel, its own outputs - the committed part STEP - rewritten when stale) and the
+    (built in parallel, its own outputs - the part's git-ignored STEP - rewritten when stale) and the
     parent pins its result. By default the call's LazyCompound is returned: deferred placement,
     and the parent's STEP links the child's tree. With `inline=True` the parent gets the body
     built in-process instead (a copy it owns - needed to recolour the leaves: a linked child keeps

@@ -33,12 +33,12 @@ and totals are never quoted (`cad/CLAUDE.md` Docs).
 ## Not modelled yet
 | item | note |
 |---|---|
-| Belt-side hardware of the three belt joints: 3 × GT2 20T pulleys on the motor shafts, the belts, the base-yaw driven pulley / what `j1_coupler` is driven by | candidate `tools/bom.py EXTRAS` rows until modelled |
-| The arm's own fasteners and the electronics (CAN adapter, wiring) | `tools/bom.py EXTRAS` lists only the drive's arm-mount bolts, nuts and grease |
+| Belt-side hardware of the elbow_pitch and wrist_pitch belts: the GT2 20T pulleys on their motors' shafts and the elbow belt (the wrist belt is an `EXTRAS` row); what drives base_yaw — a driven pulley on / under `j1_coupler` | candidate `tools/bom.py EXTRAS` rows until modelled |
+| The arm's own fasteners and the electronics (CAN adapter, wiring) | not in `tools/bom.py EXTRAS` yet (it holds the drives' fasteners, the belts and the home sensor) |
 | Simplified collision primitives in the URDF (visual meshes are reused for collision) | `robot/arm.urdf` TODO |
 | The forearm roll's **home sensor** (on the end cap's outer face, a magnet in the shaft's stop lug, to the MKS board's limit input) | `tools/bom.py EXTRAS`; the lug and the post are modelled |
 | The roll belt (240-2GT) and the wrist belt (264-2GT) | `tools/bom.py EXTRAS`; their lengths set the roll motor's centre distance / `J2_MOTOR_SLIDE_X` |
-| The roll drive's cable route: through the shaft's Ø24 bore, out of the block's rear end wall on the axis (Ø26 `cable_exit`), then over the elbow to the upper arm | nothing modelled; the exit is |
+| The roll drive's cable route: through the shaft's Ø24 bore, out of the block's rear end wall on the axis (Ø26 `cable_exit`), then over the elbow to the upper arm | only the exit (`cable_exit`) is modelled |
 | The elbow's own bearings between the block's Ø30 stub and `j1_link`'s Ø42 bore (6702-class rings fit the SolidWorks geometry; the capture never had them either) | `lib/forearm/params.py RollDriveParams stub_*`; candidate `tools/bom.py EXTRAS` rows |
 
 ## Not confirmed

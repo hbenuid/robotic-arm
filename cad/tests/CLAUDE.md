@@ -11,7 +11,7 @@ parts vs reference), `test_placements.py` (JSON integrity, tables cover every ke
 module record + the mounted records vs `lib/mounts.py`), `test_assembly.py` (the arm's leaves / solids / volume / bbox
 vs SolidWorks + the module lock — the numbers are IN that file; the arm's leaf colours -
 purchased = `BOUGHT_TINT`, which no group / module may reuse, printed = the link's / module's tint, in the arm and in
-the standalone gripper and drive), `test_bom.py` (the print / buy lists
+the standalone gripper and drives), `test_bom.py` (the print / buy lists
 partition `parts.names()` by the flag, the occurrence counts, the drive's pieces follow `DEFAULT_CONFIG`, `EXTRAS`
 well-formed), `test_params_invariants.py` (locks), `test_robot.py` (link partition, frames, FK at
 zero = capture, meshes, inertials, URDF/SRDF/SDF consistency + cadgen's validators via

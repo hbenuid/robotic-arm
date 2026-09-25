@@ -51,11 +51,11 @@ underside now repeats the coupler's lip / boss / journal / stub, the elbow 90T b
 | station (module z) | what | fixed by |
 |---|---|---|
 | `block_z` −40…36 | the block: a rounded box (`block_x` −33…33, `block_y` ±36, r 8 edges along Z) round the roll axis; its underside (−X, host z −8) rides 0.5 mm above the upper arm's slab | the slab (host −8.5); 2 mm of wall under the cavity |
-| underside, x −47…−33 | `lip_dia` Ø72 lip −35…−33 in `j1_link`'s Ø80 recess, `boss_dia` Ø62 −39…−35, `journal_dia` Ø40 −40.3…−39, `stub_dia` Ø30 −47…−40.3 (the elbow's own bearings, 6702-class in `j1_link`'s Ø42 bore — not modelled), the Ø12.5 `pin_bore` (blind at −29); the elbow 90T's **4× M4 at `pulley_bolt_r` 11** on the axes: Ø4.4 clearance −47…−39, **Ø5.6 heat-set inserts −39…−31** | the measured coupler; the stub's end (host −22) sits on the pulley's face |
+| underside, x −47…−33 | `lip_dia` Ø72 lip −35…−33 in `j1_link`'s Ø80 recess, `boss_dia` Ø62 −39…−35, `journal_dia` Ø40 −40.3…−39, `stub_dia` Ø30 −47…−40.3 (the elbow's own bearings, 6702-class in `j1_link`'s Ø42 bore — not modelled), the Ø12.5 `pin_bore_dia` (blind at −29); the elbow 90T's **4× M4 at `pulley_bolt_r` 11** on the axes: Ø4.4 clearance −47…−39, **Ø5.6 heat-set inserts −39…−31** | the measured coupler; the stub's end (host −22) sits on the pulley's face |
 | `z_end` −40…−37 | the rear end wall, the Ø26 `cable_exit` on the axis | the shaft's Ø24 bore + 1 |
 | `z_lip` −37…−35 | the lip (ID `lip_id` 46) bearing 1's outer race stops on | |
 | `z_seat` −35…−28 | **bearing 1**'s seat Ø52.15; the shaft's rear journal from −36 (`shaft_end_clear`) | |
-| −28…16 | the Ø52.6 `core_bore`: bearing 1 (pressed on the shaft) rides through it to its seat, the Ø44 core turns in it | 4.7 mm over the inserts |
+| −28…16 | the Ø52.6 `core_bore_dia`: bearing 1 (pressed on the shaft) rides through it to its seat, the Ø44 core turns in it | 4.7 mm over the inserts |
 | `z_cavity` 16…36 | the **Ø62 cavity**, OPEN through the front face: the shaft's flanged 90T ring 16.8…26.2 (teeth 18…25, `z_ring_mid` 21.5) passes through it on assembly | `cavity_z0` 2.2 mm past the inserts (z 8.2…13.8) |
 | 15.8…27.2 | the **belt window** through the top wall (`belt_window_half_x` ±22, from y 29 out) | the runs cross the wall at \|x\| 16…19 |
 | `z_face` 36 | the front face = **bearing 2** = the **end cap** (`forearm_roll_retainer`, 36…45: seat 36…43, lip 43…45, the block's outline, 4× M3 at (±27, ±30) self-tapped `cap_tap_depth` into the face, the **stop post** 45…47.5 at −X, r 24…30) | pull-out (+Z): core → bearing 2 → cap lip → 4× M3 |

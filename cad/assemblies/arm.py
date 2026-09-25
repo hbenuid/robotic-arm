@@ -32,7 +32,7 @@ are Z-up with no up-axis option, so a W-frame STEP renders lying on its side; in
 robot/arm.urdf open in the same pose. placements.json, the parts and the modules stay in W.
 
 Run:  ./cadtool gen assemblies/arm.py            -> assemblies/arm.step (git-ignored); every stale
-                                                  child part is rebuilt and its committed STEP rewritten
+                                                  child part is rebuilt and its (git-ignored) STEP rewritten
       ./cadtool inspect assemblies/arm.step      -> leaf refs, solids, faces, volume, bbox
       ./cadtool viewer                           -> http://127.0.0.1:3245/?file=assemblies/arm.step
 """

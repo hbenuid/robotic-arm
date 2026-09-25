@@ -9,8 +9,9 @@ requires-python = ">=3.11,<3.14"
 dependencies = [
     # cadgen 0.6.x requires build123d>=0.11.1,<0.12 and cadquery-ocp-novtk>=7.9,<8 (LazyCompound
     # needs 0.11's `wrapped` property, its STEP writer needs OCP 7.9's HArray1.Value, and OCCT 7.8.1
-    # mis-read its BinTools VERSION_4 component objects). The novtk pin freezes the kernel behind the
-    # committed STEPs (their bytes are deterministic per kernel; build123d only asks for a range).
+    # mis-read its BinTools VERSION_4 component objects). The novtk pin freezes the kernel the
+    # STEPs are built with (their bytes are deterministic per kernel, which the hash gate relies on;
+    # build123d only asks for a range).
     # Never install cadquery-ocp (the VTK build) alongside: both distributions own the same OCP/
     # files, so removing either one guts the other (`uv sync --reinstall-package cadquery-ocp-novtk`).
     "build123d==0.11.1",

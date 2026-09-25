@@ -12,7 +12,7 @@ usage() {
 cadtool - cadgen 0.6 + this uv project (paths relative to cad/)
   ./cadtool setup                                   per machine: uv sync (+ the OCP kernel check) + the git pre-commit hook (ruff) + git notes fetching
                                                     + Playwright Chromium (for snapshots)
-  ./cadtool doctor                                  installed cadgen vs the plugin's pin, the CAD kernel, node, chromium
+  ./cadtool doctor                                  installed cadgen vs the plugin's pin (cadgen doctor: not the OCP kernel), node, chromium
   ./cadtool gen <model.py>... [--force] [--verbose] [--json] [--mesh-tolerance X]
                                                     build: run the model script(s) -> the sibling <name>.step
                                                     (an assembly rebuilds + rewrites its stale child parts too)

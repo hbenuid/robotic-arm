@@ -1,10 +1,10 @@
 """The arm's print list and buy list, generated from the one make/buy label every part carries
 (parts.bought(name): the module declares COTS = True -> bought, anything else -> printed).
 
-    ./cadtool python tools/bom.py [--module cycloidal_drive|gripper] [--md | --json]
+    ./cadtool python tools/bom.py [--module cycloidal_drive|forearm_roll_drive|gripper] [--md | --json]
 
 Counts come from the assembly tables - assemblies/arm.py OCCURRENCES, a module row expanding into that
-module's own OCCURRENCES (gripper, cycloidal_drive) - so a part added to an assembly shows up here with no
+module's own OCCURRENCES (arm.MODULES) - so a part added to an assembly shows up here with no
 second list to keep. A bought part says what to order itself (PURCHASE_SPEC / PURCHASE_QTY, the pieces
 per occurrence - a whole pattern for the drive's pin and fastener parts / optional PURCHASE_NOTE, next
 to its MASS_G). EXTRAS below is the one hand-kept table: purchased items with NO geometry - they are on

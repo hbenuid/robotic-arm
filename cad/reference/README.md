@@ -13,7 +13,8 @@ directory; `lib.reference.path_of(name)` resolves it). Regenerate — never edit
 
 ## Provenance
 - Source tree: the SolidWorks 2026 STEP AP214 exports of 2026-08-27 (the tools' default `--src`, `lib/reference.py
-  DEFAULT_SOURCE_DIR`, or `ARM_REFERENCE_SRC`); **not in git and not needed on a machine** — the committed copies here
+  DEFAULT_SOURCE_DIR`, or `ARM_REFERENCE_SRC` for `import_solidworks.py` / `split_mks_motor.py` — `extract_placements.py`
+  takes only `--monolith`); **not in git and not needed on a machine** — the committed copies here
   are the inputs, the raw tree only for re-running the derivation tools.
 - Full assembly: `final Arm Assembly Fully Movable.STEP` (13.5 MB, inch units, sha256 `67c39d5dc9ff1d7b…`) —
   not committed; `placements.json` captures its structure.
@@ -51,7 +52,7 @@ directory; `lib.reference.path_of(name)` resolves it). Regenerate — never edit
 ## Recipe E — a new SolidWorks / vendor export arrives
 Keep it OUTSIDE the tree with a lowercase `.step` name (the raw
 exports are never committed; the tools take `--src` / `--monolith`, default `lib/reference.py DEFAULT_SOURCE_DIR`
-or `ARM_REFERENCE_SRC`); record file, size, sha256 and what it is under Provenance above; name it
+or `ARM_REFERENCE_SRC` where Provenance says); record file, size, sha256 and what it is under Provenance above; name it
 in `lib/reference.py` (`MONOLITH_NAME`, `MKS_EXPORT_NAME`, … or a `CUSTOM` / `COTS` row); measure before trusting
 it (`./cadtool inspect <file> --planes` — units, frame, shaft / pilot / bolt pattern); then Recipe A (`parts/CLAUDE.md`) or D (`vendor/README.md`). What
 the CAD keeps is the derived, committed copy (`reference/`, `vendor/`) — the raw file can be discarded afterwards.

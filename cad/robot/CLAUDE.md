@@ -37,9 +37,14 @@ robot/
   Commands below.
 - Placeholders to confirm before real use: the joint limits / effort / velocity, the axis signs and the jaw travel (all
   `[ESTIMATE]` in `lib/params.py`, `*_LIMIT_DEG …` — confirm with viewer sweeps and hardware) and the link-membership
-  assumptions the URDF ledger lists. Which CAN id (`software/control/src/config.py` J1..J3 - three ids for five
-  boards) drives which joint is unconfirmed (`docs/open_issues.md`); wrist_roll and the jaws are not driven by
+  assumptions the URDF ledger lists. Which CAN id (`software/control/src/config.py` J1..J3, fewer ids than the arm has
+  MKS boards) drives which joint is unconfirmed (`docs/open_issues.md`); wrist_roll and the jaws are not driven by
   `software/control/src/config.py`.
+- **The reductions the software must match** (`lib/params.py`): `CYCLOIDAL_RATIO` (shoulder_pitch), `GT2_RATIO`
+  (the elbow_pitch and wrist_pitch belts), `FOREARM_ROLL_RATIO` (forearm_roll); what drives base_yaw is not modelled
+  yet (`docs/open_issues.md`). They are motor revolutions per output revolution, while
+  `software/control/src/config.py`'s `gear_ratio` is output revolutions per motor revolution — the software's value
+  is the reciprocal (`1 / CYCLOIDAL_RATIO`, …).
 
 ## Joints and links
 `base_link → base_yaw → shoulder_link → shoulder_pitch → upper_arm_link → elbow_pitch → elbow_link →
