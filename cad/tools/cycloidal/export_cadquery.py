@@ -61,12 +61,12 @@ def main(argv=None) -> int:
         print(f"run from the cycloidal_drive repo root (no src/params.py in {root})", file=sys.stderr)
         return 1
     sys.path.insert(0, str(root))
-    import cadquery as cq  # noqa: E402  (the OLD venv)
-    from src.params import DEFAULT_CONFIG  # noqa: E402
+    import cadquery as cq  # the OLD venv
+    from src.params import DEFAULT_CONFIG
 
-    rev = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, cwd=root).stdout.strip()
+    rev = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, check=False, cwd=root).stdout.strip()
     dirty = subprocess.run(["git", "status", "--porcelain", "--", "src", "assembly.py", "export.py"],
-                           capture_output=True, text=True, cwd=root).stdout.strip()
+                           capture_output=True, text=True, check=False, cwd=root).stdout.strip()
     args.out.mkdir(parents=True, exist_ok=True)
     manifest = {
         "repo": "cycloidal_drive", "rev": rev, "dirty": bool(dirty), "cadquery": cq.__version__,

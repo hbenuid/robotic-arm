@@ -22,7 +22,10 @@ from assemblies._occurrences import module_rows
 from lib import reference as R
 from lib.forearm import DEFAULT as _FOREARM
 from lib.params import (
-    CYCLOIDAL_ARM_MOUNT_BOLT_COUNT, CYCLOIDAL_ARM_MOUNT_BOLT_DIA, FOREARM_ROLL_BELT_LENGTH, WRIST_BELT_LENGTH,
+    CYCLOIDAL_ARM_MOUNT_BOLT_COUNT,
+    CYCLOIDAL_ARM_MOUNT_BOLT_DIA,
+    FOREARM_ROLL_BELT_LENGTH,
+    WRIST_BELT_LENGTH,
 )
 
 # (module or None = the arm itself, what to order, pieces, why it is not modelled). Seeded with what

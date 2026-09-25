@@ -3,7 +3,6 @@
 import threading
 
 import pytest
-
 from arctos.can_interface import CANInterface
 from arctos.motor_driver import MotorDriver
 

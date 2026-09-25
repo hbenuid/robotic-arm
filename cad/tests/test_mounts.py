@@ -9,9 +9,9 @@ from build123d import GeomType, Location, Vector
 from assemblies import cycloidal_drive, forearm_roll_drive
 from assemblies._occurrences import place_world
 from lib import mounts
-from lib.cycloidal import DEFAULT_CONFIG
-from lib import placements as P
 from lib import params as PARAMS
+from lib import placements as P
+from lib.cycloidal import DEFAULT_CONFIG
 from lib.datum import BASE_BOTTOM_Y, to_location
 from lib.models import raw
 from robot import frames as F

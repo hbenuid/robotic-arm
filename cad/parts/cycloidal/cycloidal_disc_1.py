@@ -8,6 +8,7 @@ Local frame: profile centred on the disc axis, z 0..thickness (10); in the drive
 import pathlib
 
 from cadgen import step
+
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig
 from lib.cycloidal.disc import build_disc
 from lib.datum import IDENTITY

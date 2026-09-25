@@ -31,7 +31,7 @@ M4_CLEAR = 4.5          # [DESIGN] close clearance hole for an M4 screw
 M5_CLEAR = 5.5          # [DESIGN] close clearance hole for an M5 screw
 
 # --- Belt drive (GT2) - lib/belts.py (a leaf: lib/forearm/ imports it directly) ------------------
-from lib.belts import (  # noqa: F401
+from lib.belts import (  # noqa: E402, F401
     GT2_BELT_W, GT2_GROOVE_R, GT2_PITCH, GT2_PLD, GT2_PULLEY_20T_PITCH_DIA, GT2_PULLEY_20T_TEETH,
     GT2_PULLEY_90T_PITCH_DIA, GT2_PULLEY_90T_TEETH, GT2_RATIO, GT2_TOOTH_DEPTH, STANDARD_2GT_LENGTHS,
 )
@@ -51,7 +51,7 @@ MG996R_MASS_G = 55.0            # [DATASHEET]
 
 # --- Motors - lib/motors.py (a leaf: the NEMA 17 interface, the pancake, the 40 mm kit motor + its MKS
 # SERVO42D board; lib/forearm/ imports it directly) -----------------------------------------------------
-from lib.motors import (  # noqa: F401
+from lib.motors import (  # noqa: E402, F401
     MKS_SERVO42D_BOARD_STACK, MKS_SERVO42D_MASS_G, MKS_SERVO42D_SCREW_REACH, MKS_SERVO42D_STACK, MKS_SERVO42D_STANDOFF,
     MKS_SERVO42D_W, MOTOR_40, NEMA17_40_BODY_LEN, NEMA17_40_BODY_W, NEMA17_40_CONNECTOR_D, NEMA17_40_CONNECTOR_W,
     NEMA17_40_CONNECTOR_Z0, NEMA17_40_CONNECTOR_Z1, NEMA17_40_MASS_G, NEMA17_40_REAR_STUB_DIA, NEMA17_40_REAR_STUB_LEN,

@@ -9,8 +9,9 @@ which normalises the tokens. cadgen 0.6.5 deprecated its `AssemblyHelper` wrappe
 """
 
 from __future__ import annotations
+
 from cadgen import build123d as bd
-from cadgen.assembly import label_shape, label_text  # noqa: F401
+from cadgen.assembly import label_shape, label_text
 
 __all__ = ["assembly", "label_shape", "label_text"]
 

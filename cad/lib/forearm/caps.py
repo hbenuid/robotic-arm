@@ -2,8 +2,6 @@
 the LOCAL_FROM_REF that maps their SolidWorks frames here)."""
 from __future__ import annotations
 
-from cadgen import build123d as bd
-
 from lib.cycloidal.geom import cylinder, single_solid
 from lib.forearm.layout import cap1_socket_points, cap2_socket_points, elbow_end_x, motor_window
 from lib.forearm.link import slab

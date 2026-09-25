@@ -9,6 +9,7 @@ re-oriented by VENDOR_TO_REF into the same frame.
 import pathlib
 
 from cadgen import step
+
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, output_pin_points
 from lib.cycloidal.geom import cylinder
 from lib.datum import IDENTITY

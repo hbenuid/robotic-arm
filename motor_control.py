@@ -718,7 +718,7 @@ def menu_diagnostics() -> None:
 def main_menu() -> None:
     while True:
         print(f"\n{'=' * 42}")
-        print(f"  Arctos Motor Control")
+        print("  Arctos Motor Control")
         print(f"  Selected: {_selected_label}")
         print(f"{'=' * 42}")
         print("  [0] Select motor")
@@ -778,14 +778,14 @@ def main():
     )
     args = parser.parse_args()
 
-    global _can, _drivers
+    global _can
     try:
         _can = CANInterface(
             channel=args.channel,
             bitrate=args.bitrate,
             interface=args.interface,
         )
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - serial, python-can or OS: any failure to open ends the run
         print(f"Failed to open CAN bus: {e}")
         sys.exit(1)
 

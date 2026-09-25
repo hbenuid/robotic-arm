@@ -13,6 +13,7 @@ import pathlib
 
 from cadgen import build123d as bd
 from cadgen import step
+
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig
 from lib.cycloidal.geom import cylinder, single_solid
 from lib.datum import IDENTITY

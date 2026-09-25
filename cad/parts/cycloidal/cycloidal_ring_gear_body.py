@@ -14,9 +14,15 @@ import pathlib
 
 from cadgen import build123d as bd
 from cadgen import step
+
 from lib.cycloidal import (
-    DEFAULT_CONFIG, DriveConfig, compute_housing_bolt_angles, housing_bolt_points, ring_pin_hole_depth,
-    ring_pin_hole_dia, ring_pin_points,
+    DEFAULT_CONFIG,
+    DriveConfig,
+    compute_housing_bolt_angles,
+    housing_bolt_points,
+    ring_pin_hole_depth,
+    ring_pin_hole_dia,
+    ring_pin_points,
 )
 from lib.cycloidal.geom import align_min, cylinder, through
 from lib.cycloidal.housing import chamfer_outer_silhouette, hex_pocket, reveal_window_cutter

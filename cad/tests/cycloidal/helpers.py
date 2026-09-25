@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from build123d import Box, Cylinder, GeomType, Pos, PositionMode, Shape, Compound, Vertex
+from build123d import Box, Compound, Cylinder, GeomType, Pos, PositionMode, Shape, Vertex
 
 from lib import reference as R
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, ring_pin_points

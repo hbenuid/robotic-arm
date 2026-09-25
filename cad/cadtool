@@ -29,8 +29,9 @@ cadtool - cadgen 0.6 + this uv project (paths relative to cad/)
   ./cadtool cadgen|store|daemon ...                 any cadgen subcommand (`./cadtool cadgen --help`)
   ./cadtool daemon stop                             stop the warm build daemon + its workers (a fresh one starts on the next gen)
   ./cadtool pytest [-m "not slow"]                  test suite
+  ./cadtool lint [--fix] [path...]                  ruff check (lint only, no formatter; rules: pyproject.toml [tool.ruff])
   ./cadtool python -m assemblies.arm ...            any python in the venv (PYTHONPATH=cad/)
-  ./cadtool clean [--all]                           delete __pycache__/, .pytest_cache/ (and any stray __cadgen__/);
+  ./cadtool clean [--all]                           delete __pycache__/, .pytest_cache/, .ruff_cache/ (and any stray __cadgen__/);
                                                     --all also empties snapshots/ and deletes
                                                     assemblies/*.step, robot/links/*.step
 Env: CAD_PLUGIN=<plugin dir> overrides detection; CADGEN_DAEMON=0 builds on transient workers (no warm daemon);
@@ -160,10 +161,12 @@ case "$cmd" in
     exec uv run --frozen python "$@" ;;
   pytest)
     exec uv run --frozen pytest "$@" ;;
+  lint)
+    exec uv run --frozen ruff check "$@" ;;
   clean)
     # Regenerable caches only; --all also drops the git-ignored review artifacts. Never touches .venv,
     # the part STEPs, the committed reference/vendor/mesh files or the cadgen store (`./cadtool store gc` for that).
-    find "$CAD_DIR" -name .venv -prune -o -type d \( -name __cadgen__ -o -name __pycache__ -o -name .pytest_cache \) -prune -print -exec rm -rf {} +
+    find "$CAD_DIR" -name .venv -prune -o -type d \( -name __cadgen__ -o -name __pycache__ -o -name .pytest_cache -o -name .ruff_cache \) -prune -print -exec rm -rf {} +
     if [[ "${1:-}" == "--all" ]]; then
       [[ -d snapshots ]] && find snapshots -mindepth 1 -prune -exec rm -rf {} +
       rm -f assemblies/*.step robot/links/*.step

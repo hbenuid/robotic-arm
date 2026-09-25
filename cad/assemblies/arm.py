@@ -43,6 +43,7 @@ from assemblies._occurrences import grouped_children
 from lib.assembly import assembly
 from lib.datum import base_frame
 
+
 def arm_from_w():
     """W (SolidWorks capture frame, +Y up, arm toward -X) -> base_link frame B (REP-103: Z up, X
     forward, origin on the base's mounting face at the base_yaw axis): the frame the arm is emitted in.

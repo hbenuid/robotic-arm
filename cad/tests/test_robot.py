@@ -183,9 +183,8 @@ def test_forward_kinematics_at_zero_reproduces_the_capture_frames():
 @pytest.mark.slow
 @pytest.mark.parametrize("link", PHYSICAL_LINKS)
 def test_link_builds_from_its_occurrences(link):
-    from robot._links import build_link
-
     from assemblies._occurrences import split_key
+    from robot._links import build_link
 
     shape = build_link(link)
     assert shape.label == link
@@ -238,5 +237,5 @@ def test_urdf_and_sdf_match_the_frames_and_cad():
 def test_plugin_validators_pass(target):
     """cadgen's urdf/srdf/sdf validators (strict) accept the checked-in files."""
     args = ["./cadtool", "validate", target] + (["--strict"] if not target.endswith(".sdf") else ["--gz-check", "never"])
-    proc = subprocess.run(args, cwd=CAD_DIR, capture_output=True, text=True)
+    proc = subprocess.run(args, cwd=CAD_DIR, capture_output=True, text=True, check=False)
     assert proc.returncode == 0, proc.stdout[-2000:] + proc.stderr[-2000:]

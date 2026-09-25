@@ -33,6 +33,9 @@ with `ARM_REFERENCE_SRC`). A new export the user hands over is fed to those tool
   commit `pyproject.toml` and `uv.lock`.
 - Run the CLI with `uv run launcher` (entry point defined in `[project.scripts]`).
   After adding or renaming entry points, run `uv sync` to refresh `.venv/bin/`.
+- Lint with ruff (a locked dev dependency in both uv projects, config in each `pyproject.toml` `[tool.ruff]`):
+  `uv run ruff check` here (it skips `cad/`), `./cadtool lint` in `cad/`. Both are clean; keep them clean.
+  Lint only — `ruff format` is not adopted (it would re-flow `cad/`'s hand-aligned tables).
 
 ## Code layout
 - `launcher.py` auto-detects the CANable via `pyserial.tools.list_ports` and calls
@@ -51,7 +54,7 @@ with `ARM_REFERENCE_SRC`). A new export the user hands over is fed to those tool
 - `cad/` is a **separate uv project** (Python 3.12, build123d) — the motor-control
   project above never depends on it, and `launch.bat` never installs it. Never run
   CAD code with the root venv.
-- Work from `cad/` via `./cadtool …` (`setup|doctor|gen|step|why|inspect|snapshot|export|validate|viewer|parts|skill|cadgen|store|daemon|pytest|python|clean`; `step` = `gen`);
+- Work from `cad/` via `./cadtool …` (`setup|doctor|gen|step|why|inspect|snapshot|export|validate|viewer|parts|skill|cadgen|store|daemon|pytest|lint|python|clean`; `step` = `gen`);
   it runs the `cadgen` 0.6 toolchain (the `cad@text-to-cad` plugin v0.6.x's PyPI runtime, locked in
   `cad/pyproject.toml`) inside the CAD venv with `PYTHONPATH=cad/`. A model is a plain script with one
   `@step def <name>()`; `./cadtool gen <model.py>` runs it. Conventions, the wrapper → parametric

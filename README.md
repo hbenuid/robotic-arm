@@ -1,6 +1,6 @@
 # robotic-arm
 
-**Last updated:** 2026-09-23 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-24 — see the root `CHANGELOG.md` for dated changes.
 
 Robot arm control software for a 3-motor MKS SERVO42D/57D arm over CAN bus (the CAD's arm is now a 6-axis one that needs five boards - see the CAD section).
 
@@ -28,6 +28,7 @@ cd cad
 ./cadtool gen assemblies/arm.py      # build the arm STEP (rebuilds any stale part and its committed STEP)
 ./cadtool viewer                     # CAD Viewer: http://127.0.0.1:3245/?file=assemblies/arm.step (or ?file=robot/arm.urdf: joint sliders)
 ./cadtool pytest                     # convention + reference-match tests
+./cadtool lint                       # ruff check
 ./cadtool clean                      # drop __pycache__/pytest caches (cadgen's store lives in ~/.cache/cadgen)
 ```
 
@@ -150,6 +151,9 @@ pyproject.toml, uv.lock  uv-managed project metadata
   rewriting all those imports.
 - Adding a new entry-point script: add a `[project.scripts]` line in
   `pyproject.toml`, then `uv sync`.
+- Lint with `uv run ruff check` (`--fix` for the safe fixes; ruff is a dev
+  dependency, config in `pyproject.toml` `[tool.ruff]`, `cad/` excluded - it has
+  its own, `./cadtool lint`). Lint only; `ruff format` is not used.
 
 ## Known issues
 

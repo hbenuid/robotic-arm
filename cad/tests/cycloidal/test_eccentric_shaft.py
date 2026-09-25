@@ -8,8 +8,8 @@ import math
 
 import pytest
 
-from lib import reference as R
 import parts
+from lib import reference as R
 from tests.cycloidal.helpers import CFG
 
 cycloidal_eccentric_shaft = parts.load("cycloidal_eccentric_shaft")

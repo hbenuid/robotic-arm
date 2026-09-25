@@ -14,6 +14,7 @@ frame. See parts/_templates/wrapper.py for how to convert it to build123d.
 import pathlib
 
 from cadgen import step
+
 from lib import reference
 from lib.datum import IDENTITY, to_location
 

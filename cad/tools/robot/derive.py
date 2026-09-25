@@ -165,8 +165,8 @@ def urdf_draft() -> str:
                 '    <inertial>',
                 f'      <origin xyz="{fmt(com[0])} {fmt(com[1])} {fmt(com[2])}" rpy="0 0 0" />',
                 f'      <mass value="{fmt(mass)}" />',
-                f'      <inertia ixx="{fmt_i(I[0][0])}" ixy="{fmt_i(I[0][1])}" ixz="{fmt_i(I[0][2])}" '
-                f'iyy="{fmt_i(I[1][1])}" iyz="{fmt_i(I[1][2])}" izz="{fmt_i(I[2][2])}" />',
+                (f'      <inertia ixx="{fmt_i(I[0][0])}" ixy="{fmt_i(I[0][1])}" ixz="{fmt_i(I[0][2])}" '
+                 f'iyy="{fmt_i(I[1][1])}" iyz="{fmt_i(I[1][2])}" izz="{fmt_i(I[2][2])}" />'),
                 '    </inertial>']
         for tag in ("visual", "collision"):
             out += [f'    <{tag}>', '      <origin xyz="0 0 0" rpy="0 0 0" />', '      <geometry>',

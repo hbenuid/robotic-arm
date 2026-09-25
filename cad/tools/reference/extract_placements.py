@@ -25,6 +25,7 @@ import sys
 
 import build123d
 from build123d import BoundBox, Compound, Location, export_step, import_step
+
 from lib import reference as R
 from lib.placements import to_record as loc_json
 from tools.reference.mount_placements import mounted_records, with_mounted, write
@@ -178,7 +179,7 @@ def main(argv=None) -> int:
     for o in records:
         p = o["world"]["position"]
         solids = o["solids"] if "solids" in o else o["solidworks"]["solids"]   # a designed module keeps the node's totals
-        print(f"  {o['key']:26s} {o['kind']:6s} path={str(o['path'] or 'mount'):8s} parent={str(o['parent']):10s} "
+        print(f"  {o['key']:26s} {o['kind']:6s} path={o['path'] or 'mount'!s:8s} parent={o['parent']!s:10s} "
               f"solids={solids:2d} world=({p[0]:8.2f},{p[1]:8.2f},{p[2]:8.2f})")
     for s in ex.skipped:
         p = s["world"]["position"]

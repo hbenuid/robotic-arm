@@ -9,11 +9,12 @@ re-oriented by VENDOR_TO_REF into the same frame.
 import pathlib
 
 from cadgen import step
-from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, stack_positions
+
+from lib.cycloidal import DEFAULT_CONFIG, DriveConfig
 from lib.cycloidal.geom import cylinder
 from lib.datum import IDENTITY
 from lib.params import CYCLOIDAL_SUPPORT_PIN_MASS_G
-from parts.cycloidal._cots import hybrid, pattern
+from parts.cycloidal._cots import hybrid
 
 NAME = pathlib.Path(__file__).stem
 COTS = True

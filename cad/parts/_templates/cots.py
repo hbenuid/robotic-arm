@@ -19,7 +19,9 @@ import pathlib
 
 from cadgen import build123d as bd
 from cadgen import read_step, step
+
 from lib.datum import IDENTITY, to_location
+
 # from lib.params import ...  the real interface dims
 
 NAME = pathlib.Path(__file__).stem

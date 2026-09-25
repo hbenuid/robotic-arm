@@ -22,7 +22,7 @@ import importlib
 
 from cadgen import build123d as bd
 
-import parts  # noqa: E402  (stdlib-only package index; parts.load() imports a part lazily)
+import parts  # stdlib-only package index; parts.load() imports a part lazily
 from lib import placements as P
 from lib.assembly import assembly, label_shape
 from lib.datum import IDENTITY, to_location

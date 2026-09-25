@@ -7,6 +7,7 @@ re-oriented by VENDOR_TO_REF into the same frame: axis Z, standing on z=0. In th
 import pathlib
 
 from cadgen import step
+
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig
 from lib.cycloidal.geom import cylinder
 from lib.datum import IDENTITY

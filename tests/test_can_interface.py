@@ -1,8 +1,8 @@
 import threading
-import pytest
-import can
-from arctos.can_interface import CANInterface
 
+import can
+import pytest
+from arctos.can_interface import CANInterface
 
 CHANNEL = "test_ch"
 IFACE = "virtual"

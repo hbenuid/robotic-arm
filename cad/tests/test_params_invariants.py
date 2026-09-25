@@ -117,7 +117,14 @@ def test_cycloidal_stack_positions():
 
 def test_cycloidal_derived_numbers():
     from lib.cycloidal import DEFAULT_CONFIG as cfg
-    from lib.cycloidal import hex_circumdiameter, hub_height, motor_bolt_counterbore_depth, ring_pin_engagement, ring_pin_hole_depth, ring_pin_hole_dia
+    from lib.cycloidal import (
+        hex_circumdiameter,
+        hub_height,
+        motor_bolt_counterbore_depth,
+        ring_pin_engagement,
+        ring_pin_hole_depth,
+        ring_pin_hole_dia,
+    )
 
     assert cfg.stack_up.bore_zone == 28.0
     assert cfg.stack_up.ring_gear_body_height == 51.0

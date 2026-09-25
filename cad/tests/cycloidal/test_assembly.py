@@ -15,16 +15,16 @@ import math
 import pytest
 from build123d import Compound, GeomType, Location, Vector
 
+import parts
 from assemblies import cycloidal_drive
-from lib.models import raw
 from assemblies._occurrences import place_world
-from tests.cycloidal.helpers import CFG, interference
 from lib import placements as P
 from lib import reference as R
 from lib.cycloidal import compute_housing_bolt_angles, hex_circumdiameter, hub_height, stack_positions
 from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii
-import parts
+from lib.models import raw
 from robot import frames as F
+from tests.cycloidal.helpers import CFG, interference
 
 cycloidal_disc_1 = parts.load("cycloidal_disc_1")
 cycloidal_motor_plate = parts.load("cycloidal_motor_plate")

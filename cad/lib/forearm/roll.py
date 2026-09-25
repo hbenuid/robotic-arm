@@ -10,8 +10,14 @@ from cadgen import build123d as bd
 from lib.cycloidal.geom import align_min, cylinder, single_solid
 from lib.datum import to_location
 from lib.forearm.layout import (
-    belt_window, cap_bolt_points, coupler_steps, flange_bolt_points_module, module_frame_in_host, pad_bolt_points,
-    pulley_bolt_points, stack_positions,
+    belt_window,
+    cap_bolt_points,
+    coupler_steps,
+    flange_bolt_points_module,
+    module_frame_in_host,
+    pad_bolt_points,
+    pulley_bolt_points,
+    stack_positions,
 )
 from lib.forearm.link import x_cylinder
 from lib.forearm.params import DEFAULT, ForearmConfig

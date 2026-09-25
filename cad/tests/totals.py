@@ -22,7 +22,7 @@ def is_converted(part: str) -> bool:
     return part in R.CUSTOM and bool(parts.load(part).CONVERTED)
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def _built(part: str):
     return parts.build(part)
 

@@ -41,7 +41,11 @@ from dataclasses import dataclass
 
 from lib.forearm import module_frame_in_host
 from lib.params import (
-    BASE_MOTOR_PATTERN_CENTRE, CYCLOIDAL_MOTOR_BODY_LEN, J1_MOTOR_PAD_FACE_Y, J2_MOTOR_SLIDE_X, J2_MOTOR_WEB_FACE_Z,
+    BASE_MOTOR_PATTERN_CENTRE,
+    CYCLOIDAL_MOTOR_BODY_LEN,
+    J1_MOTOR_PAD_FACE_Y,
+    J2_MOTOR_SLIDE_X,
+    J2_MOTOR_WEB_FACE_Z,
     NEMA17_40_BODY_LEN,
 )
 

@@ -19,6 +19,7 @@ board on its rear face is its own part (parts/joints/mks_servo42d.py, placed by 
 import pathlib
 
 from cadgen import step
+
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, motor_bolt_points
 from lib.cycloidal.motor import nema17_motor
 from lib.datum import IDENTITY

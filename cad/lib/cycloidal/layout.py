@@ -12,10 +12,9 @@ import math
 from lib.cycloidal.params import DEFAULT_CONFIG, DriveConfig, compute_housing_bolt_angles
 
 __all__ = [
-    "compute_housing_bolt_angles", "housing_bolt_points", "ring_pin_points", "output_pin_points",
-    "motor_bolt_points", "arm_mount_angles", "arm_mount_points", "hex_circumdiameter",
-    "ring_pin_hole_dia", "ring_pin_engagement", "ring_pin_hole_depth", "motor_bolt_counterbore_depth",
-    "hub_height", "stack_positions",
+    "arm_mount_angles", "arm_mount_points", "compute_housing_bolt_angles", "hex_circumdiameter",
+    "housing_bolt_points", "hub_height", "motor_bolt_counterbore_depth", "motor_bolt_points", "output_pin_points",
+    "ring_pin_engagement", "ring_pin_hole_depth", "ring_pin_hole_dia", "ring_pin_points", "stack_positions",
 ]
 
 

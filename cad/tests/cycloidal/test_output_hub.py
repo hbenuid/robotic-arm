@@ -7,10 +7,10 @@ import math
 
 import pytest
 
-from tests.cycloidal.helpers import CFG, is_inside
+import parts
 from lib import reference as R
 from lib.cycloidal import hub_height
-import parts
+from tests.cycloidal.helpers import CFG, is_inside
 
 cycloidal_output_hub = parts.load("cycloidal_output_hub")
 

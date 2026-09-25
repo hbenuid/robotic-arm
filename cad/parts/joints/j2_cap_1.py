@@ -18,6 +18,7 @@ Conversion: build_cap_1(LEGACY) reproduces the reference (REFERENCE_BUILD); the 
 import pathlib
 
 from cadgen import step
+
 from lib.forearm import DEFAULT, LEGACY
 from lib.forearm.caps import build_cap_1
 

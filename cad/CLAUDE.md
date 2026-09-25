@@ -4,7 +4,7 @@
 conversion workflow, shared-dimension rules, assembly placements, purchased parts, tests, tooling.
 **Audience:** agent. Human docs: `README.md`. Reference provenance: `reference/README.md`. The
 cycloidal drive (spec, port notes, attachment): `docs/cycloidal_drive.md`; the forearm roll drive: `docs/forearm_roll.md`.
-**Last updated:** 2026-09-24 (cadgen 0.6.6; the OCP CAD Viewer / `ocp-vscode` and `./cadtool show` removed). Every commit that changes behaviour, layout or tooling gets a dated entry in the
+**Last updated:** 2026-09-24 (cadgen 0.6.6; the OCP CAD Viewer / `ocp-vscode` and `./cadtool show` removed; ruff lint, `./cadtool lint`). Every commit that changes behaviour, layout or tooling gets a dated entry in the
 root `CHANGELOG.md` and bumps the `Last updated` line of the docs it touches.
 
 `cad/` is a **separate uv project** (Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.6.x) inside the
@@ -124,6 +124,10 @@ the CAD keeps is the derived, committed copy (`reference/`, `vendor/`) — the r
 - `./cadtool validate <file.urdf|.srdf|.sdf> [--strict]`, `./cadtool parts "<query>"`,
   `./cadtool skill <skill> <tool> …`, `./cadtool cadgen <anything>`.
 - `./cadtool pytest [-m "not slow"]`.
+- `./cadtool lint [--fix] [path…]` — `ruff check` (a locked dev dependency; rules in `pyproject.toml [tool.ruff]`: ruff's
+  default set for the locked version + `E4`, `isort` wrapping at 120). The tree is clean; keep it clean. Lint only:
+  never `ruff format` (it would re-flow the hand-aligned tables in nearly every file). A lint fix in a model's import
+  closure makes the model stale like any source edit — rebuild and hash-gate it (Recipe C 2–4).
 - `uv add <pkg>` for deps (commit `pyproject.toml` + `uv.lock`); never `pip install`.
 - **Generated STEPs are never committed** — part STEPs included (git-ignored since 2026-09-21, like
   `assemblies/*.step` and `robot/links/*.step`): a fresh clone has none until `./cadtool gen assemblies/arm.py`

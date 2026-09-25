@@ -8,11 +8,11 @@ import math
 
 import pytest
 
-from tests.cycloidal.helpers import CFG, is_inside, no_chamfer
+import parts
 from lib import reference as R
 from lib.cycloidal import compute_housing_bolt_angles
 from lib.cycloidal.housing import chamfer_outer_silhouette, reveal_window_cutter
-import parts
+from tests.cycloidal.helpers import CFG, is_inside, no_chamfer
 
 cycloidal_motor_plate = parts.load("cycloidal_motor_plate")
 cycloidal_ring_gear_body = parts.load("cycloidal_ring_gear_body")
@@ -132,7 +132,7 @@ class TestOuterChamfer:
 
     def test_ring_gear_body_mating_face_sharp(self, chamfer_parts):
         parts = chamfer_parts
-        fn, th, ext, mates = parts["ring_gear_body"]
+        fn, _th, _ext, mates = parts["ring_gear_body"]
         assert is_inside(fn(), self.PILLAR_TIP_R, 0.0, mates[0] + 0.1)
 
     def test_full_external_perimeter_beveled(self):

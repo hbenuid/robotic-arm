@@ -34,7 +34,7 @@ print(len(modules))
 
 
 def test_no_model_module_imports_the_kernel():
-    run = subprocess.run([sys.executable, "-c", PROBE], cwd=CAD_DIR, capture_output=True, text=True,
+    run = subprocess.run([sys.executable, "-c", PROBE], cwd=CAD_DIR, capture_output=True, text=True, check=False,
                          env={"PYTHONPATH": str(CAD_DIR), "PATH": ""})
     assert run.returncode == 0, (run.stdout + run.stderr).strip()
     assert int(run.stdout) >= 41 + 3 + 8, run.stdout

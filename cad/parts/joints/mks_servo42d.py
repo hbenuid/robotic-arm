@@ -23,6 +23,7 @@ import pathlib
 
 from cadgen import build123d as bd
 from cadgen import read_step, step
+
 from lib.cycloidal import DEFAULT_CONFIG, motor_bolt_points
 from lib.cycloidal.geom import cylinder, single_solid
 from lib.datum import IDENTITY, to_location

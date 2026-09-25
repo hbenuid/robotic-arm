@@ -14,7 +14,7 @@ os.environ.setdefault("CADGEN_DAEMON", "0")
 
 @pytest.fixture(autouse=True, scope="session")
 def _no_top_level_builds():
-    import cadgen.authoring as authoring
+    from cadgen import authoring
 
     def refuse(defn):
         raise RuntimeError(

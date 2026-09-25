@@ -12,10 +12,10 @@ import numpy as np
 import pytest
 from build123d import Pos
 
-from tests.cycloidal.helpers import CFG, annulus, end_face, interference, is_inside, radial_extent, ring_pins
+import parts
 from lib import reference as R
 from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii, profile_points
-import parts
+from tests.cycloidal.helpers import CFG, annulus, end_face, interference, is_inside, radial_extent, ring_pins
 
 cycloidal_disc_1 = parts.load("cycloidal_disc_1")
 cycloidal_disc_2 = parts.load("cycloidal_disc_2")

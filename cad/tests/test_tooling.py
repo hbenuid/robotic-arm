@@ -1,9 +1,9 @@
 """The local tooling stays healthy: the venv holds the cadgen and the OCP kernel pyproject.toml pins
 (and only ONE OCP distribution), and ./cadtool inspect (tools/step_facts.py) agrees with the kernel."""
-import importlib.metadata as metadata
 import pathlib
 import re
 import tomllib
+from importlib import metadata
 
 import pytest
 

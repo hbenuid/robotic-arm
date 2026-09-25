@@ -7,9 +7,9 @@ import math
 
 import pytest
 
+import parts
 from lib import reference as R
 from lib.cycloidal import motor_bolt_counterbore_depth, ring_pin_hole_dia
-import parts
 from tests.cycloidal.helpers import CFG
 
 cycloidal_motor_plate = parts.load("cycloidal_motor_plate")

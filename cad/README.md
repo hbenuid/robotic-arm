@@ -1,6 +1,6 @@
 # robotic-arm — CAD (build123d)
 
-**Last updated:** 2026-09-24 (the OCP CAD Viewer / `ocp-vscode` and `./cadtool show` removed — the CAD Viewer is cadgen's) — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-24 (the OCP CAD Viewer / `ocp-vscode` and `./cadtool show` removed — the CAD Viewer is cadgen's; ruff lint via `./cadtool lint`) — see the root `CHANGELOG.md` for dated changes.
 
 Parametric CAD-as-code for the desktop arm (base yaw, 20:1 cycloidal shoulder pitch, belt-driven
 elbow and wrist pitch, wrist roll, MG996R parallel gripper), converted part-by-part from the original
@@ -70,8 +70,9 @@ additive (2026-09-22 entry).
 | `./cadtool cadgen …` / `store …` / `daemon …` | any `cadgen` subcommand (`store info\|gc`, `daemon status`, `doctor`); `./cadtool daemon stop` ends the warm build daemon + workers (cadgen has no stop verb) |
 | `./cadtool doctor` | installed cadgen vs the plugin's pin, Node, Playwright Chromium |
 | `./cadtool pytest [-m "not slow"]` | test suite (the fast lane skips geometry builds) |
+| `./cadtool lint [--fix] [path…]` | `ruff check` over `cad/` (rules in `pyproject.toml [tool.ruff]`; lint only - no `ruff format`, the tables are hand-aligned) |
 | `./cadtool python …` | any python in the venv with `PYTHONPATH=cad/` (`-c "from assemblies.cycloidal_drive import totals; print(totals())"`) |
-| `./cadtool clean [--all]` | delete `__pycache__/`, `.pytest_cache/` (and any stray `__cadgen__/`); `--all` also empties `snapshots/` and removes the git-ignored `assemblies/*.step`, `robot/links/*.step` |
+| `./cadtool clean [--all]` | delete `__pycache__/`, `.pytest_cache/`, `.ruff_cache/` (and any stray `__cadgen__/`); `--all` also empties `snapshots/` and removes the git-ignored `assemblies/*.step`, `robot/links/*.step` |
 
 `cadtool` always `cd`s to `cad/` (cadgen resolves paths from the working directory and the viewer
 serves it) and exports `PYTHONPATH=cad/` so `lib`, `parts`, `assemblies`, `robot` import the same way

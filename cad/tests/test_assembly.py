@@ -10,9 +10,9 @@ from build123d import Color, Location, Vector
 import parts
 from assemblies import arm, arm_no_caps, cycloidal_drive, forearm_roll_drive, gripper
 from assemblies._occurrences import BOUGHT_TINT
-from lib.models import raw
 from lib import placements as P
 from lib import reference as R
+from lib.models import raw
 from tests.source_checks import runs_its_model
 from tests.totals import part_totals, world_bbox
 

@@ -10,7 +10,7 @@ import pytest
 import parts
 from lib import reference as R
 from tests.cycloidal.helpers import fingerprint, mesh_volume, spline_deviation
-from tools.cycloidal import export_cadquery as EX     # stdlib-only at module level (runs in the CadQuery venv)
+from tools.cycloidal import export_cadquery as EX  # stdlib-only at module level (runs in the CadQuery venv)
 
 DESIGNED = sorted(R.DESIGNED)
 SPLINE_PARTS = {"cycloidal_disc_1", "cycloidal_disc_2"}
@@ -19,7 +19,6 @@ SPLINE_PARTS = {"cycloidal_disc_1", "cycloidal_disc_2"}
 @pytest.mark.slow
 @pytest.mark.parametrize("name", DESIGNED)
 def test_designed_part_reproduces_cadquery_export(name):
-    mod = parts.load(name)
     mine, ref = parts.build(name), R.load(name)
     assert all(abs(a - b) <= 0.01 for a, b in zip(R.bbox_min(mine), R.bbox_min(ref))), (R.bbox_min(mine), R.bbox_min(ref))
     assert all(abs(a - b) <= 0.01 for a, b in zip(R.bbox_size(mine), R.bbox_size(ref))), (R.bbox_size(mine), R.bbox_size(ref))

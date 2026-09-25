@@ -10,7 +10,8 @@
   },
   "extensions": {
     "recommendations": [
-      "ms-python.python"
+      "ms-python.python",
+      "charliermarsh.ruff"
     ]
   }
 }

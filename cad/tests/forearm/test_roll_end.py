@@ -5,14 +5,20 @@ import math
 import pytest
 from build123d import Box, Pos
 
+import parts
 from lib import params as PARAMS
-from lib import placements as P
 from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, closed_belt_length
-from lib.forearm import DEFAULT, LEGACY, cap1_socket_points, cap2_socket_points, flange_bolt_points, link_socket_points, motor_window
+from lib.forearm import (
+    DEFAULT,
+    LEGACY,
+    cap1_socket_points,
+    cap2_socket_points,
+    flange_bolt_points,
+    link_socket_points,
+    motor_window,
+)
 from lib.motors import NEMA17_40_BODY_W, NEMA17_40_CONNECTOR_D
 from tests.forearm.helpers import in_host, interference, is_inside
-
-import parts
 
 R = DEFAULT.roll_end
 

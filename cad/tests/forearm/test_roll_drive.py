@@ -6,18 +6,16 @@ import math
 import pytest
 from build123d import Axis, Location, Vector
 
+import parts
 from assemblies import forearm_roll_drive as M
-from lib import placements as P
 from lib import params as PARAMS
-from lib import reference as R
+from lib import placements as P
 from lib.belts import GT2_PULLEY_20T_TEETH, centre_distance
 from lib.datum import to_location
 from lib.forearm import DEFAULT, belt_window, cap_bolt_points, module_frame_in_host, pulley_bolt_points, stack_positions
 from lib.models import raw
 from robot import frames as F
 from tests.forearm.helpers import in_host, interference, is_inside
-
-import parts
 
 S = stack_positions(DEFAULT)
 D = DEFAULT.drive
@@ -181,7 +179,7 @@ def test_block_and_shaft_features(module):
     assert not is_inside(block, 0, 0, S["z_end"] + 1.5) and is_inside(block, 0, 20, S["z_end"] + 1.5) and is_inside(block, -20, 0, S["z_end"] + 1.5)
     assert not is_inside(block, 0, r_bore - 0.5, 0) and is_inside(block, 0, r_bore + 1.0, 0)
     assert not is_inside(block, -(r_cav - 1.0), 0, zm) and is_inside(block, -(r_cav + 1.0), 0, zm) and not is_inside(block, 0, -(r_cav - 1.0), zm)
-    z0, z1, half_x, y0 = belt_window(DEFAULT)
+    _z0, z1, _half_x, _y0 = belt_window(DEFAULT)
     assert not is_inside(block, 0, r_cav + 1.5, zm) and is_inside(block, 0, r_cav + 1.5, z1 + 2.0)          # the belt window, the top wall past it
     # the front face is open (the cavity reaches it), the cap's tap holes in it
     assert not is_inside(block, 0, r_cav - 1.0, S["z_face"] - 0.5)

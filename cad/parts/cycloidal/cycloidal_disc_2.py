@@ -10,6 +10,7 @@ a 180 deg assembly rotation would be a no-op on a 20-lobe disc, so disc 2 is its
 import pathlib
 
 from cadgen import step
+
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig
 from lib.cycloidal.disc import build_disc
 from lib.datum import IDENTITY

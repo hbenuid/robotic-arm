@@ -31,13 +31,18 @@ confirmed by viewer sweeps / on hardware.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from cadgen import build123d as bd
 
 from lib import params as PARAMS
-from lib import placements as P
-from lib.datum import BASE_BOTTOM_Y, BASE_FORWARD, U, base_frame, frame  # noqa: F401  (the datum frames live below assemblies/)
+from lib.datum import (  # noqa: F401  (the datum frames live below assemblies/)
+    BASE_BOTTOM_Y,
+    BASE_FORWARD,
+    U,
+    base_frame,
+    frame,
+)
 
 ROBOT_NAME = "arm"
 

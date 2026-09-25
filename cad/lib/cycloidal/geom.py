@@ -3,7 +3,8 @@ from __future__ import annotations
 
 from cadgen import build123d as bd
 
-from lib.units import NUDGE   # not lib.params: that module imports lib.cycloidal.params (no import back up)
+from lib.units import NUDGE  # not lib.params: that module imports lib.cycloidal.params (no import back up)
+
 
 def align_min():
     """`align=` for a body standing on z0: footprint centred, extends +Z. A function, not a constant:

@@ -21,13 +21,21 @@ import pathlib
 
 from cadgen import build123d as bd
 from cadgen import read_step, step
+
 from lib.cycloidal import motor_bolt_points
 from lib.cycloidal.geom import cylinder, single_solid
 from lib.cycloidal.motor import nema17_motor
 from lib.datum import IDENTITY, to_location
 from lib.params import (
-    MOTOR_40, NEMA17_40_CONNECTOR_D, NEMA17_40_CONNECTOR_W, NEMA17_40_CONNECTOR_Z0, NEMA17_40_CONNECTOR_Z1,
-    NEMA17_40_MASS_G, NEMA17_40_REAR_STUB_DIA, NEMA17_40_REAR_STUB_LEN, NUDGE,
+    MOTOR_40,
+    NEMA17_40_CONNECTOR_D,
+    NEMA17_40_CONNECTOR_W,
+    NEMA17_40_CONNECTOR_Z0,
+    NEMA17_40_CONNECTOR_Z1,
+    NEMA17_40_MASS_G,
+    NEMA17_40_REAR_STUB_DIA,
+    NEMA17_40_REAR_STUB_LEN,
+    NUDGE,
 )
 
 NAME = pathlib.Path(__file__).stem

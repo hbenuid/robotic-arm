@@ -21,8 +21,8 @@ from cadgen import step
 
 from assemblies._occurrences import located_children
 from lib.assembly import assembly
-from lib.models import raw
 from lib.cycloidal import DEFAULT_CONFIG, stack_positions
+from lib.models import raw
 
 S = stack_positions(DEFAULT_CONFIG)
 

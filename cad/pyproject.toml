@@ -25,6 +25,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=8.0",
+    "ruff>=0.16.9",
 ]
 
 [tool.pytest.ini_options]
@@ -39,3 +40,28 @@ filterwarnings = [
     # build123d fires these from a class body at import time; third-party noise.
     "ignore::DeprecationWarning:build123d.objects_curve",
 ]
+
+[tool.ruff]
+# Lint only (`./cadtool lint`); `ruff format` is not adopted: the tables (OCCURRENCES, the tagged
+# constants in lib/params.py) are hand-aligned and the formatter would re-flow nearly every file.
+# line-length only sets where isort wraps an import (E501 is not selected).
+line-length = 120
+
+[tool.ruff.lint]
+# ruff's default rule set - fixed by the locked ruff version, so a ruff bump may add rules - plus E4:
+# lib/params.py's `noqa: E402` imports sit in their sections on purpose.
+extend-select = ["E4"]
+ignore = [
+    "UP032",   # "{0.bolt_dia:g} ...".format(cfg.housing) reads better than repeating the path in an f-string
+    "SIM118",  # `key in P.keys()`: lib/placements.py keys() is a filtering function, not dict.keys()
+    "DTZ011",  # date.today(): manifests carry the local date, like CHANGELOG.md
+]
+
+[tool.ruff.lint.per-file-ignores]
+# the re-export hubs keep their packed name grids (isort would put one name per line)
+"lib/params.py" = ["I001"]
+"lib/cycloidal/__init__.py" = ["I001"]
+"lib/forearm/__init__.py" = ["I001"]
+
+[tool.ruff.lint.isort]
+split-on-trailing-comma = false

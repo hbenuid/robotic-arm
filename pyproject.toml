@@ -16,3 +16,21 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 only-include = ["launcher.py", "motor_control.py", "src"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.9",
+]
+
+[tool.ruff]
+# Lint only (`uv run ruff check`); `ruff format` is not adopted. cad/ is its own uv project with its own
+# [tool.ruff] (`./cadtool lint` there).
+extend-exclude = ["cad"]
+
+[tool.ruff.lint]
+# ruff's default rule set - fixed by the locked ruff version, so a ruff bump may add rules - plus E4
+# (import placement).
+extend-select = ["E4"]
+ignore = [
+    "EXE001",  # launcher.py / motor_control.py keep their shebangs but run as `uv run launcher`
+]
