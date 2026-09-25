@@ -1,0 +1,14 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-08-28 — `cad/` reorganised: grouped parts, split references, packaged tests/tools, `cadtool clean`, Git LFS
+
+### Changed — `parts/` grouped by subsystem (`843eaf6`)
+- `cad/parts/{base,joints,wrist,gripper,cycloidal}/` — each part module moved *with* its
+  committed STEP (the viewer pairs siblings and scans recursively); templates in
+  `parts/_templates/`, the drive's shared COTS body in `parts/cycloidal/_cots.py`; path shims
+  `parents[2]`. `parts/__init__.py` scans the groups (`MODULES`, `GROUPS`, `names()`, `load()`,
+  duplicate stems raise) and every part import goes through `parts.load()`.
+- Root `.gitignore`: the STEP re-admits are recursive (`!/cad/parts/**/*.step`,
+  `!/cad/reference/**/*.step`) — the old single-level globs would have silently un-committed any
+  new STEP in a group directory. `test_reference_match` gains a discovery guard,
+  `test_parts_convention` a `parts/cycloidal == CYCLOIDAL_PARTS` lock.
