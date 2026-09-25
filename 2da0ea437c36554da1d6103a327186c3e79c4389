@@ -1,0 +1,26 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-12 — cadgen 0.5.x URDF renderer patched: robots render again in the viewer and in snapshots
+
+### Fixed — `./cadtool patch` (`cad/tools/cadgen_patches.py`), branch `fix/urdf-viewer-render` (`2da0ea4`)
+- Symptom: `?file=robot/arm.urdf` / `.srdf` in the CAD Viewer and `./cadtool snapshot robot/arm.urdf`
+  drew the robot as a pile of huge overlapping shards, and the joint sliders / `--joint-values` changed
+  nothing. Root cause (cadgen's shipped source, `packages/cadgen-js/src`): the robot loader composes
+  every link's `linkWorld · visualOrigin · meshScale` correctly, but since 0.5.0
+  `common/stepModuleEffects.js displayTransformForPart` applies a part's transform only when the mesh
+  data declares `partTransformsBaked: false`, which `lib/urdf/kinematics.js buildUrdfMeshGeometry` never
+  sets for robots - so each link was drawn at identity in raw STL millimetres. 0.4.28 still had the
+  fallback branch (hence the correct 2026-08-28 renders); nothing in the URDF or the meshes was wrong.
+- `cad/tools/cadgen_patches.py` inserts the minified flag into the two installed bundles
+  (`cadgen/_runtime/viewer/assets/index-*.js`, `cadgen/_runtime/browser/snapshot-render.js`; `.orig`
+  backups beside them; idempotent; anchored on one unique string; refuses cadgen releases outside the
+  known list without `--force`). `cadtool`: new `patch [apply|check|revert]` verb, `setup` applies it
+  after `uv sync`, `doctor` checks it, `viewer` / `snapshot` warn when it is missing;
+  `cad/tests/test_tooling.py` (fast) asserts it is applied.
+- Upstream: one line in `packages/cadgen-js/src/lib/urdf/kinematics.js` (add `partTransformsBaked:
+  false,` to the lightweight return object of `buildUrdfMeshGeometry`) - github.com/earthtojake/text-to-cad,
+  not fixed as of 0.5.1.
+- Correction to the 2026-09-11 entry below: the URDF snapshot did NOT match the 2026-08-31 one -
+  `arm_urdf_cadgen051.png` was already the pile; it went unnoticed until the 2026-09-12 review.
+- Docs: `cad/README.md` (setup, command table, robot section), `cad/CLAUDE.md` (Running things, Robot
+  description, Gotchas).
