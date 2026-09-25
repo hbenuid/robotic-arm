@@ -1,0 +1,23 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-23 — forearm roll, M4: the docs (branch `cad/forearm-roll`)
+
+### Docs — `docs/forearm_roll.md`, every guide on the 6-axis chain (`bb199a8`)
+- `cad/docs/forearm_roll.md` (new): why a roll and where (the wrist centre), the module frame and every stack station with
+  what fixes it, fits and printing, the assembly sequence, the attachment (`elbow_link` / `forearm_link`, `RollEndParams` on
+  the forearm side), what is not modelled.
+- `cad/README.md`: `lib/motors.py`, `lib/belts.py`, `lib/forearm/` and the roll drive's parts + module + tests in the tree,
+  the assembly paragraph (three modules, the roll drive's mount-declared pose), the chain, the joints and links tables
+  gain `elbow_link` / `forearm_roll`, the viewer's sliders. Root `README.md` (the chain; five kits for three configured CAN
+  ids) and root `CLAUDE.md` (links / joints, `FOREARM_ROLL_RATIO`); `cad/CLAUDE.md` (the GROUPS tree, the chain and the
+  roll's frame convention, "the roll drive IS the joint", `tests/forearm/`); `reference/README.md` (the `native/` origin and
+  `import_native.py` in Provenance); `vendor/README.md` (`bearing_6808` in the no-vendor table); `lib/placements.py`
+  (the mounted module record); the part docstrings' counts (`nema17_40mm` ×3, `mks_servo42d` ×5 / 3 kits, `gt2_pulley_20t`
+  ×2); `Last updated` lines.
+
+Verified: fast lane 418 passed; the full suite after M3's label fix **694 passed + 9 skipped** (2 m 54 s).
+
+Branch summary at M4 (superseded by the M6 summary above): M0 `642bcbb` tooling, M1 `ae7d74d` the
+parametric forearm, M2 `8c8c264` the roll end, M3 `c11f7a7` + `2ade5b0` the roll drive and the joint, M4 `bb199a8` docs.
+Out of scope, recorded in `docs/open_issues.md`: `src/config.py`'s 4th CAN id, the stop pin / home sensor / belt guard
+hardware, the caps' removal, converting the remaining 17 wrappers.
