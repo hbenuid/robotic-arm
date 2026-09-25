@@ -10,7 +10,6 @@
   },
   "extensions": {
     "recommendations": [
-      "bernhard-42.ocp-cad-viewer",
       "ms-python.python"
     ]
   }

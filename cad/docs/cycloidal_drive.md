@@ -3,7 +3,7 @@
 **Purpose:** the specification of the drive (carried over from the `cycloidal_drive` repo, corrected
 where the code disagreed with it), where it lives in `cad/`, what changed in the build123d port, and
 how it is attached to the arm.
-**Last updated:** 2026-09-21 — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-24 — see the root `CHANGELOG.md` for dated changes.
 
 ## Provenance
 - Designed in CadQuery in [`hbenuid/cycloidal_drive`](https://github.com/hbenuid/cycloidal_drive);
@@ -247,7 +247,7 @@ ring-pin dowels (pack of 25) $8–12 · output-pin dowels $2–4 · motor bolts 
 | Printed vs. bought | `./cadtool python tools/bom.py --module cycloidal_drive` (print list, buy list, the purchased items not modelled — `EXTRAS`); in `cycloidal_drive.step` (and in the arm) purchased parts are `_occurrences.BOUGHT_TINT` grey, printed parts `cycloidal_drive.TINT`; `./cadtool python tools/export_printables.py` → `print/<name>.stl` |
 | References | `reference/cycloidal/<name>.step` × 16 (CadQuery exports, Git LFS), `reference/manifest.json` entries (`file` field); `tools/cycloidal/export_cadquery.py` + `tools/cycloidal/import_cadquery.py` |
 | Tests | `tests/cycloidal/test_{disc,eccentric_shaft,motor_plate,ring_gear_body,output_hub,housing,purchased,fitment,assembly,port}.py` + `tests/cycloidal/helpers.py` (one module per part, geometry marked `slow`) |
-| Viewer / export | `./cadtool show assemblies/cycloidal_drive.py`, `./cadtool gen assemblies/cycloidal_drive.py`, `./cadtool export parts/cycloidal/<name>.step stl` |
+| Viewer / export | `./cadtool gen assemblies/cycloidal_drive.py`, `./cadtool viewer` (`?file=assemblies/cycloidal_drive.step`), `./cadtool export parts/cycloidal/<name>.step stl` |
 
 ## Viewing the drive
 
@@ -261,7 +261,6 @@ cd cad
 ./cadtool snapshot assemblies/cycloidal_drive.step snapshots/cycloidal_drive_x.png --display '{"mode": "transparent"}' --camera "30:20"
 #   (no turntable GIF: cadgen 0.6's `snapshot --video` renders a model's `@step(animation=…)` clip, and the
 #    drive declares none - motion review is the CAD Viewer)
-./cadtool show assemblies/cycloidal_drive.py          # OCP CAD Viewer (VS Code extension); parts: ./cadtool show parts/cycloidal/cycloidal_disc_1.py
 ```
 
 ## 11. Port notes (CadQuery → build123d)

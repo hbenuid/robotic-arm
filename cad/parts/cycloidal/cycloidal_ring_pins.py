@@ -36,4 +36,4 @@ def cycloidal_ring_pins():
 
 
 if __name__ == "__main__":
-    cycloidal_ring_pins()   # build: writes the sibling cycloidal_ring_pins.step (preview: ./cadtool show parts/cycloidal/cycloidal_ring_pins.py)
+    cycloidal_ring_pins()   # build: writes the sibling cycloidal_ring_pins.step

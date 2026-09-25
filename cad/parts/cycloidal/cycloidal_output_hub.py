@@ -58,4 +58,4 @@ def cycloidal_output_hub():
 
 
 if __name__ == "__main__":
-    cycloidal_output_hub()   # build: writes the sibling cycloidal_output_hub.step (preview: ./cadtool show parts/cycloidal/cycloidal_output_hub.py)
+    cycloidal_output_hub()   # build: writes the sibling cycloidal_output_hub.step

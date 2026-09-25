@@ -33,4 +33,4 @@ def bearing_625():
 
 
 if __name__ == "__main__":
-    bearing_625()   # build: writes the sibling bearing_625.step (preview: ./cadtool show parts/cycloidal/bearing_625.py)
+    bearing_625()   # build: writes the sibling bearing_625.step

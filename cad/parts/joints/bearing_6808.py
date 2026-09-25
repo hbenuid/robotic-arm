@@ -39,4 +39,4 @@ def bearing_6808():
 
 
 if __name__ == "__main__":
-    bearing_6808()   # build: writes the sibling bearing_6808.step (preview: ./cadtool show parts/joints/bearing_6808.py)
+    bearing_6808()   # build: writes the sibling bearing_6808.step

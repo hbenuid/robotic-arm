@@ -33,4 +33,4 @@ def j3_coupler():
 
 
 if __name__ == "__main__":
-    j3_coupler()   # build: writes the sibling j3_coupler.step (preview: ./cadtool show parts/joints/j3_coupler.py)
+    j3_coupler()   # build: writes the sibling j3_coupler.step

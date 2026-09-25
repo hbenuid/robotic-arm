@@ -42,4 +42,4 @@ def j2_cap_1():
 
 
 if __name__ == "__main__":
-    j2_cap_1()   # build: writes the sibling j2_cap_1.step (preview: ./cadtool show parts/joints/j2_cap_1.py)
+    j2_cap_1()   # build: writes the sibling j2_cap_1.step

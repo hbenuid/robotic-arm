@@ -38,4 +38,4 @@ def cycloidal_housing_nuts():
 
 
 if __name__ == "__main__":
-    cycloidal_housing_nuts()   # build: writes the sibling cycloidal_housing_nuts.step (preview: ./cadtool show parts/cycloidal/cycloidal_housing_nuts.py)
+    cycloidal_housing_nuts()   # build: writes the sibling cycloidal_housing_nuts.step

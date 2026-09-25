@@ -30,4 +30,4 @@ def j1_coupler():
 
 
 if __name__ == "__main__":
-    j1_coupler()   # build: writes the sibling j1_coupler.step (preview: ./cadtool show parts/base/j1_coupler.py)
+    j1_coupler()   # build: writes the sibling j1_coupler.step

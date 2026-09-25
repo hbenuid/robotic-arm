@@ -12,7 +12,6 @@ next gen. The caps are SolidWorks wrappers and do not follow a link change, and 
 a cap that no longer fits - after changing j1_link / j2_link, rebuild and check assemblies/arm.py too.
 
 Run:  ./cadtool gen assemblies/arm_no_caps.py    -> assemblies/arm_no_caps.step (git-ignored)
-      ./cadtool show assemblies/arm_no_caps.py   -> preview in the OCP CAD Viewer (no build)
       ./cadtool viewer                           -> http://127.0.0.1:3245/?file=assemblies/arm_no_caps.step
 """
 
@@ -37,4 +36,4 @@ def arm_no_caps():
 
 
 if __name__ == "__main__":
-    arm_no_caps()   # build: writes the sibling arm_no_caps.step (preview: ./cadtool show assemblies/arm_no_caps.py)
+    arm_no_caps()   # build: writes the sibling arm_no_caps.step

@@ -6,7 +6,7 @@ at the part's LOCAL origin - the assembly owns placement. Every part MUST:
   * return a valid, labelled solid/compound from the model (label == NAME);
   * pull shared dimensions from lib.params (never hard-code a shared value);
   * have no import side effects - the `__main__` call is the BUILD (writes the sibling STEP);
-    previews are `./cadtool show parts/<group>/<name>.py`, tests use parts.build(name);
+    tests and tools use parts.build(name) (the body in-process, nothing written);
   * import `lib` / `parts` plainly: cadtool, pytest and .env put cad/ on the import path;
   * keep the CAD kernel LAZY: `from cadgen import build123d as bd` and `bd.<name>` inside function
     bodies only - no kernel object in a module-level constant or an argument default (cadgen gates an
@@ -46,4 +46,4 @@ def designed():
 
 
 if __name__ == "__main__":
-    designed()   # build: writes the sibling designed.step (preview: ./cadtool show parts/_templates/designed.py)
+    designed()   # build: writes the sibling designed.step

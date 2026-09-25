@@ -36,4 +36,4 @@ def cycloidal_housing_bolts():
 
 
 if __name__ == "__main__":
-    cycloidal_housing_bolts()   # build: writes the sibling cycloidal_housing_bolts.step (preview: ./cadtool show parts/cycloidal/cycloidal_housing_bolts.py)
+    cycloidal_housing_bolts()   # build: writes the sibling cycloidal_housing_bolts.step

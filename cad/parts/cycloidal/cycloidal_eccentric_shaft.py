@@ -74,4 +74,4 @@ def cycloidal_eccentric_shaft():
 
 
 if __name__ == "__main__":
-    cycloidal_eccentric_shaft()   # build: writes the sibling cycloidal_eccentric_shaft.step (preview: ./cadtool show parts/cycloidal/cycloidal_eccentric_shaft.py)
+    cycloidal_eccentric_shaft()   # build: writes the sibling cycloidal_eccentric_shaft.step

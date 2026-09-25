@@ -35,4 +35,4 @@ def cycloidal_output_pins():
 
 
 if __name__ == "__main__":
-    cycloidal_output_pins()   # build: writes the sibling cycloidal_output_pins.step (preview: ./cadtool show parts/cycloidal/cycloidal_output_pins.py)
+    cycloidal_output_pins()   # build: writes the sibling cycloidal_output_pins.step

@@ -63,4 +63,4 @@ def mks_servo42d():
 
 
 if __name__ == "__main__":
-    mks_servo42d()   # build: writes the sibling mks_servo42d.step (preview: ./cadtool show parts/joints/mks_servo42d.py)
+    mks_servo42d()   # build: writes the sibling mks_servo42d.step

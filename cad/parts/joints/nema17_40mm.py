@@ -66,4 +66,4 @@ def nema17_40mm():
 
 
 if __name__ == "__main__":
-    nema17_40mm()   # build: writes the sibling nema17_40mm.step (preview: ./cadtool show parts/joints/nema17_40mm.py)
+    nema17_40mm()   # build: writes the sibling nema17_40mm.step

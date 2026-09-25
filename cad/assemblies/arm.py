@@ -33,7 +33,7 @@ robot/arm.urdf open in the same pose. placements.json, the parts and the modules
 Run:  ./cadtool gen assemblies/arm.py            -> assemblies/arm.step (git-ignored); every stale
                                                   child part is rebuilt and its committed STEP rewritten
       ./cadtool inspect assemblies/arm.step      -> leaf refs, solids, faces, volume, bbox
-      ./cadtool show assemblies/arm.py           -> preview in the OCP CAD Viewer (no build)
+      ./cadtool viewer                           -> http://127.0.0.1:3245/?file=assemblies/arm.step
 """
 
 from cadgen import step
@@ -114,4 +114,4 @@ def arm():
 
 
 if __name__ == "__main__":
-    arm()   # build: writes the sibling arm.step (preview: ./cadtool show assemblies/arm.py)
+    arm()   # build: writes the sibling arm.step

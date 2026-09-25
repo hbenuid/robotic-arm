@@ -41,4 +41,4 @@ def cycloidal_disc_2():
 
 
 if __name__ == "__main__":
-    cycloidal_disc_2()   # build: writes the sibling cycloidal_disc_2.step (preview: ./cadtool show parts/cycloidal/cycloidal_disc_2.py)
+    cycloidal_disc_2()   # build: writes the sibling cycloidal_disc_2.step

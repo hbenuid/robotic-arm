@@ -36,4 +36,4 @@ def forearm_roll_shaft():
 
 
 if __name__ == "__main__":
-    forearm_roll_shaft()   # build: writes the sibling forearm_roll_shaft.step (preview: ./cadtool show parts/joints/forearm_roll_shaft.py)
+    forearm_roll_shaft()   # build: writes the sibling forearm_roll_shaft.step

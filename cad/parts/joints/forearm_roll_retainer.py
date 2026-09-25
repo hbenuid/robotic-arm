@@ -35,4 +35,4 @@ def forearm_roll_retainer():
 
 
 if __name__ == "__main__":
-    forearm_roll_retainer()   # build: writes the sibling forearm_roll_retainer.step (preview: ./cadtool show parts/joints/forearm_roll_retainer.py)
+    forearm_roll_retainer()   # build: writes the sibling forearm_roll_retainer.step

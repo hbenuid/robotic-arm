@@ -1,6 +1,6 @@
 # robotic-arm — CAD (build123d)
 
-**Last updated:** 2026-09-23 (cadgen 0.6.6; the forearm roll's elbow block is the elbow coupler) — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-24 (the OCP CAD Viewer / `ocp-vscode` and `./cadtool show` removed — the CAD Viewer is cadgen's) — see the root `CHANGELOG.md` for dated changes.
 
 Parametric CAD-as-code for the desktop arm (base yaw, 20:1 cycloidal shoulder pitch, belt-driven
 elbow and wrist pitch, wrist roll, MG996R parallel gripper), converted part-by-part from the original
@@ -38,7 +38,7 @@ cd cad
 ./cadtool pytest       # everything green?
 ```
 
-Python is pinned to **3.12** in `.python-version` (the system Python is 3.14; the OCP / ocp-vscode
+Python is pinned to **3.12** in `.python-version` (the system Python is 3.14; the OCP
 wheels are verified on 3.12 — bump deliberately, with the full suite). Never run bare `python` here —
 always `./cadtool …` or `uv run …` from `cad/`.
 
@@ -59,7 +59,6 @@ additive (2026-09-22 entry).
 | `./cadtool python tools/bom.py [--module cycloidal_drive\|gripper] [--md\|--json]` | the **print list** and the **buy list** (what to order, pieces, mass), generated from the assembly tables + each part's `COTS` flag; ends with the purchased items that are not modelled (`EXTRAS`). No CAD kernel, instant |
 | `./cadtool python tools/export_printables.py [--parts …]` | one STL per **printed** part into `print/` (git-ignored; mm, part-local frame) with the quantity to print; bought parts are refused |
 | `./cadtool why <model.py>` | why the model is current or stale, clause by clause (`cadgen store why`) |
-| `./cadtool show <model.py>` | preview the model body in the OCP CAD Viewer VS Code extension (`ocp_vscode`) — no build, nothing written |
 | `./cadtool export <file.step> stl\|3mf\|glb [out]` | one mesh file per call from a STEP document (Node 20+; `--mesh-tolerance` is *relative*, default 1.5e-3 of the bounding diagonal) |
 | `./cadtool inspect <file.step> [--planes] [--json]` | leaf refs, solids, faces, volume, bbox of a saved STEP (`--planes`: its planar faces as normal / offset / area) — a **local** tool, `tools/step_facts.py`: cadgen 0.6.5 removed `cadgen step inspect`; distances and overlaps are `cadgen.geometry.closest_points` / `overlap_volume` in a test |
 | `./cadtool inspect diff <a.step> <b.step> [--tol X]` | same geometry leaf by leaf? exit 1 if not (checking a regenerated STEP against a copy kept from before the change) |
@@ -134,7 +133,7 @@ cad/
 ├── vendor/                # purchased-part STEPs (committed via Git LFS; replaceable by better catalog models)
 ├── robot/                 # URDF / SRDF / SDF + per-link meshes and generators (see below)
 ├── print/                 # git-ignored: one STL per printed part (tools/export_printables.py)
-├── tools/                 # preview.py (./cadtool show), step_facts.py (./cadtool inspect), bom.py (print list + buy list), export_printables.py, reference/{import_solidworks,extract_placements,mount_placements,split_mks_motor}.py (SolidWorks exports -> reference/vendor/placements),
+├── tools/                 # step_facts.py (./cadtool inspect), bom.py (print list + buy list), export_printables.py, reference/{import_solidworks,extract_placements,mount_placements,split_mks_motor}.py (SolidWorks exports -> reference/vendor/placements),
 │                          # cycloidal/{export_cadquery,import_cadquery}.py (the drive's references), robot/{derive,export_link_meshes}.py
 ├── tests/                 # pytest: conventions, reference match, placements, assembly totals, params locks, robot description, package layering, the motor mounts (test_mounts.py);
 │   ├── conftest.py            # CADGEN_DAEMON=0 + a guard that fails any test calling a model at top level (tests call bodies)
@@ -164,7 +163,7 @@ links; code never imports a part statically but goes through `parts.load(name)` 
 - `@step def <name>()` **returns** the final `Part`/`Compound` at the part's **local origin** — the
   assembly owns placement; no parameters, no `out=` (the STEP is the sibling file); the file ends with
   `if __name__ == "__main__": <name>()` — that call is the build, so importing the module has **no side
-  effects** and previews go through `./cadtool show`. Imports are plain (`from lib import …`): `cadtool`,
+  effects** (build with `./cadtool gen`, look with `./cadtool viewer` / `snapshot`). Imports are plain (`from lib import …`): `cadtool`,
   pytest and `.env` put `cad/` on the import path, and cadgen imports the file as `parts.<group>.<name>`;
 - **calling the model outside a build runs the pipeline** (writes the STEP, uses the daemon) — tests and
   tools call the body instead (`parts.build(name)` / `lib.models.raw(model)`), assemblies call

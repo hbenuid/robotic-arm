@@ -30,4 +30,4 @@ def gripper_end():
 
 
 if __name__ == "__main__":
-    gripper_end()   # build: writes the sibling gripper_end.step (preview: ./cadtool show parts/gripper/gripper_end.py)
+    gripper_end()   # build: writes the sibling gripper_end.step

@@ -39,4 +39,4 @@ def forearm_roll_block():
 
 
 if __name__ == "__main__":
-    forearm_roll_block()   # build: writes the sibling forearm_roll_block.step (preview: ./cadtool show parts/joints/forearm_roll_block.py)
+    forearm_roll_block()   # build: writes the sibling forearm_roll_block.step

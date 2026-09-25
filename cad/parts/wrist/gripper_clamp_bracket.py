@@ -32,4 +32,4 @@ def gripper_clamp_bracket():
 
 
 if __name__ == "__main__":
-    gripper_clamp_bracket()   # build: writes the sibling gripper_clamp_bracket.step (preview: ./cadtool show parts/wrist/gripper_clamp_bracket.py)
+    gripper_clamp_bracket()   # build: writes the sibling gripper_clamp_bracket.step

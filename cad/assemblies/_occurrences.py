@@ -76,8 +76,8 @@ def occurrence_children(rows, modules: dict | None = None, tint: str | None = No
 
 
 def _tint(shape, color: bd.Color) -> None:
-    """Set `color` on `shape` and every descendant. ocp_tessellate renders a leaf's own
-    color (a compound-level color does not cascade), so tint the whole subtree - which is why the
+    """Set `color` on `shape` and every descendant. A leaf is rendered in its own color (a
+    compound-level color did not cascade in the OCP CAD Viewer), so tint the whole subtree - which is why the
     grouped occurrences are inline copies: a linked child keeps its own (untinted) leaves."""
     shape.color = color
     for child in getattr(shape, "children", ()) or ():

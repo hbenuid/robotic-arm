@@ -16,7 +16,6 @@ cadtool - cadgen 0.6 + this uv project (paths relative to cad/)
                                                     build: run the model script(s) -> the sibling <name>.step
                                                     (an assembly rebuilds + rewrites its stale child parts too)
   ./cadtool step ...                                alias of gen
-  ./cadtool show <model.py | dotted.name>           OCP CAD Viewer preview of the model body (no build)
   ./cadtool why <model.py>                          freshness verdict, clause by clause (cadgen store why)
   ./cadtool inspect <file.step> [--planes] [--json] leaf refs, solids, faces, volume, bbox (+ planar faces) of a saved STEP
   ./cadtool inspect diff <a.step> <b.step> [--tol X] same geometry? (exit 1 if not) - a LOCAL tool, tools/step_facts.py:
@@ -87,8 +86,6 @@ case "$cmd" in
     if [[ ${#files[@]} -eq 0 ]]; then echo "usage: cadtool gen <model.py>... [--force --verbose --json --mesh-tolerance X]" >&2; exit 2; fi
     # ${flags[@]+…}: bash 3.2 (macOS /bin/bash) treats an empty array as unset under `set -u`
     for f in "${files[@]}"; do uv run --frozen python "$f" ${flags[@]+"${flags[@]}"}; done ;;
-  show)
-    exec uv run --frozen python tools/preview.py "$@" ;;
   why)
     cg store why "$@" ;;
   inspect)

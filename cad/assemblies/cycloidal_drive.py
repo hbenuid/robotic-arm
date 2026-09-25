@@ -10,7 +10,7 @@ hub's arm-mount face at z=65. assemblies/arm.py places the module at placements.
 face bolted to j1_link).
 
 Run:  ./cadtool gen assemblies/cycloidal_drive.py             -> assemblies/cycloidal_drive.step (git-ignored)
-      ./cadtool show assemblies/cycloidal_drive.py            -> preview in the OCP CAD Viewer (no build)
+      ./cadtool viewer                                        -> http://127.0.0.1:3245/?file=assemblies/cycloidal_drive.step
       ./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals(), totals('rotor'))"
                                                               -> leaves / solids / volume / bbox (the EXPECTED lock, whole or per body)
 """
@@ -110,4 +110,4 @@ def totals(body: str | None = None):
 
 
 if __name__ == "__main__":
-    cycloidal_drive()   # build: writes the sibling cycloidal_drive.step (preview: ./cadtool show assemblies/cycloidal_drive.py)
+    cycloidal_drive()   # build: writes the sibling cycloidal_drive.step

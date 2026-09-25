@@ -45,4 +45,4 @@ def gt2_pulley_20t():
 
 
 if __name__ == "__main__":
-    gt2_pulley_20t()   # build: writes the sibling gt2_pulley_20t.step (preview: ./cadtool show parts/wrist/gt2_pulley_20t.py)
+    gt2_pulley_20t()   # build: writes the sibling gt2_pulley_20t.step

@@ -44,4 +44,4 @@ def mg996r_horn():
 
 
 if __name__ == "__main__":
-    mg996r_horn()   # build: writes the sibling mg996r_horn.step (preview: ./cadtool show parts/gripper/mg996r_horn.py)
+    mg996r_horn()   # build: writes the sibling mg996r_horn.step

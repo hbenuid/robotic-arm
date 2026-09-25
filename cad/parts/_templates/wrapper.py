@@ -41,4 +41,4 @@ def wrapper():
 
 
 if __name__ == "__main__":
-    wrapper()   # build: writes the sibling wrapper.step (preview: ./cadtool show parts/_templates/wrapper.py)
+    wrapper()   # build: writes the sibling wrapper.step

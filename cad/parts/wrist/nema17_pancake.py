@@ -47,4 +47,4 @@ def nema17_pancake():
 
 
 if __name__ == "__main__":
-    nema17_pancake()   # build: writes the sibling nema17_pancake.step (preview: ./cadtool show parts/wrist/nema17_pancake.py)
+    nema17_pancake()   # build: writes the sibling nema17_pancake.step

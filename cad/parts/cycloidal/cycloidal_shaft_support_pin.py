@@ -35,4 +35,4 @@ def cycloidal_shaft_support_pin():
 
 
 if __name__ == "__main__":
-    cycloidal_shaft_support_pin()   # build: writes the sibling cycloidal_shaft_support_pin.step (preview: ./cadtool show parts/cycloidal/cycloidal_shaft_support_pin.py)
+    cycloidal_shaft_support_pin()   # build: writes the sibling cycloidal_shaft_support_pin.step

@@ -30,4 +30,4 @@ def servo_holder():
 
 
 if __name__ == "__main__":
-    servo_holder()   # build: writes the sibling servo_holder.step (preview: ./cadtool show parts/gripper/servo_holder.py)
+    servo_holder()   # build: writes the sibling servo_holder.step

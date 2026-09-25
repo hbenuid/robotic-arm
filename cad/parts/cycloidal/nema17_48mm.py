@@ -46,4 +46,4 @@ def nema17_48mm():
 
 
 if __name__ == "__main__":
-    nema17_48mm()   # build: writes the sibling nema17_48mm.step (preview: ./cadtool show parts/cycloidal/nema17_48mm.py)
+    nema17_48mm()   # build: writes the sibling nema17_48mm.step

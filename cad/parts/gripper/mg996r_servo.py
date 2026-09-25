@@ -44,4 +44,4 @@ def mg996r_servo():
 
 
 if __name__ == "__main__":
-    mg996r_servo()   # build: writes the sibling mg996r_servo.step (preview: ./cadtool show parts/gripper/mg996r_servo.py)
+    mg996r_servo()   # build: writes the sibling mg996r_servo.step

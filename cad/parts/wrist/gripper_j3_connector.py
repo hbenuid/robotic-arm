@@ -32,4 +32,4 @@ def gripper_j3_connector():
 
 
 if __name__ == "__main__":
-    gripper_j3_connector()   # build: writes the sibling gripper_j3_connector.step (preview: ./cadtool show parts/wrist/gripper_j3_connector.py)
+    gripper_j3_connector()   # build: writes the sibling gripper_j3_connector.step

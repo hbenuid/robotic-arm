@@ -48,4 +48,4 @@ def cots():
 
 
 if __name__ == "__main__":
-    cots()   # build: writes the sibling cots.step (preview: ./cadtool show parts/_templates/cots.py)
+    cots()   # build: writes the sibling cots.step

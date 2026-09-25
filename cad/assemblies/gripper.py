@@ -2,7 +2,7 @@
 built in its own frame; assemblies/arm.py places the whole module at "gripper#1".
 
 Run:  ./cadtool gen assemblies/gripper.py       -> assemblies/gripper.step (git-ignored)
-      ./cadtool show assemblies/gripper.py      -> preview in the OCP CAD Viewer (no build)
+      ./cadtool viewer                          -> http://127.0.0.1:3245/?file=assemblies/gripper.step
 """
 
 from cadgen import step
@@ -47,4 +47,4 @@ def gripper():
 
 
 if __name__ == "__main__":
-    gripper()   # build: writes the sibling gripper.step (preview: ./cadtool show assemblies/gripper.py)
+    gripper()   # build: writes the sibling gripper.step

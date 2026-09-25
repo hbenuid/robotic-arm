@@ -30,4 +30,4 @@ def gripper_link_1():
 
 
 if __name__ == "__main__":
-    gripper_link_1()   # build: writes the sibling gripper_link_1.step (preview: ./cadtool show parts/gripper/gripper_link_1.py)
+    gripper_link_1()   # build: writes the sibling gripper_link_1.step

@@ -69,4 +69,4 @@ def cycloidal_ring_gear_body():
 
 
 if __name__ == "__main__":
-    cycloidal_ring_gear_body()   # build: writes the sibling cycloidal_ring_gear_body.step (preview: ./cadtool show parts/cycloidal/cycloidal_ring_gear_body.py)
+    cycloidal_ring_gear_body()   # build: writes the sibling cycloidal_ring_gear_body.step

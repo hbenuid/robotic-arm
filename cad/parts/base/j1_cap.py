@@ -32,4 +32,4 @@ def j1_cap():
 
 
 if __name__ == "__main__":
-    j1_cap()   # build: writes the sibling j1_cap.step (preview: ./cadtool show parts/base/j1_cap.py)
+    j1_cap()   # build: writes the sibling j1_cap.step

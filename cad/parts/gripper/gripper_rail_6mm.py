@@ -45,4 +45,4 @@ def gripper_rail_6mm():
 
 
 if __name__ == "__main__":
-    gripper_rail_6mm()   # build: writes the sibling gripper_rail_6mm.step (preview: ./cadtool show parts/gripper/gripper_rail_6mm.py)
+    gripper_rail_6mm()   # build: writes the sibling gripper_rail_6mm.step

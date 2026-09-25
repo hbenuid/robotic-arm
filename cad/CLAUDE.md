@@ -4,7 +4,7 @@
 conversion workflow, shared-dimension rules, assembly placements, purchased parts, tests, tooling.
 **Audience:** agent. Human docs: `README.md`. Reference provenance: `reference/README.md`. The
 cycloidal drive (spec, port notes, attachment): `docs/cycloidal_drive.md`; the forearm roll drive: `docs/forearm_roll.md`.
-**Last updated:** 2026-09-23 (cadgen 0.6.6; the forearm roll's elbow block is the elbow coupler now, `j3_coupler#1` retired: `docs/forearm_roll.md`). Every commit that changes behaviour, layout or tooling gets a dated entry in the
+**Last updated:** 2026-09-24 (cadgen 0.6.6; the OCP CAD Viewer / `ocp-vscode` and `./cadtool show` removed). Every commit that changes behaviour, layout or tooling gets a dated entry in the
 root `CHANGELOG.md` and bumps the `Last updated` line of the docs it touches.
 
 `cad/` is a **separate uv project** (Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.6.x) inside the
@@ -96,8 +96,9 @@ the CAD keeps is the derived, committed copy (`reference/`, `vendor/`) — the r
   drive and the robot links link their children's trees, the arm inlines tinted copies (see Assembly).
   Pull semantics: a rebuilt part does not update the arm until the arm is rebuilt (`why` shows the
   pinned child).
-- `./cadtool show <model.py>` — OCP CAD Viewer (VS Code) preview of the model BODY: no build, nothing
-  written. `./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals())"`.
+- To look at a model, build it and open its STEP in `./cadtool viewer` (below). The OCP CAD Viewer VS Code
+  extension (`ocp-vscode`, `./cadtool show`) was removed 2026-09-24 — cadgen's viewer and snapshots cover
+  everything. Numbers without a build: `./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals())"`.
 - **Printed vs. bought** — one label per part (`COTS = True` = bought, else printed; `parts.bought(name)`), everything
   else generated from it: `./cadtool python tools/bom.py [--module cycloidal_drive|gripper] [--md|--json]` (print
   list + buy list from the assembly tables, kernel-free; its `EXTRAS` = purchased items with no geometry),
@@ -377,7 +378,7 @@ Changing a shared dimension — touchpoints in order:
   `_occurrences.BOUGHT_TINT` grey (`_tint_parts`: grey always means bought, so no group / module tint may reuse it;
   `test_grey_means_bought`), and raises unless the groups cover the keys
   exactly once. `test_assembly.py` locks the group labels + the LINKS mirror. The tints are
-  per-leaf (a compound-level color doesn't cascade in ocp_tessellate) — hence the inline copies above.
+  per-leaf (a compound-level color did not cascade in the OCP CAD Viewer) — hence the inline copies above.
 - `assemblies/cycloidal_drive.py` is **code-driven**: rows are `(part, role, placement)` (data) from
   `lib/cycloidal stack_positions` (`located_children`) — the placement a position `(x, y, z)` when the part's
   frame is the module's shifted, or a frame `((x, y, z), (rx, ry, rz))` when it needs a rotation
@@ -525,7 +526,7 @@ unrelated, broken motor-control suite).
   `installPath` for each, and restart Claude Code; the marketplace clone's LFS pointers (`assets/**`, `models/**`)
   are excluded by its own `.lfsconfig` and need no `git lfs pull`.
 - A model run accepts only `--force --mesh-tolerance --mesh-angular-tolerance --verbose --json`;
-  anything else (`--totals`, a preview flag) is an argparse error — use `./cadtool show` / `python -c`.
+  anything else (`--totals`, a preview flag) is an argparse error — use `./cadtool python -c`.
 - Cycloidal discs: chamfer the lobe edges BEFORE cutting holes (the end face must carry only the
   spline edge); the profile is a periodic *interpolating* spline (`Edge.make_spline(periodic=True)`,
   never `make_spline_approx`); OCCT's analytic volume is ~0.3 % off on that face (both ours and the

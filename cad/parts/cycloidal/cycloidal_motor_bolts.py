@@ -36,4 +36,4 @@ def cycloidal_motor_bolts():
 
 
 if __name__ == "__main__":
-    cycloidal_motor_bolts()   # build: writes the sibling cycloidal_motor_bolts.step (preview: ./cadtool show parts/cycloidal/cycloidal_motor_bolts.py)
+    cycloidal_motor_bolts()   # build: writes the sibling cycloidal_motor_bolts.step

@@ -30,4 +30,4 @@ def gripper_cover():
 
 
 if __name__ == "__main__":
-    gripper_cover()   # build: writes the sibling gripper_cover.step (preview: ./cadtool show parts/gripper/gripper_cover.py)
+    gripper_cover()   # build: writes the sibling gripper_cover.step

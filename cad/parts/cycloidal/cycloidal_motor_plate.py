@@ -67,4 +67,4 @@ def cycloidal_motor_plate():
 
 
 if __name__ == "__main__":
-    cycloidal_motor_plate()   # build: writes the sibling cycloidal_motor_plate.step (preview: ./cadtool show parts/cycloidal/cycloidal_motor_plate.py)
+    cycloidal_motor_plate()   # build: writes the sibling cycloidal_motor_plate.step

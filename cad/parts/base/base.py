@@ -30,4 +30,4 @@ def base():
 
 
 if __name__ == "__main__":
-    base()   # build: writes the sibling base.step (preview: ./cadtool show parts/base/base.py)
+    base()   # build: writes the sibling base.step

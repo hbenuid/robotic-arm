@@ -32,4 +32,4 @@ def wrist_link():
 
 
 if __name__ == "__main__":
-    wrist_link()   # build: writes the sibling wrist_link.step (preview: ./cadtool show parts/wrist/wrist_link.py)
+    wrist_link()   # build: writes the sibling wrist_link.step

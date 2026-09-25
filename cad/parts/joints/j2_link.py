@@ -49,4 +49,4 @@ def j2_link():
 
 
 if __name__ == "__main__":
-    j2_link()   # build: writes the sibling j2_link.step (preview: ./cadtool show parts/joints/j2_link.py)
+    j2_link()   # build: writes the sibling j2_link.step

@@ -30,4 +30,4 @@ def j1_link():
 
 
 if __name__ == "__main__":
-    j1_link()   # build: writes the sibling j1_link.step (preview: ./cadtool show parts/base/j1_link.py)
+    j1_link()   # build: writes the sibling j1_link.step

@@ -32,4 +32,4 @@ def gripper_finger_right():
 
 
 if __name__ == "__main__":
-    gripper_finger_right()   # build: writes the sibling gripper_finger_right.step (preview: ./cadtool show parts/gripper/gripper_finger_right.py)
+    gripper_finger_right()   # build: writes the sibling gripper_finger_right.step
