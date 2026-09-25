@@ -36,7 +36,7 @@ PURCHASE_SPEC = "MKS SERVO42D closed-loop stepper driver board + cover, with 4x 
 PURCHASE_QTY = 1    # pieces per occurrence: one board kit behind one motor
 PURCHASE_NOTE = ("ordered as MKS SERVO42D closed-loop kits (motor + board): 3 kits with a 40 mm motor (parts/joints/nema17_40mm, "
                  "elbow + wrist pitch) + 2 kits with the 48 mm motor (parts/cycloidal/nema17_48mm: base_yaw and the drive); "
-                 "CAN ids src/config.py J1..J3")
+                 "CAN ids software/control/src/config.py J1..J3")
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 # Rigid transform vendor-file frame -> the part frame (identity: split_mks_motor.py writes the vendor file
 # already re-framed; set it after swapping in a differently oriented catalog model).

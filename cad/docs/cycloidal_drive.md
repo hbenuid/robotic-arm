@@ -334,7 +334,7 @@ cd cad
   `upper_arm_link` with `j1_link` + `j1_cap`. `EXPECTED["bodies"]` locks the per-body totals and
   `TestPoseInTheArm` checks the joint origin sits on the drive axis. The arm STEP's viewer tree keeps
   the module whole under `shoulder_link` (one linked child); the per-link meshes split it. Which MKS
-  motor (`src/config.py` J1..J3) drives which joint is unconfirmed; `src/config.py` still carries
+  motor (`software/control/src/config.py` J1..J3) drives which joint is unconfirmed; `software/control/src/config.py` still carries
   `gear_ratio` 1.0 while `CYCLOIDAL_RATIO` = 20.
 
 ## 13. Change policy (carried over)

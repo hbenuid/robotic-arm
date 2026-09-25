@@ -6,7 +6,7 @@ Robot arm control software for a 3-motor MKS SERVO42D/57D arm over CAN bus (the 
 
 ## Hardware
 
-- 3× MKS SERVO42D/57D stepper drivers (`src/config.py` J1..J3 = CAN ids 1..3; which arm joint each one
+- 3× MKS SERVO42D/57D stepper drivers (`software/control/src/config.py` J1..J3 = CAN ids 1..3; which arm joint each one
   drives is still to be confirmed against the CAD's robot description below - which now places five kits:
   base yaw, elbow pitch, wrist pitch, the shoulder's cycloidal drive and the forearm roll)
 - CANable / slcan-compatible USB-to-CAN adapter
@@ -47,7 +47,7 @@ that is also the elbow's output flange, a hollow printed shaft crossing the elbo
 bearings, the forearm bolted to its end spigot 48 mm from the elbow axis), `wrist_roll` the
 NEMA17 pancake and the jaws the MG996R gripper. The CAD places the three belt-joint motors (MKS SERVO42D kits on the pads
 the links carry, `cad/lib/mounts.py`: a 48 mm NEMA 17 under the base, 40 mm ones at the elbow and wrist), the drive's own
-48 mm kit and the roll drive's 40 mm kit; which CAN id (`src/config.py` J1..J3 - three of the five) drives which joint is
+48 mm kit and the roll drive's 40 mm kit; which CAN id (`software/control/src/config.py` J1..J3 - three of the five) drives which joint is
 not confirmed yet.
 
 The 20:1 cycloidal shoulder drive (formerly the separate `cycloidal_drive` CadQuery repo) is fully
@@ -61,7 +61,7 @@ for the conventions.
 ### Windows
 
 1. Clone the repo.
-2. Double-click `launch.bat`. That's it.
+2. Double-click `software\control\launch.bat`. That's it.
 
 The first run installs uv and project dependencies (~30s); every subsequent
 run goes straight to the motor controller menu.
@@ -77,16 +77,16 @@ Then:
 
 ```
 git clone <repo-url>
-cd robotic-arm
+cd robotic-arm/software/control
 uv sync
 ```
 
-`uv sync` creates `.venv/`, installs `python-can` + `pyserial`, and registers
+`uv sync` creates `software/control/.venv/`, installs `python-can` + `pyserial`, and registers
 the `launcher` console script in `.venv/bin/`.
 
 ## Configure your motors
 
-Edit [src/config.py](src/config.py):
+Edit [software/control/src/config.py](software/control/src/config.py):
 
 - `JOINTS` — three `(name, can_id, gear_ratio)` tuples. Defaults are placeholders
   (CAN IDs `0x01`/`0x02`/`0x03`, gear ratio `1.0`). Set CAN IDs to match what
@@ -103,11 +103,14 @@ itself (Menu → CAN → ID).
 
 ## Run
 
+From `software/control/` (the CLI finds its `src/` modules relative to the current directory):
+
 ```
+cd software/control
 uv run launcher
 ```
 
-(Windows: just double-click `launch.bat` — same thing, no terminal needed.)
+(Windows: just double-click `software\control\launch.bat` — same thing, no terminal needed.)
 
 `launcher` auto-detects the CANable via `pyserial` — works on macOS
 (`/dev/cu.usbmodem*`), Linux (`/dev/ttyACM*`), and Windows (`COM*`). It opens
@@ -128,23 +131,29 @@ Status → [4] Read motor status (0xF1)` — returns `Stopped` for a healthy mot
 
 ## Project structure
 
+The repo splits into the CAD and everything else:
+
 ```
-launcher.py              auto-detect CAN port + run motor_control
-motor_control.py         interactive CLI (menus, command dispatch)
-src/
-  config.py              joint table, CAN bus settings, motion defaults
-  can_interface.py       thin python-can wrapper
-  motor_driver.py        MKS CAN protocol (CRC, encode/decode, commands)
-cad/                     parametric build123d CAD, separate uv project (see cad/README.md); STEP/STL via Git LFS
-firmware/stm32/          archived STM32 (Nucleo-F446RE) PlatformIO test firmware for the SERVO42D (separate from Python)
-tests/                   pytest suite (currently broken — see Known issues)
-pyproject.toml, uv.lock  uv-managed project metadata
+cad/                         parametric build123d CAD, separate uv project (see cad/README.md); STEP/STL via Git LFS
+software/
+  control/                   the motor-control CLI, its own uv project
+    launcher.py              auto-detect CAN port + run motor_control
+    motor_control.py         interactive CLI (menus, command dispatch)
+    launch.bat               Windows double-click launcher
+    src/
+      config.py              joint table, CAN bus settings, motion defaults
+      can_interface.py       thin python-can wrapper
+      motor_driver.py        MKS CAN protocol (CRC, encode/decode, commands)
+    tests/                   pytest suite (currently broken — see Known issues)
+    pyproject.toml, uv.lock  uv-managed project metadata
+  firmware/
+    stm32/                   archived STM32 (Nucleo-F446RE) PlatformIO test firmware for the SERVO42D
 ```
 
 ## Development
 
-- Use uv exclusively: `uv add <pkg>` to add deps, never `pip install`. Commit
-  both `pyproject.toml` and `uv.lock`.
+- Work in `software/control/`. Use uv exclusively: `uv add <pkg>` to add deps,
+  never `pip install`. Commit both `pyproject.toml` and `uv.lock`.
 - `motor_control.py` does `sys.path.insert(0, "src")` so the helpers under
   `src/` import without a package prefix (`from can_interface import …`). This
   is intentional — don't convert `src/` into a real Python package without
@@ -152,8 +161,8 @@ pyproject.toml, uv.lock  uv-managed project metadata
 - Adding a new entry-point script: add a `[project.scripts]` line in
   `pyproject.toml`, then `uv sync`.
 - Lint with `uv run ruff check` (`--fix` for the safe fixes; ruff is a dev
-  dependency, config in `pyproject.toml` `[tool.ruff]`, `cad/` excluded - it has
-  its own, `./cadtool lint`). Lint only; `ruff format` is not used. It also runs
+  dependency, config in `pyproject.toml` `[tool.ruff]`; `cad/` has its own,
+  `./cadtool lint`). Lint only; `ruff format` is not used. It also runs
   by itself: a git pre-commit hook (`cd cad && ./cadtool setup` installs it on
   a machine) blocks commits with findings, a Claude Code hook checks every file
   Claude edits, and VS Code (Ruff extension) fixes and sorts imports on save.
@@ -166,5 +175,5 @@ pyproject.toml, uv.lock  uv-managed project metadata
 
 ## Known issues
 
-- [tests/](tests/) still imports `from arctos.*` and won't run until updated to
+- [software/control/tests/](software/control/tests/) still imports `from arctos.*` and won't run until updated to
   match the current `src/` layout. The CLI works without the test suite.

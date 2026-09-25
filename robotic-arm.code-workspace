@@ -5,6 +5,10 @@
       "path": "."
     },
     {
+      "name": "Motor control (Python)",
+      "path": "software/control"
+    },
+    {
       "name": "CAD (build123d)",
       "path": "cad"
     }

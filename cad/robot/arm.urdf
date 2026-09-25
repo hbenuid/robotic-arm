@@ -7,7 +7,7 @@
   pads the links carry (cad/lib/mounts.py: the 48 mm nema17_48mm#1 under the base, nema17_40mm#2..3 on
   the links, + mks_servo42d#1..3, in base_link / upper_arm_link / forearm_link), the shoulder_pitch one
   the cycloidal drive's own 48 mm motor + board, the forearm_roll one the roll drive's own 40 mm motor
-  + board (in elbow_link); which CAN id (src/config.py J1..J3 - three of the five) drives which joint is
+  + board (in elbow_link); which CAN id (software/control/src/config.py J1..J3 - three of the five) drives which joint is
   unconfirmed.
 
   SOURCE OF TRUTH: this file. Every number is derived from the CAD by cad/tools/robot/derive.py
@@ -43,12 +43,12 @@
   the GT2 90T pulleys + J3 couplers are bolted to the driven links (forearm_link at elbow_pitch,
   wrist_pitch_link at wrist_pitch); the MG996R crank linkage is merged into wrist_roll_link;
   jaw_b mirrors jaw_a (mimic, multiplier -1); positive jaw_a = opening.
-  UNCONFIRMED: which CAN id (src/config.py J1..J3) drives which joint - the motors are placed
+  UNCONFIRMED: which CAN id (software/control/src/config.py J1..J3) drives which joint - the motors are placed
   (cad/lib/mounts.py) but not mapped; the shoulder_pitch motor is the drive's own NEMA 17 at 20:1
-  (cad/lib/params.py CYCLOIDAL_RATIO; src/config.py still carries gear_ratio 1.0 everywhere). The
+  (cad/lib/params.py CYCLOIDAL_RATIO; software/control/src/config.py still carries gear_ratio 1.0 everywhere). The
   belt motors' masses (280 g) and boards (35 g) are estimates, the wrist_pitch motor's slide position
   (J2_MOTOR_SLIDE_X - what a stock 264-2GT belt sets) too; FOREARM_ROLL_LIMIT_DEG is the hard stop's
-  estimate. wrist_roll and the jaws are not driven by src/config.py, and forearm_roll needs a 4th CAN id.
+  estimate. wrist_roll and the jaws are not driven by software/control/src/config.py, and forearm_roll needs a 4th CAN id.
 -->
 <robot name="arm">
   <link name="base_link">

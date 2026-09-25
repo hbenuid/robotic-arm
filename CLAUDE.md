@@ -2,6 +2,10 @@
 
 3-motor MKS SERVO42D/57D arm controlled over CAN bus via a CANable / slcan-compatible USB adapter. Runs on macOS, Linux, and Windows.
 
+The repo splits CAD from everything else: `cad/` (the build123d CAD, its own uv project) and `software/` —
+`software/control/` (the motor-control CLI, its own uv project) and `software/firmware/` (microcontroller firmware).
+The root holds only repo-wide files (docs, `.github/`, `.githooks/`, `.claude/`, git config, the VS Code workspace).
+
 **Last updated:** 2026-09-24 — see `CHANGELOG.md` for dated changes.
 
 ## Git workflow
@@ -30,12 +34,13 @@ with `ARM_REFERENCE_SRC`). A new export the user hands over is fed to those tool
 
 ## Toolchain
 - Always use `uv` — never `pip install` directly. `uv add <pkg>` for new deps;
-  commit `pyproject.toml` and `uv.lock`.
-- Run the CLI with `uv run launcher` (entry point defined in `[project.scripts]`).
+  commit `pyproject.toml` and `uv.lock`. The motor-control project is `software/control/`: run its uv
+  commands there (the repo root is no uv project).
+- Run the CLI with `uv run launcher` from `software/control/` (entry point defined in `[project.scripts]`).
   After adding or renaming entry points, run `uv sync` to refresh `.venv/bin/`.
 - Lint with ruff (a locked dev dependency in both uv projects, config in each `pyproject.toml` `[tool.ruff]`:
   ruff's default set + `E F I UP B SIM` in full, the ignores commented):
-  `uv run ruff check` here (it skips `cad/`), `./cadtool lint` in `cad/`. Both are clean; keep them clean.
+  `uv run ruff check` in `software/control/`, `./cadtool lint` in `cad/`. Both are clean; keep them clean.
   Lint only — `ruff format` is not adopted (it would re-flow `cad/`'s hand-aligned tables).
   It runs by itself at three points: a Claude Code PostToolUse hook (`.claude/hooks/ruff-check.sh`) reports
   findings on every `.py` file Claude edits — fix them in the same turn. It is registered twice, in
@@ -56,28 +61,30 @@ them); run it on the branch before fast-forwarding `main` after: a cadgen / buil
 or vendor export or vendor STEP, a change to `lib/reference.py` or to how parts read their inputs, or any large
 change. Suggest it then; never trigger it unasked. It checks and never writes (no hash gate, no snapshots, no
 commits). The runner is a third machine (x86_64 Linux): the "no exact float equality" rule of `cad/CLAUDE.md` "Two
-machines" holds for it too. The root `tests/` stay out until they are fixed.
+machines" holds for it too. The motor-control `software/control/tests/` stay out until they are fixed.
 
 ## Code layout
+Paths in the first four bullets are relative to `software/control/`.
 - `launcher.py` auto-detects the CANable via `pyserial.tools.list_ports` and calls
   `motor_control.main()`.
 - `motor_control.py` is the interactive CLI. Near the top it does
   `sys.path.insert(0, "src")` so `src/can_interface.py`, `src/motor_driver.py`,
   `src/config.py` import without an `arctos.` prefix. **Don't** convert `src/`
   into a real Python package without also rewriting those imports — the sys.path
-  hack is load-bearing.
+  hack is load-bearing. `"src"` is relative to the current directory, so the CLI runs from `software/control/`
+  (`launch.bat` changes into its own folder first).
 - Joint table and CAN settings live in `src/config.py` (`JOINTS`, `CAN_CHANNEL`, etc).
-- `firmware/` holds all firmware, one subfolder per board. `firmware/stm32/` is the archived Nucleo-F446RE
+- `software/firmware/` holds all firmware, one subfolder per board. `software/firmware/stm32/` is the archived Nucleo-F446RE
   PlatformIO projects (a blink test and three SERVO42D CAN test programs) from before the Python CLI; each is a
   self-contained PlatformIO project, part of neither uv project.
 
 ## Known issues
-- `tests/` still imports `from arctos.*` and is broken. CLI runs fine without it.
+- `software/control/tests/` still imports `from arctos.*` and is broken. CLI runs fine without it.
 
 ## CAD (`cad/`)
 - `cad/` is a **separate uv project** (Python 3.12, build123d) — the motor-control
-  project above never depends on it, and `launch.bat` never installs it. Never run
-  CAD code with the root venv.
+  project (`software/control/`) never depends on it, and `launch.bat` never installs it. Never run
+  CAD code with the motor-control venv.
 - Work from `cad/` via `./cadtool …` (`setup|doctor|gen|step|why|inspect|snapshot|export|validate|viewer|parts|skill|cadgen|store|daemon|pytest|lint|python|clean`; `step` = `gen`);
   it runs the `cadgen` 0.6 toolchain (the `cad@text-to-cad` plugin v0.6.x's PyPI runtime, locked in
   `cad/pyproject.toml`) inside the CAD venv with `PYTHONPATH=cad/`. A model is a plain script with one
@@ -100,7 +107,7 @@ machines" holds for it too. The root `tests/` stay out until they are fixed.
   shoulder_pitch` (the cycloidal drive: stator in `shoulder_link`, rotor in `upper_arm_link`),
   `elbow_pitch, forearm_roll` (the belt-driven roll drive, `cad/assemblies/forearm_roll_drive.py`: stator in
   `elbow_link` - its block is also the elbow's output flange, the SolidWorks `j3_coupler#1` is retired -, rotor - the
-  hollow roll shaft - in `forearm_link`; `cad/docs/forearm_roll.md`), `wrist_pitch, wrist_roll, jaw_a, jaw_b`. Which MKS motor (`src/config.py` J1..J3, all `gear_ratio` 1.0) drives which joint is
+  hollow roll shaft - in `forearm_link`; `cad/docs/forearm_roll.md`), `wrist_pitch, wrist_roll, jaw_a, jaw_b`. Which MKS motor (`software/control/src/config.py` J1..J3, all `gear_ratio` 1.0) drives which joint is
   unconfirmed — `CYCLOIDAL_RATIO` = 20 applies to `shoulder_pitch`, `FOREARM_ROLL_RATIO` = 4.5 to `forearm_roll`, and the
   arm now carries five kits for three configured CAN ids. The motors themselves are placed: MKS SERVO42D kits on `base`
   (48 mm, `nema17_48mm#1`) / `j1_link` / `j2_link` (40 mm, `nema17_40mm#2..3`) with `mks_servo42d#1..3`

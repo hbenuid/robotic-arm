@@ -8,7 +8,7 @@ cycloidal drive (spec, port notes, attachment): `docs/cycloidal_drive.md`; the f
 root `CHANGELOG.md` and bumps the `Last updated` line of the docs it touches.
 
 `cad/` is a **separate uv project** (Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.6.x) inside the
-robotic-arm repo; the root motor-control project never depends on it.
+robotic-arm repo; the motor-control project (`software/control/`) never depends on it.
 
 ## Start here — task → where to look
 | you want to … | read | then follow |
@@ -80,7 +80,7 @@ the CAD keeps is the derived, committed copy (`reference/`, `vendor/`) — the r
 
 ## Running things (always via `./cadtool` or `uv run`, from `cad/`)
 - **Never call bare `python`** — the system Python is 3.14 without build123d. Python is pinned
-  to **3.12** (`.python-version`; bump only with the full suite green). Never run CAD code with the root repo's venv.
+  to **3.12** (`.python-version`; bump only with the full suite green). Never run CAD code with the motor-control venv.
 - Toolchain: the `cadgen` PyPI package (`cadgen[snapshot]==<ver>`, a locked dependency) is the whole
   runtime — decorators, the `cadgen` CLI, viewer, snapshots. The `cad@text-to-cad` plugin **v0.6.x**
   (`~/.claude/plugins/cache/text-to-cad/cad/<ver>/skills/`) ships only the `/cad:*` skill docs (+ the
@@ -448,8 +448,8 @@ Changing a shared dimension — touchpoints in order:
   in `upper_arm_link`); the forearm roll drive IS the `forearm_roll` joint (stator with the elbow pulley in
   `elbow_link` - its block is the elbow coupler, `j3_coupler#1` retired -, rotor - the shaft - with `j2_link` in `forearm_link`; `docs/forearm_roll.md`); the base_yaw / elbow_pitch /
   wrist_pitch motors are the mounted `nema17_48mm#1`, `nema17_40mm#2..3` + `mks_servo42d#1..3` (`lib/mounts.py`, see
-  Assembly), the two drives' motors are module rows; which CAN id (`src/config.py` J1..J3 - three ids for five boards)
-  drives which joint is unconfirmed; wrist_roll and the jaws are not driven by `src/config.py`.
+  Assembly), the two drives' motors are module rows; which CAN id (`software/control/src/config.py` J1..J3 - three ids for five boards)
+  drives which joint is unconfirmed; wrist_roll and the jaws are not driven by `software/control/src/config.py`.
 
 ## Tests (`./cadtool pytest`)
 `tests/conftest.py` sets `CADGEN_DAEMON=0` and blocks top-level model builds (tests call bodies:
@@ -478,7 +478,7 @@ converted — shared by `test_assembly.py` and `test_robot.py`),
 `stack` fixture is `tests/cycloidal/conftest.py`), `tests/forearm/` (the forearm: the LEGACY builds vs the SolidWorks
 parts + feature probes, the roll end, the roll drive - axis through the wrist centre, stack, press fits, clean pairs,
 clearances in the arm with the elbow folded; `helpers.in_host()` places any occurrence in `j2_link`'s frame). Geometry tests are
-`slow`. Run pytest only through `./cadtool pytest` (rootdir `cad/`; the repo-root `tests/` is the
+`slow`. Run pytest only through `./cadtool pytest` (rootdir `cad/`; `software/control/tests/` is the
 unrelated, broken motor-control suite).
 
 ## Gotchas (all verified)

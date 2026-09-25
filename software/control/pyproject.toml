@@ -23,9 +23,8 @@ dev = [
 ]
 
 [tool.ruff]
-# Lint only (`uv run ruff check`); `ruff format` is not adopted. cad/ is its own uv project with its own
-# [tool.ruff] (`./cadtool lint` there).
-extend-exclude = ["cad"]
+# Lint only (`uv run ruff check`); `ruff format` is not adopted. The repo's cad/ is its own uv project with its
+# own [tool.ruff] (`./cadtool lint` there).
 
 [tool.ruff.lint]
 # ruff's default rule set (fixed by the locked ruff version; a ruff bump may add rules) plus the commonly used

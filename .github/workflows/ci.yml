@@ -40,7 +40,8 @@ jobs:
         with:
           cache-python: true
 
-      - name: Root project - sync, lint, the CLI imports
+      - name: Motor control - sync, lint, the CLI imports
+        working-directory: software/control
         run: |
           uv sync --frozen
           uv run --frozen ruff check

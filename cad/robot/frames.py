@@ -131,7 +131,7 @@ JOINTS: list[Joint] = [
           -PARAMS.BASE_YAW_LIMIT_DEG * DEG, PARAMS.BASE_YAW_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
           notes="j1_coupler (carrying the cycloidal drive's stator) turns on the base; driven by "
                 "nema17_48mm#1 (the 48 mm motor) + mks_servo42d#1 under the base plate (lib/mounts.py) "
-                "[which CAN id (src/config.py J1..J3) it is: unconfirmed]"),
+                "[which CAN id (software/control/src/config.py J1..J3) it is: unconfirmed]"),
     Joint("shoulder_pitch", "revolute", "shoulder_link", "upper_arm_link", SHOULDER_ORIGIN, N, SHOULDER_TO_ELBOW_INPLANE,
           -PARAMS.SHOULDER_PITCH_LIMIT_DEG * DEG, PARAMS.SHOULDER_PITCH_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
           notes="the 20:1 cycloidal drive (CYCLOIDAL_RATIO, its own NEMA 17 x 48 + MKS board): stator in the j1_coupler yoke, "
@@ -145,14 +145,14 @@ JOINTS: list[Joint] = [
           -PARAMS.FOREARM_ROLL_LIMIT_DEG * DEG, PARAMS.FOREARM_ROLL_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
           notes="the forearm roll drive (assemblies/forearm_roll_drive.py, FOREARM_ROLL_RATIO 4.5): the hollow roll shaft's "
                 "flange bolts to j2_link's wall; belt-driven by the drive's own nema17_40mm + mks_servo42d on the elbow "
-                "block's pad [a 4th CAN id - src/config.py has three: unconfirmed]; hard stop +/- FOREARM_ROLL_LIMIT_DEG"),
+                "block's pad [a 4th CAN id - software/control/src/config.py has three: unconfirmed]; hard stop +/- FOREARM_ROLL_LIMIT_DEG"),
     Joint("wrist_pitch", "revolute", "forearm_link", "wrist_pitch_link", WRIST_PITCH_ORIGIN, N, F,
           -PARAMS.WRIST_PITCH_LIMIT_DEG * DEG, PARAMS.WRIST_PITCH_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
           notes="GT2 90T pulley + J3-coupler at the wrist; belt-driven by nema17_40mm#3 + mks_servo42d#3 on "
                 "j2_link's web (lib/mounts.py) [which CAN id: unconfirmed]"),
     Joint("wrist_roll", "revolute", "wrist_pitch_link", "wrist_roll_link", WRIST_ROLL_ORIGIN, F, PJ,
           -PARAMS.WRIST_ROLL_LIMIT_DEG * DEG, PARAMS.WRIST_ROLL_LIMIT_DEG * DEG, PARAMS.WRIST_EFFORT_NM, PARAMS.WRIST_VELOCITY_RAD_S,
-          notes="NEMA17 pancake + 20T pulley; NOT driven by src/config.py yet"),
+          notes="NEMA17 pancake + 20T pulley; NOT driven by software/control/src/config.py yet"),
     Joint("jaw_a", "prismatic", "wrist_roll_link", "jaw_a_link", JAW_A_ORIGIN, tuple(-v for v in PJ), F,
           -PARAMS.JAW_TRAVEL_MM * 1e-3, PARAMS.JAW_TRAVEL_MM * 1e-3, PARAMS.JAW_EFFORT_N, PARAMS.JAW_VELOCITY_M_S,
           notes="positive = opening (jaw A moves away from jaw B); MG996R crank"),

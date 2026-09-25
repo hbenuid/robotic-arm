@@ -47,15 +47,15 @@ are quoted from the code they live in — the code wins if they drift.
 ## Not confirmed
 | item | where |
 |---|---|
-| Which CAN id (`src/config.py` J1..J3) drives which joint; `src/config.py` gear ratios still 1.0 while `CYCLOIDAL_RATIO` = 20 and `GT2_RATIO` = 4.5 | root `README.md`, `robot/arm.urdf` ledger, `robot/frames.py` joint notes |
+| Which CAN id (`software/control/src/config.py` J1..J3) drives which joint; `software/control/src/config.py` gear ratios still 1.0 while `CYCLOIDAL_RATIO` = 20 and `GT2_RATIO` = 4.5 | root `README.md`, `robot/arm.urdf` ledger, `robot/frames.py` joint notes |
 | The wrist-roll pancake motor's exact model | `parts/wrist/nema17_pancake.py PURCHASE_NOTE` |
 | Link-membership assumptions (90T pulleys + J3 couplers with the driven links, the gripper linkage merged into `wrist_roll_link`) | `robot/frames.py LINKS` comments, the URDF ledger |
-| A **4th CAN id** for the forearm roll: `src/config.py` J1..J3 name three MKS boards, the arm now carries five (base_yaw, shoulder_pitch, elbow_pitch, forearm_roll, wrist_pitch) - the control side is out of the CAD's scope | `src/config.py`, root `README.md` |
+| A **4th CAN id** for the forearm roll: `software/control/src/config.py` J1..J3 name three MKS boards, the arm now carries five (base_yaw, shoulder_pitch, elbow_pitch, forearm_roll, wrist_pitch) - the control side is out of the CAD's scope | `software/control/src/config.py`, root `README.md` |
 | Whether the elbow 90T pulley is the driven side (it carries the roll drive's stator - the block that replaced `j3_coupler#1` - in `elbow_link`) | `robot/frames.py LINKS` [ASSUMPTION] |
 
 ## Known-broken / pending
 | item | where |
 |---|---|
-| The repo-root `tests/` (motor-control) imports `arctos.*` and does not run | root `CLAUDE.md` "Known issues" |
+| The motor-control `software/control/tests/` imports `arctos.*` and does not run | root `CLAUDE.md` "Known issues" |
 | 17 custom parts are still SolidWorks wrappers (`CONVERTED = False`; the forearm's `j2_link` / `j2_cap_1` / `j2_cap_2` are parametric since 2026-09-22, `lib/forearm/`); the fit problems above are fixed at conversion | `parts/<group>/*.py`, `cad/CLAUDE.md` "Part states" |
 | The drive's motor envelope cuts the D-flat at `shaft_dcut_flat / 2` (flat-to-round 4.75) — ruled correct 2026-09-21 (it is what `reference/cycloidal/nema17_48mm.step` defines and the eccentric shaft's D-bore matches); noted here only because the parameter's name reads like 4.5 | `lib/cycloidal/motor.py flat_offset()` |

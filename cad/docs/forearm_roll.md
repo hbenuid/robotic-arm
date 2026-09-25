@@ -110,4 +110,4 @@ puts it (`J2_MOTOR_SLIDE_X`) so its plug clears the wall (`plug_clearance`).
 `docs/open_issues.md`: the belts, the home sensor (on the cap's outer face, a magnet in the stop lug, to the MKS board's
 limit input), the cable route; the elbow's own bearings on the block's stub; the block's print orientation and its
 M4 inserts; the 6808's mass and inner-race edge, `t20_hub`, the belt lengths, the limit and the printed stop lugs'
-strength, the spigot's self-tapped M3s; a **4th CAN id** (`src/config.py` names three boards, the arm carries five).
+strength, the spigot's self-tapped M3s; a **4th CAN id** (`software/control/src/config.py` names three boards, the arm carries five).

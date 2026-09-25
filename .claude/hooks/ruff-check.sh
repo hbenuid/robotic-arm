@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Claude Code PostToolUse hook (Edit|Write, .claude/settings.json): `ruff check` on the .py file Claude just wrote,
-# with the ruff and the [tool.ruff] of its uv project (the root or cad/). Findings go back to Claude (exit 2);
-# nothing is fixed here - an import written before the code that uses it must survive. Tooling trouble (no uv, a
-# venv not synced yet, a ruff config error) never blocks an edit: that exits 0. macOS bash 3.2.
+# with the ruff and the [tool.ruff] of its uv project (software/control/ or cad/; any other .py is skipped). Findings
+# go back to Claude (exit 2); nothing is fixed here - an import written before the code that uses it must survive.
+# Tooling trouble (no uv, a venv not synced yet, a ruff config error) never blocks an edit: that exits 0. macOS bash 3.2.
 set -u
 
 input="$(cat)"
@@ -16,9 +16,9 @@ case "${file:-}" in *.py) ;; *) exit 0 ;; esac
 
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 case "$file" in
-  "$repo"/cad/*) project="$repo/cad" ;;
-  "$repo"/*)     project="$repo" ;;
-  *)             exit 0 ;;   # not in this repo
+  "$repo"/cad/*)              project="$repo/cad" ;;
+  "$repo"/software/control/*) project="$repo/software/control" ;;
+  *)                          exit 0 ;;   # in neither uv project, or not in this repo
 esac
 command -v uv >/dev/null 2>&1 || exit 0
 
