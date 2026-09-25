@@ -53,6 +53,24 @@ Verified on the arm64 Mac: the Claude hook pipe-tested (clean / finding / non-`.
 projects, both start directories, bash 3.2) and seen firing live in this session; the pre-commit gate run against
 staged probe files (nothing staged 0, clean 0, findings in both projects 1) under `/bin/bash` 3.2; `./cadtool setup`
 twice (idempotent, the LFS hooks untouched); fast lane 418 passed.
+### Changed — the common rule families on top of ruff's default (`4843b8c`)
+The default set of ruff 0.16 (~410 rules) left out parts of the classic core and of the commonly used set: `E7`
+(`== None`, `type(a) == type(b)`, one-line compound statements, lambda assignment), `F403` / `F405` (star imports),
+`B905` (`zip()` without `strict=`), `B007`, `SIM108` / `SIM105`, … Both projects now `extend-select` `E F I UP B SIM` in
+full (the set ruff's docs show). New findings, all in `cad/` (the root was already clean):
+- `B905` (55): every `zip()` takes `strict=True` - the pairs (3-vectors, bboxes, angle / point lists, table columns) must
+  match, and a mismatch now raises instead of silently truncating; `tools/step_facts.py diff` keeps `strict=False` (a
+  leaf-count mismatch is reported just above and the common leaves are still compared).
+- `B007` (7): unused loop variables prefixed `_`; `E731` (1): the `end_face` sort key in `tests/cycloidal/helpers.py`
+  is a `def`.
+- Ignored, reasons in the config: `E501` (no formatter; the hand-aligned tables run long), `E741` (`I` is the inertia
+  tensor), `SIM300` (its 13 "yoda" rewrites were all false: it takes any UPPER_CASE name for a constant and flipped
+  value-first asserts such as `bb.min.Z <= CFG.stack_up.z_disc1`).
+- Docs: root `CLAUDE.md` (Toolchain), `cad/CLAUDE.md` (Running things: the `strict=` convention).
+
+Verified on the arm64 Mac: all 61 generated STEPs rebuilt byte-identical to the `6a9a840` hashes; fast lane 418
+passed, full suite 698 passed + 9 skipped (no `strict=True` pair was mismatched); both projects lint clean, the commit
+passed the pre-commit gate.
 **On the Fedora PC after pulling:** `uv sync` at the root, `./cadtool setup` in `cad/` (ruff + the pre-commit hook),
 and install the Ruff VS Code extension.
 
