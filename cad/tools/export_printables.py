@@ -5,8 +5,8 @@
 One binary STL per part, in MILLIMETRES, in the part's own local frame: orienting it on the bed is the
 slicer's job (print notes - "print output-face-down" - live in each part's docstring). How many of each to
 print is the print list of tools/bom.py, repeated at the end. The body is built in-process
-(parts.build(name)): no STEP is written, no cadgen build starts. print/ is git-ignored (the root *.stl
-rule) - the files are regenerable; an STL here whose part is gone or is now bought is deleted. The
+(parts.build(name)): no STEP is written, no cadgen build starts. print/ is git-ignored (/cad/print/ in
+the root .gitignore) - the files are regenerable; an STL here whose part is gone or is now bought is deleted. The
 tolerances are finer than the URDF link meshes' (tools/robot/export_link_meshes.py): these get printed.
 """
 from __future__ import annotations

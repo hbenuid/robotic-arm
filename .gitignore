@@ -32,6 +32,8 @@ __pycache__/
 !/cad/robot/meshes/*.stl
 # Snapshot PNGs / packets - regenerable.
 /cad/snapshots/
+# The STLs to print (cad/tools/export_printables.py) - regenerable.
+/cad/print/
 
 # --- Claude Code ---
 # Share project-scoped config (.claude/settings.json); keep local overrides out.

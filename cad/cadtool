@@ -33,7 +33,7 @@ cadtool - cadgen 0.6 + this uv project (paths relative to cad/)
   ./cadtool lint [--fix] [path...]                  ruff check (lint only, no formatter; rules: pyproject.toml [tool.ruff])
   ./cadtool python -m assemblies.arm ...            any python in the venv (PYTHONPATH=cad/)
   ./cadtool clean [--all]                           delete __pycache__/, .pytest_cache/, .ruff_cache/ (and any stray __cadgen__/);
-                                                    --all also empties snapshots/ and deletes
+                                                    --all also empties snapshots/ and print/ and deletes
                                                     assemblies/*.step, robot/links/*.step
 Env: CAD_PLUGIN=<plugin dir> overrides detection; CADGEN_DAEMON=0 builds on transient workers (no warm daemon);
      CADGEN_CACHE_DIR relocates the store (default ~/.cache/cadgen; `./cadtool store gc` sweeps it).
@@ -199,6 +199,7 @@ case "$cmd" in
     find "$CAD_DIR" -name .venv -prune -o -type d \( -name __cadgen__ -o -name __pycache__ -o -name .pytest_cache -o -name .ruff_cache \) -prune -print -exec rm -rf {} +
     if [[ "${1:-}" == "--all" ]]; then
       [[ -d snapshots ]] && find snapshots -mindepth 1 -prune -exec rm -rf {} +
+      [[ -d print ]] && find print -mindepth 1 -prune -exec rm -rf {} +
       rm -f assemblies/*.step robot/links/*.step
     fi ;;
   help|-h|--help)
