@@ -1,0 +1,28 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-18 — `cad/` organization cleanup (branch `cad/organization-cleanup`)
+
+### Changed — distinct tool names, shared manifest code (`d0df451`, `2515d37`)
+- Renamed (history kept): `tools/robot/frames.py` → `tools/robot/derive.py` (two `frames.py` with
+  different jobs), `tools/reference/import_reference.py` → `import_solidworks.py`,
+  `tools/cycloidal/import_reference.py` → `import_cadquery.py` (two scripts with one name writing one
+  manifest). Docs, docstrings, test messages and the URDF / SDF header comments follow; the older
+  entries of this changelog keep the old names.
+- New `cad/lib/manifest.py` (`read()` / `write()` / `entry()`) replaces the manifest code both import
+  tools duplicated; `test_reference_match.py` and `test_parts_convention.py` read through it.
+  Re-running both tools leaves `reference/manifest.json` byte-identical.
+- `2515d37`: editing `lib/reference.py` made every wrapper / COTS part stale; all rebuilt
+  byte-identical except `parts/base/j1_link.step` and `parts/wrist/gripper_clamp_bracket.step`, which
+  came back with 12 numerical-zero terms (≤ 1e-17) written differently — same solids, faces, volume
+  and bbox; `--force` reproduces the new bytes (noted in `cad/CLAUDE.md`).
+
+Verified: `./cadtool pytest` 582 passed / 9 skipped (the COTS parts without a vendor file);
+`tools/robot/derive.py --check` OK for the URDF and SDF; `./cadtool validate` OK (`.urdf` / `.srdf`
+`--strict`, `.sdf --gz-check never`); `./cadtool gen robot/links/forearm_link.py` now writes its STEP;
+arm snapshot upright with its tints; `./cadtool doctor` clean.
+
+Left for later (not organization): three COTS envelopes hard-code numbers instead of using
+`lib/params.py` (`mg996r_servo` — whose 55.8 disagrees with `MG996R_TAB_L` 54.5 — `mg996r_horn`,
+`gt2_pulley_20t`); `parts/_templates/` has no `__init__.py`; `tests/` and `tests/cycloidal/` both hold a
+`test_assembly.py`; `robot/arm.sdf` fails `validate --strict` on 8 `collision_reuses_visual_mesh`
+warnings (the tests deliberately run it without `--strict`).
