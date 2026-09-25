@@ -1,0 +1,29 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-08-28 — the cycloidal drive: imported, ported to build123d, attached
+
+### Added — printed parts ported (`f670d20`)
+- `cad/lib/cycloidal/`: `DriveConfig` (ten frozen dataclass groups; dead fields dropped, the
+  builders' magic numbers promoted to tagged fields), `layout.py` (hole patterns, engagement depths,
+  `stack_positions` = the drive repo's `assembly.py` layout: ring pins z 5.5, output pins z 11 —
+  its `export.py` had them 1–2 mm off), `profiles.py` (numpy epitrochoid), `housing.py` (shared
+  reveal-window cutter, outer-silhouette chamfer by end-face height, hex prisms), `disc.py`
+  (periodic interpolating spline, lobe chamfer applied before the holes), `geom.py`.
+- `parts/cycloidal_disc_1`, `cycloidal_disc_2` (−9° profile phase — the discs are distinct
+  parts), `cycloidal_eccentric_shaft` (D-bore as bore ∩ half-space, no 0.25 mm sliver),
+  `cycloidal_motor_plate`, `cycloidal_ring_gear_body` (cones instead of 21 ruled lofts),
+  `cycloidal_output_hub` — the first `CONVERTED = True` parts of the repo.
+- References: `tools/export_cycloidal_cadquery.py` (runs in the old repo's venv) exports the
+  CadQuery builders as house-named STEPs; `tools/import_cycloidal_reference.py` copies them into
+  `reference/` with manifest kind `designed` / `cots` (`origin: cycloidal_drive@2f1f67d`);
+  `import_reference.py` leaves those entries alone. `lib/reference.py` gains `DESIGNED`,
+  `CYCLOIDAL_COTS`, `CYCLOIDAL_PARTS`, `DESIGNED_MODULES` and the file helpers.
+- `lib/params.py`: `CYCLOIDAL_*` interface constants (ratio 20, OD 140, stack depth 60, hub OD /
+  proud / output face z 65, arm-mount 4× M4 on Ø50 @ 45°) re-exported from the config, steel
+  density and the bearing / motor / fastener masses, with locks. `uv add numpy`.
+- Tests: the drive's 129 part tests ported one module per part (`tests/test_cycloidal_{disc,
+  eccentric_shaft,motor_plate,ring_gear_body,output_hub,housing}.py`, `cycloidal_helpers.py`) and
+  `test_cycloidal_port.py`: every designed part reproduces its CadQuery export — identical face
+  sets and tessellations (the analytic parts also to 1e-13 in volume). OCCT's analytic volume is
+  ~0.3 % off on the discs' 2000-knot spline face (both sides), so the discs keep the 0.5 % default
+  in the reference match and are compared by tessellation instead.
