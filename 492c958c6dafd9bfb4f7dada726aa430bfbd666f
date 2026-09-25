@@ -1,0 +1,21 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-21 — every motor carries the drive motor's pilot and shaft (`492c958`)
+
+The drive's original motor (`lib/cycloidal/params.py MotorParams`) is the correct interface — Ø22 × 2 pilot, Ø5 × 22
+shaft with the 18 mm D-cut, flat on +Y — and the other motors must have exactly the same, not the kit exports'
+(23 mm on the x40, 24 mm / 15 mm D-cut on the x48; the earlier trim left a 17 mm D-cut).
+- `lib/cycloidal/motor.py` exposes `pilot(m, bore=)` and `shaft(m)`; `nema17_motor()` is built from them (envelope
+  unchanged). `tools/reference/split_mks_motor.py` cuts every export's own boss and shaft off at the mounting face
+  and fuses those on — onto the x40 body (`vendor/nema17_40mm.step`, 2 solids) and the x48 body
+  (`vendor/nema17_48mm.step`, 7 solids) — and refuses to write unless the tip is at `shaft_length`, the D-cut
+  spans the last `shaft_dcut_length`, the flat faces +Y and the Ø22 pilot face sits at `pilot_height`.
+  Measured on all three models afterwards: identical (tip 22.000, pilot z 0..2, D-cut z 4..22, flat 2.25 from
+  the axis).
+- Regenerated: the three vendor files (+ their `reference/solidworks/` mirrors and manifest entries), the mounted
+  records (`mount_placements.py`), the drive's `EXPECTED` volume (679 467.5), the four links' inertials and meshes.
+  `./cadtool pytest`: 631 passed, 8 skipped.
+- **Ruled:** `reference/cycloidal/nema17_48mm.step` defines the shaft — D-flat 2.25 mm from the axis (the parameter's
+  "4.5" is `shaft_dcut_flat`, the flat sits at half of it), D-cut z 4..22, tip 22 — and the eccentric shaft fits over
+  it: its D-bore flat at 2.315 (0.065 clearance), bore z 9..23, 13 mm engagement, 1 mm above the floor, 0 mm³
+  interference in the assembly. Every motor now carries exactly that shaft; the kit exports' 2.0 flat is not used.
