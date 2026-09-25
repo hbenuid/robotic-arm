@@ -150,6 +150,9 @@ software/
     stm32/                   archived STM32 (Nucleo-F446RE) PlatformIO test firmware for the SERVO42D
 ```
 
+The software will be worked on later; for now the work is the CAD. Both stay in one repo on purpose: when the
+software is picked up it has to match the CAD's robot description (`cad/robot/arm.urdf`, joint table, gear ratios).
+
 ## Development
 
 - Work in `software/control/`. Use uv exclusively: `uv add <pkg>` to add deps,

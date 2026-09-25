@@ -6,6 +6,10 @@ The repo splits CAD from everything else: `cad/` (the build123d CAD, its own uv 
 `software/control/` (the motor-control CLI, its own uv project) and `software/firmware/` (microcontroller firmware).
 The root holds only repo-wide files (docs, `.github/`, `.githooks/`, `.claude/`, git config, the VS Code workspace).
 
+The software will be worked on later: the current work is the CAD, and `software/` stays as it is until then. It stays
+in this repo on purpose — when it is picked up it needs the CAD's robot description (`cad/robot/arm.urdf`, the joint
+table, the drive ratios) to agree with `software/control/src/config.py`, and one repo keeps both sides in one commit.
+
 **Last updated:** 2026-09-24 — see `CHANGELOG.md` for dated changes.
 
 ## Git workflow
