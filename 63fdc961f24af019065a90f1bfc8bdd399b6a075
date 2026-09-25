@@ -1,0 +1,45 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-12 — the cycloidal drive is the `shoulder_pitch` joint; descriptive link/joint names
+
+### Changed — robot description: `link1` split at the drive's output, chain renamed (`63fdc96`)
+- Confirmed structure: `j1_coupler` (the holder) yaws on the base and carries the drive's housing +
+  motor in its yoke; the drive's output hub is bolted to `j1_link`. The drive is therefore a joint,
+  not a rigid part of `link1`. `cad/robot/frames.py LINKS`: `shoulder_link` = `j1_coupler#1` +
+  `cycloidal_drive#1:stator` (15 leaves / 52 solids, 1.629 kg), `upper_arm_link` =
+  `cycloidal_drive#1:rotor` (output hub, output pins, 625 - 3 leaves / 6 solids) + `j1_link#1` +
+  `j1_cap#1` (0.786 kg); the new `shoulder_pitch` joint turns about `N` (the drive's -Z) through
+  `SHOULDER_ORIGIN` (= `j1_link#1`'s origin, on the drive axis; `SHOULDER_TO_ELBOW_INPLANE` 210.0 mm).
+- Module bodies: `cad/assemblies/cycloidal_drive.py ROTOR` / `BODIES`, `totals(body)`,
+  `EXPECTED["bodies"]`; `cad/assemblies/_occurrences.py split_key` / `module_bodies`, and
+  `world_rows("<module>#n:<body>")` expands one rigid body (unsuffixed keys unchanged).
+  `tools/robot/frames.py link_inertial` and the link-build test look keys up through `split_key`.
+- Descriptive names (ROS/UR style) replace the `j1..j3` / `link1..3` numbering - it was meant to mirror
+  the MKS motors J1..J3, impossible with four arm joints and an unconfirmed mapping, and collided
+  with the part names: joints `base_yaw`, `shoulder_pitch`, `elbow_pitch`, `wrist_pitch` (+ `wrist_roll`,
+  `jaw_a`, `jaw_b`, `tool0_joint`); links `base_link`, `shoulder_link`, `upper_arm_link`, `forearm_link`,
+  `wrist_pitch_link` (+ `wrist_roll_link`, the jaws, `tool0`). `cad/lib/params.py`: `BASE_YAW_LIMIT_DEG`,
+  new `SHOULDER_PITCH_LIMIT_DEG` (120 [ESTIMATE]), `ELBOW_PITCH_LIMIT_DEG`, `WRIST_PITCH_LIMIT_DEG`.
+  Part names are untouched.
+- `cad/robot/arm.urdf`: new link + joint, `shoulder_link` / `upper_arm_link` inertials and the
+  `elbow_pitch` origin re-derived (`--urdf-draft`), ledger rewritten; `arm.sdf` regenerated from
+  `--sdf-draft`; `arm.srdf` header, `home` state (+ `shoulder_pitch`), seven Adjacent pairs.
+  `cad/robot/links/{shoulder_link,upper_arm_link,forearm_link,wrist_pitch_link}.py`; meshes:
+  `shoulder_link.stl` + `upper_arm_link.stl` exported (53 + 8 solids = the former link1's 61),
+  `link2.stl` / `link3.stl` renamed to `forearm_link.stl` / `wrist_pitch_link.stl` (frames unchanged,
+  bytes kept), `link1.stl` removed.
+- `cad/assemblies/arm.py GROUPS` relabelled (`upper_arm_link` tint `#CCB974`); the drive module stays
+  whole under `shoulder_link` in the STEP/viewer tree (one linked child; the URDF meshes split it).
+- Tests: the partition test accepts `:<body>` keys and demands every body of a designed module exactly
+  once; `world_rows` body expansion + error cases; `BODIES` partition and per-body totals locks;
+  `TestPoseInTheArm` checks `shoulder_pitch`'s origin on the drive axis and its axis = -(drive Z); the
+  FK-at-zero test uses a 5 um per-chain tolerance (six-decimal URDF numbers composed over five
+  joints). `./cadtool pytest` 457 passed / 9 skipped; `--check`, `validate --strict` green.
+- Docs: `cad/README.md`, `cad/CLAUDE.md`, `cad/docs/cycloidal_drive.md` §12/§13. Snapshots (local,
+  git-ignored): `cad/snapshots/arm_shoulder_split.png` (the relabelled arm STEP) and
+  `arm_shoulder45_posed.png` - the links posed at `shoulder_pitch` = 45° from `robot/frames.py` and
+  written as a STEP, because `./cadtool snapshot robot/arm.urdf` (cadgen 0.5.1) renders the link
+  meshes piled at the origin - already so in `arm_urdf_cadgen051.png` from 2026-09-11, i.e. a
+  pre-existing renderer problem, not this change (the 2026-08-28 renders were fine).
+- Still unconfirmed / untouched: which MKS motor (`src/config.py` J1..J3, all `gear_ratio` 1.0) drives
+  which joint - `CYCLOIDAL_RATIO` = 20 applies to `shoulder_pitch`.
