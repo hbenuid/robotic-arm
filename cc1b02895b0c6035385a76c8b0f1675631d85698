@@ -1,0 +1,18 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-08-28 — text-to-cad v0.4.28, purchased-part workflow, robot description
+
+### Changed — CAD plugin updated to `cad@text-to-cad` v0.4.28 (`cc1b028`)
+- The installed plugin was 0.3.2 (June); upstream had moved to 0.4.28 with breaking changes.
+  The update needed `git-lfs` on `PATH` (installed to `~/.local/bin`, user scope).
+- `cadgen==0.4.28` (the plugin's Python runtime, PyPI) is now a locked dependency of `cad/`
+  (`requires-python >=3.11`), replacing the old `cadpy` PYTHONPATH trick; `lib/assembly.py`
+  imports `cadgen.assembly` first.
+- `cad/cadtool` remapped: `gen` (alias `step`) → `scripts/gen … --write`, new `export`
+  (STL/3MF/GLB), `artifact`, `validate` (URDF/SRDF/SDF), `parts` (step.parts downloader),
+  generic `skill <skill> <tool>`; `viewer` runs the new Python backend in the CAD venv
+  (`VIEWER_CAD_PYTHON`, port 3245, URL `http://127.0.0.1:3245/<abs cad>?file=…`, 12 h timeout).
+- Hidden viewer artifacts moved from `.<name>.step.glb` to `__cadgen__/` directories
+  (git-ignored); orphaned sidecars deleted. All 27 STEPs regenerated with the new CLI.
+- Docs rewritten for the new commands; the CAD datum comment corrected (the SolidWorks
+  capture frame is **Y up**).
