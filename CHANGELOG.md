@@ -4,6 +4,17 @@ Dated record of notable changes to this repository (newest first). Every commit 
 behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
 `cad-setup` working branch was fast-forward-only and has been retired).
 
+## 2026-09-24 — Firmware folder (branch `layout/firmware-folder`)
+
+### Changed — `old_stm32_tests/` → `firmware/stm32/` (`6b3012e`)
+- All firmware now sits under a top-level `firmware/`, one folder per board. The four Nucleo-F446RE PlatformIO
+  projects (`blink_test`, `servo42d_test`, `servo42d_interactive_test`, `servo42d_2motor_interactive_test`) moved
+  unchanged (all renames at 100 % similarity); each `platformio.ini` is self-contained, so no build path changes.
+- Docs: `README.md` "Project structure", root `CLAUDE.md` "Code layout" (new `firmware/` bullet).
+- Other machine: a pull removes only the tracked files, so an `old_stm32_tests/` holding just the git-ignored
+  `.vscode/c_cpp_properties.json` / `launch.json` stays behind; delete it by hand. PlatformIO rewrites those files
+  when a project is opened from its new place.
+
 ## 2026-09-24 — CI on GitHub Actions (branch `tooling/ci`)
 
 The ruff entry below said "no CI: solo, the pre-commit hook is the gate". That still holds for lint, but one thing
