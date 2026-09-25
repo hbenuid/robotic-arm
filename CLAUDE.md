@@ -1,6 +1,7 @@
 # robotic-arm
 
-3-motor MKS SERVO42D/57D arm controlled over CAN bus via a CANable / slcan-compatible USB adapter. Runs on macOS, Linux, and Windows.
+A six-joint desktop robot arm with a parallel gripper: its CAD, and the software that drives its MKS SERVO42D stepper
+motors over CAN (a CANable / slcan-compatible USB adapter; macOS, Linux and Windows).
 
 The repo splits CAD from everything else: `cad/` (the build123d CAD, its own uv project) and `software/` —
 `software/control/` (the motor-control CLI, its own uv project) and `software/firmware/` (microcontroller firmware).
@@ -39,8 +40,6 @@ through Recipe E in `cad/reference/CLAUDE.md`.
 - Always use `uv` — never `pip install` directly. `uv add <pkg>` for new deps;
   commit `pyproject.toml` and `uv.lock`. The motor-control project is `software/control/`: run its uv
   commands there (the repo root is no uv project).
-- Run the CLI with `uv run launcher` from `software/control/` (entry point defined in `[project.scripts]`).
-  After adding or renaming entry points, run `uv sync` to refresh `.venv/bin/`.
 - Lint with ruff (a locked dev dependency in both uv projects, config in each `pyproject.toml` `[tool.ruff]`:
   ruff's default set + `E F I UP B SIM` in full, the ignores commented):
   `uv run ruff check` in `software/control/`, `./cadtool lint` in `cad/`. Both are clean; keep them clean.
@@ -69,23 +68,12 @@ change. Suggest it then; never trigger it unasked. It checks and never writes (n
 commits). The runner is a third machine (x86_64 Linux): the "no exact float equality" rule of `cad/CLAUDE.md` "Two
 machines" holds for it too. The motor-control `software/control/tests/` stay out until they are fixed.
 
-## Code layout
-Paths in the first four bullets are relative to `software/control/`.
-- `launcher.py` auto-detects the CANable via `pyserial.tools.list_ports` and calls
-  `motor_control.main()`.
-- `motor_control.py` is the interactive CLI. Near the top it does
-  `sys.path.insert(0, "src")` so `src/can_interface.py`, `src/motor_driver.py`,
-  `src/config.py` import without an `arctos.` prefix. **Don't** convert `src/`
-  into a real Python package without also rewriting those imports — the sys.path
-  hack is load-bearing. `"src"` is relative to the current directory, so the CLI runs from `software/control/`
-  (`launch.bat` changes into its own folder first).
-- Joint table and CAN settings live in `src/config.py` (`JOINTS`, `CAN_CHANNEL`, etc).
-- `software/firmware/` holds all firmware, one subfolder per board. `software/firmware/stm32/` is the archived Nucleo-F446RE
-  PlatformIO projects (a blink test and three SERVO42D CAN test programs) from before the Python CLI; each is a
-  self-contained PlatformIO project, part of neither uv project.
-
-## Known issues
-- `software/control/tests/` still imports `from arctos.*` and is broken. CLI runs fine without it.
+## Software (`software/`)
+- `software/control/` is the motor-control CLI, its own uv project. Its rules — running it, the load-bearing
+  `sys.path` line, its known issues — are `software/control/CLAUDE.md`, which loads when you work there; setup and use
+  are its `README.md`.
+- `software/firmware/` holds all firmware, one subfolder per board, part of neither uv project
+  (`software/firmware/README.md`).
 
 ## CAD (`cad/`)
 - `cad/` is a **separate uv project** (Python 3.12, build123d) — the motor-control
