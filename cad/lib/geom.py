@@ -1,5 +1,7 @@
-"""Small build123d helpers shared by the cycloidal drive builders (algebra mode)."""
+"""Small build123d helpers shared by the arm's builders - the drive, the links, the purchased parts (algebra mode)."""
 from __future__ import annotations
+
+import math
 
 from cadgen import build123d as bd
 
@@ -28,3 +30,15 @@ def single_solid(shape: bd.Shape) -> bd.Solid:
     if len(solids) != 1:
         raise ValueError(f"expected exactly one solid, got {len(solids)}")
     return solids[0]
+
+
+def hex_circumdiameter(across_flats: float) -> float:
+    """Across-corners diameter of a hexagon from its across-flats size."""
+    return across_flats / math.cos(math.radians(30))
+
+
+def hex_prism(across_flats: float, angle_rad: float, height: float):
+    """A hexagonal prism standing on z=0, first vertex on +X rotated by ``angle_rad`` (the
+    CadQuery ``polygon(6, d)`` + ``transformed(rotate=...)`` convention)."""
+    r = hex_circumdiameter(across_flats) / 2.0
+    return bd.extrude(bd.RegularPolygon(r, 6, rotation=math.degrees(angle_rad)), amount=height, dir=(0, 0, 1))

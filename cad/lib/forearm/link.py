@@ -3,10 +3,9 @@ from __future__ import annotations
 
 from cadgen import build123d as bd
 
-from lib.cycloidal.geom import align_min, cylinder, single_solid, through
-from lib.cycloidal.housing import hex_prism
 from lib.forearm.layout import disc_bolt_angles, disc_bolt_points, elbow_end_x, flange_bolt_points, link_socket_points
 from lib.forearm.params import DEFAULT, ForearmConfig
+from lib.geom import align_min, cylinder, hex_prism, single_solid, through
 from lib.units import NUDGE
 
 

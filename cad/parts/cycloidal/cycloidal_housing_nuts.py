@@ -12,8 +12,8 @@ from cadgen import build123d as bd
 from cadgen import step
 
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, compute_housing_bolt_angles, housing_bolt_points
-from lib.cycloidal.housing import hex_prism
 from lib.datum import IDENTITY
+from lib.geom import hex_prism
 from lib.params import CYCLOIDAL_HOUSING_NUTS_MASS_G
 from parts.cycloidal._cots import hybrid, pattern
 

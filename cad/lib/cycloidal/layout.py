@@ -10,6 +10,7 @@ from __future__ import annotations
 import math
 
 from lib.cycloidal.params import DEFAULT_CONFIG, DriveConfig, compute_housing_bolt_angles
+from lib.geom import hex_circumdiameter  # the arm-wide helper, re-exported for the drive's callers
 
 __all__ = [
     "arm_mount_angles", "arm_mount_points", "compute_housing_bolt_angles", "hex_circumdiameter",
@@ -54,11 +55,6 @@ def arm_mount_angles(cfg: DriveConfig = DEFAULT_CONFIG) -> list[float]:
 
 def arm_mount_points(cfg: DriveConfig = DEFAULT_CONFIG) -> list[tuple[float, float]]:
     return _circle_points(cfg.output_hub.arm_mount_bolt_circle_dia / 2.0, arm_mount_angles(cfg))
-
-
-def hex_circumdiameter(across_flats: float) -> float:
-    """Across-corners diameter of a hexagon from its across-flats size."""
-    return across_flats / math.cos(math.radians(30))
 
 
 def ring_pin_hole_dia(cfg: DriveConfig = DEFAULT_CONFIG) -> float:

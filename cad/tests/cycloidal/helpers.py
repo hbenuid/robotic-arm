@@ -16,7 +16,7 @@ from build123d import Box, Compound, Cylinder, GeomType, Pos, PositionMode, Shap
 
 from lib import reference as R
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, ring_pin_points
-from lib.cycloidal.geom import align_min
+from lib.geom import align_min
 
 CFG = DEFAULT_CONFIG   # the configuration every drive test checks (variants: dataclasses.replace, see no_chamfer)
 

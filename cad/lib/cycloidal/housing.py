@@ -15,9 +15,8 @@ import math
 
 from cadgen import build123d as bd
 
-from lib.cycloidal.geom import align_min, single_solid
-from lib.cycloidal.layout import hex_circumdiameter
 from lib.cycloidal.params import DEFAULT_CONFIG, DriveConfig, compute_housing_bolt_angles
+from lib.geom import align_min, hex_prism, single_solid
 
 PILLAR_OVERSHOOT = 1.0    # [DESIGN] pillars past the bore (-) and OD (+); trimmed flush by the bore/OD cuts
 CUTTER_OVERSHOOT = 0.1    # [DESIGN] cutter annulus past the OD so the base cylinder trims it flush
@@ -79,13 +78,6 @@ def chamfer_outer_silhouette(shape: bd.Shape, cfg: DriveConfig = DEFAULT_CONFIG,
     if external_z is not None:
         sel += list(end_face(solid, external_z).outer_wire().edges())
     return solid.chamfer(ch, None, sel) if sel else solid
-
-
-def hex_prism(across_flats: float, angle_rad: float, height: float):
-    """A hexagonal prism standing on z=0, first vertex on +X rotated by ``angle_rad`` (the
-    CadQuery ``polygon(6, d)`` + ``transformed(rotate=...)`` convention)."""
-    r = hex_circumdiameter(across_flats) / 2.0
-    return bd.extrude(bd.RegularPolygon(r, 6, rotation=math.degrees(angle_rad)), amount=height, dir=(0, 0, 1))
 
 
 def hex_pocket(cfg: DriveConfig, xy, angle_rad: float, depth: float, z0: float = 0.0):

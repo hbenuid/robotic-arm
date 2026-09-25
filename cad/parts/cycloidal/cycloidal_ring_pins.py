@@ -11,8 +11,8 @@ import pathlib
 from cadgen import step
 
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, ring_pin_points
-from lib.cycloidal.geom import cylinder
 from lib.datum import IDENTITY
+from lib.geom import cylinder
 from lib.params import CYCLOIDAL_RING_PINS_MASS_G
 from parts.cycloidal._cots import hybrid, pattern
 

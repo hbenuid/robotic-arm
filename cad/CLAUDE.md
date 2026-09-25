@@ -133,7 +133,7 @@ prints cadgen's "kernel was imported before …" hint — that hint now means a 
 **Keep the kernel lazy** in every model and its import closure: `from cadgen import build123d as bd` (a PEP 562 proxy — never
 `from build123d import …`, never `from cadgen.build123d import X`, both import it) and use `bd.<name>`
 **inside function bodies only**. No kernel object in a module-level constant, a class body, a decorator or
-an argument default (`align=bd.Align.MIN` as a default is eager — `lib/cycloidal/geom.align_min()` is a
+an argument default (`align=bd.Align.MIN` as a default is eager — `lib/geom.align_min()` is a
 function for that reason); kernel types in annotations need `from __future__ import annotations`. The rule
 covers the model's whole import closure (`lib/`, `assemblies/_occurrences.py`, `robot/`). Frames a module
 declares are **data** — `(position mm, rotation_xyz_deg)`, `lib.datum.IDENTITY` for none — turned into a

@@ -15,9 +15,9 @@ import pathlib
 from cadgen import step
 
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, arm_mount_angles, arm_mount_points, hub_height, output_pin_points
-from lib.cycloidal.geom import cylinder, single_solid, through
 from lib.cycloidal.housing import hex_pocket
 from lib.datum import IDENTITY
+from lib.geom import cylinder, single_solid, through
 from lib.params import NUDGE
 
 NAME = pathlib.Path(__file__).stem

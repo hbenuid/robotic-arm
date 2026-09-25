@@ -47,8 +47,8 @@ from OCP.GeomAbs import GeomAbs_Cylinder
 
 from lib import reference as R
 from lib.cycloidal import DEFAULT_CONFIG, motor_bolt_points
-from lib.cycloidal.geom import single_solid
 from lib.cycloidal.motor import pilot, shaft
+from lib.geom import single_solid
 
 MOTOR_NAME, BOARD_NAME, DRIVE_NAME = "nema17_40mm", "mks_servo42d", "nema17_48mm"
 TO_PART = Location((0.0, 0.0, 0.0), (-90.0, 0.0, 0.0))   # export frame (face y=0, body +Y, shaft -Y) -> part frame (body -Z, shaft +Z)

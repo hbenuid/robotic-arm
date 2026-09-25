@@ -7,7 +7,6 @@ import math
 
 from cadgen import build123d as bd
 
-from lib.cycloidal.geom import align_min, cylinder, single_solid
 from lib.datum import to_location
 from lib.forearm.layout import (
     belt_window,
@@ -22,6 +21,7 @@ from lib.forearm.layout import (
 from lib.forearm.link import x_cylinder
 from lib.forearm.params import DEFAULT, ForearmConfig
 from lib.forearm.pulley import gt2_ring
+from lib.geom import align_min, cylinder, single_solid
 from lib.units import NUDGE
 
 

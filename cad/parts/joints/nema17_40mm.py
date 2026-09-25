@@ -23,9 +23,9 @@ from cadgen import build123d as bd
 from cadgen import read_step, step
 
 from lib.cycloidal import motor_bolt_points
-from lib.cycloidal.geom import cylinder, single_solid
 from lib.cycloidal.motor import nema17_motor
 from lib.datum import IDENTITY, to_location
+from lib.geom import cylinder, single_solid
 from lib.params import (
     MOTOR_40,
     NEMA17_40_CONNECTOR_D,

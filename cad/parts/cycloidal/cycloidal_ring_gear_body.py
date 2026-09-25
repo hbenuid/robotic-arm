@@ -24,9 +24,9 @@ from lib.cycloidal import (
     ring_pin_hole_dia,
     ring_pin_points,
 )
-from lib.cycloidal.geom import align_min, cylinder, through
 from lib.cycloidal.housing import chamfer_outer_silhouette, hex_pocket, reveal_window_cutter
 from lib.datum import IDENTITY
+from lib.geom import align_min, cylinder, through
 from lib.params import NUDGE
 
 NAME = pathlib.Path(__file__).stem

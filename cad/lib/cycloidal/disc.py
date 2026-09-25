@@ -8,10 +8,10 @@ from __future__ import annotations
 
 from cadgen import build123d as bd
 
-from lib.cycloidal.geom import single_solid, through
 from lib.cycloidal.layout import output_pin_points
 from lib.cycloidal.params import DEFAULT_CONFIG, DriveConfig
 from lib.cycloidal.profiles import profile_points
+from lib.geom import single_solid, through
 
 
 def build_disc(cfg: DriveConfig = DEFAULT_CONFIG, phase_offset_deg: float = 0.0) -> bd.Solid:

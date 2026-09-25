@@ -13,13 +13,13 @@ D-flat convention (the drive repo's, kept as built): the flat lies m.shaft_dcut_
 axis, i.e. flat-to-round = shaft radius + flat / 2 (4.75 for the 5 mm shaft); the eccentric shaft's
 D-bore is cut the same way (+ d_bore_clearance_add). A standard 5 mm D-shaft (and the kit exports)
 has 4.5 flat-to-round (flat 2.0 from the axis) - change both together if that is ever adopted.
-Kernel lazy: `bd.` names only inside the functions (lib/cycloidal/geom.py convention).
+Kernel lazy: `bd.` names only inside the functions (lib/geom.py convention).
 """
 from __future__ import annotations
 
 from cadgen import build123d as bd
 
-from lib.cycloidal.geom import cylinder, single_solid
+from lib.geom import cylinder, single_solid
 from lib.units import NUDGE
 
 

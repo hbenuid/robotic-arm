@@ -12,6 +12,7 @@ params.py     # single source of truth for shared dimensions (tagged provenance)
 units.py      # IN, NUDGE - a leaf module (lib/cycloidal/ imports it; params.py re-exports it)
 motors.py     # the arm's motors (NEMA 17 interface, pancake, the 40 mm kit motor + MKS board, MOTOR_40) - a leaf, re-exported by params.py
 belts.py      # GT2: the pulleys, pulley_od(), closed_belt_length() / centre_distance(), stock belt lengths - a leaf
+geom.py       # the arm's small build123d helpers: align_min(), cylinder(), through() (NUDGE overshoot), single_solid(), hex_prism() - a leaf
 upper_arm/    # the upper arm (UpperArmConfig: LEGACY = the SolidWorks j1_link, DEFAULT = no cap sockets, the motor's and the drive's hole patterns)
 forearm/      # the forearm (ForearmConfig: LEGACY = the SolidWorks j2_link, DEFAULT = the roll end, no cap sockets) and the roll drive (RollDriveParams, stack_positions, the block / shaft / retainer / 90T ring builders)
 datum.py      # capture frame W -> base_link frame B: frame(), base_frame() (arm.py arm_from_w(), robot/frames.py); frames as data: IDENTITY, to_location()
@@ -21,15 +22,16 @@ manifest.py   # reference/manifest.json: read() / write() / entry() - shared by 
 placements.py # reference/placements.json -> build123d Location
 models.py     # model_of() / raw() / geometry(inline=): the @step model of a module, its body, a child for an assembly
 assembly.py   # assembly(name, children): the native labelled Compound node; label_shape / label_text from cadgen
-cycloidal/    # the cycloidal drive: DriveConfig (params.py), layout.py, profiles.py, housing.py, disc.py, geom.py, motor.py (THE NEMA 17 pilot + shaft, every motor's)
+cycloidal/    # the cycloidal drive: DriveConfig (params.py), layout.py, profiles.py, housing.py, disc.py, motor.py (THE NEMA 17 pilot + shaft, every motor's)
 ```
 
 ## Shared dimensions (DRY)
 `lib/params.py` is the single source of truth: mm and grams, every constant tagged
 `[MEASURE] / [DATASHEET] / [DESIGN] / [REFERENCE] / [ESTIMATE]` with a derivation comment. It re-exports the
 leaves below it (`lib/units.py`, `lib/motors.py`, `lib/belts.py`: What is where) unchanged; a `lib/` package it
-re-exports from (`lib/cycloidal/`, `lib/forearm/`, `lib/upper_arm/`) takes its globals from those leaves, never from
-`lib.params` (`tests/test_layering.py LEAF_PACKAGES`). Datum: the SolidWorks capture
+re-exports from (`lib/cycloidal/`, `lib/forearm/`, `lib/upper_arm/`) takes its globals from those leaves and its geometry
+helpers from `lib/geom.py`, never from `lib.params` — and no leaf imports `lib.params` either
+(`tests/test_layering.py LEAF_PACKAGES` / `LEAF_MODULES`). Datum: the SolidWorks capture
 frame is **Y up** (J1 axis); the URDF base frame (REP-103) is `lib/datum.py base_frame()` (with `frame()`,
 `U`, `BASE_FORWARD`; `robot/frames.py` re-exports them and builds the kinematics on top) — and
 `assemblies/arm.py` emits the arm in it (`arm_from_w()`, see `assemblies/CLAUDE.md`), so `arm.step` is **Z up**.

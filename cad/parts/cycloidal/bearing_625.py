@@ -9,8 +9,8 @@ import pathlib
 from cadgen import step
 
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig
-from lib.cycloidal.geom import cylinder
 from lib.datum import IDENTITY
+from lib.geom import cylinder
 from lib.params import BEARING_625_MASS_G
 from parts.cycloidal._cots import hybrid
 

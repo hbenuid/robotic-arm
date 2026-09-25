@@ -7,8 +7,8 @@ from __future__ import annotations
 
 from cadgen import build123d as bd
 
-from lib.cycloidal.geom import align_min, cylinder, single_solid
 from lib.forearm.link import stadium, x_cylinder
+from lib.geom import align_min, cylinder, single_solid
 from lib.units import NUDGE
 from lib.upper_arm.layout import cove_axes, hub_bolt_points, pad_holes, socket_points
 from lib.upper_arm.params import DEFAULT, UpperArmConfig

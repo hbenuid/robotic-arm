@@ -4,7 +4,7 @@ from __future__ import annotations
 from cadgen import build123d as bd
 
 from lib.belts import GT2_GROOVE_R, GT2_TOOTH_DEPTH, pulley_od
-from lib.cycloidal.geom import cylinder, single_solid
+from lib.geom import cylinder, single_solid
 from lib.units import NUDGE
 
 

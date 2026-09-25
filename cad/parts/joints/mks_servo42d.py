@@ -25,8 +25,8 @@ from cadgen import build123d as bd
 from cadgen import read_step, step
 
 from lib.cycloidal import DEFAULT_CONFIG, motor_bolt_points
-from lib.cycloidal.geom import cylinder, single_solid
 from lib.datum import IDENTITY, to_location
+from lib.geom import cylinder, single_solid
 from lib.params import MKS_SERVO42D_MASS_G, MKS_SERVO42D_SCREW_REACH, MKS_SERVO42D_STACK, MKS_SERVO42D_W
 
 NAME = pathlib.Path(__file__).stem

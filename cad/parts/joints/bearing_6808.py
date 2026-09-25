@@ -10,9 +10,9 @@ import pathlib
 
 from cadgen import read_step, step
 
-from lib.cycloidal.geom import cylinder
 from lib.datum import IDENTITY, to_location
 from lib.forearm import DEFAULT, ForearmConfig
+from lib.geom import cylinder
 from lib.params import BEARING_6808_MASS_G
 
 NAME = pathlib.Path(__file__).stem
