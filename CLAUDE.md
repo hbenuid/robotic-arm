@@ -67,6 +67,9 @@ machines" holds for it too. The root `tests/` stay out until they are fixed.
   into a real Python package without also rewriting those imports — the sys.path
   hack is load-bearing.
 - Joint table and CAN settings live in `src/config.py` (`JOINTS`, `CAN_CHANNEL`, etc).
+- `firmware/` holds all firmware, one subfolder per board. `firmware/stm32/` is the archived Nucleo-F446RE
+  PlatformIO projects (a blink test and three SERVO42D CAN test programs) from before the Python CLI; each is a
+  self-contained PlatformIO project, part of neither uv project.
 
 ## Known issues
 - `tests/` still imports `from arctos.*` and is broken. CLI runs fine without it.

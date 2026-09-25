@@ -136,7 +136,7 @@ src/
   can_interface.py       thin python-can wrapper
   motor_driver.py        MKS CAN protocol (CRC, encode/decode, commands)
 cad/                     parametric build123d CAD, separate uv project (see cad/README.md); STEP/STL via Git LFS
-old_stm32_tests/         archived STM32 firmware experiments (separate from Python)
+firmware/stm32/          archived STM32 (Nucleo-F446RE) PlatformIO test firmware for the SERVO42D (separate from Python)
 tests/                   pytest suite (currently broken — see Known issues)
 pyproject.toml, uv.lock  uv-managed project metadata
 ```
