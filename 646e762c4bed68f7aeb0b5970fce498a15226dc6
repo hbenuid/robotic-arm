@@ -1,0 +1,13 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-08-28 — the cycloidal drive: imported, ported to build123d, attached
+
+### Changed — robot description: the drive rides in `link1` (`646e762`)
+- The drive is physically the **shoulder-pitch joint** between `j1_coupler` (housing in its yoke)
+  and `j1_link` (hub bolted to it) — the earlier "J1 base-yaw actuator" wording was wrong. It is
+  **not modelled as a joint yet**: `LINKS["link1"]` carries the module key, `robot/_links.py` and
+  `tools/robot_frames.py` expand it through `world_rows`; link1 is now 61 solids / 2.416 kg
+  (`meshes/link1.stl` 2.79 MB), URDF + SDF inertials re-derived, ledger rewritten (drive assumption,
+  motor→joint mapping unconfirmed). `--check`, strict validators and `tests/test_robot.py` green.
+- `src/config.py` is untouched: J1 `gear_ratio` stays 1.0 while the CAD says
+  `CYCLOIDAL_RATIO = 20` — which MKS motor drives which joint is still to be confirmed.
