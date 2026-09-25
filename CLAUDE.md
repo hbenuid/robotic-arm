@@ -44,6 +44,8 @@ through Recipe E in `cad/reference/CLAUDE.md`.
 - Lint with ruff (a locked dev dependency in both uv projects, config in each `pyproject.toml` `[tool.ruff]`:
   ruff's default set + `E F I UP B SIM` in full, the ignores commented):
   `uv run ruff check` in `software/control/`, `./cadtool lint` in `cad/`. Both are clean; keep them clean.
+  Every `zip()` takes `strict=` (`B905`): `True` where the inputs must pair up — a length mismatch raises instead of
+  silently truncating —, `False` only where a mismatch is expected and handled.
   Lint only — `ruff format` is not adopted (it would re-flow `cad/`'s hand-aligned tables).
   It runs by itself at three points: a Claude Code PostToolUse hook (`.claude/hooks/ruff-check.sh`) reports
   findings on every `.py` file Claude edits — fix them in the same turn. It is registered twice, in

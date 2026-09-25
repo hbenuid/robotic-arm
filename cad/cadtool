@@ -18,17 +18,21 @@ cadtool - cadgen 0.6 + this uv project (paths relative to cad/)
                                                     (an assembly rebuilds + rewrites its stale child parts too)
   ./cadtool step ...                                alias of gen
   ./cadtool why <model.py>                          freshness verdict, clause by clause (cadgen store why)
-  ./cadtool inspect <file.step> [--planes] [--json] leaf refs, solids, faces, volume, bbox (+ planar faces) of a saved STEP
+  ./cadtool inspect <file.step> [--planes] [--json] leaf refs, solids, faces, volume, bbox of a saved STEP
+                                                    (--planes: + every planar face as normal / offset / area)
   ./cadtool inspect diff <a.step> <b.step> [--tol X] same geometry? (exit 1 if not) - a LOCAL tool, tools/step_facts.py:
                                                     cadgen 0.6.5 removed `cadgen step inspect`
   ./cadtool snapshot <file.step|.urdf|.sdf|.stl> <out.png> [--size-profile assembly --view-labels --job job.json]
+                                                    the path you name is the file you get (no timestamp); --job = a multi-view packet
   ./cadtool export <file.step> stl|3mf|glb [out]    one mesh file per call (needs node >= 20 on PATH)
   ./cadtool validate <file.urdf|.srdf|.sdf> [--strict] [--gz-check never]
   ./cadtool viewer [--port N]                       CAD Viewer serving cad/: http://127.0.0.1:3245/?file=<rel path>
+                                                    (12 h auto-stop; ./cadtool cadgen viewer list|stop --port N)
   ./cadtool parts "<query>" [--download] [--id <id>] [--filename <name>.step]   step.parts search / download into vendor/
   ./cadtool skill <skill> <tool> [args]             a plugin skill script: skills/<skill>/scripts/<tool>
   ./cadtool cadgen|store|daemon ...                 any cadgen subcommand (`./cadtool cadgen --help`)
-  ./cadtool daemon stop                             stop the warm build daemon + its workers (a fresh one starts on the next gen)
+  ./cadtool daemon stop                             stop the warm build daemon + its workers (a fresh one starts on the next gen;
+                                                    they reload code only when restarted; ./cadtool cadgen daemon status shows them)
   ./cadtool pytest [-m "not slow"]                  test suite
   ./cadtool lint [--fix] [path...]                  ruff check (lint only, no formatter; rules: pyproject.toml [tool.ruff])
   ./cadtool python -m assemblies.arm ...            any python in the venv (PYTHONPATH=cad/)
