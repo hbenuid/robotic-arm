@@ -1,6 +1,6 @@
 # robotic-arm — CAD (build123d)
 
-**Last updated:** 2026-09-24 (the OCP CAD Viewer / `ocp-vscode` and `./cadtool show` removed — the CAD Viewer is cadgen's; ruff lint via `./cadtool lint` + the pre-commit hook `./cadtool setup` installs) — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-24 (the OCP CAD Viewer / `ocp-vscode` and `./cadtool show` removed — the CAD Viewer is cadgen's; ruff lint via `./cadtool lint` + the pre-commit hook `./cadtool setup` installs; GitHub Actions CI on every pushed branch) — see the root `CHANGELOG.md` for dated changes.
 
 Parametric CAD-as-code for the desktop arm (base yaw, 20:1 cycloidal shoulder pitch, belt-driven
 elbow and wrist pitch, wrist roll, MG996R parallel gripper), converted part-by-part from the original
@@ -37,6 +37,9 @@ cd cad
                        # + the git pre-commit hook (ruff on staged .py files) + Playwright Chromium (~150 MB, snapshots only)
 ./cadtool pytest       # everything green?
 ```
+
+CI (GitHub Actions, `../.github/workflows/ci.yml`) runs the lint, the whole suite and `./cadtool gen` of both arms on
+every pushed branch except `main`, in a clean clone on a fresh Ubuntu runner; see the root `CLAUDE.md` "CI".
 
 Python is pinned to **3.12** in `.python-version` (the system Python is 3.14; the OCP
 wheels are verified on 3.12 — bump deliberately, with the full suite). Never run bare `python` here —

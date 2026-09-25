@@ -157,6 +157,11 @@ pyproject.toml, uv.lock  uv-managed project metadata
   by itself: a git pre-commit hook (`cd cad && ./cadtool setup` installs it on
   a machine) blocks commits with findings, a Claude Code hook checks every file
   Claude edits, and VS Code (Ruff extension) fixes and sorts imports on save.
+- CI: GitHub Actions ([.github/workflows/ci.yml](.github/workflows/ci.yml))
+  checks every pushed branch except `main` on a fresh Ubuntu runner — lint
+  (both projects), the CAD test suite and a build of the arm from a clean
+  clone. Results: the branch's check mark on GitHub, the Actions tab, or
+  `gh run list`. Wait for green before fast-forwarding `main`.
 
 ## Known issues
 

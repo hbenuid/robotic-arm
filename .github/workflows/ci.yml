@@ -1,0 +1,67 @@
+# CI: a clean clone on a fresh Linux runner - lint both uv projects, the CAD test suite, then build the arm from the
+# committed inputs only (no ~/.cache/cadgen, no raw SolidWorks exports, no generated STEPs). It checks and never writes:
+# no hash gate (STEP bytes differ per machine), no snapshots, no commits. Runs on every pushed branch except main -
+# main is fast-forwarded to a branch whose commit already carries the check. Root CLAUDE.md "CI".
+name: CI
+
+on:
+  push:
+    branches-ignore: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:  # a newer push to the same branch cancels the run in progress
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      CADGEN_DAEMON: "0"  # transient build workers, no warm daemon left behind
+    steps:
+      - uses: actions/checkout@v7
+
+      # Git LFS: the objects are cached by the list of their ids, so a run only downloads them (LFS bandwidth quota)
+      # when a committed reference / vendor / mesh file changed.
+      - name: LFS object list
+        id: lfs
+        run: echo "key=lfs-$(git lfs ls-files --long | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: .git/lfs
+          key: ${{ steps.lfs.outputs.key }}
+          restore-keys: lfs-
+      - name: git lfs pull
+        run: git lfs pull
+
+      - uses: astral-sh/setup-uv@v10
+        with:
+          cache-python: true
+
+      - name: Root project - sync, lint, the CLI imports
+        run: |
+          uv sync --frozen
+          uv run --frozen ruff check
+          uv run --frozen python -c "import motor_control"
+
+      - name: CAD - sync + OCP kernel check
+        working-directory: cad
+        run: |
+          uv sync --frozen
+          uv run --frozen python -c "import OCP.gp"
+      - name: CAD - lint
+        working-directory: cad
+        run: ./cadtool lint
+      - name: CAD - fast lane
+        working-directory: cad
+        run: ./cadtool pytest -m "not slow" -p no:cacheprovider
+      - name: CAD - slow tests
+        working-directory: cad
+        run: ./cadtool pytest -m slow -p no:cacheprovider -rs
+      - name: CAD - build the arm
+        working-directory: cad
+        run: ./cadtool gen assemblies/arm.py assemblies/arm_no_caps.py

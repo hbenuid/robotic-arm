@@ -45,6 +45,17 @@ with `ARM_REFERENCE_SRC`). A new export the user hands over is fed to those tool
   with findings in the staged files; VS Code fixes / sorts imports on save (workspace settings, Ruff extension).
   `F401` is never auto-fixed (`unfixable`): an import written before its first use must survive a save.
 
+## CI (GitHub Actions)
+`.github/workflows/ci.yml` runs on every pushed branch except `main` (and by hand: Actions tab → CI → Run workflow,
+or `gh workflow run ci.yml --ref <branch>`): a fresh `ubuntu-24.04` runner clones the repo, pulls the LFS objects,
+lints both projects, imports the CLI, runs `cad/`'s fast lane and slow tests and `./cadtool gen`s both arms. It is
+the **clean-clone check** neither machine can give — no `~/.cache/cadgen`, no raw exports, no generated STEPs — so
+a test or model that quietly needs a file outside git fails there first. It checks and never writes (no hash gate,
+no snapshots, no commits). Before fast-forwarding `main` to a branch, its head commit should be green
+(`gh run list --branch <branch>`; `gh run watch` follows a run). `main` itself is not built: the fast-forward moves
+the same commit, which already carries the check. The runner is a third machine (x86_64 Linux): the "no exact float
+equality" rule of `cad/CLAUDE.md` "Two machines" holds for it too. The root `tests/` stay out until they are fixed.
+
 ## Code layout
 - `launcher.py` auto-detects the CANable via `pyserial.tools.list_ports` and calls
   `motor_control.main()`.
