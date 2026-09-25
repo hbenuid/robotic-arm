@@ -93,7 +93,8 @@ frame/size reference (for the drive's purchased parts: the CadQuery export of th
 in `reference/cycloidal/`, `lib/reference.py CYCLOIDAL_COTS`; `path_of()` resolves the origin);
 `test_cots_vendor_matches_reference_frame` (bbox within 1.5 mm, skipped when there is no vendor
 file - the envelope is then the geometry) and `test_cots_envelope_tracks_reference_bbox` guard vendor
-swaps. Swap procedure, what has been tried and where the vendor files come from: `vendor/README.md`.
+swaps. Swap procedure (Recipe D): `vendor/CLAUDE.md`; what has been tried and where the vendor files come from:
+`vendor/README.md`.
 The kit parts `nema17_40mm` / `mks_servo42d` live in `parts/joints/` (`parts/cycloidal/` is locked to
 `CYCLOIDAL_COTS`); the drive motor's envelope builder is `lib/cycloidal/motor.py nema17_motor()`, which the 40 mm
 envelope reuses with other `MotorParams`.
@@ -101,7 +102,7 @@ envelope reuses with other `MotorParams`.
 **Recipe A — add a purchased part** (`parts/<group>/<name>.py`): copy `parts/_templates/cots.py` → declare `COTS`,
 `MASS_G`, `PURCHASE_SPEC` / `PURCHASE_QTY` / `PURCHASE_NOTE`, an `_envelope()` from `lib/params.py` → register in
 `lib/reference.py COTS` (`rel=None` when the vendor file IS the reference) → put `vendor/<name>.step` in place (Recipe D,
-`vendor/README.md`) → `./cadtool python tools/reference/import_solidworks.py` (mirrors it into `reference/solidworks/`,
+`vendor/CLAUDE.md`) → `./cadtool python tools/reference/import_solidworks.py` (mirrors it into `reference/solidworks/`,
 manifest entry) → `tests/test_parts_convention.py MULTI_BODY` if it is several solids → give it an occurrence (a
 SolidWorks key, a module row, or Recipe B in `assemblies/CLAUDE.md`) → Recipe C.
 

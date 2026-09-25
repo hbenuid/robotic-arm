@@ -7,7 +7,8 @@ immutable re-export that fixes each purchased part's **frame and size** — a ve
 **replaced** by a better catalog model; the manifest
 (`reference/manifest.json`, `vendor` sub-entry) records which file is current and
 `tests/test_parts_convention.py::test_cots_vendor_matches_reference_frame` checks it still
-occupies the reference's bounding box (±1.5 mm) after the part's `VENDOR_TO_REF` re-orientation.
+occupies the reference's bounding box (±1.5 mm) after the part's `VENDOR_TO_REF` re-orientation. How to produce or
+swap one (Recipe D) and the rules for these files: [`CLAUDE.md`](CLAUDE.md); this file is the record of what is here.
 
 | File | Part module | Current model | step.parts status (2026-08-28) |
 |---|---|---|---|
@@ -36,42 +37,13 @@ What to **order** for each purchased part is not here: it is `PURCHASE_SPEC` / `
 `PURCHASE_NOTE` in the part module, printed as the buy list by `./cadtool python tools/bom.py` (which also
 lists the purchased items that have no geometry at all).
 
-## Swapping in a catalog model
-```bash
-./cadtool parts "GT2 20" --limit 20                         # search (ANDed tokens; facets --tag/--family/--standard)
-./cadtool parts --id <id> --download --filename <name>.step --overwrite   # -> vendor/<name>.step (sha256 verified)
-./cadtool inspect vendor/<name>.step --planes   # frame of the new model (leaf bbox + planar faces)
-# set VENDOR_TO_REF in parts/<group>/<name>.py so the model lands in the reference frame (reference/<origin>/<name>.step)
-./cadtool pytest -k <name>                                  # vendor-frame + envelope + convention tests
-./cadtool gen parts/<group>/<name>.py                       # regenerate the STEP (git-ignored)
-./cadtool python tools/reference/import_solidworks.py                 # refresh manifest.json (vendor sha/bbox)
-```
-If the catalog model is worse than the SolidWorks re-export, restore it:
-`cp reference/solidworks/<name>.step vendor/<name>.step && ./cadtool python tools/reference/import_solidworks.py`.
-For the cycloidal drive's parts the manifest is owned by `tools/cycloidal/import_cadquery.py`
-(run that one for them), and a worse catalog model is simply deleted — the
-envelope takes over and the manifest entry loses its `vendor` block.
-
-## Recipe D — produce or swap a vendor STEP
-From an export → `./cadtool python tools/reference/split_mks_motor.py --write
-kit|drive|all` (the motor kits); from the catalog → `./cadtool parts "<query>"` then `--id … --download` (below);
-`./cadtool inspect vendor/<name>.step --planes` and set `VENDOR_TO_REF` if the frame differs → `import_solidworks.py`
-(SolidWorks-origin parts) or `tools/cycloidal/import_cadquery.py --only <name>` (drive parts) for the manifest →
-`./cadtool gen parts/<group>/<name>.py --force` → Recipe C (`cad/CLAUDE.md`), on one machine only (below).
-
 ## Where the vendor files come from
-Besides step.parts downloads (above) and `tools/reference/extract_placements.py` (the flattened
+Besides step.parts downloads (Recipe D, `CLAUDE.md`) and `tools/reference/extract_placements.py` (the flattened
 `nema17_pancake.step`), the third producer of vendor files is `tools/reference/split_mks_motor.py`: it splits the
 "NEMA 17 x 40 + MKS SERVO42D" kit export (`lib/reference.py MKS_EXPORT_NAME`, outside the repo next to the monolith)
 by GEOMETRY into `vendor/nema17_40mm.step` and `vendor/mks_servo42d.step` (what each holds and its frame: the table
 above); `import_solidworks.py` then mirrors both into `reference/solidworks/` (`rel=None`, the `nema17_pancake`
 pattern). `--write drive` composes `vendor/nema17_48mm.step` for the drive motor from the x48 export's body
-(`MKS48_EXPORT_NAME`) the same way - **every motor carries the drive motor's interface** (`lib/cycloidal/motor.py
-pilot()` + `shaft()`, `MotorParams`: Ø22 × 2 pilot, Ø5 × 22 shaft, 18 mm D-cut, the D-flat at `shaft_dcut_flat / 2`
-from the axis like the eccentric shaft's D-bore); the drive keeps its parametric envelope as the reference
-(`tools/cycloidal/import_cadquery.py --only nema17_48mm` writes its `vendor` block).
-
-build123d's `export_step` writes the time into the STEP header, so re-running a vendor-producing tool changes the
-file's bytes (and its manifest sha) with identical geometry: vendor files are written once, on one machine, committed
-as LFS and never regenerated on the other machine — the tools' selectors (`split_mks_motor.py --write kit|drive`)
-leave the others alone. A NEW vendor file needs `gen --force` on its part (Recipe D; why: `cad/CLAUDE.md` Gotchas).
+(`MKS48_EXPORT_NAME`) the same way - every motor carries the drive motor's interface (`CLAUDE.md`); the drive keeps
+its parametric envelope as the reference (`tools/cycloidal/import_cadquery.py --only nema17_48mm` writes its `vendor`
+block).

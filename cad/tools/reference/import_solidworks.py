@@ -8,7 +8,7 @@ SolidWorks exports: tools/cycloidal/import_cadquery.py owns them (their entries 
 Copies go through the explicit map in lib/reference.py - never shell globs: the source
 names contain spaces, parentheses, a trailing space and a Cyrillic configuration name.
 reference/*.step are immutable inputs; vendor/*.step may be replaced by better models (see
-vendor/README.md); parts/*.step are regenerated from Python. Re-run (without --force) after
+vendor/CLAUDE.md); parts/*.step are regenerated from Python. Re-run (without --force) after
 tools/reference/extract_placements.py and after replacing a vendor file, so the manifest is current.
 """
 from __future__ import annotations

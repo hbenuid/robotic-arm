@@ -91,7 +91,8 @@ cad/
 Every folder with rules has its own guide — written for agents, readable by anyone:
 [`lib/`](lib/CLAUDE.md) · [`parts/`](parts/CLAUDE.md) (part conventions, converting a part, purchased parts, printed
 vs. bought) · [`assemblies/`](assemblies/CLAUDE.md) · [`robot/`](robot/CLAUDE.md) (joints, links, actuators) ·
-[`tests/`](tests/CLAUDE.md) · [`reference/`](reference/README.md) · [`vendor/`](vendor/README.md). The drives:
+[`tests/`](tests/CLAUDE.md) · [`tools/`](tools/CLAUDE.md) · [`reference/`](reference/CLAUDE.md) (what is there:
+[`README`](reference/README.md)) · [`vendor/`](vendor/CLAUDE.md) (what is there: [`README`](vendor/README.md)). The drives:
 [`docs/cycloidal_drive.md`](docs/cycloidal_drive.md), [`docs/forearm_roll.md`](docs/forearm_roll.md); what is not
 settled yet: [`docs/open_issues.md`](docs/open_issues.md).
 

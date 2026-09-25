@@ -2,8 +2,8 @@
 
 **Purpose:** the map of `cad/` and the rules that hold in every folder — running things, the regeneration
 checklist (Recipe C), layering, the lazy kernel, the two machines. **Audience:** agent; human docs: `README.md`. Each
-folder's own rules live in its CLAUDE.md — `parts/`, `assemblies/`, `robot/`, `lib/`, `tests/` — which loads when you
-work there; Start here says which file owns which task.
+folder's own rules live in its CLAUDE.md — `parts/`, `assemblies/`, `robot/`, `lib/`, `tests/`, `tools/`, `reference/`,
+`vendor/` — which loads when you work there; Start here says which file owns which task.
 
 The root `CLAUDE.md` loads with this file, so its rules (git, uv, ruff and the hooks, CI, docs) are not repeated here.
 The toolchain: Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.6.x (pins: `docs/toolchain.md`).
@@ -16,8 +16,9 @@ The toolchain: Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.6.x (pins: `docs/t
 | add a purchased part | `parts/CLAUDE.md` Purchased (COTS) parts | Recipe A (there) |
 | add a part designed HERE (no SolidWorks / CadQuery origin), or a purchased part with no model at all | `parts/CLAUDE.md` Part states → *native* | `tools/reference/import_native.py` once, then Recipe C |
 | place something the SolidWorks capture never had (a motor, a board) | `assemblies/CLAUDE.md` → Mounted occurrences | Recipe B (there) |
-| produce or swap a vendor STEP | `vendor/README.md` | Recipe D (there) |
-| a new SolidWorks / vendor export was handed over | `reference/README.md` Provenance | Recipe E (there) |
+| produce or swap a vendor STEP | `vendor/CLAUDE.md` | Recipe D (there) |
+| a new SolidWorks / vendor export was handed over | `reference/CLAUDE.md` | Recipe E (there) |
+| run or change a tool (bom, exporters, the reference importers) | `tools/CLAUDE.md` | its recipe |
 | changed any geometry, mass or placement | — | **Recipe C** (below, the regeneration checklist) |
 | change a shared dimension | `lib/CLAUDE.md` Shared dimensions (its own table) | Recipe C |
 | touch the URDF / links / inertials | `robot/CLAUDE.md` | Recipe C steps 7–9 |
@@ -165,7 +166,7 @@ Push before leaving a machine, pull on arrival (root `CLAUDE.md` "Two developmen
 - cadgen's freshness gate tracks only the inputs the LAST build actually read: a part whose vendor file appears after
   its last build still reads `current` (its body never called `read_step` on that file) — `./cadtool gen <part> --force`
   once; the assemblies then follow. Verified: `nema17_48mm` kept its envelope STEP until forced.
-- Vendor STEPs are written once, on one machine (why: `vendor/README.md` "Where the vendor files come from").
+- Vendor STEPs are written once, on one machine (why: `vendor/CLAUDE.md`).
 - Don't compare large STEP artifacts with `git diff`; compare source, `inspect` output and snapshots.
   A STEP edited by anything but its model (or built under another `CADGEN_CACHE_DIR`) reads as stale
   in `./cadtool why` — rebuild it.

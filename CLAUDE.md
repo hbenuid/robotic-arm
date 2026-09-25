@@ -33,7 +33,7 @@ own) — rules in `cad/CLAUDE.md` "Two machines". Scripts must run on macOS's ba
 The CAD reads only committed inputs (Git LFS): `cad/reference/` (the renamed SolidWorks / CadQuery exports,
 `placements.json`, `manifest.json`) and `cad/vendor/`. The raw exports they were derived from are **never committed**
 and need not exist on a machine; a new export the user hands over stays outside the tree (lowercase `.step`) and goes
-through Recipe E in `cad/reference/README.md`.
+through Recipe E in `cad/reference/CLAUDE.md`.
 
 ## Toolchain
 - Always use `uv` — never `pip install` directly. `uv add <pkg>` for new deps;
@@ -90,8 +90,8 @@ Paths in the first four bullets are relative to `software/control/`.
   project (`software/control/`) never depends on it, and `launch.bat` never installs it. Never run
   CAD code with the motor-control venv.
 - Work from `cad/` via `./cadtool …` (`./cadtool help` lists the commands). Start at `cad/CLAUDE.md` — the map and the
-  rules for every folder; each folder's own CLAUDE.md (`parts/`, `assemblies/`, `robot/`, `lib/`, `tests/`) loads when
-  you work there.
+  rules for every folder; each folder's own CLAUDE.md (`parts/`, `assemblies/`, `robot/`, `lib/`, `tests/`, `tools/`,
+  `reference/`, `vendor/`) loads when you work there.
 - What the software has to match — the joints and links, the reductions (`CYCLOIDAL_RATIO`, `GT2_RATIO`,
   `FOREARM_ROLL_RATIO` in `cad/lib/params.py`, and which way round `config.py`'s `gear_ratio` reads), which motor sits
   on which joint — is `cad/robot/CLAUDE.md`; which CAN id drives which joint is

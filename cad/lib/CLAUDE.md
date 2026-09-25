@@ -4,7 +4,7 @@ Loads when you work in `lib/`. `lib/` is the left end of the layering (`cad/CLAU
 `parts/`, `assemblies/`, `robot/`, `tools/` or `tests/`. The rules for the modules that describe the assembly rather
 than geometry live with their users: `mounts.py` (Recipe B) and `placements.py` (retired / skipped occurrences) in
 `assemblies/CLAUDE.md`; the `reference.py` registries (`CUSTOM`, `COTS`, `DESIGNED`, `NATIVE`, …) in
-`parts/CLAUDE.md` and `reference/README.md`.
+`parts/CLAUDE.md` and `reference/CLAUDE.md`.
 
 ## What is where
 ```
