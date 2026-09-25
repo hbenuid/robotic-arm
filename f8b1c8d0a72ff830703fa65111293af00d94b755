@@ -1,0 +1,28 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-21 — printed vs. bought: lists, colours and STLs from the one `COTS` label (branch `cad/printed-vs-bought`)
+
+An audit of the cycloidal drive's purchased parts found all 10 modelled ones consistent (module, occurrence,
+mass, reference, manifest — quantities match the spec), and one gap: the 4 arm-mount M4 bolts + 4 captive
+nuts (and grease) are bought but were tracked only in the doc's hand-written shopping list. The make/buy label
+already existed once per part (`COTS = True`); nothing used it. Commits: `f8b1c8d`, `8f23614`, `2974e67`
+(the last two remove the make/buy views again).
+
+### Added — what to order, on every purchased part
+- The 15 COTS modules (+ `parts/_templates/cots.py`) declare `PURCHASE_SPEC`, `PURCHASE_QTY` (pieces per
+  occurrence; the whole pattern for the drive's pin / fastener parts) and an optional `PURCHASE_NOTE`, next to
+  `MASS_G`. The drive's are built from `DEFAULT_CONFIG` (never retyped). `parts.bought(name)` is the one reader of
+  the label. Specs of the five SolidWorks-era parts are read off `vendor/README.md` / `lib/params.py` and flagged
+  "confirm" where the repo names no exact model (pancake motor, 6 mm rail, 20T pulley bore).
+- No geometry changed: all 41 part STEPs rebuilt byte-identical (`shasum -a 256 -c`, arm64 Mac).
+
+### Added — `cad/tools/bom.py`: the print list and the buy list
+- `./cadtool python tools/bom.py [--module cycloidal_drive|gripper] [--md|--json]`, counted from the assembly
+  tables (kernel-free): 26 printed parts / 34 to print; 15 bought parts / 18 occurrences / 58 pieces. `EXTRAS`
+  is the one hand-kept table — purchased items with no geometry (the arm-mount bolts and nuts, grease): on the
+  buy list, absent from the model, the totals and the inertials. `docs/cycloidal_drive.md` §9 now points at the
+  command instead of retyping the list.
+
+### Added — `cad/tools/export_printables.py`: one STL per printed part
+- Writes `cad/print/<name>.stl` (git-ignored by the root `*.stl` rule; mm, part-local frame, 0.01 mm / 0.1 rad)
+  from the in-process body, with the quantity to print; a bought part is refused, a stale STL is removed.
