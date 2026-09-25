@@ -9,19 +9,16 @@ Parts live in subsystem groups (`base`, `joints`, `wrist`, `gripper`, `cycloidal
 `parts/_templates/`). Groups follow the **physical stage along the arm**, not the name prefix and not
 the URDF links (`j1_*` sit in `base/`; `gripper_clamp_bracket` / `gripper_j3_connector` sit in `wrist/`
 as the wrist-side mount, the latter although `assemblies/gripper.py` places it) — put a new part with
-the stage it bolts to. The group is only a directory: the part's NAME is its module stem, unique
-across groups (`import parts` raises on a duplicate), and it keys the manifest,
-`reference/<origin>/<name>.step`, `placements.json` and the URDF links. `parts.names()` /
-`parts.load(name)` / `parts.model(name)` / `parts.build(name)` (a stdlib-only directory scan in
-`parts/__init__.py`) are the only way code reaches a part — never `from parts import <name>`; note
-`parts.base` is the *group package*, the part is `parts.load("base")`. Every part MUST (enforced by
-`tests/test_parts_convention.py`):
+the stage it bolts to. The group is only a directory: the part's NAME is its key and `parts.load(name)` & co. are
+the only way in (`cad/CLAUDE.md` "Rules for every folder"; `import parts` raises on a duplicate name) — a stdlib-only
+directory scan in `parts/__init__.py`; note `parts.base` is the *group package*, the part is `parts.load("base")`.
+Every part MUST (enforced by `tests/test_parts_convention.py`):
 - declare ONE model, **`@step def <name>()`** (`from cadgen import step`; NAME = file stem = model
   name; no parameters, no `out=` — the STEP is the sibling file), that **returns** a valid, labelled
   Part/Compound at its **local origin** — the assembly owns placement; label == module name;
-- end with `if __name__ == "__main__": <name>()` (`cad/CLAUDE.md`); no `show()` in the file, no import side effects;
-- import `lib` / `parts` plainly — no `sys.path` shim (`cad/CLAUDE.md`). cadgen loads `parts/<group>/<name>.py` as the
-  package module `parts.<group>.<name>` (it walks the `__init__.py` chain) — the same object `parts.load()` returns;
+- end with the build call, with no `show()` and no import side effects (`cad/CLAUDE.md` "Rules for every folder");
+- import `lib` / `parts` plainly (`cad/CLAUDE.md`): cadgen loads `parts/<group>/<name>.py` as the package module
+  `parts.<group>.<name>` (it walks the `__init__.py` chain) — the same object `parts.load()` returns;
 - pull shared dims from `lib/params.py`;
 - **keep the kernel lazy** (`cad/CLAUDE.md` "Lazy kernel").
 

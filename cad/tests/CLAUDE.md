@@ -26,7 +26,7 @@ loading `build123d` / `OCP`; names the first offender — a new assembly model g
 `totals.py` (what an occurrence contributes to the arm / link totals: its SolidWorks record, or its own build once
 converted — shared by `test_assembly.py` and `test_robot.py`),
 `tests/cycloidal/` (the drive: one module per part + housing / purchased / fitment / assembly / port,
-~230 tests; `from tests.cycloidal.helpers import CFG, …` for the shared config + geometry helpers, the
+`from tests.cycloidal.helpers import CFG, …` for the shared config + geometry helpers, the
 `stack` fixture is `tests/cycloidal/conftest.py`), `tests/upper_arm/` (`j1_link`: the LEGACY build's feature probes, DEFAULT's
 holes on the elbow motor's pattern and the drive's arm-mount bolts, no sockets), `tests/forearm/` (the forearm: the LEGACY
 build vs the SolidWorks part + feature probes, the roll end, the roll drive - axis through the wrist centre, stack, press fits, clean pairs,
@@ -34,12 +34,12 @@ clearances in the arm with the elbow folded; `helpers.in_host()` places any occu
 `slow`.
 
 ## Where the locks live
-Totals (leaves / solids / bought pieces / pinned children) are never quoted in the docs: they live in the locks —
-`tests/test_assembly.py`, `assemblies/cycloidal_drive.py EXPECTED`, `assemblies/forearm_roll_drive.py EXPECTED`,
-`reference/placements.json expected`, `tests/test_bom.py`, `tests/test_placements.py`, `MULTI_BODY` in
-`tests/test_parts_convention.py`, the interference budgets (`tests/test_mounts.py`, `tests/forearm/`) and the shared
-dimensions in `tests/test_params_invariants.py`. A geometry change bumps the ones its failures name — measure, never
-guess (Recipe C step 5 in `cad/CLAUDE.md` has the `totals()` one-liner).
+The totals the docs never quote (`cad/CLAUDE.md` Docs) live in the locks — `tests/test_assembly.py`,
+`assemblies/cycloidal_drive.py EXPECTED`, `assemblies/forearm_roll_drive.py EXPECTED`, `reference/placements.json
+expected`, `tests/test_bom.py`, `tests/test_placements.py`, `MULTI_BODY` in `tests/test_parts_convention.py`, the
+interference budgets (`tests/test_mounts.py`, `tests/forearm/`) and the shared dimensions in
+`tests/test_params_invariants.py`. A geometry change bumps the ones its failures name — measure, never guess (Recipe C
+step 5 in `cad/CLAUDE.md` has the `totals()` one-liner).
 
 ## Gotchas (all verified)
 - `Shape.intersect` on composite operands changed in build123d 0.11 (a placed module against a part reported

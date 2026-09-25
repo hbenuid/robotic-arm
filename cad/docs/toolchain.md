@@ -5,10 +5,9 @@ or when the kernel or the plugin misbehaves. Everyday running is `cad/CLAUDE.md`
 of every bump is `git log -- pyproject.toml uv.lock` from `cad/` (the older bumps carry their CHANGELOG entry as a git note).
 
 ## Pins
-- Toolchain: the `cadgen` PyPI package (`cadgen[snapshot]==<ver>`, a locked dependency) is the whole
-  runtime — decorators, the `cadgen` CLI, viewer, snapshots. The `cad@text-to-cad` plugin **v0.6.x**
-  (`~/.claude/plugins/cache/text-to-cad/cad/<ver>/skills/`) ships only the `/cad:*` skill docs (+ the
-  step.parts script); its `skills/cad/requirements.txt` pins the same cadgen version — bump both
+- cadgen and the plugin (what each one is: `cad/CLAUDE.md` "Running things"): `pyproject.toml` pins
+  `cadgen[snapshot]==<ver>`; the `cad@text-to-cad` plugin **v0.6.x** (`~/.claude/plugins/cache/text-to-cad/cad/<ver>/skills/`,
+  the skill docs + the step.parts script) pins the same cadgen version in its `skills/cad/requirements.txt` — bump both
   together, `./cadtool doctor` checks (plugin updates need `git-lfs` on `PATH`).
 - **build123d 0.11.1 / OCP 7.9.3**: cadgen 0.6.x requires `build123d>=0.11.1,<0.12` and
   `cadquery-ocp-novtk>=7.9,<8`; `pyproject.toml` pins the exact kernel (`cadquery-ocp-novtk==…`, the

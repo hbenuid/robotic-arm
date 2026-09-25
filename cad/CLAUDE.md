@@ -5,8 +5,8 @@ checklist (Recipe C), layering, the lazy kernel, the two machines. **Audience:**
 folder's own rules live in its CLAUDE.md — `parts/`, `assemblies/`, `robot/`, `lib/`, `tests/` — which loads when you
 work there; Start here says which file owns which task.
 
-`cad/` is a **separate uv project** (Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.6.x) inside the
-robotic-arm repo; the motor-control project (`software/control/`) never depends on it.
+The root `CLAUDE.md` loads with this file, so its rules (git, uv, ruff and the hooks, CI, docs) are not repeated here.
+The toolchain: Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.6.x (pins: `docs/toolchain.md`).
 
 ## Start here — task → where to look
 | you want to … | read | then follow |
@@ -26,8 +26,6 @@ robotic-arm repo; the motor-control project (`software/control/`) never depends 
 | work on the cycloidal drive / the forearm roll drive | `docs/cycloidal_drive.md` / `docs/forearm_roll.md` | — |
 | know what is unsettled (fit problems, estimates, unmodelled hardware) | `docs/open_issues.md` | add / remove rows as you go |
 | something behaves oddly | Gotchas (below), then the Gotchas of the folder's CLAUDE.md and `docs/toolchain.md` | — |
-Totals (leaves / solids / bought pieces / pinned children) are **never** quoted in the docs: they live in the locks
-(`tests/CLAUDE.md` "Where the locks live"); their history is `git log -p` on those files.
 
 ## Recipe C — the regeneration checklist, after ANY geometry / mass / placement change, in this order
 1. `./cadtool daemon stop` when `lib/reference.py`, `pyproject.toml` or the kernel changed (workers keep old code).
@@ -36,10 +34,9 @@ Totals (leaves / solids / bought pieces / pinned children) are **never** quoted 
    a part whose vendor file is NEW needs `./cadtool gen parts/<group>/<name>.py --force` first (see Gotchas below).
 4. `shasum -a 256 -c /tmp/before.txt` — only the STEPs you meant to change may fail; settle float noise with
    `./cadtool inspect diff`.
-5. `./cadtool pytest -m "not slow"`, then `./cadtool pytest`; bump the locks the failures name — `EXPECTED` from
-   `./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals(), totals('stator'))"`, the
-   count literals in `tests/test_assembly.py` / `test_bom.py` / `test_placements.py`, `MULTI_BODY`, interference
-   budgets (measure, never guess).
+5. `./cadtool pytest -m "not slow"`, then `./cadtool pytest`; bump the locks the failures name (`tests/CLAUDE.md`
+   "Where the locks live"; a drive's `EXPECTED` from
+   `./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals(), totals('stator'))"`).
 6. A mounted part's geometry changed → `./cadtool python tools/reference/mount_placements.py` (its records carry
    solids / volume / bbox); a SolidWorks-derived change → `extract_placements.py --no-pancake`.
 7. `./cadtool python tools/robot/derive.py --check robot/arm.urdf robot/arm.sdf`; for every link it names, copy that
@@ -53,13 +50,12 @@ Totals (leaves / solids / bought pieces / pinned children) are **never** quoted 
     changed (root `CLAUDE.md` Git workflow).
 
 ## Running things (always via `./cadtool` or `uv run`, from `cad/`)
-- **Never call bare `python`** — the system Python is 3.14 without build123d. Python is pinned
-  to **3.12** (`.python-version`; bump only with the full suite green). Never run CAD code with the motor-control venv.
+- **Never call bare `python`** — the system Python is 3.14 without build123d.
 - Toolchain: the `cadgen` PyPI package (a locked dependency) is the whole runtime — decorators, the `cadgen` CLI,
   viewer, snapshots; the `cad@text-to-cad` plugin only ships the `/cad:*` skill docs. Pins, upgrades and the plugin:
   `docs/toolchain.md`. **Never add `cadquery-ocp`** (the VTK build) to `pyproject.toml`: it owns the same `OCP/` files as
   `cadquery-ocp-novtk`, so uv removing one guts the other (`docs/toolchain.md` Gotchas).
-- **A model is a script you run.** `./cadtool gen parts/<group>/<name>.py` (alias `step`) runs it
+- **A model is a script you run.** `./cadtool gen parts/<group>/<name>.py` runs it
   and writes the sibling `parts/<group>/<name>.step` (git-ignored); a second run prints `current …`
   (freshness gate: source closure + tracked inputs + outputs hashed); `./cadtool why <model.py>`
   explains a verdict clause by clause; `--force` rebuilds. Every derived artefact lives in the
@@ -71,10 +67,9 @@ Totals (leaves / solids / bought pieces / pinned children) are **never** quoted 
   pinned child).
 - To look at a model, build it and open its STEP in `./cadtool viewer` (below) — cadgen's viewer and snapshots cover
   everything (no `ocp-vscode`). Numbers without a build: `./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals())"`.
-- `./cadtool inspect <file.step> [--planes] [--json]` (leaf refs, solids, faces, volume, bbox; `--planes` = the
-  planar faces as normal / offset / area) and `./cadtool inspect diff <a.step> <b.step> [--tol X]` (same geometry?
-  exit 1 if not) — a **local** tool, `tools/step_facts.py`: cadgen 0.6.5 removed `cadgen step inspect` and ships no
-  replacement command (the old `refs|measure|align|…` first argument exits 2 with the new syntax). Anything else
+- `./cadtool inspect` and `inspect diff` (what they print: the `README.md` command table; `--planes` = the planar faces
+  as normal / offset / area) are a **local** tool, `tools/step_facts.py`: cadgen 0.6.5 removed `cadgen step inspect`
+  and ships no replacement command (the old `refs|measure|align|…` first argument exits 2 with the new syntax). Anything else
   is Python over `cadgen.read_scene(path)` (`.leaves()`, `.resolve("#o1.2.f7").shape()` — world-frame build123d
   geometry, the refs the viewer shows) + `cadgen.geometry` (`closest_points`, `overlap_volume`, `topology_errors`),
   kept as a test when it is worth re-running.
@@ -88,15 +83,11 @@ Totals (leaves / solids / bought pieces / pinned children) are **never** quoted 
   restarted; `./cadtool cadgen daemon status` shows them).
 - `./cadtool pytest [-m "not slow"]`. Run pytest only through `./cadtool pytest` (rootdir `cad/`;
   `software/control/tests/` is the unrelated, broken motor-control suite); the suite: `tests/CLAUDE.md`.
-- `./cadtool lint [--fix] [path…]` — `ruff check` (a locked dev dependency; rules in `pyproject.toml [tool.ruff]`: ruff's
-  default set for the locked version + the common families `E F I UP B SIM` in full, `isort` wrapping at 120; every
-  ignore carries its reason there). Every `zip()` takes `strict=` (`B905`): `True` where the inputs must pair up -
-  a length mismatch raises instead of silently truncating -, `False` only where a mismatch is expected and handled
-  (`tools/step_facts.py diff`). The tree is clean; keep it clean. Lint only:
-  never `ruff format` (it would re-flow the hand-aligned tables in nearly every file). A lint fix in a model's import
-  closure makes the model stale like any source edit — rebuild and hash-gate it (Recipe C 2–4). Automatic: the
-  Claude Code hook reports findings on each `.py` file as it is edited (fix them before the rebuild, not after), the
-  git pre-commit hook blocks a commit with findings (root `CLAUDE.md` Toolchain).
+- `./cadtool lint [--fix] [path…]` — `ruff check` (the rules, lint-only and the hooks: root `CLAUDE.md` Toolchain;
+  `isort` wraps at 120). Every `zip()` takes `strict=` (`B905`): `True` where the inputs must pair up - a length
+  mismatch raises instead of silently truncating -, `False` only where a mismatch is expected and handled
+  (`tools/step_facts.py diff`). A lint fix in a model's import closure makes the model stale like any source edit —
+  rebuild and hash-gate it (Recipe C 2–4); fix the hook's findings before the rebuild, not after.
 - `uv add <pkg>` for deps (commit `pyproject.toml` + `uv.lock`); never `pip install`.
 - **Generated STEPs are never committed** — part STEPs included (git-ignored, like
   `assemblies/*.step` and `robot/links/*.step`): a fresh clone has none until `./cadtool gen assemblies/arm.py`
@@ -132,8 +123,7 @@ Locked by `tests/test_layering.py` (an AST scan — function-local imports count
 `lib ← parts ← assemblies ← robot ← tools ← tests`; a package imports only itself and the ones to its
 left. So `assemblies/` never imports `robot/` (the base frame both need is `lib/datum.py`), `robot/`
 builds on `assemblies/_occurrences.py` (`world_rows` reads a designed module's `OCCURRENCES` / `BODIES`),
-and `lib/cycloidal/` never imports `lib/params.py` (which re-exports from it) — its globals come from
-the leaf `lib/units.py` (`IN`, `NUDGE`; `lib/params.py` re-exports those too).
+and inside `lib/` the packages `lib/params.py` re-exports from never import it (`lib/CLAUDE.md`).
 
 ### Lazy kernel
 **Model files never load the CAD kernel at import** (`tests/test_lazy_kernel.py`, fast lane): cadgen gates a
@@ -157,28 +147,24 @@ is what assembly bodies call for a child — the linked child while a build runs
 otherwise. `tests/conftest.py` makes an accidental top-level call under pytest fail loudly.
 
 ## Two machines (Fedora Linux PC + arm64 Mac)
-The repo is worked on from both; git is the only sync channel (push before leaving a machine, pull on arrival).
+Push before leaving a machine, pull on arrival (root `CLAUDE.md` "Two development machines").
 - **Per-machine state git does not carry** — after a pull that changes `pyproject.toml` / `uv.lock`, follow
-  `docs/toolchain.md` (daemon stop, `./cadtool setup`, the plugin in both scopes, a clean `./cadtool doctor`).
+  `docs/toolchain.md`.
 - **No generated STEP is committed**, because its bytes differ per machine (see "Running things"): each
   machine builds its own, nothing to restore or avoid staging. Only `robot/meshes/*.stl` is generated AND
   committed — re-export those on one machine per change, never as a side effect.
-- `cadtool` must stay runnable on macOS's stock **bash 3.2** (under `set -u` an empty array is unset: expand
-  optional arrays as `${arr[@]+"${arr[@]}"}`) and without GNU coreutils on `PATH`. No exact-equality asserts on
+- `cadtool` runs on bash 3.2 (root `CLAUDE.md`): under `set -u` an empty array is unset — expand optional arrays as
+  `${arr[@]+"${arr[@]}"}`. No exact-equality asserts on
   floating-point results (tessellations of spline geometry differ per architecture). Changes must work on both
   machines by construction; there is no per-machine sign-off to track or report.
-- **CI is the third machine** (`.github/workflows/ci.yml`, run by hand - when: root `CLAUDE.md` "CI"): a clean clone
-  on x86_64 Ubuntu - lint, fast lane, slow tests, `gen` of both arms - with an empty cadgen store and none of the raw
-  exports. A failure there that neither machine shows is a dependency on local state: fix the test or the model,
-  never the runner.
+- **CI is the third machine** (root `CLAUDE.md` "CI"): a failure there that neither machine shows is a dependency on
+  local state — fix the test or the model, never the runner.
 
 ## Gotchas (all verified)
 - cadgen's freshness gate tracks only the inputs the LAST build actually read: a part whose vendor file appears after
   its last build still reads `current` (its body never called `read_step` on that file) — `./cadtool gen <part> --force`
   once; the assemblies then follow. Verified: `nema17_48mm` kept its envelope STEP until forced.
-- build123d's `export_step` writes the time into the STEP header, so re-running a vendor-producing tool changes the
-  file's bytes (and its manifest sha) with identical geometry — write vendor files once, on one machine, and use
-  the tools' selectors (`split_mks_motor.py --write kit|drive`) to leave the others alone.
+- Vendor STEPs are written once, on one machine (why: `vendor/README.md` "Where the vendor files come from").
 - Don't compare large STEP artifacts with `git diff`; compare source, `inspect` output and snapshots.
   A STEP edited by anything but its model (or built under another `CADGEN_CACHE_DIR`) reads as stale
   in `./cadtool why` — rebuild it.
@@ -192,9 +178,7 @@ The repo is worked on from both; git is the only sync channel (push before leavi
 ## Docs
 - A rule lives in the ONE CLAUDE.md / README of the folder it governs; a rule that spans folders lives here. Change it
   there — never restate it in a second file (point at it instead).
-- Docs name constants, never numbers, and point at code; they never list inventories (parts, counts, totals) —
-  `./cadtool help`, `parts.names()`, the tests and the locks are those lists.
-- `docs/open_issues.md` is the ONE list of what is not settled (fit problems, estimates to confirm on hardware,
-  unmodelled hardware, unconfirmed mappings): add a row when you flag something, remove it when you close it.
-- History is `git log`, never a doc: the commit message is the record (root `CLAUDE.md` Git workflow); the retired
-  `CHANGELOG.md` entries are git notes on their commits.
+- Docs name constants, never numbers, and point at code; they never list inventories (parts, counts) or quote totals
+  (leaves / solids / bought pieces / pinned children) — `./cadtool help`, `parts.names()`, the tests and the locks
+  (`tests/CLAUDE.md` "Where the locks live") are those lists; their history is `git log -p` on the lock files.
+- `docs/open_issues.md`, the commit message as the record, no dated history: root `CLAUDE.md` Docs / Git workflow.

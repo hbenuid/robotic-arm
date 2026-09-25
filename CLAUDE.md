@@ -98,4 +98,4 @@ Paths in the first four bullets are relative to `software/control/`.
   state and the reasons for it, never a dated history.
 - `cad/docs/open_issues.md` is the ONE list of what is not settled (fit problems, estimates to confirm on
   hardware, unmodelled hardware, unconfirmed mappings): add a row when you flag something, remove it when you
-  close it. `cad/CLAUDE.md` opens with a "Start here" task index and the regeneration checklist.
+  close it.

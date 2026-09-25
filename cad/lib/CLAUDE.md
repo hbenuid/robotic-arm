@@ -26,11 +26,10 @@ cycloidal/    # the cycloidal drive: DriveConfig (params.py), layout.py, profile
 
 ## Shared dimensions (DRY)
 `lib/params.py` is the single source of truth: mm and grams, every constant tagged
-`[MEASURE] / [DATASHEET] / [DESIGN] / [REFERENCE] / [ESTIMATE]` with a derivation comment.
-`lib/` never imports `parts/`. Two leaves sit below it and are re-exported unchanged: `lib/motors.py` (the
-NEMA 17 interface, the pancake, the 40 mm kit motor + MKS board, `MOTOR_40`) and `lib/belts.py` (the GT2
-constants, `pulley_od`, `closed_belt_length` / `centre_distance`, the stock belt lengths) — a `lib/` package
-that `lib/params.py` re-exports from (`lib/cycloidal/`, `lib/forearm/`, `lib/upper_arm/`) imports THOSE, never `lib.params`. Docs name constants, never numbers. Datum: the SolidWorks capture
+`[MEASURE] / [DATASHEET] / [DESIGN] / [REFERENCE] / [ESTIMATE]` with a derivation comment. It re-exports the
+leaves below it (`lib/units.py`, `lib/motors.py`, `lib/belts.py`: What is where) unchanged; a `lib/` package it
+re-exports from (`lib/cycloidal/`, `lib/forearm/`, `lib/upper_arm/`) takes its globals from those leaves, never from
+`lib.params` (`tests/test_layering.py LEAF_PACKAGES`). Datum: the SolidWorks capture
 frame is **Y up** (J1 axis); the URDF base frame (REP-103) is `lib/datum.py base_frame()` (with `frame()`,
 `U`, `BASE_FORWARD`; `robot/frames.py` re-exports them and builds the kinematics on top) — and
 `assemblies/arm.py` emits the arm in it (`arm_from_w()`, see `assemblies/CLAUDE.md`), so `arm.step` is **Z up**.
@@ -46,9 +45,6 @@ Changing a shared dimension — touchpoints in order:
 | 2 | `tests/test_params_invariants.py` | the lock; `./cadtool pytest -m "not slow"` |
 | 3 | `./cadtool gen parts/<group>/<affected>.py` | regenerate the STEP(s) (or just the arm: it rebuilds every stale part) |
 | 4 | `./cadtool pytest` + `./cadtool gen assemblies/arm.py` + snapshot | verify geometry and fit |
-
-`lib/cycloidal/` never imports `lib/params.py` (which re-exports from it) — its globals come from the leaf
-`lib/units.py` (`IN`, `NUDGE`; `lib/params.py` re-exports those too); `tests/test_layering.py` locks it.
 
 ## Kernel gotchas (all verified)
 - `Compound.volume` skips nested sub-assemblies (build123d 0.10 and 0.11) — use `lib.reference.solid_volume()`.

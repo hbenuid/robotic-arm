@@ -8,15 +8,15 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
 - `reference/placements.json` (from `tools/reference/extract_placements.py`; schema: `reference/README.md`) holds
   every occurrence: `rel` (to its parent node) and `world`, as `Location(position, rotation_xyz_deg)`; keys
   `"<part>#<n>"`, module `"gripper#1"`. Treat it as an immutable input. An occurrence the DESIGN has replaced is
-  **retired** in `lib/placements.py RETIRED` (`j3_coupler#1`: the roll drive's block carries the coupler's lip / boss /
-  journal / stub): its record stays, `P.keys()` leaves it out (`retired=True` lists the file), no table / link / total
+  **retired** in `lib/placements.py RETIRED` (`j3_coupler#1`: the roll drive's block took over its
+  features, `docs/forearm_roll.md`): its record stays, `P.keys()` leaves it out (`retired=True` lists the file), no table / link / total
   claims it (`test_placements.py`, `test_assembly.py`, `test_robot.py` follow `keys()`). A PART the design drops
   entirely (the link caps `j1_cap` / `j2_cap_1` / `j2_cap_2`) cannot be retired - its part module,
   `CUSTOM` row and manifest entry go, and a record must name a known part -: its SolidWorks product goes into
   `lib/reference.py SKIPPED_PRODUCTS` and `tools/reference/mount_placements.py` (the merge mode, no monolith) moves the
   record to `skipped` as the entry an extraction writes (pose, totals, reason) - `test_skipped_nodes_are_the_dropped_products`.
 - **Mounted occurrences** (`lib/mounts.py`): the belt joints' motors - `nema17_48mm#1` (the 48 mm motor, under the base;
-  motor + board hang `BASE_MOTOR_STACK_PROUD` = 6.1 mm below the base's bottom face) and `nema17_40mm#2..3`, + `mks_servo42d#1..3`,
+  motor + board hang `BASE_MOTOR_STACK_PROUD` below the base's bottom face) and `nema17_40mm#2..3`, + `mks_servo42d#1..3`,
   on the NEMA 17 pads `base` / `j1_link` / `j2_link` carry - never existed in the SolidWorks capture. They are declared as
   frames-as-data in the host occurrence's frame (`Mount(key, part, host, link, joint, frame)`; a board's host is its
   motor) and `tools/reference/mount_placements.py` materialises them into `placements.json` as ordinary part records
