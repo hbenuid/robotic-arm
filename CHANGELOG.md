@@ -4,6 +4,49 @@ Dated record of notable changes to this repository (newest first). Every commit 
 behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
 `cad-setup` working branch was fast-forward-only and has been retired).
 
+## 2026-09-25 — The CAD docs split into a map + per-folder CLAUDE.md files (branch `cad/docs-split`)
+
+`cad/CLAUDE.md` was 548 lines (52 KB). An agent loaded all of it the moment it touched `cad/`, and `cad/README.md`
+(35 KB) repeated much of it. The rules now live beside the code they govern. Claude Code loads a folder's CLAUDE.md
+when it reads a file there, including the folders in between: reading `lib/cycloidal/disc.py` attaches
+`lib/CLAUDE.md`, verified.
+
+### Changed — the docs layout (`78bb889`)
+- **`cad/CLAUDE.md`** (199 lines, 18 KB) is the map plus the rules that hold in every folder:
+  - Start here, re-pointed at the new homes;
+  - Recipe C, and running things;
+  - layering, the lazy kernel, never calling a model outside a build;
+  - two machines;
+  - the cross-folder gotchas;
+  - a Docs section: one rule, one file.
+- **New nested guides** (wording moved, not rewritten):
+  - `parts/CLAUDE.md`: the part contract, part states, converting, COTS, printed vs. bought, Recipe A;
+  - `assemblies/CLAUDE.md`: placements, mounts, modules, tints, Recipe B;
+  - `robot/CLAUDE.md`: the description, plus the joint and link tables from the README;
+  - `lib/CLAUDE.md`: the module map, shared dimensions, kernel gotchas;
+  - `tests/CLAUDE.md`: the suite, and where the locks live.
+- **Moved elsewhere:**
+  - Recipe D → `vendor/README.md`;
+  - Recipe E → `reference/README.md`;
+  - pins, upgrades and per-machine setup → `docs/toolchain.md` (new).
+- **`cad/README.md`** is the human front page: setup, the `./cadtool` table, a folder-level layout linking each guide,
+  and tests.
+- **Root `CLAUDE.md`:** the "CAD" and "SolidWorks inputs" sections shrink to pointers.
+- **History and dates:**
+  - Dated history is cut from the guides; all of it is in this file.
+  - Where a date carried a rule's reason, the reason stays.
+  - Every "Last updated" line goes, and so does the rule to bump them: git dates every file. The per-change CHANGELOG
+    entry stays.
+- **Fixes:**
+  - `reference/README.md`: `skipped[]` is not empty (the three caps);
+  - `docs/open_issues.md`: its "Part states" pointer;
+  - the section name cited in `.gitignore`.
+- **Checked:**
+  - Every sentence of the old guides either appears verbatim in the new doc set or is a reviewed cut (history,
+    README duplicates) or re-point.
+  - Every repo path, link and `file` "Heading" reference resolves.
+  - Docs only: no `.py` changed, the arm stays `current`, lint is clean, and the fast lane passes (419).
+
 ## 2026-09-25 — The link caps removed; `j1_link` parametric (branch `cad/remove-caps`)
 
 The covers over the two arm links are gone: `j1_cap` (the tray under `j1_link`), `j2_cap_1` (the lid over `j2_link`'s
