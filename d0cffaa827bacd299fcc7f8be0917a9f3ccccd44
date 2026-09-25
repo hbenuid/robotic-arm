@@ -1,0 +1,11 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-11 — cad/ migrated to text-to-cad v0.5.1 / cadgen 0.5.1 (`@step` models, the `cadgen` CLI, build123d 0.11)
+
+### Changed — every committed part STEP regenerated with cadgen 0.5.1 (`d0cffaa`)
+- The 41 `cad/parts/<group>/<name>.step` files rewritten by `./cadtool gen assemblies/arm.py` (each
+  part a child job of the arm) — new Git LFS objects. The 0.4 writer embedded provenance
+  (`cadgen:sourceHash`, the generator path) and a build timestamp in every STEP; 0.5 writes none and
+  pins the timestamp, so `--force` rebuilds are byte-identical from here on. Geometry facts (faces,
+  edges, occurrences, bounds) identical to the 0.4 files for all 41; `assemblies/*.step` and
+  `robot/links/*.step` stay git-ignored and regenerate the same way.
