@@ -1,0 +1,20 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-08-28 — text-to-cad v0.4.28, purchased-part workflow, robot description
+
+### Added — robot description from the CAD (`d84354a`)
+- `cad/robot/frames.py`: 7 rigid links partitioning all 34 part occurrences and 5 actuated
+  joints (`j1`–`j3` revolute, `wrist_roll` revolute, `jaw_a`/`jaw_b` prismatic with mimic)
+  + `tool0`, computed from `reference/placements.json`. REP-103 base frame; every joint frame
+  has Z on its axis; all joints are 0 at the SolidWorks capture pose.
+- Per-link generators (`robot/links/*.py`) and meshes (`robot/meshes/*.stl`, 6.7 MB, mm);
+  `tools/export_link_meshes.py`, `tools/robot_frames.py` (joint origins, OCP inertials,
+  URDF/SDF drafts, `--check`).
+- `robot/arm.urdf` (source of truth, ledger comment), `robot/arm.srdf` (MoveIt2 groups,
+  states, end effector), `robot/arm.sdf` (model-level 1.12) — all pass the plugin's strict
+  validators; URDF at zero reproduces the CAD; posed sweeps verified visually.
+- Placeholder joint limits / effort / velocity in `lib/params.py` (`[ESTIMATE]`);
+  `tests/test_robot.py` (20 tests). Suite: 117 tests.
+- Known placeholders: axis signs, limits, jaw travel, two link-membership assumptions
+  (see the URDF ledger); the cycloidal drive was not modelled (imported and attached the same
+  day, see above); wrist roll and jaws are not driven by `src/config.py`.
