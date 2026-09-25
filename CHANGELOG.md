@@ -4,6 +4,38 @@ Dated record of notable changes to this repository (newest first). Every commit 
 behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
 `cad-setup` working branch was fast-forward-only and has been retired).
 
+## 2026-09-24 — ruff lint in both uv projects (branch `tooling/ruff`)
+
+Neither project had a linter or formatter configured. Both now lint with ruff; the tree is clean and meant to stay
+clean. Lint only: `ruff format` is not adopted (it would re-flow 136 of `cad/`'s 160 files and undo the hand-aligned
+tables); nothing enforces the lint yet (no hook, CI or test).
+
+### Added — ruff, `[tool.ruff]`, `./cadtool lint`; the tree made clean (`873f8e4`)
+- `ruff==0.16.9` as a dev dependency of both projects (`uv add --dev ruff`: `pyproject.toml` + `uv.lock`, root and
+  `cad/`; only ruff added to either lock). Run it with `uv run ruff check` at the root (it skips `cad/`) and
+  `./cadtool lint [--fix] [path…]` in `cad/` (new verb; `./cadtool clean` also drops `.ruff_cache/`).
+- Rules: ruff's default set for the locked version + `E4` (import placement), in each `pyproject.toml`. `cad/`:
+  isort wraps at 120 with `split-on-trailing-comma = false`; `UP032` ignored (`"{0.x:g}".format(cfg.section)` kept in
+  the purchase specs), `SIM118` ignored (`lib/placements.py keys()` is a filtering function, not `dict.keys()`),
+  `DTZ011` ignored (manifests carry the local date); `I001` off for the three re-export hubs (`lib/params.py`,
+  `lib/cycloidal/__init__.py`, `lib/forearm/__init__.py`) so their packed name grids stay. Root: `EXE001` ignored
+  (the shebangs stay; the CLI runs as `uv run launcher`).
+- Fixes (`cad/`: 96 `.py` files, root: 4): import blocks sorted (mostly one blank line between the third-party and
+  first-party groups); unused imports removed (`robot/frames.py`, three cycloidal parts, `lib/forearm/caps.py`, two
+  forearm tests); stale `noqa`s dropped (their notes kept as comments), `lib/params.py`'s two mid-module imports
+  marked `E402`; `lib/cycloidal/layout.py __all__` sorted; unused unpacked names prefixed `_`; explicit
+  `check=False` on four `subprocess.run` calls that read the return code; `tools/robot/derive.py` parenthesizes its
+  implicitly concatenated `<inertia>` string; `motor_control.py` drops `_drivers` from a `global` (only mutated) and
+  marks its catch-all on opening the bus `noqa: BLE001`.
+- `robotic-arm.code-workspace` recommends the Ruff extension (`charliermarsh.ruff`). Docs: root `CLAUDE.md`
+  (Toolchain, the `cadtool` verb list), `cad/CLAUDE.md` (Running things), both READMEs; `Last updated` bumped.
+
+Verified on the arm64 Mac: every generated STEP (61: parts, assemblies, robot links) rebuilt from the edited
+sources byte-identical (`shasum -a 256 -c` against hashes taken at `6a9a840`); `uv lock --check` clean in both
+projects; `ruff check` clean in both; fast lane 418 passed, full suite 698 passed + 9 skipped; the root CLI imports.
+**On the Fedora PC after pulling:** `./cadtool setup` (or `uv sync`) in `cad/` and `uv sync` at the root to install
+ruff.
+
 ## 2026-09-24 — cad/ drops the OCP CAD Viewer (branch `cad/drop-ocp-vscode`)
 
 The OCP CAD Viewer VS Code extension had one remaining use, `./cadtool show` (`tools/preview.py` → `ocp_vscode.show`):
