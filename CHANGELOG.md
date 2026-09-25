@@ -4,6 +4,95 @@ Dated record of notable changes to this repository (newest first). Every commit 
 behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
 `cad-setup` working branch was fast-forward-only and has been retired).
 
+## 2026-09-25 — The link caps removed; `j1_link` parametric (branch `cad/remove-caps`)
+
+The covers over the two arm links are gone: `j1_cap` (the tray under `j1_link`), `j2_cap_1` (the lid over `j2_link`'s
+motor side) and `j2_cap_2` (its belt tray). The sockets that located them go too, which is why `j1_link` was converted
+to parametric build123d. The conversion also fixes its two hole patterns.
+
+### Removed — the three caps and `arm_no_caps` (`444a88c`)
+- **Deleted:**
+  - the part modules `parts/base/j1_cap.py`, `parts/joints/j2_cap_1.py` and `j2_cap_2.py`
+  - `lib/forearm/caps.py`, with `Cap1Params` / `Cap2Params`, the `cap1` / `cap2` fields and
+    `cap1_socket_points` / `cap2_socket_points` / `motor_window`
+  - their `reference/solidworks/*.step` (LFS), `lib/reference.py CUSTOM` rows and manifest entries
+  - `assemblies/arm_no_caps.py`, which would now build the same thing as `arm.py`, together with its two tests, its
+    `test_lazy_kernel.py` entry and its CI `gen`
+- **`placements.json`:** a part the design drops cannot be `RETIRED` like `j3_coupler#1`, because a record must name a
+  known part.
+  - The three SolidWorks products are now `lib/reference.py SKIPPED_PRODUCTS`.
+  - `tools/reference/mount_placements.py`'s merge mode (no monolith needed) moves a record whose product is skipped to
+    `skipped`, as an extraction writes it (path, pose, totals, reason). It also re-reads every skipped entry's reason.
+  - The caps' poses are kept. There are 37 part records instead of 40 (97 solids instead of 100), and the new lock is
+    `test_skipped_nodes_are_the_dropped_products`.
+- **Tables:** `arm.py OCCURRENCES` / `GROUPS` and `robot/frames.py LINKS` drop the three keys.
+  - The arm: 63 leaves (was 66), 196 solids (was 199), 33 printed occurrences (was 36).
+  - The print list: 26 parts (was 29).
+  - The neighbour and clearance lists in `test_mounts.py`, `tests/cycloidal/test_assembly.py` and
+    `tests/forearm/test_roll_drive.py` drop the caps.
+- **`j2_link`:** DEFAULT has no locating sockets (`ForearmConfig.sockets = None`). LEGACY keeps them, since it still
+  has to reproduce the SolidWorks part. The window, cap and interference tests of the forearm go.
+
+### Changed — `j1_link` parametric: `lib/upper_arm/` (`444a88c`)
+- **The new package** (`params.py UpperArmConfig`, `layout.py`, `link.py build_link`) is modelled on `lib/forearm/`
+  and holds every feature, measured 2026-09-24 from a face census and cross-sections of the reference:
+  - the stadium plate, with its r 44.5 lip and r 0.5 round
+  - the elbow half's step down, with its 45° chamfer
+  - the square opening and the hub holes
+  - the motor pad: tube, root flare, cavity, floor, pilot opening, four windows, and R10 fills tangent to the opening
+  - the three slots, the x 128 seats with their boss, the elbow bearing stack, and the cap sockets
+- **LEGACY matches the reference:** `build_link(LEGACY)` gives 354 048.80 mm³ against 354 048.81, with an identical
+  bbox. It is the part's `REFERENCE_BUILD` (`REF_BBOX_TOL` 0.02). `LOCAL_FROM_REF` stays `IDENTITY`, so the
+  placements, the mounts and every test number keep their frame.
+- **DEFAULT, what the part builds, changes three things:**
+  - No cap sockets (+416.6 mm³).
+  - The four NEMA 17 holes become Ø3.2 on the 31 mm square about the shoulder axis, where `nema17_40mm#2` sits. The
+    SolidWorks holes were 0.38 mm off the axis, unevenly spaced, and one of them was Ø3.0. This closes the
+    `open_issues.md` row.
+  - The four hub holes move onto the cycloidal drive's arm-mount bolts, at −2.584167° instead of +0.775°. This is a new
+    finding: the SolidWorks holes missed the drive's M4 bolts by 3.36° (1.47 mm at r 25, through Ø4.4 holes).
+- **Also changed:**
+  - `lib/params.py J1_MOTOR_PAD_FACE_Y` now comes from `UpperArmConfig`, and `lib/upper_arm` is a leaf package in
+    `tests/test_layering.py`.
+  - The `tools/bom.py` arm-mount bolt note now gives the plate's grip (13.27 mm).
+  - Updated the `lib/mounts.py` note on `nema17_40mm#2`.
+- **Tests:** the new `tests/upper_arm/test_j1_link.py` has:
+  - LEGACY feature probes, one line per feature
+  - a check that DEFAULT's holes lie on the elbow motor's bolt square
+  - a check against the drive's bolts, mapped through `placements.json`, which also re-derives the `[REFERENCE]` angle
+  - no-socket probes and the exact volume change
+- **Robot:** the inertials were re-derived and pasted into `arm.urdf` / `arm.sdf`, and both meshes were re-exported.
+  - `upper_arm_link`: 0.911 kg (was 1.101)
+  - `forearm_link`: 0.759 kg (was 0.920)
+- **Docs:**
+  - `cad/CLAUDE.md`: Recipe C step 3, the part-state count, the skipped-part rule under "Assembly & placements", the
+    `arm_no_caps` paragraph replaced by the `--hide` recipe, the test summary, the gotcha
+  - `cad/README.md`
+  - `reference/README.md`
+  - `docs/cycloidal_drive.md`, now saying the hub holes follow the drive
+  - `docs/forearm_roll.md`
+  - `docs/open_issues.md`: the caps row and the pad-holes row are closed, and the wrapper count is now 15 of 17
+  - `Last updated` bumped on each
+
+Verified on the arm64 Mac, on this branch:
+- Lint is clean.
+- Fast lane: 419 passed.
+- Full suite: 688 passed + 9 skipped (the usual vendor-frame skips).
+- `test_reference_match` passed for `j1_link` (the LEGACY build against the SolidWorks STEP) and for `j2_link`.
+- The hash gate: rebuilding `assemblies/arm.py` + every `robot/links/*` changed exactly `j1_link`, `j2_link`, `arm`,
+  `upper_arm_link` and `forearm_link`; every other STEP is byte-identical, and the caps' STEPs and `arm_no_caps.step`
+  are gone. A second rebuild after the last docstring edits rewrote identical bytes.
+- `./cadtool why assemblies/arm.py` shows all 66 children pinned and current.
+- `derive.py --check` is clean after the paste.
+- `validate --strict` passes for the URDF and the SRDF; the SDF (`--gz-check never`) is OK, with only its standing
+  `collision_reuses_visual_mesh` warning.
+- Snapshots of `arm.step`, the URDF and `j1_link` from both sides were looked at: no caps, no sockets, the pad and
+  every feature in place.
+
+Per machine, after the pull: delete the git-ignored leftovers `cad/parts/base/j1_cap.step`,
+`cad/parts/joints/j2_cap_1.step` / `j2_cap_2.step` and `cad/assemblies/arm_no_caps.step`, then run
+`./cadtool daemon stop` (`lib/reference.py` changed) before the next `gen`.
+
 ## 2026-09-24 — CAD vs everything else: `software/` (branch `layout/software-folder`)
 
 The root mixed the motor-control project's files in with the CAD. It now splits in two: `cad/` and `software/`.
