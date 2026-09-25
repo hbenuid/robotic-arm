@@ -1,0 +1,16 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-18 — `cad/` organization cleanup (branch `cad/organization-cleanup`)
+
+### Changed — the two import cycles are gone and the layering is locked (`82613bb`)
+- `assemblies ↔ robot`: new `cad/lib/datum.py` owns `frame()`, `U`, `BASE_FORWARD`, `BASE_BOTTOM_Y`
+  and `BASE_FRAME`; `robot/frames.py` re-exports them and `assemblies/arm.py` takes `BASE_FRAME` from
+  `lib/`. The other direction stays: `robot/_links.py` builds on `assemblies/_occurrences.py`, whose
+  `world_rows()` reads a designed module's `OCCURRENCES` / `BODIES`.
+- `lib.params ↔ lib.cycloidal`: new leaf `cad/lib/units.py` (`IN`, `NUDGE`); `lib/cycloidal/geom.py`
+  imports it instead of `lib/params.py`, which re-exports both (every `from lib.params import NUDGE`
+  is unchanged).
+- New `cad/tests/test_layering.py` (AST scan, function-local imports count):
+  `lib ← parts ← assemblies ← robot ← tools ← tests`, `lib/cycloidal/` never imports `lib/params.py`,
+  no direct `parts.<group>` imports outside `parts/`, no `sys.path` outside
+  `tools/cycloidal/export_cadquery.py` (it runs in the other repo's venv), no `cad/__init__.py`.
