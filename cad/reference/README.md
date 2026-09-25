@@ -1,7 +1,5 @@
 # reference/ — SolidWorks reference geometry
 
-**Last updated:** 2026-09-25 — see the root `CHANGELOG.md` for dated changes.
-
 **Purpose:** the original design, as exported from SolidWorks, renamed to the clean part
 names used everywhere in `cad/` (`solidworks/`) — plus, for the cycloidal drive, the CadQuery
 exports of the `cycloidal_drive` repo the build123d parts were ported from (`cycloidal/`) — and, for the parts
@@ -44,6 +42,19 @@ directory; `lib.reference.path_of(name)` resolves it). Regenerate — never edit
 - Native parts (manifest `origin: native`, kind `native` / `cots`): `./cadtool python tools/reference/import_native.py
   [--only NAME] [--force]` builds the part in-process and exports it to `native/<name>.step` (build123d's STEP header
   carries the time: written once, on one machine, committed as LFS); both other tools keep the entries.
+- Each import tool owns its own `manifest.json` entries and keeps the others'; all build them with `lib/manifest.py`
+  (`read()` / `write()` / `entry()` — no part imports it, so editing it never makes a part stale). The cycloidal
+  export runs in the OLD repo's CadQuery venv — never ours.
+- `lib.reference.step_units()` only tells inch from mm: a centimetre file (the x48 kit export) is reported as mm.
+  OCCT converts every unit correctly on import; the manifest's `units` field is the one that would lie.
+
+## Recipe E — a new SolidWorks / vendor export arrives
+Keep it OUTSIDE the tree with a lowercase `.step` name (the raw
+exports are never committed; the tools take `--src` / `--monolith`, default `lib/reference.py DEFAULT_SOURCE_DIR`
+or `ARM_REFERENCE_SRC`); record file, size, sha256 and what it is under Provenance above; name it
+in `lib/reference.py` (`MONOLITH_NAME`, `MKS_EXPORT_NAME`, … or a `CUSTOM` / `COTS` row); measure before trusting
+it (`./cadtool inspect <file> --planes` — units, frame, shaft / pilot / bolt pattern); then Recipe A (`parts/CLAUDE.md`) or D (`vendor/README.md`). What
+the CAD keeps is the derived, committed copy (`reference/`, `vendor/`) — the raw file can be discarded afterwards.
 
 ## Naming map
 Clean name ← SolidWorks product (source file under the source tree); every row lives in
@@ -133,4 +144,6 @@ included) for the assembly test; `designed_modules[]` (the keys of `kind: module
 `rel`/`world`, a `solidworks` cross-check block and `source` instead of solids/volume); `mounted[]` (the keys of the
 part records with a `mount` block — the belt joints' motors and boards declared in `lib/mounts.py`, written by
 `tools/reference/mount_placements.py`: `path` / `parent` / `label_in_monolith` null, `rel == world = host world *
-mount.frame_in_host`, `mount.host` a SolidWorks key or the motor key for a board); `skipped[]` (currently empty).
+mount.frame_in_host`, `mount.host` a SolidWorks key or the motor key for a board); `skipped[]` (one record per SolidWorks
+node whose product the design dropped, `lib/reference.py SKIPPED_PRODUCTS` - the link caps: `path`, `label`, `reason`,
+leaves / solids / volume and the `rel` / `world` pose, moved there by `tools/reference/mount_placements.py`).

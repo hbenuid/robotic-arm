@@ -1,7 +1,5 @@
 # Open issues — what the CAD knows is not settled
 
-**Last updated:** 2026-09-25 — see the root `CHANGELOG.md` for dated changes.
-
 **Purpose:** the ONE list of unsettled things a session should know before trusting a number or a fit: fit problems
 the model carries knowingly, `[ESTIMATE]` values waiting for a measurement, hardware not modelled yet, mappings
 not confirmed. **Rule:** when you flag something in a commit, add a row (issue, where it lives, what closes it,
@@ -55,5 +53,5 @@ are quoted from the code they live in — the code wins if they drift.
 | item | where |
 |---|---|
 | The motor-control `software/control/tests/` imports `arctos.*` and does not run | root `CLAUDE.md` "Known issues" |
-| 15 of the 17 custom parts are still SolidWorks wrappers (`CONVERTED = False`; the links are parametric: `j2_link` since 2026-09-22, `lib/forearm/`, `j1_link` since 2026-09-25, `lib/upper_arm/`); the fit problems above are fixed at conversion | `parts/<group>/*.py`, `cad/CLAUDE.md` "Part states" |
+| 15 of the 17 custom parts are still SolidWorks wrappers (`CONVERTED = False`; the links are parametric: `j2_link` since 2026-09-22, `lib/forearm/`, `j1_link` since 2026-09-25, `lib/upper_arm/`); the fit problems above are fixed at conversion | `parts/<group>/*.py`, `cad/parts/CLAUDE.md` "Part states" |
 | The drive's motor envelope cuts the D-flat at `shaft_dcut_flat / 2` (flat-to-round 4.75) — ruled correct 2026-09-21 (it is what `reference/cycloidal/nema17_48mm.step` defines and the eccentric shaft's D-bore matches); noted here only because the parameter's name reads like 4.5 | `lib/cycloidal/motor.py flat_offset()` |

@@ -17,8 +17,8 @@ __pycache__/
 *.glb
 *.step
 # ... and their uppercase spellings (git matches case-sensitively; SolidWorks exports as .STEP). Nothing in
-# the tree is ever uppercase - a dropped export belongs OUTSIDE the repo (root CLAUDE.md "Where the SolidWorks
-# sources are") - so these only stop one from slipping in as a raw blob.
+# the tree is ever uppercase - a dropped export belongs OUTSIDE the repo (root CLAUDE.md "The SolidWorks
+# inputs are in the repo", cad/reference/README.md) - so these only stop one from slipping in as a raw blob.
 *.STL
 *.STP
 *.STEP

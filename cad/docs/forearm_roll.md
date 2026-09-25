@@ -4,9 +4,6 @@
 `wrist_pitch`), the way `cycloidal_drive.md` documents the shoulder. Code: `lib/forearm/` (`params.py
 RollEndParams` + `RollDriveParams`, `layout.py stack_positions`, `roll.py`, `pulley.py`),
 `assemblies/forearm_roll_drive.py`, `parts/joints/forearm_roll_*.py` + `bearing_6808.py`; tests `tests/forearm/`.
-**Last updated:** 2026-09-25 (the link caps removed: `forearm_link` without `j2_cap_1` / `j2_cap_2`, `j2_link` without
-their sockets; before that M6: the elbow block redone — it IS the elbow coupler, the shaft crosses the elbow axis, the
-forearm starts 48 mm from it).
 Numbers below name the constants; the values live in `lib/forearm/params.py`.
 
 ## 0. Specifications at a glance

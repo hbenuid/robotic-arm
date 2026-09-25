@@ -1,7 +1,5 @@
 # robotic-arm
 
-**Last updated:** 2026-09-24 — see the root `CHANGELOG.md` for dated changes.
-
 Robot arm control software for a 3-motor MKS SERVO42D/57D arm over CAN bus (the CAD's arm is now a 6-axis one that needs five boards - see the CAD section).
 
 ## Hardware

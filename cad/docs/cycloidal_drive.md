@@ -3,7 +3,6 @@
 **Purpose:** the specification of the drive (carried over from the `cycloidal_drive` repo, corrected
 where the code disagreed with it), where it lives in `cad/`, what changed in the build123d port, and
 how it is attached to the arm.
-**Last updated:** 2026-09-25 — see the root `CHANGELOG.md` for dated changes.
 
 ## Provenance
 - Designed in CadQuery in [`hbenuid/cycloidal_drive`](https://github.com/hbenuid/cycloidal_drive);

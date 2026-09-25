@@ -10,8 +10,6 @@ The software will be worked on later: the current work is the CAD, and `software
 in this repo on purpose — when it is picked up it needs the CAD's robot description (`cad/robot/arm.urdf`, the joint
 table, the drive ratios) to agree with `software/control/src/config.py`, and one repo keeps both sides in one commit.
 
-**Last updated:** 2026-09-24 — see `CHANGELOG.md` for dated changes.
-
 ## Git workflow
 - Work on a branch — `cad/<topic>` for CAD work, `<area>/<topic>` otherwise — and push the **branch**. `main` is
   fast-forwarded to it only when the user says so; never commit to or push `main` directly (an approved plan
@@ -26,15 +24,10 @@ per machine. In `cad/` no generated STEP is committed (its bytes differ per mach
 own) — rules in `cad/CLAUDE.md` "Two machines". Scripts must run on macOS's bash 3.2 without GNU coreutils.
 
 ## The SolidWorks inputs are in the repo; the raw exports are not
-The CAD reads only committed files: `cad/reference/solidworks/*.step` (every part's SolidWorks export, renamed),
-`cad/reference/cycloidal/*.step`, `cad/vendor/*.step`, `reference/placements.json` and `manifest.json` — all Git
-LFS. The raw exports they were derived from (the full-assembly monolith, the per-part exports, the motor-kit
-exports) are **not kept anywhere in git** and need not exist on a machine; they are only needed to re-run the
-derivation tools (`cad/tools/reference/extract_placements.py --monolith …`, `import_solidworks.py --src …`,
-`split_mks_motor.py --src …`; the default directory is `cad/lib/reference.py DEFAULT_SOURCE_DIR`, overridable
-with `ARM_REFERENCE_SRC`). A new export the user hands over is fed to those tools from wherever it sits (lowercase
-`.step`, outside the tree — never committed raw); its sha256 goes into `cad/reference/README.md`. Recipe E in
-`cad/CLAUDE.md` "Start here".
+The CAD reads only committed inputs (Git LFS): `cad/reference/` (the renamed SolidWorks / CadQuery exports,
+`placements.json`, `manifest.json`) and `cad/vendor/`. The raw exports they were derived from are **never committed**
+and need not exist on a machine; a new export the user hands over stays outside the tree (lowercase `.step`) and goes
+through Recipe E in `cad/reference/README.md`.
 
 ## Toolchain
 - Always use `uv` — never `pip install` directly. `uv add <pkg>` for new deps;
@@ -89,38 +82,16 @@ Paths in the first four bullets are relative to `software/control/`.
 - `cad/` is a **separate uv project** (Python 3.12, build123d) — the motor-control
   project (`software/control/`) never depends on it, and `launch.bat` never installs it. Never run
   CAD code with the motor-control venv.
-- Work from `cad/` via `./cadtool …` (`setup|doctor|gen|step|why|inspect|snapshot|export|validate|viewer|parts|skill|cadgen|store|daemon|pytest|lint|python|clean`; `step` = `gen`);
-  it runs the `cadgen` 0.6 toolchain (the `cad@text-to-cad` plugin v0.6.x's PyPI runtime, locked in
-  `cad/pyproject.toml`) inside the CAD venv with `PYTHONPATH=cad/`. A model is a plain script with one
-  `@step def <name>()`; `./cadtool gen <model.py>` runs it. Conventions, the wrapper → parametric
-  conversion workflow and the reference-match tests: `cad/CLAUDE.md`.
-- Printed vs. bought is one label per part — `COTS = True` in the part module = bought, anything else = printed
-  (`parts.bought(name)`); the print list, the buy list (`./cadtool python tools/bom.py`), the grey of purchased parts
-  in `arm.step` / `gripper.step` / `cycloidal_drive.step` (one STEP per assembly, never a make/buy copy) and the STL export (`tools/export_printables.py` → git-ignored `cad/print/`) are all
-  generated from it. Never sort parts into make/buy folders or keep a second list by hand.
-- The 20:1 cycloidal shoulder drive was imported from the `cycloidal_drive` repo (history kept
-  via a subtree merge) and ported to build123d: `cad/lib/cycloidal/`, `cad/parts/cycloidal/`,
-  `cad/assemblies/cycloidal_drive.py`; spec + port notes in `cad/docs/cycloidal_drive.md`.
-- Parts are grouped by subsystem (`cad/parts/{base,joints,wrist,gripper,cycloidal}/`) and reached
-  only through `parts.load(name)`; references sit in `cad/reference/{solidworks,cycloidal}/`; the
-  committed STEP/STL files (the inputs in `reference/` + `vendor/`, and `robot/meshes/`) are Git LFS objects
-  (`git lfs pull` if a checkout shows pointer files) — part STEPs are generated and git-ignored.
-- The robot description (`cad/robot/`: `arm.urdf` is the source of truth, `arm.srdf`, `arm.sdf`, per-link
-  meshes) is derived from `cad/robot/frames.py` — links `base_link, shoulder_link, upper_arm_link,
-  elbow_link, forearm_link, wrist_pitch_link, wrist_roll_link, jaw_a_link, jaw_b_link, tool0`; joints `base_yaw,
-  shoulder_pitch` (the cycloidal drive: stator in `shoulder_link`, rotor in `upper_arm_link`),
-  `elbow_pitch, forearm_roll` (the belt-driven roll drive, `cad/assemblies/forearm_roll_drive.py`: stator in
-  `elbow_link` - its block is also the elbow's output flange, the SolidWorks `j3_coupler#1` is retired -, rotor - the
-  hollow roll shaft - in `forearm_link`; `cad/docs/forearm_roll.md`), `wrist_pitch, wrist_roll, jaw_a, jaw_b`. Which MKS motor (`software/control/src/config.py` J1..J3, all `gear_ratio` 1.0) drives which joint is
-  unconfirmed — `CYCLOIDAL_RATIO` = 20 applies to `shoulder_pitch`, `FOREARM_ROLL_RATIO` = 4.5 to `forearm_roll`, and the
-  arm now carries five kits for three configured CAN ids. The motors themselves are placed: MKS SERVO42D kits on `base`
-  (48 mm, `nema17_48mm#1`) / `j1_link` / `j2_link` (40 mm, `nema17_40mm#2..3`) with `mks_servo42d#1..3`
-  (`cad/lib/mounts.py`), the drive's 48 mm kit and the roll drive's 40 mm kit (their boards are module rows).
+- Work from `cad/` via `./cadtool …` (`./cadtool help` lists the commands). Start at `cad/CLAUDE.md` — the map and the
+  rules for every folder; each folder's own CLAUDE.md (`parts/`, `assemblies/`, `robot/`, `lib/`, `tests/`) loads when
+  you work there.
+- What the software has to match — the joints and links, the drive ratios (`CYCLOIDAL_RATIO`, `FOREARM_ROLL_RATIO` in
+  `cad/lib/params.py`), which motor sits on which joint — is `cad/robot/CLAUDE.md`; which CAN id drives which joint is
+  unconfirmed (`cad/docs/open_issues.md`).
 
 ## Docs
 - `CHANGELOG.md` is the dated record of changes: add an entry (date, what changed, commit) with
-  every commit that changes behaviour, layout or tooling, and bump the `Last updated` line of any
-  README/CLAUDE.md you touch.
+  every commit that changes behaviour, layout or tooling. Docs carry no "Last updated" line — git dates every file.
 - `cad/docs/open_issues.md` is the ONE list of what is not settled (fit problems, estimates to confirm on
   hardware, unmodelled hardware, unconfirmed mappings): add a row when you flag something, remove it when you
   close it. `cad/CLAUDE.md` opens with a "Start here" task index and the regeneration checklist.

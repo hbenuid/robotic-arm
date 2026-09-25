@@ -1,7 +1,5 @@
 # vendor/ — purchased-part STEP files (current best model per part)
 
-**Last updated:** 2026-09-21 — see the root `CHANGELOG.md` for dated changes.
-
 **Purpose:** the geometry each `COTS = True` part in `parts/<group>/` imports. Committed via the
 `!/cad/vendor/*.step` gitignore exception as Git LFS objects (not regenerable from Python). Unlike
 `reference/solidworks/<name>.step` (or `reference/cycloidal/<name>.step` for the drive) — the
@@ -53,3 +51,29 @@ If the catalog model is worse than the SolidWorks re-export, restore it:
 For the cycloidal drive's parts the manifest is owned by `tools/cycloidal/import_cadquery.py`
 (run that one for them), and a worse catalog model is simply deleted — the
 envelope takes over and the manifest entry loses its `vendor` block.
+
+## Recipe D — produce or swap a vendor STEP
+From an export → `./cadtool python tools/reference/split_mks_motor.py --write
+kit|drive|all` (the motor kits); from the catalog → `./cadtool parts "<query>"` then `--id … --download` (below);
+`./cadtool inspect vendor/<name>.step --planes` and set `VENDOR_TO_REF` if the frame differs → `import_solidworks.py`
+(SolidWorks-origin parts) or `tools/cycloidal/import_cadquery.py --only <name>` (drive parts) for the manifest →
+`./cadtool gen parts/<group>/<name>.py --force` → Recipe C (`cad/CLAUDE.md`). Vendor STEP bytes are written once, on one machine.
+
+## Where the vendor files come from
+Besides step.parts downloads (above) and `tools/reference/extract_placements.py` (the flattened
+`nema17_pancake.step`), the third producer of vendor files is `tools/reference/split_mks_motor.py`: it splits the "NEMA 17 x 40 + MKS SERVO42D"
+kit export (`lib/reference.py MKS_EXPORT_NAME`, outside the repo next to the monolith) by GEOMETRY into
+`vendor/nema17_40mm.step` (the motor body, re-framed like the drive motor - face z=0, body −Z, shaft +Z, D-flat +Y -
+with the drive's `lib/cycloidal/motor.py pilot()` + `shaft()` fused on in place of the export's own) and `vendor/mks_servo42d.step` (board + cover + standoffs + M3x30,
+z=0 at the motor's REAR face, stack −Z); `import_solidworks.py` then mirrors both into `reference/solidworks/`
+(`rel=None`, the `nema17_pancake` pattern). `--write drive` composes `vendor/nema17_48mm.step` for the drive motor from
+the x48 export's real 48 mm body (`MKS48_EXPORT_NAME`; 7 solids, tie rods left out) with the same `pilot()` + `shaft()`
+fused on - **every motor carries the drive motor's interface** (`MotorParams`: Ø22 × 2 pilot, Ø5 × 22 shaft, 18 mm D-cut,
+the D-flat at `shaft_dcut_flat / 2` from the axis like the eccentric shaft's D-bore); the drive keeps its parametric envelope as the reference (`tools/cycloidal/import_cadquery.py --only nema17_48mm`
+writes its `vendor` block). build123d's STEP writer stamps the time into the header: written once, committed as LFS -
+never regenerated on the other machine, and a NEW vendor file needs `gen --force` on its part (the gate only tracks
+inputs the last build read).
+
+- build123d's `export_step` writes the time into the STEP header, so re-running a vendor-producing tool changes the
+  file's bytes (and its manifest sha) with identical geometry — write vendor files once, on one machine, and use
+  the tools' selectors (`split_mks_motor.py --write kit|drive`) to leave the others alone.
