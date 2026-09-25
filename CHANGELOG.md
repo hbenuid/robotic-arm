@@ -4,6 +4,34 @@ Dated record of notable changes to this repository (newest first). Every commit 
 behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
 `cad-setup` working branch was fast-forward-only and has been retired).
 
+## 2026-09-24 — cad/ drops the OCP CAD Viewer (branch `cad/drop-ocp-vscode`)
+
+The OCP CAD Viewer VS Code extension had one remaining use, `./cadtool show` (`tools/preview.py` → `ocp_vscode.show`):
+a preview of a model body without building it. Everything else - the STEP / URDF viewer with kinematics sliders, the
+review snapshots - was already cadgen's own CAD Viewer, and no test, build or tool imported
+`ocp_vscode`. The user decided to drop it; to look at a model now, `./cadtool gen` it and open the STEP in
+`./cadtool viewer` (or `snapshot` it).
+
+### Removed — `ocp-vscode`, `./cadtool show`, the extension recommendation (`5f0cf03`)
+- `cad/pyproject.toml`: `ocp-vscode==3.4.0` removed with `uv remove`; `uv.lock` loses it and the 40 packages only it
+  pulled in (`ocp-tessellate`, `flask` + `werkzeug` / `jinja2`, `ipykernel` + `jupyter-client` / `pyzmq` / `tornado`,
+  `websockets`, `orjson`, `pyyaml`, …). None of them owns `OCP/` files: `import OCP.gp` still works, and nothing
+  in the tree imports any of them.
+- `cad/tools/preview.py` deleted; `cad/cadtool`: the `show` verb and its usage line (`./cadtool show` is now an unknown
+  command). `robotic-arm.code-workspace`: `bernhard-42.ocp-cad-viewer` removed from the recommended extensions.
+- The `(preview: ./cadtool show …)` tail of the `__main__` build comment removed from every part, template and
+  assembly model (54 files); the assembly `Run:` docstrings name `./cadtool viewer` instead; `parts/_templates/designed.py`
+  names `parts.build(name)`. The per-leaf tint note (`assemblies/_occurrences.py _tint`, `cad/CLAUDE.md` Assembly) now
+  says the compound-level colour "did not cascade in the OCP CAD Viewer" - the observation that motivated it.
+- Docs: `cad/CLAUDE.md` (Running things, the model-run-flags gotcha), `cad/README.md` (command table, layout tree,
+  the no-side-effects rule, the Python-pin line), `cad/docs/cycloidal_drive.md` (at a glance, "Viewing the drive"),
+  root `CLAUDE.md` (the `cadtool` verb list); `Last updated` bumped on all four.
+
+Verified on the arm64 Mac: all 61 generated STEPs (parts, assemblies, robot links) rebuilt byte-identical
+(`shasum -a 256 -c` against the pre-change hashes), every assembly and link model `current`; `uv lock --check` clean;
+fast lane 418 passed, full suite 698 passed + 9 skipped. **On the Fedora PC after pulling:** `./cadtool daemon stop &&
+./cadtool setup` (the `uv sync` prunes the 41 packages), and uninstall the VS Code extension there if it is installed.
+
 ## 2026-09-23 — forearm roll, M6: the elbow block is the elbow coupler (branch `cad/forearm-roll`)
 
 The user rejected the M5 block (the Ø90 elbow disc and the Ø70 housing meeting along a sliver, the motor on a pad
