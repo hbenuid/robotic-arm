@@ -1,0 +1,8 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-18 — `cad/` organization cleanup (branch `cad/organization-cleanup`)
+
+### Changed — `tests/cycloidal/` follows the part-access rule (`cae3ed5`)
+- The nine modules that did `from parts.cycloidal import …` now bind `<name> = parts.load("<name>")`.
+  `CFG` lives once in `tests/cycloidal/helpers.py` (was pasted into nine files) and the identical
+  `stack` fixture moved to the new `tests/cycloidal/conftest.py` (was in three).
