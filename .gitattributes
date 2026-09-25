@@ -3,3 +3,9 @@ cad/**/*.stl filter=lfs diff=lfs merge=lfs -text
 # uppercase spellings too (case-sensitive matching; the tree itself stays lowercase)
 cad/**/*.STEP filter=lfs diff=lfs merge=lfs -text
 cad/**/*.STL filter=lfs diff=lfs merge=lfs -text
+# Line endings: the bash scripts stay LF on every checkout (Git for Windows defaults to core.autocrlf=true, and a
+# CRLF bash script fails on its first line); the Windows launcher is CRLF. The index holds LF either way.
+*.sh          text eol=lf
+cad/cadtool   text eol=lf
+.githooks/*   text eol=lf
+*.bat         text eol=crlf

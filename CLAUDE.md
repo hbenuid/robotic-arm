@@ -20,8 +20,9 @@ table, the drive ratios) to agree with `software/control/src/config.py`, and one
   `-p` on a lock file). The entries of the retired `CHANGELOG.md` (to 2026-09-25) are **git notes** on the commits
   they describe — `git log` prints them under the message; `./cadtool setup` makes a machine fetch them.
 - Case matters: git and the `*.step` / `*.stl` rules are case-sensitive. `.gitignore` also ignores `*.STEP` / `*.STP` /
-  `*.STL` and `.gitattributes` LFS-tracks `*.STEP` / `*.STL`, but keep every file in the tree lowercase — the tests
-  and tools assume it.
+  `*.STL` and `.gitattributes` LFS-tracks `*.STEP` / `*.STL`, but keep every file in the tree lowercase (README /
+  CLAUDE.md excepted) — the tests and tools assume it, and `cad/tests/test_tooling.py` checks. On the Mac git runs with
+  `core.ignorecase=true`: a case-only rename needs `git mv -f`.
 
 ## Two development machines
 Worked on from a **Fedora Linux PC and an arm64 Mac**; git is the only sync channel, venvs / plugin / caches are

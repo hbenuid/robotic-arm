@@ -3,6 +3,7 @@
 import json
 import pathlib
 import re
+import subprocess
 import tomllib
 from importlib import metadata
 
@@ -79,3 +80,14 @@ def test_claude_settings_are_the_same_in_the_root_and_in_cad():
     root = json.loads((CAD_DIR.parent / ".claude" / "settings.json").read_text())
     cad = json.loads((CAD_DIR / ".claude" / "settings.json").read_text())
     assert cad == root, "the two .claude/settings.json differ - edit the root one and copy it to cad/.claude/"
+
+
+def test_every_tracked_name_is_lowercase():
+    """git and the *.step / *.stl rules are case-sensitive, the Mac's filesystem is not: git there runs with
+    core.ignorecase=true, so a case-only rename goes unnoticed on the Mac and arrives on Linux as a second file.
+    Every tracked path is lowercase except the README / CLAUDE.md docs (root CLAUDE.md "Git workflow")."""
+    names = subprocess.run(["git", "-C", str(CAD_DIR.parent), "ls-files", "-z"], capture_output=True, text=True,
+                           check=True).stdout.split("\0")[:-1]
+    checked = [n.rpartition("/")[0] if n.rpartition("/")[2] in ("README", "README.md", "CLAUDE.md") else n for n in names]
+    upper = [n for n, c in zip(names, checked, strict=True) if c != c.lower()]
+    assert not upper, f"uppercase in tracked names (rename with git mv -f): {upper}"
