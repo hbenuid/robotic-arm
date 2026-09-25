@@ -1,0 +1,80 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-11 — cad/ migrated to text-to-cad v0.5.1 / cadgen 0.5.1 (`@step` models, the `cadgen` CLI, build123d 0.11)
+
+The installed `cad@text-to-cad` plugin was 0.4.28 (2026-08-26, the last 0.4.x); upstream shipped
+0.5.0 (2026-09-04) and 0.5.1 (2026-09-08), a deliberate rewrite with **no compatibility layer**
+(`docs/migrations/migrating-0.4-to-0.5.md` upstream): no `gen_step()`, no generation CLI, no skill
+scripts, no in-tree `__cadgen__/`. The plugin now ships only the `/cad:*` skill docs; the toolchain is
+the `cadgen` PyPI package, which is developed against build123d 0.11 / OCP 7.9 — so the CAD kernel
+moved too. Migration in two commits: the code/tooling/tests/docs, then the regenerated STEPs (Git
+LFS churn kept out of the review diff).
+
+### Changed — cadgen 0.5.1: `@step` models, `cadtool` over the `cadgen` CLI, linked assemblies, build123d 0.11.1 / OCP 7.9.3 (`44cf9be`)
+- Plugin updated 0.4.28 → 0.5.1 (user + project scope). `cad/pyproject.toml`: `cadgen[snapshot]==0.5.1`
+  (the `playwright` dev dep folded into the extra), **`build123d==0.11.1` and `cadquery-ocp==7.9.3.1.1`**
+  (build123d pulls `cadquery-ocp-novtk`, cadgen pulls `cadquery-ocp` unconstrained — pinned to the same
+  release or two OCP builds land in the venv; vtk 9.3.1 → 9.6.2). Python stays 3.12. On the old
+  build123d 0.10.0 / OCP 7.8.1 pair cadgen 0.5.1 was verified to fail three ways: OCCT 7.8.1's BinTools
+  reader mis-frames the VERSION_4 component objects cadgen stores (`ReadShape` uses the "type byte
+  first" vertex layout only for VERSION_3; 11 of the 41 parts hit "UnExpected BRep_PointRepresentation"
+  and could not be materialized), a linked child could not be exported (`LazyCompound` relies on the
+  `wrapped` property build123d 0.11 introduced — OCP raised `AddShape(): incompatible function
+  arguments`), and cadgen's STEP writer needs OCP 7.9's `HArray1.Value`. All three vanish on 0.11 / 7.9.
+- **A model is a script you run.** All 54 model files (41 parts, 3 templates, 3 assemblies, 7 robot
+  links) declare `@step def <name>()` (the old `gen_step()` body; NAME = file stem = model name) and end
+  with `if __name__ == "__main__": <name>()` — that call builds and writes the sibling STEP (the
+  committed `parts/<group>/<name>.step`; layout unchanged, upstream's `src/`+`STEP/` not adopted).
+  The `sys.path` shims are gone everywhere (models, `_occurrences.py`, `tools/`): `cadtool` exports
+  `PYTHONPATH=cad/`, pytest has `pythonpath = ["."]`, the new `cad/.env` covers VS Code; cadgen imports
+  a model as its package module (`parts.<group>.<name>`, the `__init__.py` chain).
+- New `lib/models.py` (`model_of`, `raw` = the body in-process, `geometry` = the linked child while a
+  cadgen build runs on the thread, the body otherwise) and `parts.model(name)` / `parts.build(name)`.
+  `assemblies/_occurrences.py` places every child through `geometry()` — inside `./cadtool gen
+  assemblies/arm.py` the 41 parts + gripper + drive are child models built in parallel and their
+  committed STEPs rewritten when stale (pull semantics); the gripper, the drive and the robot links
+  link their children's trees, the tinted arm inlines copies (`geometry(model, inline=True)`: cadgen
+  keeps a linked child's own colours, so the per-group tints would be lost — verified by snapshot);
+  modules are `.moved()` (no in-place `.locate()` on a linked child). `lib/assembly.py` is a plain re-export of cadgen's `AssemblyHelper`
+  (the pre-0.4 `cadpy` / pure-build123d fallbacks and their `relations` field deleted).
+- Vendor and reference STEPs are read with `cadgen.read_step` (`lib.reference.load`, the 5 plain COTS
+  parts, `parts/cycloidal/_cots.hybrid`): store-cached, and a tracked input — swapping a vendor file
+  makes the part stale. `lib.reference.describe` and `tools/reference/extract_placements.py` keep
+  `build123d.import_step` (label mangling `clean_label` mirrors).
+- `cad/cadtool` rewritten: `gen`/`step` runs the model script(s) (`--force`, `--json`, …); new `show`
+  (OCP preview of the body via `tools/preview.py`, since `__main__` now builds), `why` (`cadgen store
+  why`), `doctor` (plugin pin / node / chromium), `export <file.step> stl|3mf|glb [out]`,
+  `snapshot <doc> <out.png>`, `inspect …` (`cadgen step inspect`), `validate` (`cadgen urdf|srdf|sdf
+  validate`), `viewer` (`cadgen viewer`, URL `http://127.0.0.1:3245/?file=<rel>`), `cadgen|store|daemon`
+  passthrough and `daemon stop` (cadgen has no stop verb; its warm workers keep old code loaded after
+  a `uv sync` and ignore a bare SIGTERM). Gone: `artifact`, `CADGEN_WARM`, the vendored-cadgen
+  `PYTHONPATH` fallback, `VIEWER_CAD_PYTHON`; the plugin dir is picked by the venv's `cadgen --version`.
+- Tests: new `tests/conftest.py` (`CADGEN_DAEMON=0` + a guard that fails any test calling a model at
+  top level — a top-level call would rewrite the STEP and start the daemon); `test_parts_convention`
+  asserts the `@step` model named after the file with `fmt == "step"` and no `out=`, that no `gen_step`
+  survives, and (new, slow) that every part round-trips through cadgen's component BREP writer; every
+  geometry call site uses `parts.build(name)` / `lib.models.raw(model)`; the validator test no longer
+  skips. `tests/cycloidal/helpers.interference` runs OCCT's `BRepAlgoAPI_Common` directly: build123d
+  0.11 reworked `Shape.intersect` for composite operands (the placed drive against the base reported
+  73 818 mm³ instead of 0).
+- Root `.gitignore`: the `__cadgen__/`, `.*.step.glb`, `.*.step.js`, `.*.step/` rules removed (0.5 keeps
+  everything derived in `~/.cache/cadgen`); `cad/assemblies/__cadgen__/` deleted.
+- Docs rewritten for the new commands and conventions: `cad/README.md`, `cad/CLAUDE.md`, root
+  `README.md` / `CLAUDE.md`, `cad/docs/cycloidal_drive.md`, the three templates, `lib/export.py`.
+- Accepted behaviour changes: every `gen` prints cadgen's eager-kernel hint (build123d imported at
+  module top; ~2.5 s per run — lazy `cadgen.build123d` imports are a follow-up); `export` writes one
+  mesh format per call and needs Node ≥ 20; snapshots land exactly at the path given (no timestamp,
+  no GIF orbit); `--totals` is `totals()` via `./cadtool python -c`; the `/cad:*` skills in Claude
+  Code change after a restart.
+- Verified: `./cadtool pytest` 413 passed + 9 skipped on 0.4.28 (baseline) and **454 passed + 9 skipped**
+  on 0.5.1 / build123d 0.11.1 (the 41 new round-trip tests; no warnings); the fast lane 222 passed;
+  `tools/robot/export_link_meshes.py` reproduces `robot/meshes/*.stl` byte-identically (raw mode +
+  `read_step` = the 0.4 geometry); the three validators pass; `./cadtool gen assemblies/arm.py` builds
+  the 41 parts + gripper + drive as child jobs (`why`: 54 children pinned == current), a rerun prints
+  `current`, `--force` rewrites all 44 STEPs byte-identically; `cadgen step inspect refs --facts` of every
+  part, the three assemblies and `robot/links/link1.step` is identical to the 0.4 baseline (faces, edges,
+  occurrences, size, centre, diagonal; `inspect diff` flags only float-level writer differences, no face
+  or edge deltas); the arm / drive / URDF snapshots match the 2026-08-31 ones, group tints included;
+  `./cadtool viewer` serves `?file=assemblies/arm.step` (HTTP 200, `viewer list|stop` work);
+  `./cadtool export assemblies/cycloidal_drive.step stl` writes 5.5 MB through Node; `./cadtool doctor`
+  → pin OK, node 22, chromium OK.
