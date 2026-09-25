@@ -1,0 +1,14 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-08-28 — the cycloidal drive: imported, ported to build123d, attached
+
+The 20:1 cycloidal shoulder drive designed in the separate `cycloidal_drive` CadQuery repo now
+lives in `cad/` as parametric build123d, verified against the CadQuery exports, attached to the
+arm at its SolidWorks pose and included in the robot description. Spec, port notes and attachment:
+`cad/docs/cycloidal_drive.md`. The old repo is untouched.
+
+### Added — `cycloidal_drive` history imported (`6739509`)
+- `github.com/hbenuid/cycloidal_drive@2f1f67d` (117 commits) merged with the subtree technique
+  (`git fetch` + `merge -s ours --no-commit --allow-unrelated-histories` + `read-tree --prefix`,
+  `git subtree` is not installed) under `cad/cycloidal_import/`; the directory is removed again in
+  the docs commit below once everything was ported — `git log` keeps every original commit.
