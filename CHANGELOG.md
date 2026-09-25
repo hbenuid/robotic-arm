@@ -32,6 +32,16 @@ directory), same steps: both projects lint clean, the CLI imports, fast lane 418
 tests 280 passed + 9 skipped (8 m 09 s), both arms built (3 m 51 s), the LFS objects downloaded once and cached. At
 ~13 min a run the private repo's included Actions minutes cover roughly 150 pushes a month; the arm build is the
 step to drop first if that gets tight.
+### Changed — CI runs by hand only (`c55b590`)
+Thirteen minutes on every push was too slow for what it adds to a solo repo that already lints on commit and runs the
+suite locally: the everyday push repeats a check just made, and the clean-clone check only matters when something
+under the code changes. The workflow's only trigger is now `workflow_dispatch` (Actions tab → CI → Run workflow, or
+`gh workflow run ci.yml --ref <branch>`); a push starts nothing and spends no minutes. Root `CLAUDE.md` "CI" lists
+when to run it (a cadgen / build123d / OCP bump, a new SolidWorks or vendor export or vendor STEP, a change to
+`lib/reference.py` or to how parts read their inputs, a large change - before fast-forwarding `main`) and tells Claude
+to suggest it then, never to trigger it unasked. GitHub only offers "Run workflow" for a workflow file on the default
+branch, so the button appears once `main` is fast-forwarded to this branch; the job itself is unchanged since the
+green run above, the dispatch trigger has not been exercised yet. Docs: root `CLAUDE.md`, `cad/CLAUDE.md`, both READMEs.
 
 ## 2026-09-24 — ruff lint in both uv projects (branch `tooling/ruff`)
 
