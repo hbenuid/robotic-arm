@@ -1,0 +1,14 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-24 — CI on GitHub Actions (branch `tooling/ci`)
+
+### Changed — CI runs by hand only (`c55b590`)
+Thirteen minutes on every push was too slow for what it adds to a solo repo that already lints on commit and runs the
+suite locally: the everyday push repeats a check just made, and the clean-clone check only matters when something
+under the code changes. The workflow's only trigger is now `workflow_dispatch` (Actions tab → CI → Run workflow, or
+`gh workflow run ci.yml --ref <branch>`); a push starts nothing and spends no minutes. Root `CLAUDE.md` "CI" lists
+when to run it (a cadgen / build123d / OCP bump, a new SolidWorks or vendor export or vendor STEP, a change to
+`lib/reference.py` or to how parts read their inputs, a large change - before fast-forwarding `main`) and tells Claude
+to suggest it then, never to trigger it unasked. GitHub only offers "Run workflow" for a workflow file on the default
+branch, so the button appears once `main` is fast-forwarded to this branch; the job itself is unchanged since the
+green run above, the dispatch trigger has not been exercised yet. Docs: root `CLAUDE.md`, `cad/CLAUDE.md`, both READMEs.
