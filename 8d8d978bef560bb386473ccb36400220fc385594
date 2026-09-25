@@ -1,0 +1,30 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-21 — navigation pass: what a future session needs written down (branch `cad/docs-navigation`)
+
+Docs and git rules only — no geometry, no code behaviour, nothing rebuilt. Prompted by what today's motor work had to
+reconstruct or discover: the regeneration order, how an export reaches the CAD, the uppercase-`.STEP` hole in the
+ignore/LFS rules, the `gen --force` need, totals restated in six places, no single list of open fit issues, and the git
+workflow never stated (the work went straight to `main`).
+- Root `CLAUDE.md`: **Git workflow** (branch `cad/<topic>`, push the branch, `main` fast-forwarded only on request —
+  an approved plan's "push" means the branch), that the committed `reference/` / `vendor/` copies are the CAD's inputs
+  and the raw exports are kept nowhere (only the derivation tools need them, via `--src`), the case-sensitivity note,
+  pointers to the open-issues list.
+- `cad/CLAUDE.md`: a **"Start here"** task → section index; **Recipes** A (add a purchased part), B (add a mounted
+  occurrence), **C — the regeneration checklist** (daemon → hash gate → gen → hash check → pytest + locks → mounted
+  records → `derive.py --check` + inertials → meshes + links → validate → snapshots → docs + CHANGELOG), D (produce /
+  swap a vendor STEP), E (a new export arrives); four verified gotchas (the freshness gate tracks only inputs the
+  last build read; `export_step` stamps the time; `Face.center()` on a cylinder; `step_units()` cannot see cm).
+- **Totals leave the prose**: leaves / solids / bought pieces / pinned children are no longer quoted in `cad/CLAUDE.md`,
+  `cad/README.md` or `assemblies/arm.py`'s docstring — they live in the locks (`tests/test_assembly.py`,
+  `cycloidal_drive.py EXPECTED`, `placements.json expected`, `test_bom.py`, `test_placements.py`) and the CHANGELOG.
+- New **`cad/docs/open_issues.md`**: fit problems carried knowingly (the base motor's board 6.1 mm below the base,
+  `j2_link`'s Ø20 slot vs the Ø22 pilot, `j1_link`'s pad holes, the tie-rod representation), estimates to confirm on
+  hardware (masses, shaft lengths, connector spins, `J2_MOTOR_SLIDE_X`, joint limits), hardware not modelled (20T
+  pulleys, belts, the base-yaw driven pulley, fasteners, electronics), mappings not confirmed (CAN ids, the pancake
+  model, link membership), known-broken / pending (root `tests/`, the 20 wrapper parts, the D-flat convention ruling).
+  Rule: add a row when you flag, delete it when you close.
+- `cad/README.md` tree: `lib/mounts.py`, `lib/cycloidal/motor.py`, `tools/reference/{mount_placements,split_mks_motor}.py`,
+  `tests/test_mounts.py`, `docs/open_issues.md`; the regenerate paragraph points at `reference/README.md`.
+- `.gitignore` / `.gitattributes`: `*.STEP` / `*.STP` / `*.STL` are ignored and LFS-tracked like their lowercase
+  spellings (verified with `git check-ignore` / `check-attr`); the tree itself stays lowercase.
