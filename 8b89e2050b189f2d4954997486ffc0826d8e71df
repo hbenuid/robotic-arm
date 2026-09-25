@@ -1,0 +1,20 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-08-28 — the cycloidal drive: imported, ported to build123d, attached
+
+### Changed — assembly: `cycloidal_drive` module at the SolidWorks pose (`8b89e20`)
+- `assemblies/cycloidal_drive.py`: 18 rows `(part, role, Location)` from `stack_positions`,
+  fasteners included; `EXPECTED` lock 18 leaves / 58 solids / 691 936.8 mm³; `--totals` helper.
+  `assemblies/_occurrences.py`: `place_at` / `add_located` (code-driven rows), `world_rows` /
+  `place_world_at` (expand a designed module into world-placed parts).
+- `reference/placements.json` regenerated: the `New cyloidal assembly` node is a **designed module**
+  record `cycloidal_drive#1` (pose verbatim the former `skipped[0]`, the node's totals / bbox kept
+  as a `solidworks` cross-check, no descent) — `extract_placements.py` designed-module branch,
+  `lib/placements.py keys(designed=…)`; nothing is skipped any more. `assemblies/arm.py` places
+  the module after `j1_coupler`: 16 top-level occurrences + 2 modules = 52 leaves / 108 solids.
+- Verified in place: the drive intersects nothing in base / j1_link / j1_cap and only touches the
+  `j1_coupler` yoke (≤ 150 mm³ contact); its hub face is coplanar with `j1_link`'s mounting face;
+  its world bbox matches the SolidWorks node within 1.5 mm. `tests/test_cycloidal_assembly.py`
+  (49): the 43 ported clearance checks, the layout / totals locks, the interference budget (only
+  the 7 designed overlaps: 6814/hub press fits, bolts through the solid nuts, motor-bolt heads /
+  tips, 6003/lobe press fits) and the pose checks; `test_placements` / `test_assembly` updated.
