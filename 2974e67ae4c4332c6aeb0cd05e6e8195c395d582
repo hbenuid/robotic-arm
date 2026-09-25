@@ -1,0 +1,20 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-21 — printed vs. bought: lists, colours and STLs from the one `COTS` label (branch `cad/printed-vs-bought`)
+
+### Changed — every assembly shows what was bought; one STEP per assembly (`assemblies/_occurrences.py`)
+- `_tint_parts()`: every purchased part (`parts.bought()`) gets the one `BOUGHT_TINT` grey, printed parts keep
+  their link / module colour. `grouped_children()` applies it in the arm (inside the gripper and the drive too);
+  `occurrence_children(…, tint=)` / `located_children(…, tint=)` apply it in the standalone `gripper.step` and
+  `cycloidal_drive.step`, whose `TINT` constants `arm.py MODULE_TINTS` now reuses. `base_link` moved from grey to
+  brown so grey only ever means bought (`test_grey_means_bought`). Colours only — same trees, leaves, solids,
+  volumes and bboxes; both modules still link their parts (a tint on a module's direct linked children does
+  reach its STEP — verified by snapshot).
+- `f8b1c8d` had added two make/buy working views (`arm_make_buy.py`, `cycloidal_drive_make_buy.py`: the same
+  leaves under `printed` / `bought` nodes). Both are gone again (`8f23614`, `2974e67`): with the
+  colours in the models themselves they were second copies of the same STEP.
+
+### Tests
+- `test_bom.py` (new, fast), `test_parts_convention.py` (the `PURCHASE_*` contract; a printed part declares
+  none), `test_assembly.py` (grey is reserved for purchased parts; leaf colours of the arm, `arm_no_caps`, the
+  gripper and the drive).
