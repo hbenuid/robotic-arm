@@ -1,0 +1,27 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-21 — the drive motor's vendor file: the real 48 mm body with the 22 mm drive-spec shaft (`3e667e0`)
+
+"Can't you find a NEMA 17 48 mm with a 22 mm shaft?" — not in the step.parts catalog (its one 48 mm model is a
+box with a 14.8 mm pin and no D-flat, verified) and not in the datasheets: the 17HS19-2004S1 the drive's
+`PURCHASE_SPEC` names ships a **24 ± 1 mm shaft with a 15 mm D-cut** — exactly what the user's x48 kit export
+models, so that export was faithful and the drive's 22 mm / 18 mm is the unusual one (the user's motor; measure
+before ordering). "Can't you just modify an existing model?" — yes, from the user's own two exports:
+
+- `tools/reference/split_mks_motor.py --write drive` composes `vendor/nema17_48mm.step`: the x48 export's real
+  48 mm body (front plate, housing, back plate, its two Ø22 × 7 bearings, cable connector, rotor — 7 solids; the
+  tie rods left out because the MKS kit's M3x30 replace them; the leads and the board dropped), the rotor's shaft
+  cut off at the mounting face and the x40 export's drive-spec shaft (Ø5, 4.5 flat, 18 mm D-cut, trimmed to 22)
+  fused on, re-framed from the measured axis + mounting face (the export is in centimetres, ~1.3 m off the
+  origin). The reference stays the drive repo's envelope (bbox within 1.5 mm — the connector +0.85 on +Y);
+  `tools/cycloidal/import_cadquery.py --only nema17_48mm` records the vendor block. `lib/reference.py
+  MKS48_EXPORT_NAME`; `--write kit|drive` because build123d's STEP writer stamps the time into the header
+  (rewriting a file changes its bytes); a NEW vendor file needs `gen --force` on its part — the freshness gate
+  tracks only the inputs the last build read.
+- `MULTI_BODY["nema17_48mm"] = 7` (the qty == solids rule now applies to the `cycloidal_*` patterns only), the
+  drive's `EXPECTED` 19 / 77 / 679 444.8 mm³ (stator 16 / 71), interference budgets re-measured (motor bolts 46.4
+  and the kit's M3x30 159.4: bolt shanks in the export's tapped holes, modelled at the M3 minor diameter;
+  motor vs plate / eccentric shaft / ring pins 0), the arm 172 / no-caps 169 solids, `shoulder_link` inertials +
+  mesh re-derived (URDF/SDF check clean), `./cadtool pytest` 631 passed / 8 skipped. Docs: `vendor/README.md`
+  (the 48 mm row moves from "without a vendor file" to the table), `reference/README.md`, `cad/CLAUDE.md`,
+  `docs/cycloidal_drive.md`, the part docstring.
