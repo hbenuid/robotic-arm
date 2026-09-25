@@ -1,0 +1,25 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-18 — cad/ upgraded to text-to-cad v0.6.5 / cadgen 0.6.5 (branch `cad/cadgen-0.6.5`)
+
+### Changed — the 41 part STEPs regenerated: canonical sign-of-zero only (`816a2a5`)
+- cadgen 0.6 writes a canonical zero, so every `-0.` in the STEP text became `0.` and all 41 LFS
+  objects changed. After normalising that, old and new `gripper_link_1` (72 changed lines) and
+  `j1_link` (464) are line-identical. No sidecar (`*.step.json`) appeared.
+
+Verified: baseline on 0.5.1 — fast lane 349 passed, full suite 582 passed + 9 skipped, `doctor` clean,
+arm `current` with 54 children pinned. On 0.6.5 — `./cadtool doctor` clean (`kernel OK`, pin
+`cadgen==0.6.5` against the plugin); fast lane 351 passed, full suite **585 passed + 9 skipped** (−1 patch
+test, +4 tooling tests); `--force` rebuild of the 41 parts (1 m 29 s) then parts + 3 assemblies + 8 robot
+links (daemon stopped first): kernel facts (solids, faces, volume, bbox via `import_step`) of all 41
+STEPs equal the 0.5.1 files, 0 of 41 byte-identical, a second 0.6.5 build reproduces the new bytes
+41 / 41, `./cadtool inspect diff <old> <new>` = same geometry; `./cadtool why assemblies/arm.py` =
+`current`, 54 children pinned, tree `components 50 occurrences 52 links 0` as before (gripper 19 links,
+drive 18), second `gen` = `current`; `validate robot/arm.urdf --strict` and `arm.srdf --strict` OK,
+`arm.sdf --gz-check never` OK (its `--strict` fails on the 8 `collision_reuses_visual_mesh` warnings,
+which 0.5.1 raises too — the test and the docs never used it); snapshots compared with the 0.5.1 ones:
+`robot/arm.urdf` assembled with no patch, a posed one (`shoulder_pitch` 45, `elbow_pitch` −30) moves the
+rotor + upper arm and leaves the stator, `assemblies/arm.step` keeps its tints and Z-up pose; viewer
+HTTP 200 for `?file=robot/arm.urdf` and `?file=assemblies/arm.step` (sliders not clicked — the posed
+snapshot runs the same kinematics code); `./cadtool export parts/base/base.step stl` OK (Node);
+`./cadtool store gc` removed 660 dead 0.5 objects (91.1 MB), models still `current`.
