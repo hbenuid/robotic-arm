@@ -3,8 +3,9 @@
 **Purpose:** the ONE list of unsettled things a session should know before trusting a number or a fit: fit problems
 the model carries knowingly, `[ESTIMATE]` values waiting for a measurement, hardware not modelled yet, mappings
 not confirmed. **Rule:** when you flag something in a commit, add a row (issue, where it lives, what closes it,
-the commit that raised it); when you close it, delete the row and say so in the commit message. Numbers here
-are quoted from the code they live in — the code wins if they drift.
+the commit that raised it); when you close it, delete the row and say so in the commit message. A number here is
+a fit value or an estimate, quoted beside the constant or test that holds it — the code wins if they drift; counts
+and totals are never quoted (`cad/CLAUDE.md` Docs).
 
 ## Fit problems the model carries knowingly
 | issue | where it lives | what closes it | raised |
@@ -53,5 +54,5 @@ are quoted from the code they live in — the code wins if they drift.
 | item | where |
 |---|---|
 | The motor-control `software/control/tests/` imports `arctos.*` and does not run | root `CLAUDE.md` "Known issues" |
-| 15 of the 17 custom parts are still SolidWorks wrappers (`CONVERTED = False`; the links are parametric: `j2_link` since 2026-09-22, `lib/forearm/`, `j1_link` since 2026-09-25, `lib/upper_arm/`); the fit problems above are fixed at conversion | `parts/<group>/*.py`, `cad/parts/CLAUDE.md` "Part states" |
+| Most custom parts are still SolidWorks wrappers (`CONVERTED = False`; the parametric ones so far are the links `j2_link`, `lib/forearm/`, and `j1_link`, `lib/upper_arm/`; the print list of `tools/bom.py` gives every part's state); the fit problems above are fixed at conversion | `parts/<group>/*.py`, `cad/parts/CLAUDE.md` "Part states" |
 | The drive's motor envelope cuts the D-flat at `shaft_dcut_flat / 2` (flat-to-round 4.75) — ruled correct 2026-09-21 (it is what `reference/cycloidal/nema17_48mm.step` defines and the eccentric shaft's D-bore matches); noted here only because the parameter's name reads like 4.5 | `lib/cycloidal/motor.py flat_offset()` |

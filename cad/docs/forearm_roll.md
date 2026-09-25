@@ -19,8 +19,8 @@ Numbers below name the constants; the values live in `lib/forearm/params.py`.
 | end cap (PETG) | the block's outline, 9 thick (seat + 2 lip), 4× M3 at the corners, the stop post | `forearm_roll_retainer` |
 | forearm interface | `j2_link`'s wall at 48…56 mm from the elbow axis (`wall_x` −56…−48): Ø40 × 2 recess, Ø24 bore, 4× M3 on Ø32 | `RollEndParams` |
 | clearances held by tests | block 0.5 mm above the upper arm's slab; the rolling ±45 forearm wall 3 mm off `j1_link`'s r 45 end; folded elbow (±120°) and rolled forearm (±170°) < 1 mm³ against every neighbour; journals 0.9–1.0 × the 132 mm³ press | `tests/forearm/test_roll_drive.py` |
-| link masses (URDF) | `elbow_link` 0.717 kg (pulley + stator), `forearm_link` 0.920 kg (shaft + forearm + wrist motor); arm total 5.93 kg | `robot/arm.urdf` |
-| purchased per drive | 2× 6808-2RS, 1× NEMA 17 × 40 kit + MKS SERVO42D, 1× GT2 20T (5 mm bore), 1× 240-2GT belt, 4× M4 × 40 + 4× M4 inserts, 4× M3 × 16, 4× M3 × 8, 4× M3 × 20 | `tools/bom.py` |
+| link masses (URDF) | `elbow_link` carries the pulley + stator, `forearm_link` the shaft + forearm + wrist motor; the masses are the `<inertial>` blocks (`tools/robot/derive.py`), their sum checked by `test_link_masses_add_up` | `robot/arm.urdf` |
+| purchased per drive | the 6808-2RS pair, a NEMA 17 × 40 kit + MKS SERVO42D, a GT2 20T (5 mm bore), the roll belt, the M3 / M4 screws and the M4 inserts — with quantities: `./cadtool python tools/bom.py --module forearm_roll_drive` | `tools/bom.py` |
 | printed per drive | block, shaft, cap (`./cadtool python tools/export_printables.py --parts forearm_roll_block forearm_roll_shaft forearm_roll_retainer`) | `print/` |
 
 ## 1. Why a roll, and where
@@ -108,4 +108,4 @@ puts it (`J2_MOTOR_SLIDE_X`) so its plug clears the wall (`plug_clearance`).
 `docs/open_issues.md`: the belts, the home sensor (on the cap's outer face, a magnet in the stop lug, to the MKS board's
 limit input), the cable route; the elbow's own bearings on the block's stub; the block's print orientation and its
 M4 inserts; the 6808's mass and inner-race edge, `t20_hub`, the belt lengths, the limit and the printed stop lugs'
-strength, the spigot's self-tapped M3s; a **4th CAN id** (`software/control/src/config.py` names three boards, the arm carries five).
+strength, the spigot's self-tapped M3s; the roll motor's **CAN id** (`software/control/src/config.py` has no row for it: it names fewer boards than the arm carries).

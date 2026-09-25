@@ -59,56 +59,57 @@ the CAD keeps is the derived, committed copy (`reference/`, `vendor/`) — the r
 ## Naming map
 Clean name ← SolidWorks product (source file under the source tree); every row lives in
 `solidworks/<name>.step`. Sizes are the bounding box in mm after OCCT's import (inch-unit files
-are converted automatically).
+are converted automatically). How many of each the arm uses is not recorded here: `./cadtool python tools/bom.py`
+counts them from the assembly tables.
 
-| Part | Kind | SolidWorks product | Source export | Units | Solids | Bbox size (mm) | In arm |
-|---|---|---|---|---|---|---|---|
-| `base` | custom | `base of robot arm 62126` | `step/base of robot arm 62126.STEP` | mm | 1 | 168.178 × 95.807 × 106.679 | ×1 |
-| `j1_coupler` | custom | `Base couple updated 62126 _J1 coupler` | `step/Base couple updated 62126 _J1 coupler.STEP` | mm | 1 | 96 × 63.976 × 106.264 | ×1 |
-| `j1_link` | custom | `first joint edit 62126` | `step/first joint edit 62126.STEP` | mm | 1 | 300 × 34 × 90 | ×1 |
-| `j2_link` | custom | `Joint 2 change 8126` | `step/Joint 2 change 8126.STEP` | mm | 1 | 300 × 90 × 33.5 | ×1 |
-| `j3_coupler` | custom | `Joint 2 coupler 62226_J3 Coupler` | `step/Joint 2 coupler 62226_J3 Coupler.STEP` | mm | 1 | 78 × 22 × 78 | ×2 |
-| `gt2_pulley_90t` | custom | `GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric` | `step/GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric.STEP` | mm | 1 | 59.188 × 21.4 × 59.188 | ×2 |
-| `gripper_clamp_bracket` | custom | `brack for hand cmap` | `step/brack for hand cmap.STEP` | mm | 1 | 26.2 × 64 × 43.2 | ×1 |
-| `wrist_link` | custom | `final component arm qwrist movement` | `step/final component arm qwrist movement.STEP` | mm | 1 | 124.446 × 78 × 44 | ×1 |
-| `gripper_cover` | custom | `Gripper Cover_Gripper Cover` | `step/Gripper Cover_Gripper Cover.STEP` | mm | 1 | 44 × 10.5 × 70 | ×1 |
-| `gripper_end` | custom | `Gripper End_Gripper End` | `step/Gripper End_Gripper End.STEP` | mm | 1 | 27.123 × 30 × 25.123 | ×2 |
-| `gripper_finger_left` | custom | `Gripper Hand Left_Gripper Hand Left` | `step/Gripper Hand Left_Gripper Hand Left.STEP` | mm | 1 | 26 × 4 × 105 | ×2 |
-| `gripper_finger_right` | custom | `Gripper Hand Right_Gripper Hand Left` | `step/Gripper Hand Right_Gripper Hand Left.STEP` | mm | 1 | 26 × 4 × 105 | ×2 |
-| `gripper_link_1` | custom | `Gripper link 1_Gripper link 1` | `step/Gripper link 1_Gripper link 1.STEP` | mm | 1 | 34.2 × 3.5 × 7.2 | ×2 |
-| `gripper_link_2` | custom | `Gripper link 2_Gripper link 2` | `step/Gripper link 2_Gripper link 2.STEP` | mm | 1 | 34.2 × 5 × 7.2 | ×2 |
-| `gripper_slider` | custom | `Gripper Mechanism Slider_Gripper Mechanism Slider` | `step/Gripper Mechanism Slider_Gripper Mechanism Slider.STEP` | mm | 1 | 18 × 26 × 60 | ×2 |
-| `gripper_j3_connector` | custom | `Gripper to J3 connector 7726_Gripper to J3 connector` | `step/Gripper to J3 connector 7726_Gripper to J3 connector.STEP` | mm | 2 | 23 × 12.5 × 46 | ×1 |
-| `servo_holder` | custom | `Servo Holder_Servo Holder` | `step/Servo Holder_Servo Holder.STEP` | mm | 1 | 44 × 15 × 72.5 | ×1 |
-| `gt2_pulley_20t` | COTS | `GT2_20T_Конфигурация1` | `step/GT2_20T_Конфигурация1.STEP` | mm | 3 | 14.45 × 16 × 16 | ×1 |
-| `gripper_rail_6mm` | COTS | `Gripper rail 6mm_Gripper rail 6mm` | `step/Gripper rail 6mm_Gripper rail 6mm.STEP` | mm | 1 | 6 × 125 × 6 | ×2 |
-| `mg996r_servo` | COTS | `Servo Motor MG996R 3D Model_Servo Motor MG996R 3D Model` | `step/Servo Motor MG996R 3D Model_Servo Motor MG996R 3D Model.STEP` | mm | 4 | 55.8 × 45.2 × 20.5 | ×1 |
-| `mg996r_horn` | COTS | `Servo MG996R Horn_Servo MG996R Horn` | `step/Servo MG996R Horn_Servo MG996R Horn.STEP` | mm | 1 | 32 × 2.5 × 12 | ×1 |
-| `nema17_pancake` | COTS | `nema17_pancake` | `(extracted from the full assembly)` | mm | 11 | 41.5 × 47 × 43 | ×1 |
-| `nema17_40mm` | COTS | `nema17x40_with_mks` (body + shaft) | `(split from mks/nema17x40_with_mks.step)` | mm | 2 | 42 × 49 × 62.4 | ×3 (mounted) |
-| `mks_servo42d` | COTS | `nema17x40_with_mks` (Servo42D_Assem + standoffs + M3x30) | `(split from mks/nema17x40_with_mks.step)` | mm | 13 | 43 × 43 × 33.7 | ×3 (mounted) + 1 in the drive |
+| Part | Kind | SolidWorks product | Source export | Units | Solids | Bbox size (mm) |
+|---|---|---|---|---|---|---|
+| `base` | custom | `base of robot arm 62126` | `step/base of robot arm 62126.STEP` | mm | 1 | 168.178 × 95.807 × 106.679 |
+| `j1_coupler` | custom | `Base couple updated 62126 _J1 coupler` | `step/Base couple updated 62126 _J1 coupler.STEP` | mm | 1 | 96 × 63.976 × 106.264 |
+| `j1_link` | custom | `first joint edit 62126` | `step/first joint edit 62126.STEP` | mm | 1 | 300 × 34 × 90 |
+| `j2_link` | custom | `Joint 2 change 8126` | `step/Joint 2 change 8126.STEP` | mm | 1 | 300 × 90 × 33.5 |
+| `j3_coupler` | custom | `Joint 2 coupler 62226_J3 Coupler` | `step/Joint 2 coupler 62226_J3 Coupler.STEP` | mm | 1 | 78 × 22 × 78 |
+| `gt2_pulley_90t` | custom | `GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric` | `step/GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric.STEP` | mm | 1 | 59.188 × 21.4 × 59.188 |
+| `gripper_clamp_bracket` | custom | `brack for hand cmap` | `step/brack for hand cmap.STEP` | mm | 1 | 26.2 × 64 × 43.2 |
+| `wrist_link` | custom | `final component arm qwrist movement` | `step/final component arm qwrist movement.STEP` | mm | 1 | 124.446 × 78 × 44 |
+| `gripper_cover` | custom | `Gripper Cover_Gripper Cover` | `step/Gripper Cover_Gripper Cover.STEP` | mm | 1 | 44 × 10.5 × 70 |
+| `gripper_end` | custom | `Gripper End_Gripper End` | `step/Gripper End_Gripper End.STEP` | mm | 1 | 27.123 × 30 × 25.123 |
+| `gripper_finger_left` | custom | `Gripper Hand Left_Gripper Hand Left` | `step/Gripper Hand Left_Gripper Hand Left.STEP` | mm | 1 | 26 × 4 × 105 |
+| `gripper_finger_right` | custom | `Gripper Hand Right_Gripper Hand Left` | `step/Gripper Hand Right_Gripper Hand Left.STEP` | mm | 1 | 26 × 4 × 105 |
+| `gripper_link_1` | custom | `Gripper link 1_Gripper link 1` | `step/Gripper link 1_Gripper link 1.STEP` | mm | 1 | 34.2 × 3.5 × 7.2 |
+| `gripper_link_2` | custom | `Gripper link 2_Gripper link 2` | `step/Gripper link 2_Gripper link 2.STEP` | mm | 1 | 34.2 × 5 × 7.2 |
+| `gripper_slider` | custom | `Gripper Mechanism Slider_Gripper Mechanism Slider` | `step/Gripper Mechanism Slider_Gripper Mechanism Slider.STEP` | mm | 1 | 18 × 26 × 60 |
+| `gripper_j3_connector` | custom | `Gripper to J3 connector 7726_Gripper to J3 connector` | `step/Gripper to J3 connector 7726_Gripper to J3 connector.STEP` | mm | 2 | 23 × 12.5 × 46 |
+| `servo_holder` | custom | `Servo Holder_Servo Holder` | `step/Servo Holder_Servo Holder.STEP` | mm | 1 | 44 × 15 × 72.5 |
+| `gt2_pulley_20t` | COTS | `GT2_20T_Конфигурация1` | `step/GT2_20T_Конфигурация1.STEP` | mm | 3 | 14.45 × 16 × 16 |
+| `gripper_rail_6mm` | COTS | `Gripper rail 6mm_Gripper rail 6mm` | `step/Gripper rail 6mm_Gripper rail 6mm.STEP` | mm | 1 | 6 × 125 × 6 |
+| `mg996r_servo` | COTS | `Servo Motor MG996R 3D Model_Servo Motor MG996R 3D Model` | `step/Servo Motor MG996R 3D Model_Servo Motor MG996R 3D Model.STEP` | mm | 4 | 55.8 × 45.2 × 20.5 |
+| `mg996r_horn` | COTS | `Servo MG996R Horn_Servo MG996R Horn` | `step/Servo MG996R Horn_Servo MG996R Horn.STEP` | mm | 1 | 32 × 2.5 × 12 |
+| `nema17_pancake` | COTS | `nema17_pancake` | `(extracted from the full assembly)` | mm | 11 | 41.5 × 47 × 43 |
+| `nema17_40mm` | COTS | `nema17x40_with_mks` (body + shaft) | `(split from mks/nema17x40_with_mks.step)` | mm | 2 | 42 × 49 × 62.4 |
+| `mks_servo42d` | COTS | `nema17x40_with_mks` (Servo42D_Assem + standoffs + M3x30) | `(split from mks/nema17x40_with_mks.step)` | mm | 13 | 43 × 43 × 33.7 |
 
 Cycloidal drive (`cycloidal/<name>.step`: the named CadQuery builder's export at
-`cycloidal_drive@2f1f67d`; "in arm" counts inside the `cycloidal_drive#1` module):
+`cycloidal_drive@2f1f67d`; `tools/bom.py --module cycloidal_drive` counts them):
 
-| Part | Kind | CadQuery builder | Units | Solids | Bbox size (mm) | In arm |
-|---|---|---|---|---|---|---|
-| `cycloidal_disc_1` | designed | `src/cycloidal_disc.py:build_cycloidal_disc()` | mm | 1 | 105.885 × 105.885 × 10 | ×1 |
-| `cycloidal_disc_2` | designed | `src/cycloidal_disc.py:build_cycloidal_disc(phase_offset_deg=disc2_phase)` | mm | 1 | 107 × 107 × 10 | ×1 |
-| `cycloidal_eccentric_shaft` | designed | `src/eccentric_shaft.py:build_eccentric_shaft()` | mm | 1 | 26.1 × 23.1 × 26 | ×1 |
-| `cycloidal_motor_plate` | designed | `src/motor_plate.py:build_motor_plate()` | mm | 1 | 140 × 140 × 9 | ×1 |
-| `cycloidal_ring_gear_body` | designed | `src/ring_gear_body.py:build_ring_gear_body()` | mm | 1 | 140 × 140 × 51 | ×1 |
-| `cycloidal_output_hub` | designed | `src/output_hub.py:build_output_hub()` | mm | 1 | 70.3 × 70.3 × 28 | ×1 |
-| `bearing_6003` | COTS | `src/purchased_parts.py:build_bearing_6003()` | mm | 1 | 35 × 35 × 10 | ×2 |
-| `bearing_6814` | COTS | `src/purchased_parts.py:build_bearing_6814()` | mm | 1 | 90 × 90 × 10 | ×2 |
-| `bearing_625` | COTS | `src/purchased_parts.py:build_bearing_625()` | mm | 1 | 16 × 16 × 5 | ×1 |
-| `nema17_48mm` | COTS | `src/purchased_parts.py:build_nema17_motor()` | mm | 1 | 42.3 × 42.3 × 70 | ×1 |
-| `cycloidal_ring_pins` | COTS | `src/purchased_parts.py:build_ring_pins()` | mm | 21 | 111.397 × 111.698 × 35 | ×1 |
-| `cycloidal_output_pins` | COTS | `src/purchased_parts.py:build_output_pins()` | mm | 4 | 64 × 64 × 45 | ×1 |
-| `cycloidal_shaft_support_pin` | COTS | `src/purchased_parts.py:build_shaft_support_pin()` | mm | 1 | 5 × 5 × 20 | ×1 |
-| `cycloidal_motor_bolts` | COTS | `src/purchased_parts.py:build_motor_bolts()` | mm | 4 | 36.3 × 36.3 × 13 | ×1 |
-| `cycloidal_housing_bolts` | COTS | `src/purchased_parts.py:build_housing_bolts()` | mm | 8 | 132 × 132 × 59 | ×1 |
-| `cycloidal_housing_nuts` | COTS | `src/purchased_parts.py:build_housing_nuts()` | mm | 8 | 133.083 × 133.083 × 3.2 | ×1 |
+| Part | Kind | CadQuery builder | Units | Solids | Bbox size (mm) |
+|---|---|---|---|---|---|
+| `cycloidal_disc_1` | designed | `src/cycloidal_disc.py:build_cycloidal_disc()` | mm | 1 | 105.885 × 105.885 × 10 |
+| `cycloidal_disc_2` | designed | `src/cycloidal_disc.py:build_cycloidal_disc(phase_offset_deg=disc2_phase)` | mm | 1 | 107 × 107 × 10 |
+| `cycloidal_eccentric_shaft` | designed | `src/eccentric_shaft.py:build_eccentric_shaft()` | mm | 1 | 26.1 × 23.1 × 26 |
+| `cycloidal_motor_plate` | designed | `src/motor_plate.py:build_motor_plate()` | mm | 1 | 140 × 140 × 9 |
+| `cycloidal_ring_gear_body` | designed | `src/ring_gear_body.py:build_ring_gear_body()` | mm | 1 | 140 × 140 × 51 |
+| `cycloidal_output_hub` | designed | `src/output_hub.py:build_output_hub()` | mm | 1 | 70.3 × 70.3 × 28 |
+| `bearing_6003` | COTS | `src/purchased_parts.py:build_bearing_6003()` | mm | 1 | 35 × 35 × 10 |
+| `bearing_6814` | COTS | `src/purchased_parts.py:build_bearing_6814()` | mm | 1 | 90 × 90 × 10 |
+| `bearing_625` | COTS | `src/purchased_parts.py:build_bearing_625()` | mm | 1 | 16 × 16 × 5 |
+| `nema17_48mm` | COTS | `src/purchased_parts.py:build_nema17_motor()` | mm | 1 | 42.3 × 42.3 × 70 |
+| `cycloidal_ring_pins` | COTS | `src/purchased_parts.py:build_ring_pins()` | mm | 21 | 111.397 × 111.698 × 35 |
+| `cycloidal_output_pins` | COTS | `src/purchased_parts.py:build_output_pins()` | mm | 4 | 64 × 64 × 45 |
+| `cycloidal_shaft_support_pin` | COTS | `src/purchased_parts.py:build_shaft_support_pin()` | mm | 1 | 5 × 5 × 20 |
+| `cycloidal_motor_bolts` | COTS | `src/purchased_parts.py:build_motor_bolts()` | mm | 4 | 36.3 × 36.3 × 13 |
+| `cycloidal_housing_bolts` | COTS | `src/purchased_parts.py:build_housing_bolts()` | mm | 8 | 132 × 132 × 59 |
+| `cycloidal_housing_nuts` | COTS | `src/purchased_parts.py:build_housing_nuts()` | mm | 8 | 133.083 × 133.083 × 3.2 |
 
 Notes:
 - `gripper_finger_right` is the mirror configuration of `gripper_finger_left`; its SolidWorks

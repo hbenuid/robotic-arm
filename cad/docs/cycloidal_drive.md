@@ -242,9 +242,9 @@ ring-pin dowels (pack of 25) $8–12 · output-pin dowels $2–4 · motor bolts 
 | Shared builders | `lib/cycloidal/housing.py` (reveal-window cutter, outer-silhouette chamfer, hex prisms), `lib/cycloidal/disc.py` (`build_disc`), `lib/cycloidal/geom.py` (cylinders with `NUDGE` overshoot, `single_solid`) |
 | Printed parts (designed, `CONVERTED = True`) | `parts/cycloidal/`: `cycloidal_disc_1.py`, `cycloidal_disc_2.py`, `cycloidal_eccentric_shaft.py`, `cycloidal_motor_plate.py`, `cycloidal_ring_gear_body.py`, `cycloidal_output_hub.py` — each exposes `build(cfg)` for tests and its `@step` model |
 | Purchased parts (COTS) | `parts/cycloidal/`: `bearing_6003.py`, `bearing_6814.py`, `bearing_625.py`, `nema17_48mm.py` (+ the board kit `parts/joints/mks_servo42d.py`, shared with the belt joints' motors), `cycloidal_ring_pins.py` (21), `cycloidal_output_pins.py` (4), `cycloidal_shaft_support_pin.py`, `cycloidal_motor_bolts.py` (4), `cycloidal_housing_bolts.py` (8), `cycloidal_housing_nuts.py` (8) — shared body `parts/cycloidal/_cots.py`; the multi-body ones are registered in `MULTI_BODY`; each says what to order (`PURCHASE_SPEC` / `PURCHASE_QTY`, built from `DEFAULT_CONFIG`) |
-| Assembly | `assemblies/cycloidal_drive.py` — 19 rows `(part, role, position)` from `stack_positions` (the MKS board at `z_mks_board`); `EXPECTED` = 19 leaves / 77 solids / 679 467.5 mm³ (stator 16 / 71); `./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals())"` |
+| Assembly | `assemblies/cycloidal_drive.py` — one row `(part, role, position)` per piece from `stack_positions` (the MKS board at `z_mks_board`); `EXPECTED` locks the leaves / solids / volume, whole and per body (`EXPECTED["bodies"]`); `./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals())"` |
 | Printed vs. bought | `./cadtool python tools/bom.py --module cycloidal_drive` (print list, buy list, the purchased items not modelled — `EXTRAS`); in `cycloidal_drive.step` (and in the arm) purchased parts are `_occurrences.BOUGHT_TINT` grey, printed parts `cycloidal_drive.TINT`; `./cadtool python tools/export_printables.py` → `print/<name>.stl` |
-| References | `reference/cycloidal/<name>.step` × 16 (CadQuery exports, Git LFS), `reference/manifest.json` entries (`file` field); `tools/cycloidal/export_cadquery.py` + `tools/cycloidal/import_cadquery.py` |
+| References | `reference/cycloidal/<name>.step` (CadQuery exports, Git LFS), `reference/manifest.json` entries (`file` field); `tools/cycloidal/export_cadquery.py` + `tools/cycloidal/import_cadquery.py` |
 | Tests | `tests/cycloidal/test_{disc,eccentric_shaft,motor_plate,ring_gear_body,output_hub,housing,purchased,fitment,assembly,port}.py` + `tests/cycloidal/helpers.py` (one module per part, geometry marked `slow`) |
 | Viewer / export | `./cadtool gen assemblies/cycloidal_drive.py`, `./cadtool viewer` (`?file=assemblies/cycloidal_drive.step`), `./cadtool export parts/cycloidal/<name>.step stl` |
 
@@ -316,7 +316,7 @@ cd cad
 - `placements.json` record **`cycloidal_drive#1`** (`kind: module, designed: true`) = the SolidWorks
   node `New cyloidal assembly` (sic) at path 1.3: position (1.844381, 85.010435, 31.446506) mm,
   rotation XYZ (−180, −3.694455, 180)°, parent = the arm root. Its `solidworks` block keeps the node's
-  15 leaves / 38 solids / 674 390.5 mm³ / world bbox as a cross-check; `assemblies/arm.py` locates
+  leaves / solids / volume / world bbox as a cross-check; `assemblies/arm.py` locates
   `assemblies/cycloidal_drive.py` there (row after `j1_coupler#1`).
 - **Frame:** module Z = motor axis, z = 0 the motor-plate outer face, motor body in −Z, hub face at 65.
   In the arm the axis is horizontal (module +Z → world −N, N = the J2/J3 pitch direction): the housing
@@ -326,14 +326,14 @@ cd cad
   `tests/upper_arm/`): the SolidWorks holes sat 3.36° off, where the M4 bolts would not pass.
 - **Kinematics:** the drive **is the `shoulder_pitch` joint** of `robot/frames.py` (axis `N` = the
   drive's −Z; origin `SHOULDER_ORIGIN` = `j1_link#1`'s origin, on the drive axis; limits
-  `SHOULDER_PITCH_LIMIT_DEG`). `assemblies/cycloidal_drive.py BODIES` splits the 18 rows into two rigid
+  `SHOULDER_PITCH_LIMIT_DEG`). `assemblies/cycloidal_drive.py BODIES` splits the rows into two rigid
   bodies and `LINKS` places them with a `:<body>` key suffix (`_occurrences.split_key` / `world_rows`):
-  the **stator** (`cycloidal_drive#1:stator` — motor plate, ring gear body, ring pins, housing bolts +
-  nuts, NEMA 17 + bolts, and the gear train: eccentric shaft, support pin, discs, 6003s, 6814s; 15
-  leaves / 52 solids) rides in `shoulder_link` with the yawing `j1_coupler`; the **rotor**
-  (`cycloidal_drive#1:rotor` — output hub, output pins, 625; 3 leaves / 6 solids) rides in
-  `upper_arm_link` with `j1_link`. `EXPECTED["bodies"]` locks the per-body totals and
-  `TestPoseInTheArm` checks the joint origin sits on the drive axis. The arm STEP's viewer tree keeps
+  the **stator** (`cycloidal_drive#1:stator` — every row but the rotor's: motor plate, ring gear body, ring
+  pins, housing bolts + nuts, NEMA 17 + bolts + its MKS board, and the gear train: eccentric shaft, support pin,
+  discs, 6003s, 6814s) rides in `shoulder_link` with the yawing `j1_coupler`; the **rotor**
+  (`cycloidal_drive#1:rotor` — output hub, output pins, 625) rides in `upper_arm_link` with `j1_link`.
+  `EXPECTED["bodies"]` locks the per-body totals and `TestPoseInTheArm` checks the joint origin sits on the drive
+  axis. The arm STEP's viewer tree keeps
   the module whole under `shoulder_link` (one linked child); the per-link meshes split it. Which MKS
   motor (`software/control/src/config.py` J1..J3) drives which joint is unconfirmed; `software/control/src/config.py` still carries
   `gear_ratio` 1.0 while `CYCLOIDAL_RATIO` = 20.

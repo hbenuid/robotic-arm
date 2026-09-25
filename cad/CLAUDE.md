@@ -96,7 +96,7 @@ The toolchain: Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.6.x (pins: `docs/t
   files (checksum tests, `read_step`/`import_step` and cadgen fail on them) needs `git lfs pull`.
   cadgen writes deterministic bytes per kernel **and per machine**: an unchanged model rewrites an identical
   file on the machine that built it, another machine writes the same geometry with other float noise
-  (arm64 Mac vs the Fedora PC: 17 of 41 parts, ≤ 2e-10 mm apart), and the STEP header names the OCCT version.
+  (arm64 Mac vs the Fedora PC: many parts, ≤ 2e-10 mm apart), and the STEP header names the OCCT version.
   To prove a refactor changed no geometry: `shasum -a 256 parts/*/*.step > /tmp/before`, change, rebuild
   (daemon stopped first), `shasum -a 256 -c /tmp/before` on the SAME machine; a file may still come back with
   different numerical-zero terms (seen: `j1_link`, `gripper_clamp_bracket`, 12 values ≤ 1e-17 after a
