@@ -10,7 +10,7 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 cadtool - cadgen 0.6 + this uv project (paths relative to cad/)
-  ./cadtool setup                                   per machine: uv sync (+ the OCP kernel check) + the git pre-commit hook (ruff)
+  ./cadtool setup                                   per machine: uv sync (+ the OCP kernel check) + the git pre-commit hook (ruff) + git notes fetching
                                                     + Playwright Chromium (for snapshots)
   ./cadtool doctor                                  installed cadgen vs the plugin's pin, the CAD kernel, node, chromium
   ./cadtool gen <model.py>... [--force] [--verbose] [--json] [--mesh-tolerance X]
@@ -95,6 +95,17 @@ install_git_hook() {  # .git/hooks/pre-commit = a stub that runs the committed .
   echo "cadtool: git pre-commit hook installed ($stub -> .githooks/pre-commit)"
 }
 
+fetch_git_notes() {  # the retired CHANGELOG.md lives on as git notes (refs/notes/commits) - `git log` shows them.
+  # Notes are not fetched by default: add the refspec once per machine. Not forced (+): a divergent notes ref fails the
+  # fetch loudly instead of silently replacing local notes.
+  local spec='refs/notes/*:refs/notes/*' have
+  have="$(git config --get-all remote.origin.fetch 2>/dev/null || true)"
+  case "$have" in *"$spec"*) return 0 ;; esac
+  git config --add remote.origin.fetch "$spec" || return 0
+  git fetch --quiet origin || echo "cadtool: git fetch of the notes failed - run 'git fetch origin' by hand" >&2
+  echo "cadtool: git notes now come with every fetch / pull (remote.origin.fetch += $spec)"
+}
+
 cmd="${1:-help}"
 shift || true
 case "$cmd" in
@@ -174,6 +185,7 @@ case "$cmd" in
       uv sync --reinstall-package cadquery-ocp-novtk
     fi
     install_git_hook
+    fetch_git_notes
     uv run --frozen python -m playwright install chromium ;;
   python)
     exec uv run --frozen python "$@" ;;

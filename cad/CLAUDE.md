@@ -27,7 +27,7 @@ robotic-arm repo; the motor-control project (`software/control/`) never depends 
 | know what is unsettled (fit problems, estimates, unmodelled hardware) | `docs/open_issues.md` | add / remove rows as you go |
 | something behaves oddly | Gotchas (below), then the Gotchas of the folder's CLAUDE.md and `docs/toolchain.md` | — |
 Totals (leaves / solids / bought pieces / pinned children) are **never** quoted in the docs: they live in the locks
-(`tests/CLAUDE.md` "Where the locks live") and the dated CHANGELOG entries.
+(`tests/CLAUDE.md` "Where the locks live"); their history is `git log -p` on those files.
 
 ## Recipe C — the regeneration checklist, after ANY geometry / mass / placement change, in this order
 1. `./cadtool daemon stop` when `lib/reference.py`, `pyproject.toml` or the kernel changed (workers keep old code).
@@ -49,7 +49,8 @@ Totals (leaves / solids / bought pieces / pinned children) are **never** quoted 
 10. `./cadtool snapshot assemblies/arm.step snapshots/arm.png --size-profile assembly --view-labels` (+ the drive,
     `robot/arm.urdf`) and LOOK at them.
 11. Docs: the doc that owns the changed rule (Docs, below), `docs/open_issues.md`
-    rows added / closed, a dated `CHANGELOG.md` entry naming the branch. Then commit on the branch (root `CLAUDE.md` Git workflow).
+    rows added / closed. Then commit on the branch, the message being the record — why, and every number that
+    changed (root `CLAUDE.md` Git workflow).
 
 ## Running things (always via `./cadtool` or `uv run`, from `cad/`)
 - **Never call bare `python`** — the system Python is 3.14 without build123d. Python is pinned
@@ -195,5 +196,5 @@ The repo is worked on from both; git is the only sync channel (push before leavi
   `./cadtool help`, `parts.names()`, the tests and the locks are those lists.
 - `docs/open_issues.md` is the ONE list of what is not settled (fit problems, estimates to confirm on hardware,
   unmodelled hardware, unconfirmed mappings): add a row when you flag something, remove it when you close it.
-- Every commit that changes behaviour, layout or tooling gets a dated entry in the root `CHANGELOG.md` naming the
-  branch and the commit (root `CLAUDE.md` Git workflow).
+- History is `git log`, never a doc: the commit message is the record (root `CLAUDE.md` Git workflow); the retired
+  `CHANGELOG.md` entries are git notes on their commits.

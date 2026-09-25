@@ -3,7 +3,7 @@
 **Purpose:** the ONE list of unsettled things a session should know before trusting a number or a fit: fit problems
 the model carries knowingly, `[ESTIMATE]` values waiting for a measurement, hardware not modelled yet, mappings
 not confirmed. **Rule:** when you flag something in a commit, add a row (issue, where it lives, what closes it,
-the CHANGELOG entry that raised it); when you close it, delete the row and say so in the CHANGELOG. Numbers here
+the commit that raised it); when you close it, delete the row and say so in the commit message. Numbers here
 are quoted from the code they live in — the code wins if they drift.
 
 ## Fit problems the model carries knowingly

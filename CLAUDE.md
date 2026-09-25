@@ -13,8 +13,12 @@ table, the drive ratios) to agree with `software/control/src/config.py`, and one
 ## Git workflow
 - Work on a branch — `cad/<topic>` for CAD work, `<area>/<topic>` otherwise — and push the **branch**. `main` is
   fast-forwarded to it only when the user says so; never commit to or push `main` directly (an approved plan
-  that says "commit + push" means the branch). Every commit that changes behaviour, layout or tooling gets a
-  dated `CHANGELOG.md` entry naming the branch and the commit.
+  that says "commit + push" means the branch).
+- **The commit message is the record** — there is no CHANGELOG file. Subject `<area>: what changed` (`cad:`, `docs:`,
+  `tooling:` …); body: why, what it replaces or removes, and every measured number that changed (totals, masses,
+  fits, lock values); one logical change per commit. History is `git log` (`--grep`, `-- <path>`, `-S <CONSTANT>`,
+  `-p` on a lock file). The entries of the retired `CHANGELOG.md` (to 2026-09-25) are **git notes** on the commits
+  they describe — `git log` prints them under the message; `./cadtool setup` makes a machine fetch them.
 - Case matters: git and the `*.step` / `*.stl` rules are case-sensitive. `.gitignore` and `.gitattributes` also
   match `*.STEP` / `*.STP` now, but keep every file in the tree lowercase — the tests and tools assume it.
 
@@ -90,8 +94,8 @@ Paths in the first four bullets are relative to `software/control/`.
   unconfirmed (`cad/docs/open_issues.md`).
 
 ## Docs
-- `CHANGELOG.md` is the dated record of changes: add an entry (date, what changed, commit) with
-  every commit that changes behaviour, layout or tooling. Docs carry no "Last updated" line — git dates every file.
+- No CHANGELOG and no "Last updated" lines: git dates every change (Git workflow above). Docs describe the current
+  state and the reasons for it, never a dated history.
 - `cad/docs/open_issues.md` is the ONE list of what is not settled (fit problems, estimates to confirm on
   hardware, unmodelled hardware, unconfirmed mappings): add a row when you flag something, remove it when you
   close it. `cad/CLAUDE.md` opens with a "Start here" task index and the regeneration checklist.

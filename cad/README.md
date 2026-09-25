@@ -48,8 +48,8 @@ always `./cadtool …` or `uv run …` from `cad/`.
 `cadgen` (the text-to-cad runtime, on PyPI) is a **locked dependency** pinned to the installed
 plugin version (`cadgen[snapshot]==…` in `pyproject.toml`; the plugin's `skills/cad/requirements.txt`
 pins the same) — bump both together; `./cadtool doctor` checks the pair, the CAD kernel, Node and
-Chromium. The pins, how to upgrade and what each bump broke: [`docs/toolchain.md`](docs/toolchain.md) and the root
-`CHANGELOG.md`.
+Chromium. The pins, how to upgrade and what each bump broke: [`docs/toolchain.md`](docs/toolchain.md) and
+`git log -- pyproject.toml` from `cad/` (older entries as git notes under each commit).
 
 ## `./cadtool` — the one entry point
 

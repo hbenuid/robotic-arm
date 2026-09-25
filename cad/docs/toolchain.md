@@ -1,8 +1,8 @@
 # Toolchain — pins, upgrades, per-machine setup
 
 Read this before bumping cadgen / build123d / OCP / Python, after a pull that changes `pyproject.toml` / `uv.lock`,
-or when the kernel or the plugin misbehaves. Everyday running is `cad/CLAUDE.md` "Running things"; the dated history
-of every bump is the root `CHANGELOG.md`.
+or when the kernel or the plugin misbehaves. Everyday running is `cad/CLAUDE.md` "Running things"; the history
+of every bump is `git log -- pyproject.toml uv.lock` from `cad/` (the older bumps carry their CHANGELOG entry as a git note).
 
 ## Pins
 - Toolchain: the `cadgen` PyPI package (`cadgen[snapshot]==<ver>`, a locked dependency) is the whole

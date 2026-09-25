@@ -57,7 +57,7 @@ unfixable = ["F401"]
 ignore = [
     "UP032",   # "{0.bolt_dia:g} ...".format(cfg.housing) reads better than repeating the path in an f-string
     "SIM118",  # `key in P.keys()`: lib/placements.py keys() is a filtering function, not dict.keys()
-    "DTZ011",  # date.today(): manifests carry the local date, like CHANGELOG.md
+    "DTZ011",  # date.today(): manifests carry the local date on purpose
     "E501",    # line length: no formatter, the hand-aligned tables and tagged constants run long
     "E741",    # ambiguous names: `I` is an inertia tensor (tools/robot/derive.py), not a typo for l / 1
     "SIM300",  # "yoda" flips `x <= LIMIT`: it takes any UPPER_CASE name for a constant; the asserts read value-first
