@@ -38,7 +38,7 @@ jobs:
       - name: git lfs pull
         run: git lfs pull
 
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.2.0  # exact tags only: setup-uv publishes no floating major tag (v10)
         with:
           cache-python: true
 
