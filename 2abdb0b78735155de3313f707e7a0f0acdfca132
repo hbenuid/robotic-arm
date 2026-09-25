@@ -1,0 +1,63 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-21 — the belt joints' motors placed: NEMA 17 x 40 + MKS SERVO42D kits, the drive's board (`2abdb0b`)
+
+Two SolidWorks 2026 exports of a NEMA 17 with the MKS SERVO42D board bolted to its rear were dropped in
+(`nema17x40_with_mks`, `nema17x48_with_mks`). Measured with the kernel: the x40's shaft is the drive-spec shaft
+(Ø5, 4.5 flat, 18 mm D-cut, 2 mm pilot) but 23 mm long (spec 22); the x48's is a different, wrong shaft (24 mm,
+15 mm D-cut) and the file is in centimetres. Both carry the identical board kit. Decisions: the drive motor
+(`parts/cycloidal/nema17_48mm.py`, user-confirmed correct) keeps its envelope; the x48 is archive only; the board
+becomes one part used four times; the x40 motor is placed three times with its shaft trimmed to 22.
+Both raw exports moved OUT of the tree to `~/Documents/arm_assembly_organized/mks/` (lowercase `.step`) next to
+the monolith — as `.STEP` at `cad/` root they matched neither the `*.step` ignore rule nor the LFS attribute.
+
+### Found — the links already carry the three NEMA 17 mounts
+- `base`: 4 × Ø3.2 on 31 × 31 through the 5 mm plate, a belt slot toward the yaw axis, 56 mm to the bottom face;
+  `j1_link`: a 48 × 48 pad with a cross-shaped opening on the shoulder axis (the elbow 90T's plane passes
+  through it, 210 mm centres); `j2_link`: two 110 mm slots on the NEMA pitch + a Ø20 central slot through the web
+  (a belt-tension slide, 68.5–147.5 mm centres). None had a motor — `placements.json` has no node for them.
+
+### Added — `parts/joints/nema17_40mm.py` + `mks_servo42d.py`, the split tool, the mounts
+- `tools/reference/split_mks_motor.py` splits the kit export by geometry: `vendor/nema17_40mm.step` (body +
+  D-shaft, re-framed like the drive motor with the D-flat un-spun 3.44° onto +Y, shaft trimmed to
+  `MotorParams.shaft_length`) and `vendor/mks_servo42d.step` (PCB + cover + 4 standoffs + 4 M3x30, z=0 at the
+  motor's rear face, screws to z +19.6). `import_solidworks.py` mirrors them into `reference/solidworks/`
+  (`rel=None`, the pancake pattern — vendor == reference). Written once here, committed as LFS.
+- The drive motor's envelope builder is now `lib/cycloidal/motor.py nema17_motor(m, bolt_points)`
+  (`nema17_48mm.step` byte-identical); the 40 mm envelope = the same builder with `body_width 42 / body_length
+  39.5` + the rear stub + the connector boss. Constants `NEMA17_40_*`, `MKS_SERVO42D_*`, the mount numbers
+  (`BASE_MOTOR_PATTERN_CENTRE`, `J1_MOTOR_PAD_FACE_Y`, `J2_MOTOR_WEB_FACE_Z`, `J2_MOTOR_SLIDE_RANGE`,
+  `J2_MOTOR_SLIDE_X` [ESTIMATE]) in `lib/params.py`, masses 280 g / 35 g [ESTIMATE].
+- `lib/mounts.py`: `nema17_40mm#1..3` + `mks_servo42d#1..3` as frames-as-data in the host's frame (base plate
+  underside, `j1_link` pad on the shoulder axis with the shaft +N, `j2_link` web +Z face at x = −118 with the shaft
+  −N — the only slide range where the body clears `j2_cap_1`'s window; spins [ESTIMATE]).
+  `tools/reference/mount_placements.py` materialises them into `placements.json` as ordinary part records
+  (parent None, `rel == world = host world * frame`, solids / volume / bbox from `parts.build`, a `mount` block,
+  keys under `mounted`; every motor's +Z checked against its joint axis); `extract_placements.py` appends them on
+  each run (`--no-pancake` keeps this machine's bytes out of the pancake vendor file), the merge mode runs without
+  the monolith. `lib/placements.py`: `to_record()` (the writers share the record format), `keys(mounted=)`,
+  importable before the JSON exists. Re-extraction reproduced all 36 SolidWorks records byte-for-byte.
+- `assemblies/arm.py`: the six rows after their hosts (roles = the joint names), `GROUPS` base_link /
+  upper_arm_link / forearm_link; `robot/frames.py LINKS` the same, joint notes name the motors.
+  `assemblies/cycloidal_drive.py`: the board row at `stack_positions["z_mks_board"]` (−48); `EXPECTED` 19 leaves /
+  71 solids / 705 716.1 mm³ (stator 16 / 65), bbox 140 × 140 × 127.1. Nothing sits within 55 mm behind the motor.
+- URDF / SDF: base_link, shoulder_link, upper_arm_link, forearm_link inertials re-derived (total 5.168 kg), the
+  four meshes re-exported, ledger: motors placed, CAN-id mapping still unconfirmed. `./cadtool validate --strict`
+  clean on all three files.
+- Tests: `tests/test_mounts.py` (axis on the joint, mounting face on the host's pad, board on the rear face, zero
+  interference with hosts / caps / pulleys / the drive except the Ø22 pilot in `j2_link`'s Ø20 slot ≤ 30 mm³, the
+  base stack 2.4 mm above the base bottom, the 90T planes within the shafts), `test_placements.py`
+  `test_mounted_records_follow_lib_mounts`, `test_params_invariants.py` locks; counts bumped everywhere
+  (59 leaves / 166 solids, `arm_no_caps` 56 / 163, 17 bought parts / 25 pieces, drive 19 / 71, the manifest's two
+  entries, `MULTI_BODY` 2 / 13); the drive's SolidWorks-node bbox cross-check now excludes the board (the node
+  never had one). `./cadtool pytest`: 630 passed, 9 skipped.
+- Docs: `cad/CLAUDE.md` (mounted occurrences, the split tool, the counts), `cad/README.md` (layout, joints and
+  links tables), `reference/README.md` (provenance + sha256 of the export, the regenerate sequence, the naming
+  rows, `mounted[]`), `vendor/README.md`, `docs/cycloidal_drive.md`, the root README / CLAUDE.md wording.
+
+### Follow-ups (flagged, not changed)
+- `j2_link`'s Ø20 central slot vs the Ø22 pilot (24.7 mm³) and its 0.38 mm-off `j1_link` pad holes: wrapper defects
+  for the conversions. The drive envelope's D-flat is cut at `shaft_dcut_flat/2` = 2.25 (flat-to-round 4.75, not the
+  documented 4.5; the CadQuery reference has the same). The trimmed shaft leaves a 17 mm D-cut (spec 18); confirm the
+  kit motors' shaft length and masses before ordering. Belt-side hardware (3 × 20T, belts, the base-yaw driven
+  pulley) is still unmodelled; `J2_MOTOR_SLIDE_X` and the spins are estimates to set with the belts.
