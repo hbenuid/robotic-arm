@@ -1,0 +1,24 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-18 — `cad/` organization cleanup (branch `cad/organization-cleanup`)
+
+An audit of `cad/` (layout, docs vs. tree, import graph) found the structure sound — `lib/` never
+imported upward, 41 parts ↔ 41 STEPs ↔ 41 references, LFS and ignore rules consistent — plus the
+defects and smells below. No geometry, placement or robot-description number changed.
+
+### Fixed — models that could not be built, dead code, stale docs (`a2204e0`)
+- `cad/robot/links/{forearm,shoulder,upper_arm,wrist_pitch}_link.py` lacked the
+  `if __name__ == "__main__": <name>()` build call, so `./cadtool gen` on them was a silent no-op (only
+  four of the eight link STEPs had ever been written). New `cad/tests/source_checks.py
+  runs_its_model()` (AST) is asserted for every part (`test_part_declares_its_contract`) and every
+  link model (`test_every_physical_link_has_a_runnable_model`) — the guard was untested before.
+- Removed `cad/lib/export.py` (no importers, superseded by `./cadtool gen` / `export`) and the
+  `cad/exports/` directory only it used, with their `.gitignore` rules, `cadtool clean --all` branch and
+  README lines. Dropped five unused `hex_prism` imports in `cad/parts/cycloidal/` (STEPs byte-identical).
+- Stale text: the "path shim" note and "3-joint arm" in `cad/pyproject.toml`; the mesh-tool path in the
+  root `.gitignore`; `cad/README.md` (`gripper_*` count 8 → 7, `cadgen_patches.py` and `robot/_links.py`
+  missing from the trees, `__cadgen__/` in the `clean` row); root `CLAUDE.md` (verbs `store`, `daemon`,
+  `step`; it now carries a `Last updated` line like every other doc).
+- Documented what the `parts/` groups mean — the physical stage along the arm, not the name prefix
+  and not the URDF links (`j1_*` in `base/`; `gripper_clamp_bracket` / `gripper_j3_connector` in
+  `wrist/`, the latter although `assemblies/gripper.py` places it). No part moved.
