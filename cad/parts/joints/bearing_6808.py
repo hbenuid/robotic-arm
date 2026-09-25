@@ -8,9 +8,10 @@ Dimensions: lib/forearm/params.py RollDriveParams (bearing_bore / od / width). I
 """
 import pathlib
 
-from cadgen import read_step, step
+from cadgen import step
 
-from lib.datum import IDENTITY, to_location
+from lib.cots import hybrid
+from lib.datum import IDENTITY
 from lib.forearm import DEFAULT, ForearmConfig
 from lib.geom import cylinder
 from lib.params import BEARING_6808_MASS_G
@@ -34,9 +35,7 @@ def _envelope(cfg: ForearmConfig = DEFAULT):
 @step
 def bearing_6808():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
-    part = read_step(VENDOR_STEP).moved(to_location(VENDOR_TO_REF)) if VENDOR_STEP.exists() else _envelope()
-    part.label = NAME
-    return part
+    return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)
 
 
 if __name__ == "__main__":

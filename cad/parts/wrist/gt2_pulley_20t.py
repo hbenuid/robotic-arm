@@ -14,9 +14,10 @@ else the parametric envelope below - both in the SolidWorks frame placements.jso
 import pathlib
 
 from cadgen import build123d as bd
-from cadgen import read_step, step
+from cadgen import step
 
-from lib.datum import IDENTITY, to_location
+from lib.cots import hybrid
+from lib.datum import IDENTITY
 from lib.params import GT2_PULLEY_20T_TEETH
 
 NAME = pathlib.Path(__file__).stem
@@ -40,9 +41,7 @@ def _envelope():
 @step
 def gt2_pulley_20t():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
-    part = read_step(VENDOR_STEP).moved(to_location(VENDOR_TO_REF)) if VENDOR_STEP.exists() else _envelope()
-    part.label = NAME
-    return part
+    return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)
 
 
 if __name__ == "__main__":

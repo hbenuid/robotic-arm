@@ -20,11 +20,11 @@ import pathlib
 
 from cadgen import step
 
+from lib.cots import hybrid
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, motor_bolt_points
 from lib.cycloidal.motor import nema17_motor
 from lib.datum import IDENTITY
 from lib.params import CYCLOIDAL_MOTOR_MASS_G
-from parts.cycloidal._cots import hybrid
 
 NAME = pathlib.Path(__file__).stem
 COTS = True

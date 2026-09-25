@@ -1,6 +1,6 @@
 """parts - one module per part, grouped by subsystem: parts/<group>/<name>.py + <name>.step
-(groups: base, joints, wrist, gripper, cycloidal). parts/_templates/ holds the three templates and
-parts/cycloidal/_cots.py the drive's shared purchased-part body (underscore = not a part).
+(groups: base, joints, wrist, gripper, cycloidal). parts/_templates/ holds the three templates (not
+discovered); every purchased part builds through lib/cots.py hybrid().
 Every part module declares ONE cadgen model, `@step def <name>()` (NAME = stem = model name);
 running the file builds it, model(name) hands the function to assemblies, build(name) runs its body.
 

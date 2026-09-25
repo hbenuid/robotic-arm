@@ -86,9 +86,9 @@ occurrence — the whole pattern for a pin / fastener part, so it equals its `MU
 from `DEFAULT_CONFIG`, never retyped) + optional `PURCHASE_NOTE` — a printed part declares none of the three —,
 `VENDOR_STEP = vendor/<name>.step`, `VENDOR_TO_REF`
 (vendor-file frame → SolidWorks frame, as frame data; `IDENTITY` for the SolidWorks re-exports); the model is
-hybrid (`cadgen.read_step(VENDOR_STEP)` if present — a tracked input, so a swapped vendor file makes
-the part stale — else `_envelope()` from `lib.params`, both in the SolidWorks frame `placements.json`
-assumes). `reference/solidworks/<name>.step` keeps the SolidWorks re-export of every COTS part as the
+hybrid — `return lib.cots.hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)`, the one body every COTS part
+shares: `cadgen.read_step(VENDOR_STEP)` if present (a tracked input, so a swapped vendor file makes the part
+stale), else `_envelope()` from `lib.params`, both in the SolidWorks frame `placements.json` assumes. `reference/solidworks/<name>.step` keeps the SolidWorks re-export of every COTS part as the
 frame/size reference (for the drive's purchased parts: the CadQuery export of their simplified model
 in `reference/cycloidal/`, `lib/reference.py CYCLOIDAL_COTS`; `path_of()` resolves the origin);
 `test_cots_vendor_matches_reference_frame` (bbox within 1.5 mm, skipped when there is no vendor

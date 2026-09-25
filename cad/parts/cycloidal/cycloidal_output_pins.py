@@ -10,11 +10,11 @@ import pathlib
 
 from cadgen import step
 
+from lib.cots import hybrid, pattern
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, output_pin_points
 from lib.datum import IDENTITY
 from lib.geom import cylinder
 from lib.params import CYCLOIDAL_OUTPUT_PINS_MASS_G
-from parts.cycloidal._cots import hybrid, pattern
 
 NAME = pathlib.Path(__file__).stem
 COTS = True

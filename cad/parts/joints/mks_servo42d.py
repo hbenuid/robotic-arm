@@ -22,10 +22,11 @@ else the parametric envelope below - both in the frame above.
 import pathlib
 
 from cadgen import build123d as bd
-from cadgen import read_step, step
+from cadgen import step
 
+from lib.cots import hybrid
 from lib.cycloidal import DEFAULT_CONFIG, motor_bolt_points
-from lib.datum import IDENTITY, to_location
+from lib.datum import IDENTITY
 from lib.geom import cylinder, single_solid
 from lib.params import MKS_SERVO42D_MASS_G, MKS_SERVO42D_SCREW_REACH, MKS_SERVO42D_STACK, MKS_SERVO42D_W
 
@@ -58,9 +59,7 @@ def _envelope():
 @step
 def mks_servo42d():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
-    part = read_step(VENDOR_STEP).moved(to_location(VENDOR_TO_REF)) if VENDOR_STEP.exists() else _envelope()
-    part.label = NAME
-    return part
+    return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)
 
 
 if __name__ == "__main__":

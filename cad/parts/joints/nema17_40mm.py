@@ -20,11 +20,12 @@ else the parametric envelope below - both in the part frame lib/mounts.py places
 import pathlib
 
 from cadgen import build123d as bd
-from cadgen import read_step, step
+from cadgen import step
 
+from lib.cots import hybrid
 from lib.cycloidal import motor_bolt_points
 from lib.cycloidal.motor import nema17_motor
-from lib.datum import IDENTITY, to_location
+from lib.datum import IDENTITY
 from lib.geom import cylinder, single_solid
 from lib.params import (
     MOTOR_40,
@@ -68,9 +69,7 @@ def _envelope():
 @step
 def nema17_40mm():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
-    part = read_step(VENDOR_STEP).moved(to_location(VENDOR_TO_REF)) if VENDOR_STEP.exists() else _envelope()
-    part.label = NAME
-    return part
+    return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)
 
 
 if __name__ == "__main__":

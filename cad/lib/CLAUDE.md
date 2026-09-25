@@ -12,6 +12,7 @@ params.py     # single source of truth for shared dimensions (tagged provenance)
 units.py      # IN, NUDGE - a leaf module (lib/cycloidal/ imports it; params.py re-exports it)
 motors.py     # the arm's motors (NEMA 17 interface, pancake, the 40 mm kit motor + MKS board, MOTOR_40) - a leaf, re-exported by params.py
 belts.py      # GT2: the pulleys, pulley_od(), closed_belt_length() / centre_distance(), stock belt lengths - a leaf
+cots.py       # hybrid(): the body of every purchased part (vendor STEP, else the envelope); pattern() for the multi-body ones
 geom.py       # the arm's small build123d helpers: align_min(), cylinder(), through() (NUDGE overshoot), single_solid(), hex_prism() - a leaf
 upper_arm/    # the upper arm (UpperArmConfig: LEGACY = the SolidWorks j1_link, DEFAULT = no cap sockets, the motor's and the drive's hole patterns)
 forearm/      # the forearm (ForearmConfig: LEGACY = the SolidWorks j2_link, DEFAULT = the roll end, no cap sockets) and the roll drive (RollDriveParams, stack_positions, the block / shaft / retainer / 90T ring builders)

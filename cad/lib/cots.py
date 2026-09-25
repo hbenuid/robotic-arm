@@ -1,9 +1,9 @@
-"""Shared body of the cycloidal drive's purchased-part modules (parts/cycloidal/bearing_*.py,
-nema17_48mm.py, cycloidal_*_pins/bolts/nuts.py) - NOT a part (underscore: not discovered).
+"""The body every purchased (COTS) part module builds through: the vendor STEP when vendor/<name>.step exists,
+else the module's envelope (parts/_templates/cots.py, parts/CLAUDE.md Purchased (COTS) parts).
 
-Each module keeps the house COTS contract (COTS, MASS_G, VENDOR_STEP, VENDOR_TO_REF, _envelope,
-the `@step` model); the geometry of the envelopes is the drive repo's simplified purchased-part model
-(src/purchased_parts.py at cycloidal_drive@2f1f67d), which is also the reference STEP.
+Each module keeps the house COTS contract (COTS, MASS_G, VENDOR_STEP, VENDOR_TO_REF, _envelope, the `@step`
+model) and returns hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope). pattern() is the multi-body form of the
+drive's pins, bolts and nuts.
 """
 from __future__ import annotations
 
