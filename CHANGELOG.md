@@ -8,6 +8,11 @@ behaviour, layout or tooling gets an entry here; the commit hashes are on `main`
 
 The root mixed the motor-control project's files in with the CAD. It now splits in two: `cad/` and `software/`.
 
+### Docs — the software will be worked on later; one repo (`427a18a`)
+- Root `CLAUDE.md` (top) and `README.md` ("Project structure") note that the software will be worked on later and
+  the current work is the CAD. `cad/` and `software/` stay one repo on purpose: when the software is picked up it
+  has to match the CAD's robot description (`cad/robot/arm.urdf`, the joint table, the drive ratios).
+
 ### Changed — the motor-control project moves to `software/control/`, the firmware to `software/firmware/` (`6959981`)
 - `software/control/`: `launcher.py`, `motor_control.py`, `launch.bat`, `src/`, `tests/`, `pyproject.toml`,
   `uv.lock` (all renames; the uv project is unchanged apart from dropping `[tool.ruff] extend-exclude = ["cad"]`,
