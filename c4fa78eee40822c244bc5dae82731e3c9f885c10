@@ -1,0 +1,10 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-08-28 — `cad/` reorganised: grouped parts, split references, packaged tests/tools, `cadtool clean`, Git LFS
+
+### Changed — Git LFS for the `cad/` binaries (`c4fa78e`)
+- `/.gitattributes`: `cad/**/*.step` and `cad/**/*.stl` use the LFS filter; `git add --renormalize`
+  converted the 95 tracked files (40 MB: parts 41, reference 41, vendor 6, robot meshes 7) into
+  pointers in one commit — history untouched. Clones need `git-lfs` (`git lfs install`; `git lfs pull`
+  on a checkout that shows pointer files); every regenerated STEP is a new LFS object against the
+  GitHub LFS quota.
