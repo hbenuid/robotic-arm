@@ -4,7 +4,7 @@
 conversion workflow, shared-dimension rules, assembly placements, purchased parts, tests, tooling.
 **Audience:** agent. Human docs: `README.md`. Reference provenance: `reference/README.md`. The
 cycloidal drive (spec, port notes, attachment): `docs/cycloidal_drive.md`; the forearm roll drive: `docs/forearm_roll.md`.
-**Last updated:** 2026-09-24 (cadgen 0.6.6; the OCP CAD Viewer / `ocp-vscode` and `./cadtool show` removed; ruff lint, `./cadtool lint`). Every commit that changes behaviour, layout or tooling gets a dated entry in the
+**Last updated:** 2026-09-24 (cadgen 0.6.6; the OCP CAD Viewer / `ocp-vscode` and `./cadtool show` removed; ruff lint, `./cadtool lint`, run automatically by a Claude Code hook + the git pre-commit hook). Every commit that changes behaviour, layout or tooling gets a dated entry in the
 root `CHANGELOG.md` and bumps the `Last updated` line of the docs it touches.
 
 `cad/` is a **separate uv project** (Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.6.x) inside the
@@ -127,7 +127,9 @@ the CAD keeps is the derived, committed copy (`reference/`, `vendor/`) — the r
 - `./cadtool lint [--fix] [path…]` — `ruff check` (a locked dev dependency; rules in `pyproject.toml [tool.ruff]`: ruff's
   default set for the locked version + `E4`, `isort` wrapping at 120). The tree is clean; keep it clean. Lint only:
   never `ruff format` (it would re-flow the hand-aligned tables in nearly every file). A lint fix in a model's import
-  closure makes the model stale like any source edit — rebuild and hash-gate it (Recipe C 2–4).
+  closure makes the model stale like any source edit — rebuild and hash-gate it (Recipe C 2–4). Automatic: the
+  Claude Code hook reports findings on each `.py` file as it is edited (fix them before the rebuild, not after), the
+  git pre-commit hook blocks a commit with findings (root `CLAUDE.md` Toolchain).
 - `uv add <pkg>` for deps (commit `pyproject.toml` + `uv.lock`); never `pip install`.
 - **Generated STEPs are never committed** — part STEPs included (git-ignored since 2026-09-21, like
   `assemblies/*.step` and `robot/links/*.step`): a fresh clone has none until `./cadtool gen assemblies/arm.py`
@@ -160,7 +162,9 @@ the CAD keeps is the derived, committed copy (`reference/`, `vendor/`) — the r
 ## Two machines (Fedora Linux PC + arm64 Mac)
 The repo is worked on from both; git is the only sync channel (push before leaving a machine, pull on arrival).
 - **Per-machine state git does not carry** — after a pull that changes `pyproject.toml` / `uv.lock`:
-  `./cadtool daemon stop && ./cadtool setup`, `claude plugin marketplace update text-to-cad && claude plugin
+  `./cadtool daemon stop && ./cadtool setup` (it also (re)installs the ruff git pre-commit hook: a stub
+  `.git/hooks/pre-commit` → the committed `.githooks/pre-commit`; never `core.hooksPath`, which would switch off
+  git-lfs's hooks in `.git/hooks`), `claude plugin marketplace update text-to-cad && claude plugin
   update cad@text-to-cad` (each scope — `--scope project` too; `~/.claude/plugins/installed_plugins.json` must show
   the new version for both, `doctor` cannot tell — see Gotchas; restart Claude Code), then `./cadtool doctor` must be clean. No
   `CAD_PLUGIN` in a shell profile (it overrides the plugin detection).

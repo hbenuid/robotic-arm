@@ -24,7 +24,7 @@ the whole arm already assembles and renders:
 
 ```
 cd cad
-./cadtool setup                      # one-time: venv + Playwright Chromium (snapshots)
+./cadtool setup                      # per machine: venv + git pre-commit hook (ruff) + Playwright Chromium (snapshots)
 ./cadtool gen assemblies/arm.py      # build the arm STEP (rebuilds any stale part and its committed STEP)
 ./cadtool viewer                     # CAD Viewer: http://127.0.0.1:3245/?file=assemblies/arm.step (or ?file=robot/arm.urdf: joint sliders)
 ./cadtool pytest                     # convention + reference-match tests
@@ -153,7 +153,10 @@ pyproject.toml, uv.lock  uv-managed project metadata
   `pyproject.toml`, then `uv sync`.
 - Lint with `uv run ruff check` (`--fix` for the safe fixes; ruff is a dev
   dependency, config in `pyproject.toml` `[tool.ruff]`, `cad/` excluded - it has
-  its own, `./cadtool lint`). Lint only; `ruff format` is not used.
+  its own, `./cadtool lint`). Lint only; `ruff format` is not used. It also runs
+  by itself: a git pre-commit hook (`cd cad && ./cadtool setup` installs it on
+  a machine) blocks commits with findings, a Claude Code hook checks every file
+  Claude edits, and VS Code (Ruff extension) fixes and sorts imports on save.
 
 ## Known issues
 

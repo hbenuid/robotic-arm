@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# pre-commit: `ruff check` on the staged .py files, each with the ruff and the [tool.ruff] of its own uv project
+# (the root or cad/). A finding blocks the commit; fix it (`./cadtool lint --fix` / `uv run ruff check --fix`), re-stage,
+# commit again - or skip the gate once with `git commit --no-verify`.
+# Installed per machine by `cad/cadtool setup`: a stub .git/hooks/pre-commit that runs this committed file. Not
+# core.hooksPath - that would switch off the git-lfs hooks in .git/hooks (pre-push uploads the LFS objects).
+# Lints the working-tree copy of each staged file (a partly staged file is checked as it is on disk).
+# macOS bash 3.2, no GNU coreutils.
+set -euo pipefail
+
+repo="$(git rev-parse --show-toplevel)"
+cd "$repo"
+
+root_files=(); cad_files=()
+while IFS= read -r f; do
+  case "$f" in
+    cad/*.py) cad_files+=("${f#cad/}") ;;
+    *.py)     root_files+=("$f") ;;
+  esac
+done < <(git diff --cached --name-only --diff-filter=ACMR)
+[ ${#root_files[@]} -eq 0 ] && [ ${#cad_files[@]} -eq 0 ] && exit 0
+
+# a GUI git client may run hooks without the login shell's PATH
+PATH="$PATH:$HOME/.local/bin:$HOME/.cargo/bin:/opt/homebrew/bin:/usr/local/bin"
+if ! command -v uv >/dev/null 2>&1; then
+  echo "pre-commit: uv not found - ruff did not run (git commit --no-verify to commit anyway)" >&2
+  exit 1
+fi
+
+rc=0
+if [ ${#root_files[@]} -gt 0 ]; then
+  uv run --frozen --quiet ruff check --force-exclude "${root_files[@]}" || rc=1
+fi
+if [ ${#cad_files[@]} -gt 0 ]; then
+  (cd cad && uv run --frozen --quiet ruff check --force-exclude "${cad_files[@]}") || rc=1
+fi
+if [ $rc -ne 0 ]; then
+  echo "pre-commit: ruff found problems - commit blocked (git commit --no-verify to commit anyway)" >&2
+fi
+exit $rc

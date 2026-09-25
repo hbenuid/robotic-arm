@@ -31,6 +31,8 @@ extend-exclude = ["cad"]
 # ruff's default rule set - fixed by the locked ruff version, so a ruff bump may add rules - plus E4
 # (import placement).
 extend-select = ["E4"]
+# F401 is reported, never auto-removed: fix-on-save (VS Code) would delete an import typed before its first use.
+unfixable = ["F401"]
 ignore = [
     "EXE001",  # launcher.py / motor_control.py keep their shebangs but run as `uv run launcher`
 ]

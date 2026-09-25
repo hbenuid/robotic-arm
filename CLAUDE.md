@@ -36,6 +36,13 @@ with `ARM_REFERENCE_SRC`). A new export the user hands over is fed to those tool
 - Lint with ruff (a locked dev dependency in both uv projects, config in each `pyproject.toml` `[tool.ruff]`):
   `uv run ruff check` here (it skips `cad/`), `./cadtool lint` in `cad/`. Both are clean; keep them clean.
   Lint only — `ruff format` is not adopted (it would re-flow `cad/`'s hand-aligned tables).
+  It runs by itself at three points: a Claude Code PostToolUse hook (`.claude/hooks/ruff-check.sh`) reports
+  findings on every `.py` file Claude edits — fix them in the same turn. It is registered twice, in
+  `.claude/settings.json` AND `cad/.claude/settings.json`: a session reads the shared settings file of the
+  directory it starts in only (not inherited like CLAUDE.md), so keep the two hook blocks identical;
+  the git pre-commit hook (`.githooks/pre-commit`, installed per machine by `./cadtool setup`) blocks a commit
+  with findings in the staged files; VS Code fixes / sorts imports on save (workspace settings, Ruff extension).
+  `F401` is never auto-fixed (`unfixable`): an import written before its first use must survive a save.
 
 ## Code layout
 - `launcher.py` auto-detects the CANable via `pyserial.tools.list_ports` and calls

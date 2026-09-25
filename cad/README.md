@@ -1,6 +1,6 @@
 # robotic-arm — CAD (build123d)
 
-**Last updated:** 2026-09-24 (the OCP CAD Viewer / `ocp-vscode` and `./cadtool show` removed — the CAD Viewer is cadgen's; ruff lint via `./cadtool lint`) — see the root `CHANGELOG.md` for dated changes.
+**Last updated:** 2026-09-24 (the OCP CAD Viewer / `ocp-vscode` and `./cadtool show` removed — the CAD Viewer is cadgen's; ruff lint via `./cadtool lint` + the pre-commit hook `./cadtool setup` installs) — see the root `CHANGELOG.md` for dated changes.
 
 Parametric CAD-as-code for the desktop arm (base yaw, 20:1 cycloidal shoulder pitch, belt-driven
 elbow and wrist pitch, wrist roll, MG996R parallel gripper), converted part-by-part from the original
@@ -34,7 +34,7 @@ itself is the [`cadgen`](https://pypi.org/project/cadgen/) package installed int
 ```bash
 cd cad
 ./cadtool setup        # uv sync (build123d/OCP/cadgen into ./.venv; reinstalls the OCP kernel if it does not import)
-                       # + Playwright Chromium (~150 MB, snapshots only)
+                       # + the git pre-commit hook (ruff on staged .py files) + Playwright Chromium (~150 MB, snapshots only)
 ./cadtool pytest       # everything green?
 ```
 

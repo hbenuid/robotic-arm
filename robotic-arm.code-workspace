@@ -1,11 +1,23 @@
 {
   "folders": [
-    { "name": "Project Root", "path": "." },
-    { "name": "CAD (build123d)", "path": "cad" }
+    {
+      "name": "Project Root",
+      "path": "."
+    },
+    {
+      "name": "CAD (build123d)",
+      "path": "cad"
+    }
   ],
   "settings": {
     "files.exclude": {
       "**/__pycache__": true
+    },
+    "[python]": {
+      "editor.codeActionsOnSave": {
+        "source.fixAll.ruff": "explicit",
+        "source.organizeImports.ruff": "explicit"
+      }
     }
   },
   "extensions": {

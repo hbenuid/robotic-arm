@@ -10,7 +10,8 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 cadtool - cadgen 0.6 + this uv project (paths relative to cad/)
-  ./cadtool setup                                   one-time: uv sync (+ the OCP kernel check) + Playwright Chromium (for snapshots)
+  ./cadtool setup                                   per machine: uv sync (+ the OCP kernel check) + the git pre-commit hook (ruff)
+                                                    + Playwright Chromium (for snapshots)
   ./cadtool doctor                                  installed cadgen vs the plugin's pin, the CAD kernel, node, chromium
   ./cadtool gen <model.py>... [--force] [--verbose] [--json] [--mesh-tolerance X]
                                                     build: run the model script(s) -> the sibling <name>.step
@@ -77,6 +78,22 @@ run_skill() {  # run_skill <skill> <tool> [args...]  ->  python skills/<skill>/s
 }
 
 cg() { exec uv run --frozen cadgen "$@"; }
+
+install_git_hook() {  # .git/hooks/pre-commit = a stub that runs the committed ../.githooks/pre-commit (ruff on the staged
+  # .py files). Not core.hooksPath: that would switch off git-lfs's own hooks in .git/hooks (pre-push uploads the LFS objects).
+  local hooks stub marker="installed by cad/cadtool setup"
+  hooks="$(git rev-parse --git-path hooks)" || return 0
+  stub="$hooks/pre-commit"
+  if [[ -e "$stub" ]] && ! grep -q "$marker" "$stub"; then
+    echo "cadtool: $stub exists and is not ours - left alone (the ruff pre-commit hook is NOT installed)" >&2
+    return 0
+  fi
+  mkdir -p "$hooks"
+  printf '%s\n' '#!/bin/sh' "# $marker: the hook itself is the committed .githooks/pre-commit" \
+    'exec bash "$(git rev-parse --show-toplevel)/.githooks/pre-commit" "$@"' > "$stub"
+  chmod +x "$stub"
+  echo "cadtool: git pre-commit hook installed ($stub -> .githooks/pre-commit)"
+}
 
 cmd="${1:-help}"
 shift || true
@@ -156,6 +173,7 @@ case "$cmd" in
       echo "cadtool: the OCP kernel does not import - reinstalling cadquery-ocp-novtk" >&2
       uv sync --reinstall-package cadquery-ocp-novtk
     fi
+    install_git_hook
     uv run --frozen python -m playwright install chromium ;;
   python)
     exec uv run --frozen python "$@" ;;
