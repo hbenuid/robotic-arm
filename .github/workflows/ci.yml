@@ -1,18 +1,16 @@
 # CI: a clean clone on a fresh Linux runner - lint both uv projects, the CAD test suite, then build the arm from the
 # committed inputs only (no ~/.cache/cadgen, no raw SolidWorks exports, no generated STEPs). It checks and never writes:
-# no hash gate (STEP bytes differ per machine), no snapshots, no commits. Runs on every pushed branch except main -
-# main is fast-forwarded to a branch whose commit already carries the check. Root CLAUDE.md "CI".
+# no hash gate (STEP bytes differ per machine), no snapshots, no commits. Manual only (~13 min a run): Actions tab ->
+# CI -> Run workflow, or `gh workflow run ci.yml --ref <branch>` - when to run it: root CLAUDE.md "CI".
 name: CI
 
 on:
-  push:
-    branches-ignore: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:  # a newer push to the same branch cancels the run in progress
+concurrency:  # a newer run on the same branch cancels the one in progress
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 

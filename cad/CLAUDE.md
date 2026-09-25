@@ -4,7 +4,7 @@
 conversion workflow, shared-dimension rules, assembly placements, purchased parts, tests, tooling.
 **Audience:** agent. Human docs: `README.md`. Reference provenance: `reference/README.md`. The
 cycloidal drive (spec, port notes, attachment): `docs/cycloidal_drive.md`; the forearm roll drive: `docs/forearm_roll.md`.
-**Last updated:** 2026-09-24 (cadgen 0.6.6; the OCP CAD Viewer / `ocp-vscode` and `./cadtool show` removed; ruff lint, `./cadtool lint`, run automatically by a Claude Code hook + the git pre-commit hook; GitHub Actions CI on every pushed branch). Every commit that changes behaviour, layout or tooling gets a dated entry in the
+**Last updated:** 2026-09-24 (cadgen 0.6.6; the OCP CAD Viewer / `ocp-vscode` and `./cadtool show` removed; ruff lint, `./cadtool lint`, run automatically by a Claude Code hook + the git pre-commit hook; GitHub Actions CI, run by hand). Every commit that changes behaviour, layout or tooling gets a dated entry in the
 root `CHANGELOG.md` and bumps the `Last updated` line of the docs it touches.
 
 `cad/` is a **separate uv project** (Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.6.x) inside the
@@ -178,10 +178,10 @@ The repo is worked on from both; git is the only sync channel (push before leavi
   optional arrays as `${arr[@]+"${arr[@]}"}`) and without GNU coreutils on `PATH`. No exact-equality asserts on
   floating-point results (tessellations of spline geometry differ per architecture). Changes must work on both
   machines by construction; there is no per-machine sign-off to track or report.
-- **CI is the third machine** (`.github/workflows/ci.yml`, root `CLAUDE.md` "CI"): every pushed branch gets a clean
-  clone on x86_64 Ubuntu - lint, fast lane, slow tests, `gen` of both arms - with an empty cadgen store and none of
-  the raw exports. A failure there that neither machine shows is a dependency on local state: fix the test or the
-  model, never the runner.
+- **CI is the third machine** (`.github/workflows/ci.yml`, run by hand - when: root `CLAUDE.md` "CI"): a clean clone
+  on x86_64 Ubuntu - lint, fast lane, slow tests, `gen` of both arms - with an empty cadgen store and none of the raw
+  exports. A failure there that neither machine shows is a dependency on local state: fix the test or the model,
+  never the runner.
 
 ## Authoring a part (`parts/<group>/<name>.py`)
 Parts live in subsystem groups (`base`, `joints`, `wrist`, `gripper`, `cycloidal`; templates in

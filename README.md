@@ -158,10 +158,11 @@ pyproject.toml, uv.lock  uv-managed project metadata
   a machine) blocks commits with findings, a Claude Code hook checks every file
   Claude edits, and VS Code (Ruff extension) fixes and sorts imports on save.
 - CI: GitHub Actions ([.github/workflows/ci.yml](.github/workflows/ci.yml))
-  checks every pushed branch except `main` on a fresh Ubuntu runner — lint
-  (both projects), the CAD test suite and a build of the arm from a clean
-  clone. Results: the branch's check mark on GitHub, the Actions tab, or
-  `gh run list`. Wait for green before fast-forwarding `main`.
+  runs only by hand (Actions tab → CI → Run workflow, or
+  `gh workflow run ci.yml --ref <branch>`), ~13 min on a fresh Ubuntu runner:
+  lint (both projects), the CAD test suite and a build of the arm from a clean
+  clone. Worth running before fast-forwarding `main` after a dependency bump,
+  a new CAD export or a large change; everyday pushes don't need it.
 
 ## Known issues
 
