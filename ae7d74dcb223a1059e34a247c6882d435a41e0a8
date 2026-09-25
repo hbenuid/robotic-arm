@@ -1,0 +1,39 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-22 — forearm roll, M1: the forearm is parametric (branch `cad/forearm-roll`)
+
+The first conversion of a SolidWorks wrapper: `j2_link`, `j2_cap_1` and `j2_cap_2` are now build123d, built from one
+`ForearmConfig`. No geometry changed - `LEGACY` reproduces the three references, and `DEFAULT` is `LEGACY` until the
+roll end lands (M2).
+
+### Changed — `lib/forearm/`, the three forearm parts (`ae7d74d`)
+- `lib/forearm/params.py`: `ForearmConfig` (`WebParams`, `ElbowDiscParams`, `WristBossParams`, `SlotParams`,
+  `SocketParams`, `Cap1Params`, `Cap2Params`; `motor_x`, `slide_range`), every number measured on the references on
+  2026-09-22 with a planar / cylindrical face census: the three parts are planes and cylinders only (no fillets); the
+  disc's M4 nut pockets are HEX, AF 6.86, 3.1 deep, a vertex toward the disc centre; the "Ø20 openings" are one 20 mm
+  central slot (arcs at x −148 / −56) with two 3.2 mm side slots at y ±15.4 (arcs −157 / −47); 16 blind Ø5.18 × 2
+  sockets on the web (both faces) + 2 under the wrist boss; cap 1 = 1.5 lid over a 13 mm pocket (|y| < 35, wrapping the
+  elbow axis, ending at r55 about the wrist axis), the 60 × 48 motor window centred on the motor, outline stopping at
+  r46 round the wrist boss; cap 2 = 1.5 floor under a 12 mm pocket (|y| < 35, wrapping the wrist axis) that is OPEN
+  toward the elbow (only the floor lip between r55 and r70.75 closes it), an arc channel r70.75…93.25 about the elbow
+  axis cut 10 deep from the outer face through floor and rims (purpose unknown - it clears nothing of `j1_link`),
+  outline stopping at r55 round the elbow. `layout.py` (bolt / socket points, the window), `link.py build_link(cfg)`
+  (+ `stadium`, `slab`, `elbow_disc` - the coupler interface M3 reuses), `caps.py build_cap_1/2(cfg)`.
+- `parts/joints/j2_link.py`, `j2_cap_1.py`, `j2_cap_2.py`: `CONVERTED = True`, `REFERENCE_BUILD` = the LEGACY build,
+  `REF_BBOX_TOL 0.02`; the caps carry `LOCAL_FROM_REF` from `placements.json` (`j2_cap_1`: `((0, 0, 33.5), 0)`;
+  `j2_cap_2`: `((−785.325366, −930.487557, −5.5), (−180, 0, 180))` - it was modelled ~1 m from its origin, upside down),
+  so all three are in `j2_link`'s frame and the assembly placements are untouched.
+- `lib/params.py`: `J2_MOTOR_WEB_FACE_Z`, `J2_MOTOR_SLIDE_RANGE`, `J2_MOTOR_SLIDE_X` come from `lib.forearm.params.DEFAULT`
+  (same values). `tests/test_layering.py`: `lib/forearm/` never imports `lib.params` (`LEAF_PACKAGES`).
+- `tests/forearm/` (new): `helpers.py` (`in_host()` = an occurrence in `j2_link`'s frame), `test_forearm_legacy.py`
+  (layout counts, feature probes of the LEGACY builds - slots, pockets, lip, recess, window, channel, sockets -, and
+  DEFAULT == reference while M1 holds).
+- Docs: `cad/CLAUDE.md` (Part states: 17 wrappers remain; the forearm caps follow their link), `cad/README.md`
+  (parts tree), `docs/open_issues.md` (20 → 17 wrappers).
+
+Verified (Fedora PC): reference match at the first build - `j2_link` 285 474.4 mm³ vs 285 470.5 (+0.0014 %), the caps
+within 0.5 % and 0.02 mm; fast lane 397 passed; full suite 651 passed + 8 skipped (2 m 04 s); rebuild after
+`daemon stop` changed exactly `j2_link`, `j2_cap_1`, `j2_cap_2`, `arm`, `arm_no_caps`, `forearm_link` (49 / 55
+byte-identical); `mount_placements.py` a no-op; `derive.py --check` clean for `arm.urdf` + `arm.sdf` (no inertial
+paste needed); `robot/meshes/forearm_link.stl` re-exported (2.07 MB, 41 484 triangles); `validate` ×3 OK; snapshots
+`arm.png` / `arm_no_caps.png` unchanged to the eye.
