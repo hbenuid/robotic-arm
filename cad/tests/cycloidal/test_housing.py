@@ -107,7 +107,7 @@ class TestOuterChamfer:
     def test_parts_valid_od_thickness(self, chamfer_parts):
         parts = chamfer_parts
         """One valid solid; OD and thickness unchanged - only the corners are broken."""
-        for name, (fn, th, ext, mates) in parts.items():
+        for name, (fn, th, _ext, _mates) in parts.items():
             part = fn()
             assert len(part.solids()) == 1 and part.is_valid, f"{name}: not a single valid solid"
             size = part.bounding_box().size
@@ -117,12 +117,12 @@ class TestOuterChamfer:
     def test_chamfer_reduces_volume(self, chamfer_parts):
         parts = chamfer_parts
         cfg0 = no_chamfer(CFG)
-        for name, (fn, th, ext, mates) in parts.items():
+        for name, (fn, _th, _ext, _mates) in parts.items():
             assert R.solid_volume(fn()) < R.solid_volume(fn(cfg0)), f"{name}: chamfer removed no material"
 
     def test_external_rim_beveled_but_mating_face_sharp(self, chamfer_parts):
         parts = chamfer_parts
-        for name, (fn, th, ext, mates) in parts.items():
+        for name, (fn, _th, ext, mates) in parts.items():
             part = fn()
             z_ext = ext + 0.1 if ext == 0 else ext - 0.1
             assert not is_inside(part, self.PILLAR_TIP_R, 0.0, z_ext), f"{name}: external rim should be beveled at the pillar tip"

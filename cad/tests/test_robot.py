@@ -82,12 +82,12 @@ def test_joint_frames_are_orthonormal_with_z_on_the_axis():
         for a in range(3):
             assert math.isclose(sum(v * v for v in cols[a]), 1.0, abs_tol=1e-9)
             for b in range(a + 1, 3):
-                assert abs(sum(x * y for x, y in zip(cols[a], cols[b]))) < 1e-9
-        assert all(abs(z - a) < 1e-5 for z, a in zip(cols[2], j.axis_w)), j.name
+                assert abs(sum(x * y for x, y in zip(cols[a], cols[b], strict=True))) < 1e-9
+        assert all(abs(z - a) < 1e-5 for z, a in zip(cols[2], j.axis_w, strict=True)), j.name
         # right-handed: x cross y == z
         x, y, z = cols
         cross = (x[1] * y[2] - x[2] * y[1], x[2] * y[0] - x[0] * y[2], x[0] * y[1] - x[1] * y[0])
-        assert all(abs(c - v) < 1e-9 for c, v in zip(cross, z)), j.name
+        assert all(abs(c - v) < 1e-9 for c, v in zip(cross, z, strict=True)), j.name
 
 
 def test_rpy_round_trip():

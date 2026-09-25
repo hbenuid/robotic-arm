@@ -252,7 +252,7 @@ def matches_reference(
         "solids": (len(shape.solids()), len(ref.solids())),
     }
     ok = abs(vol - ref_vol) <= vol_tol * ref_vol
-    ok = ok and all(abs(a - b) <= bbox_tol for a, b in zip(size, ref_size))
+    ok = ok and all(abs(a - b) <= bbox_tol for a, b in zip(size, ref_size, strict=True))
     if check_position:
-        ok = ok and all(abs(a - b) <= bbox_tol for a, b in zip(lo, ref_lo))
+        ok = ok and all(abs(a - b) <= bbox_tol for a, b in zip(lo, ref_lo, strict=True))
     return ok, report

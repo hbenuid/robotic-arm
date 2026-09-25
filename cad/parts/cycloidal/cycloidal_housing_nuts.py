@@ -29,7 +29,7 @@ VENDOR_TO_REF = IDENTITY
 def _envelope(cfg: DriveConfig = DEFAULT_CONFIG):
     h = cfg.housing
     return pattern(bd.Pos(xy[0], xy[1], 0) * hex_prism(h.bolt_nut_af, angle, h.bolt_nut_thickness)
-                   for angle, xy in zip(compute_housing_bolt_angles(cfg), housing_bolt_points(cfg)))
+                   for angle, xy in zip(compute_housing_bolt_angles(cfg), housing_bolt_points(cfg), strict=True))
 
 
 @step

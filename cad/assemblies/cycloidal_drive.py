@@ -105,7 +105,7 @@ def totals(body: str | None = None):
         "solids": sum(len(n.solids()) for n in leaves),
         "solid_volume": round(sum(R.solid_volume(n) for n in leaves), 3),
         "bbox_min": [round(v, 3) for v in lo],
-        "bbox_size": [round(h - l, 3) for h, l in zip(hi, lo)],
+        "bbox_size": [round(h - l, 3) for h, l in zip(hi, lo, strict=True)],
     }
 
 

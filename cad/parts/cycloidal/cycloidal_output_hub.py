@@ -41,7 +41,7 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     for xy in output_pin_points(cfg):
         result = result - cylinder(pin_r, pin_depth + NUDGE, xy, z0=-NUDGE)
     arm_r = (h.bolt_dia + tol.bolt_clearance_add) / 2.0
-    for angle, xy in zip(arm_mount_angles(cfg), arm_mount_points(cfg)):
+    for angle, xy in zip(arm_mount_angles(cfg), arm_mount_points(cfg), strict=True):
         result = result - through(arm_r, height, xy)
         result = result - hex_pocket(cfg, xy, angle, h.bolt_nut_depth + NUDGE, z0=-NUDGE)
     if hub.arm_mount_pocket_dia > 0.0:

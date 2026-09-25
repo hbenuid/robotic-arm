@@ -28,11 +28,14 @@ dev = [
 extend-exclude = ["cad"]
 
 [tool.ruff.lint]
-# ruff's default rule set - fixed by the locked ruff version, so a ruff bump may add rules - plus E4
-# (import placement).
-extend-select = ["E4"]
+# ruff's default rule set (fixed by the locked ruff version; a ruff bump may add rules) plus the commonly used
+# families in full: pycodestyle errors, pyflakes, isort, pyupgrade, bugbear, simplify.
+extend-select = ["E", "F", "I", "UP", "B", "SIM"]
 # F401 is reported, never auto-removed: fix-on-save (VS Code) would delete an import typed before its first use.
 unfixable = ["F401"]
 ignore = [
     "EXE001",  # launcher.py / motor_control.py keep their shebangs but run as `uv run launcher`
+    "E501",    # line length: no formatter, long lines are house style
+    "E741",    # ambiguous names (l / I / O): allowed where they are the domain's own symbols
+    "SIM300",  # "yoda" flips `x <= LIMIT`: it takes any UPPER_CASE name for a constant; the asserts read value-first
 ]

@@ -46,7 +46,7 @@ def elbow_disc(cfg: ForearmConfig = DEFAULT):
     d = cfg.disc
     body = cylinder(d.dia / 2.0, d.z1 - d.z0, z0=d.z0)
     body = body - through(d.bore_dia / 2.0, d.z1 - d.z0, z0=d.z0)
-    for angle, xy in zip(disc_bolt_angles(cfg), disc_bolt_points(cfg)):
+    for angle, xy in zip(disc_bolt_angles(cfg), disc_bolt_points(cfg), strict=True):
         body = body - cylinder(d.bolt_dia / 2.0, d.bolt_z1 - d.z0 + NUDGE, xy, z0=d.z0 - NUDGE)
         body = body - bd.Pos(xy[0], xy[1], d.nut_z0) * hex_prism(d.nut_af, angle, d.z1 - d.nut_z0 + NUDGE)
     return body
@@ -68,7 +68,7 @@ def build_link(cfg: ForearmConfig = DEFAULT):
     if not cfg.roll:
         # the elbow interface (the disc's bore and bolts run through the web too)
         body = body - through(d.bore_dia / 2.0, d.z1 - d.z0, z0=d.z0)
-        for angle, xy in zip(disc_bolt_angles(cfg), disc_bolt_points(cfg)):
+        for angle, xy in zip(disc_bolt_angles(cfg), disc_bolt_points(cfg), strict=True):
             body = body - cylinder(d.bolt_dia / 2.0, d.bolt_z1 - d.z0 + NUDGE, xy, z0=d.z0 - NUDGE)
             body = body - bd.Pos(xy[0], xy[1], d.nut_z0) * hex_prism(d.nut_af, angle, d.z1 - d.nut_z0 + NUDGE)
     # the wrist bearing seat: the lip's bore all the way, the seat's bore below and above the lip, the recess on top

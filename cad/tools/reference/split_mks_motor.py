@@ -89,7 +89,7 @@ def planar_faces(shape, normal, min_area=1.0):
     out = []
     for f in shape.faces().filter_by(GeomType.PLANE):
         n = f.normal_at()
-        if all(abs(a - b) < 1e-6 for a, b in zip((n.X, n.Y, n.Z), normal)) and f.area >= min_area:
+        if all(abs(a - b) < 1e-6 for a, b in zip((n.X, n.Y, n.Z), normal, strict=True)) and f.area >= min_area:
             out.append(f)
     return sorted(out, key=lambda f: f.area, reverse=True)
 
@@ -216,7 +216,7 @@ def compose_drive_motor(src48: pathlib.Path, m):
     lo, size = bbox(drive)
     ref_lo, ref_size = bbox(R.load(DRIVE_NAME))
     if not (abs(lo[2] + m.body_length) < 1e-6
-            and all(abs(a - b) <= 1.5 for a, b in zip(lo, ref_lo)) and all(abs(a - b) <= 1.5 for a, b in zip(size, ref_size))):
+            and all(abs(a - b) <= 1.5 for a, b in zip(lo, ref_lo, strict=True)) and all(abs(a - b) <= 1.5 for a, b in zip(size, ref_size, strict=True))):
         raise SystemExit(f"drive motor bbox min {fmt(lo)} size {fmt(size)} vs reference {fmt(ref_lo)} {fmt(ref_size)}")
     return drive
 

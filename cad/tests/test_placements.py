@@ -14,7 +14,7 @@ def _matrix(loc: Location):
 
 
 def _close(a, b, tol=1e-6):
-    return all(math.isclose(x, y, abs_tol=tol) for ra, rb in zip(a, b) for x, y in zip(ra, rb))
+    return all(math.isclose(x, y, abs_tol=tol) for ra, rb in zip(a, b, strict=True) for x, y in zip(ra, rb, strict=True))
 
 
 def test_record_counts_match_expected():

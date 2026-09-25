@@ -27,16 +27,16 @@ ELBOW_PULLEY_FACE_Z = -22.0      # host z of the elbow 90T's mating face (the So
 
 
 def _offset_from_line(point, origin, axis) -> float:
-    d = [p - o for p, o in zip(point, origin)]
-    t = sum(x * y for x, y in zip(d, axis))
-    return math.sqrt(sum((x - t * y) ** 2 for x, y in zip(d, axis)))
+    d = [p - o for p, o in zip(point, origin, strict=True)]
+    t = sum(x * y for x, y in zip(d, axis, strict=True))
+    return math.sqrt(sum((x - t * y) ** 2 for x, y in zip(d, axis, strict=True)))
 
 
 def test_roll_axis_through_the_wrist_centre_and_the_wrist_axes_concurrent():
     assert _offset_from_line(F.WRIST_CENTRE, F.FOREARM_ROLL_ORIGIN, F.FOREARM_ROLL_AXIS) < 0.05
     assert _offset_from_line(F.WRIST_CENTRE, F.WRIST_PITCH_ORIGIN, F.N) < 0.05
     assert _offset_from_line(F.WRIST_CENTRE, F.WRIST_ROLL_ORIGIN, F.F) < 0.05
-    assert abs(sum(x * y for x, y in zip(F.FOREARM_ROLL_AXIS, F.N))) < 1e-6           # x_hint perpendicular to the axis
+    assert abs(sum(x * y for x, y in zip(F.FOREARM_ROLL_AXIS, F.N, strict=True))) < 1e-6           # x_hint perpendicular to the axis
     assert abs(math.sqrt(sum(v * v for v in F.FOREARM_ROLL_AXIS)) - 1.0) < 1e-9
     j = F.JOINT_BY_NAME["forearm_roll"]
     assert (j.parent, j.child, j.type) == ("elbow_link", "forearm_link", "revolute")

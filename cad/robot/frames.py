@@ -72,8 +72,8 @@ ELBOW_TO_WRIST_INPLANE = (-142.926, 153.58, 9.229)   # [REFERENCE] forearm_link 
 WRIST_CENTRE_ALONG_N = -17.0                 # [REFERENCE] see above
 _len = math.sqrt(sum(v * v for v in ELBOW_TO_WRIST_INPLANE))
 FOREARM_ROLL_AXIS = tuple(v / _len for v in ELBOW_TO_WRIST_INPLANE)                    # unit, elbow -> wrist
-FOREARM_ROLL_ORIGIN = tuple(o + PARAMS.FOREARM_ROLL_AXIS_Z * n for o, n in zip(ELBOW_ORIGIN, N))   # on the elbow axis
-WRIST_CENTRE = tuple(o + WRIST_CENTRE_ALONG_N * n for o, n in zip(WRIST_PITCH_ORIGIN, N))
+FOREARM_ROLL_ORIGIN = tuple(o + PARAMS.FOREARM_ROLL_AXIS_Z * n for o, n in zip(ELBOW_ORIGIN, N, strict=True))   # on the elbow axis
+WRIST_CENTRE = tuple(o + WRIST_CENTRE_ALONG_N * n for o, n in zip(WRIST_PITCH_ORIGIN, N, strict=True))
 
 # --- rigid links: placement keys that move together -----------------------------------------
 LINK_ORDER = ["base_link", "shoulder_link", "upper_arm_link", "elbow_link", "forearm_link", "wrist_pitch_link",

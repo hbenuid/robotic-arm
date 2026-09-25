@@ -39,7 +39,10 @@ def interference(a: Shape, b: Shape) -> float:
 def end_face(shape: Shape, which: str):
     """The planar face with the lowest ("min") / highest ("max") centre Z."""
     planes = shape.faces().filter_by(GeomType.PLANE)
-    key = (lambda f: f.center().Z)
+
+    def key(f):
+        return f.center().Z
+
     return min(planes, key=key) if which == "min" else max(planes, key=key)
 
 
@@ -83,7 +86,7 @@ def spline_deviation(shape: Shape, ref: Shape, samples: int = 200) -> float:
     mine, theirs = splines(shape), splines(ref)
     assert mine and len(mine) == len(theirs), f"{len(mine)} B-spline edges vs {len(theirs)} in the reference"
     return max(b.distance_to(Vertex(*a.position_at(i / samples, position_mode=PositionMode.PARAMETER)))
-               for a, b in zip(mine, theirs) for i in range(samples))
+               for a, b in zip(mine, theirs, strict=True) for i in range(samples))
 
 
 def fingerprint(shape: Shape) -> list[tuple[str, float]]:

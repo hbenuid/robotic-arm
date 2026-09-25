@@ -45,7 +45,7 @@ ORIGIN_TOL = 0.01      # mm: a module's origin off its joint's axis (the six-dec
 def _axis_z(loc: Location) -> tuple[float, float, float]:
     """World direction of the frame's +Z."""
     tip = (loc * Location((0.0, 0.0, 1.0))).position
-    return tuple(a - b for a, b in zip(tip, loc.position))
+    return tuple(a - b for a, b in zip(tip, loc.position, strict=True))
 
 
 def _mount_block(m) -> dict:
@@ -60,11 +60,11 @@ def _mount_block(m) -> dict:
 
 def _check_axis(key: str, world: Location, joint, *, on_axis: bool) -> None:
     z, axis = _axis_z(world), joint.axis_w
-    if abs(abs(sum(a * b for a, b in zip(z, axis))) - 1.0) > AXIS_TOL:
+    if abs(abs(sum(a * b for a, b in zip(z, axis, strict=True))) - 1.0) > AXIS_TOL:
         raise SystemExit(f"{key}: +Z {z} is not parallel to the {joint.name} axis {axis}")
     if on_axis:
-        d = tuple(a - b for a, b in zip(world.position, joint.origin_w))
-        off = tuple(a - sum(x * y for x, y in zip(d, axis)) * b for a, b in zip(d, axis))
+        d = tuple(a - b for a, b in zip(world.position, joint.origin_w, strict=True))
+        off = tuple(a - sum(x * y for x, y in zip(d, axis, strict=True)) * b for a, b in zip(d, axis, strict=True))
         if sum(v * v for v in off) ** 0.5 > ORIGIN_TOL:
             raise SystemExit(f"{key}: origin {tuple(world.position)} is {sum(v * v for v in off) ** 0.5:.4f} mm off the {joint.name} axis")
 

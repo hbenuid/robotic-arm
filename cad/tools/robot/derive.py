@@ -254,9 +254,9 @@ def check_urdf(path: pathlib.Path, tol_m=1e-6, tol_rad=1e-6, rel_inertia=1e-3) -
         xyz, rpy = joint_origin(j)
         o = el.find("origin")
         got_xyz, got_rpy = _floats(o.get("xyz")), _floats(o.get("rpy"))
-        if max(abs(a - b) for a, b in zip(got_xyz, xyz)) > tol_m:
+        if max(abs(a - b) for a, b in zip(got_xyz, xyz, strict=True)) > tol_m:
             problems.append(f"{j.name}: origin xyz {got_xyz} != {[round(v, 6) for v in xyz]}")
-        drpy = max(abs(math.remainder(a - b, 2 * math.pi)) for a, b in zip(got_rpy, rpy))
+        drpy = max(abs(math.remainder(a - b, 2 * math.pi)) for a, b in zip(got_rpy, rpy, strict=True))
         if drpy > tol_rad:
             problems.append(f"{j.name}: origin rpy {got_rpy} != {[round(v, 6) for v in rpy]}")
         if el.get("type") != j.type:
@@ -287,7 +287,7 @@ def check_urdf(path: pathlib.Path, tol_m=1e-6, tol_rad=1e-6, rel_inertia=1e-3) -
         if abs(got_mass - mass) > rel_inertia * mass:
             problems.append(f"{link}: mass {got_mass} != {mass:.6f}")
         got_com = _floats(inertial.find("origin").get("xyz"))
-        if max(abs(a - b) for a, b in zip(got_com, com)) > 1e-5:
+        if max(abs(a - b) for a, b in zip(got_com, com, strict=True)) > 1e-5:
             problems.append(f"{link}: COM {got_com} != {[round(v, 6) for v in com]}")
         ie = inertial.find("inertia")
         for attr, want in (("ixx", I[0][0]), ("iyy", I[1][1]), ("izz", I[2][2]), ("ixy", I[0][1]), ("ixz", I[0][2]), ("iyz", I[1][2])):
@@ -323,7 +323,7 @@ def check_sdf(path: pathlib.Path, tol=1e-6) -> list[str]:
             problems.append(f"{j.name}: pose must be relative_to the parent link")
             continue
         vals = _floats(pose.text)
-        if max(abs(a - b) for a, b in zip(vals[:3], xyz)) > tol or max(abs(math.remainder(a - b, 2 * math.pi)) for a, b in zip(vals[3:], rpy)) > tol:
+        if max(abs(a - b) for a, b in zip(vals[:3], xyz, strict=True)) > tol or max(abs(math.remainder(a - b, 2 * math.pi)) for a, b in zip(vals[3:], rpy, strict=True)) > tol:
             problems.append(f"{j.name}: pose {vals} != {[round(v, 6) for v in (*xyz, *rpy)]}")
         if j.type != "fixed":
             lim = el.find("axis/limit")

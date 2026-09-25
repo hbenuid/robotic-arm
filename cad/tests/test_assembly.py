@@ -25,7 +25,7 @@ def _leaves(node):
 
 
 def _same_color(shape, tint: str) -> bool:
-    return all(abs(x - y) < 1e-6 for x, y in zip(tuple(shape.color), tuple(Color(tint))))
+    return all(abs(x - y) < 1e-6 for x, y in zip(tuple(shape.color), tuple(Color(tint)), strict=True))
 
 
 def _check_module_tints(module, tint):
@@ -88,7 +88,7 @@ def _expected_bbox():
     corners = [tuple((arm.arm_from_w() * Location(tuple(p))).position) for p in (lo, hi)]
     lo = [min(c[i] for c in corners) for i in range(3)]
     hi = [max(c[i] for c in corners) for i in range(3)]
-    return lo, [h - l for h, l in zip(hi, lo)]
+    return lo, [h - l for h, l in zip(hi, lo, strict=True)]
 
 
 @pytest.mark.slow
@@ -188,8 +188,8 @@ def test_arm_assembly_matches_reference_totals():
     assert len(a.solids()) == exp_solids == 199
     assert abs(R.solid_volume(a) - exp_volume) <= 0.5
     exp_min, exp_size = _expected_bbox()
-    assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_min(a), exp_min)), (R.bbox_min(a), exp_min)
-    assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_size(a), exp_size)), (R.bbox_size(a), exp_size)
+    assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_min(a), exp_min, strict=True)), (R.bbox_min(a), exp_min)
+    assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_size(a), exp_size, strict=True)), (R.bbox_size(a), exp_size)
     assert a.is_valid
     assert _check_link_tints(a) == {True: 30, False: 36}   # bought / printed leaves (tools/bom.py counts the same)
 
@@ -204,7 +204,7 @@ def test_arm_no_caps_tables_are_the_arms_minus_hidden():
     assert all(P.OCCURRENCES[key]["part"].endswith(("_cap", "_cap_1", "_cap_2")) for key in hidden)
     assert arm_no_caps.OCCURRENCES == [row for row in arm.OCCURRENCES if row[2] not in hidden]
     assert [(label, tint) for label, tint, _ in arm_no_caps.GROUPS] == [(label, tint) for label, tint, _ in arm.GROUPS]
-    for (label, _, keys), (_, _, full_keys) in zip(arm_no_caps.GROUPS, arm.GROUPS):
+    for (label, _, keys), (_, _, full_keys) in zip(arm_no_caps.GROUPS, arm.GROUPS, strict=True):
         assert keys == tuple(key for key in full_keys if key not in hidden), label
         assert keys, f"{label}: hiding must not empty a group"
     assert runs_its_model(pathlib.Path(arm_no_caps.__file__), "arm_no_caps")

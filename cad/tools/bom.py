@@ -106,7 +106,7 @@ def _table(rows: list[dict], md: bool) -> str:
     if md:
         return "\n".join(["| " + " | ".join(heads) + " |", "|" + "---|" * len(heads)] + ["| " + " | ".join(c) + " |" for c in cells])
     widths = [max(len(h), *(len(c[i]) for c in cells)) for i, h in enumerate(heads)]
-    return "\n".join("  ".join(v.ljust(w) for v, w in zip(line, widths)).rstrip() for line in [heads] + cells)
+    return "\n".join("  ".join(v.ljust(w) for v, w in zip(line, widths, strict=True)).rstrip() for line in [heads] + cells)
 
 
 def main(argv=None) -> int:

@@ -125,7 +125,10 @@ the CAD keeps is the derived, committed copy (`reference/`, `vendor/`) — the r
   `./cadtool skill <skill> <tool> …`, `./cadtool cadgen <anything>`.
 - `./cadtool pytest [-m "not slow"]`.
 - `./cadtool lint [--fix] [path…]` — `ruff check` (a locked dev dependency; rules in `pyproject.toml [tool.ruff]`: ruff's
-  default set for the locked version + `E4`, `isort` wrapping at 120). The tree is clean; keep it clean. Lint only:
+  default set for the locked version + the common families `E F I UP B SIM` in full, `isort` wrapping at 120; every
+  ignore carries its reason there). Every `zip()` takes `strict=` (`B905`): `True` where the inputs must pair up -
+  a length mismatch raises instead of silently truncating -, `False` only where a mismatch is expected and handled
+  (`tools/step_facts.py diff`). The tree is clean; keep it clean. Lint only:
   never `ruff format` (it would re-flow the hand-aligned tables in nearly every file). A lint fix in a model's import
   closure makes the model stale like any source edit — rebuild and hash-gate it (Recipe C 2–4). Automatic: the
   Claude Code hook reports findings on each `.py` file as it is edited (fix them before the rebuild, not after), the

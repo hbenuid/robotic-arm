@@ -20,11 +20,11 @@ SPLINE_PARTS = {"cycloidal_disc_1", "cycloidal_disc_2"}
 @pytest.mark.parametrize("name", DESIGNED)
 def test_designed_part_reproduces_cadquery_export(name):
     mine, ref = parts.build(name), R.load(name)
-    assert all(abs(a - b) <= 0.01 for a, b in zip(R.bbox_min(mine), R.bbox_min(ref))), (R.bbox_min(mine), R.bbox_min(ref))
-    assert all(abs(a - b) <= 0.01 for a, b in zip(R.bbox_size(mine), R.bbox_size(ref))), (R.bbox_size(mine), R.bbox_size(ref))
+    assert all(abs(a - b) <= 0.01 for a, b in zip(R.bbox_min(mine), R.bbox_min(ref), strict=True)), (R.bbox_min(mine), R.bbox_min(ref))
+    assert all(abs(a - b) <= 0.01 for a, b in zip(R.bbox_size(mine), R.bbox_size(ref), strict=True)), (R.bbox_size(mine), R.bbox_size(ref))
     fm, fr = fingerprint(mine), fingerprint(ref)
     assert len(fm) == len(fr), f"{name}: {len(fm)} faces vs {len(fr)} in the reference"
-    for (tm, am), (tr, ar) in zip(fm, fr):
+    for (tm, am), (tr, ar) in zip(fm, fr, strict=True):
         assert tm == tr and abs(am - ar) <= 1e-3 * max(1.0, abs(ar)), f"{name}: face {tm} {am} vs {tr} {ar}"
     vm, cm, nm = mesh_volume(mine)
     vr, cr, nr = mesh_volume(ref)
@@ -39,7 +39,7 @@ def test_designed_part_reproduces_cadquery_export(name):
         tri_tol, vol_tol, centroid_tol = 0.0, 1e-6, 1e-3
     assert abs(nm - nr) <= tri_tol * nr, f"{name}: tessellation differs ({nm} vs {nr} triangles)"
     assert abs(vm - vr) <= vol_tol * abs(vr), f"{name}: mesh volume {vm} vs {vr}"
-    assert all(abs(a - b) <= centroid_tol for a, b in zip(cm, cr)), f"{name}: centroid {cm} vs {cr}"
+    assert all(abs(a - b) <= centroid_tol for a, b in zip(cm, cr, strict=True)), f"{name}: centroid {cm} vs {cr}"
     if name not in SPLINE_PARTS:
         vol, ref_vol = R.solid_volume(mine), R.solid_volume(ref)
         assert abs(vol - ref_vol) <= 1e-6 * ref_vol, f"{name}: volume {vol} vs {ref_vol}"

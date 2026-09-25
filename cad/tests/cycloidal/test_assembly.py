@@ -327,8 +327,8 @@ class TestModuleLocks:
         got = {name if role is None else f"{name}:{role}": pos for name, role, pos in cycloidal_drive.OCCURRENCES}
         assert got.keys() == want.keys()
         for label, pos in want.items():
-            assert all(math.isclose(a, b, abs_tol=1e-9) for a, b in zip(got[label], pos)), label
-        for name, role, pos in cycloidal_drive.OCCURRENCES:      # rows are positions (data): translations only
+            assert all(math.isclose(a, b, abs_tol=1e-9) for a, b in zip(got[label], pos, strict=True)), label
+        for name, _role, pos in cycloidal_drive.OCCURRENCES:      # rows are positions (data): translations only
             assert isinstance(pos, tuple) and len(pos) == 3 and all(isinstance(v, float) for v in pos), name
 
     def test_bodies_partition_the_rows(self):
@@ -401,8 +401,8 @@ class TestPoseInTheArm:
         sw = P.OCCURRENCES[DRIVE_KEY]["solidworks"]
         # the children keep their module-frame locations; the module's world pose sits on the Compound
         node = Compound([c for c in drive_world.children if c.label.split(":")[0] != "mks_servo42d"]).moved(drive_world.location)
-        assert all(abs(a - b) <= 1.5 for a, b in zip(R.bbox_min(node), sw["world_bbox_min"])), (R.bbox_min(node), sw["world_bbox_min"])
-        assert all(abs(a - b) <= 1.5 for a, b in zip(R.bbox_size(node), sw["world_bbox_size"])), (R.bbox_size(node), sw["world_bbox_size"])
+        assert all(abs(a - b) <= 1.5 for a, b in zip(R.bbox_min(node), sw["world_bbox_min"], strict=True)), (R.bbox_min(node), sw["world_bbox_min"])
+        assert all(abs(a - b) <= 1.5 for a, b in zip(R.bbox_size(node), sw["world_bbox_size"], strict=True)), (R.bbox_size(node), sw["world_bbox_size"])
 
     def test_drive_clears_arm_neighbours(self, drive_world):
         """No intersection with the base, j1_link or j1_cap; only contact-level overlap with the

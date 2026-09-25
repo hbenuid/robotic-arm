@@ -33,7 +33,8 @@ with `ARM_REFERENCE_SRC`). A new export the user hands over is fed to those tool
   commit `pyproject.toml` and `uv.lock`.
 - Run the CLI with `uv run launcher` (entry point defined in `[project.scripts]`).
   After adding or renaming entry points, run `uv sync` to refresh `.venv/bin/`.
-- Lint with ruff (a locked dev dependency in both uv projects, config in each `pyproject.toml` `[tool.ruff]`):
+- Lint with ruff (a locked dev dependency in both uv projects, config in each `pyproject.toml` `[tool.ruff]`:
+  ruff's default set + `E F I UP B SIM` in full, the ignores commented):
   `uv run ruff check` here (it skips `cad/`), `./cadtool lint` in `cad/`. Both are clean; keep them clean.
   Lint only — `ruff format` is not adopted (it would re-flow `cad/`'s hand-aligned tables).
   It runs by itself at three points: a Claude Code PostToolUse hook (`.claude/hooks/ruff-check.sh`) reports

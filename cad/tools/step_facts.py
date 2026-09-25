@@ -37,8 +37,8 @@ def facts(path: str | pathlib.Path) -> dict:
     for leaf in scene.leaves():
         shape = leaf.shape()
         bb = shape.bounding_box()
-        lo = _xyz(bb.min) if lo is None else [min(a, b) for a, b in zip(lo, _xyz(bb.min))]
-        hi = _xyz(bb.max) if hi is None else [max(a, b) for a, b in zip(hi, _xyz(bb.max))]
+        lo = _xyz(bb.min) if lo is None else [min(a, b) for a, b in zip(lo, _xyz(bb.min), strict=True)]
+        hi = _xyz(bb.max) if hi is None else [max(a, b) for a, b in zip(hi, _xyz(bb.max), strict=True)]
         rows.append({
             "ref": leaf.ref,
             "label": leaf.label,
@@ -59,7 +59,7 @@ def facts(path: str | pathlib.Path) -> dict:
             "faces": sum(r["faces"] for r in rows),
             "volume": sum(r["volume"] for r in rows),
             "bbox_min": lo or [0.0, 0.0, 0.0],
-            "bbox_size": [h - l for l, h in zip(lo, hi)] if rows else [0.0, 0.0, 0.0],
+            "bbox_size": [h - l for l, h in zip(lo, hi, strict=True)] if rows else [0.0, 0.0, 0.0],
         },
     }
 
@@ -91,7 +91,7 @@ def diff(a: str | pathlib.Path, b: str | pathlib.Path, tol: float = 1e-6) -> lis
     out = []
     if fa["totals"]["leaves"] != fb["totals"]["leaves"]:
         out.append(f"leaves: {fa['totals']['leaves']} != {fb['totals']['leaves']}")
-    for ra, rb in zip(fa["leaves"], fb["leaves"]):
+    for ra, rb in zip(fa["leaves"], fb["leaves"], strict=False):   # a count mismatch is reported above; compare the common leaves
         where = f"{ra['ref']} {ra['label']}"
         for key in ("ref", "label", "solids", "faces"):
             if ra[key] != rb[key]:
@@ -99,7 +99,7 @@ def diff(a: str | pathlib.Path, b: str | pathlib.Path, tol: float = 1e-6) -> lis
         if not _close(ra["volume"], rb["volume"], tol):
             out.append(f"{where}: volume {ra['volume']!r} != {rb['volume']!r}")
         for key in ("bbox_size", "bbox_center"):
-            if not all(_close(x, y, tol) for x, y in zip(ra[key], rb[key])):
+            if not all(_close(x, y, tol) for x, y in zip(ra[key], rb[key], strict=True)):
                 out.append(f"{where}: {key} {ra[key]} != {rb[key]}")
     return out
 

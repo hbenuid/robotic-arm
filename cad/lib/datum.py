@@ -46,8 +46,8 @@ def frame(origin_w, z_w, x_hint_w) -> bd.Location:
     """World Location of a right-handed frame: Z along z_w, X along x_hint_w projected
     perpendicular to Z, origin at origin_w (mm)."""
     z = _unit(z_w)
-    d = sum(a * b for a, b in zip(x_hint_w, z))
-    x = _unit(tuple(a - d * b for a, b in zip(x_hint_w, z)))
+    d = sum(a * b for a, b in zip(x_hint_w, z, strict=True))
+    x = _unit(tuple(a - d * b for a, b in zip(x_hint_w, z, strict=True)))
     return bd.Location(bd.Plane(origin=bd.Vector(*origin_w), x_dir=bd.Vector(*x), z_dir=bd.Vector(*z)))
 
 

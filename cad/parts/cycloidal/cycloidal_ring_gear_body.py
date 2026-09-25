@@ -61,7 +61,7 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
         result = result - through(m4_r, height, xy)
     # shared outer profile, captive nut pockets on the output face, bevel
     result = result - reveal_window_cutter(cfg, height)
-    for angle, xy in zip(compute_housing_bolt_angles(cfg), housing_bolt_points(cfg)):
+    for angle, xy in zip(compute_housing_bolt_angles(cfg), housing_bolt_points(cfg), strict=True):
         result = result - hex_pocket(cfg, xy, angle, h.bolt_nut_depth + NUDGE, z0=height - h.bolt_nut_depth)
     return chamfer_outer_silhouette(result, cfg, external_z=height)
 

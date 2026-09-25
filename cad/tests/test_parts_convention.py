@@ -132,7 +132,7 @@ def test_cots_envelope_tracks_reference_bbox(name):
     env = mod._envelope()
     assert env.is_valid
     for got, exp in ((R.bbox_min(env), entry["bbox_min"]), (R.bbox_size(env), entry["bbox_size"])):
-        assert all(abs(g - e) <= 0.05 for g, e in zip(got, exp)), f"{name} envelope {got} vs reference {exp}"
+        assert all(abs(g - e) <= 0.05 for g, e in zip(got, exp, strict=True)), f"{name} envelope {got} vs reference {exp}"
 
 
 COTS_FRAME_TOL_MM = 1.5   # catalog models differ slightly from the SolidWorks re-exports
@@ -152,7 +152,7 @@ def test_cots_vendor_matches_reference_frame(name):
         (R.bbox_min(shape), R.bbox_min(ref), "bbox min"),
         (R.bbox_size(shape), R.bbox_size(ref), "bbox size"),
     ):
-        assert all(abs(g - e) <= COTS_FRAME_TOL_MM for g, e in zip(got, exp)), (
+        assert all(abs(g - e) <= COTS_FRAME_TOL_MM for g, e in zip(got, exp, strict=True)), (
             f"{name} vendor geometry {what} {got} vs reference {exp} (tol {COTS_FRAME_TOL_MM} mm) - "
             f"set VENDOR_TO_REF in parts/{name}.py"
         )
