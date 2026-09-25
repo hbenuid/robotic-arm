@@ -1,0 +1,13 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-08-28 — text-to-cad v0.4.28, purchased-part workflow, robot description
+
+### Added — step.parts vendor workflow (`8e16a0f`)
+- Every purchased (COTS) part keeps its SolidWorks re-export in `cad/reference/<name>.step`
+  as an immutable frame/size reference; `cad/vendor/<name>.step` is the current best model
+  and may be replaced. `reference/manifest.json` records both (`vendor` sub-entry).
+- COTS parts declare `VENDOR_TO_REF` (vendor-file frame → SolidWorks frame);
+  `test_cots_vendor_matches_reference_frame` guards swapped models (bbox within 1.5 mm).
+- Procedure in `cad/vendor/README.md`. Tried `gt2_pulley_20t_bore5_w6` from step.parts and
+  rejected it (analytic simplified model); MG996R not in the catalog; pancake catalog model is
+  simplified; no Ø6 rod — all kept as the SolidWorks re-exports.
