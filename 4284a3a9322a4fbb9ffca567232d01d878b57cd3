@@ -1,0 +1,24 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-12 — every committed part STEP regenerated on OCP 7.9.3 (writer formatting only, geometry unchanged)
+
+### Changed — the 41 `cad/parts/<group>/<name>.step` files rewritten on the locked kernel (`4284a3a`)
+- `d0cffaa`'s STEPs were written by warm daemon workers that still had OCP 7.8.1 loaded (their header
+  line read `Open CASCADE STEP processor 7.8` although `cad/uv.lock` already pinned 7.9.3.1.1 — the
+  `./cadtool daemon stop` gotcha), so its "byte-identical from here on" held only per kernel: any part
+  rebuilt on 7.9 (a `--force`, an edit to a shared `lib/` file) became a new LFS object with a two-line
+  diff, first seen on `base` and `j1_cap`. All 41 parts force-rebuilt per model after stopping the
+  daemon (`find parts … | xargs -P4 -I{} ./cadtool python {} --force`; `./cadtool gen` runs files
+  sequentially and `--force` never cascades to children).
+- Verified against the committed LFS objects: 35 files differ only in the header line and the
+  `COLOUR_RGB` float formatting (equal sizes); six (`j1_coupler`, `mg996r_servo`, `nema17_48mm`,
+  `cycloidal_eccentric_shaft`, `cycloidal_motor_plate`, `cycloidal_ring_gear_body`) additionally carry
+  float noise in `DIRECTION` / `CARTESIAN_POINT` values (1e-32 components, `-0.`, 1e-16 residues), and
+  the two housing parts a different stored shape tolerance (`UNCERTAINTY_MEASURE` 1e-7 → 1e-5 / 2e-5)
+  with renumbered edge references. `./cadtool inspect diff <old> <new>`: same topology and counts for
+  all six, bbox deltas ≤ 6e-14 mm; `test_reference_match` + `tests/cycloidal` for the two housing parts
+  61 passed, `-m "not slow"` 222 passed, `./cadtool gen assemblies/arm.py` builds and reads current.
+  Nothing in the repo reads these files (tests and tools build in-process). From here `--force`
+  rebuilds are byte-identical on the locked kernel.
+- `cad/CLAUDE.md`: the deterministic-bytes note now says deterministic *per kernel* (the STEP header
+  names the OCCT version, so a kernel bump rewrites every file once — stop the daemon first).
