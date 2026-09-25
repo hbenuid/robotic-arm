@@ -1,0 +1,18 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-08-28 — `cad/` reorganised: grouped parts, split references, packaged tests/tools, `cadtool clean`, Git LFS
+
+The folder had outgrown its flat directories (87 files in `parts/`, 44 in `reference/`, 17 test
+modules). Parts are now grouped by subsystem, references by origin, the drive's tests and the
+tools are packages, and the 95 committed STEP/STL binaries are Git LFS objects. No part was
+renamed: every name still keys the manifest, the reference file, `placements.json` and the URDF
+links. Baseline suite 410 + 9 skipped → 412 + 9 skipped (two new discovery locks).
+
+### Changed — tests/tools packages, robot/links stubs, `cadtool clean` (`35dbdc5`)
+- `cad/tests/cycloidal/` (the drive's 10 modules + `helpers.py`, imported as
+  `tests.cycloidal.helpers`) and `cad/tools/{reference,cycloidal,robot}/` as packages
+  (`robot_frames.py` → `tools/robot/frames.py`, `export_cycloidal_cadquery.py` →
+  `tools/cycloidal/export_cadquery.py`, …); `test_robot` imports `tools.robot.frames` instead of
+  hacking `sys.path`. `robot/links/*.py` are 4-line stubs (a literal `def gen_step()`, which the
+  plugin's AST lookup needs). `./cadtool clean [--all]` deletes `__cadgen__/` (261 MB of viewer
+  caches), `__pycache__/`, `.pytest_cache/` (and, with `--all`, the git-ignored review artifacts).
