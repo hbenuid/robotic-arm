@@ -1,0 +1,9 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-08-28 — `cad/` reorganised: grouped parts, split references, packaged tests/tools, `cadtool clean`, Git LFS
+
+### Changed — `reference/` split by origin (`ced1497`)
+- `cad/reference/solidworks/` (25 SolidWorks exports) and `cad/reference/cycloidal/` (16 CadQuery
+  exports of the drive); `lib.reference.path_of()` resolves the origin from the registries; both
+  import tools write there and record a `file` field in `manifest.json` (added to all 41 entries
+  without re-running the importers — every checksum unchanged).
