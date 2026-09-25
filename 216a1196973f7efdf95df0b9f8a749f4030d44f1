@@ -1,0 +1,40 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-18 — model files no longer load the CAD kernel at import (branch `cad/lazy-kernel-import`)
+
+cadgen gates a model (freshness check, warm-daemon dispatch) before paying for OCP — but only while
+neither `build123d` nor `OCP` is in `sys.modules` when the model is called. Every model file here
+imported build123d at module top, so each run, even of a current model, paid the import and printed
+cadgen's "kernel was imported before …" hint (documented until now as accepted noise).
+
+### Changed — the whole model import closure is kernel-free at import (`216a119`)
+- 55 files (`parts/` 45, `lib/` 7, `assemblies/` 2, `robot/` 1): `from build123d import …` →
+  `from cadgen import build123d as bd` (cadgen's PEP 562 proxy) with `bd.<name>` inside function bodies;
+  rewritten by an AST-located tool (strings / comments untouched), `from __future__ import annotations`
+  added where annotations name kernel types. 33 part files need no kernel import at all any more.
+- Kernel objects that were built at import are now data or functions:
+  - the 44 frame constants (28 `LOCAL_FROM_REF`, 16 `VENDOR_TO_REF`, all identity) are **frame data** —
+    `lib.datum.IDENTITY` or `((x, y, z), (rx, ry, rz))`, made a `Location` by `lib.datum.to_location()`
+    inside the body (`IDENTITY` → a bare `Location()`, so nothing changes in the written STEP);
+  - `lib.datum.BASE_FRAME` → `base_frame()` (cached), `assemblies.arm.ARM_FROM_W` → `arm_from_w()`;
+    `robot/frames.py` re-exports `base_frame`;
+  - `assemblies/cycloidal_drive.py OCCURRENCES` rows are `(part, role, position)` tuples, not
+    `(part, role, Location)`; `_occurrences.located_children` / `world_rows` build the `Location`;
+  - `lib/cycloidal/geom.MIN` (a tuple of `Align`) → `align_min()`.
+- New `cad/tests/test_lazy_kernel.py` (fast lane, 0.1 s): a fresh interpreter imports the 3 templates,
+  the 41 parts, the 3 assemblies and the 8 link models one by one and fails on the first that loads
+  `build123d` / `OCP`. Tests follow the renames (`arm.arm_from_w()`, `F.base_frame()`, frame data in
+  `test_reference_match.py`, position rows in `tests/cycloidal/test_assembly.py`).
+- Docs: `cad/CLAUDE.md` (the "expected noise" bullet is now the rule + an Authoring bullet: lazy `bd`,
+  no kernel object at module level / in defaults, frames as data), `cad/README.md`,
+  `cad/docs/cycloidal_drive.md`, the three `parts/_templates/`.
+
+Verified: `./cadtool pytest -q -W error::FutureWarning` 587 passed + 9 skipped (+1 guard test, +1
+layering row for it). Every source changed, so all 52 models were stale: rebuilt (daemon stopped first)
+in 54 s — 52 STEPs written, **0 eager-kernel hints**, no committed part STEP changed (`git status`: 0 of
+41), the 11 assembly / link STEPs byte-identical (`sha256sum -c`), `./cadtool why assemblies/arm.py` =
+`current`, 54 children pinned. No-op re-run of an unchanged model: **`parts/base/base.py` 1.5 s → 0.09 s**
+(3 runs each), `assemblies/arm.py` 0.25 s, a link 0.10 s, all 41 parts 3.7 s (was ~1.5 s each); the first
+no-op check of a model right after a rebuild is slower (up to ~1.6 s, once). `python -X importtime` on
+a link and on the arm: 0 kernel modules. Negative control: importing `tools/robot/derive.py` (module-level
+`OCP` import, outside any model's closure) trips the same check.
