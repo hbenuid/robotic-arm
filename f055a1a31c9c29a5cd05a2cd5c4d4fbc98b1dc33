@@ -1,0 +1,14 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-08-28 — the cycloidal drive: imported, ported to build123d, attached
+
+### Changed — docs; `cad/cycloidal_import/` removed (`f055a1a`)
+- `cad/docs/cycloidal_drive.md`: the drive's spec carried over and corrected (its old §10 claimed
+  "both discs are identical, the 180° offset is applied in the assembly" — wrong; 7.6 mm → 7.4 mm
+  disc holes; rotted 67 / 134 / 120 mm comments), where things live in `cad/`, port notes
+  (idiom table, promoted numbers, dropped fields, interference budget, OCCT volume caveat), the
+  attachment and the change policy.
+- `cad/README.md`, `cad/CLAUDE.md`, `cad/reference/README.md`, `cad/vendor/README.md`, root
+  `README.md` / `CLAUDE.md` updated (designed part state, code-driven module, 16 reference rows,
+  catalog decisions); the CadQuery import directory deleted. Suite: 419 tests (410 + 9 skipped
+  vendor-frame checks for envelope-only parts).
