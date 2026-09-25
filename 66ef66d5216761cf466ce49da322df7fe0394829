@@ -1,0 +1,30 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-24 — CI on GitHub Actions (branch `tooling/ci`)
+
+The ruff entry below said "no CI: solo, the pre-commit hook is the gate". That still holds for lint, but one thing
+neither machine can check is that a **clean clone** builds and passes: both carry state git does not (the cadgen
+store, the raw SolidWorks exports, generated STEPs in the tree). CI is that check.
+
+### Added — `.github/workflows/ci.yml` (`66ef66d`, `3327fcb`)
+- Runs on a push to any branch except `main` (`main` is fast-forwarded to an already-checked commit) and by hand
+  (`workflow_dispatch`); a newer push to the same branch cancels the run in progress; `contents: read` only.
+- One job on `ubuntu-24.04` (30 min timeout, `CADGEN_DAEMON=0`): checkout → `git lfs pull` with `.git/lfs` cached on a
+  hash of the LFS object list (the LFS bandwidth quota is only spent when a committed input changes) → `setup-uv`
+  (uv + managed Python cached) → root: `uv sync --frozen`, `ruff check`, `import motor_control` → `cad/`: `uv sync
+  --frozen`, `import OCP.gp`, `./cadtool lint`, the fast lane, the slow tests (`-m slow`: the full suite without
+  running the fast lane twice), `./cadtool gen assemblies/arm.py assemblies/arm_no_caps.py`.
+- Left out on purpose: the hash gate (STEP bytes are per machine), snapshots, the plugin / `doctor`, Playwright,
+  the broken root `tests/`, a macOS runner (10× the minutes; the Mac covers bash 3.2). Nothing is written back.
+- `astral-sh/setup-uv` is pinned to an exact tag (`@v10.2.0`): it publishes no floating major tag, and the first run
+  (`66ef66d`) failed at "Set up job" on `@v10` (`3327fcb`). `actions/checkout@v7` / `actions/cache@v6` float.
+- Docs: root `CLAUDE.md` ("CI", new section), `cad/CLAUDE.md` (Two machines: CI is the third), both READMEs;
+  `Last updated` bumped.
+
+Verified: first on the arm64 Mac in a fresh clone with an empty cadgen store (`CADGEN_CACHE_DIR` in a scratch
+directory), same steps: both projects lint clean, the CLI imports, fast lane 418 passed (28 s), full suite 698 passed
++ 9 skipped (3 m 56 s; the 9 = the `envelope in use` vendor-frame skips, as on both machines), both arms built cold in
+44 s (47 part STEPs). Then on GitHub, run 36084093645 (`3327fcb`), green in 13 m: fast lane 418 passed (19 s), slow
+tests 280 passed + 9 skipped (8 m 09 s), both arms built (3 m 51 s), the LFS objects downloaded once and cached. At
+~13 min a run the private repo's included Actions minutes cover roughly 150 pushes a month; the arm build is the
+step to drop first if that gets tight.
