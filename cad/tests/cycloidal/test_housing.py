@@ -12,7 +12,8 @@ import parts
 from lib import reference as R
 from lib.cycloidal import compute_housing_bolt_angles
 from lib.cycloidal.housing import chamfer_outer_silhouette, reveal_window_cutter
-from tests.cycloidal.helpers import CFG, is_inside, no_chamfer
+from tests.cycloidal.helpers import CFG, no_chamfer
+from tests.helpers import is_inside
 
 cycloidal_motor_plate = parts.load("cycloidal_motor_plate")
 cycloidal_ring_gear_body = parts.load("cycloidal_ring_gear_body")

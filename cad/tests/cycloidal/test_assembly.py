@@ -24,7 +24,8 @@ from lib.cycloidal import compute_housing_bolt_angles, hex_circumdiameter, hub_h
 from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii
 from lib.models import raw
 from robot import frames as F
-from tests.cycloidal.helpers import CFG, interference
+from tests.cycloidal.helpers import CFG
+from tests.helpers import interference
 
 cycloidal_disc_1 = parts.load("cycloidal_disc_1")
 cycloidal_motor_plate = parts.load("cycloidal_motor_plate")

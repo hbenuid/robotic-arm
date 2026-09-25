@@ -11,7 +11,8 @@ from lib import params as PARAMS
 from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, closed_belt_length
 from lib.forearm import DEFAULT, LEGACY, flange_bolt_points, link_socket_points
 from lib.motors import NEMA17_40_BODY_W, NEMA17_40_CONNECTOR_D
-from tests.forearm.helpers import in_host, interference, is_inside
+from tests.forearm.helpers import in_host
+from tests.helpers import interference, is_inside
 
 R = DEFAULT.roll_end
 

@@ -16,7 +16,7 @@ from lib.cycloidal.params import DEFAULT_CONFIG
 from lib.datum import to_location
 from lib.motors import NEMA17_BOLT_SP
 from lib.upper_arm import DEFAULT, LEGACY, hub_bolt_points, pad_holes, socket_points
-from tests.cycloidal.helpers import is_inside
+from tests.helpers import is_inside
 
 
 def _in_link(key: str, local=(0.0, 0.0, 0.0)) -> Location:

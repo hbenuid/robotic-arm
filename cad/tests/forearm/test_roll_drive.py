@@ -15,7 +15,8 @@ from lib.datum import to_location
 from lib.forearm import DEFAULT, belt_window, cap_bolt_points, module_frame_in_host, pulley_bolt_points, stack_positions
 from lib.models import raw
 from robot import frames as F
-from tests.forearm.helpers import in_host, interference, is_inside
+from tests.forearm.helpers import in_host
+from tests.helpers import interference, is_inside
 
 S = stack_positions(DEFAULT)
 D = DEFAULT.drive

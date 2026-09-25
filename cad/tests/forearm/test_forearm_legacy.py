@@ -3,7 +3,7 @@ match is tests/test_reference_match.py's; here the features are probed by name s
 import pytest
 
 from lib.forearm import LEGACY, link_socket_points
-from tests.forearm.helpers import is_inside
+from tests.helpers import is_inside
 
 
 def test_legacy_layout():

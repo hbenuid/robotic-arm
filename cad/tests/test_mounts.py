@@ -15,7 +15,7 @@ from lib.cycloidal import DEFAULT_CONFIG
 from lib.datum import BASE_BOTTOM_Y, to_location
 from lib.models import raw
 from robot import frames as F
-from tests.cycloidal.helpers import interference
+from tests.helpers import interference
 
 MOTORS = [m for m in mounts.MOUNTS if m.part in mounts.MOTORS]
 BOARDS = {m.host: m for m in mounts.MOUNTS if m.part == mounts.BOARD}

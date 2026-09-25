@@ -9,7 +9,7 @@ import pytest
 
 import parts
 from lib import reference as R
-from tests.cycloidal.helpers import fingerprint, mesh_volume, spline_deviation
+from tests.helpers import fingerprint, mesh_volume, spline_deviation
 from tools.cycloidal import export_cadquery as EX  # stdlib-only at module level (runs in the CadQuery venv)
 
 DESIGNED = sorted(R.DESIGNED)

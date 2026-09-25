@@ -15,7 +15,8 @@ from build123d import Pos
 import parts
 from lib import reference as R
 from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii, profile_points
-from tests.cycloidal.helpers import CFG, annulus, end_face, interference, is_inside, radial_extent, ring_pins
+from tests.cycloidal.helpers import CFG, ring_pins
+from tests.helpers import annulus, end_face, interference, is_inside, radial_extent
 
 cycloidal_disc_1 = parts.load("cycloidal_disc_1")
 cycloidal_disc_2 = parts.load("cycloidal_disc_2")

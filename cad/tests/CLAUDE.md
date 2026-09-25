@@ -23,10 +23,11 @@ the base stack above the base bottom, the 90T planes within the shafts),
 `test_lazy_kernel.py` (a fresh interpreter imports every template, part, assembly and link model without
 loading `build123d` / `OCP`; names the first offender — a new assembly model goes in its module list),
 `source_checks.py` (the shared `runs_its_model()` check that a model file ends with its build call),
+`helpers.py` (the geometry helpers every geometry test shares: `interference`, `is_inside`, `section_area`, …),
 `totals.py` (what an occurrence contributes to the arm / link totals: its SolidWorks record, or its own build once
 converted — shared by `test_assembly.py` and `test_robot.py`),
 `tests/cycloidal/` (the drive: one module per part + housing / purchased / fitment / assembly / port,
-`from tests.cycloidal.helpers import CFG, …` for the shared config + geometry helpers, the
+`from tests.cycloidal.helpers import CFG, …` for the drive's config, the
 `stack` fixture is `tests/cycloidal/conftest.py`), `tests/upper_arm/` (`j1_link`: the LEGACY build's feature probes, DEFAULT's
 holes on the elbow motor's pattern and the drive's arm-mount bolts, no sockets), `tests/forearm/` (the forearm: the LEGACY
 build vs the SolidWorks part + feature probes, the roll end, the roll drive - axis through the wrist centre, stack, press fits, clean pairs,
@@ -43,4 +44,4 @@ step 5 in `cad/CLAUDE.md` has the `totals()` one-liner).
 
 ## Gotchas (all verified)
 - `Shape.intersect` on composite operands changed in build123d 0.11 (a placed module against a part reported
-  whole solids as common) — `tests/cycloidal/helpers.interference` runs the kernel's `BRepAlgoAPI_Common` directly.
+  whole solids as common) — `tests/helpers.interference` runs the kernel's `BRepAlgoAPI_Common` directly.

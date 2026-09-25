@@ -13,7 +13,8 @@ from build123d import Pos
 import parts
 from lib.cycloidal import stack_positions
 from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii
-from tests.cycloidal.helpers import CFG, interference
+from tests.cycloidal.helpers import CFG
+from tests.helpers import interference
 
 bearing_6003 = parts.load("bearing_6003")
 cycloidal_disc_1 = parts.load("cycloidal_disc_1")
