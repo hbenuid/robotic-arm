@@ -4,6 +4,39 @@ Dated record of notable changes to this repository (newest first). Every commit 
 behaviour, layout or tooling gets an entry here; the commit hashes are on `main` (the former
 `cad-setup` working branch was fast-forward-only and has been retired).
 
+## 2026-09-24 — CAD vs everything else: `software/` (branch `layout/software-folder`)
+
+The root mixed the motor-control project's files in with the CAD. It now splits in two: `cad/` and `software/`.
+
+### Changed — the motor-control project moves to `software/control/`, the firmware to `software/firmware/` (`6959981`)
+- `software/control/`: `launcher.py`, `motor_control.py`, `launch.bat`, `src/`, `tests/`, `pyproject.toml`,
+  `uv.lock` (all renames; the uv project is unchanged apart from dropping `[tool.ruff] extend-exclude = ["cad"]`,
+  which no longer applies). Its uv commands now run there: `cd software/control && uv run launcher`. The CLI's
+  `sys.path.insert(0, "src")` is relative to the current directory, so it must start in that folder (`launch.bat`
+  already changes into its own folder).
+- `software/firmware/stm32/`: the four PlatformIO projects, moved again unchanged (see the entry below).
+- The two `tests/__pycache__/*.pyc` files committed by mistake are no longer tracked (`.gitignore` already
+  excluded `__pycache__/`).
+- Tooling: the pre-commit hook and the Claude Code ruff hook map `software/control/*.py` to that project (a `.py`
+  outside both projects is not checked). The CI step "Motor control" runs in `software/control/`. The VS Code
+  workspace gains a "Motor control (Python)" folder, so its `.venv` is picked up.
+- Docs: root `README.md` (setup, run, project structure), root `CLAUDE.md` (a layout paragraph at the top,
+  Toolchain, CI, Code layout, Known issues, CAD), `cad/CLAUDE.md`. Every `cad/` mention of the control config
+  (`cad/docs/*.md`, `open_issues.md`, comments in `lib/belts.py` / `lib/params.py`, the `PURCHASE_NOTE` of
+  `parts/joints/mks_servo42d.py`, the joint notes in `robot/frames.py`, the header comments of `robot/arm.urdf`) now
+  reads `software/control/src/config.py`. These are text only: nothing generated changes.
+
+Verified on the arm64 Mac: in `software/control/`, `uv sync --frozen` builds a fresh `.venv`, `ruff check` is clean,
+and `motor_control` / `launcher` import. The Claude hook reports findings on a bad `software/control` file (exit 2)
+and passes clean files in both projects. The pre-commit hook linted both projects on this commit. In `cad/`, lint is
+clean, the fast lane passed (418), and `test_robot` / `test_parts_convention` / `test_bom` passed (201 passed + 9
+skipped, the usual vendor-frame skips).
+
+Per machine, after the pull: delete the orphaned root `.venv/`, `__pycache__/` and `.ruff_cache/`, and any leftover
+`src/`, `tests/`, `firmware/` or `old_stm32_tests/` folders. They hold only git-ignored files (caches, the STM32
+projects' `.vscode/*.json`). Then run `uv sync` in `software/control/`. `./cadtool setup` does not need rerunning:
+the hook stub runs the committed `.githooks/pre-commit`.
+
 ## 2026-09-24 — Firmware folder (branch `layout/firmware-folder`)
 
 ### Changed — `old_stm32_tests/` → `firmware/stm32/` (`6b3012e`)
