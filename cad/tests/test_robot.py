@@ -6,6 +6,7 @@ import pathlib
 import subprocess
 import xml.etree.ElementTree as ET
 
+import numpy as np
 import pytest
 
 import parts
@@ -204,6 +205,38 @@ def test_link_builds_from_its_occurrences(link):
     assert len(shape.solids()) == solids
     assert abs(R.solid_volume(shape) - volume) <= 0.5
     assert shape.is_valid
+
+
+def _stl_facts(path: pathlib.Path) -> dict:
+    """Enclosed volume (mm^3), its centroid and the vertex bbox of a binary STL."""
+    data = path.read_bytes()
+    n = int(np.frombuffer(data, "<u4", count=1, offset=80)[0])
+    assert len(data) == 84 + 50 * n, f"{path.name}: not a binary STL (an LFS pointer? git lfs pull)"
+    record = np.dtype([("normal", "<f4", 3), ("v", "<f4", (3, 3)), ("attr", "<u2")])
+    tris = np.frombuffer(data, record, count=n, offset=84)["v"].astype(np.float64)
+    v0, v1, v2 = tris[:, 0], tris[:, 1], tris[:, 2]
+    vol = np.einsum("ij,ij->i", v0, np.cross(v1, v2)) / 6.0
+    pts = tris.reshape(-1, 3)
+    return {"volume": vol.sum(), "centroid": ((v0 + v1 + v2) / 4.0 * vol[:, None]).sum(axis=0) / vol.sum(),
+            "bbox": np.concatenate([pts.min(axis=0), pts.max(axis=0)])}
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize("link", PHYSICAL_LINKS)
+def test_committed_mesh_matches_a_fresh_export(link, tmp_path):
+    """robot/meshes/<link>.stl is what tools/robot/export_link_meshes.py writes for the link today, so a geometry
+    change that skipped the re-export (Recipe C step 8) fails here. Compared by what the meshes enclose, not byte
+    for byte: OCCT triangulates the same geometry a little differently per machine - measured against the committed
+    meshes, at most 4.2e-5 relative volume and 0.0033 mm centroid (shoulder_link), bbox identical."""
+    from tools.robot.export_link_meshes import export_link
+
+    fresh = tmp_path / f"{link}.stl"
+    assert export_link(link, fresh)[1]
+    now, committed = _stl_facts(fresh), _stl_facts(ROBOT_DIR / "meshes" / f"{link}.stl")
+    stale = f"robot/meshes/{link}.stl is stale: ./cadtool python tools/robot/export_link_meshes.py --links {link}"
+    assert abs(now["volume"] / committed["volume"] - 1.0) <= 5e-4, stale
+    assert np.linalg.norm(now["centroid"] - committed["centroid"]) <= 0.02, stale
+    assert np.abs(now["bbox"] - committed["bbox"]).max() <= 0.05, stale
 
 
 @pytest.mark.slow

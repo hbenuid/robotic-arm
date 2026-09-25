@@ -14,7 +14,7 @@ purchased = `BOUGHT_TINT`, which no group / module may reuse, printed = the link
 the standalone gripper and drives), `test_bom.py` (the print / buy lists
 partition `parts.names()` by the flag, the occurrence counts, the drive's pieces follow `DEFAULT_CONFIG`, `EXTRAS`
 well-formed), `test_params_invariants.py` (locks), `test_robot.py` (link partition, frames, FK at
-zero = capture, meshes, inertials, URDF/SRDF/SDF consistency + cadgen's validators via
+zero = capture, the committed meshes vs a fresh export, inertials, URDF/SRDF/SDF consistency + cadgen's validators via
 `./cadtool validate`), `test_tooling.py` (the installed cadgen and OCP kernel are the pinned ones, one complete OCP distribution,
 `./cadtool inspect` agrees with the kernel),
 `test_mounts.py` (the mounted motors: axis on the joint, face on the pad, board on the rear face, interference budget,

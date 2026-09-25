@@ -41,7 +41,8 @@ The toolchain: Python 3.12, build123d 0.11, OCP 7.9, cadgen 0.6.x (pins: `docs/t
    solids / volume / bbox); a SolidWorks-derived change → `extract_placements.py --no-pancake`.
 7. `./cadtool python tools/robot/derive.py --check robot/arm.urdf robot/arm.sdf`; for every link it names, copy that
    link's `<inertial>` block from `--urdf-draft` / `--sdf-draft` into `robot/arm.urdf` / `arm.sdf` (never a generator).
-8. `./cadtool python tools/robot/export_link_meshes.py --links <those links>` and `./cadtool gen robot/links/<link>.py`.
+8. `./cadtool python tools/robot/export_link_meshes.py --links <those links>` and `./cadtool gen robot/links/<link>.py`
+   (a mesh left stale fails `tests/test_robot.py`'s slow lane).
 9. `./cadtool validate robot/arm.urdf --strict` (and `arm.srdf --strict`, `arm.sdf --gz-check never`); `--check` again.
 10. `./cadtool snapshot assemblies/arm.step snapshots/arm.png --size-profile assembly --view-labels` (+ the drive,
     `robot/arm.urdf`) and LOOK at them.
