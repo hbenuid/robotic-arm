@@ -1,0 +1,47 @@
+CHANGELOG.md entry (the file was removed on 2026-09-25; the commit message is the record since):
+
+## 2026-09-22 — cad/ upgraded to text-to-cad v0.6.6 / cadgen 0.6.6 (branch `cad/cadgen-0.6.6`)
+
+Upstream shipped v0.6.6 on 2026-09-21: **additive only**. Diffed against the installed 0.6.5 wheel before the bump:
+one new module `cadgen/eng_drawing.py` (an `@eng_drawing` decorator that renders a dimensioned PDF of a part —
+not exported from `cadgen/__init__`, no CLI verb by design), a `drawing=` keyword on
+`drawing_checks.validate_drawing_document` (existing callers unchanged), the viewer bundle's version string, and two
+new hard dependencies (`matplotlib`, `pillow` — ezdxf's PDF backend). Every other `.py` is byte-identical: the
+daemon, the freshness gate and cache schemas, the STEP writer / packager, the CLI table and model-run flags, `doctor`,
+snapshot, viewer, the URDF / SRDF / SDF validators, the three deprecation warnings. The plugin gained two skills
+(`engineering-drawing`, `dfm`) and removed none. Kernel unchanged (build123d 0.11.1 / OCP 7.9.3); no geometry,
+placement or robot-description number changed; no model read stale (the freshness hash never covers site-packages).
+
+### Changed — cadgen 0.6.6, plugin 0.6.6 in both scopes (`6d02e04`)
+- `cad/pyproject.toml`: `cadgen[snapshot]==0.6.6`; `uv.lock`: cadgen 0.6.6, `matplotlib` 3.11.2 + `contourpy`,
+  `cycler`, `kiwisolver` **back in by design** (the 2026-09-18 entry recorded their removal with `cadquery-ocp` —
+  they are now cadgen's own dependencies; `pillow` 12.2.0 was already locked). `build123d==0.11.1` and
+  `cadquery-ocp-novtk==7.9.3.1.1` still satisfy 0.6.6's unchanged bounds; no `cadquery-ocp`, no `vtk`.
+- Plugin updated 0.6.5 → 0.6.6 in the **user and the project scope** (`claude plugin update cad@text-to-cad`, then
+  `--scope project`); `~/.claude/plugins/installed_plugins.json` shows 0.6.6 + the `…/cad/0.6.6` install path for
+  both. **Gotcha found:** `claude plugin marketplace update` alone had already created the `0.6.6` cache directory
+  while both scopes still recorded 0.6.5, and `./cadtool doctor` cannot see that — `plugin_dir()` pairs the venv's
+  cadgen version with the cache directory of the same name, so it reports `pin OK` against a plugin that is not the
+  installed one. Written up in `cad/CLAUDE.md` Gotchas + "Two machines" and `cad/README.md`. The marketplace clone's
+  15 LFS pointer files (`assets/**`, `models/**`) are excluded by its own `.lfsconfig` — no `git lfs pull` needed.
+- Docs: `cad/README.md` (runtime line, plugin-update line, the cutover list), `cad/CLAUDE.md` (Gotchas: the cutover
+  list gains 0.6.6, the doctor / `installed_plugins.json` item; "Two machines": update each scope and check the file).
+  Root `CLAUDE.md` / `README.md` only say "0.6 / v0.6.x" and were left alone.
+- Verified still present in 0.6.6 (all private, byte-identical to 0.6.5): `cadgen.authoring.build_in_progress`,
+  `_build(defn)`, `ModelDef.func/fmt/script_path/out`, `__cadgen_model__`, `__wrapped__`,
+  `_internal.component_package._shape_brep_bytes` / `_build123d_shape_from_brep_bytes`, `cadgen.assembly.label_shape`
+  / `label_text`, `read_scene` / `read_step`, `cadgen.geometry`, the `-m cadgen.daemon` cmdline. Unchanged:
+  model-run flags, `store why|gc`, snapshot flags, viewer port, no `daemon stop` verb upstream, no up-axis option.
+- Not adopted: `@eng_drawing`, the `dfm` / `engineering-drawing` skills.
+
+Verified on the arm64 Mac (the Fedora PC follows the "Two machines" arrival steps after pulling): baseline on 0.6.5 —
+`doctor` clean, fast lane 384 passed, full suite 632 passed + 8 skipped, arm `current` with 61 children pinned. On
+0.6.6 — `./cadtool daemon stop` + the 0.6.5 viewer stopped first (its reuse key carries the version), `uv lock` +
+`./cadtool setup` (5 packages: −cadgen 0.6.5, +cadgen 0.6.6, +matplotlib, +contourpy, +cycler, +kiwisolver);
+`./cadtool doctor` clean (`cadgen 0.6.6`, `kernel OK`, `pin OK — cadgen==0.6.6` against the `0.6.6` cache); fast lane
+384 passed; `why assemblies/arm.py` = `current`, 61 children pinned, none inlined, **before** any rebuild;
+`--force` rebuild of all 43 parts (51 s) then the four assemblies: `shasum -a 256 -c` = **47 / 47 byte-identical**
+(so the assemblies read `current` straight away — same writer, same kernel, same machine), second `gen` = `current`;
+full suite **632 passed + 8 skipped** (1 m 49 s, same counts as the baseline); `validate robot/arm.urdf --strict`, `arm.srdf --strict`, `arm.sdf --gz-check never` OK;
+snapshots of `assemblies/arm.step` (Z-up, tints) and `robot/arm.urdf` (assembled) looked at; a 0.6.6 viewer served
+`?file=assemblies/arm.step` with HTTP 200 (`viewer list` shows `viewer 0.6.6`) and was stopped.
