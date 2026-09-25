@@ -8,7 +8,7 @@ behaviour, layout or tooling gets an entry here; the commit hashes are on `main`
 
 Neither project had a linter or formatter configured. Both now lint with ruff; the tree is clean and meant to stay
 clean. Lint only: `ruff format` is not adopted (it would re-flow 136 of `cad/`'s 160 files and undo the hand-aligned
-tables); nothing enforces the lint yet (no hook, CI or test).
+tables). It runs by itself at three points (no CI: solo, the pre-commit hook is the gate).
 
 ### Added — ruff, `[tool.ruff]`, `./cadtool lint`; the tree made clean (`873f8e4`)
 - `ruff==0.16.9` as a dev dependency of both projects (`uv add --dev ruff`: `pyproject.toml` + `uv.lock`, root and
@@ -33,8 +33,28 @@ tables); nothing enforces the lint yet (no hook, CI or test).
 Verified on the arm64 Mac: every generated STEP (61: parts, assemblies, robot links) rebuilt from the edited
 sources byte-identical (`shasum -a 256 -c` against hashes taken at `6a9a840`); `uv lock --check` clean in both
 projects; `ruff check` clean in both; fast lane 418 passed, full suite 698 passed + 9 skipped; the root CLI imports.
-**On the Fedora PC after pulling:** `./cadtool setup` (or `uv sync`) in `cad/` and `uv sync` at the root to install
-ruff.
+### Added — ruff runs by itself: Claude Code hook, git pre-commit hook, VS Code on save (`9d24a87`)
+- **Claude Code**: a PostToolUse hook on `Edit|Write` runs `.claude/hooks/ruff-check.sh`, which lints the `.py` file
+  just written with its own project's ruff + config and returns findings to Claude (exit 2) - it fixes nothing, and
+  tooling trouble (no uv, an unsynced venv) never blocks an edit. Registered in `.claude/settings.json` AND
+  `cad/.claude/settings.json` (new): a session reads the shared settings file of its start directory only, not a
+  parent's (the docs, and verified here: a session started in `cad/` never ran the root-only hook, and ran it at once
+  after `cad/.claude/settings.json` appeared). The command finds the script through `git rev-parse --show-toplevel`.
+- **git**: `.githooks/pre-commit` runs `ruff check` on the staged `.py` files (per project) and blocks the commit on a
+  finding (`--no-verify` skips it once). `./cadtool setup` installs it per machine as a stub `.git/hooks/pre-commit`
+  that runs the committed file - not `core.hooksPath`, which would switch off git-lfs's `pre-push` / `post-*` hooks in
+  `.git/hooks`; an existing foreign `pre-commit` is left alone. bash 3.2, extra `PATH` for GUI git clients.
+- **VS Code**: the workspace runs `source.fixAll.ruff` + `source.organizeImports.ruff` on save (Ruff extension).
+- `unfixable = ["F401"]` in both `[tool.ruff.lint]`: an unused import is reported, never auto-removed, so a save (or
+  `--fix`) cannot delete an import typed before its first use.
+- Docs: root `CLAUDE.md` (Toolchain), `cad/CLAUDE.md` (Running things, Two machines), both READMEs.
+
+Verified on the arm64 Mac: the Claude hook pipe-tested (clean / finding / non-`.py` / outside the repo / no uv, both
+projects, both start directories, bash 3.2) and seen firing live in this session; the pre-commit gate run against
+staged probe files (nothing staged 0, clean 0, findings in both projects 1) under `/bin/bash` 3.2; `./cadtool setup`
+twice (idempotent, the LFS hooks untouched); fast lane 418 passed.
+**On the Fedora PC after pulling:** `uv sync` at the root, `./cadtool setup` in `cad/` (ruff + the pre-commit hook),
+and install the Ruff VS Code extension.
 
 ## 2026-09-24 — cad/ drops the OCP CAD Viewer (branch `cad/drop-ocp-vscode`)
 
