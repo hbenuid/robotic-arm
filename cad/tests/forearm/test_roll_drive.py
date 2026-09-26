@@ -5,6 +5,7 @@ import math
 
 import pytest
 from build123d import Axis, Location, Vector
+from cadgen.geometry import closest_points
 
 import parts
 from assemblies import forearm_roll_drive as M
@@ -28,8 +29,11 @@ from tests.helpers import interference, is_inside
 
 S = stack_positions(DEFAULT)
 D = DEFAULT.drive
-UPPER_ARM_FACE_Z = -8.5          # host z of j1_link's +N face (its slab lies below it)
-UPPER_ARM_RECESS = (40.0, -14.5)  # j1_link's recess round the elbow axis: radius, floor (host z)
+UPPER_ARM_FACE_Z = -10.0         # host z of j1_link's +N face under the block: its elbow relief's floor (the lip's root) ...
+UPPER_ARM_RELIEF_R = 60.0        # ... within this radius of the elbow axis (lib/upper_arm/params.py ElbowParams.relief_r)
+UPPER_ARM_RECESS = (40.0, -15.5)  # j1_link's recess round the elbow axis: radius, floor (host z)
+FACE_GAP = 1.5                   # the least axial gap between a face the elbow turns and j1_link's (printed PETG; the
+#                                  forearm's moment tilts the block on its 6806 pair)
 UPPER_ARM_BORE_R = 21.0          # j1_link's bore the coupler's stub / journal turn in
 UPPER_ARM_END_R = 45.0           # j1_link's round end about the elbow axis
 ELBOW_PULLEY_FACE_Z = -22.0 - PARAMS.PULLEY_SEAT_SHIFT   # host z of the elbow 90T's mating face: the SolidWorks coupler's stub end
@@ -76,14 +80,16 @@ def test_the_elbow_coupler_is_retired_for_the_block():
 
 def test_stack():
     w, z_axis = DEFAULT.roll_end, DEFAULT.roll_end.axis_z
-    # the block round the elbow axis: its underside 0.5 above the upper arm's slab, the coupler features below it in
-    # j1_link's recess and bore where the SolidWorks coupler's were, an inner-ring shoulder between the journal and the
-    # stub, the stub on through the lip to the elbow pulley's face (the Ø12.5 bore open at its end)
-    assert z_axis + D.block_x[0] >= UPPER_ARM_FACE_Z + 0.5
+    # the block round the elbow axis: its underside and the cap's FACE_GAP clear of the upper arm's relief, which
+    # reaches past their corners, the coupler features below it in j1_link's recess and bore where the SolidWorks
+    # coupler's were, an inner-ring shoulder between the journal and the stub, the stub on through the lip to the
+    # elbow pulley's face (the Ø12.5 bore open at its end)
+    assert z_axis + D.block_x[0] >= UPPER_ARM_FACE_Z + FACE_GAP
+    assert math.hypot(max(S["z_cap_outer"], -D.block_z[0]), D.block_y[1]) <= UPPER_ARM_RELIEF_R - 2.0
     assert D.lip_dia / 2.0 <= UPPER_ARM_RECESS[0] - 1.0 and D.boss_dia / 2.0 <= UPPER_ARM_RECESS[0] - 2.0
     assert D.lip_x[1] == D.block_x[0] and D.boss_x[1] == D.lip_x[0] and D.journal_x[1] == D.boss_x[0]
     assert D.step_x[1] == D.journal_x[0] and D.stub_x[1] == D.step_x[0] and D.stub_dia < D.step_dia < D.journal_dia
-    assert z_axis + D.boss_x[0] >= UPPER_ARM_RECESS[1] + 0.5 and D.journal_dia / 2.0 < UPPER_ARM_BORE_R and D.stub_dia / 2.0 < UPPER_ARM_BORE_R
+    assert z_axis + D.boss_x[0] >= UPPER_ARM_RECESS[1] + FACE_GAP and D.journal_dia / 2.0 < UPPER_ARM_BORE_R and D.stub_dia / 2.0 < UPPER_ARM_BORE_R
     assert z_axis + D.stub_x[0] == ELBOW_PULLEY_FACE_Z and D.pin_bore_x[0] == D.stub_x[0]
     # the stations, rear end wall -> the forearm wall
     assert S["z_end"] == D.block_z[0] and S["z_lip"] == S["z_end"] + D.end_wall and S["z_seat"] == S["z_lip"] + D.lip == S["z_bearing_1"]
@@ -279,15 +285,24 @@ def test_module_clears_its_neighbours_in_the_arm():
 
 
 @pytest.mark.slow
-@pytest.mark.parametrize("deg", [-PARAMS.ELBOW_PITCH_LIMIT_DEG, -60.0, 60.0, PARAMS.ELBOW_PITCH_LIMIT_DEG])
+@pytest.mark.parametrize("deg", [-PARAMS.ELBOW_PITCH_LIMIT_DEG, -60.0, 0.0, 60.0, PARAMS.ELBOW_PITCH_LIMIT_DEG])
 def test_module_clears_the_folded_upper_arm(deg):
     """The upper arm (j1_link, its motor + board) swung about the elbow axis (host z through the origin) by the
-    elbow's limits never runs into the block, its motor, the board or the end cap."""
+    elbow's limits never runs into the block, its motor, the board or the end cap - and never comes near what turns
+    over it: the end cap's underside (level with the block's) its designed height above the relief's floor, the block
+    nowhere nearer than its journal's edge to the bore's rim (a radial gap: the bearings set it)."""
     module = _placed_module()
     axis = Axis((0.0, 0.0, 0.0), (0.0, 0.0, 1.0))
     for key in ("j1_link#1", "nema17_40mm#2", "mks_servo42d#2"):
         vol = interference(module, in_host(key).rotate(axis, deg))
         assert vol < 1.0, f"elbow {deg:+.0f} deg: module x {key}: {vol:.1f} mm^3"
+    upper_arm = in_host("j1_link#1").rotate(axis, deg)
+    cap_gap = closest_points(_placed_part("forearm_roll_retainer"), upper_arm).distance
+    assert cap_gap == pytest.approx(DEFAULT.roll_end.axis_z + D.block_x[0] - UPPER_ARM_FACE_Z, abs=0.01)
+    assert cap_gap >= FACE_GAP
+    journal_edge = math.hypot(UPPER_ARM_BORE_R - D.journal_dia / 2.0, DEFAULT.roll_end.axis_z + D.journal_x[0] - UPPER_ARM_RECESS[1])
+    block_gap = closest_points(_placed_part("forearm_roll_block"), upper_arm).distance
+    assert block_gap == pytest.approx(journal_edge, abs=0.01) and block_gap >= 1.0
 
 
 @pytest.mark.slow

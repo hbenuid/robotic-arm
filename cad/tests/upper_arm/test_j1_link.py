@@ -1,11 +1,13 @@
 """j1_link, parametric (lib/upper_arm/): the LEGACY configuration reproduces the SolidWorks part feature by feature
 (the volume / bbox match is tests/test_reference_match.py's; here the features are probed by name so a regression
-names what moved), and DEFAULT - what the part builds - changes exactly three things: no cap sockets, the NEMA 17
-holes on the motor's pattern, the hub holes on the cycloidal drive's bolts."""
+names what moved), and DEFAULT - what the part builds - changes exactly four things: no cap sockets, the NEMA 17
+holes on the motor's pattern, the hub holes on the cycloidal drive's bolts, and the elbow block's clearance (the
+relief round the elbow axis, the recess floor deeper)."""
 import math
+from dataclasses import replace
 
 import pytest
-from build123d import Location
+from build123d import Location, Rot
 
 import parts
 from lib import mounts
@@ -16,7 +18,7 @@ from lib.cycloidal.params import DEFAULT_CONFIG
 from lib.datum import to_location
 from lib.motors import NEMA17_BOLT_SP
 from lib.upper_arm import DEFAULT, LEGACY, hub_bolt_points, pad_holes, socket_points
-from tests.helpers import is_inside
+from tests.helpers import interference, is_inside
 
 
 def _in_link(key: str, local=(0.0, 0.0, 0.0)) -> Location:
@@ -27,7 +29,9 @@ def _in_link(key: str, local=(0.0, 0.0, 0.0)) -> Location:
 def test_layout():
     assert len(hub_bolt_points(LEGACY)) == len(hub_bolt_points(DEFAULT)) == 4
     assert [len(s) for s in socket_points(LEGACY)] == [7, 3] and socket_points(DEFAULT) == ([], [])
-    assert DEFAULT.slab == LEGACY.slab and DEFAULT.elbow == LEGACY.elbow and DEFAULT.slots == LEGACY.slots
+    assert DEFAULT.slab == LEGACY.slab and DEFAULT.slots == LEGACY.slots
+    assert LEGACY.elbow.relief_r == 0.0 and DEFAULT.elbow.relief_r > 0.0 and DEFAULT.elbow.recess_y < LEGACY.elbow.recess_y
+    assert replace(DEFAULT.elbow, relief_r=LEGACY.elbow.relief_r, recess_y=LEGACY.elbow.recess_y) == LEGACY.elbow
     assert PARAMS.J1_MOTOR_PAD_FACE_Y == DEFAULT.pad.face_y == -32.5
 
 
@@ -117,7 +121,9 @@ def test_legacy_features(legacy):
 
 
 @pytest.mark.slow
-def test_default_changes_only_the_holes_and_the_sockets(link, legacy):
+def test_default_changes_only_the_holes_the_sockets_and_the_elbow(link, legacy):
+    from lib.upper_arm.link import _bore
+
     assert link.is_valid and len(link.solids()) == 1
     assert tuple(link.bounding_box().min) == pytest.approx(tuple(legacy.bounding_box().min), abs=1e-6)
     assert tuple(link.bounding_box().max) == pytest.approx(tuple(legacy.bounding_box().max), abs=1e-6)
@@ -130,7 +136,19 @@ def test_default_changes_only_the_holes_and_the_sockets(link, legacy):
         assert not is_inside(link, x, -28, z)
     for x, z in hub_bolt_points(DEFAULT):
         assert not is_inside(link, x, -5, z)
+    # the elbow: the lip gone within relief_r of the axis (its root, y1, the floor), still there beyond; the recess floor
+    s, e = DEFAULT.slab, DEFAULT.elbow
+    x_edge = s.elbow_x - e.relief_r
+    assert not is_inside(link, x_edge + 1.0, s.y1 + 1.0, 0) and is_inside(link, x_edge + 1.0, s.y1 - 0.5, 0)
+    assert is_inside(link, x_edge - 1.0, s.y1 + 1.0, 0) and is_inside(legacy, x_edge + 1.0, s.y1 + 1.0, 0)
+    r_floor = (e.recess_dia + e.bore_dia) / 4.0
+    assert not is_inside(link, s.elbow_x, e.recess_y + 0.5, r_floor) and is_inside(link, s.elbow_x, e.recess_y - 0.5, r_floor)
     # the 10 sockets filled (+416.6 mm^3), the fourth NEMA hole Ø3.0 -> Ø3.2 through the 9 mm floor (-8.8); moving
-    # the holes changes nothing else
+    # the holes changes nothing else; the relief takes the lip inside relief_r, the recess the ring between the bore
+    # and the recess 1 mm deeper
     floor = DEFAULT.pad.floor_y - DEFAULT.pad.face_y
-    assert link.volume - legacy.volume == pytest.approx(10 * math.pi * 2.575 ** 2 * 2.0 - floor * math.pi * (1.6 ** 2 - 1.5 ** 2), abs=0.5)
+    relief = interference(legacy, Rot(-90.0, 0.0, 0.0) * _bore(e.relief_r, s.y1, s.lip_top + 1.0, s.elbow_x))
+    ring = math.pi * ((e.recess_dia / 2.0) ** 2 - (e.bore_dia / 2.0) ** 2) * (LEGACY.elbow.recess_y - e.recess_y)
+    assert relief > 0.0
+    assert link.volume - legacy.volume == pytest.approx(10 * math.pi * 2.575 ** 2 * 2.0 - floor * math.pi * (1.6 ** 2 - 1.5 ** 2)
+                                                        - relief - ring, abs=0.5)

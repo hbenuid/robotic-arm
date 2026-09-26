@@ -8,7 +8,8 @@ Every feature is a prism or a bore along Y.
 
 Two configurations: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
 tests/test_reference_match.py), DEFAULT is what the part builds: no cap-locating sockets (the caps were removed
-2026-09-25), the NEMA 17 holes on a true square about the shoulder axis and the hub holes on the drive's pattern.
+2026-09-25), the NEMA 17 holes on a true square about the shoulder axis, the hub holes on the drive's pattern and
+the elbow's clearance for the elbow block (the relief round the axis, the recess 1 mm deeper).
 
 Every number below was measured on the reference 2026-09-24 (planar / cylindrical face census;
 tests/upper_arm/test_j1_link.py re-checks the builds against it): [REFERENCE] unless tagged.
@@ -38,7 +39,8 @@ class SlabParams:
 @dataclass(frozen=True)
 class ElbowParams:
     """The elbow half: thicker below (a 45 degree chamfer, then a step down), and the elbow_pitch bearing stack on
-    its axis - a recess from the top, the bore, a lip and a seat from below."""
+    its axis - a recess from the top, the bore, a lip and a seat from below; DEFAULT also cuts the slab's lip away
+    round the axis (`relief_r`), where the elbow block turns over the top face."""
 
     chamfer_x: float = 145.5          # the chamfer starts at the underside ...
     step_x: float = 153.5             # ... and meets the step wall here (45 degrees: 8 down)
@@ -49,6 +51,8 @@ class ElbowParams:
     lip_dia: float = 37.64
     lip_y: tuple = (-15.0, -13.0)
     seat_dia: float = 42.2            # lip .. underside
+    relief_r: float = 0.0             # [DESIGN] the top face down to the lip's root (SlabParams.y1) within this radius of
+    #                                   the elbow axis; 0: none (the SolidWorks part)
 
 
 @dataclass(frozen=True)
@@ -145,4 +149,8 @@ DEFAULT = replace(
     pad=replace(LEGACY.pad, holes=tuple((sx * NEMA17_BOLT_SP / 2.0, sz * NEMA17_BOLT_SP / 2.0, LEGACY.pad.hole_dia)
                                         for sx, sz in ((1, -1), (1, 1), (-1, 1), (-1, -1)))),   # [DESIGN]
     hub=replace(LEGACY.hub, bolt_angle_deg=-2.584167),   # [REFERENCE] the drive's bolts, 3.36 degrees from the SolidWorks holes
+    # the elbow block (lib/forearm/ RollDriveParams) turns with the elbow over this top face: its flat underside and its
+    # end cap's, swept to r 57.6, ride 2.0 above the relief's floor (0.5 over the lip), its Ø62 boss 1.5 above the
+    # recess floor (0.5 at the SolidWorks -4.5); the upper 6806 seat stays 7.5 deep (tests/forearm/test_roll_drive.py)
+    elbow=replace(LEGACY.elbow, relief_r=60.0, recess_y=-5.5),   # [DESIGN]
 )

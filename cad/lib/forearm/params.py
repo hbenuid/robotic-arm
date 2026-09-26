@@ -142,8 +142,8 @@ class RollDriveParams:
     seat_add: float = 0.15                # [DESIGN] PETG press allowance on the seat diameter (cf. the drive's 6814 seat)
     journal_add: float = 0.3              # [DESIGN] the printed journal's interference in the inner race (cf. the drive's hub)
     inner_race_od: float = 44.5           # [ESTIMATE] 6808 inner-race outer edge - the shaft's Ø44 core must not touch the outer race
-    # the block (stator): a rounded box round the roll axis - x along N (its underside at -X rides 0.5 mm above the
-    # upper arm's slab, host z -8.5), y up in the swing plane (the motor plate stands on +Y), z along the roll axis
+    # the block (stator): a rounded box round the roll axis - x along N (its underside at -X rides 2.0 mm above the
+    # upper arm's elbow relief, host z -10), y up in the swing plane (the motor plate stands on +Y), z along the roll axis
     block_x: tuple = (-33.0, 33.0)        # [DESIGN] host z -8 .. 58
     block_y: tuple = (-36.0, 36.0)        # [DESIGN] 5 mm of wall over the cavity; the motor's body clears the top at the slot's low end
     block_z: tuple = (-40.0, 36.0)        # [DESIGN] the rear end wall .. the front face (the cap sits on it)

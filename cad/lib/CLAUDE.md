@@ -18,7 +18,7 @@ cots.py       # hybrid(): the body of every purchased part (vendor STEP, else th
 geom.py       # the arm's small build123d helpers: align_min(), cylinder(), through() (NUDGE overshoot), single_solid(), hex_prism() - a leaf
 base/         # the base (BaseConfig: LEGACY = the SolidWorks base, DEFAULT = what is built)
 coupler/      # the J3 coupler (CouplerParams: LEGACY = the SolidWorks j3_coupler, DEFAULT = what is built)
-upper_arm/    # the upper arm (UpperArmConfig: LEGACY = the SolidWorks j1_link, DEFAULT = no cap sockets, the motor's and the drive's hole patterns)
+upper_arm/    # the upper arm (UpperArmConfig: LEGACY = the SolidWorks j1_link, DEFAULT = no cap sockets, the motor's and the drive's hole patterns, the elbow block's clearance)
 forearm/      # the forearm (ForearmConfig: LEGACY = the SolidWorks j2_link, DEFAULT = the roll end, no cap sockets) and the roll drive (RollDriveParams, stack_positions, the block / shaft / retainer / 90T ring builders)
 datum.py      # capture frame W -> base_link frame B: frame(), base_frame() (arm.py arm_from_w(), robot/frames.py); frames as data: IDENTITY, to_location()
 mounts.py     # what the SolidWorks capture never placed right, as frames-as-data: the belt joints' motors + MKS boards, their 6806 pairs, the re-seated 90Ts and their M4 screws + nuts

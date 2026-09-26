@@ -30,7 +30,7 @@ converted — shared by `test_assembly.py` and `test_robot.py`),
 `tests/cycloidal/` (the drive: one module per part + housing / purchased / fitment / assembly / port,
 `from tests.cycloidal.helpers import CFG, …` for the drive's config, the
 `stack` fixture is `tests/cycloidal/conftest.py`), `tests/upper_arm/` (`j1_link`: the LEGACY build's feature probes, DEFAULT's
-holes on the elbow motor's pattern and the drive's arm-mount bolts, no sockets), `tests/base/` (`base`: the LEGACY build's
+holes on the elbow motor's pattern and the drive's arm-mount bolts, no sockets, the elbow block's relief), `tests/base/` (`base`: the LEGACY build's
 feature probes, the interface values lib/params.py and lib/datum.py take from it), `tests/coupler/` (`j3_coupler`: the
 LEGACY build's feature probes, the stub the roll drive's block repeats), `tests/forearm/` (the forearm: the LEGACY
 build vs the SolidWorks part + feature probes, the roll end, the roll drive - axis through the wrist centre, stack, press fits, clean pairs,
