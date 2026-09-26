@@ -280,7 +280,7 @@
       <axis>
         <xyz expressed_in="elbow_pitch">0 0 1</xyz>
         <limit>
-          <lower>-2.094395</lower><upper>2.094395</upper>
+          <lower>-1.570796</lower><upper>1.570796</upper>
           <effort>5</effort><velocity>1</velocity>
         </limit>
       </axis>

@@ -243,7 +243,7 @@
     <child link="elbow_link" />
     <origin xyz="0.210003 0 0.009998" rpy="0 0 0.010227" />
     <axis xyz="0 0 1" />
-    <limit lower="-2.094395" upper="2.094395" effort="5" velocity="1" />
+    <limit lower="-1.570796" upper="1.570796" effort="5" velocity="1" />
   </joint>
   <joint name="forearm_roll" type="revolute">
     <parent link="elbow_link" />

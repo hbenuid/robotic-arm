@@ -158,7 +158,7 @@ PULLEY_NUTS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * nut_volume(M4_NUT)         
 # and SDF are checked against these by tools/robot/derive.py --check.
 BASE_YAW_LIMIT_DEG = 175.0        # [ESTIMATE] symmetric +/- range; j1_coupler (carrying the drive's stator) turns on the base
 SHOULDER_PITCH_LIMIT_DEG = 120.0  # [ESTIMATE] the 20:1 cycloidal drive (CYCLOIDAL_RATIO) between j1_coupler and j1_link
-ELBOW_PITCH_LIMIT_DEG = 120.0     # [ESTIMATE] GT2 belt at j2_link
+ELBOW_PITCH_LIMIT_DEG = 90.0      # [DESIGN] the forearm's roll wall (j2_link, 48 from the elbow axis) meets j1_link's side from +/-93 deg
 WRIST_PITCH_LIMIT_DEG = 120.0     # [ESTIMATE] GT2 belt at wrist_link
 FOREARM_ROLL_LIMIT_DEG = 170.0    # [ESTIMATE] the forearm roll (GT2 belt in the elbow block): a hard stop keeps the cables from winding
 WRIST_ROLL_LIMIT_DEG = 180.0      # [ESTIMATE] NEMA17 pancake wrist roll (not CAN-driven yet)

@@ -318,3 +318,16 @@ def test_forearm_clears_the_elbow_while_rolling(deg):
     for label in ("forearm_roll_block", "forearm_roll_retainer", "nema17_40mm:forearm_roll", "mks_servo42d:forearm_roll"):
         vol = interference(link, _placed_part(label))
         assert vol < 1.0, f"roll {deg:+.0f} deg: j2_link x {label}: {vol:.1f} mm^3"
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize("elbow", [-PARAMS.ELBOW_PITCH_LIMIT_DEG, PARAMS.ELBOW_PITCH_LIMIT_DEG])
+@pytest.mark.parametrize("roll", [-PARAMS.FOREARM_ROLL_LIMIT_DEG, -90.0, 0.0, 90.0, PARAMS.FOREARM_ROLL_LIMIT_DEG])
+def test_forearm_clears_the_upper_arm_at_the_elbow_limits(elbow, roll):
+    """The elbow folded to its limits, the forearm rolled anywhere: j2_link's roll wall (48 from the elbow axis, its
+    lower edge 1.5 below j1_link's top face) lies beside the upper arm and stays 2 mm off it. The wall meets j1_link's
+    side from +/-93 deg, which is what sets ELBOW_PITCH_LIMIT_DEG."""
+    link = parts.build("j2_link").rotate(Axis((0.0, 0.0, DEFAULT.roll_end.axis_z), (-1.0, 0.0, 0.0)), roll)
+    upper_arm = in_host("j1_link#1").rotate(Axis((0.0, 0.0, 0.0), (0.0, 0.0, 1.0)), elbow)
+    gap = closest_points(link, upper_arm).distance
+    assert gap >= 2.0, f"elbow {elbow:+.0f} deg, roll {roll:+.0f} deg: j2_link {gap:.2f} mm off j1_link"
