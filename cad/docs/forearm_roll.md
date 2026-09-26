@@ -20,7 +20,7 @@ Numbers below name the constants; the values live in `lib/forearm/params.py`.
 | forearm interface | `j2_link`'s wall at 48…56 mm from the elbow axis (`wall_x` −56…−48): Ø40 × 2 recess, Ø24 bore, 4× M3 on Ø32 | `RollEndParams` |
 | clearances held by tests | block 0.5 mm above the upper arm's slab; the rolling ±45 forearm wall 3 mm off `j1_link`'s r 45 end; folded elbow (±120°) and rolled forearm (±170°) < 1 mm³ against every neighbour; journals 0.9–1.0 × the 132 mm³ press | `tests/forearm/test_roll_drive.py` |
 | link masses (URDF) | `elbow_link` carries the pulley + stator, `forearm_link` the shaft + forearm + wrist motor; the masses are the `<inertial>` blocks (`tools/robot/derive.py`), their sum checked by `test_link_masses_add_up` | `robot/arm.urdf` |
-| purchased per drive | the 6808-2RS pair, a NEMA 17 × 40 kit + MKS SERVO42D, a GT2 20T (5 mm bore), the roll belt, the M3 / M4 screws and the M4 nuts — with quantities: `./cadtool python tools/bom.py --module forearm_roll_drive` | `tools/bom.py` |
+| purchased per drive | the 6808-2RS pair, a NEMA 17 × 40 kit + MKS SERVO42D, a GT2 20T (5 mm bore), the roll belt, the M3 screws — with quantities: `./cadtool python tools/bom.py --module forearm_roll_drive`; the elbow 90T's M4 screws and nuts are the arm's (`elbow_pulley_screws`, `elbow_pulley_nuts`) | `tools/bom.py` |
 | printed per drive | block, shaft, cap (`./cadtool python tools/export_printables.py --parts forearm_roll_block forearm_roll_shaft forearm_roll_retainer`) | `print/` |
 
 ## 1. Why a roll, and where
@@ -82,11 +82,12 @@ on the side and the motor plate need support — a `dfam-check` pass before the 
 the shaft spigot down (the ring's grooves print vertically), the cap flat.
 
 ## 4. Assembly sequence
-1. Four M4 nuts into the block's hex channels: block underside down, drop each nut into the core bore from the front
+1. Four M4 nuts (`elbow_pulley_nuts`) into the block's hex channels: block underside down, drop each nut into the core bore from the front
    and let it into its channel (tweezers), down onto its seat - the channel's 6.85 across flats holds it.
 2. The elbow's 6806-2RS pair into `j1_link`'s bore, one each side of the lip; the block's stub into the upper one
    (its Ø33 shoulder on the inner ring, its end through the lip), the elbow 90T's hub into the lower one from below
-   (its Ø34.76 ring on that inner ring, its end on the stub's end): 4× M4 × 40 up through the pulley's hub, the stub,
+   (its Ø34.76 ring on that inner ring, its end on the stub's end): 4× M4 × 40 (`elbow_pulley_screws`) up through the
+   pulley's hub (its holes opened to `M4_CLEAR`), the stub,
    the journal and the boss into the nuts (the tips 1.4 mm past them) bolt the pulley flat onto the stub and clamp
    both inner rings - the stub's 2 mm in the lip spaces them as the lip spaces the outer rings. The hex holds each nut,
    so the screws re-tighten from the pulley side at any time; a screw taken right out once the shaft is in can drop its
@@ -103,7 +104,7 @@ the shaft spigot down (the ring's grooves print vertically), the cap flat.
    The stop lug on the neck meets the cap's post at ±`FOREARM_ROLL_LIMIT_DEG`.
 
 ## 5. Attachment to the arm (`robot/`)
-`elbow_link` = `gt2_pulley_90t#3` (the re-seated elbow 90T) + `forearm_roll_drive#1:stator` (the elbow's driven side: the block that is the
+`elbow_link` = `gt2_pulley_90t#3` (the re-seated elbow 90T) + its screws and nuts + `forearm_roll_drive#1:stator` (the elbow's driven side: the block that is the
 coupler, both bearings, the end cap, the motor + board, the 20T); `forearm_link` = `forearm_roll_drive#1:rotor` (the
 shaft) + `j2_link` + the wrist-pitch motor. `Joint("forearm_roll")` has Z along the forearm and X = N
 (its child's long direction IS the axis). The forearm side of the interface is `lib/forearm/params.py

@@ -1,5 +1,5 @@
-"""The motor mounts of the belt joints, their bearings, the two re-seated 90T pulleys, and the pose of a code-driven
-module the SolidWorks capture never placed - occurrences declared here, not extracted.
+"""The motor mounts of the belt joints, their bearings, the two re-seated 90T pulleys and the bolts that clamp them, and
+the pose of a code-driven module the SolidWorks capture never placed - occurrences declared here, not extracted.
 
 The SolidWorks arm cut a NEMA 17 pad into `base` (base_yaw), `j1_link` (elbow_pitch) and `j2_link`
 (wrist_pitch) but never placed the motors, so reference/placements.json has no record for them.
@@ -45,18 +45,25 @@ retired - lib/placements.py) left no room for the lower bearing, re-declared PUL
 their own axis (+Y): the host of such a mount is the capture pose it corrects. The wrist's keeps its spin exactly; the
 elbow's turns RollDriveParams.pulley_bolt_deg about its axis with the elbow block's bolt pattern (lib/forearm/params.py:
 its nut channels would otherwise stop short of the ring cavity).
+The PULLEY BOLTS (FASTENER_MOUNTS): each 90T's 4x M4 screws and nuts, purchased pattern parts
+(parts/joints/{elbow,wrist}_pulley_{screws,nuts}) centred on the joint axis (their +Z on it). A screw set is hosted
+on its pulley, its heads' bearing face on the pulley's outer face (GT2_PULLEY_90T_FACE_Y) and its shanks into the hub;
+a nut set is hosted on its screw set, its bearing face where the host's seat lies along the screws - the elbow
+block's channel seats (RollDriveParams.nut_seat_x), j3_coupler's pocket floors (CouplerParams.nut_depth).
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
 
 from lib.base.params import DEFAULT as _BASE
+from lib.coupler.params import DEFAULT as _COUPLER
 from lib.forearm import module_frame_in_host
 from lib.forearm.params import DEFAULT as _FOREARM
 from lib.params import (
     BASE_MOTOR_PATTERN_CENTRE,
     BEARING_6806_WIDTH,
     CYCLOIDAL_MOTOR_BODY_LEN,
+    GT2_PULLEY_90T_FACE_Y,
     J1_MOTOR_PAD_FACE_Y,
     J2_MOTOR_SLIDE_X,
     J2_MOTOR_WEB_FACE_Z,
@@ -68,12 +75,14 @@ from lib.upper_arm.params import DEFAULT as _UPPER_ARM
 MOTOR_48, MOTOR_40, BOARD = "nema17_48mm", "nema17_40mm", "mks_servo42d"
 MOTORS = (MOTOR_48, MOTOR_40)
 BEARING, PULLEY = "bearing_6806", "gt2_pulley_90t"
+PULLEY_BOLTS = ("elbow_pulley_screws", "elbow_pulley_nuts", "wrist_pulley_screws", "wrist_pulley_nuts")
 
 # The part-frame axis tools/reference/mount_placements.py checks for each mounted part, and whether it lies ON its
-# joint's axis (a motor's shaft runs beside its joint, parallel; a bearing or a pulley sits on it).
+# joint's axis (a motor's shaft runs beside its joint, parallel; a bearing, a pulley or a pulley-bolt pattern sits on it).
 AXES: dict[str, tuple[tuple[float, float, float], bool]] = {
     MOTOR_48: ((0.0, 0.0, 1.0), False), MOTOR_40: ((0.0, 0.0, 1.0), False),
     BEARING: ((0.0, 0.0, 1.0), True), PULLEY: ((0.0, 1.0, 0.0), True),
+    **{part: ((0.0, 0.0, 1.0), True) for part in PULLEY_BOLTS},
 }
 
 
@@ -140,7 +149,22 @@ PULLEY_MOUNTS: tuple[Mount, ...] = (
     Mount("gt2_pulley_90t#4", PULLEY, "gt2_pulley_90t#2", "wrist_pitch_link", "wrist_pitch", ((0.0, PULLEY_SEAT_SHIFT, 0.0), (0.0, 0.0, 0.0)),
           "the wrist 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower wrist bearing"),
 )
-MOUNTS: tuple[Mount, ...] = MOTOR_MOUNTS + BEARING_MOUNTS + PULLEY_MOUNTS
+# A pulley's screw set: +Z into the hub (the pulley's -Y) from its outer face; the pattern on the pulley's own X / Z axes.
+_SCREWS_ON_FACE = ((0.0, GT2_PULLEY_90T_FACE_Y[1], 0.0), (90.0, 0.0, 0.0))
+_HUB_LEN = GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_FACE_Y[0]
+FASTENER_MOUNTS: tuple[Mount, ...] = (
+    Mount("elbow_pulley_screws#1", "elbow_pulley_screws", "gt2_pulley_90t#3", "elbow_link", "elbow_pitch", _SCREWS_ON_FACE,
+          "the elbow 90T's 4x M4 x pulley_screw_len: heads on its outer face, down through its hub and the block's stub"),
+    Mount("elbow_pulley_nuts#1", "elbow_pulley_nuts", "elbow_pulley_screws#1", "elbow_link", "elbow_pitch",
+          ((0.0, 0.0, round(_FOREARM.drive.nut_seat_x - (_FOREARM.drive.stub_x[0] - _HUB_LEN), 6)), (0.0, 0.0, 0.0)),
+          "the elbow screws' nuts on the block's channel seats (nut_seat_x), a flat toward the axis"),
+    Mount("wrist_pulley_screws#1", "wrist_pulley_screws", "gt2_pulley_90t#4", "wrist_pitch_link", "wrist_pitch", _SCREWS_ON_FACE,
+          "the wrist 90T's 4x M4 x pulley_screw_len: heads on its outer face, down through its hub and j3_coupler's stub"),
+    Mount("wrist_pulley_nuts#1", "wrist_pulley_nuts", "wrist_pulley_screws#1", "wrist_pitch_link", "wrist_pitch",
+          ((0.0, 0.0, round(_COUPLER.stub_y1 + _HUB_LEN - _COUPLER.nut_depth, 6)), (0.0, 0.0, 0.0)),
+          "the wrist screws' nuts on j3_coupler's pocket floors (nut_depth), a corner along the coupler's Z"),
+)
+MOUNTS: tuple[Mount, ...] = MOTOR_MOUNTS + BEARING_MOUNTS + PULLEY_MOUNTS + FASTENER_MOUNTS
 BY_KEY: dict[str, Mount] = {m.key: m for m in MOUNTS}
 
 

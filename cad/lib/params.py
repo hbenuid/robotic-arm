@@ -25,15 +25,14 @@ from lib.units import IN, NUDGE  # noqa: F401
 
 PETG_DENSITY = 1.27e-3  # [DESIGN] g/mm^3 - printed-part mass estimates
 
-# --- Fasteners ----------------------------------------------------------------
-M3_CLEAR = 3.4          # [DESIGN] close clearance hole for an M3 screw
-M4_CLEAR = 4.5          # [DESIGN] close clearance hole for an M4 screw
-M5_CLEAR = 5.5          # [DESIGN] close clearance hole for an M5 screw
+# --- Fasteners - lib/fasteners.py (a leaf: the sizes, the clearance holes, the plain screw / nut builders) ----
+from lib.fasteners import M3_CLEAR, M4_CLEAR, M4_NUT, M4_PITCH, M4_SHCS, M5_CLEAR, nut_volume, shcs_volume  # noqa: E402, F401
 
 # --- Belt drive (GT2) - lib/belts.py (a leaf: lib/forearm/ imports it directly) ------------------
 from lib.belts import (  # noqa: E402, F401
     GT2_BELT_W, GT2_GROOVE_R, GT2_PITCH, GT2_PLD, GT2_PULLEY_20T_PITCH_DIA, GT2_PULLEY_20T_TEETH,
-    GT2_PULLEY_90T_PITCH_DIA, GT2_PULLEY_90T_TEETH, GT2_RATIO, GT2_TOOTH_DEPTH, STANDARD_2GT_LENGTHS,
+    GT2_PULLEY_90T_BOLT_R, GT2_PULLEY_90T_FACE_Y, GT2_PULLEY_90T_PITCH_DIA, GT2_PULLEY_90T_TEETH, GT2_RATIO,
+    GT2_TOOTH_DEPTH, STANDARD_2GT_LENGTHS, pulley_90t_bolt_points,
 )
 # --- The belt joints' bearings - lib/bearings.py (a leaf: lib/base/, lib/coupler/, lib/forearm/ import it) -----
 from lib.bearings import (  # noqa: E402, F401
@@ -144,6 +143,15 @@ CYCLOIDAL_HOUSING_BOLTS_MASS_G = STEEL_DENSITY * _DRIVE.housing.bolt_count * (
 CYCLOIDAL_HOUSING_NUTS_MASS_G = STEEL_DENSITY * _DRIVE.housing.bolt_count * _hex_vol(_DRIVE.housing.bolt_nut_af, _DRIVE.housing.bolt_nut_thickness)     # 8.5, 8x M4
 CYCLOIDAL_MOTOR_BOLTS_MASS_G = STEEL_DENSITY * 4 * (
     _cyl_vol(_DRIVE.motor.bolt_dia / 2, _DRIVE.motor.motor_bolt_thread_length) + _cyl_vol(_DRIVE.motor.motor_bolt_head_dia / 2, _DRIVE.motor.motor_bolt_head_height))   # 4.3, 4x M3x10
+
+# The 90T pulley bolts of the elbow and the wrist (parts/joints/{elbow,wrist}_pulley_{screws,nuts}): the same estimate
+# over their modelled geometry (lib/fasteners.py: the socket and the nut's bore taken out)
+from lib.coupler.params import DEFAULT as _COUPLER  # noqa: E402
+
+_PULLEY_BOLTS = len(pulley_90t_bolt_points())
+ELBOW_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _FOREARM.drive.pulley_screw_len)   # 20.1, 4x M4x40
+WRIST_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _COUPLER.pulley_screw_len)         # 24.1, 4x M4x50
+PULLEY_NUTS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * nut_volume(M4_NUT)                                              # 3.0, 4x M4 (each joint)
 
 # --- Robot description (robot/frames.py, robot/arm.urdf) --------------------------------------
 # Joint limits and actuator ratings are PLACEHOLDERS until measured on the hardware; the URDF

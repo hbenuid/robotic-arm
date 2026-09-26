@@ -40,6 +40,8 @@ class CouplerParams:
     pulley_bolt_dia: float = 4.1
     nut_af: float = 6.85               # ... their nuts in hex pockets in the flange's underside, a corner along +/-Z
     nut_depth: float = 2.8
+    pulley_screw_len: float = 50.0     # [DESIGN] M4 x 50 (ISO 4762, parts/joints/wrist_pulley_screws) from the 90T's outer face: 46.8
+    #                                    ends flush with the nut's outer face (its 3.2 in the 2.8 pocket), 50 runs 3.2 past it
     flange_bolt_r: float = 35.0        # the flange's 4x M4, on the axes ...
     flange_bolt_dia: float = 4.1
     counterbore_dia: float = 7.1       # ... their heads in counterbores from the flange's top ...

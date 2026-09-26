@@ -18,6 +18,11 @@ GT2_BELT_W = 6.0                                    # [DATASHEET] the 6 mm belt 
 GT2_TOOTH_DEPTH = 0.75                              # [DATASHEET] belt tooth height (= the pulley groove depth)
 GT2_GROOVE_R = 0.555                                # [ESTIMATE] pulley groove (belt tooth) radius - MEASURE on reference/solidworks/gt2_pulley_90t.step
 
+# The printed 90T's hub (parts/joints/gt2_pulley_90t, in its SolidWorks part frame, its axis +Y): its end, which bolts
+# flat onto the coupler's stub, and its outer face, under the pulley bolts' heads; the 4x M4 run through it end to end.
+GT2_PULLEY_90T_FACE_Y = (-13.2, 8.2)                # [REFERENCE] the hub's end .. the outer face, along +Y
+GT2_PULLEY_90T_BOLT_R = 11.0                        # [REFERENCE] the 4x M4 on the pulley's own X / Z axes (the SolidWorks pattern)
+
 # Closed-loop 2GT belts, 6 mm wide, as commonly stocked (mm = teeth x 2) [ESTIMATE] - confirm with the vendor.
 STANDARD_2GT_LENGTHS = (110, 112, 122, 124, 130, 150, 158, 160, 188, 200, 202, 208, 210, 220, 224, 230, 232,
                         240, 250, 252, 254, 258, 260, 264, 280, 288, 294, 300, 320, 336, 350, 360, 400)
@@ -31,6 +36,13 @@ def pulley_od(teeth: int) -> float:
     """The pulley's outside (tooth-tip) diameter: pitch diameter minus twice the pitch-line distance
     (90T: 56.79, the root land measured on the SolidWorks pulley)."""
     return pitch_dia(teeth) - 2.0 * GT2_PLD
+
+
+def pulley_90t_bolt_points() -> list[tuple[float, float]]:
+    """The 90T's 4x M4 about its axis, on its two cross axes at GT2_PULLEY_90T_BOLT_R - (x, z) in the pulley's frame,
+    (x, y) in the frame of a fastener pattern whose +Z runs along the axis (the pulley bolts, the holes they need)."""
+    r = GT2_PULLEY_90T_BOLT_R
+    return [(r, 0.0), (0.0, r), (-r, 0.0), (0.0, -r)]
 
 
 def closed_belt_length(centre_distance: float, teeth_a: int, teeth_b: int) -> float:

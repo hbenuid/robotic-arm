@@ -1,12 +1,12 @@
 """Materialise the mounts declared in lib/mounts.py - the belt joints' motors, their bearings, the re-seated 90T
-pulleys and the pose of a code-driven module - as reference/placements.json records.
+pulleys, the M4 screws + nuts that clamp them and the pose of a code-driven module - as reference/placements.json records.
 
     ./cadtool python tools/reference/mount_placements.py [--out reference/placements.json]
 
 The SolidWorks capture never contained the belt joints' motors or bearings; lib/mounts.py declares each one (a
 motor's MKS board too, and the two 90T pulleys it re-seats) as a frame in its host occurrence's frame. This tool
 resolves `world = host world * frame` (the host is a SolidWorks record - a retired one for a re-seated pulley -, or
-the motor record for a board - declaration order), builds the part
+the motor record for a board, the pulley for its screws, the screws for their nuts - declaration order), builds the part
 in-process (parts.build) to fill `solids` / `solid_volume` / `world_bbox_*`, and writes ordinary
 `kind: "part"` records with parent None, rel == world and a `mount` block naming the host, link, joint
 and the frame - so assemblies/arm.py, robot/frames.py LINKS, the inertials and tools/bom.py read them
@@ -24,7 +24,7 @@ own totals are its EXPECTED; expected_totals() counts part records only), listed
 AND `mounted`, exactly like the drive's SolidWorks-placed record otherwise.
 
 Checks: every motor's +Z must be parallel to its joint's axis (robot/frames.py JOINTS); a bearing's +Z, a pulley's
-+Y (lib/mounts.py AXES) and a module's +Z must lie ON that axis (parallel, origin on the line) - a wrong rotation
++Y, a pulley-bolt pattern's +Z (lib/mounts.py AXES) and a module's +Z must lie ON that axis (parallel, origin on the line) - a wrong rotation
 convention in a mount fails here, not silently in the assembly.
 """
 from __future__ import annotations

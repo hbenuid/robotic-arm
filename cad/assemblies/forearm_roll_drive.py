@@ -11,7 +11,8 @@ roll shaft with its integral 90T ring between the bearings and the end spigot th
 crossing, +Z along the roll axis toward the wrist, +X = host +Z (N), +Y = up in the arm's swing plane; the arm places
 it through lib/mounts.py MODULE_MOUNTS ("forearm_roll_drive#1" on j2_link#1). Every station comes from
 lib/forearm stack_positions() - never type one here. Gear ratio 90 / 20 = 4.5 (FOREARM_ROLL_RATIO); the belt
-(240-2GT) and the fasteners are tools/bom.py EXTRAS.
+(240-2GT) and the M3 screws are tools/bom.py EXTRAS; the elbow 90T's M4 screws + nuts into the block are the arm's
+(lib/mounts.py FASTENER_MOUNTS).
 """
 from cadgen import step
 

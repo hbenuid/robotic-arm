@@ -7,7 +7,7 @@ importable on its own, and a part never depends on how it is assembled. Function
 count too (they are still edges). Two finer rules ride along:
   * lib/cycloidal/, lib/forearm/, lib/upper_arm/, lib/base/ and lib/coupler/ never import lib/params.py: that module re-exports their
     interface values, so they take their globals from the leaves (lib/units.py, lib/motors.py, lib/belts.py,
-    lib/bearings.py, lib/geom.py) instead - and the leaves never import lib/params.py either;
+    lib/bearings.py, lib/fasteners.py, lib/geom.py) instead - and the leaves never import lib/params.py either;
   * nothing mutates sys.path (cadtool / pytest / .env put cad/ on the path) - except the one tool that
     runs in ANOTHER repo's venv.
 """
@@ -32,7 +32,7 @@ PART_MODULE_IMPORT_ALLOWED = {"parts"}
 # lib/belts.py) and never import lib.params back.
 LEAF_PACKAGES = ("cycloidal", "forearm", "upper_arm", "base", "coupler")
 # The leaves those packages import: importing lib.params from one would close the cycle.
-LEAF_MODULES = ("units.py", "motors.py", "belts.py", "bearings.py", "geom.py")
+LEAF_MODULES = ("units.py", "motors.py", "belts.py", "bearings.py", "fasteners.py", "geom.py")
 
 SOURCES = sorted(p for pkg in ORDER for p in (CAD_DIR / pkg).rglob("*.py") if "__pycache__" not in p.parts)
 
@@ -68,7 +68,7 @@ def test_imports_respect_the_layering(path):
         if (any(path.is_relative_to(CAD_DIR / "lib" / leaf) for leaf in LEAF_PACKAGES)
                 or path in [CAD_DIR / "lib" / leaf for leaf in LEAF_MODULES]) and (
                 module == "lib.params" or (module == "lib" and "params" in names)):
-            problems.append(f"{_rel(path)}:{line} imports lib.params - lib/{path.relative_to(CAD_DIR).parts[1]} takes its globals from the leaves (lib/units.py, lib/motors.py, lib/belts.py, lib/geom.py)")
+            problems.append(f"{_rel(path)}:{line} imports lib.params - lib/{path.relative_to(CAD_DIR).parts[1]} takes its globals from the leaves (lib/units.py, lib/motors.py, lib/belts.py, lib/bearings.py, lib/fasteners.py, lib/geom.py)")
         if pkg not in PART_MODULE_IMPORT_ALLOWED and (module.startswith("parts.") or (module == "parts" and names)):
             problems.append(f"{_rel(path)}:{line} imports {module} - reach parts through parts.load()/model()/build()")
     if _rel(path) not in SYS_PATH_ALLOWED:

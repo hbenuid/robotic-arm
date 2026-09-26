@@ -32,6 +32,11 @@ MULTI_BODY = {
     "cycloidal_motor_bolts": 4,
     "cycloidal_housing_bolts": 8,
     "cycloidal_housing_nuts": 8,
+    # the 90T pulley bolts of the elbow and the wrist (lib/mounts.py FASTENER_MOUNTS)
+    "elbow_pulley_screws": 4,
+    "elbow_pulley_nuts": 4,
+    "wrist_pulley_screws": 4,
+    "wrist_pulley_nuts": 4,
 }
 
 
@@ -73,7 +78,8 @@ def test_part_declares_its_contract(name):
         assert isinstance(spec, str) and spec.strip(), f"COTS part {name} must set PURCHASE_SPEC (what to order - tools/bom.py)"
         assert isinstance(qty, int) and qty >= 1, f"COTS part {name} must set PURCHASE_QTY (pieces per occurrence)"
         assert isinstance(getattr(mod, "PURCHASE_NOTE", ""), str)
-        if name.startswith("cycloidal_") and name in MULTI_BODY:   # a fastener / pin pattern: one piece per solid (not a multi-body vendor motor)
+        if name in MULTI_BODY and (name.startswith("cycloidal_") or name.endswith(("_screws", "_nuts"))):
+            # a fastener / pin pattern: one piece per solid (not a multi-body vendor motor)
             assert qty == MULTI_BODY[name], f"{name}.PURCHASE_QTY {qty} != its {MULTI_BODY[name]} solids"
     else:
         assert not any(hasattr(mod, a) for a in ("PURCHASE_SPEC", "PURCHASE_QTY", "PURCHASE_NOTE")), (

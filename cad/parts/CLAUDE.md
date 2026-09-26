@@ -50,7 +50,8 @@ Custom parts declare `REFERENCE = NAME`, `CONVERTED` and `LOCAL_FROM_REF`:
   locks the geometry like every other part's; a native part's own tests hold its design intent.
   A new native part: `tools/reference/import_native.py` once, then Recipe C.
 - *diverged conversion*: a converted CUSTOM part whose DEFAULT build deliberately leaves its SolidWorks
-  reference (the forearm parts, whose elbow end gave way to the roll joint) declares `REFERENCE_BUILD`, a
+  reference (the forearm parts, whose elbow end gave way to the roll joint; `gt2_pulley_90t`, the SolidWorks body with
+  its bolt holes opened to `M4_CLEAR`) declares `REFERENCE_BUILD`, a
   zero-arg callable returning the LEGACY configuration that still reproduces the reference —
   `tests/test_reference_match.py` matches THAT build; the default one is locked by the part's own tests.
   A converted CUSTOM part contributes its own build (volume, bbox) to the arm / link totals locks

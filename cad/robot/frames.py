@@ -88,15 +88,17 @@ LINKS: dict[str, list[str]] = {
     # the drive's rotor (output hub + output pins) is bolted to j1_link: the shoulder_pitch output;
     # the elbow_pitch motor + board bolt to j1_link's pad, the elbow bearing pair sits in its elbow bore (lib/mounts.py)
     "upper_arm_link": ["cycloidal_drive#1:rotor", "j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2"],
-    # the elbow 90T pulley (the elbow_pitch output, assumed the driven side  [ASSUMPTION]) carries the forearm roll
-    # drive's STATOR - the elbow block that IS the elbow coupler now (j3_coupler#1 is retired, lib/placements.py),
-    # both bearings, the end cap, the roll motor + board and its 20T (assemblies/forearm_roll_drive.py BODIES)
-    "elbow_link": ["gt2_pulley_90t#3", "forearm_roll_drive#1:stator"],
+    # the elbow 90T pulley (the elbow_pitch output, assumed the driven side  [ASSUMPTION]) and the M4 screws + nuts
+    # that clamp it carry the forearm roll drive's STATOR - the elbow block that IS the elbow coupler now (j3_coupler#1
+    # is retired, lib/placements.py), both bearings, the end cap, the roll motor + board and its 20T
+    # (assemblies/forearm_roll_drive.py BODIES)
+    "elbow_link": ["gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", "forearm_roll_drive#1:stator"],
     # the drive's ROTOR - the hollow roll shaft - IS the forearm's elbow end (its flange bolts to j2_link's wall);
     # the wrist_pitch motor + board bolt to j2_link's web, the wrist bearing pair sits in its wrist boss (lib/mounts.py)
     "forearm_link": ["forearm_roll_drive#1:rotor", "j2_link#1", "bearing_6806#5", "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3"],
-    # likewise the wrist 90T pulley + J3-coupler ride with the wrist-pitch body  [ASSUMPTION]
-    "wrist_pitch_link": ["wrist_link#1", "gripper_clamp_bracket#1", "nema17_pancake#1", "gt2_pulley_90t#4", "j3_coupler#2"],
+    # likewise the wrist 90T pulley, its M4 screws + nuts and the J3-coupler ride with the wrist-pitch body  [ASSUMPTION]
+    "wrist_pitch_link": ["wrist_link#1", "gripper_clamp_bracket#1", "nema17_pancake#1", "gt2_pulley_90t#4",
+                         "wrist_pulley_screws#1", "wrist_pulley_nuts#1", "j3_coupler#2"],
     # the gripper base rolls with the 20T pulley; the servo crank linkage is merged in  [ASSUMPTION]
     "wrist_roll_link": [
         "gt2_pulley_20t#1", "gripper_j3_connector#1", "servo_holder#1", "mg996r_servo#1", "mg996r_horn#1",

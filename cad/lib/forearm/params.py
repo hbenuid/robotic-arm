@@ -19,8 +19,9 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 
 from lib.bearings import BEARING_6806_SHOULDER_DIA, PULLEY_SEAT_SHIFT
-from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, centre_distance
+from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_FACE_Y, GT2_PULLEY_90T_TEETH, centre_distance
 from lib.cycloidal.params import MotorParams
+from lib.fasteners import M4_CLEAR, M4_NUT
 from lib.motors import MOTOR_40
 
 
@@ -165,11 +166,12 @@ class RollDriveParams:
     pulley_bolt_r: float = 11.0           # [REFERENCE] the elbow 90T's 4x M4 at r 11 (the SolidWorks coupler's pattern) ...
     pulley_bolt_deg: float = 45.0         # [DESIGN] ... turned off the axes, the elbow 90T with it (lib/mounts.py): on the axes the +z
     #                                       nut channel would stop 1.6 mm short of the cavity (cavity_z0), at 45 deg 4.4
-    pulley_bolt_dia: float = 4.4          # [DESIGN] M4 clearance up through the stub, the journal and the boss to the nut seat
-    pulley_hub_len: float = 21.4          # [REFERENCE] the 90T's length through its bolt holes: the screw heads sit on its outer face
+    pulley_bolt_dia: float = M4_CLEAR     # [DESIGN] 4.4, M4 clearance up through the stub, the journal and the boss to the nut seat
+    pulley_hub_len: float = GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_FACE_Y[0]   # [REFERENCE] 21.4, the 90T's length through its bolt holes:
+    #                                       the screw heads sit on its outer face (parts/joints/elbow_pulley_screws)
     pulley_screw_len: float = 40.0        # [DESIGN] M4 x 40 (ISO 4762) from the pulley's outer face
     nut_af: float = 6.85                  # [DESIGN] the M4 nuts' (ISO 4032, s 7) hex channels - j3_coupler's pocket (lib/coupler/params.py)
-    nut_t: float = 3.2                    # [DATASHEET] ISO 4032 M4 nut height
+    nut_t: float = M4_NUT.h               # [DATASHEET] 3.2, ISO 4032 M4 nut height (parts/joints/elbow_pulley_nuts)
     nut_seat_x: float = -36.0             # [DESIGN] in the boss: the screw ends 1.4 mm (2 pitches) past its nut, 6.5 mm under the core bore
     nut_channel_past: float = 1.0         # [DESIGN] each channel runs up from its seat into the core bore, this far past its outermost corner:
     #                                       the nuts drop in from inside the bore (block underside down) before the shaft goes in

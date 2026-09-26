@@ -1,21 +1,24 @@
 """The belt joints' mounts (lib/mounts.py, materialised into reference/placements.json by
 tools/reference/mount_placements.py): each NEMA 17 sits on the pad its SolidWorks host carries with its shaft
 parallel to the joint axis, its MKS board on its rear face; each joint's 6806 pair stands on the lip of its bore
-with the coupler's shoulder on the upper inner ring and the re-seated 90T's ring under the lower one; and nothing
-runs into the neighbours."""
+with the coupler's shoulder on the upper inner ring and the re-seated 90T's ring under the lower one; each 90T clamped
+by its 4x M4 screws + nuts; and nothing runs into the neighbours but the nuts' designed press in their pockets."""
 import math
 
 import pytest
-from build123d import GeomType, Location, Vector
+from build123d import Align, Cylinder, GeomType, Location, Pos, Vector
 
+import parts
 from assemblies import cycloidal_drive, forearm_roll_drive
 from assemblies._occurrences import place_world
 from lib import mounts
 from lib import params as PARAMS
 from lib import placements as P
 from lib.bearings import BEARING_6806_SHOULDER_DIA, BEARING_6806_WIDTH
+from lib.coupler import DEFAULT as COUPLER
 from lib.cycloidal import DEFAULT_CONFIG
 from lib.datum import BASE_BOTTOM_Y, to_location
+from lib.fasteners import hex_area
 from lib.forearm import DEFAULT as FOREARM
 from lib.forearm import pulley_bolt_points
 from lib.models import raw
@@ -24,13 +27,27 @@ from tests.helpers import interference, is_inside
 
 MOTORS = [m for m in mounts.MOUNTS if m.part in mounts.MOTORS]
 BOARDS = {m.host: m for m in mounts.MOUNTS if m.part == mounts.BOARD}
-ON_AXIS = [m for m in mounts.MOUNTS if m.part in (mounts.BEARING, mounts.PULLEY)]
+ON_AXIS = [m for m in mounts.MOUNTS if m.part in (mounts.BEARING, mounts.PULLEY, *mounts.PULLEY_BOLTS)]
 # per belt joint: (upper bearing, lower bearing, the housing, what bears on the upper inner ring, the re-seated 90T)
 STACKS = {
     "base_yaw": ("bearing_6806#1", "bearing_6806#2", "base#1", None, None),
     "elbow_pitch": ("bearing_6806#3", "bearing_6806#4", "j1_link#1", "forearm_roll_block", "gt2_pulley_90t#3"),
     "wrist_pitch": ("bearing_6806#5", "bearing_6806#6", "j2_link#1", "j3_coupler#2", "gt2_pulley_90t#4"),
 }
+# per bolted 90T: (its screw set, its nut set, the pulley, what the nuts sit in, the nut_af of that pocket, how much of
+# each nut is inside it) - the elbow's nuts wholly in the block's channels, the wrist's 2.8 of 3.2 in j3_coupler's pockets
+PULLEY_BOLTS = {
+    "elbow_pitch": ("elbow_pulley_screws#1", "elbow_pulley_nuts#1", "gt2_pulley_90t#3", "forearm_roll_drive#1",
+                    FOREARM.drive.nut_af, FOREARM.drive.nut_t),
+    "wrist_pitch": ("wrist_pulley_screws#1", "wrist_pulley_nuts#1", "gt2_pulley_90t#4", "j3_coupler#2",
+                    COUPLER.nut_af, COUPLER.nut_depth),
+}
+
+
+def _press(nut_af: float, depth: float) -> float:
+    """The designed overlap of a joint's 4 nuts (ISO 4032, M4_NUT.af across flats) in pockets nut_af across flats,
+    `depth` of each nut inside (docs/open_issues.md: the PETG press) - mm^3."""
+    return len(PARAMS.pulley_90t_bolt_points()) * (hex_area(PARAMS.M4_NUT.af) - hex_area(nut_af)) * depth
 
 
 def _world(key: str) -> Location:
@@ -82,13 +99,14 @@ def test_mounting_face_lies_on_the_host_pad(m):
 @pytest.mark.slow
 def test_motors_and_boards_clear_their_neighbours():
     """Interference budget (mm^3) of every mount against the hosts, the pulleys and the placed drives: zero everywhere
-    (the Ø22 pilot boss used to stand in j2_link's Ø20 central slot - the parametric forearm's slot is 22.3 wide)."""
+    (the Ø22 pilot boss used to stand in j2_link's Ø20 central slot - the parametric forearm's slot is 22.3 wide) but
+    the pulley nuts' designed press in their nut_af pockets (_press, test_pulley_bolts_clamp_their_joints)."""
     neighbours = ["base#1", "j1_coupler#1", "j1_link#1", "j2_link#1", "gt2_pulley_90t#3", "gt2_pulley_90t#4", "j3_coupler#2",
                   "wrist_link#1"]
     shapes = {k: place_world(P.OCCURRENCES[k]["part"], k) for k in neighbours}
     shapes["cycloidal_drive#1"] = raw(cycloidal_drive.cycloidal_drive).moved(_world("cycloidal_drive#1"))
     shapes["forearm_roll_drive#1"] = raw(forearm_roll_drive.forearm_roll_drive).moved(_world("forearm_roll_drive#1"))
-    budget = {}
+    budget = {(nuts, host): _press(nut_af, depth) + 0.5 for _, nuts, _, host, nut_af, depth in PULLEY_BOLTS.values()}
     for m in mounts.MOUNTS:
         part = place_world(m.part, m.key)
         for key, other in shapes.items():
@@ -144,7 +162,8 @@ def test_the_base_takes_the_48mm_motor_and_the_links_the_40mm_one():
 def test_bearings_and_pulleys_sit_on_their_joint_axes():
     """Each bearing's +Z and each re-seated pulley's +Y (lib/mounts.py AXES) runs along its joint's axis, its origin on
     the axis; a pair per belt joint, riding with its housing's link; each pulley PULLEY_SEAT_SHIFT out from its retired
-    SolidWorks pose, along its own axis - the wrist's spin kept, the elbow's turned with its block's bolt pattern."""
+    SolidWorks pose, along its own axis - the wrist's spin kept, the elbow's turned with its block's bolt pattern; each
+    pulley-bolt pattern centred on its joint's axis too."""
     for m in ON_AXIS:
         joint, (local, on_axis) = F.JOINT_BY_NAME[m.joint], mounts.AXES[m.part]
         world = _world(m.key)
@@ -184,6 +203,70 @@ def test_the_elbow_pulley_holes_line_up_with_the_block_bolts():
         assert not is_inside(block, *at(face + 1.0, y, z)), (y, z)
         r = D.pulley_bolt_r
         assert is_inside(pulley, *at(face - 1.0, y + 3.0 * z / r, z - 3.0 * y / r)), (y, z)
+
+
+def test_the_pulley_bolts_reach_their_nuts():
+    """The arithmetic of both 90T stacks (lib/mounts.py FASTENER_MOUNTS): each screw set's heads on the pulley's outer
+    face, its nuts on their host's seats - the elbow block's channel seats, j3_coupler's pocket floors - and every
+    screw reaching two pitches past its nut; both hosts drill the pulley's own hole circle, with M4 clearance."""
+    D, C, (y0, y1) = FOREARM.drive, COUPLER, PARAMS.GT2_PULLEY_90T_FACE_Y
+    for joint, length in (("elbow_pitch", D.pulley_screw_len), ("wrist_pitch", C.pulley_screw_len)):
+        screws, nuts = (mounts.BY_KEY[k] for k in PULLEY_BOLTS[joint][:2])
+        assert screws.host == PULLEY_BOLTS[joint][2] and nuts.host == screws.key, joint
+        assert screws.frame == ((0.0, y1, 0.0), (90.0, 0.0, 0.0)), joint                      # +Z into the hub
+        assert length - (nuts.frame[0][2] + PARAMS.M4_NUT.h) >= 2 * PARAMS.M4_PITCH - 1e-9, joint
+        assert parts.load(screws.part).PURCHASE_SPEC.startswith(f"M4 x {length:g} "), joint
+    assert math.isclose(mounts.BY_KEY["elbow_pulley_nuts#1"].frame[0][2], D.nut_seat_x - (D.stub_x[0] - (y1 - y0)))
+    assert math.isclose(mounts.BY_KEY["wrist_pulley_nuts#1"].frame[0][2], C.stub_y1 + (y1 - y0) - C.nut_depth)
+    assert D.pulley_hub_len == y1 - y0 and D.nut_t == PARAMS.M4_NUT.h
+    assert D.pulley_bolt_r == C.pulley_bolt_r == PARAMS.GT2_PULLEY_90T_BOLT_R
+    assert D.pulley_bolt_dia == PARAMS.M4_CLEAR > C.pulley_bolt_dia > PARAMS.M4_SHCS.d
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize("joint", list(PULLEY_BOLTS))
+def test_pulley_bolts_clamp_their_joints(joint):
+    """Each 90T's 4x M4: the heads bear on the pulley's outer face, each shank runs through the pulley's M4_CLEAR hole
+    (the SolidWorks Ø3.9 took no M4 - the part opens it), the nuts bear on their host's seats and sit in its pockets
+    with exactly the designed press, and the ring the heads sweep clears the parent link through a whole turn."""
+    screws_key, nuts_key, pulley_key, host_key, nut_af, depth = PULLEY_BOLTS[joint]
+    ws, wn = _world(screws_key), _world(nuts_key)
+    z = _dir(ws).normalized()
+    pulley = place_world(mounts.PULLEY, pulley_key)
+    if host_key == "forearm_roll_drive#1":
+        host = next(c for c in raw(forearm_roll_drive.forearm_roll_drive).children if c.label == "forearm_roll_block")
+        host = host.moved(_world(host_key))
+    else:
+        host = place_world(P.OCCURRENCES[host_key]["part"], host_key)
+
+    def planar(shape, origin: Vector, sign: int) -> bool:
+        return any(round(f.normal_at().dot(z)) == sign and abs((f.center() - origin).dot(z)) < 1e-3
+                   for f in shape.faces().filter_by(GeomType.PLANE) if abs(abs(f.normal_at().dot(z)) - 1.0) < 1e-6)
+
+    assert planar(pulley, ws.position, -1), joint          # the outer face, facing the heads
+    assert planar(host, wn.position, 1), joint             # the seat, facing the nuts
+    hub = PARAMS.GT2_PULLEY_90T_FACE_Y[1] - PARAMS.GT2_PULLEY_90T_FACE_Y[0]
+    r_hole = PARAMS.M4_CLEAR / 2.0
+    for x, y in PARAMS.pulley_90t_bolt_points():
+        ux, uy = x / math.hypot(x, y), y / math.hypot(x, y)
+        for s in (1.0, hub / 2.0, hub - 1.0):
+            def at(r, s=s, x=x, y=y, ux=ux, uy=uy):
+                p = (ws * Location((x + r * ux, y + r * uy, s))).position
+                return p.X, p.Y, p.Z
+            assert not is_inside(pulley, *at(0.0)) and not is_inside(pulley, *at(r_hole - 0.1)), (joint, x, y, s)
+            assert is_inside(pulley, *at(r_hole + 0.2)), (joint, x, y, s)          # the hole, no bigger
+    nuts = place_world(mounts.BY_KEY[nuts_key].part, nuts_key)
+    press = _press(nut_af, depth)
+    assert 0.9 * press <= interference(nuts, host) <= press + 0.5, joint
+    # the heads' ring (the hole circle +/- the head's radius, the head's height off the face) against every part of
+    # the joint's parent link (the modules' bodies there - the drive's rotor, the roll shaft - are far from the pulleys)
+    r, head = PARAMS.GT2_PULLEY_90T_BOLT_R, PARAMS.M4_SHCS
+    ring = Pos(0.0, 0.0, -head.head_h) * (Cylinder(r + head.head_dia / 2.0, head.head_h, align=(Align.CENTER, Align.CENTER, Align.MIN))
+                                          - Cylinder(r - head.head_dia / 2.0, head.head_h, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+    ring = ring.moved(ws)
+    for key in F.LINKS[F.JOINT_BY_NAME[joint].parent]:
+        if ":" not in key:
+            assert interference(ring, place_world(P.OCCURRENCES[key]["part"], key)) < 1.0, (joint, key)
 
 
 def _faces_on(shape, origin: Vector, z: Vector) -> list[tuple[int, float, float]]:

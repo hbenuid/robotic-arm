@@ -6,7 +6,7 @@
 Counts come from the assembly tables - assemblies/arm.py OCCURRENCES, a module row expanding into that
 module's own OCCURRENCES (arm.MODULES) - so a part added to an assembly shows up here with no
 second list to keep. A bought part says what to order itself (PURCHASE_SPEC / PURCHASE_QTY, the pieces
-per occurrence - a whole pattern for the drive's pin and fastener parts / optional PURCHASE_NOTE, next
+per occurrence - a whole pattern for a pin or fastener part / optional PURCHASE_NOTE, next
 to its MASS_G). EXTRAS below is the one hand-kept table: purchased items with NO geometry - they are on
 the buy list, not in the model, the totals or the inertials. No CAD kernel is loaded.
 """
@@ -30,7 +30,8 @@ from lib.params import (
 from lib.upper_arm import DEFAULT as _UPPER_ARM
 
 # (module or None = the arm itself, what to order, pieces, why it is not modelled). Seeded with what
-# docs/cycloidal_drive.md states; the elbow belt, the arm's own fasteners and the electronics are not listed yet.
+# docs/cycloidal_drive.md states; the elbow belt, the arm's own fasteners (but the 90T pulley bolts, modelled:
+# parts/joints/{elbow,wrist}_pulley_{screws,nuts}) and the electronics are not listed yet.
 EXTRAS = [
     ("cycloidal_drive", f"M{CYCLOIDAL_ARM_MOUNT_BOLT_DIA:g} socket head cap screw (ISO 4762), 40-50 mm long - arm-mount bolts",
      CYCLOIDAL_ARM_MOUNT_BOLT_COUNT,
@@ -46,11 +47,6 @@ EXTRAS = [
     ("forearm_roll_drive", "M3 x 8 socket head cap screw - the roll motor to the block's plate", 4, "through the plate's tension slots into the motor"),
     ("forearm_roll_drive", "home sensor (hall or optical) on the end cap's outer face + magnet in the shaft's stop lug", 1,
      "wired to the MKS board's limit input; nothing modelled yet (docs/open_issues.md); the hard stop itself is the printed lug + post"),
-    ("forearm_roll_drive", (f"M4 x {_FOREARM.drive.pulley_screw_len:g} socket head cap screw (ISO 4762) - the elbow 90T pulley up into "
-                            "nuts in the elbow block"), 4,
-     "through the pulley's hub and the block's stub / journal / boss (the SolidWorks coupler's pattern, r 11, turned 45 deg)"),
-    ("forearm_roll_drive", "M4 hex nut (ISO 4032) - captive in the elbow block's hex channels", 4,
-     "drop them in from inside the core bore before the roll shaft goes in (docs/forearm_roll.md §4)"),
     (None, f"{WRIST_BELT_LENGTH}-2GT closed belt, 6 mm - the wrist-pitch belt (90T at the wrist, 20T on the forearm motor)", 1,
      "belts are not modelled; the length sets J2_MOTOR_SLIDE_X (lib/forearm/params.py wrist_belt, [ESTIMATE])"),
 ]

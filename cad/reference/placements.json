@@ -11,9 +11,9 @@
  "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. A record with a `mount` block (keys under `mounted`) is a motor mount declared in lib/mounts.py, not a SolidWorks node: parent None, rel == world = host world * mount frame.",
  "root_label": "final_Arm_Assembly_Fully_Movable",
  "expected": {
-  "leaf_occurrences": 45,
-  "solids": 105,
-  "solid_volume": 1927856.167
+  "leaf_occurrences": 49,
+  "solids": 121,
+  "solid_volume": 1933693.491
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -34,6 +34,10 @@
   "bearing_6806#6",
   "gt2_pulley_90t#3",
   "gt2_pulley_90t#4",
+  "elbow_pulley_screws#1",
+  "elbow_pulley_nuts#1",
+  "wrist_pulley_screws#1",
+  "wrist_pulley_nuts#1",
   "forearm_roll_drive#1"
  ],
  "occurrences": [
@@ -4078,7 +4082,7 @@
     "note": "the elbow 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower elbow bearing; turned pulley_bolt_deg about its axis with the block's bolt pattern (the nut channels clear of the ring cavity)"
    },
    "solids": 1,
-   "solid_volume": 24810.708,
+   "solid_volume": 24531.703,
    "rel": {
     "position": [
      -145.60967,
@@ -4181,7 +4185,7 @@
     "note": "the wrist 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower wrist bearing"
    },
    "solids": 1,
-   "solid_volume": 24810.708,
+   "solid_volume": 24531.703,
    "rel": {
     "position": [
      -285.831703,
@@ -4255,6 +4259,418 @@
     59.67,
     59.188,
     24.229
+   ]
+  },
+  {
+   "key": "elbow_pulley_screws#1",
+   "part": "elbow_pulley_screws",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "gt2_pulley_90t#3",
+    "link": "elbow_link",
+    "joint": "elbow_pitch",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      8.2,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the elbow 90T's 4x M4 x pulley_screw_len: heads on its outer face, down through its hub and the block's stub"
+   },
+   "solids": 4,
+   "solid_volume": 2564.018,
+   "rel": {
+    "position": [
+     -146.138043,
+     240.046921,
+     -62.112567
+    ],
+    "rotation_xyz_deg": [
+     -0.0,
+     3.694455,
+     178.002358
+    ],
+    "matrix_3x4": [
+     [
+      -0.997315384,
+      -0.034785919,
+      0.064435734,
+      -146.138043226
+     ],
+     [
+      0.034858359,
+      -0.999392263,
+      2e-09,
+      240.046920979
+     ],
+     [
+      0.064396574,
+      0.002246126,
+      0.997921859,
+      -62.112566818
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -146.138043,
+     240.046921,
+     -62.112567
+    ],
+    "rotation_xyz_deg": [
+     -0.0,
+     3.694455,
+     178.002358
+    ],
+    "matrix_3x4": [
+     [
+      -0.997315384,
+      -0.034785919,
+      0.064435734,
+      -146.138043226
+     ],
+     [
+      0.034858359,
+      -0.999392263,
+      2e-09,
+      240.046920979
+     ],
+     [
+      0.064396574,
+      0.002246126,
+      0.997921859,
+      -62.112566818
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -160.859,
+    225.554,
+    -67.038
+   ],
+   "world_bbox_size": [
+    30.265,
+    28.987,
+    45.68
+   ]
+  },
+  {
+   "key": "elbow_pulley_nuts#1",
+   "part": "elbow_pulley_nuts",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "elbow_pulley_screws#1",
+    "link": "elbow_link",
+    "joint": "elbow_pitch",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      0.0,
+      35.4
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the elbow screws' nuts on the block's channel seats (nut_seat_x), a flat toward the axis"
+   },
+   "solids": 4,
+   "solid_volume": 382.322,
+   "rel": {
+    "position": [
+     -143.857018,
+     240.046921,
+     -26.786133
+    ],
+    "rotation_xyz_deg": [
+     -0.0,
+     3.694455,
+     178.002358
+    ],
+    "matrix_3x4": [
+     [
+      -0.997315384,
+      -0.034785919,
+      0.064435734,
+      -143.857018226
+     ],
+     [
+      0.034858359,
+      -0.999392263,
+      2e-09,
+      240.046921044
+     ],
+     [
+      0.064396574,
+      0.002246126,
+      0.997921859,
+      -26.786133019
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -143.857018,
+     240.046921,
+     -26.786133
+    ],
+    "rotation_xyz_deg": [
+     -0.0,
+     3.694455,
+     178.002358
+    ],
+    "matrix_3x4": [
+     [
+      -0.997315384,
+      -0.034785919,
+      0.064435734,
+      -143.857018226
+     ],
+     [
+      0.034858359,
+      -0.999392263,
+      2e-09,
+      240.046921044
+     ],
+     [
+      0.064396574,
+      0.002246126,
+      0.997921859,
+      -26.786133019
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -158.388,
+    225.485,
+    -27.724
+   ],
+   "world_bbox_size": [
+    29.269,
+    29.123,
+    5.07
+   ]
+  },
+  {
+   "key": "wrist_pulley_screws#1",
+   "part": "wrist_pulley_screws",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "gt2_pulley_90t#4",
+    "link": "wrist_pitch_link",
+    "joint": "wrist_pitch",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      8.2,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the wrist 90T's 4x M4 x pulley_screw_len: heads on its outer face, down through its hub and j3_coupler's stub"
+   },
+   "solids": 4,
+   "solid_volume": 3066.672,
+   "rel": {
+    "position": [
+     -286.360076,
+     393.625302,
+     -10.970978
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     -119.862693
+    ],
+    "matrix_3x4": [
+     [
+      -0.496888416,
+      0.865418938,
+      0.064435728,
+      -286.360076148
+     ],
+     [
+      -0.867221146,
+      -0.497923171,
+      -4e-09,
+      393.625302049
+     ],
+     [
+      0.032084038,
+      -0.055880028,
+      0.997921859,
+      -10.970977823
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -286.360076,
+     393.625302,
+     -10.970978
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     -119.862693
+    ],
+    "matrix_3x4": [
+     [
+      -0.496888416,
+      0.865418938,
+      0.064435728,
+      -286.360076148
+     ],
+     [
+      -0.867221146,
+      -0.497923171,
+      -4e-09,
+      393.625302049
+     ],
+     [
+      0.032084038,
+      -0.055880028,
+      0.997921859,
+      -10.970977823
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -299.63,
+    380.586,
+    -15.803
+   ],
+   "world_bbox_size": [
+    28.007,
+    26.079,
+    55.472
+   ]
+  },
+  {
+   "key": "wrist_pulley_nuts#1",
+   "part": "wrist_pulley_nuts",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "wrist_pulley_screws#1",
+    "link": "wrist_pitch_link",
+    "joint": "wrist_pitch",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      0.0,
+      43.6
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the wrist screws' nuts on j3_coupler's pocket floors (nut_depth), a corner along the coupler's Z"
+   },
+   "solids": 4,
+   "solid_volume": 382.322,
+   "rel": {
+    "position": [
+     -283.550678,
+     393.625302,
+     32.538415
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     -119.862693
+    ],
+    "matrix_3x4": [
+     [
+      -0.496888416,
+      0.865418938,
+      0.064435728,
+      -283.550678428
+     ],
+     [
+      -0.867221146,
+      -0.497923171,
+      -4e-09,
+      393.62530186
+     ],
+     [
+      0.032084038,
+      -0.055880028,
+      0.997921859,
+      32.538415237
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -283.550678,
+     393.625302,
+     32.538415
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     -119.862693
+    ],
+    "matrix_3x4": [
+     [
+      -0.496888416,
+      0.865418938,
+      0.064435728,
+      -283.550678428
+     ],
+     [
+      -0.867221146,
+      -0.497923171,
+      -4e-09,
+      393.62530186
+     ],
+     [
+      0.032084038,
+      -0.055880028,
+      0.997921859,
+      32.538415237
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -296.568,
+    380.044,
+    31.698
+   ],
+   "world_bbox_size": [
+    26.241,
+    27.162,
+    4.874
    ]
   },
   {

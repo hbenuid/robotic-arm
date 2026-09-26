@@ -71,9 +71,9 @@ joints' motors are mounted occurrences (`lib/mounts.py`, `assemblies/CLAUDE.md`)
 | `base_link` | `base` + `bearing_6806#1`, `#2` (the base_yaw pair in its bore) + `nema17_48mm#1`, `mks_servo42d#1` (the base_yaw 48 mm motor + board under the plate) |
 | `shoulder_link` | `j1_coupler` + the drive's **stator** (`cycloidal_drive#1:stator`: motor plate, ring gear body, ring pins, housing bolts/nuts, NEMA 17 + its MKS board, gear train) |
 | `upper_arm_link` | the drive's **rotor** (`cycloidal_drive#1:rotor`: output hub, output pins, 625) + `j1_link` + `bearing_6806#3`, `#4` (the elbow pair in its bore) + `nema17_40mm#2`, `mks_servo42d#2` (the elbow_pitch motor + board on the pad) |
-| `elbow_link` | `gt2_pulley_90t#3` (re-seated, `lib/mounts.py`) + the roll drive's **stator** (`forearm_roll_drive#1:stator`: the elbow block — the elbow coupler and the housing in one, `j3_coupler#1` retired —, 2× 6808, the end cap, its NEMA 17 x 40 + MKS board, the 20T) |
+| `elbow_link` | `gt2_pulley_90t#3` (re-seated, `lib/mounts.py`) + its M4 screws + nuts (`elbow_pulley_screws#1`, `elbow_pulley_nuts#1`) + the roll drive's **stator** (`forearm_roll_drive#1:stator`: the elbow block — the elbow coupler and the housing in one, `j3_coupler#1` retired —, 2× 6808, the end cap, its NEMA 17 x 40 + MKS board, the 20T) |
 | `forearm_link` | the roll drive's **rotor** (`forearm_roll_drive#1:rotor`: the hollow roll shaft with its 90T ring and end spigot) + `j2_link` + `bearing_6806#5`, `#6` (the wrist pair in its boss) + `nema17_40mm#3`, `mks_servo42d#3` (the wrist_pitch motor + board on the web) |
-| `wrist_pitch_link` | `wrist_link`, `gripper_clamp_bracket`, `nema17_pancake`, `gt2_pulley_90t#4` (re-seated), `j3_coupler#2` |
+| `wrist_pitch_link` | `wrist_link`, `gripper_clamp_bracket`, `nema17_pancake`, `gt2_pulley_90t#4` (re-seated) + its M4 screws + nuts (`wrist_pulley_screws#1`, `wrist_pulley_nuts#1`), `j3_coupler#2` |
 | `wrist_roll_link` | `gt2_pulley_20t` + the gripper base (connector, servo holder, servo + horn, cover, rails, crank links) |
 | `jaw_a_link` / `jaw_b_link` | slider + two fingers + end, each side |
 

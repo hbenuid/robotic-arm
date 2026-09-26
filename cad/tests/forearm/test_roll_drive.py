@@ -70,7 +70,8 @@ def test_the_elbow_coupler_is_retired_for_the_block():
     """j3_coupler#1's record stays in placements.json but nothing claims it; the wrist's j3_coupler#2 is untouched."""
     assert P.RETIRED[0] == "j3_coupler#1" and "j3_coupler#1" in P.OCCURRENCES
     assert "j3_coupler#1" not in P.keys() and "j3_coupler#1" in P.keys(retired=True) and "j3_coupler#2" in P.keys()
-    assert F.LINKS["elbow_link"] == ["gt2_pulley_90t#3", "forearm_roll_drive#1:stator"]   # the re-seated elbow 90T (lib/mounts.py)
+    assert F.LINKS["elbow_link"] == ["gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1",
+                                     "forearm_roll_drive#1:stator"]   # the re-seated elbow 90T + its bolts (lib/mounts.py)
 
 
 def test_stack():

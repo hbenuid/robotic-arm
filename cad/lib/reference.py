@@ -127,6 +127,10 @@ NATIVE: dict[str, str] = {
 NATIVE_COTS: dict[str, str] = {
     "bearing_6808": "parts/joints/bearing_6808.py:_envelope()",
     "bearing_6806": "parts/joints/bearing_6806.py:_envelope()",
+    "elbow_pulley_screws": "parts/joints/elbow_pulley_screws.py:_envelope()",
+    "elbow_pulley_nuts": "parts/joints/elbow_pulley_nuts.py:_envelope()",
+    "wrist_pulley_screws": "parts/joints/wrist_pulley_screws.py:_envelope()",
+    "wrist_pulley_nuts": "parts/joints/wrist_pulley_nuts.py:_envelope()",
 }
 COTS.update({name: (f"native {builder}", None) for name, builder in NATIVE_COTS.items()})
 NATIVE_PARTS: set[str] = set(NATIVE) | set(NATIVE_COTS)

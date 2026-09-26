@@ -33,6 +33,7 @@ geometry; `test_cots_vendor_matches_reference_frame` skips them):
 | `parts/joints/bearing_6808.py` | no 6808 / 61808 / 6908 entry (2026-09-22: nothing above a 17 mm bore in the catalog) - a native COTS part (`lib/reference.py NATIVE_COTS`, reference `reference/native/`) |
 | `parts/joints/bearing_6806.py` | no 6806 / 61806 / 30 x 42 x 7 entry (2026-09-25: the catalog's 132 bearings stop at a 20 mm bore) - a native COTS part like the 6808 |
 | `cycloidal_ring_pins`, `cycloidal_output_pins`, `cycloidal_shaft_support_pin`, `cycloidal_motor_bolts`, `cycloidal_housing_bolts`, `cycloidal_housing_nuts` | pattern parts (21 / 4 / 1 / 4 / 8 / 8 solids); the catalog has single fasteners only |
+| `parts/joints/elbow_pulley_screws.py`, `elbow_pulley_nuts.py`, `wrist_pulley_screws.py`, `wrist_pulley_nuts.py` | the 90T pulley bolts: pattern parts (4 solids each), native COTS (`lib/reference.py NATIVE_COTS`) - the catalog has single fasteners only |
 
 What to **order** for each purchased part is not here: it is `PURCHASE_SPEC` / `PURCHASE_QTY` /
 `PURCHASE_NOTE` in the part module, printed as the buy list by `./cadtool python tools/bom.py` (which also

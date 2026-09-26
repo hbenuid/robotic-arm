@@ -1,7 +1,8 @@
 """The whole arm: every part of the SolidWorks 'final Arm Assembly Fully Movable' placed from
 reference/placements.json - the SolidWorks part occurrences + the mounted ones (lib/mounts.py: the belt joints'
 NEMA 17 motors - 48 mm at the base, 40 mm at the elbow and wrist - and their MKS SERVO42D boards, on the pads the links carry;
-the 6806-2RS bearing pair in each belt joint's bore; the elbow's and the wrist's 90T re-seated on them) + the gripper module
+the 6806-2RS bearing pair in each belt joint's bore; the elbow's and the wrist's 90T re-seated on them, each clamped by 4x M4
+screws + nuts) + the gripper module
 (SolidWorks-driven) + the cycloidal_drive module (code-driven, placed at the SolidWorks node's pose) + the
 forearm_roll_drive module (code-driven, placed by lib/mounts.py MODULE_MOUNTS) - the totals are locked in
 tests/test_assembly.py - bucketed into the GROUPS component tree (arm -> base_link/shoulder_link/upper_arm_link/
@@ -13,9 +14,11 @@ rails, the 20T pulleys) is _occurrences.BOUGHT_TINT grey, inside the modules too
     |- base_link         base, bearing_6806:base_yaw_1 / _2, nema17_48mm:base_yaw, mks_servo42d:base_yaw
     |- shoulder_link     j1_coupler, cycloidal_drive (kept whole - see below)
     |- upper_arm_link    j1_link, bearing_6806:elbow_pitch_1 / _2, nema17_40mm:elbow_pitch, mks_servo42d:elbow_pitch
-    |- elbow_link        gt2_pulley_90t:j2, forearm_roll_drive (kept whole - see below; its block IS the elbow coupler)
+    |- elbow_link        gt2_pulley_90t:j2, elbow_pulley_screws / _nuts:elbow_pitch, forearm_roll_drive (kept whole - see
+    |                    below; its block IS the elbow coupler)
     |- forearm_link      j2_link, bearing_6806:wrist_pitch_1 / _2, nema17_40mm:wrist_pitch, mks_servo42d:wrist_pitch
-    |- wrist_pitch_link  gt2_pulley_90t:j3, j3_coupler:j3, wrist_link, gripper_clamp_bracket, nema17_pancake
+    |- wrist_pitch_link  gt2_pulley_90t:j3, wrist_pulley_screws / _nuts:wrist_pitch, j3_coupler:j3, wrist_link,
+    |                    gripper_clamp_bracket, nema17_pancake
     |- wrist             gt2_pulley_20t, gripper
 
 j3_coupler#1 (the elbow's SolidWorks coupler) is RETIRED (lib/placements.py): the roll drive's block carries its
@@ -76,6 +79,8 @@ OCCURRENCES = [
     ("nema17_40mm",           "elbow_pitch", "nema17_40mm#2"),     # mounted: j1_link's pad
     ("mks_servo42d",          "elbow_pitch", "mks_servo42d#2"),
     ("gt2_pulley_90t",        "j2", "gt2_pulley_90t#3"),           # mounted: re-seated on the lower elbow bearing (#1 retired)
+    ("elbow_pulley_screws",   "elbow_pitch", "elbow_pulley_screws#1"),   # mounted: the elbow 90T's 4x M4 ...
+    ("elbow_pulley_nuts",     "elbow_pitch", "elbow_pulley_nuts#1"),     # ... into the block's captive nuts
     # j3_coupler#1 (the elbow coupler) is retired: the roll drive's block bolts to the elbow pulley in its place
     ("forearm_roll_drive",    None, ROLL_KEY),             # module: assemblies/forearm_roll_drive.py (the forearm_roll joint; lib/mounts.py MODULE_MOUNTS)
     ("j2_link",               None, "j2_link#1"),
@@ -84,6 +89,8 @@ OCCURRENCES = [
     ("nema17_40mm",           "wrist_pitch", "nema17_40mm#3"),     # mounted: j2_link's web slots
     ("mks_servo42d",          "wrist_pitch", "mks_servo42d#3"),
     ("gt2_pulley_90t",        "j3", "gt2_pulley_90t#4"),           # mounted: re-seated on the lower wrist bearing (#2 retired)
+    ("wrist_pulley_screws",   "wrist_pitch", "wrist_pulley_screws#1"),   # mounted: the wrist 90T's 4x M4 ...
+    ("wrist_pulley_nuts",     "wrist_pitch", "wrist_pulley_nuts#1"),     # ... into the nuts in j3_coupler's flange
     ("j3_coupler",            "j3", "j3_coupler#2"),
     ("wrist_link",            None, "wrist_link#1"),
     ("gripper_clamp_bracket", None, "gripper_clamp_bracket#1"),
@@ -104,9 +111,10 @@ GROUPS = [
     ("base_link",        "#937860", ("base#1", "bearing_6806#1", "bearing_6806#2", "nema17_48mm#1", "mks_servo42d#1")),
     ("shoulder_link",    "#4C72B0", ("j1_coupler#1", DRIVE_KEY)),
     ("upper_arm_link",   "#CCB974", ("j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2")),
-    ("elbow_link",       "#DA8BC3", ("gt2_pulley_90t#3", ROLL_KEY)),
+    ("elbow_link",       "#DA8BC3", ("gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", ROLL_KEY)),
     ("forearm_link",     "#DD8452", ("j2_link#1", "bearing_6806#5", "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3")),
-    ("wrist_pitch_link", "#55A868", ("gt2_pulley_90t#4", "j3_coupler#2", "wrist_link#1", "gripper_clamp_bracket#1", "nema17_pancake#1")),
+    ("wrist_pitch_link", "#55A868", ("gt2_pulley_90t#4", "wrist_pulley_screws#1", "wrist_pulley_nuts#1", "j3_coupler#2", "wrist_link#1",
+                                     "gripper_clamp_bracket#1", "nema17_pancake#1")),
     ("wrist",            "#8172B3", ("gt2_pulley_20t#1", GRIPPER_KEY)),
 ]
 MODULE_TINTS = {DRIVE_KEY: cycloidal_drive.TINT, ROLL_KEY: forearm_roll_drive.TINT, GRIPPER_KEY: gripper.TINT}  # the modules keep their own color in their group

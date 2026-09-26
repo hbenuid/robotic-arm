@@ -20,17 +20,20 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   on the NEMA 17 pads `base` / `j1_link` / `j2_link` carry - and each belt joint's 6806-2RS pair (`bearing_6806#1..6`, on
   the lip of its housing's bore) never existed in the SolidWorks capture; the elbow's and the wrist's 90T
   (`gt2_pulley_90t#3` / `#4`) did, but where the lower bearing had no room - their mounts are hosted on the retired
-  records they correct, `PULLEY_SEAT_SHIFT` out along the pulley's own axis. They are declared as
+  records they correct, `PULLEY_SEAT_SHIFT` out along the pulley's own axis; each 90T's 4x M4 screws + nuts
+  (`elbow_pulley_screws#1` / `elbow_pulley_nuts#1`, `wrist_pulley_*#1` - COTS pattern parts) are hosted on the pulley and
+  on the screws, centred on the joint axis. They are declared as
   frames-as-data in the host occurrence's frame (`Mount(key, part, host, link, joint, frame)`; a board's host is its
-  motor) and `tools/reference/mount_placements.py` materialises them into `placements.json` as ordinary part records
+  motor, a nut set's its screw set) and `tools/reference/mount_placements.py` materialises them into `placements.json` as ordinary part records
   (parent `None`, `rel == world = host world * frame`, solids / volume / bbox from `parts.build`, a `mount` block; keys
-  under top-level `mounted`, `P.keys(mounted=True)`), checking each motor's +Z against its joint axis (a bearing's +Z, a pulley's +Y ON it - `lib/mounts.py AXES`). The extractor
+  under top-level `mounted`, `P.keys(mounted=True)`), checking each motor's +Z against its joint axis (a bearing's +Z, a pulley's +Y, a pulley-bolt pattern's +Z ON it - `lib/mounts.py AXES`). The extractor
   appends them on every run (`extract_placements.py --no-pancake` - the flag keeps this machine's bytes out of
   `vendor/nema17_pancake.step`); `mount_placements.py` alone is the merge mode that needs no monolith (change a spin or
   `J2_MOTOR_SLIDE_X` in `lib/params.py` → run it → re-derive the inertials). `assemblies/arm.py OCCURRENCES` /
   `GROUPS` and `robot/frames.py LINKS` list the keys like any other (roles = the joint names). `tests/test_mounts.py`
   re-checks the geometry: axis on the joint, mounting face on the host's pad, each bearing stack's contacts
-  (`test_bearing_stacks`), zero interference with the neighbours (no budget left anywhere). The drive's own board is a `cycloidal_drive.py` row
+  (`test_bearing_stacks`), the pulley bolts' seats and reach (`test_pulley_bolts_clamp_their_joints`), zero interference
+  with the neighbours - the one budget is the nuts' designed press in their `nut_af` pockets (`_press`). The drive's own board is a `cycloidal_drive.py` row
   (`stack_positions["z_mks_board"]`).
 - `assemblies/arm.py` / `gripper.py`: `OCCURRENCES = [(part, role|None, key), …]` in SolidWorks
   document order; `assemblies/_occurrences.py` places each occurrence as
@@ -65,9 +68,9 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   module's DIRECT linked children does reach its STEP, so the modules stay linked (the arm's inline copies predate
   that finding and were left alone). Separate make/buy models were tried and removed as duplicates — one STEP per
   assembly. A purchased item that is **not modelled** (the
-  drive's arm-mount bolts + captive nuts, the belts, the roll drive's screws and nuts) lives only in `tools/bom.py EXTRAS` — it is on the buy list and
+  drive's arm-mount bolts + captive nuts, the belts, the roll drive's M3 screws) lives only in `tools/bom.py EXTRAS` — it is on the buy list and
   absent from the model, the totals and the inertials; model it as a COTS pattern part (`cycloidal_housing_bolts` is
-  the pattern) to change that.
+  the pattern, `elbow_pulley_screws` a native mounted one) to change that.
 - `arm.py GROUPS` buckets the occurrences into the component tree
   `arm → base_link/shoulder_link/upper_arm_link/elbow_link/forearm_link/wrist_pitch_link/wrist` — the
   `robot/frames.py LINKS` partition with the three modules kept whole (`wrist` = wrist_roll_link + jaw
