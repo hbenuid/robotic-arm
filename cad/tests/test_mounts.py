@@ -207,6 +207,9 @@ def test_bearing_stacks(joint):
         ring = [f for f in _faces_on(pulley, wl.position, z) if f[0] == 1]
         assert ring and max(r1 for _, _, r1 in ring) < lip_r, (joint, ring)                           # clear of the outer ring
         others += [coupler, pulley]
+    # line-to-line fits (the elbow's upper seat Ø42.0, the Ø30 stubs and hubs) leave float noise in the boolean that
+    # differs per machine (0.05 mm^3 on x86_64 Linux, 0 on arm64 macOS) - the suite's 1 mm^3 'no overlap' budget;
+    # a real misfit is far above it (0.1 mm across a bearing's face is ~68 mm^3)
     for b in bearings:
         for o in others + [bearings[1] if b is bearings[0] else bearings[0]]:
-            assert interference(b, o) < 1e-3, joint
+            assert interference(b, o) < 1.0, joint
