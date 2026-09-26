@@ -180,8 +180,9 @@ def _faces_on(shape, origin: Vector, z: Vector) -> list[tuple[int, float, float]
 def test_bearing_stacks(joint):
     """Each belt joint's pair: both bearings on the lip that splits the housing's bore (the lip bears on the outer
     rings only), the coupler's shoulder down on the upper inner ring, the re-seated 90T's ring under the lower inner
-    ring - so bolting the pulley to the coupler clamps both - and no overlap anywhere. The base's stack is not closed
-    yet: j1_coupler has no shoulder and the base_yaw pulley is not modelled (docs/open_issues.md)."""
+    ring, the coupler's stub on through the lip to the pulley, which bolts flat onto its end - a solid joint that
+    clamps both inner rings - and no overlap anywhere. The base's stack is not closed yet: j1_coupler has no shoulder
+    and the base_yaw pulley is not modelled (docs/open_issues.md)."""
     up, lo, host_key, coupler_key, pulley_key = STACKS[joint]
     host = place_world(P.OCCURRENCES[host_key]["part"], host_key)
     wu, wl = _world(up), _world(lo)
@@ -206,6 +207,16 @@ def test_bearing_stacks(joint):
         assert shoulder and max(r1 for _, _, r1 in shoulder) <= inner_r + 1e-6, (joint, shoulder)     # the inner ring only
         ring = [f for f in _faces_on(pulley, wl.position, z) if f[0] == 1]
         assert ring and max(r1 for _, _, r1 in ring) < lip_r, (joint, ring)                           # clear of the outer ring
+        # the pulley bolts flat onto the stub's end, in the plane of the lip's lower face (the lower bearing's top)
+        plane = (wl * width).position
+        stub_end = [f for f in _faces_on(coupler, plane, z) if f[0] == -1]
+        hub_end = [f for f in _faces_on(pulley, plane, z) if f[0] == 1]
+        assert stub_end and hub_end, (joint, stub_end, hub_end)
+        contact = (max(min(r0 for _, r0, _ in stub_end), min(r0 for _, r0, _ in hub_end)),
+                   min(max(r1 for _, _, r1 in stub_end), max(r1 for _, _, r1 in hub_end)))
+        assert contact[1] - contact[0] > 5.0, (joint, contact)                                        # a real annulus
+        for a, b in ((pulley, coupler), (pulley, host), (coupler, host)):
+            assert interference(a, b) < 1.0, joint
         others += [coupler, pulley]
     # line-to-line fits (the elbow's upper seat Ø42.0, the Ø30 stubs and hubs) leave float noise in the boolean that
     # differs per machine (0.05 mm^3 on x86_64 Linux, 0 on arm64 macOS) - the suite's 1 mm^3 'no overlap' budget;

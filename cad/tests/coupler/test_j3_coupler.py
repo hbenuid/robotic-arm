@@ -1,12 +1,15 @@
 """j3_coupler, parametric (lib/coupler/): the LEGACY configuration reproduces the SolidWorks part feature by feature
 (the volume / bbox match is tests/test_reference_match.py's; here the features are probed by name so a regression
 names what moved), its stub is the one the forearm roll drive's block repeats at the elbow, and DEFAULT - what the
-part builds - adds exactly one thing: the shoulder on the upper wrist bearing's inner ring."""
+part builds - adds exactly two things: the shoulder on the upper wrist bearing's inner ring, and PULLEY_SEAT_SHIFT
+more stub, on through the lip to the re-seated wrist 90T it bolts to."""
 import math
+from dataclasses import replace
 
 import pytest
 
 import parts
+from lib.bearings import PULLEY_SEAT_SHIFT
 from lib.coupler import DEFAULT, LEGACY, flange_bolt_points, pulley_bolt_points
 from lib.forearm import DEFAULT as FOREARM
 from tests.helpers import is_inside
@@ -57,13 +60,18 @@ def test_legacy_features(legacy):
 
 
 @pytest.mark.slow
-def test_default_adds_only_the_shoulder(coupler, legacy):
-    from dataclasses import replace
-    assert replace(DEFAULT, step=None) == LEGACY
+def test_default_adds_the_shoulder_and_the_longer_stub(coupler, legacy):
+    assert replace(DEFAULT, step=None, stub_y1=LEGACY.stub_y1) == LEGACY
+    assert DEFAULT.stub_y1 == LEGACY.stub_y1 + PULLEY_SEAT_SHIFT
     dia, y1 = DEFAULT.step
     r = dia / 2.0
     assert is_inside(coupler, r - 0.2, (DEFAULT.journal_y1 + y1) / 2.0, 0) and not is_inside(legacy, r - 0.2, (DEFAULT.journal_y1 + y1) / 2.0, 0)
     assert not is_inside(coupler, r - 0.2, y1 + 0.1, 0)                           # the stub above it
     ring = math.pi * (r ** 2 - (DEFAULT.stub_dia / 2.0) ** 2) * (y1 - DEFAULT.journal_y1)
-    assert coupler.volume - legacy.volume == pytest.approx(ring, abs=1e-3)
-    assert tuple(coupler.bounding_box().max) == pytest.approx(tuple(legacy.bounding_box().max), abs=1e-6)
+    # the stub's extension: its annulus round the bore, less the 90T's 4 bolt holes through it
+    extension = math.pi * ((DEFAULT.stub_dia / 2.0) ** 2 - (DEFAULT.bore_dia / 2.0) ** 2 - 4 * (DEFAULT.pulley_bolt_dia / 2.0) ** 2) * PULLEY_SEAT_SHIFT
+    assert coupler.volume - legacy.volume == pytest.approx(ring + extension, abs=1e-3)
+    y = LEGACY.stub_y1 + PULLEY_SEAT_SHIFT / 2.0
+    assert is_inside(coupler, 14.5, y, 2) and not is_inside(legacy, 14.5, y, 2)
+    assert coupler.bounding_box().max.Y == pytest.approx(DEFAULT.stub_y1, abs=1e-6)
+    assert (coupler.bounding_box().max.X, coupler.bounding_box().max.Z) == pytest.approx((legacy.bounding_box().max.X, legacy.bounding_box().max.Z))

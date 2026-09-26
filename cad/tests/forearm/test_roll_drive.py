@@ -24,8 +24,8 @@ UPPER_ARM_FACE_Z = -8.5          # host z of j1_link's +N face (its slab lies be
 UPPER_ARM_RECESS = (40.0, -14.5)  # j1_link's recess round the elbow axis: radius, floor (host z)
 UPPER_ARM_BORE_R = 21.0          # j1_link's bore the coupler's stub / journal turn in
 UPPER_ARM_END_R = 45.0           # j1_link's round end about the elbow axis
-STUB_END_Z = -22.0               # host z of the block's stub end (the SolidWorks coupler's)
-ELBOW_PULLEY_FACE_Z = STUB_END_Z - PARAMS.PULLEY_SEAT_SHIFT   # the elbow 90T's hub end: on j1_link's lip, under the stub's end
+ELBOW_PULLEY_FACE_Z = -22.0 - PARAMS.PULLEY_SEAT_SHIFT   # host z of the elbow 90T's mating face: the SolidWorks coupler's stub end
+#                                                          (-22), both moved on to the re-seated pulley on j1_link's lip
 
 
 def _offset_from_line(point, origin, axis) -> float:
@@ -69,13 +69,13 @@ def test_stack():
     w, z_axis = DEFAULT.roll_end, DEFAULT.roll_end.axis_z
     # the block round the elbow axis: its underside 0.5 above the upper arm's slab, the coupler features below it in
     # j1_link's recess and bore where the SolidWorks coupler's were, an inner-ring shoulder between the journal and the
-    # stub, the elbow pulley PULLEY_SEAT_SHIFT below the stub's end (the lip between them)
+    # stub, the stub on through the lip to the elbow pulley's face (the Ø12.5 bore open at its end)
     assert z_axis + D.block_x[0] >= UPPER_ARM_FACE_Z + 0.5
     assert D.lip_dia / 2.0 <= UPPER_ARM_RECESS[0] - 1.0 and D.boss_dia / 2.0 <= UPPER_ARM_RECESS[0] - 2.0
     assert D.lip_x[1] == D.block_x[0] and D.boss_x[1] == D.lip_x[0] and D.journal_x[1] == D.boss_x[0]
     assert D.step_x[1] == D.journal_x[0] and D.stub_x[1] == D.step_x[0] and D.stub_dia < D.step_dia < D.journal_dia
     assert z_axis + D.boss_x[0] >= UPPER_ARM_RECESS[1] + 0.5 and D.journal_dia / 2.0 < UPPER_ARM_BORE_R and D.stub_dia / 2.0 < UPPER_ARM_BORE_R
-    assert z_axis + D.stub_x[0] == STUB_END_Z
+    assert z_axis + D.stub_x[0] == ELBOW_PULLEY_FACE_Z and D.pin_bore_x[0] == D.stub_x[0]
     # the stations, rear end wall -> the forearm wall
     assert S["z_end"] == D.block_z[0] and S["z_lip"] == S["z_end"] + D.end_wall and S["z_seat"] == S["z_lip"] + D.lip == S["z_bearing_1"]
     assert S["z_bore"] == S["z_seat"] + D.bearing_width and S["z_bore"] < S["z_cavity"] == D.cavity_z0 < S["z_ring_flange_1"]
@@ -226,11 +226,18 @@ def _placed_module():
     return raw(M.forearm_roll_drive).moved(to_location(module_frame_in_host(DEFAULT)))
 
 
+def _placed_part(label: str):
+    """One of the module's parts in j2_link's frame. A child of _placed_module() stays in the MODULE frame (moving the
+    compound moves only the compound), so each part is moved itself."""
+    part = next(c for c in raw(M.forearm_roll_drive).children if c.label == label)
+    return part.moved(to_location(module_frame_in_host(DEFAULT)))
+
+
 @pytest.mark.slow
 def test_module_clears_its_neighbours_in_the_arm():
-    """In j2_link's frame: the module against the forearm, the elbow pulley (PULLEY_SEAT_SHIFT below the block's stub
-    end), the elbow bearings (the stub in the upper one, its shoulder on it: contact, no overlap) and the upper arm at
-    the capture pose; the shaft's spigot in j2_link's recess likewise."""
+    """In j2_link's frame: the module against the forearm, the elbow pulley (the block's stub end sits on its face:
+    contact, no overlap), the elbow bearings (the stub in the upper one, its shoulder on it) and the upper arm - the
+    stub through its lip - at the capture pose; the shaft's spigot in j2_link's recess likewise."""
     module = _placed_module()
     link = parts.build("j2_link")
     assert interference(module, link) < 1.0
@@ -238,10 +245,10 @@ def test_module_clears_its_neighbours_in_the_arm():
                 "nema17_40mm#3", "mks_servo42d#3"):
         vol = interference(module, in_host(key))
         assert vol < 1.0, f"module x {key}: {vol:.1f} mm^3"
-    block = next(c for c in raw(M.forearm_roll_drive).children if c.label == "forearm_roll_block").moved(to_location(module_frame_in_host(DEFAULT)))
-    assert math.isclose(block.bounding_box().min.Z, STUB_END_Z, abs_tol=1e-6)                            # the stub's end ...
-    assert math.isclose(in_host("gt2_pulley_90t#3").bounding_box().max.Z, ELBOW_PULLEY_FACE_Z, abs_tol=0.05)   # ... the pulley below it
-    shaft = next(c for c in raw(M.forearm_roll_drive).children if c.label == "forearm_roll_shaft").moved(to_location(module_frame_in_host(DEFAULT)))
+    block = _placed_part("forearm_roll_block")
+    assert math.isclose(block.bounding_box().min.Z, ELBOW_PULLEY_FACE_Z, abs_tol=1e-6)                   # the stub's end on the pulley
+    assert math.isclose(in_host("gt2_pulley_90t#3").bounding_box().max.Z, ELBOW_PULLEY_FACE_Z, abs_tol=0.05)
+    shaft = _placed_part("forearm_roll_shaft")
     assert math.isclose(shaft.bounding_box().min.X, -S["z_spigot_end"], abs_tol=1e-6)
     assert interference(shaft, link) < 1.0
 
@@ -268,7 +275,6 @@ def test_forearm_clears_the_elbow_while_rolling(deg):
     for key in ("j1_link#1", "gt2_pulley_90t#3"):
         vol = interference(link, in_host(key))
         assert vol < 1.0, f"roll {deg:+.0f} deg: j2_link x {key}: {vol:.1f} mm^3"
-    module = _placed_module()
     for label in ("forearm_roll_block", "forearm_roll_retainer", "nema17_40mm:forearm_roll", "mks_servo42d:forearm_roll"):
-        vol = interference(link, next(c for c in module.children if c.label == label))
+        vol = interference(link, _placed_part(label))
         assert vol < 1.0, f"roll {deg:+.0f} deg: j2_link x {label}: {vol:.1f} mm^3"

@@ -15,7 +15,7 @@ Numbers below name the constants; the values live in `lib/forearm/params.py`.
 | torque | ≈ 1.1–1.8 N·m at the roll vs ≈ 0.9 N·m worst-case static load | §2 |
 | bearings | 2× 6808-2RS (40 × 52 × 7), 71 mm apart, straddling the elbow axis (seats Ø52.15, journals Ø40.3) | `RollDriveParams bearing_*` |
 | shaft (rotor, PETG) | hollow, Ø24 cable bore end to end, Ø44 core, Ø38 neck, Ø39.7 end spigot + 4× M3 on Ø32 into the forearm wall; 86 mm long (z −36…50) | `forearm_roll_shaft` |
-| block (stator, PETG) | 66 × 72 × 76 mm rounded box (x −33…33, y ±36, z −40…36, r 8), **also the elbow's output flange**: Ø72 lip, Ø62 boss, Ø40 journal, Ø33 inner-ring shoulder, Ø30 stub down into `j1_link` (host z −22…−8), 4× M4 heat-set inserts at r 11 for the elbow 90T; Ø26 cable exit in the rear wall; the motor plate + cheeks on top | `forearm_roll_block` |
+| block (stator, PETG) | 66 × 72 × 76 mm rounded box (x −33…33, y ±36, z −40…36, r 8), **also the elbow's output flange**: Ø72 lip, Ø62 boss, Ø40 journal, Ø33 inner-ring shoulder, Ø30 stub down through `j1_link`'s bore to the elbow 90T (host z −25…−8), 4× M4 heat-set inserts at r 11 for the elbow 90T; Ø26 cable exit in the rear wall; the motor plate + cheeks on top | `forearm_roll_block` |
 | end cap (PETG) | the block's outline, 9 thick (seat + 2 lip), 4× M3 at the corners, the stop post | `forearm_roll_retainer` |
 | forearm interface | `j2_link`'s wall at 48…56 mm from the elbow axis (`wall_x` −56…−48): Ø40 × 2 recess, Ø24 bore, 4× M3 on Ø32 | `RollEndParams` |
 | clearances held by tests | block 0.5 mm above the upper arm's slab; the rolling ±45 forearm wall 3 mm off `j1_link`'s r 45 end; folded elbow (±120°) and rolled forearm (±170°) < 1 mm³ against every neighbour; journals 0.9–1.0 × the 132 mm³ press | `tests/forearm/test_roll_drive.py` |
@@ -52,7 +52,7 @@ elbow's 6806 pair, §4), and
 | station (module z) | what | fixed by |
 |---|---|---|
 | `block_z` −40…36 | the block: a rounded box (`block_x` −33…33, `block_y` ±36, r 8 edges along Z) round the roll axis; its underside (−X, host z −8) rides 0.5 mm above the upper arm's slab | the slab (host −8.5); 2 mm of wall under the cavity |
-| underside, x −47…−33 | `lip_dia` Ø72 lip −35…−33 in `j1_link`'s Ø80 recess, `boss_dia` Ø62 −39…−35, `journal_dia` Ø40 −40.3…−39, `step_dia` Ø33 −41…−40.3 (the shoulder on the upper 6806's inner ring), `stub_dia` Ø30 −47…−41 (in the upper of the elbow's 6806-2RS pair, `j1_link`'s bore: `lib/mounts.py bearing_6806#3` / `#4`), the Ø12.5 `pin_bore_dia` (blind at −29); the elbow 90T's **4× M4 at `pulley_bolt_r` 11** on the axes: Ø4.4 clearance −47…−39, **Ø5.6 heat-set inserts −39…−31** | the measured coupler; the stub's end (host −22) stands `PULLEY_SEAT_SHIFT` (3) above the re-seated pulley's hub (host −25, on `j1_link`'s lip) |
+| underside, x −50…−33 | `lip_dia` Ø72 lip −35…−33 in `j1_link`'s Ø80 recess, `boss_dia` Ø62 −39…−35, `journal_dia` Ø40 −40.3…−39, `step_dia` Ø33 −41…−40.3 (the shoulder on the upper 6806's inner ring), `stub_dia` Ø30 −50…−41 (in the upper of the elbow's 6806-2RS pair and on through the lip, `j1_link`'s bore: `lib/mounts.py bearing_6806#3` / `#4`), the Ø12.5 `pin_bore_dia` (from the stub's end, blind at −29); the elbow 90T's **4× M4 at `pulley_bolt_r` 11** on the axes: Ø4.4 clearance −50…−39, **Ø5.6 heat-set inserts −39…−31** | the measured coupler, its stub `PULLEY_SEAT_SHIFT` (3) longer: its end (host −25, the lip's lower face) sits on the re-seated pulley's face |
 | `z_end` −40…−37 | the rear end wall, the Ø26 `cable_exit` on the axis | the shaft's Ø24 bore + 1 |
 | `z_lip` −37…−35 | the lip (ID `lip_id` 46) bearing 1's outer race stops on | |
 | `z_seat` −35…−28 | **bearing 1**'s seat Ø52.15; the shaft's rear journal from −36 (`shaft_end_clear`) | |
@@ -75,7 +75,7 @@ race's edge, `inner_race_od` [ESTIMATE]), the bearings 71 mm apart straddling th
 PETG, the drive's rules (`cycloidal_drive.md` §6): the seats are the bearing OD + `seat_add` 0.15 (a printed hole
 comes out undersize — print a fit gauge first), the journals `journal_add` 0.3 interference. Tests
 (`tests/forearm/test_roll_drive.py`) hold the journal press fit at 0.9–1.0 × 132 mm³ per bearing, 0 in the seats,
-every other pair in the module below 1 mm³, and the elbow 90T `PULLEY_SEAT_SHIFT` below the block's stub end
+every other pair in the module below 1 mm³, and the block's stub end ON the elbow pulley's face
 (`tests/test_mounts.py test_bearing_stacks` holds the elbow's 6806 stack). Print the block
 front face down (the seat, the core bore and the cavity print as vertical bores; the coupler stub / journal / boss
 on the side and the motor plate need support — a `dfam-check` pass before the first print, `docs/open_issues.md`),
@@ -84,9 +84,10 @@ the shaft spigot down (the ring's grooves print vertically), the cap flat.
 ## 4. Assembly sequence
 1. Four M4 heat-set inserts into the block's underside (from the stub side, through the Ø4.4 holes' floor).
 2. The elbow's 6806-2RS pair into `j1_link`'s bore, one each side of the lip; the block's stub into the upper one
-   (its Ø33 shoulder on the inner ring), the elbow 90T's hub into the lower one from below (its Ø34.76 ring on that
-   inner ring, the hub's end 3 mm short of the stub's): 4× M4 × 40 up through the pulley's hub, the stub, the
-   journal and the boss into the inserts (7.6 mm of the 8 mm insert) clamp both inner rings against the lip.
+   (its Ø33 shoulder on the inner ring, its end through the lip), the elbow 90T's hub into the lower one from below
+   (its Ø34.76 ring on that inner ring, its end on the stub's end): 4× M4 × 40 up through the pulley's hub, the stub,
+   the journal and the boss into the inserts (7.6 mm of the 8 mm insert) bolt the pulley flat onto the stub and clamp
+   both inner rings - the stub's 2 mm in the lip spaces them as the lip spaces the outer rings.
 3. Press bearing 1 onto the shaft's rear journal against shoulder 1.
 4. Slide the shaft + bearing 1 into the block from the front, through the cavity and the core bore, the outer race to
    the lip; the ring ends in the cavity.

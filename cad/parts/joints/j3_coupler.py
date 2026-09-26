@@ -3,9 +3,9 @@ build_coupler(cfg), in the SolidWorks part frame - origin on the joint axis at t
 toward the stub's end).
 
 A Ø78 flange (4x M4 counterbored on the axes at r 35), a Ø58/62 dust-lip ring on its top, the Ø40 journal and the
-Ø30 stub the wrist bearings turn on (DEFAULT: a Ø33 shoulder between them on the upper 6806's inner ring), a Ø12.5
-bore; the wrist 90T bolts onto the stub's end with 4x M4 on the axes at r 11, their nuts in hex pockets in the
-flange's underside. Every number: lib/coupler/params.py (CouplerParams;
+Ø30 stub the wrist bearings turn on (DEFAULT: a Ø33 shoulder between them on the upper 6806's inner ring, and the
+stub 3 mm longer, on through the lip to the re-seated pulley), a Ø12.5 bore; the wrist 90T bolts flat onto the
+stub's end with 4x M4 on the axes at r 11, their nuts in hex pockets in the flange's underside. Every number: lib/coupler/params.py (CouplerParams;
 measured on the reference 2026-09-25).
 
 SolidWorks product: 'Joint 2 coupler 62226_J3 Coupler'

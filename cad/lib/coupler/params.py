@@ -11,7 +11,8 @@ The forearm roll drive's elbow block repeats the lip / boss / journal / stub at 
 RollDriveParams; j3_coupler#1 is retired).
 
 Two configurations: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
-tests/test_reference_match.py); DEFAULT is what the part builds: an inner-ring shoulder on the stub.
+tests/test_reference_match.py); DEFAULT is what the part builds: an inner-ring shoulder on the stub, the stub long
+enough to reach the re-seated pulley.
 
 Every number below was measured on the reference 2026-09-25 (vertex / face census; tests/coupler/test_j3_coupler.py
 re-checks the builds against it): [REFERENCE] unless tagged. Units mm. Frozen dataclasses; variants via
@@ -21,7 +22,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
-from lib.bearings import BEARING_6806_SHOULDER_DIA
+from lib.bearings import BEARING_6806_SHOULDER_DIA, PULLEY_SEAT_SHIFT
 
 
 @dataclass(frozen=True)
@@ -48,8 +49,10 @@ class CouplerParams:
 
 LEGACY = CouplerParams()     # the SolidWorks part, exactly
 
-# What the part builds: a shoulder on the journal's face down onto the upper wrist bearing's inner ring, so bolting the
-# 90T on clamps both inner rings (the pulley's ring below, this shoulder above) against the lip between the outer
-# rings; the journal's Ø40 face stopped 0.7 above the bearing and would have borne on its outer ring too
+# What the part builds: a shoulder on the journal's face down onto the upper wrist bearing's inner ring (the journal's
+# Ø40 face stopped 0.7 above the bearing and would have borne on its outer ring too), and the stub PULLEY_SEAT_SHIFT
+# longer, on through the lip to the re-seated wrist 90T, which bolts flat onto its end - so the bolts clamp both inner
+# rings (the pulley's ring below, the shoulder above), spaced as the lip spaces the outer rings
 # (tests/test_mounts.py test_bearing_stacks).
-DEFAULT = replace(LEGACY, step=(BEARING_6806_SHOULDER_DIA, 16.0))   # [DESIGN] y1: the upper wrist bearing's top face
+DEFAULT = replace(LEGACY, step=(BEARING_6806_SHOULDER_DIA, 16.0),   # [DESIGN] y1: the upper wrist bearing's top face
+                  stub_y1=LEGACY.stub_y1 + PULLEY_SEAT_SHIFT)       # [DESIGN] the lip's lower face: the pulley's hub end
