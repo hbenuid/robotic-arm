@@ -10,7 +10,7 @@ and totals are never quoted (`cad/CLAUDE.md` Docs).
 ## Fit problems the model carries knowingly
 | issue | where it lives | what closes it | raised |
 |---|---|---|---|
-| The base_yaw motor (48 mm) + its MKS board reach **6.1 mm below the base's bottom face** (62.1 mm stack, 56 mm of depth under the plate) | `lib/params.py BASE_MOTOR_STACK_PROUD`, `tests/test_mounts.py`, `test_params_invariants.py` | feet / a cut-out ≥ 6.1 mm under the base, or the plate moved up when `base` is converted | 2026-09-21 (`d9662a3`) |
+| The base_yaw motor (48 mm) + its MKS board reach **6.1 mm below the base's bottom face** (62.1 mm stack, 56 mm of depth under the plate) | `lib/params.py BASE_MOTOR_STACK_PROUD`, `tests/test_mounts.py`, `test_params_invariants.py` | feet / a cut-out ≥ 6.1 mm under the base, or the plate moved up (`lib/base/params.py PlateParams`) | 2026-09-21 (`d9662a3`) |
 | The drive motor's tie rods are not modelled (the MKS kit's M3x30 replace them); bolt shanks overlap the export's tapped holes in the model (46 / 159 mm³, thread engagement) | `tests/cycloidal/test_assembly.py` interference budget | nothing — a modelling representation; re-measure if the vendor file changes | 2026-09-21 (`3e667e0`) |
 
 ## Estimates to confirm on the hardware (`[ESTIMATE]` in `lib/params.py` unless noted)
@@ -54,5 +54,5 @@ and totals are never quoted (`cad/CLAUDE.md` Docs).
 | item | where |
 |---|---|
 | The motor-control `software/control/tests/` imports `arctos.*` and does not run | `software/control/CLAUDE.md` "Known issues" |
-| Most custom parts are still SolidWorks wrappers (`CONVERTED = False`; the parametric ones so far are the links `j2_link`, `lib/forearm/`, and `j1_link`, `lib/upper_arm/`; the print list of `tools/bom.py` gives every part's state); the fit problems above are fixed at conversion | `parts/<group>/*.py`, `cad/parts/CLAUDE.md` "Part states" |
+| Most custom parts are still SolidWorks wrappers (`CONVERTED = False`; the parametric ones so far are the links `j2_link`, `lib/forearm/`, and `j1_link`, `lib/upper_arm/`, and the `base`, `lib/base/`; the print list of `tools/bom.py` gives every part's state); the fit problems above are fixed at conversion | `parts/<group>/*.py`, `cad/parts/CLAUDE.md` "Part states" |
 | The drive's motor envelope cuts the D-flat at `shaft_dcut_flat / 2` (flat-to-round 4.75) — ruled correct 2026-09-21 (it is what `reference/cycloidal/nema17_48mm.step` defines and the eccentric shaft's D-bore matches); noted here only because the parameter's name reads like 4.5 | `lib/cycloidal/motor.py flat_offset()` |

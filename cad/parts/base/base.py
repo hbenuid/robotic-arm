@@ -1,4 +1,15 @@
-"""base - import wrapper around the SolidWorks reference (reference/base.step).
+"""base - the arm's foot and the base_yaw housing (parametric build123d, lib/base/body.py build_base(cfg), in the
+SolidWorks part frame - origin on the base_yaw axis, +Y up it, the bottom face at y = -100.9, the round half on -X).
+
+A D-shaped wall (r 53.34 round half, straight sides to the flat +X end, 5 thick) from the bottom face up to a 5 mm
+motor plate at y -44.9..-39.9; above the plate the round half and the sides' stubs carry on up to the cap, open over
+the plate on the +X side (the base_yaw belt's room). The cap: a 45 degree chamfer under it, the bearing bore on the
+axis (the upper seat Ø42.4 from the seat ring's top, a Ø31.73 lip, the lower seat Ø43.4 through a Ø63.47 boss), an
+annular groove round the raised seat ring j1_coupler turns on. The plate: a central opening that runs out to the
+wall on the -X side, a curved slot on +X, and the 48 mm base_yaw motor's seat on its underside (4 holes on the NEMA 17
+square, the pilot window, the belt slot toward the axis, a U rim round the motor's face; lib/mounts.py places
+nema17_48mm#1 on it). A cable notch through the +X end at the bottom. Every number: lib/base/params.py (BaseConfig;
+measured on the reference 2026-09-25).
 
 SolidWorks product: 'base of robot arm 62126'
 Source export:      step/base of robot arm 62126.STEP
@@ -6,28 +17,34 @@ Reference: mm units, 1 solid(s), volume 286169.1 mm^3,
            bbox size (168.178, 95.807, 106.679) mm, bbox min (-53.339, -100.9, -53.339) mm.
 In the arm: x1 (base#1).
 
-Not yet parametric: base() returns the reference geometry in the SolidWorks part-file
-frame. See parts/_templates/wrapper.py for how to convert it to build123d.
+Conversion: build_base(LEGACY) reproduces the reference (REFERENCE_BUILD - tests/test_reference_match.py); the
+model builds DEFAULT (tests/base/ lock what DEFAULT changes).
 """
 import pathlib
 
 from cadgen import step
 
-from lib import reference
-from lib.datum import IDENTITY, to_location
+from lib.base import DEFAULT, LEGACY
+from lib.base.body import build_base
+from lib.datum import IDENTITY
 
 NAME = pathlib.Path(__file__).stem
-REFERENCE = NAME              # reference/<NAME>.step
-CONVERTED = False             # True once base() is parametric build123d
-LOCAL_FROM_REF = IDENTITY   # reference frame -> this part's local frame (identity = SolidWorks frame)
+REFERENCE = NAME              # reference/solidworks/<NAME>.step
+CONVERTED = True
+LOCAL_FROM_REF = IDENTITY     # modelled in the SolidWorks part frame
+
+
+def REFERENCE_BUILD():
+    """The configuration that reproduces the SolidWorks part (the reference-match lock)."""
+    return build_base(LEGACY)
 
 
 @step
 def base():
-    """Return the reference geometry as a labelled Solid/Compound in this part's local frame."""
-    shape = reference.load(REFERENCE).moved(to_location(LOCAL_FROM_REF))
-    shape.label = NAME
-    return shape
+    """The base at its local origin (the base_yaw axis); the assembly owns placement."""
+    part = build_base(DEFAULT)
+    part.label = NAME
+    return part
 
 
 if __name__ == "__main__":

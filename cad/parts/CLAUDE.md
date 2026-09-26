@@ -30,9 +30,9 @@ its STEP stay siblings (cadgen's default `out`; the viewer pairs them into one e
 Custom parts declare `REFERENCE = NAME`, `CONVERTED` and `LOCAL_FROM_REF`:
 - *wrapper* (`CONVERTED = False`, from `_templates/wrapper.py`): the model returns
   `reference/solidworks/<name>.step` (via `lib.reference.load` → `cadgen.read_step`, a tracked input)
-  in the SolidWorks part-file frame — the day-one state of every custom part (the two links are parametric: `j2_link` in
+  in the SolidWorks part-file frame — the day-one state of every custom part (the two links and the base are parametric: `j2_link` in
   `lib/forearm/` - a `ForearmConfig` with `LEGACY` = the SolidWorks part and `DEFAULT` = what is built -, `j1_link` in
-  `lib/upper_arm/` - an `UpperArmConfig`, the same pattern);
+  `lib/upper_arm/` - an `UpperArmConfig` -, `base` in `lib/base/` - a `BaseConfig`, the same pattern);
 - *parametric* (`CONVERTED = True`, from `_templates/designed.py`): real build123d — see "Converting a part" below.
 - *designed* (`CONVERTED = True`, `REFERENCE = NAME`, registered in `lib/reference.py DESIGNED`):
   the cycloidal drive's printed parts — the reference is the CadQuery export they were ported

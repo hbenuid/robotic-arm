@@ -60,8 +60,11 @@ from lib.motors import (  # noqa: E402, F401
 )
 
 # The mounts (host-part frames, mm): where the pads sit in the SolidWorks links. base_yaw takes the 48 mm motor
-# (parts/cycloidal/nema17_48mm, the drive's), elbow_pitch / wrist_pitch the 40 mm one.
-BASE_MOTOR_PATTERN_CENTRE = (78.971, -44.9, 0.084)   # [REFERENCE] base: 4x M3 on 31 x 31 through the 5 mm plate, on its -Y face
+# (parts/cycloidal/nema17_48mm, the drive's), elbow_pitch / wrist_pitch the 40 mm one. The base is parametric
+# (lib/base/params.py BaseConfig - a leaf like the links'): its motor seat comes from its DEFAULT configuration.
+from lib.base.params import DEFAULT as _BASE  # noqa: E402
+
+BASE_MOTOR_PATTERN_CENTRE = (_BASE.motor.centre[0], _BASE.plate.y[0], _BASE.motor.centre[1])   # (78.971, -44.9, 0.084) [REFERENCE] base: 4x M3 on 31 x 31 through the 5 mm plate, on its -Y face
 BASE_MOTOR_STACK_PROUD = 6.1    # [DESIGN] the 48 mm motor + board (48 + 14.1) hang this far BELOW the base's bottom face
 #                                 (56.0 mm of depth under the plate): the base needs feet / a cut-out at least this deep
 # j1_link and j2_link are parametric (lib/upper_arm/params.py UpperArmConfig, lib/forearm/params.py ForearmConfig -

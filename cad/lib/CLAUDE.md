@@ -14,6 +14,7 @@ motors.py     # the arm's motors (NEMA 17 interface, pancake, the 40 mm kit moto
 belts.py      # GT2: the pulleys, pulley_od(), closed_belt_length() / centre_distance(), stock belt lengths - a leaf
 cots.py       # hybrid(): the body of every purchased part (vendor STEP, else the envelope); pattern() for the multi-body ones
 geom.py       # the arm's small build123d helpers: align_min(), cylinder(), through() (NUDGE overshoot), single_solid(), hex_prism() - a leaf
+base/         # the base (BaseConfig: LEGACY = the SolidWorks base, DEFAULT = what is built)
 upper_arm/    # the upper arm (UpperArmConfig: LEGACY = the SolidWorks j1_link, DEFAULT = no cap sockets, the motor's and the drive's hole patterns)
 forearm/      # the forearm (ForearmConfig: LEGACY = the SolidWorks j2_link, DEFAULT = the roll end, no cap sockets) and the roll drive (RollDriveParams, stack_positions, the block / shaft / retainer / 90T ring builders)
 datum.py      # capture frame W -> base_link frame B: frame(), base_frame() (arm.py arm_from_w(), robot/frames.py); frames as data: IDENTITY, to_location()
@@ -30,7 +31,7 @@ cycloidal/    # the cycloidal drive: DriveConfig (params.py), layout.py, profile
 `lib/params.py` is the single source of truth: mm and grams, every constant tagged
 `[MEASURE] / [DATASHEET] / [DESIGN] / [REFERENCE] / [ESTIMATE]` with a derivation comment. It re-exports the
 leaves below it (`lib/units.py`, `lib/motors.py`, `lib/belts.py`: What is where) unchanged; a `lib/` package it
-re-exports from (`lib/cycloidal/`, `lib/forearm/`, `lib/upper_arm/`) takes its globals from those leaves and its geometry
+re-exports from (`lib/cycloidal/`, `lib/forearm/`, `lib/upper_arm/`, `lib/base/`) takes its globals from those leaves and its geometry
 helpers from `lib/geom.py`, never from `lib.params` — and no leaf imports `lib.params` either
 (`tests/test_layering.py LEAF_PACKAGES` / `LEAF_MODULES`). Datum: the SolidWorks capture
 frame is **Y up** (J1 axis); the URDF base frame (REP-103) is `lib/datum.py base_frame()` (with `frame()`,

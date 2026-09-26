@@ -5,7 +5,7 @@
 A package imports only itself and the ones to its left - so there is no cycle, `lib/` stays
 importable on its own, and a part never depends on how it is assembled. Function-local imports
 count too (they are still edges). Two finer rules ride along:
-  * lib/cycloidal/, lib/forearm/ and lib/upper_arm/ never import lib/params.py: that module re-exports their
+  * lib/cycloidal/, lib/forearm/, lib/upper_arm/ and lib/base/ never import lib/params.py: that module re-exports their
     interface values, so they take their globals from the leaves (lib/units.py, lib/motors.py, lib/belts.py,
     lib/geom.py) instead - and the leaves never import lib/params.py either;
   * nothing mutates sys.path (cadtool / pytest / .env put cad/ on the path) - except the one tool that
@@ -30,7 +30,7 @@ PART_MODULE_IMPORT_ALLOWED = {"parts"}
 
 # lib/ packages lib/params.py re-exports from: they take their globals from the leaves (lib/units.py, lib/motors.py,
 # lib/belts.py) and never import lib.params back.
-LEAF_PACKAGES = ("cycloidal", "forearm", "upper_arm")
+LEAF_PACKAGES = ("cycloidal", "forearm", "upper_arm", "base")
 # The leaves those packages import: importing lib.params from one would close the cycle.
 LEAF_MODULES = ("units.py", "motors.py", "belts.py", "geom.py")
 
