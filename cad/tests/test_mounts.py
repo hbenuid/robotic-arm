@@ -16,9 +16,11 @@ from lib import placements as P
 from lib.bearings import BEARING_6806_SHOULDER_DIA, BEARING_6806_WIDTH
 from lib.cycloidal import DEFAULT_CONFIG
 from lib.datum import BASE_BOTTOM_Y, to_location
+from lib.forearm import DEFAULT as FOREARM
+from lib.forearm import pulley_bolt_points
 from lib.models import raw
 from robot import frames as F
-from tests.helpers import interference
+from tests.helpers import interference, is_inside
 
 MOTORS = [m for m in mounts.MOUNTS if m.part in mounts.MOTORS]
 BOARDS = {m.host: m for m in mounts.MOUNTS if m.part == mounts.BOARD}
@@ -142,7 +144,7 @@ def test_the_base_takes_the_48mm_motor_and_the_links_the_40mm_one():
 def test_bearings_and_pulleys_sit_on_their_joint_axes():
     """Each bearing's +Z and each re-seated pulley's +Y (lib/mounts.py AXES) runs along its joint's axis, its origin on
     the axis; a pair per belt joint, riding with its housing's link; each pulley PULLEY_SEAT_SHIFT out from its retired
-    SolidWorks pose, along its own axis, its spin kept."""
+    SolidWorks pose, along its own axis - the wrist's spin kept, the elbow's turned with its block's bolt pattern."""
     for m in ON_AXIS:
         joint, (local, on_axis) = F.JOINT_BY_NAME[m.joint], mounts.AXES[m.part]
         world = _world(m.key)
@@ -155,9 +157,33 @@ def test_bearings_and_pulleys_sit_on_their_joint_axes():
     assert by_joint == {j: list(s[:2]) for j, s in STACKS.items()}
     for j, (up, _, host, _, _) in STACKS.items():
         assert mounts.BY_KEY[up].host == host and mounts.BY_KEY[up].link == F.JOINT_BY_NAME[j].parent
-    for m in (mounts.BY_KEY["gt2_pulley_90t#3"], mounts.BY_KEY["gt2_pulley_90t#4"]):
-        assert m.host in P.RETIRED and m.frame == ((0.0, PARAMS.PULLEY_SEAT_SHIFT, 0.0), (0.0, 0.0, 0.0))
+    for key, spin in (("gt2_pulley_90t#3", FOREARM.drive.pulley_bolt_deg), ("gt2_pulley_90t#4", 0.0)):
+        m = mounts.BY_KEY[key]
+        assert m.host in P.RETIRED and m.frame == ((0.0, PARAMS.PULLEY_SEAT_SHIFT, 0.0), (0.0, spin, 0.0))
         assert m.link == F.JOINT_BY_NAME[m.joint].child
+
+
+@pytest.mark.slow
+def test_the_elbow_pulley_holes_line_up_with_the_block_bolts():
+    """The elbow 90T turned with the block's bolt pattern: each M4 axis runs through the pulley's hole along its
+    whole length and on into the stub's clearance hole, the hub solid 3 mm beside it (a pattern 45 deg off would
+    put every axis in solid hub)."""
+    D = FOREARM.drive
+    module = _world("forearm_roll_drive#1")
+    block = next(c for c in raw(forearm_roll_drive.forearm_roll_drive).children if c.label == "forearm_roll_block").moved(module)
+    pulley = place_world(mounts.PULLEY, "gt2_pulley_90t#3")
+
+    def at(x, y, z):
+        p = (module * Location((x, y, z))).position
+        return p.X, p.Y, p.Z
+
+    face = D.stub_x[0]
+    for y, z in pulley_bolt_points(FOREARM):
+        for x in (face - 1.0, face - D.pulley_hub_len / 2.0, face - D.pulley_hub_len + 1.0):
+            assert not is_inside(pulley, *at(x, y, z)), (y, z, x)
+        assert not is_inside(block, *at(face + 1.0, y, z)), (y, z)
+        r = D.pulley_bolt_r
+        assert is_inside(pulley, *at(face - 1.0, y + 3.0 * z / r, z - 3.0 * y / r)), (y, z)
 
 
 def _faces_on(shape, origin: Vector, z: Vector) -> list[tuple[int, float, float]]:

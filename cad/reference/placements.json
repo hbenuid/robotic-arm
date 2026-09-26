@@ -4070,12 +4070,12 @@
      ],
      "rotation_xyz_deg": [
       0.0,
-      0.0,
+      45.0,
       0.0
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the elbow 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower elbow bearing"
+    "note": "the elbow 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower elbow bearing; turned pulley_bolt_deg about its axis with the block's bolt pattern (the nut channels clear of the ring cavity)"
    },
    "solids": 1,
    "solid_volume": 24810.708,
@@ -4086,27 +4086,27 @@
      -53.929608
     ],
     "rotation_xyz_deg": [
-     93.438897,
-     42.891416,
-     174.954347
+     89.871228,
+     -1.993488,
+     176.303304
     ],
     "matrix_3x4": [
      [
-      -0.72980583,
+      -0.997315384,
       -0.064435734,
-      0.680611112,
+      -0.034785919,
       -145.609670203
      ],
      [
-      -0.682028464,
+      0.034858359,
       -2e-09,
-      -0.731325628,
+      -0.999392263,
       240.046920995
      ],
      [
-      0.047123505,
+      0.064396574,
       -0.997921859,
-      -0.043947004,
+      0.002246126,
       -53.929607576
      ]
     ]
@@ -4118,27 +4118,27 @@
      -53.929608
     ],
     "rotation_xyz_deg": [
-     93.438897,
-     42.891416,
-     174.954347
+     89.871228,
+     -1.993488,
+     176.303304
     ],
     "matrix_3x4": [
      [
-      -0.72980583,
+      -0.997315384,
       -0.064435734,
-      0.680611112,
+      -0.034785919,
       -145.609670203
      ],
      [
-      -0.682028464,
+      0.034858359,
       -2e-09,
-      -0.731325628,
+      -0.999392263,
       240.046920995
      ],
      [
-      0.047123505,
+      0.064396574,
       -0.997921859,
-      -0.043947004,
+      0.002246126,
       -53.929607576
      ]
     ]

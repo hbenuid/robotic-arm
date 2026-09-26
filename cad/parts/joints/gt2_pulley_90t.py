@@ -6,7 +6,8 @@ Reference: mm units, 1 solid(s), volume 24810.7 mm^3,
            bbox size (59.188, 21.4, 59.188) mm, bbox min (-29.594, -13.2, -29.594) mm.
 In the arm: x2 (gt2_pulley_90t#3 at the elbow, #4 at the wrist - mounts that re-seat the SolidWorks #1 / #2, retired,
 PULLEY_SEAT_SHIFT out along the axis: its Ø30 x 7 journal in the lower 6806 of the joint, its Ø34.76 ring under that
-bearing's inner ring - lib/mounts.py).
+bearing's inner ring; the elbow's also turned 45 deg about its axis with the elbow block's bolt pattern - lib/mounts.py).
+Its 4x Ø3.9 bolt holes (r 11, on its axes) run through its whole length: the M4 heads sit on its outer face.
 
 Printed 90-tooth GT2 pulley (config 'GT2 Pulley - Parametric'); 842 faces, ~1 s to import. Used at J2 and J3.
 

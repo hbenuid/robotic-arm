@@ -161,11 +161,18 @@ class RollDriveParams:
     stub_x: tuple = (-47.0 - PULLEY_SEAT_SHIFT, -41.0)   # [REFERENCE] host -25 .. -16: the capture coupler's end (-47) on through the lip to the
     #                                       re-seated elbow 90T, which bolts flat onto it (its 2 mm in the lip space the inner rings)
     pin_bore_dia: float = 12.5            # [REFERENCE] the coupler's through bore
-    pin_bore_x: tuple = (-47.0 - PULLEY_SEAT_SHIFT, -29.0)   # [DESIGN] from the stub's end, blind: stops 2.7 mm under the shaft's bore
-    pulley_bolt_r: float = 11.0           # [REFERENCE] the elbow 90T's 4x M4 on the axes (host x / y)
-    pulley_bolt_dia: float = 4.4          # [DESIGN] M4 clearance up through the stub, the journal and the boss
-    insert_dia: float = 5.6               # [DESIGN] M4 heat-set insert hole
-    insert_x: tuple = (-39.0, -31.0)      # [DESIGN] 8 deep from the boss's root; 2.2 mm from the cavity's rear wall
+    pin_bore_x: tuple = (-47.0 - PULLEY_SEAT_SHIFT, -37.0)   # [DESIGN] from the stub's end, blind: stops 1 mm under the nut seats
+    pulley_bolt_r: float = 11.0           # [REFERENCE] the elbow 90T's 4x M4 at r 11 (the SolidWorks coupler's pattern) ...
+    pulley_bolt_deg: float = 45.0         # [DESIGN] ... turned off the axes, the elbow 90T with it (lib/mounts.py): on the axes the +z
+    #                                       nut channel would stop 1.6 mm short of the cavity (cavity_z0), at 45 deg 4.4
+    pulley_bolt_dia: float = 4.4          # [DESIGN] M4 clearance up through the stub, the journal and the boss to the nut seat
+    pulley_hub_len: float = 21.4          # [REFERENCE] the 90T's length through its bolt holes: the screw heads sit on its outer face
+    pulley_screw_len: float = 40.0        # [DESIGN] M4 x 40 (ISO 4762) from the pulley's outer face
+    nut_af: float = 6.85                  # [DESIGN] the M4 nuts' (ISO 4032, s 7) hex channels - j3_coupler's pocket (lib/coupler/params.py)
+    nut_t: float = 3.2                    # [DATASHEET] ISO 4032 M4 nut height
+    nut_seat_x: float = -36.0             # [DESIGN] in the boss: the screw ends 1.4 mm (2 pitches) past its nut, 6.5 mm under the core bore
+    nut_channel_past: float = 1.0         # [DESIGN] each channel runs up from its seat into the core bore, this far past its outermost corner:
+    #                                       the nuts drop in from inside the bore (block underside down) before the shaft goes in
     # the housing bore, rear end wall -> front face
     end_wall: float = 3.0                 # [DESIGN] block_z[0] .. +3, the cable exit through it
     cable_exit_dia: float = 26.0          # [DESIGN] on the axis: the shaft's Ø24 bore + 1 mm all round
@@ -174,7 +181,7 @@ class RollDriveParams:
     core_bore_dia: float = 52.6           # [DESIGN] the bore from the seat to the cavity: bearing 1 (on the shaft) slides through it to its
     #                                       seat with 0.3 mm of radial clearance; the shaft's Ø44 core turns in it
     cavity_dia: float = 62.0              # [DESIGN] round the ring's flanges (+1.4), 2 mm of wall under it (block_x[0])
-    cavity_z0: float = 16.0               # [DESIGN] the cavity's rear wall: 2.2 mm past the pulley-bolt inserts (z 8.2 .. 13.8); open to the front
+    cavity_z0: float = 16.0               # [DESIGN] the cavity's rear wall: 4.4 mm past the pulley-bolt nut channels (z to 11.6); open to the front
     belt_window_half_x: float = 22.0      # [DESIGN] the belt's two runs cross the top wall at |x| ~ 16..19 (tangent points on the ring at +/- 26.4, on the 20T at +/- 5.7)
     belt_window_y0: float = 29.0          # [DESIGN] from inside the cavity out through the top wall
     belt_window_margin: float = 1.0       # [DESIGN] past the ring's flanges, both sides

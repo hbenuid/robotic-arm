@@ -14,6 +14,7 @@ from lib.forearm.layout import (
     coupler_steps,
     flange_bolt_points_module,
     module_frame_in_host,
+    nut_channel_end,
     pad_bolt_points,
     pulley_bolt_points,
     stack_positions,
@@ -21,7 +22,7 @@ from lib.forearm.layout import (
 from lib.forearm.link import x_cylinder
 from lib.forearm.params import DEFAULT, ForearmConfig
 from lib.forearm.pulley import gt2_ring
-from lib.geom import align_min, cylinder, single_solid
+from lib.geom import align_min, cylinder, hex_prism, single_solid
 from lib.units import NUDGE
 
 
@@ -41,6 +42,11 @@ def _wedge(r_in: float, r_out: float, z0: float, height: float, deg_width: float
     half = r_out * math.tan(math.radians(deg_width / 2.0))
     box = bd.Pos(r_in, 0.0, z0) * bd.Box(r_out - r_in, 2 * half, height, align=(bd.Align.MIN, bd.Align.CENTER, bd.Align.MIN))
     return bd.Rot(0.0, 0.0, at_deg) * box
+
+
+def _x_hex(across_flats: float, length: float, yz, x0: float, flat_deg: float):
+    """A hex prism along +X from x0, its axis through (y, z) = yz, one flat facing flat_deg in the y-z plane (0 = +Y)."""
+    return bd.Pos(x0, yz[0], yz[1]) * bd.Rot(0.0, 90.0, 0.0) * hex_prism(across_flats, math.radians(flat_deg), length)
 
 
 def _slot_y(x: float, y: float, width: float, length: float, z0: float, depth: float):
@@ -72,11 +78,13 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     # the belt window through the top wall round the ring
     z0, z1, half_x, y0 = belt_window(cfg)
     body = body - bd.Pos(0.0, y0, z0) * bd.Box(2 * half_x, y_top - y0 + NUDGE, z1 - z0, align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.MIN))
-    # the coupler side: the pin bore, the elbow pulley's 4x M4 (clearance through the stub, heat-set inserts above)
+    # the coupler side: the pin bore, the elbow pulley's 4x M4 - clearance up through the stub to the nut seat, then
+    # each nut's hex channel (a flat toward the elbow axis) on up into the core bore, where the nut drops in
     body = body - x_cylinder(d.pin_bore_dia / 2.0, d.pin_bore_x[1] - d.pin_bore_x[0] + NUDGE, (0.0, 0.0), d.pin_bore_x[0] - NUDGE)
-    for yz in pulley_bolt_points(cfg):
-        body = body - x_cylinder(d.pulley_bolt_dia / 2.0, d.insert_x[0] - d.stub_x[0] + 2 * NUDGE, yz, d.stub_x[0] - NUDGE)
-        body = body - x_cylinder(d.insert_dia / 2.0, d.insert_x[1] - d.insert_x[0], yz, d.insert_x[0])
+    for y, z in pulley_bolt_points(cfg):
+        body = body - x_cylinder(d.pulley_bolt_dia / 2.0, d.nut_seat_x - d.stub_x[0] + 2 * NUDGE, (y, z), d.stub_x[0] - NUDGE)
+        x_end = nut_channel_end(y, cfg)
+        body = body - _x_hex(d.nut_af, x_end - d.nut_seat_x, (y, z), d.nut_seat_x, math.degrees(math.atan2(z, y)))
     # the cap's 4x M3 (self-tapping) in the front face; the plate's four tension slots and its pilot slot
     for x, y in cap_bolt_points(cfg):
         body = body - cylinder(d.cap_tap_dia / 2.0, d.cap_tap_depth + NUDGE, (x, y), z0=S["z_face"] - d.cap_tap_depth)

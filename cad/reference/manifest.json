@@ -428,13 +428,13 @@
     119.926,
     76.0
    ],
-   "bytes": 304191,
+   "bytes": 396448,
    "file": "native/forearm_roll_block.step",
    "kind": "native",
    "origin": "native",
    "product": "forearm_roll_block - the forearm roll drive's STATOR - the elbow block, which is also the elbow's output flange: a rounded box",
-   "sha256": "ddcd4b075a86ccc8f24fe83a74fe7950b2d4ce2de0df1b7b497f84265e51eba5",
-   "solid_volume": 211045.135,
+   "sha256": "2612cdb7e25dbcf2b23e032e88ebb37200b565039f35e8c9d6a00bc97bf27e8e",
+   "solid_volume": 210853.072,
    "solids": 1,
    "source": "lib/forearm/roll.py:build_block(DEFAULT)",
    "units": "mm"

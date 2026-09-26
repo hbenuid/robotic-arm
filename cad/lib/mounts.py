@@ -42,7 +42,9 @@ j2_link's wrist boss (wrist_pitch) - each standing on the lip (its axis +Z on th
 first. They ride with the housing's link.
 The PULLEYS (PULLEY_MOUNTS): the elbow's and the wrist's 90T, whose SolidWorks poses (gt2_pulley_90t#1 / #2,
 retired - lib/placements.py) left no room for the lower bearing, re-declared PULLEY_SEAT_SHIFT further out along
-their own axis (+Y): the host of such a mount is the capture pose it corrects, its spin kept exactly.
+their own axis (+Y): the host of such a mount is the capture pose it corrects. The wrist's keeps its spin exactly; the
+elbow's turns RollDriveParams.pulley_bolt_deg about its axis with the elbow block's bolt pattern (lib/forearm/params.py:
+its nut channels would otherwise stop short of the ring cavity).
 """
 from __future__ import annotations
 
@@ -131,8 +133,10 @@ BEARING_MOUNTS: tuple[Mount, ...] = (
                    (0.0, 0.0, 0.0), "j2_link's wrist boss (axis +Z)"),
 )
 PULLEY_MOUNTS: tuple[Mount, ...] = (
-    Mount("gt2_pulley_90t#3", PULLEY, "gt2_pulley_90t#1", "elbow_link", "elbow_pitch", ((0.0, PULLEY_SEAT_SHIFT, 0.0), (0.0, 0.0, 0.0)),
-          "the elbow 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower elbow bearing"),
+    Mount("gt2_pulley_90t#3", PULLEY, "gt2_pulley_90t#1", "elbow_link", "elbow_pitch",
+          ((0.0, PULLEY_SEAT_SHIFT, 0.0), (0.0, _FOREARM.drive.pulley_bolt_deg, 0.0)),
+          "the elbow 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower elbow bearing; "
+          "turned pulley_bolt_deg about its axis with the block's bolt pattern (the nut channels clear of the ring cavity)"),
     Mount("gt2_pulley_90t#4", PULLEY, "gt2_pulley_90t#2", "wrist_pitch_link", "wrist_pitch", ((0.0, PULLEY_SEAT_SHIFT, 0.0), (0.0, 0.0, 0.0)),
           "the wrist 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower wrist bearing"),
 )

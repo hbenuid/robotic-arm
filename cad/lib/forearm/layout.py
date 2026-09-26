@@ -111,10 +111,19 @@ def cap_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
 
 
 def pulley_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
-    """The elbow 90T pulley's 4x M4 into the block's underside, as (y, z) about the elbow axis (module X): on the
-    axes, pulley_bolt_r out - the SolidWorks coupler's pattern."""
-    r = cfg.drive.pulley_bolt_r
-    return [(r, 0.0), (0.0, r), (-r, 0.0), (0.0, -r)]
+    """The elbow 90T pulley's 4x M4 into the block's underside, as (y, z) about the elbow axis (module X): the
+    SolidWorks coupler's pattern (pulley_bolt_r out, on the axes) turned pulley_bolt_deg."""
+    d = cfg.drive
+    return [(d.pulley_bolt_r * math.cos(a), d.pulley_bolt_r * math.sin(a))
+            for a in (math.radians(d.pulley_bolt_deg + 90.0 * k) for k in range(4))]
+
+
+def nut_channel_end(y: float, cfg: ForearmConfig = DEFAULT) -> float:
+    """Module x where the hex channel of the pulley bolt at y ends: past the core bore's wall at the channel's
+    outermost corner (|y| + the hex's corner radius off the roll axis), by nut_channel_past."""
+    d = cfg.drive
+    y_out = abs(y) + d.nut_af / math.sqrt(3.0)
+    return -math.sqrt((d.core_bore_dia / 2.0) ** 2 - y_out ** 2) + d.nut_channel_past
 
 
 def coupler_steps(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float, float]]:

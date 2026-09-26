@@ -12,7 +12,15 @@ from lib import params as PARAMS
 from lib import placements as P
 from lib.belts import GT2_PULLEY_20T_TEETH, centre_distance
 from lib.datum import to_location
-from lib.forearm import DEFAULT, belt_window, cap_bolt_points, module_frame_in_host, pulley_bolt_points, stack_positions
+from lib.forearm import (
+    DEFAULT,
+    belt_window,
+    cap_bolt_points,
+    module_frame_in_host,
+    nut_channel_end,
+    pulley_bolt_points,
+    stack_positions,
+)
 from lib.models import raw
 from robot import frames as F
 from tests.forearm.helpers import in_host
@@ -88,11 +96,18 @@ def test_stack():
     assert S["z_end"] < S["z_bearing_1"] and S["z_bearing_1"] + D.bearing_width < 0 < S["z_bearing_2"] <= S["z_face"]
     # the forearm wall: the rolling +/-45 wall (its corners r 57 about the roll axis) clears j1_link's round end
     assert S["z_wall"] >= UPPER_ARM_END_R + 1.5
-    # walls: 2 mm under the cavity and the seat, over the inserts; the inserts 2 mm from the cavity's rear wall
+    # walls: 2 mm under the cavity and the seat
     assert -D.block_x[0] - D.cavity_dia / 2.0 >= 2.0 and -D.block_x[0] - (D.bearing_od + D.seat_add) / 2.0 >= 2.0
-    assert D.cavity_z0 - (D.pulley_bolt_r + D.insert_dia / 2.0) >= 2.0
-    assert -D.insert_x[1] - D.core_bore_dia / 2.0 >= 2.0 and D.pin_bore_x[1] <= -D.core_bore_dia / 2.0 - 2.0
-    assert D.insert_x[0] == D.boss_x[0] and D.pulley_bolt_r + D.insert_dia / 2.0 <= D.boss_dia / 2.0 - 2.0
+    # the elbow 90T's nuts: seated in the boss, the M4 from the pulley's outer face 2 pitches past its nut, nut and tip
+    # 2 mm under the core bore (bearing 1 slides past the channels' mouths); each hex channel 2 mm from the cavity's
+    # rear wall (the pattern turned pulley_bolt_deg for it) and clear of the pin bore, which ends under the seats
+    corner = D.nut_af / math.sqrt(3.0)
+    tip = D.stub_x[0] - D.pulley_hub_len + D.pulley_screw_len
+    assert D.boss_x[0] < D.nut_seat_x < D.boss_x[1] and D.pulley_bolt_r + corner <= D.boss_dia / 2.0 - 2.0
+    assert tip - (D.nut_seat_x + D.nut_t) >= 2 * 0.7 - 1e-9 and tip <= -D.core_bore_dia / 2.0 - 2.0
+    assert D.nut_seat_x + D.nut_t <= -D.core_bore_dia / 2.0 - 2.0 and D.pin_bore_x[1] == D.nut_seat_x - 1.0
+    assert all(D.cavity_z0 - (z + corner) >= 2.0 for _, z in pulley_bolt_points(DEFAULT))
+    assert all(nut_channel_end(y) > -D.core_bore_dia / 2.0 for y, _ in pulley_bolt_points(DEFAULT))   # open into the bore
     assert D.pulley_bolt_r + D.pulley_bolt_dia / 2.0 <= D.stub_dia / 2.0 - 1.5   # the SolidWorks coupler's own wall round them
     # bearing 2 slides on from the wrist end: everything beyond journal 2 is smaller than its bore; the ring passes the open cavity
     assert D.shoulder_od < D.inner_race_od < D.bearing_od and D.neck_od < D.bearing_bore and w.flange_dia < D.bearing_bore
@@ -189,14 +204,23 @@ def test_block_and_shaft_features(module):
     assert not is_inside(block, 0, r_cav - 1.0, S["z_face"] - 0.5)
     for x, y in cap_bolt_points(DEFAULT):
         assert not is_inside(block, x, y, S["z_face"] - 4.0) and is_inside(block, x, y, S["z_face"] - D.cap_tap_depth - 2.0)
-    # the coupler side: the lip inside its radius only, the boss, the stub, the pin bore, the pulley bolts + inserts
+    # the coupler side: the lip inside its radius only, the boss, the stub, the pin bore, the pulley bolts + nut channels
     assert is_inside(block, D.lip_x[0] + 1.0, 0, 20.0) and not is_inside(block, D.lip_x[0] + 1.0, 0, D.lip_dia / 2.0 + 2.0)   # (0, 0) is the pin bore
     assert is_inside(block, D.boss_x[0] + 1.0, 0, D.boss_dia / 2.0 - 2.0) and not is_inside(block, D.boss_x[0] + 1.0, 0, D.boss_dia / 2.0 + 1.0)
     assert is_inside(block, D.stub_x[0] + 2.0, 0, D.stub_dia / 2.0 - 1.0) and not is_inside(block, D.stub_x[0] + 2.0, 0, D.stub_dia / 2.0 + 1.0)
-    assert not is_inside(block, D.stub_x[0] + 2.0, 0, 0) and not is_inside(block, D.pin_bore_x[1] - 1.0, 0, 0) and is_inside(block, D.pin_bore_x[1] + 1.0, 0, 0)
+    assert not is_inside(block, D.stub_x[0] + 2.0, 0, 0) and not is_inside(block, D.pin_bore_x[1] - 0.5, 0, 0) and is_inside(block, D.pin_bore_x[1] + 0.5, 0, 0)
+    flat, corner = D.nut_af / 2.0, D.nut_af / math.sqrt(3.0)
     for y, z in pulley_bolt_points(DEFAULT):
-        assert not is_inside(block, D.stub_x[0] + 2.0, y, z) and not is_inside(block, (D.insert_x[0] + D.insert_x[1]) / 2.0, y, z)
-        assert is_inside(block, D.insert_x[1] + 1.5, y, z)
+        u = (y / D.pulley_bolt_r, z / D.pulley_bolt_r)              # radial (a flat faces the axis), t tangential (a corner)
+        t = (-u[1], u[0])
+        assert not is_inside(block, D.stub_x[0] + 2.0, y, z) and not is_inside(block, D.nut_seat_x - 1.0, y, z)   # the clearance hole
+        assert is_inside(block, D.nut_seat_x - 0.5, y + 2.8 * u[0], z + 2.8 * u[1])                            # the seat beside it
+        above = D.nut_seat_x + 1.0
+        assert not is_inside(block, above, y, z) and not is_inside(block, nut_channel_end(y) - D.nut_channel_past - 0.5, y, z)
+        assert not is_inside(block, above, y - (flat - 0.2) * u[0], z - (flat - 0.2) * u[1])       # the hex, a flat toward the axis
+        assert is_inside(block, above, y - (flat + 0.3) * u[0], z - (flat + 0.3) * u[1])
+        assert not is_inside(block, above, y + (corner - 0.2) * t[0], z + (corner - 0.2) * t[1])
+        assert is_inside(block, above, y + (corner + 0.3) * t[0], z + (corner + 0.3) * t[1])
     # the motor plate (with its pilot slot), the motor's space behind it, a cheek
     assert is_inside(block, 10, S["y_motor"] + 10, S["z_motor_face"] + 1.5) and not is_inside(block, 0, S["y_motor"], S["z_motor_face"] + 1.5)
     assert not is_inside(block, 10, S["y_motor"] + 10, S["z_motor_face"] - 1.5) and not is_inside(block, 0, D.block_y[1] + 5.0, -10.0)

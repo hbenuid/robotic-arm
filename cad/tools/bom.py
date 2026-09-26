@@ -46,10 +46,11 @@ EXTRAS = [
     ("forearm_roll_drive", "M3 x 8 socket head cap screw - the roll motor to the block's plate", 4, "through the plate's tension slots into the motor"),
     ("forearm_roll_drive", "home sensor (hall or optical) on the end cap's outer face + magnet in the shaft's stop lug", 1,
      "wired to the MKS board's limit input; nothing modelled yet (docs/open_issues.md); the hard stop itself is the printed lug + post"),
-    ("forearm_roll_drive", "M4 x 40 socket head cap screw - the elbow 90T pulley up into the elbow block's heat-set inserts", 4,
-     "through the pulley's hub and the block's stub / journal / boss (the SolidWorks coupler's pattern, r 11 on the axes)"),
-    ("forearm_roll_drive", "M4 heat-set insert, 8 mm - in the elbow block's underside for the pulley bolts", 4,
-     "the elbow's torque path into the block; a bolted steel insert plate is the fallback if they creep"),
+    ("forearm_roll_drive", (f"M4 x {_FOREARM.drive.pulley_screw_len:g} socket head cap screw (ISO 4762) - the elbow 90T pulley up into "
+                            "nuts in the elbow block"), 4,
+     "through the pulley's hub and the block's stub / journal / boss (the SolidWorks coupler's pattern, r 11, turned 45 deg)"),
+    ("forearm_roll_drive", "M4 hex nut (ISO 4032) - captive in the elbow block's hex channels", 4,
+     "drop them in from inside the core bore before the roll shaft goes in (docs/forearm_roll.md §4)"),
     (None, f"{WRIST_BELT_LENGTH}-2GT closed belt, 6 mm - the wrist-pitch belt (90T at the wrist, 20T on the forearm motor)", 1,
      "belts are not modelled; the length sets J2_MOTOR_SLIDE_X (lib/forearm/params.py wrist_belt, [ESTIMATE])"),
 ]

@@ -15,12 +15,12 @@ Numbers below name the constants; the values live in `lib/forearm/params.py`.
 | torque | ≈ 1.1–1.8 N·m at the roll vs ≈ 0.9 N·m worst-case static load | §2 |
 | bearings | 2× 6808-2RS (40 × 52 × 7), 71 mm apart, straddling the elbow axis (seats Ø52.15, journals Ø40.3) | `RollDriveParams bearing_*` |
 | shaft (rotor, PETG) | hollow, Ø24 cable bore end to end, Ø44 core, Ø38 neck, Ø39.7 end spigot + 4× M3 on Ø32 into the forearm wall; 86 mm long (z −36…50) | `forearm_roll_shaft` |
-| block (stator, PETG) | 66 × 72 × 76 mm rounded box (x −33…33, y ±36, z −40…36, r 8), **also the elbow's output flange**: Ø72 lip, Ø62 boss, Ø40 journal, Ø33 inner-ring shoulder, Ø30 stub down through `j1_link`'s bore to the elbow 90T (host z −25…−8), 4× M4 heat-set inserts at r 11 for the elbow 90T; Ø26 cable exit in the rear wall; the motor plate + cheeks on top | `forearm_roll_block` |
+| block (stator, PETG) | 66 × 72 × 76 mm rounded box (x −33…33, y ±36, z −40…36, r 8), **also the elbow's output flange**: Ø72 lip, Ø62 boss, Ø40 journal, Ø33 inner-ring shoulder, Ø30 stub down through `j1_link`'s bore to the elbow 90T (host z −25…−8), 4× M4 at r 11 (turned 45°) for the elbow 90T into captive nuts in hex channels that open into the core bore; Ø26 cable exit in the rear wall; the motor plate + cheeks on top | `forearm_roll_block` |
 | end cap (PETG) | the block's outline, 9 thick (seat + 2 lip), 4× M3 at the corners, the stop post | `forearm_roll_retainer` |
 | forearm interface | `j2_link`'s wall at 48…56 mm from the elbow axis (`wall_x` −56…−48): Ø40 × 2 recess, Ø24 bore, 4× M3 on Ø32 | `RollEndParams` |
 | clearances held by tests | block 0.5 mm above the upper arm's slab; the rolling ±45 forearm wall 3 mm off `j1_link`'s r 45 end; folded elbow (±120°) and rolled forearm (±170°) < 1 mm³ against every neighbour; journals 0.9–1.0 × the 132 mm³ press | `tests/forearm/test_roll_drive.py` |
 | link masses (URDF) | `elbow_link` carries the pulley + stator, `forearm_link` the shaft + forearm + wrist motor; the masses are the `<inertial>` blocks (`tools/robot/derive.py`), their sum checked by `test_link_masses_add_up` | `robot/arm.urdf` |
-| purchased per drive | the 6808-2RS pair, a NEMA 17 × 40 kit + MKS SERVO42D, a GT2 20T (5 mm bore), the roll belt, the M3 / M4 screws and the M4 inserts — with quantities: `./cadtool python tools/bom.py --module forearm_roll_drive` | `tools/bom.py` |
+| purchased per drive | the 6808-2RS pair, a NEMA 17 × 40 kit + MKS SERVO42D, a GT2 20T (5 mm bore), the roll belt, the M3 / M4 screws and the M4 nuts — with quantities: `./cadtool python tools/bom.py --module forearm_roll_drive` | `tools/bom.py` |
 | printed per drive | block, shaft, cap (`./cadtool python tools/export_printables.py --parts forearm_roll_block forearm_roll_shaft forearm_roll_retainer`) | `print/` |
 
 ## 1. Why a roll, and where
@@ -52,12 +52,12 @@ elbow's 6806 pair, §4), and
 | station (module z) | what | fixed by |
 |---|---|---|
 | `block_z` −40…36 | the block: a rounded box (`block_x` −33…33, `block_y` ±36, r 8 edges along Z) round the roll axis; its underside (−X, host z −8) rides 0.5 mm above the upper arm's slab | the slab (host −8.5); 2 mm of wall under the cavity |
-| underside, x −50…−33 | `lip_dia` Ø72 lip −35…−33 in `j1_link`'s Ø80 recess, `boss_dia` Ø62 −39…−35, `journal_dia` Ø40 −40.3…−39, `step_dia` Ø33 −41…−40.3 (the shoulder on the upper 6806's inner ring), `stub_dia` Ø30 −50…−41 (in the upper of the elbow's 6806-2RS pair and on through the lip, `j1_link`'s bore: `lib/mounts.py bearing_6806#3` / `#4`), the Ø12.5 `pin_bore_dia` (from the stub's end, blind at −29); the elbow 90T's **4× M4 at `pulley_bolt_r` 11** on the axes: Ø4.4 clearance −50…−39, **Ø5.6 heat-set inserts −39…−31** | the measured coupler, its stub `PULLEY_SEAT_SHIFT` (3) longer: its end (host −25, the lip's lower face) sits on the re-seated pulley's face |
+| underside, x −50…−33 | `lip_dia` Ø72 lip −35…−33 in `j1_link`'s Ø80 recess, `boss_dia` Ø62 −39…−35, `journal_dia` Ø40 −40.3…−39, `step_dia` Ø33 −41…−40.3 (the shoulder on the upper 6806's inner ring), `stub_dia` Ø30 −50…−41 (in the upper of the elbow's 6806-2RS pair and on through the lip, `j1_link`'s bore: `lib/mounts.py bearing_6806#3` / `#4`), the Ø12.5 `pin_bore_dia` (from the stub's end, blind at −37: 1 mm under the nut seats); the elbow 90T's **4× M4 at `pulley_bolt_r` 11, turned `pulley_bolt_deg` 45°** off the axes: Ø4.4 clearance −50…−36, then each nut's **hex channel** (`nut_af` 6.85, a flat toward the elbow axis) from its seat `nut_seat_x` −36 up into the core bore | the measured coupler, its stub `PULLEY_SEAT_SHIFT` (3) longer: its end (host −25, the lip's lower face) sits on the re-seated pulley's face; the turn keeps the channels 4.4 mm from the cavity (on the axes: 1.6) |
 | `z_end` −40…−37 | the rear end wall, the Ø26 `cable_exit` on the axis | the shaft's Ø24 bore + 1 |
 | `z_lip` −37…−35 | the lip (ID `lip_id` 46) bearing 1's outer race stops on | |
 | `z_seat` −35…−28 | **bearing 1**'s seat Ø52.15; the shaft's rear journal from −36 (`shaft_end_clear`) | |
-| −28…16 | the Ø52.6 `core_bore_dia`: bearing 1 (pressed on the shaft) rides through it to its seat, the Ø44 core turns in it | 4.7 mm over the inserts |
-| `z_cavity` 16…36 | the **Ø62 cavity**, OPEN through the front face: the shaft's flanged 90T ring 16.8…26.2 (teeth 18…25, `z_ring_mid` 21.5) passes through it on assembly | `cavity_z0` 2.2 mm past the inserts (z 8.2…13.8) |
+| −28…16 | the Ø52.6 `core_bore_dia`: bearing 1 (pressed on the shaft) rides through it to its seat, the Ø44 core turns in it; the four nut channels open into its floor | the nuts (−36…−32.8) and the screw tips (−31.4) ≥ 2 mm under it |
+| `z_cavity` 16…36 | the **Ø62 cavity**, OPEN through the front face: the shaft's flanged 90T ring 16.8…26.2 (teeth 18…25, `z_ring_mid` 21.5) passes through it on assembly | `cavity_z0` 4.4 mm past the nut channels (z to 11.6) |
 | 15.8…27.2 | the **belt window** through the top wall (`belt_window_half_x` ±22, from y 29 out) | the runs cross the wall at \|x\| 16…19 |
 | `z_face` 36 | the front face = **bearing 2** = the **end cap** (`forearm_roll_retainer`, 36…45: seat 36…43, lip 43…45, the block's outline, 4× M3 at (±27, ±30) self-tapped `cap_tap_depth` into the face, the **stop post** 45…47.5 at −X, r 24…30) | pull-out (+Z): core → bearing 2 → cap lip → 4× M3 |
 | `z_neck` 43…48 | the shaft's Ø38 neck (bearing 2 slides over it), the **stop lug** on it 45…47.5 at +X, r 17…28 (contact at ±`stop_deg` = 180 − 10) | `stop_t` 0.5 mm short of the wall |
@@ -69,7 +69,7 @@ race's edge, `inner_race_od` [ESTIMATE]), the bearings 71 mm apart straddling th
 (`FOREARM_ROLL_RATIO`) → ≈ 1.1–1.8 N·m at the roll from the 40 mm kit motor, against a worst-case static load of
 ≈ 0.9 N·m (forearm horizontal, wrist 90°, roll 90°, ≈ 0.5 kg wrist + gripper + 0.2 kg payload). The shoulder
 (`cycloidal_drive.md` §7) carries ≈ 0.35 kg more beyond the elbow. The elbow's torque path is now the elbow 90T →
-4× M4 in heat-set inserts → the block → the bearings → the shaft → the forearm wall.
+4× M4 into captive nuts → the block → the bearings → the shaft → the forearm wall.
 
 ## 3. Fits and printing
 PETG, the drive's rules (`cycloidal_drive.md` §6): the seats are the bearing OD + `seat_add` 0.15 (a printed hole
@@ -82,12 +82,15 @@ on the side and the motor plate need support — a `dfam-check` pass before the 
 the shaft spigot down (the ring's grooves print vertically), the cap flat.
 
 ## 4. Assembly sequence
-1. Four M4 heat-set inserts into the block's underside (from the stub side, through the Ø4.4 holes' floor).
+1. Four M4 nuts into the block's hex channels: block underside down, drop each nut into the core bore from the front
+   and let it into its channel (tweezers), down onto its seat - the channel's 6.85 across flats holds it.
 2. The elbow's 6806-2RS pair into `j1_link`'s bore, one each side of the lip; the block's stub into the upper one
    (its Ø33 shoulder on the inner ring, its end through the lip), the elbow 90T's hub into the lower one from below
    (its Ø34.76 ring on that inner ring, its end on the stub's end): 4× M4 × 40 up through the pulley's hub, the stub,
-   the journal and the boss into the inserts (7.6 mm of the 8 mm insert) bolt the pulley flat onto the stub and clamp
-   both inner rings - the stub's 2 mm in the lip spaces them as the lip spaces the outer rings.
+   the journal and the boss into the nuts (the tips 1.4 mm past them) bolt the pulley flat onto the stub and clamp
+   both inner rings - the stub's 2 mm in the lip spaces them as the lip spaces the outer rings. The hex holds each nut,
+   so the screws re-tighten from the pulley side at any time; a screw taken right out once the shaft is in can drop its
+   nut into the gap round the shaft's core.
 3. Press bearing 1 onto the shaft's rear journal against shoulder 1.
 4. Slide the shaft + bearing 1 into the block from the front, through the cavity and the core bore, the outer race to
    the lip; the ring ends in the cavity.
@@ -112,5 +115,5 @@ puts it (`J2_MOTOR_SLIDE_X`) so its plug clears the wall (`plug_clearance`).
 ## 6. Not modelled / to confirm
 `docs/open_issues.md`: the belts, the home sensor (on the cap's outer face, a magnet in the stop lug, to the MKS board's
 limit input), the cable route; the elbow drive's second stage; the 6806 seats' PETG fit; the block's print orientation and its
-M4 inserts; the 6808's mass and inner-race edge, `t20_hub`, the belt lengths, the limit and the printed stop lugs'
+nut channels' fit; the 6808's mass and inner-race edge, `t20_hub`, the belt lengths, the limit and the printed stop lugs'
 strength, the spigot's self-tapped M3s; the roll motor's **CAN id** (`software/control/src/config.py` has no row for it: it names fewer boards than the arm carries).
