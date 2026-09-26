@@ -1,4 +1,4 @@
-"""Geometry helpers shared by the geometry tests (tests/cycloidal/, tests/forearm/, tests/upper_arm/, tests/base/,
+"""Geometry helpers shared by the geometry tests (tests/cycloidal/, tests/forearm/, tests/upper_arm/, tests/base/, tests/coupler/,
 tests/test_mounts.py). The drive's own config helpers stay in tests/cycloidal/helpers.py.
 
 CadQuery -> build123d idioms from the drive's port (see docs/cycloidal_drive.md "Port notes"):

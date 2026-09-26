@@ -30,7 +30,8 @@ converted — shared by `test_assembly.py` and `test_robot.py`),
 `from tests.cycloidal.helpers import CFG, …` for the drive's config, the
 `stack` fixture is `tests/cycloidal/conftest.py`), `tests/upper_arm/` (`j1_link`: the LEGACY build's feature probes, DEFAULT's
 holes on the elbow motor's pattern and the drive's arm-mount bolts, no sockets), `tests/base/` (`base`: the LEGACY build's
-feature probes, the interface values lib/params.py and lib/datum.py take from it), `tests/forearm/` (the forearm: the LEGACY
+feature probes, the interface values lib/params.py and lib/datum.py take from it), `tests/coupler/` (`j3_coupler`: the
+LEGACY build's feature probes, the stub the roll drive's block repeats), `tests/forearm/` (the forearm: the LEGACY
 build vs the SolidWorks part + feature probes, the roll end, the roll drive - axis through the wrist centre, stack, press fits, clean pairs,
 clearances in the arm with the elbow folded; `helpers.in_host()` places any occurrence in `j2_link`'s frame). Geometry tests are
 `slow`.

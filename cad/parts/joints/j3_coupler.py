@@ -1,4 +1,11 @@
-"""j3_coupler - import wrapper around the SolidWorks reference (reference/j3_coupler.step).
+"""j3_coupler - the driven side of the wrist_pitch belt joint (parametric build123d, lib/coupler/body.py
+build_coupler(cfg), in the SolidWorks part frame - origin on the joint axis at the flange's underside, +Y up the axis
+toward the stub's end).
+
+A Ø78 flange (4x M4 counterbored on the axes at r 35), a Ø58/62 dust-lip ring on its top, the Ø40 journal and the
+Ø30 stub the wrist bearings turn on, a Ø12.5 bore; the wrist 90T bolts onto the stub's end with 4x M4 on the axes at
+r 11, their nuts in hex pockets in the flange's underside. Every number: lib/coupler/params.py (CouplerParams;
+measured on the reference 2026-09-25).
 
 SolidWorks product: 'Joint 2 coupler 62226_J3 Coupler'
 Source export:      step/Joint 2 coupler 62226_J3 Coupler.STEP
@@ -7,30 +14,34 @@ Reference: mm units, 1 solid(s), volume 55568.5 mm^3,
 In the arm: x1 (j3_coupler#2, the wrist; j3_coupler#1 at the elbow is RETIRED - lib/placements.py: the forearm roll drive's
 block carries its lip / boss / journal / stub since 2026-09-23).
 
-SolidWorks config name 'J3 Coupler'; used at J2 and J3.
-
-Not yet parametric: j3_coupler() returns the reference geometry in the SolidWorks part-file
-frame. See parts/_templates/wrapper.py for how to convert it to build123d.
+Conversion: build_coupler(LEGACY) reproduces the reference (REFERENCE_BUILD - tests/test_reference_match.py); the
+model builds DEFAULT (tests/coupler/ lock what DEFAULT changes).
 """
 import pathlib
 
 from cadgen import step
 
-from lib import reference
-from lib.datum import IDENTITY, to_location
+from lib.coupler import DEFAULT, LEGACY
+from lib.coupler.body import build_coupler
+from lib.datum import IDENTITY
 
 NAME = pathlib.Path(__file__).stem
-REFERENCE = NAME              # reference/<NAME>.step
-CONVERTED = False             # True once j3_coupler() is parametric build123d
-LOCAL_FROM_REF = IDENTITY   # reference frame -> this part's local frame (identity = SolidWorks frame)
+REFERENCE = NAME              # reference/solidworks/<NAME>.step
+CONVERTED = True
+LOCAL_FROM_REF = IDENTITY     # modelled in the SolidWorks part frame
+
+
+def REFERENCE_BUILD():
+    """The configuration that reproduces the SolidWorks part (the reference-match lock)."""
+    return build_coupler(LEGACY)
 
 
 @step
 def j3_coupler():
-    """Return the reference geometry as a labelled Solid/Compound in this part's local frame."""
-    shape = reference.load(REFERENCE).moved(to_location(LOCAL_FROM_REF))
-    shape.label = NAME
-    return shape
+    """The coupler at its local origin (the flange's underside on the joint axis); the assembly owns placement."""
+    part = build_coupler(DEFAULT)
+    part.label = NAME
+    return part
 
 
 if __name__ == "__main__":

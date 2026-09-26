@@ -54,5 +54,5 @@ and totals are never quoted (`cad/CLAUDE.md` Docs).
 | item | where |
 |---|---|
 | The motor-control `software/control/tests/` imports `arctos.*` and does not run | `software/control/CLAUDE.md` "Known issues" |
-| Most custom parts are still SolidWorks wrappers (`CONVERTED = False`; the parametric ones so far are the links `j2_link`, `lib/forearm/`, and `j1_link`, `lib/upper_arm/`, and the `base`, `lib/base/`; the print list of `tools/bom.py` gives every part's state); the fit problems above are fixed at conversion | `parts/<group>/*.py`, `cad/parts/CLAUDE.md` "Part states" |
+| Most custom parts are still SolidWorks wrappers (`CONVERTED = False`; the parametric ones so far are the links `j2_link`, `lib/forearm/`, and `j1_link`, `lib/upper_arm/`, the `base`, `lib/base/`, and `j3_coupler`, `lib/coupler/`; the print list of `tools/bom.py` gives every part's state); the fit problems above are fixed at conversion | `parts/<group>/*.py`, `cad/parts/CLAUDE.md` "Part states" |
 | The drive's motor envelope cuts the D-flat at `shaft_dcut_flat / 2` (flat-to-round 4.75) — ruled correct 2026-09-21 (it is what `reference/cycloidal/nema17_48mm.step` defines and the eccentric shaft's D-bore matches); noted here only because the parameter's name reads like 4.5 | `lib/cycloidal/motor.py flat_offset()` |
