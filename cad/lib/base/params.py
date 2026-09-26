@@ -11,7 +11,7 @@ under it) holds the base_yaw bearing bore in a boss below and a seat ring on top
 (lib/mounts.py nema17_48mm#1) bolts to the plate's underside, its shaft up through the plate's window.
 
 Two configurations: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
-tests/test_reference_match.py); DEFAULT is what the part builds.
+tests/test_reference_match.py); DEFAULT is what the part builds: the bearing bore sized for the 6806-2RS pair.
 
 Every number below was measured on the reference 2026-09-25 (vertex / face census; tests/base/test_base.py
 re-checks the builds against it): [REFERENCE] unless tagged. Units mm, degrees where named *_deg (in the XZ plane,
@@ -19,7 +19,9 @@ from +X toward +Z). Frozen dataclasses; variants via dataclasses.replace.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+
+from lib.forearm.params import LEGACY as _FOREARM
 
 
 @dataclass(frozen=True)
@@ -106,4 +108,9 @@ class BaseConfig:
 
 
 LEGACY = BaseConfig()     # the SolidWorks part, exactly
-DEFAULT = LEGACY          # what the part builds
+
+# What the part builds: the base_yaw bore takes the 6806-2RS pair (lib/bearings.py) like the wrist's bore - both
+# seats the wrist's Ø42.2 (the SolidWorks Ø42.4 / Ø43.4 let the bearings wobble, the lower one 0.7 mm a side) and its
+# Ø37.65 lip, which stops the outer rings only (the SolidWorks Ø31.73 lip ran under the upper bearing's inner ring).
+DEFAULT = replace(LEGACY, bore=replace(LEGACY.bore, upper_dia=_FOREARM.boss.seat_dia, lower_dia=_FOREARM.boss.seat_dia,
+                                       lip_dia=_FOREARM.boss.lip_dia))   # [DESIGN]

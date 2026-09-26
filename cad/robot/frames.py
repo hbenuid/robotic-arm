@@ -79,23 +79,24 @@ WRIST_CENTRE = tuple(o + WRIST_CENTRE_ALONG_N * n for o, n in zip(WRIST_PITCH_OR
 LINK_ORDER = ["base_link", "shoulder_link", "upper_arm_link", "elbow_link", "forearm_link", "wrist_pitch_link",
               "wrist_roll_link", "jaw_a_link", "jaw_b_link", "tool0"]
 LINKS: dict[str, list[str]] = {
-    # the base_yaw motor + its MKS board hang under the base plate (lib/mounts.py) - they turn nothing themselves
-    "base_link": ["base#1", "nema17_48mm#1", "mks_servo42d#1"],
+    # the base_yaw motor + its MKS board hang under the base plate (lib/mounts.py) - they turn nothing themselves;
+    # the base_yaw bearing pair sits in the base's bore (a bearing rides with its housing)
+    "base_link": ["base#1", "bearing_6806#1", "bearing_6806#2", "nema17_48mm#1", "mks_servo42d#1"],
     # j1_coupler (the holder) turns on the base; the cycloidal drive's stator - housing, motor (+ its
     # MKS board) and the gear train - is bolted into its yoke (assemblies/cycloidal_drive.py BODIES).
     "shoulder_link": ["j1_coupler#1", "cycloidal_drive#1:stator"],
     # the drive's rotor (output hub + output pins) is bolted to j1_link: the shoulder_pitch output;
-    # the elbow_pitch motor + board bolt to j1_link's pad (lib/mounts.py)
-    "upper_arm_link": ["cycloidal_drive#1:rotor", "j1_link#1", "nema17_40mm#2", "mks_servo42d#2"],
+    # the elbow_pitch motor + board bolt to j1_link's pad, the elbow bearing pair sits in its elbow bore (lib/mounts.py)
+    "upper_arm_link": ["cycloidal_drive#1:rotor", "j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2"],
     # the elbow 90T pulley (the elbow_pitch output, assumed the driven side  [ASSUMPTION]) carries the forearm roll
     # drive's STATOR - the elbow block that IS the elbow coupler now (j3_coupler#1 is retired, lib/placements.py),
     # both bearings, the end cap, the roll motor + board and its 20T (assemblies/forearm_roll_drive.py BODIES)
-    "elbow_link": ["gt2_pulley_90t#1", "forearm_roll_drive#1:stator"],
+    "elbow_link": ["gt2_pulley_90t#3", "forearm_roll_drive#1:stator"],
     # the drive's ROTOR - the hollow roll shaft - IS the forearm's elbow end (its flange bolts to j2_link's wall);
-    # the wrist_pitch motor + board bolt to j2_link's web (lib/mounts.py)
-    "forearm_link": ["forearm_roll_drive#1:rotor", "j2_link#1", "nema17_40mm#3", "mks_servo42d#3"],
+    # the wrist_pitch motor + board bolt to j2_link's web, the wrist bearing pair sits in its wrist boss (lib/mounts.py)
+    "forearm_link": ["forearm_roll_drive#1:rotor", "j2_link#1", "bearing_6806#5", "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3"],
     # likewise the wrist 90T pulley + J3-coupler ride with the wrist-pitch body  [ASSUMPTION]
-    "wrist_pitch_link": ["wrist_link#1", "gripper_clamp_bracket#1", "nema17_pancake#1", "gt2_pulley_90t#2", "j3_coupler#2"],
+    "wrist_pitch_link": ["wrist_link#1", "gripper_clamp_bracket#1", "nema17_pancake#1", "gt2_pulley_90t#4", "j3_coupler#2"],
     # the gripper base rolls with the 20T pulley; the servo crank linkage is merged in  [ASSUMPTION]
     "wrist_roll_link": [
         "gt2_pulley_20t#1", "gripper_j3_connector#1", "servo_holder#1", "mg996r_servo#1", "mg996r_horn#1",
@@ -129,7 +130,7 @@ DEG = math.pi / 180.0
 JOINTS: list[Joint] = [
     Joint("base_yaw", "revolute", "base_link", "shoulder_link", BASE_YAW_ORIGIN, U, BASE_FORWARD,
           -PARAMS.BASE_YAW_LIMIT_DEG * DEG, PARAMS.BASE_YAW_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
-          notes="j1_coupler (carrying the cycloidal drive's stator) turns on the base; driven by "
+          notes="j1_coupler (carrying the cycloidal drive's stator) turns on the base in the bearing_6806#1 / #2 pair; driven by "
                 "nema17_48mm#1 (the 48 mm motor) + mks_servo42d#1 under the base plate (lib/mounts.py) "
                 "[which CAN id (software/control/src/config.py J1..J3) it is: unconfirmed]"),
     Joint("shoulder_pitch", "revolute", "shoulder_link", "upper_arm_link", SHOULDER_ORIGIN, N, SHOULDER_TO_ELBOW_INPLANE,
@@ -138,8 +139,9 @@ JOINTS: list[Joint] = [
                 "output hub bolted to j1_link [which CAN id: unconfirmed]"),
     Joint("elbow_pitch", "revolute", "upper_arm_link", "elbow_link", ELBOW_ORIGIN, N, ELBOW_TO_WRIST_INPLANE,
           -PARAMS.ELBOW_PITCH_LIMIT_DEG * DEG, PARAMS.ELBOW_PITCH_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
-          notes="GT2 90T pulley + J3-coupler at the elbow (carrying the roll drive's stator); belt-driven by nema17_40mm#2 + "
-                "mks_servo42d#2 on j1_link's pad (lib/mounts.py) [which CAN id: unconfirmed]"),
+          notes="GT2 90T pulley + the roll drive's block (its stator) at the elbow, turning in the bearing_6806#3 / #4 pair; "
+                "belt-driven by nema17_40mm#2 + mks_servo42d#2 on j1_link's pad (lib/mounts.py) through a second stage at "
+                "j1_link's x 128 seats (not modelled) [which CAN id: unconfirmed]"),
     # the roll: Z along the forearm (its child link's long direction IS the axis), so X = N, the pitch-axis direction
     Joint("forearm_roll", "revolute", "elbow_link", "forearm_link", FOREARM_ROLL_ORIGIN, FOREARM_ROLL_AXIS, N,
           -PARAMS.FOREARM_ROLL_LIMIT_DEG * DEG, PARAMS.FOREARM_ROLL_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
@@ -148,7 +150,7 @@ JOINTS: list[Joint] = [
                 "block's pad [a 4th CAN id - software/control/src/config.py has three: unconfirmed]; hard stop +/- FOREARM_ROLL_LIMIT_DEG"),
     Joint("wrist_pitch", "revolute", "forearm_link", "wrist_pitch_link", WRIST_PITCH_ORIGIN, N, F,
           -PARAMS.WRIST_PITCH_LIMIT_DEG * DEG, PARAMS.WRIST_PITCH_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
-          notes="GT2 90T pulley + J3-coupler at the wrist; belt-driven by nema17_40mm#3 + mks_servo42d#3 on "
+          notes="GT2 90T pulley + J3-coupler at the wrist, turning in the bearing_6806#5 / #6 pair; belt-driven by nema17_40mm#3 + mks_servo42d#3 on "
                 "j2_link's web (lib/mounts.py) [which CAN id: unconfirmed]"),
     Joint("wrist_roll", "revolute", "wrist_pitch_link", "wrist_roll_link", WRIST_ROLL_ORIGIN, F, PJ,
           -PARAMS.WRIST_ROLL_LIMIT_DEG * DEG, PARAMS.WRIST_ROLL_LIMIT_DEG * DEG, PARAMS.WRIST_EFFORT_NM, PARAMS.WRIST_VELOCITY_RAD_S,

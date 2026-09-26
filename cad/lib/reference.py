@@ -126,6 +126,7 @@ NATIVE: dict[str, str] = {
 # clean name -> builder label. The same tool writes their reference (kind "cots") from the envelope.
 NATIVE_COTS: dict[str, str] = {
     "bearing_6808": "parts/joints/bearing_6808.py:_envelope()",
+    "bearing_6806": "parts/joints/bearing_6806.py:_envelope()",
 }
 COTS.update({name: (f"native {builder}", None) for name, builder in NATIVE_COTS.items()})
 NATIVE_PARTS: set[str] = set(NATIVE) | set(NATIVE_COTS)

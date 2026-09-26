@@ -7,7 +7,7 @@ importable on its own, and a part never depends on how it is assembled. Function
 count too (they are still edges). Two finer rules ride along:
   * lib/cycloidal/, lib/forearm/, lib/upper_arm/, lib/base/ and lib/coupler/ never import lib/params.py: that module re-exports their
     interface values, so they take their globals from the leaves (lib/units.py, lib/motors.py, lib/belts.py,
-    lib/geom.py) instead - and the leaves never import lib/params.py either;
+    lib/bearings.py, lib/geom.py) instead - and the leaves never import lib/params.py either;
   * nothing mutates sys.path (cadtool / pytest / .env put cad/ on the path) - except the one tool that
     runs in ANOTHER repo's venv.
 """
@@ -32,7 +32,7 @@ PART_MODULE_IMPORT_ALLOWED = {"parts"}
 # lib/belts.py) and never import lib.params back.
 LEAF_PACKAGES = ("cycloidal", "forearm", "upper_arm", "base", "coupler")
 # The leaves those packages import: importing lib.params from one would close the cycle.
-LEAF_MODULES = ("units.py", "motors.py", "belts.py", "geom.py")
+LEAF_MODULES = ("units.py", "motors.py", "belts.py", "bearings.py", "geom.py")
 
 SOURCES = sorted(p for pkg in ORDER for p in (CAD_DIR / pkg).rglob("*.py") if "__pycache__" not in p.parts)
 

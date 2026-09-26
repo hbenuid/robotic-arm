@@ -26,6 +26,8 @@ def build_coupler(cfg: CouplerParams = DEFAULT):
                    - _bore(cfg.lip_dia[0] / 2.0, cfg.flange_y1 - 2.0 * NUDGE, cfg.lip_y1 + NUDGE))
     body = body + _bore(cfg.journal_dia / 2.0, cfg.flange_y1 - NUDGE, cfg.journal_y1)
     body = body + _bore(cfg.stub_dia / 2.0, cfg.journal_y1 - NUDGE, cfg.stub_y1)
+    if cfg.step is not None:
+        body = body + _bore(cfg.step[0] / 2.0, cfg.journal_y1 - NUDGE, cfg.step[1])
     body = body - _bore(cfg.bore_dia / 2.0, -NUDGE, cfg.stub_y1 + NUDGE)
     for x, z in pulley_bolt_points(cfg):
         body = body - _bore(cfg.pulley_bolt_dia / 2.0, cfg.nut_depth - NUDGE, cfg.stub_y1 + NUDGE, x, z)

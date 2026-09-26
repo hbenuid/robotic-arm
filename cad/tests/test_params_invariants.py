@@ -158,3 +158,26 @@ def test_cycloidal_dead_params_gone():
         (cfg.housing, "motor_plate_wall"), (cfg.bearings, "ecc_qty"), (cfg.bearings, "inp_qty"),
     ):
         assert not hasattr(group, name), name
+
+
+def test_the_6806_pair_fits_every_belt_joint_bore():
+    """lib/bearings.py against the three bores it goes in (base_yaw, elbow_pitch, wrist_pitch) and the stubs in it:
+    every seat takes the OD and is at least a bearing deep each side of the lip, every lip clears the inner rings,
+    every stub is the bore and every shoulder bears on the inner ring only."""
+    from lib.base import DEFAULT as BASE
+    from lib.coupler import DEFAULT as COUPLER
+    from lib.forearm import DEFAULT as FOREARM
+    from lib.upper_arm import DEFAULT as UPPER_ARM
+
+    bore, od, width, shoulder = p.BEARING_6806_BORE, p.BEARING_6806_OD, p.BEARING_6806_WIDTH, p.BEARING_6806_SHOULDER_DIA
+    assert bore < shoulder < od and p.BEARING_6806_MASS_G > 0
+    assert COUPLER.stub_dia == FOREARM.drive.stub_dia == bore
+    assert COUPLER.step[0] == FOREARM.drive.step_dia == shoulder
+    e, w, b, c = UPPER_ARM.elbow, FOREARM.web, FOREARM.boss, BASE.bore
+    seats = [(e.bore_dia, e.lip_y[1], e.recess_y), (e.seat_dia, e.y0, e.lip_y[0]),              # j1_link: upper, lower
+             (b.seat_dia, b.lip_z[1], b.seat_z1), (b.seat_dia, w.z0, b.lip_z[0]),               # j2_link
+             (c.upper_dia, c.lip_y[1], BASE.cap.ring_top_y), (c.lower_dia, BASE.cap.boss_y0, c.lip_y[0])]   # base
+    for dia, lo, hi in seats:
+        assert dia >= od and hi - lo >= width, (dia, lo, hi)
+    for lip in (e.lip_dia, b.lip_dia, c.lip_dia):
+        assert shoulder + 2.0 < lip < od

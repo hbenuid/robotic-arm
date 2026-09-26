@@ -87,6 +87,28 @@
     "solids": 1
    }
   },
+  "bearing_6806": {
+   "bbox_min": [
+    -21.0,
+    -21.0,
+    0.0
+   ],
+   "bbox_size": [
+    42.0,
+    42.0,
+    7.0
+   ],
+   "bytes": 9245,
+   "file": "native/bearing_6806.step",
+   "kind": "cots",
+   "origin": "native",
+   "product": "bearing_6806 - purchased (COTS) part: 6806-2RS (61806) thin-section deep-groove ball bearing, 30 x 42 x 7 - the pair",
+   "sha256": "19365c4295d4334c5780cac568088a11443f1d95090851d9cdef43bee5e83d92",
+   "solid_volume": 4750.088,
+   "solids": 1,
+   "source": "parts/joints/bearing_6806.py:_envelope()",
+   "units": "mm"
+  },
   "bearing_6808": {
    "bbox_min": [
     -26.0,
@@ -406,13 +428,13 @@
     119.926,
     76.0
    ],
-   "bytes": 299916,
+   "bytes": 304177,
    "file": "native/forearm_roll_block.step",
    "kind": "native",
    "origin": "native",
    "product": "forearm_roll_block - the forearm roll drive's STATOR - the elbow block, which is also the elbow's output flange: a rounded box",
-   "sha256": "ab6aab9dcfa4436bd1dc9af92ee54902c305018e89b15b2ecb6a4d8a6e4a14bb",
-   "solid_volume": 209371.271,
+   "sha256": "20f9bf9b69643c28b84327578320e974e10cab503ecfbc6fd188f20a8bdfe268",
+   "solid_volume": 209475.179,
    "solids": 1,
    "source": "lib/forearm/roll.py:build_block(DEFAULT)",
    "units": "mm"

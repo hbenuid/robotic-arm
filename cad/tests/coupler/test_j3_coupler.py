@@ -1,6 +1,7 @@
 """j3_coupler, parametric (lib/coupler/): the LEGACY configuration reproduces the SolidWorks part feature by feature
 (the volume / bbox match is tests/test_reference_match.py's; here the features are probed by name so a regression
-names what moved), and its stub is the one the forearm roll drive's block repeats at the elbow."""
+names what moved), its stub is the one the forearm roll drive's block repeats at the elbow, and DEFAULT - what the
+part builds - adds exactly one thing: the shoulder on the upper wrist bearing's inner ring."""
 import math
 
 import pytest
@@ -15,10 +16,12 @@ def test_layout():
     assert len(pulley_bolt_points(LEGACY)) == len(flange_bolt_points(LEGACY)) == 4
     assert all(math.isclose(math.hypot(x, z), LEGACY.pulley_bolt_r) for x, z in pulley_bolt_points(LEGACY))
     d = FOREARM.drive
-    # the roll drive's block repeats the coupler's features at the elbow (its stub ends 22 - 15.3 from the journal)
+    # the roll drive's block repeats the coupler's features at the elbow, the inner-ring shoulder included
     assert (d.stub_dia, d.journal_dia, d.boss_dia, d.pulley_bolt_r) == (LEGACY.stub_dia, LEGACY.journal_dia, LEGACY.lip_dia[1],
                                                                         LEGACY.pulley_bolt_r)
-    assert d.stub_x[1] - d.stub_x[0] == pytest.approx(LEGACY.stub_y1 - LEGACY.journal_y1)
+    assert LEGACY.step is None and DEFAULT.step[0] == d.step_dia
+    assert d.step_x[1] - d.step_x[0] == pytest.approx(DEFAULT.step[1] - DEFAULT.journal_y1)
+    assert d.stub_x[1] - d.stub_x[0] == pytest.approx(DEFAULT.stub_y1 - DEFAULT.step[1])
 
 
 @pytest.fixture(scope="module")
@@ -54,6 +57,13 @@ def test_legacy_features(legacy):
 
 
 @pytest.mark.slow
-def test_default_is_legacy(coupler, legacy):
-    assert DEFAULT == LEGACY
-    assert coupler.volume == pytest.approx(legacy.volume, abs=1e-6)
+def test_default_adds_only_the_shoulder(coupler, legacy):
+    from dataclasses import replace
+    assert replace(DEFAULT, step=None) == LEGACY
+    dia, y1 = DEFAULT.step
+    r = dia / 2.0
+    assert is_inside(coupler, r - 0.2, (DEFAULT.journal_y1 + y1) / 2.0, 0) and not is_inside(legacy, r - 0.2, (DEFAULT.journal_y1 + y1) / 2.0, 0)
+    assert not is_inside(coupler, r - 0.2, y1 + 0.1, 0)                           # the stub above it
+    ring = math.pi * (r ** 2 - (DEFAULT.stub_dia / 2.0) ** 2) * (y1 - DEFAULT.journal_y1)
+    assert coupler.volume - legacy.volume == pytest.approx(ring, abs=1e-3)
+    assert tuple(coupler.bounding_box().max) == pytest.approx(tuple(legacy.bounding_box().max), abs=1e-6)

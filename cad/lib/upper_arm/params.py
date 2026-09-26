@@ -100,7 +100,8 @@ class SlotParams:
 @dataclass(frozen=True)
 class BearingParams:
     """At x 128: a Ø22.2 counterbore from each side (608 bearings?) around a Ø8.4 hole through a 2 mm web, the
-    lower one in a Ø40 boss proud of the underside. Purpose unknown (the SolidWorks capture holds nothing there)."""
+    lower one in a Ø40 boss proud of the underside - the elbow drive's second stage (an intermediate pulley shaft between
+    the pad's motor and the elbow 90T; not modelled - docs/open_issues.md; the SolidWorks capture holds nothing there)."""
 
     x: float = 128.0
     seat_dia: float = 22.2

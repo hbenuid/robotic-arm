@@ -6,8 +6,9 @@ A 300 x 90 stadium plate (y -11.77..1.5 at the shoulder half, stepping down to y
 r 44.5 lip on top. Shoulder end: the Ø50 4x M4 bolts of the drive's output hub around a 42.5 square opening, over
 the elbow motor's 48 square pad (face y -32.5, a window in each wall - the +X one is the elbow belt's exit - the
 NEMA 17 holes in its floor; lib/mounts.py places nema17_40mm#2 on it). Elbow end: the Ø80 recess, the Ø42 bore, a
-Ø37.64 lip and the Ø42.2 seat from below on the elbow axis. Between them: two through slots, the stepped slot at
-x 163 and a Ø22.2 seat from each side at x 128 (purposes unknown). DEFAULT (what the part builds) leaves out LEGACY's
+Ø37.64 lip and the Ø42.2 seat from below on the elbow axis (the elbow's 6806-2RS pair, one each side of the lip -
+lib/mounts.py). Between them: two through slots, the stepped slot at x 163 (purpose unknown) and a Ø22.2 seat from
+each side at x 128 (the elbow drive's second stage, not modelled). DEFAULT (what the part builds) leaves out LEGACY's
 10 Ø5.15 x 2 sockets in the underside (j1_cap's dowel seats - the cap was removed 2026-09-25), puts the 4 NEMA 17
 holes on a 31 square about the shoulder axis (the SolidWorks ones are 0.38 off and uneven) and the hub holes on the
 drive's bolts (3.36 degrees from the SolidWorks ones). Every number: lib/upper_arm/params.py (UpperArmConfig;

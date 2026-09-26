@@ -11,9 +11,9 @@
  "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. A record with a `mount` block (keys under `mounted`) is a motor mount declared in lib/mounts.py, not a SolidWorks node: parent None, rel == world = host world * mount frame.",
  "root_label": "final_Arm_Assembly_Fully_Movable",
  "expected": {
-  "leaf_occurrences": 37,
-  "solids": 97,
-  "solid_volume": 1849734.223
+  "leaf_occurrences": 45,
+  "solids": 105,
+  "solid_volume": 1927856.167
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -26,6 +26,14 @@
   "mks_servo42d#2",
   "nema17_40mm#3",
   "mks_servo42d#3",
+  "bearing_6806#1",
+  "bearing_6806#2",
+  "bearing_6806#3",
+  "bearing_6806#4",
+  "bearing_6806#5",
+  "bearing_6806#6",
+  "gt2_pulley_90t#3",
+  "gt2_pulley_90t#4",
   "forearm_roll_drive#1"
  ],
  "occurrences": [
@@ -3423,6 +3431,830 @@
     55.873,
     55.318,
     36.591
+   ]
+  },
+  {
+   "key": "bearing_6806#1",
+   "part": "bearing_6806",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "base#1",
+    "link": "base_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      -13.092748,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      -90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the base's bore (axis +Y): the upper (coupler-side) 6806, on the lip"
+   },
+   "solids": 1,
+   "solid_volume": 4750.088,
+   "rel": {
+    "position": [
+     0.0,
+     -13.092748,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     0.0
+    ],
+    "matrix_3x4": [
+     [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -13.092748
+     ],
+     [
+      0.0,
+      -1.0,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     0.0,
+     -13.092748,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     0.0
+    ],
+    "matrix_3x4": [
+     [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -13.092748
+     ],
+     [
+      0.0,
+      -1.0,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -21.0,
+    -13.093,
+    -21.0
+   ],
+   "world_bbox_size": [
+    42.0,
+    7.0,
+    42.0
+   ]
+  },
+  {
+   "key": "bearing_6806#2",
+   "part": "bearing_6806",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "base#1",
+    "link": "base_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      -21.4,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      -90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the base's bore (axis +Y): the lower (pulley-side) 6806, under the lip"
+   },
+   "solids": 1,
+   "solid_volume": 4750.088,
+   "rel": {
+    "position": [
+     0.0,
+     -21.4,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     0.0
+    ],
+    "matrix_3x4": [
+     [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -21.4
+     ],
+     [
+      0.0,
+      -1.0,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     0.0,
+     -21.4,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     0.0
+    ],
+    "matrix_3x4": [
+     [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -21.4
+     ],
+     [
+      0.0,
+      -1.0,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -21.0,
+    -21.4,
+    -21.0
+   ],
+   "world_bbox_size": [
+    42.0,
+    7.0,
+    42.0
+   ]
+  },
+  {
+   "key": "bearing_6806#3",
+   "part": "bearing_6806",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j1_link#1",
+    "link": "upper_arm_link",
+    "joint": "elbow_pitch",
+    "frame_in_host": {
+     "position": [
+      210.0,
+      -13.0,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      -90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "j1_link's elbow bore (axis +Y): the upper (coupler-side) 6806, on the lip"
+   },
+   "solids": 1,
+   "solid_volume": 4750.088,
+   "rel": {
+    "position": [
+     -144.630248,
+     240.04692,
+     -38.761195
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     132.415833
+    ],
+    "matrix_3x4": [
+     [
+      -0.673104708,
+      -0.736734748,
+      0.064435727,
+      -144.630248194
+     ],
+     [
+      0.738268975,
+      -0.674506428,
+      -2e-09,
+      240.046919707
+     ],
+     [
+      0.043462313,
+      0.047570897,
+      0.997921859,
+      -38.761195356
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -144.630248,
+     240.04692,
+     -38.761195
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     132.415833
+    ],
+    "matrix_3x4": [
+     [
+      -0.673104708,
+      -0.736734748,
+      0.064435727,
+      -144.630248194
+     ],
+     [
+      0.738268975,
+      -0.674506428,
+      -2e-09,
+      240.046919707
+     ],
+     [
+      0.043462313,
+      0.047570897,
+      0.997921859,
+      -38.761195356
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -165.587,
+    219.047,
+    -40.114
+   ],
+   "world_bbox_size": [
+    42.364,
+    42.0,
+    9.692
+   ]
+  },
+  {
+   "key": "bearing_6806#4",
+   "part": "bearing_6806",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j1_link#1",
+    "link": "upper_arm_link",
+    "joint": "elbow_pitch",
+    "frame_in_host": {
+     "position": [
+      210.0,
+      -22.0,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      -90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "j1_link's elbow bore (axis +Y): the lower (pulley-side) 6806, under the lip"
+   },
+   "solids": 1,
+   "solid_volume": 4750.088,
+   "rel": {
+    "position": [
+     -145.21017,
+     240.04692,
+     -47.742492
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     132.415833
+    ],
+    "matrix_3x4": [
+     [
+      -0.673104708,
+      -0.736734748,
+      0.064435727,
+      -145.21016974
+     ],
+     [
+      0.738268975,
+      -0.674506428,
+      -2e-09,
+      240.046919721
+     ],
+     [
+      0.043462313,
+      0.047570897,
+      0.997921859,
+      -47.742492088
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -145.21017,
+     240.04692,
+     -47.742492
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     132.415833
+    ],
+    "matrix_3x4": [
+     [
+      -0.673104708,
+      -0.736734748,
+      0.064435727,
+      -145.21016974
+     ],
+     [
+      0.738268975,
+      -0.674506428,
+      -2e-09,
+      240.046919721
+     ],
+     [
+      0.043462313,
+      0.047570897,
+      0.997921859,
+      -47.742492088
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -166.167,
+    219.047,
+    -49.096
+   ],
+   "world_bbox_size": [
+    42.364,
+    42.0,
+    9.692
+   ]
+  },
+  {
+   "key": "bearing_6806#5",
+   "part": "bearing_6806",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j2_link#1",
+    "link": "forearm_link",
+    "joint": "wrist_pitch",
+    "frame_in_host": {
+     "position": [
+      -210.0,
+      0.0,
+      19.0
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "j2_link's wrist boss (axis +Z): the upper (coupler-side) 6806, on the lip"
+   },
+   "solids": 1,
+   "solid_volume": 4750.088,
+   "rel": {
+    "position": [
+     -284.852281,
+     393.625302,
+     12.380393
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     -46.997641
+    ],
+    "matrix_3x4": [
+     [
+      0.68061112,
+      0.729805824,
+      0.064435731,
+      -284.852281232
+     ],
+     [
+      -0.731325622,
+      0.682028471,
+      0.0,
+      393.625301525
+     ],
+     [
+      -0.043947003,
+      -0.047123501,
+      0.997921859,
+      12.380392993
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -284.852281,
+     393.625302,
+     12.380393
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     -46.997641
+    ],
+    "matrix_3x4": [
+     [
+      0.68061112,
+      0.729805824,
+      0.064435731,
+      -284.852281232
+     ],
+     [
+      -0.731325622,
+      0.682028471,
+      0.0,
+      393.625301525
+     ],
+     [
+      -0.043947003,
+      -0.047123501,
+      0.997921859,
+      12.380392993
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -305.809,
+    372.625,
+    11.027
+   ],
+   "world_bbox_size": [
+    42.364,
+    42.0,
+    9.692
+   ]
+  },
+  {
+   "key": "bearing_6806#6",
+   "part": "bearing_6806",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j2_link#1",
+    "link": "forearm_link",
+    "joint": "wrist_pitch",
+    "frame_in_host": {
+     "position": [
+      -210.0,
+      0.0,
+      10.0
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "j2_link's wrist boss (axis +Z): the lower (pulley-side) 6806, under the lip"
+   },
+   "solids": 1,
+   "solid_volume": 4750.088,
+   "rel": {
+    "position": [
+     -285.432203,
+     393.625302,
+     3.399096
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     -46.997641
+    ],
+    "matrix_3x4": [
+     [
+      0.68061112,
+      0.729805824,
+      0.064435731,
+      -285.432202813
+     ],
+     [
+      -0.731325622,
+      0.682028471,
+      0.0,
+      393.625301525
+     ],
+     [
+      -0.043947003,
+      -0.047123501,
+      0.997921859,
+      3.399096263
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -285.432203,
+     393.625302,
+     3.399096
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     -46.997641
+    ],
+    "matrix_3x4": [
+     [
+      0.68061112,
+      0.729805824,
+      0.064435731,
+      -285.432202813
+     ],
+     [
+      -0.731325622,
+      0.682028471,
+      0.0,
+      393.625301525
+     ],
+     [
+      -0.043947003,
+      -0.047123501,
+      0.997921859,
+      3.399096263
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -306.389,
+    372.625,
+    2.046
+   ],
+   "world_bbox_size": [
+    42.364,
+    42.0,
+    9.692
+   ]
+  },
+  {
+   "key": "gt2_pulley_90t#3",
+   "part": "gt2_pulley_90t",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "gt2_pulley_90t#1",
+    "link": "elbow_link",
+    "joint": "elbow_pitch",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      3.0,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the elbow 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower elbow bearing"
+   },
+   "solids": 1,
+   "solid_volume": 24810.708,
+   "rel": {
+    "position": [
+     -145.60967,
+     240.046921,
+     -53.929608
+    ],
+    "rotation_xyz_deg": [
+     93.438897,
+     42.891416,
+     174.954347
+    ],
+    "matrix_3x4": [
+     [
+      -0.72980583,
+      -0.064435734,
+      0.680611112,
+      -145.609670203
+     ],
+     [
+      -0.682028464,
+      -2e-09,
+      -0.731325628,
+      240.046920995
+     ],
+     [
+      0.047123505,
+      -0.997921859,
+      -0.043947004,
+      -53.929607576
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -145.60967,
+     240.046921,
+     -53.929608
+    ],
+    "rotation_xyz_deg": [
+     93.438897,
+     42.891416,
+     174.954347
+    ],
+    "matrix_3x4": [
+     [
+      -0.72980583,
+      -0.064435734,
+      0.680611112,
+      -145.609670203
+     ],
+     [
+      -0.682028464,
+      -2e-09,
+      -0.731325628,
+      240.046920995
+     ],
+     [
+      0.047123505,
+      -0.997921859,
+      -0.043947004,
+      -53.929607576
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -175.67,
+    210.453,
+    -64.019
+   ],
+   "world_bbox_size": [
+    59.67,
+    59.188,
+    24.229
+   ]
+  },
+  {
+   "key": "gt2_pulley_90t#4",
+   "part": "gt2_pulley_90t",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "gt2_pulley_90t#2",
+    "link": "wrist_pitch_link",
+    "joint": "wrist_pitch",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      3.0,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the wrist 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower wrist bearing"
+   },
+   "solids": 1,
+   "solid_volume": 24810.708,
+   "rel": {
+    "position": [
+     -285.831703,
+     393.625302,
+     -2.788019
+    ],
+    "rotation_xyz_deg": [
+     96.403295,
+     59.930577,
+     172.611205
+    ],
+    "matrix_3x4": [
+     [
+      -0.496888416,
+      -0.064435728,
+      0.865418938,
+      -285.831703183
+     ],
+     [
+      -0.867221146,
+      4e-09,
+      -0.497923171,
+      393.625302013
+     ],
+     [
+      0.032084038,
+      -0.997921859,
+      -0.055880028,
+      -2.788018578
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -285.831703,
+     393.625302,
+     -2.788019
+    ],
+    "rotation_xyz_deg": [
+     96.403295,
+     59.930577,
+     172.611205
+    ],
+    "matrix_3x4": [
+     [
+      -0.496888416,
+      -0.064435728,
+      0.865418938,
+      -285.831703183
+     ],
+     [
+      -0.867221146,
+      4e-09,
+      -0.497923171,
+      393.625302013
+     ],
+     [
+      0.032084038,
+      -0.997921859,
+      -0.055880028,
+      -2.788018578
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -315.892,
+    364.031,
+    -12.878
+   ],
+   "world_bbox_size": [
+    59.67,
+    59.188,
+    24.229
    ]
   },
   {

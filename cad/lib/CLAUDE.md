@@ -12,6 +12,7 @@ params.py     # single source of truth for shared dimensions (tagged provenance)
 units.py      # IN, NUDGE - a leaf module (lib/cycloidal/ imports it; params.py re-exports it)
 motors.py     # the arm's motors (NEMA 17 interface, pancake, the 40 mm kit motor + MKS board, MOTOR_40) - a leaf, re-exported by params.py
 belts.py      # GT2: the pulleys, pulley_od(), closed_belt_length() / centre_distance(), stock belt lengths - a leaf
+bearings.py   # the belt joints' 6806-2RS pair: bore / OD / width, the inner-ring shoulder, the mass - a leaf
 cots.py       # hybrid(): the body of every purchased part (vendor STEP, else the envelope); pattern() for the multi-body ones
 geom.py       # the arm's small build123d helpers: align_min(), cylinder(), through() (NUDGE overshoot), single_solid(), hex_prism() - a leaf
 base/         # the base (BaseConfig: LEGACY = the SolidWorks base, DEFAULT = what is built)
@@ -19,7 +20,7 @@ coupler/      # the J3 coupler (CouplerParams: LEGACY = the SolidWorks j3_couple
 upper_arm/    # the upper arm (UpperArmConfig: LEGACY = the SolidWorks j1_link, DEFAULT = no cap sockets, the motor's and the drive's hole patterns)
 forearm/      # the forearm (ForearmConfig: LEGACY = the SolidWorks j2_link, DEFAULT = the roll end, no cap sockets) and the roll drive (RollDriveParams, stack_positions, the block / shaft / retainer / 90T ring builders)
 datum.py      # capture frame W -> base_link frame B: frame(), base_frame() (arm.py arm_from_w(), robot/frames.py); frames as data: IDENTITY, to_location()
-mounts.py     # the motor mounts the SolidWorks capture never had (base_yaw / elbow_pitch / wrist_pitch motors + MKS boards) as frames-as-data
+mounts.py     # what the SolidWorks capture never placed right, as frames-as-data: the belt joints' motors + MKS boards, their 6806 pairs, the re-seated 90Ts
 reference.py  # naming maps (SolidWorks custom/COTS, designed cycloidal parts, modules), loaders, path_of(), matches_reference()
 manifest.py   # reference/manifest.json: read() / write() / entry() - shared by the two import tools and the tests
 placements.py # reference/placements.json -> build123d Location
@@ -31,7 +32,7 @@ cycloidal/    # the cycloidal drive: DriveConfig (params.py), layout.py, profile
 ## Shared dimensions (DRY)
 `lib/params.py` is the single source of truth: mm and grams, every constant tagged
 `[MEASURE] / [DATASHEET] / [DESIGN] / [REFERENCE] / [ESTIMATE]` with a derivation comment. It re-exports the
-leaves below it (`lib/units.py`, `lib/motors.py`, `lib/belts.py`: What is where) unchanged; a `lib/` package it
+leaves below it (`lib/units.py`, `lib/motors.py`, `lib/belts.py`, `lib/bearings.py`: What is where) unchanged; a `lib/` package it
 re-exports from (`lib/cycloidal/`, `lib/forearm/`, `lib/upper_arm/`, `lib/base/`, `lib/coupler/`) takes its globals from those leaves and its geometry
 helpers from `lib/geom.py`, never from `lib.params` — and no leaf imports `lib.params` either
 (`tests/test_layering.py LEAF_PACKAGES` / `LEAF_MODULES`). Datum: the SolidWorks capture

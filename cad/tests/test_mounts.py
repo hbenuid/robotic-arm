@@ -1,6 +1,8 @@
-"""The belt joints' motor mounts (lib/mounts.py, materialised into reference/placements.json by
-tools/reference/mount_placements.py): each NEMA 17 x 40 sits on the pad its SolidWorks host carries with
-its shaft on the joint axis, its MKS board on its rear face, and nothing runs into the neighbours."""
+"""The belt joints' mounts (lib/mounts.py, materialised into reference/placements.json by
+tools/reference/mount_placements.py): each NEMA 17 sits on the pad its SolidWorks host carries with its shaft
+parallel to the joint axis, its MKS board on its rear face; each joint's 6806 pair stands on the lip of its bore
+with the coupler's shoulder on the upper inner ring and the re-seated 90T's ring under the lower one; and nothing
+runs into the neighbours."""
 import math
 
 import pytest
@@ -11,6 +13,7 @@ from assemblies._occurrences import place_world
 from lib import mounts
 from lib import params as PARAMS
 from lib import placements as P
+from lib.bearings import BEARING_6806_SHOULDER_DIA, BEARING_6806_WIDTH
 from lib.cycloidal import DEFAULT_CONFIG
 from lib.datum import BASE_BOTTOM_Y, to_location
 from lib.models import raw
@@ -19,6 +22,13 @@ from tests.helpers import interference
 
 MOTORS = [m for m in mounts.MOUNTS if m.part in mounts.MOTORS]
 BOARDS = {m.host: m for m in mounts.MOUNTS if m.part == mounts.BOARD}
+ON_AXIS = [m for m in mounts.MOUNTS if m.part in (mounts.BEARING, mounts.PULLEY)]
+# per belt joint: (upper bearing, lower bearing, the housing, what bears on the upper inner ring, the re-seated 90T)
+STACKS = {
+    "base_yaw": ("bearing_6806#1", "bearing_6806#2", "base#1", None, None),
+    "elbow_pitch": ("bearing_6806#3", "bearing_6806#4", "j1_link#1", "forearm_roll_block", "gt2_pulley_90t#3"),
+    "wrist_pitch": ("bearing_6806#5", "bearing_6806#6", "j2_link#1", "j3_coupler#2", "gt2_pulley_90t#4"),
+}
 
 
 def _world(key: str) -> Location:
@@ -69,9 +79,9 @@ def test_mounting_face_lies_on_the_host_pad(m):
 
 @pytest.mark.slow
 def test_motors_and_boards_clear_their_neighbours():
-    """Interference budget (mm^3) against the hosts, the pulleys and the placed drives: zero everywhere
+    """Interference budget (mm^3) of every mount against the hosts, the pulleys and the placed drives: zero everywhere
     (the Ø22 pilot boss used to stand in j2_link's Ø20 central slot - the parametric forearm's slot is 22.3 wide)."""
-    neighbours = ["base#1", "j1_coupler#1", "j1_link#1", "j2_link#1", "gt2_pulley_90t#1", "gt2_pulley_90t#2", "j3_coupler#2",
+    neighbours = ["base#1", "j1_coupler#1", "j1_link#1", "j2_link#1", "gt2_pulley_90t#3", "gt2_pulley_90t#4", "j3_coupler#2",
                   "wrist_link#1"]
     shapes = {k: place_world(P.OCCURRENCES[k]["part"], k) for k in neighbours}
     shapes["cycloidal_drive#1"] = raw(cycloidal_drive.cycloidal_drive).moved(_world("cycloidal_drive#1"))
@@ -80,9 +90,11 @@ def test_motors_and_boards_clear_their_neighbours():
     for m in mounts.MOUNTS:
         part = place_world(m.part, m.key)
         for key, other in shapes.items():
+            if key == m.key:
+                continue   # a re-seated pulley is a neighbour of the others
             vol = interference(part, other)
             assert vol <= budget.get((m.key, key), 1.0), f"{m.key} x {key}: {vol:.1f} mm^3"
-    # the three motors and boards do not touch each other either
+    # the mounts do not run into each other either (a bearing and the pulley in it only touch)
     placed = [(m.key, place_world(m.part, m.key)) for m in mounts.MOUNTS]
     for i, (ka, a) in enumerate(placed):
         for kb, b in placed[i + 1:]:
@@ -102,9 +114,10 @@ def test_base_motor_stack_hangs_below_the_base_by_the_documented_amount():
 
 @pytest.mark.slow
 def test_belt_pulley_planes_are_reachable():
-    """Each belt motor's shaft (22 mm past its mounting face) reaches the plane of the 90T it drives: the 90T's
-    bore-axis station lies between the mounting face and the shaft tip along the motor axis."""
-    for m, pulley_key in (("nema17_40mm#2", "gt2_pulley_90t#1"), ("nema17_40mm#3", "gt2_pulley_90t#2")):
+    """The wrist motor's shaft (22 mm past its mounting face) reaches the plane of the 90T it drives: the 90T's
+    bore-axis station lies between the mounting face and the shaft tip along the motor axis. (The elbow 90T is driven
+    from a second stage through j1_link's x 128 seats, not from its motor - not modelled, docs/open_issues.md.)"""
+    for m, pulley_key in (("nema17_40mm#3", "gt2_pulley_90t#4"),):
         world = _world(m)
         z = _dir(world).normalized()
         pulley = place_world("gt2_pulley_90t", pulley_key)
@@ -124,3 +137,76 @@ def test_wrist_pitch_slide_position_is_inside_the_slots():
 def test_the_base_takes_the_48mm_motor_and_the_links_the_40mm_one():
     by_joint = {m.joint: m.part for m in mounts.MOUNTS if m.part in mounts.MOTORS}
     assert by_joint == {"base_yaw": "nema17_48mm", "elbow_pitch": "nema17_40mm", "wrist_pitch": "nema17_40mm"}
+
+
+def test_bearings_and_pulleys_sit_on_their_joint_axes():
+    """Each bearing's +Z and each re-seated pulley's +Y (lib/mounts.py AXES) runs along its joint's axis, its origin on
+    the axis; a pair per belt joint, riding with its housing's link; each pulley PULLEY_SEAT_SHIFT out from its retired
+    SolidWorks pose, along its own axis, its spin kept."""
+    for m in ON_AXIS:
+        joint, (local, on_axis) = F.JOINT_BY_NAME[m.joint], mounts.AXES[m.part]
+        world = _world(m.key)
+        axis = Vector(*joint.axis_w)
+        assert on_axis and abs(abs(_dir(world, local).normalized().dot(axis)) - 1.0) < 1e-6, m.key
+        d = world.position - Vector(*joint.origin_w)
+        assert (d - axis * d.dot(axis)).length < 0.01, m.key
+        assert m.key in F.LINKS[m.link], m.key
+    by_joint = {j: [m.key for m in ON_AXIS if m.joint == j and m.part == mounts.BEARING] for j in STACKS}
+    assert by_joint == {j: list(s[:2]) for j, s in STACKS.items()}
+    for j, (up, _, host, _, _) in STACKS.items():
+        assert mounts.BY_KEY[up].host == host and mounts.BY_KEY[up].link == F.JOINT_BY_NAME[j].parent
+    for m in (mounts.BY_KEY["gt2_pulley_90t#3"], mounts.BY_KEY["gt2_pulley_90t#4"]):
+        assert m.host in P.RETIRED and m.frame == ((0.0, PARAMS.PULLEY_SEAT_SHIFT, 0.0), (0.0, 0.0, 0.0))
+        assert m.link == F.JOINT_BY_NAME[m.joint].child
+
+
+def _faces_on(shape, origin: Vector, z: Vector) -> list[tuple[int, float, float]]:
+    """The planar faces of `shape` in the plane through `origin` normal to z: (the normal's sign along z, the smallest
+    and largest radius of their circular edges about the axis through origin along z)."""
+    found = []
+    for f in shape.faces().filter_by(GeomType.PLANE):
+        n = f.normal_at()
+        if abs(abs(n.dot(z)) - 1.0) > 1e-6 or abs((f.center() - origin).dot(z)) > 1e-3:
+            continue
+        radii = [e.radius for e in f.edges() if e.geom_type == GeomType.CIRCLE
+                 and ((e.arc_center - origin) - z * (e.arc_center - origin).dot(z)).length < 1e-3]
+        if radii:
+            found.append((round(n.dot(z)), min(radii), max(radii)))
+    return found
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize("joint", list(STACKS))
+def test_bearing_stacks(joint):
+    """Each belt joint's pair: both bearings on the lip that splits the housing's bore (the lip bears on the outer
+    rings only), the coupler's shoulder down on the upper inner ring, the re-seated 90T's ring under the lower inner
+    ring - so bolting the pulley to the coupler clamps both - and no overlap anywhere. The base's stack is not closed
+    yet: j1_coupler has no shoulder and the base_yaw pulley is not modelled (docs/open_issues.md)."""
+    up, lo, host_key, coupler_key, pulley_key = STACKS[joint]
+    host = place_world(P.OCCURRENCES[host_key]["part"], host_key)
+    wu, wl = _world(up), _world(lo)
+    z = _dir(wu).normalized()
+    width = Location((0.0, 0.0, BEARING_6806_WIDTH))
+    inner_r, lip_r = BEARING_6806_SHOULDER_DIA / 2.0, math.inf
+    for station, sign in ((wu.position, 1), ((wl * width).position, -1)):      # the lip's two faces
+        faces = [f for f in _faces_on(host, station, z) if f[0] == sign]
+        assert faces, (joint, sign)
+        lip_r = min(lip_r, min(r0 for _, r0, _ in faces))
+    assert lip_r > inner_r + 1.0, (joint, lip_r)                                # the lip clears the inner rings
+    bearings = [place_world(mounts.BEARING, k) for k in (up, lo)]
+    others = [host]
+    if coupler_key is not None:
+        if coupler_key == "forearm_roll_block":
+            coupler = next(c for c in raw(forearm_roll_drive.forearm_roll_drive).children if c.label == coupler_key)
+            coupler = coupler.moved(_world("forearm_roll_drive#1"))
+        else:
+            coupler = place_world(P.OCCURRENCES[coupler_key]["part"], coupler_key)
+        pulley = place_world(mounts.PULLEY, pulley_key)
+        shoulder = [f for f in _faces_on(coupler, (wu * width).position, z) if f[0] == -1]
+        assert shoulder and max(r1 for _, _, r1 in shoulder) <= inner_r + 1e-6, (joint, shoulder)     # the inner ring only
+        ring = [f for f in _faces_on(pulley, wl.position, z) if f[0] == 1]
+        assert ring and max(r1 for _, _, r1 in ring) < lip_r, (joint, ring)                           # clear of the outer ring
+        others += [coupler, pulley]
+    for b in bearings:
+        for o in others + [bearings[1] if b is bearings[0] else bearings[0]]:
+            assert interference(b, o) < 1e-3, joint

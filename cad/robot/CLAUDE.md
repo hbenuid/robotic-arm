@@ -41,8 +41,8 @@ robot/
   MKS boards) drives which joint is unconfirmed (`docs/open_issues.md`); wrist_roll and the jaws are not driven by
   `software/control/src/config.py`.
 - **The reductions the software must match** (`lib/params.py`): `CYCLOIDAL_RATIO` (shoulder_pitch), `GT2_RATIO`
-  (the elbow_pitch and wrist_pitch belts), `FOREARM_ROLL_RATIO` (forearm_roll); what drives base_yaw is not modelled
-  yet (`docs/open_issues.md`). They are motor revolutions per output revolution, while
+  (the wrist_pitch belt, and the elbow_pitch one provisionally: `j1_link`'s x 128 seats are for a second elbow stage,
+  not designed yet), `FOREARM_ROLL_RATIO` (forearm_roll); what drives base_yaw is not modelled yet (`docs/open_issues.md`). They are motor revolutions per output revolution, while
   `software/control/src/config.py`'s `gear_ratio` is output revolutions per motor revolution — the software's value
   is the reciprocal (`1 / CYCLOIDAL_RATIO`, …).
 
@@ -68,12 +68,12 @@ joints' motors are mounted occurrences (`lib/mounts.py`, `assemblies/CLAUDE.md`)
 
 | link | occurrences (`robot/frames.py LINKS`) |
 |---|---|
-| `base_link` | `base` + `nema17_48mm#1`, `mks_servo42d#1` (the base_yaw 48 mm motor + board under the plate) |
+| `base_link` | `base` + `bearing_6806#1`, `#2` (the base_yaw pair in its bore) + `nema17_48mm#1`, `mks_servo42d#1` (the base_yaw 48 mm motor + board under the plate) |
 | `shoulder_link` | `j1_coupler` + the drive's **stator** (`cycloidal_drive#1:stator`: motor plate, ring gear body, ring pins, housing bolts/nuts, NEMA 17 + its MKS board, gear train) |
-| `upper_arm_link` | the drive's **rotor** (`cycloidal_drive#1:rotor`: output hub, output pins, 625) + `j1_link` + `nema17_40mm#2`, `mks_servo42d#2` (the elbow_pitch motor + board on the pad) |
-| `elbow_link` | `gt2_pulley_90t#1` + the roll drive's **stator** (`forearm_roll_drive#1:stator`: the elbow block — the elbow coupler and the housing in one, `j3_coupler#1` retired —, 2× 6808, the end cap, its NEMA 17 x 40 + MKS board, the 20T) |
-| `forearm_link` | the roll drive's **rotor** (`forearm_roll_drive#1:rotor`: the hollow roll shaft with its 90T ring and end spigot) + `j2_link` + `nema17_40mm#3`, `mks_servo42d#3` (the wrist_pitch motor + board on the web) |
-| `wrist_pitch_link` | `wrist_link`, `gripper_clamp_bracket`, `nema17_pancake`, `gt2_pulley_90t#2`, `j3_coupler#2` |
+| `upper_arm_link` | the drive's **rotor** (`cycloidal_drive#1:rotor`: output hub, output pins, 625) + `j1_link` + `bearing_6806#3`, `#4` (the elbow pair in its bore) + `nema17_40mm#2`, `mks_servo42d#2` (the elbow_pitch motor + board on the pad) |
+| `elbow_link` | `gt2_pulley_90t#3` (re-seated, `lib/mounts.py`) + the roll drive's **stator** (`forearm_roll_drive#1:stator`: the elbow block — the elbow coupler and the housing in one, `j3_coupler#1` retired —, 2× 6808, the end cap, its NEMA 17 x 40 + MKS board, the 20T) |
+| `forearm_link` | the roll drive's **rotor** (`forearm_roll_drive#1:rotor`: the hollow roll shaft with its 90T ring and end spigot) + `j2_link` + `bearing_6806#5`, `#6` (the wrist pair in its boss) + `nema17_40mm#3`, `mks_servo42d#3` (the wrist_pitch motor + board on the web) |
+| `wrist_pitch_link` | `wrist_link`, `gripper_clamp_bracket`, `nema17_pancake`, `gt2_pulley_90t#4` (re-seated), `j3_coupler#2` |
 | `wrist_roll_link` | `gt2_pulley_20t` + the gripper base (connector, servo holder, servo + horn, cover, rails, crank links) |
 | `jaw_a_link` / `jaw_b_link` | slider + two fingers + end, each side |
 

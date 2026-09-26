@@ -4,8 +4,9 @@ SolidWorks part frame - origin on the base_yaw axis, +Y up it, the bottom face a
 A D-shaped wall (r 53.34 round half, straight sides to the flat +X end, 5 thick) from the bottom face up to a 5 mm
 motor plate at y -44.9..-39.9; above the plate the round half and the sides' stubs carry on up to the cap, open over
 the plate on the +X side (the base_yaw belt's room). The cap: a 45 degree chamfer under it, the bearing bore on the
-axis (the upper seat Ø42.4 from the seat ring's top, a Ø31.73 lip, the lower seat Ø43.4 through a Ø63.47 boss), an
-annular groove round the raised seat ring j1_coupler turns on. The plate: a central opening that runs out to the
+axis (the upper seat from the seat ring's top, the lip, the lower seat through a Ø63.47 boss - DEFAULT: Ø42.2 / Ø37.65
+/ Ø42.2 for the 6806-2RS pair, the wrist's; LEGACY: Ø42.4 / Ø31.73 / Ø43.4), an annular groove round the raised seat
+ring j1_coupler turns on. The plate: a central opening that runs out to the
 wall on the -X side, a curved slot on +X, and the 48 mm base_yaw motor's seat on its underside (4 holes on the NEMA 17
 square, the pilot window, the belt slot toward the axis, a U rim round the motor's face; lib/mounts.py places
 nema17_48mm#1 on it). A cable notch through the +X end at the bottom. Every number: lib/base/params.py (BaseConfig;

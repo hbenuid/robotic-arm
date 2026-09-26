@@ -11,7 +11,7 @@ The forearm roll drive's elbow block repeats the lip / boss / journal / stub at 
 RollDriveParams; j3_coupler#1 is retired).
 
 Two configurations: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
-tests/test_reference_match.py); DEFAULT is what the part builds.
+tests/test_reference_match.py); DEFAULT is what the part builds: an inner-ring shoulder on the stub.
 
 Every number below was measured on the reference 2026-09-25 (vertex / face census; tests/coupler/test_j3_coupler.py
 re-checks the builds against it): [REFERENCE] unless tagged. Units mm. Frozen dataclasses; variants via
@@ -19,7 +19,9 @@ dataclasses.replace.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+
+from lib.bearings import BEARING_6806_SHOULDER_DIA
 
 
 @dataclass(frozen=True)
@@ -41,7 +43,13 @@ class CouplerParams:
     flange_bolt_dia: float = 4.1
     counterbore_dia: float = 7.1       # ... their heads in counterbores from the flange's top ...
     counterbore_y0: float = 6.0        # ... down to here
+    step: tuple | None = None          # (dia, y1): an inner-ring shoulder from the journal's face up to y1, the stub above it
 
 
 LEGACY = CouplerParams()     # the SolidWorks part, exactly
-DEFAULT = LEGACY             # what the part builds
+
+# What the part builds: a shoulder on the journal's face down onto the upper wrist bearing's inner ring, so bolting the
+# 90T on clamps both inner rings (the pulley's ring below, this shoulder above) against the lip between the outer
+# rings; the journal's Ø40 face stopped 0.7 above the bearing and would have borne on its outer ring too
+# (tests/test_mounts.py test_bearing_stacks).
+DEFAULT = replace(LEGACY, step=(BEARING_6806_SHOULDER_DIA, 16.0))   # [DESIGN] y1: the upper wrist bearing's top face

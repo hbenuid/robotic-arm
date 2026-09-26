@@ -11,6 +11,7 @@ and totals are never quoted (`cad/CLAUDE.md` Docs).
 | issue | where it lives | what closes it | raised |
 |---|---|---|---|
 | The base_yaw motor (48 mm) + its MKS board reach **6.1 mm below the base's bottom face** (62.1 mm stack, 56 mm of depth under the plate) | `lib/params.py BASE_MOTOR_STACK_PROUD`, `tests/test_mounts.py`, `test_params_invariants.py` | feet / a cut-out ≥ 6.1 mm under the base, or the plate moved up (`lib/base/params.py PlateParams`) | 2026-09-21 (`d9662a3`) |
+| The base_yaw bearing stack is not clamped: `j1_coupler` has no inner-ring shoulder (its flat underside stops 1.5 mm above the upper 6806 and 0.5 above the base's seat ring, so tightening the base_yaw pulley's bolts would pull it onto the ring), and the lower 6806 holds nothing until the base_yaw pulley is modelled | `lib/mounts.py` `bearing_6806#1` / `#2`; `tests/test_mounts.py test_bearing_stacks` checks only the lip at the base | convert `j1_coupler` with a Ø`BEARING_6806_SHOULDER_DIA` shoulder like `j3_coupler`'s DEFAULT; model the base_yaw pulley (Not modelled, below) | 2026-09-25 (`git log --grep 6806-2RS`) |
 | The drive motor's tie rods are not modelled (the MKS kit's M3x30 replace them); bolt shanks overlap the export's tapped holes in the model (46 / 159 mm³, thread engagement) | `tests/cycloidal/test_assembly.py` interference budget | nothing — a modelling representation; re-measure if the vendor file changes | 2026-09-21 (`3e667e0`) |
 
 ## Estimates to confirm on the hardware (`[ESTIMATE]` in `lib/params.py` unless noted)
@@ -24,6 +25,8 @@ and totals are never quoted (`cad/CLAUDE.md` Docs).
 | The roll belt, 240-2GT (`RollDriveParams.roll_belt`) - it sets the roll motor's centre distance (60.9) and so its height above the block (its body 1.9 mm above the top at the nominal slot position) | `lib/forearm/params.py` | confirm on the hardware; the plate's slots give +/- 2.5 mm |
 | `FOREARM_ROLL_LIMIT_DEG` = 170 (the hard stop: the shaft's lug on its neck against the end cap's post - printed, 10° wide each, 1 mm of axial overlap) | `lib/params.py`, `lib/forearm/params.py stop_*` | the overlap and widths on the print; the lugs are small - a steel pin if PETG shears |
 | 6808-2RS: mass 33 g, inner-race OD ≈ 44.5 (the shaft's Ø44 shoulders must not touch the outer race) | `lib/params.py BEARING_6808_MASS_G`, `RollDriveParams.inner_race_od` | datasheet / calipers on the bearing in hand |
+| 6806-2RS: mass 26 g (the 6808's, scaled by the ring area); the inner ring's outer edge against the Ø33 shoulders on the stubs and the 90T's Ø34.76 ring (both must bear on the inner ring only) | `lib/bearings.py` | datasheet / calipers on the bearing in hand |
+| The 6806 seats in PETG: Ø42.2 (the base, `j1_link`'s lower seat, `j2_link`'s two), `j1_link`'s upper seat Ø42.0 (line-to-line); the Ø30 stubs and hubs in the inner rings (line-to-line; `j1_coupler`'s Ø29.8) | `lib/base/params.py BoreParams`, `lib/upper_arm/params.py ElbowParams`, `lib/forearm/params.py WristBossParams` | print a fit gauge first (docs/cycloidal_drive.md §6) |
 | The vendor 20T's tooth-band centre 10.95 from its hub face (`t20_hub`) and the 0.5 mm lift above the pad | `lib/forearm/params.py` | the pulley slides on the motor shaft (set screw): align it with the ring on assembly |
 | The roll shaft's Ø40 end spigot + 4x M3 self-tapped into an 8 mm PETG wall carry the forearm's bending moment (no separate flange: bearing 2 must slide over the end) | `lib/forearm/params.py RollEndParams` | check for creep on the print; heat-set inserts or a bolted steel flange if it moves |
 | The elbow's torque path is 4x M4 in **heat-set inserts** in the elbow block's PETG underside (the elbow 90T bolts up into them, 8 mm of insert) | `lib/forearm/params.py RollDriveParams insert_*`, `tools/bom.py EXTRAS` | check for creep on the print; a bolted steel insert plate under the boss is the fallback |
@@ -33,17 +36,17 @@ and totals are never quoted (`cad/CLAUDE.md` Docs).
 ## Not modelled yet
 | item | note |
 |---|---|
-| Belt-side hardware of the elbow_pitch and wrist_pitch belts: the GT2 20T pulleys on their motors' shafts and the elbow belt (the wrist belt is an `EXTRAS` row); what drives base_yaw — a driven pulley on / under `j1_coupler` | candidate `tools/bom.py EXTRAS` rows until modelled |
+| Belt-side hardware of the elbow_pitch and wrist_pitch belts: the GT2 20T pulleys on their motors' shafts and the elbow belt (the wrist belt is an `EXTRAS` row); the elbow drive's second stage through `j1_link`'s x 128 seats (`lib/upper_arm/params.py BearingParams`: a pulley on an 8 mm shaft in two 608s?), whose belt plane must follow the elbow 90T - re-seated `PULLEY_SEAT_SHIFT` out on its bearing; what drives base_yaw — a driven pulley under `j1_coupler` (the 90T's SolidWorks name says J1: probably a third copy, its hub in the lower base bearing) | candidate `tools/bom.py EXTRAS` rows until modelled |
 | The arm's own fasteners and the electronics (CAN adapter, wiring) | not in `tools/bom.py EXTRAS` yet (it holds the drives' fasteners, the belts and the home sensor) |
 | Simplified collision primitives in the URDF (visual meshes are reused for collision) | `robot/arm.urdf` TODO |
 | The forearm roll's **home sensor** (on the end cap's outer face, a magnet in the shaft's stop lug, to the MKS board's limit input) | `tools/bom.py EXTRAS`; the lug and the post are modelled |
 | The roll belt (240-2GT) and the wrist belt (264-2GT) | `tools/bom.py EXTRAS`; their lengths set the roll motor's centre distance / `J2_MOTOR_SLIDE_X` |
 | The roll drive's cable route: through the shaft's Ø24 bore, out of the block's rear end wall on the axis (Ø26 `cable_exit`), then over the elbow to the upper arm | only the exit (`cable_exit`) is modelled |
-| The elbow's own bearings between the block's Ø30 stub and `j1_link`'s Ø42 bore (6702-class rings fit the SolidWorks geometry; the capture never had them either) | `lib/forearm/params.py RollDriveParams stub_*`; candidate `tools/bom.py EXTRAS` rows |
 
 ## Not confirmed
 | item | where |
 |---|---|
+| The elbow_pitch reduction: `robot/CLAUDE.md` gives it `GT2_RATIO` (90/20, one stage), but `j1_link`'s x 128 seats are for a second stage of the elbow drive - the ratio is provisional until that stage is designed | `lib/belts.py GT2_RATIO`, `robot/CLAUDE.md` reductions, `lib/upper_arm/params.py BearingParams` |
 | Which CAN id (`software/control/src/config.py` J1..J3) drives which joint; `software/control/src/config.py` gear ratios still 1.0 while `CYCLOIDAL_RATIO` = 20 and `GT2_RATIO` = 4.5 | `software/control/README.md` Configure your motors, `robot/arm.urdf` ledger, `robot/frames.py` joint notes |
 | The wrist-roll pancake motor's exact model | `parts/wrist/nema17_pancake.py PURCHASE_NOTE` |
 | Link-membership assumptions (90T pulleys + J3 couplers with the driven links, the gripper linkage merged into `wrist_roll_link`) | `robot/frames.py LINKS` comments, the URDF ledger |

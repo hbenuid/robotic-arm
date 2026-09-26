@@ -1,7 +1,10 @@
 """base, parametric (lib/base/): the LEGACY configuration reproduces the SolidWorks part feature by feature (the
 volume / bbox match is tests/test_reference_match.py's; here the features are probed by name so a regression names
-what moved), and the interface values lib/params.py and lib/datum.py take from it are the ones the rest of the arm
-uses (the base_yaw motor's seat, the bottom face)."""
+what moved), the interface values lib/params.py and lib/datum.py take from it are the ones the rest of the arm
+uses (the base_yaw motor's seat, the bottom face), and DEFAULT - what the part builds - changes only the bearing
+bore: the 6806-2RS pair's seats and lip, the wrist's."""
+from dataclasses import replace
+
 import pytest
 from build123d import Location
 
@@ -10,7 +13,9 @@ from lib import mounts
 from lib import params as PARAMS
 from lib import placements as P
 from lib.base import DEFAULT, LEGACY, chamfer_inset, motor_holes, side_stub_x
+from lib.bearings import BEARING_6806_OD, BEARING_6806_WIDTH
 from lib.datum import BASE_BOTTOM_Y, to_location
+from lib.forearm import DEFAULT as FOREARM
 from lib.motors import NEMA17_BOLT_SP, NEMA17_FACE
 from tests.helpers import is_inside
 
@@ -83,7 +88,22 @@ def test_legacy_features(legacy):
     assert is_inside(leg, 0, -5.7, 50)
 
 
+def test_default_bore_takes_the_6806_pair():
+    b = DEFAULT.bore
+    assert replace(DEFAULT, bore=LEGACY.bore) == LEGACY
+    assert (b.upper_dia, b.lower_dia, b.lip_dia) == (FOREARM.boss.seat_dia, FOREARM.boss.seat_dia, FOREARM.boss.lip_dia)
+    assert b.upper_dia > BEARING_6806_OD and LEGACY.bore.lower_dia - BEARING_6806_OD > 1.0   # the SolidWorks lower seat: 1.4 over
+    c = DEFAULT.cap
+    assert c.ring_top_y - b.lip_y[1] > BEARING_6806_WIDTH and b.lip_y[0] - c.boss_y0 > BEARING_6806_WIDTH   # a bearing fits each side
+
+
 @pytest.mark.slow
-def test_default_is_legacy(base, legacy):
-    assert DEFAULT == LEGACY
-    assert base.volume == pytest.approx(legacy.volume, abs=1e-6)
+def test_default_changes_only_the_bore(base, legacy):
+    assert base.is_valid and len(base.solids()) == 1
+    assert tuple(base.bounding_box().min) == pytest.approx(tuple(legacy.bounding_box().min), abs=1e-6)
+    assert tuple(base.bounding_box().max) == pytest.approx(tuple(legacy.bounding_box().max), abs=1e-6)
+    assert is_inside(base, 0, -10, 21.15) and not is_inside(legacy, 0, -10, 21.15)   # the upper seat Ø42.4 -> Ø42.2
+    assert is_inside(base, 0, -18, 21.5) and not is_inside(legacy, 0, -18, 21.5)     # the lower seat Ø43.4 -> Ø42.2
+    assert not is_inside(base, 0, -13.8, 17) and is_inside(legacy, 0, -13.8, 17)     # the lip Ø31.73 -> Ø37.65
+    assert is_inside(base, 0, -13.8, 19) and not is_inside(base, 0, -10, 21.05)
+    assert is_inside(base, 60, -42, 30) == is_inside(legacy, 60, -42, 30)              # the rest as before

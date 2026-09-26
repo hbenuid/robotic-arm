@@ -1,11 +1,12 @@
-"""Materialise the mounts declared in lib/mounts.py - the belt joints' motors and the pose of a code-driven
-module - as reference/placements.json records.
+"""Materialise the mounts declared in lib/mounts.py - the belt joints' motors, their bearings, the re-seated 90T
+pulleys and the pose of a code-driven module - as reference/placements.json records.
 
     ./cadtool python tools/reference/mount_placements.py [--out reference/placements.json]
 
-The SolidWorks capture never contained the belt joints' motors; lib/mounts.py declares each one (and its
-MKS board) as a frame in its host occurrence's frame. This tool resolves `world = host world * frame`
-(the host is a SolidWorks record, or the motor record for a board - declaration order), builds the part
+The SolidWorks capture never contained the belt joints' motors or bearings; lib/mounts.py declares each one (a
+motor's MKS board too, and the two 90T pulleys it re-seats) as a frame in its host occurrence's frame. This tool
+resolves `world = host world * frame` (the host is a SolidWorks record - a retired one for a re-seated pulley -, or
+the motor record for a board - declaration order), builds the part
 in-process (parts.build) to fill `solids` / `solid_volume` / `world_bbox_*`, and writes ordinary
 `kind: "part"` records with parent None, rel == world and a `mount` block naming the host, link, joint
 and the frame - so assemblies/arm.py, robot/frames.py LINKS, the inertials and tools/bom.py read them
@@ -22,9 +23,9 @@ a `kind: "module", designed: true` record with the same `mount` block and no sol
 own totals are its EXPECTED; expected_totals() counts part records only), listed under `designed_modules`
 AND `mounted`, exactly like the drive's SolidWorks-placed record otherwise.
 
-Checks: every motor's +Z must be parallel to its joint's axis (robot/frames.py JOINTS), a module's +Z must
-lie ON that axis (parallel, origin on the line) - a wrong rotation convention in a mount fails here, not
-silently in the assembly.
+Checks: every motor's +Z must be parallel to its joint's axis (robot/frames.py JOINTS); a bearing's +Z, a pulley's
++Y (lib/mounts.py AXES) and a module's +Z must lie ON that axis (parallel, origin on the line) - a wrong rotation
+convention in a mount fails here, not silently in the assembly.
 """
 from __future__ import annotations
 
@@ -45,9 +46,9 @@ AXIS_TOL = 1e-6        # direction cosine
 ORIGIN_TOL = 0.01      # mm: a module's origin off its joint's axis (the six-decimal placements round to ~1 um)
 
 
-def _axis_z(loc: Location) -> tuple[float, float, float]:
-    """World direction of the frame's +Z."""
-    tip = (loc * Location((0.0, 0.0, 1.0))).position
+def _axis_z(loc: Location, local=(0.0, 0.0, 1.0)) -> tuple[float, float, float]:
+    """World direction of the frame's +Z (or of another local axis)."""
+    tip = (loc * Location(local)).position
     return tuple(a - b for a, b in zip(tip, loc.position, strict=True))
 
 
@@ -61,10 +62,10 @@ def _mount_block(m) -> dict:
     }
 
 
-def _check_axis(key: str, world: Location, joint, *, on_axis: bool) -> None:
-    z, axis = _axis_z(world), joint.axis_w
+def _check_axis(key: str, world: Location, joint, *, on_axis: bool, local=(0.0, 0.0, 1.0)) -> None:
+    z, axis = _axis_z(world, local), joint.axis_w
     if abs(abs(sum(a * b for a, b in zip(z, axis, strict=True))) - 1.0) > AXIS_TOL:
-        raise SystemExit(f"{key}: +Z {z} is not parallel to the {joint.name} axis {axis}")
+        raise SystemExit(f"{key}: local axis {local} -> {z} is not parallel to the {joint.name} axis {axis}")
     if on_axis:
         d = tuple(a - b for a, b in zip(world.position, joint.origin_w, strict=True))
         off = tuple(a - sum(x * y for x, y in zip(d, axis, strict=True)) * b for a, b in zip(d, axis, strict=True))
@@ -83,8 +84,9 @@ def mounted_records(records: list[dict]) -> list[dict]:
         if m.host not in worlds:
             raise SystemExit(f"{m.key}: host {m.host!r} has no placement record (declare the motor before its board)")
         world = worlds[m.host] * to_location(m.frame)
-        if m.part in mounts.MOTORS:
-            _check_axis(m.key, world, joints[m.joint], on_axis=False)
+        if m.part in mounts.AXES:
+            local, on_axis = mounts.AXES[m.part]
+            _check_axis(m.key, world, joints[m.joint], on_axis=on_axis, local=local)
         shape = parts.build(m.part).moved(world)
         bb = shape.bounding_box()
         out.append({

@@ -40,8 +40,9 @@
   stator (housing, motor, gear train) in its yoke - together shoulder_link; the drive's rotor
   (output hub + pins) is bolted to j1_link - together upper_arm_link - so the drive IS the
   shoulder_pitch joint (cad/docs/cycloidal_drive.md, cad/assemblies/cycloidal_drive.py BODIES);
-  the GT2 90T pulleys + J3 couplers are bolted to the driven links (forearm_link at elbow_pitch,
-  wrist_pitch_link at wrist_pitch); the MG996R crank linkage is merged into wrist_roll_link;
+  the GT2 90T pulleys + J3 couplers are bolted to the driven links (elbow_link at elbow_pitch,
+  wrist_pitch_link at wrist_pitch); each belt joint's 6806-2RS bearing pair rides with its housing
+  (base_link, upper_arm_link, forearm_link; cad/lib/mounts.py); the MG996R crank linkage is merged into wrist_roll_link;
   jaw_b mirrors jaw_a (mimic, multiplier -1); positive jaw_a = opening.
   UNCONFIRMED: which CAN id (software/control/src/config.py J1..J3) drives which joint - the motors are placed
   (cad/lib/mounts.py) but not mapped; the shoulder_pitch motor is the drive's own NEMA 17 at 20:1
@@ -53,9 +54,9 @@
 <robot name="arm">
   <link name="base_link">
     <inertial>
-      <origin xyz="-0.053669 0.000025 0.041293" rpy="0 0 0" />
-      <mass value="0.798435" />
-      <inertia ixx="1.118423e-03" ixy="2.499112e-06" ixz="-4.304277e-04" iyy="2.210752e-03" iyz="1.092404e-06" izz="2.264645e-03" />
+      <origin xyz="-0.050363 0.000023 0.044115" rpy="0 0 0" />
+      <mass value="0.850854" />
+      <inertia ixx="1.231537e-03" ixy="2.563886e-06" ixz="-5.513392e-04" iyy="2.465551e-03" iyz="1.147680e-06" izz="2.423921e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -91,9 +92,9 @@
   </link>
   <link name="upper_arm_link">
     <inertial>
-      <origin xyz="0.057873 0.000007 -0.020491" rpy="0 0 0" />
-      <mass value="0.910943" />
-      <inertia ixx="1.170612e-03" ixy="4.042278e-07" ixz="-5.219457e-04" iyy="6.983385e-03" iyz="3.973953e-07" izz="6.648278e-03" />
+      <origin xyz="0.066088 0.000007 -0.02014" rpy="0 0 0" />
+      <mass value="0.962943" />
+      <inertia ixx="1.182607e-03" ixy="4.543568e-07" ixz="-5.705141e-04" iyy="8.133817e-03" iyz="3.995517e-07" izz="7.804031e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -110,9 +111,9 @@
   </link>
   <link name="elbow_link">
     <inertial>
-      <origin xyz="-0.006474 -0.02808 0.020894" rpy="0 0 0" />
-      <mass value="0.716573" />
-      <inertia ixx="1.249184e-03" ixy="-1.577578e-04" ixz="2.256873e-05" iyy="7.161326e-04" iyz="8.799615e-05" izz="1.273491e-03" />
+      <origin xyz="-0.006473 -0.028075 0.020756" rpy="0 0 0" />
+      <mass value="0.716705" />
+      <inertia ixx="1.260573e-03" ixy="-1.577817e-04" ixz="2.321146e-05" iyy="7.274229e-04" iyz="9.078551e-05" izz="1.273633e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -129,9 +130,9 @@
   </link>
   <link name="forearm_link">
     <inertial>
-      <origin xyz="0.003677 -0.000011 0.118336" rpy="0 0 0" />
-      <mass value="0.759089" />
-      <inertia ixx="3.623068e-03" ixy="2.562328e-07" ixz="-1.993706e-05" iyy="3.537420e-03" iyz="2.033548e-07" izz="5.108902e-04" />
+      <origin xyz="0.002992 -0.000011 0.124212" rpy="0 0 0" />
+      <mass value="0.811089" />
+      <inertia ixx="4.049262e-03" ixy="2.601384e-07" ixz="2.768527e-05" iyy="3.961768e-03" iyz="1.696707e-07" izz="5.263602e-04" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -148,9 +149,9 @@
   </link>
   <link name="wrist_pitch_link">
     <inertial>
-      <origin xyz="0.060735 0.000068 -0.014763" rpy="0 0 0" />
-      <mass value="0.440548" />
-      <inertia ixx="2.099885e-04" ixy="-7.021730e-07" ixz="4.137442e-05" iyy="8.819831e-04" iyz="5.963427e-08" izz="9.360178e-04" />
+      <origin xyz="0.060716 0.000068 -0.014978" rpy="0 0 0" />
+      <mass value="0.44068" />
+      <inertia ixx="2.143491e-04" ixy="-7.026954e-07" ixz="3.562768e-05" iyy="8.868304e-04" iyz="5.357135e-08" izz="9.365373e-04" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />

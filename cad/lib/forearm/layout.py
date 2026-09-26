@@ -119,9 +119,10 @@ def pulley_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]
 
 def coupler_steps(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float, float]]:
     """The block's underside as (diameter, x0, x1) cylinders about the elbow axis, the block's face downward: the lip
-    in j1_link's recess, the boss, the journal, the stub the elbow bearings sit on."""
+    in j1_link's recess, the boss, the journal, the shoulder on the upper elbow bearing's inner ring, the stub in it."""
     d = cfg.drive
-    return [(d.lip_dia, *d.lip_x), (d.boss_dia, *d.boss_x), (d.journal_dia, *d.journal_x), (d.stub_dia, *d.stub_x)]
+    return [(d.lip_dia, *d.lip_x), (d.boss_dia, *d.boss_x), (d.journal_dia, *d.journal_x), (d.step_dia, *d.step_x),
+            (d.stub_dia, *d.stub_x)]
 
 
 def belt_window(cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float, float]:

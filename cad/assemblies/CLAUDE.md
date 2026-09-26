@@ -9,7 +9,7 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   every occurrence: `rel` (to its parent node) and `world`, as `Location(position, rotation_xyz_deg)`; keys
   `"<part>#<n>"`, module `"gripper#1"`. Treat it as an immutable input. An occurrence the DESIGN has replaced is
   **retired** in `lib/placements.py RETIRED` (`j3_coupler#1`: the roll drive's block took over its
-  features, `docs/forearm_roll.md`): its record stays, `P.keys()` leaves it out (`retired=True` lists the file), no table / link / total
+  features, `docs/forearm_roll.md`; `gt2_pulley_90t#1` / `#2`: re-seated 3 mm out as mounts, below): its record stays, `P.keys()` leaves it out (`retired=True` lists the file), no table / link / total
   claims it (`test_placements.py`, `test_assembly.py`, `test_robot.py` follow `keys()`). A PART the design drops
   entirely (the link caps `j1_cap` / `j2_cap_1` / `j2_cap_2`) cannot be retired - its part module,
   `CUSTOM` row and manifest entry go, and a record must name a known part -: its SolidWorks product goes into
@@ -17,17 +17,20 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   record to `skipped` as the entry an extraction writes (pose, totals, reason) - `test_skipped_nodes_are_the_dropped_products`.
 - **Mounted occurrences** (`lib/mounts.py`): the belt joints' motors - `nema17_48mm#1` (the 48 mm motor, under the base;
   motor + board hang `BASE_MOTOR_STACK_PROUD` below the base's bottom face) and `nema17_40mm#2..3`, + `mks_servo42d#1..3`,
-  on the NEMA 17 pads `base` / `j1_link` / `j2_link` carry - never existed in the SolidWorks capture. They are declared as
+  on the NEMA 17 pads `base` / `j1_link` / `j2_link` carry - and each belt joint's 6806-2RS pair (`bearing_6806#1..6`, on
+  the lip of its housing's bore) never existed in the SolidWorks capture; the elbow's and the wrist's 90T
+  (`gt2_pulley_90t#3` / `#4`) did, but where the lower bearing had no room - their mounts are hosted on the retired
+  records they correct, `PULLEY_SEAT_SHIFT` out along the pulley's own axis. They are declared as
   frames-as-data in the host occurrence's frame (`Mount(key, part, host, link, joint, frame)`; a board's host is its
   motor) and `tools/reference/mount_placements.py` materialises them into `placements.json` as ordinary part records
   (parent `None`, `rel == world = host world * frame`, solids / volume / bbox from `parts.build`, a `mount` block; keys
-  under top-level `mounted`, `P.keys(mounted=True)`), checking each motor's +Z against its joint axis. The extractor
+  under top-level `mounted`, `P.keys(mounted=True)`), checking each motor's +Z against its joint axis (a bearing's +Z, a pulley's +Y ON it - `lib/mounts.py AXES`). The extractor
   appends them on every run (`extract_placements.py --no-pancake` - the flag keeps this machine's bytes out of
   `vendor/nema17_pancake.step`); `mount_placements.py` alone is the merge mode that needs no monolith (change a spin or
   `J2_MOTOR_SLIDE_X` in `lib/params.py` → run it → re-derive the inertials). `assemblies/arm.py OCCURRENCES` /
   `GROUPS` and `robot/frames.py LINKS` list the keys like any other (roles = the joint names). `tests/test_mounts.py`
-  re-checks the geometry: axis on the joint, mounting face on the host's pad, zero interference with the neighbours
-  (no budget left anywhere). The drive's own board is a `cycloidal_drive.py` row
+  re-checks the geometry: axis on the joint, mounting face on the host's pad, each bearing stack's contacts
+  (`test_bearing_stacks`), zero interference with the neighbours (no budget left anywhere). The drive's own board is a `cycloidal_drive.py` row
   (`stack_positions["z_mks_board"]`).
 - `assemblies/arm.py` / `gripper.py`: `OCCURRENCES = [(part, role|None, key), …]` in SolidWorks
   document order; `assemblies/_occurrences.py` places each occurrence as
@@ -107,7 +110,8 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   silently re-parented — `_occurrences` builds a fresh body per occurrence outside a build (inside
   one, each call to a child model is its own linked occurrence).
 
-**Recipe B — add a mounted occurrence** (something SolidWorks never placed): `lib/mounts.py` `Mount(key, part, host,
+**Recipe B — add a mounted occurrence** (something SolidWorks never placed, or a SolidWorks pose the design corrects -
+retire the record, host the mount on it): `lib/mounts.py` `Mount(key, part, host,
 link, joint, frame)` — the frame as data in the HOST's frame, +Z on the joint axis → `./cadtool python
 tools/reference/mount_placements.py` (writes the `placements.json` record, checks the axis) → the key into
 `assemblies/arm.py OCCURRENCES` + `GROUPS` and `robot/frames.py LINKS` → a case in `tests/test_mounts.py` (face on the

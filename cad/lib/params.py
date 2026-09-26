@@ -35,6 +35,16 @@ from lib.belts import (  # noqa: E402, F401
     GT2_BELT_W, GT2_GROOVE_R, GT2_PITCH, GT2_PLD, GT2_PULLEY_20T_PITCH_DIA, GT2_PULLEY_20T_TEETH,
     GT2_PULLEY_90T_PITCH_DIA, GT2_PULLEY_90T_TEETH, GT2_RATIO, GT2_TOOTH_DEPTH, STANDARD_2GT_LENGTHS,
 )
+# The 90T pulleys of the elbow and the wrist sit this far out along their axes from where the SolidWorks capture put
+# them (lib/mounts.py re-seats them): SolidWorks mated each hub straight onto its coupler's stub, as if there were no
+# bearings; moved out by this much the hub's end lies on the lip's lower face, its Ø30 x 7 journal in the lower 6806
+# and its Ø34.76 ring under that bearing's inner ring (tests/test_mounts.py test_bearing_stacks).
+PULLEY_SEAT_SHIFT = 3.0         # [REFERENCE] the capture's stub end -> the lip's lower face (elbow and wrist alike)
+
+# --- The belt joints' bearings - lib/bearings.py (a leaf: lib/base/, lib/coupler/, lib/forearm/ import it) -----
+from lib.bearings import (  # noqa: E402, F401
+    BEARING_6806_BORE, BEARING_6806_MASS_G, BEARING_6806_OD, BEARING_6806_SHOULDER_DIA, BEARING_6806_WIDTH,
+)
 
 # --- Gripper hardware ---------------------------------------------------------
 RAIL_DIA = 6.0          # [REFERENCE] round linear rail (parts/gripper/gripper_rail_6mm), used x2

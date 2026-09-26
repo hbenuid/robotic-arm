@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
+from lib.bearings import BEARING_6806_SHOULDER_DIA
 from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, centre_distance
 from lib.cycloidal.params import MotorParams
 from lib.motors import MOTOR_40
@@ -154,8 +155,10 @@ class RollDriveParams:
     boss_x: tuple = (-39.0, -35.0)        # [REFERENCE] host -14 .. -10
     journal_dia: float = 40.0             # [REFERENCE] in j1_link's Ø42 bore
     journal_x: tuple = (-40.3, -39.0)     # [REFERENCE] host -15.3 .. -14
-    stub_dia: float = 30.0                # [REFERENCE] the elbow bearings' seat (6702-class rings in j1_link's Ø42 bore - not modelled)
-    stub_x: tuple = (-47.0, -40.3)        # [REFERENCE] host -22 .. -15.3: its end face is the elbow 90T's mating face
+    step_dia: float = BEARING_6806_SHOULDER_DIA   # [DESIGN] an inner-ring shoulder on the journal's face, down onto the upper elbow bearing ...
+    step_x: tuple = (-41.0, -40.3)        # [DESIGN] ... host -16 .. -15.3: the journal's Ø40 face stopped 0.7 above that bearing (and bore on its outer ring)
+    stub_dia: float = 30.0                # [REFERENCE] in the upper of the elbow's 6806-2RS pair (lib/mounts.py bearing_6806#3; the 90T's hub in #4)
+    stub_x: tuple = (-47.0, -41.0)        # [REFERENCE] host -22 .. -16: the elbow 90T sits PULLEY_SEAT_SHIFT (3) below its end, on the lower bearing
     pin_bore_dia: float = 12.5            # [REFERENCE] the coupler's through bore
     pin_bore_x: tuple = (-47.0, -29.0)    # [DESIGN] blind: stops 2.7 mm under the shaft's bore
     pulley_bolt_r: float = 11.0           # [REFERENCE] the elbow 90T's 4x M4 on the axes (host x / y)
