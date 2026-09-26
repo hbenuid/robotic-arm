@@ -60,11 +60,11 @@
     <link name="upper_arm_link">
       <pose relative_to="shoulder_pitch">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.064746 0.000007 -0.020325 0 0 0</pose>
-        <mass>0.953232</mass>
+        <pose>0.063934 0.000007 -0.020434 0 0 0</pose>
+        <mass>0.947403</mass>
         <inertia>
-          <ixx>1.172461e-03</ixx><ixy>4.461501e-07</ixy><ixz>-5.473800e-04</ixz>
-          <iyy>7.951985e-03</iyy><iyz>3.984028e-07</iyz><izz>7.618680e-03</izz>
+          <ixx>1.166245e-03</ixx><ixy>4.411813e-07</ixy><ixz>-5.338125e-04</ixz>
+          <iyy>7.842824e-03</iyy><iyz>3.977235e-07</iyz><izz>7.507072e-03</izz>
         </inertia>
       </inertial>
       <visual name="upper_arm_link_visual">

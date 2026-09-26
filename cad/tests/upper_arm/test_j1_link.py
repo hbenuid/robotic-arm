@@ -31,7 +31,8 @@ def test_layout():
     assert [len(s) for s in socket_points(LEGACY)] == [7, 3] and socket_points(DEFAULT) == ([], [])
     assert DEFAULT.slab == LEGACY.slab and DEFAULT.slots == LEGACY.slots
     assert LEGACY.elbow.relief_r == 0.0 and DEFAULT.elbow.relief_r > 0.0 and DEFAULT.elbow.recess_y < LEGACY.elbow.recess_y
-    assert replace(DEFAULT.elbow, relief_r=LEGACY.elbow.relief_r, recess_y=LEGACY.elbow.recess_y) == LEGACY.elbow
+    assert replace(DEFAULT.elbow, relief_r=LEGACY.elbow.relief_r, relief_y=LEGACY.elbow.relief_y,
+                   recess_y=LEGACY.elbow.recess_y) == LEGACY.elbow
     assert PARAMS.J1_MOTOR_PAD_FACE_Y == DEFAULT.pad.face_y == -32.5
 
 
@@ -136,10 +137,10 @@ def test_default_changes_only_the_holes_the_sockets_and_the_elbow(link, legacy):
         assert not is_inside(link, x, -28, z)
     for x, z in hub_bolt_points(DEFAULT):
         assert not is_inside(link, x, -5, z)
-    # the elbow: the lip gone within relief_r of the axis (its root, y1, the floor), still there beyond; the recess floor
+    # the elbow: the top face down to relief_y within relief_r of the axis, the lip still there beyond; the recess floor
     s, e = DEFAULT.slab, DEFAULT.elbow
     x_edge = s.elbow_x - e.relief_r
-    assert not is_inside(link, x_edge + 1.0, s.y1 + 1.0, 0) and is_inside(link, x_edge + 1.0, s.y1 - 0.5, 0)
+    assert not is_inside(link, x_edge + 1.0, e.relief_y + 0.5, 0) and is_inside(link, x_edge + 1.0, e.relief_y - 0.5, 0)
     assert is_inside(link, x_edge - 1.0, s.y1 + 1.0, 0) and is_inside(legacy, x_edge + 1.0, s.y1 + 1.0, 0)
     r_floor = (e.recess_dia + e.bore_dia) / 4.0
     assert not is_inside(link, s.elbow_x, e.recess_y + 0.5, r_floor) and is_inside(link, s.elbow_x, e.recess_y - 0.5, r_floor)
@@ -147,7 +148,7 @@ def test_default_changes_only_the_holes_the_sockets_and_the_elbow(link, legacy):
     # the holes changes nothing else; the relief takes the lip inside relief_r, the recess the ring between the bore
     # and the recess 1 mm deeper
     floor = DEFAULT.pad.floor_y - DEFAULT.pad.face_y
-    relief = interference(legacy, Rot(-90.0, 0.0, 0.0) * _bore(e.relief_r, s.y1, s.lip_top + 1.0, s.elbow_x))
+    relief = interference(legacy, Rot(-90.0, 0.0, 0.0) * _bore(e.relief_r, e.relief_y, s.lip_top + 1.0, s.elbow_x))
     ring = math.pi * ((e.recess_dia / 2.0) ** 2 - (e.bore_dia / 2.0) ** 2) * (LEGACY.elbow.recess_y - e.recess_y)
     assert relief > 0.0
     assert link.volume - legacy.volume == pytest.approx(10 * math.pi * 2.575 ** 2 * 2.0 - floor * math.pi * (1.6 ** 2 - 1.5 ** 2)

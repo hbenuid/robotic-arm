@@ -29,10 +29,10 @@ from tests.helpers import interference, is_inside
 
 S = stack_positions(DEFAULT)
 D = DEFAULT.drive
-UPPER_ARM_FACE_Z = -10.0         # host z of j1_link's +N face under the block: its elbow relief's floor (the lip's root) ...
+UPPER_ARM_FACE_Z = -11.0         # host z of j1_link's +N face under the block: its elbow relief's floor (1 under the lip's root) ...
 UPPER_ARM_RELIEF_R = 60.0        # ... within this radius of the elbow axis (lib/upper_arm/params.py ElbowParams.relief_r)
-UPPER_ARM_RECESS = (40.0, -15.5)  # j1_link's recess round the elbow axis: radius, floor (host z)
-FACE_GAP = 1.5                   # the least axial gap between a face the elbow turns and j1_link's (printed PETG; the
+UPPER_ARM_RECESS = (40.0, -16.0)  # j1_link's recess round the elbow axis: radius, floor (host z)
+FACE_GAP = 2.0                   # the least axial gap between a face the elbow turns and j1_link's (printed PETG; the
 #                                  forearm's moment tilts the block on its 6806 pair)
 UPPER_ARM_BORE_R = 21.0          # j1_link's bore the coupler's stub / journal turn in
 UPPER_ARM_END_R = 45.0           # j1_link's round end about the elbow axis

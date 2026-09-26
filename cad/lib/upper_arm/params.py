@@ -9,7 +9,7 @@ Every feature is a prism or a bore along Y.
 Two configurations: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
 tests/test_reference_match.py), DEFAULT is what the part builds: no cap-locating sockets (the caps were removed
 2026-09-25), the NEMA 17 holes on a true square about the shoulder axis, the hub holes on the drive's pattern and
-the elbow's clearance for the elbow block (the relief round the axis, the recess 1 mm deeper).
+the elbow's clearance for the elbow block (the relief round the axis, the recess 1.5 mm deeper).
 
 Every number below was measured on the reference 2026-09-24 (planar / cylindrical face census;
 tests/upper_arm/test_j1_link.py re-checks the builds against it): [REFERENCE] unless tagged.
@@ -51,8 +51,9 @@ class ElbowParams:
     lip_dia: float = 37.64
     lip_y: tuple = (-15.0, -13.0)
     seat_dia: float = 42.2            # lip .. underside
-    relief_r: float = 0.0             # [DESIGN] the top face down to the lip's root (SlabParams.y1) within this radius of
-    #                                   the elbow axis; 0: none (the SolidWorks part)
+    relief_r: float = 0.0             # [DESIGN] the top face down to relief_y within this radius of the elbow axis;
+    #                                   0: none (the SolidWorks part)
+    relief_y: float = 0.0             # [DESIGN] the relief's floor (0: the lip's root, SlabParams.y1)
 
 
 @dataclass(frozen=True)
@@ -150,7 +151,8 @@ DEFAULT = replace(
                                         for sx, sz in ((1, -1), (1, 1), (-1, 1), (-1, -1)))),   # [DESIGN]
     hub=replace(LEGACY.hub, bolt_angle_deg=-2.584167),   # [REFERENCE] the drive's bolts, 3.36 degrees from the SolidWorks holes
     # the elbow block (lib/forearm/ RollDriveParams) turns with the elbow over this top face: its flat underside and its
-    # end cap's, swept to r 57.6, ride 2.0 above the relief's floor (0.5 over the lip), its Ø62 boss 1.5 above the
-    # recess floor (0.5 at the SolidWorks -4.5); the upper 6806 seat stays 7.5 deep (tests/forearm/test_roll_drive.py)
-    elbow=replace(LEGACY.elbow, relief_r=60.0, recess_y=-5.5),   # [DESIGN]
+    # end cap's, swept to r 57.6, ride 3.0 above the relief's floor (0.5 over the lip), its Ø62 boss 2.0 above the
+    # recess floor (0.5 at the SolidWorks -4.5), which is level with the upper 6806's top: its seat exactly 7.0 deep,
+    # the most the boss can get (tests/forearm/test_roll_drive.py)
+    elbow=replace(LEGACY.elbow, relief_r=60.0, relief_y=-1.0, recess_y=-6.0),   # [DESIGN]
 )

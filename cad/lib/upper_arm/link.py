@@ -39,7 +39,7 @@ def _plate(cfg: UpperArmConfig):
     body = body.fillet(s.round_r, body.faces().sort_by(bd.Axis.Z)[-1].edges())
     body = body + stadium(s.elbow_x, 2.0 * s.lip_r, s.lip_top - s.y1, s.elbow_x / 2.0, s.y1)
     if e.relief_r:
-        body = body - _bore(e.relief_r, s.y1, top, s.elbow_x)
+        body = body - _bore(e.relief_r, e.relief_y, top, s.elbow_x)
     # the shoulder half is thinner: its underside, the 45 degree chamfer, the step down to the elbow half
     drop = e.step_x - e.chamfer_x
     step = bd.Plane.XZ * bd.Polygon((-2.0 * s.r, s.y0), (e.chamfer_x, s.y0), (e.step_x, s.y0 - drop), (e.step_x, e.y0 - 1.0),

@@ -91,7 +91,7 @@ FOREARM_FLANGE_DIA = _FOREARM.roll_end.flange_dia  # 39.7 [DESIGN] the roll shaf
 FOREARM_ROLL_BELT_LENGTH = _FOREARM.drive.roll_belt          # 240-2GT [ESTIMATE] the roll belt (90T ring on the shaft, 20T on the motor)
 FOREARM_ROLL_MOTOR_XY = (0.0, _FOREARM.drive.motor_y)        # (0, 60.9) [DESIGN] the roll motor's axis in the module frame: on the roll axis in X, up in the swing plane by what the belt sets
 FOREARM_ROLL_RATIO = _FOREARM.drive.ring_teeth / GT2_PULLEY_20T_TEETH   # 4.5:1 [DESIGN] like the other belt joints
-FOREARM_ROLL_BLOCK_X = _FOREARM.drive.block_x       # (-33, 33) [DESIGN] the elbow block's extent along N: its underside 2.0 mm above the upper arm's elbow relief (host z -10)
+FOREARM_ROLL_BLOCK_X = _FOREARM.drive.block_x       # (-33, 33) [DESIGN] the elbow block's extent along N: its underside 3.0 mm above the upper arm's elbow relief (host z -11)
 
 # --- Cycloidal drive (lib/cycloidal/, assemblies/cycloidal_drive.py, docs/cycloidal_drive.md) -----
 # The drive's own dimensions live in lib/cycloidal/params.py (DriveConfig, ported from the
