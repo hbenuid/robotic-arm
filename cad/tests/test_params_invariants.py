@@ -168,10 +168,11 @@ def test_the_6806_pair_fits_every_belt_joint_bore():
     from lib.coupler import DEFAULT as COUPLER
     from lib.forearm import DEFAULT as FOREARM
     from lib.upper_arm import DEFAULT as UPPER_ARM
+    from lib.yaw_coupler import DEFAULT as YAW_COUPLER
 
     bore, od, width, shoulder = p.BEARING_6806_BORE, p.BEARING_6806_OD, p.BEARING_6806_WIDTH, p.BEARING_6806_SHOULDER_DIA
     assert bore < shoulder < od and p.BEARING_6806_MASS_G > 0
-    assert COUPLER.stub_dia == FOREARM.drive.stub_dia == bore
+    assert COUPLER.stub_dia == FOREARM.drive.stub_dia == YAW_COUPLER.hub.stub_dia == bore
     assert COUPLER.step[0] == FOREARM.drive.step_dia == shoulder
     e, w, b, c = UPPER_ARM.elbow, FOREARM.web, FOREARM.boss, BASE.bore
     seats = [(e.bore_dia, e.lip_y[1], e.recess_y), (e.seat_dia, e.y0, e.lip_y[0]),              # j1_link: upper, lower

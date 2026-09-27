@@ -4,6 +4,8 @@ Built in the part frame directly: the disc, the flare and the hub turn about the
 yoke is prisms along X (the drive's axis) - their outlines in the YZ plane, lib/yaw_coupler/layout.py."""
 from __future__ import annotations
 
+import math
+
 from cadgen import build123d as bd
 
 from lib.geom import align_min, hex_prism, single_solid
@@ -102,4 +104,8 @@ def build_yaw_coupler(cfg: YawCouplerConfig = DEFAULT):
     body = body - _ycyl(h.bore_dia / 2.0, h.stub_y0 - NUDGE, k.pocket_y0 + NUDGE)
     for x, z in hole_points(cfg):
         body = body - _ycyl(h.hole_dia / 2.0, h.stub_y0 - NUDGE, k.pocket_y0 + NUDGE, x, z)
+        if h.nut_af is not None:
+            # a hex prism along Y, a corner along Z (hex_prism's vertex at +90 deg turns onto -Z)
+            body = body - bd.Pos(x, k.pocket_y0 - h.nut_depth, z) * bd.Rot(-90.0, 0.0, 0.0) * hex_prism(
+                h.nut_af, math.pi / 2.0, h.nut_depth + NUDGE)
     return single_solid(body)

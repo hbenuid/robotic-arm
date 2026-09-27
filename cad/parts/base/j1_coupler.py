@@ -2,11 +2,15 @@
 drive's housing (parametric build123d, lib/yaw_coupler/body.py build_yaw_coupler(cfg), in the SolidWorks part frame -
 origin on the base_yaw axis at the base's seat-ring top, +Y up the axis, the drive's axis along X at y 90).
 
-A drafted disc (flats at x +/-40, ears of a Ø96 disc beyond them, a Ø90.05 recess in its underside) on a Ø29.8 stub
-into the upper base bearing, a Ø15 bore and 4x Ø3.3 holes on the diagonals up to the pocket over the hub; on the disc
-a ring and the yoke flaring out of it: the -X cheek and the middle body under the housing's Ø116 cradle, a channel
-and two V-grooves round the housing's pillars, the nut pockets of 3 housing bolts in the cheek's outer face. Every
-number: lib/yaw_coupler/params.py (YawCouplerConfig; measured on the reference 2026-09-27).
+A drafted disc (flats at x +/-40, ears of a Ø96 disc beyond them, a recess in its underside - DEFAULT: Ø90.4, its
+ceiling the seat on the base_yaw thrust bearing, the rim 0.5 over the base's top face) on a stub through the upper base
+bearing (DEFAULT: Ø30, on to the lip's lower face, where the base_yaw 90T's hub end meets it), a bore (DEFAULT: the
+90T's Ø12.5) and 4 holes on the diagonals up to the pocket over the hub (DEFAULT: the 90T's bolt circle, M4 clearance,
+the nuts flush in hex pockets in the pocket's floor); on the disc a ring and the yoke flaring out of it: the -X cheek
+and the middle body under the housing's Ø116 cradle, a channel and two V-grooves round the housing's pillars, the nut
+pockets of 3 housing bolts in the cheek's outer face. Every number: lib/yaw_coupler/params.py (YawCouplerConfig;
+measured on the reference 2026-09-27; LEGACY: the Ø90.05 recess on the base's face, a Ø29.8 stub 0.2 into the lip, a
+Ø15 bore, 4x Ø3.3).
 
 SolidWorks product: 'Base couple updated 62126 _J1 coupler'
 Source export:      step/Base couple updated 62126 _J1 coupler.STEP
