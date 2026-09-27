@@ -79,3 +79,7 @@ def totals(body: str | None = None) -> dict:
     leaves = [c for c in module.children if body is None or c.label.split(":")[0] in BODIES[body]]
     return {"leaves": len(leaves), "solids": sum(len(c.solids()) for c in leaves),
             "solid_volume": round(sum(R.solid_volume(c) for c in leaves), 3)}
+
+
+if __name__ == "__main__":
+    forearm_roll_drive()   # build: writes the sibling forearm_roll_drive.step

@@ -84,7 +84,7 @@ Every command, its flags and what it prints: `./cadtool help` (for people: the `
   (`parts/CLAUDE.md`).
 - Every model file — each part, each assembly, each `robot/links/<link>.py` — ends with
   `if __name__ == "__main__": <name>()` — that call IS the build (`./cadtool gen` runs the file; without it `gen`
-  silently builds nothing — source-checked for every part and every `robot/links/<link>.py`); no `show()` in the
+  silently builds nothing — source-checked for every part, every assembly and every `robot/links/<link>.py`); no `show()` in the
   file, no import side effects.
 - Import `lib` / `parts` plainly — **no `sys.path` shim**: `cadtool` exports `PYTHONPATH=cad/`, pytest
   has `pythonpath = ["."]`, `.env` covers VS Code. **Never add `cad/__init__.py`** (the package root would become the

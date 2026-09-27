@@ -8,7 +8,7 @@ lane. Every test module's docstring says what it checks.
 `parts.build(name)`, `lib.models.raw(model)`). `test_parts_convention.py` (contract + geometry for
 every part, COTS envelopes + vendor frames), `test_reference_match.py` (manifest checksums; converted
 parts vs reference), `test_placements.py` (JSON integrity, tables cover every key once, the designed
-module record + the mounted records vs `lib/mounts.py`), `test_assembly.py` (the arm's leaves / solids / volume / bbox
+module record + the mounted records vs `lib/mounts.py`), `test_assembly.py` (every assembly file ends with its build call; the arm's leaves / solids / volume / bbox
 vs SolidWorks + the module lock — the numbers are IN that file; the arm's leaf colours -
 purchased = `BOUGHT_TINT`, which no group / module may reuse, printed = the link's / module's tint, in the arm and in
 the standalone gripper and drives), `test_bom.py` (the print / buy lists

@@ -2,6 +2,7 @@
 code-driven cycloidal_drive module's own totals and the colors: in every assembly a purchased part is
 BOUGHT_TINT grey, a printed one its link's / module's tint."""
 import importlib
+import pathlib
 
 import pytest
 from build123d import Color, Location, Vector
@@ -12,6 +13,7 @@ from assemblies._occurrences import BOUGHT_TINT
 from lib import placements as P
 from lib import reference as R
 from lib.models import raw
+from tests.source_checks import runs_its_model
 from tests.totals import part_totals, world_bbox
 
 DRIVE = cycloidal_drive.EXPECTED
@@ -118,6 +120,15 @@ def test_forearm_roll_drive_module_builds():
     assert abs(R.solid_volume(d) - ROLL["solid_volume"]) <= 0.5
     assert d.is_valid
     assert _check_module_tints(d, forearm_roll_drive.TINT) == {True: 7, False: 4}   # 2 bearings, motor, board, 20T, the mount's screws + nuts / block, motor mount, shaft, retainer
+
+
+def test_every_assembly_runs_its_model():
+    """Each assemblies/<name>.py ends with the `__main__` call of its model <name>() - without it
+    `./cadtool gen assemblies/<name>.py` builds nothing and the module is only ever built as the arm's child."""
+    files = sorted(p for p in pathlib.Path(arm.__file__).parent.glob("*.py") if not p.stem.startswith("_"))
+    assert files
+    for path in files:
+        assert runs_its_model(path, path.stem), f"{path.name}: must end with `if __name__ == \"__main__\": {path.stem}()`"
 
 
 def test_arm_groups_mirror_links():
