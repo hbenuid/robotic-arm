@@ -159,7 +159,7 @@ PULLEY_NUTS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * nut_volume(M4_NUT)         
 from lib.forearm.layout import mount_bolt_points as _mount_bolt_points  # noqa: E402
 
 _MOUNT_BOLTS = len(_mount_bolt_points(_FOREARM))
-ROLL_MOUNT_SCREWS_MASS_G = STEEL_DENSITY * _MOUNT_BOLTS * csk_volume(M3_CSK, _FOREARM.drive.mount_screw_len)   # 3.3, 4x M3x12 countersunk
+ROLL_MOUNT_SCREWS_MASS_G = STEEL_DENSITY * _MOUNT_BOLTS * csk_volume(M3_CSK, _FOREARM.drive.mount_screw_len)   # 4.2, 4x M3x16 countersunk
 ROLL_MOUNT_NUTS_MASS_G = STEEL_DENSITY * _MOUNT_BOLTS * nut_volume(M3_NUT)                                      # 1.4, 4x M3
 
 # --- Robot description (robot/frames.py, robot/arm.urdf) --------------------------------------

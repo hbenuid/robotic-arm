@@ -4,8 +4,9 @@ They clamp the motor mount (forearm_roll_motor_mount) into the pocket on the elb
 
 In the arm (assemblies/forearm_roll_drive.py, a row of the module): the heads flush with the mount's base under the
 motor, the shanks down through its countersunk holes and the block's top wall into the M3 nuts pressed into the hex
-pockets under it (forearm_roll_mount_nuts); the tips end 2 pitches past the nuts, in the pockets, clear of the core
-bore. Length: lib/forearm/params.py RollDriveParams.mount_screw_len (overall, as ISO 10642 measures it).
+pockets under it (forearm_roll_mount_nuts); the tips come out of the pockets into the core bore's clearance round the
+shaft's core (take the screws out before the shaft comes out). Length: lib/forearm/params.py
+RollDriveParams.mount_screw_len (overall, as ISO 10642 measures it).
 
 No catalog model (the catalog has single fasteners only, vendor/README.md) and no SolidWorks export: a NATIVE COTS
 pattern part (lib/reference.py NATIVE_COTS) like elbow_pulley_screws - its envelope IS the geometry (lib/fasteners.py

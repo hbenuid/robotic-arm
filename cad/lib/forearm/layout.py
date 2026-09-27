@@ -74,7 +74,9 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
     z_motor_face = z_ring_mid - d.t20                             # 6.05
     z_motor_board = z_motor_face - d.motor.body_length            # -33.45
     y_step = d.block_y[1] - d.mount_base_t                        # 32: the pocket's floor = the motor mount's underside
-    y_tip = d.block_y[1] - d.mount_screw_len                      # 24: the screws' tips (the heads flush with the block's top)
+    y_tip = d.block_y[1] - d.mount_screw_len                      # 20: the screws' tips (the heads flush with the block's top)
+    y_nut_low = math.sqrt((d.core_bore_dia / 2.0 + d.mount_nut_clear) ** 2
+                          - (d.mount_bolt_x - d.mount_nut.af / 2.0) ** 2)   # 22.64: each nut's lower face, its inner flat mount_nut_clear off the bore
     return {
         "z_block": 0.0, "z_shaft": 0.0,
         "z_end": z_end, "z_lip": z_lip, "z_seat": z_seat, "z_bore": z_bore, "z_cavity": z_cavity,
@@ -96,7 +98,7 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
         "y_step": y_step,
         "z_step_riser": z_motor_face + d.pad_t + d.mount_fit,     # 10.25: the pocket's front wall, mount_fit before the base's front edge
         "y_mount_tip": y_tip,
-        "y_mount_nut": y_tip + d.mount_tip_past + d.mount_nut.h,  # 27.4: the nut pockets' ceiling = the nuts' bearing face
+        "y_mount_nut": y_nut_low + d.mount_nut.h,                 # 25.04: the nut pockets' ceiling = the nuts' bearing face
     }
 
 

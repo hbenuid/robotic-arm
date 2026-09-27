@@ -4,8 +4,8 @@ The mount's countersunk screws (forearm_roll_mount_screws) run into them, in the
 wall (forearm_roll_block).
 
 In the arm (assemblies/forearm_roll_drive.py, a row of the module): each nut up against its pocket's ceiling
-(lib/forearm/layout.py stack_positions()["y_mount_nut"]: the screw's tip RollDriveParams.mount_tip_past past it), a
-flat toward +/-X as the pocket holds it. Each pocket opens into the core bore: the nut goes in from inside the bore,
+(lib/forearm/layout.py stack_positions()["y_mount_nut"]: as near the pocket's mouth as bearing 1 allows, its inner
+flat RollDriveParams.mount_nut_clear outside the core bore), a flat toward +/-X as the pocket holds it. Each pocket opens into the core bore: the nut goes in from inside the bore,
 pressed up to its seat (mount_nut_pocket_af: a press, so it stays when its screw is out), before the roll shaft goes
 in (docs/forearm_roll.md §4).
 

@@ -136,18 +136,20 @@ def test_stack():
     assert S["y_step"] + D.mount_base_t == D.block_y[1] and S["y_step"] - D.core_bore_dia / 2.0 >= 5.0
     assert S["y_step"] - (D.bearing_od + D.seat_add) / 2.0 >= 5.0
     assert math.isclose(S["z_step_riser"] - S["z_pad_top"], D.mount_fit) and S["z_step_riser"] + 2.0 <= belt_window(DEFAULT)[0]
-    # its screws: the countersunk heads inside the base's sides, behind the plate; each 2 pitches past its nut, the nut
-    # under 3 mm of the top wall; nut and tip 2 mm clear of the core bore (bearing 1 slides past the pockets' mouths,
-    # the shaft's core turns inside); each hex pocket (a press on the nut) opens into the core bore only - 2 mm clear
-    # of the seat behind and the cavity in front
+    # its screws: the countersunk heads inside the base's sides, behind the plate; each nut as near its pocket's mouth as
+    # bearing 1 allows (its inner flat mount_nut_clear outside the core bore: the bearing slides past the pockets'
+    # mouths before the mount goes on), under 3 mm of the top wall; each screw 2 pitches or more past its nut, its tip
+    # out in the core bore's clearance but 2 mm off the shaft's core; each hex pocket (a press on the nut) opens into
+    # the core bore only - 2 mm clear of the seat behind and the cavity in front
     head_r, pocket_corner = D.mount_screw.head_dia / 2.0, D.mount_nut_pocket_af / math.sqrt(3.0)
     xs, zs = {abs(x) for x, _ in mount_bolt_points(DEFAULT)}, [z for _, z in mount_bolt_points(DEFAULT)]
     assert len(mount_bolt_points(DEFAULT)) == 4 and xs == {D.mount_bolt_x}
     assert D.mount_bolt_x + head_r <= D.plate_w / 2.0 - 1.5 and max(zs) + head_r <= S["z_motor_face"] - 1.5
-    assert math.isclose(S["y_mount_nut"] - D.mount_nut.h - S["y_mount_tip"], D.mount_tip_past) and D.mount_tip_past >= 2 * PARAMS.M3_PITCH
-    assert S["y_step"] - S["y_mount_nut"] >= 3.0
-    assert math.hypot(D.mount_bolt_x - D.mount_nut.af / 2.0, S["y_mount_nut"] - D.mount_nut.h) >= D.core_bore_dia / 2.0 + 2.0
-    assert math.hypot(D.mount_bolt_x - D.mount_screw.d / 2.0, S["y_mount_tip"]) >= D.core_bore_dia / 2.0 + 2.0
+    nut_low = S["y_mount_nut"] - D.mount_nut.h
+    assert math.isclose(math.hypot(D.mount_bolt_x - D.mount_nut.af / 2.0, nut_low), D.core_bore_dia / 2.0 + D.mount_nut_clear)
+    assert D.mount_nut_clear >= 1.0 and S["y_step"] - S["y_mount_nut"] >= 3.0
+    assert nut_low - S["y_mount_tip"] >= 2 * PARAMS.M3_PITCH
+    assert math.hypot(D.mount_bolt_x - D.mount_screw.d / 2.0, S["y_mount_tip"]) >= D.shoulder_od / 2.0 + 2.0
     assert D.mount_nut_pocket_af < D.mount_nut.af and mount_nut_pocket_open_y(D.mount_bolt_x) < S["y_mount_tip"]
     assert min(zs) - pocket_corner >= S["z_bore"] + 2.0 and max(zs) + pocket_corner <= S["z_cavity"] - 2.0
     # the belt window: the ring's width + the margins, from inside the cavity out through the top wall

@@ -236,10 +236,12 @@ class RollDriveParams:
     mount_bolt_x: float = 18.0            # [DESIGN] the screws at x +/- this (the heads 1.6 inside the base's sides) ...
     mount_bolt_z: tuple = (-22.0, 1.0)    # [DESIGN] ... and these z: over the core bore (its nut pockets clear of the seat and the cavity), the front heads 1.7 behind the plate
     mount_screw: CskSize = M3_CSK         # [DATASHEET] ISO 10642 M3 (parts/joints/forearm_roll_mount_screws)
-    mount_screw_len: float = 12.0         # [DESIGN] M3 x 12 countersunk (length overall)
+    mount_screw_len: float = 16.0         # [DESIGN] M3 x 16 countersunk (length overall): through the base, the top wall and its nut, the tip
+    #                                       out in the core bore's clearance round the shaft's core (take them out before the shaft)
     mount_bolt_dia: float = M3_CLEAR      # [DESIGN] 3.4, through the base and the block's top wall to the nut
     mount_nut: NutSize = M3_NUT           # [DATASHEET] ISO 4032 M3 (parts/joints/forearm_roll_mount_nuts)
-    mount_tip_past: float = 1.0           # [DESIGN] the screw's tip 2 pitches past its nut: sets the nut's seat (the pocket's ceiling)
+    mount_nut_clear: float = 1.0          # [DESIGN] each nut's inner edge this far outside the core bore: as near its pocket's mouth as
+    #                                       bearing 1, sliding through the core bore, allows - sets the nut's seat (the pocket's ceiling)
     mount_nut_pocket_af: float = 5.35     # [DESIGN] the nuts' hex pockets, a flat toward +/-X: a press on the 5.5 nut (cf. nut_af 6.85 on the 7.0), so it stays when its screw is out
 
     @property

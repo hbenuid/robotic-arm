@@ -472,13 +472,13 @@
     72.0,
     76.0
    ],
-   "bytes": 389035,
+   "bytes": 389817,
    "file": "native/forearm_roll_block.step",
    "kind": "native",
    "origin": "native",
    "product": "forearm_roll_block - the forearm roll drive's STATOR - the elbow block, which is also the elbow's output flange: a rounded box",
-   "sha256": "0f3a639249834df8712a8f2c88d2033ba94967f3ce4b47300a55e4ad9ffaadc9",
-   "solid_volume": 192043.738,
+   "sha256": "4a63fcd1e3af28ebff9e933c2c13947275bb517aadc315228fe68b152a22df81",
+   "solid_volume": 192191.808,
    "solids": 1,
    "source": "lib/forearm/roll.py:build_block(DEFAULT)",
    "units": "mm"
@@ -536,15 +536,15 @@
    "bbox_size": [
     42.72,
     29.72,
-    12.0
+    16.0
    ],
    "bytes": 123398,
    "file": "native/forearm_roll_mount_screws.step",
    "kind": "cots",
    "origin": "native",
    "product": "forearm_roll_mount_screws - purchased (COTS) part: the roll motor mount's 4 M3 countersunk screws (ISO 10642).",
-   "sha256": "3146e887bc68fce8b0a4a231960d65e87ab7a44d6d4666a846a793932b4e5176",
-   "solid_volume": 416.216,
+   "sha256": "bc45685e493b525526e82c8670a4d176d462e51c74bf9edac76d3f0228f0d272",
+   "solid_volume": 529.313,
    "solids": 4,
    "source": "parts/joints/forearm_roll_mount_screws.py:_envelope()",
    "units": "mm"
