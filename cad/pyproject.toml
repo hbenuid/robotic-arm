@@ -7,7 +7,7 @@ readme = "README.md"
 # wheels are verified on 3.12, and cadgen (the text-to-cad runtime) needs >=3.11.
 requires-python = ">=3.11,<3.14"
 dependencies = [
-    # cadgen 0.6.x requires build123d>=0.11.1,<0.12 and cadquery-ocp-novtk>=7.9,<8 (LazyCompound
+    # cadgen 0.7.x requires build123d>=0.11.1,<0.12 and cadquery-ocp-novtk>=7.9,<8 (LazyCompound
     # needs 0.11's `wrapped` property, its STEP writer needs OCP 7.9's HArray1.Value, and OCCT 7.8.1
     # mis-read its BinTools VERSION_4 component objects). The novtk pin freezes the kernel the
     # STEPs are built with (their bytes are deterministic per kernel, which the hash gate relies on;
@@ -19,7 +19,7 @@ dependencies = [
     # The text-to-cad runtime (decorators, `cadgen` CLI, viewer, snapshots via the [snapshot]
     # extra = playwright). Same version as the installed cad@text-to-cad plugin, whose
     # skills/cad/requirements.txt pins it: bump both together (`./cadtool doctor` checks).
-    "cadgen[snapshot]==0.6.6",
+    "cadgen[snapshot]==0.7.2",
     "numpy>=2.4.6",
 ]
 

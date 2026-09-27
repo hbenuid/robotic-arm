@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# cadtool - the one entry point for cad/: the cadgen 0.6 toolchain (a model is a plain script you
+# cadtool - the one entry point for cad/: the cadgen 0.7 toolchain (a model is a plain script you
 # RUN; every other verb is the `cadgen` console script) plus the usual dev commands, all inside THIS
 # uv project (Python 3.12 + build123d + cadgen), always from cad/ with PYTHONPATH=cad/ so `lib`,
 # `parts`, `assemblies` and `robot` import the same way for you, for cadgen's closure scan and for
@@ -9,10 +9,10 @@ set -euo pipefail
 
 usage() {
   cat <<'USAGE'
-cadtool - cadgen 0.6 + this uv project (paths relative to cad/)
+cadtool - cadgen 0.7 + this uv project (paths relative to cad/)
   ./cadtool setup                                   per machine: uv sync (+ the OCP kernel check) + the git pre-commit hook (ruff) + git notes fetching
                                                     + Playwright Chromium (for snapshots)
-  ./cadtool doctor                                  installed cadgen vs the plugin's pin (cadgen doctor: not the OCP kernel), node, chromium
+  ./cadtool doctor                                  installed cadgen vs the plugin's pin (cadgen doctor imports OCP; a gutted kernel: setup), node, chromium
   ./cadtool gen <model.py>... [--force] [--verbose] [--json] [--mesh-tolerance X]
                                                     build: run the model script(s) -> the sibling <name>.step
                                                     (an assembly rebuilds + rewrites its stale child parts too)

@@ -6,10 +6,10 @@ of every bump is `git log -- pyproject.toml uv.lock` from `cad/` (the older bump
 
 ## Pins
 - cadgen and the plugin (what each one is: `cad/CLAUDE.md` "Running things"): `pyproject.toml` pins
-  `cadgen[snapshot]==<ver>`; the `cad@text-to-cad` plugin **v0.6.x** (`~/.claude/plugins/cache/text-to-cad/cad/<ver>/skills/`,
+  `cadgen[snapshot]==<ver>`; the `cad@text-to-cad` plugin **v0.7.x** (`~/.claude/plugins/cache/text-to-cad/cad/<ver>/skills/`,
   the skill docs + the step.parts script) pins the same cadgen version in its `skills/cad/requirements.txt` — bump both
   together, `./cadtool doctor` checks (plugin updates need `git-lfs` on `PATH`).
-- **build123d 0.11.1 / OCP 7.9.3**: cadgen 0.6.x requires `build123d>=0.11.1,<0.12` and
+- **build123d 0.11.1 / OCP 7.9.3**: cadgen 0.7.x requires `build123d>=0.11.1,<0.12` and
   `cadquery-ocp-novtk>=7.9,<8`; `pyproject.toml` pins the exact kernel (`cadquery-ocp-novtk==…`, the
   STEP bytes are per-kernel) and must never gain `cadquery-ocp`, the VTK build (see Gotchas below). On 0.10 / 7.8.1 cadgen could not
   build 11 parts (OCCT 7.8.1 mis-read BinTools VERSION_4 component objects), could not export a linked
@@ -37,10 +37,18 @@ the new version for both, `doctor` cannot tell — see Gotchas below; restart Cl
   still counts the other as installed: `uv sync` reports success and `import OCP.gp` fails (a bare `import OCP`
   can still succeed: the leftover `OCP/` directory is an empty namespace package). Repair with
   `uv sync --reinstall-package cadquery-ocp-novtk` (`./cadtool setup` does it when `OCP.gp` does not import;
-  `test_tooling.py` checks every RECORD file exists). cadgen's `doctor` does NOT flag an absent kernel.
+  `test_tooling.py` checks every RECORD file exists). cadgen's `doctor` (since 0.7) runs a bare `import OCP` in a
+  subprocess (exit 4 when it fails to load, only a note when OCP is absent), so it does NOT catch this gutted kernel —
+  the `OCP.gp` probe of `./cadtool setup` does.
 - cadgen makes hard cutovers (0.6.0: cache / sidecar schemas, so every model read stale once; 0.6.5: the
   inspect CLI; 0.6.6 was additive only — `cadgen.eng_drawing` and matplotlib / pillow as hard deps, nothing
-  retired, no stale wave, same STEP bytes): a retired interface fails with a teaching error, never an alias. On a bump re-check the
+  retired, no stale wave, same STEP bytes; 0.7.0: the rebuilt CAD Viewer and the snapshot display settings — `--render`
+  is gone, `--display` takes a preset or the grouped JSON, the old mode names (`transparent`, `shaded_edges` …) are
+  refused, and viewer state is per browser tab; no store schema change, same STEP bytes): a retired interface fails
+  with a teaching error, never an alias (a bad `--display` value is refused with the list of presets). The freshness gate
+  does not hash cadgen's own version, so a bump makes no model stale and a plain `gen` afterwards rewrites nothing: to
+  hash-gate a bump, build every model on the old pin (a fresh worktree has no STEPs), hash, then `./cadtool gen <every
+  model> --force` on the new one and `shasum -c`. On a bump re-check the
   private names this repo leans on — `cadgen.authoring.build_in_progress` / `_build` / `ModelDef.func|fmt|script_path|out`
   (`lib/models.py`, `tests/conftest.py`, `test_parts_convention.py`), `cadgen._internal.component_package`
   (`_shape_brep_bytes`, `_build123d_shape_from_brep_bytes`), the `-m cadgen.daemon` cmdline

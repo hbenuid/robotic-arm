@@ -59,7 +59,7 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
 - Roles (`j2`/`j3` = the elbow_pitch / wrist_pitch pulley + coupler pairs, `1`/`2`) only disambiguate
   duplicates; renaming them after the joints is a follow-up.
 - A view of the arm with some occurrences hidden needs no model: `./cadtool snapshot assemblies/arm.step out.png
-  --hide '#<label>'` (label refs; STEP input only, not with `--render` / `--focus`; the viewer has no `?hide=`
+  --hide '#<label>'` (label refs; STEP input only, any `--display`, not with `--focus`; the viewer has no `?hide=`
   parameter). A second model would be the only way to get a STEP (a model takes no parameters, the freshness gate
   sees no environment variable).
 - **Printed vs. bought is a colour in every assembly, never a second model.** `gripper.py`, `cycloidal_drive.py` and

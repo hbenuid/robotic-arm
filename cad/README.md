@@ -19,7 +19,7 @@ CadQuery exports — see [`docs/cycloidal_drive.md`](docs/cycloidal_drive.md).
 Requirements: [`uv`](https://docs.astral.sh/uv/), `git-lfs` on `PATH` — every committed STEP/STL here (the inputs in
 `reference/` and `vendor/`, plus `robot/meshes/`) is a Git LFS object, so `git lfs install` before cloning (a clone that
 shows ~130-byte pointer files needs `git lfs pull`) — and Node 20+ (only for STL/3MF/GLB export). For Claude Code, the
-[`cad@text-to-cad`](https://github.com/earthtojake/text-to-cad) plugin **v0.6.x** (AI CAD assistance, below; the repo's
+[`cad@text-to-cad`](https://github.com/earthtojake/text-to-cad) plugin **v0.7.x** (AI CAD assistance, below; the repo's
 `.claude/settings.json` enables its marketplace) — install it once per scope, `--scope project` for the repo's own:
 
 ```bash

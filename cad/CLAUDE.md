@@ -146,8 +146,9 @@ machines"; CI is the third machine: root `CLAUDE.md` "CI").
 - Don't compare large STEP artifacts with `git diff`; compare source, `inspect` output and snapshots.
   A STEP edited by anything but its model (or built under another `CADGEN_CACHE_DIR`) reads as stale
   in `./cadtool why` — rebuild it.
-- A model run accepts only `--force --mesh-tolerance --mesh-angular-tolerance --verbose --json`;
-  anything else (`--totals`, a preview flag) is an argparse error — use `./cadtool python -c`.
+- A model run accepts only `--force --mesh-tolerance --mesh-angular-tolerance --verbose --json` (`./cadtool gen
+  <model.py> --help` lists them); anything else (`--totals`, a preview flag) is an argparse error — use
+  `./cadtool python -c`.
 
 ## Docs
 - A rule lives in the ONE CLAUDE.md / README of the folder it governs; a rule that spans folders lives here. Change it

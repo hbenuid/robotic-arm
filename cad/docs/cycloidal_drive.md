@@ -257,8 +257,8 @@ cd cad
 #   also ?file=assemblies/arm.step (the drive in the arm), ?file=parts/cycloidal/cycloidal_ring_gear_body.step (any part),
 #   ?file=robot/arm.urdf (the robot with joint sliders - shoulder_pitch turns the drive's rotor with j1_link)
 ./cadtool snapshot assemblies/cycloidal_drive.step snapshots/cycloidal_drive.png --size-profile assembly --view-labels
-./cadtool snapshot assemblies/cycloidal_drive.step snapshots/cycloidal_drive_x.png --display '{"mode": "transparent"}' --camera "30:20"
-#   (no turntable GIF: cadgen 0.6's `snapshot --video` renders a model's `@step(animation=…)` clip, and the
+./cadtool snapshot assemblies/cycloidal_drive.step snapshots/cycloidal_drive_x.png --display xray --camera "30:20"
+#   (no turntable GIF: cadgen's `snapshot --video` renders a model's `@step(animation=…)` clip, and the
 #    drive declares none - motion review is the CAD Viewer)
 ```
 
