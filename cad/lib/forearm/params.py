@@ -126,7 +126,7 @@ class RollDriveParams:
     down into j1_link's bore and the elbow 90T pulley bolts straight into it - round a hollow roll shaft (rotor) that
     CROSSES the elbow axis: bearing 1's seat in the block's rear end, the shaft's integral 90T ring in the Ø cavity_dia
     cavity that is OPEN to the front face (the ring passes through it on assembly), bearing 2 in the bolt-on END CAP on
-    that face, the 40 mm kit motor on the bolt-on MOTOR MOUNT whose base fills a step cut into the block's top (its
+    that face, the 40 mm kit motor on the bolt-on MOTOR MOUNT whose base fills a pocket cut into the block's flat top (its
     vertical plate UP in the swing plane, the motor's body behind the elbow axis), the belt down through the top wall,
     the cables out of the rear end wall on the axis. MODULE FRAME:
     origin at the roll axis' crossing with the elbow axis (host (0, 0, axis_z)); +Z along the roll axis toward the
@@ -221,26 +221,26 @@ class RollDriveParams:
     roll_belt: int = 240                  # [ESTIMATE] 240-2GT closed belt, 6 mm: sets the centre distance (60.9) = the motor's height
     t20_hub: float = 10.95                # [REFERENCE] vendor 20T: its tooth band's centre from its hub face (7.45 + 3.5)
     pulley_lift: float = 0.5              # [DESIGN] the 20T's hub face above the plate's front face
-    pad_t: float = 3.0                    # [DESIGN] the plate (on the shaft side of the mounting face; the Ø22 x 2 pilot boss centres in it)
-    plate_w: float = 46.0                 # [DESIGN] the plate's width (X); it reaches plate_w / 2 above the motor axis
+    pad_t: float = 4.0                    # [DESIGN] the plate = mount_base_t: the mount one thickness throughout (the Ø22 x 2 pilot boss centres in it)
+    plate_w: float = 46.0                 # [DESIGN] the plate's width (X) = the mount's base; it reaches plate_w / 2 above the motor axis
     pad_slot_len: float = 5.0             # [DESIGN] +/- 2.5 belt-tension slide along Y
     pad_bolt_dia: float = 3.4
     pad_pilot_w: float = 22.3             # [DESIGN] the pilot boss slot
-    # the motor mount (forearm_roll_motor_mount): its base fills a step cut into the block's top from the rear face to
-    # the plate's front face, its top where the block's top was (the motor keeps its clearance), the plate rooted in it;
-    # 4x M3 countersunk (flush, under the motor) down through the base into M3 nuts slid in from the block's rear face
-    # along two channels (the channel's end stops the front nut under its screw)
-    mount_base_t: float = 4.0             # [DESIGN] the base = the step's depth: 5.7 mm of wall left over the core bore
-    mount_fit: float = 0.2                # [DESIGN] PETG clearance between the base's front edge and the step's riser
-    mount_bolt_x: float = 20.0            # [DESIGN] the screws at x +/- this (the heads under the motor's footprint, +/- 21) ...
-    mount_bolt_z: tuple = (-34.0, 2.0)    # [DESIGN] ... and these z: the rear pair's heads 2.6 inside the rear face, the front 1.7 behind the plate
+    # the motor mount (forearm_roll_motor_mount): a plain base plate_w wide in a pocket cut into the block's flat top
+    # (the block keeps its rounded edges), from the rear face to the plate's front face, its top where the block's top
+    # was (the motor keeps its clearance), the plate rooted in it; 4x M3 countersunk (flush, under the motor) down
+    # through the base and the block's top wall into M3 nuts pressed into hex pockets that open into the core bore (the
+    # elbow pulley nuts' way: in from inside the bore before the shaft goes in)
+    mount_base_t: float = 4.0             # [DESIGN] the base = the pocket's depth: 5.7 mm of wall left over the core bore
+    mount_fit: float = 0.2                # [DESIGN] PETG clearance round the base in its pocket (the sides and the riser)
+    mount_bolt_x: float = 18.0            # [DESIGN] the screws at x +/- this (the heads 1.6 inside the base's sides) ...
+    mount_bolt_z: tuple = (-22.0, 1.0)    # [DESIGN] ... and these z: over the core bore (its nut pockets clear of the seat and the cavity), the front heads 1.7 behind the plate
     mount_screw: CskSize = M3_CSK         # [DATASHEET] ISO 10642 M3 (parts/joints/forearm_roll_mount_screws)
-    mount_screw_len: float = 12.0         # [DESIGN] M3 x 12 countersunk (length overall): the tip 2.6 past its nut
-    mount_bolt_dia: float = M3_CLEAR      # [DESIGN] 3.4, through the base and on into the block
+    mount_screw_len: float = 12.0         # [DESIGN] M3 x 12 countersunk (length overall)
+    mount_bolt_dia: float = M3_CLEAR      # [DESIGN] 3.4, through the base and the block's top wall to the nut
     mount_nut: NutSize = M3_NUT           # [DATASHEET] ISO 4032 M3 (parts/joints/forearm_roll_mount_nuts)
-    mount_nut_roof: float = 3.0           # [DESIGN] the step's floor .. each channel's ceiling (the nut's bearing face)
-    mount_channel_add: float = 0.3        # [DESIGN] the channels' clearance on the nut's across-flats and thickness
-    mount_hole_past: float = 0.5          # [DESIGN] the clearance hole runs this far past the screw's tip
+    mount_tip_past: float = 1.0           # [DESIGN] the screw's tip 2 pitches past its nut: sets the nut's seat (the pocket's ceiling)
+    mount_nut_pocket_af: float = 5.35     # [DESIGN] the nuts' hex pockets, a flat toward +/-X: a press on the 5.5 nut (cf. nut_af 6.85 on the 7.0), so it stays when its screw is out
 
     @property
     def t20(self) -> float:

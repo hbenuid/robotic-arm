@@ -71,10 +71,10 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
     z_neck = z_face + d.bearing_width                             # 43
     z_cap_outer = z_neck + d.cap_lip                              # 45: the cap's outer face, the stops stand on it
     z_wall = -w.wall_x[1]                                         # 48: the forearm wall's elbow face = the spigot starts
-    z_motor_face = z_ring_mid - d.t20                             # 7.05
-    z_motor_board = z_motor_face - d.motor.body_length            # -32.45
-    y_step = d.block_y[1] - d.mount_base_t                        # 32: the step's floor = the motor mount's underside
-    y_mount_nut = y_step - d.mount_nut_roof                       # 29: the channels' ceiling = the nuts' bearing face
+    z_motor_face = z_ring_mid - d.t20                             # 6.05
+    z_motor_board = z_motor_face - d.motor.body_length            # -33.45
+    y_step = d.block_y[1] - d.mount_base_t                        # 32: the pocket's floor = the motor mount's underside
+    y_tip = d.block_y[1] - d.mount_screw_len                      # 24: the screws' tips (the heads flush with the block's top)
     return {
         "z_block": 0.0, "z_shaft": 0.0,
         "z_end": z_end, "z_lip": z_lip, "z_seat": z_seat, "z_bore": z_bore, "z_cavity": z_cavity,
@@ -94,12 +94,17 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
         "x_motor": 0.0, "y_motor": d.motor_y,
         "y_plate_top": d.motor_y + d.plate_w / 2.0,               # 83.9
         "y_step": y_step,
-        "z_step_riser": z_motor_face + d.pad_t + d.mount_fit,     # 10.25: the step's front wall, mount_fit before the base's front edge
-        "y_mount_nut": y_mount_nut,
-        "y_channel_floor": y_mount_nut - d.mount_nut.h - d.mount_channel_add,   # 26.3
-        "z_channel_end": d.mount_bolt_z[1] + d.mount_nut.af / math.sqrt(3.0),   # 5.18: the front nut, pushed home, is centred under its screw
-        "y_mount_hole": d.block_y[1] - d.mount_screw_len - d.mount_hole_past,  # 23.5: the clearance holes' bottom
+        "z_step_riser": z_motor_face + d.pad_t + d.mount_fit,     # 10.25: the pocket's front wall, mount_fit before the base's front edge
+        "y_mount_tip": y_tip,
+        "y_mount_nut": y_tip + d.mount_tip_past + d.mount_nut.h,  # 27.4: the nut pockets' ceiling = the nuts' bearing face
     }
+
+
+def mount_nut_pocket_open_y(x: float, cfg: ForearmConfig = DEFAULT) -> float:
+    """Module y where the hex pocket of the mount nut at x starts: inside the core bore under the pocket's outermost
+    flat (|x| + half the across-flats off the roll axis), 1 mm down - so the pocket opens into the bore all round."""
+    d = cfg.drive
+    return math.sqrt((d.core_bore_dia / 2.0) ** 2 - (abs(x) + d.mount_nut_pocket_af / 2.0) ** 2) - 1.0
 
 
 def mount_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:

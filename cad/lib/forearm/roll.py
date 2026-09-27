@@ -15,6 +15,7 @@ from lib.forearm.layout import (
     flange_bolt_points_module,
     module_frame_in_host,
     mount_bolt_points,
+    mount_nut_pocket_open_y,
     nut_channel_end,
     pad_bolt_points,
     pulley_bolt_points,
@@ -60,13 +61,17 @@ def _y_cylinder(radius: float, height: float, xz, y0: float):
     return bd.Pos(xz[0], y0, xz[1]) * bd.Rot(-90.0, 0.0, 0.0) * cylinder(radius, height)
 
 
-def _step(cfg: ForearmConfig, z1: float, y1: float, pad: float = 0.0):
-    """The box over the block's top the motor mount's base occupies: y_step .. y1, from the rear face to z1, `pad`
-    past the block's outline on its open sides (a cutter's overshoot)."""
+def _y_hex(across_flats: float, length: float, xz, y0: float):
+    """A hex prism along +Y from y0, its axis through (x, z) = xz, a flat toward +/-X (its corners along Z)."""
+    return bd.Pos(xz[0], y0, xz[1]) * bd.Rot(-90.0, 0.0, 0.0) * hex_prism(across_flats, math.pi / 2.0, length)
+
+
+def _pocket(cfg: ForearmConfig, half_x: float, z1: float, y1: float, rear_pad: float = 0.0):
+    """The box the motor mount's base occupies on the block's flat top: x +/- half_x, y_step .. y1, from the rear face
+    (rear_pad past it: a cutter's overshoot) to z1."""
     d, S = cfg.drive, stack_positions(cfg)
-    x0, x1 = d.block_x[0] - pad, d.block_x[1] + pad
-    return bd.Pos((x0 + x1) / 2.0, S["y_step"], d.block_z[0] - pad) * bd.Box(
-        x1 - x0, y1 - S["y_step"], z1 - d.block_z[0] + pad, align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.MIN))
+    return bd.Pos(0.0, S["y_step"], d.block_z[0] - rear_pad) * bd.Box(
+        2 * half_x, y1 - S["y_step"], z1 - d.block_z[0] + rear_pad, align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.MIN))
 
 
 def build_block(cfg: ForearmConfig = DEFAULT):
@@ -97,29 +102,25 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     # the cap's 4x M3 (self-tapping) in the front face
     for x, y in cap_bolt_points(cfg):
         body = body - cylinder(d.cap_tap_dia / 2.0, d.cap_tap_depth + NUDGE, (x, y), z0=S["z_face"] - d.cap_tap_depth)
-    # the motor mount's seat: the step its base fills (from the rear face to the riser), the 4 screws' clearance holes
-    # down past their tips, and the two nut channels along Z from the rear face under them - a flat of each nut on
-    # either wall, the channel's end stopping the front nut under its screw
-    body = body - _step(cfg, S["z_step_riser"], y_top + 1.0, pad=1.0)
-    for xz in mount_bolt_points(cfg):
-        body = body - _y_cylinder(d.mount_bolt_dia / 2.0, S["y_step"] - S["y_mount_hole"] + NUDGE, xz, S["y_mount_hole"])
-    w = d.mount_nut.af + d.mount_channel_add
-    for sx in (1.0, -1.0):
-        body = body - bd.Pos(sx * d.mount_bolt_x, S["y_channel_floor"], S["z_end"] - NUDGE) * bd.Box(
-            w, S["y_mount_nut"] - S["y_channel_floor"], S["z_channel_end"] - S["z_end"] + NUDGE,
-            align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.MIN))
+    # the motor mount's seat: the pocket its base fills in the flat top (mount_fit round it, open at the rear face; the
+    # rounded edges stay), the 4 screws' clearance holes down through the top wall to the nuts' seats, and each nut's
+    # hex pocket (a flat toward +/-X) on down into the core bore, where the nut goes in before the shaft
+    body = body - _pocket(cfg, d.plate_w / 2.0 + d.mount_fit, S["z_step_riser"], y_top + 1.0, rear_pad=1.0)
+    for x, z in mount_bolt_points(cfg):
+        body = body - _y_cylinder(d.mount_bolt_dia / 2.0, S["y_step"] - S["y_mount_nut"] + 2 * NUDGE, (x, z), S["y_mount_nut"] - NUDGE)
+        y_open = mount_nut_pocket_open_y(x, cfg)
+        body = body - _y_hex(d.mount_nut_pocket_af, S["y_mount_nut"] - y_open, (x, z), y_open)
     return single_solid(body)
 
 
 def build_motor_mount(cfg: ForearmConfig = DEFAULT):
-    """The motor mount in the module frame: its base is the block's own rounded outline over the step (y_step .. the
-    block's top, the rear face .. the plate's front face) - the block's outline whole again, the motor's clearance
-    unchanged -, the vertical plate rooted in it (the four tension slots, the pilot slot) and the 4 countersunk
-    clearance holes (the heads flush with the base's top, under the motor)."""
+    """The motor mount in the module frame, one thickness throughout (mount_base_t = pad_t): a plain base plate_w wide
+    in the pocket on the block's flat top (y_step .. the block's top, the rear face .. the plate's front face - the
+    motor's clearance unchanged), the vertical plate rooted in it (the four tension slots, the pilot slot) and the 4
+    countersunk clearance holes (the heads flush with the base's top, under the motor)."""
     d, S = cfg.drive, stack_positions(cfg)
     y_top = d.block_y[1]
-    body = _rounded_box(d.block_x, d.block_y, (d.block_z[0], S["z_pad_top"]), d.block_corner_r) & _step(
-        cfg, S["z_pad_top"], y_top, pad=1.0)
+    body = _pocket(cfg, d.plate_w / 2.0, S["z_pad_top"], y_top)
     body = body + bd.Pos(0.0, S["y_step"], S["z_motor_face"]) * bd.Box(
         d.plate_w, S["y_plate_top"] - S["y_step"], d.pad_t, align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.MIN))
     for x, y in pad_bolt_points(cfg):

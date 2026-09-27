@@ -1,11 +1,11 @@
 """forearm_roll_mount_screws - purchased (COTS) part: the roll motor mount's 4 M3 countersunk screws (ISO 10642).
 
-They clamp the motor mount (forearm_roll_motor_mount) into the step on the elbow block's top (forearm_roll_block).
+They clamp the motor mount (forearm_roll_motor_mount) into the pocket on the elbow block's top (forearm_roll_block).
 
 In the arm (assemblies/forearm_roll_drive.py, a row of the module): the heads flush with the mount's base under the
-motor, the shanks down through its countersunk holes into the block and through the M3 nuts in its two channels
-(forearm_roll_mount_nuts); the tips end in clearance holes past the nuts. Length: lib/forearm/params.py
-RollDriveParams.mount_screw_len (overall, as ISO 10642 measures it).
+motor, the shanks down through its countersunk holes and the block's top wall into the M3 nuts pressed into the hex
+pockets under it (forearm_roll_mount_nuts); the tips end 2 pitches past the nuts, in the pockets, clear of the core
+bore. Length: lib/forearm/params.py RollDriveParams.mount_screw_len (overall, as ISO 10642 measures it).
 
 No catalog model (the catalog has single fasteners only, vendor/README.md) and no SolidWorks export: a NATIVE COTS
 pattern part (lib/reference.py NATIVE_COTS) like elbow_pulley_screws - its envelope IS the geometry (lib/fasteners.py
@@ -32,7 +32,7 @@ COTS = True
 MASS_G = ROLL_MOUNT_SCREWS_MASS_G   # [ESTIMATE] the modelled steel (lib/params.py)
 PURCHASE_SPEC = f"M{M3_CSK.d:g} x {LENGTH:g} countersunk socket screw (ISO 10642)"
 PURCHASE_QTY = len(mount_bolt_points())   # pieces per occurrence (the whole pattern)
-PURCHASE_NOTE = "the roll motor mount into the elbow block's step, into the M3 nuts in its channels (forearm_roll_mount_nuts)"
+PURCHASE_NOTE = "the roll motor mount into the elbow block's pocket, into the M3 nuts pressed into its hex pockets (forearm_roll_mount_nuts)"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 

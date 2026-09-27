@@ -4,8 +4,8 @@ Stator: the elbow block - ONE printed part that is the elbow's output flange (it
 j3_coupler's lip, boss, journal and stub down into j1_link's bore; the elbow 90T pulley bolts straight into it, so
 j3_coupler#1 is retired, lib/placements.py RETIRED) and the roll housing round the shaft that crosses the elbow axis
 (bearing 1's seat in its rear end, the Ø62 cavity the ring runs in, open to the front face) -, bearing 1, the bolt-on
-end cap with bearing 2 on the front face, the bolt-on motor mount (its base in the step on the block's top, 4x M3
-countersunk into M3 nuts in the block's channels), the 40 mm kit motor + MKS board on the mount's vertical plate UP in
+end cap with bearing 2 on the front face, the bolt-on motor mount (its base in the pocket on the block's top, 4x M3
+countersunk into M3 nuts pressed into the block's top wall from the bore), the 40 mm kit motor + MKS board on the mount's vertical plate UP in
 the swing plane (its body behind the elbow axis) and the 20T on the motor shaft. Rotor: the hollow
 roll shaft with its integral 90T ring between the bearings and the end spigot the forearm's wall bolts onto
 (forearm_link). MODULE FRAME (lib/forearm/params.py RollDriveParams): origin on the roll axis at the elbow-axis
@@ -37,7 +37,7 @@ def _at(x: float = 0.0, y: float = 0.0, z: float = 0.0):
 # frame is not the module's (the 20T's vendor axis is +X). The block, the motor mount and the shaft are built at their
 # stations (their rows are at 0), the cap at its local origin (placed on the block's front face); the bearings stand on
 # their seats; the mount's screws and nuts are patterns on Z turned down -Y (Rot X +90: their (x, y) = the module's
-# (x, z)), the heads flush with the block's top, the nuts up against their channels' ceilings; the motor's mounting
+# (x, z)), the heads flush with the block's top, the nuts up against their pockets' ceilings; the motor's mounting
 # face is the mount plate's rear face, centred on the roll axis in X, spun so its connector points +X.
 OCCURRENCES = [
     ("forearm_roll_block",    None, _at()),
@@ -61,8 +61,8 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("stator") after any geometry change.
 EXPECTED = {
-    "leaves": 11, "solids": 32, "solid_volume": 419018.261,
-    "bodies": {"stator": {"leaves": 10, "solids": 31, "solid_volume": 323775.82},
+    "leaves": 11, "solids": 32, "solid_volume": 421260.721,
+    "bodies": {"stator": {"leaves": 10, "solids": 31, "solid_volume": 326018.28},
                "rotor": {"leaves": 1, "solids": 1, "solid_volume": 95242.441}},
 }
 

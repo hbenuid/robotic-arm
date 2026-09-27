@@ -1,13 +1,13 @@
 """forearm_roll_mount_nuts - purchased (COTS) part: the roll motor mount's 4 M3 hex nuts (ISO 4032), in the elbow block.
 
-The mount's countersunk screws (forearm_roll_mount_screws) run into them, in the block's two nut channels
-(forearm_roll_block).
+The mount's countersunk screws (forearm_roll_mount_screws) run into them, in the block's hex pockets under its top
+wall (forearm_roll_block).
 
-In the arm (assemblies/forearm_roll_drive.py, a row of the module): each nut up against its channel's ceiling
-(lib/forearm/layout.py stack_positions()["y_mount_nut"], lib/forearm/params.py RollDriveParams.mount_nut_roof under
-the step's floor), a flat on either wall of its channel. They slide in along the channels from the block's rear face,
-two per channel - the front one first, pushed to the channel's end, which stops it under its screw
-(docs/forearm_roll.md §4).
+In the arm (assemblies/forearm_roll_drive.py, a row of the module): each nut up against its pocket's ceiling
+(lib/forearm/layout.py stack_positions()["y_mount_nut"]: the screw's tip RollDriveParams.mount_tip_past past it), a
+flat toward +/-X as the pocket holds it. Each pocket opens into the core bore: the nut goes in from inside the bore,
+pressed up to its seat (mount_nut_pocket_af: a press, so it stays when its screw is out), before the roll shaft goes
+in (docs/forearm_roll.md §4).
 
 No catalog model (the catalog has single fasteners only, vendor/README.md) and no SolidWorks export: a NATIVE COTS
 pattern part (lib/reference.py NATIVE_COTS) like elbow_pulley_nuts - its envelope IS the geometry (lib/fasteners.py
@@ -32,14 +32,14 @@ COTS = True
 MASS_G = ROLL_MOUNT_NUTS_MASS_G   # [ESTIMATE] the modelled steel (lib/params.py)
 PURCHASE_SPEC = f"M{M3_NUT.d:g} hex nut (ISO 4032)"
 PURCHASE_QTY = len(mount_bolt_points())   # pieces per occurrence (the whole pattern)
-PURCHASE_NOTE = "slid into the elbow block's two channels from its rear face, the front nut of each first"
+PURCHASE_NOTE = "pressed into the elbow block's hex pockets from inside its core bore, before the roll shaft"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 
 
 def _envelope():
-    """The four plain nuts, corners along +/-Y (the channel's length) so a flat faces each wall: the geometry until a
-    vendor model exists."""
+    """The four plain nuts, corners along +/-Y (the module's Z) so a flat faces +/-X as the pockets hold them: the
+    geometry until a vendor model exists."""
     return pattern(hex_nut(M3_NUT, math.pi / 2.0, xy) for xy in mount_bolt_points())
 
 

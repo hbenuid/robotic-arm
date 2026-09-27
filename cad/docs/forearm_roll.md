@@ -15,8 +15,8 @@ Numbers below name the constants; the values live in `lib/forearm/params.py`.
 | torque | ≈ 1.1–1.8 N·m at the roll vs ≈ 0.9 N·m worst-case static load | §2 |
 | bearings | 2× 6808-2RS (40 × 52 × 7), 71 mm apart, straddling the elbow axis (seats Ø52.15, journals Ø40.3) | `RollDriveParams bearing_*` |
 | shaft (rotor, PETG) | hollow, Ø24 cable bore end to end, Ø44 core, Ø38 neck, Ø39.7 end spigot + 4× M3 on Ø32 into the forearm wall; 86 mm long (z −36…50) | `forearm_roll_shaft` |
-| block (stator, PETG) | 66 × 72 × 76 mm rounded box (x −33…33, y ±36, z −40…36, r 8), **also the elbow's output flange**: Ø72 lip, Ø62 boss, Ø40 journal, Ø33 inner-ring shoulder, Ø30 stub down through `j1_link`'s bore to the elbow 90T (host z −25…−8), 4× M4 at r 11 (turned 45°) for the elbow 90T into captive nuts in hex channels that open into the core bore; Ø26 cable exit in the rear wall; on top the `mount_base_t` step the motor mount's base fills, its 4 clearance holes and the two M3 nut channels from the rear face | `forearm_roll_block` |
-| motor mount (PETG) | bolted on, **separate from the block**: a base in the block's step (the block's rounded outline, `mount_base_t` thick, the rear face … the plate's front face; its top where the block's top was, so the motor keeps its clearance) + the 3 mm vertical plate up to y 83.9 (the tension slots, the Ø22.3 pilot slot); no cheeks; 4× M3 × 12 countersunk (ISO 10642, `mount_screw_len`), flush under the motor, at (±`mount_bolt_x`, `mount_bolt_z`) into M3 nuts in the block's channels | `forearm_roll_motor_mount`, `forearm_roll_mount_screws` / `_nuts` |
+| block (stator, PETG) | 66 × 72 × 76 mm rounded box (x −33…33, y ±36, z −40…36, r 8), **also the elbow's output flange**: Ø72 lip, Ø62 boss, Ø40 journal, Ø33 inner-ring shoulder, Ø30 stub down through `j1_link`'s bore to the elbow 90T (host z −25…−8), 4× M4 at r 11 (turned 45°) for the elbow 90T into captive nuts in hex channels that open into the core bore; Ø26 cable exit in the rear wall; in the flat top the `mount_base_t` pocket the motor mount's base fills (the rounded edges stay), its 4 clearance holes down through the top wall and 4 hex pockets for the mount's M3 nuts that open into the core bore | `forearm_roll_block` |
+| motor mount (PETG) | bolted on, **separate from the block**, one thickness throughout (`pad_t` = `mount_base_t`): a plain base as wide as the plate (`plate_w`) in the pocket on the block's flat top (the rear face … the plate's front face; its top where the block's top was, so the motor keeps its clearance) + the vertical plate up to y 83.9 (the tension slots, the Ø22.3 pilot slot); no cheeks; 4× M3 × 12 countersunk (ISO 10642, `mount_screw_len`), flush under the motor, at (±`mount_bolt_x`, `mount_bolt_z`) through the base and the top wall into M3 nuts pressed into the block's hex pockets | `forearm_roll_motor_mount`, `forearm_roll_mount_screws` / `_nuts` |
 | end cap (PETG) | the block's outline, 9 thick (seat + 2 lip), 4× M3 at the corners, the stop post | `forearm_roll_retainer` |
 | forearm interface | `j2_link`'s wall at 48…56 mm from the elbow axis (`wall_x` −56…−48): Ø40 × 2 recess, Ø24 bore, 4× M3 on Ø32 | `RollEndParams` |
 | clearances held by tests | block and end cap 3.0 mm above `j1_link`'s elbow relief (its lip cut away within `relief_r` of the elbow axis, past their corners), the boss 2.0 above its recess floor, level with the upper 6806's top (`FACE_GAP`: the least gap a face the elbow turns may keep; minimum gaps, not overlap volumes); the rolling ±45 forearm wall 3 mm off `j1_link`'s r 45 end; folded elbow (±90°) and rolled forearm (±170°) < 1 mm³ against every neighbour; at the elbow's limits the forearm wall, rolled anywhere, ≥ 2 mm off `j1_link` (it meets the upper arm's side from ±93°: that sets `ELBOW_PITCH_LIMIT_DEG`); journals 0.9–1.0 × the 132 mm³ press | `tests/forearm/test_roll_drive.py` |
@@ -57,14 +57,14 @@ elbow's 6806 pair, §4), and
 | `z_end` −40…−37 | the rear end wall, the Ø26 `cable_exit` on the axis | the shaft's Ø24 bore + 1 |
 | `z_lip` −37…−35 | the lip (ID `lip_id` 46) bearing 1's outer race stops on | |
 | `z_seat` −35…−28 | **bearing 1**'s seat Ø52.15; the shaft's rear journal from −36 (`shaft_end_clear`) | |
-| −28…16 | the Ø52.6 `core_bore_dia`: bearing 1 (pressed on the shaft) rides through it to its seat, the Ø44 core turns in it; the four nut channels open into its floor | the nuts (−36…−32.8) and the screw tips (−31.4) ≥ 2 mm under it |
+| −28…16 | the Ø52.6 `core_bore_dia`: bearing 1 (pressed on the shaft) rides through it to its seat, the Ø44 core turns in it; the elbow pulley's four nut channels open into its floor, the motor mount's four nut pockets into its roof | the nuts (−36…−32.8) and the screw tips (−31.4) ≥ 2 mm under it; the mount's nuts and tips ≥ 2 mm over it |
 | `z_cavity` 16…36 | the **Ø62 cavity**, OPEN through the front face: the shaft's flanged 90T ring 16.8…26.2 (teeth 18…25, `z_ring_mid` 21.5) passes through it on assembly | `cavity_z0` 4.4 mm past the nut channels (z to 11.6) |
 | 15.8…27.2 | the **belt window** through the top wall (`belt_window_half_x` ±22, from y 29 out) | the runs cross the wall at \|x\| 16…19 |
 | `z_face` 36 | the front face = **bearing 2** = the **end cap** (`forearm_roll_retainer`, 36…45: seat 36…43, lip 43…45, the block's outline, 4× M3 at (±27, ±30) self-tapped `cap_tap_depth` into the face, the **stop post** 45…47.5 at −X, r 24…30) | pull-out (+Z): core → bearing 2 → cap lip → 4× M3 |
 | `z_neck` 43…48 | the shaft's Ø38 neck (bearing 2 slides over it), the **stop lug** on it 45…47.5 at +X, r 17…28 (contact at ±`stop_deg` = 180 − 10) | `stop_t` 0.5 mm short of the wall |
 | `z_wall` 48…50 | the shaft's **Ø39.7 spigot** (`RollEndParams.flange_dia`) in the wall's Ø40 recess, 4× M3 on Ø32 into its end wall; the **forearm wall 48…56** (`wall_x` −56…−48) | ≥ 45 + 3: the rolling ±45 wall (corners r 57) clears `j1_link`'s r 45 end |
-| `z_motor_face` 7.05 | the roll motor's mounting face at (x 0, y `motor_y` 60.9): body −32.45…7.05 (behind the elbow axis, 7.5 before the block's rear), the MKS board −46.55…−32.45, spun `motor_spin_deg` 90° so the connector points +X; the 3 mm **plate** 7.05…10.05 of the **motor mount** (`forearm_roll_motor_mount`) up to y 83.9 (tension slots ±2.5 along Y, the Ø22.3 pilot slot), nothing beside the motor; the 20T's hub face `pulley_lift` above the plate, its teeth level with the ring (`t20`) | `centre_distance` = what a `roll_belt` 240-2GT sets; the board 3.4 mm above the top (the mount's, level with the block's) at the nominal slot position, 0.9 at the slot's low end |
-| `y_step` 32 (the top, `z_end` … `z_step_riser` 10.25) | the **step** the motor mount's base fills (its front edge `mount_fit` before the riser, 5.5 before the belt window); 4× Ø3.4 down to `y_mount_hole` at (±`mount_bolt_x`, `mount_bolt_z`); two **nut channels** at x ±`mount_bolt_x`, the nut's across-flats × thickness + `mount_channel_add` (y 26.3…29: `mount_nut_roof` 3 under the step), along Z from the rear face to `z_channel_end` | 5.7 mm of wall left over the core bore, the channels 5 off it; the front nut, pushed to the channel's end, centred under its screw |
+| `z_motor_face` 6.05 | the roll motor's mounting face at (x 0, y `motor_y` 60.9): body −33.45…6.05 (behind the elbow axis, 6.55 before the block's rear), the MKS board −47.55…−33.45, spun `motor_spin_deg` 90° so the connector points +X; the 4 mm **plate** 6.05…10.05 of the **motor mount** (`forearm_roll_motor_mount`) up to y 83.9 (tension slots ±2.5 along Y, the Ø22.3 pilot slot), nothing beside the motor; the 20T's hub face `pulley_lift` above the plate, its teeth level with the ring (`t20`) | `centre_distance` = what a `roll_belt` 240-2GT sets; the board 3.4 mm above the top (the mount's, level with the block's) at the nominal slot position, 0.9 at the slot's low end |
+| `y_step` 32 (the flat top, x ±(`plate_w` / 2 + `mount_fit`), `z_end` … `z_step_riser` 10.25) | the **pocket** the motor mount's base fills, open at the rear face (the flat rim and the rounded edges stay either side; its front edge `mount_fit` before the riser, 5.5 before the belt window); 4× Ø3.4 at (±`mount_bolt_x`, `mount_bolt_z`) down through the top wall to the nuts' seat `y_mount_nut` 27.4, then each nut's **hex pocket** (`mount_nut_pocket_af`, a flat toward ±X) on down into the core bore | 5.7 mm of wall left over the core bore; the nut and the screw's tip (`mount_tip_past` past it) ≥ 2 mm clear of the bore; the pockets open into the core bore only, ≥ 2 from the seat and the cavity |
 
 Shaft: Ø40.3 journals (`bearing_bore` + `journal_add`) at both ends of the Ø44 core (`shoulder_od` < the inner
 race's edge, `inner_race_od` [ESTIMATE]), the bearings 71 mm apart straddling the elbow axis. Ratio 90 / 20 = 4.5
@@ -79,15 +79,18 @@ comes out undersize — print a fit gauge first), the journals `journal_add` 0.3
 (`tests/forearm/test_roll_drive.py`) hold the journal press fit at 0.9–1.0 × 132 mm³ per bearing, 0 in the seats,
 every other pair in the module below 1 mm³, and the block's stub end ON the elbow pulley's face
 (`tests/test_mounts.py test_bearing_stacks` holds the elbow's 6806 stack). Print the block
-front face down (the seat, the core bore, the cavity and the mount's nut channels print as vertical bores; the
-coupler stub / journal / boss on the side need support — a `dfam-check` pass before the first print,
-`docs/open_issues.md`), the motor mount base down (the plate a vertical wall, the countersinks on top), the shaft
-spigot down (the ring's grooves print vertically), the cap flat. The motor plate is braced only by its root in the
-mount's base (`docs/open_issues.md`: check it for flex under the belt's pull).
+front face down (the seat, the core bore and the cavity print as vertical bores; the mount's screw holes and nut
+pockets lie on their side, each pocket with a corner up so it bridges itself; the coupler stub / journal / boss on
+the side need support — a `dfam-check` pass before the first print, `docs/open_issues.md`), the motor mount base down
+(the plate a vertical wall, the countersinks on top), the shaft spigot down (the ring's grooves print vertically), the
+cap flat. The motor plate is braced only by its root in the mount's base (`docs/open_issues.md`: check it for flex
+under the belt's pull).
 
 ## 4. Assembly sequence
 1. Four M4 nuts (`elbow_pulley_nuts`) into the block's hex channels: block underside down, drop each nut into the core bore from the front
-   and let it into its channel (tweezers), down onto its seat - the channel's 6.85 across flats holds it.
+   and let it into its channel (tweezers), down onto its seat - the channel's 6.85 across flats holds it. Then the
+   motor mount's four M3 nuts (`forearm_roll_mount_nuts`) the same way into the hex pockets in the top wall: block top
+   down, each nut into its pocket and pressed down onto its seat (`mount_nut_pocket_af` holds it).
 2. The elbow's 6806-2RS pair into `j1_link`'s bore, one each side of the lip; the block's stub into the upper one
    (its Ø33 shoulder on the inner ring, its end through the lip), the elbow 90T's hub into the lower one from below
    (its Ø34.76 ring on that inner ring, its end on the stub's end): 4× M4 × 40 (`elbow_pulley_screws`) up through the
@@ -101,10 +104,10 @@ mount's base (`docs/open_issues.md`: check it for flex under the belt's pull).
    the lip; the ring ends in the cavity.
 5. Slide bearing 2 over the spigot and the neck and press it onto journal 2 against the core; the cap over it (its
    seat on the outer race), 4× M3 into the front face.
-6. Two M3 nuts (`forearm_roll_mount_nuts`) into each of the block's nut channels from its rear face: the front one
-   first, pushed to the channel's end (it stops there under its screw), then the rear one under the rear hole. The
-   motor mount into the step, 4× M3 × 12 countersunk (`forearm_roll_mount_screws`) down through its base into the
-   nuts. The screws sit under the motor: to take the mount off, take the motor off first (step 7 backwards).
+6. The motor mount into the pocket on the block's top, 4× M3 × 12 countersunk (`forearm_roll_mount_screws`) down
+   through its base and the top wall into the nuts (step 1). The screws sit under the motor: to take the mount off,
+   take the motor off first (step 7 backwards); the pressed nuts stay in their pockets (a loose one can drop into the
+   gap round the shaft's core, as the elbow pulley's can).
 7. Motor onto the mount's plate (4× M3 through the tension slots, connector toward +N), the 20T on its shaft with its
    teeth level with the ring, the 240-2GT belt through the window; slide the motor up the slots to tension.
 8. Cables from the forearm through the bore, out of the rear end wall toward the upper arm.
@@ -124,5 +127,5 @@ puts it (`J2_MOTOR_SLIDE_X`) so its plug clears the wall (`plug_clearance`).
 ## 6. Not modelled / to confirm
 `docs/open_issues.md`: the belts, the home sensor (on the cap's outer face, a magnet in the stop lug, to the MKS board's
 limit input), the cable route; the elbow drive's second stage; the 6806 seats' PETG fit; the block's print orientation and its
-nut channels' fit (the pulley's and the mount's), the mount's countersinks; the motor plate's flex without cheeks; the 6808's mass and inner-race edge, `t20_hub`, the belt lengths, the limit and the printed stop lugs'
+nut channels' and pockets' fit (the pulley's and the mount's), the mount's countersinks; the motor plate's flex without cheeks; the 6808's mass and inner-race edge, `t20_hub`, the belt lengths, the limit and the printed stop lugs'
 strength, the spigot's self-tapped M3s; the roll motor's **CAN id** (`software/control/src/config.py` has no row for it: it names fewer boards than the arm carries).

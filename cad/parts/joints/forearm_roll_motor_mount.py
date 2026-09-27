@@ -1,8 +1,9 @@
-"""forearm_roll_motor_mount - the forearm roll motor's MOUNT, bolted onto the elbow block's top: a base that fills the step cut
-into the block's top (the block's own rounded outline, y 32..36, from its rear face to the plate's front face - its top where the
-block's top was, so the motor keeps its clearance) and the vertical 3 mm plate rooted in it, UP in the swing plane (the four
-tension slots for the motor's M3s, the Ø22.3 pilot slot); 4x M3 countersunk (flush, under the motor) down through the base into
-the M3 nuts in the block's channels (forearm_roll_mount_screws / _nuts).
+"""forearm_roll_motor_mount - the forearm roll motor's MOUNT, bolted onto the elbow block's top, one thickness throughout
+(mount_base_t = pad_t): a plain base as wide as the plate in the pocket cut into the block's flat top (y 32..36, from the block's
+rear face to the plate's front face - its top where the block's top was, so the motor keeps its clearance; the block keeps its
+rounded edges) and the vertical plate rooted in it, UP in the swing plane (the four tension slots for the motor's M3s, the Ø22.3
+pilot slot); 4x M3 countersunk (flush, under the motor) down through the base and the block's top wall into the M3 nuts pressed
+into hex pockets that open into the block's core bore (forearm_roll_mount_screws / _nuts).
 
 NATIVE part (lib/reference.py NATIVE): designed here in build123d (lib/forearm/roll.py build_motor_mount(cfg), every number
 lib/forearm/params.py RollDriveParams, in the drive's MODULE frame at its stack station - assemblies/forearm_roll_drive.py

@@ -5,8 +5,8 @@ core bore - j3_coupler#1 is retired),
 the housing bore that CROSSES the elbow axis - the rear end wall with the Ø26 cable exit on the axis, the lip bearing 1 stops on,
 its Ø52.15 seat, the clearance bore round the shaft's core, the Ø62 cavity the shaft's 90T ring runs in (open through the front
 face, the belt window in the top wall), the end cap's 4x M3 in the front face - and, on the block's top UP in the swing plane, the
-step the bolt-on motor mount's base fills (forearm_roll_motor_mount: the 40 mm kit motor's plate), its 4 clearance holes and the two
-channels the mount's M3 nuts slide into from the rear face.
+pocket in the flat top the bolt-on motor mount's base fills (forearm_roll_motor_mount: the 40 mm kit motor's plate; the rounded edges
+stay), its 4 clearance holes down through the top wall and the hex pockets the mount's M3 nuts press into from inside the core bore.
 
 NATIVE part (lib/reference.py NATIVE): designed here in build123d (lib/forearm/roll.py build_block(cfg), every number
 lib/forearm/params.py RollDriveParams, in the drive's MODULE frame at its stack station - assemblies/forearm_roll_drive.py
