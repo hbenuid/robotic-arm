@@ -1,6 +1,6 @@
 """build123d builders of the forearm roll drive's printed parts (RollDriveParams, module frame, at their stack
-stations): the elbow block (stator - the housing that is also the elbow's output flange), the hollow roll shaft with
-its integral 90T (rotor) and the bolt-on end cap carrying bearing 2."""
+stations): the elbow block (stator - the housing that is also the elbow's output flange), the bolt-on motor mount on
+its top, the hollow roll shaft with its integral 90T (rotor) and the bolt-on end cap carrying bearing 2."""
 from __future__ import annotations
 
 import math
@@ -14,6 +14,7 @@ from lib.forearm.layout import (
     coupler_steps,
     flange_bolt_points_module,
     module_frame_in_host,
+    mount_bolt_points,
     nut_channel_end,
     pad_bolt_points,
     pulley_bolt_points,
@@ -54,20 +55,28 @@ def _slot_y(x: float, y: float, width: float, length: float, z0: float, depth: f
     return bd.Pos(x, y, z0 - NUDGE) * bd.Rot(0.0, 0.0, 90.0) * bd.extrude(bd.SlotCenterToCenter(length, width), amount=depth + 2 * NUDGE)
 
 
+def _y_cylinder(radius: float, height: float, xz, y0: float):
+    """A cylinder along +Y from y0, its axis through (x, z) = xz."""
+    return bd.Pos(xz[0], y0, xz[1]) * bd.Rot(-90.0, 0.0, 0.0) * cylinder(radius, height)
+
+
+def _step(cfg: ForearmConfig, z1: float, y1: float, pad: float = 0.0):
+    """The box over the block's top the motor mount's base occupies: y_step .. y1, from the rear face to z1, `pad`
+    past the block's outline on its open sides (a cutter's overshoot)."""
+    d, S = cfg.drive, stack_positions(cfg)
+    x0, x1 = d.block_x[0] - pad, d.block_x[1] + pad
+    return bd.Pos((x0 + x1) / 2.0, S["y_step"], d.block_z[0] - pad) * bd.Box(
+        x1 - x0, y1 - S["y_step"], z1 - d.block_z[0] + pad, align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.MIN))
+
+
 def build_block(cfg: ForearmConfig = DEFAULT):
     d, S = cfg.drive, stack_positions(cfg)
     # the material first: the rounded box round the roll axis, the coupler's lip / boss / journal / stub on its
-    # underside (about the elbow axis, module X), the motor plate standing on its top and the two cheeks
+    # underside (about the elbow axis, module X)
     body = _rounded_box(d.block_x, d.block_y, d.block_z, d.block_corner_r)
     for dia, x0, x1 in coupler_steps(cfg):
         body = body + x_cylinder(dia / 2.0, x1 - x0, (0.0, 0.0), x0)
     y_top = d.block_y[1]
-    body = body + bd.Pos(0.0, y_top - 1.0, S["z_motor_face"]) * bd.Box(
-        d.plate_w, S["y_plate_top"] - y_top + 1.0, d.pad_t, align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.MIN))
-    x_cheek = d.motor.body_width / 2.0 + d.cheek_gap + d.cheek_t / 2.0
-    for sx in (1.0, -1.0):
-        body = body + bd.Pos(sx * x_cheek, y_top - 1.0, S["z_cheek"]) * bd.Box(
-            d.cheek_t, d.cheek_h + 1.0, S["z_motor_face"] - S["z_cheek"], align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.MIN))
     # the bore, rear to front: the cable exit through the end wall, the lip, bearing 1's seat, the clearance bore
     # round the core, the cavity the ring runs in - open through the front face
     body = body - cylinder(d.cable_exit_dia / 2.0, d.end_wall + 2 * NUDGE, z0=S["z_end"] - NUDGE)
@@ -85,12 +94,43 @@ def build_block(cfg: ForearmConfig = DEFAULT):
         body = body - x_cylinder(d.pulley_bolt_dia / 2.0, d.nut_seat_x - d.stub_x[0] + 2 * NUDGE, (y, z), d.stub_x[0] - NUDGE)
         x_end = nut_channel_end(y, cfg)
         body = body - _x_hex(d.nut_af, x_end - d.nut_seat_x, (y, z), d.nut_seat_x, math.degrees(math.atan2(z, y)))
-    # the cap's 4x M3 (self-tapping) in the front face; the plate's four tension slots and its pilot slot
+    # the cap's 4x M3 (self-tapping) in the front face
     for x, y in cap_bolt_points(cfg):
         body = body - cylinder(d.cap_tap_dia / 2.0, d.cap_tap_depth + NUDGE, (x, y), z0=S["z_face"] - d.cap_tap_depth)
+    # the motor mount's seat: the step its base fills (from the rear face to the riser), the 4 screws' clearance holes
+    # down past their tips, and the two nut channels along Z from the rear face under them - a flat of each nut on
+    # either wall, the channel's end stopping the front nut under its screw
+    body = body - _step(cfg, S["z_step_riser"], y_top + 1.0, pad=1.0)
+    for xz in mount_bolt_points(cfg):
+        body = body - _y_cylinder(d.mount_bolt_dia / 2.0, S["y_step"] - S["y_mount_hole"] + NUDGE, xz, S["y_mount_hole"])
+    w = d.mount_nut.af + d.mount_channel_add
+    for sx in (1.0, -1.0):
+        body = body - bd.Pos(sx * d.mount_bolt_x, S["y_channel_floor"], S["z_end"] - NUDGE) * bd.Box(
+            w, S["y_mount_nut"] - S["y_channel_floor"], S["z_channel_end"] - S["z_end"] + NUDGE,
+            align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.MIN))
+    return single_solid(body)
+
+
+def build_motor_mount(cfg: ForearmConfig = DEFAULT):
+    """The motor mount in the module frame: its base is the block's own rounded outline over the step (y_step .. the
+    block's top, the rear face .. the plate's front face) - the block's outline whole again, the motor's clearance
+    unchanged -, the vertical plate rooted in it (the four tension slots, the pilot slot) and the 4 countersunk
+    clearance holes (the heads flush with the base's top, under the motor)."""
+    d, S = cfg.drive, stack_positions(cfg)
+    y_top = d.block_y[1]
+    body = _rounded_box(d.block_x, d.block_y, (d.block_z[0], S["z_pad_top"]), d.block_corner_r) & _step(
+        cfg, S["z_pad_top"], y_top, pad=1.0)
+    body = body + bd.Pos(0.0, S["y_step"], S["z_motor_face"]) * bd.Box(
+        d.plate_w, S["y_plate_top"] - S["y_step"], d.pad_t, align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.MIN))
     for x, y in pad_bolt_points(cfg):
         body = body - _slot_y(x, y, d.pad_bolt_dia, d.pad_slot_len, S["z_motor_face"], d.pad_t)
     body = body - _slot_y(S["x_motor"], S["y_motor"], d.pad_pilot_w, d.pad_slot_len, S["z_motor_face"], d.pad_t)
+    # the 90 deg countersinks: the screw head's own cone from its top (dk at the base's top) down to the hole
+    r_hole, r_head = d.mount_bolt_dia / 2.0, d.mount_screw.head_dia / 2.0
+    for xz in mount_bolt_points(cfg):
+        body = body - _y_cylinder(r_hole, d.mount_base_t + 2 * NUDGE, xz, S["y_step"] - NUDGE)
+        sink = bd.Cone(r_hole, r_head + NUDGE, r_head - r_hole + NUDGE, align=align_min())
+        body = body - bd.Pos(xz[0], y_top - (r_head - r_hole), xz[1]) * bd.Rot(-90.0, 0.0, 0.0) * sink
     return single_solid(body)
 
 

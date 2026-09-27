@@ -37,6 +37,9 @@ MULTI_BODY = {
     "elbow_pulley_nuts": 4,
     "wrist_pulley_screws": 4,
     "wrist_pulley_nuts": 4,
+    # the roll motor mount's countersunk screws + nuts (assemblies/forearm_roll_drive.py rows)
+    "forearm_roll_mount_screws": 4,
+    "forearm_roll_mount_nuts": 4,
 }
 
 

@@ -113,11 +113,11 @@ def test_cycloidal_drive_module_builds():
 def test_forearm_roll_drive_module_builds():
     d = raw(forearm_roll_drive.forearm_roll_drive)
     assert d.label == "forearm_roll_drive"
-    assert len(_leaves(d)) == len(forearm_roll_drive.OCCURRENCES) == ROLL["leaves"] == 8
+    assert len(_leaves(d)) == len(forearm_roll_drive.OCCURRENCES) == ROLL["leaves"] == 11
     assert len(d.solids()) == ROLL["solids"]
     assert abs(R.solid_volume(d) - ROLL["solid_volume"]) <= 0.5
     assert d.is_valid
-    assert _check_module_tints(d, forearm_roll_drive.TINT) == {True: 5, False: 3}   # 2 bearings, motor, board, 20T / block, shaft, retainer
+    assert _check_module_tints(d, forearm_roll_drive.TINT) == {True: 7, False: 4}   # 2 bearings, motor, board, 20T, the mount's screws + nuts / block, motor mount, shaft, retainer
 
 
 def test_arm_groups_mirror_links():
@@ -180,13 +180,13 @@ def test_arm_assembly_matches_reference_totals():
     assert [c.label for c in a.children] == [label for label, _, _ in arm.GROUPS]
     leaves = _leaves(a)
     exp_leaves, exp_solids, exp_volume = _expected_totals()
-    assert len(leaves) == exp_leaves == 73
+    assert len(leaves) == exp_leaves == 76
     labels = [leaf.label for leaf in leaves]
     assert len(set(labels)) == len(labels), f"duplicate leaf labels: {labels}"
-    assert len(a.solids()) == exp_solids == 218
+    assert len(a.solids()) == exp_solids == 227
     assert abs(R.solid_volume(a) - exp_volume) <= 0.5
     exp_min, exp_size = _expected_bbox()
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_min(a), exp_min, strict=True)), (R.bbox_min(a), exp_min)
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_size(a), exp_size, strict=True)), (R.bbox_size(a), exp_size)
     assert a.is_valid
-    assert _check_link_tints(a) == {True: 40, False: 33}   # bought / printed leaves (tools/bom.py counts the same)
+    assert _check_link_tints(a) == {True: 42, False: 34}   # bought / printed leaves (tools/bom.py counts the same)

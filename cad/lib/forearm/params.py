@@ -21,7 +21,7 @@ from dataclasses import dataclass, replace
 from lib.bearings import BEARING_6806_SHOULDER_DIA, PULLEY_SEAT_SHIFT
 from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_FACE_Y, GT2_PULLEY_90T_TEETH, centre_distance
 from lib.cycloidal.params import MotorParams
-from lib.fasteners import M4_CLEAR, M4_NUT
+from lib.fasteners import M3_CLEAR, M3_CSK, M3_NUT, M4_CLEAR, M4_NUT, CskSize, NutSize
 from lib.motors import MOTOR_40
 
 
@@ -126,8 +126,9 @@ class RollDriveParams:
     down into j1_link's bore and the elbow 90T pulley bolts straight into it - round a hollow roll shaft (rotor) that
     CROSSES the elbow axis: bearing 1's seat in the block's rear end, the shaft's integral 90T ring in the Ø cavity_dia
     cavity that is OPEN to the front face (the ring passes through it on assembly), bearing 2 in the bolt-on END CAP on
-    that face, the 40 mm kit motor on a vertical plate on the block's top - UP in the swing plane, its body behind the
-    elbow axis -, the belt down through the top wall, the cables out of the rear end wall on the axis. MODULE FRAME:
+    that face, the 40 mm kit motor on the bolt-on MOTOR MOUNT whose base fills a step cut into the block's top (its
+    vertical plate UP in the swing plane, the motor's body behind the elbow axis), the belt down through the top wall,
+    the cables out of the rear end wall on the axis. MODULE FRAME:
     origin at the roll axis' crossing with the elbow axis (host (0, 0, axis_z)); +Z along the roll axis toward the
     wrist (host −X); +X = host +Z (N, away from the upper arm); +Y = host +Y = up in the arm's swing plane. Stations in
     that frame: layout.stack_positions(). Assembly: bearing 1 into the rear seat, the shaft in from the front (its
@@ -143,7 +144,7 @@ class RollDriveParams:
     journal_add: float = 0.3              # [DESIGN] the printed journal's interference in the inner race (cf. the drive's hub)
     inner_race_od: float = 44.5           # [ESTIMATE] 6808 inner-race outer edge - the shaft's Ø44 core must not touch the outer race
     # the block (stator): a rounded box round the roll axis - x along N (its underside at -X rides 3.0 mm above the
-    # upper arm's elbow relief, host z -11), y up in the swing plane (the motor plate stands on +Y), z along the roll axis
+    # upper arm's elbow relief, host z -11), y up in the swing plane (the motor mount sits on +Y), z along the roll axis
     block_x: tuple = (-33.0, 33.0)        # [DESIGN] host z -8 .. 58
     block_y: tuple = (-36.0, 36.0)        # [DESIGN] 5 mm of wall over the cavity; the motor's body clears the top at the slot's low end
     block_z: tuple = (-40.0, 36.0)        # [DESIGN] the rear end wall .. the front face (the cap sits on it)
@@ -211,10 +212,10 @@ class RollDriveParams:
     ring_flange_dia: float = 59.19        # [REFERENCE] the SolidWorks 90T's flanges
     ring_flange_t: float = 1.2
     ring_z0: float = 18.0                 # [DESIGN] the teeth start here (the motor's body then ends 7.5 mm before the block's rear)
-    # the motor: on the block's top, up in the swing plane, centred on the roll axis in X, body toward the elbow (-Z),
+    # the motor: over the block's top, up in the swing plane, centred on the roll axis in X, body toward the elbow (-Z),
     # shaft toward the wrist, spun motor_spin_deg about its axis so its cable connector points +X (away from the upper
-    # arm, clear of the block's top); a vertical plate (normal to Z) carries it - slotted along Y for belt tension -
-    # and two cheeks flank the body (cheek_h stays under the connector)
+    # arm, clear of the block's top); the motor mount's vertical plate (normal to Z) carries it - slotted along Y for
+    # belt tension
     motor: MotorParams = MOTOR_40
     motor_spin_deg: float = 90.0          # [DESIGN] about the motor axis: the connector (the motor frame's -Y) -> module +X
     roll_belt: int = 240                  # [ESTIMATE] 240-2GT closed belt, 6 mm: sets the centre distance (60.9) = the motor's height
@@ -225,9 +226,21 @@ class RollDriveParams:
     pad_slot_len: float = 5.0             # [DESIGN] +/- 2.5 belt-tension slide along Y
     pad_bolt_dia: float = 3.4
     pad_pilot_w: float = 22.3             # [DESIGN] the pilot boss slot
-    cheek_t: float = 3.0                  # [DESIGN] the two cheeks beside the motor body, standing on the block's top
-    cheek_h: float = 16.0
-    cheek_gap: float = 0.5                # [DESIGN] cheek .. motor body
+    # the motor mount (forearm_roll_motor_mount): its base fills a step cut into the block's top from the rear face to
+    # the plate's front face, its top where the block's top was (the motor keeps its clearance), the plate rooted in it;
+    # 4x M3 countersunk (flush, under the motor) down through the base into M3 nuts slid in from the block's rear face
+    # along two channels (the channel's end stops the front nut under its screw)
+    mount_base_t: float = 4.0             # [DESIGN] the base = the step's depth: 5.7 mm of wall left over the core bore
+    mount_fit: float = 0.2                # [DESIGN] PETG clearance between the base's front edge and the step's riser
+    mount_bolt_x: float = 20.0            # [DESIGN] the screws at x +/- this (the heads under the motor's footprint, +/- 21) ...
+    mount_bolt_z: tuple = (-34.0, 2.0)    # [DESIGN] ... and these z: the rear pair's heads 2.6 inside the rear face, the front 1.7 behind the plate
+    mount_screw: CskSize = M3_CSK         # [DATASHEET] ISO 10642 M3 (parts/joints/forearm_roll_mount_screws)
+    mount_screw_len: float = 12.0         # [DESIGN] M3 x 12 countersunk (length overall): the tip 2.6 past its nut
+    mount_bolt_dia: float = M3_CLEAR      # [DESIGN] 3.4, through the base and on into the block
+    mount_nut: NutSize = M3_NUT           # [DATASHEET] ISO 4032 M3 (parts/joints/forearm_roll_mount_nuts)
+    mount_nut_roof: float = 3.0           # [DESIGN] the step's floor .. each channel's ceiling (the nut's bearing face)
+    mount_channel_add: float = 0.3        # [DESIGN] the channels' clearance on the nut's across-flats and thickness
+    mount_hole_past: float = 0.5          # [DESIGN] the clearance hole runs this far past the screw's tip
 
     @property
     def t20(self) -> float:

@@ -18,6 +18,7 @@ from lib.forearm import (
     belt_window,
     cap_bolt_points,
     module_frame_in_host,
+    mount_bolt_points,
     nut_channel_end,
     pulley_bolt_points,
     stack_positions,
@@ -120,19 +121,40 @@ def test_stack():
     assert D.shoulder_od < D.inner_race_od < D.bearing_od and D.neck_od < D.bearing_bore and w.flange_dia < D.bearing_bore
     assert D.cavity_dia >= D.ring_flange_dia + 2.0 and D.lip_id > D.bearing_bore + D.journal_add
     assert D.bearing_od + 0.3 <= D.core_bore_dia < D.cavity_dia      # bearing 1 rides through the core bore to its seat from the front
-    # the motor: on the block's top, centred on the roll axis in X, the belt setting its height, its body clear of the
-    # top at the slot's low end, the plate past its bolt square, the cheeks clear of the board
+    # the motor: over the block's top, centred on the roll axis in X, the belt setting its height, its body clear of the
+    # top (the mount's, level with the block's) at the slot's low end, the plate past its bolt square
     assert S["x_motor"] == 0.0 and math.isclose(S["y_motor"], D.centre_distance)
     assert math.isclose(D.centre_distance, centre_distance(D.roll_belt, D.ring_teeth, GT2_PULLEY_20T_TEETH), abs_tol=1e-9)
     assert S["y_motor"] - D.pad_slot_len / 2.0 - D.motor.body_width / 2.0 >= D.block_y[1] + 0.5
     assert S["y_plate_top"] >= S["y_motor"] + 15.5 + D.pad_bolt_dia / 2.0 + 2.0 and D.plate_w >= D.motor.body_width + 2.0
-    assert S["z_cheek"] > S["z_motor_board"] and D.cheek_gap > 0.0
+    # the motor mount: its base fills the step (its top where the block's top was, 5 mm of wall left over the core bore
+    # and the seat), the riser mount_fit before its front edge and 2 mm before the belt window
+    assert S["y_step"] + D.mount_base_t == D.block_y[1] and S["y_step"] - D.core_bore_dia / 2.0 >= 5.0
+    assert S["y_step"] - (D.bearing_od + D.seat_add) / 2.0 >= 5.0
+    assert math.isclose(S["z_step_riser"] - S["z_pad_top"], D.mount_fit) and S["z_step_riser"] + 2.0 <= belt_window(DEFAULT)[0]
+    # its screws: the countersunk heads on the base's flat top, behind the plate, inside the rear face; each 2 pitches
+    # past its nut, its clearance hole 2 mm off the core bore; the nuts under mount_nut_roof of PETG
+    head_r, hole_r = D.mount_screw.head_dia / 2.0, D.mount_bolt_dia / 2.0
+    xs, zs = {abs(x) for x, _ in mount_bolt_points(DEFAULT)}, [z for _, z in mount_bolt_points(DEFAULT)]
+    assert len(mount_bolt_points(DEFAULT)) == 4 and xs == {D.mount_bolt_x}
+    assert D.mount_bolt_x + head_r <= D.block_x[1] - D.block_corner_r - 1.0
+    assert max(zs) + head_r <= S["z_motor_face"] - 1.5 and min(zs) - head_r >= D.block_z[0] + 2.0
+    assert (S["y_mount_nut"] - D.mount_nut.h) - (D.block_y[1] - D.mount_screw_len) >= 2 * PARAMS.M3_PITCH
+    assert math.hypot(D.mount_bolt_x - hole_r, S["y_mount_hole"]) >= D.core_bore_dia / 2.0 + 2.0
+    assert S["y_step"] - S["y_mount_nut"] == D.mount_nut_roof >= 2.0
+    # the nut channels: 2 mm off the core bore and the seat, inside the side faces, 2 mm before the cavity; the front
+    # nut, pushed to the channel's end, centred under its screw
+    w_ch = D.mount_nut.af + D.mount_channel_add
+    assert math.hypot(D.mount_bolt_x - w_ch / 2.0, S["y_channel_floor"]) >= D.core_bore_dia / 2.0 + 2.0
+    assert D.mount_bolt_x + w_ch / 2.0 <= D.block_x[1] - 2.0 and S["z_cavity"] - S["z_channel_end"] >= 2.0
+    assert math.isclose(S["z_channel_end"] - max(zs), D.mount_nut.af / math.sqrt(3.0))
+    assert math.isclose(S["y_mount_nut"] - S["y_channel_floor"], D.mount_nut.h + D.mount_channel_add)
     # the belt window: the ring's width + the margins, from inside the cavity out through the top wall
     z0, z1, half_x, y0 = belt_window(DEFAULT)
     assert z0 == S["z_ring_flange_1"] - D.belt_window_margin and z1 == S["z_ring_end"] + D.belt_window_margin and z1 < S["z_face"]
     assert half_x < D.ring_flange_dia / 2.0 and y0 < D.cavity_dia / 2.0 < D.block_y[1]      # a slot for the runs, not the ring
     assert all(abs(x) - D.cap_tap_dia / 2.0 >= half_x + 2.0 for x, _ in cap_bolt_points(DEFAULT))   # the cap's taps beside the window
-    assert D.motor_spin_deg == 90.0 and D.cheek_h + D.block_y[1] < S["y_motor"] - 8.0            # the connector (16 wide) clears the cheeks
+    assert D.motor_spin_deg == 90.0                                                               # the connector toward +X, away from the upper arm
     # the wall bolts into the shaft's end wall: 2 mm of PETG round each tap hole, between the bore and the spigot
     assert D.bore == w.cable_bore and D.cable_exit_dia > D.bore
     assert w.bolt_circle_dia / 2.0 - D.end_bolt_tap_dia / 2.0 >= D.bore / 2.0 + 2.0
@@ -228,12 +250,28 @@ def test_block_and_shaft_features(module):
         assert is_inside(block, above, y - (flat + 0.3) * u[0], z - (flat + 0.3) * u[1])
         assert not is_inside(block, above, y + (corner - 0.2) * t[0], z + (corner - 0.2) * t[1])
         assert is_inside(block, above, y + (corner + 0.3) * t[0], z + (corner + 0.3) * t[1])
-    # the motor plate (with its pilot slot), the motor's space behind it, a cheek
-    assert is_inside(block, 10, S["y_motor"] + 10, S["z_motor_face"] + 1.5) and not is_inside(block, 0, S["y_motor"], S["z_motor_face"] + 1.5)
-    assert not is_inside(block, 10, S["y_motor"] + 10, S["z_motor_face"] - 1.5) and not is_inside(block, 0, D.block_y[1] + 5.0, -10.0)
-    x_cheek = D.motor.body_width / 2.0 + D.cheek_gap + D.cheek_t / 2.0
-    assert is_inside(block, x_cheek, D.block_y[1] + 5.0, -10.0) and is_inside(block, -x_cheek, D.block_y[1] + 5.0, -10.0)
-    assert not is_inside(block, x_cheek, D.block_y[1] + 5.0, S["z_motor_board"] - 1.0)
+    # the motor mount: the plate (with its pilot slot), the motor's space behind it, nothing beside the motor; its base
+    # in the step - the block open above the step's floor, the riser in front of the base
+    mount = _leaf(module, "forearm_roll_motor_mount")
+    assert is_inside(mount, 10, S["y_motor"] + 10, S["z_motor_face"] + 1.5) and not is_inside(mount, 0, S["y_motor"], S["z_motor_face"] + 1.5)
+    assert not is_inside(mount, 10, S["y_motor"] + 10, S["z_motor_face"] - 1.5) and not is_inside(mount, 0, D.block_y[1] + 5.0, -10.0)
+    x_side = D.motor.body_width / 2.0 + 2.0
+    assert not is_inside(mount, x_side, D.block_y[1] + 5.0, -10.0) and not is_inside(mount, -x_side, D.block_y[1] + 5.0, -10.0)
+    y_base = (S["y_step"] + D.block_y[1]) / 2.0
+    assert is_inside(mount, 0, y_base, -10.0) and not is_inside(block, 0, y_base, -10.0) and is_inside(block, 0, S["y_step"] - 1.0, -10.0)
+    assert is_inside(block, 0, y_base, S["z_step_riser"] + 1.0) and not is_inside(mount, 0, y_base, S["z_pad_top"] + 0.1)
+    # its screws: the countersinks in the base, the clearance holes in the block down past the tips; the nut channels
+    # open at the rear face, closed past their end, walled round
+    head_r = D.mount_screw.head_dia / 2.0
+    for x, z in mount_bolt_points(DEFAULT):
+        assert not is_inside(mount, x + head_r - 0.3, D.block_y[1] - 0.1, z) and is_inside(mount, x + head_r + 0.3, D.block_y[1] - 0.1, z)
+        assert not is_inside(block, x, S["y_mount_hole"] + 0.3, z) and is_inside(block, x, S["y_mount_hole"] - 0.3, z)
+    y_ch, w = (S["y_channel_floor"] + S["y_mount_nut"]) / 2.0, D.mount_nut.af + D.mount_channel_add
+    for sx in (1.0, -1.0):
+        x = sx * D.mount_bolt_x
+        assert not is_inside(block, x, y_ch, S["z_end"] + 0.5) and not is_inside(block, x, y_ch, S["z_channel_end"] - 0.5)
+        assert is_inside(block, x, y_ch, S["z_channel_end"] + 0.5) and is_inside(block, x + sx * (w / 2.0 + 0.3), y_ch, -10.0)
+        assert is_inside(block, x, S["y_mount_nut"] + 0.3, -10.0) and is_inside(block, x, S["y_channel_floor"] - 0.3, -10.0)
     # the shaft: the bore, the core, journal 1, the ring (a land, a groove, all round), the neck, the lug, the spigot, a tap
     assert not is_inside(shaft, 0, 0, zm) and is_inside(shaft, D.bore / 2.0 + 1.0, 0, zm)
     assert is_inside(shaft, D.bearing_bore / 2.0 - 0.5, 0, S["z_seat"] + 3.0) and not is_inside(shaft, D.bearing_bore / 2.0 + 1.0, 0, S["z_seat"] + 3.0)
@@ -309,13 +347,15 @@ def test_module_clears_the_folded_upper_arm(deg):
 @pytest.mark.parametrize("deg", [-PARAMS.FOREARM_ROLL_LIMIT_DEG, -90.0, 90.0, PARAMS.FOREARM_ROLL_LIMIT_DEG])
 def test_forearm_clears_the_elbow_while_rolling(deg):
     """j2_link rolled about the roll axis (host: through (0, 0, axis_z) along -X) to its limits never runs into the
-    upper arm's round end, the elbow pulley or the stator's parts (the block, the end cap, the motor, the board)."""
+    upper arm's round end, the elbow pulley or the stator's parts (the block, the end cap, the motor mount, the motor, the
+    board)."""
     axis = Axis((0.0, 0.0, DEFAULT.roll_end.axis_z), (-1.0, 0.0, 0.0))
     link = parts.build("j2_link").rotate(axis, deg)
     for key in ("j1_link#1", "gt2_pulley_90t#3"):
         vol = interference(link, in_host(key))
         assert vol < 1.0, f"roll {deg:+.0f} deg: j2_link x {key}: {vol:.1f} mm^3"
-    for label in ("forearm_roll_block", "forearm_roll_retainer", "nema17_40mm:forearm_roll", "mks_servo42d:forearm_roll"):
+    for label in ("forearm_roll_block", "forearm_roll_retainer", "forearm_roll_motor_mount", "nema17_40mm:forearm_roll",
+                  "mks_servo42d:forearm_roll"):
         vol = interference(link, _placed_part(label))
         assert vol < 1.0, f"roll {deg:+.0f} deg: j2_link x {label}: {vol:.1f} mm^3"
 

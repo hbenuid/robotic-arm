@@ -26,7 +26,9 @@ from lib.units import IN, NUDGE  # noqa: F401
 PETG_DENSITY = 1.27e-3  # [DESIGN] g/mm^3 - printed-part mass estimates
 
 # --- Fasteners - lib/fasteners.py (a leaf: the sizes, the clearance holes, the plain screw / nut builders) ----
-from lib.fasteners import M3_CLEAR, M4_CLEAR, M4_NUT, M4_PITCH, M4_SHCS, M5_CLEAR, nut_volume, shcs_volume  # noqa: E402, F401
+from lib.fasteners import (  # noqa: E402, F401
+    M3_CLEAR, M3_CSK, M3_NUT, M3_PITCH, M4_CLEAR, M4_NUT, M4_PITCH, M4_SHCS, M5_CLEAR, csk_volume, nut_volume, shcs_volume,
+)
 
 # --- Belt drive (GT2) - lib/belts.py (a leaf: lib/forearm/ imports it directly) ------------------
 from lib.belts import (  # noqa: E402, F401
@@ -152,6 +154,13 @@ _PULLEY_BOLTS = len(pulley_90t_bolt_points())
 ELBOW_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _FOREARM.drive.pulley_screw_len)   # 20.1, 4x M4x40
 WRIST_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _COUPLER.pulley_screw_len)         # 24.1, 4x M4x50
 PULLEY_NUTS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * nut_volume(M4_NUT)                                              # 3.0, 4x M4 (each joint)
+
+# The roll motor mount's screws and nuts (parts/joints/forearm_roll_mount_{screws,nuts}): the same estimate
+from lib.forearm.layout import mount_bolt_points as _mount_bolt_points  # noqa: E402
+
+_MOUNT_BOLTS = len(_mount_bolt_points(_FOREARM))
+ROLL_MOUNT_SCREWS_MASS_G = STEEL_DENSITY * _MOUNT_BOLTS * csk_volume(M3_CSK, _FOREARM.drive.mount_screw_len)   # 3.3, 4x M3x12 countersunk
+ROLL_MOUNT_NUTS_MASS_G = STEEL_DENSITY * _MOUNT_BOLTS * nut_volume(M3_NUT)                                      # 1.4, 4x M3
 
 # --- Robot description (robot/frames.py, robot/arm.urdf) --------------------------------------
 # Joint limits and actuator ratings are PLACEHOLDERS until measured on the hardware; the URDF

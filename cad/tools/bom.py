@@ -30,8 +30,9 @@ from lib.params import (
 from lib.upper_arm import DEFAULT as _UPPER_ARM
 
 # (module or None = the arm itself, what to order, pieces, why it is not modelled). Seeded with what
-# docs/cycloidal_drive.md states; the elbow belt, the arm's own fasteners (but the 90T pulley bolts, modelled:
-# parts/joints/{elbow,wrist}_pulley_{screws,nuts}) and the electronics are not listed yet.
+# docs/cycloidal_drive.md states; the elbow belt, the arm's own fasteners (but the 90T pulley bolts and the roll motor
+# mount's, modelled: parts/joints/{elbow,wrist}_pulley_{screws,nuts}, forearm_roll_mount_{screws,nuts}) and the
+# electronics are not listed yet.
 EXTRAS = [
     ("cycloidal_drive", f"M{CYCLOIDAL_ARM_MOUNT_BOLT_DIA:g} socket head cap screw (ISO 4762), 40-50 mm long - arm-mount bolts",
      CYCLOIDAL_ARM_MOUNT_BOLT_COUNT,
@@ -44,7 +45,7 @@ EXTRAS = [
     ("forearm_roll_drive", "M3 x 20 socket head cap screw (ISO 4762) - the forearm wall onto the roll shaft's end spigot", _FOREARM.roll_end.bolt_count,
      "heads on the wall's wrist face, through the wall, self-tapping into the shaft's end wall (or heat-set inserts)"),
     ("forearm_roll_drive", "M3 x 16 socket head cap screw - the end cap to the elbow block's front face (self-tapping in PETG)", 4, "or heat-set inserts"),
-    ("forearm_roll_drive", "M3 x 8 socket head cap screw - the roll motor to the block's plate", 4, "through the plate's tension slots into the motor"),
+    ("forearm_roll_drive", "M3 x 8 socket head cap screw - the roll motor to the motor mount's plate", 4, "through the plate's tension slots into the motor"),
     ("forearm_roll_drive", "home sensor (hall or optical) on the end cap's outer face + magnet in the shaft's stop lug", 1,
      "wired to the MKS board's limit input; nothing modelled yet (docs/open_issues.md); the hard stop itself is the printed lug + post"),
     (None, f"{WRIST_BELT_LENGTH}-2GT closed belt, 6 mm - the wrist-pitch belt (90T at the wrist, 20T on the forearm motor)", 1,

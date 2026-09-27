@@ -469,18 +469,84 @@
    ],
    "bbox_size": [
     83.0,
-    119.926,
+    72.0,
     76.0
    ],
-   "bytes": 396448,
+   "bytes": 336501,
    "file": "native/forearm_roll_block.step",
    "kind": "native",
    "origin": "native",
    "product": "forearm_roll_block - the forearm roll drive's STATOR - the elbow block, which is also the elbow's output flange: a rounded box",
-   "sha256": "2612cdb7e25dbcf2b23e032e88ebb37200b565039f35e8c9d6a00bc97bf27e8e",
-   "solid_volume": 210853.072,
+   "sha256": "b183bc2f46c6496783f90cdad0b4c255a6f5e27338dc509f4d83d77bc693f81d",
+   "solid_volume": 188631.31,
    "solids": 1,
    "source": "lib/forearm/roll.py:build_block(DEFAULT)",
+   "units": "mm"
+  },
+  "forearm_roll_motor_mount": {
+   "bbox_min": [
+    -31.928,
+    32.0,
+    -40.0
+   ],
+   "bbox_size": [
+    63.856,
+    51.926,
+    50.05
+   ],
+   "bytes": 149521,
+   "file": "native/forearm_roll_motor_mount.step",
+   "kind": "native",
+   "origin": "native",
+   "product": "forearm_roll_motor_mount - the forearm roll motor's MOUNT, bolted onto the elbow block's top: a base that fills the step cut",
+   "sha256": "4f381849f0b9cc37f016d46ae547111c36a1a912a009c33587f4b066173f9e6e",
+   "solid_volume": 16548.628,
+   "solids": 1,
+   "source": "lib/forearm/roll.py:build_motor_mount(DEFAULT)",
+   "units": "mm"
+  },
+  "forearm_roll_mount_nuts": {
+   "bbox_min": [
+    -22.75,
+    -37.175,
+    0.0
+   ],
+   "bbox_size": [
+    45.5,
+    42.351,
+    2.4
+   ],
+   "bytes": 106467,
+   "file": "native/forearm_roll_mount_nuts.step",
+   "kind": "cots",
+   "origin": "native",
+   "product": "forearm_roll_mount_nuts - purchased (COTS) part: the roll motor mount's 4 M3 hex nuts (ISO 4032), in the elbow block.",
+   "sha256": "9f21e76532e8dcbcfb97cff6d40fbe3623feb472b42b23729a023d4f0ad08fa8",
+   "solid_volume": 183.635,
+   "solids": 4,
+   "source": "parts/joints/forearm_roll_mount_nuts.py:_envelope()",
+   "units": "mm"
+  },
+  "forearm_roll_mount_screws": {
+   "bbox_min": [
+    -23.36,
+    -37.36,
+    0.0
+   ],
+   "bbox_size": [
+    46.72,
+    42.72,
+    12.0
+   ],
+   "bytes": 123035,
+   "file": "native/forearm_roll_mount_screws.step",
+   "kind": "cots",
+   "origin": "native",
+   "product": "forearm_roll_mount_screws - purchased (COTS) part: the roll motor mount's 4 M3 countersunk screws (ISO 10642).",
+   "sha256": "e031b01a3ba8bc9e834adcd3fe78f864788b3f56facc8ab6b4cc168e182df30b",
+   "solid_volume": 416.216,
+   "solids": 4,
+   "source": "parts/joints/forearm_roll_mount_screws.py:_envelope()",
    "units": "mm"
   },
   "forearm_roll_retainer": {
