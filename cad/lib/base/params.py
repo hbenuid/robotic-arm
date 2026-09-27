@@ -7,11 +7,13 @@ BASE_BOTTOM_Y), the round half toward -X, the motor end toward +X. Every feature
 The body: a D-shaped wall (a half round of r on -X, straight sides out to the flat +X end) from the bottom face up
 to the motor plate; above the plate only the round half and the straight sides' stubs (out to where the inside of a
 side meets the outer round) carry on up to the cap; the cap (a disc of r plus those stubs, a 45 degree chamfer
-under it) holds the base_yaw bearing bore in a boss below and a seat ring on top for j1_coupler. The 48 mm motor
+under it) holds the base_yaw bearing bore in a boss below and on top a seat ring in an annular groove - the base_yaw
+thrust bearing (lib/bearings.py THRUST_*) lies in the groove, centred on the ring, under j1_coupler. The 48 mm motor
 (lib/mounts.py nema17_48mm#1) bolts to the plate's underside, its shaft up through the plate's window.
 
 Two configurations: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
-tests/test_reference_match.py); DEFAULT is what the part builds: the bearing bore sized for the 6806-2RS pair.
+tests/test_reference_match.py); DEFAULT is what the part builds: the bearing bore sized for the 6806-2RS pair, the seat
+ring sized for the thrust bearing's bore.
 
 Every number below was measured on the reference 2026-09-25 (vertex / face census; tests/base/test_base.py
 re-checks the builds against it): [REFERENCE] unless tagged. Units mm, degrees where named *_deg (in the XZ plane,
@@ -21,6 +23,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
+from lib.bearings import THRUST_BORE
 from lib.forearm.params import LEGACY as _FOREARM
 
 
@@ -41,7 +44,8 @@ class ShellParams:
 @dataclass(frozen=True)
 class CapParams:
     """The cap: its underside flat inside a 45 degree chamfer that starts on the wall's inside at chamfer_y0, the top
-    face with an annular groove round a raised seat ring (j1_coupler bears on the ring), the bearing boss under the
+    face with an annular groove round a raised seat ring (the thrust bearing's washers and cage in the groove, centred on
+    the ring; j1_coupler stands on them), the bearing boss under the
     underside, an r 0.5 round on the groove's outer edge, the ring's top edge and both ends of the bore."""
 
     chamfer_y0: float = -24.4
@@ -112,5 +116,9 @@ LEGACY = BaseConfig()     # the SolidWorks part, exactly
 # What the part builds: the base_yaw bore takes the 6806-2RS pair (lib/bearings.py) like the wrist's bore - both
 # seats the wrist's Ø42.2 (the SolidWorks Ø42.4 / Ø43.4 let the bearings wobble, the lower one 0.7 mm a side) and its
 # Ø37.65 lip, which stops the outer rings only (the SolidWorks Ø31.73 lip ran under the upper bearing's inner ring).
+# The seat ring centres the thrust bearing (the washers' and the cage's bore THRUST_BORE): the SolidWorks Ø65.1 would
+# not go into a Ø65 bore; RING_CLEAR a side.
+RING_CLEAR = 0.1          # [DESIGN]
 DEFAULT = replace(LEGACY, bore=replace(LEGACY.bore, upper_dia=_FOREARM.boss.seat_dia, lower_dia=_FOREARM.boss.seat_dia,
-                                       lip_dia=_FOREARM.boss.lip_dia))   # [DESIGN]
+                                       lip_dia=_FOREARM.boss.lip_dia),                                    # [DESIGN]
+                  cap=replace(LEGACY.cap, groove_r=(THRUST_BORE / 2.0 - RING_CLEAR, LEGACY.cap.groove_r[1])))   # [DESIGN]

@@ -19,7 +19,7 @@ zero = capture, the committed meshes vs a fresh export, inertials, URDF/SRDF/SDF
 `./cadtool inspect` agrees with the kernel),
 `test_mounts.py` (the mounted motors: axis on the joint, face on the pad, board on the rear face, interference budget,
 the base stack above the base bottom, the 90T planes within the shafts; the 90T pulley bolts: seats, reach, the opened
-holes, the nuts' designed press),
+holes, the nuts' designed press; the base_yaw thrust stack under `j1_coupler`),
 `test_layering.py` (the package layering, no `sys.path`, no direct part-module imports — AST scan),
 `test_lazy_kernel.py` (a fresh interpreter imports every template, part, assembly and link model without
 loading `build123d` / `OCP`; names the first offender — a new assembly model goes in its module list),

@@ -11,7 +11,7 @@ def test_every_part_is_counted_once_per_occurrence():
     counts = bom.part_counts()
     leaves = (len(arm.OCCURRENCES) - len(arm.MODULES) + len(gripper.OCCURRENCES) + len(cycloidal_drive.OCCURRENCES)
               + len(forearm_roll_drive.OCCURRENCES))
-    assert sum(counts.values()) == leaves == 76
+    assert sum(counts.values()) == leaves == 79
     assert set(counts) == set(parts.names()), "a part under parts/ that no assembly places (or the reverse)"
     assert sum(bom.part_counts("gripper").values()) == len(gripper.OCCURRENCES)
     assert sum(bom.part_counts("cycloidal_drive").values()) == len(cycloidal_drive.OCCURRENCES)
@@ -24,7 +24,7 @@ def test_the_two_lists_partition_the_parts_by_the_cots_flag():
     assert not {r["part"] for r in printed} & {r["part"] for r in bought}
     assert {r["part"] for r in bought} == set(R.COTS)
     assert (len(printed), sum(r["qty"] for r in printed)) == (27, 34)
-    assert (len(bought), sum(bom.part_counts()[r["part"]] for r in bought)) == (25, 42)
+    assert (len(bought), sum(bom.part_counts()[r["part"]] for r in bought)) == (27, 45)
     assert {r["state"] for r in printed} <= {"wrapper", "parametric", "designed", "native"}
     assert {r["part"] for r in printed if r["state"] == "designed"} == set(R.DESIGNED)
     assert {r["part"] for r in printed if r["state"] == "native"} == set(R.NATIVE)

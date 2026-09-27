@@ -18,7 +18,8 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
 - **Mounted occurrences** (`lib/mounts.py`): the belt joints' motors - `nema17_48mm#1` (the 48 mm motor, under the base;
   motor + board hang `BASE_MOTOR_STACK_PROUD` below the base's bottom face) and `nema17_40mm#2..3`, + `mks_servo42d#1..3`,
   on the NEMA 17 pads `base` / `j1_link` / `j2_link` carry - and each belt joint's 6806-2RS pair (`bearing_6806#1..6`, on
-  the lip of its housing's bore) never existed in the SolidWorks capture; the elbow's and the wrist's 90T
+  the lip of its housing's bore) and the base_yaw thrust bearing (`washer_as6590#1`, `bearing_axk6590#1` in the base's groove,
+  `washer_as6590#2` under `j1_coupler`'s seat) never existed in the SolidWorks capture; the elbow's and the wrist's 90T
   (`gt2_pulley_90t#3` / `#4`) did, but where the lower bearing had no room - their mounts are hosted on the retired
   records they correct, `PULLEY_SEAT_SHIFT` out along the pulley's own axis; each 90T's 4x M4 screws + nuts
   (`elbow_pulley_screws#1` / `elbow_pulley_nuts#1`, `wrist_pulley_*#1` - COTS pattern parts) are hosted on the pulley and

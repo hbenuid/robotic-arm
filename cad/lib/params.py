@@ -36,10 +36,11 @@ from lib.belts import (  # noqa: E402, F401
     GT2_PULLEY_90T_BOLT_R, GT2_PULLEY_90T_FACE_Y, GT2_PULLEY_90T_PITCH_DIA, GT2_PULLEY_90T_TEETH, GT2_RATIO,
     GT2_TOOTH_DEPTH, STANDARD_2GT_LENGTHS, pulley_90t_bolt_points,
 )
-# --- The belt joints' bearings - lib/bearings.py (a leaf: lib/base/, lib/coupler/, lib/forearm/ import it) -----
+# --- The belt joints' bearings + the base_yaw thrust bearing - lib/bearings.py (a leaf: lib/base/, lib/coupler/, lib/forearm/, lib/yaw_coupler/ import it)
 from lib.bearings import (  # noqa: E402, F401
     BEARING_6806_BORE, BEARING_6806_MASS_G, BEARING_6806_OD, BEARING_6806_SHOULDER_DIA, BEARING_6806_WIDTH,
-    PULLEY_SEAT_SHIFT,
+    PULLEY_SEAT_SHIFT, THRUST_BORE, THRUST_CAGE_MASS_G, THRUST_CAGE_WIDTH, THRUST_OD, THRUST_STACK,
+    THRUST_WASHER_MASS_G, THRUST_WASHER_WIDTH,
 )
 
 # --- Gripper hardware ---------------------------------------------------------

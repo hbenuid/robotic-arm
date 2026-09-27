@@ -2,7 +2,8 @@
 tools/reference/mount_placements.py): each NEMA 17 sits on the pad its SolidWorks host carries with its shaft
 parallel to the joint axis, its MKS board on its rear face; each joint's 6806 pair stands on the lip of its bore
 with the coupler's shoulder on the upper inner ring and the re-seated 90T's ring under the lower one; each 90T clamped
-by its 4x M4 screws + nuts; and nothing runs into the neighbours but the nuts' designed press in their pockets."""
+by its 4x M4 screws + nuts; j1_coupler stands on the base_yaw thrust bearing in the base's groove; and nothing runs
+into the neighbours but the nuts' designed press in their pockets."""
 import math
 
 import pytest
@@ -14,7 +15,15 @@ from assemblies._occurrences import place_world
 from lib import mounts
 from lib import params as PARAMS
 from lib import placements as P
-from lib.bearings import BEARING_6806_SHOULDER_DIA, BEARING_6806_WIDTH
+from lib.base.params import RING_CLEAR
+from lib.bearings import (
+    BEARING_6806_SHOULDER_DIA,
+    BEARING_6806_WIDTH,
+    THRUST_BORE,
+    THRUST_CAGE_WIDTH,
+    THRUST_OD,
+    THRUST_WASHER_WIDTH,
+)
 from lib.coupler import DEFAULT as COUPLER
 from lib.cycloidal import DEFAULT_CONFIG
 from lib.datum import BASE_BOTTOM_Y, to_location
@@ -22,12 +31,15 @@ from lib.fasteners import hex_area
 from lib.forearm import DEFAULT as FOREARM
 from lib.forearm import pulley_bolt_points
 from lib.models import raw
+from lib.yaw_coupler.params import RIM_CLEAR, THRUST_CLEAR
 from robot import frames as F
 from tests.helpers import interference, is_inside
 
 MOTORS = [m for m in mounts.MOUNTS if m.part in mounts.MOTORS]
 BOARDS = {m.host: m for m in mounts.MOUNTS if m.part == mounts.BOARD}
-ON_AXIS = [m for m in mounts.MOUNTS if m.part in (mounts.BEARING, mounts.PULLEY, *mounts.PULLEY_BOLTS)]
+ON_AXIS = [m for m in mounts.MOUNTS if m.part in (mounts.BEARING, mounts.THRUST_CAGE, mounts.THRUST_WASHER, mounts.PULLEY,
+                                                  *mounts.PULLEY_BOLTS)]
+THRUST = ("washer_as6590#1", "bearing_axk6590#1", "washer_as6590#2")   # up the base_yaw axis
 # per belt joint: (upper bearing, lower bearing, the housing, what bears on the upper inner ring, the re-seated 90T)
 STACKS = {
     "base_yaw": ("bearing_6806#1", "bearing_6806#2", "base#1", None, None),
@@ -290,8 +302,9 @@ def test_bearing_stacks(joint):
     """Each belt joint's pair: both bearings on the lip that splits the housing's bore (the lip bears on the outer
     rings only), the coupler's shoulder down on the upper inner ring, the re-seated 90T's ring under the lower inner
     ring, the coupler's stub on through the lip to the pulley, which bolts flat onto its end - a solid joint that
-    clamps both inner rings - and no overlap anywhere. The base's stack is not closed yet: j1_coupler has no shoulder
-    and the base_yaw pulley is not modelled (docs/open_issues.md)."""
+    clamps both inner rings - and no overlap anywhere. The base's differs: j1_coupler stands on the thrust bearing
+    instead of a shoulder (test_thrust_bearing_carries_j1_coupler), and the base_yaw pulley is not modelled
+    (docs/open_issues.md)."""
     up, lo, host_key, coupler_key, pulley_key = STACKS[joint]
     host = place_world(P.OCCURRENCES[host_key]["part"], host_key)
     wu, wl = _world(up), _world(lo)
@@ -333,3 +346,33 @@ def test_bearing_stacks(joint):
     for b in bearings:
         for o in others + [bearings[1] if b is bearings[0] else bearings[0]]:
             assert interference(b, o) < 1.0, joint
+
+
+@pytest.mark.slow
+def test_thrust_bearing_carries_j1_coupler():
+    """base_yaw's axial load: the lower washer on the floor of the base's groove, the needle cage on it, the upper washer
+    on the cage and j1_coupler's seat down on that - face to face up the axis, each contact the washers' whole annulus -;
+    the stack THRUST_CLEAR inside the coupler's recess and RING_CLEAR round the base's seat ring (inside its bore) and
+    inside the groove's wall; the coupler nowhere nearer the base than its rim's RIM_CLEAR over the top face (it turns on
+    the stack, not on the base's face); no overlap with the base, the coupler or the 6806 pair."""
+    lower, cage, upper = (place_world(mounts.BY_KEY[k].part, k) for k in THRUST)
+    base, coupler = (place_world(P.OCCURRENCES[k]["part"], k) for k in ("base#1", "j1_coupler#1"))
+    w = _world(THRUST[0])
+    z = _dir(w).normalized()
+    assert abs(z.dot(Vector(*F.JOINT_BY_NAME["base_yaw"].axis_w)) - 1.0) < 1e-6
+    heights = (0.0, THRUST_WASHER_WIDTH, THRUST_WASHER_WIDTH + THRUST_CAGE_WIDTH, 2.0 * THRUST_WASHER_WIDTH + THRUST_CAGE_WIDTH)
+    for h, below, above in zip(heights, (base, lower, cage, upper), (lower, cage, upper, coupler), strict=True):
+        plane = (w * Location((0.0, 0.0, h))).position
+        down = [f for f in _faces_on(above, plane, z) if f[0] == -1]
+        up = [f for f in _faces_on(below, plane, z) if f[0] == 1]
+        assert down and up, h
+        contact = (max(min(r0 for _, r0, _ in down), min(r0 for _, r0, _ in up)),
+                   min(max(r1 for _, _, r1 in down), max(r1 for _, _, r1 in up)))
+        assert contact[0] <= THRUST_BORE / 2.0 + 1e-6 and contact[1] >= THRUST_OD / 2.0 - 1e-6, (h, contact)
+    assert base.distance_to(cage) == pytest.approx(RING_CLEAR, abs=1e-3)        # round the ring, inside the groove
+    assert coupler.distance_to(cage) == pytest.approx(THRUST_CLEAR, abs=1e-3)   # inside the recess
+    assert base.distance_to(coupler) == pytest.approx(RIM_CLEAR, abs=1e-3)      # the rim over the top face
+    shapes = [base, coupler, lower, cage, upper, *(place_world(mounts.BEARING, k) for k in STACKS["base_yaw"][:2])]
+    for i, a in enumerate(shapes):
+        for b in shapes[i + 1:]:
+            assert interference(a, b) < 1.0

@@ -6,7 +6,8 @@ motor plate at y -44.9..-39.9; above the plate the round half and the sides' stu
 the plate on the +X side (the base_yaw belt's room). The cap: a 45 degree chamfer under it, the bearing bore on the
 axis (the upper seat from the seat ring's top, the lip, the lower seat through a Ø63.47 boss - DEFAULT: Ø42.2 / Ø37.65
 / Ø42.2 for the 6806-2RS pair, the wrist's; LEGACY: Ø42.4 / Ø31.73 / Ø43.4), an annular groove round the raised seat
-ring j1_coupler turns on. The plate: a central opening that runs out to the
+ring for the base_yaw thrust bearing j1_coupler turns on (DEFAULT: the ring Ø64.8 inside the bearing's Ø65 bore;
+LEGACY: Ø65.1). The plate: a central opening that runs out to the
 wall on the -X side, a curved slot on +X, and the 48 mm base_yaw motor's seat on its underside (4 holes on the NEMA 17
 square, the pilot window, the belt slot toward the axis, a U rim round the motor's face; lib/mounts.py places
 nema17_48mm#1 on it). A cable notch through the +X end at the bottom. Every number: lib/base/params.py (BaseConfig;

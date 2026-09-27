@@ -40,6 +40,10 @@ The BEARINGS (parts/joints/bearing_6806, BEARING_MOUNTS): the 6806-2RS pair each
 each side of the lip that splits its bore - in the base (base_yaw), in j1_link's elbow end (elbow_pitch), in
 j2_link's wrist boss (wrist_pitch) - each standing on the lip (its axis +Z on the joint axis), the coupler side
 first. They ride with the housing's link.
+The THRUST BEARING (THRUST_MOUNTS): the base_yaw joint's axial load - j1_coupler and all it carries - on a needle cage
+(parts/base/bearing_axk6590) between two washers (parts/base/washer_as6590) in the base's groove round its seat ring:
+the lower washer on the groove's floor and the cage on it ride with the base, the upper washer under j1_coupler's seat
+(lib/yaw_coupler/params.py DEFAULT) with the coupler.
 The PULLEYS (PULLEY_MOUNTS): the elbow's and the wrist's 90T, whose SolidWorks poses (gt2_pulley_90t#1 / #2,
 retired - lib/placements.py) left no room for the lower bearing, re-declared PULLEY_SEAT_SHIFT further out along
 their own axis (+Y): the host of such a mount is the capture pose it corrects. The wrist's keeps its spin exactly; the
@@ -56,6 +60,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from lib.base.params import DEFAULT as _BASE
+from lib.bearings import THRUST_WASHER_WIDTH
 from lib.coupler.params import DEFAULT as _COUPLER
 from lib.forearm import module_frame_in_host
 from lib.forearm.params import DEFAULT as _FOREARM
@@ -71,10 +76,12 @@ from lib.params import (
     PULLEY_SEAT_SHIFT,
 )
 from lib.upper_arm.params import DEFAULT as _UPPER_ARM
+from lib.yaw_coupler.params import DEFAULT as _YAW_COUPLER
 
 MOTOR_48, MOTOR_40, BOARD = "nema17_48mm", "nema17_40mm", "mks_servo42d"
 MOTORS = (MOTOR_48, MOTOR_40)
 BEARING, PULLEY = "bearing_6806", "gt2_pulley_90t"
+THRUST_CAGE, THRUST_WASHER = "bearing_axk6590", "washer_as6590"
 PULLEY_BOLTS = ("elbow_pulley_screws", "elbow_pulley_nuts", "wrist_pulley_screws", "wrist_pulley_nuts")
 
 # The part-frame axis tools/reference/mount_placements.py checks for each mounted part, and whether it lies ON its
@@ -82,6 +89,7 @@ PULLEY_BOLTS = ("elbow_pulley_screws", "elbow_pulley_nuts", "wrist_pulley_screws
 AXES: dict[str, tuple[tuple[float, float, float], bool]] = {
     MOTOR_48: ((0.0, 0.0, 1.0), False), MOTOR_40: ((0.0, 0.0, 1.0), False),
     BEARING: ((0.0, 0.0, 1.0), True), PULLEY: ((0.0, 1.0, 0.0), True),
+    THRUST_CAGE: ((0.0, 0.0, 1.0), True), THRUST_WASHER: ((0.0, 0.0, 1.0), True),
     **{part: ((0.0, 0.0, 1.0), True) for part in PULLEY_BOLTS},
 }
 
@@ -141,6 +149,18 @@ BEARING_MOUNTS: tuple[Mount, ...] = (
     *_bearing_pair(5, "j2_link#1", "forearm_link", "wrist_pitch", _FOREARM.boss.lip_z, (_FOREARM.web.wrist_x, 0.0, None),
                    (0.0, 0.0, 0.0), "j2_link's wrist boss (axis +Z)"),
 )
+# The thrust stack along the base_yaw axis (+Y of both hosts; each part's +Z up it, standing on its lower face).
+_UP = (-90.0, 0.0, 0.0)
+_GROOVE_FLOOR = _BASE.cap.groove_y0
+THRUST_MOUNTS: tuple[Mount, ...] = (
+    Mount("washer_as6590#1", THRUST_WASHER, "base#1", "base_link", "base_yaw", ((0.0, _GROOVE_FLOOR, 0.0), _UP),
+          "the thrust bearing's lower washer, on the floor of the base's groove"),
+    Mount("bearing_axk6590#1", THRUST_CAGE, "base#1", "base_link", "base_yaw", ((0.0, round(_GROOVE_FLOOR + THRUST_WASHER_WIDTH, 6), 0.0), _UP),
+          "the needle cage on the lower washer, round the base's seat ring"),
+    Mount("washer_as6590#2", THRUST_WASHER, "j1_coupler#1", "shoulder_link", "base_yaw",
+          ((0.0, round(_YAW_COUPLER.hub.recess_y1 - THRUST_WASHER_WIDTH, 6), 0.0), _UP),
+          "the upper washer, under j1_coupler's seat (its recess's ceiling) - it turns with the coupler"),
+)
 PULLEY_MOUNTS: tuple[Mount, ...] = (
     Mount("gt2_pulley_90t#3", PULLEY, "gt2_pulley_90t#1", "elbow_link", "elbow_pitch",
           ((0.0, PULLEY_SEAT_SHIFT, 0.0), (0.0, _FOREARM.drive.pulley_bolt_deg, 0.0)),
@@ -164,7 +184,7 @@ FASTENER_MOUNTS: tuple[Mount, ...] = (
           ((0.0, 0.0, round(_COUPLER.stub_y1 + _HUB_LEN - _COUPLER.nut_depth, 6)), (0.0, 0.0, 0.0)),
           "the wrist screws' nuts on j3_coupler's pocket floors (nut_depth), a corner along the coupler's Z"),
 )
-MOUNTS: tuple[Mount, ...] = MOTOR_MOUNTS + BEARING_MOUNTS + PULLEY_MOUNTS + FASTENER_MOUNTS
+MOUNTS: tuple[Mount, ...] = MOTOR_MOUNTS + BEARING_MOUNTS + THRUST_MOUNTS + PULLEY_MOUNTS + FASTENER_MOUNTS
 BY_KEY: dict[str, Mount] = {m.key: m for m in MOUNTS}
 
 

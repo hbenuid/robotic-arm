@@ -11,9 +11,9 @@
  "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. A record with a `mount` block (keys under `mounted`) is a motor mount declared in lib/mounts.py, not a SolidWorks node: parent None, rel == world = host world * mount frame.",
  "root_label": "final_Arm_Assembly_Fully_Movable",
  "expected": {
-  "leaf_occurrences": 49,
-  "solids": 121,
-  "solid_volume": 1933693.491
+  "leaf_occurrences": 52,
+  "solids": 124,
+  "solid_volume": 1948910.581
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -32,6 +32,9 @@
   "bearing_6806#4",
   "bearing_6806#5",
   "bearing_6806#6",
+  "washer_as6590#1",
+  "bearing_axk6590#1",
+  "washer_as6590#2",
   "gt2_pulley_90t#3",
   "gt2_pulley_90t#4",
   "elbow_pulley_screws#1",
@@ -4053,6 +4056,315 @@
     42.364,
     42.0,
     9.692
+   ]
+  },
+  {
+   "key": "washer_as6590#1",
+   "part": "washer_as6590",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "base#1",
+    "link": "base_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      -8.492748,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      -90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the thrust bearing's lower washer, on the floor of the base's groove"
+   },
+   "solids": 1,
+   "solid_volume": 3043.418,
+   "rel": {
+    "position": [
+     0.0,
+     -8.492748,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     0.0
+    ],
+    "matrix_3x4": [
+     [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -8.492748
+     ],
+     [
+      0.0,
+      -1.0,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     0.0,
+     -8.492748,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     0.0
+    ],
+    "matrix_3x4": [
+     [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -8.492748
+     ],
+     [
+      0.0,
+      -1.0,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -45.0,
+    -8.493,
+    -45.0
+   ],
+   "world_bbox_size": [
+    90.0,
+    1.0,
+    90.0
+   ]
+  },
+  {
+   "key": "bearing_axk6590#1",
+   "part": "bearing_axk6590",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "base#1",
+    "link": "base_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      -7.492748,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      -90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the needle cage on the lower washer, round the base's seat ring"
+   },
+   "solids": 1,
+   "solid_volume": 9130.254,
+   "rel": {
+    "position": [
+     0.0,
+     -7.492748,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     0.0
+    ],
+    "matrix_3x4": [
+     [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -7.492748
+     ],
+     [
+      0.0,
+      -1.0,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     0.0,
+     -7.492748,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     0.0
+    ],
+    "matrix_3x4": [
+     [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -7.492748
+     ],
+     [
+      0.0,
+      -1.0,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -45.0,
+    -7.493,
+    -45.0
+   ],
+   "world_bbox_size": [
+    90.0,
+    3.0,
+    90.0
+   ]
+  },
+  {
+   "key": "washer_as6590#2",
+   "part": "washer_as6590",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j1_coupler#1",
+    "link": "shoulder_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      0.6,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      -90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the upper washer, under j1_coupler's seat (its recess's ceiling) - it turns with the coupler"
+   },
+   "solids": 1,
+   "solid_volume": 3043.418,
+   "rel": {
+    "position": [
+     0.0,
+     -4.492748,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     -0.0,
+     -86.305545
+    ],
+    "matrix_3x4": [
+     [
+      0.064435731,
+      0.997921859,
+      -0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -4.492748
+     ],
+     [
+      0.997921859,
+      -0.064435731,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     0.0,
+     -4.492748,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     -0.0,
+     -86.305545
+    ],
+    "matrix_3x4": [
+     [
+      0.064435731,
+      0.997921859,
+      -0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -4.492748
+     ],
+     [
+      0.997921859,
+      -0.064435731,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -45.0,
+    -4.493,
+    -45.0
+   ],
+   "world_bbox_size": [
+    90.0,
+    1.0,
+    90.0
    ]
   },
   {

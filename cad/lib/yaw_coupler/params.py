@@ -16,7 +16,10 @@ the V-grooves on the pillars' sides, their points on the housing's od, the nut p
 tests/yaw_coupler/ checks they agree).
 
 Two configurations: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
-tests/test_reference_match.py); DEFAULT is what the part builds.
+tests/test_reference_match.py); DEFAULT is what the part builds: it stands on the base_yaw thrust bearing in the
+base's groove (lib/bearings.py THRUST_*) - the recess's ceiling is the seat on the upper washer, wide enough to clear
+the stack, and the rim is lifted clear of the base's top face (the SolidWorks rim sat on it, the coupler turning on
+the base's face).
 
 Every number below was measured on the reference 2026-09-27 (face census; tests/yaw_coupler/test_j1_coupler.py
 re-checks the builds against it): [REFERENCE] unless tagged. Three simplifications, all inside the reference-match
@@ -27,7 +30,10 @@ are the section at x 28.5 carried on), the channel has no 0.2 mm corner bevels. 
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+
+from lib.base.params import DEFAULT as _BASE
+from lib.bearings import THRUST_OD, THRUST_STACK
 
 
 @dataclass(frozen=True)
@@ -111,4 +117,15 @@ class YawCouplerConfig:
 
 
 LEGACY = YawCouplerConfig()     # the SolidWorks part, exactly
-DEFAULT = LEGACY                # what the part builds
+
+# What the part builds: the coupler stands on the thrust bearing - washer, cage, washer (THRUST_STACK) on the floor of
+# the base's groove - its seat (the recess's ceiling) on the upper washer, the recess THRUST_CLEAR a side round the
+# stack's OD, the rim RIM_CLEAR over the base's top face. The part keeps its placement (placements.json puts its origin
+# at the base's ring_top_y), so the seat is 1.1 higher than the SolidWorks ceiling, the stub 1.1 longer up into it.
+THRUST_CLEAR = 0.2                # [DESIGN] the recess round the washers and the cage (radial)
+RIM_CLEAR = 0.5                   # [DESIGN] the rim over the base's top face
+_CAP = _BASE.cap                  # the base's frame: this part's origin at its ring_top_y
+DEFAULT = replace(LEGACY,
+                  hub=replace(LEGACY.hub, recess_dia=THRUST_OD + 2.0 * THRUST_CLEAR,
+                              recess_y1=round(_CAP.groove_y0 - _CAP.ring_top_y + THRUST_STACK, 6)),
+                  disc=replace(LEGACY.disc, y0=round(_CAP.top_y - _CAP.ring_top_y + RIM_CLEAR, 6)))

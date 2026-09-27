@@ -19,13 +19,13 @@ def _close(a, b, tol=1e-6):
 
 def test_record_counts_match_expected():
     parts_ = P.keys(kind="part", retired=True)
-    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 49      # 31 SolidWorks + 18 mounted (j3_coupler#1, the two 90Ts retired, still records)
+    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 52      # 31 SolidWorks + 21 mounted (j3_coupler#1, the two 90Ts retired, still records)
     assert P.keys(kind="module") == ["cycloidal_drive#1", "gripper#1", "forearm_roll_drive#1"]
     assert P.keys(kind="module", designed=True) == P.DATA["designed_modules"] == ["cycloidal_drive#1", "forearm_roll_drive#1"]
-    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 121  # 47 + (7 + 13) + 2 x (2 + 13) + 6 bearings + 2 pulleys + 4 x 4 pulley bolts
+    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 124  # 47 + (7 + 13) + 2 x (2 + 13) + 6 bearings + 3 thrust + 2 pulleys + 4 x 4 pulley bolts
     assert len(P.keys(kind="part", mounted=False, retired=True)) == 31
     assert P.RETIRED == ("j3_coupler#1", "gt2_pulley_90t#1", "gt2_pulley_90t#2") and set(P.RETIRED) <= set(P.OCCURRENCES)
-    assert len(P.keys(kind="part")) == 49 - len(P.RETIRED)
+    assert len(P.keys(kind="part")) == 52 - len(P.RETIRED)
 
 
 def test_mounted_records_follow_lib_mounts():
@@ -38,7 +38,8 @@ def test_mounted_records_follow_lib_mounts():
     keys = P.keys(kind="part", mounted=True)
     assert keys == mounts.keys() == [
         "nema17_48mm#1", "mks_servo42d#1", "nema17_40mm#2", "mks_servo42d#2", "nema17_40mm#3", "mks_servo42d#3",
-        *(f"bearing_6806#{n}" for n in range(1, 7)), "gt2_pulley_90t#3", "gt2_pulley_90t#4",
+        *(f"bearing_6806#{n}" for n in range(1, 7)), "washer_as6590#1", "bearing_axk6590#1", "washer_as6590#2",
+        "gt2_pulley_90t#3", "gt2_pulley_90t#4",
         "elbow_pulley_screws#1", "elbow_pulley_nuts#1", "wrist_pulley_screws#1", "wrist_pulley_nuts#1"]
     assert P.keys(mounted=True) == P.DATA["mounted"] == mounts.keys() + mounts.module_keys()
     for key in keys:

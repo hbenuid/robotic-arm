@@ -80,11 +80,14 @@ LINK_ORDER = ["base_link", "shoulder_link", "upper_arm_link", "elbow_link", "for
               "wrist_roll_link", "jaw_a_link", "jaw_b_link", "tool0"]
 LINKS: dict[str, list[str]] = {
     # the base_yaw motor + its MKS board hang under the base plate (lib/mounts.py) - they turn nothing themselves;
-    # the base_yaw bearing pair sits in the base's bore (a bearing rides with its housing)
-    "base_link": ["base#1", "bearing_6806#1", "bearing_6806#2", "nema17_48mm#1", "mks_servo42d#1"],
+    # the base_yaw bearing pair sits in the base's bore (a bearing rides with its housing), the thrust bearing's lower
+    # washer and its cage in the base's groove
+    "base_link": ["base#1", "bearing_6806#1", "bearing_6806#2", "washer_as6590#1", "bearing_axk6590#1", "nema17_48mm#1",
+                  "mks_servo42d#1"],
     # j1_coupler (the holder) turns on the base; the cycloidal drive's stator - housing, motor (+ its
-    # MKS board) and the gear train - is bolted into its yoke (assemblies/cycloidal_drive.py BODIES).
-    "shoulder_link": ["j1_coupler#1", "cycloidal_drive#1:stator"],
+    # MKS board) and the gear train - is bolted into its yoke (assemblies/cycloidal_drive.py BODIES); the thrust
+    # bearing's upper washer turns with it, under its seat.
+    "shoulder_link": ["j1_coupler#1", "washer_as6590#2", "cycloidal_drive#1:stator"],
     # the drive's rotor (output hub + output pins) is bolted to j1_link: the shoulder_pitch output;
     # the elbow_pitch motor + board bolt to j1_link's pad, the elbow bearing pair sits in its elbow bore (lib/mounts.py)
     "upper_arm_link": ["cycloidal_drive#1:rotor", "j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2"],
@@ -132,7 +135,8 @@ DEG = math.pi / 180.0
 JOINTS: list[Joint] = [
     Joint("base_yaw", "revolute", "base_link", "shoulder_link", BASE_YAW_ORIGIN, U, BASE_FORWARD,
           -PARAMS.BASE_YAW_LIMIT_DEG * DEG, PARAMS.BASE_YAW_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
-          notes="j1_coupler (carrying the cycloidal drive's stator) turns on the base in the bearing_6806#1 / #2 pair; driven by "
+          notes="j1_coupler (carrying the cycloidal drive's stator) turns on the base in the bearing_6806#1 / #2 pair and stands "
+                "on the thrust bearing in its groove (washer_as6590#1, bearing_axk6590#1, washer_as6590#2); driven by "
                 "nema17_48mm#1 (the 48 mm motor) + mks_servo42d#1 under the base plate (lib/mounts.py) "
                 "[which CAN id (software/control/src/config.py J1..J3) it is: unconfirmed]"),
     Joint("shoulder_pitch", "revolute", "shoulder_link", "upper_arm_link", SHOULDER_ORIGIN, N, SHOULDER_TO_ELBOW_INPLANE,

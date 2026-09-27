@@ -1,15 +1,20 @@
 """j1_coupler, parametric (lib/yaw_coupler/): the LEGACY configuration reproduces the SolidWorks part feature by
 feature (the volume / bbox match is tests/test_reference_match.py's; here the features are probed by name so a
-regression names what moved), and the yoke's shapes are the drive's housing's - its bore, its od, its pillars' sides,
-its bolt circle and nut pockets (lib/cycloidal/params.py HousingParams)."""
+regression names what moved), the yoke's shapes are the drive's housing's - its bore, its od, its pillars' sides,
+its bolt circle and nut pockets (lib/cycloidal/params.py HousingParams) -, and DEFAULT - what the part builds - changes
+only its underside: the seat on the thrust bearing, the rim clear of the base (tests/test_mounts.py checks the stack in
+place)."""
 import math
+from dataclasses import replace
 
 import pytest
 
 import parts
+from lib.base import DEFAULT as BASE
+from lib.bearings import THRUST_OD, THRUST_STACK
 from lib.cycloidal.housing import PILLAR_OVERSHOOT
 from lib.cycloidal.params import DEFAULT_CONFIG as DRIVE
-from lib.yaw_coupler import LEGACY, hole_points, nut_centres, od_point
+from lib.yaw_coupler import DEFAULT, LEGACY, hole_points, nut_centres, od_point
 from lib.yaw_coupler.layout import below_axis
 from tests.helpers import is_inside
 
@@ -118,7 +123,30 @@ def test_legacy_hub(legacy):
         assert not is_inside(leg, x, -8.0, z)                                        # ... from the stub's end
 
 
+def test_default_stands_on_the_thrust_bearing():
+    """The seat on the upper washer: the groove's floor (the base's frame; this part's origin at its ring_top_y) plus
+    the stack; the recess round the stack's OD; the rim over the base's top face - nothing else changes."""
+    h, c = DEFAULT.hub, BASE.cap
+    assert replace(DEFAULT, hub=replace(h, recess_dia=LEGACY.hub.recess_dia, recess_y1=LEGACY.hub.recess_y1),
+                   disc=replace(DEFAULT.disc, y0=LEGACY.disc.y0)) == LEGACY
+    assert h.recess_y1 == pytest.approx(c.groove_y0 - c.ring_top_y + THRUST_STACK)
+    assert h.recess_dia > THRUST_OD and h.recess_dia / 2.0 > c.groove_r[1]          # the rim wholly over the top face
+    assert DEFAULT.disc.y0 > c.top_y - c.ring_top_y and LEGACY.disc.y0 == pytest.approx(c.top_y - c.ring_top_y)
+
+
 @pytest.mark.slow
-def test_the_part_builds_default(coupler, legacy):
-    assert coupler.label == "j1_coupler" and coupler.is_valid
-    assert coupler.volume == pytest.approx(legacy.volume)
+def test_default_changes_only_the_underside(coupler, legacy):
+    assert coupler.label == "j1_coupler" and coupler.is_valid and len(coupler.solids()) == 1
+    assert tuple(coupler.bounding_box().min) == pytest.approx(tuple(legacy.bounding_box().min), abs=1e-6)
+    assert tuple(coupler.bounding_box().max) == pytest.approx(tuple(legacy.bounding_box().max), abs=1e-6)
+    y1 = DEFAULT.hub.recess_y1
+    assert not is_inside(coupler, 0, y1 - 0.05, 44) and is_inside(coupler, 0, y1 + 0.05, 44)   # the seat, 1.1 higher
+    assert is_inside(legacy, 0, y1 - 0.05, 44)
+    assert not is_inside(coupler, 0, 1.0, 45.1) and is_inside(coupler, 0, 1.0, 45.3)          # the recess round the stack
+    y0 = DEFAULT.disc.y0
+    assert not is_inside(coupler, 0, y0 - 0.05, 50) and is_inside(coupler, 0, y0 + 0.05, 50)   # the rim, lifted
+    assert is_inside(legacy, 0, y0 - 0.05, 50)
+    assert not is_inside(coupler, 47.5, y0 - 0.05, 0) and is_inside(coupler, 47.5, y0 + 0.05, 0)   # the ears with it
+    assert is_inside(coupler, 0, y1 - 0.05, 14.5) and is_inside(coupler, 0, -5, 14.7)          # the stub up into the seat
+    for probe in ((0, 40, 52.9), (20, 34.5, 20), (-31, 45.8, 49.2), (25, 20.0, 0), (0, 2, 7.7)):
+        assert is_inside(coupler, *probe) == is_inside(legacy, *probe)                         # the rest as before

@@ -57,7 +57,7 @@ joints' motors are mounted occurrences (`lib/mounts.py`, `assemblies/CLAUDE.md`)
 
 | joint | type | parent → child | actuator | notes |
 |---|---|---|---|---|
-| `base_yaw` | revolute, world up | `base_link → shoulder_link` | NEMA 17 x 48 + MKS SERVO42D (`nema17_48mm#1` + `mks_servo42d#1` under the base plate, hanging `BASE_MOTOR_STACK_PROUD` below the base's bottom face) | the holder `j1_coupler` turns on the base |
+| `base_yaw` | revolute, world up | `base_link → shoulder_link` | NEMA 17 x 48 + MKS SERVO42D (`nema17_48mm#1` + `mks_servo42d#1` under the base plate, hanging `BASE_MOTOR_STACK_PROUD` below the base's bottom face) | the holder `j1_coupler` turns on the base, standing on the thrust bearing in its groove |
 | `shoulder_pitch` | revolute, `N` | `shoulder_link → upper_arm_link` | the 20:1 cycloidal drive, its own NEMA 17 (`CYCLOIDAL_RATIO`) | stator with the holder, rotor with `j1_link` |
 | `elbow_pitch` | revolute, `N` | `upper_arm_link → elbow_link` | GT2 90T belt, NEMA 17 x 40 + MKS SERVO42D (`nema17_40mm#2` + `mks_servo42d#2` on `j1_link`'s pad) | the pulley carries the roll drive's block, which is the elbow coupler (`j3_coupler#1` retired) |
 | `forearm_roll` | revolute, along the forearm through the wrist centre | `elbow_link → forearm_link` | GT2 90T ring on the hollow roll shaft, NEMA 17 x 40 + MKS SERVO42D on the motor mount bolted to the elbow block's top (`assemblies/forearm_roll_drive.py`) | the shaft's end spigot bolts to `j2_link`'s wall 48 mm from the elbow axis; hard stop ±`FOREARM_ROLL_LIMIT_DEG`; specs `docs/forearm_roll.md` §0 |
@@ -68,8 +68,8 @@ joints' motors are mounted occurrences (`lib/mounts.py`, `assemblies/CLAUDE.md`)
 
 | link | occurrences (`robot/frames.py LINKS`) |
 |---|---|
-| `base_link` | `base` + `bearing_6806#1`, `#2` (the base_yaw pair in its bore) + `nema17_48mm#1`, `mks_servo42d#1` (the base_yaw 48 mm motor + board under the plate) |
-| `shoulder_link` | `j1_coupler` + the drive's **stator** (`cycloidal_drive#1:stator`: motor plate, ring gear body, ring pins, housing bolts/nuts, NEMA 17 + its MKS board, gear train) |
+| `base_link` | `base` + `bearing_6806#1`, `#2` (the base_yaw pair in its bore) + `washer_as6590#1`, `bearing_axk6590#1` (the thrust bearing's lower washer and cage in its groove) + `nema17_48mm#1`, `mks_servo42d#1` (the base_yaw 48 mm motor + board under the plate) |
+| `shoulder_link` | `j1_coupler` + `washer_as6590#2` (the thrust bearing's upper washer, under its seat) + the drive's **stator** (`cycloidal_drive#1:stator`: motor plate, ring gear body, ring pins, housing bolts/nuts, NEMA 17 + its MKS board, gear train) |
 | `upper_arm_link` | the drive's **rotor** (`cycloidal_drive#1:rotor`: output hub, output pins, 625) + `j1_link` + `bearing_6806#3`, `#4` (the elbow pair in its bore) + `nema17_40mm#2`, `mks_servo42d#2` (the elbow_pitch motor + board on the pad) |
 | `elbow_link` | `gt2_pulley_90t#3` (re-seated, `lib/mounts.py`) + its M4 screws + nuts (`elbow_pulley_screws#1`, `elbow_pulley_nuts#1`) + the roll drive's **stator** (`forearm_roll_drive#1:stator`: the elbow block — the elbow coupler and the housing in one, `j3_coupler#1` retired —, 2× 6808, the end cap, the bolt-on motor mount + its M3 screws and nuts, its NEMA 17 x 40 + MKS board, the 20T) |
 | `forearm_link` | the roll drive's **rotor** (`forearm_roll_drive#1:rotor`: the hollow roll shaft with its 90T ring and end spigot) + `j2_link` + `bearing_6806#5`, `#6` (the wrist pair in its boss) + `nema17_40mm#3`, `mks_servo42d#3` (the wrist_pitch motor + board on the web) |

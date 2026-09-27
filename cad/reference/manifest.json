@@ -153,6 +153,28 @@
    "source": "src/purchased_parts.py:build_bearing_6814()",
    "units": "mm"
   },
+  "bearing_axk6590": {
+   "bbox_min": [
+    -45.0,
+    -45.0,
+    0.0
+   ],
+   "bbox_size": [
+    90.0,
+    90.0,
+    3.0
+   ],
+   "bytes": 9262,
+   "file": "native/bearing_axk6590.step",
+   "kind": "cots",
+   "origin": "native",
+   "product": "bearing_axk6590 - purchased (COTS) part: INA AXK 6590 needle roller and cage thrust assembly, 65 x 90 x 3 - the",
+   "sha256": "29d722166472258dde0e94604f0c2e80239a8d98e8ef4ce86c71bb296fb29728",
+   "solid_volume": 9130.254,
+   "solids": 1,
+   "source": "parts/base/bearing_axk6590.py:_envelope()",
+   "units": "mm"
+  },
   "cycloidal_disc_1": {
    "bbox_min": [
     -52.942,
@@ -1211,6 +1233,28 @@
    "solid_volume": 14670.662,
    "solids": 1,
    "source": "step/Servo Holder_Servo Holder.STEP",
+   "units": "mm"
+  },
+  "washer_as6590": {
+   "bbox_min": [
+    -45.0,
+    -45.0,
+    0.0
+   ],
+   "bbox_size": [
+    90.0,
+    90.0,
+    1.0
+   ],
+   "bytes": 9256,
+   "file": "native/washer_as6590.step",
+   "kind": "cots",
+   "origin": "native",
+   "product": "washer_as6590 - purchased (COTS) part: INA AS 6590 thrust washer, 65 x 90 x 1 - the raceways of the base_yaw thrust",
+   "sha256": "5f491ce83ff7e1906848e7a817da6b039d26c35ae32ffde6538f63bf722ab2f7",
+   "solid_volume": 3043.418,
+   "solids": 1,
+   "source": "parts/base/washer_as6590.py:_envelope()",
    "units": "mm"
   },
   "wrist_link": {
