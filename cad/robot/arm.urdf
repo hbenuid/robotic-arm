@@ -73,9 +73,9 @@
   </link>
   <link name="shoulder_link">
     <inertial>
-      <origin xyz="-0.000816 0.015306 -0.011234" rpy="0 0 0" />
-      <mass value="1.664416" />
-      <inertia ixx="3.846276e-03" ixy="1.395527e-05" ixz="1.395735e-05" iyy="3.574227e-03" iyz="-2.839446e-04" izz="2.881448e-03" />
+      <origin xyz="-0.000815 0.015304 -0.011235" rpy="0 0 0" />
+      <mass value="1.664482" />
+      <inertia ixx="3.846424e-03" ixy="1.395277e-05" ixz="1.398866e-05" iyy="3.574559e-03" iyz="-2.840645e-04" izz="2.881732e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
