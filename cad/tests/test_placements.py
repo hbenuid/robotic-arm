@@ -19,17 +19,18 @@ def _close(a, b, tol=1e-6):
 
 def test_record_counts_match_expected():
     parts_ = P.keys(kind="part", retired=True)
-    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 52      # 31 SolidWorks + 21 mounted (j3_coupler#1, the two 90Ts retired, still records)
+    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 55      # 31 SolidWorks + 24 mounted (j3_coupler#1, the two 90Ts retired, still records)
     assert P.keys(kind="module") == ["cycloidal_drive#1", "gripper#1", "forearm_roll_drive#1"]
     assert P.keys(kind="module", designed=True) == P.DATA["designed_modules"] == ["cycloidal_drive#1", "forearm_roll_drive#1"]
-    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 124  # 47 + (7 + 13) + 2 x (2 + 13) + 6 bearings + 3 thrust + 2 pulleys + 4 x 4 pulley bolts
+    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 133  # 47 + the base motor mount (1 + 4 + 4) + (7 + 13) + 2 x (2 + 13) + 6 bearings + 3 thrust + 2 pulleys + 4 x 4 pulley bolts
     assert len(P.keys(kind="part", mounted=False, retired=True)) == 31
     assert P.RETIRED == ("j3_coupler#1", "gt2_pulley_90t#1", "gt2_pulley_90t#2") and set(P.RETIRED) <= set(P.OCCURRENCES)
-    assert len(P.keys(kind="part")) == 52 - len(P.RETIRED)
+    assert len(P.keys(kind="part")) == 55 - len(P.RETIRED)
 
 
 def test_mounted_records_follow_lib_mounts():
-    """The mounts (lib/mounts.py: motors + boards, bearings, re-seated pulleys, their bolts) are part records written by
+    """The mounts (lib/mounts.py: the base's motor mount + its bolts, motors + boards, bearings, re-seated pulleys, their
+    bolts) are part records written by
     tools/reference/mount_placements.py:
     parent None, rel == world = host world * the declared frame, the `mount` block naming the declaration."""
     from lib import mounts
@@ -37,6 +38,7 @@ def test_mounted_records_follow_lib_mounts():
 
     keys = P.keys(kind="part", mounted=True)
     assert keys == mounts.keys() == [
+        "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1",
         "nema17_48mm#1", "mks_servo42d#1", "nema17_40mm#2", "mks_servo42d#2", "nema17_40mm#3", "mks_servo42d#3",
         *(f"bearing_6806#{n}" for n in range(1, 7)), "washer_as6590#1", "bearing_axk6590#1", "washer_as6590#2",
         "gt2_pulley_90t#3", "gt2_pulley_90t#4",
@@ -48,7 +50,7 @@ def test_mounted_records_follow_lib_mounts():
         assert (o["mount"]["host"], o["mount"]["link"], o["mount"]["joint"], o["mount"]["source"]) == (m.host, m.link, m.joint, "lib/mounts.py")
         assert o["mount"]["frame_in_host"] == {"position": list(m.frame[0]), "rotation_xyz_deg": list(m.frame[1])}
         assert o["rel"] == o["world"]
-        host_world = P.location(m.host, "world")           # a SolidWorks record, or the motor declared before its board
+        host_world = P.location(m.host, "world")           # a SolidWorks record, or a mount declared before what it hosts
         assert _close(_matrix(host_world * to_location(m.frame)), _matrix(P.location(key, "world")), tol=1e-4), key
         assert o["solids"] > 0 and o["solid_volume"] > 0 and len(o["world_bbox_min"]) == 3
 
@@ -80,7 +82,7 @@ def test_keys_unique_and_parts_known():
     keys = [o["key"] for o in P.DATA["occurrences"]]
     assert len(keys) == len(set(keys))
     for o in P.DATA["occurrences"]:
-        assert o["part"] in (set(R.CUSTOM) | set(R.COTS) | set(R.MODULES) | set(R.DESIGNED_MODULES)), o["key"]
+        assert o["part"] in (set(R.CUSTOM) | set(R.COTS) | set(R.NATIVE) | set(R.MODULES) | set(R.DESIGNED_MODULES)), o["key"]
         assert o["key"] == f"{o['part']}#{o['key'].rsplit('#', 1)[1]}"
         if o["parent"] is not None:
             assert o["parent"] in P.OCCURRENCES and P.OCCURRENCES[o["parent"]]["kind"] == "module"

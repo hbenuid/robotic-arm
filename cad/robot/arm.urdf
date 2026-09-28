@@ -55,9 +55,9 @@
 <robot name="arm">
   <link name="base_link">
     <inertial>
-      <origin xyz="-0.046897 0.000021 0.047559" rpy="0 0 0" />
-      <mass value="0.913722" />
-      <inertia ixx="1.426810e-03" ixy="2.631768e-06" ixz="-6.989411e-04" iyy="2.809310e-03" iyz="1.215159e-06" izz="2.669327e-03" />
+      <origin xyz="-0.044986 0.000021 0.056664" rpy="0 0 0" />
+      <mass value="0.93574" />
+      <inertia ixx="1.515585e-03" ixy="2.801067e-06" ixz="-6.562157e-04" iyy="2.940607e-03" iyz="1.172646e-06" izz="2.693847e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -228,7 +228,7 @@
   <joint name="base_yaw" type="revolute">
     <parent link="base_link" />
     <child link="shoulder_link" />
-    <origin xyz="0 0 0.18591" rpy="0 0 0" />
+    <origin xyz="0 0 0.19701" rpy="0 0 0" />
     <axis xyz="0 0 1" />
     <limit lower="-3.054326" upper="3.054326" effort="5" velocity="1" />
   </joint>

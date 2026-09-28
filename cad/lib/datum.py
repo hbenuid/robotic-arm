@@ -25,7 +25,8 @@ from lib.base.params import DEFAULT as _BASE
 
 U = (0.0, 1.0, 0.0)                          # base_yaw axis: world up
 BASE_FORWARD = (-1.0, 0.0, 0.0)              # the arm extends toward -X_W
-BASE_BOTTOM_Y = _BASE.shell.y0               # -100.9 [REFERENCE] the base's bottom face (mounting face; base#1 sits at identity)
+BASE_BOTTOM_Y = _BASE.shell.y0               # -112.0 [DESIGN] the base's bottom face (mounting face; base#1 sits at identity): the
+#                                              SolidWorks -100.9 lowered under the base_yaw motor's board (lib/base/params.py BOARD_CLEAR)
 
 IDENTITY = ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0))   # a frame as data: (position mm, rotation_xyz_deg)
 

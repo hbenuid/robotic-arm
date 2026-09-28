@@ -79,10 +79,12 @@ WRIST_CENTRE = tuple(o + WRIST_CENTRE_ALONG_N * n for o, n in zip(WRIST_PITCH_OR
 LINK_ORDER = ["base_link", "shoulder_link", "upper_arm_link", "elbow_link", "forearm_link", "wrist_pitch_link",
               "wrist_roll_link", "jaw_a_link", "jaw_b_link", "tool0"]
 LINKS: dict[str, list[str]] = {
-    # the base_yaw motor + its MKS board hang under the base plate (lib/mounts.py) - they turn nothing themselves;
-    # the base_yaw bearing pair sits in the base's bore (a bearing rides with its housing), the thrust bearing's lower
-    # washer and its cage in the base's groove
-    "base_link": ["base#1", "bearing_6806#1", "bearing_6806#2", "washer_as6590#1", "bearing_axk6590#1", "nema17_48mm#1",
+    # the base's motor mount (its +X lobe) is bolted to it with its M4 screws + nuts; the base_yaw motor + its MKS
+    # board hang under the mount's plate (lib/mounts.py) - they turn nothing themselves; the base_yaw bearing pair sits
+    # in the base's bore (a bearing rides with its housing), the thrust bearing's lower washer and its cage in the
+    # base's groove
+    "base_link": ["base#1", "bearing_6806#1", "bearing_6806#2", "washer_as6590#1", "bearing_axk6590#1",
+                  "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1", "nema17_48mm#1",
                   "mks_servo42d#1"],
     # j1_coupler (the holder) turns on the base; the cycloidal drive's stator - housing, motor (+ its
     # MKS board) and the gear train - is bolted into its yoke (assemblies/cycloidal_drive.py BODIES); the thrust
