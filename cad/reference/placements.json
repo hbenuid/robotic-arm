@@ -11,15 +11,18 @@
  "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. A record with a `mount` block (keys under `mounted`) is a motor mount declared in lib/mounts.py, not a SolidWorks node: parent None, rel == world = host world * mount frame.",
  "root_label": "final_Arm_Assembly_Fully_Movable",
  "expected": {
-  "leaf_occurrences": 52,
-  "solids": 124,
-  "solid_volume": 1948910.581
+  "leaf_occurrences": 55,
+  "solids": 133,
+  "solid_volume": 2045645.504
  },
  "designed_modules": [
   "cycloidal_drive#1",
   "forearm_roll_drive#1"
  ],
  "mounted": [
+  "base_motor_mount#1",
+  "base_motor_mount_screws#1",
+  "base_motor_mount_nuts#1",
   "nema17_48mm#1",
   "mks_servo42d#1",
   "nema17_40mm#2",
@@ -2823,8 +2826,8 @@
    ]
   },
   {
-   "key": "nema17_48mm#1",
-   "part": "nema17_48mm",
+   "key": "base_motor_mount#1",
+   "part": "base_motor_mount",
    "kind": "part",
    "path": null,
    "parent": null,
@@ -2835,7 +2838,316 @@
     "joint": "base_yaw",
     "frame_in_host": {
      "position": [
-      78.971441,
+      0.0,
+      0.0,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the base's +X lobe (the motor's plate), bolted to the base at the joint face; built in the base's part frame"
+   },
+   "solids": 1,
+   "solid_volume": 94793.893,
+   "rel": {
+    "position": [
+     -0.0,
+     -0.0,
+     -0.0
+    ],
+    "rotation_xyz_deg": [
+     -0.0,
+     0.0,
+     -0.0
+    ],
+    "matrix_3x4": [
+     [
+      1.0,
+      0.0,
+      0.0,
+      -0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0,
+      -0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -0.0
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -0.0,
+     -0.0,
+     -0.0
+    ],
+    "rotation_xyz_deg": [
+     -0.0,
+     0.0,
+     -0.0
+    ],
+    "matrix_3x4": [
+     [
+      1.0,
+      0.0,
+      0.0,
+      -0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0,
+      -0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -0.0
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    55.0,
+    -100.9,
+    -53.339
+   ],
+   "world_bbox_size": [
+    59.839,
+    61.0,
+    106.679
+   ]
+  },
+  {
+   "key": "base_motor_mount_screws#1",
+   "part": "base_motor_mount_screws",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "base_motor_mount#1",
+    "link": "base_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      63.0,
+      0.0,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      -90.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the mount's 4x M4 x screw_len: heads on its ribs' inside faces, along -X through both ribs into the base"
+   },
+   "solids": 4,
+   "solid_volume": 1558.708,
+   "rel": {
+    "position": [
+     63.0,
+     0.0,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -0.0,
+     -90.0,
+     0.0
+    ],
+    "matrix_3x4": [
+     [
+      0.0,
+      0.0,
+      -1.0,
+      63.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     63.0,
+     0.0,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -0.0,
+     -90.0,
+     0.0
+    ],
+    "matrix_3x4": [
+     [
+      0.0,
+      0.0,
+      -1.0,
+      63.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    43.0,
+    -96.4,
+    -45.839
+   ],
+   "world_bbox_size": [
+    24.0,
+    47.0,
+    91.679
+   ]
+  },
+  {
+   "key": "base_motor_mount_nuts#1",
+   "part": "base_motor_mount_nuts",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "base_motor_mount_screws#1",
+    "link": "base_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      0.0,
+      12.8
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the screws' nuts in the base ribs' hex pockets, their outer faces flush with the ribs' back faces, a corner up"
+   },
+   "solids": 4,
+   "solid_volume": 382.322,
+   "rel": {
+    "position": [
+     50.2,
+     0.0,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -0.0,
+     -90.0,
+     0.0
+    ],
+    "matrix_3x4": [
+     [
+      0.0,
+      0.0,
+      -1.0,
+      50.2
+     ],
+     [
+      0.0,
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     50.2,
+     0.0,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -0.0,
+     -90.0,
+     0.0
+    ],
+    "matrix_3x4": [
+     [
+      0.0,
+      0.0,
+      -1.0,
+      50.2
+     ],
+     [
+      0.0,
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    47.0,
+    -96.941,
+    -45.839
+   ],
+   "world_bbox_size": [
+    3.2,
+    48.083,
+    91.679
+   ]
+  },
+  {
+   "key": "nema17_48mm#1",
+   "part": "nema17_48mm",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "base_motor_mount#1",
+    "link": "base_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      81.971675,
       -44.9,
       0.08362
      ],
@@ -2846,13 +3158,13 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the 48 mm motor under the base plate, shaft up through it; motor + board hang BASE_MOTOR_STACK_PROUD below the base's bottom face; connector toward +X [ESTIMATE]"
+    "note": "the 48 mm motor under the motor mount's plate (in the base's part frame), shaft up through it, at the slots' middle; motor + board hang BASE_MOTOR_STACK_PROUD below the base's bottom face; connector toward +X [ESTIMATE]"
    },
    "solids": 7,
    "solid_volume": 60656.432,
    "rel": {
     "position": [
-     78.971441,
+     81.971675,
      -44.9,
      0.08362
     ],
@@ -2866,7 +3178,7 @@
       -0.0,
       1.0,
       0.0,
-      78.971441
+      81.971675
      ],
      [
       -0.0,
@@ -2884,7 +3196,7 @@
    },
    "world": {
     "position": [
-     78.971441,
+     81.971675,
      -44.9,
      0.08362
     ],
@@ -2898,7 +3210,7 @@
       -0.0,
       1.0,
       0.0,
-      78.971441
+      81.971675
      ],
      [
       -0.0,
@@ -2915,7 +3227,7 @@
     ]
    },
    "world_bbox_min": [
-    57.971,
+    60.972,
     -92.9,
     -20.916
    ],
@@ -2955,7 +3267,7 @@
    "solid_volume": 13779.335,
    "rel": {
     "position": [
-     78.971441,
+     81.971675,
      -92.9,
      0.08362
     ],
@@ -2969,7 +3281,7 @@
       -0.0,
       1.0,
       0.0,
-      78.971441
+      81.971675
      ],
      [
       -0.0,
@@ -2987,7 +3299,7 @@
    },
    "world": {
     "position": [
-     78.971441,
+     81.971675,
      -92.9,
      0.08362
     ],
@@ -3001,7 +3313,7 @@
       -0.0,
       1.0,
       0.0,
-      78.971441
+      81.971675
      ],
      [
       -0.0,
@@ -3018,7 +3330,7 @@
     ]
    },
    "world_bbox_min": [
-    57.471,
+    60.472,
     -107.0,
     -21.416
    ],

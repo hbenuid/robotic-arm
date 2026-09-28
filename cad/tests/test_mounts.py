@@ -1,5 +1,6 @@
 """The belt joints' mounts (lib/mounts.py, materialised into reference/placements.json by
-tools/reference/mount_placements.py): each NEMA 17 sits on the pad its SolidWorks host carries with its shaft
+tools/reference/mount_placements.py): each NEMA 17 sits on the pad its printed host carries (a SolidWorks link, or
+the base's bolt-on motor mount, itself bolted to the base by 4x M4 into nuts pressed into the base) with its shaft
 parallel to the joint axis, its MKS board on its rear face; each joint's 6806 pair stands on the lip of its bore
 with the coupler's shoulder on the upper inner ring and the re-seated 90T's ring under the lower one; each 90T clamped
 by its 4x M4 screws + nuts; j1_coupler stands on the base_yaw thrust bearing in the base's groove; and nothing runs
@@ -15,6 +16,7 @@ from assemblies._occurrences import place_world
 from lib import mounts
 from lib import params as PARAMS
 from lib import placements as P
+from lib.base import DEFAULT as BASE
 from lib.base.params import RING_CLEAR
 from lib.bearings import (
     BEARING_6806_SHOULDER_DIA,
@@ -78,7 +80,9 @@ def test_every_motor_has_its_board_and_they_sit_in_the_same_link():
         body = PARAMS.CYCLOIDAL_MOTOR_BODY_LEN if m.part == mounts.MOTOR_48 else PARAMS.NEMA17_40_BODY_LEN
         assert b.frame == mounts.board_frame(body) == ((0.0, 0.0, -body), (0.0, 0.0, 0.0))
         assert m.key in F.LINKS[m.link] and b.key in F.LINKS[m.link], m.link
-        assert P.OCCURRENCES[m.host]["kind"] == "part" and "mount" not in P.OCCURRENCES[m.host]   # a SolidWorks host
+        host = P.OCCURRENCES[m.host]   # a printed host: a SolidWorks record, or the base's bolt-on motor mount
+        assert host["kind"] == "part" and not getattr(parts.load(host["part"]), "COTS", False)
+        assert "mount" not in host or mounts.BY_KEY[m.host].host == "base#1"
 
 
 @pytest.mark.parametrize("m", MOTORS, ids=[m.joint for m in MOTORS])
@@ -97,7 +101,7 @@ def test_motor_shaft_is_on_its_joint_axis(m):
 @pytest.mark.parametrize("m", MOTORS, ids=[m.joint for m in MOTORS])
 def test_mounting_face_lies_on_the_host_pad(m):
     """The motor's mounting face (its local z=0 plane) coincides with a planar face of the host at the pattern
-    centre: the base plate's underside, j1_link's pad, j2_link's web."""
+    centre: the base motor mount's plate underside, j1_link's pad, j2_link's web."""
     world = _world(m.key)
     origin, z = world.position, _dir(world).normalized()
     host = place_world(P.OCCURRENCES[m.host]["part"], m.host)
@@ -112,13 +116,16 @@ def test_mounting_face_lies_on_the_host_pad(m):
 def test_motors_and_boards_clear_their_neighbours():
     """Interference budget (mm^3) of every mount against the hosts, the pulleys and the placed drives: zero everywhere
     (the Ø22 pilot boss used to stand in j2_link's Ø20 central slot - the parametric forearm's slot is 22.3 wide) but
-    the pulley nuts' designed press in their nut_af pockets (_press, test_pulley_bolts_clamp_their_joints)."""
-    neighbours = ["base#1", "j1_coupler#1", "j1_link#1", "j2_link#1", "gt2_pulley_90t#3", "gt2_pulley_90t#4", "j3_coupler#2",
+    the pulley nuts' designed press in their nut_af pockets (_press, test_pulley_bolts_clamp_their_joints) and the base
+    motor mount's nuts' in the base's ribs (JointParams.nut_pocket_af)."""
+    neighbours = ["base#1", "base_motor_mount#1", "j1_coupler#1", "j1_link#1", "j2_link#1", "gt2_pulley_90t#3", "gt2_pulley_90t#4", "j3_coupler#2",
                   "wrist_link#1"]
     shapes = {k: place_world(P.OCCURRENCES[k]["part"], k) for k in neighbours}
     shapes["cycloidal_drive#1"] = raw(cycloidal_drive.cycloidal_drive).moved(_world("cycloidal_drive#1"))
     shapes["forearm_roll_drive#1"] = raw(forearm_roll_drive.forearm_roll_drive).moved(_world("forearm_roll_drive#1"))
     budget = {(nuts, host): _press(nut_af, depth) + 0.5 for _, nuts, _, host, nut_af, depth in PULLEY_BOLTS.values()}
+    joint = BASE.joint
+    budget[("base_motor_mount_nuts#1", "base#1")] = _press(joint.nut_pocket_af, joint.nut.h) + 0.5
     for m in mounts.MOUNTS:
         part = place_world(m.part, m.key)
         for key, other in shapes.items():

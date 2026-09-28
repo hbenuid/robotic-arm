@@ -191,13 +191,13 @@ def test_arm_assembly_matches_reference_totals():
     assert [c.label for c in a.children] == [label for label, _, _ in arm.GROUPS]
     leaves = _leaves(a)
     exp_leaves, exp_solids, exp_volume = _expected_totals()
-    assert len(leaves) == exp_leaves == 79
+    assert len(leaves) == exp_leaves == 82
     labels = [leaf.label for leaf in leaves]
     assert len(set(labels)) == len(labels), f"duplicate leaf labels: {labels}"
-    assert len(a.solids()) == exp_solids == 230
+    assert len(a.solids()) == exp_solids == 239
     assert abs(R.solid_volume(a) - exp_volume) <= 0.5
     exp_min, exp_size = _expected_bbox()
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_min(a), exp_min, strict=True)), (R.bbox_min(a), exp_min)
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_size(a), exp_size, strict=True)), (R.bbox_size(a), exp_size)
     assert a.is_valid
-    assert _check_link_tints(a) == {True: 45, False: 34}   # bought / printed leaves (tools/bom.py counts the same)
+    assert _check_link_tints(a) == {True: 47, False: 35}   # bought / printed leaves (tools/bom.py counts the same)

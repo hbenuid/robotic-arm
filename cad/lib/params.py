@@ -68,10 +68,11 @@ from lib.motors import (  # noqa: E402, F401
 
 # The mounts (host-part frames, mm): where the pads sit in the SolidWorks links. base_yaw takes the 48 mm motor
 # (parts/cycloidal/nema17_48mm, the drive's), elbow_pitch / wrist_pitch the 40 mm one. The base is parametric
-# (lib/base/params.py BaseConfig - a leaf like the links'): its motor seat comes from its DEFAULT configuration.
+# (lib/base/params.py BaseConfig - a leaf like the links'): its motor seat - on the base's bolt-on motor mount
+# (parts/base/base_motor_mount), in the base's part frame - comes from its DEFAULT configuration.
 from lib.base.params import DEFAULT as _BASE  # noqa: E402
 
-BASE_MOTOR_PATTERN_CENTRE = (_BASE.motor.centre[0], _BASE.plate.y[0], _BASE.motor.centre[1])   # (78.971, -44.9, 0.084) [REFERENCE] base: 4x M3 on 31 x 31 through the 5 mm plate, on its -Y face
+BASE_MOTOR_PATTERN_CENTRE = (_BASE.motor.centre[0], _BASE.plate.y[0], _BASE.motor.centre[1])   # (81.972, -44.9, 0.084) [DESIGN] the motor mount: 4x M3 on 31 x 31 through the 5 mm plate (slots of +/- travel along X), on its -Y face; x where the 280-2GT belt puts it
 BASE_MOTOR_STACK_PROUD = 6.1    # [DESIGN] the 48 mm motor + board (48 + 14.1) hang this far BELOW the base's bottom face
 #                                 (56.0 mm of depth under the plate): the base needs feet / a cut-out at least this deep
 # j1_link and j2_link are parametric (lib/upper_arm/params.py UpperArmConfig, lib/forearm/params.py ForearmConfig -
@@ -162,6 +163,13 @@ from lib.forearm.layout import mount_bolt_points as _mount_bolt_points  # noqa: 
 _MOUNT_BOLTS = len(_mount_bolt_points(_FOREARM))
 ROLL_MOUNT_SCREWS_MASS_G = STEEL_DENSITY * _MOUNT_BOLTS * csk_volume(M3_CSK, _FOREARM.drive.mount_screw_len)   # 4.2, 4x M3x16 countersunk
 ROLL_MOUNT_NUTS_MASS_G = STEEL_DENSITY * _MOUNT_BOLTS * nut_volume(M3_NUT)                                      # 1.4, 4x M3
+
+# The base motor mount's screws and nuts (parts/base/base_motor_mount_{screws,nuts}): the same estimate
+from lib.base.layout import joint_bolt_points as _joint_bolt_points  # noqa: E402
+
+_JOINT_BOLTS = len(_joint_bolt_points(_BASE))
+BASE_MOUNT_SCREWS_MASS_G = STEEL_DENSITY * _JOINT_BOLTS * shcs_volume(_BASE.joint.screw, _BASE.joint.screw_len)   # 12.2, 4x M4x20
+BASE_MOUNT_NUTS_MASS_G = STEEL_DENSITY * _JOINT_BOLTS * nut_volume(_BASE.joint.nut)                              # 3.0, 4x M4
 
 # --- Robot description (robot/frames.py, robot/arm.urdf) --------------------------------------
 # Joint limits and actuator ratings are PLACEHOLDERS until measured on the hardware; the URDF

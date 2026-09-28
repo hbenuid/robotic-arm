@@ -15,9 +15,11 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   `CUSTOM` row and manifest entry go, and a record must name a known part -: its SolidWorks product goes into
   `lib/reference.py SKIPPED_PRODUCTS` and `tools/reference/mount_placements.py` (the merge mode, no monolith) moves the
   record to `skipped` as the entry an extraction writes (pose, totals, reason) - `test_skipped_nodes_are_the_dropped_products`.
-- **Mounted occurrences** (`lib/mounts.py`): the belt joints' motors - `nema17_48mm#1` (the 48 mm motor, under the base;
-  motor + board hang `BASE_MOTOR_STACK_PROUD` below the base's bottom face) and `nema17_40mm#2..3`, + `mks_servo42d#1..3`,
-  on the NEMA 17 pads `base` / `j1_link` / `j2_link` carry - and each belt joint's 6806-2RS pair (`bearing_6806#1..6`, on
+- **Mounted occurrences** (`lib/mounts.py`): the base's bolt-on motor mount (`base_motor_mount#1`, the base's +X lobe as a
+  part of its own - designed here, at identity on `base#1` - with its 4x M4 screws + nuts, `base_motor_mount_screws#1` /
+  `_nuts#1`, hosted on the mount and on the screws); the belt joints' motors - `nema17_48mm#1` (the 48 mm motor, under the
+  motor mount's plate; motor + board hang `BASE_MOTOR_STACK_PROUD` below the base's bottom face) and `nema17_40mm#2..3`,
+  + `mks_servo42d#1..3`, on the NEMA 17 pads `base_motor_mount` / `j1_link` / `j2_link` carry - and each belt joint's 6806-2RS pair (`bearing_6806#1..6`, on
   the lip of its housing's bore) and the base_yaw thrust bearing (`washer_as6590#1`, `bearing_axk6590#1` in the base's groove,
   `washer_as6590#2` under `j1_coupler`'s seat) never existed in the SolidWorks capture; the elbow's and the wrist's 90T
   (`gt2_pulley_90t#3` / `#4`) did, but where the lower bearing had no room - their mounts are hosted on the retired
@@ -34,7 +36,8 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   `GROUPS` and `robot/frames.py LINKS` list the keys like any other (roles = the joint names). `tests/test_mounts.py`
   re-checks the geometry: axis on the joint, mounting face on the host's pad, each bearing stack's contacts
   (`test_bearing_stacks`), the pulley bolts' seats and reach (`test_pulley_bolts_clamp_their_joints`), zero interference
-  with the neighbours - the one budget is the nuts' designed press in their `nut_af` pockets (`_press`). The drive's own board is a `cycloidal_drive.py` row
+  with the neighbours - the one budget is the nuts' designed press in their pockets (`_press`: the pulley bolts' `nut_af`,
+  the base motor mount's `JointParams.nut_pocket_af`); the base motor mount's joint is `tests/base/test_motor_mount.py`. The drive's own board is a `cycloidal_drive.py` row
   (`stack_positions["z_mks_board"]`).
 - `assemblies/arm.py` / `gripper.py`: `OCCURRENCES = [(part, role|None, key), …]` in SolidWorks
   document order; `assemblies/_occurrences.py` places each occurrence as

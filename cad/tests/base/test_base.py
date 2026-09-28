@@ -1,8 +1,10 @@
 """base, parametric (lib/base/): the LEGACY configuration reproduces the SolidWorks part feature by feature (the
 volume / bbox match is tests/test_reference_match.py's; here the features are probed by name so a regression names
 what moved), the interface values lib/params.py and lib/datum.py take from it are the ones the rest of the arm
-uses (the base_yaw motor's seat, the bottom face), and DEFAULT - what the part builds - changes only the bearing
-bore (the 6806-2RS pair's seats and lip, the wrist's) and the seat ring (inside the thrust bearing's bore)."""
+uses (the base_yaw motor's seat, the bottom face), and DEFAULT - what the part builds - changes the bearing bore (the
+6806-2RS pair's seats and lip, the wrist's) and the seat ring (inside the thrust bearing's bore), and cuts the motor
+lobe off at the joint face (base_motor_mount, its seat slotted where the stock belt puts the motor:
+tests/base/test_motor_mount.py)."""
 from dataclasses import replace
 
 import pytest
@@ -28,6 +30,8 @@ def test_layout():
     m = LEGACY.motor
     assert m.slot_x1 == pytest.approx(m.centre[0] + m.rim_half)             # the belt slot runs to the rim's +X inside
     assert 2.0 * m.rim_half > NEMA17_FACE                                    # the rim takes the motor's face
+    d = DEFAULT.motor                                                        # ... the slots' far end with DEFAULT's travel
+    assert d.slot_x1 == pytest.approx(d.centre[0] + d.rim_half + d.travel) and LEGACY.motor.travel == 0.0
 
 
 def test_interface_values_come_from_the_base():
@@ -37,8 +41,8 @@ def test_interface_values_come_from_the_base():
 
 
 def test_motor_holes_are_the_base_yaw_motors_bolts():
-    """The 48 mm motor (lib/mounts.py nema17_48mm#1: face on the plate's underside) has its 4 bolts on the NEMA 17
-    square in its own frame (face z = 0): each one is a hole's axis."""
+    """The 48 mm motor (lib/mounts.py nema17_48mm#1: face on the motor mount's plate's underside, in the base's frame)
+    has its 4 bolts on the NEMA 17 square in its own frame (face z = 0): each one is a hole's axis - the slots' middle."""
     frame = to_location(mounts.BY_KEY["nema17_48mm#1"].frame)
     half = NEMA17_BOLT_SP / 2.0
     bolts = [(frame * Location((sx * half, sy * half, 0.0))).position for sx in (1, -1) for sy in (1, -1)]
@@ -91,7 +95,7 @@ def test_legacy_features(legacy):
 
 def test_default_bore_takes_the_6806_pair():
     b = DEFAULT.bore
-    assert replace(DEFAULT, bore=LEGACY.bore, cap=LEGACY.cap) == LEGACY
+    assert replace(DEFAULT, bore=LEGACY.bore, cap=LEGACY.cap, motor=LEGACY.motor, joint=None) == LEGACY
     assert (b.upper_dia, b.lower_dia, b.lip_dia) == (FOREARM.boss.seat_dia, FOREARM.boss.seat_dia, FOREARM.boss.lip_dia)
     assert b.upper_dia > BEARING_6806_OD and LEGACY.bore.lower_dia - BEARING_6806_OD > 1.0   # the SolidWorks lower seat: 1.4 over
     c = DEFAULT.cap
@@ -107,14 +111,16 @@ def test_default_ring_centres_the_thrust_bearing():
 
 
 @pytest.mark.slow
-def test_default_changes_only_the_bore_and_the_ring(base, legacy):
+def test_default_changes_the_bore_and_the_ring_and_ends_at_the_joint(base, legacy):
     assert base.is_valid and len(base.solids()) == 1
     assert tuple(base.bounding_box().min) == pytest.approx(tuple(legacy.bounding_box().min), abs=1e-6)
-    assert tuple(base.bounding_box().max) == pytest.approx(tuple(legacy.bounding_box().max), abs=1e-6)
+    lmax = legacy.bounding_box().max
+    assert tuple(base.bounding_box().max) == pytest.approx((DEFAULT.joint.split_x, lmax.Y, lmax.Z), abs=1e-6)   # the lobe is the mount's
     assert is_inside(base, 0, -10, 21.15) and not is_inside(legacy, 0, -10, 21.15)   # the upper seat Ø42.4 -> Ø42.2
     assert is_inside(base, 0, -18, 21.5) and not is_inside(legacy, 0, -18, 21.5)     # the lower seat Ø43.4 -> Ø42.2
     assert not is_inside(base, 0, -13.8, 17) and is_inside(legacy, 0, -13.8, 17)     # the lip Ø31.73 -> Ø37.65
     assert is_inside(base, 0, -13.8, 19) and not is_inside(base, 0, -10, 21.05)
     assert not is_inside(base, 0, -7, 32.45) and is_inside(legacy, 0, -7, 32.45)     # the ring Ø65.1 -> Ø64.8
     assert is_inside(base, 0, -7, 32.3)
-    assert is_inside(base, 60, -42, 30) == is_inside(legacy, 60, -42, 30)              # the rest as before
+    assert is_inside(base, 52, -42, 30) and is_inside(legacy, 52, -42, 30)             # the plate's neck as before
+    assert is_inside(base, 54, -42, 0) and not is_inside(legacy, 54, -42, 0)          # its belt slot is the mount's
