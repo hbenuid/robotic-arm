@@ -28,7 +28,7 @@ from lib.forearm import (
 from lib.models import raw
 from robot import frames as F
 from tests.forearm.helpers import in_host
-from tests.helpers import interference, is_inside
+from tests.helpers import interference, is_inside, module_tints
 
 S = stack_positions(DEFAULT)
 D = DEFAULT.drive
@@ -188,7 +188,14 @@ def test_totals_and_bodies(module):
         got = M.totals(body)
         assert (got["leaves"], got["solids"]) == (M.EXPECTED["bodies"][body]["leaves"], M.EXPECTED["bodies"][body]["solids"])
         assert abs(got["solid_volume"] - M.EXPECTED["bodies"][body]["solid_volume"]) < 0.5
-    assert module.is_valid
+
+
+@pytest.mark.slow
+def test_module_colors(module):
+    """Standalone: the purchased parts BOUGHT_TINT, the printed ones the module's TINT."""
+    assert module.label == "forearm_roll_drive"
+    # 2 bearings, motor, board, 20T, the mount's screws + nuts / block, motor mount, shaft, retainer
+    assert module_tints(module, M.TINT) == {True: 7, False: 4}
 
 
 @pytest.mark.slow

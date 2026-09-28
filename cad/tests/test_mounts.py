@@ -126,6 +126,9 @@ def test_motors_and_boards_clear_their_neighbours():
     budget = {(nuts, host): _press(nut_af, depth) + 0.5 for _, nuts, _, host, nut_af, depth in PULLEY_BOLTS.values()}
     joint = BASE.joint
     budget[("base_motor_mount_nuts#1", "base#1")] = _press(joint.nut_pocket_af, joint.nut.h) + 0.5
+    # line-to-line fits (the elbow's upper 6806 seat Ø42.0, the Ø30 stubs and hubs) leave float noise in the boolean
+    # that differs per machine (0.05 mm^3 on x86_64 Linux, 0 on arm64 macOS) - the suite's 1 mm^3 'no overlap' budget;
+    # a real misfit is far above it (0.1 mm across a bearing's face is ~68 mm^3)
     for m in mounts.MOUNTS:
         part = place_world(m.part, m.key)
         for key, other in shapes.items():
@@ -311,7 +314,8 @@ def test_bearing_stacks(joint):
     """Each belt joint's pair: both bearings on the lip that splits the housing's bore (the lip bears on the outer
     rings only), the coupler's shoulder down on the upper inner ring, the re-seated 90T's ring under the lower inner
     ring, the coupler's stub on through the lip to the pulley, which bolts flat onto its end - a solid joint that
-    clamps both inner rings - and no overlap anywhere. The base's differs: j1_coupler stands on the thrust bearing
+    clamps both inner rings - and the coupler clear of the housing (the bearings and the pulley against everything
+    else: test_motors_and_boards_clear_their_neighbours). The base's differs: j1_coupler stands on the thrust bearing
     instead of a shoulder (test_thrust_bearing_carries_j1_coupler), and the base_yaw pulley is not modelled
     (docs/open_issues.md)."""
     up, lo, host_key, coupler_key, pulley_key = STACKS[joint]
@@ -325,8 +329,6 @@ def test_bearing_stacks(joint):
         assert faces, (joint, sign)
         lip_r = min(lip_r, min(r0 for _, r0, _ in faces))
     assert lip_r > inner_r + 1.0, (joint, lip_r)                                # the lip clears the inner rings
-    bearings = [place_world(mounts.BEARING, k) for k in (up, lo)]
-    others = [host]
     if coupler_key is not None:
         if coupler_key == "forearm_roll_block":
             coupler = next(c for c in raw(forearm_roll_drive.forearm_roll_drive).children if c.label == coupler_key)
@@ -346,15 +348,7 @@ def test_bearing_stacks(joint):
         contact = (max(min(r0 for _, r0, _ in stub_end), min(r0 for _, r0, _ in hub_end)),
                    min(max(r1 for _, _, r1 in stub_end), max(r1 for _, _, r1 in hub_end)))
         assert contact[1] - contact[0] > 5.0, (joint, contact)                                        # a real annulus
-        for a, b in ((pulley, coupler), (pulley, host), (coupler, host)):
-            assert interference(a, b) < 1.0, joint
-        others += [coupler, pulley]
-    # line-to-line fits (the elbow's upper seat Ø42.0, the Ø30 stubs and hubs) leave float noise in the boolean that
-    # differs per machine (0.05 mm^3 on x86_64 Linux, 0 on arm64 macOS) - the suite's 1 mm^3 'no overlap' budget;
-    # a real misfit is far above it (0.1 mm across a bearing's face is ~68 mm^3)
-    for b in bearings:
-        for o in others + [bearings[1] if b is bearings[0] else bearings[0]]:
-            assert interference(b, o) < 1.0, joint
+        assert interference(coupler, host) < 1.0, joint
 
 
 @pytest.mark.slow
@@ -363,7 +357,8 @@ def test_thrust_bearing_carries_j1_coupler():
     on the cage and j1_coupler's seat down on that - face to face up the axis, each contact the washers' whole annulus -;
     the stack THRUST_CLEAR inside the coupler's recess and RING_CLEAR round the base's seat ring (inside its bore) and
     inside the groove's wall; the coupler nowhere nearer the base than its rim's RIM_CLEAR over the top face (it turns on
-    the stack, not on the base's face); no overlap with the base, the coupler or the 6806 pair."""
+    the stack, not on the base's face). No overlap: the stack against the base, the coupler and the 6806 pair is in
+    test_motors_and_boards_clear_their_neighbours, the base against the coupler is RIM_CLEAR apart."""
     lower, cage, upper = (place_world(mounts.BY_KEY[k].part, k) for k in THRUST)
     base, coupler = (place_world(P.OCCURRENCES[k]["part"], k) for k in ("base#1", "j1_coupler#1"))
     w = _world(THRUST[0])
@@ -381,7 +376,3 @@ def test_thrust_bearing_carries_j1_coupler():
     assert base.distance_to(cage) == pytest.approx(RING_CLEAR, abs=1e-3)        # round the ring, inside the groove
     assert coupler.distance_to(cage) == pytest.approx(THRUST_CLEAR, abs=1e-3)   # inside the recess
     assert base.distance_to(coupler) == pytest.approx(RIM_CLEAR, abs=1e-3)      # the rim over the top face
-    shapes = [base, coupler, lower, cage, upper, *(place_world(mounts.BEARING, k) for k in STACKS["base_yaw"][:2])]
-    for i, a in enumerate(shapes):
-        for b in shapes[i + 1:]:
-            assert interference(a, b) < 1.0

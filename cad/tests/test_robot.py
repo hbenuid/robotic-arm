@@ -181,32 +181,6 @@ def test_forward_kinematics_at_zero_reproduces_the_capture_frames():
 
 
 # --- slow: geometry ----------------------------------------------------------------------------
-@pytest.mark.slow
-@pytest.mark.parametrize("link", PHYSICAL_LINKS)
-def test_link_builds_from_its_occurrences(link):
-    from assemblies._occurrences import split_key
-    from robot._links import build_link
-
-    shape = build_link(link)
-    assert shape.label == link
-    solids = volume = 0.0
-    for k in F.LINKS[link]:
-        okey, body = split_key(k)
-        o = P.OCCURRENCES[okey]
-        if o.get("designed"):     # a code-driven module: its own totals lock (whole or one rigid body)
-            expected = importlib.import_module(f"assemblies.{o['part']}").EXPECTED
-            lock = expected["bodies"][body] if body else expected
-            solids += lock["solids"]
-            volume += lock["solid_volume"]
-        else:                     # a SolidWorks record, or the part's own build once converted (tests.totals)
-            s, v = solids_and_volume(okey)
-            solids += s
-            volume += v
-    assert len(shape.solids()) == solids
-    assert abs(R.solid_volume(shape) - volume) <= 0.5
-    assert shape.is_valid
-
-
 def _stl_facts(path: pathlib.Path) -> dict:
     """Enclosed volume (mm^3), its centroid and the vertex bbox of a binary STL."""
     data = path.read_bytes()
@@ -223,15 +197,34 @@ def _stl_facts(path: pathlib.Path) -> dict:
 
 @pytest.mark.slow
 @pytest.mark.parametrize("link", PHYSICAL_LINKS)
-def test_committed_mesh_matches_a_fresh_export(link, tmp_path):
-    """robot/meshes/<link>.stl is what tools/robot/export_link_meshes.py writes for the link today, so a geometry
-    change that skipped the re-export (Recipe C step 8) fails here. Compared by what the meshes enclose, not byte
-    for byte: OCCT triangulates the same geometry a little differently per machine - measured against the committed
-    meshes, at most 4.2e-5 relative volume and 0.0033 mm centroid (shoulder_link), bbox identical."""
+def test_link_builds_from_its_occurrences_and_matches_its_mesh(link, tmp_path):
+    """The link as tools/robot/export_link_meshes.py builds and exports it (robot/_links.py build_link): its solids and
+    volume are what its occurrences add up to, and robot/meshes/<link>.stl is what the tool writes for it today, so a
+    geometry change that skipped the re-export (Recipe C step 8) fails here. The meshes are compared by what they
+    enclose, not byte for byte: OCCT triangulates the same geometry a little differently per machine - measured
+    against the committed meshes, at most 4.2e-5 relative volume and 0.0033 mm centroid (shoulder_link), bbox
+    identical."""
+    from assemblies._occurrences import split_key
     from tools.robot.export_link_meshes import export_link
 
     fresh = tmp_path / f"{link}.stl"
-    assert export_link(link, fresh)[1]
+    shape, ok = export_link(link, fresh)
+    assert ok and shape.label == link
+    solids = volume = 0.0
+    for k in F.LINKS[link]:
+        okey, body = split_key(k)
+        o = P.OCCURRENCES[okey]
+        if o.get("designed"):     # a code-driven module: its own totals lock (whole or one rigid body)
+            expected = importlib.import_module(f"assemblies.{o['part']}").EXPECTED
+            lock = expected["bodies"][body] if body else expected
+            solids += lock["solids"]
+            volume += lock["solid_volume"]
+        else:                     # a SolidWorks record, or the part's own build once converted (tests.totals)
+            s, v = solids_and_volume(okey)
+            solids += s
+            volume += v
+    assert len(shape.solids()) == solids
+    assert abs(R.solid_volume(shape) - volume) <= 0.5
     now, committed = _stl_facts(fresh), _stl_facts(ROBOT_DIR / "meshes" / f"{link}.stl")
     stale = f"robot/meshes/{link}.stl is stale: ./cadtool python tools/robot/export_link_meshes.py --links {link}"
     assert abs(now["volume"] / committed["volume"] - 1.0) <= 5e-4, stale

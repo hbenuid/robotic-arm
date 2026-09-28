@@ -38,12 +38,13 @@ Custom parts declare `REFERENCE = NAME`, `CONVERTED` and `LOCAL_FROM_REF`:
 - *parametric* (`CONVERTED = True`, from `_templates/designed.py`): real build123d — see "Converting a part" below.
 - *designed* (`CONVERTED = True`, `REFERENCE = NAME`, registered in `lib/reference.py DESIGNED`):
   the cycloidal drive's printed parts — the reference is the CadQuery export they were ported
-  from; `tests/cycloidal/test_port.py` additionally demands identical face sets / tessellations (the two
+  from; `tests/cycloidal/test_port.py` matches them to it (not `tests/test_reference_match.py`: its volume / bbox
+  check is weaker) - identical face sets / tessellations (the two
   spline discs: the lobe profile within 1e-6 mm of the reference spline, `helpers.spline_deviation`, and the
   mesh within its chordal error — see `cad/CLAUDE.md` "Two machines").
   A drive part that has left its export (the housing's bolt count: `lib/cycloidal/params.py DEFAULT_CONFIG` vs the
   port, `LEGACY_CONFIG` - the two housing parts and the housing bolts / nuts) declares `REFERENCE_BUILD`, its
-  `LEGACY_CONFIG` build: `test_port`, the reference match and `test_cots_envelope_tracks_reference_bbox` compare THAT.
+  `LEGACY_CONFIG` build: `test_port` and `test_cots_envelope_tracks_reference_bbox` compare THAT.
   Their geometry helpers live in `lib/cycloidal/` and each module exposes `build(cfg)` for tests
   (reached like any part: `parts.load(name).build(cfg)` — tests never import `parts.<group>` either).
 - *native* (`CONVERTED = True`, `REFERENCE = NAME`, registered in `lib/reference.py NATIVE`; a purchased part
@@ -97,8 +98,8 @@ shares: `cadgen.read_step(VENDOR_STEP)` if present (a tracked input, so a swappe
 stale), else `_envelope()` from `lib.params`, both in the SolidWorks frame `placements.json` assumes. `reference/solidworks/<name>.step` keeps the SolidWorks re-export of every COTS part as the
 frame/size reference (for the drive's purchased parts: the CadQuery export of their simplified model
 in `reference/cycloidal/`, `lib/reference.py CYCLOIDAL_COTS`; `path_of()` resolves the origin);
-`test_cots_vendor_matches_reference_frame` (bbox within 1.5 mm, skipped when there is no vendor
-file - the envelope is then the geometry) and `test_cots_envelope_tracks_reference_bbox` guard vendor
+`test_cots_vendor_matches_reference_frame` (bbox within 1.5 mm; collected only for a vendor file that is not the
+reference itself - with no vendor file the envelope is the geometry) and `test_cots_envelope_tracks_reference_bbox` guard vendor
 swaps. Swap procedure (Recipe D): `vendor/CLAUDE.md`; what has been tried and where the vendor files come from:
 `vendor/README.md`.
 The kit parts `nema17_40mm` / `mks_servo42d` live in `parts/joints/` (`parts/cycloidal/` is locked to

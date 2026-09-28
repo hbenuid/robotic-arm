@@ -6,12 +6,12 @@ lane. Every test module's docstring says what it checks.
 ## Tests (`./cadtool pytest`)
 `tests/conftest.py` sets `CADGEN_DAEMON=0` and blocks top-level model builds (tests call bodies:
 `parts.build(name)`, `lib.models.raw(model)`). `test_parts_convention.py` (contract + geometry for
-every part, COTS envelopes + vendor frames), `test_reference_match.py` (manifest checksums; converted
+every part, COTS envelopes + vendor frames), `test_reference_match.py` (manifest checksums; converted and native
 parts vs reference), `test_placements.py` (JSON integrity, tables cover every key once, the designed
 module record + the mounted records vs `lib/mounts.py`), `test_assembly.py` (every assembly file ends with its build call; the arm's leaves / solids / volume / bbox
 vs SolidWorks + the module lock — the numbers are IN that file; the arm's leaf colours -
 purchased = `BOUGHT_TINT`, which no group / module may reuse, printed = the link's / module's tint, in the arm and in
-the standalone gripper and drives), `test_bom.py` (the print / buy lists
+the standalone gripper; the standalone drives' in their own tests), `test_bom.py` (the print / buy lists
 partition `parts.names()` by the flag, the occurrence counts, the drive's pieces follow `DEFAULT_CONFIG`, `EXTRAS`
 well-formed), `test_params_invariants.py` (locks), `test_robot.py` (link partition, frames, FK at
 zero = capture, the committed meshes vs a fresh export, inertials, URDF/SRDF/SDF consistency + cadgen's validators via
@@ -24,7 +24,8 @@ holes, the nuts' designed press; the base_yaw thrust stack under `j1_coupler`),
 `test_lazy_kernel.py` (a fresh interpreter imports every template, part, assembly and link model without
 loading `build123d` / `OCP`; names the first offender — a new assembly model goes in its module list),
 `source_checks.py` (the shared `runs_its_model()` check that a model file ends with its build call),
-`helpers.py` (the geometry helpers every geometry test shares: `interference`, `is_inside`, `section_area`, …),
+`helpers.py` (the geometry helpers every geometry test shares: `interference`, `is_inside`, `section_area`, …, and
+`module_tints`, a standalone module's colours),
 `totals.py` (what an occurrence contributes to the arm / link totals: its SolidWorks record, or its own build once
 converted — shared by `test_assembly.py` and `test_robot.py`),
 `tests/cycloidal/` (the drive: one module per part + housing / purchased / fitment / assembly / port,

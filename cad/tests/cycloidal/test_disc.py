@@ -5,18 +5,18 @@
   3. Meshing simulation - ring-pin interference / contact over one input revolution
   4. The built solid - topology, bounding box, chamfer, volume sanity
   5. Disc <-> purchased-part fitment; 6. both discs at their orbit positions
+(the built discs against the pins, the shaft and the 6003: tests/cycloidal/test_assembly.py's interference budget)
 """
 import math
 
 import numpy as np
 import pytest
-from build123d import Pos
 
 import parts
 from lib import reference as R
 from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii, profile_points
-from tests.cycloidal.helpers import CFG, ring_pins
-from tests.helpers import annulus, end_face, interference, is_inside, radial_extent
+from tests.cycloidal.helpers import CFG
+from tests.helpers import end_face, radial_extent
 
 cycloidal_disc_1 = parts.load("cycloidal_disc_1")
 cycloidal_disc_2 = parts.load("cycloidal_disc_2")
@@ -272,13 +272,6 @@ class TestDiscFitment:
         assert CFG.shaft.bearing_seat_od >= CFG.bearings.ecc_bore
         assert CFG.shaft.bearing_seat_od - CFG.bearings.ecc_bore <= 0.2
 
-    @pytest.mark.slow
-    def test_6003_bearing_no_interference_with_disc(self):
-        """Both at the origin: the bearing sits inside the disc bore, no overlap."""
-        b = CFG.bearings
-        vol = interference(cycloidal_disc_1.build(), annulus(b.ecc_od, b.ecc_bore, b.ecc_width))
-        assert vol < 1.0, f"Bearing/disc interference volume = {vol:.1f}mm^3 (should be ~0)"
-
 
 # ===================================================================
 # 6. Assembly-level meshing - both discs at their orbit positions
@@ -322,48 +315,3 @@ class TestAssemblyMeshing:
             hole_xy = (pin_circle_r * math.cos(a) - e, pin_circle_r * math.sin(a))
             margin = hole_r - pin_r - math.hypot(pin_xy[0] - hole_xy[0], pin_xy[1] - hole_xy[1])
             assert margin >= 0.2 - 1e-6, f"Pin {k}/disc-2 hole margin {margin:.2f}mm < 0.2mm"
-
-
-@pytest.fixture(scope="module")
-def disc1_built(stack):
-    return Pos(stack["x_disc1"], 0, stack["z_disc1"]) * cycloidal_disc_1.build()
-
-
-@pytest.fixture(scope="module")
-def disc2_built(stack):
-    return Pos(stack["x_disc2"], 0, stack["z_disc2"]) * cycloidal_disc_2.build()
-
-
-@pytest.fixture(scope="module")
-def pins(stack):
-    return ring_pins(CFG, stack["z_ring_pins"])
-
-
-@pytest.mark.slow
-class TestAssemblyInterference:
-    """Boolean checks on the as-built discs (chamfers included) + ring pins at their stack
-    positions."""
-
-    def test_disc1_no_pin_interference(self, disc1_built, pins):
-        vol = interference(disc1_built, pins)
-        assert vol < 1.0, f"Disc 1 / ring-pin overlap = {vol:.2f}mm^3"
-
-    def test_disc2_no_pin_interference(self, disc2_built, pins):
-        """Regression: the buggy identical-discs build produced multi-mm^3 overlap here."""
-        vol = interference(disc2_built, pins)
-        assert vol < 1.0, f"Disc 2 / ring-pin overlap = {vol:.2f}mm^3"
-
-    def test_discs_are_distinct_parts(self):
-        """Disc 1's lobe tip is a valley on disc 2 (half a lobe pitch apart) - point probes on
-        the un-translated discs (a boolean cut between the two spline solids takes minutes)."""
-        d1, d2 = cycloidal_disc_1.build(), cycloidal_disc_2.build()
-        z = CFG.disc.thickness / 2.0
-        tip = max(profile_points(CFG), key=lambda p: math.hypot(*p))
-        r = math.hypot(*tip)
-        x, y = tip[0] * (r - 0.6) / r, tip[1] * (r - 0.6) / r     # just inside disc 1's tip
-        assert is_inside(d1, x, y, z), "disc 1's own lobe tip must be material"
-        assert not is_inside(d2, x, y, z), "disc 2 must have a valley where disc 1 has a lobe tip (phase not applied?)"
-        tip2 = max(profile_points(CFG, CFG.gear.disc2_phase_deg), key=lambda p: math.hypot(*p))
-        r2 = math.hypot(*tip2)
-        x2, y2 = tip2[0] * (r2 - 0.6) / r2, tip2[1] * (r2 - 0.6) / r2
-        assert is_inside(d2, x2, y2, z) and not is_inside(d1, x2, y2, z)

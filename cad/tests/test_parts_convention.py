@@ -12,6 +12,7 @@ import pytest
 import parts
 from lib import manifest as M
 from lib import reference as R
+from lib.datum import IDENTITY
 from tests.source_checks import runs_its_model
 
 PART_NAMES = parts.names()
@@ -151,14 +152,22 @@ def test_cots_envelope_tracks_reference_bbox(name):
 COTS_FRAME_TOL_MM = 1.5   # catalog models differ slightly from the SolidWorks re-exports
 
 
+def _vendor_differs(name: str) -> bool:
+    """A vendor file the frame check can tell from the reference: one that is not the reference file itself
+    (manifest same_as_reference), or one moved by VENDOR_TO_REF. With no vendor file the envelope is the geometry
+    (test_cots_envelope_tracks_reference_bbox)."""
+    vendor = M.read()["parts"][name].get("vendor")
+    return vendor is not None and (not vendor["same_as_reference"] or parts.load(name).VENDOR_TO_REF != IDENTITY)
+
+
+VENDOR_PARTS = [n for n in COTS_PARTS if _vendor_differs(n)]
+
+
 @pytest.mark.slow
-@pytest.mark.parametrize("name", COTS_PARTS)
+@pytest.mark.parametrize("name", VENDOR_PARTS)
 def test_cots_vendor_matches_reference_frame(name):
     """The vendor geometry (after VENDOR_TO_REF) must occupy the SolidWorks reference's bounding
     box - guards the re-orientation of a swapped-in step.parts model."""
-    mod = parts.load(name)
-    if not mod.VENDOR_STEP.exists():
-        pytest.skip(f"no vendor/{name}.step - envelope in use")
     shape = parts.build(name)
     ref = R.load(name)
     for got, exp, what in (

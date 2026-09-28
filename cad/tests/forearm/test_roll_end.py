@@ -71,7 +71,8 @@ def test_link_ends_at_the_wall_and_keeps_its_wrist_end(link):
 
 
 @pytest.mark.slow
-def test_wrist_motor_clears_the_wall_and_the_slot(link):
-    motor, board = in_host("nema17_40mm#3"), in_host("mks_servo42d#3")
+def test_wrist_motor_plug_clears_the_wall():
+    """The placed motor's connector end plug_clearance short of the wall (the motor and its board clear of j2_link,
+    the pilot in the central slot: tests/test_mounts.py test_motors_and_boards_clear_their_neighbours)."""
+    motor = in_host("nema17_40mm#3")
     assert motor.bounding_box().max.X + R.plug_clearance <= R.wall_x[0] + 1e-6
-    assert interference(motor, link) < 1.0 and interference(board, link) < 1.0

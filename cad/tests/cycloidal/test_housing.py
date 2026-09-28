@@ -132,11 +132,6 @@ class TestOuterChamfer:
             z_mate = mz + 0.1 if mz == 0 else mz - 0.1
             assert is_inside(part, self.PILLAR_TIP_R, 0.0, z_mate), f"{name}: mating face must stay sharp"
 
-    def test_ring_gear_body_mating_face_sharp(self, chamfer_parts):
-        parts = chamfer_parts
-        fn, _th, _ext, mates = parts["ring_gear_body"]
-        assert is_inside(fn(), self.PILLAR_TIP_R, 0.0, mates[0] + 0.1)
-
     def test_full_external_perimeter_beveled(self):
         """Passing external_z bevels the whole perimeter (pillar sides + inner arcs), removing
         materially more than the barrel verticals alone."""

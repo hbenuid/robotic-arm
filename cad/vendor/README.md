@@ -24,7 +24,7 @@ swap one (Recipe D) and the rules for these files: [`CLAUDE.md`](CLAUDE.md); thi
 
 Purchased parts **without** a vendor file (their `_envelope()` — the drive repo's simplified model or, for a
 native COTS part, the envelope accepted by `tools/reference/import_native.py` - also the reference STEP — is the
-geometry; `test_cots_vendor_matches_reference_frame` skips them):
+geometry; `test_cots_vendor_matches_reference_frame` leaves them out):
 
 | Part module | Why no catalog model (2026-08-28) |
 |---|---|

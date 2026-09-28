@@ -1,5 +1,6 @@
 """Geometry helpers shared by the geometry tests (tests/cycloidal/, tests/forearm/, tests/upper_arm/, tests/base/, tests/coupler/,
-tests/test_mounts.py). The drive's own config helpers stay in tests/cycloidal/helpers.py.
+tests/test_mounts.py), and the standalone modules' colour check (tests/test_assembly.py, the drives' own tests). The
+drive's own config helpers stay in tests/cycloidal/helpers.py.
 
 CadQuery -> build123d idioms from the drive's port (see docs/cycloidal_drive.md "Port notes"):
   .val().isInside(v, tol)       -> is_inside(solid, x, y, z)
@@ -10,8 +11,10 @@ CadQuery -> build123d idioms from the drive's port (see docs/cycloidal_drive.md 
 """
 from __future__ import annotations
 
-from build123d import Box, Compound, Cylinder, GeomType, Pos, PositionMode, Shape, Vertex
+from build123d import Box, Color, Compound, Cylinder, GeomType, Pos, PositionMode, Shape, Vertex
 
+import parts
+from assemblies._occurrences import BOUGHT_TINT
 from lib import reference as R
 from lib.geom import align_min
 
@@ -107,3 +110,23 @@ def fingerprint(shape: Shape) -> list[tuple[str, float]]:
 def annulus(od: float, bore: float, width: float):
     """A plain annulus standing on z=0 - a bearing stand-in (the drive's simplified purchased-part model)."""
     return Cylinder(od / 2.0, width, align=align_min()) - Cylinder(bore / 2.0, width, align=align_min())
+
+
+def leaves(node) -> list:
+    """The leaves of an assembly node (the node itself when it has no children)."""
+    return [node] if not node.children else [leaf for child in node.children for leaf in leaves(child)]
+
+
+def same_color(shape, tint: str) -> bool:
+    return all(abs(x - y) < 1e-6 for x, y in zip(tuple(shape.color), tuple(Color(tint)), strict=True))
+
+
+def module_tints(module, tint: str) -> dict[bool, int]:
+    """A standalone module: purchased parts BOUGHT_TINT, printed parts the module's TINT; returns the
+    bought / printed leaf counts."""
+    seen = {True: 0, False: 0}
+    for leaf in leaves(module):
+        bought = parts.bought(leaf.label.split(":")[0])
+        assert same_color(leaf, BOUGHT_TINT if bought else tint), f"{module.label}/{leaf.label}: {tuple(leaf.color)}"
+        seen[bought] += 1
+    return seen
