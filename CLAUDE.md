@@ -12,9 +12,13 @@ in this repo on purpose — when it is picked up it needs the CAD's robot descri
 table, the drive ratios) to agree with `software/control/src/config.py`, and one repo keeps both sides in one commit.
 
 ## Git workflow
-- Work on a branch — `cad/<topic>` for CAD work, `<area>/<topic>` otherwise — and push the **branch**. `main` is
-  fast-forwarded to it only when the user says so; never commit to or push `main` directly (an approved plan
-  that says "commit + push" means the branch).
+- Work on a branch — `cad/<topic>` for CAD work, `<area>/<topic>` otherwise — and push the **branch**. It goes into
+  `main` only when the user says so, and always as a **merge commit, never a fast-forward**: from the main checkout
+  (on `main`, clean) `git pull --ff-only`, `git merge --no-ff <branch> -m "Merge <branch>: <what it did, one line>"`,
+  `git push origin main` (never `git push origin <branch>:main` - that is a fast-forward). So `main` reads one entry
+  per branch - `git log --first-parent main`, or a graph view (VS Code's Source Control Graph, GitHub Desktop) that
+  opens each merge into the branch's commits; the older history was fast-forwarded and stays linear. Never commit to
+  or push `main` otherwise (an approved plan that says "commit + push" means the branch).
 - **The commit message is the record** — there is no CHANGELOG file. Subject `<area>: what changed` (`cad:`, `docs:`,
   `tooling:` …); body: why, what it replaces or removes, and every measured number that changed (totals, masses,
   fits, lock values); one logical change per commit. History is `git log` (`--grep`, `-- <path>`, `-S <CONSTANT>`,
@@ -62,7 +66,7 @@ pulls the LFS objects, lints both projects, imports the CLI, runs `cad/`'s fast 
 gen`s the arm (~13 min, from the private repo's monthly Actions minutes). It is the **clean-clone check** neither
 machine can give — no `~/.cache/cadgen`, no raw exports, no generated STEPs — so a test or model that quietly needs
 a file outside git fails there first. Everyday pushes do not need it (the pre-commit hook and the local suite cover
-them); run it on the branch before fast-forwarding `main` after: a cadgen / build123d / OCP bump, a new SolidWorks
+them); run it on the branch before merging it into `main` after: a cadgen / build123d / OCP bump, a new SolidWorks
 or vendor export or vendor STEP, a change to `lib/reference.py` or to how parts read their inputs, or any large
 change. Suggest it then; never trigger it unasked. It checks and never writes (no hash gate, no snapshots, no
 commits). The runner is a third machine (x86_64 Linux): the "no exact float equality" rule of `cad/CLAUDE.md` "Two
