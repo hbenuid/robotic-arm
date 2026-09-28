@@ -23,11 +23,17 @@ def is_inside(solid: Shape, x: float, y: float, z: float, tol: float = 1e-6) -> 
     return solid.is_inside((x, y, z), tol)
 
 
+COINCIDENT_MM = 1e-5   # faces nearer than this are one face to interference() (the Common's fuzzy value)
+
+
 def interference(a: Shape, b: Shape) -> float:
     """Volume of a ∩ b (0 when the boolean is empty) - the kernel's Common directly, because
     build123d 0.11 reworked `Shape.intersect` for composite operands (a placed module of 18
     solids against a part reported whole solids as "common"). Shapes whose bounding boxes do not meet
-    share nothing: no boolean. Otherwise one Build, non-destructive: the operands stay untouched."""
+    share nothing: no boolean. Otherwise one Build, non-destructive: the operands stay untouched. A line-to-line fit
+    (a bearing's OD in a seat of its own diameter: coincident cylinders) is the kernel's fragile case - on x86_64 Linux
+    the Common of bearing_6806#3 in j1_link's Ø42.0 seat came back as the whole bearing - so faces within
+    COINCIDENT_MM count as coincident."""
     from OCP.Bnd import Bnd_Box
     from OCP.BRepAlgoAPI import BRepAlgoAPI_Common
     from OCP.BRepBndLib import BRepBndLib
@@ -45,6 +51,7 @@ def interference(a: Shape, b: Shape) -> float:
     op.SetArguments(args)
     op.SetTools(tools)
     op.SetNonDestructive(True)
+    op.SetFuzzyValue(COINCIDENT_MM)
     op.Build()
     return R.solid_volume(Compound(op.Shape())) if op.IsDone() else 0.0
 

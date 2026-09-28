@@ -66,3 +66,6 @@ step 5 in `cad/CLAUDE.md` has the `totals()` one-liner).
   whole solids as common) — `tests/helpers.interference` runs the kernel's `BRepAlgoAPI_Common` directly: the
   two-shape constructor already runs the boolean (a `Build()` after it runs it all again), so it sets the operands on
   an empty operator, non-destructive (the default mode may modify them), and skips pairs whose bounding boxes are apart.
+  A line-to-line fit (coincident cylinders: a bearing in a seat of its own diameter) is the kernel's fragile case: one
+  such pass on x86_64 Linux returned the whole bearing as common (arm64 macOS: 0), so the Common's fuzzy value
+  `COINCIDENT_MM` makes faces that near one face.
