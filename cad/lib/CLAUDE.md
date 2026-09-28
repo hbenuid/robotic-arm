@@ -16,7 +16,7 @@ bearings.py   # the belt joints' 6806-2RS pair: bore / OD / width, the inner-rin
 fasteners.py  # the arm's screws + nuts: M4_SHCS / M4_NUT / M4_PITCH, M3_CSK / M3_NUT / M3_PITCH, the M3-M5 clearance holes, shcs() / csk() / hex_nut() (the plain geometry of the pulley bolts and of the roll and base motor mounts' screws + nuts) - a leaf
 cots.py       # hybrid(): the body of every purchased part (vendor STEP, else the envelope); pattern() for the multi-body ones
 geom.py       # the arm's small build123d helpers: align_min(), cylinder(), through() (NUDGE overshoot), single_solid(), hex_prism() - a leaf
-base/         # the base and its bolt-on motor mount (BaseConfig: LEGACY = the SolidWorks base, DEFAULT = what is built - the +X lobe cut off at JointParams, the motor slotted at the stock belt's centre distance)
+base/         # the base and its bolt-on motor mount (BaseConfig: LEGACY = the SolidWorks base, DEFAULT = what is built - the +X lobe cut off at JointParams, the motor in a narrower bolt-on box (MountParams) slotted at the stock belt's centre distance)
 coupler/      # the J3 coupler (CouplerParams: LEGACY = the SolidWorks j3_coupler, DEFAULT = what is built)
 yaw_coupler/  # the base_yaw coupler, the drive's yoke (YawCouplerConfig: LEGACY = the SolidWorks j1_coupler, DEFAULT = what is built)
 upper_arm/    # the upper arm (UpperArmConfig: LEGACY = the SolidWorks j1_link, DEFAULT = no cap sockets, the motor's and the drive's hole patterns, the elbow block's clearance)

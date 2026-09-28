@@ -30,32 +30,32 @@
    "bbox_min": [
     55.0,
     -100.9,
-    -53.339
+    -48.584
    ],
    "bbox_size": [
-    59.839,
+    63.472,
     61.0,
-    106.679
+    97.167
    ],
-   "bytes": 220114,
+   "bytes": 171299,
    "file": "native/base_motor_mount.step",
    "kind": "native",
    "origin": "native",
-   "product": "base_motor_mount - the base_yaw motor's MOUNT: the base's +X lobe as its own part, bolted to the base across the",
-   "sha256": "7107bc1665e03b0d88fb49e9d3827f50dbcc6d026298fc0bd4295a6fd111877e",
-   "solid_volume": 94793.893,
+   "product": "base_motor_mount - the base_yaw motor's MOUNT: a box round the motor, bolted to the base's end across the plane",
+   "sha256": "974b58ecc8d0d3478e795510975165eaf309c0c581f2740d2daf64815f1a8640",
+   "solid_volume": 86160.255,
    "solids": 1,
    "source": "lib/base/body.py:build_motor_mount(DEFAULT)",
    "units": "mm"
   },
   "base_motor_mount_nuts": {
    "bbox_min": [
-    -45.839,
+    -46.084,
     -96.941,
     0.0
    ],
    "bbox_size": [
-    91.679,
+    92.167,
     48.083,
     3.2
    ],
@@ -64,7 +64,7 @@
    "kind": "cots",
    "origin": "native",
    "product": "base_motor_mount_nuts - purchased (COTS) part: the base motor mount's 4 M4 hex nuts (ISO 4032), in the base.",
-   "sha256": "d139fdc4a4cb0d3787a3ae95e48b55a9e1a3ed0d56a4cab44b522068308b994f",
+   "sha256": "034284683e3f2e868459cdf3a3ff50350b5ebcd2827f0c2b5ebf2452069a3e44",
    "solid_volume": 382.322,
    "solids": 4,
    "source": "parts/base/base_motor_mount_nuts.py:_envelope()",
@@ -72,12 +72,12 @@
   },
   "base_motor_mount_screws": {
    "bbox_min": [
-    -45.839,
+    -46.084,
     -96.4,
     -4.0
    ],
    "bbox_size": [
-    91.679,
+    92.167,
     47.0,
     24.0
    ],
@@ -86,7 +86,7 @@
    "kind": "cots",
    "origin": "native",
    "product": "base_motor_mount_screws - purchased (COTS) part: the base motor mount's 4 M4 socket head cap screws (ISO 4762).",
-   "sha256": "44f853c676a769149f72aa4e23daac69efd334a72be3ad2e047b62b949714674",
+   "sha256": "00c12e457fad739c371db2c81cddd66277707c1bbff9efea8f81f973db659983",
    "solid_volume": 1558.708,
    "solids": 4,
    "source": "parts/base/base_motor_mount_screws.py:_envelope()",

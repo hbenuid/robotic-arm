@@ -4,7 +4,7 @@ from __future__ import annotations
 import math
 
 from lib.base.params import DEFAULT, BaseConfig
-from lib.motors import NEMA17_BOLT_SP
+from lib.motors import MKS_SERVO42D_W, NEMA17_BOLT_SP
 
 
 def motor_holes(cfg: BaseConfig = DEFAULT) -> list[tuple[float, float]]:
@@ -24,19 +24,30 @@ def chamfer_inset(cfg: BaseConfig = DEFAULT) -> float:
     return cfg.cap.underside_y - cfg.cap.chamfer_y0
 
 
+def mount_inner_half(cfg: BaseConfig = DEFAULT) -> float:
+    """The motor mount's inside half-width (|z| of its side walls' inner faces, about the axis): the MKS board's square
+    about the motor's centre, and MountParams.room clear of it."""
+    return MKS_SERVO42D_W / 2.0 + abs(cfg.motor.centre[1]) + cfg.mount.room
+
+
+def mount_x1(cfg: BaseConfig = DEFAULT) -> float:
+    """The outer face of the motor mount's end wall: room past the board's square at the slots' middle, and the wall."""
+    return cfg.motor.centre[0] + MKS_SERVO42D_W / 2.0 + cfg.mount.room + cfg.mount.wall
+
+
 def joint_bolt_points(cfg: BaseConfig = DEFAULT) -> list[tuple[float, float]]:
-    """(z, y) of the 4 M4 through the joint's ribs (JointParams): each rib's centreline, bolt_inset under the plate's
-    underside and above the bottom face - also the (x, y) of the screw / nut patterns (base_motor_mount_screws), whose
-    +Z the mounts turn down the base's -X."""
-    s, j = cfg.shell, cfg.joint
-    z = s.r - s.wall - j.rib_w / 2.0
+    """(z, y) of the 4 M4 through the mount's ears and the base's posts (JointParams, MountParams): each ear's
+    centreline, bolt_inset under the plate's underside and above the bottom face - also the (x, y) of the screw / nut
+    patterns (base_motor_mount_screws), whose +Z the mounts turn down the base's -X."""
+    s, j, m = cfg.shell, cfg.joint, cfg.mount
+    z = mount_inner_half(cfg) + m.wall + m.ear_w / 2.0
     return [(sz * z, y) for sz in (1, -1) for y in (cfg.plate.y[0] - j.bolt_inset, s.y0 + j.bolt_inset)]
 
 
 def joint_stations(cfg: BaseConfig = DEFAULT) -> dict[str, float]:
-    """The joint's stations along X: the base rib's back face (the nuts' outer faces flush with it), the joint face,
-    the mount rib's inside face (under the screws' heads), the nuts' bearing faces and the screws' tips."""
+    """The joint's stations along X: the base posts' back face (the nuts' outer faces flush with it), the joint face,
+    the ears' outer face (under the screws' heads), the nuts' bearing faces and the screws' tips."""
     j = cfg.joint
-    back, head = j.split_x - j.rib_t, j.split_x + j.rib_t
-    return {"x_base_rib": back, "x_split": j.split_x, "x_head": head, "x_nut_face": back + j.nut.h,
+    back, head = j.split_x - j.post_t, j.split_x + cfg.mount.ear_t
+    return {"x_post": back, "x_split": j.split_x, "x_head": head, "x_nut_face": back + j.nut.h,
             "x_tip": head - j.screw_len}

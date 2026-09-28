@@ -117,7 +117,7 @@ def test_motors_and_boards_clear_their_neighbours():
     """Interference budget (mm^3) of every mount against the hosts, the pulleys and the placed drives: zero everywhere
     (the Ø22 pilot boss used to stand in j2_link's Ø20 central slot - the parametric forearm's slot is 22.3 wide) but
     the pulley nuts' designed press in their nut_af pockets (_press, test_pulley_bolts_clamp_their_joints) and the base
-    motor mount's nuts' in the base's ribs (JointParams.nut_pocket_af)."""
+    motor mount's nuts' in the base's posts (JointParams.nut_pocket_af)."""
     neighbours = ["base#1", "base_motor_mount#1", "j1_coupler#1", "j1_link#1", "j2_link#1", "gt2_pulley_90t#3", "gt2_pulley_90t#4", "j3_coupler#2",
                   "wrist_link#1"]
     shapes = {k: place_world(P.OCCURRENCES[k]["part"], k) for k in neighbours}

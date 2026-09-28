@@ -4,7 +4,15 @@ Pure-Python config and layout here (lib/base/params.py, layout.py); the build123
 (imported explicitly by the part, so importing this package never pulls in OCCT). Never imports lib/params.py -
 that module re-exports the interface values from here.
 """
-from lib.base.layout import chamfer_inset, joint_bolt_points, joint_stations, motor_holes, side_stub_x  # noqa: F401
+from lib.base.layout import (  # noqa: F401
+    chamfer_inset,
+    joint_bolt_points,
+    joint_stations,
+    motor_holes,
+    mount_inner_half,
+    mount_x1,
+    side_stub_x,
+)
 from lib.base.params import (  # noqa: F401
     DEFAULT,
     LEGACY,
@@ -13,6 +21,7 @@ from lib.base.params import (  # noqa: F401
     CapParams,
     JointParams,
     MotorParams,
+    MountParams,
     PlateParams,
     ShellParams,
 )

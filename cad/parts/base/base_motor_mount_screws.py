@@ -2,8 +2,8 @@
 
 They bolt the motor mount (base_motor_mount) to the base (base) across the joint face.
 
-In the arm (lib/mounts.py, hosted on base_motor_mount#1): the heads on the inside faces of the mount's two ribs, the
-shanks along the base's -X through both ribs into the M4 nuts pressed into the base's ribs
+In the arm (lib/mounts.py, hosted on base_motor_mount#1): the heads on the outer faces of the mount's two ears, the
+shanks along the base's -X through the ears and the base's posts into the M4 nuts pressed into the posts
 (base_motor_mount_nuts), the tips out into the base's cavity. Length: lib/base/params.py JointParams.screw_len.
 
 No catalog model (the catalog has single fasteners only, vendor/README.md) and no SolidWorks export: a NATIVE COTS
@@ -31,7 +31,7 @@ COTS = True
 MASS_G = BASE_MOUNT_SCREWS_MASS_G   # [ESTIMATE] the modelled steel (lib/params.py)
 PURCHASE_SPEC = f"M{M4_SHCS.d:g} x {LENGTH:g} socket head cap screw (ISO 4762)"
 PURCHASE_QTY = len(joint_bolt_points())   # pieces per occurrence (the whole pattern)
-PURCHASE_NOTE = "the base motor mount to the base, from inside the mount into the M4 nuts pressed into the base's ribs (base_motor_mount_nuts)"
+PURCHASE_NOTE = "the base motor mount's ears to the base's posts, into the M4 nuts pressed into the posts (base_motor_mount_nuts)"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 

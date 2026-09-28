@@ -4,17 +4,26 @@ Every feature but the joint's bolts runs along the part's Y (the base_yaw axis),
 frame whose +Z is the part's +Y - part (x, y, z) = working (x, -z, y), the helpers below take part coordinates - and
 turned into the part frame once at the end (Rot(-90, 0, 0)), like lib/upper_arm/link.py.
 
-With cfg.joint (DEFAULT) the one SolidWorks body is cut at x = split_x: build_base keeps the -X side (the tower, the
-plate's neck) and build_motor_mount the +X lobe (its walls, the plate with the motor's seat, the U rim, the cable
-notch); each gets its ribs at the joint face and the M4 holes through them, the base its nut pockets. Without it
-(LEGACY) build_base is the whole SolidWorks part."""
+With cfg.joint (DEFAULT) the SolidWorks body is cut at x = split_x: build_base keeps the -X side (the tower, the
+plate's neck) and ends in two posts with the M4 holes and the nuts' pockets, the window between them opening into the
+motor mount; build_motor_mount is a box of its own (cfg.mount) round the motor and its board - walls, end wall, the
+plate with the motor's seat, the U rim - with an ear each side at the joint face for the M4. Without it (LEGACY)
+build_base is the whole SolidWorks part."""
 from __future__ import annotations
 
 import math
 
 from cadgen import build123d as bd
 
-from lib.base.layout import chamfer_inset, joint_bolt_points, joint_stations, motor_holes, side_stub_x
+from lib.base.layout import (
+    chamfer_inset,
+    joint_bolt_points,
+    joint_stations,
+    motor_holes,
+    mount_inner_half,
+    mount_x1,
+    side_stub_x,
+)
 from lib.base.params import DEFAULT, BaseConfig
 from lib.geom import align_min, cylinder, hex_prism, single_solid
 from lib.units import NUDGE
@@ -102,31 +111,38 @@ def _cap(cfg: BaseConfig, body):
     return body.fillet(c.fillet, edges)
 
 
+def _motor_seat(cfg: BaseConfig, plate):
+    """`plate` less the motor's window and its 4 holes (slots of +/- travel along X when it has any)."""
+    p, m = cfg.plate, cfg.motor
+    y, cz = (p.y[0] - NUDGE, p.y[1] + NUDGE), m.centre[1]
+    plate = plate - _block(m.window_x, (cz - m.window_half_z, cz + m.window_half_z), y)
+    for x, z in motor_holes(cfg):
+        plate = plate - (_slot(m.hole_dia / 2.0, (x - m.travel, x + m.travel), z, y) if m.travel > 0.0 else _bore(m.hole_dia / 2.0, *y, x, z))
+    return plate
+
+
 def _plate(cfg: BaseConfig):
     """The motor plate across the D: the central opening (out to the wall on the -X side), the curved slot, the
-    motor's holes (slots of +/- travel along X when it has any), window and belt slot (the motor mount's own when the
-    lobe is split off: build_motor_mount)."""
+    motor's seat and, on the SolidWorks base, the belt slot (the motor mount has none)."""
     s, p, m = cfg.shell, cfg.plate, cfg.motor
     ri, y = s.r - s.wall, (p.y[0] - NUDGE, p.y[1] + NUDGE)
     plate = _d(ri, s.x1 - s.wall, p.y)
     plate = plate - _bore(p.opening_r, *y) - _sector(ri + 1.0, p.open_deg, y)
     arc = bd.CenterArc((0.0, 0.0), p.arc_slot_r, -p.arc_slot_half_deg, 2.0 * p.arc_slot_half_deg)
     plate = plate - bd.Pos(0.0, 0.0, y[0]) * bd.extrude(bd.SlotArc(arc, p.arc_slot_w), amount=y[1] - y[0])
-    cz = m.centre[1]
-    plate = plate - _block(m.window_x, (cz - m.window_half_z, cz + m.window_half_z), y)
+    plate = _motor_seat(cfg, plate)
     if cfg.joint is None:
+        cz = m.centre[1]
         plate = plate - (_block((s.r - 5.0, m.slot_x1), (cz - m.slot_half_z, cz + m.slot_half_z), y) - _bore(s.r, y[0] - NUDGE, y[1] + NUDGE))
-    for x, z in motor_holes(cfg):
-        plate = plate - (_slot(m.hole_dia / 2.0, (x - m.travel, x + m.travel), z, y) if m.travel > 0.0 else _bore(m.hole_dia / 2.0, *y, x, z))
     return plate
 
 
 def _rim(cfg: BaseConfig):
-    """The U rim under the plate round the motor's face (open toward the axis, its ends on the shell's outer round -
-    past the joint face when the lobe is split off, build_motor_mount cutting them there)."""
+    """The U rim under the plate round the motor's face (open toward the axis, its ends on the shell's outer round - on
+    the joint face in the motor mount)."""
     s, p, m = cfg.shell, cfg.plate, cfg.motor
     cz, h, out = m.centre[1], m.rim_half, m.rim_half + m.rim_wall
-    x0 = s.r - 10.0 if cfg.joint is None else cfg.joint.split_x - 1.0
+    x0 = s.r - 10.0 if cfg.joint is None else cfg.joint.split_x
     rim = _block((x0, m.slot_x1 + m.rim_wall), (cz - out, cz + out), (m.rim_y0, p.y[0] + NUDGE))
     rim = rim - _block((x0 - 1.0, m.slot_x1), (cz - h, cz + h), (m.rim_y0 - NUDGE, p.y[0] + 2.0 * NUDGE))
     return rim - _bore(s.r, m.rim_y0 - NUDGE, p.y[0] + 2.0 * NUDGE) if cfg.joint is None else rim
@@ -138,46 +154,50 @@ def _side(cfg: BaseConfig, x: tuple):
     return _block(x, (-s.r - 1.0, s.r + 1.0), (s.y0 - 1.0, cfg.cap.top_y + 1.0))
 
 
-def _ribs(cfg: BaseConfig, x: tuple):
-    """The joint's two ribs between x[0] and x[1]: inside each side wall, rib_w deep, from the bottom face up to the
-    plate's underside."""
+def _posts(cfg: BaseConfig):
+    """The base's two posts at the joint: post_t thick behind the joint face, from each side wall in to the motor
+    mount's inside (the window between them), from the bottom face up to the plate's underside."""
     s, p, j = cfg.shell, cfg.plate, cfg.joint
-    ri, y = s.r - s.wall, (s.y0, p.y[0] + NUDGE)
-    return _block(x, (ri - j.rib_w, ri + NUDGE), y) + _block(x, (-ri - NUDGE, -ri + j.rib_w), y)
+    ri, w_in = s.r - s.wall, mount_inner_half(cfg)
+    x, y = (j.split_x - j.post_t, j.split_x), (s.y0, p.y[0] + NUDGE)
+    return _block(x, (w_in, ri + NUDGE), y) + _block(x, (-ri - NUDGE, -w_in), y)
 
 
 def _bolt_holes(cfg: BaseConfig, body):
-    """`body` less the 4 M4 clearance holes along X through both ribs."""
+    """`body` less the 4 M4 clearance holes along X through the posts and the ears."""
     j, st = cfg.joint, joint_stations(cfg)
-    x = (st["x_base_rib"] - 1.0, st["x_head"] + 1.0)
+    x = (st["x_post"] - 1.0, st["x_head"] + 1.0)
     for z, y in joint_bolt_points(cfg):
         body = body - _x_bore(j.bolt_dia / 2.0, x, z, y)
     return body
 
 
 def build_base(cfg: BaseConfig = DEFAULT):
-    """The base: the whole SolidWorks part (cfg.joint None), else its -X side up to the joint face, the ribs, the M4
-    holes and the nuts' hex pockets (from the ribs' back face, nut.h deep)."""
+    """The base: the whole SolidWorks part (cfg.joint None), else its -X side up to the joint face, the posts, the M4
+    holes and the nuts' hex pockets (from the posts' back face, nut.h deep)."""
     body = _cap(cfg, _walls(cfg)) + _plate(cfg)
     if cfg.joint is None:
         return single_solid(bd.Rot(-90.0, 0.0, 0.0) * (body + _rim(cfg)))
     j, st = cfg.joint, joint_stations(cfg)
     s = cfg.shell
-    body = (body & _side(cfg, (-s.r - 1.0, j.split_x))) + _ribs(cfg, (st["x_base_rib"], j.split_x))
+    body = (body & _side(cfg, (-s.r - 1.0, j.split_x))) + _posts(cfg)
     body = _bolt_holes(cfg, body)
     for z, y in joint_bolt_points(cfg):
-        body = body - _x_hex(j.nut_pocket_af, (st["x_base_rib"] - NUDGE, st["x_nut_face"]), z, y)
+        body = body - _x_hex(j.nut_pocket_af, (st["x_post"] - NUDGE, st["x_nut_face"]), z, y)
     return single_solid(bd.Rot(-90.0, 0.0, 0.0) * body)
 
 
 def build_motor_mount(cfg: BaseConfig = DEFAULT):
-    """The base's +X lobe from the joint face out (cfg.joint): its walls and end wall (the cable notch), the plate
-    with the motor's slotted seat, window and belt slot, the U rim, the ribs and the M4 holes."""
-    s, p, m, j = cfg.shell, cfg.plate, cfg.motor, cfg.joint
-    st = joint_stations(cfg)
-    body = (_walls(cfg) + _plate(cfg) + _rim(cfg)) & _side(cfg, (j.split_x, s.x1 + 1.0))
-    body = body + _ribs(cfg, (j.split_x, st["x_head"]))
-    cz = m.centre[1]
-    body = body - _block((j.split_x - 1.0, m.slot_x1), (cz - m.slot_half_z, cz + m.slot_half_z), (p.y[0] - NUDGE, p.y[1] + NUDGE))
+    """The motor mount (cfg.joint, cfg.mount): a box from the joint face to its end wall, room round the motor's board
+    inside, open underneath and toward the base; the plate across its top with the motor's seat and the U rim under
+    it; an ear outside each side wall at the joint face, and the M4 holes through the ears."""
+    s, p, j, mt = cfg.shell, cfg.plate, cfg.joint, cfg.mount
+    w_in, x1 = mount_inner_half(cfg), mount_x1(cfg)
+    w_out, y = w_in + mt.wall, (s.y0, p.y[1])
+    body = _block((j.split_x, x1), (-w_out, w_out), y)
+    body = body - _block((j.split_x - 1.0, x1 - mt.wall), (-w_in, w_in), (s.y0 - NUDGE, p.y[0]))
+    ears = (j.split_x, j.split_x + mt.ear_t)
+    body = body + _block(ears, (w_out - NUDGE, w_out + mt.ear_w), y) + _block(ears, (-w_out - mt.ear_w, -w_out + NUDGE), y)
+    body = _motor_seat(cfg, body) + _rim(cfg)
     body = _bolt_holes(cfg, body)
     return single_solid(bd.Rot(-90.0, 0.0, 0.0) * body)

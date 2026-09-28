@@ -118,18 +118,18 @@ class Mount:
 
 
 # The base's motor lobe, a part of its own bolted to the base (lib/base/params.py JointParams), and the 4x M4 that hold
-# it: the mount in the base's part frame; the screws' +Z down the base's -X from the heads on the mount's ribs (the
-# pattern's (x, y) = the base's (z, y)); the nuts on the screws, their bearing faces nut.h inside the base's ribs.
+# it: the mount in the base's part frame; the screws' +Z down the base's -X from the heads on the mount's ears (the
+# pattern's (x, y) = the base's (z, y)); the nuts on the screws, their bearing faces nut.h inside the base's posts.
 _JOINT = joint_stations(_BASE)
 BASE_MOUNTS: tuple[Mount, ...] = (
     Mount("base_motor_mount#1", BASE_MOUNT, "base#1", "base_link", "base_yaw", ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)),
-          "the base's +X lobe (the motor's plate), bolted to the base at the joint face; built in the base's part frame"),
+          "the motor's box (its plate the motor's seat), bolted to the base's posts at the joint face; built in the base's part frame"),
     Mount("base_motor_mount_screws#1", BASE_MOUNT_SCREWS, "base_motor_mount#1", "base_link", "base_yaw",
           ((_JOINT["x_head"], 0.0, 0.0), (0.0, -90.0, 0.0)),
-          "the mount's 4x M4 x screw_len: heads on its ribs' inside faces, along -X through both ribs into the base"),
+          "the mount's 4x M4 x screw_len: heads on its ears' outer faces, along -X through the ears and the base's posts"),
     Mount("base_motor_mount_nuts#1", BASE_MOUNT_NUTS, "base_motor_mount_screws#1", "base_link", "base_yaw",
           ((0.0, 0.0, round(_JOINT["x_head"] - _JOINT["x_nut_face"], 6)), (0.0, 0.0, 0.0)),
-          "the screws' nuts in the base ribs' hex pockets, their outer faces flush with the ribs' back faces, a corner up"),
+          "the screws' nuts in the base posts' hex pockets, their outer faces flush with the posts' back faces, a corner up"),
 )
 MOTOR_MOUNTS: tuple[Mount, ...] = (
     Mount("nema17_48mm#1", MOTOR_48, "base_motor_mount#1", "base_link", "base_yaw",

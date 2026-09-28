@@ -15,8 +15,8 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   `CUSTOM` row and manifest entry go, and a record must name a known part -: its SolidWorks product goes into
   `lib/reference.py SKIPPED_PRODUCTS` and `tools/reference/mount_placements.py` (the merge mode, no monolith) moves the
   record to `skipped` as the entry an extraction writes (pose, totals, reason) - `test_skipped_nodes_are_the_dropped_products`.
-- **Mounted occurrences** (`lib/mounts.py`): the base's bolt-on motor mount (`base_motor_mount#1`, the base's +X lobe as a
-  part of its own - designed here, at identity on `base#1` - with its 4x M4 screws + nuts, `base_motor_mount_screws#1` /
+- **Mounted occurrences** (`lib/mounts.py`): the base's bolt-on motor mount (`base_motor_mount#1`, a box round the motor bolted to
+  the base's end - designed here, at identity on `base#1` - with its 4x M4 screws + nuts, `base_motor_mount_screws#1` /
   `_nuts#1`, hosted on the mount and on the screws); the belt joints' motors - `nema17_48mm#1` (the 48 mm motor, under the
   motor mount's plate; motor + board hang `BASE_MOTOR_STACK_PROUD` below the base's bottom face) and `nema17_40mm#2..3`,
   + `mks_servo42d#1..3`, on the NEMA 17 pads `base_motor_mount` / `j1_link` / `j2_link` carry - and each belt joint's 6806-2RS pair (`bearing_6806#1..6`, on
