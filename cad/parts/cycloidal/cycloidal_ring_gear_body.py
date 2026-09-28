@@ -6,9 +6,12 @@ cycloidal_ring_gear_body.step is that builder's export (kind "designed"). PETG.
 
 Stepped bore: 116 mm (z 0..28, disc orbit + clearance), 90.15 mm 6814 press-fit seat (28..48),
 86.15 mm hub clearance behind the integral 2 mm retention lip (48..51). 21 blind ring-pin holes
-(31.5 deep) with 1 mm entry funnels at the bore/bearing transition; 8x M4 through-holes with hex
-nut pockets on the output face; the shared 8-pillar reveal-window silhouette; the output face
+(31.5 deep) with 1 mm entry funnels at the bore/bearing transition; the M4 through-holes (bolt_count)
+with hex nut pockets on the output face; the shared pillar / reveal-window silhouette; the output face
 (z=51, external) and barrel edges chamfered, the motor-plate face (z=0) sharp.
+
+Diverged from the port: build(LEGACY_CONFIG) reproduces the export (REFERENCE_BUILD - tests/cycloidal/test_port.py,
+tests/test_reference_match.py); the model builds DEFAULT_CONFIG (6 bolts, not the port's 8).
 """
 import pathlib
 
@@ -17,6 +20,7 @@ from cadgen import step
 
 from lib.cycloidal import (
     DEFAULT_CONFIG,
+    LEGACY_CONFIG,
     DriveConfig,
     compute_housing_bolt_angles,
     housing_bolt_points,
@@ -55,7 +59,7 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     for xy in ring_pin_points(cfg):
         result = result - cylinder(pin_dia / 2.0, depth + NUDGE, xy, z0=-NUDGE)
         result = result - bd.Pos(xy[0], xy[1], bore_zone - NUDGE) * bd.Cone(funnel_r + slope * NUDGE, pin_dia / 2.0, funnel_d + NUDGE, align=align_min())
-    # 8x M4 through-holes
+    # the M4 housing bolts' through-holes
     m4_r = (h.bolt_dia + tol.bolt_clearance_add) / 2.0
     for xy in housing_bolt_points(cfg):
         result = result - through(m4_r, height, xy)
@@ -64,6 +68,11 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     for angle, xy in zip(compute_housing_bolt_angles(cfg), housing_bolt_points(cfg), strict=True):
         result = result - hex_pocket(cfg, xy, angle, h.bolt_nut_depth + NUDGE, z0=height - h.bolt_nut_depth)
     return chamfer_outer_silhouette(result, cfg, external_z=height)
+
+
+def REFERENCE_BUILD():
+    """The CadQuery port (LEGACY_CONFIG) - what reference/cycloidal/cycloidal_ring_gear_body.step holds (tests/cycloidal/test_port.py)."""
+    return build(LEGACY_CONFIG)
 
 
 @step

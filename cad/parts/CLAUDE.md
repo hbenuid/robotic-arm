@@ -41,6 +41,9 @@ Custom parts declare `REFERENCE = NAME`, `CONVERTED` and `LOCAL_FROM_REF`:
   from; `tests/cycloidal/test_port.py` additionally demands identical face sets / tessellations (the two
   spline discs: the lobe profile within 1e-6 mm of the reference spline, `helpers.spline_deviation`, and the
   mesh within its chordal error — see `cad/CLAUDE.md` "Two machines").
+  A drive part that has left its export (the housing's bolt count: `lib/cycloidal/params.py DEFAULT_CONFIG` vs the
+  port, `LEGACY_CONFIG` - the two housing parts and the housing bolts / nuts) declares `REFERENCE_BUILD`, its
+  `LEGACY_CONFIG` build: `test_port`, the reference match and `test_cots_envelope_tracks_reference_bbox` compare THAT.
   Their geometry helpers live in `lib/cycloidal/` and each module exposes `build(cfg)` for tests
   (reached like any part: `parts.load(name).build(cfg)` — tests never import `parts.<group>` either).
 - *native* (`CONVERTED = True`, `REFERENCE = NAME`, registered in `lib/reference.py NATIVE`; a purchased part

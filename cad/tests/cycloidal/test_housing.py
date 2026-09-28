@@ -1,6 +1,6 @@
 """The shared housing profile (ported from cycloidal_drive tests/test_housing_profile.py).
 
-lib/cycloidal/housing.py defines the 8-pillar / 8-window outer profile shared by the motor
+lib/cycloidal/housing.py defines the pillar / window outer profile (one per housing bolt) shared by the motor
 plate and the ring gear body and the outer-silhouette chamfer. Any change to the profile
 (pillar dims, bolt angles, bore radii) is caught here before the dependent part tests.
 """
@@ -11,7 +11,7 @@ import pytest
 import parts
 from lib import reference as R
 from lib.cycloidal import compute_housing_bolt_angles
-from lib.cycloidal.housing import chamfer_outer_silhouette, reveal_window_cutter
+from lib.cycloidal.housing import CUTTER_OVERSHOOT, chamfer_outer_silhouette, reveal_window_cutter
 from tests.cycloidal.helpers import CFG, no_chamfer
 from tests.helpers import is_inside
 
@@ -43,7 +43,7 @@ def chamfer_parts():
 class TestCutter:
 
     def test_solid_is_valid(self, cutter):
-        """8 pillars subtracted from the annulus leave 8 disjoint window solids."""
+        """bolt_count pillars subtracted from the annulus leave as many disjoint window solids."""
         solids = cutter.solids()
         assert len(solids) == CFG.housing.bolt_count, f"Expected {CFG.housing.bolt_count} solids, got {len(solids)}"
         for s in solids:
@@ -51,10 +51,11 @@ class TestCutter:
 
     def test_bounding_box(self, cutter):
         """XY span between the bore and the OD overshoot (the pillars eat into the outer ring at the
-        bolt axes); Z span exact."""
+        bolt axes - on X; a window on Y reaches the overshoot); Z span exact."""
         size = cutter.bounding_box().size
-        assert CFG.housing.bore_dia < size.X < CFG.housing.od + 0.2
-        assert CFG.housing.bore_dia < size.Y < CFG.housing.od + 0.2
+        span = CFG.housing.od + 2.0 * CUTTER_OVERSHOOT
+        assert CFG.housing.bore_dia < size.X < span
+        assert CFG.housing.bore_dia < size.Y <= span + 1e-6
         assert abs(size.Z - 10.0) < 0.05
 
     def test_volume_sanity(self, cutter):

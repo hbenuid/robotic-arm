@@ -13,9 +13,9 @@ from lib.cycloidal.params import DEFAULT_CONFIG, DriveConfig, compute_housing_bo
 from lib.geom import hex_circumdiameter  # the arm-wide helper, re-exported for the drive's callers
 
 __all__ = [
-    "arm_mount_angles", "arm_mount_points", "compute_housing_bolt_angles", "hex_circumdiameter",
+    "PILLAR_OVERSHOOT", "arm_mount_angles", "arm_mount_points", "compute_housing_bolt_angles", "hex_circumdiameter",
     "housing_bolt_points", "hub_height", "motor_bolt_counterbore_depth", "motor_bolt_points", "output_pin_points",
-    "ring_pin_engagement", "ring_pin_hole_depth", "ring_pin_hole_dia", "ring_pin_points", "stack_positions",
+    "pillar_corners", "pillar_half_width", "ring_pin_engagement", "ring_pin_hole_depth", "ring_pin_hole_dia", "ring_pin_points", "stack_positions",
 ]
 
 
@@ -24,8 +24,35 @@ def _circle_points(radius: float, angles: list[float]) -> list[tuple[float, floa
 
 
 def housing_bolt_points(cfg: DriveConfig = DEFAULT_CONFIG) -> list[tuple[float, float]]:
-    """8x M4 housing bolts on the 125 mm circle."""
+    """The M4 housing bolts (bolt_count) on the 125 mm circle."""
     return _circle_points(cfg.housing.bolt_circle_dia / 2.0, compute_housing_bolt_angles(cfg))
+
+
+PILLAR_OVERSHOOT = 1.0    # [DESIGN] pillars past the bore (-) and OD (+); trimmed flush by the bore/OD cuts
+
+
+def pillar_corners(cfg: DriveConfig, angle: float) -> list[tuple[float, float]]:
+    """(x, y) of the housing pillar on the bolt at ``angle`` (radians, from +X): the radially flipped
+    trapezoid, ``pillar_inner_w`` wide at the bore - PILLAR_OVERSHOOT, ``pillar_outer_w`` at the od
+    + PILLAR_OVERSHOOT, in the order inner -, outer -, outer +, inner + (lib/cycloidal/housing.py)."""
+    h = cfg.housing
+    inner_r, outer_r = h.bore_dia / 2.0 - PILLAR_OVERSHOOT, h.od / 2.0 + PILLAR_OVERSHOOT
+    c, s = math.cos(angle), math.sin(angle)
+    local = [
+        (inner_r, -h.pillar_inner_w / 2.0),
+        (outer_r, -h.pillar_outer_w / 2.0),
+        (outer_r, +h.pillar_outer_w / 2.0),
+        (inner_r, +h.pillar_inner_w / 2.0),
+    ]
+    return [(lx * c - ly * s, lx * s + ly * c) for lx, ly in local]
+
+
+def pillar_half_width(cfg: DriveConfig, along: float) -> float:
+    """The housing pillar's half width at ``along`` from the drive's axis, on its centre line (the sides of
+    pillar_corners, carried on past its ends)."""
+    h = cfg.housing
+    inner_r, outer_r = h.bore_dia / 2.0 - PILLAR_OVERSHOOT, h.od / 2.0 + PILLAR_OVERSHOOT
+    return (h.pillar_inner_w + (h.pillar_outer_w - h.pillar_inner_w) * (along - inner_r) / (outer_r - inner_r)) / 2.0
 
 
 def ring_pin_points(cfg: DriveConfig = DEFAULT_CONFIG) -> list[tuple[float, float]]:

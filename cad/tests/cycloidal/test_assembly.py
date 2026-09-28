@@ -348,7 +348,9 @@ class TestModuleLocks:
         for key in ("leaves", "solids"):
             assert totals[key] == cycloidal_drive.EXPECTED[key], key
         assert abs(totals["solid_volume"] - cycloidal_drive.EXPECTED["solid_volume"]) <= 0.5
-        assert totals["bbox_size"] == [140.0, 140.0, 127.1]   # 48 motor + 14.1 MKS board behind the plate, 65 to the hub face
+        # X: the pillars at 0 / 180 degrees reach the od; Y: no pillar on it, the ones at +/-60 and +/-120 degrees
+        # (their chamfered outer corners) set it; Z: 48 motor + 14.1 MKS board behind the plate, 65 to the hub face
+        assert totals["bbox_size"] == [140.0, 124.908, 127.1]
         bodies = {body: cycloidal_drive.totals(body) for body in cycloidal_drive.BODIES}
         for body, got in bodies.items():
             want = cycloidal_drive.EXPECTED["bodies"][body]
@@ -368,7 +370,7 @@ class TestModuleLocks:
         leaves = {c.label: c for c in drive.children}
         budget = {
             ("bearing_6814:1", "cycloidal_output_hub"): 331.0, ("bearing_6814:2", "cycloidal_output_hub"): 331.0,
-            ("cycloidal_housing_bolts", "cycloidal_housing_nuts"): 322.0,
+            ("cycloidal_housing_bolts", "cycloidal_housing_nuts"): 241.3,
             ("cycloidal_motor_bolts", "cycloidal_motor_plate"): 52.0, ("nema17_48mm", "cycloidal_motor_bolts"): 46.4,
             ("bearing_6003:1", "cycloidal_eccentric_shaft"): 27.0, ("bearing_6003:2", "cycloidal_eccentric_shaft"): 27.0,
             ("mks_servo42d", "nema17_48mm"): 159.4,
@@ -398,17 +400,27 @@ class TestPoseInTheArm:
     the j1_coupler yoke, hub face on j1_link - and it IS the robot's shoulder_pitch joint."""
 
     def test_module_world_bbox_matches_solidworks_node(self, drive_world):
-        """The SolidWorks node never carried the MKS board (2026-09-21): compare the module without it."""
+        """The SolidWorks node never carried the MKS board (2026-09-21): compare the module without it. The node
+        holds the port's 8-pillar housing (lib/cycloidal/params.py LEGACY_CONFIG): the module lies inside its box and
+        fills it but along the drive's +Y (world up), where DEFAULT_CONFIG's housing has no pillar."""
         sw = P.OCCURRENCES[DRIVE_KEY]["solidworks"]
         # the children keep their module-frame locations; the module's world pose sits on the Compound
         node = Compound([c for c in drive_world.children if c.label.split(":")[0] != "mks_servo42d"]).moved(drive_world.location)
-        assert all(abs(a - b) <= 1.5 for a, b in zip(R.bbox_min(node), sw["world_bbox_min"], strict=True)), (R.bbox_min(node), sw["world_bbox_min"])
-        assert all(abs(a - b) <= 1.5 for a, b in zip(R.bbox_size(node), sw["world_bbox_size"], strict=True)), (R.bbox_size(node), sw["world_bbox_size"])
+        lo, size = R.bbox_min(node), R.bbox_size(node)
+        sw_lo, sw_size = sw["world_bbox_min"], sw["world_bbox_size"]
+        world = P.location(DRIVE_KEY, "world")
+        up = (world * Location((0, 1, 0))).position - world.position
+        narrow = max(range(3), key=lambda i: abs(tuple(up)[i]))
+        for i in range(3):
+            assert lo[i] >= sw_lo[i] - 1.5 and lo[i] + size[i] <= sw_lo[i] + sw_size[i] + 1.5, (i, lo, size, sw_lo, sw_size)
+            if i != narrow:
+                assert abs(lo[i] - sw_lo[i]) <= 1.5 and abs(size[i] - sw_size[i]) <= 1.5, (i, lo, size, sw_lo, sw_size)
 
     def test_drive_clears_arm_neighbours(self, drive_world):
         """No intersection with the base or j1_link; only contact-level overlap with the
-        j1_coupler yoke it sits in (motor plate ~18 + ring gear body ~100 mm^3 measured)."""
-        for key, limit in (("base#1", 1.0), ("j1_link#1", 1.0), ("j1_coupler#1", 150.0)):
+        j1_coupler yoke it sits in: the cradle against the housing, whose axis sits 0.21 off the cradle's
+        (docs/open_issues.md) - motor plate ~7.5 + ring gear body ~23 mm^3 measured; the pillars clear their sockets."""
+        for key, limit in (("base#1", 1.0), ("j1_link#1", 1.0), ("j1_coupler#1", 35.0)):
             part = P.OCCURRENCES[key]["part"]
             vol = interference(drive_world, place_world(part, key))
             assert vol <= limit, f"drive x {key}: {vol:.1f} mm^3 (limit {limit})"

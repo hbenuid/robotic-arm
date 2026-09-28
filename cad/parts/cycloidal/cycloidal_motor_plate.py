@@ -5,9 +5,12 @@ cycloidal_motor_plate.step is that builder's export (kind "designed"). PETG.
 
 Outer face z=0 (motor mounting face, external): pilot recess, 4x M3 clearance holes (heads
 pocketed from the inner face), 15 mm shaft pass-through; 21 ring-pin through-holes on the 108 mm
-circle (pins are inserted one at a time from this face); 8x M4 through-holes with counterbores
-on the 125 mm circle; the shared 8-pillar reveal-window silhouette; outer silhouette chamfered.
+circle (pins are inserted one at a time from this face); the M4 through-holes (bolt_count) with
+counterbores on the 125 mm circle; the shared pillar / reveal-window silhouette; outer silhouette chamfered.
 The inner face z=9 seats on the ring gear body and stays sharp.
+
+Diverged from the port: build(LEGACY_CONFIG) reproduces the export (REFERENCE_BUILD - tests/cycloidal/test_port.py,
+tests/test_reference_match.py); the model builds DEFAULT_CONFIG (6 bolts, not the port's 8).
 """
 import pathlib
 
@@ -15,6 +18,7 @@ from cadgen import step
 
 from lib.cycloidal import (
     DEFAULT_CONFIG,
+    LEGACY_CONFIG,
     DriveConfig,
     housing_bolt_points,
     motor_bolt_counterbore_depth,
@@ -54,7 +58,7 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     pin_r = ring_pin_hole_dia(cfg) / 2.0
     for xy in ring_pin_points(cfg):
         result = result - through(pin_r, t, xy)
-    # 8x M4 through-holes + counterbores on the outer face
+    # the M4 housing bolts' through-holes + counterbores on the outer face
     m4_r = (h.bolt_dia + tol.bolt_clearance_add) / 2.0
     for xy in housing_bolt_points(cfg):
         result = result - through(m4_r, t, xy)
@@ -62,6 +66,11 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     # shared outer profile, then the bevel (outer face z=0 is external, inner face z=9 mates)
     result = result - reveal_window_cutter(cfg, t)
     return chamfer_outer_silhouette(result, cfg, external_z=0.0)
+
+
+def REFERENCE_BUILD():
+    """The CadQuery port (LEGACY_CONFIG) - what reference/cycloidal/cycloidal_motor_plate.step holds (tests/cycloidal/test_port.py)."""
+    return build(LEGACY_CONFIG)
 
 
 @step

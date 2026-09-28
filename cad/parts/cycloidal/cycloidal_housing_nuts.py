@@ -1,10 +1,11 @@
-"""cycloidal_housing_nuts - the 8 M4 hex nuts (7 AF x 3.2) on the 125 mm bolt circle, standing on z=0, keyed radially.
+"""cycloidal_housing_nuts - the M4 hex nuts (bolt_count) (7 AF x 3.2) on the 125 mm bolt circle, standing on z=0, keyed radially.
 
 In the drive: at stack z_housing_nuts (56) in the ring gear body's output-face pockets. Solid
 hexagons (no thread).
 Ported from cycloidal_drive@2f1f67d src/purchased_parts.py; reference/cycloidal_housing_nuts.step is that builder's
 export (kind "cots"). No catalog model (the envelope is the geometry); a vendor/cycloidal_housing_nuts.step would be
-re-oriented by VENDOR_TO_REF into the same frame.
+re-oriented by VENDOR_TO_REF into the same frame. The export is the port's 8-nut pattern (REFERENCE_BUILD); the model
+builds DEFAULT_CONFIG's.
 """
 import pathlib
 
@@ -12,7 +13,7 @@ from cadgen import build123d as bd
 from cadgen import step
 
 from lib.cots import hybrid, pattern
-from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, compute_housing_bolt_angles, housing_bolt_points
+from lib.cycloidal import DEFAULT_CONFIG, LEGACY_CONFIG, DriveConfig, compute_housing_bolt_angles, housing_bolt_points
 from lib.datum import IDENTITY
 from lib.geom import hex_prism
 from lib.params import CYCLOIDAL_HOUSING_NUTS_MASS_G
@@ -30,6 +31,11 @@ def _envelope(cfg: DriveConfig = DEFAULT_CONFIG):
     h = cfg.housing
     return pattern(bd.Pos(xy[0], xy[1], 0) * hex_prism(h.bolt_nut_af, angle, h.bolt_nut_thickness)
                    for angle, xy in zip(compute_housing_bolt_angles(cfg), housing_bolt_points(cfg), strict=True))
+
+
+def REFERENCE_BUILD():
+    """The CadQuery port's pattern (LEGACY_CONFIG) - what reference/cycloidal/cycloidal_housing_nuts.step holds."""
+    return _envelope(LEGACY_CONFIG)
 
 
 @step

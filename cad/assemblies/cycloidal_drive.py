@@ -73,11 +73,11 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 
 # Totals of the model (tests/cycloidal/test_assembly.py locks them; refresh with totals() /
 # totals(body) after a geometry change): 19 leaves, 37 SolidWorks-equivalent solids + the 7-solid
-# vendor motor + 20 fasteners + the 13-solid board kit, and the same per rigid body.
+# vendor motor + 16 fasteners + the 13-solid board kit, and the same per rigid body.
 EXPECTED = {
-    "leaves": 19, "solids": 77, "solid_volume": 679467.512,
+    "leaves": 19, "solids": 73, "solid_volume": 659601.475,
     "bodies": {
-        "stator": {"leaves": 16, "solids": 71, "solid_volume": 579459.085},
+        "stator": {"leaves": 16, "solids": 67, "solid_volume": 559593.048},
         "rotor": {"leaves": 3, "solids": 6, "solid_volume": 100008.427},
     },
 }

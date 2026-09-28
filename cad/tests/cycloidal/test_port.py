@@ -2,7 +2,8 @@
 the house reference-match: identical face sets and identical tessellations, plus the exact
 analytic volume for the parts whose faces OCCT integrates reliably (everything but the two
 spline discs, whose analytic volume wobbles by ~0.3 % on both sides of the comparison, and whose
-tessellation is platform-sensitive: they match the reference lobe spline point for point instead)."""
+tessellation is platform-sensitive: they match the reference lobe spline point for point instead). A part that has left the port (the housing's bolt
+count, lib/cycloidal/params.py DEFAULT_CONFIG) declares REFERENCE_BUILD - the port's build is what is matched."""
 import json
 
 import pytest
@@ -19,7 +20,8 @@ SPLINE_PARTS = {"cycloidal_disc_1", "cycloidal_disc_2"}
 @pytest.mark.slow
 @pytest.mark.parametrize("name", DESIGNED)
 def test_designed_part_reproduces_cadquery_export(name):
-    mine, ref = parts.build(name), R.load(name)
+    reference_build = getattr(parts.load(name), "REFERENCE_BUILD", None)
+    mine, ref = reference_build() if reference_build else parts.build(name), R.load(name)
     assert all(abs(a - b) <= 0.01 for a, b in zip(R.bbox_min(mine), R.bbox_min(ref), strict=True)), (R.bbox_min(mine), R.bbox_min(ref))
     assert all(abs(a - b) <= 0.01 for a, b in zip(R.bbox_size(mine), R.bbox_size(ref), strict=True)), (R.bbox_size(mine), R.bbox_size(ref))
     fm, fr = fingerprint(mine), fingerprint(ref)

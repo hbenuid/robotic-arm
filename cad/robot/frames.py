@@ -9,7 +9,7 @@ BODIES) - which assemblies/_occurrences.world_rows expands into world-placed par
 Chain: base_link -base_yaw-> shoulder_link -shoulder_pitch-> upper_arm_link -elbow_pitch-> elbow_link
 -forearm_roll-> forearm_link -wrist_pitch-> wrist_pitch_link -wrist_roll-> wrist_roll_link -jaw_a/jaw_b->
 jaw_*_link, + tool0 (frame-only). The cycloidal drive IS the shoulder_pitch joint: its stator
-(housing + motor, bolted into the j1_coupler yoke) rides in shoulder_link, its rotor (output
+(housing + motor, seated in the j1_coupler yoke) rides in shoulder_link, its rotor (output
 hub + pins, bolted to j1_link) in upper_arm_link (docs/cycloidal_drive.md "Attachment").
 
 Frames (all in the SolidWorks WORLD frame W, millimetres; W is +Y up, the arm extends toward
@@ -87,7 +87,7 @@ LINKS: dict[str, list[str]] = {
                   "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1", "nema17_48mm#1",
                   "mks_servo42d#1"],
     # j1_coupler (the holder) turns on the base; the cycloidal drive's stator - housing, motor (+ its
-    # MKS board) and the gear train - is bolted into its yoke (assemblies/cycloidal_drive.py BODIES); the thrust
+    # MKS board) and the gear train - sits in its yoke (assemblies/cycloidal_drive.py BODIES); the thrust
     # bearing's upper washer turns with it, under its seat.
     "shoulder_link": ["j1_coupler#1", "washer_as6590#2", "cycloidal_drive#1:stator"],
     # the drive's rotor (output hub + output pins) is bolted to j1_link: the shoulder_pitch output;

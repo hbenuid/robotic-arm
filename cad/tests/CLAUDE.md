@@ -34,10 +34,11 @@ holes on the elbow motor's pattern and the drive's arm-mount bolts, no sockets, 
 feature probes, the interface values lib/params.py and lib/datum.py take from it; `base_motor_mount`: the wiring room, the
 joint to the base's posts, the slotted seat at the stock belt's centre distance, the motor clear across the travel), `tests/coupler/` (`j3_coupler`: the
 LEGACY build's feature probes, the stub the roll drive's block repeats), `tests/yaw_coupler/` (`j1_coupler`: the LEGACY
-build's feature probes, the yoke on the drive's housing - its bore, od, pillars, bolt circle), `tests/wrist/` (`wrist_link`: the
-LEGACY build's feature probes, the seat on the coupler's flange, the end face on the NEMA 17 pattern), `tests/pulley/`
-(`gt2_pulley_90t`: the GT2 groove's tangency solve against the export's arcs, the LEGACY build's feature probes and
-surfaces, DEFAULT's opened holes), `tests/forearm/` (the forearm: the LEGACY
+build's feature probes, the yoke on the drive's housing - its bore, od, pillars, bolt circle; DEFAULT's sockets round the
+6-pillar housing's two pillars), `tests/wrist/` (`wrist_link`: the LEGACY build's feature probes, the seat on the
+coupler's flange, the end face on the NEMA 17 pattern), `tests/pulley/` (`gt2_pulley_90t`: the GT2 groove's tangency
+solve against the export's arcs, the LEGACY build's feature probes and surfaces, DEFAULT's opened holes),
+`tests/forearm/` (the forearm: the LEGACY
 build vs the SolidWorks part + feature probes, the roll end, the roll drive - axis through the wrist centre, stack, press fits, clean pairs,
 clearances in the arm with the elbow folded; `helpers.in_host()` places any occurrence in `j2_link`'s frame). Geometry tests are
 `slow`.
