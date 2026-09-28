@@ -1,7 +1,10 @@
 # tests/ — the pytest suite
 
 Loads when you work in `tests/`. Run it only through `./cadtool pytest` (`cad/CLAUDE.md`); `-m "not slow"` is the fast
-lane. Every test module's docstring says what it checks.
+lane. `-n <workers>` (pytest-xdist) spreads the suite over processes, a whole file per worker (`pyproject.toml` sets
+`--dist=loadfile`: a file's fixtures and `built.py` shapes are built once) — `-n 4` on a dev machine (each worker holds
+its own shapes, ~1.5 GB at most; not `-n auto`, which starts one per core), `-n 2` in CI (`.github/workflows/ci.yml`).
+Every test module's docstring says what it checks.
 
 ## Tests (`./cadtool pytest`)
 `tests/conftest.py` sets `CADGEN_DAEMON=0` and blocks top-level model builds (tests call bodies:

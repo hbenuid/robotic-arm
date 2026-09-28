@@ -1,7 +1,7 @@
 # CI: a clean clone on a fresh Linux runner - lint both uv projects, the CAD test suite, then build the arm from the
 # committed inputs only (no ~/.cache/cadgen, no raw SolidWorks exports, no generated STEPs). It checks and never writes:
-# no hash gate (STEP bytes differ per machine), no snapshots, no commits. Manual only (~13 min a run): Actions tab ->
-# CI -> Run workflow, or `gh workflow run ci.yml --ref <branch>` - when to run it: root CLAUDE.md "CI".
+# no hash gate (STEP bytes differ per machine), no snapshots, no commits. Manual only: Actions tab -> CI -> Run
+# workflow, or `gh workflow run ci.yml --ref <branch>` - when to run it, and how long it takes: root CLAUDE.md "CI".
 name: CI
 
 on:
@@ -60,7 +60,8 @@ jobs:
         run: ./cadtool pytest -m "not slow" -p no:cacheprovider
       - name: CAD - slow tests
         working-directory: cad
-        run: ./cadtool pytest -m slow -p no:cacheprovider -rs
+        # both vCPUs: a whole test file per worker (pyproject.toml --dist=loadfile)
+        run: ./cadtool pytest -m slow -n 2 -p no:cacheprovider -rs --durations=15
       - name: CAD - build the arm
         working-directory: cad
         run: ./cadtool gen assemblies/arm.py
