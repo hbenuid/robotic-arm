@@ -23,10 +23,25 @@ def is_inside(solid: Shape, x: float, y: float, z: float, tol: float = 1e-6) -> 
 def interference(a: Shape, b: Shape) -> float:
     """Volume of a ∩ b (0 when the boolean is empty) - the kernel's Common directly, because
     build123d 0.11 reworked `Shape.intersect` for composite operands (a placed module of 18
-    solids against a part reported whole solids as "common")."""
+    solids against a part reported whole solids as "common"). Shapes whose bounding boxes do not meet
+    share nothing: no boolean. Otherwise one Build, non-destructive: the operands stay untouched."""
+    from OCP.Bnd import Bnd_Box
     from OCP.BRepAlgoAPI import BRepAlgoAPI_Common
+    from OCP.BRepBndLib import BRepBndLib
+    from OCP.TopTools import TopTools_ListOfShape
 
-    op = BRepAlgoAPI_Common(a.wrapped, b.wrapped)
+    box_a, box_b = Bnd_Box(), Bnd_Box()
+    BRepBndLib.Add_s(a.wrapped, box_a, False)   # from the geometry: the shapes' meshes stay as they are
+    BRepBndLib.Add_s(b.wrapped, box_b, False)
+    if box_a.IsOut(box_b):
+        return 0.0
+    args, tools = TopTools_ListOfShape(), TopTools_ListOfShape()
+    args.Append(a.wrapped)
+    tools.Append(b.wrapped)
+    op = BRepAlgoAPI_Common()
+    op.SetArguments(args)
+    op.SetTools(tools)
+    op.SetNonDestructive(True)
     op.Build()
     return R.solid_volume(Compound(op.Shape())) if op.IsDone() else 0.0
 

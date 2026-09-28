@@ -53,4 +53,6 @@ step 5 in `cad/CLAUDE.md` has the `totals()` one-liner).
 
 ## Gotchas (all verified)
 - `Shape.intersect` on composite operands changed in build123d 0.11 (a placed module against a part reported
-  whole solids as common) — `tests/helpers.interference` runs the kernel's `BRepAlgoAPI_Common` directly.
+  whole solids as common) — `tests/helpers.interference` runs the kernel's `BRepAlgoAPI_Common` directly: the
+  two-shape constructor already runs the boolean (a `Build()` after it runs it all again), so it sets the operands on
+  an empty operator, non-destructive (the default mode may modify them), and skips pairs whose bounding boxes are apart.
