@@ -30,8 +30,7 @@ def test_layout():
     m = LEGACY.motor
     assert m.slot_x1 == pytest.approx(m.centre[0] + m.rim_half)             # the belt slot runs to the rim's +X inside
     assert 2.0 * m.rim_half > NEMA17_FACE                                    # the rim takes the motor's face
-    d = DEFAULT.motor                                                        # ... the slots' far end with DEFAULT's travel
-    assert d.slot_x1 == pytest.approx(d.centre[0] + d.rim_half + d.travel) and LEGACY.motor.travel == 0.0
+    assert LEGACY.motor.travel == 0.0 and DEFAULT.motor.travel > 0.0                # DEFAULT's holes are slots
 
 
 def test_interface_values_come_from_the_base():

@@ -94,7 +94,8 @@ class MotorParams:
     """The base_yaw motor's seat on the plate's underside: 4 holes on the NEMA 17 square about `centre` (x, z), a
     window for the pilot and the shaft's pulley, the belt slot from the shell's outer round out to slot_x1, and a U
     rim hanging below the plate round the motor's face on three sides (open toward the axis, its ends on the outer
-    round: the motor slides along the slot)."""
+    round: the motor slides along the slot). The belt slot and the rim are the SolidWorks base's only: the motor
+    mount (build_motor_mount) has neither - its slots hold the motor."""
 
     centre: tuple = (78.971441, 0.08362)
     hole_dia: float = 3.2
@@ -166,8 +167,7 @@ LEGACY = BaseConfig()     # the SolidWorks part, exactly
 # board with room for the wiring, in place of the SolidWorks lobe the base's full width). It sits where a stock belt puts it:
 # the SolidWorks centre (78.97 from the axis) wants a 274.2 mm belt; YAW_BELT sets 81.97, the holes are slots of
 # +/- MOTOR_TRAVEL along X (the belt's tension), the window lets the pilot slide with them (WINDOW_CLEAR a side - only
-# the pilot's height in Z: the SolidWorks window's +/- 21.3 would run into the -X slots) and the rim's +X side follows
-# the slots out.
+# the pilot's height in Z: the SolidWorks window's +/- 21.3 would run into the -X slots).
 RING_CLEAR = 0.1          # [DESIGN]
 YAW_BELT = 280            # [ESTIMATE] base_yaw belt, 280-2GT (lib/belts.py STANDARD_2GT_LENGTHS): 20T motor - 90T joint
 MOTOR_TRAVEL = 2.5        # [DESIGN] the roll motor's slots' +/- 2.5 (lib/forearm/params.py)
@@ -179,6 +179,5 @@ DEFAULT = replace(LEGACY, bore=replace(LEGACY.bore, upper_dia=_FOREARM.boss.seat
                   cap=replace(LEGACY.cap, groove_r=(THRUST_BORE / 2.0 - RING_CLEAR, LEGACY.cap.groove_r[1])),   # [DESIGN]
                   motor=replace(LEGACY.motor, centre=(_MOTOR_X, LEGACY.motor.centre[1]), hole_dia=M3_CLEAR,
                                 window_x=(round(_MOTOR_X - _WINDOW_HALF, 6), round(_MOTOR_X + _WINDOW_HALF, 6)),
-                                window_half_z=NEMA17_PILOT_DIA / 2.0 + WINDOW_CLEAR,
-                                slot_x1=round(_MOTOR_X + LEGACY.motor.rim_half + MOTOR_TRAVEL, 6), travel=MOTOR_TRAVEL),   # [DESIGN]
+                                window_half_z=NEMA17_PILOT_DIA / 2.0 + WINDOW_CLEAR, travel=MOTOR_TRAVEL),   # [DESIGN]
                   joint=JointParams(), mount=MountParams())                                             # [DESIGN]

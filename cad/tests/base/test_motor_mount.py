@@ -38,13 +38,11 @@ def test_the_motor_sits_where_the_stock_belt_puts_it():
 
 
 def test_the_seat_follows_the_slots():
-    """The pilot slides in the window, the rim's +X side stands past the motor's face at the slots' far end and inside
-    the mount, the whole motor stays on the mount at their near end; the slots keep a web to the window."""
+    """The pilot slides in the window, the whole motor stays on the mount at the slots' near end; the slots keep a web
+    to the window."""
     c, cz = M.centre
     assert M.window_x[0] < c - M.travel - NEMA17_PILOT_DIA / 2.0 and M.window_x[1] > c + M.travel + NEMA17_PILOT_DIA / 2.0
     assert M.window_half_z > NEMA17_PILOT_DIA / 2.0
-    assert M.slot_x1 > c + M.travel + NEMA17_FACE / 2.0 and X1 - MT.wall - (M.slot_x1 + M.rim_wall) > 1.0
-    assert M.rim_half + M.rim_wall < W_IN
     assert c - M.travel - NEMA17_FACE / 2.0 - J.split_x > 1.0
     for _, z in motor_holes():
         assert abs(z - cz) - M.hole_dia / 2.0 - M.window_half_z >= 2.0   # the web between a slot and the window
@@ -134,7 +132,8 @@ def test_the_mount_carries_the_slotted_seat(mount):
         assert is_inside(mount, x + M.travel + r + 0.2, -42, z) and is_inside(mount, x - M.travel - r - 0.2, -42, z)
         assert is_inside(mount, x, -42, z + (r + 0.2) * (1 if z > cz else -1))
     assert not is_inside(mount, c, -42, cz + M.window_half_z - 0.1) and is_inside(mount, c, -42, cz + M.window_half_z + 0.1)
-    assert is_inside(mount, M.slot_x1 + 1.0, -48, cz) and not is_inside(mount, M.slot_x1 - 1.0, -48, cz)   # the rim
+    for x, z in ((c + M.travel + NEMA17_FACE / 2.0 + 1.3, cz), (c, cz + NEMA17_FACE / 2.0 + 1.3)):
+        assert not is_inside(mount, x, PL.y[0] - 3.0, z)                                              # no rim under the plate
 
 
 @pytest.mark.slow

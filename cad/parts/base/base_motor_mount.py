@@ -5,9 +5,10 @@ In place of the SolidWorks base's +X lobe (the base's full width), a box only as
 MountParams.room round it for the wiring (lib/base/layout.py mount_inner_half(), mount_x1()): two side walls and an
 end wall from the bottom face (it stands on the table) up to the 5 mm plate across their tops, which carries the
 48 mm motor's seat on its underside (4 slots of +/- travel along X for the motor's M3s - the base_yaw belt's tension
--, the pilot's window slotted with them, the U rim round the motor's face). Open underneath, and open toward the base:
-the window between the base's two posts takes the cables into the base. An ear outside each side wall at the joint
-face (ear_w wide, ear_t thick, full height) with 2 M4 clearance holes along X: 4x M4 SHCS (base_motor_mount_screws),
+-, the pilot's window slotted with them; no rim round the motor's face: the slots hold it). Open underneath, and open
+toward the base: the window between the base's two posts takes the cables into the base. An ear outside each side
+wall at the joint face (ear_w wide, ear_t thick, full height) with 2 M4 clearance holes along X: 4x M4 SHCS
+(base_motor_mount_screws),
 their heads on the ears' outer faces - turned from outside, along -X beside the walls - run through the ears and the
 base's posts into the M4 nuts pressed into the posts (base_motor_mount_nuts).
 
