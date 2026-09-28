@@ -30,10 +30,11 @@ its STEP stay siblings (cadgen's default `out`; the viewer pairs them into one e
 Custom parts declare `REFERENCE = NAME`, `CONVERTED` and `LOCAL_FROM_REF`:
 - *wrapper* (`CONVERTED = False`, from `_templates/wrapper.py`): the model returns
   `reference/solidworks/<name>.step` (via `lib.reference.load` → `cadgen.read_step`, a tracked input)
-  in the SolidWorks part-file frame — the day-one state of every custom part (the two links, the base, both couplers and the wrist body are parametric: `j2_link` in
+  in the SolidWorks part-file frame — the day-one state of every custom part (the two links, the base, both couplers, the wrist body and the 90T pulley are parametric: `j2_link` in
   `lib/forearm/` - a `ForearmConfig` with `LEGACY` = the SolidWorks part and `DEFAULT` = what is built -, `j1_link` in
   `lib/upper_arm/` - an `UpperArmConfig` -, `base` in `lib/base/` - a `BaseConfig` -, `j3_coupler` in `lib/coupler/` - a `CouplerParams` -,
-  `j1_coupler` in `lib/yaw_coupler/` - a `YawCouplerConfig` -, `wrist_link` in `lib/wrist/` - a `WristConfig`, the same pattern);
+  `j1_coupler` in `lib/yaw_coupler/` - a `YawCouplerConfig` -, `wrist_link` in `lib/wrist/` - a `WristConfig` -, `gt2_pulley_90t` in
+  `lib/pulley/` - a `PulleyParams`, the same pattern);
 - *parametric* (`CONVERTED = True`, from `_templates/designed.py`): real build123d — see "Converting a part" below.
 - *designed* (`CONVERTED = True`, `REFERENCE = NAME`, registered in `lib/reference.py DESIGNED`):
   the cycloidal drive's printed parts — the reference is the CadQuery export they were ported
@@ -51,8 +52,8 @@ Custom parts declare `REFERENCE = NAME`, `CONVERTED` and `LOCAL_FROM_REF`:
   locks the geometry like every other part's; a native part's own tests hold its design intent.
   A new native part: `tools/reference/import_native.py` once, then Recipe C.
 - *diverged conversion*: a converted CUSTOM part whose DEFAULT build deliberately leaves its SolidWorks
-  reference (the forearm parts, whose elbow end gave way to the roll joint; `gt2_pulley_90t`, the SolidWorks body with
-  its bolt holes opened to `M4_CLEAR`) declares `REFERENCE_BUILD`, a
+  reference (the forearm parts, whose elbow end gave way to the roll joint; `gt2_pulley_90t`, its bolt holes opened to
+  `M4_CLEAR`) declares `REFERENCE_BUILD`, a
   zero-arg callable returning the LEGACY configuration that still reproduces the reference —
   `tests/test_reference_match.py` matches THAT build; the default one is locked by the part's own tests.
   A converted CUSTOM part contributes its own build (volume, bbox) to the arm / link totals locks

@@ -1,0 +1,132 @@
+"""gt2_pulley_90t, parametric (lib/pulley/): the groove's tangency solve lands on the SolidWorks arcs, the LEGACY
+configuration reproduces the SolidWorks part feature by feature (the volume / bbox match is
+tests/test_reference_match.py's; here the features are probed by name so a regression names what moved, and its
+surfaces are the reference's own), and DEFAULT - what the part builds - opens the bolt holes and changes nothing else."""
+import itertools
+import math
+from dataclasses import replace
+
+import pytest
+
+import parts
+from lib import belts
+from lib.fasteners import M4_CLEAR
+from lib.pulley import DEFAULT, LEGACY
+from lib.pulley.teeth import groove_arcs, groove_centres
+from tests.helpers import is_inside
+
+# The centres of the SolidWorks groove's arcs (the +y half of the groove on +X), read off the reference's cylinders.
+MEASURED_CENTRES = {"bottom": (28.1988897565, 0.0), "blend": (28.2555855858, -0.0613465476),
+                    "flank": (28.3911220340, -0.3964406093), "tip": (28.2341206498, 0.7427918364)}
+
+
+def at(r: float, y: float, deg: float = 45.0) -> tuple[float, float, float]:
+    """A point r off the axis at `deg` about it (atan2(z, x); 45: clear of the bolt holes), y along it."""
+    return r * math.cos(math.radians(deg)), y, r * math.sin(math.radians(deg))
+
+
+def test_params():
+    assert LEGACY.teeth == belts.GT2_PULLEY_90T_TEETH
+    assert (LEGACY.end_y, LEGACY.face_y) == belts.GT2_PULLEY_90T_FACE_Y
+    assert LEGACY.bolt_points() == belts.pulley_90t_bolt_points()
+    assert LEGACY.band_y1 - 1.0 == pytest.approx(belts.GT2_BELT_W)                     # the band: the belt + 1
+    assert LEGACY.hub_dia == 30.0 and LEGACY.flange_dia == pytest.approx(59.188, abs=1e-3)   # the 6806's bore; the bbox
+    assert DEFAULT == replace(LEGACY, hole_dia=M4_CLEAR)
+
+
+def test_groove_centres():
+    for name, centre in groove_centres(LEGACY.teeth).items():
+        assert math.dist(centre, MEASURED_CENTRES[name]) < 1e-8, name
+
+
+def test_groove_arcs():
+    arcs = groove_arcs(LEGACY.teeth)
+    r_land = belts.pulley_od(LEGACY.teeth) / 2.0
+    assert len(arcs) == 7
+    for (_, _, end), (start, _, _) in itertools.pairwise(arcs):
+        assert end == start                                                             # one chain
+    for (start, mid, end), (m_start, m_mid, m_end) in zip(arcs, reversed(arcs), strict=True):   # symmetric
+        assert (*start, *mid, *end) == pytest.approx((m_end[0], -m_end[1], m_mid[0], -m_mid[1], m_start[0], -m_start[1]))
+    assert math.hypot(*arcs[0][0]) == pytest.approx(r_land) and arcs[0][0][1] < 0.0 < arcs[-1][2][1]   # land to land
+    assert arcs[3][1] == pytest.approx((r_land - belts.GT2_TOOTH_DEPTH, 0.0))              # the bottom, a tooth deep
+    # the groove's width at the land, as the reference's fillets meet it: 1.507 deg either side of the centreline
+    assert math.degrees(math.atan2(arcs[-1][2][1], arcs[-1][2][0])) == pytest.approx(1.5070071840, abs=1e-8)
+
+
+@pytest.fixture(scope="module")
+def legacy():
+    from lib.pulley.body import build_pulley
+    return build_pulley(LEGACY)
+
+
+@pytest.fixture(scope="module")
+def pulley():
+    return parts.build("gt2_pulley_90t")
+
+
+def _surfaces(shape) -> set[tuple]:
+    """Every face's surface: a cylinder by (radius, its axis's offset from the pulley's), a cone by its half-angle (either
+    sign: its axis may run either way) and its span along Y, a plane by (the normal's sign along Y, its Y) - every axis
+    and normal along Y."""
+    from OCP.BRepAdaptor import BRepAdaptor_Surface
+    from OCP.GeomAbs import GeomAbs_Cone, GeomAbs_Cylinder, GeomAbs_Plane
+
+    found = set()
+    for f in shape.faces():
+        s = BRepAdaptor_Surface(f.wrapped)
+        kind = s.GetType()
+        if kind == GeomAbs_Cylinder:
+            axis = s.Cylinder().Axis()
+            assert abs(abs(axis.Direction().Y()) - 1.0) < 1e-9
+            found.add(("cylinder", round(s.Cylinder().Radius(), 5), round(math.hypot(axis.Location().X(), axis.Location().Z()), 5)))
+        elif kind == GeomAbs_Cone:
+            bb = f.bounding_box()
+            found.add(("cone", round(abs(math.degrees(s.Cone().SemiAngle())), 5), round(bb.min.Y, 3), round(bb.max.Y, 3)))
+        else:
+            assert kind == GeomAbs_Plane and abs(abs(f.normal_at().Y) - 1.0) < 1e-9
+            found.add(("plane", round(f.normal_at().Y), round(f.center().Y, 5)))
+    return found
+
+
+@pytest.mark.slow
+def test_legacy_surfaces_are_the_references(legacy):
+    from lib import reference
+    ref = reference.load("gt2_pulley_90t")
+    assert legacy.is_valid and len(legacy.solids()) == 1
+    assert _surfaces(legacy) == _surfaces(ref)
+    assert legacy.volume == pytest.approx(ref.volume, rel=1e-7)
+
+
+@pytest.mark.slow
+def test_legacy_features(legacy):
+    leg, c = legacy, LEGACY
+    assert is_inside(leg, *at(14.8, -10.0)) and not is_inside(leg, *at(15.2, -10.0))       # the journal
+    assert is_inside(leg, *at(17.2, -5.5)) and not is_inside(leg, *at(17.2, -6.4))         # the ring ...
+    assert not is_inside(leg, *at(17.2, -4.5)) and not is_inside(leg, *at(17.5, -5.5))     # ... Ø34.76, 1.5 high
+    assert is_inside(leg, *at(14.8, 0.5)) and not is_inside(leg, *at(15.2, 0.5))           # the hub up to the step
+    assert is_inside(leg, *at(17.3, 1.3)) and not is_inside(leg, *at(17.7, 1.3))           # the step
+    assert not is_inside(leg, *at(22.0, 1.6)) and is_inside(leg, *at(22.0, 2.0))           # open under the web
+    assert is_inside(leg, *at(26.7, -1.0)) and not is_inside(leg, *at(26.3, -1.0))         # the rim's inside
+    assert is_inside(leg, *at(29.5, -0.6)) and not is_inside(leg, *at(29.7, -0.6))         # the lower flange ...
+    assert is_inside(leg, *at(29.5, -0.25)) and not is_inside(leg, *at(29.5, -0.1))        # ... its chamfer
+    assert is_inside(leg, *at(29.5, 7.8)) and not is_inside(leg, *at(29.5, 7.1))           # the upper flange, chamfered
+    assert not is_inside(leg, *at(27.9, 3.5, 0.0)) and is_inside(leg, *at(27.5, 3.5, 0.0))  # a groove on +X ...
+    assert is_inside(leg, *at(28.3, 3.5, 2.0)) and not is_inside(leg, *at(28.5, 3.5, 2.0))  # ... a land between two
+    assert not is_inside(leg, *at(6.0, 0.0)) and is_inside(leg, *at(6.5, 0.0))              # the bore
+    for x, z in c.bolt_points():
+        u = (x / c.bolt_r, z / c.bolt_r)
+        for y in (c.end_y + 0.5, 0.0, c.face_y - 0.5):                                     # the bolt holes, end to face
+            assert not is_inside(leg, x, y, z) and not is_inside(leg, x + 1.85 * u[0], y, z + 1.85 * u[1])
+            assert is_inside(leg, x + 2.05 * u[0], y, z + 2.05 * u[1])
+
+
+@pytest.mark.slow
+def test_default_opens_the_bolt_holes(pulley, legacy):
+    holes = 4 * math.pi * ((DEFAULT.hole_dia / 2.0) ** 2 - (LEGACY.hole_dia / 2.0) ** 2) * (DEFAULT.face_y - DEFAULT.end_y)
+    assert legacy.volume - pulley.volume == pytest.approx(holes, abs=1e-3)
+    for x, z in DEFAULT.bolt_points():
+        u = (x / DEFAULT.bolt_r, z / DEFAULT.bolt_r)
+        assert not is_inside(pulley, x + 2.1 * u[0], 0.0, z + 2.1 * u[1]) and is_inside(pulley, x + 2.3 * u[0], 0.0, z + 2.3 * u[1])
+    lb, pb = legacy.bounding_box(), pulley.bounding_box()
+    assert (pb.min.X, pb.min.Y, pb.min.Z, pb.max.X, pb.max.Y, pb.max.Z) == pytest.approx(
+        (lb.min.X, lb.min.Y, lb.min.Z, lb.max.X, lb.max.Y, lb.max.Z), abs=1e-6)
