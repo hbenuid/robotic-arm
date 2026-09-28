@@ -16,9 +16,10 @@ table, the drive ratios) to agree with `software/control/src/config.py`, and one
   `main` only when the user says so, and always as a **merge commit, never a fast-forward**: from the main checkout
   (on `main`, clean) `git pull --ff-only`, `git merge --no-ff <branch> -m "Merge <branch>: <what it did, one line>"`,
   `git push origin main` (never `git push origin <branch>:main` - that is a fast-forward). So `main` reads one entry
-  per branch - `git log --first-parent main`, or a graph view (VS Code's Source Control Graph, GitHub Desktop) that
-  opens each merge into the branch's commits; the older history was fast-forwarded and stays linear. Never commit to
-  or push `main` otherwise (an approved plan that says "commit + push" means the branch).
+  per branch - `git log --first-parent main`, or a branch graph (VS Code's Source Control Graph, `git log --graph`)
+  that draws each branch as a side line into its merge (GitHub Desktop's History is a flat list: it shows no grouping,
+  a merge's row there shows the branch's whole change); the older history was fast-forwarded and stays linear. Never
+  commit to or push `main` otherwise (an approved plan that says "commit + push" means the branch).
 - **The commit message is the record** — there is no CHANGELOG file. Subject `<area>: what changed` (`cad:`, `docs:`,
   `tooling:` …); body: why, what it replaces or removes, and every measured number that changed (totals, masses,
   fits, lock values); one logical change per commit. History is `git log` (`--grep`, `-- <path>`, `-S <CONSTANT>`,
