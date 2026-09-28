@@ -6,8 +6,8 @@ turned into the part frame once at the end (Rot(-90, 0, 0)), like lib/upper_arm/
 
 With cfg.joint (DEFAULT) the SolidWorks body is cut at x = split_x: build_base keeps the -X side (the tower, the
 plate's neck) and ends in two posts with the M4 holes and the nuts' pockets, the window between them opening into the
-motor mount; build_motor_mount is a box of its own (cfg.mount) round the motor and its board - walls, end wall, the
-plate with the motor's seat - with an ear each side at the joint face for the M4. Without it (LEGACY)
+motor mount; build_motor_mount is a box of its own (cfg.mount) round the motor and its board - trussed walls and end
+wall, the plate with the motor's seat - with an ear each side at the joint face for the M4. Without it (LEGACY)
 build_base is the whole SolidWorks part."""
 from __future__ import annotations
 
@@ -23,6 +23,7 @@ from lib.base.layout import (
     mount_inner_half,
     mount_x1,
     side_stub_x,
+    truss_panels,
 )
 from lib.base.params import DEFAULT, BaseConfig
 from lib.geom import align_min, cylinder, hex_prism, single_solid
@@ -59,6 +60,20 @@ def _x_hex(across_flats: float, x: tuple, z: float, y: float):
 def _slot(radius: float, x: tuple, z: float, y: tuple):
     """A slot along the part's X (its round ends' centres at x[0], x[1]) through the plate from y[0] to y[1]."""
     return _bore(radius, *y, x[0], z) + _bore(radius, *y, x[1], z) + _block(x, (z - radius, z + radius), y)
+
+
+def _strut(axis: str, span: tuple, p0: tuple, p1: tuple, width: float):
+    """A strut `width` wide along p0 -> p1 in a wall's (u, v) plane (lib/base/layout.py truss_panels(): u the part's x
+    for a wall across z, its z for one across x; v the part's y), through the wall's `span` on `axis` and 1 past each
+    face, 2 widths past both ends."""
+    (u0, v0), (u1, v1) = p0, p1
+    du, dv = u1 - u0, v1 - v0
+    length, depth = math.hypot(du, dv) + 4.0 * width, span[1] - span[0] + 2.0
+    uc, vc, mid = (u0 + u1) / 2.0, (v0 + v1) / 2.0, (span[0] + span[1]) / 2.0
+    if axis == "z":   # the wall in the part's XY plane = the working XZ: turned about the working Y
+        return bd.Pos(uc, -mid, vc) * bd.Rot(0.0, -math.degrees(math.atan2(dv, du)), 0.0) * bd.Box(length, depth, width)
+    # the wall in the part's ZY plane = the working (-Y)Z: turned about the working X
+    return bd.Pos(mid, -uc, vc) * bd.Rot(math.degrees(math.atan2(dv, -du)), 0.0, 0.0) * bd.Box(depth, length, width)
 
 
 def _d(r: float, x1: float, y: tuple, x0: float = 0.0):
@@ -186,10 +201,25 @@ def build_base(cfg: BaseConfig = DEFAULT):
     return single_solid(bd.Rot(-90.0, 0.0, 0.0) * body)
 
 
+def _truss_windows(cfg: BaseConfig):
+    """The motor mount's truss windows (lib/base/layout.py truss_panels()): per wall the frame's inside less the V's two
+    struts - three triangles - through the wall's thickness, 1 past each face."""
+    cutter = None
+    for pn in truss_panels(cfg):
+        (u, v), (a0, a1) = pn["window"], pn["span"]
+        across = (a0 - 1.0, a1 + 1.0)
+        win = _block(u, across, v) if pn["axis"] == "z" else _block(across, u, v)
+        for p0, p1 in pn["struts"]:
+            win = win - _strut(pn["axis"], pn["span"], p0, p1, cfg.mount.strut)
+        cutter = win if cutter is None else cutter + win
+    return cutter
+
+
 def build_motor_mount(cfg: BaseConfig = DEFAULT):
     """The motor mount (cfg.joint, cfg.mount): a box from the joint face to its end wall, room round the motor's board
-    inside, open underneath and toward the base; the plate across its top with the motor's seat (nothing under it: the
-    slots hold the motor); an ear outside each side wall at the joint face, and the M4 holes through the ears."""
+    inside, open underneath and toward the base, its walls trussed; the plate across its top with the motor's seat
+    (nothing under it: the slots hold the motor); an ear outside each side wall at the joint face, and the M4 holes
+    through the ears."""
     s, p, j, mt = cfg.shell, cfg.plate, cfg.joint, cfg.mount
     w_in, x1 = mount_inner_half(cfg), mount_x1(cfg)
     w_out, y = w_in + mt.wall, (s.y0, p.y[1])
@@ -197,6 +227,6 @@ def build_motor_mount(cfg: BaseConfig = DEFAULT):
     body = body - _block((j.split_x - 1.0, x1 - mt.wall), (-w_in, w_in), (s.y0 - NUDGE, p.y[0]))
     ears = (j.split_x, j.split_x + mt.ear_t)
     body = body + _block(ears, (w_out - NUDGE, w_out + mt.ear_w), y) + _block(ears, (-w_out - mt.ear_w, -w_out + NUDGE), y)
-    body = _motor_seat(cfg, body)
+    body = _motor_seat(cfg, body) - _truss_windows(cfg)
     body = _bolt_holes(cfg, body)
     return single_solid(bd.Rot(-90.0, 0.0, 0.0) * body)

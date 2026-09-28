@@ -1,9 +1,12 @@
 """base_motor_mount, the base_yaw motor's bolt-on box (lib/base/body.py build_motor_mount, DEFAULT's JointParams +
-MountParams): room round the motor's board for the wiring, the window between the base's posts open into the base;
+MountParams): room round the motor's board for the wiring, the window between the base's posts open into the base, the
+walls V trusses that print plate-down without supports;
 the joint - the two parts meet at split_x without overlapping, flush on the plate's top and the bottom face, 4x M4
 through the mount's ears and the base's posts from heads turned outside into nuts pressed into the posts, the tips past
 the nuts - and the motor's slotted seat where the stock belt puts the motor: the motor and its board clear the mount
 at both ends of the slots' travel."""
+import math
+
 import pytest
 from build123d import Location
 
@@ -11,6 +14,7 @@ import parts
 from assemblies._occurrences import place_world
 from lib import mounts
 from lib.base import DEFAULT, LEGACY, joint_bolt_points, joint_stations, motor_holes, mount_inner_half, mount_x1
+from lib.base.layout import truss_panels
 from lib.base.params import MOTOR_TRAVEL, YAW_BELT
 from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, STANDARD_2GT_LENGTHS, closed_belt_length
 from lib.datum import BASE_BOTTOM_Y
@@ -77,6 +81,23 @@ def test_joint_layout():
     assert ST["x_post"] - ST["x_tip"] >= 2.0 * M4_PITCH
 
 
+def test_the_walls_are_trussed():
+    """Three trussed walls (lib/base/layout.py truss_panels()): each frame's window the wall's height less a rail at
+    each end, a V of two struts at >= 45 deg (self-supporting when printed plate-down) and two side triangles whose
+    table edge - a bridge in print - spans <= 30 mm; the side walls' post at the joint backs the whole ear."""
+    panels = truss_panels()
+    assert [pn["axis"] for pn in panels] == ["z", "z", "x"]
+    for pn in panels:
+        (u0, u1), (v0, v1) = pn["window"]
+        assert v1 - v0 == pytest.approx(PL.y[0] - S.y0 - 2.0 * MT.strut)
+        assert [p0 for p0, _ in pn["struts"]] == [(u0, v1), (u1, v1)] and {p1 for _, p1 in pn["struts"]} == {((u0 + u1) / 2.0, v0)}
+        for (a, b), (c, d) in pn["struts"]:
+            angle = math.degrees(math.atan2(abs(d - b), abs(c - a)))
+            bridge = abs(c - a) - (MT.strut / 2.0) / math.sin(math.radians(angle))
+            assert angle >= 45.0 and 0.0 < bridge <= 30.0, (pn["axis"], angle, bridge)
+    assert panels[0]["window"][0][0] == pytest.approx(J.split_x + MT.ear_t)
+
+
 @pytest.fixture(scope="module")
 def base():
     return parts.build("base")
@@ -101,14 +122,34 @@ def test_the_parts_meet_at_the_joint(base, mount):
         assert is_inside(base, x_base, -70, sz * (W_IN + 0.5)) and not is_inside(base, x_base, -70, sz * (W_IN - 0.5))   # a post
         assert is_inside(mount, x_mount, -70, sz * (W_OUT + MT.ear_w - 0.5))                                         # an ear
         assert not is_inside(mount, x_mount, -70, sz * (W_OUT + MT.ear_w + 0.5))
-        assert is_inside(mount, 90, -70, sz * (W_IN + 0.5)) and not is_inside(mount, 90, -70, sz * (W_OUT + 0.5))      # a side wall
+        for y in (PL.y[0] - MT.strut / 2.0, S.y0 + MT.strut / 2.0):                                    # a side wall's rails
+            assert is_inside(mount, 90, y, sz * (W_IN + 0.5)) and not is_inside(mount, 90, y, sz * (W_OUT + 0.5))
     assert not is_inside(base, x_base, -70, 0) and not is_inside(base, x_base, -99, 0)   # the window into the base, full height
     assert not is_inside(mount, 90, -70, 0) and not is_inside(mount, x_mount, -99, 0)    # the mount's inside, open underneath
+    assert is_inside(mount, X1 - MT.wall / 2.0, -98, 0) and is_inside(mount, X1 - MT.wall / 2.0, -48, 0)   # the end wall's rails
     for part, x in ((base, x_base), (mount, x_mount)):
         for z, y in joint_bolt_points():
             assert not is_inside(part, x, y, z + J.bolt_dia / 2.0 - 0.1) and is_inside(part, x, y, z + J.bolt_dia / 2.0 + 0.1)
     assert is_inside(base, J.split_x - 2.0, -42, 0) and is_inside(mount, J.split_x + 2.0, -42, 0)   # the plate whole: no belt slot
-    assert is_inside(mount, X1 - MT.wall / 2.0, -90, 0) and is_inside(mount, X1 - MT.wall / 2.0, -60, 0)   # the end wall: no notch
+    assert is_inside(mount, X1 - MT.wall / 2.0, S.y0 + 1.0, 0)          # the end wall's foot: no cable notch
+
+
+@pytest.mark.slow
+def test_the_truss_windows_are_open(mount):
+    """Each wall's three triangles are open; its struts, rails and posts are there."""
+    for pn in truss_panels():
+        (u0, u1), (v0, v1) = pn["window"]
+        um, mid = (u0 + u1) / 2.0, (pn["span"][0] + pn["span"][1]) / 2.0
+
+        def at(u, v, pn=pn, mid=mid):
+            return (u, v, mid) if pn["axis"] == "z" else (mid, v, u)
+
+        for u, v in ((um, v1 - (v1 - v0) / 3.0), (u0 + (um - u0) / 3.0, v0 + (v1 - v0) / 3.0),
+                     (u1 - (u1 - um) / 3.0, v0 + (v1 - v0) / 3.0)):
+            assert not is_inside(mount, *at(u, v)), (pn["axis"], pn["span"], u, v)
+        vm, h = (v0 + v1) / 2.0, MT.strut / 2.0
+        for u, v in (((u0 + um) / 2.0, vm), ((u1 + um) / 2.0, vm), (um, v1 + h), (um - 10.0, v0 - h), (u0 - h, vm), (u1 + h, vm)):
+            assert is_inside(mount, *at(u, v)), (pn["axis"], pn["span"], u, v)
 
 
 @pytest.mark.slow

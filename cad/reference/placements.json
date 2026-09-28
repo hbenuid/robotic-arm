@@ -13,7 +13,7 @@
  "expected": {
   "leaf_occurrences": 55,
   "solids": 133,
-  "solid_volume": 2034937.859
+  "solid_volume": 2002248.785
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -2852,7 +2852,7 @@
     "note": "the motor's box (its plate the motor's seat), bolted to the base's posts at the joint face; built in the base's part frame"
    },
    "solids": 1,
-   "solid_volume": 84086.248,
+   "solid_volume": 51397.174,
    "rel": {
     "position": [
      -0.0,
@@ -2920,12 +2920,12 @@
    "world_bbox_min": [
     55.0,
     -100.9,
-    -48.584
+    -47.584
    ],
    "world_bbox_size": [
-    63.472,
+    62.472,
     61.0,
-    97.167
+    95.167
    ]
   },
   {
@@ -3023,12 +3023,12 @@
    "world_bbox_min": [
     43.0,
     -96.4,
-    -46.084
+    -45.084
    ],
    "world_bbox_size": [
     24.0,
     47.0,
-    92.167
+    90.167
    ]
   },
   {
@@ -3126,12 +3126,12 @@
    "world_bbox_min": [
     47.0,
     -96.941,
-    -46.084
+    -45.084
    ],
    "world_bbox_size": [
     3.2,
     48.083,
-    92.167
+    90.167
    ]
   },
   {

@@ -137,12 +137,20 @@ class MountParams:
     through the window between its posts: the cables' way), `wall` thick, from the joint face to its end wall and from
     the bottom face (it stands on the table) up to the plate's top; the plate (the motor's seat, MotorParams) across its
     top; open underneath. An ear outside each side wall at the joint end, ear_w wide (in Z) and ear_t thick (along X),
-    full height, carries the side's 2 M4 (JointParams)."""
+    full height, carries the side's 2 M4 (JointParams).
+
+    The walls are trusses (lib/base/layout.py truss_panels()): below the plate each keeps a frame `strut` wide - a rail
+    under the plate, a rail on the table, a post at each end (from the outer corner, so the corner posts take in the
+    other wall) - and a V of two `strut` wide struts from the frame's top corners down to the middle of its bottom
+    rail; the three triangles between are open. Printed plate-down, the middle one is self-supporting and the side
+    ones bridge only their table edge. The walls carry little: the belt's pull goes along the plate into the ears, and
+    the motor + board weigh ~0.44 kg."""
 
     room: float = 10.0
-    wall: float = 5.0              # the shell's
+    wall: float = 4.0
     ear_w: float = 12.0
     ear_t: float = 8.0
+    strut: float = 6.0
 
 
 @dataclass(frozen=True)

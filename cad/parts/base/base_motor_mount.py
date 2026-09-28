@@ -3,14 +3,15 @@ x = split_x (lib/base/params.py JointParams), so it can be reprinted or swapped 
 
 In place of the SolidWorks base's +X lobe (the base's full width), a box only as wide as the motor's MKS board and
 MountParams.room round it for the wiring (lib/base/layout.py mount_inner_half(), mount_x1()): two side walls and an
-end wall from the bottom face (it stands on the table) up to the 5 mm plate across their tops, which carries the
-48 mm motor's seat on its underside (4 slots of +/- travel along X for the motor's M3s - the base_yaw belt's tension
--, the pilot's window slotted with them; no rim round the motor's face: the slots hold it). Open underneath, and open
-toward the base: the window between the base's two posts takes the cables into the base. An ear outside each side
-wall at the joint face (ear_w wide, ear_t thick, full height) with 2 M4 clearance holes along X: 4x M4 SHCS
-(base_motor_mount_screws),
-their heads on the ears' outer faces - turned from outside, along -X beside the walls - run through the ears and the
-base's posts into the M4 nuts pressed into the posts (base_motor_mount_nuts).
+end wall from the bottom face (it stands on the table) up to the 5 mm plate across their tops. The walls are thin
+(wall) and trussed: a frame of rails and posts round a V of two struts, the three triangles between open, so the
+wiring is reachable from the sides and the end too (truss_panels()). The plate carries the 48 mm motor's seat on its
+underside (4 slots of +/- travel along X for the motor's M3s - the base_yaw belt's tension -, the pilot's window
+slotted with them; no rim round the motor's face: the slots hold it). Open underneath, and open toward the base: the
+window between the base's two posts takes the cables into the base. An ear outside each side wall at the joint face
+(ear_w wide, ear_t thick, full height) with 2 M4 clearance holes along X: 4x M4 SHCS (base_motor_mount_screws), their
+heads on the ears' outer faces - turned from outside, along -X beside the walls - run through the ears and the base's
+posts into the M4 nuts pressed into the posts (base_motor_mount_nuts).
 
 NATIVE part (lib/reference.py NATIVE): designed here in build123d (lib/base/body.py build_motor_mount(cfg), every
 number lib/base/params.py), in the base's part frame - lib/mounts.py places it on base#1 at identity; its reference is
