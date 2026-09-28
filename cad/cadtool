@@ -33,7 +33,7 @@ cadtool - cadgen 0.7 + this uv project (paths relative to cad/)
   ./cadtool cadgen|store|daemon ...                 any cadgen subcommand (`./cadtool cadgen --help`)
   ./cadtool daemon stop                             stop the warm build daemon + its workers (a fresh one starts on the next gen;
                                                     they reload code only when restarted; ./cadtool cadgen daemon status shows them)
-  ./cadtool pytest [-m "not slow"]                  test suite
+  ./cadtool pytest [-m "not slow"] [-n 4]           test suite (-n: worker processes, a whole test file each)
   ./cadtool lint [--fix] [path...]                  ruff check (lint only, no formatter; rules: pyproject.toml [tool.ruff])
   ./cadtool python -m assemblies.arm ...            any python in the venv (PYTHONPATH=cad/)
   ./cadtool clean [--all]                           delete __pycache__/, .pytest_cache/, .ruff_cache/ (and any stray __cadgen__/);

@@ -172,7 +172,8 @@ shared cutter (`lib/cycloidal/housing.py reveal_window_cutter`) is subtracted fr
 (`LEGACY_CONFIG`) had 8, at 60° from +X with the same start (0°), so the `j1_coupler` yoke holds the two pillars
 that straddle its bottom (§12); three bolts sit in line with ring pins, 8.5 mm out, as the port's first did. The
 two housing parts and the housing bolts / nuts declare `REFERENCE_BUILD` (their `LEGACY_CONFIG` build), which
-`tests/cycloidal/test_port.py` and the reference match compare with the CadQuery exports.
+`tests/cycloidal/test_port.py` (the parts) and `test_cots_envelope_tracks_reference_bbox` (the bolts / nuts) compare
+with the CadQuery exports.
 
 **Outer-edge chamfer** (`edge_chamfer` 1.5, `chamfer_outer_silhouette`): the pillars' outer vertical
 corners always, plus the *entire* outer-wire perimeter of each part's external end face (the plate's

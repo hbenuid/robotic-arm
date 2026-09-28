@@ -8,10 +8,10 @@ from dataclasses import replace
 
 import pytest
 
-import parts
 from lib.bearings import PULLEY_SEAT_SHIFT
 from lib.coupler import DEFAULT, LEGACY, flange_bolt_points, pulley_bolt_points
 from lib.forearm import DEFAULT as FOREARM
+from tests import built
 from tests.helpers import is_inside
 
 
@@ -29,13 +29,12 @@ def test_layout():
 
 @pytest.fixture(scope="module")
 def legacy():
-    from lib.coupler.body import build_coupler
-    return build_coupler(LEGACY)
+    return built.legacy("j3_coupler")
 
 
 @pytest.fixture(scope="module")
 def coupler():
-    return parts.build("j3_coupler")
+    return built.part("j3_coupler")
 
 
 @pytest.mark.slow

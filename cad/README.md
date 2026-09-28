@@ -57,7 +57,7 @@ Always run through `./cadtool …` (or `uv run …`) from `cad/`; `./cadtool doc
 | `./cadtool skill <skill> <tool> [args]` | a plugin skill script (`dfam-check dfam_tool.py`, `gcode gcode_tool.py`, …) |
 | `./cadtool cadgen …` / `store …` / `daemon …` | any `cadgen` subcommand; `./cadtool daemon stop` ends the warm build daemon |
 | `./cadtool doctor` | installed cadgen vs the plugin's pin, Node, Playwright Chromium |
-| `./cadtool pytest [-m "not slow"]` | test suite (the fast lane skips geometry builds) |
+| `./cadtool pytest [-m "not slow"] [-n 4]` | test suite (the fast lane skips geometry builds; `-n`: worker processes, a whole test file each) |
 | `./cadtool lint [--fix] [path…]` | `ruff check` over `cad/` |
 | `./cadtool python …` | any python in the venv with `PYTHONPATH=cad/` (`-c "from assemblies.cycloidal_drive import totals; print(totals())"`) |
 | `./cadtool clean [--all]` | delete `__pycache__/`, `.pytest_cache/`, `.ruff_cache/` (and any stray `__cadgen__/`); `--all` also empties `snapshots/` and removes the git-ignored `assemblies/*.step`, `robot/links/*.step` |
@@ -99,7 +99,7 @@ settled yet: [`docs/open_issues.md`](docs/open_issues.md).
 ## Tests
 
 ```bash
-./cadtool pytest                 # everything (the geometry builds take ~2 min; never writes a STEP)
+./cadtool pytest                 # everything (the geometry builds take ~1.5 min, under 1 min with -n 4; never writes a STEP)
 ./cadtool pytest -m "not slow"   # fast lane: metadata, params, placements JSON, tooling (the pinned cadgen + one complete OCP kernel)
 ./cadtool pytest tests/cycloidal # the cycloidal drive's tests only (tests/cycloidal/test_<part>.py + helpers.py)
 uv run pytest                    # equivalent (cadgen is a normal dependency)

@@ -6,11 +6,11 @@ from dataclasses import replace
 import pytest
 from build123d import Box, Pos
 
-import parts
 from lib import params as PARAMS
 from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, closed_belt_length
 from lib.forearm import DEFAULT, LEGACY, flange_bolt_points, link_socket_points
 from lib.motors import NEMA17_40_BODY_W, NEMA17_40_CONNECTOR_D
+from tests import built
 from tests.forearm.helpers import in_host
 from tests.helpers import interference, is_inside
 
@@ -40,7 +40,7 @@ def test_default_layout():
 
 @pytest.fixture(scope="module")
 def link():
-    return parts.build("j2_link")
+    return built.part("j2_link")
 
 
 @pytest.mark.slow
@@ -71,7 +71,8 @@ def test_link_ends_at_the_wall_and_keeps_its_wrist_end(link):
 
 
 @pytest.mark.slow
-def test_wrist_motor_clears_the_wall_and_the_slot(link):
-    motor, board = in_host("nema17_40mm#3"), in_host("mks_servo42d#3")
+def test_wrist_motor_plug_clears_the_wall():
+    """The placed motor's connector end plug_clearance short of the wall (the motor and its board clear of j2_link,
+    the pilot in the central slot: tests/test_mounts.py test_motors_and_boards_clear_their_neighbours)."""
+    motor = in_host("nema17_40mm#3")
     assert motor.bounding_box().max.X + R.plug_clearance <= R.wall_x[0] + 1e-6
-    assert interference(motor, link) < 1.0 and interference(board, link) < 1.0

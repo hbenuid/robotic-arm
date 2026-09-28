@@ -3,6 +3,7 @@ match is tests/test_reference_match.py's; here the features are probed by name s
 import pytest
 
 from lib.forearm import LEGACY, link_socket_points
+from tests import built
 from tests.helpers import is_inside
 
 
@@ -13,8 +14,7 @@ def test_legacy_layout():
 
 @pytest.fixture(scope="module")
 def link():
-    from lib.forearm.link import build_link
-    return build_link(LEGACY)
+    return built.legacy("j2_link")
 
 
 @pytest.mark.slow

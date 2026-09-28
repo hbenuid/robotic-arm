@@ -214,14 +214,17 @@ def world_rows(key: str) -> list:
     return [(part, role, world * row_location(pos)) for part, role, pos in rows]
 
 
+def placement_at(part_name: str, world: bd.Location, into=None) -> bd.Location:
+    """Where place_world_at() moves the part: `into^-1 * world * LOCAL_FROM_REF^-1` (`into` omitted: identity)."""
+    loc = world * _local_from_ref(part_name).inverse()
+    return loc if into is None else into.inverse() * loc
+
+
 def place_world_at(part_name: str, world: bd.Location, into=None):
     """parts.model(part_name) at a WORLD placement of its reference frame, optionally
     re-expressed in another frame (`into` = that frame's world Location, so the result is
     `into^-1 * world * LOCAL_FROM_REF^-1 * local`). Used for per-link meshes."""
-    loc = world * _local_from_ref(part_name).inverse()
-    if into is not None:
-        loc = into.inverse() * loc
-    return _part(part_name).moved(loc)
+    return _part(part_name).moved(placement_at(part_name, world, into))
 
 
 def place_world(part_name: str, key: str, into=None):

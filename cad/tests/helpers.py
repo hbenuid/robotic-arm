@@ -1,5 +1,6 @@
 """Geometry helpers shared by the geometry tests (tests/cycloidal/, tests/forearm/, tests/upper_arm/, tests/base/, tests/coupler/,
-tests/test_mounts.py). The drive's own config helpers stay in tests/cycloidal/helpers.py.
+tests/test_mounts.py), and the standalone modules' colour check (tests/test_assembly.py, the drives' own tests). The
+drive's own config helpers stay in tests/cycloidal/helpers.py.
 
 CadQuery -> build123d idioms from the drive's port (see docs/cycloidal_drive.md "Port notes"):
   .val().isInside(v, tol)       -> is_inside(solid, x, y, z)
@@ -10,8 +11,10 @@ CadQuery -> build123d idioms from the drive's port (see docs/cycloidal_drive.md 
 """
 from __future__ import annotations
 
-from build123d import Box, Compound, Cylinder, GeomType, Pos, PositionMode, Shape, Vertex
+from build123d import Box, Color, Compound, Cylinder, GeomType, Pos, PositionMode, Shape, Vertex
 
+import parts
+from assemblies._occurrences import BOUGHT_TINT
 from lib import reference as R
 from lib.geom import align_min
 
@@ -20,13 +23,35 @@ def is_inside(solid: Shape, x: float, y: float, z: float, tol: float = 1e-6) -> 
     return solid.is_inside((x, y, z), tol)
 
 
+COINCIDENT_MM = 1e-5   # faces nearer than this are one face to interference() (the Common's fuzzy value)
+
+
 def interference(a: Shape, b: Shape) -> float:
     """Volume of a ∩ b (0 when the boolean is empty) - the kernel's Common directly, because
     build123d 0.11 reworked `Shape.intersect` for composite operands (a placed module of 18
-    solids against a part reported whole solids as "common")."""
+    solids against a part reported whole solids as "common"). Shapes whose bounding boxes do not meet
+    share nothing: no boolean. Otherwise one Build, non-destructive: the operands stay untouched. A line-to-line fit
+    (a bearing's OD in a seat of its own diameter: coincident cylinders) is the kernel's fragile case - on x86_64 Linux
+    the Common of bearing_6806#3 in j1_link's Ø42.0 seat came back as the whole bearing - so faces within
+    COINCIDENT_MM count as coincident."""
+    from OCP.Bnd import Bnd_Box
     from OCP.BRepAlgoAPI import BRepAlgoAPI_Common
+    from OCP.BRepBndLib import BRepBndLib
+    from OCP.TopTools import TopTools_ListOfShape
 
-    op = BRepAlgoAPI_Common(a.wrapped, b.wrapped)
+    box_a, box_b = Bnd_Box(), Bnd_Box()
+    BRepBndLib.Add_s(a.wrapped, box_a, False)   # from the geometry: the shapes' meshes stay as they are
+    BRepBndLib.Add_s(b.wrapped, box_b, False)
+    if box_a.IsOut(box_b):
+        return 0.0
+    args, tools = TopTools_ListOfShape(), TopTools_ListOfShape()
+    args.Append(a.wrapped)
+    tools.Append(b.wrapped)
+    op = BRepAlgoAPI_Common()
+    op.SetArguments(args)
+    op.SetTools(tools)
+    op.SetNonDestructive(True)
+    op.SetFuzzyValue(COINCIDENT_MM)
     op.Build()
     return R.solid_volume(Compound(op.Shape())) if op.IsDone() else 0.0
 
@@ -92,3 +117,23 @@ def fingerprint(shape: Shape) -> list[tuple[str, float]]:
 def annulus(od: float, bore: float, width: float):
     """A plain annulus standing on z=0 - a bearing stand-in (the drive's simplified purchased-part model)."""
     return Cylinder(od / 2.0, width, align=align_min()) - Cylinder(bore / 2.0, width, align=align_min())
+
+
+def leaves(node) -> list:
+    """The leaves of an assembly node (the node itself when it has no children)."""
+    return [node] if not node.children else [leaf for child in node.children for leaf in leaves(child)]
+
+
+def same_color(shape, tint: str) -> bool:
+    return all(abs(x - y) < 1e-6 for x, y in zip(tuple(shape.color), tuple(Color(tint)), strict=True))
+
+
+def module_tints(module, tint: str) -> dict[bool, int]:
+    """A standalone module: purchased parts BOUGHT_TINT, printed parts the module's TINT; returns the
+    bought / printed leaf counts."""
+    seen = {True: 0, False: 0}
+    for leaf in leaves(module):
+        bought = parts.bought(leaf.label.split(":")[0])
+        assert same_color(leaf, BOUGHT_TINT if bought else tint), f"{module.label}/{leaf.label}: {tuple(leaf.color)}"
+        seen[bought] += 1
+    return seen

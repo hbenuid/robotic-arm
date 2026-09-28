@@ -90,12 +90,13 @@ def cycloidal_drive():
     return assembly("cycloidal_drive", located_children(OCCURRENCES, tint=TINT))
 
 
-def totals(body: str | None = None):
-    """leaves / solids / volume / bbox of the module (in-process), or of one rigid body
-    (`body` in BODIES: the leaves whose part name - the label before ':role' - is in it)."""
+def totals(body: str | None = None, *, shape=None):
+    """leaves / solids / volume / bbox of the module (in-process, or `shape`: a build of it already made), or of one
+    rigid body (`body` in BODIES: the leaves whose part name - the label before ':role' - is in it)."""
     from lib import reference as R
 
-    shape = raw(cycloidal_drive)   # the model BODY, in-process - never the model (that builds)
+    if shape is None:
+        shape = raw(cycloidal_drive)   # the model BODY, in-process - never the model (that builds)
     leaves = [n for n in shape.children if body is None or n.label.split(":")[0] in BODIES[body]]
     boxes = [n.bounding_box() for n in leaves]
     lo = [min(getattr(b.min, ax) for b in boxes) for ax in "XYZ"]

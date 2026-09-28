@@ -7,30 +7,24 @@ tests/test_assembly_clearances.py) plus the module's own locks and its attachmen
   4. Bearing retention - 6814 by press fit + integral lip; 6003 by the disc bore; 625 by the hub pocket
   5. Shaft reach - motor shaft in the D-bore, support pin through the 625
   6. Ring pin span; 7. housing bolt engagement
-  8. Boolean checks on the key mating pairs, the module's interference budget, the module totals
-     and layout locks, and the drive's pose in the arm (fits its neighbours, hub face on j1_link)
+  8. The module's interference budget (every mating pair: the designed overlaps and the clean ones), the module
+     totals, colors and layout locks, and the drive's pose in the arm (fits its neighbours, hub face on j1_link)
 """
 import math
 
 import pytest
 from build123d import Compound, GeomType, Location, Vector
 
-import parts
 from assemblies import cycloidal_drive
-from assemblies._occurrences import place_world
 from lib import placements as P
 from lib import reference as R
 from lib.cycloidal import compute_housing_bolt_angles, hex_circumdiameter, hub_height, stack_positions
 from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii
-from lib.models import raw
 from robot import frames as F
+from tests import built
 from tests.cycloidal.helpers import CFG
-from tests.helpers import interference
+from tests.helpers import interference, module_tints
 
-cycloidal_disc_1 = parts.load("cycloidal_disc_1")
-cycloidal_motor_plate = parts.load("cycloidal_motor_plate")
-cycloidal_output_hub = parts.load("cycloidal_output_hub")
-cycloidal_ring_gear_body = parts.load("cycloidal_ring_gear_body")
 DRIVE_KEY = "cycloidal_drive#1"
 
 
@@ -266,50 +260,19 @@ class TestHousingBoltEngagement:
 
 
 # ===================================================================
-# 8. Booleans on the key mating pairs, module locks, the pose in the arm
+# 8. The interference budget, module locks, the pose in the arm
 # ===================================================================
 
 
 @pytest.fixture(scope="module")
-def ring_body(stack):
-    return Location((0, 0, stack["z_ring_gear_body"])) * cycloidal_ring_gear_body.build()
-
-
-@pytest.fixture(scope="module")
-def hub(stack):
-    return Location((0, 0, stack["z_hub"])) * cycloidal_output_hub.build()
-
-
-@pytest.fixture(scope="module")
 def drive():
-    return raw(cycloidal_drive.cycloidal_drive)
+    return built.model(cycloidal_drive.cycloidal_drive)
 
 
 @pytest.fixture(scope="module")
 def drive_world(drive):
     """The module at placements.json "cycloidal_drive#1" (the SolidWorks node's pose)."""
     return drive.moved(P.location(DRIVE_KEY, "world"))
-
-
-@pytest.mark.slow
-class TestMatingPairs:
-
-    def test_motor_plate_ring_body_no_interference(self, ring_body):
-        vol = interference(cycloidal_motor_plate.build(), ring_body)
-        assert vol < 1.0, f"Motor plate / ring body interference = {vol:.1f}mm^3"
-
-    def test_output_hub_protrudes_through_housing(self, hub, ring_body):
-        proud = hub.bounding_box().max.Z - ring_body.bounding_box().max.Z
-        assert abs(proud - CFG.output_hub.proud_above_housing) < 0.1
-
-    def test_disc_clears_ring_gear_shoulder(self, stack, ring_body):
-        disc = Location((stack["x_disc1"], 0, stack["z_disc1"])) * cycloidal_disc_1.build()
-        vol = interference(disc, ring_body)
-        assert vol < 1.0, f"Disc / ring gear body interference = {vol:.1f}mm^3"
-
-    def test_output_hub_clears_ring_body(self, hub, ring_body):
-        vol = interference(hub, ring_body)
-        assert vol < 1.0, f"Output hub / ring body interference = {vol:.1f}mm^3"
 
 
 class TestModuleLocks:
@@ -343,15 +306,15 @@ class TestModuleLocks:
         assert bodies["rotor"] == {"cycloidal_output_hub", "cycloidal_output_pins", "bearing_625"}
 
     @pytest.mark.slow
-    def test_module_totals_match_lock(self):
-        totals = cycloidal_drive.totals()
+    def test_module_totals_match_lock(self, drive):
+        totals = cycloidal_drive.totals(shape=drive)
         for key in ("leaves", "solids"):
             assert totals[key] == cycloidal_drive.EXPECTED[key], key
         assert abs(totals["solid_volume"] - cycloidal_drive.EXPECTED["solid_volume"]) <= 0.5
         # X: the pillars at 0 / 180 degrees reach the od; Y: no pillar on it, the ones at +/-60 and +/-120 degrees
         # (their chamfered outer corners) set it; Z: 48 motor + 14.1 MKS board behind the plate, 65 to the hub face
         assert totals["bbox_size"] == [140.0, 124.908, 127.1]
-        bodies = {body: cycloidal_drive.totals(body) for body in cycloidal_drive.BODIES}
+        bodies = {body: cycloidal_drive.totals(body, shape=drive) for body in cycloidal_drive.BODIES}
         for body, got in bodies.items():
             want = cycloidal_drive.EXPECTED["bodies"][body]
             for key in ("leaves", "solids"):
@@ -362,11 +325,20 @@ class TestModuleLocks:
         assert abs(sum(t["solid_volume"] for t in bodies.values()) - totals["solid_volume"]) <= 0.01
 
     @pytest.mark.slow
+    def test_module_colors(self, drive):
+        """Standalone: the purchased parts BOUGHT_TINT, the printed ones the module's TINT."""
+        assert drive.label == "cycloidal_drive"
+        assert module_tints(drive, cycloidal_drive.TINT) == {True: 13, False: 6}   # + the MKS board
+
+    @pytest.mark.slow
     def test_module_interference_budget(self, drive):
         """Only the designed overlaps exist (mm^3): the two 6814/hub press fits, the bolts
         through the solid nuts, the motor-bolt heads in the plate, the two 6003/lobe press fits, and the
         thread engagement of the motor bolts (front) and the MKS kit's M3x30 (rear) in the vendor motor's
-        tapped holes (its holes are modelled at the M3 minor diameter, the bolts at the major)."""
+        tapped holes (its holes are modelled at the M3 minor diameter, the bolts at the major). Every other mating pair
+        is clean - the discs among them: disc 1 against the ring gear body's shoulder, the shaft and its 6003, both
+        against the ring pins (the buggy identical-discs build overlapped the pins by several mm^3). A boolean between
+        the two spline discs takes minutes: tests/cycloidal/test_port.py tells them apart."""
         leaves = {c.label: c for c in drive.children}
         budget = {
             ("bearing_6814:1", "cycloidal_output_hub"): 331.0, ("bearing_6814:2", "cycloidal_output_hub"): 331.0,
@@ -388,6 +360,9 @@ class TestModuleLocks:
             ("cycloidal_eccentric_shaft", "cycloidal_motor_plate"), ("bearing_6814:1", "cycloidal_ring_gear_body"),
             ("bearing_6814:2", "cycloidal_ring_gear_body"), ("bearing_6814:1", "bearing_6814:2"),
             ("mks_servo42d", "cycloidal_motor_bolts"), ("mks_servo42d", "cycloidal_motor_plate"),
+            ("cycloidal_disc_1", "cycloidal_ring_gear_body"), ("cycloidal_disc_1", "cycloidal_eccentric_shaft"),
+            ("cycloidal_disc_1", "bearing_6003:1"), ("cycloidal_disc_1", "cycloidal_ring_pins"),
+            ("cycloidal_disc_2", "cycloidal_ring_pins"),
         ]
         for a, b in clean:
             vol = interference(leaves[a], leaves[b])
@@ -421,8 +396,7 @@ class TestPoseInTheArm:
         j1_coupler yoke it sits in: the cradle against the housing, whose axis sits 0.21 off the cradle's
         (docs/open_issues.md) - motor plate ~7.5 + ring gear body ~23 mm^3 measured; the pillars clear their sockets."""
         for key, limit in (("base#1", 1.0), ("j1_link#1", 1.0), ("j1_coupler#1", 35.0)):
-            part = P.OCCURRENCES[key]["part"]
-            vol = interference(drive_world, place_world(part, key))
+            vol = interference(drive_world, built.placed(key))
             assert vol <= limit, f"drive x {key}: {vol:.1f} mm^3 (limit {limit})"
 
     def test_hub_face_coplanar_with_j1_link_mount(self):
@@ -430,7 +404,7 @@ class TestPoseInTheArm:
         world = P.location(DRIVE_KEY, "world")
         hub_centre = (world * Location((0, 0, stack_positions(CFG)["hub_top"]))).position
         axis = (world * Location((0, 0, 1))).position - world.position      # the drive axis in world
-        link = place_world("j1_link", "j1_link#1")
+        link = built.placed("j1_link#1")
         faces = [f for f in link.faces().filter_by(GeomType.PLANE) if abs(f.normal_at().dot(axis)) > 0.99 and f.area > 10000]
         assert faces, "j1_link has no large planar face perpendicular to the drive axis"
         face = max(faces, key=lambda f: f.area)

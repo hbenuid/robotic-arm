@@ -1,11 +1,12 @@
-"""The arm assembly rebuilt from parts + placements reproduces the SolidWorks totals, plus the
-code-driven cycloidal_drive module's own totals and the colors: in every assembly a purchased part is
-BOUGHT_TINT grey, a printed one its link's / module's tint."""
+"""The arm assembly rebuilt from parts + placements reproduces the SolidWorks totals (the designed modules counted by
+their own locks, which their own tests hold: tests/cycloidal/test_assembly.py, tests/forearm/test_roll_drive.py) and the
+colors: in every assembly a purchased part is BOUGHT_TINT grey, a printed one its link's / module's tint (the
+standalone drives' in their own tests)."""
 import importlib
 import pathlib
 
 import pytest
-from build123d import Color, Location, Vector
+from build123d import Location, Vector
 
 import parts
 from assemblies import arm, cycloidal_drive, forearm_roll_drive, gripper
@@ -13,30 +14,10 @@ from assemblies._occurrences import BOUGHT_TINT
 from lib import placements as P
 from lib import reference as R
 from lib.models import raw
+from tests import built
+from tests.helpers import leaves, module_tints, same_color
 from tests.source_checks import runs_its_model
 from tests.totals import part_totals, world_bbox
-
-DRIVE = cycloidal_drive.EXPECTED
-ROLL = forearm_roll_drive.EXPECTED
-
-
-def _leaves(node):
-    return [node] if not node.children else [leaf for child in node.children for leaf in _leaves(child)]
-
-
-def _same_color(shape, tint: str) -> bool:
-    return all(abs(x - y) < 1e-6 for x, y in zip(tuple(shape.color), tuple(Color(tint)), strict=True))
-
-
-def _check_module_tints(module, tint):
-    """A standalone module: purchased parts BOUGHT_TINT, printed parts the module's TINT; returns the
-    bought / printed leaf counts."""
-    seen = {True: 0, False: 0}
-    for leaf in _leaves(module):
-        bought = parts.bought(leaf.label.split(":")[0])
-        assert _same_color(leaf, BOUGHT_TINT if bought else tint), f"{module.label}/{leaf.label}: {tuple(leaf.color)}"
-        seen[bought] += 1
-    return seen
 
 
 def _check_link_tints(root):
@@ -49,9 +30,9 @@ def _check_link_tints(root):
     for group in root.children:
         for member in group.children:
             printed = module_tint.get(member.label, group_tint[group.label])
-            for leaf in _leaves(member):
+            for leaf in leaves(member):
                 bought = parts.bought(leaf.label.split(":")[0])
-                assert _same_color(leaf, BOUGHT_TINT if bought else printed), f"{group.label}/{leaf.label}: {tuple(leaf.color)}"
+                assert same_color(leaf, BOUGHT_TINT if bought else printed), f"{group.label}/{leaf.label}: {tuple(leaf.color)}"
                 seen[bought] += 1
     return seen
 
@@ -79,7 +60,7 @@ def _expected_bbox():
     hi = [float("-inf")] * 3
     boxes = [world_bbox(k) for k in P.keys(kind="part")]
     for k in P.keys(kind="module", designed=True):
-        bb = raw(arm.MODULES[P.OCCURRENCES[k]["part"]]).moved(P.location(k, "world")).bounding_box()
+        bb = built.placed(k).bounding_box()
         boxes.append(((bb.min.X, bb.min.Y, bb.min.Z), (bb.size.X, bb.size.Y, bb.size.Z)))
     for bmin, bsize in boxes:
         for i in range(3):
@@ -95,31 +76,8 @@ def _expected_bbox():
 def test_gripper_module_builds():
     g = raw(gripper.gripper)
     assert g.label == "gripper"
-    assert len(_leaves(g)) == len(gripper.OCCURRENCES) == 19
-    assert g.is_valid
-    assert _check_module_tints(g, gripper.TINT) == {True: 4, False: 15}   # servo, horn, 2 rails
-
-
-@pytest.mark.slow
-def test_cycloidal_drive_module_builds():
-    d = raw(cycloidal_drive.cycloidal_drive)
-    assert d.label == "cycloidal_drive"
-    assert len(_leaves(d)) == len(cycloidal_drive.OCCURRENCES) == DRIVE["leaves"] == 19
-    assert len(d.solids()) == DRIVE["solids"]
-    assert abs(R.solid_volume(d) - DRIVE["solid_volume"]) <= 0.5
-    assert d.is_valid
-    assert _check_module_tints(d, cycloidal_drive.TINT) == {True: 13, False: 6}   # + the MKS board
-
-
-@pytest.mark.slow
-def test_forearm_roll_drive_module_builds():
-    d = raw(forearm_roll_drive.forearm_roll_drive)
-    assert d.label == "forearm_roll_drive"
-    assert len(_leaves(d)) == len(forearm_roll_drive.OCCURRENCES) == ROLL["leaves"] == 11
-    assert len(d.solids()) == ROLL["solids"]
-    assert abs(R.solid_volume(d) - ROLL["solid_volume"]) <= 0.5
-    assert d.is_valid
-    assert _check_module_tints(d, forearm_roll_drive.TINT) == {True: 7, False: 4}   # 2 bearings, motor, board, 20T, the mount's screws + nuts / block, motor mount, shaft, retainer
+    assert len(leaves(g)) == len(gripper.OCCURRENCES) == 19
+    assert module_tints(g, gripper.TINT) == {True: 4, False: 15}   # servo, horn, 2 rails
 
 
 def test_every_assembly_runs_its_model():
@@ -189,15 +147,14 @@ def test_arm_assembly_matches_reference_totals():
     a = raw(arm.arm)
     assert a.label == "arm"
     assert [c.label for c in a.children] == [label for label, _, _ in arm.GROUPS]
-    leaves = _leaves(a)
+    arm_leaves = leaves(a)
     exp_leaves, exp_solids, exp_volume = _expected_totals()
-    assert len(leaves) == exp_leaves == 82
-    labels = [leaf.label for leaf in leaves]
+    assert len(arm_leaves) == exp_leaves == 82
+    labels = [leaf.label for leaf in arm_leaves]
     assert len(set(labels)) == len(labels), f"duplicate leaf labels: {labels}"
     assert len(a.solids()) == exp_solids == 235
     assert abs(R.solid_volume(a) - exp_volume) <= 0.5
     exp_min, exp_size = _expected_bbox()
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_min(a), exp_min, strict=True)), (R.bbox_min(a), exp_min)
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_size(a), exp_size, strict=True)), (R.bbox_size(a), exp_size)
-    assert a.is_valid
     assert _check_link_tints(a) == {True: 47, False: 35}   # bought / printed leaves (tools/bom.py counts the same)

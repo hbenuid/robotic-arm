@@ -10,7 +10,6 @@ from dataclasses import replace
 import pytest
 from build123d import Location
 
-import parts
 from lib import mounts
 from lib import params as PARAMS
 from lib import placements as P
@@ -20,6 +19,7 @@ from lib.bearings import BEARING_6806_OD, BEARING_6806_WIDTH, THRUST_BORE, THRUS
 from lib.datum import BASE_BOTTOM_Y, to_location
 from lib.forearm import DEFAULT as FOREARM
 from lib.motors import NEMA17_BOLT_SP, NEMA17_FACE
+from tests import built
 from tests.helpers import is_inside
 
 
@@ -52,13 +52,12 @@ def test_motor_holes_are_the_base_yaw_motors_bolts():
 
 @pytest.fixture(scope="module")
 def legacy():
-    from lib.base.body import build_base
-    return build_base(LEGACY)
+    return built.legacy("base")
 
 
 @pytest.fixture(scope="module")
 def base():
-    return parts.build("base")
+    return built.part("base")
 
 
 @pytest.mark.slow

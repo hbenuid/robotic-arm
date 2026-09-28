@@ -26,6 +26,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=8.0",
+    "pytest-xdist>=3.8.0",
     "ruff>=0.16.9",
 ]
 
@@ -34,6 +35,9 @@ dev = [
 # (cadtool exports PYTHONPATH=cad/ for everything else, .env covers VS Code - no path shims).
 pythonpath = ["."]
 testpaths = ["tests"]
+# `-n <workers>` (pytest-xdist) spreads the suite over processes, a whole file per worker: its module fixtures and
+# tests/built.py's shapes are built once. Without -n it runs in one process, as before.
+addopts = "--dist=loadfile"
 markers = [
     "slow: builds/imports real OCCT geometry (deselect with -m 'not slow')",
 ]

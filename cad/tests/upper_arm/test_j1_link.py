@@ -9,7 +9,6 @@ from dataclasses import replace
 import pytest
 from build123d import Location, Rot
 
-import parts
 from lib import mounts
 from lib import params as PARAMS
 from lib import placements as P
@@ -18,6 +17,7 @@ from lib.cycloidal.params import DEFAULT_CONFIG
 from lib.datum import to_location
 from lib.motors import NEMA17_BOLT_SP
 from lib.upper_arm import DEFAULT, LEGACY, hub_bolt_points, pad_holes, socket_points
+from tests import built
 from tests.helpers import interference, is_inside
 
 
@@ -72,13 +72,12 @@ def test_default_hub_holes_are_the_drives_bolts():
 
 @pytest.fixture(scope="module")
 def legacy():
-    from lib.upper_arm.link import build_link
-    return build_link(LEGACY)
+    return built.legacy("j1_link")
 
 
 @pytest.fixture(scope="module")
 def link():
-    return parts.build("j1_link")
+    return built.part("j1_link")
 
 
 @pytest.mark.slow

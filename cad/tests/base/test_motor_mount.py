@@ -10,9 +10,6 @@ import math
 import pytest
 from build123d import Location
 
-import parts
-from assemblies._occurrences import place_world
-from lib import mounts
 from lib.base import DEFAULT, LEGACY, joint_bolt_points, joint_stations, motor_holes, mount_inner_half, mount_x1
 from lib.base.layout import truss_panels
 from lib.base.params import MOTOR_TRAVEL, YAW_BELT
@@ -21,6 +18,7 @@ from lib.datum import BASE_BOTTOM_Y
 from lib.fasteners import M4_PITCH
 from lib.geom import hex_circumdiameter
 from lib.motors import MKS_SERVO42D_W, NEMA17_FACE, NEMA17_PILOT_DIA
+from tests import built
 from tests.helpers import interference, is_inside
 
 J, M, S, PL, MT = DEFAULT.joint, DEFAULT.motor, DEFAULT.shell, DEFAULT.plate, DEFAULT.mount
@@ -100,12 +98,12 @@ def test_the_walls_are_trussed():
 
 @pytest.fixture(scope="module")
 def base():
-    return parts.build("base")
+    return built.part("base")
 
 
 @pytest.fixture(scope="module")
 def mount():
-    return parts.build("base_motor_mount")
+    return built.part("base_motor_mount")
 
 
 @pytest.mark.slow
@@ -182,8 +180,8 @@ def test_the_mount_carries_the_slotted_seat(mount):
 def test_the_screws_clamp_the_joint():
     """Every head's bearing face on an ear's outer face, every tip 2 pitches past its nut's outer face, into the base's
     cavity below the plate; each nut coaxial with its screw."""
-    screws = place_world("base_motor_mount_screws", "base_motor_mount_screws#1")
-    nuts = place_world("base_motor_mount_nuts", "base_motor_mount_nuts#1")
+    screws = built.placed("base_motor_mount_screws#1")
+    nuts = built.placed("base_motor_mount_nuts#1")
     for solid in screws.solids():
         bb = solid.bounding_box()
         assert bb.max.X == pytest.approx(ST["x_head"] + J.screw.head_h, abs=1e-4)
@@ -200,7 +198,7 @@ def test_the_motor_clears_the_mount_across_the_travel(mount, dx):
     the plate's underside, the pilot in the window), the board the wiring room clear of it, less the travel."""
     shift = Location((dx, 0.0, 0.0))
     for key, clear in (("nema17_48mm#1", 0.0), ("mks_servo42d#1", MT.room - M.travel - 0.1)):
-        part = place_world(mounts.BY_KEY[key].part, key).moved(shift)
+        part = built.placed(key).moved(shift)
         assert interference(part, mount) < 1e-3, key
         if clear:
             assert part.distance_to(mount) >= clear, key

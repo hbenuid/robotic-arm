@@ -73,9 +73,10 @@ def forearm_roll_drive():
     return assembly("forearm_roll_drive", located_children(OCCURRENCES, tint=TINT))
 
 
-def totals(body: str | None = None) -> dict:
-    """(leaves, solids, solid_volume) of a fresh in-process build - the whole module or one of BODIES."""
-    module = raw(forearm_roll_drive)
+def totals(body: str | None = None, *, shape=None) -> dict:
+    """(leaves, solids, solid_volume) of a fresh in-process build - or of `shape`, a build of it already made - the
+    whole module or one of BODIES."""
+    module = raw(forearm_roll_drive) if shape is None else shape
     leaves = [c for c in module.children if body is None or c.label.split(":")[0] in BODIES[body]]
     return {"leaves": len(leaves), "solids": sum(len(c.solids()) for c in leaves),
             "solid_volume": round(sum(R.solid_volume(c) for c in leaves), 3)}

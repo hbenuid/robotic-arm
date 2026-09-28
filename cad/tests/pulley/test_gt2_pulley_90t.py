@@ -8,11 +8,11 @@ from dataclasses import replace
 
 import pytest
 
-import parts
 from lib import belts
 from lib.fasteners import M4_CLEAR
 from lib.pulley import DEFAULT, LEGACY
 from lib.pulley.teeth import groove_arcs, groove_centres
+from tests import built
 from tests.helpers import is_inside
 
 # The centres of the SolidWorks groove's arcs (the +y half of the groove on +X), read off the reference's cylinders.
@@ -55,13 +55,12 @@ def test_groove_arcs():
 
 @pytest.fixture(scope="module")
 def legacy():
-    from lib.pulley.body import build_pulley
-    return build_pulley(LEGACY)
+    return built.legacy("gt2_pulley_90t")
 
 
 @pytest.fixture(scope="module")
 def pulley():
-    return parts.build("gt2_pulley_90t")
+    return built.part("gt2_pulley_90t")
 
 
 def _surfaces(shape) -> set[tuple]:
