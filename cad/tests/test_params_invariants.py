@@ -22,6 +22,14 @@ def test_gt2_belt_drive():
     assert p.GT2_PULLEY_90T_PITCH_DIA < MANIFEST["gt2_pulley_90t"]["bbox_size"][0] < p.GT2_PULLEY_90T_PITCH_DIA + 3
 
 
+def test_gt2_groove():
+    # the tooth form (lib/pulley/teeth.py): the fillet smallest, the blend between the bottom and the flank it joins, the
+    # flank's centre on the 90T's land 0.8 deg across the groove's centreline, the bottom as deep as the belt's tooth
+    assert p.GT2_TIP_R < p.GT2_GROOVE_R < p.GT2_BLEND_R < p.GT2_FLANK_R
+    assert math.isclose(p.GT2_FLANK_OFFSET, p.pulley_od(90) / 2.0 * math.sin(math.radians(0.8)))
+    assert p.GT2_GROOVE_R < p.GT2_TOOTH_DEPTH < 2.0 * p.GT2_GROOVE_R
+
+
 def test_pancake_envelope_tracks_reference():
     size = MANIFEST["nema17_pancake"]["bbox_size"]
     assert math.isclose(p.PANCAKE_BODY_W, size[0], abs_tol=0.05)
