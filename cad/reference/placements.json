@@ -13,7 +13,7 @@
  "expected": {
   "leaf_occurrences": 55,
   "solids": 133,
-  "solid_volume": 2002248.785
+  "solid_volume": 2007146.747
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -2852,7 +2852,7 @@
     "note": "the motor's box (its plate the motor's seat), bolted to the base's posts at the joint face; built in the base's part frame"
    },
    "solids": 1,
-   "solid_volume": 51397.174,
+   "solid_volume": 56295.136,
    "rel": {
     "position": [
      -0.0,
@@ -2919,12 +2919,12 @@
    },
    "world_bbox_min": [
     55.0,
-    -100.9,
+    -112.0,
     -47.584
    ],
    "world_bbox_size": [
     62.472,
-    61.0,
+    72.1,
     95.167
    ]
   },
@@ -3022,12 +3022,12 @@
    },
    "world_bbox_min": [
     43.0,
-    -96.4,
+    -107.5,
     -45.084
    ],
    "world_bbox_size": [
     24.0,
-    47.0,
+    58.1,
     90.167
    ]
   },
@@ -3125,12 +3125,12 @@
    },
    "world_bbox_min": [
     47.0,
-    -96.941,
+    -108.041,
     -45.084
    ],
    "world_bbox_size": [
     3.2,
-    48.083,
+    59.183,
     90.167
    ]
   },
@@ -3158,7 +3158,7 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the 48 mm motor under the motor mount's plate (in the base's part frame), shaft up through it, at the slots' middle; motor + board hang BASE_MOTOR_STACK_PROUD below the base's bottom face; connector toward +X [ESTIMATE]"
+    "note": "the 48 mm motor under the motor mount's plate (in the base's part frame), shaft up through it, at the slots' middle; motor + board end BASE_MOTOR_TABLE_CLEAR above the base's bottom face; connector toward +X [ESTIMATE]"
    },
    "solids": 7,
    "solid_volume": 60656.432,

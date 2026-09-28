@@ -126,7 +126,8 @@ def test_the_parts_meet_at_the_joint(base, mount):
             assert is_inside(mount, 90, y, sz * (W_IN + 0.5)) and not is_inside(mount, 90, y, sz * (W_OUT + 0.5))
     assert not is_inside(base, x_base, -70, 0) and not is_inside(base, x_base, -99, 0)   # the window into the base, full height
     assert not is_inside(mount, 90, -70, 0) and not is_inside(mount, x_mount, -99, 0)    # the mount's inside, open underneath
-    assert is_inside(mount, X1 - MT.wall / 2.0, -98, 0) and is_inside(mount, X1 - MT.wall / 2.0, -48, 0)   # the end wall's rails
+    for y in (PL.y[0] - MT.strut / 2.0, S.y0 + MT.strut / 2.0):                                        # the end wall's rails
+        assert is_inside(mount, X1 - MT.wall / 2.0, y, 0)
     for part, x in ((base, x_base), (mount, x_mount)):
         for z, y in joint_bolt_points():
             assert not is_inside(part, x, y, z + J.bolt_dia / 2.0 - 0.1) and is_inside(part, x, y, z + J.bolt_dia / 2.0 + 0.1)

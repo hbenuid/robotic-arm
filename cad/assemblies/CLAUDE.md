@@ -18,7 +18,7 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
 - **Mounted occurrences** (`lib/mounts.py`): the base's bolt-on motor mount (`base_motor_mount#1`, a box round the motor bolted to
   the base's end - designed here, at identity on `base#1` - with its 4x M4 screws + nuts, `base_motor_mount_screws#1` /
   `_nuts#1`, hosted on the mount and on the screws); the belt joints' motors - `nema17_48mm#1` (the 48 mm motor, under the
-  motor mount's plate; motor + board hang `BASE_MOTOR_STACK_PROUD` below the base's bottom face) and `nema17_40mm#2..3`,
+  motor mount's plate; motor + board end `BASE_MOTOR_TABLE_CLEAR` above the base's bottom face) and `nema17_40mm#2..3`,
   + `mks_servo42d#1..3`, on the NEMA 17 pads `base_motor_mount` / `j1_link` / `j2_link` carry - and each belt joint's 6806-2RS pair (`bearing_6806#1..6`, on
   the lip of its housing's bore) and the base_yaw thrust bearing (`washer_as6590#1`, `bearing_axk6590#1` in the base's groove,
   `washer_as6590#2` under `j1_coupler`'s seat) never existed in the SolidWorks capture; the elbow's and the wrist's 90T

@@ -13,12 +13,14 @@ square, the pilot window, the belt slot toward the axis, a U rim round the motor
 nema17_48mm#1 on it). A cable notch through the +X end at the bottom. Every number: lib/base/params.py (BaseConfig;
 measured on the reference 2026-09-25).
 
-What DEFAULT builds ends at the joint face x = split_x (JointParams), just past the round, in two posts inside the
-side walls, from the bottom face up to the plate's neck: the lobe beyond it is gone, the motor sits in
-base_motor_mount, a narrower box bolted to the posts by 4x M4 through its ears into the M4 nuts pressed into the posts
-(hex pockets from the posts' back faces, a corner up). The window between the posts is the mount's inside: the
-cables come through it into the base (their way out of the base: docs/open_issues.md). The base keeps the tower, the
-plate's neck with the curved slot, and the D walls up to the joint face.
+What DEFAULT builds reaches lower: its bottom face (the mounting face, lib/datum.py BASE_BOTTOM_Y) sits BOARD_CLEAR
+under the base_yaw motor's board, which hung 6.1 below the SolidWorks one. It ends at the joint face x = split_x
+(JointParams), just past the round, in two posts inside the side walls, from the bottom face up to the plate's neck:
+the lobe beyond it is gone, the motor sits in base_motor_mount, a narrower box bolted to the posts by 4x M4 through its
+ears into the M4 nuts pressed into the posts (hex pockets from the posts' back faces, a corner up). The window between
+the posts is the mount's inside: the cables come through it into the base (their way out of the base:
+docs/open_issues.md). The base keeps the tower, the plate's neck with the curved slot, and the D walls up to the joint
+face.
 
 SolidWorks product: 'base of robot arm 62126'
 Source export:      step/base of robot arm 62126.STEP

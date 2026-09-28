@@ -27,9 +27,10 @@ from dataclasses import dataclass, replace
 
 from lib.bearings import THRUST_BORE
 from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, centre_distance
+from lib.cycloidal.params import DEFAULT_CONFIG as _DRIVE
 from lib.fasteners import M3_CLEAR, M4_CLEAR, M4_NUT, M4_SHCS, NutSize, ShcsSize
 from lib.forearm.params import LEGACY as _FOREARM
-from lib.motors import NEMA17_PILOT_DIA
+from lib.motors import MKS_SERVO42D_STACK, NEMA17_PILOT_DIA
 
 
 @dataclass(frozen=True)
@@ -176,13 +177,19 @@ LEGACY = BaseConfig()     # the SolidWorks part, exactly
 # the SolidWorks centre (78.97 from the axis) wants a 274.2 mm belt; YAW_BELT sets 81.97, the holes are slots of
 # +/- MOTOR_TRAVEL along X (the belt's tension), the window lets the pilot slide with them (WINDOW_CLEAR a side - only
 # the pilot's height in Z: the SolidWorks window's +/- 21.3 would run into the -X slots).
+# The bottom face (the mounting face, lib/datum.py BASE_BOTTOM_Y) sits BOARD_CLEAR under the motor's MKS board: the
+# SolidWorks base's -100.9 left the 48 mm motor + board (48 + 14.1 under the plate) hanging 6.1 below it. The base's
+# walls, its posts and the whole motor mount reach down to it.
 RING_CLEAR = 0.1          # [DESIGN]
+BOARD_CLEAR = 5.0         # [DESIGN] the base_yaw motor's board above the table
 YAW_BELT = 280            # [ESTIMATE] base_yaw belt, 280-2GT (lib/belts.py STANDARD_2GT_LENGTHS): 20T motor - 90T joint
 MOTOR_TRAVEL = 2.5        # [DESIGN] the roll motor's slots' +/- 2.5 (lib/forearm/params.py)
 WINDOW_CLEAR = 0.2        # [DESIGN]
 _MOTOR_X = round(centre_distance(YAW_BELT, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH), 6)
 _WINDOW_HALF = NEMA17_PILOT_DIA / 2.0 + MOTOR_TRAVEL + WINDOW_CLEAR
-DEFAULT = replace(LEGACY, bore=replace(LEGACY.bore, upper_dia=_FOREARM.boss.seat_dia, lower_dia=_FOREARM.boss.seat_dia,
+_BOTTOM_Y = round(LEGACY.plate.y[0] - _DRIVE.motor.body_length - MKS_SERVO42D_STACK - BOARD_CLEAR, 6)
+DEFAULT = replace(LEGACY, shell=replace(LEGACY.shell, y0=_BOTTOM_Y),                                  # [DESIGN]
+                  bore=replace(LEGACY.bore, upper_dia=_FOREARM.boss.seat_dia, lower_dia=_FOREARM.boss.seat_dia,
                                        lip_dia=_FOREARM.boss.lip_dia),                                    # [DESIGN]
                   cap=replace(LEGACY.cap, groove_r=(THRUST_BORE / 2.0 - RING_CLEAR, LEGACY.cap.groove_r[1])),   # [DESIGN]
                   motor=replace(LEGACY.motor, centre=(_MOTOR_X, LEGACY.motor.centre[1]), hole_dia=M3_CLEAR,

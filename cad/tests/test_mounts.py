@@ -143,12 +143,14 @@ def test_motors_and_boards_clear_their_neighbours():
 
 
 @pytest.mark.slow
-def test_base_motor_stack_hangs_below_the_base_by_the_documented_amount():
-    """Under the base plate the 48 mm motor + board stack (62.1) reaches BASE_MOTOR_STACK_PROUD below the base's
-    mounting face (56 mm of depth) - a known, documented protrusion, not a silent one."""
-    lowest = min(place_world(m.part, m.key).bounding_box().min.Y for m in mounts.MOUNTS if m.joint == "base_yaw")
+def test_base_motor_stack_clears_the_table():
+    """Under the motor mount's plate the 48 mm motor + board stack (62.1) ends BASE_MOTOR_TABLE_CLEAR above the base's
+    mounting face: nothing of base_link reaches below the table."""
+    stack = [m for m in mounts.MOUNTS if m.joint == "base_yaw" and m.part in (mounts.MOTOR_48, mounts.BOARD)]
+    lowest = min(place_world(m.part, m.key).bounding_box().min.Y for m in stack)
     assert math.isclose(PARAMS.BASE_MOTOR_PATTERN_CENTRE[1] - lowest, PARAMS.CYCLOIDAL_MOTOR_BODY_LEN + PARAMS.MKS_SERVO42D_STACK, abs_tol=0.05)
-    assert math.isclose(BASE_BOTTOM_Y - lowest, PARAMS.BASE_MOTOR_STACK_PROUD, abs_tol=0.05), BASE_BOTTOM_Y - lowest
+    assert math.isclose(lowest - BASE_BOTTOM_Y, PARAMS.BASE_MOTOR_TABLE_CLEAR, abs_tol=0.05), lowest - BASE_BOTTOM_Y
+    assert min(place_world(k, f"{k}#1").bounding_box().min.Y for k in ("base", "base_motor_mount")) == pytest.approx(BASE_BOTTOM_Y, abs=1e-4)
 
 
 @pytest.mark.slow

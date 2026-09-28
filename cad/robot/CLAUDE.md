@@ -57,7 +57,7 @@ joints' motors are mounted occurrences (`lib/mounts.py`, `assemblies/CLAUDE.md`)
 
 | joint | type | parent → child | actuator | notes |
 |---|---|---|---|---|
-| `base_yaw` | revolute, world up | `base_link → shoulder_link` | NEMA 17 x 48 + MKS SERVO42D (`nema17_48mm#1` + `mks_servo42d#1` under the plate of the base's bolt-on motor mount, hanging `BASE_MOTOR_STACK_PROUD` below the base's bottom face) | the holder `j1_coupler` turns on the base, standing on the thrust bearing in its groove |
+| `base_yaw` | revolute, world up | `base_link → shoulder_link` | NEMA 17 x 48 + MKS SERVO42D (`nema17_48mm#1` + `mks_servo42d#1` under the plate of the base's bolt-on motor mount, `BASE_MOTOR_TABLE_CLEAR` above the base's bottom face) | the holder `j1_coupler` turns on the base, standing on the thrust bearing in its groove |
 | `shoulder_pitch` | revolute, `N` | `shoulder_link → upper_arm_link` | the 20:1 cycloidal drive, its own NEMA 17 (`CYCLOIDAL_RATIO`) | stator with the holder, rotor with `j1_link` |
 | `elbow_pitch` | revolute, `N` | `upper_arm_link → elbow_link` | GT2 90T belt, NEMA 17 x 40 + MKS SERVO42D (`nema17_40mm#2` + `mks_servo42d#2` on `j1_link`'s pad) | the pulley carries the roll drive's block, which is the elbow coupler (`j3_coupler#1` retired) |
 | `forearm_roll` | revolute, along the forearm through the wrist centre | `elbow_link → forearm_link` | GT2 90T ring on the hollow roll shaft, NEMA 17 x 40 + MKS SERVO42D on the motor mount bolted to the elbow block's top (`assemblies/forearm_roll_drive.py`) | the shaft's end spigot bolts to `j2_link`'s wall 48 mm from the elbow axis; hard stop ±`FOREARM_ROLL_LIMIT_DEG`; specs `docs/forearm_roll.md` §0 |

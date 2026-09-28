@@ -28,8 +28,8 @@ like the drive's SolidWorks-placed record.
 
 Geometry (lib/params.py, kernel-verified 2026-09-21 - tests/test_mounts.py re-checks it):
   base_yaw     the motor mount's plate -Y face, pattern centre BASE_MOTOR_PATTERN_CENTRE (the slots' middle); the
-               48 mm body hangs in -Y, shaft +Y through the plate, belt slot toward the yaw axis; motor + board reach BASE_MOTOR_STACK_PROUD (6.1 mm)
-               BELOW the base's bottom face (56 mm of depth under the plate) - the base needs feet or a cut-out
+               48 mm body hangs in -Y, shaft +Y through the plate; motor + board end BASE_MOTOR_TABLE_CLEAR above the
+               base's bottom face (lowered under them, lib/base/params.py BOARD_CLEAR)
   elbow_pitch  j1_link's 48 x 48 pad (outer face y = J1_MOTOR_PAD_FACE_Y, the -N side), pattern on the
                shoulder axis; shaft +N through the pad opening into the elbow drive, whose second stage runs through
                j1_link's x 128 seats (not modelled - docs/open_issues.md) to the elbow 90T
@@ -135,7 +135,7 @@ MOTOR_MOUNTS: tuple[Mount, ...] = (
     Mount("nema17_48mm#1", MOTOR_48, "base_motor_mount#1", "base_link", "base_yaw",
           (BASE_MOTOR_PATTERN_CENTRE, (-90.0, 0.0, 270.0)),
           "the 48 mm motor under the motor mount's plate (in the base's part frame), shaft up through it, at the slots' "
-          "middle; motor + board hang BASE_MOTOR_STACK_PROUD below the base's bottom face; connector toward +X [ESTIMATE]"),
+          "middle; motor + board end BASE_MOTOR_TABLE_CLEAR above the base's bottom face; connector toward +X [ESTIMATE]"),
     Mount("mks_servo42d#1", BOARD, "nema17_48mm#1", "base_link", "base_yaw", BOARD_FRAME_48),
     Mount("nema17_40mm#2", MOTOR_40, "j1_link#1", "upper_arm_link", "elbow_pitch",
           ((0.0, J1_MOTOR_PAD_FACE_Y, 0.0), (-90.0, 0.0, 90.0)),

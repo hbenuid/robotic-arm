@@ -70,11 +70,12 @@ from lib.motors import (  # noqa: E402, F401
 # (parts/cycloidal/nema17_48mm, the drive's), elbow_pitch / wrist_pitch the 40 mm one. The base is parametric
 # (lib/base/params.py BaseConfig - a leaf like the links'): its motor seat - on the base's bolt-on motor mount
 # (parts/base/base_motor_mount), in the base's part frame - comes from its DEFAULT configuration.
+from lib.base.params import BOARD_CLEAR as _BOARD_CLEAR  # noqa: E402
 from lib.base.params import DEFAULT as _BASE  # noqa: E402
 
 BASE_MOTOR_PATTERN_CENTRE = (_BASE.motor.centre[0], _BASE.plate.y[0], _BASE.motor.centre[1])   # (81.972, -44.9, 0.084) [DESIGN] the motor mount: 4x M3 on 31 x 31 through the 5 mm plate (slots of +/- travel along X), on its -Y face; x where the 280-2GT belt puts it
-BASE_MOTOR_STACK_PROUD = 6.1    # [DESIGN] the 48 mm motor + board (48 + 14.1) hang this far BELOW the base's bottom face
-#                                 (56.0 mm of depth under the plate): the base needs feet / a cut-out at least this deep
+BASE_MOTOR_TABLE_CLEAR = _BOARD_CLEAR   # [DESIGN] 5.0 - the 48 mm motor + board (48 + 14.1 under the plate) end this far
+#                                          ABOVE the base's bottom face (lib/base/params.py: the face sits under them)
 # j1_link and j2_link are parametric (lib/upper_arm/params.py UpperArmConfig, lib/forearm/params.py ForearmConfig -
 # leaves like lib/cycloidal/params.py): the motors' pad faces and j2_link's slide come from their DEFAULT configurations.
 from lib.upper_arm.params import DEFAULT as _UPPER_ARM  # noqa: E402
