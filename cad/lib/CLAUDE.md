@@ -19,9 +19,9 @@ geom.py       # the arm's small build123d helpers: align_min(), cylinder(), thro
 base/         # the base (BaseConfig: LEGACY = the SolidWorks base, DEFAULT = what is built)
 coupler/      # the J3 coupler (CouplerParams: LEGACY = the SolidWorks j3_coupler, DEFAULT = what is built)
 yaw_coupler/  # the base_yaw coupler, the drive's yoke (YawCouplerConfig: LEGACY = the SolidWorks j1_coupler, DEFAULT = what is built)
-pulley/       # the 90T pulley (PulleyParams: LEGACY = the SolidWorks gt2_pulley_90t, DEFAULT = what is built) and teeth.py: the GT2 groove (arcs solved from lib/belts.py's tooth form) and gt2_ring()
+pulley/       # the 90T pulley (PulleyParams: LEGACY = the SolidWorks gt2_pulley_90t, DEFAULT = what is built) and teeth.py: the GT2 groove (arcs solved from lib/belts.py's tooth form) and gt2_ring() (its rim, the roll shaft's ring)
 upper_arm/    # the upper arm (UpperArmConfig: LEGACY = the SolidWorks j1_link, DEFAULT = no cap sockets, the motor's and the drive's hole patterns, the elbow block's clearance)
-forearm/      # the forearm (ForearmConfig: LEGACY = the SolidWorks j2_link, DEFAULT = the roll end, no cap sockets) and the roll drive (RollDriveParams, stack_positions, the block / motor mount / shaft / retainer / 90T ring builders)
+forearm/      # the forearm (ForearmConfig: LEGACY = the SolidWorks j2_link, DEFAULT = the roll end, no cap sockets) and the roll drive (RollDriveParams, stack_positions, the block / motor mount / shaft / retainer builders; the shaft's 90T ring is lib/pulley/teeth.py gt2_ring())
 datum.py      # capture frame W -> base_link frame B: frame(), base_frame() (arm.py arm_from_w(), robot/frames.py); frames as data: IDENTITY, to_location()
 mounts.py     # what the SolidWorks capture never placed right, as frames-as-data: the belt joints' motors + MKS boards, their 6806 pairs, the base_yaw thrust stack, the re-seated 90Ts and their M4 screws + nuts
 reference.py  # naming maps (SolidWorks custom/COTS, designed cycloidal parts, modules), loaders, path_of(), matches_reference()
