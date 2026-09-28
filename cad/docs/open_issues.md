@@ -65,7 +65,6 @@ gives every part's state.
 
 | part | link (`robot/frames.py LINKS`) | note |
 |---|---|---|
-| `wrist_link` | wrist_pitch_link | the wrist body; `j3_coupler#2`'s flange M4s screw into it (`assemblies/arm.py`) |
 | `gripper_clamp_bracket` | wrist_pitch_link | (`assemblies/arm.py`) |
 | `gt2_pulley_90t` | elbow_link, wrist_pitch_link | diverged: the SolidWorks body with its bolt holes opened to `M4_CLEAR`; `REFERENCE_BUILD` is the untouched export |
 | `gripper_j3_connector` | wrist_roll_link | two solids in one part (`tests/test_parts_convention.py MULTI_BODY`) |

@@ -141,11 +141,11 @@
     <link name="wrist_pitch_link">
       <pose relative_to="wrist_pitch">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.056998 0.000064 -0.015489 0 0 0</pose>
-        <mass>0.469425</mass>
+        <pose>0.057 0.000066 -0.015487 0 0 0</pose>
+        <mass>0.469349</mass>
         <inertia>
-          <ixx>2.263282e-04</ixx><ixy>-8.075530e-07</ixy><ixz>2.195330e-05</ixz>
-          <iyy>9.982938e-04</iyy><iyz>3.914792e-08</iyz><izz>1.039618e-03</izz>
+          <ixx>2.263088e-04</ixx><ixy>-8.101134e-07</ixy><ixz>2.196099e-05</ixz>
+          <iyy>9.982734e-04</iyy><iyz>5.072278e-08</iyz><izz>1.039608e-03</izz>
         </inertia>
       </inertial>
       <visual name="wrist_pitch_link_visual">
