@@ -121,6 +121,7 @@ NATIVE: dict[str, str] = {
     "forearm_roll_shaft":    "lib/forearm/roll.py:build_shaft(DEFAULT)",
     "forearm_roll_retainer": "lib/forearm/roll.py:build_retainer(DEFAULT)",
     "forearm_roll_motor_mount": "lib/forearm/roll.py:build_motor_mount(DEFAULT)",
+    "base_motor_mount":      "lib/base/body.py:build_motor_mount(DEFAULT)",
 }
 
 # Purchased parts with neither a SolidWorks export nor a catalog model (their envelope IS the geometry):
@@ -136,6 +137,8 @@ NATIVE_COTS: dict[str, str] = {
     "wrist_pulley_nuts": "parts/joints/wrist_pulley_nuts.py:_envelope()",
     "forearm_roll_mount_screws": "parts/joints/forearm_roll_mount_screws.py:_envelope()",
     "forearm_roll_mount_nuts": "parts/joints/forearm_roll_mount_nuts.py:_envelope()",
+    "base_motor_mount_screws": "parts/base/base_motor_mount_screws.py:_envelope()",
+    "base_motor_mount_nuts": "parts/base/base_motor_mount_nuts.py:_envelope()",
 }
 COTS.update({name: (f"native {builder}", None) for name, builder in NATIVE_COTS.items()})
 NATIVE_PARTS: set[str] = set(NATIVE) | set(NATIVE_COTS)

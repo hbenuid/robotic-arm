@@ -3,7 +3,8 @@ the pose of a code-driven module the SolidWorks capture never placed - occurrenc
 
 The SolidWorks arm cut a NEMA 17 pad into `base` (base_yaw), `j1_link` (elbow_pitch) and `j2_link`
 (wrist_pitch) but never placed the motors, so reference/placements.json has no record for them.
-This module DECLARES them: the 48 mm kit motor (parts/cycloidal/nema17_48mm, the drive's) on the base's pad,
+This module DECLARES them: the 48 mm kit motor (parts/cycloidal/nema17_48mm, the drive's) on the base's pad - now
+on the base's bolt-on motor mount (BASE_MOUNTS: parts/base/base_motor_mount and its M4 screws + nuts),
 a 40 mm kit motor (parts/joints/nema17_40mm) on each of the two link pads, and each motor's MKS SERVO42D board
 (parts/joints/mks_servo42d) on its rear face. Each mount is a frame AS DATA
 (`(position mm, rotation_xyz_deg)`, lib.datum.to_location - kernel-free, like every frame a module
@@ -26,9 +27,9 @@ totals are its EXPECTED), listed under both `designed_modules` and `mounted`, wh
 like the drive's SolidWorks-placed record.
 
 Geometry (lib/params.py, kernel-verified 2026-09-21 - tests/test_mounts.py re-checks it):
-  base_yaw     base plate -Y face, pattern centre BASE_MOTOR_PATTERN_CENTRE; the 48 mm body hangs in -Y, shaft +Y
-               through the plate, belt slot toward the yaw axis; motor + board reach BASE_MOTOR_STACK_PROUD (6.1 mm)
-               BELOW the base's bottom face (56 mm of depth under the plate) - the base needs feet or a cut-out
+  base_yaw     the motor mount's plate -Y face, pattern centre BASE_MOTOR_PATTERN_CENTRE (the slots' middle); the
+               48 mm body hangs in -Y, shaft +Y through the plate; motor + board end BASE_MOTOR_TABLE_CLEAR above the
+               base's bottom face (lowered under them, lib/base/params.py BOARD_CLEAR)
   elbow_pitch  j1_link's 48 x 48 pad (outer face y = J1_MOTOR_PAD_FACE_Y, the -N side), pattern on the
                shoulder axis; shaft +N through the pad opening into the elbow drive, whose second stage runs through
                j1_link's x 128 seats (not modelled - docs/open_issues.md) to the elbow 90T
@@ -59,6 +60,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from lib.base.layout import joint_stations
 from lib.base.params import DEFAULT as _BASE
 from lib.bearings import THRUST_WASHER_WIDTH
 from lib.coupler.params import DEFAULT as _COUPLER
@@ -83,6 +85,7 @@ MOTORS = (MOTOR_48, MOTOR_40)
 BEARING, PULLEY = "bearing_6806", "gt2_pulley_90t"
 THRUST_CAGE, THRUST_WASHER = "bearing_axk6590", "washer_as6590"
 PULLEY_BOLTS = ("elbow_pulley_screws", "elbow_pulley_nuts", "wrist_pulley_screws", "wrist_pulley_nuts")
+BASE_MOUNT, BASE_MOUNT_SCREWS, BASE_MOUNT_NUTS = "base_motor_mount", "base_motor_mount_screws", "base_motor_mount_nuts"
 
 # The part-frame axis tools/reference/mount_placements.py checks for each mounted part, and whether it lies ON its
 # joint's axis (a motor's shaft runs beside its joint, parallel; a bearing, a pulley or a pulley-bolt pattern sits on it).
@@ -114,11 +117,25 @@ class Mount:
     note: str = ""
 
 
+# The base's motor lobe, a part of its own bolted to the base (lib/base/params.py JointParams), and the 4x M4 that hold
+# it: the mount in the base's part frame; the screws' +Z down the base's -X from the heads on the mount's ears (the
+# pattern's (x, y) = the base's (z, y)); the nuts on the screws, their bearing faces nut.h inside the base's posts.
+_JOINT = joint_stations(_BASE)
+BASE_MOUNTS: tuple[Mount, ...] = (
+    Mount("base_motor_mount#1", BASE_MOUNT, "base#1", "base_link", "base_yaw", ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)),
+          "the motor's box (its plate the motor's seat), bolted to the base's posts at the joint face; built in the base's part frame"),
+    Mount("base_motor_mount_screws#1", BASE_MOUNT_SCREWS, "base_motor_mount#1", "base_link", "base_yaw",
+          ((_JOINT["x_head"], 0.0, 0.0), (0.0, -90.0, 0.0)),
+          "the mount's 4x M4 x screw_len: heads on its ears' outer faces, along -X through the ears and the base's posts"),
+    Mount("base_motor_mount_nuts#1", BASE_MOUNT_NUTS, "base_motor_mount_screws#1", "base_link", "base_yaw",
+          ((0.0, 0.0, round(_JOINT["x_head"] - _JOINT["x_nut_face"], 6)), (0.0, 0.0, 0.0)),
+          "the screws' nuts in the base posts' hex pockets, their outer faces flush with the posts' back faces, a corner up"),
+)
 MOTOR_MOUNTS: tuple[Mount, ...] = (
-    Mount("nema17_48mm#1", MOTOR_48, "base#1", "base_link", "base_yaw",
+    Mount("nema17_48mm#1", MOTOR_48, "base_motor_mount#1", "base_link", "base_yaw",
           (BASE_MOTOR_PATTERN_CENTRE, (-90.0, 0.0, 270.0)),
-          "the 48 mm motor under the base plate, shaft up through it; motor + board hang BASE_MOTOR_STACK_PROUD below "
-          "the base's bottom face; connector toward +X [ESTIMATE]"),
+          "the 48 mm motor under the motor mount's plate (in the base's part frame), shaft up through it, at the slots' "
+          "middle; motor + board end BASE_MOTOR_TABLE_CLEAR above the base's bottom face; connector toward +X [ESTIMATE]"),
     Mount("mks_servo42d#1", BOARD, "nema17_48mm#1", "base_link", "base_yaw", BOARD_FRAME_48),
     Mount("nema17_40mm#2", MOTOR_40, "j1_link#1", "upper_arm_link", "elbow_pitch",
           ((0.0, J1_MOTOR_PAD_FACE_Y, 0.0), (-90.0, 0.0, 90.0)),
@@ -184,7 +201,7 @@ FASTENER_MOUNTS: tuple[Mount, ...] = (
           ((0.0, 0.0, round(_COUPLER.stub_y1 + _HUB_LEN - _COUPLER.nut_depth, 6)), (0.0, 0.0, 0.0)),
           "the wrist screws' nuts on j3_coupler's pocket floors (nut_depth), a corner along the coupler's Z"),
 )
-MOUNTS: tuple[Mount, ...] = MOTOR_MOUNTS + BEARING_MOUNTS + THRUST_MOUNTS + PULLEY_MOUNTS + FASTENER_MOUNTS
+MOUNTS: tuple[Mount, ...] = BASE_MOUNTS + MOTOR_MOUNTS + BEARING_MOUNTS + THRUST_MOUNTS + PULLEY_MOUNTS + FASTENER_MOUNTS
 BY_KEY: dict[str, Mount] = {m.key: m for m in MOUNTS}
 
 

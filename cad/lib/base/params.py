@@ -12,8 +12,10 @@ thrust bearing (lib/bearings.py THRUST_*) lies in the groove, centred on the rin
 (lib/mounts.py nema17_48mm#1) bolts to the plate's underside, its shaft up through the plate's window.
 
 Two configurations: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
-tests/test_reference_match.py); DEFAULT is what the part builds: the bearing bore sized for the 6806-2RS pair, the seat
-ring sized for the thrust bearing's bore.
+tests/test_reference_match.py); DEFAULT is what the parts build: the bearing bore sized for the 6806-2RS pair, the seat
+ring sized for the thrust bearing's bore, and the +X lobe cut off at a joint face (JointParams): in its place a
+narrower bolt-on motor mount (MountParams, parts/base/base_motor_mount), its motor seat slotted where a stock belt puts
+the motor.
 
 Every number below was measured on the reference 2026-09-25 (vertex / face census; tests/base/test_base.py
 re-checks the builds against it): [REFERENCE] unless tagged. Units mm, degrees where named *_deg (in the XZ plane,
@@ -24,7 +26,11 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 
 from lib.bearings import THRUST_BORE
+from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, centre_distance
+from lib.cycloidal.params import DEFAULT_CONFIG as _DRIVE
+from lib.fasteners import M3_CLEAR, M4_CLEAR, M4_NUT, M4_SHCS, NutSize, ShcsSize
 from lib.forearm.params import LEGACY as _FOREARM
+from lib.motors import MKS_SERVO42D_STACK, NEMA17_PILOT_DIA
 
 
 @dataclass(frozen=True)
@@ -89,7 +95,8 @@ class MotorParams:
     """The base_yaw motor's seat on the plate's underside: 4 holes on the NEMA 17 square about `centre` (x, z), a
     window for the pilot and the shaft's pulley, the belt slot from the shell's outer round out to slot_x1, and a U
     rim hanging below the plate round the motor's face on three sides (open toward the axis, its ends on the outer
-    round: the motor slides along the slot)."""
+    round: the motor slides along the slot). The belt slot and the rim are the SolidWorks base's only: the motor
+    mount (build_motor_mount) has neither - its slots hold the motor."""
 
     centre: tuple = (78.971441, 0.08362)
     hole_dia: float = 3.2
@@ -100,6 +107,51 @@ class MotorParams:
     rim_half: float = 21.3         # the rim's inside: +/- this about the centre (the +X side at slot_x1)
     rim_wall: float = 2.0
     rim_y0: float = -51.9
+    travel: float = 0.0            # [DESIGN] the motor's slide along X, +/- this about the centre: the holes become
+    #                                slots, the belt's tension (0: the SolidWorks round holes)
+
+
+@dataclass(frozen=True)
+class JointParams:
+    """[DESIGN] Where the motor mount (base_motor_mount) bolts to the base: the plane x = split_x across the D below the
+    plate, the base on -X, the mount on +X. The base ends there in a post inside each side wall, post_t thick (along X),
+    in to the mount's inside (MountParams: the window between the posts, full height, opens the mount into the base),
+    from the bottom face up to the plate's underside; 2 M4 per side along X, through the mount's ear and the post,
+    bolt_inset under the plate's underside and above the bottom face: the heads on the ears' outside, the nuts pressed
+    into hex pockets in the posts (their outer faces flush with the posts' back faces, a corner up), the tips out into
+    the base."""
+
+    split_x: float = 55.0          # just past the tower's round (shell.r): the base keeps a flat full-width end
+    post_t: float = 8.0
+    bolt_inset: float = 8.0
+    bolt_dia: float = M4_CLEAR
+    screw: ShcsSize = M4_SHCS
+    screw_len: float = 20.0        # the tip 4.0 past the nut's outer face
+    nut: NutSize = M4_NUT
+    nut_pocket_af: float = 6.85    # a press on the 7.0 nut (the elbow block's, j3_coupler's): it stays when its screw is out
+
+
+@dataclass(frozen=True)
+class MountParams:
+    """[DESIGN] The motor mount (base_motor_mount): a box round the 48 mm motor + its MKS board, `room` clear of the
+    board's square on every side (in Z; along X to the end wall at the slots' middle - the -X side opens into the base
+    through the window between its posts: the cables' way), `wall` thick, from the joint face to its end wall and from
+    the bottom face (it stands on the table) up to the plate's top; the plate (the motor's seat, MotorParams) across its
+    top; open underneath. An ear outside each side wall at the joint end, ear_w wide (in Z) and ear_t thick (along X),
+    full height, carries the side's 2 M4 (JointParams).
+
+    The walls are trusses (lib/base/layout.py truss_panels()): below the plate each keeps a frame `strut` wide - a rail
+    under the plate, a rail on the table, a post at each end (from the outer corner, so the corner posts take in the
+    other wall) - and a V of two `strut` wide struts from the frame's top corners down to the middle of its bottom
+    rail; the three triangles between are open. Printed plate-down, the middle one is self-supporting and the side
+    ones bridge only their table edge. The walls carry little: the belt's pull goes along the plate into the ears, and
+    the motor + board weigh ~0.44 kg."""
+
+    room: float = 10.0
+    wall: float = 4.0
+    ear_w: float = 12.0
+    ear_t: float = 8.0
+    strut: float = 6.0
 
 
 @dataclass(frozen=True)
@@ -109,6 +161,8 @@ class BaseConfig:
     bore: BoreParams = BoreParams()
     plate: PlateParams = PlateParams()
     motor: MotorParams = MotorParams()
+    joint: JointParams | None = None   # None: one part, the lobe included (the SolidWorks base)
+    mount: MountParams | None = None   # the bolt-on motor mount (with joint)
 
 
 LEGACY = BaseConfig()     # the SolidWorks part, exactly
@@ -118,7 +172,27 @@ LEGACY = BaseConfig()     # the SolidWorks part, exactly
 # Ø37.65 lip, which stops the outer rings only (the SolidWorks Ø31.73 lip ran under the upper bearing's inner ring).
 # The seat ring centres the thrust bearing (the washers' and the cage's bore THRUST_BORE): the SolidWorks Ø65.1 would
 # not go into a Ø65 bore; RING_CLEAR a side.
+# The motor has a bolt-on mount of its own (base_motor_mount, JointParams + MountParams: a box round the motor and its
+# board with room for the wiring, in place of the SolidWorks lobe the base's full width). It sits where a stock belt puts it:
+# the SolidWorks centre (78.97 from the axis) wants a 274.2 mm belt; YAW_BELT sets 81.97, the holes are slots of
+# +/- MOTOR_TRAVEL along X (the belt's tension), the window lets the pilot slide with them (WINDOW_CLEAR a side - only
+# the pilot's height in Z: the SolidWorks window's +/- 21.3 would run into the -X slots).
+# The bottom face (the mounting face, lib/datum.py BASE_BOTTOM_Y) sits BOARD_CLEAR under the motor's MKS board: the
+# SolidWorks base's -100.9 left the 48 mm motor + board (48 + 14.1 under the plate) hanging 6.1 below it. The base's
+# walls, its posts and the whole motor mount reach down to it.
 RING_CLEAR = 0.1          # [DESIGN]
-DEFAULT = replace(LEGACY, bore=replace(LEGACY.bore, upper_dia=_FOREARM.boss.seat_dia, lower_dia=_FOREARM.boss.seat_dia,
+BOARD_CLEAR = 5.0         # [DESIGN] the base_yaw motor's board above the table
+YAW_BELT = 280            # [ESTIMATE] base_yaw belt, 280-2GT (lib/belts.py STANDARD_2GT_LENGTHS): 20T motor - 90T joint
+MOTOR_TRAVEL = 2.5        # [DESIGN] the roll motor's slots' +/- 2.5 (lib/forearm/params.py)
+WINDOW_CLEAR = 0.2        # [DESIGN]
+_MOTOR_X = round(centre_distance(YAW_BELT, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH), 6)
+_WINDOW_HALF = NEMA17_PILOT_DIA / 2.0 + MOTOR_TRAVEL + WINDOW_CLEAR
+_BOTTOM_Y = round(LEGACY.plate.y[0] - _DRIVE.motor.body_length - MKS_SERVO42D_STACK - BOARD_CLEAR, 6)
+DEFAULT = replace(LEGACY, shell=replace(LEGACY.shell, y0=_BOTTOM_Y),                                  # [DESIGN]
+                  bore=replace(LEGACY.bore, upper_dia=_FOREARM.boss.seat_dia, lower_dia=_FOREARM.boss.seat_dia,
                                        lip_dia=_FOREARM.boss.lip_dia),                                    # [DESIGN]
-                  cap=replace(LEGACY.cap, groove_r=(THRUST_BORE / 2.0 - RING_CLEAR, LEGACY.cap.groove_r[1])))   # [DESIGN]
+                  cap=replace(LEGACY.cap, groove_r=(THRUST_BORE / 2.0 - RING_CLEAR, LEGACY.cap.groove_r[1])),   # [DESIGN]
+                  motor=replace(LEGACY.motor, centre=(_MOTOR_X, LEGACY.motor.centre[1]), hole_dia=M3_CLEAR,
+                                window_x=(round(_MOTOR_X - _WINDOW_HALF, 6), round(_MOTOR_X + _WINDOW_HALF, 6)),
+                                window_half_z=NEMA17_PILOT_DIA / 2.0 + WINDOW_CLEAR, travel=MOTOR_TRAVEL),   # [DESIGN]
+                  joint=JointParams(), mount=MountParams())                                             # [DESIGN]

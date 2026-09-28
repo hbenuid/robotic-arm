@@ -6,11 +6,11 @@
     <link name="base_link">
       <pose>0 0 0 0 0 0</pose>
       <inertial>
-        <pose>-0.046897 0.000021 0.047559 0 0 0</pose>
-        <mass>0.913722</mass>
+        <pose>-0.044986 0.000021 0.056664 0 0 0</pose>
+        <mass>0.93574</mass>
         <inertia>
-          <ixx>1.426810e-03</ixx><ixy>2.631768e-06</ixy><ixz>-6.989411e-04</ixz>
-          <iyy>2.809310e-03</iyy><iyz>1.215159e-06</iyz><izz>2.669327e-03</izz>
+          <ixx>1.515585e-03</ixx><ixy>2.801067e-06</ixy><ixz>-6.562157e-04</ixz>
+          <iyy>2.940607e-03</iyy><iyz>1.172646e-06</iyz><izz>2.693847e-03</izz>
         </inertia>
       </inertial>
       <visual name="base_link_visual">
@@ -250,7 +250,7 @@
       <pose relative_to="tool0_joint">0 0 0 0 0 0</pose>
     </link>
     <joint name="base_yaw" type="revolute">
-      <pose relative_to="base_link">0 0 0.18591 0 0 0</pose>
+      <pose relative_to="base_link">0 0 0.19701 0 0 0</pose>
       <parent>base_link</parent>
       <child>shoulder_link</child>
       <axis>

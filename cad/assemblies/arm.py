@@ -12,7 +12,8 @@ rails, the 20T pulleys) is _occurrences.BOUGHT_TINT grey, inside the modules too
 
     arm
     |- base_link         base, bearing_6806:base_yaw_1 / _2, washer_as6590:base_yaw_1, bearing_axk6590:base_yaw,
-    |                    nema17_48mm:base_yaw, mks_servo42d:base_yaw
+    |                    base_motor_mount, base_motor_mount_screws / _nuts:base_yaw, nema17_48mm:base_yaw,
+    |                    mks_servo42d:base_yaw
     |- shoulder_link     j1_coupler, washer_as6590:base_yaw_2, cycloidal_drive (kept whole - see below)
     |- upper_arm_link    j1_link, bearing_6806:elbow_pitch_1 / _2, nema17_40mm:elbow_pitch, mks_servo42d:elbow_pitch
     |- elbow_link        gt2_pulley_90t:j2, elbow_pulley_screws / _nuts:elbow_pitch, forearm_roll_drive (kept whole - see
@@ -72,7 +73,10 @@ OCCURRENCES = [
     ("bearing_6806",          "base_yaw_2", "bearing_6806#2"),
     ("washer_as6590",         "base_yaw_1", "washer_as6590#1"),    # mounted: the thrust bearing in the base's groove ...
     ("bearing_axk6590",       "base_yaw", "bearing_axk6590#1"),
-    ("nema17_48mm",           "base_yaw", "nema17_48mm#1"),        # mounted: the 48 mm motor under the base plate
+    ("base_motor_mount",      None, "base_motor_mount#1"),         # mounted: the base's bolt-on motor lobe ...
+    ("base_motor_mount_screws", "base_yaw", "base_motor_mount_screws#1"),   # ... its 4x M4 ...
+    ("base_motor_mount_nuts", "base_yaw", "base_motor_mount_nuts#1"),       # ... into the nuts in the base's ribs
+    ("nema17_48mm",           "base_yaw", "nema17_48mm#1"),        # mounted: the 48 mm motor under the motor mount's plate
     ("mks_servo42d",          "base_yaw", "mks_servo42d#1"),
     ("j1_coupler",            None, "j1_coupler#1"),
     ("washer_as6590",         "base_yaw_2", "washer_as6590#2"),    # ... its upper washer under j1_coupler's seat
@@ -113,6 +117,7 @@ MODULES = {"gripper": gripper.gripper, "cycloidal_drive": cycloidal_drive.cycloi
 # The tints color the PRINTED parts; grey is reserved for the purchased ones (BOUGHT_TINT).
 GROUPS = [
     ("base_link",        "#937860", ("base#1", "bearing_6806#1", "bearing_6806#2", "washer_as6590#1", "bearing_axk6590#1",
+                                     "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1",
                                      "nema17_48mm#1", "mks_servo42d#1")),
     ("shoulder_link",    "#4C72B0", ("j1_coupler#1", "washer_as6590#2", DRIVE_KEY)),
     ("upper_arm_link",   "#CCB974", ("j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2")),
