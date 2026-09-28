@@ -604,13 +604,13 @@
     59.19,
     86.0
    ],
-   "bytes": 1514252,
+   "bytes": 3644077,
    "file": "native/forearm_roll_shaft.step",
    "kind": "native",
    "origin": "native",
    "product": "forearm_roll_shaft - the forearm roll drive's ROTOR - the hollow roll shaft that crosses the elbow axis: a Ø40.3 journal at each",
-   "sha256": "2d59737deeb8e20b8e14b7139844ed9241bec18dda440e8ae8421946b56a4824",
-   "solid_volume": 95242.441,
+   "sha256": "c61952e9e4a6c329f8ea6dcbca3cc94c63b44d8cd3ef11bc4de63b14e6d689a7",
+   "solid_volume": 95222.909,
    "solids": 1,
    "source": "lib/forearm/roll.py:build_shaft(DEFAULT)",
    "units": "mm"

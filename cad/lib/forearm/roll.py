@@ -1,6 +1,7 @@
 """build123d builders of the forearm roll drive's printed parts (RollDriveParams, module frame, at their stack
 stations): the elbow block (stator - the housing that is also the elbow's output flange), the bolt-on motor mount on
-its top, the hollow roll shaft with its integral 90T (rotor) and the bolt-on end cap carrying bearing 2."""
+its top, the hollow roll shaft with its integral 90T (rotor; the GT2 ring of lib/pulley/teeth.py) and the bolt-on end
+cap carrying bearing 2."""
 from __future__ import annotations
 
 import math
@@ -23,8 +24,8 @@ from lib.forearm.layout import (
 )
 from lib.forearm.link import x_cylinder
 from lib.forearm.params import DEFAULT, ForearmConfig
-from lib.forearm.pulley import gt2_ring
 from lib.geom import align_min, cylinder, hex_prism, single_solid
+from lib.pulley.teeth import gt2_ring
 from lib.units import NUDGE
 
 

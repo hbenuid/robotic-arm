@@ -58,15 +58,13 @@ and totals are never quoted (`cad/CLAUDE.md` Docs).
 | Whether the elbow 90T pulley is the driven side (it carries the roll drive's stator - the block that replaced `j3_coupler#1` - in `elbow_link`) | `robot/frames.py LINKS` [ASSUMPTION] |
 
 ## Not converted yet (SolidWorks geometry, not build123d)
-The part's model still returns its SolidWorks export (`CONVERTED = False`, `parts/_templates/wrapper.py`) or cuts
-into it (a diverged part), so its geometry can be moved but not re-sized by a parameter. Converting one:
-`parts/CLAUDE.md` "Converting a part", then Recipe C; the same commit deletes its row. `tools/bom.py`'s print list
-gives every part's state.
+The part's model still returns its SolidWorks export (`CONVERTED = False`, `parts/_templates/wrapper.py`), so its
+geometry can be moved but not re-sized by a parameter. Converting one: `parts/CLAUDE.md` "Converting a part", then
+Recipe C; the same commit deletes its row. `tools/bom.py`'s print list gives every part's state.
 
 | part | link (`robot/frames.py LINKS`) | note |
 |---|---|---|
 | `gripper_clamp_bracket` | wrist_pitch_link | (`assemblies/arm.py`) |
-| `gt2_pulley_90t` | elbow_link, wrist_pitch_link | diverged: the SolidWorks body with its bolt holes opened to `M4_CLEAR`; `REFERENCE_BUILD` is the untouched export |
 | `gripper_j3_connector` | wrist_roll_link | two solids in one part (`tests/test_parts_convention.py MULTI_BODY`) |
 | `servo_holder` | wrist_roll_link | holds the MG996R (`assemblies/gripper.py`) |
 | `gripper_cover` | wrist_roll_link | |

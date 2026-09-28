@@ -11,7 +11,7 @@ than geometry live with their users: `mounts.py` (Recipe B) and `placements.py` 
 params.py     # single source of truth for shared dimensions (tagged provenance)
 units.py      # IN, NUDGE - a leaf module (lib/cycloidal/ imports it; params.py re-exports it)
 motors.py     # the arm's motors (NEMA 17 interface, pancake, the 40 mm kit motor + MKS board, MOTOR_40) - a leaf, re-exported by params.py
-belts.py      # GT2: the pulleys, pulley_od(), closed_belt_length() / centre_distance(), stock belt lengths, the 90T's hub faces + bolt circle (pulley_90t_bolt_points()) - a leaf
+belts.py      # GT2: the groove's tooth form, the pulleys, pulley_od(), closed_belt_length() / centre_distance(), stock belt lengths, the 90T's hub faces + bolt circle (pulley_90t_bolt_points()) - a leaf
 bearings.py   # the belt joints' 6806-2RS pair: bore / OD / width, the inner-ring shoulder, the mass; the base_yaw thrust bearing (AXK / AS 6590, THRUST_*) - a leaf
 fasteners.py  # the arm's screws + nuts: M4_SHCS / M4_NUT / M4_PITCH, M3_CSK / M3_NUT / M3_PITCH, the M3-M5 clearance holes, shcs() / csk() / hex_nut() (the pulley bolts' and the roll motor mount's plain geometry) - a leaf
 cots.py       # hybrid(): the body of every purchased part (vendor STEP, else the envelope); pattern() for the multi-body ones
@@ -20,8 +20,9 @@ base/         # the base (BaseConfig: LEGACY = the SolidWorks base, DEFAULT = wh
 coupler/      # the J3 coupler (CouplerParams: LEGACY = the SolidWorks j3_coupler, DEFAULT = what is built)
 yaw_coupler/  # the base_yaw coupler, the drive's yoke (YawCouplerConfig: LEGACY = the SolidWorks j1_coupler, DEFAULT = what is built)
 wrist/        # the wrist body (WristConfig: LEGACY = the SolidWorks wrist_link, DEFAULT = what is built)
+pulley/       # the 90T pulley (PulleyParams: LEGACY = the SolidWorks gt2_pulley_90t, DEFAULT = what is built) and teeth.py: the GT2 groove (arcs solved from lib/belts.py's tooth form) and gt2_ring() (its rim, the roll shaft's ring)
 upper_arm/    # the upper arm (UpperArmConfig: LEGACY = the SolidWorks j1_link, DEFAULT = no cap sockets, the motor's and the drive's hole patterns, the elbow block's clearance)
-forearm/      # the forearm (ForearmConfig: LEGACY = the SolidWorks j2_link, DEFAULT = the roll end, no cap sockets) and the roll drive (RollDriveParams, stack_positions, the block / motor mount / shaft / retainer / 90T ring builders)
+forearm/      # the forearm (ForearmConfig: LEGACY = the SolidWorks j2_link, DEFAULT = the roll end, no cap sockets) and the roll drive (RollDriveParams, stack_positions, the block / motor mount / shaft / retainer builders; the shaft's 90T ring is lib/pulley/teeth.py gt2_ring())
 datum.py      # capture frame W -> base_link frame B: frame(), base_frame() (arm.py arm_from_w(), robot/frames.py); frames as data: IDENTITY, to_location()
 mounts.py     # what the SolidWorks capture never placed right, as frames-as-data: the belt joints' motors + MKS boards, their 6806 pairs, the base_yaw thrust stack, the re-seated 90Ts and their M4 screws + nuts
 reference.py  # naming maps (SolidWorks custom/COTS, designed cycloidal parts, modules), loaders, path_of(), matches_reference()
