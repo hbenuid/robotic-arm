@@ -16,13 +16,12 @@ import pytest
 from build123d import Compound, GeomType, Location, Vector
 
 from assemblies import cycloidal_drive
-from assemblies._occurrences import place_world
 from lib import placements as P
 from lib import reference as R
 from lib.cycloidal import compute_housing_bolt_angles, hex_circumdiameter, hub_height, stack_positions
 from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii
-from lib.models import raw
 from robot import frames as F
+from tests import built
 from tests.cycloidal.helpers import CFG
 from tests.helpers import interference, module_tints
 
@@ -267,7 +266,7 @@ class TestHousingBoltEngagement:
 
 @pytest.fixture(scope="module")
 def drive():
-    return raw(cycloidal_drive.cycloidal_drive)
+    return built.model(cycloidal_drive.cycloidal_drive)
 
 
 @pytest.fixture(scope="module")
@@ -307,15 +306,15 @@ class TestModuleLocks:
         assert bodies["rotor"] == {"cycloidal_output_hub", "cycloidal_output_pins", "bearing_625"}
 
     @pytest.mark.slow
-    def test_module_totals_match_lock(self):
-        totals = cycloidal_drive.totals()
+    def test_module_totals_match_lock(self, drive):
+        totals = cycloidal_drive.totals(shape=drive)
         for key in ("leaves", "solids"):
             assert totals[key] == cycloidal_drive.EXPECTED[key], key
         assert abs(totals["solid_volume"] - cycloidal_drive.EXPECTED["solid_volume"]) <= 0.5
         # X: the pillars at 0 / 180 degrees reach the od; Y: no pillar on it, the ones at +/-60 and +/-120 degrees
         # (their chamfered outer corners) set it; Z: 48 motor + 14.1 MKS board behind the plate, 65 to the hub face
         assert totals["bbox_size"] == [140.0, 124.908, 127.1]
-        bodies = {body: cycloidal_drive.totals(body) for body in cycloidal_drive.BODIES}
+        bodies = {body: cycloidal_drive.totals(body, shape=drive) for body in cycloidal_drive.BODIES}
         for body, got in bodies.items():
             want = cycloidal_drive.EXPECTED["bodies"][body]
             for key in ("leaves", "solids"):
@@ -397,8 +396,7 @@ class TestPoseInTheArm:
         j1_coupler yoke it sits in: the cradle against the housing, whose axis sits 0.21 off the cradle's
         (docs/open_issues.md) - motor plate ~7.5 + ring gear body ~23 mm^3 measured; the pillars clear their sockets."""
         for key, limit in (("base#1", 1.0), ("j1_link#1", 1.0), ("j1_coupler#1", 35.0)):
-            part = P.OCCURRENCES[key]["part"]
-            vol = interference(drive_world, place_world(part, key))
+            vol = interference(drive_world, built.placed(key))
             assert vol <= limit, f"drive x {key}: {vol:.1f} mm^3 (limit {limit})"
 
     def test_hub_face_coplanar_with_j1_link_mount(self):
@@ -406,7 +404,7 @@ class TestPoseInTheArm:
         world = P.location(DRIVE_KEY, "world")
         hub_centre = (world * Location((0, 0, stack_positions(CFG)["hub_top"]))).position
         axis = (world * Location((0, 0, 1))).position - world.position      # the drive axis in world
-        link = place_world("j1_link", "j1_link#1")
+        link = built.placed("j1_link#1")
         faces = [f for f in link.faces().filter_by(GeomType.PLANE) if abs(f.normal_at().dot(axis)) > 0.99 and f.area > 10000]
         assert faces, "j1_link has no large planar face perpendicular to the drive axis"
         face = max(faces, key=lambda f: f.area)

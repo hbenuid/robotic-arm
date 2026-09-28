@@ -14,6 +14,7 @@ from assemblies._occurrences import BOUGHT_TINT
 from lib import placements as P
 from lib import reference as R
 from lib.models import raw
+from tests import built
 from tests.helpers import leaves, module_tints, same_color
 from tests.source_checks import runs_its_model
 from tests.totals import part_totals, world_bbox
@@ -59,7 +60,7 @@ def _expected_bbox():
     hi = [float("-inf")] * 3
     boxes = [world_bbox(k) for k in P.keys(kind="part")]
     for k in P.keys(kind="module", designed=True):
-        bb = raw(arm.MODULES[P.OCCURRENCES[k]["part"]]).moved(P.location(k, "world")).bounding_box()
+        bb = built.placed(k).bounding_box()
         boxes.append(((bb.min.X, bb.min.Y, bb.min.Z), (bb.size.X, bb.size.Y, bb.size.Z)))
     for bmin, bsize in boxes:
         for i in range(3):

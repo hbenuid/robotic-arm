@@ -6,11 +6,11 @@ from dataclasses import replace
 import pytest
 from build123d import Box, Pos
 
-import parts
 from lib import params as PARAMS
 from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, closed_belt_length
 from lib.forearm import DEFAULT, LEGACY, flange_bolt_points, link_socket_points
 from lib.motors import NEMA17_40_BODY_W, NEMA17_40_CONNECTOR_D
+from tests import built
 from tests.forearm.helpers import in_host
 from tests.helpers import interference, is_inside
 
@@ -40,7 +40,7 @@ def test_default_layout():
 
 @pytest.fixture(scope="module")
 def link():
-    return parts.build("j2_link")
+    return built.part("j2_link")
 
 
 @pytest.mark.slow

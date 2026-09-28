@@ -6,10 +6,10 @@ import math
 
 import pytest
 
-import parts
 from lib.coupler import LEGACY as COUPLER
 from lib.motors import NEMA17_BOLT_SP
 from lib.wrist import DEFAULT, LEGACY, end_face_holes, seat_bolt_points, slope_x
+from tests import built
 from tests.helpers import is_inside
 
 P, S, T, E = LEGACY.plate, LEGACY.seat, LEGACY.tower, LEGACY.end_face
@@ -57,7 +57,7 @@ def legacy():
 
 @pytest.fixture(scope="module")
 def wrist():
-    return parts.build("wrist_link")
+    return built.part("wrist_link")
 
 
 @pytest.mark.slow

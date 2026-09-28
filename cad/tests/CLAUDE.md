@@ -5,7 +5,13 @@ lane. Every test module's docstring says what it checks.
 
 ## Tests (`./cadtool pytest`)
 `tests/conftest.py` sets `CADGEN_DAEMON=0` and blocks top-level model builds (tests call bodies:
-`parts.build(name)`, `lib.models.raw(model)`). `test_parts_convention.py` (contract + geometry for
+`parts.build(name)`, `lib.models.raw(model)`), and fails the test that changed a shape `built.py` shares.
+`built.py` builds each part, module and placed occurrence once per test process (`part`, `legacy`, `model`, `leaf`,
+`placed`) — take geometry there, not from a fresh build (a build per test is most of what a slow test costs).
+Those shapes are SHARED, so READ-ONLY: measure them and move copies (`.moved()`, `.rotate()`); never
+relabel, re-parent, `.move()` / `.locate()` them, mesh them or hand them to build123d's booleans (its docstring says
+what is safe) — a test that must do that builds its own (`tests/cycloidal/test_port.py` tessellates: fresh builds).
+`test_parts_convention.py` (contract + geometry for
 every part, COTS envelopes + vendor frames), `test_reference_match.py` (manifest checksums; converted and native
 parts vs reference), `test_placements.py` (JSON integrity, tables cover every key once, the designed
 module record + the mounted records vs `lib/mounts.py`), `test_assembly.py` (every assembly file ends with its build call; the arm's leaves / solids / volume / bbox
@@ -27,7 +33,7 @@ loading `build123d` / `OCP`; names the first offender — a new assembly model g
 `helpers.py` (the geometry helpers every geometry test shares: `interference`, `is_inside`, `section_area`, …, and
 `module_tints`, a standalone module's colours),
 `totals.py` (what an occurrence contributes to the arm / link totals: its SolidWorks record, or its own build once
-converted — shared by `test_assembly.py` and `test_robot.py`),
+converted — shared by `test_assembly.py` and `test_robot.py`), `built.py` (above),
 `tests/cycloidal/` (the drive: one module per part + housing / purchased / fitment / assembly / port,
 `from tests.cycloidal.helpers import CFG, …` for the drive's config, the
 `stack` fixture is `tests/cycloidal/conftest.py`), `tests/upper_arm/` (`j1_link`: the LEGACY build's feature probes, DEFAULT's

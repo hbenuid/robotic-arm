@@ -21,6 +21,7 @@ SPLINE_PARTS = {"cycloidal_disc_1", "cycloidal_disc_2"}
 @pytest.mark.parametrize("name", DESIGNED)
 def test_designed_part_reproduces_cadquery_export(name):
     reference_build = getattr(parts.load(name), "REFERENCE_BUILD", None)
+    # fresh builds, not tests/built.py's shared ones: mesh_volume tessellates them (the mesh stays on the faces)
     mine, ref = reference_build() if reference_build else parts.build(name), R.load(name)
     assert all(abs(a - b) <= 0.01 for a, b in zip(R.bbox_min(mine), R.bbox_min(ref), strict=True)), (R.bbox_min(mine), R.bbox_min(ref))
     assert all(abs(a - b) <= 0.01 for a, b in zip(R.bbox_size(mine), R.bbox_size(ref), strict=True)), (R.bbox_size(mine), R.bbox_size(ref))

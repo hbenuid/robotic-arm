@@ -9,12 +9,10 @@ the mounted motors) keeps the record's numbers.
 """
 from __future__ import annotations
 
-import functools
-
 import parts
-from assemblies._occurrences import place_world
 from lib import placements as P
 from lib import reference as R
+from tests import built
 
 
 def is_converted(part: str) -> bool:
@@ -22,16 +20,11 @@ def is_converted(part: str) -> bool:
     return part in R.CUSTOM and bool(parts.load(part).CONVERTED)
 
 
-@functools.cache
-def _built(part: str):
-    return parts.build(part)
-
-
 def solids_and_volume(key: str) -> tuple[int, float]:
     """(solids, solid_volume) of a part occurrence: the record's, or the built part's when converted."""
     o = P.OCCURRENCES[key]
     if is_converted(o["part"]):
-        shape = _built(o["part"])
+        shape = built.part(o["part"])
         return len(shape.solids()), R.solid_volume(shape)
     return o["solids"], o["solid_volume"]
 
@@ -40,7 +33,7 @@ def world_bbox(key: str) -> tuple[tuple[float, float, float], tuple[float, float
     """(min, size) of a part occurrence's world bounding box: the record's, or the placed build's when converted."""
     o = P.OCCURRENCES[key]
     if is_converted(o["part"]):
-        bb = place_world(o["part"], key).bounding_box()
+        bb = built.placed(key).bounding_box()
         return (bb.min.X, bb.min.Y, bb.min.Z), (bb.size.X, bb.size.Y, bb.size.Z)
     return tuple(o["world_bbox_min"]), tuple(o["world_bbox_size"])
 

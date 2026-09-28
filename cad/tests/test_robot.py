@@ -1,5 +1,6 @@
 """The robot description (robot/frames.py, robot/links/*, robot/meshes/*, robot/arm.{urdf,srdf,sdf})
 stays consistent with the CAD and with itself."""
+import functools
 import importlib
 import math
 import pathlib
@@ -10,10 +11,12 @@ import numpy as np
 import pytest
 
 import parts
+from assemblies._occurrences import placement_at
 from lib import params as PARAMS
 from lib import placements as P
 from lib import reference as R
 from robot import frames as F
+from tests import built
 from tests.source_checks import runs_its_model
 from tests.totals import solids_and_volume
 from tools.robot import derive as RF
@@ -22,6 +25,16 @@ CAD_DIR = pathlib.Path(__file__).resolve().parent.parent
 ROBOT_DIR = CAD_DIR / "robot"
 URDF, SRDF, SDF = ROBOT_DIR / "arm.urdf", ROBOT_DIR / "arm.srdf", ROBOT_DIR / "arm.sdf"
 PHYSICAL_LINKS = [l for l in F.LINK_ORDER if F.LINKS[l]]
+_link_inertial = functools.cache(RF.link_inertial)
+
+
+@pytest.fixture
+def inertials_from_shared_parts(monkeypatch):
+    """tools/robot/derive.py's link inertials over tests/built.py's parts (it only measures them), each link's computed
+    once per process - two tests read them all."""
+    monkeypatch.setattr(RF, "place_world_at",
+                        lambda part, world, into=None: built.part(part).moved(placement_at(part, world, into)))
+    monkeypatch.setattr(RF, "link_inertial", _link_inertial)
 
 
 # --- fast: structure ---------------------------------------------------------------------------
@@ -233,7 +246,7 @@ def test_link_builds_from_its_occurrences_and_matches_its_mesh(link, tmp_path):
 
 
 @pytest.mark.slow
-def test_link_masses_add_up():
+def test_link_masses_add_up(inertials_from_shared_parts):
     """Every part of every link counted once: SolidWorks part keys from placements.json, the
     designed module's parts from a fresh build."""
     from assemblies._occurrences import world_rows
@@ -247,13 +260,13 @@ def test_link_masses_add_up():
             elif P.OCCURRENCES[k]["kind"] == "part":
                 expected_g += PARAMS.PETG_DENSITY * solids_and_volume(k)[1]
             else:
-                expected_g += PARAMS.PETG_DENSITY * R.solid_volume(parts.build(part))
+                expected_g += PARAMS.PETG_DENSITY * R.solid_volume(built.part(part))
     total = sum(RF.link_inertial(l)[0] for l in PHYSICAL_LINKS)
     assert math.isclose(total, expected_g * 1e-3, rel_tol=1e-6)
 
 
 @pytest.mark.slow
-def test_urdf_and_sdf_match_the_frames_and_cad():
+def test_urdf_and_sdf_match_the_frames_and_cad(inertials_from_shared_parts):
     assert RF.check_urdf(URDF) == []
     assert RF.check_sdf(SDF) == []
 

@@ -5,14 +5,14 @@ parallel to the joint axis, its MKS board on its rear face; each joint's 6806 pa
 with the coupler's shoulder on the upper inner ring and the re-seated 90T's ring under the lower one; each 90T clamped
 by its 4x M4 screws + nuts; j1_coupler stands on the base_yaw thrust bearing in the base's groove; and nothing runs
 into the neighbours but the nuts' designed press in their pockets."""
+import functools
 import math
 
 import pytest
 from build123d import Align, Cylinder, GeomType, Location, Pos, Vector
 
 import parts
-from assemblies import cycloidal_drive, forearm_roll_drive
-from assemblies._occurrences import place_world
+from assemblies import forearm_roll_drive
 from lib import mounts
 from lib import params as PARAMS
 from lib import placements as P
@@ -32,9 +32,9 @@ from lib.datum import BASE_BOTTOM_Y, to_location
 from lib.fasteners import hex_area
 from lib.forearm import DEFAULT as FOREARM
 from lib.forearm import pulley_bolt_points
-from lib.models import raw
 from lib.yaw_coupler.params import RIM_CLEAR, THRUST_CLEAR
 from robot import frames as F
+from tests import built
 from tests.helpers import interference, is_inside
 
 MOTORS = [m for m in mounts.MOUNTS if m.part in mounts.MOTORS]
@@ -66,6 +66,12 @@ def _press(nut_af: float, depth: float) -> float:
 
 def _world(key: str) -> Location:
     return P.location(key, "world")
+
+
+@functools.cache
+def _roll_block():
+    """The roll drive's block at its world pose (tests/built.py: shared, read-only)."""
+    return built.leaf(forearm_roll_drive.forearm_roll_drive, "forearm_roll_block").moved(_world("forearm_roll_drive#1"))
 
 
 def _dir(loc: Location, local=(0.0, 0.0, 1.0)) -> Vector:
@@ -104,7 +110,7 @@ def test_mounting_face_lies_on_the_host_pad(m):
     centre: the base motor mount's plate underside, j1_link's pad, j2_link's web."""
     world = _world(m.key)
     origin, z = world.position, _dir(world).normalized()
-    host = place_world(P.OCCURRENCES[m.host]["part"], m.host)
+    host = built.placed(m.host)
     faces = [f for f in host.faces().filter_by(GeomType.PLANE)
              if abs(abs(f.normal_at().dot(z)) - 1.0) < 1e-6 and abs((f.center() - origin).dot(z)) < 1e-3]
     assert faces, f"{m.key}: no planar face of {m.host} through the mounting plane"
@@ -120,9 +126,8 @@ def test_motors_and_boards_clear_their_neighbours():
     motor mount's nuts' in the base's posts (JointParams.nut_pocket_af)."""
     neighbours = ["base#1", "base_motor_mount#1", "j1_coupler#1", "j1_link#1", "j2_link#1", "gt2_pulley_90t#3", "gt2_pulley_90t#4", "j3_coupler#2",
                   "wrist_link#1"]
-    shapes = {k: place_world(P.OCCURRENCES[k]["part"], k) for k in neighbours}
-    shapes["cycloidal_drive#1"] = raw(cycloidal_drive.cycloidal_drive).moved(_world("cycloidal_drive#1"))
-    shapes["forearm_roll_drive#1"] = raw(forearm_roll_drive.forearm_roll_drive).moved(_world("forearm_roll_drive#1"))
+    shapes = {k: built.placed(k) for k in neighbours}
+    shapes |= {k: built.placed(k) for k in ("cycloidal_drive#1", "forearm_roll_drive#1")}
     budget = {(nuts, host): _press(nut_af, depth) + 0.5 for _, nuts, _, host, nut_af, depth in PULLEY_BOLTS.values()}
     joint = BASE.joint
     budget[("base_motor_mount_nuts#1", "base#1")] = _press(joint.nut_pocket_af, joint.nut.h) + 0.5
@@ -130,14 +135,14 @@ def test_motors_and_boards_clear_their_neighbours():
     # that differs per machine (0.05 mm^3 on x86_64 Linux, 0 on arm64 macOS) - the suite's 1 mm^3 'no overlap' budget;
     # a real misfit is far above it (0.1 mm across a bearing's face is ~68 mm^3)
     for m in mounts.MOUNTS:
-        part = place_world(m.part, m.key)
+        part = built.placed(m.key)
         for key, other in shapes.items():
             if key == m.key:
                 continue   # a re-seated pulley is a neighbour of the others
             vol = interference(part, other)
             assert vol <= budget.get((m.key, key), 1.0), f"{m.key} x {key}: {vol:.1f} mm^3"
     # the mounts do not run into each other either (a bearing and the pulley in it only touch)
-    placed = [(m.key, place_world(m.part, m.key)) for m in mounts.MOUNTS]
+    placed = [(m.key, built.placed(m.key)) for m in mounts.MOUNTS]
     for i, (ka, a) in enumerate(placed):
         for kb, b in placed[i + 1:]:
             if mounts.BY_KEY[kb].host == ka or mounts.BY_KEY[ka].host == kb:
@@ -150,10 +155,10 @@ def test_base_motor_stack_clears_the_table():
     """Under the motor mount's plate the 48 mm motor + board stack (62.1) ends BASE_MOTOR_TABLE_CLEAR above the base's
     mounting face: nothing of base_link reaches below the table."""
     stack = [m for m in mounts.MOUNTS if m.joint == "base_yaw" and m.part in (mounts.MOTOR_48, mounts.BOARD)]
-    lowest = min(place_world(m.part, m.key).bounding_box().min.Y for m in stack)
+    lowest = min(built.placed(m.key).bounding_box().min.Y for m in stack)
     assert math.isclose(PARAMS.BASE_MOTOR_PATTERN_CENTRE[1] - lowest, PARAMS.CYCLOIDAL_MOTOR_BODY_LEN + PARAMS.MKS_SERVO42D_STACK, abs_tol=0.05)
     assert math.isclose(lowest - BASE_BOTTOM_Y, PARAMS.BASE_MOTOR_TABLE_CLEAR, abs_tol=0.05), lowest - BASE_BOTTOM_Y
-    assert min(place_world(k, f"{k}#1").bounding_box().min.Y for k in ("base", "base_motor_mount")) == pytest.approx(BASE_BOTTOM_Y, abs=1e-4)
+    assert min(built.placed(f"{k}#1").bounding_box().min.Y for k in ("base", "base_motor_mount")) == pytest.approx(BASE_BOTTOM_Y, abs=1e-4)
 
 
 @pytest.mark.slow
@@ -164,7 +169,7 @@ def test_belt_pulley_planes_are_reachable():
     for m, pulley_key in (("nema17_40mm#3", "gt2_pulley_90t#4"),):
         world = _world(m)
         z = _dir(world).normalized()
-        pulley = place_world("gt2_pulley_90t", pulley_key)
+        pulley = built.placed(pulley_key)
         bb = pulley.bounding_box()
         centre = Vector((bb.min.X + bb.max.X) / 2, (bb.min.Y + bb.max.Y) / 2, (bb.min.Z + bb.max.Z) / 2)
         station = (centre - world.position).dot(z)
@@ -213,8 +218,8 @@ def test_the_elbow_pulley_holes_line_up_with_the_block_bolts():
     put every axis in solid hub)."""
     D = FOREARM.drive
     module = _world("forearm_roll_drive#1")
-    block = next(c for c in raw(forearm_roll_drive.forearm_roll_drive).children if c.label == "forearm_roll_block").moved(module)
-    pulley = place_world(mounts.PULLEY, "gt2_pulley_90t#3")
+    block = _roll_block()
+    pulley = built.placed("gt2_pulley_90t#3")
 
     def at(x, y, z):
         p = (module * Location((x, y, z))).position
@@ -256,12 +261,8 @@ def test_pulley_bolts_clamp_their_joints(joint):
     screws_key, nuts_key, pulley_key, host_key, nut_af, depth = PULLEY_BOLTS[joint]
     ws, wn = _world(screws_key), _world(nuts_key)
     z = _dir(ws).normalized()
-    pulley = place_world(mounts.PULLEY, pulley_key)
-    if host_key == "forearm_roll_drive#1":
-        host = next(c for c in raw(forearm_roll_drive.forearm_roll_drive).children if c.label == "forearm_roll_block")
-        host = host.moved(_world(host_key))
-    else:
-        host = place_world(P.OCCURRENCES[host_key]["part"], host_key)
+    pulley = built.placed(pulley_key)
+    host = _roll_block() if host_key == "forearm_roll_drive#1" else built.placed(host_key)
 
     def planar(shape, origin: Vector, sign: int) -> bool:
         return any(round(f.normal_at().dot(z)) == sign and abs((f.center() - origin).dot(z)) < 1e-3
@@ -279,7 +280,7 @@ def test_pulley_bolts_clamp_their_joints(joint):
                 return p.X, p.Y, p.Z
             assert not is_inside(pulley, *at(0.0)) and not is_inside(pulley, *at(r_hole - 0.1)), (joint, x, y, s)
             assert is_inside(pulley, *at(r_hole + 0.2)), (joint, x, y, s)          # the hole, no bigger
-    nuts = place_world(mounts.BY_KEY[nuts_key].part, nuts_key)
+    nuts = built.placed(nuts_key)
     press = _press(nut_af, depth)
     assert 0.9 * press <= interference(nuts, host) <= press + 0.5, joint
     # the heads' ring (the hole circle +/- the head's radius, the head's height off the face) against every part of
@@ -290,7 +291,7 @@ def test_pulley_bolts_clamp_their_joints(joint):
     ring = ring.moved(ws)
     for key in F.LINKS[F.JOINT_BY_NAME[joint].parent]:
         if ":" not in key:
-            assert interference(ring, place_world(P.OCCURRENCES[key]["part"], key)) < 1.0, (joint, key)
+            assert interference(ring, built.placed(key)) < 1.0, (joint, key)
 
 
 def _faces_on(shape, origin: Vector, z: Vector) -> list[tuple[int, float, float]]:
@@ -319,7 +320,7 @@ def test_bearing_stacks(joint):
     instead of a shoulder (test_thrust_bearing_carries_j1_coupler), and the base_yaw pulley is not modelled
     (docs/open_issues.md)."""
     up, lo, host_key, coupler_key, pulley_key = STACKS[joint]
-    host = place_world(P.OCCURRENCES[host_key]["part"], host_key)
+    host = built.placed(host_key)
     wu, wl = _world(up), _world(lo)
     z = _dir(wu).normalized()
     width = Location((0.0, 0.0, BEARING_6806_WIDTH))
@@ -330,12 +331,8 @@ def test_bearing_stacks(joint):
         lip_r = min(lip_r, min(r0 for _, r0, _ in faces))
     assert lip_r > inner_r + 1.0, (joint, lip_r)                                # the lip clears the inner rings
     if coupler_key is not None:
-        if coupler_key == "forearm_roll_block":
-            coupler = next(c for c in raw(forearm_roll_drive.forearm_roll_drive).children if c.label == coupler_key)
-            coupler = coupler.moved(_world("forearm_roll_drive#1"))
-        else:
-            coupler = place_world(P.OCCURRENCES[coupler_key]["part"], coupler_key)
-        pulley = place_world(mounts.PULLEY, pulley_key)
+        coupler = _roll_block() if coupler_key == "forearm_roll_block" else built.placed(coupler_key)
+        pulley = built.placed(pulley_key)
         shoulder = [f for f in _faces_on(coupler, (wu * width).position, z) if f[0] == -1]
         assert shoulder and max(r1 for _, _, r1 in shoulder) <= inner_r + 1e-6, (joint, shoulder)     # the inner ring only
         ring = [f for f in _faces_on(pulley, wl.position, z) if f[0] == 1]
@@ -359,8 +356,8 @@ def test_thrust_bearing_carries_j1_coupler():
     inside the groove's wall; the coupler nowhere nearer the base than its rim's RIM_CLEAR over the top face (it turns on
     the stack, not on the base's face). No overlap: the stack against the base, the coupler and the 6806 pair is in
     test_motors_and_boards_clear_their_neighbours, the base against the coupler is RIM_CLEAR apart."""
-    lower, cage, upper = (place_world(mounts.BY_KEY[k].part, k) for k in THRUST)
-    base, coupler = (place_world(P.OCCURRENCES[k]["part"], k) for k in ("base#1", "j1_coupler#1"))
+    lower, cage, upper = (built.placed(k) for k in THRUST)
+    base, coupler = (built.placed(k) for k in ("base#1", "j1_coupler#1"))
     w = _world(THRUST[0])
     z = _dir(w).normalized()
     assert abs(z.dot(Vector(*F.JOINT_BY_NAME["base_yaw"].axis_w)) - 1.0) < 1e-6

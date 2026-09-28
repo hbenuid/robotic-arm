@@ -13,6 +13,7 @@ import parts
 from lib import manifest as M
 from lib import reference as R
 from lib.datum import IDENTITY
+from tests import built
 from tests.source_checks import runs_its_model
 
 PART_NAMES = parts.names()
@@ -106,7 +107,7 @@ def test_part_declares_its_contract(name):
 @pytest.mark.slow
 @pytest.mark.parametrize("name", PART_NAMES)
 def test_part_builds_valid_labelled_geometry(name):
-    shape = parts.build(name)
+    shape = built.part(name)
     assert shape is not None, f"{name}() returned None"
     assert shape.label == name, f"{name} must label its result with its own name, got {shape.label!r}"
     assert shape.is_valid, f"{name} built an invalid shape"
@@ -128,7 +129,7 @@ def test_part_survives_cadgen_component_round_trip(name):
     every part."""
     from cadgen._internal import component_package as cp
 
-    shape = parts.build(name)
+    shape = built.part(name)
     back = cp._build123d_shape_from_brep_bytes(cp._shape_brep_bytes(shape))
     assert back.is_valid and len(back.solids()) == len(shape.solids())
     assert abs(R.solid_volume(back) - R.solid_volume(shape)) < 1e-6 * max(1.0, R.solid_volume(shape))
@@ -168,7 +169,7 @@ VENDOR_PARTS = [n for n in COTS_PARTS if _vendor_differs(n)]
 def test_cots_vendor_matches_reference_frame(name):
     """The vendor geometry (after VENDOR_TO_REF) must occupy the SolidWorks reference's bounding
     box - guards the re-orientation of a swapped-in step.parts model."""
-    shape = parts.build(name)
+    shape = built.part(name)
     ref = R.load(name)
     for got, exp, what in (
         (R.bbox_min(shape), R.bbox_min(ref), "bbox min"),

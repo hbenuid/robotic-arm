@@ -4,12 +4,24 @@ Tests call model BODIES (lib.models.raw / parts.build), never a model: calling a
 outside a cadgen build runs the whole pipeline - it rewrites the part STEP and talks to the
 warm daemon. CADGEN_DAEMON=0 keeps any build transient (belt) and `_build` is replaced so an
 accidental top-level call fails loudly instead (braces).
+
+The shapes tests/built.py caches are shared by every later test: a test that changed one (its label, colour, tree or
+location) fails at its teardown.
 """
 import os
+import sys
 
 import pytest
 
 os.environ.setdefault("CADGEN_DAEMON", "0")
+
+
+@pytest.fixture(autouse=True)
+def _shared_shapes_stay_as_built():
+    yield
+    built = sys.modules.get("tests.built")
+    changed = built.changed() if built is not None else []
+    assert not changed, "this test changed a shape tests/built.py shares (they are read-only):\n" + "\n".join(changed)
 
 
 @pytest.fixture(autouse=True, scope="session")

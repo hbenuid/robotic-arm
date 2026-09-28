@@ -11,7 +11,6 @@ from dataclasses import replace
 
 import pytest
 
-import parts
 from lib.base import DEFAULT as BASE
 from lib.bearings import BEARING_6806_BORE, THRUST_OD, THRUST_STACK
 from lib.belts import GT2_PULLEY_90T_BOLT_R
@@ -23,6 +22,7 @@ from lib.fasteners import M4_CLEAR, M4_NUT
 from lib.geom import hex_circumdiameter
 from lib.yaw_coupler import DEFAULT, LEGACY, hole_points, nut_centres, od_point, socket_outline
 from lib.yaw_coupler.layout import below_axis, pillar_point
+from tests import built
 from tests.helpers import is_inside
 
 
@@ -99,13 +99,12 @@ def test_default_yoke_holds_the_housings_pillars():
 
 @pytest.fixture(scope="module")
 def legacy():
-    from lib.yaw_coupler.body import build_yaw_coupler
-    return build_yaw_coupler(LEGACY)
+    return built.legacy("j1_coupler")
 
 
 @pytest.fixture(scope="module")
 def coupler():
-    return parts.build("j1_coupler")
+    return built.part("j1_coupler")
 
 
 @pytest.mark.slow

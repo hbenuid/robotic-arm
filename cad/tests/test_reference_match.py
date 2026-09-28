@@ -16,6 +16,7 @@ import parts
 from lib import manifest as M
 from lib import reference as R
 from lib.datum import IDENTITY, to_location
+from tests import built
 
 CUSTOM_PARTS = [n for n in parts.names() if n in R.CUSTOM or n in R.DESIGNED or n in R.NATIVE]
 MATCHED = [n for n in CUSTOM_PARTS if n in R.NATIVE or (n in R.CUSTOM and parts.load(n).CONVERTED)]
@@ -56,9 +57,8 @@ def test_reference_and_vendor_files_match_manifest():
 @pytest.mark.parametrize("name", MATCHED)
 def test_part_matches_reference(name):
     mod = parts.load(name)
-    reference_build = getattr(mod, "REFERENCE_BUILD", None)   # a diverged conversion: match its LEGACY build
     ok, report = R.matches_reference(
-        reference_build() if reference_build else parts.build(name),
+        built.legacy(name) if hasattr(mod, "REFERENCE_BUILD") else built.part(name),   # a diverged conversion: its LEGACY build
         mod.REFERENCE,
         local_from_ref=to_location(getattr(mod, "LOCAL_FROM_REF", IDENTITY)),
         vol_tol=getattr(mod, "REF_VOL_TOL", 0.005),
