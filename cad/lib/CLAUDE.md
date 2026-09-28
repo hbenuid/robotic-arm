@@ -19,6 +19,7 @@ geom.py       # the arm's small build123d helpers: align_min(), cylinder(), thro
 base/         # the base (BaseConfig: LEGACY = the SolidWorks base, DEFAULT = what is built)
 coupler/      # the J3 coupler (CouplerParams: LEGACY = the SolidWorks j3_coupler, DEFAULT = what is built)
 yaw_coupler/  # the base_yaw coupler, the drive's yoke (YawCouplerConfig: LEGACY = the SolidWorks j1_coupler, DEFAULT = what is built)
+wrist/        # the wrist body (WristConfig: LEGACY = the SolidWorks wrist_link, DEFAULT = what is built)
 upper_arm/    # the upper arm (UpperArmConfig: LEGACY = the SolidWorks j1_link, DEFAULT = no cap sockets, the motor's and the drive's hole patterns, the elbow block's clearance)
 forearm/      # the forearm (ForearmConfig: LEGACY = the SolidWorks j2_link, DEFAULT = the roll end, no cap sockets) and the roll drive (RollDriveParams, stack_positions, the block / motor mount / shaft / retainer / 90T ring builders)
 datum.py      # capture frame W -> base_link frame B: frame(), base_frame() (arm.py arm_from_w(), robot/frames.py); frames as data: IDENTITY, to_location()
@@ -65,3 +66,9 @@ Changing a shared dimension — touchpoints in order:
   never `make_spline_approx`); OCCT's analytic volume is ~0.3 % off on that face (both ours and the
   reference) - compare tessellations/face sets, not `.volume`. A boolean between the two discs takes
   minutes: probe points instead.
+- `wrist_link`'s fillet (`lib/wrist/link.py`): OCCT's default `.volume` (and `derive.py`'s inertials, the same
+  integration) reads the trimmed fillet face ~0.06 % low, and the error jumps with unrelated construction changes (the
+  fillet core's height); the adaptive integration `BRepGProp.VolumeProperties_s(shape.wrapped, props, 1e-7, False)` is
+  stable and agrees with the reference - measure a change to that fillet with it (or cell-by-cell commons), not `.volume`.
+  The fillet itself is made on a core carried over the tower's top: on the part the slope's edge with the bore ends in a
+  point at the top, which `fillet()` cannot run through.
