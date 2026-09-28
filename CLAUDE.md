@@ -20,8 +20,9 @@ table, the drive ratios) to agree with `software/control/src/config.py`, and one
   warning when it conflicts. If `main` moves under an open branch, merge `main` into the branch (`git fetch`,
   `git merge origin/main`, fix conflicts, re-run the suite, push): the pull request follows the branch.
 - The pull request is merged only when the user says so, and always as a **merge commit** — never squash, rebase or
-  fast-forward (GitHub offers all three): `gh pr merge <n> --merge --subject "Merge <branch>: <what it did, one
-  line>"`, then `git pull --ff-only` in the main checkout (on `main`, clean). So `main` reads one entry per branch -
+  fast-forward (the repo's GitHub settings allow only merge commits): `gh pr merge <n> --merge --subject "Merge
+  <branch>: <what it did, one line>"`, then `git pull --ff-only` in the main checkout (on `main`, clean). So `main`
+  reads one entry per branch -
   `git log --first-parent main`, or a branch graph (VS Code's Source Control Graph, `git log --graph`) that draws
   each branch as a side line into its merge (GitHub Desktop's History is a flat list: it shows no grouping, a merge's
   row there shows the branch's whole change); the older history was fast-forwarded and stays linear. Never commit to
