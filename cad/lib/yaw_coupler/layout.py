@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import math
 
+from lib.cycloidal import DEFAULT_CONFIG as DRIVE
+from lib.cycloidal import PILLAR_OVERSHOOT, pillar_half_width
 from lib.yaw_coupler.params import DEFAULT, YawCouplerConfig
 
 
@@ -58,8 +60,10 @@ def cheek_outline(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[float, float]]:
 
 def middle_outline(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[float, float]]:
     """(y, z) of the middle body: up the outer face to the od point, the V-groove round the 45 degree pillar - across
-    its end on the od, then down its near side to the cradle."""
+    its end on the od, then down its near side to the cradle; with no V-grooves, the cheek's outline."""
     k = cfg.yoke
+    if k.groove_z is None:
+        return cheek_outline(cfg)
     near, end = k.groove_z
     return _mirrored([(_bottom(cfg), k.outer_z), od_point(cfg), (below_axis(cfg, k.od_r, end), end),
                       (below_axis(cfg, k.cradle_r, near), near), (k.axis_y, near)])
@@ -70,6 +74,27 @@ def channel_outline(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[float, float]
     k = cfg.yoke
     top = k.channel_half_z + (k.axis_y - k.channel_floor_y) * k.channel_slope
     return _mirrored([(k.channel_floor_y, k.channel_half_z), (k.axis_y, top)])
+
+
+def pillar_point(cfg: YawCouplerConfig, deg: float, along: float, across: float) -> tuple[float, float]:
+    """(y, z) of the point `along` the centre line of the drive's pillar at deg from straight down (toward +Z) from the
+    drive's axis and `across` it (toward +Z at deg 0)."""
+    a = math.radians(deg)
+    return (cfg.yoke.axis_y - along * math.cos(a) + across * math.sin(a), along * math.sin(a) + across * math.cos(a))
+
+
+def socket_outline(cfg: YawCouplerConfig, deg: float, wall: float = 0.0) -> list[tuple[float, float]]:
+    """(y, z) of the socket round the drive's pillar at deg from straight down: its walls the pillar's sides
+    (lib/cycloidal/layout.py pillar_half_width) socket_clear out, its floor flat across its centre line socket_clear
+    past the housing's od (the pillar's end is an arc on it, its corners chamfered), its mouth where the pillar's own
+    inner end is - inside the cradle, so the socket opens into it. `wall` further out on the walls and the floor: the
+    outline of the socket's wall (socket_wall)."""
+    k, h = cfg.yoke, DRIVE.housing
+    gap = k.socket_clear + wall
+    mouth, floor = h.bore_dia / 2.0 - PILLAR_OVERSHOOT, h.od / 2.0 + gap
+    grow = gap * math.hypot(1.0, pillar_half_width(DRIVE, 1.0) - pillar_half_width(DRIVE, 0.0))
+    return [pillar_point(cfg, deg, r, side * (pillar_half_width(DRIVE, r) + grow))
+            for r, side in ((mouth, -1.0), (floor, -1.0), (floor, 1.0), (mouth, 1.0))]
 
 
 def nut_centres(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[float, float]]:

@@ -10,7 +10,7 @@ import pytest
 import parts
 from lib import reference as R
 from lib.cycloidal import compute_housing_bolt_angles, ring_pin_engagement, ring_pin_hole_dia
-from lib.cycloidal.housing import PILLAR_OVERSHOOT
+from lib.cycloidal.layout import PILLAR_OVERSHOOT
 from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii
 from tests.cycloidal.helpers import CFG
 from tests.helpers import probe_volume, section_area
@@ -123,7 +123,7 @@ class TestRingGearBodyDimensions:
 
     def test_windows_span_full_body_height(self):
         """The reveal windows run the full body height (no continuous rim; the motor plate seats
-        on the 8 pillar tops)."""
+        on the pillar tops)."""
         assert BODY_H == CFG.stack_up.total_housing_depth - CFG.stack_up.z_motor_plate_inner
 
     def test_ring_pin_chamfer_within_bearing_zone(self):
@@ -155,9 +155,11 @@ class TestSolid:
         assert body_solid.is_valid
 
     def test_outer_diameter(self, body_solid):
+        """The od on X (the pillars at 0 / 180 degrees); on Y no pillar - the chamfered corners of the ones at
+        +/-60 and +/-120 degrees."""
         size = body_solid.bounding_box().size
         assert abs(size.X - CFG.housing.od) < 0.2
-        assert abs(size.Y - CFG.housing.od) < 0.2
+        assert abs(size.Y - 124.908) < 0.01
 
     def test_height(self, body_solid):
         assert abs(body_solid.bounding_box().size.Z - BODY_H) < 0.1

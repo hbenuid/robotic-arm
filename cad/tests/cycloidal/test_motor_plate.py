@@ -105,9 +105,11 @@ class TestSolid:
         assert plate_solid.is_valid
 
     def test_bounding_box_xy(self, plate_solid):
+        """The od on X (the pillars at 0 / 180 degrees); on Y no pillar - the chamfered corners of the ones at
+        +/-60 and +/-120 degrees."""
         size = plate_solid.bounding_box().size
         assert abs(size.X - CFG.housing.od) < 0.2, f"X extent {size.X:.2f}mm, expected {CFG.housing.od}mm"
-        assert abs(size.Y - CFG.housing.od) < 0.2
+        assert abs(size.Y - 124.908) < 0.01
 
     def test_bounding_box_z(self, plate_solid):
         assert abs(plate_solid.bounding_box().size.Z - PLATE_T) < 0.1

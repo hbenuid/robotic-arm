@@ -97,4 +97,4 @@ def test_extras_are_well_formed_and_scoped_to_a_module():
 def test_cli_prints_the_three_lists(capsys):
     assert bom.main(["--module", "cycloidal_drive", "--md"]) == 0
     out = capsys.readouterr().out
-    assert "## PRINT - 6 parts" in out and "## BUY - 11 parts, 53 pieces" in out and "## BUY, NOT MODELLED" in out
+    assert "## PRINT - 6 parts" in out and "## BUY - 11 parts, 49 pieces" in out and "## BUY, NOT MODELLED" in out

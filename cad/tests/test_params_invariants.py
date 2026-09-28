@@ -142,8 +142,8 @@ def test_cycloidal_steel_masses_track_volumes():
     assert math.isclose(p.CYCLOIDAL_RING_PINS_MASS_G, 72.5, abs_tol=0.1)
     assert math.isclose(p.CYCLOIDAL_OUTPUT_PINS_MASS_G, 17.8, abs_tol=0.1)
     assert math.isclose(p.CYCLOIDAL_SUPPORT_PIN_MASS_G, 3.1, abs_tol=0.1)
-    assert math.isclose(p.CYCLOIDAL_HOUSING_BOLTS_MASS_G, 53.1, abs_tol=0.1)
-    assert math.isclose(p.CYCLOIDAL_HOUSING_NUTS_MASS_G, 8.5, abs_tol=0.1)
+    assert math.isclose(p.CYCLOIDAL_HOUSING_BOLTS_MASS_G, 39.8, abs_tol=0.1)
+    assert math.isclose(p.CYCLOIDAL_HOUSING_NUTS_MASS_G, 6.4, abs_tol=0.1)
     assert math.isclose(p.CYCLOIDAL_MOTOR_BOLTS_MASS_G, 4.3, abs_tol=0.1)
     for mass in (p.CYCLOIDAL_MOTOR_MASS_G, p.BEARING_6003_MASS_G, p.BEARING_6814_MASS_G, p.BEARING_625_MASS_G):
         assert mass > 0

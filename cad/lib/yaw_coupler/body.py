@@ -18,6 +18,7 @@ from lib.yaw_coupler.layout import (
     hole_points,
     middle_outline,
     nut_centres,
+    socket_outline,
 )
 from lib.yaw_coupler.params import DEFAULT, YawCouplerConfig
 
@@ -61,23 +62,31 @@ def _disc(cfg: YawCouplerConfig):
 
 
 def _yoke(cfg: YawCouplerConfig):
-    """The cheek and the middle body, each inside the flare (the cone out of the ring's top edge)."""
+    """The cheek and the middle body, each inside the flare (the cone out of the ring's top edge); the wall round each
+    socket, whole even where the flare trims the middle body."""
     d, k = cfg.disc, cfg.yoke
     y0 = d.ring_y1 - NUDGE   # a hair into the ring, so the two fuse
     flare = _revolved([(0.0, y0), (flare_r(cfg, y0), y0), (flare_r(cfg, k.axis_y), k.axis_y), (0.0, k.axis_y)])
-    cheek = _x_prism(cheek_outline(cfg), *k.cheek_x) & flare
-    middle = _x_prism(middle_outline(cfg), k.cheek_x[1] - NUDGE, k.body_x1) & flare
-    return cheek + middle
+    yoke = _x_prism(cheek_outline(cfg), *k.cheek_x) & flare
+    yoke = yoke + (_x_prism(middle_outline(cfg), k.cheek_x[1] - NUDGE, k.body_x1) & flare)
+    for deg in k.socket_deg:
+        yoke = yoke + _x_prism(socket_outline(cfg, deg, k.socket_wall), k.cheek_x[1] - NUDGE, k.body_x1)
+    return yoke
 
 
 def _yoke_cuts(cfg: YawCouplerConfig):
-    """The cradle, the pocket over the hub, the channel and the notch under the bottom pillar, the nut pockets."""
+    """The cradle, the pocket over the hub, the channel and the notch under the bottom pillar, the sockets round the
+    pillars, the nut pockets."""
     d, k = cfg.disc, cfg.yoke
     (px, pz), x_out = k.pocket_half, k.cheek_x[0]
     cuts = [_xcyl(k.cradle_r, -_FAR, _FAR, k.axis_y),
-            _box((-px, px), (k.pocket_y0, k.axis_y), (-pz, pz)),
-            _x_prism(channel_outline(cfg), k.cheek_x[1], k.channel_x1),
-            _xcyl(k.notch_r, k.channel_x1, d.flat_x + NUDGE, k.notch_y)]
+            _box((-px, px), (k.pocket_y0, k.axis_y), (-pz, pz))]
+    if k.channel:
+        cuts += [_x_prism(channel_outline(cfg), k.cheek_x[1], k.channel_x1),
+                 _xcyl(k.notch_r, k.channel_x1, d.flat_x + NUDGE, k.notch_y)]
+    for deg in k.socket_deg:
+        # from the cheek's inner face (the housing's output face bears on it) on through the middle body
+        cuts.append(_x_prism(socket_outline(cfg, deg), k.cheek_x[1], k.body_x1 + NUDGE))
     for y, z in nut_centres(cfg):
         # a hex prism along X, a corner along Z (hex_prism's first vertex on +X turns onto -Z)
         cuts.append(bd.Pos(x_out - NUDGE, y, z) * bd.Rot(0.0, 90.0, 0.0) * hex_prism(k.nut_af, 0.0, k.nut_depth + NUDGE))

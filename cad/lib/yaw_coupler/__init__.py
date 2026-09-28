@@ -12,5 +12,6 @@ from lib.yaw_coupler.layout import (  # noqa: F401
     middle_outline,
     nut_centres,
     od_point,
+    socket_outline,
 )
 from lib.yaw_coupler.params import DEFAULT, LEGACY, DiscParams, HubParams, YawCouplerConfig, YokeParams  # noqa: F401

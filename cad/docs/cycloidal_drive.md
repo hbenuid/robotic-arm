@@ -111,8 +111,8 @@ The output bearings (z 37..57) and the discs (z 13..35) are axially separated; t
 | Ring pins | 4 × 35 h6 hardened dowel (buy 25) | 21 | `cycloidal_ring_pins` |
 | Output pins | 4 × 45 h6 hardened dowel; light press in the hub's 4.20 blind holes (printed ~4.00–4.10), hub ceiling / motor plate as backup capture, free through the discs' 7.4 holes | 4 | `cycloidal_output_pins` |
 | Shaft support pin | 5 × 20 h6 dowel | 1 | `cycloidal_shaft_support_pin` |
-| Housing bolts | M4 × 55 SHCS (ISO 4762), Ø7 × 4 head; counterbored in the motor plate, captive nut in the ring gear body | 8 | `cycloidal_housing_bolts` |
-| Housing nuts | M4 hex, 7.0 AF × 3.2 (pocket 7.2 AF) | 8 | `cycloidal_housing_nuts` |
+| Housing bolts | M4 × 55 SHCS (ISO 4762), Ø7 × 4 head; counterbored in the motor plate, captive nut in the ring gear body | 6 | `cycloidal_housing_bolts` |
+| Housing nuts | M4 hex, 7.0 AF × 3.2 (pocket 7.2 AF) | 6 | `cycloidal_housing_nuts` |
 | Motor bolts | M3 × 10 SHCS, Ø5.3 × 3 head (13 total): 6 through the plate + 4 engagement, head flush in the 3 mm inner-face pocket | 4 | `cycloidal_motor_bolts` |
 | Arm-mount bolts + nuts | 4 × M4 (≈40–50 long: link + 28 hub) into captive M4 nuts on the hub inner face — install the nuts before pressing the hub through the 6814s | 4 + 4 | not modelled — on the buy list through `tools/bom.py EXTRAS` |
 
@@ -149,26 +149,32 @@ nuts at 56; shaft, motor and motor plate at 0 (built in place).
 
 ## 5. Housing design notes (`cfg.housing`)
 
-### 5.1 Envelope — OD 140, depth 60, bore Ø116, 6814 seat Ø90.15 × 20, bolt circle Ø125 (8 × M4).
+### 5.1 Envelope — OD 140, depth 60, bore Ø116, 6814 seat Ø90.15 × 20, bolt circle Ø125 (`bolt_count` × M4).
 
 ### 5.2 Housing split — two printed parts (the former output cap is folded into the ring gear body)
 
 1. **Motor plate** (`parts/cycloidal/cycloidal_motor_plate.py`, z 0..9): NEMA 17 pattern with a Ø22.30 × 2 pilot
-   recess, Ø15 shaft pass-through (`motor_plate_shaft_bore`), 21 ring-pin through-holes Ø4.20, 8 × M4
+   recess, Ø15 shaft pass-through (`motor_plate_shaft_bore`), 21 ring-pin through-holes Ø4.20, the M4
    holes with Ø7.4 × 4.5 counterbores on the outer face, M3 heads flush in 3 mm inner-face pockets.
 2. **Ring gear body** (`parts/cycloidal/cycloidal_ring_gear_body.py`, local z 0..51 at stack 9..60): 21 blind
    ring-pin holes Ø4.20 × 31.5 with 1 mm entry funnels at the bore/bearing transition (Ø5.2 → Ø4.2,
    `ring_pin_entry_chamfer_*`), stepped bore Ø116 (0..28) / Ø90.15 seat (28..48) / **Ø86.15 integral
    retention lip** (48..51, `lip_radial` 2 over the 90 mm outer races — bearings insert from the input
-   side and seat against it), 8 × M4 through-holes, **8 captive hex nut pockets** (7.2 AF × 4) on the
+   side and seat against it), the M4 through-holes, a **captive hex nut pocket** (7.2 AF × 4) for each on the
    output face, each backed by a full-height bolt pillar.
 
-**Shared outer profile** — both parts carry the same 8-pillar / 8-window silhouette around the bolt
-circle (pillars `pillar_inner_w` 18 at the bore, `pillar_outer_w` 10 at the OD, one per bolt); the
-plate seats on the body's pillar faces, no continuous rim. One shared cutter
-(`lib/cycloidal/housing.py reveal_window_cutter`) is subtracted from every housing base solid.
+**Shared outer profile** — both parts carry the same pillar / window silhouette around the bolt
+circle (pillars `pillar_inner_w` 18 at the bore, `pillar_outer_w` 10 at the OD, one per bolt -
+`lib/cycloidal/layout.py pillar_corners`); the plate seats on the body's pillar faces, no continuous rim. One
+shared cutter (`lib/cycloidal/housing.py reveal_window_cutter`) is subtracted from every housing base solid.
 
-**Outer-edge chamfer** (`edge_chamfer` 1.5, `chamfer_outer_silhouette`): the 8 pillar outer vertical
+**Bolt count** (`bolt_count`) — the one departure from the port: `DEFAULT_CONFIG` builds 6 bolts where the port
+(`LEGACY_CONFIG`) had 8, at 60° from +X with the same start (0°), so the `j1_coupler` yoke holds the two pillars
+that straddle its bottom (§12); three bolts sit in line with ring pins, 8.5 mm out, as the port's first did. The
+two housing parts and the housing bolts / nuts declare `REFERENCE_BUILD` (their `LEGACY_CONFIG` build), which
+`tests/cycloidal/test_port.py` and the reference match compare with the CadQuery exports.
+
+**Outer-edge chamfer** (`edge_chamfer` 1.5, `chamfer_outer_silhouette`): the pillars' outer vertical
 corners always, plus the *entire* outer-wire perimeter of each part's external end face (the plate's
 motor face z = 0, the body's output face z = 51); the mating faces (plate z = 9, body z = 0) stay
 sharp so the stack beds flush. Internal holes are never beveled. `edge_chamfer = 0` disables; keep
@@ -280,12 +286,14 @@ cd cad
 - **Magic numbers promoted to tagged fields:** `housing.motor_plate_shaft_bore` 15, `lip_radial` 2,
   `ring_pin_entry_chamfer_depth/_add` 1/1, `pillar_inner_w/outer_w` 18/10, `bolt_nut_af` 7;
   `shaft.bridge_flange_add` 6; `motor.pilot_height` 2, `motor_bolt_thread_margin` 0.5,
-  `motor_bolt_recess` 1; `tolerances.bolt_clearance_add` 0.4. Module constants: `PILLAR_OVERSHOOT`,
-  `CUTTER_OVERSHOOT`, `BARREL_EDGE_MARGIN` (`lib/cycloidal/housing.py`).
+  `motor_bolt_recess` 1; `tolerances.bolt_clearance_add` 0.4. Module constants: `PILLAR_OVERSHOOT`
+  (`lib/cycloidal/layout.py`, with the pillar's outline `pillar_corners` / `pillar_half_width` the yoke's sockets
+  share), `CUTTER_OVERSHOOT`, `BARREL_EDGE_MARGIN` (`lib/cycloidal/housing.py`).
 - **Dropped (unused) fields:** `ProfileParams.spline_tolerance`, `PETGTolerances.bearing_inner_shaft_sub`
   / `sliding_clearance_add`, `HousingParams.wall_thickness` / `motor_plate_wall`,
   `BearingParams.ecc_qty` / `inp_qty`. `DriveConfig` itself is frozen now.
-- **Geometry is identical** to the CadQuery builders (`tests/cycloidal/test_port.py`: same face sets, same
+- **Geometry is identical** to the CadQuery builders in `LEGACY_CONFIG` (the housing's bolt count is the one
+  departure, §5.2; `tests/cycloidal/test_port.py` builds a part's `REFERENCE_BUILD` if it has one: same face sets, same
   tessellations to 1e-11, same analytic volume to 1e-13 for the analytic parts). Order matters on the
   disc: the lobe chamfer is applied while the end faces carry only the spline edge, *before* the holes.
 - **OCCT volume caveat:** `BRepGProp` volume integration is ~0.3 % off on the 2000-knot spline face of
@@ -298,11 +306,12 @@ cd cad
   (= `assembly.py`). The SolidWorks sub-assembly was imported from `export.py`'s STEP, so its pins are
   1–2 mm off ours (cosmetic, inside their holes); it is kept in `placements.json` as a cross-check.
 - **Designed interference budget** (`test_module_interference_budget`, mm³): 6814 inner race / hub
-  press fit 330.6 × 2; housing bolts through the solid nuts 321.7; motor-bolt heads in the plate 51.9
+  press fit 330.6 × 2; housing bolts through the solid nuts 241.3; motor-bolt heads in the plate 51.9
   and shanks in the vendor motor's tapped holes (modelled at the M3 minor diameter) 46.4; 6003 / lobe press fits
   26.8 × 2; the MKS kit's four M3x30 in the same holes from the rear 159.4. Everything else
-  is < 1 mm³; the whole module vs the arm: base / j1_link 0, j1_coupler yoke contact ≤ 150 (the board
-  behind the motor has 55 mm of free air).
+  is < 1 mm³; the whole module vs the arm: base / j1_link 0, j1_coupler yoke contact ≤ 35 (the cradle against
+  the housing, whose axis sits 0.21 off the cradle's - `docs/open_issues.md`; the pillars clear their sockets; the
+  board behind the motor has 55 mm of free air).
 - **Corrections to the drive repo's spec:** its §10 said "both discs are identical — the 180° offset is
   applied in the assembly": wrong (disc 2 carries the −9° phase, §1.2); §3.3's "7.6 mm disc holes"
   → 7.4; stale 67 / 134 / 120 mm comments (the OD is 140) and other rotted numbers in comments.
@@ -319,8 +328,10 @@ cd cad
   leaves / solids / volume / world bbox as a cross-check; `assemblies/arm.py` locates
   `assemblies/cycloidal_drive.py` there (row after `j1_coupler#1`).
 - **Frame:** module Z = motor axis, z = 0 the motor-plate outer face, motor body in −Z, hub face at 65.
-  In the arm the axis is horizontal (module +Z → world −N, N = the J2/J3 pitch direction): the housing
-  sits in the `j1_coupler` yoke (its pads touch the motor-plate outer face) and the hub's arm-mount
+  In the arm the axis is horizontal (module +Z → world −N, N = the J2/J3 pitch direction; module +Y → world up): the
+  housing sits in the `j1_coupler` yoke (its pads touch the motor-plate outer face), the two pillars at 240° / 300°
+  (±30° from the bottom) in its sockets (`lib/yaw_coupler/params.py` DEFAULT; the SolidWorks yoke held the port's
+  pillars at 225° / 270° / 315°), and the hub's arm-mount
   face is coplanar with `j1_link`'s big mounting face — verified by `TestPoseInTheArm`. `j1_link` (parametric,
   `lib/upper_arm/`) puts its 4 Ø4.4 holes on `arm_mount_points` as this pose places them (`HubParams.bolt_angle_deg`,
   `tests/upper_arm/`): the SolidWorks holes sat 3.36° off, where the M4 bolts would not pass.

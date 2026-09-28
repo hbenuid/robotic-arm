@@ -30,8 +30,8 @@ MULTI_BODY = {
     "cycloidal_ring_pins": 21,
     "cycloidal_output_pins": 4,
     "cycloidal_motor_bolts": 4,
-    "cycloidal_housing_bolts": 8,
-    "cycloidal_housing_nuts": 8,
+    "cycloidal_housing_bolts": 6,
+    "cycloidal_housing_nuts": 6,
     # the 90T pulley bolts of the elbow and the wrist (lib/mounts.py FASTENER_MOUNTS)
     "elbow_pulley_screws": 4,
     "elbow_pulley_nuts": 4,
@@ -135,10 +135,11 @@ COTS_PARTS = [n for n in PART_NAMES if n in R.COTS]
 
 @pytest.mark.parametrize("name", COTS_PARTS)
 def test_cots_envelope_tracks_reference_bbox(name):
-    """The fallback envelope must occupy the vendor geometry's bounding box (same frame)."""
+    """The fallback envelope must occupy the vendor geometry's bounding box (same frame) - the REFERENCE_BUILD's,
+    for a part that has left its reference (the drive's housing fasteners: the port's pattern)."""
     mod = parts.load(name)
     entry = M.read()["parts"][name]
-    env = mod._envelope()
+    env = getattr(mod, "REFERENCE_BUILD", mod._envelope)()
     assert env.is_valid
     for got, exp in ((R.bbox_min(env), entry["bbox_min"]), (R.bbox_size(env), entry["bbox_size"])):
         assert all(abs(g - e) <= 0.05 for g, e in zip(got, exp, strict=True)), f"{name} envelope {got} vs reference {exp}"

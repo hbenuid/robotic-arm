@@ -9,19 +9,22 @@ through the -X cheek.
 The body, bottom up: the hub on the axis (a stub down into the upper base bearing, a bore, 4 small holes) under a
 drafted disc (flats at x = +/-40, an ear of the Ø96 disc beyond each flat) with a recess in its underside; a ring on
 the disc, then the yoke flaring out of it - a -X cheek (outboard of the housing's output face) and a middle body that
-holds the housing's bottom and +/-45 degree pillars (a channel and two V-grooves), all under the housing's cradle,
-the housing's 3 bottom bolts' nut pockets in the cheek's outer face, a pocket open to the cradle over the hub.
+holds the housing's pillars (LEGACY: the 8-pillar housing's bottom and +/-45 degree ones, in a channel and two
+V-grooves; DEFAULT: the 6-pillar housing's two at +/-30 degrees, in closed sockets), all under the housing's cradle,
+the nut pockets of the bolts through those pillars in the cheek's outer face, a pocket open to the cradle over the hub.
 The yoke's shapes follow the drive's housing (lib/cycloidal/params.py HousingParams: the cradle r against the bore,
-the V-grooves on the pillars' sides, their points on the housing's od, the nut pockets on its bolt circle -
+the grooves and sockets on the pillars' sides, their points on the housing's od, the nut pockets on its bolt circle -
 tests/yaw_coupler/ checks they agree).
 
 Two configurations: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
 tests/test_reference_match.py); DEFAULT is what the part builds: it stands on the base_yaw thrust bearing in the
 base's groove (lib/bearings.py THRUST_*) - the recess's ceiling is the seat on the upper washer, wide enough to clear
 the stack, and the rim is lifted clear of the base's top face (the SolidWorks rim sat on it, the coupler turning on
-the base's face); and its hub takes the base_yaw 90T like j3_coupler's the wrist's: the stub the bearings' bore, on
+the base's face); its hub takes the base_yaw 90T like j3_coupler's the wrist's: the stub the bearings' bore, on
 through the lip to its lower face, where the 90T's hub end meets it, drilled for the 90T's 4 bolts (M4 clearance, on
-its bolt circle at the diagonals, the nuts in hex pockets in the pocket's floor) round the 90T's bore.
+its bolt circle at the diagonals, the nuts in hex pockets in the pocket's floor) round the 90T's bore; and its yoke
+holds the drive's 6-pillar housing (lib/cycloidal/params.py DEFAULT_CONFIG): a socket round each pillar at +/-30
+degrees from the bottom, their bolts' nut pockets in the cheek - no channel, no notch, no V-grooves.
 
 Every number below was measured on the reference 2026-09-27 (face census; tests/yaw_coupler/test_j1_coupler.py
 re-checks the builds against it): [REFERENCE] unless tagged. Three simplifications, all inside the reference-match
@@ -88,10 +91,14 @@ class YokeParams:
     tops, as points on circles about the drive's axis (given by |z|): the cheek from its outer face straight to
     cheek_top_z on the cradle - across the +/-45 degree pillars' far side; the middle body in a V-groove round each
     pillar - its end (a chord on the housing's od, groove_z[1] .. the outer face) and its near side (down to
-    groove_z[0] on the cradle). The channel under the bottom pillar (its floor, and walls that open at the pillar's
-    side slope) runs from the cheek to channel_x1; the notch round the bottom housing bolt's head from channel_x1 to
-    the +X flat. The pocket over the hub, open into the cradle. The nut pockets of 3 housing bolts (the bottom one
-    and those at +/- 45 degrees, on bolt_circle_r) in the cheek's outer face, a hole on through the rest of it."""
+    groove_z[0] on the cradle) - or, groove_z None, the cheek's top. The channel under the bottom pillar (its floor,
+    and walls that open at the pillar's side slope) runs from the cheek to channel_x1; the notch round the bottom
+    housing bolt's head from channel_x1 to the +X flat (neither unless channel). A closed socket round the drive's
+    pillar at each of socket_deg (from straight down, toward +Z) - the pillar's sides and end socket_clear out
+    (lib/yaw_coupler/layout.py socket_outline), open into the cradle - from the cheek through the middle body, in a
+    wall socket_wall thick (under the socket's floor, near the +X end, it stands out of the flare: a rib). The
+    pocket over the hub, open into the cradle. The nut pockets of the housing bolts at bolt_deg (from straight down,
+    on bolt_circle_r) in the cheek's outer face, a hole on through the rest of it."""
 
     flare_apex_y: float = 10.285583
     cheek_x: tuple = (-32.8, -28.5)
@@ -101,11 +108,12 @@ class YokeParams:
     cradle_r: float = 58.0           # the housing's bore is 116: the cradle is its circle
     od_r: float = 70.0               # the housing's od / 2: the points of the V-grooves' ends
     cheek_top_z: float = 46.826264   # on the cradle
-    groove_z: tuple = (34.224206, 45.574176)   # on the cradle, on od_r
+    groove_z: tuple | None = (34.224206, 45.574176)   # on the cradle, on od_r (None: no V-grooves)
     channel_floor_y: float = 20.204293
     channel_half_z: float = 5.552097           # at the floor ...
     channel_slope: float = 2.0 / 7.0           # ... opening dz / dy (the pillar's sides)
     channel_x1: float = 32.7
+    channel: bool = True                       # the channel and the notch (the 8-pillar housing's bottom pillar)
     notch_r: float = 4.817811
     notch_y: float = 27.5
     pocket_half: tuple = (15.2, 31.0)          # x, z
@@ -115,6 +123,9 @@ class YokeParams:
     nut_af: float = 7.196671
     nut_depth: float = 4.0
     bolt_hole_dia: float = 4.4
+    socket_deg: tuple = ()                     # [DESIGN] a socket round the drive's pillar at each (none in SolidWorks) ...
+    socket_clear: float = 0.2                  # [DESIGN] ... this clear of its sides and its end (the channel's 0.2) ...
+    socket_wall: float = 2.0                   # [DESIGN] ... in a wall this thick, kept where the flare trims the yoke
 
 
 @dataclass(frozen=True)
@@ -133,6 +144,7 @@ LEGACY = YawCouplerConfig()     # the SolidWorks part, exactly
 THRUST_CLEAR = 0.2                # [DESIGN] the recess round the washers and the cage (radial)
 RIM_CLEAR = 0.5                   # [DESIGN] the rim over the base's top face
 _CAP = _BASE.cap                  # the base's frame: this part's origin at its ring_top_y
+PILLAR_DEG = (-30.0, 30.0)        # [DESIGN] the drive's pillars the yoke holds, from straight down (DEFAULT below)
 DEFAULT = replace(LEGACY,
                   hub=replace(LEGACY.hub, recess_dia=THRUST_OD + 2.0 * THRUST_CLEAR,
                               recess_y1=round(_CAP.groove_y0 - _CAP.ring_top_y + THRUST_STACK, 6),
@@ -144,4 +156,10 @@ DEFAULT = replace(LEGACY,
                               stub_dia=BEARING_6806_BORE, stub_y0=round(_BASE.bore.lip_y[0] - _CAP.ring_top_y, 6),
                               bore_dia=_J3_COUPLER.bore_dia, hole_dia=M4_CLEAR, hole_r=GT2_PULLEY_90T_BOLT_R,
                               nut_af=_J3_COUPLER.nut_af, nut_depth=M4_NUT.h),
-                  disc=replace(LEGACY.disc, y0=round(_CAP.top_y - _CAP.ring_top_y + RIM_CLEAR, 6)))
+                  disc=replace(LEGACY.disc, y0=round(_CAP.top_y - _CAP.ring_top_y + RIM_CLEAR, 6)),
+                  # the drive's 6-pillar housing (lib/cycloidal/params.py DEFAULT_CONFIG): its bolts at 0, 60 .. 300
+                  # degrees from the drive's +X, which placements.json turns onto this frame's +Z - two straddle the
+                  # cradle's bottom (the drive's 240 and 300), two stand at the axis's height past the outer faces, and
+                  # none at the bottom or at +/-45 degrees: a socket round each of the two, their bolts' nut pockets in
+                  # the cheek; the channel, the notch and the V-grooves go (the middle body up to the cheek's top)
+                  yoke=replace(LEGACY.yoke, groove_z=None, channel=False, socket_deg=PILLAR_DEG, bolt_deg=PILLAR_DEG))

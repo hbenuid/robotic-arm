@@ -14,13 +14,15 @@ Port adaptations (all listed in docs/cycloidal_drive.md "Port notes"):
     / sliding_clearance_add, HousingParams.wall_thickness / motor_plate_wall, BearingParams.ecc_qty /
     inp_qty);
   * the interface dimensions the arm needs are re-exported by lib/params.py (CYCLOIDAL_*).
+Two configurations: LEGACY_CONFIG is the port (what the CadQuery exports in reference/cycloidal/ were built
+from); DEFAULT_CONFIG is what the parts build - it differs only in HousingParams.bolt_count.
 Units: mm, degrees where named *_deg. The stack-up datum (Z=0) is the OUTER face of the motor plate
 (the NEMA 17 mounting face); +Z runs through the drive toward the output hub.
 """
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 
 @dataclass(frozen=True)
@@ -272,9 +274,15 @@ class DriveConfig:
 
 def compute_housing_bolt_angles(cfg: DriveConfig) -> list[float]:
     """Evenly spaced housing-bolt angles (radians, from +X). The 125 mm bolt circle and the
-    108 mm ring-pin circle are ~8.5 mm apart radially, so no angular offset is needed."""
+    108 mm ring-pin circle are ~8.5 mm apart radially, so no angular offset is needed (a bolt may
+    line up with a ring pin: DEFAULT_CONFIG's do every 120 degrees)."""
     n = cfg.housing.bolt_count
     return [2 * math.pi * i / n for i in range(n)]
 
 
-DEFAULT_CONFIG = DriveConfig()
+# The port: the CadQuery drive exactly (the designed parts' REFERENCE_BUILD - tests/cycloidal/test_port.py).
+LEGACY_CONFIG = DriveConfig()
+
+# What the parts build: the housing on 6 bolts, not 8 - 6 pillars at 60 degrees from +X (same start), so the
+# j1_coupler yoke holds the two that straddle its bottom (lib/yaw_coupler/params.py DEFAULT).
+DEFAULT_CONFIG = replace(LEGACY_CONFIG, housing=replace(LEGACY_CONFIG.housing, bolt_count=6))   # [DESIGN]

@@ -1,13 +1,13 @@
 """Shared outer profile of the two housing parts (motor plate + ring gear body).
 
 Port of cycloidal_drive@2f1f67d src/helpers/housing_profile.py. Both parts present the same
-silhouette: 8 trapezoidal pillars (one per M4 housing bolt) joined only at the inner annulus,
-with reveal windows between them. ``reveal_window_cutter`` is subtracted from an annular housing
-solid to imprint that profile; ``chamfer_outer_silhouette`` bevels the result's outer edges.
+silhouette: trapezoidal pillars (one per M4 housing bolt, HousingParams.bolt_count) joined only at
+the inner annulus, with reveal windows between them. ``reveal_window_cutter`` is subtracted from an
+annular housing solid to imprint that profile; ``chamfer_outer_silhouette`` bevels the result's outer edges.
 
-Pillar (radially flipped trapezoid): ``pillar_inner_w`` (18) tangential at the bore,
-``pillar_outer_w`` (10) at the OD; the radial bounds overshoot the bore (-1) and the OD (+1) so
-the bore / base-cylinder cuts trim every pillar flush.
+Pillar (radially flipped trapezoid, lib/cycloidal/layout.py pillar_corners): ``pillar_inner_w`` (18)
+tangential at the bore, ``pillar_outer_w`` (10) at the OD; the radial bounds overshoot the bore (-1)
+and the OD (+1) so the bore / base-cylinder cuts trim every pillar flush.
 """
 from __future__ import annotations
 
@@ -15,30 +15,22 @@ import math
 
 from cadgen import build123d as bd
 
+from lib.cycloidal.layout import pillar_corners
 from lib.cycloidal.params import DEFAULT_CONFIG, DriveConfig, compute_housing_bolt_angles
 from lib.geom import align_min, hex_prism, single_solid
 
-PILLAR_OVERSHOOT = 1.0    # [DESIGN] pillars past the bore (-) and OD (+); trimmed flush by the bore/OD cuts
 CUTTER_OVERSHOOT = 0.1    # [DESIGN] cutter annulus past the OD so the base cylinder trims it flush
 BARREL_EDGE_MARGIN = 1.0  # [DESIGN] barrel corners are the vertical edges at r >= od/2 - this (skips r<=66 bolt artefacts)
 
 
 def reveal_window_cutter(cfg: DriveConfig = DEFAULT_CONFIG, height: float = 0.0, z_offset: float = 0.0):
-    """Wall-removal volume leaving 8 trapezoidal pillars at the bolt angles: 8 disjoint solids
-    spanning z_offset..z_offset+height. The annulus inside the bore is untouched."""
+    """Wall-removal volume leaving a trapezoidal pillar at each bolt angle: bolt_count disjoint
+    solids spanning z_offset..z_offset+height. The annulus inside the bore is untouched."""
     h = cfg.housing
     housing_r, bore_r = h.od / 2.0, h.bore_dia / 2.0
-    inner_r, outer_r = bore_r - PILLAR_OVERSHOOT, housing_r + PILLAR_OVERSHOOT
     cutter = bd.Cylinder(housing_r + CUTTER_OVERSHOOT, height, align=align_min()) - bd.Cylinder(bore_r, height, align=align_min())
     for a in compute_housing_bolt_angles(cfg):
-        c, s = math.cos(a), math.sin(a)
-        local = [
-            (inner_r, -h.pillar_inner_w / 2.0),
-            (outer_r, -h.pillar_outer_w / 2.0),
-            (outer_r, +h.pillar_outer_w / 2.0),
-            (inner_r, +h.pillar_inner_w / 2.0),
-        ]
-        pts = [(lx * c - ly * s, lx * s + ly * c) for lx, ly in local]
+        pts = pillar_corners(cfg, a)
         pillar = bd.extrude(bd.make_face(bd.Polyline(*pts, close=True)), amount=height, dir=(0, 0, 1))
         cutter = cutter - pillar
     return bd.Pos(0, 0, z_offset) * cutter
@@ -58,7 +50,7 @@ def end_face(solid: bd.Shape, z: float, tol: float = 1e-4) -> bd.Face:
 def chamfer_outer_silhouette(shape: bd.Shape, cfg: DriveConfig = DEFAULT_CONFIG, external_z: float | None = None) -> bd.Solid:
     """Bevel the outer silhouette of a finished housing part (call AFTER the windows are cut).
 
-    Always chamfers the 8 pillar outer vertical corners (the barrel edges). When ``external_z``
+    Always chamfers the pillars' outer vertical corners (the barrel edges). When ``external_z``
     is the height of the part's externally facing end face, that face's whole outer perimeter
     (outer arcs, window arcs, pillar sides - the outer wire, so internal holes are excluded) is
     chamfered too. Mating faces stay sharp. Unchanged when ``edge_chamfer <= 0``."""
