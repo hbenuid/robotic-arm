@@ -2,7 +2,7 @@
 
 **Purpose:** the ONE list of unsettled things a session should know before trusting a number or a fit: fit problems
 the model carries knowingly, `[ESTIMATE]` values waiting for a measurement, hardware not modelled yet, mappings
-not confirmed. **Rule:** when you flag something in a commit, add a row (issue, where it lives, what closes it,
+not confirmed, parts not converted yet. **Rule:** when you flag something in a commit, add a row (issue, where it lives, what closes it,
 the commit that raised it); when you close it, delete the row and say so in the commit message. A number here is
 a fit value or an estimate, quoted beside the constant or test that holds it — the code wins if they drift; counts
 and totals are never quoted (`cad/CLAUDE.md` Docs).
@@ -60,9 +60,26 @@ and totals are never quoted (`cad/CLAUDE.md` Docs).
 | A **4th CAN id** for the forearm roll: `software/control/src/config.py` J1..J3 name three MKS boards, the arm now carries five (base_yaw, shoulder_pitch, elbow_pitch, forearm_roll, wrist_pitch) - the control side is out of the CAD's scope | `software/control/src/config.py`, `software/control/README.md` Hardware |
 | Whether the elbow 90T pulley is the driven side (it carries the roll drive's stator - the block that replaced `j3_coupler#1` - in `elbow_link`) | `robot/frames.py LINKS` [ASSUMPTION] |
 
+## Not converted yet (SolidWorks geometry, not build123d)
+The part's model still returns its SolidWorks export (`CONVERTED = False`, `parts/_templates/wrapper.py`), so its
+geometry can be moved but not re-sized by a parameter. Converting one: `parts/CLAUDE.md` "Converting a part", then
+Recipe C; the same commit deletes its row. `tools/bom.py`'s print list gives every part's state.
+
+| part | link (`robot/frames.py LINKS`) | note |
+|---|---|---|
+| `gripper_clamp_bracket` | wrist_pitch_link | (`assemblies/arm.py`) |
+| `gripper_j3_connector` | wrist_roll_link | two solids in one part (`tests/test_parts_convention.py MULTI_BODY`) |
+| `servo_holder` | wrist_roll_link | holds the MG996R (`assemblies/gripper.py`) |
+| `gripper_cover` | wrist_roll_link | |
+| `gripper_link_1` | wrist_roll_link | the servo's crank linkage, merged into the link |
+| `gripper_link_2` | wrist_roll_link | likewise |
+| `gripper_slider` | jaw_a_link, jaw_b_link | |
+| `gripper_finger_left` | jaw_a_link | |
+| `gripper_finger_right` | jaw_b_link | the mirror of `gripper_finger_left` (its export is still named "…Hand Left") |
+| `gripper_end` | jaw_a_link, jaw_b_link | |
+
 ## Known-broken / pending
 | item | where |
 |---|---|
 | The motor-control `software/control/tests/` imports `arctos.*` and does not run | `software/control/CLAUDE.md` "Known issues" |
-| Most custom parts are still SolidWorks wrappers (`CONVERTED = False`; the parametric ones so far are the links `j2_link`, `lib/forearm/`, and `j1_link`, `lib/upper_arm/`, the `base`, `lib/base/`, and the couplers `j3_coupler`, `lib/coupler/`, and `j1_coupler`, `lib/yaw_coupler/`; `gt2_pulley_90t` is the SolidWorks body with its bolt holes opened to `M4_CLEAR`, a diverged part; the print list of `tools/bom.py` gives every part's state); the fit problems above are fixed at conversion | `parts/<group>/*.py`, `cad/parts/CLAUDE.md` "Part states" |
 | The drive's motor envelope cuts the D-flat at `shaft_dcut_flat / 2` (flat-to-round 4.75) — ruled correct 2026-09-21 (it is what `reference/cycloidal/nema17_48mm.step` defines and the eccentric shaft's D-bore matches); noted here only because the parameter's name reads like 4.5 | `lib/cycloidal/motor.py flat_offset()` |

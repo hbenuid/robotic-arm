@@ -1,7 +1,7 @@
-"""GT2 belt drives - a leaf module (no imports): the tooth pitch, the pulleys the arm uses and the
-closed-belt arithmetic every belt joint needs (the elbow / wrist belts on the SolidWorks 90T pulleys,
-the forearm roll's 90T ring). lib/params.py re-exports the constants; lib/forearm/ imports from HERE
-(it must not import lib/params.py, which imports it back).
+"""GT2 belt drives - a leaf module (no imports): the tooth pitch, the groove every printed pulley cuts, the pulleys the
+arm uses and the closed-belt arithmetic every belt joint needs (the elbow / wrist belts on the 90T pulleys, the forearm
+roll's 90T ring). lib/params.py re-exports the constants; lib/pulley/ and lib/forearm/ import from HERE (they must not
+import lib/params.py, which imports them back).
 
 Tags as in lib/params.py. Units mm.
 """
@@ -16,7 +16,18 @@ GT2_RATIO = GT2_PULLEY_90T_TEETH / GT2_PULLEY_20T_TEETH                 # 4.5:1 
 GT2_PLD = 0.254                                     # [DATASHEET] pitch-line distance: pitch radius - pulley outside radius
 GT2_BELT_W = 6.0                                    # [DATASHEET] the 6 mm belt every joint uses
 GT2_TOOTH_DEPTH = 0.75                              # [DATASHEET] belt tooth height (= the pulley groove depth)
-GT2_GROOVE_R = 0.555                                # [ESTIMATE] pulley groove (belt tooth) radius - MEASURE on reference/solidworks/gt2_pulley_90t.step
+
+# The groove every printed pulley cuts (lib/pulley/teeth.py), as the SolidWorks 90T has it
+# (reference/solidworks/gt2_pulley_90t.step): arcs only, each tangent to the next - a round bottom GT2_TOOTH_DEPTH under
+# the land, a blend into each flank, the flank (its centre on the land circle, across the groove's centreline), a
+# fillet onto the land. The blend's and the fillet's centres follow from those tangencies (teeth.py groove_centres()).
+GT2_GROOVE_R = 0.555                                # [REFERENCE] the groove's bottom (the belt tooth's tip)
+GT2_FLANK_R = 1.0                                   # [REFERENCE] each flank ...
+GT2_FLANK_OFFSET = (GT2_PULLEY_90T_PITCH_DIA / 2.0 - GT2_PLD) * math.sin(math.radians(0.8))   # [REFERENCE] 0.396: ...
+#                                                     its centre this far across the centreline: 0.8 deg on the 90T's land
+GT2_BLEND_R = 0.6385333225                          # [REFERENCE] flank -> bottom (the export's value: the constraint
+#                                                     that set it in the SolidWorks sketch is not in the export)
+GT2_TIP_R = 0.15                                    # [REFERENCE] flank -> land
 
 # The printed 90T's hub (parts/joints/gt2_pulley_90t, in its SolidWorks part frame, its axis +Y): its end, which bolts
 # flat onto the coupler's stub, and its outer face, under the pulley bolts' heads; the 4x M4 run through it end to end.
