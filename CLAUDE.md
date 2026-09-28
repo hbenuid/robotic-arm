@@ -12,14 +12,23 @@ in this repo on purpose — when it is picked up it needs the CAD's robot descri
 table, the drive ratios) to agree with `software/control/src/config.py`, and one repo keeps both sides in one commit.
 
 ## Git workflow
-- Work on a branch — `cad/<topic>` for CAD work, `<area>/<topic>` otherwise — and push the **branch**. It goes into
-  `main` only when the user says so, and always as a **merge commit, never a fast-forward**: from the main checkout
-  (on `main`, clean) `git pull --ff-only`, `git merge --no-ff <branch> -m "Merge <branch>: <what it did, one line>"`,
-  `git push origin main` (never `git push origin <branch>:main` - that is a fast-forward). So `main` reads one entry
-  per branch - `git log --first-parent main`, or a branch graph (VS Code's Source Control Graph, `git log --graph`)
-  that draws each branch as a side line into its merge (GitHub Desktop's History is a flat list: it shows no grouping,
-  a merge's row there shows the branch's whole change); the older history was fast-forwarded and stays linear. Never
-  commit to or push `main` otherwise (an approved plan that says "commit + push" means the branch).
+- Work on a branch — `cad/<topic>` for CAD work, `<area>/<topic>` otherwise — and push the **branch**.
+- **Every branch reaches `main` through a pull request.** When the branch is done (committed, the local suite green,
+  pushed), open one: `gh pr create --base main --head <branch> --title "<what it did, one line>" --body "<why, what
+  changed, the checks run>"` (the commits stay the record: the body summarises, it does not replace them).
+  `gh pr list` is then the list of branches waiting for `main`, each with its diff against today's `main` and a
+  warning when it conflicts. If `main` moves under an open branch, merge `main` into the branch (`git fetch`,
+  `git merge origin/main`, fix conflicts, re-run the suite, push): the pull request follows the branch.
+- The pull request is merged only when the user says so, and always as a **merge commit** — never squash, rebase or
+  fast-forward (the repo's GitHub settings allow only merge commits): `gh pr merge <n> --merge --subject "Merge
+  <branch>: <what it did, one line>"`, then `git pull --ff-only` in the main checkout (on `main`, clean). So `main`
+  reads one entry per branch -
+  `git log --first-parent main`, or a branch graph (VS Code's Source Control Graph, `git log --graph`) that draws
+  each branch as a side line into its merge (GitHub Desktop's History is a flat list: it shows no grouping, a merge's
+  row there shows the branch's whole change); the older history was fast-forwarded and stays linear. Never commit to
+  or push `main` directly, never `git merge` into `main` by hand and never `git push origin <branch>:main` (an
+  approved plan that says "commit + push" means the branch; opening its pull request is part of finishing a branch,
+  merging it is not).
 - **The commit message is the record** — there is no CHANGELOG file. Subject `<area>: what changed` (`cad:`, `docs:`,
   `tooling:` …); body: why, what it replaces or removes, and every measured number that changed (totals, masses,
   fits, lock values); one logical change per commit. History is `git log` (`--grep`, `-- <path>`, `-S <CONSTANT>`,
@@ -67,11 +76,13 @@ pulls the LFS objects, lints both projects, imports the CLI, runs `cad/`'s fast 
 gen`s the arm (~13 min, from the private repo's monthly Actions minutes). It is the **clean-clone check** neither
 machine can give — no `~/.cache/cadgen`, no raw exports, no generated STEPs — so a test or model that quietly needs
 a file outside git fails there first. Everyday pushes do not need it (the pre-commit hook and the local suite cover
-them); run it on the branch before merging it into `main` after: a cadgen / build123d / OCP bump, a new SolidWorks
-or vendor export or vendor STEP, a change to `lib/reference.py` or to how parts read their inputs, or any large
-change. Suggest it then; never trigger it unasked. It checks and never writes (no hash gate, no snapshots, no
-commits). The runner is a third machine (x86_64 Linux): the "no exact float equality" rule of `cad/CLAUDE.md` "Two
-machines" holds for it too. The motor-control `software/control/tests/` stay out until they are fixed.
+them); run it on the branch before its pull request is merged after: a cadgen / build123d / OCP bump, a new
+SolidWorks or vendor export or vendor STEP, a change to `lib/reference.py` or to how parts read their inputs, or any
+large change - on the branch as it will merge (with `main` merged in if `main` moved), its result noted on the pull
+request (`gh pr comment <n>`). Suggest it then; never trigger it unasked. It checks and never writes (no hash gate,
+no snapshots, no commits). The runner is a third machine (x86_64 Linux): the "no exact float equality" rule of
+`cad/CLAUDE.md` "Two machines" holds for it too. The motor-control `software/control/tests/` stay out until they are
+fixed.
 
 ## Software (`software/`)
 - `software/control/` is the motor-control CLI, its own uv project. Its rules — running it, the load-bearing
