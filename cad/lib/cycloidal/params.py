@@ -15,7 +15,8 @@ Port adaptations (all listed in docs/cycloidal_drive.md "Port notes"):
     inp_qty);
   * the interface dimensions the arm needs are re-exported by lib/params.py (CYCLOIDAL_*).
 Two configurations: LEGACY_CONFIG is the port (what the CadQuery exports in reference/cycloidal/ were built
-from); DEFAULT_CONFIG is what the parts build - it differs only in HousingParams.bolt_count.
+from); DEFAULT_CONFIG is what the parts build - it differs in HousingParams.bolt_count and in the gear's size
+(RING_INSET: the ring-pin circle and the housing round it, smaller by the same amount).
 Units: mm, degrees where named *_deg. The stack-up datum (Z=0) is the OUTER face of the motor plate
 (the NEMA 17 mounting face); +Z runs through the drive toward the output hub.
 """
@@ -122,7 +123,7 @@ class HousingParams:
     bore_dia: float = 116.0
     edge_chamfer: float = 1.5          # 45 deg chamfer on the outer silhouette of both housing parts; 0 disables
     bolt_count: int = 8
-    bolt_circle_dia: float = 125.0     # outside the 116 mm bore
+    bolt_circle_dia: float = 125.0     # outside the bore
     bolt_dia: float = 4.0              # M4
     bolt_length: float = 55.0          # M4 x 55 SHCS
     bolt_head_dia: float = 7.0
@@ -228,7 +229,7 @@ class StackUp:
 
     @property
     def bore_zone(self) -> float:
-        """Disc zone + output clearance = the 116 mm bore length (28)."""
+        """Disc zone + output clearance = the bore's length (28)."""
         return self.disc_zone + self.output_clearance
 
     @property
@@ -273,9 +274,9 @@ class DriveConfig:
 
 
 def compute_housing_bolt_angles(cfg: DriveConfig) -> list[float]:
-    """Evenly spaced housing-bolt angles (radians, from +X). The 125 mm bolt circle and the
-    108 mm ring-pin circle are ~8.5 mm apart radially, so no angular offset is needed (a bolt may
-    line up with a ring pin: DEFAULT_CONFIG's do every 120 degrees)."""
+    """Evenly spaced housing-bolt angles (radians, from +X). The bolt circle sits 8.5 mm outside the
+    ring-pin circle (radially, in both configs), so no angular offset is needed (a bolt may line up with a
+    ring pin: DEFAULT_CONFIG's do every 120 degrees)."""
     n = cfg.housing.bolt_count
     return [2 * math.pi * i / n for i in range(n)]
 
@@ -283,6 +284,20 @@ def compute_housing_bolt_angles(cfg: DriveConfig) -> list[float]:
 # The port: the CadQuery drive exactly (the designed parts' REFERENCE_BUILD - tests/cycloidal/test_port.py).
 LEGACY_CONFIG = DriveConfig()
 
-# What the parts build: the housing on 6 bolts, not 8 - 6 pillars at 60 degrees from +X (same start), so the
-# j1_coupler yoke holds the two that straddle its bottom (lib/yaw_coupler/params.py DEFAULT).
-DEFAULT_CONFIG = replace(LEGACY_CONFIG, housing=replace(LEGACY_CONFIG.housing, bolt_count=6))   # [DESIGN]
+# What the parts build - two departures from the port:
+#  * the housing on 6 bolts, not 8 - 6 pillars at 60 degrees from +X (same start), so the j1_coupler yoke holds the
+#    two that straddle its bottom (lib/yaw_coupler/params.py DEFAULT);
+#  * a smaller gear: the ring-pin circle and everything outside it (the bore, the bolt circle, the od) RING_INSET
+#    further in, so each wall outside the pins keeps the port's thickness (the housing's outline between its pillars
+#    is the bore: 1.9 outside the pin holes) and the drive is 2 * RING_INSET smaller across. The discs follow the
+#    pins (their epitrochoid is the pin circle's); the 6814s, the hub, the shaft and the stack-up do not change. The
+#    limit is the wall between the pins' far ends and the 6814 seat, 6.8 -> 2.8 (tests/cycloidal/test_ring_gear_body.py).
+RING_INSET = 4.0   # [DESIGN] mm, radial
+DEFAULT_CONFIG = replace(
+    LEGACY_CONFIG,
+    gear=replace(LEGACY_CONFIG.gear, ring_pin_circle_dia=LEGACY_CONFIG.gear.ring_pin_circle_dia - 2 * RING_INSET),  # 100
+    housing=replace(LEGACY_CONFIG.housing, bolt_count=6,
+                    bore_dia=LEGACY_CONFIG.housing.bore_dia - 2 * RING_INSET,                   # 108
+                    bolt_circle_dia=LEGACY_CONFIG.housing.bolt_circle_dia - 2 * RING_INSET,     # 117
+                    od=LEGACY_CONFIG.housing.od - 2 * RING_INSET),                             # 132
+)   # [DESIGN]

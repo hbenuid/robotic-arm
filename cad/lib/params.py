@@ -110,7 +110,7 @@ from lib.cycloidal.params import DEFAULT_CONFIG as _DRIVE  # noqa: E402
 CYCLOIDAL_RATIO = _DRIVE.gear.gear_ratio                          # 20:1 [DESIGN] 20 lobes / 21 ring pins.
 #   NOTE: software/control/src/config.py JOINTS still carries gear_ratio 1.0 on J1..J3 - which MKS motor drives the
 #   shoulder_pitch joint (if any of them) is unconfirmed.
-CYCLOIDAL_HOUSING_OD = _DRIVE.housing.od                          # 140 [DESIGN]
+CYCLOIDAL_HOUSING_OD = _DRIVE.housing.od                          # 132 [DESIGN] the lugs; lib/cycloidal/params.py RING_INSET
 CYCLOIDAL_STACK_DEPTH = _DRIVE.stack_up.total_housing_depth       # 60 [DESIGN] motor-plate outer face -> housing output face
 CYCLOIDAL_MOTOR_BODY_LEN = _DRIVE.motor.body_length               # 48 [DATASHEET] NEMA 17 body behind the plate (-Z)
 CYCLOIDAL_HUB_OD = _DRIVE.output_hub.od                           # 70.3 [DESIGN]

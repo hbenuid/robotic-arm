@@ -1,11 +1,12 @@
 """j1_coupler, parametric (lib/yaw_coupler/): the LEGACY configuration reproduces the SolidWorks part feature by
 feature (the volume / bbox match is tests/test_reference_match.py's; here the features are probed by name so a
 regression names what moved), the yoke's shapes are the drive's housing's - its bore, its od, its pillars' sides,
-its bolt circle and nut pockets (lib/cycloidal/params.py HousingParams) -, and DEFAULT - what the part builds - changes
-its underside, its hub and the yoke's hold on the housing: the seat on the thrust bearing, the rim clear of the base
-(tests/test_mounts.py checks the stack in place), the stub on to the lip's lower face and drilled for the base_yaw 90T,
-the sockets round the 6-pillar housing's two pillars at +/-30 degrees (tests/cycloidal/test_assembly.py checks the
-drive in place)."""
+its bolt circle and nut pockets (lib/cycloidal/params.py HousingParams; LEGACY's the port's housing, LEGACY_CONFIG) -,
+and DEFAULT - what the part builds - changes its underside, its hub and the yoke's hold on the housing: the seat on the
+thrust bearing, the rim clear of the base (tests/test_mounts.py checks the stack in place), the stub on to the lip's
+lower face and drilled for the base_yaw 90T, the cradle, od points and nut pockets on the housing the drive builds
+(DEFAULT_CONFIG's smaller one) and the sockets round its two pillars at +/-30 degrees (tests/cycloidal/test_assembly.py
+checks the drive in place)."""
 import math
 from dataclasses import replace
 
@@ -18,10 +19,11 @@ from lib.coupler import DEFAULT as J3_COUPLER
 from lib.cycloidal import compute_housing_bolt_angles
 from lib.cycloidal.layout import PILLAR_OVERSHOOT
 from lib.cycloidal.params import DEFAULT_CONFIG as DRIVE
+from lib.cycloidal.params import LEGACY_CONFIG as PORT
 from lib.fasteners import M4_CLEAR, M4_NUT
 from lib.geom import hex_circumdiameter
 from lib.yaw_coupler import DEFAULT, LEGACY, hole_points, nut_centres, od_point, socket_outline
-from lib.yaw_coupler.layout import below_axis, pillar_point
+from lib.yaw_coupler.layout import below_axis, flare_r, pillar_point
 from tests import built
 from tests.helpers import is_inside
 
@@ -33,15 +35,17 @@ def _polar(y: float, z: float, deg: float) -> tuple[float, float]:
     return (u * math.cos(a) + z * math.sin(a), abs(-u * math.sin(a) + z * math.cos(a)))
 
 
-def _pillar_half_w(along: float) -> float:
-    """The housing pillar's half width at `along` from the drive's axis (lib/cycloidal/housing.py's trapezoid)."""
-    h = DRIVE.housing
+def _pillar_half_w(along: float, drive=DRIVE) -> float:
+    """The housing pillar's half width at `along` from the drive's axis (lib/cycloidal/housing.py's trapezoid) - the
+    housing the parts build, or `drive`'s."""
+    h = drive.housing
     r0, r1 = h.bore_dia / 2.0 - PILLAR_OVERSHOOT, h.od / 2.0 + PILLAR_OVERSHOOT
     return (h.pillar_inner_w + (h.pillar_outer_w - h.pillar_inner_w) * (along - r0) / (r1 - r0)) / 2.0
 
 
 def test_the_yoke_is_the_housings_shape():
-    k, h = LEGACY.yoke, DRIVE.housing
+    """LEGACY's yoke (the SolidWorks part) on the port's housing (LEGACY_CONFIG)."""
+    k, h = LEGACY.yoke, PORT.housing
     assert (2.0 * k.cradle_r, 2.0 * k.od_r, 2.0 * k.bolt_circle_r) == (h.bore_dia, h.od, h.bolt_circle_dia)
     assert k.nut_af == pytest.approx(h.bolt_nut_pocket_af, abs=0.01) and k.nut_depth == h.bolt_nut_depth
     near, end = k.groove_z
@@ -53,14 +57,14 @@ def test_the_yoke_is_the_housings_shape():
     # far side; D and B, C and A mirror each other about the pillar's centre line (to the census's 1e-4)
     for p in (c, d, a, b):
         along, across = _polar(*p, 45.0)
-        assert across == pytest.approx(_pillar_half_w(along), abs=0.01)
+        assert across == pytest.approx(_pillar_half_w(along, PORT), abs=0.01)
     assert (k.axis_y - b[0], b[1]) == pytest.approx((d[1], k.axis_y - d[0]), abs=1e-4)
     assert (k.axis_y - a[0], a[1]) == pytest.approx((c[1], k.axis_y - c[0]), abs=1e-4)
     # the channel: its floor corners on the od, its walls the bottom pillar's sides 0.2 out
     corner_along = k.axis_y - k.channel_floor_y
-    assert math.hypot(corner_along, _pillar_half_w(corner_along)) == pytest.approx(k.od_r, abs=0.01)
-    assert k.channel_slope == pytest.approx(_pillar_half_w(60.0) - _pillar_half_w(61.0))
-    gap = (k.channel_half_z - _pillar_half_w(corner_along)) / math.hypot(1.0, k.channel_slope)
+    assert math.hypot(corner_along, _pillar_half_w(corner_along, PORT)) == pytest.approx(k.od_r, abs=0.01)
+    assert k.channel_slope == pytest.approx(_pillar_half_w(60.0, PORT) - _pillar_half_w(61.0, PORT))
+    gap = (k.channel_half_z - _pillar_half_w(corner_along, PORT)) / math.hypot(1.0, k.channel_slope)
     assert gap == pytest.approx(0.2, abs=0.005)
     # the nut pockets: the bottom housing bolt and the two at +/-45 degrees, on the bolt circle
     assert [math.hypot(k.axis_y - y, z) for y, z in nut_centres(LEGACY)] == pytest.approx([k.bolt_circle_r] * 3)
@@ -73,10 +77,13 @@ def _from_bottom(drive_rad: float) -> float:
 
 
 def test_default_yoke_holds_the_housings_pillars():
-    """DEFAULT's yoke on the drive's housing (lib/cycloidal/params.py DEFAULT_CONFIG): a socket round each pillar it
-    holds - on a housing bolt, its walls and floor socket_clear off the pillar -, the nut pockets under those bolts,
-    and every other pillar clear of the yoke (past the cheek's top on the cradle and the od point on the od)."""
+    """DEFAULT's yoke on the drive's housing (lib/cycloidal/params.py DEFAULT_CONFIG): its cradle, od points and bolt
+    circle that housing's (the drive's axis where LEGACY has it), a socket round each pillar it holds - on a housing
+    bolt, its walls and floor socket_clear off the pillar -, the nut pockets under those bolts, and every other pillar
+    clear of the yoke (past the cheek's top on the cradle and the od point on the od)."""
     k, h = DEFAULT.yoke, DRIVE.housing
+    assert (2.0 * k.cradle_r, 2.0 * k.od_r, 2.0 * k.bolt_circle_r) == (h.bore_dia, h.od, h.bolt_circle_dia)
+    assert k.axis_y == LEGACY.yoke.axis_y
     pillars = [_from_bottom(a) for a in compute_housing_bolt_angles(DRIVE)]
     assert k.socket_deg and k.bolt_deg == k.socket_deg and k.groove_z is None and not k.channel
     assert all(any(abs(d - p) < 1e-9 for p in pillars) for d in k.socket_deg)
@@ -195,7 +202,11 @@ def test_default_hub_takes_the_base_yaw_90t():
 def test_default_changes_the_hub_the_underside_and_the_yoke(coupler, legacy):
     assert coupler.label == "j1_coupler" and coupler.is_valid and len(coupler.solids()) == 1
     bb, lb = coupler.bounding_box(), legacy.bounding_box()
-    assert (bb.min.X, bb.min.Z, *tuple(bb.max)) == pytest.approx((lb.min.X, lb.min.Z, *tuple(lb.max)), abs=1e-6)
+    assert (bb.min.X, bb.min.Z, bb.max.X, bb.max.Z) == pytest.approx((lb.min.X, lb.min.Z, lb.max.X, lb.max.Z), abs=1e-6)
+    top = below_axis(DEFAULT, DEFAULT.yoke.cradle_r, DEFAULT.yoke.cheek_top_z)
+    assert bb.max.Y == pytest.approx(top, abs=1e-6) and lb.max.Y == pytest.approx(below_axis(LEGACY, LEGACY.yoke.cradle_r,
+                                                                                               LEGACY.yoke.cheek_top_z), abs=1e-6)
+    assert bb.max.Y > lb.max.Y             # the cheek's top: the same |z| on the smaller housing's cradle, so higher
     assert bb.min.Y == pytest.approx(DEFAULT.hub.stub_y0, abs=1e-6)                           # the stub's end, lower
     assert is_inside(coupler, 0, -9.2, 12) and not is_inside(coupler, 0, -9.4, 12) and not is_inside(legacy, 0, -9.2, 12)
     assert is_inside(coupler, 0, -5, 14.95) and not is_inside(coupler, 0, -5, 15.05)          # the stub Ø30 ...
@@ -221,24 +232,32 @@ def test_default_changes_the_hub_the_underside_and_the_yoke(coupler, legacy):
         assert is_inside(coupler, *probe) == is_inside(legacy, *probe)                         # the rest as before
     k = DEFAULT.yoke
     flare = DEFAULT.disc.ring_r / (DEFAULT.disc.ring_y1 - k.flare_apex_y)     # the flare's dr / dy
+    od = DRIVE.housing.od / 2.0
     for d in k.socket_deg:
-        hw = _pillar_half_w(64.0)
+        hw = _pillar_half_w(od - 6.0)
         for x in (-28.3, 0.0, 22.0, 31.3):
-            assert not is_inside(coupler, x, *pillar_point(DEFAULT, d, 64.0, 0.0))            # the socket, end to end ...
-        assert is_inside(legacy, 22.0, *pillar_point(DEFAULT, d, 64.0, 0.0))
-        assert not is_inside(coupler, 22.0, *pillar_point(DEFAULT, d, 64.0, hw + 0.1))        # ... its walls 0.2 off ...
-        assert is_inside(coupler, 22.0, *pillar_point(DEFAULT, d, 64.0, hw + 0.35))
-        assert not is_inside(coupler, 22.0, *pillar_point(DEFAULT, d, 70.1, 0.0))             # ... its floor 0.2 off the od
-        assert is_inside(coupler, 22.0, *pillar_point(DEFAULT, d, 70.35, 0.0))
-        assert is_inside(coupler, -29.0, *pillar_point(DEFAULT, d, 67.0, 0.0))                # ... stopped by the cheek
-        # its wall under the floor's corner nearest the ring, socket_wall thick even at the ends, where the flare
-        # (the cone out of the ring's top edge) would leave under 1 mm: a rib out of it
+            assert not is_inside(coupler, x, *pillar_point(DEFAULT, d, od - 6.0, 0.0))        # the socket, end to end ...
+        assert is_inside(legacy, 22.0, *pillar_point(DEFAULT, d, od - 6.0, 0.0))
+        assert not is_inside(coupler, 22.0, *pillar_point(DEFAULT, d, od - 6.0, hw + 0.1))    # ... its walls 0.2 off ...
+        assert is_inside(coupler, 22.0, *pillar_point(DEFAULT, d, od - 6.0, hw + 0.35))
+        assert not is_inside(coupler, 22.0, *pillar_point(DEFAULT, d, od + 0.1, 0.0))         # ... its floor 0.2 off the od
+        assert is_inside(coupler, 22.0, *pillar_point(DEFAULT, d, od + 0.35, 0.0))
+        assert is_inside(coupler, -29.0, *pillar_point(DEFAULT, d, od - 3.0, 0.0))            # ... stopped by the cheek
+        # its wall under the floor's corner nearest the ring, socket_wall thick even at the ends; where the flare
+        # (the cone out of the ring's top edge) would leave less, a rib stands out of it (the port's housing; the
+        # smaller one's sockets sit inside the flare, whose body is thicker there)
         y, z = min(socket_outline(DEFAULT, d), key=lambda p: p[0])
         n = (-flare, math.copysign(1.0, z))
         n = (n[0] / math.hypot(*n), n[1] / math.hypot(*n))
         for x in (-28.3, 31.3):
             assert is_inside(coupler, x, y + n[0] * (k.socket_wall - 0.1), z + n[1] * (k.socket_wall - 0.1))
-            assert not is_inside(coupler, x, y + n[0] * (k.socket_wall + 0.3), z + n[1] * (k.socket_wall + 0.3))
+            py, pz = y + n[0] * (k.socket_wall + 0.3), z + n[1] * (k.socket_wall + 0.3)
+            if math.hypot(x, pz) > flare_r(DEFAULT, py):                                        # the rib, no thicker
+                assert not is_inside(coupler, x, py, pz)
+    for r, solid in ((DRIVE.housing.bore_dia / 2.0 - 0.3, False), (DRIVE.housing.bore_dia / 2.0 + 2.0, True)):
+        y = k.axis_y - math.sqrt(r * r - 10.0 ** 2)
+        assert is_inside(coupler, 22.0, y, 10.0) == solid                                     # the cradle on the smaller
+        assert not is_inside(legacy, 22.0, y, 10.0)                                           # housing: its floor risen
     for y, z in nut_centres(DEFAULT):
         assert not is_inside(coupler, -31, y, z) and not is_inside(coupler, -28.7, y, z)      # the nut pockets at +/-30 ...
         assert is_inside(legacy, -31, y, z)

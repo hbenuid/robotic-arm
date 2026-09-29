@@ -1,4 +1,4 @@
-"""cycloidal_housing_nuts - the M4 hex nuts (bolt_count) (7 AF x 3.2) on the 125 mm bolt circle, standing on z=0, keyed radially.
+"""cycloidal_housing_nuts - the M4 hex nuts (bolt_count) (7 AF x 3.2) on the bolt circle, standing on z=0, keyed radially.
 
 In the drive: at stack z_housing_nuts (56) in the ring gear body's output-face pockets. Solid
 hexagons (no thread).
