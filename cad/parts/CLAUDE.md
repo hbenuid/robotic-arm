@@ -113,6 +113,14 @@ envelope reuses with other `MotorParams`.
 manifest entry) → `tests/test_parts_convention.py MULTI_BODY` if it is several solids → give it an occurrence (a
 SolidWorks key, a module row, or Recipe B in `assemblies/CLAUDE.md`) → Recipe C.
 
+## Modelled, not placed yet
+A part may be modelled before an assembly places it (a sensor whose mount is not designed yet). It declares
+`UNPLACED = "<why, and what will place it>"` (`parts.unplaced()`); `tests/test_bom.py` then leaves it out of the
+"every part is placed" check, and the print and buy lists never see it (they count occurrences). Its order line stays
+a `tools/bom.py EXTRAS` row until then. Placing it is ONE commit: the occurrence, `UNPLACED` removed (the test fails
+while a placed part still declares it) and its `EXTRAS` row removed. Everything else holds as for a placed part: the
+registry, the reference, `MULTI_BODY`, the part's build in the slow lane.
+
 ## Printed vs. bought
 Every part carries the make/buy label once: `COTS = True` in its module means **bought**, anything else is
 **printed** (`parts.bought(name)`). Nothing else is kept by hand — the folders follow the arm's physical

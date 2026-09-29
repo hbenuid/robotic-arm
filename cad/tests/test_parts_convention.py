@@ -77,6 +77,9 @@ def test_part_declares_its_contract(name):
     assert m.__cadgen_model__.out is None, f"parts.{name}: no out= - the STEP is the sibling parts/<group>/{name}.step"
     assert runs_its_model(parts.source_of(name), name), (
         f"parts.{name}: the file must end with `if __name__ == \"__main__\": {name}()` - without it `./cadtool gen` builds nothing")
+    unplaced = getattr(mod, "UNPLACED", None)
+    assert unplaced is None or (isinstance(unplaced, str) and unplaced.strip()), (
+        f"{name}.UNPLACED must say why no assembly places it yet (parts/CLAUDE.md \"Modelled, not placed yet\")")
     if getattr(mod, "COTS", False):
         assert name in R.COTS, f"{name} declares COTS but is not in lib.reference.COTS"
         mass = getattr(mod, "MASS_G", None)

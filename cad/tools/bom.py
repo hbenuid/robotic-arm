@@ -8,7 +8,8 @@ module's own OCCURRENCES (arm.MODULES) - so a part added to an assembly shows up
 second list to keep. A bought part says what to order itself (PURCHASE_SPEC / PURCHASE_QTY, the pieces
 per occurrence - a whole pattern for a pin or fastener part / optional PURCHASE_NOTE, next
 to its MASS_G). EXTRAS below is the one hand-kept table: purchased items with NO geometry - they are on
-the buy list, not in the model, the totals or the inertials. No CAD kernel is loaded.
+the buy list, not in the model, the totals or the inertials - and the order line of a part modelled but not placed
+yet (UNPLACED, parts/CLAUDE.md "Modelled, not placed yet"). No CAD kernel is loaded.
 """
 from __future__ import annotations
 
