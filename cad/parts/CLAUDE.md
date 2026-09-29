@@ -111,7 +111,8 @@ envelope reuses with other `MotorParams`.
 `lib/reference.py COTS` (`rel=None` when the vendor file IS the reference) → put `vendor/<name>.step` in place (Recipe D,
 `vendor/CLAUDE.md`) → `./cadtool python tools/reference/import_solidworks.py` (mirrors it into `reference/solidworks/`,
 manifest entry) → `tests/test_parts_convention.py MULTI_BODY` if it is several solids → give it an occurrence (a
-SolidWorks key, a module row, or Recipe B in `assemblies/CLAUDE.md`) → Recipe C.
+SolidWorks key, a module row, or Recipe B in `assemblies/CLAUDE.md`) → Recipe C. A part modelled before its mount is
+known goes in `tests/test_bom.py UNPLACED` instead of the occurrence, with a `docs/open_issues.md` row.
 
 ## Printed vs. bought
 Every part carries the make/buy label once: `COTS = True` in its module means **bought**, anything else is

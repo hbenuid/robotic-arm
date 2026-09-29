@@ -129,6 +129,7 @@ NATIVE: dict[str, str] = {
 NATIVE_COTS: dict[str, str] = {
     "bearing_6808": "parts/joints/bearing_6808.py:_envelope()",
     "bearing_6806": "parts/joints/bearing_6806.py:_envelope()",
+    "gt2_idler_20t": "parts/joints/gt2_idler_20t.py:_envelope()",
     "bearing_axk6590": "parts/base/bearing_axk6590.py:_envelope()",
     "washer_as6590": "parts/base/washer_as6590.py:_envelope()",
     "elbow_pulley_screws": "parts/joints/elbow_pulley_screws.py:_envelope()",

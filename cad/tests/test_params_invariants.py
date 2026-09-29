@@ -30,6 +30,17 @@ def test_gt2_groove():
     assert p.GT2_GROOVE_R < p.GT2_TOOTH_DEPTH < 2.0 * p.GT2_GROOVE_R
 
 
+def test_gt2_idler():
+    # the seller's drawing (lib/belts.py); the belt runs in the channel, on the seat, under the flanges' rims
+    assert (p.GT2_IDLER_BORE, p.GT2_IDLER_SEAT_DIA, p.GT2_IDLER_FLANGE_DIA) == (5.0, 12.1, 18.0)
+    assert (p.GT2_IDLER_CHANNEL_W, p.GT2_IDLER_WIDTH) == (7.0, 9.0)
+    assert p.GT2_BELT_W < p.GT2_IDLER_CHANNEL_W < p.GT2_IDLER_WIDTH
+    assert p.GT2_IDLER_BORE < p.GT2_IDLER_SEAT_DIA < p.GT2_IDLER_FLANGE_DIA
+    size = MANIFEST["gt2_idler_20t"]["bbox_size"]
+    for got, want in zip(size, (p.GT2_IDLER_FLANGE_DIA, p.GT2_IDLER_FLANGE_DIA, p.GT2_IDLER_WIDTH), strict=True):
+        assert math.isclose(got, want, abs_tol=0.05)
+
+
 def test_pancake_envelope_tracks_reference():
     size = MANIFEST["nema17_pancake"]["bbox_size"]
     assert math.isclose(p.PANCAKE_BODY_W, size[0], abs_tol=0.05)
