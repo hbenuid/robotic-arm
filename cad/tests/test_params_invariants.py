@@ -121,7 +121,7 @@ def test_ky003_hall_sensor_matches_the_listings():
 # --- cycloidal drive interface (lib/cycloidal re-exported through lib/params.py) --------------------
 def test_cycloidal_interface():
     assert p.CYCLOIDAL_RATIO == 20
-    assert p.CYCLOIDAL_HOUSING_OD == 140.0
+    assert p.CYCLOIDAL_HOUSING_OD == 129.2
     assert p.CYCLOIDAL_STACK_DEPTH == 60.0
     assert p.CYCLOIDAL_MOTOR_BODY_LEN == 48.0
     assert p.CYCLOIDAL_HUB_OD == 70.3

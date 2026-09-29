@@ -4,13 +4,13 @@ Ported from cycloidal_drive@2f1f67d src/motor_plate.py (build_motor_plate()); re
 cycloidal_motor_plate.step is that builder's export (kind "designed"). PETG.
 
 Outer face z=0 (motor mounting face, external): pilot recess, 4x M3 clearance holes (heads
-pocketed from the inner face), 15 mm shaft pass-through; 21 ring-pin through-holes on the 108 mm
+pocketed from the inner face), 15 mm shaft pass-through; 21 ring-pin through-holes on the ring-pin
 circle (pins are inserted one at a time from this face); the M4 through-holes (bolt_count) with
-counterbores on the 125 mm circle; the shared pillar / reveal-window silhouette; outer silhouette chamfered.
+counterbores on the bolt circle; the shared pillar / reveal-window silhouette; outer silhouette chamfered.
 The inner face z=9 seats on the ring gear body and stays sharp.
 
 Diverged from the port: build(LEGACY_CONFIG) reproduces the export (REFERENCE_BUILD - tests/cycloidal/test_port.py,
-tests/test_reference_match.py); the model builds DEFAULT_CONFIG (6 bolts, not the port's 8).
+tests/test_reference_match.py); the model builds DEFAULT_CONFIG (6 bolts, not the port's 8, and the smaller gear: RING_INSET).
 """
 import pathlib
 

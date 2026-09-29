@@ -4,12 +4,14 @@ Ported from cycloidal_drive@2f1f67d src/cycloidal_disc.py (build_cycloidal_disc(
 reference/cycloidal_disc_1.step is that CadQuery builder's own export (manifest kind "designed").
 Local frame: profile centred on the disc axis, z 0..thickness (10); in the drive it orbits at
 (+e, 0) at stack z_disc1 (13) with a 6003 bearing in its 35.10 bore. PETG, 100 % infill.
+Diverged from the port: build(LEGACY_CONFIG) reproduces the export (REFERENCE_BUILD - tests/cycloidal/test_port.py);
+the model builds DEFAULT_CONFIG's smaller pin circle (lib/cycloidal/params.py RING_INSET).
 """
 import pathlib
 
 from cadgen import step
 
-from lib.cycloidal import DEFAULT_CONFIG, DriveConfig
+from lib.cycloidal import DEFAULT_CONFIG, LEGACY_CONFIG, DriveConfig
 from lib.cycloidal.disc import build_disc
 from lib.datum import IDENTITY
 
@@ -29,6 +31,12 @@ def phase_deg(cfg: DriveConfig = DEFAULT_CONFIG) -> float:
 
 def build(cfg: DriveConfig = DEFAULT_CONFIG):
     return build_disc(cfg, phase_deg(cfg))
+
+
+def REFERENCE_BUILD():
+    """The CadQuery port (LEGACY_CONFIG, its 108 mm pin circle) - what reference/cycloidal/cycloidal_disc_1.step holds
+    (tests/cycloidal/test_port.py)."""
+    return build(LEGACY_CONFIG)
 
 
 @step

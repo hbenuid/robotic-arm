@@ -41,6 +41,7 @@ from lib.base.params import DEFAULT as _BASE
 from lib.bearings import BEARING_6806_BORE, THRUST_OD, THRUST_STACK
 from lib.belts import GT2_PULLEY_90T_BOLT_R
 from lib.coupler.params import DEFAULT as _J3_COUPLER
+from lib.cycloidal.params import DEFAULT_CONFIG as _DRIVE
 from lib.fasteners import M4_CLEAR, M4_NUT
 
 
@@ -105,8 +106,8 @@ class YokeParams:
     body_x1: float = 31.5
     outer_z: float = 53.131924
     axis_y: float = 90.0             # the drive's axis (along X)
-    cradle_r: float = 58.0           # the housing's bore is 116: the cradle is its circle
-    od_r: float = 70.0               # the housing's od / 2: the points of the V-grooves' ends
+    cradle_r: float = 58.0           # the housing's bore / 2 (the port's 116): the cradle is its circle
+    od_r: float = 70.0               # the housing's od / 2 (the port's 140): the points of the V-grooves' ends
     cheek_top_z: float = 46.826264   # on the cradle
     groove_z: tuple | None = (34.224206, 45.574176)   # on the cradle, on od_r (None: no V-grooves)
     channel_floor_y: float = 20.204293
@@ -161,5 +162,9 @@ DEFAULT = replace(LEGACY,
                   # degrees from the drive's +X, which placements.json turns onto this frame's +Z - two straddle the
                   # cradle's bottom (the drive's 240 and 300), two stand at the axis's height past the outer faces, and
                   # none at the bottom or at +/-45 degrees: a socket round each of the two, their bolts' nut pockets in
-                  # the cheek; the channel, the notch and the V-grooves go (the middle body up to the cheek's top)
-                  yoke=replace(LEGACY.yoke, groove_z=None, channel=False, socket_deg=PILLAR_DEG, bolt_deg=PILLAR_DEG))
+                  # the cheek; the channel, the notch and the V-grooves go (the middle body up to the cheek's top). The
+                  # cradle, the od points and the nut pockets are that housing's (its RING_INSET smaller gear): the
+                  # drive's axis stays put, so the cradle's floor rises to meet the smaller housing
+                  yoke=replace(LEGACY.yoke, groove_z=None, channel=False, socket_deg=PILLAR_DEG, bolt_deg=PILLAR_DEG,
+                               cradle_r=_DRIVE.housing.bore_dia / 2.0, od_r=_DRIVE.housing.od / 2.0,
+                               bolt_circle_r=_DRIVE.housing.bolt_circle_dia / 2.0))

@@ -84,7 +84,7 @@ class TestHousingAlignment:
         assert abs(s.ring_gear_body_height - 51.0) < 0.01
 
     def test_all_housing_parts_same_od(self):
-        assert CFG.housing.od == 140.0
+        assert CFG.housing.od == 129.2
 
     def test_housing_bolt_angles_consistent(self):
         angles = compute_housing_bolt_angles(CFG)
@@ -313,7 +313,7 @@ class TestModuleLocks:
         assert abs(totals["solid_volume"] - cycloidal_drive.EXPECTED["solid_volume"]) <= 0.5
         # X: the pillars at 0 / 180 degrees reach the od; Y: no pillar on it, the ones at +/-60 and +/-120 degrees
         # (their chamfered outer corners) set it; Z: 48 motor + 14.1 MKS board behind the plate, 65 to the hub face
-        assert totals["bbox_size"] == [140.0, 124.908, 127.1]
+        assert totals["bbox_size"] == [129.2, 116.023, 127.1]
         bodies = {body: cycloidal_drive.totals(body, shape=drive) for body in cycloidal_drive.BODIES}
         for body, got in bodies.items():
             want = cycloidal_drive.EXPECTED["bodies"][body]
@@ -377,25 +377,26 @@ class TestPoseInTheArm:
     def test_module_world_bbox_matches_solidworks_node(self, drive_world):
         """The SolidWorks node never carried the MKS board (2026-09-21): compare the module without it. The node
         holds the port's 8-pillar housing (lib/cycloidal/params.py LEGACY_CONFIG): the module lies inside its box and
-        fills it but along the drive's +Y (world up), where DEFAULT_CONFIG's housing has no pillar."""
+        fills it along the drive's axis; across the axis DEFAULT_CONFIG's housing is RING_INSET smaller all round."""
         sw = P.OCCURRENCES[DRIVE_KEY]["solidworks"]
         # the children keep their module-frame locations; the module's world pose sits on the Compound
         node = Compound([c for c in drive_world.children if c.label.split(":")[0] != "mks_servo42d"]).moved(drive_world.location)
         lo, size = R.bbox_min(node), R.bbox_size(node)
         sw_lo, sw_size = sw["world_bbox_min"], sw["world_bbox_size"]
         world = P.location(DRIVE_KEY, "world")
-        up = (world * Location((0, 1, 0))).position - world.position
-        narrow = max(range(3), key=lambda i: abs(tuple(up)[i]))
+        axis = (world * Location((0, 0, 1))).position - world.position
+        along = max(range(3), key=lambda i: abs(tuple(axis)[i]))
         for i in range(3):
             assert lo[i] >= sw_lo[i] - 1.5 and lo[i] + size[i] <= sw_lo[i] + sw_size[i] + 1.5, (i, lo, size, sw_lo, sw_size)
-            if i != narrow:
+            if i == along:
                 assert abs(lo[i] - sw_lo[i]) <= 1.5 and abs(size[i] - sw_size[i]) <= 1.5, (i, lo, size, sw_lo, sw_size)
 
     def test_drive_clears_arm_neighbours(self, drive_world):
         """No intersection with the base or j1_link; only contact-level overlap with the
         j1_coupler yoke it sits in: the cradle against the housing, whose axis sits 0.21 off the cradle's
-        (docs/open_issues.md) - motor plate ~7.5 + ring gear body ~23 mm^3 measured; the pillars clear their sockets."""
-        for key, limit in (("base#1", 1.0), ("j1_link#1", 1.0), ("j1_coupler#1", 35.0)):
+        (docs/open_issues.md) - motor plate ~11.3 + ring gear body ~34.0 mm^3 measured (the cradle wraps the smaller
+        housing further up its sides than the port's: a longer arc of it); the pillars clear their sockets."""
+        for key, limit in (("base#1", 1.0), ("j1_link#1", 1.0), ("j1_coupler#1", 50.0)):
             vol = interference(drive_world, built.placed(key))
             assert vol <= limit, f"drive x {key}: {vol:.1f} mm^3 (limit {limit})"
 

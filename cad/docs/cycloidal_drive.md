@@ -26,7 +26,7 @@ how it is attached to the arm.
 | Gear ratio | 20:1 (20 lobes, 21 ring pins) — `lib/params.py CYCLOIDAL_RATIO` |
 | Motor | NEMA 17, 48 mm body, 22 mm × Ø5 D-shaft (`parts/cycloidal/nema17_48mm.py`; the shown geometry is `vendor/nema17_48mm.step`, the real body from the user's kit export carrying this motor's own pilot + shaft, `lib/cycloidal/motor.py`) + its MKS SERVO42D board kit on the rear face (`parts/joints/mks_servo42d.py`, `z_mks_board` = −48) |
 | Eccentricity | 1.5 mm |
-| Housing OD | 140 mm (`CYCLOIDAL_HOUSING_OD`) |
+| Housing OD | 129.2 mm at the pillars, 108 between them (`CYCLOIDAL_HOUSING_OD`; the port's 140 / 116, §5.4) |
 | Print material | PETG, 100 % infill on the discs |
 
 The drive's own dimensions live in **`lib/cycloidal/params.py`** (`DriveConfig`, ten frozen groups:
@@ -41,9 +41,9 @@ number below names its field.
 |---|---|---|
 | Ring pins | 21 (`num_ring_pins`) | N + 1, N = 20 lobes |
 | Ring pin Ø | 4.00 (`ring_pin_dia`) | h6 ground steel dowel |
-| Ring pin circle Ø | 108.00 (`ring_pin_circle_dia`) | centred in the housing bore |
+| Ring pin circle Ø | 100.00 (`ring_pin_circle_dia`) | centred in the housing bore; the port's 108 less 2 × `RING_INSET` (§5.4) |
 | Ring pin length | 35 (`ring_pin_length`) | 3.5 in the motor plate + 28 open bore zone + 3.5 into the bearing-zone wall; the plate's 9 mm through-holes leave 5.5 mm empty at the outer face |
-| Housing bore Ø | 116.00 (`housing.bore_dia`) | |
+| Housing bore Ø | 108.00 (`housing.bore_dia`) | 2 behind the pins, 3 past the discs' swing; between the pillars it is the housing's outline (1.9 outside the pin holes) |
 
 ### 1.2 Cycloidal disc (`cfg.disc`, `parts/cycloidal/cycloidal_disc_1.py`, `_2.py`)
 
@@ -51,7 +51,7 @@ number below names its field.
 |---|---|---|
 | Lobes | 20 (`gear.num_lobes`) | sets the ratio |
 | Disc count | 2 | orbit centres 180° apart cancel vibration. Disc 2's epitrochoid is phase-rotated by `gear.disc2_phase_deg = -180°/N_lobes = -9°`; the output-pin holes are identical (disc-local 0/90/180/270 on the 60 mm circle). **The discs are distinct printed parts** — a 180° assembly rotation is a no-op on a 20-lobe disc. |
-| OD | ~108 (105.9 / 107.0 bbox) | epitrochoid profile (§8) |
+| OD | ~99 (98.0 / 99.0 bbox) | epitrochoid profile (§8): tips R − r + e = 49.5, valleys R − r − e = 46.5 |
 | Centre bore Ø | 35.10 (`center_bore_dia`) | 35 mm 6003 OD + 0.10 clearance |
 | Thickness | 10.00 (`thickness`) | = 6003 width |
 | Lobe chamfer | 1.00 × 45° both faces (`lobe_chamfer`) | assembly lead-in, hides elephant foot; symmetric (no wrong side); costs ~20 % lobe contact length |
@@ -67,7 +67,7 @@ number below names its field.
 | Hub pin holes | Ø4.20 × 19 blind (`ring_pin_hole_dia`, grip − `output_hub_pin_ceiling`) | greased sliding fit through the discs; captured between the closed hub ceiling and the motor plate |
 
 Clearances: pin-hole inner edge 26.30 vs bore radius 17.55 → **8.75 mm wall**; pin-hole outer edge
-33.70 vs lobe valley ~49 → **~15 mm wall**.
+33.70 vs lobe valley 46.5 (~45.5 past the lobe chamfer) → **~12 mm wall**.
 
 **Backlash:** the ring-pin mesh is a zero-clearance theoretical epitrochoid, so the output-pin holes are
 the dominant designed source: slack = hole_r − pin_r − e = 3.70 − 2.00 − 1.50 = **0.20 mm radial**, i.e.
@@ -135,7 +135,7 @@ is a step.parts catalog model (`bearing_625_2rs_sealed_simple`); see `vendor/REA
 | 2 × 6814 (`output_bearing_total`) | 20 | 57 = `z_bearing_top` |
 | Output wall: retention lip + nut pockets (`output_wall`) | 3 | 60 = `total_housing_depth` |
 
-Derived: `disc_zone` 26, `bore_zone` 28 (the 116 mm bore length), `ring_gear_body_height` 51.
+Derived: `disc_zone` 26, `bore_zone` 28 (the bore's length), `ring_gear_body_height` 51.
 **Hub protrusion:** the hub is 28 tall (grip 20 + wall 3 + `proud_above_housing` 5) at z 37, so its
 arm-mount face sits at **z = 65**, 5 mm proud of the housing (`CYCLOIDAL_OUTPUT_FACE_Z`). **Housing
 depth follows the bolt:** M4 × 55 in the 4.5 counterbore ends at 59.5 — inside the 60 mm depth with full
@@ -149,7 +149,7 @@ nuts at 56; shaft, motor and motor plate at 0 (built in place).
 
 ## 5. Housing design notes (`cfg.housing`)
 
-### 5.1 Envelope — OD 140, depth 60, bore Ø116, 6814 seat Ø90.15 × 20, bolt circle Ø125 (`bolt_count` × M4).
+### 5.1 Envelope — OD 129.2, depth 60, bore Ø108, 6814 seat Ø90.15 × 20, bolt circle Ø117 (`bolt_count` × M4).
 
 ### 5.2 Housing split — two printed parts (the former output cap is folded into the ring gear body)
 
@@ -158,28 +158,29 @@ nuts at 56; shaft, motor and motor plate at 0 (built in place).
    holes with Ø7.4 × 4.5 counterbores on the outer face, M3 heads flush in 3 mm inner-face pockets.
 2. **Ring gear body** (`parts/cycloidal/cycloidal_ring_gear_body.py`, local z 0..51 at stack 9..60): 21 blind
    ring-pin holes Ø4.20 × 31.5 with 1 mm entry funnels at the bore/bearing transition (Ø5.2 → Ø4.2,
-   `ring_pin_entry_chamfer_*`), stepped bore Ø116 (0..28) / Ø90.15 seat (28..48) / **Ø86.15 integral
+   `ring_pin_entry_chamfer_*`), stepped bore Ø108 (0..28) / Ø90.15 seat (28..48) / **Ø86.15 integral
    retention lip** (48..51, `lip_radial` 2 over the 90 mm outer races — bearings insert from the input
    side and seat against it), the M4 through-holes, a **captive hex nut pocket** (7.2 AF × 4) for each on the
-   output face, each backed by a full-height bolt pillar.
+   output face, turned `bolt_nut_turn_deg` off a radial corner (`DEFAULT_CONFIG`: a flat outward, §5.4), each backed
+   by a full-height bolt pillar.
 
 **Shared outer profile** — both parts carry the same pillar / window silhouette around the bolt
 circle (pillars `pillar_inner_w` 18 at the bore, `pillar_outer_w` 10 at the OD, one per bolt -
 `lib/cycloidal/layout.py pillar_corners`); the plate seats on the body's pillar faces, no continuous rim. One
 shared cutter (`lib/cycloidal/housing.py reveal_window_cutter`) is subtracted from every housing base solid.
 
-**Bolt count** (`bolt_count`) — the one departure from the port: `DEFAULT_CONFIG` builds 6 bolts where the port
+**Bolt count** (`bolt_count`) — a departure from the port (the others: the gear size and the pillar tips, §5.4): `DEFAULT_CONFIG` builds 6 bolts where the port
 (`LEGACY_CONFIG`) had 8, at 60° from +X with the same start (0°), so the `j1_coupler` yoke holds the two pillars
 that straddle its bottom (§12); three bolts sit in line with ring pins, 8.5 mm out, as the port's first did. The
 two housing parts and the housing bolts / nuts declare `REFERENCE_BUILD` (their `LEGACY_CONFIG` build), which
 `tests/cycloidal/test_port.py` (the parts) and `test_cots_envelope_tracks_reference_bbox` (the bolts / nuts) compare
 with the CadQuery exports.
 
-**Outer-edge chamfer** (`edge_chamfer` 1.5, `chamfer_outer_silhouette`): the pillars' outer vertical
+**Outer-edge chamfer** (`edge_chamfer` 1.0; the port's 1.5, `chamfer_outer_silhouette`): the pillars' outer vertical
 corners always, plus the *entire* outer-wire perimeter of each part's external end face (the plate's
 motor face z = 0, the body's output face z = 51); the mating faces (plate z = 9, body z = 0) stay
-sharp so the stack beds flush. Internal holes are never beveled. `edge_chamfer = 0` disables; keep
-≤ 2 to preserve the nut-pocket-to-OD wall.
+sharp so the stack beds flush. Internal holes are never beveled. `edge_chamfer = 0` disables; keep it
+under `LUG_WALL` - 1 to leave the external faces 1 mm or more past the nut pockets (§5.4).
 
 ### 5.3 Output hub (`parts/cycloidal/cycloidal_output_hub.py`, `cfg.output_hub`)
 
@@ -189,6 +190,25 @@ only; Ø16.2 × 5 625 pocket on the inner face; **arm-link mount** 4 × Ø4.4 th
 from the pins, each into a captive M4 nut pocket (7.2 AF × 4) on the inner face; a Ø36 × ~7 lightening
 recess in the proud face (`arm_mount_pocket_dia`, 0 = sealed) — the arm link bears on the r 25..35
 annulus. The proud section passes the lip bore with ~7.9 mm radial clearance. Print output-face-down.
+
+### 5.4 Gear size and pillar tips (`RING_INSET`, `LUG_WALL`)
+
+`DEFAULT_CONFIG` moves the ring-pin circle and everything outside it — the bore, the bolt circle, the od — `RING_INSET`
+in from the port's (`lib/cycloidal/params.py`), so the drive is 2 × `RING_INSET` smaller across and every wall outside
+the pins keeps the port's thickness: between the pillars the housing's outline is its bore, 1.9 outside the pin holes,
+so the bore cannot come in further than the pins (a Ø106 bore left 0.9 there, and the 1.5 edge chamfer broke into the
+holes). The discs follow the pins (their epitrochoid is the pin circle's, §8: K1 = e·N / R goes 0.58 → 0.63, no
+undercut); the 6814s, the hub, the shaft, the output pins, the stack-up and every fastener do not change. **The limit**
+is the wall between the pins' far ends and the 6814 seat: the pins sit `ring_pin_engagement` into the wall round the
+seat, 2.8 thick there (6.8 in the port; `test_pin_holes_dont_breach_bearing_seat` holds ≥ 2.5) — test-print the seat
+(§6). The discs, the ring pins and both housing parts declare `REFERENCE_BUILD` for it (§5.2, §11).
+
+**Pillar tips** (`LUG_WALL`): each housing nut and its pocket are turned a flat outward (`bolt_nut_turn_deg` 30), and
+`LUG_WALL` of plastic stands past the pocket, so the od is the bolt circle + the pocket's AF + 2 × `LUG_WALL` (the port
+kept 3.3 past a corner); the edge chamfer is 1.0, so the external faces keep 1.5 past the nut pockets and 1.4 past
+the counterbores. The pillars keep the port's widths (`pillar_inner_w` / `pillar_outer_w`: they bridge the windows
+and key the housing in the yoke); beside the turned nut 3.1 of wall is left. The bolt circle stays at the pins'
+distance: pulled in, the `j1_coupler` cheek's nut pockets for the ±30° bolts would break into its cradle.
 
 ## 6. PETG print tolerances (`cfg.tolerances`)
 
@@ -208,13 +228,14 @@ tight. Never design a hole smaller than its steel part.
 | Bolt / head clearance | +0.4 on the Ø | `bolt_clearance_add` | M3 3.4 / 5.7, M4 4.4 |
 
 Print the discs flat at 100 % infill; ≤ 0.16 mm layers for bearing seats; test-print a bearing fit
-gauge first; PETG shrinks 0.3–0.5 % over 140 mm (the housing may need ~140.5 — not compensated).
+gauge first; PETG shrinks 0.3–0.5 % over 129 mm (the housing may need ~129.5 — not compensated).
 
 ## 7. Performance estimates
 
 Motor 0.45 Nm × 20 = 9.0 Nm theoretical; 55–65 % efficiency (printed, no pin bearings) →
 **5.0–5.9 Nm practical**, ~1.3–1.5 kg at 400 mm including the arm; 200–500 rpm in → 10–25 rpm out;
-not backdrivable; backlash ≈ ±0.38° (§1.3). **Torque budget warning:** marginal for this arm at
+not backdrivable; backlash ≈ ±0.38° (§1.3). The Ø100 ring-pin circle (§5.4) puts ~8 % more force on each ring pin
+than the port's Ø108 for the same torque (54 / 50). **Torque budget warning:** marginal for this arm at
 400 mm reach — a lightweight demonstrator; NEMA 23 or a higher ratio for heavier payloads.
 
 ## 8. Disc profile (`lib/cycloidal/profiles.py`)
@@ -248,7 +269,7 @@ ring-pin dowels (pack of 25) $8–12 · output-pin dowels $2–4 · motor bolts 
 | Profile maths | `lib/cycloidal/profiles.py` (numpy) |
 | Shared builders | `lib/cycloidal/housing.py` (reveal-window cutter, outer-silhouette chamfer, nut pockets), `lib/cycloidal/disc.py` (`build_disc`); the arm-wide `lib/geom.py` (cylinders with `NUDGE` overshoot, `single_solid`, hex prisms) |
 | Printed parts (designed, `CONVERTED = True`) | `parts/cycloidal/`: `cycloidal_disc_1.py`, `cycloidal_disc_2.py`, `cycloidal_eccentric_shaft.py`, `cycloidal_motor_plate.py`, `cycloidal_ring_gear_body.py`, `cycloidal_output_hub.py` — each exposes `build(cfg)` for tests and its `@step` model |
-| Purchased parts (COTS) | `parts/cycloidal/`: `bearing_6003.py`, `bearing_6814.py`, `bearing_625.py`, `nema17_48mm.py` (+ the board kit `parts/joints/mks_servo42d.py`, shared with the belt joints' motors), `cycloidal_ring_pins.py` (21), `cycloidal_output_pins.py` (4), `cycloidal_shaft_support_pin.py`, `cycloidal_motor_bolts.py` (4), `cycloidal_housing_bolts.py` (8), `cycloidal_housing_nuts.py` (8) — shared body `lib/cots.py` (every COTS part's); the multi-body ones are registered in `MULTI_BODY`; each says what to order (`PURCHASE_SPEC` / `PURCHASE_QTY`, built from `DEFAULT_CONFIG`) |
+| Purchased parts (COTS) | `parts/cycloidal/`: `bearing_6003.py`, `bearing_6814.py`, `bearing_625.py`, `nema17_48mm.py` (+ the board kit `parts/joints/mks_servo42d.py`, shared with the belt joints' motors), `cycloidal_ring_pins.py` (21), `cycloidal_output_pins.py` (4), `cycloidal_shaft_support_pin.py`, `cycloidal_motor_bolts.py` (4), `cycloidal_housing_bolts.py` (`bolt_count`), `cycloidal_housing_nuts.py` (`bolt_count`) — shared body `lib/cots.py` (every COTS part's); the multi-body ones are registered in `MULTI_BODY`; each says what to order (`PURCHASE_SPEC` / `PURCHASE_QTY`, built from `DEFAULT_CONFIG`) |
 | Assembly | `assemblies/cycloidal_drive.py` — one row `(part, role, position)` per piece from `stack_positions` (the MKS board at `z_mks_board`); `EXPECTED` locks the leaves / solids / volume, whole and per body (`EXPECTED["bodies"]`); `./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals())"` |
 | Printed vs. bought | `./cadtool python tools/bom.py --module cycloidal_drive` (print list, buy list, the purchased items not modelled — `EXTRAS`); in `cycloidal_drive.step` (and in the arm) purchased parts are `_occurrences.BOUGHT_TINT` grey, printed parts `cycloidal_drive.TINT`; `./cadtool python tools/export_printables.py` → `print/<name>.stl` |
 | References | `reference/cycloidal/<name>.step` (CadQuery exports, Git LFS), `reference/manifest.json` entries (`file` field); `tools/cycloidal/export_cadquery.py` + `tools/cycloidal/import_cadquery.py` |
@@ -293,8 +314,8 @@ cd cad
 - **Dropped (unused) fields:** `ProfileParams.spline_tolerance`, `PETGTolerances.bearing_inner_shaft_sub`
   / `sliding_clearance_add`, `HousingParams.wall_thickness` / `motor_plate_wall`,
   `BearingParams.ecc_qty` / `inp_qty`. `DriveConfig` itself is frozen now.
-- **Geometry is identical** to the CadQuery builders in `LEGACY_CONFIG` (the housing's bolt count is the one
-  departure, §5.2; `tests/cycloidal/test_port.py` builds a part's `REFERENCE_BUILD` if it has one: same face sets, same
+- **Geometry is identical** to the CadQuery builders in `LEGACY_CONFIG` (`DEFAULT_CONFIG` departs in the housing's
+  bolt count, §5.2, the gear size and the pillar tips, §5.4; `tests/cycloidal/test_port.py` builds a part's `REFERENCE_BUILD` if it has one: same face sets, same
   tessellations to 1e-11, same analytic volume to 1e-13 for the analytic parts). Order matters on the
   disc: the lobe chamfer is applied while the end faces carry only the spline edge, *before* the holes.
 - **OCCT volume caveat:** `BRepGProp` volume integration is ~0.3 % off on the 2000-knot spline face of
@@ -310,12 +331,12 @@ cd cad
   press fit 330.6 × 2; housing bolts through the solid nuts 241.3; motor-bolt heads in the plate 51.9
   and shanks in the vendor motor's tapped holes (modelled at the M3 minor diameter) 46.4; 6003 / lobe press fits
   26.8 × 2; the MKS kit's four M3x30 in the same holes from the rear 159.4. Everything else
-  is < 1 mm³; the whole module vs the arm: base / j1_link 0, j1_coupler yoke contact ≤ 35 (the cradle against
+  is < 1 mm³; the whole module vs the arm: base / j1_link 0, j1_coupler yoke contact ≤ 50 (the cradle against
   the housing, whose axis sits 0.21 off the cradle's - `docs/open_issues.md`; the pillars clear their sockets; the
   board behind the motor has 55 mm of free air).
 - **Corrections to the drive repo's spec:** its §10 said "both discs are identical — the 180° offset is
   applied in the assembly": wrong (disc 2 carries the −9° phase, §1.2); §3.3's "7.6 mm disc holes"
-  → 7.4; stale 67 / 134 / 120 mm comments (the OD is 140) and other rotted numbers in comments.
+  → 7.4; stale 67 / 134 / 120 mm comments (the port's OD is 140) and other rotted numbers in comments.
 - **Two venvs:** `tools/cycloidal/export_cadquery.py` runs in the old repo's CadQuery venv
   (`cd ../cycloidal_drive && uv run python ../robotic-arm/cad/tools/cycloidal/export_cadquery.py`);
   everything else via `./cadtool`. The name maps of the exporter and `lib/reference.py` are kept equal
@@ -332,7 +353,9 @@ cd cad
   In the arm the axis is horizontal (module +Z → world −N, N = the J2/J3 pitch direction; module +Y → world up): the
   housing sits in the `j1_coupler` yoke (its pads touch the motor-plate outer face), the two pillars at 240° / 300°
   (±30° from the bottom) in its sockets (`lib/yaw_coupler/params.py` DEFAULT; the SolidWorks yoke held the port's
-  pillars at 225° / 270° / 315°), and the hub's arm-mount
+  pillars at 225° / 270° / 315°), its cradle, od points and nut pockets on `DEFAULT_CONFIG`'s housing (the drive's
+  axis stays at the SolidWorks pose, so the cradle's floor sits `RING_INSET` higher than the SolidWorks yoke's and
+  its cheeks reach further up the housing's sides), and the hub's arm-mount
   face is coplanar with `j1_link`'s big mounting face — verified by `TestPoseInTheArm`. `j1_link` (parametric,
   `lib/upper_arm/`) puts its 4 Ø4.4 holes on `arm_mount_points` as this pose places them (`HubParams.bolt_angle_deg`,
   `tests/upper_arm/`): the SolidWorks holes sat 3.36° off, where the M4 bolts would not pass.
