@@ -45,6 +45,8 @@ MULTI_BODY = {
     # the base motor mount's M4 screws + nuts (lib/mounts.py BASE_MOUNTS)
     "base_motor_mount_screws": 4,
     "base_motor_mount_nuts": 4,
+    # the KY-003 hall module: the board, the chip (body + leads), the header (housing + pins) - one piece to buy
+    "ky003_hall_sensor": 3,
 }
 
 

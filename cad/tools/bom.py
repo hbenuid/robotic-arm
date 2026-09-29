@@ -47,8 +47,9 @@ EXTRAS = [
      "heads on the wall's wrist face, through the wall, self-tapping into the shaft's end wall (or heat-set inserts)"),
     ("forearm_roll_drive", "M3 x 16 socket head cap screw - the end cap to the elbow block's front face (self-tapping in PETG)", 4, "or heat-set inserts"),
     ("forearm_roll_drive", "M3 x 8 socket head cap screw - the roll motor to the motor mount's plate", 4, "through the plate's tension slots into the motor"),
-    ("forearm_roll_drive", "home sensor (hall or optical) on the end cap's outer face + magnet in the shaft's stop lug", 1,
-     "wired to the MKS board's limit input; nothing modelled yet (docs/open_issues.md); the hard stop itself is the printed lug + post"),
+    ("forearm_roll_drive", "home sensor: KY-003 hall module (A3144, 5 V) on the end cap's outer face + a magnet in the shaft's stop lug", 1,
+     ("modelled, not placed yet (parts/joints/ky003_hall_sensor, UNPLACED); the magnet is not modelled; wired to the MKS "
+      "board's limit input (docs/open_issues.md); the hard stop itself is the printed lug + post")),
     (None, f"{WRIST_BELT_LENGTH}-2GT closed belt, 6 mm - the wrist-pitch belt (90T at the wrist, 20T on the forearm motor)", 1,
      "belts are not modelled; the length sets J2_MOTOR_SLIDE_X (lib/forearm/params.py wrist_belt, [ESTIMATE])"),
 ]
