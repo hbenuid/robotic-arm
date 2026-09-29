@@ -34,6 +34,15 @@ GT2_TIP_R = 0.15                                    # [REFERENCE] flank -> land
 GT2_PULLEY_90T_FACE_Y = (-13.2, 8.2)                # [REFERENCE] the hub's end .. the outer face, along +Y
 GT2_PULLEY_90T_BOLT_R = 11.0                        # [REFERENCE] the 4x M4 on the pulley's own X / Z axes (the SolidWorks pattern)
 
+# The purchased toothless idler (parts/joints/gt2_idler_20t), a 20T-size smooth idler for the 6 mm belt, as the seller's
+# drawing gives it (WINSINN "GT2 Idler Pulley - 20 Toothless, 5mm Bore", aluminium): two flanges on a smooth belt seat,
+# a bearing inside on the bore.
+GT2_IDLER_BORE = 5.0                                # [DATASHEET] the axle
+GT2_IDLER_FLANGE_DIA = 18.0                         # [DATASHEET]
+GT2_IDLER_SEAT_DIA = 12.1                           # [DATASHEET] the smooth belt seat (a 20T pulley's pulley_od(20): 12.22)
+GT2_IDLER_WIDTH = 9.0                               # [DATASHEET] flange face to flange face
+GT2_IDLER_CHANNEL_W = 7.0                           # [DATASHEET] between the flanges: 1 mm flanges, the belt + 1
+
 # Closed-loop 2GT belts, 6 mm wide, as commonly stocked (mm = teeth x 2) [ESTIMATE] - confirm with the vendor.
 STANDARD_2GT_LENGTHS = (110, 112, 122, 124, 130, 150, 158, 160, 188, 200, 202, 208, 210, 220, 224, 230, 232,
                         240, 250, 252, 254, 258, 260, 264, 280, 288, 294, 300, 320, 336, 350, 360, 400)

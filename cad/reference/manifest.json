@@ -908,6 +908,28 @@
    "source": "step/Gripper Mechanism Slider_Gripper Mechanism Slider.STEP",
    "units": "mm"
   },
+  "gt2_idler_20t": {
+   "bbox_min": [
+    -9.0,
+    -9.0,
+    0.0
+   ],
+   "bbox_size": [
+    18.0,
+    18.0,
+    9.0
+   ],
+   "bytes": 16996,
+   "file": "native/gt2_idler_20t.step",
+   "kind": "cots",
+   "origin": "native",
+   "product": "gt2_idler_20t - purchased (COTS) part: GT2 20T toothless (smooth) idler, 5 mm bore, for the 6 mm belt - two flanges on",
+   "sha256": "4358b8be74a2fa97270815030c30d31ce381784a3eaf36594b0298e0773ffe52",
+   "solid_volume": 1137.154,
+   "solids": 1,
+   "source": "parts/joints/gt2_idler_20t.py:_envelope()",
+   "units": "mm"
+  },
   "gt2_pulley_20t": {
    "bbox_min": [
     0.0,

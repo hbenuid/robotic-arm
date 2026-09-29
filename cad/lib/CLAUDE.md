@@ -11,7 +11,7 @@ than geometry live with their users: `mounts.py` (Recipe B) and `placements.py` 
 params.py     # single source of truth for shared dimensions (tagged provenance)
 units.py      # IN, NUDGE - a leaf module (lib/cycloidal/ imports it; params.py re-exports it)
 motors.py     # the arm's motors (NEMA 17 interface, pancake, the 40 mm kit motor + MKS board, MOTOR_40) - a leaf, re-exported by params.py
-belts.py      # GT2: the groove's tooth form, the pulleys, pulley_od(), closed_belt_length() / centre_distance(), stock belt lengths, the 90T's hub faces + bolt circle (pulley_90t_bolt_points()) - a leaf
+belts.py      # GT2: the groove's tooth form, the pulleys, pulley_od(), closed_belt_length() / centre_distance(), stock belt lengths, the 90T's hub faces + bolt circle (pulley_90t_bolt_points()), the purchased toothless idler (GT2_IDLER_*) - a leaf
 bearings.py   # the belt joints' 6806-2RS pair: bore / OD / width, the inner-ring shoulder, the mass; the base_yaw thrust bearing (AXK / AS 6590, THRUST_*) - a leaf
 fasteners.py  # the arm's screws + nuts: M4_SHCS / M4_NUT / M4_PITCH, M3_CSK / M3_NUT / M3_PITCH, the M3-M5 clearance holes, shcs() / csk() / hex_nut() (the plain geometry of the pulley bolts and of the roll and base motor mounts' screws + nuts) - a leaf
 sensors.py    # the joints' endstop / home sensor: the KY-003 hall module (the A3144 chip, the board, the header), ky003_hall_point() - a leaf

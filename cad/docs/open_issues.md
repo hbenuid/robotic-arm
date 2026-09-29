@@ -50,6 +50,7 @@ and totals are never quoted (`cad/CLAUDE.md` Docs).
 | The roll belt (240-2GT) and the wrist belt (264-2GT) | `tools/bom.py EXTRAS`; their lengths set the roll motor's centre distance / `J2_MOTOR_SLIDE_X` |
 | The base_yaw motor's cables out of the base: they leave the motor mount into the base through the window between its posts (`lib/base/body.py _posts`), but the base has no way out for them (the lobe's cable notch went with the lobe) | decide where (a notch at the foot of the base's round or a side wall), then add it to `build_base` |
 | The roll drive's cable route: through the shaft's Ø24 bore, out of the block's rear end wall on the axis (Ø26 `cable_exit`), then over the elbow to the upper arm | only the exit (`cable_exit`) is modelled |
+| Where the purchased GT2 toothless idler goes (`parts/joints/gt2_idler_20t`, modelled but placed nowhere): which belt it guides or tensions, its axle (`GT2_IDLER_BORE`) and what holds it; its `MASS_G` is an estimate (weigh one) | its `UNPLACED` keeps it off the print / buy lists, its order line a `tools/bom.py EXTRAS` row; place it with Recipe B (`assemblies/CLAUDE.md`) - `parts/CLAUDE.md` "Modelled, not placed yet" |
 
 ## Not confirmed
 | item | where |
