@@ -18,7 +18,7 @@ import `lib`, `parts`, `assemblies` and `robot`; only `tests` imports them.
 ## What is here
 | tool | does | writes |
 |---|---|---|
-| `bom.py` | the print list and the buy list from the make/buy label; `EXTRAS` = purchased items with no geometry | — (stdout) |
+| `bom.py` | the print list and the buy list from the make/buy label; `EXTRAS` = purchased items with no geometry, and the order line of a part modelled but not placed yet (`parts/CLAUDE.md`) | — (stdout) |
 | `export_printables.py` | one STL per printed part into `print/` (git-ignored) | — |
 | `step_facts.py` | `./cadtool inspect` / `inspect diff` of saved STEPs | — |
 | `robot/derive.py` | joint origins, link inertials, URDF / SDF drafts; `--check` compares the checked-in files | — (stdout) |

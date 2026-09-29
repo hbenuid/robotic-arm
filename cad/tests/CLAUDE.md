@@ -21,7 +21,7 @@ module record + the mounted records vs `lib/mounts.py`), `test_assembly.py` (eve
 vs SolidWorks + the module lock — the numbers are IN that file; the arm's leaf colours -
 purchased = `BOUGHT_TINT`, which no group / module may reuse, printed = the link's / module's tint, in the arm and in
 the standalone gripper; the standalone drives' in their own tests), `test_bom.py` (the print / buy lists
-partition `parts.names()` by the flag - `UNPLACED` excepted -, the occurrence counts, the drive's pieces follow `DEFAULT_CONFIG`, `EXTRAS`
+partition `parts.names()` by the flag, the occurrence counts, the drive's pieces follow `DEFAULT_CONFIG`, `EXTRAS`
 well-formed), `test_params_invariants.py` (locks), `test_robot.py` (link partition, frames, FK at
 zero = capture, the committed meshes vs a fresh export, inertials, URDF/SRDF/SDF consistency + cadgen's validators via
 `./cadtool validate`), `test_tooling.py` (the installed cadgen and OCP kernel are the pinned ones, one complete OCP distribution,

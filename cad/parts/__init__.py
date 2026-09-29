@@ -56,6 +56,12 @@ def bought(name: str) -> bool:
     return bool(getattr(load(name), "COTS", False))
 
 
+def unplaced() -> list[str]:
+    """The parts modelled before any assembly places them (the module declares UNPLACED = "<why>"): the print and buy
+    lists skip them, their order line stays a tools/bom.py EXTRAS row (parts/CLAUDE.md "Modelled, not placed yet")."""
+    return [name for name in MODULES if getattr(load(name), "UNPLACED", None) is not None]
+
+
 def source_of(name: str) -> pathlib.Path:
     return _ROOT / GROUPS[name] / f"{name}.py"
 

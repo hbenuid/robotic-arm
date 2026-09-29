@@ -140,6 +140,7 @@ NATIVE_COTS: dict[str, str] = {
     "forearm_roll_mount_nuts": "parts/joints/forearm_roll_mount_nuts.py:_envelope()",
     "base_motor_mount_screws": "parts/base/base_motor_mount_screws.py:_envelope()",
     "base_motor_mount_nuts": "parts/base/base_motor_mount_nuts.py:_envelope()",
+    "ky003_hall_sensor": "parts/joints/ky003_hall_sensor.py:_envelope()",
 }
 COTS.update({name: (f"native {builder}", None) for name, builder in NATIVE_COTS.items()})
 NATIVE_PARTS: set[str] = set(NATIVE) | set(NATIVE_COTS)

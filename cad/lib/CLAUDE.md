@@ -14,6 +14,7 @@ motors.py     # the arm's motors (NEMA 17 interface, pancake, the 40 mm kit moto
 belts.py      # GT2: the groove's tooth form, the pulleys, pulley_od(), closed_belt_length() / centre_distance(), stock belt lengths, the 90T's hub faces + bolt circle (pulley_90t_bolt_points()), the purchased toothless idler (GT2_IDLER_*) - a leaf
 bearings.py   # the belt joints' 6806-2RS pair: bore / OD / width, the inner-ring shoulder, the mass; the base_yaw thrust bearing (AXK / AS 6590, THRUST_*) - a leaf
 fasteners.py  # the arm's screws + nuts: M4_SHCS / M4_NUT / M4_PITCH, M3_CSK / M3_NUT / M3_PITCH, the M3-M5 clearance holes, shcs() / csk() / hex_nut() (the plain geometry of the pulley bolts and of the roll and base motor mounts' screws + nuts) - a leaf
+sensors.py    # the joints' endstop / home sensor: the KY-003 hall module (the A3144 chip, the board, the header), ky003_hall_point() - a leaf
 cots.py       # hybrid(): the body of every purchased part (vendor STEP, else the envelope); pattern() for the multi-body ones
 geom.py       # the arm's small build123d helpers: align_min(), cylinder(), through() (NUDGE overshoot), single_solid(), hex_prism() - a leaf
 base/         # the base and its bolt-on motor mount (BaseConfig: LEGACY = the SolidWorks base, DEFAULT = what is built - the +X lobe cut off at JointParams, the motor in a narrower bolt-on box (MountParams) slotted at the stock belt's centre distance)
@@ -36,7 +37,7 @@ cycloidal/    # the cycloidal drive: DriveConfig (params.py), layout.py, profile
 ## Shared dimensions (DRY)
 `lib/params.py` is the single source of truth: mm and grams, every constant tagged
 `[MEASURE] / [DATASHEET] / [DESIGN] / [REFERENCE] / [ESTIMATE]` with a derivation comment. It re-exports the
-leaves below it (`lib/units.py`, `lib/motors.py`, `lib/belts.py`, `lib/bearings.py`, `lib/fasteners.py`: What is where) unchanged; a `lib/` package it
+leaves below it (`lib/units.py`, `lib/motors.py`, `lib/belts.py`, `lib/bearings.py`, `lib/fasteners.py`, `lib/sensors.py`: What is where) unchanged; a `lib/` package it
 re-exports from (`lib/cycloidal/`, `lib/forearm/`, `lib/upper_arm/`, `lib/base/`, `lib/coupler/`) takes its globals from those leaves and its geometry
 helpers from `lib/geom.py`, never from `lib.params` — and no leaf imports `lib.params` either
 (`tests/test_layering.py LEAF_PACKAGES` / `LEAF_MODULES`). Datum: the SolidWorks capture

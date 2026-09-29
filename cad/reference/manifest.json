@@ -1073,6 +1073,28 @@
    "source": "step/Joint 2 coupler 62226_J3 Coupler.STEP",
    "units": "mm"
   },
+  "ky003_hall_sensor": {
+   "bbox_min": [
+    -4.52,
+    -7.5,
+    -3.0
+   ],
+   "bbox_size": [
+    29.02,
+    15.0,
+    7.14
+   ],
+   "bytes": 321258,
+   "file": "native/ky003_hall_sensor.step",
+   "kind": "cots",
+   "origin": "native",
+   "product": "ky003_hall_sensor - purchased (COTS) part: KY-003 hall-effect sensor module (A3144 unipolar hall switch on a PCB).",
+   "sha256": "7c164c1a30ba6456dfec730bd868023a326beeba6e91092461bb070e1ec69f67",
+   "solid_volume": 506.869,
+   "solids": 3,
+   "source": "parts/joints/ky003_hall_sensor.py:_envelope()",
+   "units": "mm"
+  },
   "mg996r_horn": {
    "bbox_min": [
     -16.0,

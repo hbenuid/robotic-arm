@@ -67,6 +67,14 @@ from lib.motors import (  # noqa: E402, F401
     PANCAKE_MASS_G,
 )
 
+# --- Sensors - lib/sensors.py (a leaf: the KY-003 hall module, the joints' endstop / home sensor) -----------------
+from lib.sensors import (  # noqa: E402, F401
+    A3144_BODY_H, A3144_BODY_T, A3144_BODY_W, A3144_HALL_DEPTH, A3144_LEAD_PITCH, A3144_LEAD_T, A3144_LEAD_W,
+    KY003_BOARD_L, KY003_BOARD_T, KY003_BOARD_W, KY003_HEADER_H, KY003_HOLE_DIA, KY003_HOLE_INSET, KY003_LEAD_BEND_X,
+    KY003_LEAD_OUT, KY003_LEAD_TAIL, KY003_MASS_G, KY003_PIN_OUT, KY003_PIN_PITCH, KY003_PIN_TAIL, KY003_PIN_W,
+    KY003_PINS, ky003_hall_point,
+)
+
 # The mounts (host-part frames, mm): where the pads sit in the SolidWorks links. base_yaw takes the 48 mm motor
 # (parts/cycloidal/nema17_48mm, the drive's), elbow_pitch / wrist_pitch the 40 mm one. The base is parametric
 # (lib/base/params.py BaseConfig - a leaf like the links'): its motor seat - on the base's bolt-on motor mount
