@@ -210,10 +210,12 @@ class TestSolid:
         assert disc_solid.is_valid
 
     def test_bounding_box_dimensions(self, disc_solid):
-        """XY extent ~ disc OD (~108 mm), Z extent = thickness."""
+        """XY extent ~ the lobe-tip circle (2 * (R - r + e): 99 mm), Z extent = thickness."""
+        g = CFG.gear
+        tip = 2.0 * (g.ring_pin_circle_radius - g.ring_pin_radius + g.eccentricity)
         size = disc_solid.bounding_box().size
-        assert abs(size.X - 108.0) < 5.0, f"X extent {size.X:.2f}mm, expected ~108mm"
-        assert abs(size.Y - 108.0) < 5.0, f"Y extent {size.Y:.2f}mm, expected ~108mm"
+        for axis, extent in (("X", size.X), ("Y", size.Y)):
+            assert tip - 2.0 < extent < tip + 0.5, f"{axis} extent {extent:.2f}mm, expected ~{tip:.1f}mm"
         assert abs(size.Z - CFG.disc.thickness) < 0.1
 
     def test_lobe_chamfer_applied(self, disc_solid):

@@ -101,10 +101,10 @@ class TestOuterChamfer:
     stay sharp: the motor plate's motor face (z=0) and the ring gear body's output face (z=51)
     bevel their whole perimeter; the inner mating faces stay sharp."""
 
-    PILLAR_TIP_R = 69.5   # just inside the 70 mm pillar outer face, at a pillar centre
+    PILLAR_TIP_R = CFG.housing.od / 2.0 - 0.5   # just inside the pillar's outer face, at a pillar centre
 
     def test_edge_chamfer_param(self):
-        assert CFG.housing.edge_chamfer == 1.5
+        assert CFG.housing.edge_chamfer == 1.0
 
     def test_parts_valid_od_thickness(self, chamfer_parts):
         parts = chamfer_parts

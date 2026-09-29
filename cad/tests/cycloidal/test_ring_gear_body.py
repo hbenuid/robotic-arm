@@ -32,10 +32,12 @@ class TestRingGearBodyDimensions:
         assert h.bolt_circle_dia / 2.0 + (h.bolt_dia + tol.bolt_clearance_add) / 2.0 < h.od / 2.0
 
     def test_pin_holes_dont_breach_bearing_seat(self):
-        """The ring-pin holes keep >= 5 mm to the bearing seat bore."""
+        """The ring-pin holes keep >= 2.5 mm to the 6814 seat bore. The wall only runs where the pins' far ends sit
+        (ring_pin_engagement into the seat's length) and bounds how far the ring-pin circle can come in
+        (lib/cycloidal/params.py RING_INSET: 2.8 mm; the port's 108 mm circle had 6.8)."""
         g, h = CFG.gear, CFG.housing
         gap = (g.ring_pin_circle_dia / 2.0 - ring_pin_hole_dia(CFG) / 2.0) - h.output_bearing_seat_dia / 2.0
-        assert gap >= 5.0, f"Pin hole inner edge to bearing seat wall = {gap:.2f}mm, need >= 5mm"
+        assert gap >= 2.5, f"Pin hole inner edge to bearing seat wall = {gap:.2f}mm, need >= 2.5mm"
 
     def test_pin_holes_inside_housing_od(self):
         g, h = CFG.gear, CFG.housing
@@ -159,7 +161,7 @@ class TestSolid:
         +/-60 and +/-120 degrees."""
         size = body_solid.bounding_box().size
         assert abs(size.X - CFG.housing.od) < 0.2
-        assert abs(size.Y - 124.908) < 0.01
+        assert abs(size.Y - 116.023) < 0.01
 
     def test_height(self, body_solid):
         assert abs(body_solid.bounding_box().size.Z - BODY_H) < 0.1

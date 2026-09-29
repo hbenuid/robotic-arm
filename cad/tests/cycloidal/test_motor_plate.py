@@ -109,7 +109,7 @@ class TestSolid:
         +/-60 and +/-120 degrees."""
         size = plate_solid.bounding_box().size
         assert abs(size.X - CFG.housing.od) < 0.2, f"X extent {size.X:.2f}mm, expected {CFG.housing.od}mm"
-        assert abs(size.Y - 124.908) < 0.01
+        assert abs(size.Y - 116.023) < 0.01
 
     def test_bounding_box_z(self, plate_solid):
         assert abs(plate_solid.bounding_box().size.Z - PLATE_T) < 0.1
