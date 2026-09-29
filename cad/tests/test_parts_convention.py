@@ -45,6 +45,8 @@ MULTI_BODY = {
     # the base motor mount's M4 screws + nuts (lib/mounts.py BASE_MOUNTS)
     "base_motor_mount_screws": 4,
     "base_motor_mount_nuts": 4,
+    # the KY-003 hall module: the board, the chip (body + leads), the header (housing + pins) - one piece to buy
+    "ky003_hall_sensor": 3,
 }
 
 
@@ -77,6 +79,9 @@ def test_part_declares_its_contract(name):
     assert m.__cadgen_model__.out is None, f"parts.{name}: no out= - the STEP is the sibling parts/<group>/{name}.step"
     assert runs_its_model(parts.source_of(name), name), (
         f"parts.{name}: the file must end with `if __name__ == \"__main__\": {name}()` - without it `./cadtool gen` builds nothing")
+    unplaced = getattr(mod, "UNPLACED", None)
+    assert unplaced is None or (isinstance(unplaced, str) and unplaced.strip()), (
+        f"{name}.UNPLACED must say why no assembly places it yet (parts/CLAUDE.md \"Modelled, not placed yet\")")
     if getattr(mod, "COTS", False):
         assert name in R.COTS, f"{name} declares COTS but is not in lib.reference.COTS"
         mass = getattr(mod, "MASS_G", None)

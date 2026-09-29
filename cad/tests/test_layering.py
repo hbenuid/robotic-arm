@@ -32,7 +32,7 @@ PART_MODULE_IMPORT_ALLOWED = {"parts"}
 # their globals from the leaves (lib/units.py, lib/motors.py, lib/belts.py) and never import lib.params back.
 LEAF_PACKAGES = ("cycloidal", "forearm", "upper_arm", "base", "coupler", "yaw_coupler", "wrist", "pulley")
 # The leaves those packages import: importing lib.params from one would close the cycle.
-LEAF_MODULES = ("units.py", "motors.py", "belts.py", "bearings.py", "fasteners.py", "geom.py")
+LEAF_MODULES = ("units.py", "motors.py", "belts.py", "bearings.py", "fasteners.py", "geom.py", "sensors.py")
 
 SOURCES = sorted(p for pkg in ORDER for p in (CAD_DIR / pkg).rglob("*.py") if "__pycache__" not in p.parts)
 
@@ -68,7 +68,7 @@ def test_imports_respect_the_layering(path):
         if (any(path.is_relative_to(CAD_DIR / "lib" / leaf) for leaf in LEAF_PACKAGES)
                 or path in [CAD_DIR / "lib" / leaf for leaf in LEAF_MODULES]) and (
                 module == "lib.params" or (module == "lib" and "params" in names)):
-            problems.append(f"{_rel(path)}:{line} imports lib.params - lib/{path.relative_to(CAD_DIR).parts[1]} takes its globals from the leaves (lib/units.py, lib/motors.py, lib/belts.py, lib/bearings.py, lib/fasteners.py, lib/geom.py)")
+            problems.append(f"{_rel(path)}:{line} imports lib.params - lib/{path.relative_to(CAD_DIR).parts[1]} takes its globals from the leaves (lib/units.py, lib/motors.py, lib/belts.py, lib/bearings.py, lib/fasteners.py, lib/geom.py, lib/sensors.py)")
         if pkg not in PART_MODULE_IMPORT_ALLOWED and (module.startswith("parts.") or (module == "parts" and names)):
             problems.append(f"{_rel(path)}:{line} imports {module} - reach parts through parts.load()/model()/build()")
     if _rel(path) not in SYS_PATH_ALLOWED:

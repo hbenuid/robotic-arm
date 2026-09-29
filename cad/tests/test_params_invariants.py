@@ -86,6 +86,27 @@ def test_mg996r_fits_its_reference_envelope():
     assert p.MG996R_MASS_G > 0
 
 
+def test_ky003_hall_sensor_matches_the_listings():
+    """The KY-003 module (lib/sensors.py, parts/joints/ky003_hall_sensor): the chip + the board + the pins along X and
+    the pins' tails + the board + the header's housing along Z make the listings' 29 x 15 x 7 module, which the
+    accepted reference is; the three leads fit the chip and clear the mounting holes, the pins fit the housing, the
+    hall element sits inside the chip's body."""
+    length = p.KY003_LEAD_OUT + p.A3144_BODY_H + p.KY003_BOARD_L + p.KY003_PIN_OUT
+    height = p.KY003_PIN_TAIL + p.KY003_BOARD_T + p.KY003_HEADER_H
+    for got, listed in zip((length, p.KY003_BOARD_W, height), (29.0, 15.0, 7.0), strict=True):
+        assert abs(got - listed) <= 0.5
+    size = MANIFEST["ky003_hall_sensor"]["bbox_size"]
+    assert all(math.isclose(a, b, abs_tol=1e-3) for a, b in zip(size, (length, p.KY003_BOARD_W, height), strict=True))
+    lead_edge = (p.KY003_PINS - 1) / 2 * p.A3144_LEAD_PITCH + p.A3144_LEAD_W / 2
+    assert lead_edge < p.A3144_BODY_W / 2
+    assert lead_edge < p.KY003_BOARD_W / 2 - p.KY003_HOLE_INSET - p.KY003_HOLE_DIA / 2    # the leads pass between the holes
+    assert (p.KY003_PINS - 1) * p.KY003_PIN_PITCH + p.KY003_PIN_W < p.KY003_PINS * p.KY003_PIN_PITCH
+    x, y, z = p.ky003_hall_point()
+    assert -(p.KY003_LEAD_OUT + p.A3144_BODY_H) < x < -p.KY003_LEAD_OUT and abs(y) < 1e-9
+    assert p.KY003_BOARD_T < z < p.KY003_BOARD_T + p.A3144_BODY_T
+    assert p.KY003_MASS_G > 0
+
+
 # --- cycloidal drive interface (lib/cycloidal re-exported through lib/params.py) --------------------
 def test_cycloidal_interface():
     assert p.CYCLOIDAL_RATIO == 20
