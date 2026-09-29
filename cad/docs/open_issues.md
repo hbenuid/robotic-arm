@@ -1,8 +1,8 @@
 # Open issues — what the CAD knows is not settled
 
 **Purpose:** the ONE list of unsettled things a session should know before trusting a number or a fit: fit problems
-the model carries knowingly, `[ESTIMATE]` values waiting for a measurement, hardware not modelled yet, mappings
-not confirmed, parts not converted yet. **Rule:** when you flag something in a commit, add a row (issue, where it lives, what closes it,
+the model carries knowingly, joints their drives cannot hold, `[ESTIMATE]` values waiting for a measurement,
+hardware not modelled yet, mappings not confirmed, parts not converted yet. **Rule:** when you flag something in a commit, add a row (issue, where it lives, what closes it,
 the commit that raised it); when you close it, delete the row and say so in the commit message. A number here is
 a fit value or an estimate, quoted beside the constant or test that holds it — the code wins if they drift; counts
 and totals are never quoted (`cad/CLAUDE.md` Docs).
@@ -15,6 +15,12 @@ and totals are never quoted (`cad/CLAUDE.md` Docs).
 | The drive motor's tie rods are not modelled (the MKS kit's M3x30 replace them); bolt shanks overlap the export's tapped holes in the model (46 / 159 mm³, thread engagement) | `tests/cycloidal/test_assembly.py` interference budget | nothing — a modelling representation; re-measure if the vendor file changes | 2026-09-21 (`3e667e0`) |
 | The roll motor's plate (`pad_t`, the mount's one thickness) is braced only by its root in the motor mount's base (the cheeks that stiffened it are gone): the belt's pull, `t20` in front of the plate, and the motor hanging behind it bend that root | `lib/forearm/params.py RollDriveParams pad_t`, `lib/forearm/roll.py build_motor_mount` | check the plate for flex / creep under belt tension on the print; thicken `pad_t` or add a root fillet / gussets outside the motor's footprint if it gives | 2026-09-27 (`git log --grep forearm_roll_motor_mount`) |
 | `j3_coupler`'s pulley-bolt holes are Ø4.1 (the SolidWorks pattern) for the wrist 90T's M4 shanks: 0.05 mm a side in PETG, and printed holes come out small (the 90T's own were opened to `M4_CLEAR`) | `lib/coupler/params.py CouplerParams.pulley_bolt_dia` | drill them Ø4.2 or open DEFAULT's to `M4_CLEAR` | 2026-09-26 (`git log --grep wrist_pulley_screws`) |
+
+## Joints their drives cannot hold
+| issue | where it lives | what closes it | raised |
+|---|---|---|---|
+| **shoulder_pitch cannot hold the arm stretched out level**: the drive gives 5.0–5.9 N·m (`CYCLOIDAL_RATIO` x the 48 mm motor at the printed drive's efficiency, `docs/cycloidal_drive.md` §7; 9.0 with no losses at all) against a worst-case static load of ≈ 8.6 N·m with an empty gripper, ≈ 9.8 N·m with 0.2 kg (`tools/robot/joint_loads.py`); §7's budget (~1.3–1.5 kg at 400 mm including the arm) is below the arm as modelled. The tool's masses are the URDF's, printed parts solid, so a real print loads the joint less - by roughly a fifth on a rough printed / bought split, still more than the drive gives | `lib/params.py CYCLOIDAL_RATIO`, `lib/cycloidal/params.py DEFAULT_CONFIG`, `docs/cycloidal_drive.md` §7 | a higher reduction - about 60:1 overall holds 1.5x the load (a 20T→60T belt stage in front of the drive, the motor off its axis), at a third of the joint speed for the same motor speed - or a stronger motor, or a spring carrying the arm's weight; then the drive's pins and discs checked at the torque they carry (set by the load, not the ratio) | 2026-09-29 (`git log --grep joint_loads`) |
+| **elbow_pitch cannot hold the forearm level**: `robot/CLAUDE.md` gives it `GT2_RATIO`, one 90/20 stage, provisionally (`j1_link`'s x 128 seats are for a second stage, not designed yet): ≈ 1.1–1.8 N·m from the 40 mm kit motor (the forearm roll's figure for the same motor and ratio, `docs/forearm_roll.md` §2) against ≈ 3.2 N·m with an empty gripper, ≈ 4.1 N·m with 0.2 kg (`tools/robot/joint_loads.py`). Whatever the ratio, the 90T's belt then pulls ~140 N (that load on its pitch radius) | `lib/belts.py GT2_RATIO`, `robot/CLAUDE.md` reductions, `lib/upper_arm/params.py BearingParams` | the second stage at about 20:1 overall - a second 20T→90T (`GT2_RATIO` squared) holds ~1.6x the load; a belt wider than the 6 mm GT2 on the last stage if its rating is short of that pull | 2026-09-29 (`git log --grep joint_loads`) |
 
 ## Estimates to confirm on the hardware (`[ESTIMATE]` in `lib/params.py` unless noted)
 | value | where | how to confirm |
@@ -54,7 +60,6 @@ and totals are never quoted (`cad/CLAUDE.md` Docs).
 ## Not confirmed
 | item | where |
 |---|---|
-| The elbow_pitch reduction: `robot/CLAUDE.md` gives it `GT2_RATIO` (90/20, one stage), but `j1_link`'s x 128 seats are for a second stage of the elbow drive - the ratio is provisional until that stage is designed | `lib/belts.py GT2_RATIO`, `robot/CLAUDE.md` reductions, `lib/upper_arm/params.py BearingParams` |
 | Which CAN id (`software/control/src/config.py` J1..J3) drives which joint; `software/control/src/config.py` gear ratios still 1.0 while `CYCLOIDAL_RATIO` = 20 and `GT2_RATIO` = 4.5 | `software/control/README.md` Configure your motors, `robot/arm.urdf` ledger, `robot/frames.py` joint notes |
 | The wrist-roll pancake motor's exact model | `parts/wrist/nema17_pancake.py PURCHASE_NOTE` |
 | Link-membership assumptions (90T pulleys + J3 couplers with the driven links, the gripper linkage merged into `wrist_roll_link`) | `robot/frames.py LINKS` comments, the URDF ledger |

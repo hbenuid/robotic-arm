@@ -22,6 +22,7 @@ import `lib`, `parts`, `assemblies` and `robot`; only `tests` imports them.
 | `export_printables.py` | one STL per printed part into `print/` (git-ignored) | — |
 | `step_facts.py` | `./cadtool inspect` / `inspect diff` of saved STEPs | — |
 | `robot/derive.py` | joint origins, link inertials, URDF / SDF drafts; `--check` compares the checked-in files | — (stdout) |
+| `robot/joint_loads.py` | each joint's worst-case static load (N·m) and inertia from `robot/arm.urdf`'s inertials, a payload at `tool0` (`--payload`) - what a drive has to hold | — (stdout) |
 | `robot/export_link_meshes.py` | `robot/meshes/<link>.stl` (`tests/test_robot.py` fails on a stale one) | *writes* |
 | `reference/import_solidworks.py` | the SolidWorks exports → `reference/solidworks/`, seeds `vendor/`, `manifest.json` | *writes* |
 | `reference/extract_placements.py` | the monolith → `placements.json` (+ `vendor/nema17_pancake.step` unless `--no-pancake`) | *writes* |

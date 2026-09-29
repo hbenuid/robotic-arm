@@ -44,7 +44,8 @@ robot/
   (the wrist_pitch belt, and the elbow_pitch one provisionally: `j1_link`'s x 128 seats are for a second elbow stage,
   not designed yet), `FOREARM_ROLL_RATIO` (forearm_roll); what drives base_yaw is not modelled yet (`docs/open_issues.md`). They are motor revolutions per output revolution, while
   `software/control/src/config.py`'s `gear_ratio` is output revolutions per motor revolution — the software's value
-  is the reciprocal (`1 / CYCLOIDAL_RATIO`, …).
+  is the reciprocal (`1 / CYCLOIDAL_RATIO`, …). What each joint has to hold: `tools/robot/joint_loads.py`; the shoulder
+  and elbow reductions fall short of it (`docs/open_issues.md` "Joints their drives cannot hold").
 
 ## Joints and links
 `base_link → base_yaw → shoulder_link → shoulder_pitch → upper_arm_link → elbow_pitch → elbow_link →
