@@ -32,10 +32,10 @@ from lib.fasteners import (  # noqa: E402, F401
 
 # --- Belt drive (GT2) - lib/belts.py (a leaf: lib/forearm/ imports it directly) ------------------
 from lib.belts import (  # noqa: E402, F401
-    GT2_BELT_W, GT2_BLEND_R, GT2_FLANK_OFFSET, GT2_FLANK_R, GT2_GROOVE_R, GT2_IDLER_BORE, GT2_IDLER_CHANNEL_W,
+    GT2_BELT_W, GT2_BLEND_R, GT2_FLANK_ANGLE, GT2_FLANK_R, GT2_GROOVE_R, GT2_IDLER_BORE, GT2_IDLER_CHANNEL_W,
     GT2_IDLER_FLANGE_DIA, GT2_IDLER_SEAT_DIA, GT2_IDLER_WIDTH, GT2_PITCH, GT2_PLD, GT2_PULLEY_20T_PITCH_DIA,
     GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_BOLT_R, GT2_PULLEY_90T_FACE_Y, GT2_PULLEY_90T_PITCH_DIA, GT2_PULLEY_90T_TEETH,
-    GT2_RATIO, GT2_TIP_R, GT2_TOOTH_DEPTH, STANDARD_2GT_LENGTHS, pulley_90t_bolt_points, pulley_od,
+    GT2_RATIO, GT2_TIP_R, GT2_TOOTH_DEPTH, STANDARD_2GT_LENGTHS, flank_offset, pulley_90t_bolt_points, pulley_od,
 )
 # --- The belt joints' bearings + the base_yaw thrust bearing - lib/bearings.py (a leaf: lib/base/, lib/coupler/, lib/forearm/, lib/yaw_coupler/ import it)
 from lib.bearings import (  # noqa: E402, F401
