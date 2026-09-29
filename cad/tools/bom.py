@@ -74,6 +74,8 @@ def _state(name: str) -> str:
         return "designed"
     if name in R.NATIVE:
         return "native"
+    if name in R.MEASURED:
+        return "measured"
     return "parametric" if parts.load(name).CONVERTED else "wrapper"
 
 

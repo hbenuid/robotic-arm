@@ -15,12 +15,21 @@ tests/test_reference_match.py); DEFAULT is what the part builds: the bolt holes 
 
 Every number below was measured on the reference 2026-09-27 (face census; tests/pulley/test_gt2_pulley_90t.py re-checks
 the builds against it): [REFERENCE] unless tagged. Units mm. Frozen dataclasses; variants via dataclasses.replace.
+
+CompoundPulleyParams - the printed 20-60T compound pulley (gt2_pulley_20_60t), its own frame and provenance on the class.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
-from lib.belts import GT2_PULLEY_90T_BOLT_R, GT2_PULLEY_90T_FACE_Y, GT2_PULLEY_90T_TEETH, pulley_od
+from lib.belts import (
+    GT2_BLEND_R,
+    GT2_PULLEY_20_60T_TEETH,
+    GT2_PULLEY_90T_BOLT_R,
+    GT2_PULLEY_90T_FACE_Y,
+    GT2_PULLEY_90T_TEETH,
+    pulley_od,
+)
 from lib.fasteners import M4_CLEAR
 
 _AXES = ((1.0, 0.0), (0.0, 1.0), (-1.0, 0.0), (0.0, -1.0))
@@ -62,3 +71,43 @@ LEGACY = PulleyParams()     # the SolidWorks part, exactly
 # What the part builds: the bolt holes opened to M4 clearance (the export's Ø3.9 sits under an M4's shank) - the bolts
 # pass through the pulley into the nuts under the stub.
 DEFAULT = replace(LEGACY, hole_dia=M4_CLEAR)   # [DESIGN]
+
+
+@dataclass(frozen=True)
+class CompoundPulleyParams:
+    """The printed 20-60T compound pulley (gt2_pulley_20_60t): two toothed bands on one bore, each between two
+    flanges, the upper band's lower flange standing on the lower band's upper flange - solid, no hub, no web.
+
+    Frame (= its SolidWorks part frame): origin on the axis at the lower band's bottom (its lower flange's top), +Y up the
+    axis toward the upper band. Measured 2026-09-29 on the SolidWorks export ("GT2 Pulley - 20 - 60 teeth", sha256
+    55733855bdc5..., not committed - lib/reference.py MEASURED; tests/pulley/test_gt2_pulley_20_60t.py holds the numbers):
+    [REFERENCE] unless tagged. Per band: index 0 the lower band, 1 the upper."""
+    teeth: tuple = GT2_PULLEY_20_60T_TEETH
+    band_w: float = 7.0                # each tooth band along Y (the belt + 1, as the 90T's)
+    flange_t: float = 1.2              # each flange along Y ...
+    flange_h: float = 1.2              # ... standing this far out from its band's land (radially)
+    chamfer: float = 0.3               # 45 deg, on each flange's outer edge on the teeth's side
+    blend_r: tuple = (GT2_BLEND_R, 0.6160365848)   # the groove's blend (lib/pulley/teeth.py): the 60T's is the 90T's,
+    #                                                the 20T's the export's own value (the constraint behind it is not in it)
+    bore_dia: float = 8.0              # through, end to end
+
+    def band_y0(self, i: int) -> float:
+        """Where band i's teeth start (its lower flange's top): the lower band at the origin, the upper one on the
+        lower band's upper flange plus its own lower flange."""
+        return i * (self.band_w + 2.0 * self.flange_t)
+
+    def flange_dia(self, i: int) -> float:
+        return pulley_od(self.teeth[i]) + 2.0 * self.flange_h
+
+    @property
+    def end_y(self) -> float:
+        """The lower band's lower flange's underside."""
+        return -self.flange_t
+
+    @property
+    def top_y(self) -> float:
+        """The upper band's upper flange's top."""
+        return self.band_y0(len(self.teeth) - 1) + self.band_w + self.flange_t
+
+
+COMPOUND = CompoundPulleyParams()   # the SolidWorks part, exactly - and what the part builds

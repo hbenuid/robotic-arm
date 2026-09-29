@@ -26,7 +26,7 @@ def test_the_two_lists_partition_the_parts_by_the_cots_flag():
     assert {r["part"] for r in bought} == set(R.COTS) - set(parts.unplaced())
     assert (len(printed), sum(r["qty"] for r in printed)) == (28, 35)
     assert (len(bought), sum(bom.part_counts()[r["part"]] for r in bought)) == (29, 47)
-    assert {r["state"] for r in printed} <= {"wrapper", "parametric", "designed", "native"}
+    assert {r["state"] for r in printed} <= {"wrapper", "parametric", "designed", "native", "measured"}
     assert {r["part"] for r in printed if r["state"] == "designed"} == set(R.DESIGNED)
     assert {r["part"] for r in printed if r["state"] == "native"} == set(R.NATIVE)
 

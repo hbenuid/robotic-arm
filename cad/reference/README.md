@@ -29,6 +29,10 @@ are [`CLAUDE.md`](CLAUDE.md); this file is the record of what is here.
   22 mm one - so `split_mks_motor.py --write drive` composes `vendor/nema17_48mm.step` from its body and the drive's
   own pilot + shaft; the drive motor's reference stays `cycloidal/nema17_48mm.step` (`import_cadquery.py --only nema17_48mm`
   records the vendor block).
+- Measured, not committed: `step/gt2_pulley_20_60t.step` under the source tree (SolidWorks 2026 export of 2026-09-26,
+  mm, 1 solid, 1 974 574 bytes, sha256 `55733855bdc5…`; `lib/reference.py MEASURED`) — the 20-60T compound pulley,
+  converted by measuring it (`parts/CLAUDE.md` Part states → *measured*): nothing of it is in this folder, its numbers
+  are in `lib/pulley/params.py` and `tests/pulley/test_gt2_pulley_20_60t.py`.
 - Regenerating these files, in order: [`CLAUDE.md`](CLAUDE.md).
 
 ## Naming map

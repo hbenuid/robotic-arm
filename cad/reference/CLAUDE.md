@@ -37,4 +37,6 @@ or `ARM_REFERENCE_SRC` where `README.md` Provenance says); record file, size, sh
 `README.md` Provenance; name it in `lib/reference.py` (`MONOLITH_NAME`, `MKS_EXPORT_NAME`, … or a `CUSTOM` / `COTS`
 row); measure before trusting it (`./cadtool inspect <file> --planes` — units, frame, shaft / pilot / bolt pattern);
 then Recipe A (`parts/CLAUDE.md`) or D (`vendor/CLAUDE.md`). What the CAD keeps is the derived, committed copy
-(`reference/`, `vendor/`) — the raw file can be discarded afterwards.
+(`reference/`, `vendor/`) — the raw file can be discarded afterwards. A printed part's export is not copied here at
+all: a *measured* conversion (`parts/CLAUDE.md` Part states, `lib/reference.py MEASURED`) keeps only its numbers, in
+the part's params and tests - keep the raw file (its sha256 in `MEASURED`) until the tests are committed.
