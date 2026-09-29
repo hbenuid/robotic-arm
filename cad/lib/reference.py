@@ -8,7 +8,8 @@ full-assembly STEP into reference/placements.json (and the motor mounts declared
 tools/reference/mount_placements.py). The cycloidal drive's references are CadQuery exports in
 reference/cycloidal/ (tools/cycloidal/import_cadquery.py); the parts designed in this repo (NATIVE) keep
 their accepted build in reference/native/ (tools/reference/import_native.py); path_of() resolves the
-origin. The third producer of vendor files is tools/reference/split_mks_motor.py: it splits the "NEMA 17
+origin. A measured conversion (MEASURED) keeps no reference at all: its export was measured once, its own tests hold
+the numbers. The third producer of vendor files is tools/reference/split_mks_motor.py: it splits the "NEMA 17
 x 40 + MKS SERVO42D" kit export (MKS_EXPORT_NAME, next to the monolith) into vendor/nema17_40mm.step and
 vendor/mks_servo42d.step, which import_solidworks.py then mirrors into reference/solidworks/.
 
@@ -144,6 +145,15 @@ NATIVE_COTS: dict[str, str] = {
 }
 COTS.update({name: (f"native {builder}", None) for name, builder in NATIVE_COTS.items()})
 NATIVE_PARTS: set[str] = set(NATIVE) | set(NATIVE_COTS)
+
+# Measured conversions: printed parts converted from a SolidWorks export that was measured once and is NOT committed -
+# no reference file, no manifest entry, so the import tools and tests/test_reference_match.py never see them; the
+# part's own tests lock its build to the export's numbers. clean name -> (SolidWorks product, export path under the
+# source dir, the export's sha256 - what was measured).
+MEASURED: dict[str, tuple[str, str, str]] = {
+    "gt2_pulley_20_60t": ("GT2 Pulley - 20 - 60 teeth", "step/gt2_pulley_20_60t.step",
+                          "55733855bdc50452499682bef5add391cdd0363c7bed4f4b5c5a44a83dbd0523"),
+}
 
 # Sub-assemblies whose contents are code-driven (assemblies/<name>.py places its parts from a lib/ stack):
 # clean name -> product name of the SolidWorks node that places it, or a description when the pose is

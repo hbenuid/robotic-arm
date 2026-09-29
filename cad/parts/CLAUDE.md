@@ -27,7 +27,7 @@ Keep the importable `parts/<group>/<name>.py` naming (tests/assemblies reach the
 its STEP stay siblings (cadgen's default `out`; the viewer pairs them into one entry).
 
 ## Part states
-Custom parts declare `REFERENCE = NAME`, `CONVERTED` and `LOCAL_FROM_REF`:
+Custom parts declare `REFERENCE = NAME` (`None` for a *measured* one), `CONVERTED` and `LOCAL_FROM_REF`:
 - *wrapper* (`CONVERTED = False`, from `_templates/wrapper.py`): the model returns
   `reference/solidworks/<name>.step` (via `lib.reference.load` → `cadgen.read_step`, a tracked input)
   in the SolidWorks part-file frame — the day-one state of every custom part (the two links, the base, both couplers, the wrist body and the 90T pulley are parametric: `j2_link` in
@@ -57,6 +57,13 @@ Custom parts declare `REFERENCE = NAME`, `CONVERTED` and `LOCAL_FROM_REF`:
   `--force` = accept a changed design; `import_solidworks.py` keeps the entries). The reference-match test then
   locks the geometry like every other part's; a native part's own tests hold its design intent.
   A new native part: `tools/reference/import_native.py` once, then Recipe C.
+- *measured* (`CONVERTED = True`, `REFERENCE = None`, registered in `lib/reference.py MEASURED`): converted from a
+  SolidWorks export that is measured once and NOT committed (`gt2_pulley_20_60t`) - the direction for new exports:
+  the CAD stands on its code, not on reference files. No reference file, no manifest entry, so neither the import
+  tools nor `tests/test_reference_match.py` see it; `MEASURED` records the export (its product, file and sha256) and
+  the part's own tests hold the numbers measured on it (arc centres, surfaces, volume, bbox, feature probes: the
+  measured values written into the test, `tests/pulley/test_gt2_pulley_20_60t.py`), its params tagged `[REFERENCE]`.
+  `tests/test_parts_convention.py` checks the state.
 - *diverged conversion*: a converted CUSTOM part whose DEFAULT build deliberately leaves its SolidWorks
   reference (the forearm parts, whose elbow end gave way to the roll joint; `gt2_pulley_90t`, its bolt holes opened to
   `M4_CLEAR`) declares `REFERENCE_BUILD`, a
@@ -84,6 +91,11 @@ Custom parts declare `REFERENCE = NAME`, `CONVERTED` and `LOCAL_FROM_REF`:
    box within 0.2 mm of the reference (per-part overrides: `REF_VOL_TOL`, `REF_BBOX_TOL`).
 5. `./cadtool gen parts/<group>/<name>.py` to regenerate the STEP, then
    `./cadtool gen assemblies/arm.py` + `./cadtool snapshot …` to eyeball it in place — and the rest of Recipe C.
+
+A NEW export (Recipe E, `reference/CLAUDE.md`) goes straight to a *measured* conversion (Part states): step 1 on the
+raw file (outside the tree), the part written as in steps 2-3 with `REFERENCE = None` and a `lib/reference.py MEASURED`
+row, and in place of step 4 its own tests - the export's numbers written into them, checked against the raw file once
+before they are committed; then step 5.
 
 `read_step()` / `import_step()` convert inch-unit files to mm and keep the assembly hierarchy (labels
 mangle ` .()` → `_`; `lib.reference.clean_label` mirrors build123d's `import_step`, which the
@@ -118,10 +130,11 @@ SolidWorks key, a module row, or Recipe B in `assemblies/CLAUDE.md`) → Recipe 
 ## Modelled, not placed yet
 A part may be modelled before an assembly places it (a sensor whose mount is not designed yet). It declares
 `UNPLACED = "<why, and what will place it>"` (`parts.unplaced()`); `tests/test_bom.py` then leaves it out of the
-"every part is placed" check, and the print and buy lists never see it (they count occurrences). Its order line stays
-a `tools/bom.py EXTRAS` row until then. Placing it is ONE commit: the occurrence, `UNPLACED` removed (the test fails
-while a placed part still declares it) and its `EXTRAS` row removed. Everything else holds as for a placed part: the
-registry, the reference, `MULTI_BODY`, the part's build in the slow lane.
+"every part is placed" check, and the print and buy lists never see it (they count occurrences). A purchased one's
+order line stays a `tools/bom.py EXTRAS` row until then (a printed one has none). Placing it is ONE commit: the
+occurrence, `UNPLACED` removed (the test fails while a placed part still declares it) and its `EXTRAS` row removed.
+Everything else holds as for a placed part: the registry, the reference, `MULTI_BODY`, the part's build in the slow
+lane. `./cadtool gen assemblies/arm.py` does not build it: `./cadtool gen parts/<group>/<name>.py`.
 
 ## Printed vs. bought
 Every part carries the make/buy label once: `COTS = True` in its module means **bought**, anything else is

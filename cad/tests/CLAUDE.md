@@ -47,7 +47,9 @@ LEGACY build's feature probes, the stub the roll drive's block repeats), `tests/
 build's feature probes, the yoke on the drive's housing - its bore, od, pillars, bolt circle; DEFAULT's sockets round the
 6-pillar housing's two pillars), `tests/wrist/` (`wrist_link`: the LEGACY build's feature probes, the seat on the
 coupler's flange, the end face on the NEMA 17 pattern), `tests/pulley/` (`gt2_pulley_90t`: the GT2 groove's tangency
-solve against the export's arcs, the LEGACY build's feature probes and surfaces, DEFAULT's opened holes),
+solve against the export's arcs, the LEGACY build's feature probes and surfaces, DEFAULT's opened holes;
+`gt2_pulley_20_60t`, a measured conversion: its export's numbers written into the test - both bands' arc centres, the
+surfaces, volume, bbox - and feature probes; `helpers.py`: probe points about the axis, the surface census),
 `tests/forearm/` (the forearm: the LEGACY
 build vs the SolidWorks part + feature probes, the roll end, the roll drive - axis through the wrist centre, stack, press fits, clean pairs,
 clearances in the arm with the elbow folded; `helpers.in_host()` places any occurrence in `j2_link`'s frame). Geometry tests are

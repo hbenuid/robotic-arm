@@ -11,7 +11,7 @@ than geometry live with their users: `mounts.py` (Recipe B) and `placements.py` 
 params.py     # single source of truth for shared dimensions (tagged provenance)
 units.py      # IN, NUDGE - a leaf module (lib/cycloidal/ imports it; params.py re-exports it)
 motors.py     # the arm's motors (NEMA 17 interface, pancake, the 40 mm kit motor + MKS board, MOTOR_40) - a leaf, re-exported by params.py
-belts.py      # GT2: the groove's tooth form, the pulleys, pulley_od(), closed_belt_length() / centre_distance(), stock belt lengths, the 90T's hub faces + bolt circle (pulley_90t_bolt_points()), the purchased toothless idler (GT2_IDLER_*) - a leaf
+belts.py      # GT2: the groove's tooth form (flank_offset()), the pulleys (the 20-60T's bands), pulley_od(), closed_belt_length() / centre_distance(), stock belt lengths, the 90T's hub faces + bolt circle (pulley_90t_bolt_points()), the purchased toothless idler (GT2_IDLER_*) - a leaf
 bearings.py   # the belt joints' 6806-2RS pair: bore / OD / width, the inner-ring shoulder, the mass; the base_yaw thrust bearing (AXK / AS 6590, THRUST_*) - a leaf
 fasteners.py  # the arm's screws + nuts: M4_SHCS / M4_NUT / M4_PITCH, M3_CSK / M3_NUT / M3_PITCH, the M3-M5 clearance holes, shcs() / csk() / hex_nut() (the plain geometry of the pulley bolts and of the roll and base motor mounts' screws + nuts) - a leaf
 sensors.py    # the joints' endstop / home sensor: the KY-003 hall module (the A3144 chip, the board, the header), ky003_hall_point() - a leaf
@@ -21,12 +21,12 @@ base/         # the base and its bolt-on motor mount (BaseConfig: LEGACY = the S
 coupler/      # the J3 coupler (CouplerParams: LEGACY = the SolidWorks j3_coupler, DEFAULT = what is built)
 yaw_coupler/  # the base_yaw coupler, the drive's yoke (YawCouplerConfig: LEGACY = the SolidWorks j1_coupler, DEFAULT = what is built)
 wrist/        # the wrist body (WristConfig: LEGACY = the SolidWorks wrist_link, DEFAULT = what is built)
-pulley/       # the 90T pulley (PulleyParams: LEGACY = the SolidWorks gt2_pulley_90t, DEFAULT = what is built) and teeth.py: the GT2 groove (arcs solved from lib/belts.py's tooth form) and gt2_ring() (its rim, the roll shaft's ring)
+pulley/       # the 90T pulley (PulleyParams: LEGACY = the SolidWorks gt2_pulley_90t, DEFAULT = what is built), the 20-60T compound pulley (CompoundPulleyParams: COMPOUND = the measured gt2_pulley_20_60t, build_compound()) and teeth.py: the GT2 groove (arcs solved from lib/belts.py's tooth form) and gt2_ring() (its rim, the roll shaft's ring)
 upper_arm/    # the upper arm (UpperArmConfig: LEGACY = the SolidWorks j1_link, DEFAULT = no cap sockets, the motor's and the drive's hole patterns, the elbow block's clearance)
 forearm/      # the forearm (ForearmConfig: LEGACY = the SolidWorks j2_link, DEFAULT = the roll end, no cap sockets) and the roll drive (RollDriveParams, stack_positions, the block / motor mount / shaft / retainer builders; the shaft's 90T ring is lib/pulley/teeth.py gt2_ring())
 datum.py      # capture frame W -> base_link frame B: frame(), base_frame() (arm.py arm_from_w(), robot/frames.py); frames as data: IDENTITY, to_location()
 mounts.py     # what the SolidWorks capture never placed right, as frames-as-data: the base's motor mount + its M4s, the belt joints' motors + MKS boards, their 6806 pairs, the base_yaw thrust stack, the re-seated 90Ts and their M4 screws + nuts
-reference.py  # naming maps (SolidWorks custom/COTS, designed cycloidal parts, modules), loaders, path_of(), matches_reference()
+reference.py  # naming maps (SolidWorks custom/COTS, designed cycloidal parts, native and measured parts, modules), loaders, path_of(), matches_reference()
 manifest.py   # reference/manifest.json: read() / write() / entry() - shared by the two import tools and the tests
 placements.py # reference/placements.json -> build123d Location
 models.py     # model_of() / raw() / geometry(inline=): the @step model of a module, its body, a child for an assembly

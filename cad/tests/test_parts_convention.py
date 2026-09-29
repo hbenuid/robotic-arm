@@ -4,8 +4,8 @@ Auto-discovers parts exactly like the assemblies do (parts.names(): every module
 package that does not start with '_') and checks each honours the cadgen `@step` contract: importable
 with no side effects, ONE `@step def <name>()` model named after the file whose STEP is the
 sibling file (no out=), whose body (parts.build(name) - never the model itself, that would start a
-build) returns a valid, non-empty, labelled shape, plus the wrapper / designed / COTS metadata this
-repo adds. New parts are covered the moment they land.
+build) returns a valid, non-empty, labelled shape, plus the wrapper / designed / native / measured / COTS metadata
+this repo adds. New parts are covered the moment they land.
 """
 import pytest
 
@@ -55,7 +55,7 @@ def test_some_parts_were_discovered():
 
 
 def test_naming_map_matches_part_files():
-    expected = set(R.CUSTOM) | set(R.COTS) | set(R.DESIGNED) | set(R.NATIVE)
+    expected = set(R.CUSTOM) | set(R.COTS) | set(R.DESIGNED) | set(R.NATIVE) | set(R.MEASURED)
     assert set(PART_NAMES) == expected, (
         f"parts/ and lib/reference.py disagree: only in parts/: {set(PART_NAMES) - expected}; "
         f"only in the map: {expected - set(PART_NAMES)}"
@@ -97,16 +97,25 @@ def test_part_declares_its_contract(name):
     else:
         assert not any(hasattr(mod, a) for a in ("PURCHASE_SPEC", "PURCHASE_QTY", "PURCHASE_NOTE")), (
             f"{name} is printed (no COTS = True) but declares PURCHASE_* - it would never reach the buy list")
-        assert name in R.CUSTOM or name in R.DESIGNED or name in R.NATIVE, f"{name} is not in lib.reference.CUSTOM / DESIGNED / NATIVE (and not COTS)"
-        assert getattr(mod, "REFERENCE", None) == name, f"{name}.REFERENCE must name reference/<origin>/{name}.step"
-        assert isinstance(getattr(mod, "CONVERTED", None), bool), f"{name} must declare CONVERTED = True/False"
-        if name in R.NATIVE:
-            assert mod.CONVERTED is True, f"{name} is native build123d - CONVERTED must be True"
-        assert R.path_of(mod.REFERENCE).exists(), (
-            f"missing {R.path_of(name)} (run tools/reference/import_solidworks.py, tools/cycloidal/import_cadquery.py "
-            f"or, for a native part, tools/reference/import_native.py)")
-        if hasattr(mod, "REFERENCE_BUILD"):
-            assert mod.CONVERTED is True and callable(mod.REFERENCE_BUILD), f"{name}.REFERENCE_BUILD is for a converted part's LEGACY build"
+        assert name in R.CUSTOM or name in R.DESIGNED or name in R.NATIVE or name in R.MEASURED, (
+            f"{name} is not in lib.reference.CUSTOM / DESIGNED / NATIVE / MEASURED (and not COTS)")
+        if name in R.MEASURED:
+            # a measured conversion keeps no reference: its own tests hold the export's numbers (parts/CLAUDE.md)
+            assert getattr(mod, "REFERENCE", "unset") is None, f"{name} is a measured conversion - REFERENCE must be None"
+            assert getattr(mod, "CONVERTED", None) is True, f"{name} is a measured conversion - CONVERTED must be True"
+            assert not hasattr(mod, "REFERENCE_BUILD"), f"{name} is a measured conversion - nothing to match a LEGACY build to"
+            assert name not in M.read()["parts"] and not R.path_of(name).exists(), (
+                f"{name} is a measured conversion - no reference file and no manifest entry")
+        else:
+            assert getattr(mod, "REFERENCE", None) == name, f"{name}.REFERENCE must name reference/<origin>/{name}.step"
+            assert isinstance(getattr(mod, "CONVERTED", None), bool), f"{name} must declare CONVERTED = True/False"
+            if name in R.NATIVE:
+                assert mod.CONVERTED is True, f"{name} is native build123d - CONVERTED must be True"
+            assert R.path_of(mod.REFERENCE).exists(), (
+                f"missing {R.path_of(name)} (run tools/reference/import_solidworks.py, tools/cycloidal/import_cadquery.py "
+                f"or, for a native part, tools/reference/import_native.py)")
+            if hasattr(mod, "REFERENCE_BUILD"):
+                assert mod.CONVERTED is True and callable(mod.REFERENCE_BUILD), f"{name}.REFERENCE_BUILD is for a converted part's LEGACY build"
 
 
 @pytest.mark.slow

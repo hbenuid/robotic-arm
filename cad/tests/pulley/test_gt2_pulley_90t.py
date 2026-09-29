@@ -14,15 +14,11 @@ from lib.pulley import DEFAULT, LEGACY
 from lib.pulley.teeth import groove_arcs, groove_centres
 from tests import built
 from tests.helpers import is_inside
+from tests.pulley.helpers import at, surfaces
 
 # The centres of the SolidWorks groove's arcs (the +y half of the groove on +X), read off the reference's cylinders.
 MEASURED_CENTRES = {"bottom": (28.1988897565, 0.0), "blend": (28.2555855858, -0.0613465476),
                     "flank": (28.3911220340, -0.3964406093), "tip": (28.2341206498, 0.7427918364)}
-
-
-def at(r: float, y: float, deg: float = 45.0) -> tuple[float, float, float]:
-    """A point r off the axis at `deg` about it (atan2(z, x); 45: clear of the bolt holes), y along it."""
-    return r * math.cos(math.radians(deg)), y, r * math.sin(math.radians(deg))
 
 
 def test_params():
@@ -63,42 +59,18 @@ def pulley():
     return built.part("gt2_pulley_90t")
 
 
-def _surfaces(shape) -> set[tuple]:
-    """Every face's surface: a cylinder by (radius, its axis's offset from the pulley's), a cone by its half-angle (either
-    sign: its axis may run either way) and its span along Y, a plane by (the normal's sign along Y, its Y) - every axis
-    and normal along Y."""
-    from OCP.BRepAdaptor import BRepAdaptor_Surface
-    from OCP.GeomAbs import GeomAbs_Cone, GeomAbs_Cylinder, GeomAbs_Plane
-
-    found = set()
-    for f in shape.faces():
-        s = BRepAdaptor_Surface(f.wrapped)
-        kind = s.GetType()
-        if kind == GeomAbs_Cylinder:
-            axis = s.Cylinder().Axis()
-            assert abs(abs(axis.Direction().Y()) - 1.0) < 1e-9
-            found.add(("cylinder", round(s.Cylinder().Radius(), 5), round(math.hypot(axis.Location().X(), axis.Location().Z()), 5)))
-        elif kind == GeomAbs_Cone:
-            bb = f.bounding_box()
-            found.add(("cone", round(abs(math.degrees(s.Cone().SemiAngle())), 5), round(bb.min.Y, 3), round(bb.max.Y, 3)))
-        else:
-            assert kind == GeomAbs_Plane and abs(abs(f.normal_at().Y) - 1.0) < 1e-9
-            found.add(("plane", round(f.normal_at().Y), round(f.center().Y, 5)))
-    return found
-
-
 @pytest.mark.slow
 def test_legacy_surfaces_are_the_references(legacy):
     from lib import reference
     ref = reference.load("gt2_pulley_90t")
     assert legacy.is_valid and len(legacy.solids()) == 1
-    assert _surfaces(legacy) == _surfaces(ref)
+    assert surfaces(legacy) == surfaces(ref)
     assert legacy.volume == pytest.approx(ref.volume, rel=1e-7)
 
 
 @pytest.mark.slow
 def test_legacy_features(legacy):
-    leg, c = legacy, LEGACY
+    leg, c = legacy, LEGACY                 # at()'s default 45 deg keeps a probe clear of the bolt holes (on the axes)
     assert is_inside(leg, *at(14.8, -10.0)) and not is_inside(leg, *at(15.2, -10.0))       # the journal
     assert is_inside(leg, *at(17.2, -5.5)) and not is_inside(leg, *at(17.2, -6.4))         # the ring ...
     assert not is_inside(leg, *at(17.2, -4.5)) and not is_inside(leg, *at(17.5, -5.5))     # ... Ø34.76, 1.5 high

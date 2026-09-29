@@ -10,6 +10,7 @@ import math
 GT2_PITCH = 2.0                                     # [DATASHEET] GT2 tooth pitch
 GT2_PULLEY_90T_TEETH = 90                           # [REFERENCE] printed 90T pulley (parts/joints/gt2_pulley_90t), used x2
 GT2_PULLEY_20T_TEETH = 20                           # [REFERENCE] purchased 20T pulley (parts/wrist/gt2_pulley_20t)
+GT2_PULLEY_20_60T_TEETH = (60, 20)                  # [REFERENCE] printed compound pulley (parts/joints/gt2_pulley_20_60t): its lower band, its upper
 GT2_PULLEY_90T_PITCH_DIA = GT2_PULLEY_90T_TEETH * GT2_PITCH / math.pi   # 57.30 mm pitch diameter
 GT2_PULLEY_20T_PITCH_DIA = GT2_PULLEY_20T_TEETH * GT2_PITCH / math.pi   # 12.73 mm
 GT2_RATIO = GT2_PULLEY_90T_TEETH / GT2_PULLEY_20T_TEETH                 # 4.5:1 [REFERENCE] motor turns per output turn; config.py's gear_ratio is 1 / this (robot/CLAUDE.md)
@@ -19,12 +20,14 @@ GT2_TOOTH_DEPTH = 0.75                              # [DATASHEET] belt tooth hei
 
 # The groove every printed pulley cuts (lib/pulley/teeth.py), as the SolidWorks 90T has it
 # (reference/solidworks/gt2_pulley_90t.step): arcs only, each tangent to the next - a round bottom GT2_TOOTH_DEPTH under
-# the land, a blend into each flank, the flank (its centre on the land circle, across the groove's centreline), a
-# fillet onto the land. The blend's and the fillet's centres follow from those tangencies (teeth.py groove_centres()).
+# the land, a blend into each flank, the flank (its centre on the land circle, across the groove's centreline -
+# flank_offset()), a fillet onto the land. The blend's and the fillet's centres follow from those tangencies (teeth.py
+# groove_centres()).
 GT2_GROOVE_R = 0.555                                # [REFERENCE] the groove's bottom (the belt tooth's tip)
 GT2_FLANK_R = 1.0                                   # [REFERENCE] each flank ...
-GT2_FLANK_OFFSET = (GT2_PULLEY_90T_PITCH_DIA / 2.0 - GT2_PLD) * math.sin(math.radians(0.8))   # [REFERENCE] 0.396: ...
-#                                                     its centre this far across the centreline: 0.8 deg on the 90T's land
+GT2_FLANK_ANGLE = 72.0                              # [REFERENCE] ... its centre on the land circle this many degrees / teeth
+#                                                     across the centreline - a fifth of the pitch angle: 0.8 deg on the 90T,
+#                                                     1.2 and 3.6 on the 20-60T's bands (their SolidWorks exports agree)
 GT2_BLEND_R = 0.6385333225                          # [REFERENCE] flank -> bottom (the export's value: the constraint
 #                                                     that set it in the SolidWorks sketch is not in the export)
 GT2_TIP_R = 0.15                                    # [REFERENCE] flank -> land
@@ -56,6 +59,12 @@ def pulley_od(teeth: int) -> float:
     """The pulley's outside (tooth-tip) diameter: pitch diameter minus twice the pitch-line distance
     (90T: 56.79, the root land measured on the SolidWorks pulley)."""
     return pitch_dia(teeth) - 2.0 * GT2_PLD
+
+
+def flank_offset(teeth: int) -> float:
+    """How far a groove's flank centre sits across its centreline: on the land circle, GT2_FLANK_ANGLE / teeth degrees
+    off it (90T: 0.396)."""
+    return (pitch_dia(teeth) / 2.0 - GT2_PLD) * math.sin(math.radians(GT2_FLANK_ANGLE / teeth))
 
 
 def pulley_90t_bolt_points() -> list[tuple[float, float]]:
