@@ -10,7 +10,7 @@ Numbers below name the constants; the values live in `lib/forearm/params.py`.
 | item | value | where |
 |---|---|---|
 | joint | `forearm_roll`, revolute, `elbow_link → forearm_link`; axis along the forearm through the wrist centre, crossing the elbow axis 25 mm along N (`FOREARM_ROLL_AXIS_Z`) | `robot/frames.py` |
-| range | ±170° (`FOREARM_ROLL_LIMIT_DEG`), printed hard stop (lug on the shaft's neck, post on the cap); home sensor not modelled | `lib/params.py`, `RollDriveParams stop_*` |
+| range | ±170° (`FOREARM_ROLL_LIMIT_DEG`), printed hard stop (lug on the shaft's neck, post on the cap); home sensor modelled (`ky003_hall_sensor`), not placed | `lib/params.py`, `RollDriveParams stop_*` |
 | drive | NEMA 17 × 40 mm + MKS SERVO42D (a 4th CAN id), GT2 20T on the motor, integral printed 90T ring on the shaft, **4.5 : 1**, 240-2GT × 6 mm belt (`roll_belt`, centre distance 60.9) | `RollDriveParams`, `lib/belts.py` |
 | torque | ≈ 1.1–1.8 N·m at the roll vs ≈ 0.9 N·m worst-case static load | §2 |
 | bearings | 2× 6808-2RS (40 × 52 × 7), 71 mm apart, straddling the elbow axis (seats Ø52.15, journals Ø40.3) | `RollDriveParams bearing_*` |
@@ -126,7 +126,7 @@ RollEndParams`: the wall at `wall_x` (−56…−48), its Ø40 recess, the Ø32 
 puts it (`J2_MOTOR_SLIDE_X`) so its plug clears the wall (`plug_clearance`).
 
 ## 6. Not modelled / to confirm
-`docs/open_issues.md`: the belts, the home sensor (on the cap's outer face, a magnet in the stop lug, to the MKS board's
+`docs/open_issues.md`: the belts, the home sensor's mount (the modelled `ky003_hall_sensor`'s chip on the cap's outer face, a magnet in the stop lug, to the MKS board's
 limit input), the cable route; the elbow drive's second stage; the 6806 seats' PETG fit; the block's print orientation and its
 nut channels' and pockets' fit (the pulley's and the mount's), the mount's countersinks; the motor plate's flex without cheeks; the 6808's mass and inner-race edge, `t20_hub`, the belt lengths, the limit and the printed stop lugs'
 strength, the spigot's self-tapped M3s; the roll motor's **CAN id** (`software/control/src/config.py` has no row for it: it names fewer boards than the arm carries).
