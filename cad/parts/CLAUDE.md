@@ -43,8 +43,9 @@ Custom parts declare `REFERENCE = NAME`, `CONVERTED` and `LOCAL_FROM_REF`:
   spline discs: the lobe profile within 1e-6 mm of the reference spline, `helpers.spline_deviation`, and the
   mesh within its chordal error — see `cad/CLAUDE.md` "Two machines").
   A drive part that has left its export (`lib/cycloidal/params.py DEFAULT_CONFIG` vs the port, `LEGACY_CONFIG`: the
-  housing's bolt count - the two housing parts and the housing bolts / nuts - and the gear size, `RING_INSET` - the
-  discs, the ring pins and the housing parts) declares `REFERENCE_BUILD`, its
+  housing's bolt count - the two housing parts and the housing bolts / nuts -, the gear size, `RING_INSET` - the
+  discs, the ring pins and the housing parts - and the pillar tips, `LUG_WALL` - the housing parts and nuts) declares
+  `REFERENCE_BUILD`, its
   `LEGACY_CONFIG` build: `test_port` and `test_cots_envelope_tracks_reference_bbox` compare THAT.
   Their geometry helpers live in `lib/cycloidal/` and each module exposes `build(cfg)` for tests
   (reached like any part: `parts.load(name).build(cfg)` — tests never import `parts.<group>` either).

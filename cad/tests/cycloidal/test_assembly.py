@@ -84,7 +84,7 @@ class TestHousingAlignment:
         assert abs(s.ring_gear_body_height - 51.0) < 0.01
 
     def test_all_housing_parts_same_od(self):
-        assert CFG.housing.od == 132.0
+        assert CFG.housing.od == 129.2
 
     def test_housing_bolt_angles_consistent(self):
         angles = compute_housing_bolt_angles(CFG)
@@ -313,7 +313,7 @@ class TestModuleLocks:
         assert abs(totals["solid_volume"] - cycloidal_drive.EXPECTED["solid_volume"]) <= 0.5
         # X: the pillars at 0 / 180 degrees reach the od; Y: no pillar on it, the ones at +/-60 and +/-120 degrees
         # (their chamfered outer corners) set it; Z: 48 motor + 14.1 MKS board behind the plate, 65 to the hub face
-        assert totals["bbox_size"] == [132.0, 117.972, 127.1]
+        assert totals["bbox_size"] == [129.2, 116.023, 127.1]
         bodies = {body: cycloidal_drive.totals(body, shape=drive) for body in cycloidal_drive.BODIES}
         for body, got in bodies.items():
             want = cycloidal_drive.EXPECTED["bodies"][body]

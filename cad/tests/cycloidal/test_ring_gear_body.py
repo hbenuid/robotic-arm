@@ -161,7 +161,7 @@ class TestSolid:
         +/-60 and +/-120 degrees."""
         size = body_solid.bounding_box().size
         assert abs(size.X - CFG.housing.od) < 0.2
-        assert abs(size.Y - 117.972) < 0.01
+        assert abs(size.Y - 116.023) < 0.01
 
     def test_height(self, body_solid):
         assert abs(body_solid.bounding_box().size.Z - BODY_H) < 0.1

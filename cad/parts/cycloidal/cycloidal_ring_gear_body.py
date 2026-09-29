@@ -14,6 +14,7 @@ Diverged from the port: build(LEGACY_CONFIG) reproduces the export (REFERENCE_BU
 tests/test_reference_match.py); the model builds DEFAULT_CONFIG (6 bolts, not the port's 8, and the smaller gear:
 RING_INSET).
 """
+import math
 import pathlib
 
 from cadgen import build123d as bd
@@ -66,8 +67,9 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
         result = result - through(m4_r, height, xy)
     # shared outer profile, captive nut pockets on the output face, bevel
     result = result - reveal_window_cutter(cfg, height)
+    turn = math.radians(h.bolt_nut_turn_deg)
     for angle, xy in zip(compute_housing_bolt_angles(cfg), housing_bolt_points(cfg), strict=True):
-        result = result - hex_pocket(cfg, xy, angle, h.bolt_nut_depth + NUDGE, z0=height - h.bolt_nut_depth)
+        result = result - hex_pocket(cfg, xy, angle + turn, h.bolt_nut_depth + NUDGE, z0=height - h.bolt_nut_depth)
     return chamfer_outer_silhouette(result, cfg, external_z=height)
 
 

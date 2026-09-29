@@ -1,4 +1,5 @@
-"""cycloidal_housing_nuts - the M4 hex nuts (bolt_count) (7 AF x 3.2) on the bolt circle, standing on z=0, keyed radially.
+"""cycloidal_housing_nuts - the M4 hex nuts (bolt_count) (7 AF x 3.2) on the bolt circle, standing on z=0, keyed like
+their pockets (a corner radially outward, turned bolt_nut_turn_deg).
 
 In the drive: at stack z_housing_nuts (56) in the ring gear body's output-face pockets. Solid
 hexagons (no thread).
@@ -7,6 +8,7 @@ export (kind "cots"). No catalog model (the envelope is the geometry); a vendor/
 re-oriented by VENDOR_TO_REF into the same frame. The export is the port's 8-nut pattern (REFERENCE_BUILD); the model
 builds DEFAULT_CONFIG's.
 """
+import math
 import pathlib
 
 from cadgen import build123d as bd
@@ -29,7 +31,8 @@ VENDOR_TO_REF = IDENTITY
 
 def _envelope(cfg: DriveConfig = DEFAULT_CONFIG):
     h = cfg.housing
-    return pattern(bd.Pos(xy[0], xy[1], 0) * hex_prism(h.bolt_nut_af, angle, h.bolt_nut_thickness)
+    turn = math.radians(h.bolt_nut_turn_deg)
+    return pattern(bd.Pos(xy[0], xy[1], 0) * hex_prism(h.bolt_nut_af, angle + turn, h.bolt_nut_thickness)
                    for angle, xy in zip(compute_housing_bolt_angles(cfg), housing_bolt_points(cfg), strict=True))
 
 

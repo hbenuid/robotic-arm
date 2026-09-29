@@ -242,7 +242,7 @@ def test_default_changes_the_hub_the_underside_and_the_yoke(coupler, legacy):
         assert is_inside(coupler, 22.0, *pillar_point(DEFAULT, d, od - 6.0, hw + 0.35))
         assert not is_inside(coupler, 22.0, *pillar_point(DEFAULT, d, od + 0.1, 0.0))         # ... its floor 0.2 off the od
         assert is_inside(coupler, 22.0, *pillar_point(DEFAULT, d, od + 0.35, 0.0))
-        assert is_inside(coupler, -29.0, *pillar_point(DEFAULT, d, od - 3.0, 0.0))            # ... stopped by the cheek
+        assert is_inside(coupler, -29.0, *pillar_point(DEFAULT, d, od - 1.0, 0.0))            # ... stopped by the cheek (past its nut pocket)
         # its wall under the floor's corner nearest the ring, socket_wall thick even at the ends; where the flare
         # (the cone out of the ring's top edge) would leave less, a rib stands out of it (the port's housing; the
         # smaller one's sockets sit inside the flare, whose body is thicker there)

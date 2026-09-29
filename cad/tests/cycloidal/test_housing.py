@@ -104,7 +104,7 @@ class TestOuterChamfer:
     PILLAR_TIP_R = CFG.housing.od / 2.0 - 0.5   # just inside the pillar's outer face, at a pillar centre
 
     def test_edge_chamfer_param(self):
-        assert CFG.housing.edge_chamfer == 1.5
+        assert CFG.housing.edge_chamfer == 1.0
 
     def test_parts_valid_od_thickness(self, chamfer_parts):
         parts = chamfer_parts
