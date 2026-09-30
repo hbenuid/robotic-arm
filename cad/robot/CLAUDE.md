@@ -22,7 +22,8 @@ robot/
 - `robot/frames.py` is the kinematic SSOT: `LINKS` (occurrence keys per rigid link; a designed-module
   key may carry a `:<body>` suffix — `cycloidal_drive#1:stator` / `:rotor` from
   `assemblies/cycloidal_drive.py BODIES`, expanded by `_occurrences.world_rows`) and `JOINTS` (axis
-  point/direction in the SolidWorks capture frame, limits from `lib/params.py`). Frames are REP-103 (`base_link` on
+  point/direction in the SolidWorks capture frame — the points beyond a shortened link moved with it,
+  `lib/placements.py SHIFTS` via `P.shifted()` — limits from `lib/params.py`). Frames are REP-103 (`base_link` on
   the base's bottom face at the base_yaw axis, Z up, X forward). Joint frame: Z on the axis, X along the child link
   (`forearm_roll`: X = N, its child lies along the axis); child link frame = joint frame at capture, so **all joints
   are 0 at the capture pose**, mesh origins are identity and the URDF at zero reproduces `assemblies/arm.py` (emitted

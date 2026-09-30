@@ -109,6 +109,13 @@ def test_rpy_round_trip():
         RF.joint_origin(j)   # asserts internally that R(rpy) reproduces the matrix
 
 
+def test_joint_origins_sit_on_their_shifted_records():
+    """The origins beyond a link follow its SHIFTS (lib/placements.py): each is its record's world origin."""
+    for origin, key in ((F.ELBOW_ORIGIN, "j2_link#1"), (F.WRIST_PITCH_ORIGIN, "j3_coupler#2"),
+                        (F.WRIST_ROLL_ORIGIN, "gt2_pulley_20t#1")):
+        assert math.dist(origin, tuple(P.location(key, "world").position)) < 0.01, key
+
+
 def test_meshes_exist_and_are_referenced_by_the_urdf():
     root = ET.parse(URDF).getroot()
     for link in F.LINK_ORDER:

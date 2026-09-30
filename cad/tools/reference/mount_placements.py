@@ -5,8 +5,9 @@ pulleys, the M4 screws + nuts that clamp them and the pose of a code-driven modu
 
 The SolidWorks capture never contained the belt joints' motors or bearings; lib/mounts.py declares each one (a
 motor's MKS board too, and the two 90T pulleys it re-seats) as a frame in its host occurrence's frame. This tool
-resolves `world = host world * frame` (the host is a SolidWorks record - a retired one for a re-seated pulley -, or
-the motor record for a board, the pulley for its screws, the screws for their nuts - declaration order), builds the part
+resolves `world = host world * frame` (the host is a SolidWorks record - a retired one for a re-seated pulley -, its
+world pose moved by lib/placements.py SHIFTS, or the motor record for a board, the pulley for its screws, the screws
+for their nuts - declaration order), builds the part
 in-process (parts.build) to fill `solids` / `solid_volume` / `world_bbox_*`, and writes ordinary
 `kind: "part"` records with parent None, rel == world and a `mount` block naming the host, link, joint
 and the frame - so assemblies/arm.py, robot/frames.py LINKS, the inertials and tools/bom.py read them
@@ -77,7 +78,7 @@ def mounted_records(records: list[dict]) -> list[dict]:
     """The lib/mounts.py occurrences as placements.json records, resolved against `records` (the SolidWorks
     occurrences; the boards resolve against the motors declared before them): the part mounts first, then the
     module mounts."""
-    worlds = {o["key"]: P.to_location(o["world"]) for o in records}
+    worlds = {o["key"]: P.record_location(o, "world") for o in records}
     joints = RF.JOINT_BY_NAME
     out = []
     for m in mounts.MOUNTS:

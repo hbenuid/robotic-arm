@@ -1,6 +1,7 @@
 """Kinematic decomposition of the arm: rigid links and joint frames, derived from the
-SolidWorks capture (reference/placements.json). Single source for robot/links/*.py,
-tools/robot/derive.py, tools/robot/export_link_meshes.py and tests/test_robot.py.
+SolidWorks capture (reference/placements.json) with the design's link-length shifts (lib/placements.py SHIFTS)
+applied. Single source for robot/links/*.py, tools/robot/derive.py, tools/robot/export_link_meshes.py and
+tests/test_robot.py.
 
 LINKS holds placement keys: part occurrences and designed-module keys - "cycloidal_drive#1", or
 one rigid body of it, "cycloidal_drive#1:stator" / ":rotor" (assemblies/cycloidal_drive.py
@@ -36,6 +37,7 @@ from dataclasses import dataclass
 from cadgen import build123d as bd
 
 from lib import params as PARAMS
+from lib import placements as P
 from lib.datum import (  # noqa: F401  (the datum frames live below assemblies/)
     BASE_BOTTOM_Y,
     BASE_FORWARD,
@@ -54,14 +56,16 @@ PJ = (0.499699, 0.865884, 0.023354)          # jaw travel: the two Ø6 gripper r
 BASE_YAW_ORIGIN = (0.0, 85.010435, 0.0)      # [REFERENCE] on the base_yaw axis at the cycloidal drive's axis height (its node's Y)
 SHOULDER_ORIGIN = (-2.440595, 85.010435, -34.915297)   # [REFERENCE] j1_link#1 origin: on the cycloidal drive's axis, 66.5 mm along it from the
 #                                                        motor-plate face (1.5 past the hub's arm-mount face, CYCLOIDAL_OUTPUT_FACE_Z)
-ELBOW_ORIGIN = (-143.15, 240.05, -15.81)     # [REFERENCE] j2_link#1's origin (on the elbow_pitch axis; the retired j3_coupler#1 shared it)
-WRIST_PITCH_ORIGIN = (-283.37, 393.63, 35.33)   # [REFERENCE] j3_coupler#2 origin (on the wrist_pitch axis)
-WRIST_ROLL_ORIGIN = (-379.355, 448.22, 24.495)  # [REFERENCE] 20T pulley origin, on the pancake shaft axis
-JAW_A_ORIGIN = (-453.626, 429.287, 26.317)   # [REFERENCE] gripper_slider#1 world bbox centre
-JAW_B_ORIGIN = (-400.194, 521.876, 28.815)   # [REFERENCE] gripper_slider#2 world bbox centre
-TOOL0_ORIGIN = (-480.567, 506.452, 31.03)    # [REFERENCE] midpoint between the two finger ends
-SHOULDER_TO_ELBOW_INPLANE = (-141.353693, 155.039565, 9.127651)   # [REFERENCE] upper_arm_link long direction: ELBOW_ORIGIN - SHOULDER_ORIGIN
-#                                                                   minus its 10.0 mm component along N (210.0 mm in the pitch plane)
+# The origins beyond a link move with it: the capture point [REFERENCE] + the SHIFTS of the record it sits on.
+ELBOW_ORIGIN = P.shifted("j2_link#1", (-143.15, 240.05, -15.81))   # j2_link#1's origin (on the elbow_pitch axis; the retired j3_coupler#1 shared it)
+WRIST_PITCH_ORIGIN = P.shifted("j3_coupler#2", (-283.37, 393.63, 35.33))   # j3_coupler#2 origin (on the wrist_pitch axis)
+WRIST_ROLL_ORIGIN = P.shifted("gt2_pulley_20t#1", (-379.355, 448.22, 24.495))   # 20T pulley origin, on the pancake shaft axis
+JAW_A_ORIGIN = P.shifted("gripper#1", (-453.626, 429.287, 26.317))   # gripper_slider#1 world bbox centre
+JAW_B_ORIGIN = P.shifted("gripper#1", (-400.194, 521.876, 28.815))   # gripper_slider#2 world bbox centre
+TOOL0_ORIGIN = P.shifted("gripper#1", (-480.567, 506.452, 31.03))    # midpoint between the two finger ends
+# The link directions (only their direction is used - lib/datum.py frame() projects them; the SHIFTS are parallel):
+SHOULDER_TO_ELBOW_INPLANE = (-141.353693, 155.039565, 9.127651)   # [REFERENCE] upper_arm_link long direction: the capture's
+#                                                                   ELBOW_ORIGIN - SHOULDER_ORIGIN minus its 10.0 mm component along N
 ELBOW_TO_WRIST_INPLANE = (-142.926, 153.58, 9.229)   # [REFERENCE] forearm_link long direction (elbow -> wrist_pitch, perpendicular to N)
 
 # --- the forearm roll (the 6th joint, assemblies/forearm_roll_drive.py): its axis runs along the forearm through the

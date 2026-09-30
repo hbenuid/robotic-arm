@@ -15,6 +15,16 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   `CUSTOM` row and manifest entry go, and a record must name a known part -: its SolidWorks product goes into
   `lib/reference.py SKIPPED_PRODUCTS` and `tools/reference/mount_placements.py` (the merge mode, no monolith) moves the
   record to `skipped` as the entry an extraction writes (pose, totals, reason) - `test_skipped_nodes_are_the_dropped_products`.
+- **Shifted occurrences** (`lib/placements.py SHIFTS`): a link whose length the design changes (`j1_link`
+  `slab.elbow_x`, `j2_link` `web.wrist_x`, `wrist_link` `tower.block_x1`) moves every capture record beyond it along
+  its own +X by the parameter's DEFAULT − LEGACY — the file stays as extracted, `location()` applies the shift
+  (`to_location()` / `to_record()` stay raw: the writers and the round-trip test use them). A `LinkShift` lists the
+  TOP-LEVEL records beyond its link, the retired hosts included; a module's children follow its world pose (their
+  `rel` is to it); mounted records are never listed — `mount_placements.py` resolves their hosts through
+  `record_location()`, so the shift is baked into their records. `robot/frames.py` moves the joint origins beyond a
+  link with `P.shifted()`, `tests/totals.py` a record's bbox with `record_shift()`. `test_placements.py` checks the
+  lists against `robot/frames.py LINKS`, each anchor axis against its record, and where the links put what lies
+  beyond them.
 - **Mounted occurrences** (`lib/mounts.py`): the base's bolt-on motor mount (`base_motor_mount#1`, a box round the motor bolted to
   the base's end - designed here, at identity on `base#1` - with its 4x M4 screws + nuts, `base_motor_mount_screws#1` /
   `_nuts#1`, hosted on the mount and on the screws); the belt joints' motors - `nema17_48mm#1` (the 48 mm motor, under the
