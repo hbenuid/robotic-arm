@@ -27,7 +27,7 @@ PETG_DENSITY = 1.27e-3  # [DESIGN] g/mm^3 - printed-part mass estimates
 
 # --- Fasteners - lib/fasteners.py (a leaf: the sizes, the clearance holes, the plain screw / nut builders) ----
 from lib.fasteners import (  # noqa: E402, F401
-    M3_CLEAR, M3_CSK, M3_NUT, M3_PITCH, M4_CLEAR, M4_NUT, M4_PITCH, M4_SHCS, M5_CLEAR, csk_volume, nut_volume, shcs_volume,
+    M3_CLEAR, M3_CSK, M3_NUT, M3_PITCH, M3_SHCS, M4_CLEAR, M4_NUT, M4_PITCH, M4_SHCS, M5_CLEAR, csk_volume, nut_volume, shcs_volume,
 )
 
 # --- Belt drive (GT2) - lib/belts.py (a leaf: lib/forearm/ imports it directly) ------------------
@@ -101,7 +101,7 @@ WRIST_BELT_LENGTH = _FOREARM.roll_end.wrist_belt   # 258-2GT [ESTIMATE] the wris
 # The forearm roll (lib/forearm/params.py RollEndParams; the rotor's wall on j2_link, the elbow block + shaft in M3):
 FOREARM_ROLL_AXIS_Z = _FOREARM.roll_end.axis_z     # 25 [REFERENCE] the roll axis' N-station in j2_link's frame = the wrist centre's (42 - 17)
 FOREARM_WALL_X = _FOREARM.roll_end.wall_x          # (-56, -48) [DESIGN] the flange wall: wrist face .. elbow face (48 from the elbow axis)
-FOREARM_WALL_Z = _FOREARM.roll_end.wall_z          # (-10, 60) [DESIGN]
+FOREARM_WALL_OD = _FOREARM.roll_end.wall_od        # 60 [DESIGN] the flange wall's round outline about the roll axis (on a foot as wide as the web's neck)
 FOREARM_PLUG_CLEARANCE = _FOREARM.roll_end.plug_clearance   # 10 [DESIGN] the wrist motor's connector plug to the wall
 FOREARM_FLANGE_DIA = _FOREARM.roll_end.flange_dia  # 39.7 [DESIGN] the roll shaft's end spigot the forearm wall bolts onto
 FOREARM_ROLL_BELT_LENGTH = _FOREARM.drive.roll_belt          # 240-2GT [ESTIMATE] the roll belt (90T ring on the shaft, 20T on the motor)
@@ -194,7 +194,8 @@ BASE_YAW_LIMIT_DEG = 175.0        # [ESTIMATE] symmetric +/- range; j1_coupler (
 # down in front - stops 3 deg before the forearm roll drive's motor + board reach j1_coupler with the elbow folded
 # back (tests/test_sweeps.py), the lower is an [ESTIMATE]
 SHOULDER_PITCH_LIMITS_DEG = (-120.0, 75.0)   # [DESIGN]
-ELBOW_PITCH_LIMIT_DEG = 90.0      # [DESIGN] the forearm's roll wall (j2_link, 48 from the elbow axis) meets j1_link's side from +/-93 deg
+ELBOW_PITCH_LIMIT_DEG = 90.0      # [DESIGN] kept at 90: the necked forearm (j2_link) stays 2 mm off j1_link at any roll to about +/-102 deg,
+#                                   but SHOULDER_PITCH_LIMITS_DEG was set over this range (docs/open_issues.md)
 # the GT2 belt at wrist_link: (lower, upper), the clear range (the wrist body's back corners reach j2_link's web at
 # -109 / +74.5 at any roll, tests/test_sweeps.py) less 4 deg
 WRIST_PITCH_LIMITS_DEG = (-105.0, 70.0)   # [DESIGN]

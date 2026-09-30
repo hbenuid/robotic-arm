@@ -22,7 +22,7 @@ from dataclasses import dataclass, replace
 from lib.bearings import BEARING_6806_SHOULDER_DIA, PULLEY_SEAT_SHIFT
 from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_FACE_Y, GT2_PULLEY_90T_TEETH, centre_distance
 from lib.cycloidal.params import MotorParams
-from lib.fasteners import M3_CLEAR, M3_CSK, M3_NUT, M4_CLEAR, M4_NUT, CskSize, NutSize
+from lib.fasteners import M3_CLEAR, M3_CSK, M3_NUT, M3_SHCS, M4_CLEAR, M4_NUT, CskSize, NutSize, ShcsSize
 from lib.motors import MOTOR_40
 
 
@@ -101,21 +101,36 @@ class RollEndParams:
     The roll axis runs along -X through (y 0, z axis_z) - the wrist centre, where the wrist_pitch and wrist_roll
     axes meet (42 − 17 along N from the elbow origin), so the three wrist axes stay concurrent. The rotor (the
     hollow roll shaft, parts/joints/forearm_roll_shaft) puts its Ø39.7 end spigot into a shallow locating recess on
-    the wall's elbow face and takes 4x M3 through the wall; the cables pass through the bore. The wall stands 48 mm
-    from the elbow axis - the least the rolling ±45 mm wall (corners r 57 about the roll axis) clears the upper arm's
-    r 45 round end by 3 mm. Elbow block + shaft: lib/forearm/roll.py (M6)."""
+    the wall's elbow face; 4x M3 from the wall's wrist face run through the wall and the shaft's end into nuts buried
+    in the shaft, behind bearing 2 (the bottom one's head in a channel under the web); the cables pass through the
+    bore. The wall stands 48 mm
+    from the elbow axis: whatever the forearm's roll angle, it clears the upper arm's r 45 round end by 3 mm. It is a
+    round flange about the roll axis on a foot as wide as itself - the web tapers to that width from the wrist boss
+    (the neck) - braced by two gussets on the web's top face, either side of the wrist motor.
+    Elbow block + shaft: lib/forearm/roll.py (M6)."""
 
     axis_z: float = 25.0                  # [REFERENCE] the wrist centre's N-station above the elbow origin (42 − 17)
-    wall_x: tuple = (-56.0, -48.0)        # [DESIGN] the wall's wrist face .. elbow face (8 thick): 48 from the elbow axis (>= 45 + 3, see above)
-    wall_z: tuple = (-10.0, 60.0)         # [DESIGN] full width y +/- half_w; sized under / over the former caps' tray and lid - nothing swings there
+    wall_x: tuple = (-56.0, -48.0)        # [DESIGN] the wall's wrist face .. elbow face (8 thick): 48 from the elbow axis (>= 45 + 3: the upper arm's round end)
+    wall_od: float = 60.0                 # [DESIGN] the wall's round outline about the roll axis: it covers the stop lug and post in front of it (r 28 / 30)
+    neck_half_w: float = 30.0             # [DESIGN] the web's half width at the wall (= wall_od / 2: the wall's foot); the web tapers to it from the wrist boss
+    rib_y: tuple = (24.0, 30.0)           # [DESIGN] the two gussets on the web's top face against the wall's wrist face: |y| in this band - outside the
+    #                                       wrist motor's body (+/- 21) and board (+/- 21.5), inside the neck
+    rib_len: float = 30.0                 # [DESIGN] ... this far along the web from the wall
+    rib_h: float = 20.0                   # [DESIGN] ... this high above the web at the wall (the wall's round outline cuts their tops)
     flange_dia: float = 39.7              # [DESIGN] the shaft's end spigot (< the 6808 bore: bearing 2 slides over it from the wrist end)
     flange_recess_add: float = 0.3        # [DESIGN] PETG mating clearance on the recess diameter (Ø40.0)
     flange_recess_depth: float = 2.0      # [DESIGN] a locating spigot, not a load path
-    bolt_circle_dia: float = 32.0         # [DESIGN] 4x M3 on the axes (0 / 90 / 180 / 270 about the roll axis), into the shaft's end wall
+    bolt_circle_dia: float = 31.0         # [DESIGN] 4x M3 on the axes (0 / 90 / 180 / 270 about the roll axis): each clearance hole centred in the
+    #                                       shaft's neck wall, between its Ø24 bore and its Ø38 outside (1.8 mm either side)
     bolt_count: int = 4
     bolt_angle_deg: float = 0.0
-    bolt_dia: float = 3.4                 # [DESIGN] M3 clearance through the wall (heads on the wrist face; self-tapping in the shaft's end)
-    cable_bore: float = 24.0              # [DESIGN] = the shaft's bore (the shaft's Ø39.7 end leaves ~8 mm of wall for the bolts)
+    bolt_dia: float = M3_CLEAR            # [DESIGN] 3.4, through the wall and on through the shaft's end to its nut
+    screw: ShcsSize = M3_SHCS             # [DATASHEET] ISO 4762 M3, heads on the wall's wrist face (tools/bom.py EXTRAS)
+    screw_len: float = 25.0               # [DESIGN] M3 x 25: through the wall (6 at the holes, less the recess) and the shaft's end to its nut behind
+    #                                       bearing 2 (RollDriveParams.end_nut), 2 pitches past it
+    channel_clear: float = 0.5            # [DESIGN] the channel under the web for a screw whose head would land in the web (the bottom one): the head
+    #                                       + this all round, open to the web's underside, from the wall into the motor slot (the screw lays in, a key reaches it)
+    cable_bore: float = 24.0              # [DESIGN] = the shaft's bore
     plug_clearance: float = 10.0          # [DESIGN] the wrist motor's connector plug needs this much room to the wall
     wrist_belt: int = 258                 # [ESTIMATE] 258-2GT closed belt, 6 mm: sets the motor slide (motor_x)
 
@@ -134,7 +149,8 @@ class RollDriveParams:
     wrist (host −X); +X = host +Z (N, away from the upper arm); +Y = host +Y = up in the arm's swing plane. Stations in
     that frame: layout.stack_positions(). Assembly: bearing 1 into the rear seat, the shaft in from the front (its
     rear journal into bearing 1, the ring through the cavity), bearing 2 over the spigot and the neck onto journal 2,
-    the cap over it (4x M3 into the front face), the forearm wall onto the spigot (4x M3 into the shaft's end). Bearing 1
+    the cap over it (4x M3 into the front face), the forearm wall onto the spigot (4x M3 into the nuts pushed into the
+    shaft's pockets from its bore). Bearing 1
     is pressed onto the shaft's rear journal first and rides in through the cavity and the core bore to its seat."""
 
     # bearings: 2x 6808-2RS - bearing 1 in the block's rear seat against its lip, bearing 2 in the cap's seat against the cap's lip
@@ -200,8 +216,10 @@ class RollDriveParams:
     shoulder_od: float = 44.0             # [DESIGN] the core between the journals (< inner_race_od)
     neck_od: float = 38.0                 # [DESIGN] beyond journal 2 to the spigot: bearing 2 slides over it (< bearing_bore)
     shaft_end_clear: float = 1.0          # [DESIGN] the shaft's rear end .. the end wall's inner face (the cables exit there)
-    end_bolt_tap_dia: float = 2.5         # [DESIGN] 4x M3 self-tapping into the shaft's end wall (RollEndParams.bolt_circle_dia)
-    end_bolt_depth: float = 8.0
+    end_nut: NutSize = M3_NUT             # [DATASHEET] ISO 4032 M3: the nuts of the forearm wall's 4 screws (RollEndParams.screw), in the Ø44 core
+    #                                       behind bearing 2 (tools/bom.py EXTRAS) - the screws clamp the neck and journal 2 between head and nut
+    end_nut_fit: float = 0.2              # [DESIGN] each nut's pocket - a slot from the cable bore outward, a flat either side (af wide): its height
+    #                                       and its reach past the nut's outer corner over the nut; the nut bears on its wall-side face
     stop_lug_r: tuple = (17.0, 28.0)      # [DESIGN] the rotor's hard-stop lug on the neck (rooted 2 mm inside its Ø38), at +X in the zero pose
     stop_post_r: tuple = (24.0, 30.0)     # [DESIGN] the cap's post on its outer face, at -X: they overlap r 24..28
     stop_t: float = 2.5                   # [DESIGN] both, from the cap's outer face; 0.5 mm short of the forearm wall
