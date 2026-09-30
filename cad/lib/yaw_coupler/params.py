@@ -21,8 +21,9 @@ tests/test_reference_match.py); DEFAULT is what the part builds: it stands on th
 base's groove (lib/bearings.py THRUST_*) - the recess's ceiling is the seat on the upper washer, wide enough to clear
 the stack, and the rim is lifted clear of the base's top face (the SolidWorks rim sat on it, the coupler turning on
 the base's face); its hub takes the base_yaw 90T like j3_coupler's the wrist's: the stub the bearings' bore, on
-through the lip to its lower face, where the 90T's hub end meets it, drilled for the 90T's 4 bolts (M4 clearance, on
-its bolt circle at the diagonals, the nuts in hex pockets in the pocket's floor) round the 90T's bore; and its yoke
+through the lip to its lower face, where the 90T's hub end meets it (gt2_pulley_90t#5, lib/mounts.py), drilled for the
+90T's 4 bolts (M4 clearance, on its bolt circle at the diagonals, the nuts in hex pockets in the pocket's floor -
+parts/base/yaw_pulley_screws / _nuts) round the 90T's bore; and its yoke
 holds the drive's 6-pillar housing (lib/cycloidal/params.py DEFAULT_CONFIG): a socket round each pillar at +/-30
 degrees from the bottom, their bolts' nut pockets in the cheek - no channel, no notch, no V-grooves.
 
@@ -63,6 +64,9 @@ class HubParams:
     hole_deg: float = 45.0           # ... the first at this angle (from +X toward +Z), 90 apart
     nut_af: float | None = None      # the holes' nut pockets (none in the SolidWorks part) ...
     nut_depth: float = 0.0           # ... this deep
+    pulley_screw_len: float = 45.0   # [DESIGN] M4 x 45 (ISO 4762, parts/base/yaw_pulley_screws) from the base_yaw 90T's outer
+    #                                  face: 38.7 ends flush with the nut's outer face (DEFAULT's pockets), 45 runs 6.3 past it
+    #                                  into the pocket over the hub (an M4 x 40 ends 1.3 past: under two pitches)
 
 
 @dataclass(frozen=True)

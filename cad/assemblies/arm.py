@@ -1,8 +1,8 @@
 """The whole arm: every part of the SolidWorks 'final Arm Assembly Fully Movable' placed from
 reference/placements.json - the SolidWorks part occurrences + the mounted ones (lib/mounts.py: the belt joints'
 NEMA 17 motors - 48 mm at the base, 40 mm at the elbow and wrist - and their MKS SERVO42D boards, on the pads the links carry;
-the 6806-2RS bearing pair in each belt joint's bore; the base_yaw thrust bearing in the base's groove; the elbow's and the wrist's 90T re-seated on them, each clamped by 4x M4
-screws + nuts) + the gripper module
+the 6806-2RS bearing pair in each belt joint's bore; the base_yaw thrust bearing in the base's groove; the elbow's and the wrist's 90T re-seated on them
+and the base_yaw 90T under j1_coupler, each clamped by 4x M4 screws + nuts) + the gripper module
 (SolidWorks-driven) + the cycloidal_drive module (code-driven, placed at the SolidWorks node's pose) + the
 forearm_roll_drive module (code-driven, placed by lib/mounts.py MODULE_MOUNTS) - the totals are locked in
 tests/test_assembly.py - bucketed into the GROUPS component tree (arm -> base_link/shoulder_link/upper_arm_link/
@@ -14,7 +14,8 @@ rails, the 20T pulleys) is _occurrences.BOUGHT_TINT grey, inside the modules too
     |- base_link         base, bearing_6806:base_yaw_1 / _2, washer_as6590:base_yaw_1, bearing_axk6590:base_yaw,
     |                    base_motor_mount, base_motor_mount_screws / _nuts:base_yaw, nema17_48mm:base_yaw,
     |                    mks_servo42d:base_yaw
-    |- shoulder_link     j1_coupler, washer_as6590:base_yaw_2, cycloidal_drive (kept whole - see below)
+    |- shoulder_link     j1_coupler, washer_as6590:base_yaw_2, gt2_pulley_90t:base_yaw, yaw_pulley_screws / _nuts:base_yaw,
+    |                    cycloidal_drive (kept whole - see below)
     |- upper_arm_link    j1_link, bearing_6806:elbow_pitch_1 / _2, nema17_40mm:elbow_pitch, mks_servo42d:elbow_pitch
     |- elbow_link        gt2_pulley_90t:j2, elbow_pulley_screws / _nuts:elbow_pitch, forearm_roll_drive (kept whole - see
     |                    below; its block IS the elbow coupler)
@@ -80,6 +81,9 @@ OCCURRENCES = [
     ("mks_servo42d",          "base_yaw", "mks_servo42d#1"),
     ("j1_coupler",            None, "j1_coupler#1"),
     ("washer_as6590",         "base_yaw_2", "washer_as6590#2"),    # ... its upper washer under j1_coupler's seat
+    ("gt2_pulley_90t",        "base_yaw", "gt2_pulley_90t#5"),     # mounted: the base_yaw 90T on j1_coupler's stub end, in the lower base bearing
+    ("yaw_pulley_screws",     "base_yaw", "yaw_pulley_screws#1"),  # mounted: the base_yaw 90T's 4x M4 ...
+    ("yaw_pulley_nuts",       "base_yaw", "yaw_pulley_nuts#1"),    # ... into the nuts in j1_coupler's hub
     ("cycloidal_drive",       None, DRIVE_KEY),            # module: assemblies/cycloidal_drive.py (the shoulder_pitch joint)
     ("j1_link",               None, "j1_link#1"),
     ("bearing_6806",          "elbow_pitch_1", "bearing_6806#3"),  # mounted: j1_link's elbow bore
@@ -119,7 +123,8 @@ GROUPS = [
     ("base_link",        "#937860", ("base#1", "bearing_6806#1", "bearing_6806#2", "washer_as6590#1", "bearing_axk6590#1",
                                      "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1",
                                      "nema17_48mm#1", "mks_servo42d#1")),
-    ("shoulder_link",    "#4C72B0", ("j1_coupler#1", "washer_as6590#2", DRIVE_KEY)),
+    ("shoulder_link",    "#4C72B0", ("j1_coupler#1", "washer_as6590#2", "gt2_pulley_90t#5", "yaw_pulley_screws#1", "yaw_pulley_nuts#1",
+                                     DRIVE_KEY)),
     ("upper_arm_link",   "#CCB974", ("j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2")),
     ("elbow_link",       "#DA8BC3", ("gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", ROLL_KEY)),
     ("forearm_link",     "#DD8452", ("j2_link#1", "bearing_6806#5", "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3")),

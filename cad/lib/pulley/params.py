@@ -1,5 +1,6 @@
-"""PulleyParams - every dimension of the printed 90T GT2 pulley (gt2_pulley_90t: the driven pulley of the elbow and the
-wrist belts - its hub turns in the joint's lower 6806 and bolts flat onto the stub above it), in its part frame.
+"""PulleyParams - every dimension of the printed 90T GT2 pulley (gt2_pulley_90t: the driven pulley of the elbow, the
+wrist and the base_yaw belts - its hub turns in the joint's lower 6806 and bolts flat onto the stub beyond it), in its
+part frame.
 
 Frame (= the SolidWorks part frame of gt2_pulley_90t, which placements.json and lib/mounts.py place): origin on the axis
 at the lower flange's top (where the teeth start), +Y up the axis toward the outer face, under the pulley bolts' heads.

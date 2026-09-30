@@ -32,8 +32,8 @@ from lib.upper_arm import DEFAULT as _UPPER_ARM
 
 # (module or None = the arm itself, what to order, pieces, why it is not modelled). Seeded with what
 # docs/cycloidal_drive.md states; the elbow belt, the arm's own fasteners (but the 90T pulley bolts and the roll motor
-# mount's, modelled: parts/joints/{elbow,wrist}_pulley_{screws,nuts}, forearm_roll_mount_{screws,nuts}) and the
-# electronics are not listed yet.
+# mount's, modelled: parts/joints/{elbow,wrist}_pulley_{screws,nuts}, parts/base/yaw_pulley_{screws,nuts},
+# forearm_roll_mount_{screws,nuts}) and the electronics are not listed yet.
 EXTRAS = [
     ("cycloidal_drive", f"M{CYCLOIDAL_ARM_MOUNT_BOLT_DIA:g} socket head cap screw (ISO 4762), 40-50 mm long - arm-mount bolts",
      CYCLOIDAL_ARM_MOUNT_BOLT_COUNT,

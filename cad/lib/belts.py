@@ -8,7 +8,7 @@ Tags as in lib/params.py. Units mm.
 import math
 
 GT2_PITCH = 2.0                                     # [DATASHEET] GT2 tooth pitch
-GT2_PULLEY_90T_TEETH = 90                           # [REFERENCE] printed 90T pulley (parts/joints/gt2_pulley_90t), used x2
+GT2_PULLEY_90T_TEETH = 90                           # [REFERENCE] printed 90T pulley (parts/joints/gt2_pulley_90t), used x3
 GT2_PULLEY_20T_TEETH = 20                           # [REFERENCE] purchased 20T pulley (parts/wrist/gt2_pulley_20t)
 GT2_PULLEY_20_60T_TEETH = (60, 20)                  # [REFERENCE] printed compound pulley (parts/joints/gt2_pulley_20_60t): its lower band, its upper
 GT2_PULLEY_90T_PITCH_DIA = GT2_PULLEY_90T_TEETH * GT2_PITCH / math.pi   # 57.30 mm pitch diameter

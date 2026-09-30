@@ -49,8 +49,9 @@ Custom parts declare `REFERENCE = NAME` (`None` for a *measured* one), `CONVERTE
   `LEGACY_CONFIG` build: `test_port` and `test_cots_envelope_tracks_reference_bbox` compare THAT.
   Their geometry helpers live in `lib/cycloidal/` and each module exposes `build(cfg)` for tests
   (reached like any part: `parts.load(name).build(cfg)` — tests never import `parts.<group>` either).
-- *native* (`CONVERTED = True`, `REFERENCE = NAME`, registered in `lib/reference.py NATIVE`; a purchased part
-  with neither a SolidWorks export nor a catalog model goes in `NATIVE_COTS`, its envelope IS the geometry):
+- *native* (`CONVERTED = True`, `REFERENCE = NAME`, registered in `lib/reference.py NATIVE`; the purchased parts in
+  `NATIVE_COTS` - neither a SolidWorks export nor a catalog model, the envelope IS the geometry - keep theirs the same
+  way; a NEW such purchased part keeps none: *envelope COTS*, Purchased (COTS) parts below):
   designed in this repo with no external origin, so the reference is the build the author ACCEPTED —
   `reference/native/<name>.step` + the manifest entry, written by `./cadtool python
   tools/reference/import_native.py [--only NAME] [--force]` ONCE on one machine (LFS, like a vendor file;
@@ -116,6 +117,13 @@ in `reference/cycloidal/`, `lib/reference.py CYCLOIDAL_COTS`; `path_of()` resolv
 reference itself - with no vendor file the envelope is the geometry) and `test_cots_envelope_tracks_reference_bbox` guard vendor
 swaps. Swap procedure (Recipe D): `vendor/AGENTS.md`; what has been tried and where the vendor files come from:
 `vendor/README.md`.
+An *envelope COTS* part (`lib/reference.py ENVELOPE_COTS`: `yaw_pulley_screws`, `yaw_pulley_nuts`) is a purchased part
+with no catalog model and no export that keeps NO reference - the direction for new purchased parts, as *measured* is
+for new exports: the same contract and the same hybrid body, its envelope the geometry, but no file under
+`reference/`, no `vendor/` file, no manifest entry and no `COTS` row, so the import tools and the reference checks
+never see it; its own test holds its numbers - pieces, volume, bbox, measured on the build and written in - and what
+it is (`tests/base/test_yaw_pulley_bolts.py`). `tests/test_parts_convention.py` checks the state. A vendor model for
+one makes it an ordinary COTS part (Recipe A / D).
 The kit parts `nema17_40mm` / `mks_servo42d` live in `parts/joints/` (`parts/cycloidal/` is locked to
 `CYCLOIDAL_COTS`); the drive motor's envelope builder is `lib/cycloidal/motor.py nema17_motor()`, which the 40 mm
 envelope reuses with other `MotorParams`.
@@ -125,7 +133,9 @@ envelope reuses with other `MotorParams`.
 `lib/reference.py COTS` (`rel=None` when the vendor file IS the reference) → put `vendor/<name>.step` in place (Recipe D,
 `vendor/AGENTS.md`) → `./cadtool python tools/reference/import_solidworks.py --src <export tree>` (mirrors it into `reference/solidworks/`,
 manifest entry) → `tests/test_parts_convention.py MULTI_BODY` if it is several solids → give it an occurrence (a
-SolidWorks key, a module row, or Recipe B in `assemblies/AGENTS.md`) → Recipe C.
+SolidWorks key, a module row, or Recipe B in `assemblies/AGENTS.md`) → Recipe C. With no vendor model and no export
+(a fastener pattern, a plain bearing): register it in `ENVELOPE_COTS` instead, skip the vendor file and the import, and
+write its numbers into a test of its own.
 
 ## Modelled, not placed yet
 A part may be modelled before an assembly places it (a sensor whose mount is not designed yet). It declares

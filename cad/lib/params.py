@@ -159,13 +159,16 @@ CYCLOIDAL_HOUSING_NUTS_MASS_G = STEEL_DENSITY * _DRIVE.housing.bolt_count * _hex
 CYCLOIDAL_MOTOR_BOLTS_MASS_G = STEEL_DENSITY * 4 * (
     _cyl_vol(_DRIVE.motor.bolt_dia / 2, _DRIVE.motor.motor_bolt_thread_length) + _cyl_vol(_DRIVE.motor.motor_bolt_head_dia / 2, _DRIVE.motor.motor_bolt_head_height))   # 4.3, 4x M3x10
 
-# The 90T pulley bolts of the elbow and the wrist (parts/joints/{elbow,wrist}_pulley_{screws,nuts}): the same estimate
-# over their modelled geometry (lib/fasteners.py: the socket and the nut's bore taken out)
+# The 90T pulley bolts of the elbow, the wrist and the base_yaw joint (parts/joints/{elbow,wrist}_pulley_{screws,nuts},
+# parts/base/yaw_pulley_{screws,nuts}): the same estimate over their modelled geometry (lib/fasteners.py: the socket and
+# the nut's bore taken out)
 from lib.coupler.params import DEFAULT as _COUPLER  # noqa: E402
+from lib.yaw_coupler.params import DEFAULT as _YAW_COUPLER  # noqa: E402
 
 _PULLEY_BOLTS = len(pulley_90t_bolt_points())
 ELBOW_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _FOREARM.drive.pulley_screw_len)   # 20.1, 4x M4x40
 WRIST_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _COUPLER.pulley_screw_len)         # 24.1, 4x M4x50
+YAW_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _YAW_COUPLER.hub.pulley_screw_len)   # 22.1, 4x M4x45
 PULLEY_NUTS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * nut_volume(M4_NUT)                                              # 3.0, 4x M4 (each joint)
 
 # The roll motor mount's screws and nuts (parts/joints/forearm_roll_mount_{screws,nuts}): the same estimate

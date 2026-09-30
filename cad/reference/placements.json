@@ -11,9 +11,9 @@
  "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. A record with a `mount` block (keys under `mounted`) is a motor mount declared in lib/mounts.py, not a SolidWorks node: parent None, rel == world = host world * mount frame.",
  "root_label": "final_Arm_Assembly_Fully_Movable",
  "expected": {
-  "leaf_occurrences": 55,
-  "solids": 133,
-  "solid_volume": 2007146.747
+  "leaf_occurrences": 58,
+  "solids": 142,
+  "solid_volume": 2034876.117
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -40,10 +40,13 @@
   "washer_as6590#2",
   "gt2_pulley_90t#3",
   "gt2_pulley_90t#4",
+  "gt2_pulley_90t#5",
   "elbow_pulley_screws#1",
   "elbow_pulley_nuts#1",
   "wrist_pulley_screws#1",
   "wrist_pulley_nuts#1",
+  "yaw_pulley_screws#1",
+  "yaw_pulley_nuts#1",
   "forearm_roll_drive#1"
  ],
  "occurrences": [
@@ -4886,6 +4889,109 @@
    ]
   },
   {
+   "key": "gt2_pulley_90t#5",
+   "part": "gt2_pulley_90t",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j1_coupler#1",
+    "link": "shoulder_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      -22.507252,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      180.0,
+      45.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the base_yaw 90T under j1_coupler, hub up: its hub end on the stub's end, its journal in the lower base bearing, its ring under that bearing's inner ring (it holds the coupler down on the thrust bearing); turned hole_deg about its axis onto the stub's diagonal holes"
+   },
+   "solids": 1,
+   "solid_volume": 24531.703,
+   "rel": {
+    "position": [
+     0.0,
+     -27.6,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     48.694455,
+     180.0
+    ],
+    "matrix_3x4": [
+     [
+      -0.660074371,
+      -0.0,
+      0.751200256,
+      0.0
+     ],
+     [
+      0.0,
+      -1.0,
+      -0.0,
+      -27.6
+     ],
+     [
+      0.751200256,
+      0.0,
+      0.660074371,
+      0.0
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     0.0,
+     -27.6,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     48.694455,
+     180.0
+    ],
+    "matrix_3x4": [
+     [
+      -0.660074371,
+      -0.0,
+      0.751200256,
+      0.0
+     ],
+     [
+      0.0,
+      -1.0,
+      -0.0,
+      -27.6
+     ],
+     [
+      0.751200256,
+      0.0,
+      0.660074371,
+      0.0
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -29.594,
+    -35.8,
+    -29.594
+   ],
+   "world_bbox_size": [
+    59.188,
+    21.4,
+    59.188
+   ]
+  },
+  {
    "key": "elbow_pulley_screws#1",
    "part": "elbow_pulley_screws",
    "kind": "part",
@@ -5295,6 +5401,212 @@
     26.241,
     27.162,
     4.874
+   ]
+  },
+  {
+   "key": "yaw_pulley_screws#1",
+   "part": "yaw_pulley_screws",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "gt2_pulley_90t#5",
+    "link": "shoulder_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      8.2,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the base_yaw 90T's 4x M4 x pulley_screw_len: heads on its outer face (under it), up through its hub and j1_coupler's stub"
+   },
+   "solids": 4,
+   "solid_volume": 2815.345,
+   "rel": {
+    "position": [
+     -0.0,
+     -35.8,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     -131.305545
+    ],
+    "matrix_3x4": [
+     [
+      -0.660074371,
+      0.751200256,
+      0.0,
+      -0.0
+     ],
+     [
+      0.0,
+      -0.0,
+      1.0,
+      -35.8
+     ],
+     [
+      0.751200256,
+      0.660074371,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -0.0,
+     -35.8,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     -131.305545
+    ],
+    "matrix_3x4": [
+     [
+      -0.660074371,
+      0.751200256,
+      0.0,
+      -0.0
+     ],
+     [
+      0.0,
+      -0.0,
+      1.0,
+      -35.8
+     ],
+     [
+      0.751200256,
+      0.660074371,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -11.763,
+    -39.8,
+    -11.763
+   ],
+   "world_bbox_size": [
+    23.526,
+    49.0,
+    23.526
+   ]
+  },
+  {
+   "key": "yaw_pulley_nuts#1",
+   "part": "yaw_pulley_nuts",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "yaw_pulley_screws#1",
+    "link": "shoulder_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      0.0,
+      35.507252
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the base_yaw screws' nuts in j1_coupler's hex pockets, flush with the floor of the pocket over its hub (nut_depth under pocket_y0), a corner along the coupler's Z"
+   },
+   "solids": 4,
+   "solid_volume": 382.322,
+   "rel": {
+    "position": [
+     0.0,
+     -0.292748,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     -131.305545
+    ],
+    "matrix_3x4": [
+     [
+      -0.660074371,
+      0.751200256,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      -0.0,
+      1.0,
+      -0.292748
+     ],
+     [
+      0.751200256,
+      0.660074371,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     0.0,
+     -0.292748,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     -131.305545
+    ],
+    "matrix_3x4": [
+     [
+      -0.660074371,
+      0.751200256,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      -0.0,
+      1.0,
+      -0.292748
+     ],
+     [
+      0.751200256,
+      0.660074371,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -12.296,
+    -0.293,
+    -11.886
+   ],
+   "world_bbox_size": [
+    24.593,
+    3.2,
+    23.772
    ]
   },
   {

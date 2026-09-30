@@ -42,7 +42,7 @@
   (output hub + pins) is bolted to j1_link - together upper_arm_link - so the drive IS the
   shoulder_pitch joint (cad/docs/cycloidal_drive.md, cad/assemblies/cycloidal_drive.py BODIES);
   the GT2 90T pulleys + J3 couplers are bolted to the driven links (elbow_link at elbow_pitch,
-  wrist_pitch_link at wrist_pitch); each belt joint's 6806-2RS bearing pair rides with its housing
+  wrist_pitch_link at wrist_pitch; the base_yaw 90T to j1_coupler's stub end inside the base - shoulder_link); each belt joint's 6806-2RS bearing pair rides with its housing
   (base_link, upper_arm_link, forearm_link; cad/lib/mounts.py), the base_yaw thrust bearing's lower washer and needle
   cage with base_link, its upper washer with j1_coupler (shoulder_link); the MG996R crank linkage is merged into wrist_roll_link;
   jaw_b mirrors jaw_a (mimic, multiplier -1); positive jaw_a = opening.
@@ -75,9 +75,9 @@
   </link>
   <link name="shoulder_link">
     <inertial>
-      <origin xyz="-0.000858 0.015952 -0.013965" rpy="0 0 0" />
-      <mass value="1.594247" />
-      <inertia ixx="3.674871e-03" ixy="2.317943e-05" ixz="1.803046e-05" iyy="3.263627e-03" iyz="-3.530535e-04" izz="2.686198e-03" />
+      <origin xyz="-0.000828 0.015409 -0.01717" rpy="0 0 0" />
+      <mass value="1.650504" />
+      <inertia ixx="4.185559e-03" ixy="2.392286e-05" ixz="2.241258e-05" iyy="3.760526e-03" iyz="-4.345619e-04" izz="2.713967e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />

@@ -268,7 +268,7 @@ def test_link_masses_add_up(inertials_from_shared_parts):
     for k in P.keys(kind="part") + P.keys(kind="module", designed=True):
         for part, _, _ in world_rows(k):
             mod = parts.load(part)
-            if part in R.COTS:
+            if parts.bought(part):
                 expected_g += mod.MASS_G
             elif P.OCCURRENCES[k]["kind"] == "part":
                 expected_g += PARAMS.PETG_DENSITY * solids_and_volume(k)[1]

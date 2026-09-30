@@ -27,8 +27,9 @@ zero = capture, the committed meshes vs a fresh export, inertials, URDF/SRDF/SDF
 `./cadtool validate`), `test_tooling.py` (the installed cadgen and OCP kernel are the pinned ones, one complete OCP distribution,
 `./cadtool inspect` agrees with the kernel),
 `test_mounts.py` (the mounted motors: axis on the joint, face on the pad, board on the rear face, interference budget,
-the base stack above the base bottom, the 90T planes within the shafts; the 90T pulley bolts: seats, reach, the opened
-holes, the nuts' designed press; the base_yaw thrust stack under `j1_coupler`),
+the base stack above the base bottom, the 90T planes within the shafts; each belt joint's bearing stack between its
+coupler's stub and its 90T; the 90T pulley bolts: seats, reach, the opened holes, the nuts' designed press; the base_yaw
+thrust stack under `j1_coupler`),
 `test_layering.py` (the package layering, no `sys.path`, no direct part-module imports — AST scan),
 `test_sweeps.py` (the joint limits keep the arm off itself: exact distances between the robot links' parts at poses
 on the limits - the shoulder's upper limit over the elbow's range, poses with the arm down in the table skipped),
@@ -44,7 +45,9 @@ converted — shared by `test_assembly.py` and `test_robot.py`), `built.py` (abo
 `stack` fixture is `tests/cycloidal/conftest.py`), `tests/upper_arm/` (`j1_link`: the LEGACY build's feature probes, DEFAULT's
 holes on the elbow motor's pattern and the drive's arm-mount bolts, no sockets, the elbow block's relief), `tests/base/` (`base`: the LEGACY build's
 feature probes, the interface values lib/params.py and lib/datum.py take from it; `base_motor_mount`: the wiring room, the
-joint to the base's posts, the slotted seat at the stock belt's centre distance, the motor clear across the travel), `tests/coupler/` (`j3_coupler`: the
+joint to the base's posts, the slotted seat at the stock belt's centre distance, the motor clear across the travel;
+`yaw_pulley_screws` / `yaw_pulley_nuts`, envelope COTS parts: the numbers no reference file holds for them - pieces, volume,
+bbox - and feature probes), `tests/coupler/` (`j3_coupler`: the
 LEGACY build's feature probes, the stub the roll drive's block repeats), `tests/yaw_coupler/` (`j1_coupler`: the LEGACY
 build's feature probes, the yoke on the drive's housing - its bore, od, pillars, bolt circle; DEFAULT's sockets round the
 6-pillar housing's two pillars), `tests/wrist/` (`wrist_link`: the LEGACY build's feature probes, the seat on the
