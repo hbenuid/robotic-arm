@@ -126,3 +126,5 @@ part records with a `mount` block — the belt joints' motors and boards declare
 mount.frame_in_host`, `mount.host` a SolidWorks key or the motor key for a board); `skipped[]` (one record per SolidWorks
 node whose product the design dropped, `lib/reference.py SKIPPED_PRODUCTS` - the link caps: `path`, `label`, `reason`,
 leaves / solids / volume and the `rel` / `world` pose, moved there by `tools/reference/mount_placements.py`).
+The capture records stay as extracted when the design changes a link's length: `lib/placements.py SHIFTS` moves
+the records beyond it when they are read (`assemblies/AGENTS.md` "Shifted occurrences").

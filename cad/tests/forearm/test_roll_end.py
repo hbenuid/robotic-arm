@@ -1,5 +1,6 @@
 """The DEFAULT forearm - the roll end: the flange wall replaces the elbow disc, the wrist-pitch motor sits where
-the stock belt puts it and clears the wall, the wrist end is the SolidWorks one, the removed caps' sockets are gone."""
+the stock belt puts it and clears the wall, the wrist end is the SolidWorks one SHORTENING nearer the elbow, the
+removed caps' sockets are gone."""
 import math
 from dataclasses import replace
 
@@ -9,6 +10,7 @@ from build123d import Box, Pos
 from lib import params as PARAMS
 from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, closed_belt_length
 from lib.forearm import DEFAULT, LEGACY, flange_bolt_points, link_socket_points
+from lib.forearm.params import SHORTENING
 from lib.motors import NEMA17_40_BODY_W, NEMA17_40_CONNECTOR_D
 from tests import built
 from tests.forearm.helpers import in_host
@@ -19,7 +21,8 @@ R = DEFAULT.roll_end
 
 def test_default_layout():
     assert DEFAULT.roll and not LEGACY.roll
-    assert DEFAULT.web == LEGACY.web and DEFAULT.boss == LEGACY.boss
+    assert DEFAULT.web == replace(LEGACY.web, wrist_x=LEGACY.web.wrist_x + SHORTENING) and SHORTENING > 0.0
+    assert DEFAULT.boss == LEGACY.boss
     assert DEFAULT.sockets is None and LEGACY.sockets is not None and link_socket_points(DEFAULT) == ([], [])
     # the slide: set by the belt, inside the (shortened) slots, the plug clear of the wall, the body clear of the boss
     x = DEFAULT.motor_x
@@ -51,11 +54,15 @@ def test_link_ends_at_the_wall_and_keeps_its_wrist_end(link):
     bb = link.bounding_box()
     assert math.isclose(bb.max.X, R.wall_x[1], abs_tol=1e-6) and math.isclose(bb.min.Z, R.wall_z[0], abs_tol=1e-6)
     assert math.isclose(bb.max.Z, R.wall_z[1], abs_tol=1e-6)
-    # the wrist end (x < -165: the boss) is the SolidWorks one, but for the sockets
-    probe = Pos(-210.0, 0.0, 15.0) * Box(90.0, 100.0, 60.0)
-    assert abs(interference(link, probe) - interference(build_link(replace(LEGACY, sockets=None)), probe)) < 0.5
+    # the wrist end (the boss, 45 either side of the pivot) is the SolidWorks one SHORTENING nearer the elbow, but
+    # for the sockets
+    probe = Box(90.0, 100.0, 60.0)
+    at_default, at_legacy = Pos(DEFAULT.web.wrist_x, 0.0, 15.0), Pos(LEGACY.web.wrist_x, 0.0, 15.0)
+    legacy = build_link(replace(LEGACY, sockets=None))
+    assert abs(interference(link, at_default * probe) - interference(legacy, at_legacy * probe)) < 0.5
     # no locating sockets: the caps they held are gone
-    assert is_inside(link, -120, 40, 18) and is_inside(link, -120, 40, 9) and is_inside(link, -244.64, 20, 9)
+    wrist_socket_x = DEFAULT.web.wrist_x + LEGACY.sockets.wrist[0][0] - LEGACY.web.wrist_x
+    assert is_inside(link, -120, 40, 18) and is_inside(link, -120, 40, 9) and is_inside(link, wrist_socket_x, 20, 9)
     # the wall: solid, the flange recess on its elbow face, the cable bore and the bolt holes through it
     xm, x_face = (R.wall_x[0] + R.wall_x[1]) / 2.0, R.wall_x[1]
     assert is_inside(link, xm, 40, 50) and is_inside(link, xm, 0, -8)

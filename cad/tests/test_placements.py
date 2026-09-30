@@ -1,11 +1,17 @@
-"""reference/placements.json integrity and its coverage by the assembly tables (no geometry)."""
+"""reference/placements.json integrity and its coverage by the assembly tables, and the design's link-length
+shifts of its records (lib/placements.py SHIFTS) (no geometry)."""
 import math
+from dataclasses import replace
 
 from build123d import Location
 
+import lib.forearm.params as FOREARM
+import lib.upper_arm.params as UPPER_ARM
+import lib.wrist.params as WRIST
 from assemblies import arm, cycloidal_drive, forearm_roll_drive, gripper
 from lib import placements as P
 from lib import reference as R
+from robot import frames as RF
 
 
 def _matrix(loc: Location):
@@ -96,12 +102,90 @@ def test_rotation_convention_round_trips():
             assert _close(_matrix(P.to_location(o[frame])), o[frame]["matrix_3x4"]), f"{o['key']} {frame}"
 
 
-def test_world_equals_parent_world_times_rel():
+def _check_world_equals_parent_world_times_rel():
     for key, o in P.OCCURRENCES.items():
         parent_world = P.location(o["parent"], "world") if o["parent"] else Location()
         # 1e-4 mm/unitless: the JSON stores 6-decimal positions/angles, and a ~1e-6 deg
         # rounding over a ~100 mm lever arm shows up at the 1e-6 level.
         assert _close(_matrix(parent_world * P.location(key, "rel")), _matrix(P.location(key, "world")), tol=1e-4), key
+
+
+def test_world_equals_parent_world_times_rel():
+    _check_world_equals_parent_world_times_rel()
+
+
+# --- the link-length shifts (lib/placements.py SHIFTS) ---------------------------------------------------------------
+def _position_in(anchor: str, key: str) -> tuple:
+    """`key`'s world origin in `anchor`'s part frame (both with SHIFTS applied)."""
+    return tuple((P.location(anchor, "world").inverse() * P.location(key, "world")).position)
+
+
+def _near(a, b, tol=1e-3) -> bool:
+    return all(math.isclose(x, y, abs_tol=tol) for x, y in zip(a, b, strict=True))
+
+
+def _capture_records(*links: str) -> set:
+    """The top-level capture records the links' occurrences come from: a gripper part is its module's; the mounted
+    records and the designed modules' bodies are not capture records."""
+    out = set()
+    for link in links:
+        for key in RF.LINKS[link]:
+            if ":" in key or "mount" in P.OCCURRENCES[key]:
+                continue
+            out.add(P.OCCURRENCES[key]["parent"] or key)
+    return out
+
+
+def _check_links_carry_what_lies_beyond(elbow_x: float, wrist_x: float, end_dx: float):
+    """j2_link#1 (on the elbow axis) sits at (elbow_x, 10, 0) in j1_link's frame, j3_coupler#2 (on the wrist_pitch
+    axis) at (wrist_x, 0, 42) in j2_link's; what bolts to the wrist body's end face keeps its capture pose in the
+    wrist body's frame but for x + end_dx."""
+    assert _near(_position_in("j1_link#1", "j2_link#1"), (elbow_x, 10.0, 0.0))
+    assert _near(_position_in("j2_link#1", "j3_coupler#2"), (wrist_x, 0.0, 42.0))
+    wrist_raw = P.to_location(P.OCCURRENCES["wrist_link#1"]["world"])
+    for key in P.SHIFTS[2].moves:
+        raw = tuple((wrist_raw.inverse() * P.to_location(P.OCCURRENCES[key]["world"])).position)
+        assert _near(_position_in("wrist_link#1", key), (raw[0] + end_dx, raw[1], raw[2])), key
+
+
+def test_shift_axes_are_their_anchors_x():
+    for s in P.SHIFTS:
+        x = [row[0] for row in P.OCCURRENCES[s.anchor]["world"]["matrix_3x4"]]
+        assert all(math.isclose(a, b, abs_tol=1e-9) for a, b in zip(x, s.axis_w, strict=True)), s.link
+
+
+def test_shifts_move_the_capture_records_beyond_each_link():
+    upper_arm, forearm, wrist = (s for s in P.SHIFTS)
+    assert (upper_arm.anchor, forearm.anchor, wrist.anchor) == ("j1_link#1", "j2_link#1", "wrist_link#1")
+    assert set(upper_arm.moves) == _capture_records("elbow_link", "forearm_link", "wrist_pitch_link", "wrist_roll_link",
+                                                    "jaw_a_link", "jaw_b_link") | set(P.RETIRED)
+    assert set(forearm.moves) == _capture_records("wrist_pitch_link", "wrist_roll_link", "jaw_a_link", "jaw_b_link") | {
+        "gt2_pulley_90t#2"}
+    assert set(wrist.moves) == _capture_records("wrist_roll_link", "jaw_a_link", "jaw_b_link") | {
+        "gripper_clamp_bracket#1", "nema17_pancake#1"}
+    assert all(P.OCCURRENCES[key]["parent"] is None for key in upper_arm.moves)
+    assert (upper_arm.along_x, forearm.along_x, wrist.along_x) == (
+        UPPER_ARM.DEFAULT.slab.elbow_x - UPPER_ARM.LEGACY.slab.elbow_x,
+        FOREARM.DEFAULT.web.wrist_x - FOREARM.LEGACY.web.wrist_x,
+        WRIST.DEFAULT.tower.block_x1 - WRIST.LEGACY.tower.block_x1)
+
+
+def test_the_links_carry_what_lies_beyond_them():
+    _check_links_carry_what_lies_beyond(UPPER_ARM.DEFAULT.slab.elbow_x, FOREARM.DEFAULT.web.wrist_x,
+                                        WRIST.DEFAULT.tower.block_x1 - WRIST.LEGACY.tower.block_x1)
+
+
+def test_shifted_links_keep_the_records_consistent(monkeypatch):
+    """Shorter links (any lengths): each moves what lies beyond it, a module's children follow it, the rest stays."""
+    along = {"j1_link": -40.0, "j2_link": 40.0, "wrist_link": -20.0}
+    before = {key: P.location(key, "world") for key in ("base#1", "j1_link#1", "cycloidal_drive#1")}
+    monkeypatch.setattr(P, "SHIFTS", tuple(replace(s, along_x=along[s.link]) for s in P.SHIFTS))
+    _check_links_carry_what_lies_beyond(UPPER_ARM.LEGACY.slab.elbow_x - 40.0, FOREARM.LEGACY.web.wrist_x + 40.0, -20.0)
+    _check_world_equals_parent_world_times_rel()
+    for key, loc in before.items():
+        assert _close(_matrix(P.location(key, "world")), _matrix(loc), tol=1e-9), key
+    for child in (key for key, o in P.OCCURRENCES.items() if o["parent"] == "gripper#1"):
+        assert _close(_matrix(P.location(child, "rel")), P.OCCURRENCES[child]["rel"]["matrix_3x4"], tol=1e-6), child
 
 
 def test_assembly_tables_claim_every_part_key_exactly_once():

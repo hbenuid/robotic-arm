@@ -2,7 +2,7 @@
 
 Loads when you work in `lib/`. `lib/` is the left end of the layering (`cad/AGENTS.md` "Layering"): it never imports
 `parts/`, `assemblies/`, `robot/`, `tools/` or `tests/`. The rules for the modules that describe the assembly rather
-than geometry live with their users: `mounts.py` (Recipe B) and `placements.py` (retired / skipped occurrences) in
+than geometry live with their users: `mounts.py` (Recipe B) and `placements.py` (retired / skipped / shifted occurrences) in
 `assemblies/AGENTS.md`; the `reference.py` registries (`CUSTOM`, `COTS`, `DESIGNED`, `NATIVE`, …) in
 `parts/AGENTS.md` and `reference/AGENTS.md`.
 

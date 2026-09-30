@@ -2,14 +2,16 @@
 axes), in its part frame.
 
 Frame (= the SolidWorks part frame of j1_link, which placements.json places): origin on the shoulder_pitch axis,
-+X along the link to the elbow_pitch axis at x = elbow_x (210), +Y = N (both pitch axes; the cycloidal drive's hub
-bolts onto the y = +1.5 top face, the elbow motor hangs off the pad on the -Y side), Z across the link (the width).
-Every feature is a prism or a bore along Y.
++X along the link to the elbow_pitch axis at x = SlabParams.elbow_x, +Y = N (both pitch axes; the cycloidal drive's
+hub bolts onto the y = +1.5 top face, the elbow motor hangs off the pad on the -Y side), Z across the link (the
+width). Every feature is a prism or a bore along Y.
 
 Two configurations: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
-tests/test_reference_match.py), DEFAULT is what the part builds: no cap-locating sockets (the caps were removed
-2026-09-25), the NEMA 17 holes on a true square about the shoulder axis, the hub holes on the drive's pattern and
-the elbow's clearance for the elbow block (the relief round the axis, the recess 1.5 mm deeper).
+tests/test_reference_match.py), DEFAULT is what the part builds: SHORTENING nearer the shoulder at the elbow (every
+elbow-end feature moves with the axis - lib/placements.py SHIFTS moves what lies beyond), no cap-locating sockets
+(the caps were removed 2026-09-25), no through slots, the NEMA 17 holes on a true square about the shoulder axis,
+the hub holes on the drive's pattern and the elbow's clearance for the elbow block (the relief round the axis, the
+recess 1.5 mm deeper).
 
 Every number below was measured on the reference 2026-09-24 (planar / cylindrical face census;
 tests/upper_arm/test_j1_link.py re-checks the builds against it): [REFERENCE] unless tagged.
@@ -90,8 +92,9 @@ class HubParams:
 @dataclass(frozen=True)
 class SlotParams:
     """Stadium slots across the plate (along Z, `half_len` = the end centres' |z|): two through slots of unknown
-    purpose, and one at x 163 with a 10 wide counterbore from below (next to the elbow belt's strands - a
-    tensioner slot?)."""
+    purpose (DEFAULT has none: the second stage's seat, moved with the elbow, lands on them), and one at stepped_x,
+    47 from the elbow axis, with a 10 wide counterbore from below (next to the elbow belt's strands - a tensioner
+    slot?)."""
 
     through_x: tuple = (70.5, 100.5)
     width: float = 4.0
@@ -104,9 +107,10 @@ class SlotParams:
 
 @dataclass(frozen=True)
 class BearingParams:
-    """At x 128: a Ø22.2 counterbore from each side (608 bearings?) around a Ø8.4 hole through a 2 mm web, the
+    """At x: a Ø22.2 counterbore from each side (608 bearings?) around a Ø8.4 hole through a 2 mm web, the
     lower one in a Ø40 boss proud of the underside - the elbow drive's second stage (an intermediate pulley shaft between
-    the pad's motor and the elbow 90T; not modelled - docs/open_issues.md; the SolidWorks capture holds nothing there)."""
+    the pad's motor and the elbow 90T; not modelled - docs/open_issues.md; the SolidWorks capture holds nothing there).
+    82 from the elbow axis in both configurations: DEFAULT's x puts a stock 258-2GT on the motor's 20T and the 60T."""
 
     x: float = 128.0
     seat_dia: float = 22.2
@@ -140,13 +144,32 @@ class UpperArmConfig:
 
 LEGACY = UpperArmConfig()     # the SolidWorks part, exactly
 
-# What the part builds: the caps are gone, so are their sockets; the motor's 4 holes on the NEMA 17 square about the
-# shoulder axis (the motor is placed there - lib/mounts.py nema17_40mm#2); the hub holes where the drive's arm-mount
-# bolts are - the drive's 45 degree pattern (lib/cycloidal/layout.py arm_mount_angles) as the capture pose places it
-# in this frame (placements.json cycloidal_drive#1 and j1_link#1; tests/upper_arm/test_j1_link.py re-derives it).
-DEFAULT = replace(
+SHORTENING = -40.0   # [DESIGN] the elbow axis this much nearer the shoulder than the SolidWorks part's: the arm's reach
+#                      is long for its NEMA 17 drives (the shoulder's and the elbow's holding torque)
+
+
+def shortened(cfg: UpperArmConfig, dx: float) -> UpperArmConfig:
+    """`cfg` with the elbow axis `dx` along X: every feature at the elbow end - the thick half's chamfer and step, the
+    counterbored slot, the second stage's seat - moves with it (the relief and the bearing stack sit on the axis
+    itself); the shoulder end (the pad, the hub bolts, the through slots) stays."""
+    return replace(
+        cfg,
+        slab=replace(cfg.slab, elbow_x=cfg.slab.elbow_x + dx),
+        elbow=replace(cfg.elbow, chamfer_x=cfg.elbow.chamfer_x + dx, step_x=cfg.elbow.step_x + dx),
+        slots=replace(cfg.slots, stepped_x=cfg.slots.stepped_x + dx),
+        bearing=replace(cfg.bearing, x=cfg.bearing.x + dx),
+    )
+
+
+# What the part builds: SHORTENING at the elbow end; the caps are gone, so are their sockets; the through slots too
+# (the moved seat's boss lands on them - no use for them was ever found); the motor's 4 holes on the NEMA 17 square
+# about the shoulder axis (the motor is placed there - lib/mounts.py nema17_40mm#2); the hub holes where the drive's
+# arm-mount bolts are - the drive's 45 degree pattern (lib/cycloidal/layout.py arm_mount_angles) as the capture pose
+# places it in this frame (placements.json cycloidal_drive#1 and j1_link#1; tests/upper_arm/test_j1_link.py re-derives it).
+DEFAULT = shortened(replace(
     LEGACY,
     sockets=None,
+    slots=replace(LEGACY.slots, through_x=()),   # [DESIGN]
     pad=replace(LEGACY.pad, holes=tuple((sx * NEMA17_BOLT_SP / 2.0, sz * NEMA17_BOLT_SP / 2.0, LEGACY.pad.hole_dia)
                                         for sx, sz in ((1, -1), (1, 1), (-1, 1), (-1, -1)))),   # [DESIGN]
     hub=replace(LEGACY.hub, bolt_angle_deg=-2.584167),   # [REFERENCE] the drive's bolts, 3.36 degrees from the SolidWorks holes
@@ -155,4 +178,4 @@ DEFAULT = replace(
     # recess floor (0.5 at the SolidWorks -4.5), which is level with the upper 6806's top: its seat exactly 7.0 deep,
     # the most the boss can get (tests/forearm/test_roll_drive.py)
     elbow=replace(LEGACY.elbow, relief_r=60.0, relief_y=-1.0, recess_y=-6.0),   # [DESIGN]
-)
+), SHORTENING)

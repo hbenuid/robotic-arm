@@ -1,8 +1,9 @@
 """j1_link, parametric (lib/upper_arm/): the LEGACY configuration reproduces the SolidWorks part feature by feature
 (the volume / bbox match is tests/test_reference_match.py's; here the features are probed by name so a regression
-names what moved), and DEFAULT - what the part builds - changes exactly four things: no cap sockets, the NEMA 17
-holes on the motor's pattern, the hub holes on the cycloidal drive's bolts, and the elbow block's clearance (the
-relief round the elbow axis, the recess floor deeper)."""
+names what moved), and DEFAULT - what the part builds - changes exactly these: SHORTENING at the elbow end (every
+elbow-end feature moves with the axis), no through slots, no cap sockets, the NEMA 17 holes on the motor's pattern,
+the hub holes on the cycloidal drive's bolts, and the elbow block's clearance (the relief round the elbow axis, the
+recess floor deeper)."""
 import math
 from dataclasses import replace
 
@@ -17,6 +18,7 @@ from lib.cycloidal.params import DEFAULT_CONFIG
 from lib.datum import to_location
 from lib.motors import NEMA17_BOLT_SP
 from lib.upper_arm import DEFAULT, LEGACY, hub_bolt_points, pad_holes, socket_points
+from lib.upper_arm.params import SHORTENING
 from tests import built
 from tests.helpers import interference, is_inside
 
@@ -29,10 +31,17 @@ def _in_link(key: str, local=(0.0, 0.0, 0.0)) -> Location:
 def test_layout():
     assert len(hub_bolt_points(LEGACY)) == len(hub_bolt_points(DEFAULT)) == 4
     assert [len(s) for s in socket_points(LEGACY)] == [7, 3] and socket_points(DEFAULT) == ([], [])
-    assert DEFAULT.slab == LEGACY.slab and DEFAULT.slots == LEGACY.slots
+    # SHORTENING at the elbow end: the axis and every elbow-end feature move with it, the second stage keeps its
+    # span to the elbow; the shoulder end stays; the through slots are gone
+    dx = SHORTENING
+    assert dx < 0.0 and DEFAULT.slab == replace(LEGACY.slab, elbow_x=LEGACY.slab.elbow_x + dx)
+    assert DEFAULT.slots == replace(LEGACY.slots, through_x=(), stepped_x=LEGACY.slots.stepped_x + dx)
+    assert DEFAULT.bearing == replace(LEGACY.bearing, x=LEGACY.bearing.x + dx)
+    assert DEFAULT.slab.elbow_x - DEFAULT.bearing.x == LEGACY.slab.elbow_x - LEGACY.bearing.x
     assert LEGACY.elbow.relief_r == 0.0 and DEFAULT.elbow.relief_r > 0.0 and DEFAULT.elbow.recess_y < LEGACY.elbow.recess_y
     assert replace(DEFAULT.elbow, relief_r=LEGACY.elbow.relief_r, relief_y=LEGACY.elbow.relief_y,
-                   recess_y=LEGACY.elbow.recess_y) == LEGACY.elbow
+                   recess_y=LEGACY.elbow.recess_y, chamfer_x=DEFAULT.elbow.chamfer_x - dx,
+                   step_x=DEFAULT.elbow.step_x - dx) == LEGACY.elbow
     assert PARAMS.J1_MOTOR_PAD_FACE_Y == DEFAULT.pad.face_y == -32.5
 
 
@@ -121,34 +130,49 @@ def test_legacy_features(legacy):
 
 
 @pytest.mark.slow
-def test_default_changes_only_the_holes_the_sockets_and_the_elbow(link, legacy):
-    from lib.upper_arm.link import _bore
+def test_default_is_shorter_and_changes_only_the_holes_the_slots_the_sockets_and_the_elbow(link, legacy):
+    from build123d import Box, Pos
 
+    from lib.upper_arm.link import _bore, build_link
+
+    dx = SHORTENING
     assert link.is_valid and len(link.solids()) == 1
     assert tuple(link.bounding_box().min) == pytest.approx(tuple(legacy.bounding_box().min), abs=1e-6)
-    assert tuple(link.bounding_box().max) == pytest.approx(tuple(legacy.bounding_box().max), abs=1e-6)
+    lmax, gmax = link.bounding_box().max, legacy.bounding_box().max
+    assert (lmax.X, lmax.Y, lmax.Z) == pytest.approx((gmax.X + dx, gmax.Y, gmax.Z), abs=1e-6)
     shoulder, elbow = socket_points(LEGACY)
     for x, z in shoulder:
         assert is_inside(link, x, -11.0, z)                                           # no sockets
     for x, z in elbow:
-        assert is_inside(link, x, -23.0, z)
+        assert is_inside(link, x + dx, -23.0, z)
+    for x in LEGACY.slots.through_x:
+        assert not is_inside(legacy, x, -5, 0) and is_inside(link, x, -5, 0)          # no through slots
     for x, z, _ in pad_holes(DEFAULT):
         assert not is_inside(link, x, -28, z)
     for x, z in hub_bolt_points(DEFAULT):
         assert not is_inside(link, x, -5, z)
+    # the elbow-end features where the shortening puts them: the second stage's seat (the hole through the web, the
+    # web beside it), the stepped slot, the chamfer
+    b, sl = DEFAULT.bearing, DEFAULT.slots
+    assert not is_inside(link, b.x, sum(b.web_y) / 2.0, 0) and is_inside(link, b.x + 6.0, sum(b.web_y) / 2.0, 0)
+    assert not is_inside(link, sl.stepped_x, -5, 0) and is_inside(link, sl.stepped_x + 4.0, -5, 0)
+    assert is_inside(link, 149.5 + dx, -15.5, 30) and not is_inside(link, 149.5 + dx, -16.0, 30)
     # the elbow: the top face down to relief_y within relief_r of the axis, the lip still there beyond; the recess floor
     s, e = DEFAULT.slab, DEFAULT.elbow
     x_edge = s.elbow_x - e.relief_r
     assert not is_inside(link, x_edge + 1.0, e.relief_y + 0.5, 0) and is_inside(link, x_edge + 1.0, e.relief_y - 0.5, 0)
-    assert is_inside(link, x_edge - 1.0, s.y1 + 1.0, 0) and is_inside(legacy, x_edge + 1.0, s.y1 + 1.0, 0)
+    assert is_inside(link, x_edge - 1.0, s.y1 + 1.0, 0) and is_inside(legacy, x_edge - dx + 1.0, s.y1 + 1.0, 0)
     r_floor = (e.recess_dia + e.bore_dia) / 4.0
     assert not is_inside(link, s.elbow_x, e.recess_y + 0.5, r_floor) and is_inside(link, s.elbow_x, e.recess_y - 0.5, r_floor)
-    # the 10 sockets filled (+416.6 mm^3), the fourth NEMA hole Ø3.0 -> Ø3.2 through the 9 mm floor (-8.8); moving
-    # the holes changes nothing else; the relief takes the lip inside relief_r, the recess the ring between the bore
-    # and the recess 1 mm deeper
+    # volume, against LEGACY without its sockets and through slots (it is then one section from the pad's end to the
+    # second stage's boss, so the shortening takes |dx| x that section out): the fourth NEMA hole Ø3.0 -> Ø3.2 through
+    # the 9 mm floor (-8.8); moving the holes changes nothing else; the relief takes the lip inside relief_r, the
+    # recess the ring between the bore and the recess 1 mm deeper
+    plain = build_link(replace(LEGACY, sockets=None, slots=replace(LEGACY.slots, through_x=())))
+    section = interference(plain, Pos(50.0, 0.0, 0.0) * Box(1.0, 200.0, 200.0))
     floor = DEFAULT.pad.floor_y - DEFAULT.pad.face_y
-    relief = interference(legacy, Rot(-90.0, 0.0, 0.0) * _bore(e.relief_r, e.relief_y, s.lip_top + 1.0, s.elbow_x))
+    relief = interference(plain, Rot(-90.0, 0.0, 0.0) * _bore(e.relief_r, e.relief_y, s.lip_top + 1.0, LEGACY.slab.elbow_x))
     ring = math.pi * ((e.recess_dia / 2.0) ** 2 - (e.bore_dia / 2.0) ** 2) * (LEGACY.elbow.recess_y - e.recess_y)
-    assert relief > 0.0
-    assert link.volume - legacy.volume == pytest.approx(10 * math.pi * 2.575 ** 2 * 2.0 - floor * math.pi * (1.6 ** 2 - 1.5 ** 2)
-                                                        - relief - ring, abs=0.5)
+    assert relief > 0.0 and section > 0.0
+    assert link.volume - plain.volume == pytest.approx(dx * section - floor * math.pi * (1.6 ** 2 - 1.5 ** 2)
+                                                       - relief - ring, abs=0.5)
