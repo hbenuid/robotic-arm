@@ -7,7 +7,7 @@ flanges chamfered on the teeth's side, the 20T's lower flange standing on the 60
 web, no set screw. Every number: lib/pulley/params.py (CompoundPulleyParams).
 
 SolidWorks product: 'GT2 Pulley - 20 - 60 teeth'
-Source export:      step/gt2_pulley_20_60t.step (1 974 574 bytes, sha256 55733855bdc5..., lib/reference.py MEASURED)
+Source export:      'GT2 Pulley - 20 - 60 teeth.STEP' (1 974 574 bytes, sha256 55733855bdc5..., lib/reference.py MEASURED)
 Export: mm units, 1 solid, volume 10693.26 mm^3,
         bbox size (40.089, 18.8, 40.089) mm, bbox min (-20.045, -1.2, -20.045) mm.
 

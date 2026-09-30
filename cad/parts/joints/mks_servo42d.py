@@ -12,7 +12,7 @@ reaching to z=+19.6 into the motor's through-holes; the board square is centred 
 and its edges are parallel to the motor's (the connector side of the PCB on -Y, like the motor's).
 
 SolidWorks product: 'nema17x40_with_mks' (Servo42D_Assem + standoffs + screws)
-Source export:      ~/Documents/arm_assembly_organized/mks/nema17x40_with_mks.step (lib.reference.MKS_EXPORT_NAME)
+Source export:      mks/nema17x40_with_mks.step (lib.reference.MKS_EXPORT_NAME)
 Reference: mm units, 13 solid(s), bbox size (43, 43, 33.7) mm, bbox min (-21.5, -21.5, -14.1) mm.
 In the arm: x5 (mks_servo42d#1 behind nema17_48mm#1 under the base, #2..3 behind nema17_40mm#2..3, one inside cycloidal_drive#1, one inside forearm_roll_drive#1).
 

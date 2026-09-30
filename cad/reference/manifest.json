@@ -1432,6 +1432,5 @@
    "source": "parts/joints/wrist_pulley_screws.py:_envelope()",
    "units": "mm"
   }
- },
- "source_dir": "/home/hben09/Documents/arm_assembly_organized"
+ }
 }
