@@ -1,11 +1,11 @@
 # Toolchain — pins, upgrades, per-machine setup
 
 Read this before bumping cadgen / build123d / OCP / Python, after a pull that changes `pyproject.toml` / `uv.lock`,
-or when the kernel or the plugin misbehaves. Everyday running is `cad/CLAUDE.md` "Running things"; the history
+or when the kernel or the plugin misbehaves. Everyday running is `cad/AGENTS.md` "Running things"; the history
 of every bump is `git log -- pyproject.toml uv.lock` from `cad/` (the older bumps carry their CHANGELOG entry as a git note).
 
 ## Pins
-- cadgen and the plugin (what each one is: `cad/CLAUDE.md` "Running things"): `pyproject.toml` pins
+- cadgen and the plugin (what each one is: `cad/AGENTS.md` "Running things"): `pyproject.toml` pins
   `cadgen[snapshot]==<ver>`; the `cad@text-to-cad` plugin **v0.7.x** (`~/.claude/plugins/cache/text-to-cad/cad/<ver>/skills/`,
   the skill docs + the step.parts script) pins the same cadgen version in its `skills/cad/requirements.txt` — bump both
   together, `./cadtool doctor` checks (plugin updates need `git-lfs` on `PATH`).

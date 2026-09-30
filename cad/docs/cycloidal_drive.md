@@ -371,7 +371,7 @@ cd cad
   axis. The arm STEP's viewer tree keeps
   the module whole under `shoulder_link` (one linked child); the per-link meshes split it. Which MKS
   motor (`software/control/src/config.py` J1..J3) drives which joint is unconfirmed; `config.py` still carries
-  `gear_ratio` 1.0 where this joint needs `1 / CYCLOIDAL_RATIO` (the direction: `robot/CLAUDE.md`).
+  `gear_ratio` 1.0 where this joint needs `1 / CYCLOIDAL_RATIO` (the direction: `robot/AGENTS.md`).
 
 ## 13. Change policy (carried over)
 

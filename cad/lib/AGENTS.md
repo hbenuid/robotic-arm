@@ -1,10 +1,10 @@
 # lib/ — shared dimensions and geometry code
 
-Loads when you work in `lib/`. `lib/` is the left end of the layering (`cad/CLAUDE.md` "Layering"): it never imports
+Loads when you work in `lib/`. `lib/` is the left end of the layering (`cad/AGENTS.md` "Layering"): it never imports
 `parts/`, `assemblies/`, `robot/`, `tools/` or `tests/`. The rules for the modules that describe the assembly rather
 than geometry live with their users: `mounts.py` (Recipe B) and `placements.py` (retired / skipped occurrences) in
-`assemblies/CLAUDE.md`; the `reference.py` registries (`CUSTOM`, `COTS`, `DESIGNED`, `NATIVE`, …) in
-`parts/CLAUDE.md` and `reference/CLAUDE.md`.
+`assemblies/AGENTS.md`; the `reference.py` registries (`CUSTOM`, `COTS`, `DESIGNED`, `NATIVE`, …) in
+`parts/AGENTS.md` and `reference/AGENTS.md`.
 
 ## What is where
 ```
@@ -43,7 +43,7 @@ helpers from `lib/geom.py`, never from `lib.params` — and no leaf imports `lib
 (`tests/test_layering.py LEAF_PACKAGES` / `LEAF_MODULES`). Datum: the SolidWorks capture
 frame is **Y up** (J1 axis); the URDF base frame (REP-103) is `lib/datum.py base_frame()` (with `frame()`,
 `U`, `BASE_FORWARD`; `robot/frames.py` re-exports them and builds the kinematics on top) — and
-`assemblies/arm.py` emits the arm in it (`arm_from_w()`, see `assemblies/CLAUDE.md`), so `arm.step` is **Z up**.
+`assemblies/arm.py` emits the arm in it (`arm_from_w()`, see `assemblies/AGENTS.md`), so `arm.step` is **Z up**.
 The cycloidal drive's own dimensions are `lib/cycloidal/params.py` (`DriveConfig`, frozen
 dataclasses, variants via `dataclasses.replace`); `lib/params.py` re-exports the interface values
 (`CYCLOIDAL_*`, masses) from it - never retype a drive number.

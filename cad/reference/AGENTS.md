@@ -39,7 +39,7 @@ repo (the raw exports are never committed and have no fixed place — every tool
 path: `--src` / `--src48` / `--monolith`). Record its file name as handed over, size, sha256 and what it is under
 `README.md` Provenance; name it in `lib/reference.py` (`MONOLITH_NAME`, `MKS_EXPORT_NAME`, … or a `CUSTOM` / `COTS`
 row); measure before trusting it (`./cadtool inspect <file> --planes` — units, frame, shaft / pilot / bolt pattern);
-then Recipe A (`parts/CLAUDE.md`) or D (`vendor/CLAUDE.md`). What the CAD keeps is the derived, committed copy
+then Recipe A (`parts/AGENTS.md`) or D (`vendor/AGENTS.md`). What the CAD keeps is the derived, committed copy
 (`reference/`, `vendor/`) — the raw file is the user's, to keep or discard. A printed part's export is not copied here
-at all: a *measured* conversion (`parts/CLAUDE.md` Part states, `lib/reference.py MEASURED`) keeps only its numbers, in
+at all: a *measured* conversion (`parts/AGENTS.md` Part states, `lib/reference.py MEASURED`) keeps only its numbers, in
 the part's params and tests - the raw file is needed until the tests are committed (its sha256 in `MEASURED`).

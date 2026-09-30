@@ -37,20 +37,20 @@ table, the drive ratios) to agree with `software/control/src/config.py`, and one
   they describe — `git log` prints them under the message; `./cadtool setup` makes a machine fetch them.
 - Case matters: git and the `*.step` / `*.stl` rules are case-sensitive. `.gitignore` also ignores `*.STEP` / `*.STP` /
   `*.STL` and `.gitattributes` LFS-tracks `*.STEP` / `*.STL`, but keep every file in the tree lowercase (README /
-  CLAUDE.md excepted) — the tests and tools assume it, and `cad/tests/test_tooling.py` checks. On the Mac git runs with
+  AGENTS.md excepted) — the tests and tools assume it, and `cad/tests/test_tooling.py` checks. On the Mac git runs with
   `core.ignorecase=true`: a case-only rename needs `git mv -f`.
 
 ## Two development machines
 Worked on from a **Fedora Linux PC and an arm64 Mac**; git is the only sync channel, venvs / plugin / caches are
 per machine. In `cad/` no generated STEP is committed (its bytes differ per machine; each machine builds its
-own) — rules in `cad/CLAUDE.md` "Two machines". Scripts must run on macOS's bash 3.2 without GNU coreutils.
+own) — rules in `cad/AGENTS.md` "Two machines". Scripts must run on macOS's bash 3.2 without GNU coreutils.
 
 ## The SolidWorks inputs are in the repo; the raw exports are not
 The CAD reads only committed inputs (Git LFS): `cad/reference/` (the renamed SolidWorks / CadQuery exports,
 `placements.json`, `manifest.json`) and `cad/vendor/`. The raw exports they were derived from are **never committed**
 and need not exist on a machine, and they have no fixed place: the tools that read one take its path. A new export
 the user hands over is read where the user put it — never moved, renamed or copied elsewhere on the machine, and no
-folder is made for it outside the repo — and goes through Recipe E in `cad/reference/CLAUDE.md`.
+folder is made for it outside the repo — and goes through Recipe E in `cad/reference/AGENTS.md`.
 
 ## Toolchain
 - Always use `uv` — never `pip install` directly. `uv add <pkg>` for new deps;
@@ -65,7 +65,7 @@ folder is made for it outside the repo — and goes through Recipe E in `cad/ref
   It runs by itself at three points: a Claude Code PostToolUse hook (`.claude/hooks/ruff-check.sh`) reports
   findings on every `.py` file Claude edits — fix them in the same turn. It is registered twice, in
   `.claude/settings.json` AND `cad/.claude/settings.json`: a session reads the shared settings file of the
-  directory it starts in only (not inherited like CLAUDE.md), so the cad/ file is a copy of the root one (edit the
+  directory it starts in only (not inherited like AGENTS.md), so the cad/ file is a copy of the root one (edit the
   root one, copy it; `cad/tests/test_tooling.py` checks);
   the git pre-commit hook (`.githooks/pre-commit`, installed per machine by `./cadtool setup`) blocks a commit
   with findings in the staged files; VS Code fixes / sorts imports on save (workspace settings, Ruff extension).
@@ -84,12 +84,12 @@ SolidWorks or vendor export or vendor STEP, a change to `lib/reference.py` or to
 large change - on the branch as it will merge (with `main` merged in if `main` moved), its result noted on the pull
 request (`gh pr comment <n>`). Suggest it then; never trigger it unasked. It checks and never writes (no hash gate,
 no snapshots, no commits). The runner is a third machine (x86_64 Linux): the "no exact float equality" rule of
-`cad/CLAUDE.md` "Two machines" holds for it too. The motor-control `software/control/tests/` stay out until they are
+`cad/AGENTS.md` "Two machines" holds for it too. The motor-control `software/control/tests/` stay out until they are
 fixed.
 
 ## Software (`software/`)
 - `software/control/` is the motor-control CLI, its own uv project. Its rules — running it, the load-bearing
-  `sys.path` line, its known issues — are `software/control/CLAUDE.md`, which loads when you work there; setup and use
+  `sys.path` line, its known issues — are `software/control/AGENTS.md`, which loads when you work there; setup and use
   are its `README.md`.
 - `software/firmware/` holds all firmware, one subfolder per board, part of neither uv project
   (`software/firmware/README.md`).
@@ -98,15 +98,19 @@ fixed.
 - `cad/` is a **separate uv project** (Python 3.12, build123d) — the motor-control
   project (`software/control/`) never depends on it, and `launch.bat` never installs it. Never run
   CAD code with the motor-control venv.
-- Work from `cad/` via `./cadtool …` (`./cadtool help` lists the commands). Start at `cad/CLAUDE.md` — the map and the
-  rules for every folder; each folder's own CLAUDE.md (`parts/`, `assemblies/`, `robot/`, `lib/`, `tests/`, `tools/`,
+- Work from `cad/` via `./cadtool …` (`./cadtool help` lists the commands). Start at `cad/AGENTS.md` — the map and the
+  rules for every folder; each folder's own AGENTS.md (`parts/`, `assemblies/`, `robot/`, `lib/`, `tests/`, `tools/`,
   `reference/`, `vendor/`) loads when you work there.
 - What the software has to match — the joints and links, the reductions (`CYCLOIDAL_RATIO`, `GT2_RATIO`,
   `FOREARM_ROLL_RATIO` in `cad/lib/params.py`, and which way round `config.py`'s `gear_ratio` reads), which motor sits
-  on which joint — is `cad/robot/CLAUDE.md`; which CAN id drives which joint is
+  on which joint — is `cad/robot/AGENTS.md`; which CAN id drives which joint is
   unconfirmed (`cad/docs/open_issues.md`).
 
 ## Docs
+- The agent instructions are `AGENTS.md` files — this one, and one per folder that has rules of its own. Claude Code
+  (2.1.277 or later) reads an `AGENTS.md` only where it finds no `CLAUDE.md`, and a `CLAUDE.local.md` counts as one:
+  never add either file anywhere in the repo, or the `AGENTS.md` files there stop loading
+  (`cad/tests/test_tooling.py` checks the tracked tree).
 - No CHANGELOG and no "Last updated" lines: git dates every change (Git workflow above). Docs describe the current
   state and the reasons for it, never a dated history.
 - `cad/docs/open_issues.md` is the ONE list of what is not settled (fit problems, estimates to confirm on

@@ -5,7 +5,7 @@ the model carries knowingly, `[ESTIMATE]` values waiting for a measurement, hard
 not confirmed, parts not converted yet. **Rule:** when you flag something in a commit, add a row (issue, where it lives, what closes it,
 the commit that raised it); when you close it, delete the row and say so in the commit message. A number here is
 a fit value or an estimate, quoted beside the constant or test that holds it — the code wins if they drift; counts
-and totals are never quoted (`cad/CLAUDE.md` Docs).
+and totals are never quoted (`cad/AGENTS.md` Docs).
 
 ## Fit problems the model carries knowingly
 | issue | where it lives | what closes it | raised |
@@ -43,19 +43,19 @@ and totals are never quoted (`cad/CLAUDE.md` Docs).
 ## Not modelled yet
 | item | note |
 |---|---|
-| Belt-side hardware of the elbow_pitch and wrist_pitch belts: the GT2 20T pulleys on their motors' shafts and the elbow belt (the wrist belt is an `EXTRAS` row); the elbow drive's second stage through `j1_link`'s x 128 seats (`lib/upper_arm/params.py BearingParams`: a pulley on an 8 mm shaft in two 608s?), whose belt plane must follow the elbow 90T - re-seated `PULLEY_SEAT_SHIFT` out on its bearing: its pulley is modelled, the printed 20-60T compound pulley on an 8 mm bore (`parts/joints/gt2_pulley_20_60t`, `UNPLACED` - `parts/CLAUDE.md` "Modelled, not placed yet"), its shaft, bearings, belts and the elbow motor's place are not; what drives base_yaw — a third 90T under `j1_coupler` (the 90T's SolidWorks name says J1), its hub in the lower base bearing and bolted to the stub's end (a Recipe-B mount turned 45 degrees onto the stub's pattern, its M4 screws - x 40 from the 90T's outer face ends 1.3 past the nuts - and nuts), a 20T on the 48 mm motor, and the belt, `YAW_BELT` (a stock 2GT length): the base motor mount's slots put `BASE_MOTOR_PATTERN_CENTRE` at its centre distance, ± `MOTOR_TRAVEL` to tension it; the motor's 4 M3s through the slots | candidate `tools/bom.py EXTRAS` rows until modelled |
+| Belt-side hardware of the elbow_pitch and wrist_pitch belts: the GT2 20T pulleys on their motors' shafts and the elbow belt (the wrist belt is an `EXTRAS` row); the elbow drive's second stage through `j1_link`'s x 128 seats (`lib/upper_arm/params.py BearingParams`: a pulley on an 8 mm shaft in two 608s?), whose belt plane must follow the elbow 90T - re-seated `PULLEY_SEAT_SHIFT` out on its bearing: its pulley is modelled, the printed 20-60T compound pulley on an 8 mm bore (`parts/joints/gt2_pulley_20_60t`, `UNPLACED` - `parts/AGENTS.md` "Modelled, not placed yet"), its shaft, bearings, belts and the elbow motor's place are not; what drives base_yaw — a third 90T under `j1_coupler` (the 90T's SolidWorks name says J1), its hub in the lower base bearing and bolted to the stub's end (a Recipe-B mount turned 45 degrees onto the stub's pattern, its M4 screws - x 40 from the 90T's outer face ends 1.3 past the nuts - and nuts), a 20T on the 48 mm motor, and the belt, `YAW_BELT` (a stock 2GT length): the base motor mount's slots put `BASE_MOTOR_PATTERN_CENTRE` at its centre distance, ± `MOTOR_TRAVEL` to tension it; the motor's 4 M3s through the slots | candidate `tools/bom.py EXTRAS` rows until modelled |
 | The arm's own fasteners and the electronics (CAN adapter, wiring) - the 90T pulley bolts excepted (`parts/joints/{elbow,wrist}_pulley_{screws,nuts}`), e.g. `j3_coupler`'s flange M4s into `wrist_link` | not in `tools/bom.py EXTRAS` yet (it holds the drives' fasteners, the belts and the home sensor) |
 | Simplified collision primitives in the URDF (visual meshes are reused for collision) | `robot/arm.urdf` TODO |
 | The forearm roll's **home sensor** (on the end cap's outer face, a magnet in the shaft's stop lug, to the MKS board's limit input): the sensor is modelled - the KY-003 hall module, `parts/joints/ky003_hall_sensor` (`UNPLACED`) - but not placed; not designed yet: the chip's pocket and lead groove in the cap (the board does not fit between the cap and the forearm wall - the chip goes on its leads or on wires, `ky003_hall_point()` is its hall element), the magnet's seat in the lug (south pole toward the chip's branded face), the wires to the MKS board | `tools/bom.py EXTRAS` (the order line until it is placed); the lug and the post are modelled |
 | The roll belt (240-2GT) and the wrist belt (264-2GT) | `tools/bom.py EXTRAS`; their lengths set the roll motor's centre distance / `J2_MOTOR_SLIDE_X` |
 | The base_yaw motor's cables out of the base: they leave the motor mount into the base through the window between its posts (`lib/base/body.py _posts`), but the base has no way out for them (the lobe's cable notch went with the lobe) | decide where (a notch at the foot of the base's round or a side wall), then add it to `build_base` |
 | The roll drive's cable route: through the shaft's Ø24 bore, out of the block's rear end wall on the axis (Ø26 `cable_exit`), then over the elbow to the upper arm | only the exit (`cable_exit`) is modelled |
-| Where the purchased GT2 toothless idler goes (`parts/joints/gt2_idler_20t`, modelled but placed nowhere): which belt it guides or tensions, its axle (`GT2_IDLER_BORE`) and what holds it; its `MASS_G` is an estimate (weigh one) | its `UNPLACED` keeps it off the print / buy lists, its order line a `tools/bom.py EXTRAS` row; place it with Recipe B (`assemblies/CLAUDE.md`) - `parts/CLAUDE.md` "Modelled, not placed yet" |
+| Where the purchased GT2 toothless idler goes (`parts/joints/gt2_idler_20t`, modelled but placed nowhere): which belt it guides or tensions, its axle (`GT2_IDLER_BORE`) and what holds it; its `MASS_G` is an estimate (weigh one) | its `UNPLACED` keeps it off the print / buy lists, its order line a `tools/bom.py EXTRAS` row; place it with Recipe B (`assemblies/AGENTS.md`) - `parts/AGENTS.md` "Modelled, not placed yet" |
 
 ## Not confirmed
 | item | where |
 |---|---|
-| The elbow_pitch reduction: `robot/CLAUDE.md` gives it `GT2_RATIO` (90/20, one stage), but `j1_link`'s x 128 seats are for a second stage of the elbow drive (its pulley, `GT2_PULLEY_20_60T_TEETH`, is modelled, not placed) - the ratio is provisional until that stage is designed | `lib/belts.py GT2_RATIO`, `robot/CLAUDE.md` reductions, `lib/upper_arm/params.py BearingParams` |
+| The elbow_pitch reduction: `robot/AGENTS.md` gives it `GT2_RATIO` (90/20, one stage), but `j1_link`'s x 128 seats are for a second stage of the elbow drive (its pulley, `GT2_PULLEY_20_60T_TEETH`, is modelled, not placed) - the ratio is provisional until that stage is designed | `lib/belts.py GT2_RATIO`, `robot/AGENTS.md` reductions, `lib/upper_arm/params.py BearingParams` |
 | Which CAN id (`software/control/src/config.py` J1..J3) drives which joint; `software/control/src/config.py` gear ratios still 1.0 while `CYCLOIDAL_RATIO` = 20 and `GT2_RATIO` = 4.5 | `software/control/README.md` Configure your motors, `robot/arm.urdf` ledger, `robot/frames.py` joint notes |
 | The wrist-roll pancake motor's exact model | `parts/wrist/nema17_pancake.py PURCHASE_NOTE` |
 | Link-membership assumptions (90T pulleys + J3 couplers with the driven links, the gripper linkage merged into `wrist_roll_link`) | `robot/frames.py LINKS` comments, the URDF ledger |
@@ -64,7 +64,7 @@ and totals are never quoted (`cad/CLAUDE.md` Docs).
 
 ## Not converted yet (SolidWorks geometry, not build123d)
 The part's model still returns its SolidWorks export (`CONVERTED = False`, `parts/_templates/wrapper.py`), so its
-geometry can be moved but not re-sized by a parameter. Converting one: `parts/CLAUDE.md` "Converting a part", then
+geometry can be moved but not re-sized by a parameter. Converting one: `parts/AGENTS.md` "Converting a part", then
 Recipe C; the same commit deletes its row. `tools/bom.py`'s print list gives every part's state.
 
 | part | link (`robot/frames.py LINKS`) | note |
@@ -83,5 +83,5 @@ Recipe C; the same commit deletes its row. `tools/bom.py`'s print list gives eve
 ## Known-broken / pending
 | item | where |
 |---|---|
-| The motor-control `software/control/tests/` imports `arctos.*` and does not run | `software/control/CLAUDE.md` "Known issues" |
+| The motor-control `software/control/tests/` imports `arctos.*` and does not run | `software/control/AGENTS.md` "Known issues" |
 | The drive's motor envelope cuts the D-flat at `shaft_dcut_flat / 2` (flat-to-round 4.75) — ruled correct 2026-09-21 (it is what `reference/cycloidal/nema17_48mm.step` defines and the eccentric shaft's D-bore matches); noted here only because the parameter's name reads like 4.5 | `lib/cycloidal/motor.py flat_offset()` |

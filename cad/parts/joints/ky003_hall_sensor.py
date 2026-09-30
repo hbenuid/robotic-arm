@@ -2,7 +2,7 @@
 
 The joints' endstop / home sensor: the A3144 switches when a magnet's SOUTH pole comes up to its branded face; the
 board carries its pull-up, a status LED and the 3-pin header (-, +, S) - S reads low while the magnet is there. The
-chip is rated 4.5..24 V: run it at 5 V. NOT PLACED yet (UNPLACED below, parts/CLAUDE.md "Modelled, not placed yet"):
+chip is rated 4.5..24 V: run it at 5 V. NOT PLACED yet (UNPLACED below, parts/AGENTS.md "Modelled, not placed yet"):
 the forearm roll's home sensor, the chip in a pocket in the end cap's outer face (forearm_roll_retainer) and a magnet
 in the shaft's stop lug (forearm_roll_shaft) - neither is designed yet, and the board will not fit in the 3 mm between
 the cap and the forearm wall, so the chip goes there on its leads or on wires (docs/open_issues.md).

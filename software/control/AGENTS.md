@@ -1,7 +1,7 @@
 # software/control/ — the motor-control CLI
 
 Loads when you work in `software/control/`. The repo-wide rules (git, uv, ruff and the hooks, CI, docs) are the root
-`CLAUDE.md`; setup, configuring the motors and running the CLI are `README.md`. The software is picked up after the
+`AGENTS.md`; setup, configuring the motors and running the CLI are `README.md`. The software is picked up after the
 CAD: until then it stays as it is.
 
 ## Running
@@ -19,8 +19,8 @@ CAD: until then it stays as it is.
   folder first).
 - Joint table and CAN settings live in `src/config.py` (`JOINTS`, `CAN_CHANNEL`, etc). What they must match — the
   joints, the reductions and which way round `gear_ratio` reads, which motor sits on which joint — is
-  `cad/robot/CLAUDE.md`; which CAN id drives which joint is unconfirmed (`cad/docs/open_issues.md`).
+  `cad/robot/AGENTS.md`; which CAN id drives which joint is unconfirmed (`cad/docs/open_issues.md`).
 
 ## Known issues
 - `tests/` still imports `from arctos.*` and is broken, and `pytest` is not in the dev group; the CLI runs fine
-  without it. CI leaves these tests out (root `CLAUDE.md` "CI").
+  without it. CI leaves these tests out (root `AGENTS.md` "CI").
