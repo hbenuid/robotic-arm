@@ -151,9 +151,9 @@
   </link>
   <link name="wrist_pitch_link">
     <inertial>
-      <origin xyz="0.057 0.000066 -0.015487" rpy="0 0 0" />
-      <mass value="0.469349" />
-      <inertia ixx="2.263088e-04" ixy="-8.101134e-07" ixz="2.196099e-05" iyy="9.982734e-04" iyz="5.072278e-08" izz="1.039608e-03" />
+      <origin xyz="0.044801 0.000072 -0.015628" rpy="0 0 0" />
+      <mass value="0.416999" />
+      <inertia ixx="1.980835e-04" ixy="-6.067706e-07" ixz="1.562280e-05" iyy="6.681027e-04" iyz="3.610497e-08" izz="6.966356e-04" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -259,12 +259,12 @@
     <child link="wrist_pitch_link" />
     <origin xyz="0.016998 0 0.17" rpy="-1.570799 -1.271722 -1.570793" />
     <axis xyz="0 0 1" />
-    <limit lower="-2.094395" upper="2.094395" effort="5" velocity="1" />
+    <limit lower="-1.832596" upper="1.22173" effort="5" velocity="1" />
   </joint>
   <joint name="wrist_roll" type="revolute">
     <parent link="wrist_pitch_link" />
     <child link="wrist_roll_link" />
-    <origin xyz="0.109643 0.000005 -0.016998" rpy="-1.570799 -0.055534 -1.570796" />
+    <origin xyz="0.089643 0.000005 -0.016998" rpy="-1.570799 -0.055534 -1.570796" />
     <axis xyz="0 0 1" />
     <limit lower="-3.141593" upper="3.141593" effort="1" velocity="2" />
   </joint>

@@ -1,14 +1,17 @@
 """wrist_link, parametric (lib/wrist/): the LEGACY configuration reproduces the SolidWorks part feature by feature (the
 volume / bbox match is tests/test_reference_match.py's; here the features are probed by name so a regression names
 what moved), its seat is j3_coupler's flange (lib/coupler/params.py) and its end face the NEMA 17 pattern, and DEFAULT
-- what the part builds - is LEGACY (the port changes no geometry)."""
+- what the part builds - is the tower SHORTENING shorter: the end face nearer the pitch axis, the weight-saving pocket
+kept inside the shorter block, the plate's round end clipped at the face, the upper M3 pair gone."""
 import math
+from dataclasses import replace
 
 import pytest
 
 from lib.coupler import LEGACY as COUPLER
 from lib.motors import NEMA17_BOLT_SP
 from lib.wrist import DEFAULT, LEGACY, end_face_holes, seat_bolt_points, slope_x
+from lib.wrist.params import SHORTENING
 from tests import built
 from tests.helpers import is_inside
 
@@ -102,7 +105,35 @@ def test_legacy_tower(legacy):
         assert not is_inside(leg, 35, y, z) and is_inside(leg, 35, y, z + E.m4_dia / 2.0 + 0.1)
 
 
+def test_default_is_the_short_tower():
+    """DEFAULT differs from LEGACY in exactly the end face's place (SHORTENING), the slope and the M3 rows."""
+    t, e = DEFAULT.tower, DEFAULT.end_face
+    assert SHORTENING < 0.0 and t.block_x1 == T.block_x1 + SHORTENING
+    assert DEFAULT == replace(LEGACY, tower=replace(T, block_x1=t.block_x1, slope_x1=t.slope_x1),
+                              end_face=replace(E, m3_rows=e.m3_rows))
+    # the slope's cut stays inside the fillet's core (lib/wrist/link.py: 1 past the end face, _CORE_ABOVE over the top)
+    from lib.wrist.link import _CORE_ABOVE
+
+    assert slope_x(T.z1 + _CORE_ABOVE, DEFAULT) < t.block_x1 + 1.0
+    m3, m4 = end_face_holes(DEFAULT)
+    assert len(m3) == 2 and all(z < e.axis_z for _, z in m3) and m4 == end_face_holes(LEGACY)[1]
+
+
 @pytest.mark.slow
-def test_the_part_builds_legacy(wrist, legacy):
-    assert DEFAULT == LEGACY
-    assert wrist.volume == pytest.approx(legacy.volume, abs=1e-6)
+def test_the_part_is_the_short_tower(wrist, legacy):
+    t, e = DEFAULT.tower, DEFAULT.end_face
+    assert wrist.is_valid and len(wrist.solids()) == 1
+    assert wrist.bounding_box().max.X == pytest.approx(t.block_x1, abs=1e-6)
+    assert wrist.volume < legacy.volume
+    # nothing past the end face: the wall and the plate's round end are clipped there (both reached x 39)
+    assert not is_inside(wrist, t.block_x1 + 0.5, 0, 22.0) and not is_inside(wrist, t.block_x1 + 2.0, 0, 2.5)
+    assert is_inside(legacy, t.block_x1 + 2.0, 0, 2.5)
+    # the block: solid in front of the pocket up to its top; the lower M3 and the 4 M4 through, the upper M3 not drilled
+    assert is_inside(wrist, t.block_x1 - 1.0, 0, 40.0) and is_inside(wrist, t.block_x1 - 5.0, 0, 40.0)
+    m3, m4 = end_face_holes(DEFAULT)
+    for y, z in m3 + m4:
+        assert not is_inside(wrist, t.block_x1 - 1.0, y, z)
+    for sy in (-1.0, 1.0):
+        assert is_inside(wrist, t.block_x1 - 1.0, sy * e.m3_sp / 2.0, e.axis_z + e.m3_sp / 2.0)
+    # the pocket: still open behind the slope
+    assert not is_inside(wrist, 8.0, 0.0, 35.0)

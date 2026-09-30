@@ -161,6 +161,10 @@ def test_urdf_limits_track_params():
     lower, upper = PARAMS.SHOULDER_PITCH_LIMITS_DEG
     assert math.isclose(float(lim.get("lower")), math.radians(lower), abs_tol=1e-6)
     assert math.isclose(float(lim.get("upper")), math.radians(upper), abs_tol=1e-6)
+    lim = root.find("joint[@name='wrist_pitch']/limit")
+    lower, upper = PARAMS.WRIST_PITCH_LIMITS_DEG
+    assert math.isclose(float(lim.get("lower")), math.radians(lower), abs_tol=1e-6)
+    assert math.isclose(float(lim.get("upper")), math.radians(upper), abs_tol=1e-6)
     lim = root.find("joint[@name='forearm_roll']/limit")
     assert math.isclose(float(lim.get("upper")), math.radians(PARAMS.FOREARM_ROLL_LIMIT_DEG), abs_tol=1e-6)
     lim = root.find("joint[@name='jaw_a']/limit")

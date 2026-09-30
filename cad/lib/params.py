@@ -191,7 +191,9 @@ BASE_YAW_LIMIT_DEG = 175.0        # [ESTIMATE] symmetric +/- range; j1_coupler (
 # back (tests/test_sweeps.py), the lower is an [ESTIMATE]
 SHOULDER_PITCH_LIMITS_DEG = (-120.0, 75.0)   # [DESIGN]
 ELBOW_PITCH_LIMIT_DEG = 90.0      # [DESIGN] the forearm's roll wall (j2_link, 48 from the elbow axis) meets j1_link's side from +/-93 deg
-WRIST_PITCH_LIMIT_DEG = 120.0     # [ESTIMATE] GT2 belt at wrist_link
+# the GT2 belt at wrist_link: (lower, upper), the clear range (the wrist body's back corners reach j2_link's web at
+# -109 / +74.5 at any roll, tests/test_sweeps.py) less 4 deg
+WRIST_PITCH_LIMITS_DEG = (-105.0, 70.0)   # [DESIGN]
 FOREARM_ROLL_LIMIT_DEG = 170.0    # [ESTIMATE] the forearm roll (GT2 belt in the elbow block): a hard stop keeps the cables from winding
 WRIST_ROLL_LIMIT_DEG = 180.0      # [ESTIMATE] NEMA17 pancake wrist roll (not CAN-driven yet)
 JAW_TRAVEL_MM = 10.0            # [ESTIMATE] symmetric +/- jaw travel about the capture pose

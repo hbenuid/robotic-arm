@@ -1,7 +1,8 @@
 """The joint limits keep the arm off itself (slow). Along the shoulder's upper limit - the arm pitched down in front -
 the parts beyond the elbow (the forearm roll drive's motor + board first) stay off the base and the shoulder over the
-elbow's whole range. Exact distances (BRepExtrema) at poses on the limits, the part pairs whose boxes are apart
-pruned; a pose with the arm down in the table the base stands on (below its bottom face) is skipped."""
+elbow's whole range; at the wrist_pitch limits the wrist body and the gripper stay off the forearm at any roll.
+Exact distances (BRepExtrema) at poses on the limits, the part pairs whose boxes are apart pruned; a pose with the
+arm down in the table the base stands on (below its bottom face) is skipped."""
 from __future__ import annotations
 
 import functools
@@ -74,3 +75,15 @@ def test_the_shoulder_limit_keeps_the_forearm_off_the_base_and_the_shoulder():
             checked.append((shoulder, elbow))
     # the folded-back side, where the roll drive's motor + board come nearest, is above the table at the limit
     assert (upper, -int(PARAMS.ELBOW_PITCH_LIMIT_DEG)) in checked, checked
+
+
+def test_the_wrist_pitch_limits_keep_the_wrist_off_the_forearm():
+    fixed = _link_parts("forearm_link") + _link_parts("elbow_link")
+    on_axis = ("gt2_pulley_90t", "wrist_pulley", "j3_coupler")   # they turn in the forearm's bearings, on the axis
+    pitching = [p for p in _link_parts("wrist_pitch_link") if not p[0].startswith(on_axis)]
+    rolling = [p for link in ("wrist_roll_link", "jaw_a_link", "jaw_b_link") for p in _link_parts(link)]
+    for wrist in PARAMS.WRIST_PITCH_LIMITS_DEG:
+        for roll in (0, 90, 180, 270):
+            movers = _posed(pitching, ("wrist_pitch", wrist)) + _posed(rolling, ("wrist_roll", roll), ("wrist_pitch", wrist))
+            d, ml, fl = _closest(movers, fixed)
+            assert d >= 1.0, f"wrist {wrist}, roll {roll}: {ml} {d:.2f} mm from {fl}"

@@ -161,7 +161,7 @@ JOINTS: list[Joint] = [
                 "flange bolts to j2_link's wall; belt-driven by the drive's own nema17_40mm + mks_servo42d on the elbow "
                 "block's pad [a 4th CAN id - software/control/src/config.py has three: unconfirmed]; hard stop +/- FOREARM_ROLL_LIMIT_DEG"),
     Joint("wrist_pitch", "revolute", "forearm_link", "wrist_pitch_link", WRIST_PITCH_ORIGIN, N, F,
-          -PARAMS.WRIST_PITCH_LIMIT_DEG * DEG, PARAMS.WRIST_PITCH_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
+          PARAMS.WRIST_PITCH_LIMITS_DEG[0] * DEG, PARAMS.WRIST_PITCH_LIMITS_DEG[1] * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
           notes="GT2 90T pulley + J3-coupler at the wrist, turning in the bearing_6806#5 / #6 pair; belt-driven by nema17_40mm#3 + mks_servo42d#3 on "
                 "j2_link's web (lib/mounts.py) [which CAN id: unconfirmed]"),
     Joint("wrist_roll", "revolute", "wrist_pitch_link", "wrist_roll_link", WRIST_ROLL_ORIGIN, F, PJ,
