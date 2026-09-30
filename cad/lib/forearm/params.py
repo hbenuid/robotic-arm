@@ -102,12 +102,19 @@ class RollEndParams:
     axes meet (42 − 17 along N from the elbow origin), so the three wrist axes stay concurrent. The rotor (the
     hollow roll shaft, parts/joints/forearm_roll_shaft) puts its Ø39.7 end spigot into a shallow locating recess on
     the wall's elbow face and takes 4x M3 through the wall; the cables pass through the bore. The wall stands 48 mm
-    from the elbow axis - the least the rolling ±45 mm wall (corners r 57 about the roll axis) clears the upper arm's
-    r 45 round end by 3 mm. Elbow block + shaft: lib/forearm/roll.py (M6)."""
+    from the elbow axis: whatever the forearm's roll angle, it clears the upper arm's r 45 round end by 3 mm. It is a
+    round flange about the roll axis on a foot as wide as itself - the web tapers to that width from the wrist boss
+    (the neck) - braced by two gussets on the web's top face, either side of the wrist motor.
+    Elbow block + shaft: lib/forearm/roll.py (M6)."""
 
     axis_z: float = 25.0                  # [REFERENCE] the wrist centre's N-station above the elbow origin (42 − 17)
-    wall_x: tuple = (-56.0, -48.0)        # [DESIGN] the wall's wrist face .. elbow face (8 thick): 48 from the elbow axis (>= 45 + 3, see above)
-    wall_z: tuple = (-10.0, 60.0)         # [DESIGN] full width y +/- half_w; sized under / over the former caps' tray and lid - nothing swings there
+    wall_x: tuple = (-56.0, -48.0)        # [DESIGN] the wall's wrist face .. elbow face (8 thick): 48 from the elbow axis (>= 45 + 3: the upper arm's round end)
+    wall_od: float = 60.0                 # [DESIGN] the wall's round outline about the roll axis: it covers the stop lug and post in front of it (r 28 / 30)
+    neck_half_w: float = 30.0             # [DESIGN] the web's half width at the wall (= wall_od / 2: the wall's foot); the web tapers to it from the wrist boss
+    rib_y: tuple = (24.0, 30.0)           # [DESIGN] the two gussets on the web's top face against the wall's wrist face: |y| in this band - outside the
+    #                                       wrist motor's body (+/- 21) and board (+/- 21.5), inside the neck
+    rib_len: float = 30.0                 # [DESIGN] ... this far along the web from the wall
+    rib_h: float = 20.0                   # [DESIGN] ... this high above the web at the wall (the wall's round outline cuts their tops)
     flange_dia: float = 39.7              # [DESIGN] the shaft's end spigot (< the 6808 bore: bearing 2 slides over it from the wrist end)
     flange_recess_add: float = 0.3        # [DESIGN] PETG mating clearance on the recess diameter (Ø40.0)
     flange_recess_depth: float = 2.0      # [DESIGN] a locating spigot, not a load path

@@ -23,6 +23,21 @@ def elbow_end_x(cfg: ForearmConfig = DEFAULT) -> float:
     return cfg.roll_end.wall_x[0] if cfg.roll else 0.0
 
 
+def neck_tangent(cfg: ForearmConfig = DEFAULT) -> tuple[float, float]:
+    """Where the web's tapered side leaves the wrist boss, as (x, +y): the point of the boss circle whose tangent
+    runs to the wall's foot (elbow_end_x, neck_half_w). The other side mirrors it."""
+    cx, r = cfg.web.wrist_x, cfg.boss.dia / 2.0
+    px, py = elbow_end_x(cfg), cfg.roll_end.neck_half_w
+    angle = math.atan2(py, px - cx) + math.acos(r / math.hypot(px - cx, py))
+    return cx + r * math.cos(angle), r * math.sin(angle)
+
+
+def web_half_width(x: float, cfg: ForearmConfig = DEFAULT) -> float:
+    """The necked web's half width at x, between the tangent point on the wrist boss and the wall."""
+    (tx, ty), px, py = neck_tangent(cfg), elbow_end_x(cfg), cfg.roll_end.neck_half_w
+    return ty + (py - ty) * (x - tx) / (px - tx)
+
+
 def _grid(cfg: ForearmConfig, x_max: float) -> list[tuple[float, float]]:
     """The socket grid columns that lie at x < x_max (a part that ends before a column has no socket there)."""
     s = cfg.sockets

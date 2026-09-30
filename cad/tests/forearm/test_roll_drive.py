@@ -104,7 +104,7 @@ def test_stack():
     assert math.isclose(S["z_ring_mid"] - S["z_motor_face"], D.t20) and S["z_20t"] - S["z_pad_top"] == D.pulley_lift
     # the shaft CROSSES the elbow axis: the bearings straddle it inside the block
     assert S["z_end"] < S["z_bearing_1"] and S["z_bearing_1"] + D.bearing_width < 0 < S["z_bearing_2"] <= S["z_face"]
-    # the forearm wall: the rolling +/-45 wall (its corners r 57 about the roll axis) clears j1_link's round end
+    # the forearm wall: the rolling forearm, whatever its roll angle, clears j1_link's round end
     assert S["z_wall"] >= UPPER_ARM_END_R + 1.5
     # walls: 2 mm under the cavity and the seat
     assert -D.block_x[0] - D.cavity_dia / 2.0 >= 2.0 and -D.block_x[0] - (D.bearing_od + D.seat_add) / 2.0 >= 2.0
@@ -393,9 +393,9 @@ def test_forearm_clears_the_elbow_while_rolling():
 @pytest.mark.parametrize("elbow", [-PARAMS.ELBOW_PITCH_LIMIT_DEG, PARAMS.ELBOW_PITCH_LIMIT_DEG])
 @pytest.mark.parametrize("roll", [-PARAMS.FOREARM_ROLL_LIMIT_DEG, -90.0, 0.0, 90.0, PARAMS.FOREARM_ROLL_LIMIT_DEG])
 def test_forearm_clears_the_upper_arm_at_the_elbow_limits(elbow, roll):
-    """The elbow folded to its limits, the forearm rolled anywhere: j2_link's roll wall (48 from the elbow axis, its
-    lower edge 1.5 below j1_link's top face) lies beside the upper arm and stays 2 mm off it. The wall meets j1_link's
-    side from +/-93 deg, which is what sets ELBOW_PITCH_LIMIT_DEG."""
+    """The elbow folded to its limits, the forearm rolled anywhere: j2_link (its round wall 48 from the elbow axis, its
+    necked web) stays 2 mm off the upper arm beside it. It would to about +/-102 deg (sampled every 5 deg of roll), past
+    ELBOW_PITCH_LIMIT_DEG, which stays at 90 (lib/params.py)."""
     link = built.part("j2_link").rotate(Axis((0.0, 0.0, DEFAULT.roll_end.axis_z), (-1.0, 0.0, 0.0)), roll)
     upper_arm = in_host("j1_link#1").rotate(Axis((0.0, 0.0, 0.0), (0.0, 0.0, 1.0)), elbow)
     gap = closest_points(link, upper_arm).distance
