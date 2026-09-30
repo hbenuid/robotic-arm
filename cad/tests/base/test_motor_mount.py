@@ -13,7 +13,13 @@ from build123d import Location
 from lib.base import DEFAULT, LEGACY, joint_bolt_points, joint_stations, motor_holes, mount_inner_half, mount_x1
 from lib.base.layout import truss_panels
 from lib.base.params import MOTOR_TRAVEL, YAW_BELT
-from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, STANDARD_2GT_LENGTHS, closed_belt_length
+from lib.belts import (
+    GT2_PULLEY_20T_TEETH,
+    GT2_PULLEY_90T_TEETH,
+    GT2_PULLEY_120T_TEETH,
+    STANDARD_2GT_LENGTHS,
+    closed_belt_length,
+)
 from lib.datum import BASE_BOTTOM_Y
 from lib.fasteners import M4_PITCH
 from lib.geom import hex_circumdiameter
@@ -28,14 +34,14 @@ W_OUT = W_IN + MT.wall                # the mount's side walls' outside
 X1 = mount_x1()                       # the mount's end wall's outside
 
 
-def _belt(x: float) -> float:
-    return closed_belt_length(x, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH)
+def _belt(x: float, teeth: int = GT2_PULLEY_120T_TEETH) -> float:
+    return closed_belt_length(x, teeth, GT2_PULLEY_20T_TEETH)
 
 
 def test_the_motor_sits_where_the_stock_belt_puts_it():
     assert YAW_BELT in STANDARD_2GT_LENGTHS and M.travel == MOTOR_TRAVEL > 0.0
-    assert _belt(M.centre[0]) == pytest.approx(YAW_BELT, abs=1e-4)
-    assert _belt(LEGACY.motor.centre[0]) == pytest.approx(274.2, abs=0.05)   # the SolidWorks centre: no stock belt
+    assert _belt(M.centre[0]) == pytest.approx(YAW_BELT, abs=1e-4)                             # round the base_yaw 120T
+    assert _belt(LEGACY.motor.centre[0], GT2_PULLEY_90T_TEETH) == pytest.approx(274.2, abs=0.05)   # the SolidWorks centre (a 90T): no stock belt
     assert _belt(M.centre[0] - M.travel) < YAW_BELT - 4.0 and _belt(M.centre[0] + M.travel) > YAW_BELT + 4.0   # slack / tension
 
 

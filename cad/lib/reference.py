@@ -9,7 +9,7 @@ tools/reference/mount_placements.py). The cycloidal drive's references are CadQu
 reference/cycloidal/ (tools/cycloidal/import_cadquery.py); the parts designed in this repo (NATIVE) keep
 their accepted build in reference/native/ (tools/reference/import_native.py); path_of() resolves the
 origin. A measured conversion (MEASURED) keeps no reference at all: its export was measured once, its own tests hold
-the numbers - and neither does a purchased part in ENVELOPE_COTS, whose envelope is locked by its own tests. The third producer of vendor files is tools/reference/split_mks_motor.py: it splits the "NEMA 17
+the numbers - and neither does a part in NO_REFERENCE, designed here and locked by its own tests. The third producer of vendor files is tools/reference/split_mks_motor.py: it splits the "NEMA 17
 x 40 + MKS SERVO42D" kit export (MKS_EXPORT_NAME) into vendor/nema17_40mm.step and
 vendor/mks_servo42d.step, which import_solidworks.py then mirrors into reference/solidworks/.
 
@@ -145,11 +145,13 @@ NATIVE_COTS: dict[str, str] = {
 COTS.update({name: (f"native {builder}", None) for name, builder in NATIVE_COTS.items()})
 NATIVE_PARTS: set[str] = set(NATIVE) | set(NATIVE_COTS)
 
-# Purchased parts that keep NO reference - the direction for new ones (the CAD stands on its code, not on reference
-# files): no vendor model and no export, the envelope IS the geometry, and the part's own tests lock its numbers
-# (pieces, volume, bbox - the purchased counterpart of MEASURED). Not in COTS: no reference file, no manifest entry, so
-# the import tools and the reference checks never see them. clean name -> builder label.
-ENVELOPE_COTS: dict[str, str] = {
+# Parts designed here that keep NO reference - the direction for new ones (the CAD stands on its code, not on reference
+# files): a printed part built by code of this repo (REFERENCE = None), or a purchased one with no vendor model and no
+# export whose envelope IS the geometry; the part's own test locks its numbers (volume, bbox, pieces - as MEASURED does
+# an export's). Neither in NATIVE nor in COTS: no reference file, no manifest entry, so the import tools and the
+# reference checks never see them. clean name -> builder label.
+NO_REFERENCE: dict[str, str] = {
+    "gt2_pulley_120t": "lib/pulley/body.py:build_pulley(YAW)",
     "yaw_pulley_screws": "parts/base/yaw_pulley_screws.py:_envelope()",
     "yaw_pulley_nuts": "parts/base/yaw_pulley_nuts.py:_envelope()",
 }

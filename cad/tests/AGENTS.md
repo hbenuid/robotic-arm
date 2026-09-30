@@ -46,7 +46,7 @@ converted — shared by `test_assembly.py` and `test_robot.py`), `built.py` (abo
 holes on the elbow motor's pattern and the drive's arm-mount bolts, no sockets, the elbow block's relief), `tests/base/` (`base`: the LEGACY build's
 feature probes, the interface values lib/params.py and lib/datum.py take from it; `base_motor_mount`: the wiring room, the
 joint to the base's posts, the slotted seat at the stock belt's centre distance, the motor clear across the travel;
-`yaw_pulley_screws` / `yaw_pulley_nuts`, envelope COTS parts: the numbers no reference file holds for them - pieces, volume,
+`yaw_pulley_screws` / `yaw_pulley_nuts`, purchased parts with no reference: the numbers no reference file holds for them - pieces, volume,
 bbox - and feature probes), `tests/coupler/` (`j3_coupler`: the
 LEGACY build's feature probes, the stub the roll drive's block repeats), `tests/yaw_coupler/` (`j1_coupler`: the LEGACY
 build's feature probes, the yoke on the drive's housing - its bore, od, pillars, bolt circle; DEFAULT's sockets round the
@@ -54,7 +54,8 @@ build's feature probes, the yoke on the drive's housing - its bore, od, pillars,
 coupler's flange, the end face on the NEMA 17 pattern), `tests/pulley/` (`gt2_pulley_90t`: the GT2 groove's tangency
 solve against the export's arcs, the LEGACY build's feature probes and surfaces, DEFAULT's opened holes;
 `gt2_pulley_20_60t`, a measured conversion: its export's numbers written into the test - both bands' arc centres, the
-surfaces, volume, bbox - and feature probes; `helpers.py`: probe points about the axis, the surface census),
+surfaces, volume, bbox - and feature probes;
+`gt2_pulley_120t`, a part with no reference: its volume and bbox written in, the 90T's hub and holes, 120 grooves; `helpers.py`: probe points about the axis, the surface census),
 `tests/forearm/` (the forearm: the LEGACY
 build vs the SolidWorks part + feature probes, the roll end, the roll drive - axis through the wrist centre, stack, press fits, clean pairs,
 clearances in the arm with the elbow folded; `helpers.in_host()` places any occurrence in `j2_link`'s frame). Geometry tests are

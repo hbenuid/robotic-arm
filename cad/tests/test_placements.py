@@ -35,7 +35,7 @@ def test_record_counts_match_expected():
 
 
 def test_mounted_records_follow_lib_mounts():
-    """The mounts (lib/mounts.py: the base's motor mount + its bolts, motors + boards, bearings, the 90T pulleys, their
+    """The mounts (lib/mounts.py: the base's motor mount + its bolts, motors + boards, bearings, the driven pulleys, their
     bolts) are part records written by
     tools/reference/mount_placements.py:
     parent None, rel == world = host world * the declared frame, the `mount` block naming the declaration."""
@@ -47,7 +47,7 @@ def test_mounted_records_follow_lib_mounts():
         "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1",
         "nema17_48mm#1", "mks_servo42d#1", "nema17_40mm#2", "mks_servo42d#2", "nema17_40mm#3", "mks_servo42d#3",
         *(f"bearing_6806#{n}" for n in range(1, 7)), "washer_as6590#1", "bearing_axk6590#1", "washer_as6590#2",
-        "gt2_pulley_90t#3", "gt2_pulley_90t#4", "gt2_pulley_90t#5",
+        "gt2_pulley_90t#3", "gt2_pulley_90t#4", "gt2_pulley_120t#1",
         "elbow_pulley_screws#1", "elbow_pulley_nuts#1", "wrist_pulley_screws#1", "wrist_pulley_nuts#1",
         "yaw_pulley_screws#1", "yaw_pulley_nuts#1"]
     assert P.keys(mounted=True) == P.DATA["mounted"] == mounts.keys() + mounts.module_keys()
@@ -89,7 +89,7 @@ def test_keys_unique_and_parts_known():
     keys = [o["key"] for o in P.DATA["occurrences"]]
     assert len(keys) == len(set(keys))
     for o in P.DATA["occurrences"]:
-        assert o["part"] in (set(R.CUSTOM) | set(R.COTS) | set(R.ENVELOPE_COTS) | set(R.NATIVE) | set(R.MEASURED) | set(R.MODULES)
+        assert o["part"] in (set(R.CUSTOM) | set(R.COTS) | set(R.NO_REFERENCE) | set(R.NATIVE) | set(R.MEASURED) | set(R.MODULES)
                              | set(R.DESIGNED_MODULES)), o["key"]
         assert o["key"] == f"{o['part']}#{o['key'].rsplit('#', 1)[1]}"
         if o["parent"] is not None:

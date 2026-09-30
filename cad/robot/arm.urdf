@@ -42,7 +42,7 @@
   (output hub + pins) is bolted to j1_link - together upper_arm_link - so the drive IS the
   shoulder_pitch joint (cad/docs/cycloidal_drive.md, cad/assemblies/cycloidal_drive.py BODIES);
   the GT2 90T pulleys + J3 couplers are bolted to the driven links (elbow_link at elbow_pitch,
-  wrist_pitch_link at wrist_pitch; the base_yaw 90T to j1_coupler's stub end inside the base - shoulder_link); each belt joint's 6806-2RS bearing pair rides with its housing
+  wrist_pitch_link at wrist_pitch; the base_yaw 120T to j1_coupler's stub end inside the base - shoulder_link); each belt joint's 6806-2RS bearing pair rides with its housing
   (base_link, upper_arm_link, forearm_link; cad/lib/mounts.py), the base_yaw thrust bearing's lower washer and needle
   cage with base_link, its upper washer with j1_coupler (shoulder_link); the MG996R crank linkage is merged into wrist_roll_link;
   jaw_b mirrors jaw_a (mimic, multiplier -1); positive jaw_a = opening.
@@ -56,9 +56,9 @@
 <robot name="arm">
   <link name="base_link">
     <inertial>
-      <origin xyz="-0.044986 0.000021 0.056664" rpy="0 0 0" />
-      <mass value="0.93574" />
-      <inertia ixx="1.515585e-03" ixy="2.801067e-06" ixz="-6.562157e-04" iyy="2.940607e-03" iyz="1.172646e-06" izz="2.693847e-03" />
+      <origin xyz="-0.046028 0.000021 0.056669" rpy="0 0 0" />
+      <mass value="0.936947" />
+      <inertia ixx="1.516875e-03" ixy="2.865620e-06" ixz="-6.700869e-04" iyy="3.015555e-03" iyz="1.172743e-06" izz="2.768958e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -75,9 +75,9 @@
   </link>
   <link name="shoulder_link">
     <inertial>
-      <origin xyz="-0.000828 0.015409 -0.01717" rpy="0 0 0" />
-      <mass value="1.650504" />
-      <inertia ixx="4.185559e-03" ixy="2.392286e-05" ixz="2.241258e-05" iyy="3.760526e-03" iyz="-4.345619e-04" izz="2.713967e-03" />
+      <origin xyz="-0.00082 0.015255 -0.01817" rpy="0 0 0" />
+      <mass value="1.667132" />
+      <inertia ixx="4.365000e-03" ixy="2.413298e-05" ixz="2.378057e-05" iyy="3.936070e-03" iyz="-4.600069e-04" izz="2.737501e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />

@@ -23,10 +23,11 @@ def test_the_two_lists_partition_the_parts_by_the_cots_flag():
     printed, bought = bom.print_rows(), bom.buy_rows()
     assert {r["part"] for r in printed} | {r["part"] for r in bought} == set(parts.names()) - set(parts.unplaced())
     assert not {r["part"] for r in printed} & {r["part"] for r in bought}
-    assert {r["part"] for r in bought} == (set(R.COTS) | set(R.ENVELOPE_COTS)) - set(parts.unplaced())
-    assert (len(printed), sum(r["qty"] for r in printed)) == (28, 36)
+    assert {r["part"] for r in bought} == (set(R.COTS) | {n for n in R.NO_REFERENCE if parts.bought(n)}) - set(parts.unplaced())
+    assert (len(printed), sum(r["qty"] for r in printed)) == (29, 36)
     assert (len(bought), sum(bom.part_counts()[r["part"]] for r in bought)) == (31, 49)
-    assert {r["state"] for r in printed} <= {"wrapper", "parametric", "designed", "native", "measured"}
+    assert {r["state"] for r in printed} <= {"wrapper", "parametric", "designed", "native", "measured", "no reference"}
+    assert {r["part"] for r in printed if r["state"] == "no reference"} == {n for n in R.NO_REFERENCE if not parts.bought(n)}
     assert {r["part"] for r in printed if r["state"] == "designed"} == set(R.DESIGNED)
     assert {r["part"] for r in printed if r["state"] == "native"} == set(R.NATIVE)
 
@@ -62,7 +63,8 @@ def test_the_belt_joints_take_a_6806_pair_each():
 
 
 def test_the_90t_pulleys_take_their_m4_screws_and_nuts():
-    """Each belt joint's 90T is clamped by 4x M4 + nuts (lib/mounts.py FASTENER_MOUNTS): modelled pattern parts on the
+    """Each belt joint's driven pulley (the elbow's and the wrist's 90T, the base_yaw 120T) is clamped by 4x M4 + nuts
+    (lib/mounts.py FASTENER_MOUNTS): modelled pattern parts on the
     buy list, no vendor model - no longer EXTRAS rows."""
     rows = {r["part"]: r for r in bom.buy_rows() if r["part"].endswith(("_pulley_screws", "_pulley_nuts"))}
     assert set(rows) == {"elbow_pulley_screws", "elbow_pulley_nuts", "wrist_pulley_screws", "wrist_pulley_nuts",
@@ -72,7 +74,8 @@ def test_the_90t_pulleys_take_their_m4_screws_and_nuts():
     assert rows["wrist_pulley_screws"]["order"].startswith("M4 x 50 socket head cap screw")
     assert rows["yaw_pulley_screws"]["order"].startswith("M4 x 45 socket head cap screw")
     assert all(rows[n]["order"] == "M4 hex nut (ISO 4032)" for n in ("elbow_pulley_nuts", "wrist_pulley_nuts", "yaw_pulley_nuts"))
-    assert next(r for r in bom.print_rows() if r["part"] == "gt2_pulley_90t")["qty"] == len(rows) // 2   # a 90T per bolted joint
+    driven = {r["part"]: r["qty"] for r in bom.print_rows() if r["part"] in ("gt2_pulley_90t", "gt2_pulley_120t")}
+    assert driven == {"gt2_pulley_90t": 2, "gt2_pulley_120t": 1} and sum(driven.values()) == len(rows) // 2   # a pulley per bolted joint
     assert not any("M4" in spec for owner, spec, _, _ in bom.EXTRAS if owner == "forearm_roll_drive")
 
 

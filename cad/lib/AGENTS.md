@@ -21,12 +21,12 @@ base/         # the base and its bolt-on motor mount (BaseConfig: LEGACY = the S
 coupler/      # the J3 coupler (CouplerParams: LEGACY = the SolidWorks j3_coupler, DEFAULT = what is built)
 yaw_coupler/  # the base_yaw coupler, the drive's yoke (YawCouplerConfig: LEGACY = the SolidWorks j1_coupler, DEFAULT = what is built)
 wrist/        # the wrist body (WristConfig: LEGACY = the SolidWorks wrist_link, DEFAULT = what is built)
-pulley/       # the 90T pulley (PulleyParams: LEGACY = the SolidWorks gt2_pulley_90t, DEFAULT = what is built), the 20-60T compound pulley (CompoundPulleyParams: COMPOUND = the measured gt2_pulley_20_60t, build_compound()) and teeth.py: the GT2 groove (arcs solved from lib/belts.py's tooth form) and gt2_ring() (its rim, the roll shaft's ring)
+pulley/       # the 90T pulley (PulleyParams: LEGACY = the SolidWorks gt2_pulley_90t, DEFAULT = what is built, YAW = DEFAULT with 120 teeth - gt2_pulley_120t), the 20-60T compound pulley (CompoundPulleyParams: COMPOUND = the measured gt2_pulley_20_60t, build_compound()) and teeth.py: the GT2 groove (arcs solved from lib/belts.py's tooth form) and gt2_ring() (its rim, the roll shaft's ring)
 upper_arm/    # the upper arm (UpperArmConfig: LEGACY = the SolidWorks j1_link, DEFAULT = no cap sockets, the motor's and the drive's hole patterns, the elbow block's clearance)
 forearm/      # the forearm (ForearmConfig: LEGACY = the SolidWorks j2_link, DEFAULT = the roll end, no cap sockets) and the roll drive (RollDriveParams, stack_positions, the block / motor mount / shaft / retainer builders; the shaft's 90T ring is lib/pulley/teeth.py gt2_ring())
 datum.py      # capture frame W -> base_link frame B: frame(), base_frame() (arm.py arm_from_w(), robot/frames.py); frames as data: IDENTITY, to_location()
-mounts.py     # what the SolidWorks capture never placed right, as frames-as-data: the base's motor mount + its M4s, the belt joints' motors + MKS boards, their 6806 pairs, the base_yaw thrust stack, the 90Ts (the elbow's and the wrist's re-seated, the base_yaw one placed) and their M4 screws + nuts
-reference.py  # naming maps (SolidWorks custom/COTS, designed cycloidal parts, native and measured parts, the purchased parts with no reference - ENVELOPE_COTS -, modules), loaders, path_of(), matches_reference()
+mounts.py     # what the SolidWorks capture never placed right, as frames-as-data: the base's motor mount + its M4s, the belt joints' motors + MKS boards, their 6806 pairs, the base_yaw thrust stack, the driven pulleys (the elbow's and the wrist's 90T re-seated, the base_yaw 120T placed) and their M4 screws + nuts
+reference.py  # naming maps (SolidWorks custom/COTS, designed cycloidal parts, native and measured parts, the parts designed here with no reference - NO_REFERENCE -, modules), loaders, path_of(), matches_reference()
 manifest.py   # reference/manifest.json: read() / write() / entry() - shared by the two import tools and the tests
 placements.py # reference/placements.json -> build123d Location
 models.py     # model_of() / raw() / geometry(inline=): the @step model of a module, its body, a child for an assembly

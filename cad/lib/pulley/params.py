@@ -1,6 +1,6 @@
-"""PulleyParams - every dimension of the printed 90T GT2 pulley (gt2_pulley_90t: the driven pulley of the elbow, the
-wrist and the base_yaw belts - its hub turns in the joint's lower 6806 and bolts flat onto the stub beyond it), in its
-part frame.
+"""PulleyParams - every dimension of the printed 90T GT2 pulley (gt2_pulley_90t: the driven pulley of the elbow and the
+wrist belts - its hub turns in the joint's lower 6806 and bolts flat onto the stub beyond it), in its part frame; YAW is
+the base_yaw belt's 120T (gt2_pulley_120t), the same pulley with more teeth.
 
 Frame (= the SolidWorks part frame of gt2_pulley_90t, which placements.json and lib/mounts.py place): origin on the axis
 at the lower flange's top (where the teeth start), +Y up the axis toward the outer face, under the pulley bolts' heads.
@@ -11,8 +11,9 @@ step -, the web on top of it, the toothed rim round the web (the tooth band betw
 teeth's side; the groove is lib/belts.py's), open underneath between the step and the rim; the bore on the axis and the
 4 bolts on the X / Z axes (lib/belts.py pulley_90t_bolt_points()), from the hub's end to the outer face.
 
-Two configurations: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
-tests/test_reference_match.py); DEFAULT is what the part builds: the bolt holes at M4 clearance.
+Two configurations of the 90T: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
+tests/test_reference_match.py); DEFAULT is what the part builds: the bolt holes at M4 clearance. YAW is DEFAULT with 120
+teeth (below).
 
 Every number below was measured on the reference 2026-09-27 (face census; tests/pulley/test_gt2_pulley_90t.py re-checks
 the builds against it): [REFERENCE] unless tagged. Units mm. Frozen dataclasses; variants via dataclasses.replace.
@@ -29,6 +30,7 @@ from lib.belts import (
     GT2_PULLEY_90T_BOLT_R,
     GT2_PULLEY_90T_FACE_Y,
     GT2_PULLEY_90T_TEETH,
+    GT2_PULLEY_120T_TEETH,
     pulley_od,
 )
 from lib.fasteners import M4_CLEAR
@@ -72,6 +74,13 @@ LEGACY = PulleyParams()     # the SolidWorks part, exactly
 # What the part builds: the bolt holes opened to M4 clearance (the export's Ø3.9 sits under an M4's shank) - the bolts
 # pass through the pulley into the nuts under the stub.
 DEFAULT = replace(LEGACY, hole_dia=M4_CLEAR)   # [DESIGN]
+
+# The base_yaw joint's driven pulley (gt2_pulley_120t): DEFAULT with GT2_PULLEY_120T_TEETH - the base_yaw ratio 6:1 on the
+# motor's 20T, where the elbow's and the wrist's 90T give 4.5:1 - and its rim's inside grown with the teeth, keeping the
+# 90T's wall under them. The hub (journal, ring, step), the web's height, the bore and the bolts are the 90T's: it sits
+# on j1_coupler's stub in the lower base bearing the same way, clamped by the same screws.
+YAW = replace(DEFAULT, teeth=GT2_PULLEY_120T_TEETH,
+              rim_dia=round(pulley_od(GT2_PULLEY_120T_TEETH) - (pulley_od(LEGACY.teeth) - LEGACY.rim_dia), 6))   # [DESIGN]
 
 
 @dataclass(frozen=True)

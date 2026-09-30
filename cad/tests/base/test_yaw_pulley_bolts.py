@@ -1,7 +1,8 @@
-"""yaw_pulley_screws / yaw_pulley_nuts, the base_yaw 90T's 4x M4 and their nuts: envelope COTS parts
-(lib/reference.py ENVELOPE_COTS), which keep no reference file - THIS file locks their numbers (the pieces, the modelled
-volume and the bounding box, measured on the build and written in) and what they are: every screw on the 90T's hole
-circle with its head's bearing face on z=0, every nut on it with a corner where j1_coupler's pockets have theirs.
+"""yaw_pulley_screws / yaw_pulley_nuts, the base_yaw 120T's 4x M4 and their nuts: purchased parts with no reference
+(lib/reference.py NO_REFERENCE), which keep no reference file - THIS file locks their numbers (the pieces, the modelled
+volume and the bounding box, measured on the build and written in) and what they are: every screw on the pulley's hole
+circle (the 90T's, which the 120T keeps) with its head's bearing face on z=0, every nut on it with a corner where
+j1_coupler's pockets have theirs.
 The patterns in place - the heads on the pulley, the nuts in the pockets with the designed press, the reach past the
 nuts - are tests/test_mounts.py."""
 import math
@@ -28,12 +29,12 @@ def _inside(shape, x: float, y: float, z: float) -> bool:
     return any(is_inside(s, x, y, z) for s in shape.solids())
 
 
-def test_they_are_envelope_cots_parts_of_the_base_group():
-    assert set(LOCKS) == set(R.ENVELOPE_COTS)
+def test_they_are_purchased_parts_with_no_reference_in_the_base_group():
+    assert set(LOCKS) == {n for n in R.NO_REFERENCE if parts.bought(n)}
     for name in LOCKS:
         mod = parts.load(name)
         assert parts.GROUPS[name] == "base" and parts.bought(name) and mod.PURCHASE_QTY == len(POINTS) == LOCKS[name][0]
-        assert R.ENVELOPE_COTS[name] == f"parts/base/{name}.py:_envelope()"
+        assert R.NO_REFERENCE[name] == f"parts/base/{name}.py:_envelope()"
 
 
 def test_the_order_lines_and_masses_follow_the_hub():

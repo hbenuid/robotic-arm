@@ -6,11 +6,11 @@
     <link name="base_link">
       <pose>0 0 0 0 0 0</pose>
       <inertial>
-        <pose>-0.044986 0.000021 0.056664 0 0 0</pose>
-        <mass>0.93574</mass>
+        <pose>-0.046028 0.000021 0.056669 0 0 0</pose>
+        <mass>0.936947</mass>
         <inertia>
-          <ixx>1.515585e-03</ixx><ixy>2.801067e-06</ixy><ixz>-6.562157e-04</ixz>
-          <iyy>2.940607e-03</iyy><iyz>1.172646e-06</iyz><izz>2.693847e-03</izz>
+          <ixx>1.516875e-03</ixx><ixy>2.865620e-06</ixy><ixz>-6.700869e-04</ixz>
+          <iyy>3.015555e-03</iyy><iyz>1.172743e-06</iyz><izz>2.768958e-03</izz>
         </inertia>
       </inertial>
       <visual name="base_link_visual">
@@ -33,11 +33,11 @@
     <link name="shoulder_link">
       <pose relative_to="base_yaw">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>-0.000828 0.015409 -0.01717 0 0 0</pose>
-        <mass>1.650504</mass>
+        <pose>-0.00082 0.015255 -0.01817 0 0 0</pose>
+        <mass>1.667132</mass>
         <inertia>
-          <ixx>4.185559e-03</ixx><ixy>2.392286e-05</ixy><ixz>2.241258e-05</ixz>
-          <iyy>3.760526e-03</iyy><iyz>-4.345619e-04</iyz><izz>2.713967e-03</izz>
+          <ixx>4.365000e-03</ixx><ixy>2.413298e-05</ixy><ixz>2.378057e-05</ixz>
+          <iyy>3.936070e-03</iyy><iyz>-4.600069e-04</iyz><izz>2.737501e-03</izz>
         </inertia>
       </inertial>
       <visual name="shoulder_link_visual">

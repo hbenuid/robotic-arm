@@ -76,6 +76,8 @@ def _state(name: str) -> str:
         return "native"
     if name in R.MEASURED:
         return "measured"
+    if name in R.NO_REFERENCE:
+        return "no reference"
     return "parametric" if parts.load(name).CONVERTED else "wrapper"
 
 

@@ -4,7 +4,7 @@ Auto-discovers parts exactly like the assemblies do (parts.names(): every module
 package that does not start with '_') and checks each honours the cadgen `@step` contract: importable
 with no side effects, ONE `@step def <name>()` model named after the file whose STEP is the
 sibling file (no out=), whose body (parts.build(name) - never the model itself, that would start a
-build) returns a valid, non-empty, labelled shape, plus the wrapper / designed / native / measured / COTS / envelope COTS
+build) returns a valid, non-empty, labelled shape, plus the wrapper / designed / native / measured / no-reference / COTS
 metadata this repo adds. New parts are covered the moment they land.
 """
 import pytest
@@ -58,8 +58,9 @@ def test_some_parts_were_discovered():
 
 
 def test_naming_map_matches_part_files():
-    expected = set(R.CUSTOM) | set(R.COTS) | set(R.ENVELOPE_COTS) | set(R.DESIGNED) | set(R.NATIVE) | set(R.MEASURED)
-    assert not set(R.ENVELOPE_COTS) & set(R.COTS), "a purchased part either keeps a reference (COTS) or none (ENVELOPE_COTS)"
+    expected = set(R.CUSTOM) | set(R.COTS) | set(R.NO_REFERENCE) | set(R.DESIGNED) | set(R.NATIVE) | set(R.MEASURED)
+    kept = set(R.CUSTOM) | set(R.COTS) | set(R.DESIGNED) | set(R.NATIVE) | set(R.MEASURED)
+    assert not set(R.NO_REFERENCE) & kept, "a part keeps a reference (or a measured export) or none (NO_REFERENCE), not both"
     assert set(PART_NAMES) == expected, (
         f"parts/ and lib/reference.py disagree: only in parts/: {set(PART_NAMES) - expected}; "
         f"only in the map: {expected - set(PART_NAMES)}"
@@ -86,13 +87,19 @@ def test_part_declares_its_contract(name):
     unplaced = getattr(mod, "UNPLACED", None)
     assert unplaced is None or (isinstance(unplaced, str) and unplaced.strip()), (
         f"{name}.UNPLACED must say why no assembly places it yet (parts/AGENTS.md \"Modelled, not placed yet\")")
+    if name in R.NO_REFERENCE:
+        # designed here, no reference: its own tests hold its numbers (parts/AGENTS.md Part states); a purchased one's
+        # envelope is its geometry - no vendor file either
+        assert name not in M.read()["parts"] and not R.path_of(name).exists(), (
+            f"{name} keeps no reference - no reference file and no manifest entry")
+        assert not hasattr(mod, "REFERENCE_BUILD"), f"{name} keeps no reference - nothing to match a LEGACY build to"
+        if getattr(mod, "COTS", False):
+            assert not hasattr(mod, "REFERENCE") and not mod.VENDOR_STEP.exists(), f"{name}: an envelope, no vendor file"
+        else:
+            assert getattr(mod, "REFERENCE", "unset") is None and getattr(mod, "CONVERTED", None) is True, (
+                f"{name} keeps no reference - REFERENCE = None, CONVERTED = True")
     if getattr(mod, "COTS", False):
-        assert name in R.COTS or name in R.ENVELOPE_COTS, f"{name} declares COTS but is not in lib.reference.COTS / ENVELOPE_COTS"
-        if name in R.ENVELOPE_COTS:
-            # a purchased part with no reference: its envelope is the geometry, its own tests hold its numbers (parts/AGENTS.md)
-            assert name not in M.read()["parts"] and not R.path_of(name).exists() and not mod.VENDOR_STEP.exists(), (
-                f"{name} is an envelope COTS part - no reference file, no vendor file and no manifest entry")
-            assert not hasattr(mod, "REFERENCE") and not hasattr(mod, "REFERENCE_BUILD"), f"{name} is an envelope COTS part - nothing to match"
+        assert name in R.COTS or name in R.NO_REFERENCE, f"{name} declares COTS but is not in lib.reference.COTS / NO_REFERENCE"
         mass = getattr(mod, "MASS_G", None)
         assert isinstance(mass, (int, float)) and mass > 0, f"COTS part {name} must set MASS_G > 0"
         assert mod.VENDOR_STEP == R.VENDOR_DIR / f"{name}.step", f"{name}.VENDOR_STEP must be vendor/{name}.step"
@@ -106,9 +113,11 @@ def test_part_declares_its_contract(name):
     else:
         assert not any(hasattr(mod, a) for a in ("PURCHASE_SPEC", "PURCHASE_QTY", "PURCHASE_NOTE")), (
             f"{name} is printed (no COTS = True) but declares PURCHASE_* - it would never reach the buy list")
-        assert name in R.CUSTOM or name in R.DESIGNED or name in R.NATIVE or name in R.MEASURED, (
-            f"{name} is not in lib.reference.CUSTOM / DESIGNED / NATIVE / MEASURED (and not COTS)")
-        if name in R.MEASURED:
+        assert name in R.CUSTOM or name in R.DESIGNED or name in R.NATIVE or name in R.MEASURED or name in R.NO_REFERENCE, (
+            f"{name} is not in lib.reference.CUSTOM / DESIGNED / NATIVE / MEASURED / NO_REFERENCE (and not COTS)")
+        if name in R.NO_REFERENCE:
+            pass   # checked above
+        elif name in R.MEASURED:
             # a measured conversion keeps no reference: its own tests hold the export's numbers (parts/AGENTS.md)
             assert getattr(mod, "REFERENCE", "unset") is None, f"{name} is a measured conversion - REFERENCE must be None"
             assert getattr(mod, "CONVERTED", None) is True, f"{name} is a measured conversion - CONVERTED must be True"

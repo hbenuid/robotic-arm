@@ -1,5 +1,5 @@
-"""The motor mounts of the belt joints, their bearings, their 90T pulleys (the elbow's and the wrist's re-seated, the
-base_yaw one placed) and the bolts that clamp them, and the pose of a code-driven module the SolidWorks capture never
+"""The motor mounts of the belt joints, their bearings, their driven pulleys (the elbow's and the wrist's 90T re-seated,
+the base_yaw 120T placed) and the bolts that clamp them, and the pose of a code-driven module the SolidWorks capture never
 placed - occurrences declared here, not extracted.
 
 The SolidWorks arm cut a NEMA 17 pad into `base` (base_yaw), `j1_link` (elbow_pitch) and `j2_link`
@@ -29,7 +29,7 @@ like the drive's SolidWorks-placed record.
 
 Geometry (lib/params.py, kernel-verified 2026-09-21 - tests/test_mounts.py re-checks it):
   base_yaw     the motor mount's plate -Y face, pattern centre BASE_MOTOR_PATTERN_CENTRE (the slots' middle); the
-               48 mm body hangs in -Y, shaft +Y through the plate into the plane of the base_yaw 90T's teeth; motor +
+               48 mm body hangs in -Y, shaft +Y through the plate into the plane of the base_yaw 120T's teeth; motor +
                board end BASE_MOTOR_TABLE_CLEAR above the base's bottom face (lowered under them, lib/base/params.py
                BOARD_CLEAR)
   elbow_pitch  j1_link's 48 x 48 pad (outer face y = J1_MOTOR_PAD_FACE_Y, the -N side), pattern on the
@@ -51,12 +51,12 @@ The PULLEYS (PULLEY_MOUNTS): the elbow's and the wrist's 90T, whose SolidWorks p
 retired - lib/placements.py) left no room for the lower bearing, re-declared PULLEY_SEAT_SHIFT further out along
 their own axis (+Y): the host of such a mount is the capture pose it corrects. The wrist's keeps its spin exactly; the
 elbow's turns RollDriveParams.pulley_bolt_deg about its axis with the elbow block's bolt pattern (lib/forearm/params.py:
-its nut channels would otherwise stop short of the ring cavity). The base_yaw 90T (gt2_pulley_90t#5) the capture never
-had: hosted on j1_coupler, upside down under it (its +Y down the axis) - its hub end on the stub's end in the plane of
+its nut channels would otherwise stop short of the ring cavity). The base_yaw pulley (gt2_pulley_120t#1, the 90T with
+120 teeth: lib/pulley/params.py YAW) the capture never had: hosted on j1_coupler, upside down under it (its +Y down the axis) - its hub end on the stub's end in the plane of
 the lip's lower face, its journal in the lower base bearing, its ring under that bearing's inner ring - and turned
 HubParams.hole_deg about the axis onto the stub's diagonal holes (lib/yaw_coupler/params.py). Bolted there it holds the
 coupler down on the thrust bearing: the lower bearing's outer ring stands under the base's lip.
-The PULLEY BOLTS (FASTENER_MOUNTS): each 90T's 4x M4 screws and nuts, purchased pattern parts
+The PULLEY BOLTS (FASTENER_MOUNTS): each pulley's 4x M4 screws and nuts, purchased pattern parts
 (parts/joints/{elbow,wrist}_pulley_{screws,nuts}, parts/base/yaw_pulley_{screws,nuts}) centred on the joint axis (their
 +Z on it). A screw set is hosted on its pulley, its heads' bearing face on the pulley's outer face
 (GT2_PULLEY_90T_FACE_Y) and its shanks into the hub; a nut set is hosted on its screw set, its bearing face where the
@@ -90,7 +90,7 @@ from lib.yaw_coupler.params import DEFAULT as _YAW_COUPLER
 
 MOTOR_48, MOTOR_40, BOARD = "nema17_48mm", "nema17_40mm", "mks_servo42d"
 MOTORS = (MOTOR_48, MOTOR_40)
-BEARING, PULLEY = "bearing_6806", "gt2_pulley_90t"
+BEARING, PULLEY, YAW_PULLEY = "bearing_6806", "gt2_pulley_90t", "gt2_pulley_120t"
 THRUST_CAGE, THRUST_WASHER = "bearing_axk6590", "washer_as6590"
 PULLEY_BOLTS = ("elbow_pulley_screws", "elbow_pulley_nuts", "wrist_pulley_screws", "wrist_pulley_nuts",
                 "yaw_pulley_screws", "yaw_pulley_nuts")
@@ -100,7 +100,7 @@ BASE_MOUNT, BASE_MOUNT_SCREWS, BASE_MOUNT_NUTS = "base_motor_mount", "base_motor
 # joint's axis (a motor's shaft runs beside its joint, parallel; a bearing, a pulley or a pulley-bolt pattern sits on it).
 AXES: dict[str, tuple[tuple[float, float, float], bool]] = {
     MOTOR_48: ((0.0, 0.0, 1.0), False), MOTOR_40: ((0.0, 0.0, 1.0), False),
-    BEARING: ((0.0, 0.0, 1.0), True), PULLEY: ((0.0, 1.0, 0.0), True),
+    BEARING: ((0.0, 0.0, 1.0), True), PULLEY: ((0.0, 1.0, 0.0), True), YAW_PULLEY: ((0.0, 1.0, 0.0), True),
     THRUST_CAGE: ((0.0, 0.0, 1.0), True), THRUST_WASHER: ((0.0, 0.0, 1.0), True),
     **{part: ((0.0, 0.0, 1.0), True) for part in PULLEY_BOLTS},
 }
@@ -194,9 +194,9 @@ PULLEY_MOUNTS: tuple[Mount, ...] = (
           "turned pulley_bolt_deg about its axis with the block's bolt pattern (the nut channels clear of the ring cavity)"),
     Mount("gt2_pulley_90t#4", PULLEY, "gt2_pulley_90t#2", "wrist_pitch_link", "wrist_pitch", ((0.0, PULLEY_SEAT_SHIFT, 0.0), (0.0, 0.0, 0.0)),
           "the wrist 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower wrist bearing"),
-    Mount("gt2_pulley_90t#5", PULLEY, "j1_coupler#1", "shoulder_link", "base_yaw",
+    Mount("gt2_pulley_120t#1", YAW_PULLEY, "j1_coupler#1", "shoulder_link", "base_yaw",
           ((0.0, round(_YAW_COUPLER.hub.stub_y0 + GT2_PULLEY_90T_FACE_Y[0], 6), 0.0), (180.0, _YAW_COUPLER.hub.hole_deg, 0.0)),
-          "the base_yaw 90T under j1_coupler, hub up: its hub end on the stub's end, its journal in the lower base bearing, "
+          "the base_yaw 120T under j1_coupler, hub up: its hub end on the stub's end, its journal in the lower base bearing, "
           "its ring under that bearing's inner ring (it holds the coupler down on the thrust bearing); turned hole_deg "
           "about its axis onto the stub's diagonal holes"),
 )
@@ -214,8 +214,8 @@ FASTENER_MOUNTS: tuple[Mount, ...] = (
     Mount("wrist_pulley_nuts#1", "wrist_pulley_nuts", "wrist_pulley_screws#1", "wrist_pitch_link", "wrist_pitch",
           ((0.0, 0.0, round(_COUPLER.stub_y1 + _HUB_LEN - _COUPLER.nut_depth, 6)), (0.0, 0.0, 0.0)),
           "the wrist screws' nuts on j3_coupler's pocket floors (nut_depth), a corner along the coupler's Z"),
-    Mount("yaw_pulley_screws#1", "yaw_pulley_screws", "gt2_pulley_90t#5", "shoulder_link", "base_yaw", _SCREWS_ON_FACE,
-          "the base_yaw 90T's 4x M4 x pulley_screw_len: heads on its outer face (under it), up through its hub and j1_coupler's stub"),
+    Mount("yaw_pulley_screws#1", "yaw_pulley_screws", "gt2_pulley_120t#1", "shoulder_link", "base_yaw", _SCREWS_ON_FACE,
+          "the base_yaw 120T's 4x M4 x pulley_screw_len: heads on its outer face (under it), up through its hub and j1_coupler's stub"),
     Mount("yaw_pulley_nuts#1", "yaw_pulley_nuts", "yaw_pulley_screws#1", "shoulder_link", "base_yaw",
           ((0.0, 0.0, round(_HUB_LEN + _YAW_COUPLER.yoke.pocket_y0 - _YAW_COUPLER.hub.nut_depth - _YAW_COUPLER.hub.stub_y0, 6)),
            (0.0, 0.0, 0.0)),

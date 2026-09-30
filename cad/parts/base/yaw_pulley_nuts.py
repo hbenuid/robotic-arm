@@ -1,6 +1,6 @@
-"""yaw_pulley_nuts - purchased (COTS) part: the base_yaw 90T's 4 M4 hex nuts (ISO 4032), in j1_coupler's hub.
+"""yaw_pulley_nuts - purchased (COTS) part: the base_yaw 120T's 4 M4 hex nuts (ISO 4032), in j1_coupler's hub.
 
-The base_yaw 90T's screws run into them, in the hex pockets of the floor of the pocket over the coupler's hub.
+The base_yaw 120T's screws run into them, in the hex pockets of the floor of the pocket over the coupler's hub.
 
 In the arm (lib/mounts.py, hosted on yaw_pulley_screws): each nut on its pocket's floor (lib/yaw_coupler/params.py
 HubParams.nut_depth: sunk flush with the floor of the pocket over the hub), all four with a corner along the coupler's
@@ -8,7 +8,7 @@ Z as the pockets are cut (lib/yaw_coupler/body.py); the pockets are nut_af acros
 (docs/open_issues.md). They go in from the cradle before the drive's housing covers the pocket.
 
 No catalog model (the catalog has single fasteners only, vendor/README.md), no SolidWorks export and NO reference
-file: an ENVELOPE COTS pattern part (lib/reference.py ENVELOPE_COTS) - its envelope IS the geometry (lib/fasteners.py
+file: a pattern part with no reference (lib/reference.py NO_REFERENCE) - its envelope IS the geometry (lib/fasteners.py
 hex_nut(): no thread, the bore at the nominal diameter) and tests/base/test_yaw_pulley_bolts.py locks its numbers.
 Frame: axis on Z, the nuts' bearing faces on z=0, standing in +Z; the four on the 90T's hole circle (lib/belts.py
 pulley_90t_bolt_points()), each with a corner on the pattern's x = -y diagonal (CORNER_DEG): the coupler's Z where the
