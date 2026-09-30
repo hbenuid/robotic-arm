@@ -1,6 +1,6 @@
 """j2_link - the forearm web: the link between the elbow_pitch and wrist_pitch pivots (parametric build123d,
 lib/forearm/link.py build_link(cfg), in the SolidWorks part frame - origin on the elbow pivot, the wrist pivot at
-x = -210, +Z = N toward the motor-body side).
+x = WebParams.wrist_x, +Z = N toward the motor-body side).
 
 Elbow end (DEFAULT, the forearm roll): the flange wall at x -56..-48 - full width, z -10..60 - with the roll shaft's
 Ø40 x 2 spigot recess on its elbow face, 4x M3 on Ø32 and the Ø24 cable bore on the roll axis (y 0, z 25 = the wrist

@@ -21,7 +21,8 @@
   the SolidWorks capture pose: ALL JOINTS ARE 0 AT THE CAPTURE POSE and every mesh origin is
   identity. In that pose shoulder_link is yawed +3.694 deg about base_yaw relative to base X (a
   captured pose, not a design offset); the shoulder_pitch, elbow_pitch and wrist_pitch axes are
-  parallel (210.0 mm apart each in the pitch plane, with 10 mm and 42 mm offsets along the axis).
+  parallel (SlabParams.elbow_x and -WebParams.wrist_x apart in the pitch plane, with 10 mm and 42 mm offsets
+  along the axis).
   forearm_roll's Z runs along the forearm (elbow -> wrist_pitch, the pitch plane's in-plane direction)
   through the WRIST CENTRE - where the wrist_pitch and wrist_roll axes meet, 17 mm back along the pitch
   axis from the wrist_pitch origin - so the last three axes are concurrent (a spherical wrist); its X is
@@ -93,9 +94,9 @@
   </link>
   <link name="upper_arm_link">
     <inertial>
-      <origin xyz="0.063934 0.000007 -0.020434" rpy="0 0 0" />
-      <mass value="0.947403" />
-      <inertia ixx="1.166245e-03" ixy="4.411813e-07" ixz="-5.338125e-04" iyy="7.842824e-03" iyz="3.977235e-07" izz="7.507072e-03" />
+      <origin xyz="0.04954 0.000008 -0.021353" rpy="0 0 0" />
+      <mass value="0.893701" />
+      <inertia ixx="1.112860e-03" ixy="3.554079e-07" ixz="-4.020589e-04" iyy="5.281005e-03" iyz="3.920609e-07" izz="4.920055e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -131,9 +132,9 @@
   </link>
   <link name="forearm_link">
     <inertial>
-      <origin xyz="0.002992 -0.000011 0.124212" rpy="0 0 0" />
-      <mass value="0.811089" />
-      <inertia ixx="4.049262e-03" ixy="2.601384e-07" ixz="2.768527e-05" iyy="3.961768e-03" iyz="1.696707e-07" izz="5.263602e-04" />
+      <origin xyz="0.003934 -0.000011 0.098002" rpy="0 0 0" />
+      <mass value="0.761574" />
+      <inertia ixx="2.600065e-03" ixy="2.532379e-07" ixz="8.007298e-05" iyy="2.534882e-03" iyz="8.046006e-08" izz="4.808943e-04" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -237,12 +238,12 @@
     <child link="upper_arm_link" />
     <origin xyz="0.002441 -0.034915 0" rpy="-1.570796 -0.830504 0.064484" />
     <axis xyz="0 0 1" />
-    <limit lower="-2.094395" upper="2.094395" effort="5" velocity="1" />
+    <limit lower="-2.094395" upper="1.308997" effort="5" velocity="1" />
   </joint>
   <joint name="elbow_pitch" type="revolute">
     <parent link="upper_arm_link" />
     <child link="elbow_link" />
-    <origin xyz="0.210003 0 0.009998" rpy="0 0 0.010227" />
+    <origin xyz="0.170003 0 0.009999" rpy="0 0 0.010227" />
     <axis xyz="0 0 1" />
     <limit lower="-1.570796" upper="1.570796" effort="5" velocity="1" />
   </joint>
@@ -256,7 +257,7 @@
   <joint name="wrist_pitch" type="revolute">
     <parent link="forearm_link" />
     <child link="wrist_pitch_link" />
-    <origin xyz="0.016998 0 0.21" rpy="-1.570799 -1.271722 -1.570793" />
+    <origin xyz="0.016998 0 0.17" rpy="-1.570799 -1.271722 -1.570793" />
     <axis xyz="0 0 1" />
     <limit lower="-2.094395" upper="2.094395" effort="5" velocity="1" />
   </joint>

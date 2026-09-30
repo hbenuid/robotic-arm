@@ -94,9 +94,9 @@ J1_MOTOR_PAD_FACE_Y = _UPPER_ARM.pad.face_y        # -32.5 [REFERENCE] j1_link: 
 from lib.forearm.params import DEFAULT as _FOREARM  # noqa: E402
 
 J2_MOTOR_WEB_FACE_Z = _FOREARM.web.z1              # 19 [REFERENCE] j2_link: the web's +Z face; the motor bolts through its slots
-J2_MOTOR_SLIDE_RANGE = _FOREARM.slide_range        # (-141.5, -130) [DESIGN] motor-axis x range the (shortened) slots allow
-J2_MOTOR_SLIDE_X = _FOREARM.motor_x                # -136.37: set by the stock WRIST_BELT_LENGTH (lib/belts.py centre_distance) [ESTIMATE]
-WRIST_BELT_LENGTH = _FOREARM.roll_end.wrist_belt   # 264-2GT [ESTIMATE] the wrist-pitch belt (90T at the wrist, 20T on the motor)
+J2_MOTOR_SLIDE_RANGE = _FOREARM.slide_range        # (-103.5, -94) [DESIGN] motor-axis x range the (shortened) slots allow
+J2_MOTOR_SLIDE_X = _FOREARM.motor_x                # -99.52: set by the stock WRIST_BELT_LENGTH (lib/belts.py centre_distance) [ESTIMATE]
+WRIST_BELT_LENGTH = _FOREARM.roll_end.wrist_belt   # 258-2GT [ESTIMATE] the wrist-pitch belt (90T at the wrist, 20T on the motor)
 # The forearm roll (lib/forearm/params.py RollEndParams; the rotor's wall on j2_link, the elbow block + shaft in M3):
 FOREARM_ROLL_AXIS_Z = _FOREARM.roll_end.axis_z     # 25 [REFERENCE] the roll axis' N-station in j2_link's frame = the wrist centre's (42 - 17)
 FOREARM_WALL_X = _FOREARM.roll_end.wall_x          # (-56, -48) [DESIGN] the flange wall: wrist face .. elbow face (48 from the elbow axis)
@@ -186,7 +186,10 @@ BASE_MOUNT_NUTS_MASS_G = STEEL_DENSITY * _JOINT_BOLTS * nut_volume(_BASE.joint.n
 # Joint limits and actuator ratings are PLACEHOLDERS until measured on the hardware; the URDF
 # and SDF are checked against these by tools/robot/derive.py --check.
 BASE_YAW_LIMIT_DEG = 175.0        # [ESTIMATE] symmetric +/- range; j1_coupler (carrying the drive's stator) turns on the base
-SHOULDER_PITCH_LIMIT_DEG = 120.0  # [ESTIMATE] the 20:1 cycloidal drive (CYCLOIDAL_RATIO) between j1_coupler and j1_link
+# the 20:1 cycloidal drive (CYCLOIDAL_RATIO) between j1_coupler and j1_link: (lower, upper); the upper - the arm pitched
+# down in front - stops 3 deg before the forearm roll drive's motor + board reach j1_coupler with the elbow folded
+# back (tests/test_sweeps.py), the lower is an [ESTIMATE]
+SHOULDER_PITCH_LIMITS_DEG = (-120.0, 75.0)   # [DESIGN]
 ELBOW_PITCH_LIMIT_DEG = 90.0      # [DESIGN] the forearm's roll wall (j2_link, 48 from the elbow axis) meets j1_link's side from +/-93 deg
 WRIST_PITCH_LIMIT_DEG = 120.0     # [ESTIMATE] GT2 belt at wrist_link
 FOREARM_ROLL_LIMIT_DEG = 170.0    # [ESTIMATE] the forearm roll (GT2 belt in the elbow block): a hard stop keeps the cables from winding

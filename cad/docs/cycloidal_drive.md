@@ -21,7 +21,7 @@ how it is attached to the arm.
 
 | Parameter | Value |
 |---|---|
-| Application | The arm's `shoulder_pitch` joint (~400 mm reach) — between `j1_coupler` and `j1_link` (§12) |
+| Application | The arm's `shoulder_pitch` joint (~340 mm reach to the wrist centre) — between `j1_coupler` and `j1_link` (§12) |
 | Type | Two-disc cycloidal drive, discs 180° apart |
 | Gear ratio | 20:1 (20 lobes, 21 ring pins) — `lib/params.py CYCLOIDAL_RATIO` |
 | Motor | NEMA 17, 48 mm body, 22 mm × Ø5 D-shaft (`parts/cycloidal/nema17_48mm.py`; the shown geometry is `vendor/nema17_48mm.step`, the real body from the user's kit export carrying this motor's own pilot + shaft, `lib/cycloidal/motor.py`) + its MKS SERVO42D board kit on the rear face (`parts/joints/mks_servo42d.py`, `z_mks_board` = −48) |
@@ -235,8 +235,9 @@ gauge first; PETG shrinks 0.3–0.5 % over 129 mm (the housing may need ~129.5 �
 Motor 0.45 Nm × 20 = 9.0 Nm theoretical; 55–65 % efficiency (printed, no pin bearings) →
 **5.0–5.9 Nm practical**, ~1.3–1.5 kg at 400 mm including the arm; 200–500 rpm in → 10–25 rpm out;
 not backdrivable; backlash ≈ ±0.38° (§1.3). The Ø100 ring-pin circle (§5.4) puts ~8 % more force on each ring pin
-than the port's Ø108 for the same torque (54 / 50). **Torque budget warning:** marginal for this arm at
-400 mm reach — a lightweight demonstrator; NEMA 23 or a higher ratio for heavier payloads.
+than the port's Ø108 for the same torque (54 / 50). **Torque budget warning:** short of this arm even at
+its ~340 mm reach to the wrist centre (the arm stretched out horizontally weighs more on the shoulder than this) —
+a lightweight demonstrator; a balance spring, NEMA 23 or a higher ratio for heavier payloads.
 
 ## 8. Disc profile (`lib/cycloidal/profiles.py`)
 
@@ -361,7 +362,7 @@ cd cad
   `tests/upper_arm/`): the SolidWorks holes sat 3.36° off, where the M4 bolts would not pass.
 - **Kinematics:** the drive **is the `shoulder_pitch` joint** of `robot/frames.py` (axis `N` = the
   drive's −Z; origin `SHOULDER_ORIGIN` = `j1_link#1`'s origin, on the drive axis; limits
-  `SHOULDER_PITCH_LIMIT_DEG`). `assemblies/cycloidal_drive.py BODIES` splits the rows into two rigid
+  `SHOULDER_PITCH_LIMITS_DEG`). `assemblies/cycloidal_drive.py BODIES` splits the rows into two rigid
   bodies and `LINKS` places them with a `:<body>` key suffix (`_occurrences.split_key` / `world_rows`):
   the **stator** (`cycloidal_drive#1:stator` — every row but the rotor's: motor plate, ring gear body, ring
   pins, housing bolts + nuts, NEMA 17 + bolts + its MKS board, and the gear train: eccentric shaft, support pin,

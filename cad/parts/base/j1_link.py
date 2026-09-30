@@ -1,15 +1,16 @@
 """j1_link - the upper arm: the link between the shoulder_pitch and elbow_pitch axes (parametric build123d,
 lib/upper_arm/link.py build_link(cfg), in the SolidWorks part frame - origin on the shoulder axis, the elbow axis at
-x = 210, +Y = N, the cycloidal drive's hub on the y = +1.5 top face).
+x = SlabParams.elbow_x, +Y = N, the cycloidal drive's hub on the y = +1.5 top face).
 
-A 300 x 90 stadium plate (y -11.77..1.5 at the shoulder half, stepping down to y -24 under the elbow half) with a
+A stadium plate, 90 wide (y -11.77..1.5 at the shoulder half, stepping down to y -24 under the elbow half) with a
 r 44.5 lip on top. Shoulder end: the Ø50 4x M4 bolts of the drive's output hub around a 42.5 square opening, over
 the elbow motor's 48 square pad (face y -32.5, a window in each wall - the +X one is the elbow belt's exit - the
 NEMA 17 holes in its floor; lib/mounts.py places nema17_40mm#2 on it). Elbow end: the Ø80 recess, the Ø42 bore, a
 Ø37.64 lip and the Ø42.2 seat from below on the elbow axis (the elbow's 6806-2RS pair, one each side of the lip -
-lib/mounts.py). Between them: two through slots, the stepped slot at x 163 (purpose unknown) and a Ø22.2 seat from
-each side at x 128 (the elbow drive's second stage, not modelled). DEFAULT (what the part builds) leaves out LEGACY's
-10 Ø5.15 x 2 sockets in the underside (j1_cap's dowel seats - the cap was removed 2026-09-25), puts the 4 NEMA 17
+lib/mounts.py). Between them: two through slots, the stepped slot (purpose unknown) and a Ø22.2 seat from each side
+(the elbow drive's second stage, not modelled). DEFAULT (what the part builds) is SHORTENING shorter at the elbow
+end (the elbow-end features move with the axis), leaves out the through slots and LEGACY's 10 Ø5.15 x 2 sockets in
+the underside (j1_cap's dowel seats - the cap was removed 2026-09-25), puts the 4 NEMA 17
 holes on a 31 square about the shoulder axis (the SolidWorks ones are 0.38 off and uneven) and the hub holes on the
 drive's bolts (3.36 degrees from the SolidWorks ones). Every number: lib/upper_arm/params.py (UpperArmConfig;
 measured on the reference 2026-09-24).

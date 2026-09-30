@@ -32,7 +32,7 @@ Geometry (lib/params.py, kernel-verified 2026-09-21 - tests/test_mounts.py re-ch
                base's bottom face (lowered under them, lib/base/params.py BOARD_CLEAR)
   elbow_pitch  j1_link's 48 x 48 pad (outer face y = J1_MOTOR_PAD_FACE_Y, the -N side), pattern on the
                shoulder axis; shaft +N through the pad opening into the elbow drive, whose second stage runs through
-               j1_link's x 128 seats (not modelled - docs/open_issues.md) to the elbow 90T
+               j1_link's second-stage seats (BearingParams.x; not modelled - docs/open_issues.md) to the elbow 90T
   wrist_pitch  j2_link's web (+Z face z = J2_MOTOR_WEB_FACE_Z), motor axis at x = J2_MOTOR_SLIDE_X on the side
                slots (lib/forearm/params.py: where the stock wrist belt puts it, its plug clear of the roll wall);
                body +N, shaft -N through the web, the 20T under it

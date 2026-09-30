@@ -27,7 +27,7 @@ NAME = pathlib.Path(__file__).stem
 REFERENCE = None              # a measured conversion: no reference file (lib/reference.py MEASURED)
 CONVERTED = True
 LOCAL_FROM_REF = IDENTITY     # modelled in the SolidWorks part frame
-UNPLACED = ("the elbow drive's second stage is not designed yet - an 8 mm shaft in j1_link's x 128 seats, its belts and "
+UNPLACED = ("the elbow drive's second stage is not designed yet - an 8 mm shaft in j1_link's second-stage seats, its belts and "
             "the elbow motor's new place; that design places it (docs/open_issues.md)")
 
 

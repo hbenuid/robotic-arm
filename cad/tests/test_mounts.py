@@ -165,7 +165,7 @@ def test_base_motor_stack_clears_the_table():
 def test_belt_pulley_planes_are_reachable():
     """The wrist motor's shaft (22 mm past its mounting face) reaches the plane of the 90T it drives: the 90T's
     bore-axis station lies between the mounting face and the shaft tip along the motor axis. (The elbow 90T is driven
-    from a second stage through j1_link's x 128 seats, not from its motor - not modelled, docs/open_issues.md.)"""
+    from a second stage through j1_link's second-stage seats, not from its motor - not modelled, docs/open_issues.md.)"""
     for m, pulley_key in (("nema17_40mm#3", "gt2_pulley_90t#4"),):
         world = _world(m)
         z = _dir(world).normalized()

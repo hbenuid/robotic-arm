@@ -146,14 +146,14 @@ JOINTS: list[Joint] = [
                 "nema17_48mm#1 (the 48 mm motor) + mks_servo42d#1 under the base plate (lib/mounts.py) "
                 "[which CAN id (software/control/src/config.py J1..J3) it is: unconfirmed]"),
     Joint("shoulder_pitch", "revolute", "shoulder_link", "upper_arm_link", SHOULDER_ORIGIN, N, SHOULDER_TO_ELBOW_INPLANE,
-          -PARAMS.SHOULDER_PITCH_LIMIT_DEG * DEG, PARAMS.SHOULDER_PITCH_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
+          PARAMS.SHOULDER_PITCH_LIMITS_DEG[0] * DEG, PARAMS.SHOULDER_PITCH_LIMITS_DEG[1] * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
           notes="the 20:1 cycloidal drive (CYCLOIDAL_RATIO, its own NEMA 17 x 48 + MKS board): stator in the j1_coupler yoke, "
                 "output hub bolted to j1_link [which CAN id: unconfirmed]"),
     Joint("elbow_pitch", "revolute", "upper_arm_link", "elbow_link", ELBOW_ORIGIN, N, ELBOW_TO_WRIST_INPLANE,
           -PARAMS.ELBOW_PITCH_LIMIT_DEG * DEG, PARAMS.ELBOW_PITCH_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
           notes="GT2 90T pulley + the roll drive's block (its stator) at the elbow, turning in the bearing_6806#3 / #4 pair; "
                 "belt-driven by nema17_40mm#2 + mks_servo42d#2 on j1_link's pad (lib/mounts.py) through a second stage at "
-                "j1_link's x 128 seats (not modelled) [which CAN id: unconfirmed]"),
+                "j1_link's second-stage seats (BearingParams.x, not modelled) [which CAN id: unconfirmed]"),
     # the roll: Z along the forearm (its child link's long direction IS the axis), so X = N, the pitch-axis direction
     Joint("forearm_roll", "revolute", "elbow_link", "forearm_link", FOREARM_ROLL_ORIGIN, FOREARM_ROLL_AXIS, N,
           -PARAMS.FOREARM_ROLL_LIMIT_DEG * DEG, PARAMS.FOREARM_ROLL_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
