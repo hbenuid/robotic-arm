@@ -20,7 +20,8 @@ table, the drive ratios) to agree with `software/control/src/config.py`, and one
   warning when it conflicts. If `main` moves under an open branch, merge `main` into the branch (`git fetch`,
   `git merge origin/main`, fix conflicts, re-run the suite, push): the pull request follows the branch.
 - The pull request is merged only when the user says so, and always as a **merge commit** — never squash, rebase or
-  fast-forward (the repo's GitHub settings allow only merge commits): `gh pr merge <n> --merge --subject "Merge
+  fast-forward (the repo's GitHub settings allow only merge commits, and its ruleset "main: pull requests only"
+  rejects every push to `main` - direct, forced or a deletion - for everyone): `gh pr merge <n> --merge --subject "Merge
   <branch>: <what it did, one line>"`, then `git pull --ff-only` in the main checkout (on `main`, clean). So `main`
   reads one entry per branch -
   `git log --first-parent main`, or a branch graph (VS Code's Source Control Graph, `git log --graph`) that draws
@@ -74,7 +75,8 @@ folder is made for it outside the repo — and goes through Recipe E in `cad/ref
 `.github/workflows/ci.yml` runs **only by hand** (Actions tab → CI → Run workflow, or
 `gh workflow run ci.yml --ref <branch>`; `gh run watch` follows it): a fresh `ubuntu-24.04` runner clones the repo,
 pulls the LFS objects, lints both projects, imports the CLI, runs `cad/`'s fast lane and slow tests and `./cadtool
-gen`s the arm (~13 min, from the private repo's monthly Actions minutes). It is the **clean-clone check** neither
+gen`s the arm (~13 min; the repo is public, so its standard runners cost no Actions minutes, and being manual-only
+it never runs for someone else's fork or pull request). It is the **clean-clone check** neither
 machine can give — no `~/.cache/cadgen`, no raw exports, no generated STEPs — so a test or model that quietly needs
 a file outside git fails there first. Everyday pushes do not need it (the pre-commit hook and the local suite cover
 them); run it on the branch before its pull request is merged after: a cadgen / build123d / OCP bump, a new
