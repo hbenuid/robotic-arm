@@ -44,7 +44,11 @@ the new version for both, `doctor` cannot tell — see Gotchas below; restart Cl
   inspect CLI; 0.6.6 was additive only — `cadgen.eng_drawing` and matplotlib / pillow as hard deps, nothing
   retired, no stale wave, same STEP bytes; 0.7.0: the rebuilt CAD Viewer and the snapshot display settings — `--render`
   is gone, `--display` takes a preset or the grouped JSON, the old mode names (`transparent`, `shaded_edges` …) are
-  refused, and viewer state is per browser tab; no store schema change, same STEP bytes): a retired interface fails
+  refused, and viewer state is per browser tab; no store schema change, same STEP bytes; 0.7.3 / 0.7.4 were fixes
+  only — cadgen's own mesher (the viewer, snapshots, `./cadtool export`; not `robot/meshes/`, which build123d's
+  `export_stl` writes) meshes a hole through a curved face without slivers, and its version bump re-tessellates the
+  store's display meshes once; the viewer's playback and orbit were fixed, and the plugin folded its `cad-viewer` skill
+  into `cad` / `dxf` / `urdf` / `srdf` / `sdf`; same STEP bytes): a retired interface fails
   with a teaching error, never an alias (a bad `--display` value is refused with the list of presets). The freshness gate
   does not hash cadgen's own version, so a bump makes no model stale and a plain `gen` afterwards rewrites nothing: to
   hash-gate a bump, build every model on the old pin (a fresh worktree has no STEPs), hash, then `./cadtool gen <every
@@ -62,4 +66,8 @@ the new version for both, `doctor` cannot tell — see Gotchas below; restart Cl
   new cache directory while both scopes still record the old version). Update the plugin in BOTH
   scopes (`claude plugin update cad@text-to-cad`, then `--scope project`), check that file shows the new `version` +
   `installPath` for each, and restart Claude Code; the marketplace clone's LFS pointers (`assets/**`, `models/**`)
-  are excluded by its own `.lfsconfig` and need no `git lfs pull`.
+  are excluded by its own `.lfsconfig` and need no `git lfs pull`. A session first started in `cad/` records a third
+  entry (project scope, `projectPath` = `cad/`) that no `update` reaches: run from `cad/`, `update --scope project`
+  answers for the repo root's entry ("already at the latest version") while `install` there still reports the old one.
+  Copy the root entry's `version`, `installPath`, `gitCommitSha` and `lastUpdated` into it by hand (back the file up
+  first); `claude plugin list` run from `cad/` then shows the new version for all three entries.
