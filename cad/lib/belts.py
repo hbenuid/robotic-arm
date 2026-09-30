@@ -13,7 +13,7 @@ GT2_PULLEY_20T_TEETH = 20                           # [REFERENCE] purchased 20T 
 GT2_PULLEY_20_60T_TEETH = (60, 20)                  # [REFERENCE] printed compound pulley (parts/joints/gt2_pulley_20_60t): its lower band, its upper
 GT2_PULLEY_90T_PITCH_DIA = GT2_PULLEY_90T_TEETH * GT2_PITCH / math.pi   # 57.30 mm pitch diameter
 GT2_PULLEY_20T_PITCH_DIA = GT2_PULLEY_20T_TEETH * GT2_PITCH / math.pi   # 12.73 mm
-GT2_RATIO = GT2_PULLEY_90T_TEETH / GT2_PULLEY_20T_TEETH                 # 4.5:1 [REFERENCE] motor turns per output turn; config.py's gear_ratio is 1 / this (robot/CLAUDE.md)
+GT2_RATIO = GT2_PULLEY_90T_TEETH / GT2_PULLEY_20T_TEETH                 # 4.5:1 [REFERENCE] motor turns per output turn; config.py's gear_ratio is 1 / this (robot/AGENTS.md)
 GT2_PLD = 0.254                                     # [DATASHEET] pitch-line distance: pitch radius - pulley outside radius
 GT2_BELT_W = 6.0                                    # [DATASHEET] the 6 mm belt every joint uses
 GT2_TOOTH_DEPTH = 0.75                              # [DATASHEET] belt tooth height (= the pulley groove depth)

@@ -1,6 +1,6 @@
 # tests/ — the pytest suite
 
-Loads when you work in `tests/`. Run it only through `./cadtool pytest` (`cad/CLAUDE.md`); `-m "not slow"` is the fast
+Loads when you work in `tests/`. Run it only through `./cadtool pytest` (`cad/AGENTS.md`); `-m "not slow"` is the fast
 lane. `-n <workers>` (pytest-xdist) spreads the suite over processes, a whole file per worker (`pyproject.toml` sets
 `--dist=loadfile`: a file's fixtures and `built.py` shapes are built once) — `-n 4` on a dev machine (each worker holds
 its own shapes, ~1.5 GB at most; not `-n auto`, which starts one per core), `-n 2` in CI (`.github/workflows/ci.yml`).
@@ -58,12 +58,12 @@ clearances in the arm with the elbow folded; `helpers.in_host()` places any occu
 `slow`.
 
 ## Where the locks live
-The totals the docs never quote (`cad/CLAUDE.md` Docs) live in the locks — `tests/test_assembly.py`,
+The totals the docs never quote (`cad/AGENTS.md` Docs) live in the locks — `tests/test_assembly.py`,
 `assemblies/cycloidal_drive.py EXPECTED`, `assemblies/forearm_roll_drive.py EXPECTED`, `reference/placements.json
 expected`, `tests/test_bom.py`, `tests/test_placements.py`, `MULTI_BODY` in `tests/test_parts_convention.py`, the
 interference budgets (`tests/test_mounts.py`, `tests/forearm/`) and the shared dimensions in
 `tests/test_params_invariants.py`. A geometry change bumps the ones its failures name — measure, never guess (Recipe C
-step 5 in `cad/CLAUDE.md` has the `totals()` one-liner).
+step 5 in `cad/AGENTS.md` has the `totals()` one-liner).
 
 ## Gotchas (all verified)
 - `Shape.intersect` on composite operands changed in build123d 0.11 (a placed module against a part reported

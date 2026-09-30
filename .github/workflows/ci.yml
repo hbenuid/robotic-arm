@@ -1,7 +1,7 @@
 # CI: a clean clone on a fresh Linux runner - lint both uv projects, the CAD test suite, then build the arm from the
 # committed inputs only (no ~/.cache/cadgen, no raw SolidWorks exports, no generated STEPs). It checks and never writes:
 # no hash gate (STEP bytes differ per machine), no snapshots, no commits. Manual only: Actions tab -> CI -> Run
-# workflow, or `gh workflow run ci.yml --ref <branch>` - when to run it, and how long it takes: root CLAUDE.md "CI".
+# workflow, or `gh workflow run ci.yml --ref <branch>` - when to run it, and how long it takes: root AGENTS.md "CI".
 name: CI
 
 on:

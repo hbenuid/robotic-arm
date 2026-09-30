@@ -11,7 +11,7 @@ Every constant carries a provenance tag:
 
 Units: millimetres and grams. Datum: the SolidWorks capture frame of reference/placements.json
 - **+Y is up** (the J1 axis), the arm extends toward -X, Z is the pitch-axis direction. Each part
-keeps its SolidWorks part-file frame until it is converted (see CLAUDE.md). The URDF's REP-103
+keeps its SolidWorks part-file frame until it is converted (see AGENTS.md). The URDF's REP-103
 base frame (Z up, X forward) is lib/datum.py base_frame() (robot/frames.py builds the kinematics on
 it); assemblies/arm.py EMITS the arm in that frame (arm_from_w() - cadgen's viewer and snapshots are
 Z-up), the placements themselves stay in the capture frame. `lib/` never imports `parts/`.

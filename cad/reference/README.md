@@ -9,7 +9,7 @@ shaft, retainer and its 6808 bearing envelope), their **accepted builds** (`nati
 files are **immutable inputs** (committed as Git LFS objects): each custom part's wrapper returns
 them until it is converted, and `tests/test_reference_match.py` compares every converted part
 against them. The rules for them — never edit, the regeneration order, the manifest, Recipe E for a new export —
-are [`CLAUDE.md`](CLAUDE.md); this file is the record of what is here.
+are [`AGENTS.md`](AGENTS.md); this file is the record of what is here.
 
 ## Provenance
 - Source tree: the SolidWorks 2026 STEP AP214 exports of 2026-08-27, **not in git, not needed on a machine and with
@@ -30,9 +30,9 @@ are [`CLAUDE.md`](CLAUDE.md); this file is the record of what is here.
   records the vendor block).
 - Measured, not committed: `GT2 Pulley - 20 - 60 teeth.STEP` (SolidWorks 2026 export of 2026-09-26,
   mm, 1 solid, 1 974 574 bytes, sha256 `55733855bdc5…`; `lib/reference.py MEASURED`) — the 20-60T compound pulley,
-  converted by measuring it (`parts/CLAUDE.md` Part states → *measured*): nothing of it is in this folder, its numbers
+  converted by measuring it (`parts/AGENTS.md` Part states → *measured*): nothing of it is in this folder, its numbers
   are in `lib/pulley/params.py` and `tests/pulley/test_gt2_pulley_20_60t.py`.
-- Regenerating these files, in order: [`CLAUDE.md`](CLAUDE.md).
+- Regenerating these files, in order: [`AGENTS.md`](AGENTS.md).
 
 ## Naming map
 Clean name ← SolidWorks product (source file under the source tree); every row lives in
@@ -127,4 +127,4 @@ mount.frame_in_host`, `mount.host` a SolidWorks key or the motor key for a board
 node whose product the design dropped, `lib/reference.py SKIPPED_PRODUCTS` - the link caps: `path`, `label`, `reason`,
 leaves / solids / volume and the `rel` / `world` pose, moved there by `tools/reference/mount_placements.py`).
 The capture records stay as extracted when the design changes a link's length: `lib/placements.py SHIFTS` moves
-the records beyond it when they are read (`assemblies/CLAUDE.md` "Shifted occurrences").
+the records beyond it when they are read (`assemblies/AGENTS.md` "Shifted occurrences").

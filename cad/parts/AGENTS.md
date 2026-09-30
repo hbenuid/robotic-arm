@@ -1,7 +1,7 @@
 # parts/ — one part per file
 
 Loads when you work in `parts/`. The rules every folder shares (layering, the lazy kernel, never calling a model
-outside a build, no `sys.path` shim, the build call at the end of a model file) are in `cad/CLAUDE.md`; the full
+outside a build, no `sys.path` shim, the build call at the end of a model file) are in `cad/AGENTS.md`; the full
 regeneration checklist is Recipe C there.
 
 ## Authoring a part (`parts/<group>/<name>.py`)
@@ -10,17 +10,17 @@ Parts live in subsystem groups (`base`, `joints`, `wrist`, `gripper`, `cycloidal
 the URDF links (`j1_*` sit in `base/`; `gripper_clamp_bracket` / `gripper_j3_connector` sit in `wrist/`
 as the wrist-side mount, the latter although `assemblies/gripper.py` places it) — put a new part with
 the stage it bolts to. The group is only a directory: the part's NAME is its key and `parts.load(name)` & co. are
-the only way in (`cad/CLAUDE.md` "Rules for every folder"; `import parts` raises on a duplicate name) — a stdlib-only
+the only way in (`cad/AGENTS.md` "Rules for every folder"; `import parts` raises on a duplicate name) — a stdlib-only
 directory scan in `parts/__init__.py`; note `parts.base` is the *group package*, the part is `parts.load("base")`.
 Every part MUST (enforced by `tests/test_parts_convention.py`):
 - declare ONE model, **`@step def <name>()`** (`from cadgen import step`; NAME = file stem = model
   name; no parameters, no `out=` — the STEP is the sibling file), that **returns** a valid, labelled
   Part/Compound at its **local origin** — the assembly owns placement; label == module name;
-- end with the build call, with no `show()` and no import side effects (`cad/CLAUDE.md` "Rules for every folder");
-- import `lib` / `parts` plainly (`cad/CLAUDE.md`): cadgen loads `parts/<group>/<name>.py` as the package module
+- end with the build call, with no `show()` and no import side effects (`cad/AGENTS.md` "Rules for every folder");
+- import `lib` / `parts` plainly (`cad/AGENTS.md`): cadgen loads `parts/<group>/<name>.py` as the package module
   `parts.<group>.<name>` (it walks the `__init__.py` chain) — the same object `parts.load()` returns;
 - pull shared dims from `lib/params.py`;
-- **keep the kernel lazy** (`cad/CLAUDE.md` "Lazy kernel").
+- **keep the kernel lazy** (`cad/AGENTS.md` "Lazy kernel").
 
 Keep the importable `parts/<group>/<name>.py` naming (tests/assemblies reach them through
 `parts.load` / `parts.model`); upstream's `src/` + `STEP/` layout is deliberately not used. A part and
@@ -41,7 +41,7 @@ Custom parts declare `REFERENCE = NAME` (`None` for a *measured* one), `CONVERTE
   from; `tests/cycloidal/test_port.py` matches them to it (not `tests/test_reference_match.py`: its volume / bbox
   check is weaker) - identical face sets / tessellations (the two
   spline discs: the lobe profile within 1e-6 mm of the reference spline, `helpers.spline_deviation`, and the
-  mesh within its chordal error — see `cad/CLAUDE.md` "Two machines").
+  mesh within its chordal error — see `cad/AGENTS.md` "Two machines").
   A drive part that has left its export (`lib/cycloidal/params.py DEFAULT_CONFIG` vs the port, `LEGACY_CONFIG`: the
   housing's bolt count - the two housing parts and the housing bolts / nuts -, the gear size, `RING_INSET` - the
   discs, the ring pins and the housing parts - and the pillar tips, `LUG_WALL` - the housing parts and nuts) declares
@@ -92,7 +92,7 @@ Custom parts declare `REFERENCE = NAME` (`None` for a *measured* one), `CONVERTE
 5. `./cadtool gen parts/<group>/<name>.py` to regenerate the STEP, then
    `./cadtool gen assemblies/arm.py` + `./cadtool snapshot …` to eyeball it in place — and the rest of Recipe C.
 
-A NEW export (Recipe E, `reference/CLAUDE.md`) goes straight to a *measured* conversion (Part states): step 1 on the
+A NEW export (Recipe E, `reference/AGENTS.md`) goes straight to a *measured* conversion (Part states): step 1 on the
 raw file (where the user put it), the part written as in steps 2-3 with `REFERENCE = None` and a `lib/reference.py MEASURED`
 row, and in place of step 4 its own tests - the export's numbers written into them, checked against the raw file once
 before they are committed; then step 5.
@@ -114,7 +114,7 @@ frame/size reference (for the drive's purchased parts: the CadQuery export of th
 in `reference/cycloidal/`, `lib/reference.py CYCLOIDAL_COTS`; `path_of()` resolves the origin);
 `test_cots_vendor_matches_reference_frame` (bbox within 1.5 mm; collected only for a vendor file that is not the
 reference itself - with no vendor file the envelope is the geometry) and `test_cots_envelope_tracks_reference_bbox` guard vendor
-swaps. Swap procedure (Recipe D): `vendor/CLAUDE.md`; what has been tried and where the vendor files come from:
+swaps. Swap procedure (Recipe D): `vendor/AGENTS.md`; what has been tried and where the vendor files come from:
 `vendor/README.md`.
 The kit parts `nema17_40mm` / `mks_servo42d` live in `parts/joints/` (`parts/cycloidal/` is locked to
 `CYCLOIDAL_COTS`); the drive motor's envelope builder is `lib/cycloidal/motor.py nema17_motor()`, which the 40 mm
@@ -123,9 +123,9 @@ envelope reuses with other `MotorParams`.
 **Recipe A — add a purchased part** (`parts/<group>/<name>.py`): copy `parts/_templates/cots.py` → declare `COTS`,
 `MASS_G`, `PURCHASE_SPEC` / `PURCHASE_QTY` / `PURCHASE_NOTE`, an `_envelope()` from `lib/params.py` → register in
 `lib/reference.py COTS` (`rel=None` when the vendor file IS the reference) → put `vendor/<name>.step` in place (Recipe D,
-`vendor/CLAUDE.md`) → `./cadtool python tools/reference/import_solidworks.py --src <export tree>` (mirrors it into `reference/solidworks/`,
+`vendor/AGENTS.md`) → `./cadtool python tools/reference/import_solidworks.py --src <export tree>` (mirrors it into `reference/solidworks/`,
 manifest entry) → `tests/test_parts_convention.py MULTI_BODY` if it is several solids → give it an occurrence (a
-SolidWorks key, a module row, or Recipe B in `assemblies/CLAUDE.md`) → Recipe C.
+SolidWorks key, a module row, or Recipe B in `assemblies/AGENTS.md`) → Recipe C.
 
 ## Modelled, not placed yet
 A part may be modelled before an assembly places it (a sensor whose mount is not designed yet). It declares
@@ -144,8 +144,8 @@ generated from the label:
 - **Lists** — `./cadtool python tools/bom.py [--module <module>] [--md|--json]` (a module of `assemblies/arm.py MODULES`) (kernel-free) prints
   what to print (part, quantity) and what to buy (`PURCHASE_SPEC`, pieces = occurrences × `PURCHASE_QTY`, mass, vendor
   file or envelope), counted from the assembly tables. Purchased items that are **not modelled** are the one
-  hand-kept table, `EXTRAS` in that tool (`assemblies/CLAUDE.md`).
+  hand-kept table, `EXTRAS` in that tool (`assemblies/AGENTS.md`).
 - **STLs** — `./cadtool python tools/export_printables.py [--parts …]` writes `print/<name>.stl` for every printed part
   (git-ignored, mm, part-local frame, with the quantity to print); bought parts are refused.
 - **Colours** — the grey of purchased parts in `arm.step` and every module's STEP (`gripper.step`,
-  `cycloidal_drive.step`, `forearm_roll_drive.step`; `assemblies/CLAUDE.md`).
+  `cycloidal_drive.step`, `forearm_roll_drive.step`; `assemblies/AGENTS.md`).

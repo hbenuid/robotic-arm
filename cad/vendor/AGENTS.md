@@ -14,7 +14,7 @@ file came from is `README.md`; this file holds the rules.
   vendor-producing tool changes the file's bytes (and its manifest sha) with identical geometry. Vendor files are
   committed as LFS and never regenerated on the other machine — the tools' selectors
   (`split_mks_motor.py --write kit|drive`) leave the others alone.
-- A NEW vendor file needs `./cadtool gen parts/<group>/<name>.py --force` on its part once (why: `cad/CLAUDE.md`
+- A NEW vendor file needs `./cadtool gen parts/<group>/<name>.py --force` on its part once (why: `cad/AGENTS.md`
   Gotchas).
 
 ## Recipe D — produce or swap a vendor STEP
@@ -30,7 +30,7 @@ the catalog:
 ```
 Then the manifest: `./cadtool python tools/reference/import_solidworks.py --src <export tree>` for SolidWorks-origin parts,
 `./cadtool python tools/cycloidal/import_cadquery.py --only <name>` for the drive's parts (their manifest is owned by
-that tool) → `./cadtool gen parts/<group>/<name>.py --force` → Recipe C (`cad/CLAUDE.md`), on one machine only.
+that tool) → `./cadtool gen parts/<group>/<name>.py --force` → Recipe C (`cad/AGENTS.md`), on one machine only.
 
 A catalog model worse than the SolidWorks re-export is restored:
 `cp reference/solidworks/<name>.step vendor/<name>.step && ./cadtool python tools/reference/import_solidworks.py --src <export tree>`;

@@ -1,6 +1,6 @@
 # robot/ — the robot description (URDF / SRDF / SDF)
 
-Loads when you work in `robot/`. After any change here: Recipe C steps 7–9 (`cad/CLAUDE.md`).
+Loads when you work in `robot/`. After any change here: Recipe C steps 7–9 (`cad/AGENTS.md`).
 
 ```
 robot/
@@ -27,7 +27,7 @@ robot/
   the base's bottom face at the base_yaw axis, Z up, X forward). Joint frame: Z on the axis, X along the child link
   (`forearm_roll`: X = N, its child lies along the axis); child link frame = joint frame at capture, so **all joints
   are 0 at the capture pose**, mesh origins are identity and the URDF at zero reproduces `assemblies/arm.py` (emitted
-  in the same `base_link` frame — `assemblies/CLAUDE.md`). Moving an occurrence between links or changing an axis =
+  in the same `base_link` frame — `assemblies/AGENTS.md`). Moving an occurrence between links or changing an axis =
   edit `frames.py`, re-export the meshes, re-derive the affected `<origin>` / `<inertial>` values from the drafts (the
   checked-in XML stays canonical), re-check.
 - `robot/links/<link>.py` are `@step` models of each rigid link (`robot/_links.build_link`, in the link
@@ -54,7 +54,7 @@ forearm_roll → forearm_link → wrist_pitch → wrist_pitch_link → wrist_rol
 wrist centre (`forearm_roll`'s axis runs along the forearm through `WRIST_CENTRE`; `docs/forearm_roll.md`). The two
 drives ARE joints: each one's stator stays in the parent link, its rotor moves with the child (`BODIES` in
 `assemblies/cycloidal_drive.py` / `forearm_roll_drive.py`; the URDF ledger, `docs/cycloidal_drive.md` §12). The belt
-joints' motors are mounted occurrences (`lib/mounts.py`, `assemblies/CLAUDE.md`); the drives' motors are module rows.
+joints' motors are mounted occurrences (`lib/mounts.py`, `assemblies/AGENTS.md`); the drives' motors are module rows.
 
 | joint | type | parent → child | actuator | notes |
 |---|---|---|---|---|

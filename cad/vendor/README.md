@@ -8,7 +8,7 @@ immutable re-export that fixes each purchased part's **frame and size** — a ve
 (`reference/manifest.json`, `vendor` sub-entry) records which file is current and
 `tests/test_parts_convention.py::test_cots_vendor_matches_reference_frame` checks it still
 occupies the reference's bounding box (±1.5 mm) after the part's `VENDOR_TO_REF` re-orientation. How to produce or
-swap one (Recipe D) and the rules for these files: [`CLAUDE.md`](CLAUDE.md); this file is the record of what is here.
+swap one (Recipe D) and the rules for these files: [`AGENTS.md`](AGENTS.md); this file is the record of what is here.
 
 | File | Part module | Current model | step.parts status (2026-08-28) |
 |---|---|---|---|
@@ -42,12 +42,12 @@ What to **order** for each purchased part is not here: it is `PURCHASE_SPEC` / `
 lists the purchased items that have no geometry at all).
 
 ## Where the vendor files come from
-Besides step.parts downloads (Recipe D, `CLAUDE.md`) and `tools/reference/extract_placements.py` (the flattened
+Besides step.parts downloads (Recipe D, `AGENTS.md`) and `tools/reference/extract_placements.py` (the flattened
 `nema17_pancake.step`), the third producer of vendor files is `tools/reference/split_mks_motor.py`: it splits the
 "NEMA 17 x 40 + MKS SERVO42D" kit export (`lib/reference.py MKS_EXPORT_NAME`, a raw export not in the repo)
 by GEOMETRY into `vendor/nema17_40mm.step` and `vendor/mks_servo42d.step` (what each holds and its frame: the table
 above); `import_solidworks.py` then mirrors both into `reference/solidworks/` (`rel=None`, the `nema17_pancake`
 pattern). `--write drive` composes `vendor/nema17_48mm.step` for the drive motor from the x48 export's body
-(`MKS48_EXPORT_NAME`) the same way - every motor carries the drive motor's interface (`CLAUDE.md`); the drive keeps
+(`MKS48_EXPORT_NAME`) the same way - every motor carries the drive motor's interface (`AGENTS.md`); the drive keeps
 its parametric envelope as the reference (`tools/cycloidal/import_cadquery.py --only nema17_48mm` writes its `vendor`
 block).
