@@ -9,7 +9,7 @@ software (`software/control/`) never depends on it.
 geometry (`reference/solidworks/<name>.step`) until it is converted, purchased parts use their vendor STEPs, and
 `assemblies/arm.py` places all of them from placements extracted from the SolidWorks
 assembly — so the whole arm already assembles, renders and is tested. Converting a part means
-replacing its wrapper body with real build123d code (see [`parts/CLAUDE.md`](parts/CLAUDE.md) "Converting a part"). The **20:1
+replacing its wrapper body with real build123d code (see [`parts/AGENTS.md`](parts/AGENTS.md) "Converting a part"). The **20:1
 cycloidal shoulder drive is fully parametric build123d** (`lib/cycloidal/`,
 `assemblies/cycloidal_drive.py`), ported from the `cycloidal_drive` repo and verified against its
 CadQuery exports — see [`docs/cycloidal_drive.md`](docs/cycloidal_drive.md).
@@ -36,7 +36,7 @@ cd cad
 Always run through `./cadtool …` (or `uv run …`) from `cad/`; `./cadtool doctor` checks the install. The pins
 (Python, cadgen, the CAD kernel), updating the plugin and what a pull that changes `pyproject.toml` / `uv.lock` needs:
 [`docs/toolchain.md`](docs/toolchain.md). CI (run by hand, a clean clone on a fresh runner): the root
-[`CLAUDE.md`](../CLAUDE.md) "CI".
+[`AGENTS.md`](../AGENTS.md) "CI".
 
 ## `./cadtool` — the one entry point
 
@@ -44,7 +44,7 @@ Always run through `./cadtool …` (or `uv run …`) from `cad/`; `./cadtool doc
 |---|---|
 | `./cadtool gen parts/<group>/<name>.py` (alias `step`) | **run the model script**: writes `parts/<group>/<name>.step` beside it (git-ignored), or prints `current …` when nothing changed; `--force` rebuilds |
 | `./cadtool gen assemblies/arm.py` | build `assemblies/arm.step` (git-ignored), rebuilding every stale part first |
-| `./cadtool python tools/bom.py [--module cycloidal_drive\|forearm_roll_drive\|gripper] [--md\|--json]` | the **print list** and the **buy list** ([`parts/CLAUDE.md`](parts/CLAUDE.md) Printed vs. bought) |
+| `./cadtool python tools/bom.py [--module cycloidal_drive\|forearm_roll_drive\|gripper] [--md\|--json]` | the **print list** and the **buy list** ([`parts/AGENTS.md`](parts/AGENTS.md) Printed vs. bought) |
 | `./cadtool python tools/export_printables.py [--parts …]` | one STL per **printed** part into `print/` (git-ignored) |
 | `./cadtool why <model.py>` | why the model is current or stale, clause by clause (`cadgen store why`) |
 | `./cadtool export <file.step> stl\|3mf\|glb [out]` | one mesh file per call from a STEP document (Node 20+; `--mesh-tolerance` is *relative*, default 1.5e-3 of the bounding diagonal) |
@@ -75,7 +75,7 @@ deleting it is always safe). `CADGEN_DAEMON=0` runs a build on transient workers
 cad/
 ├── cadtool       # the one entry point (above)
 ├── .env          # PYTHONPATH=. for the VS Code Python extension (cadtool / pytest set it themselves)
-├── CLAUDE.md     # the agent map + the rules for every folder; the folders below carry their own
+├── AGENTS.md     # the agent map + the rules for every folder; the folders below carry their own
 ├── lib/          # shared dimensions (params.py, the single source of truth) + geometry code, a package per converted subsystem
 ├── parts/        # one part model per file, grouped by the stage along the arm (+ _templates/)
 ├── assemblies/   # the arm, the gripper and the two drive modules (cycloidal shoulder, forearm roll)
@@ -89,10 +89,10 @@ cad/
 └── snapshots/    # git-ignored: snapshot PNGs
 ```
 Every folder with rules has its own guide — written for agents, readable by anyone:
-[`lib/`](lib/CLAUDE.md) · [`parts/`](parts/CLAUDE.md) (part conventions, converting a part, purchased parts, printed
-vs. bought) · [`assemblies/`](assemblies/CLAUDE.md) · [`robot/`](robot/CLAUDE.md) (joints, links, actuators) ·
-[`tests/`](tests/CLAUDE.md) · [`tools/`](tools/CLAUDE.md) · [`reference/`](reference/CLAUDE.md) (what is there:
-[`README`](reference/README.md)) · [`vendor/`](vendor/CLAUDE.md) (what is there: [`README`](vendor/README.md)). The drives:
+[`lib/`](lib/AGENTS.md) · [`parts/`](parts/AGENTS.md) (part conventions, converting a part, purchased parts, printed
+vs. bought) · [`assemblies/`](assemblies/AGENTS.md) · [`robot/`](robot/AGENTS.md) (joints, links, actuators) ·
+[`tests/`](tests/AGENTS.md) · [`tools/`](tools/AGENTS.md) · [`reference/`](reference/AGENTS.md) (what is there:
+[`README`](reference/README.md)) · [`vendor/`](vendor/AGENTS.md) (what is there: [`README`](vendor/README.md)). The drives:
 [`docs/cycloidal_drive.md`](docs/cycloidal_drive.md), [`docs/forearm_roll.md`](docs/forearm_roll.md); what is not
 settled yet: [`docs/open_issues.md`](docs/open_issues.md).
 
@@ -110,4 +110,4 @@ uv run pytest                    # equivalent (cadgen is a normal dependency)
 The `cad@text-to-cad` plugin's `/cad:*` skills drive the run-the-model → inspect → snapshot loop
 this repo is aligned with (plus `dfam-check` for printability, `step-parts`, and the URDF/SRDF/SDF
 skills); they assume the `cadgen` CLI on `PATH` — inside this project that is `./cadtool cadgen …`.
-Agent-facing conventions live in `CLAUDE.md` and each folder's own `CLAUDE.md`.
+Agent-facing conventions live in `AGENTS.md` and each folder's own `AGENTS.md`.

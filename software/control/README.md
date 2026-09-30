@@ -9,7 +9,7 @@ slcan-compatible USB adapter, on macOS, Linux and Windows. Its own uv project; i
 - MKS SERVO42D stepper drivers. [`src/config.py`](src/config.py) names three (J1..J3 = CAN ids 1..3); the arm the CAD
   describes carries more MKS boards, and which joint each CAN id drives is not confirmed yet:
   [`cad/docs/open_issues.md`](../../cad/docs/open_issues.md). The joints and the motor on each:
-  [`cad/robot/CLAUDE.md`](../../cad/robot/CLAUDE.md).
+  [`cad/robot/AGENTS.md`](../../cad/robot/AGENTS.md).
 - CANable / slcan-compatible USB-to-CAN adapter
 - 500 kbit/s CAN bus (MKS factory default)
 
@@ -50,7 +50,7 @@ Edit [`src/config.py`](src/config.py):
   you've programmed into each motor's on-board menu. The CAD's reductions are
   `cad/lib/params.py` `CYCLOIDAL_RATIO` (20:1, shoulder pitch), `GT2_RATIO` (4.5:1, elbow and wrist-pitch belts)
   and `FOREARM_ROLL_RATIO` (4.5:1, forearm roll); `gear_ratio` counts output turns per motor turn, so it takes their
-  reciprocal ([`cad/robot/CLAUDE.md`](../../cad/robot/CLAUDE.md)). Which motor drives which joint is not confirmed
+  reciprocal ([`cad/robot/AGENTS.md`](../../cad/robot/AGENTS.md)). Which motor drives which joint is not confirmed
   yet, so the ratios here stay `1.0`.
 - `CAN_CHANNEL` — only needed if auto-detect fails. The launcher overrides this
   on every run.
@@ -105,7 +105,7 @@ pyproject.toml, uv.lock  uv-managed project metadata
 ## Development
 
 Lint with `uv run ruff check` here. The working rules — branches, commit messages, uv only, the hooks, CI — are the
-root [`CLAUDE.md`](../../CLAUDE.md), this folder's rules [`CLAUDE.md`](CLAUDE.md). The git pre-commit hook (ruff on
+root [`AGENTS.md`](../../AGENTS.md), this folder's rules [`AGENTS.md`](AGENTS.md). The git pre-commit hook (ruff on
 the staged files, both projects) is installed per machine by `cad/cadtool setup`.
 
 ## Known issues

@@ -2,31 +2,31 @@
 
 **Purpose:** the map of `cad/` and the rules that hold in every folder — running things, the regeneration
 checklist (Recipe C), layering, the lazy kernel, the two machines. **Audience:** agent; human docs: `README.md`. Each
-folder's own rules live in its CLAUDE.md — `parts/`, `assemblies/`, `robot/`, `lib/`, `tests/`, `tools/`, `reference/`,
+folder's own rules live in its AGENTS.md — `parts/`, `assemblies/`, `robot/`, `lib/`, `tests/`, `tools/`, `reference/`,
 `vendor/` — which loads when you work there; Start here says which file owns which task.
 
-The root `CLAUDE.md` loads with this file, so its rules (git, uv, ruff and the hooks, CI, docs) are not repeated here.
+The root `AGENTS.md` loads with this file, so its rules (git, uv, ruff and the hooks, CI, docs) are not repeated here.
 The toolchain, its pins and upgrades: `docs/toolchain.md`.
 
 ## Start here — task → where to look
 | you want to … | read | then follow |
 |---|---|---|
 | run / build / inspect / snapshot anything | Running things (below) | — |
-| add or convert a printed part | `parts/CLAUDE.md` | Recipe C after the geometry |
-| add a purchased part | `parts/CLAUDE.md` Purchased (COTS) parts | Recipe A (there) |
-| add a part designed HERE (no SolidWorks / CadQuery origin), or a purchased part with no model at all | `parts/CLAUDE.md` Part states → *native* | `tools/reference/import_native.py` once, then Recipe C |
-| place something the SolidWorks capture never had (a motor, a board) | `assemblies/CLAUDE.md` → Mounted occurrences | Recipe B (there) |
-| produce or swap a vendor STEP | `vendor/CLAUDE.md` | Recipe D (there) |
-| a new SolidWorks / vendor export was handed over | `reference/CLAUDE.md` | Recipe E (there) |
-| run or change a tool (bom, exporters, the reference importers) | `tools/CLAUDE.md` | its recipe |
+| add or convert a printed part | `parts/AGENTS.md` | Recipe C after the geometry |
+| add a purchased part | `parts/AGENTS.md` Purchased (COTS) parts | Recipe A (there) |
+| add a part designed HERE (no SolidWorks / CadQuery origin), or a purchased part with no model at all | `parts/AGENTS.md` Part states → *native* | `tools/reference/import_native.py` once, then Recipe C |
+| place something the SolidWorks capture never had (a motor, a board) | `assemblies/AGENTS.md` → Mounted occurrences | Recipe B (there) |
+| produce or swap a vendor STEP | `vendor/AGENTS.md` | Recipe D (there) |
+| a new SolidWorks / vendor export was handed over | `reference/AGENTS.md` | Recipe E (there) |
+| run or change a tool (bom, exporters, the reference importers) | `tools/AGENTS.md` | its recipe |
 | changed any geometry, mass or placement | — | **Recipe C** (below, the regeneration checklist) |
-| change a shared dimension | `lib/CLAUDE.md` Shared dimensions (its own table) | Recipe C |
-| touch the URDF / links / inertials | `robot/CLAUDE.md` | Recipe C steps 7–9 |
-| print list, buy list, STLs to print | `parts/CLAUDE.md` Printed vs. bought | — |
+| change a shared dimension | `lib/AGENTS.md` Shared dimensions (its own table) | Recipe C |
+| touch the URDF / links / inertials | `robot/AGENTS.md` | Recipe C steps 7–9 |
+| print list, buy list, STLs to print | `parts/AGENTS.md` Printed vs. bought | — |
 | bump cadgen / build123d / OCP / Python, or a pull changed `pyproject.toml` / `uv.lock` | `docs/toolchain.md` | — |
 | work on the cycloidal drive / the forearm roll drive | `docs/cycloidal_drive.md` / `docs/forearm_roll.md` | — |
 | know what is unsettled (fit problems, estimates, unmodelled hardware) | `docs/open_issues.md` | add / remove rows as you go |
-| something behaves oddly | Gotchas (below), then the Gotchas of the folder's CLAUDE.md and `docs/toolchain.md` | — |
+| something behaves oddly | Gotchas (below), then the Gotchas of the folder's AGENTS.md and `docs/toolchain.md` | — |
 
 ## Recipe C — the regeneration checklist, after ANY geometry / mass / placement change, in this order
 1. `./cadtool daemon stop` when `lib/reference.py`, `pyproject.toml` or the kernel changed (workers keep old code).
@@ -36,7 +36,7 @@ The toolchain, its pins and upgrades: `docs/toolchain.md`.
 4. `shasum -a 256 -c /tmp/before.txt` on the SAME machine (STEP bytes differ per machine: Two machines, below) —
    only the STEPs you meant to change may fail; a file can still come back with numerical-zero terms (≤ 1e-17, seen
    after a `lib/reference.py` edit): settle float noise with `./cadtool inspect diff <old.step> <new.step>`.
-5. `./cadtool pytest -m "not slow"`, then `./cadtool pytest`; bump the locks the failures name (`tests/CLAUDE.md`
+5. `./cadtool pytest -m "not slow"`, then `./cadtool pytest`; bump the locks the failures name (`tests/AGENTS.md`
    "Where the locks live"; a drive's `EXPECTED` from
    `./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals(), totals('stator'))"`).
 6. A mounted part's geometry changed → `./cadtool python tools/reference/mount_placements.py` (its records carry
@@ -50,7 +50,7 @@ The toolchain, its pins and upgrades: `docs/toolchain.md`.
     `robot/arm.urdf`) and LOOK at them.
 11. Docs: the doc that owns the changed rule (Docs, below), `docs/open_issues.md`
     rows added / closed. Then commit on the branch, the message being the record — why, and every number that
-    changed (root `CLAUDE.md` Git workflow).
+    changed (root `AGENTS.md` Git workflow).
 
 ## Running things (always via `./cadtool` or `uv run`, from `cad/`)
 Every command, its flags and what it prints: `./cadtool help` (for people: the `README.md` table). The rules:
@@ -64,7 +64,7 @@ Every command, its flags and what it prints: `./cadtool help` (for people: the `
   the tree.
 - **An assembly calls its child models**: `./cadtool gen assemblies/arm.py` rebuilds every stale part in parallel and
   rewrites its STEP; the gripper, the drives and the robot links link their children's trees, the arm inlines tinted
-  copies (`assemblies/CLAUDE.md`). Pull semantics: a rebuilt part does not update the arm until the arm is rebuilt
+  copies (`assemblies/AGENTS.md`). Pull semantics: a rebuilt part does not update the arm until the arm is rebuilt
   (`why` shows the pinned child).
 - **Look at what you built**: hand every created / updated STEP to `./cadtool viewer`; snapshot review
   (`./cadtool snapshot …`) is mandatory after visible geometry changes. No `ocp-vscode`.
@@ -73,15 +73,15 @@ Every command, its flags and what it prints: `./cadtool help` (for people: the `
   viewer shows) + `cadgen.geometry` (`closest_points`, `overlap_volume`, `topology_errors`), kept as a test when it is
   worth re-running.
 - Run pytest only through `./cadtool pytest` (rootdir `cad/`; `software/control/tests/` is the unrelated motor-control
-  suite); the suite: `tests/CLAUDE.md`.
+  suite); the suite: `tests/AGENTS.md`.
 - A lint fix in a model's import closure makes the model stale like any source edit — rebuild and hash-gate it
-  (Recipe C 2–4); fix the hook's findings before the rebuild, not after. The lint rules: root `CLAUDE.md` Toolchain.
+  (Recipe C 2–4); fix the hook's findings before the rebuild, not after. The lint rules: root `AGENTS.md` Toolchain.
 
 ## Rules for every folder
 - A part's NAME (its module stem, unique across groups) is its key everywhere — the manifest,
   `reference/<origin>/<name>.step`, `placements.json`, the URDF links. Code reaches a part only through
   `parts.names()` / `parts.load(name)` / `parts.model(name)` / `parts.build(name)` — never `from parts import <name>`
-  (`parts/CLAUDE.md`).
+  (`parts/AGENTS.md`).
 - Every model file — each part, each assembly, each `robot/links/<link>.py` — ends with
   `if __name__ == "__main__": <name>()` — that call IS the build (`./cadtool gen` runs the file; without it `gen`
   silently builds nothing — source-checked for every part, every assembly and every `robot/links/<link>.py`); no `show()` in the
@@ -96,7 +96,7 @@ Locked by `tests/test_layering.py` (an AST scan — function-local imports count
 `lib ← parts ← assemblies ← robot ← tools ← tests`; a package imports only itself and the ones to its
 left. So `assemblies/` never imports `robot/` (the base frame both need is `lib/datum.py`), `robot/`
 builds on `assemblies/_occurrences.py` (`world_rows` reads a designed module's `OCCURRENCES` / `BODIES`),
-and inside `lib/` the packages `lib/params.py` re-exports from never import it (`lib/CLAUDE.md`).
+and inside `lib/` the packages `lib/params.py` re-exports from never import it (`lib/AGENTS.md`).
 
 ### Lazy kernel
 **Model files never load the CAD kernel at import** (`tests/test_lazy_kernel.py`, fast lane): cadgen gates a
@@ -120,8 +120,8 @@ is what assembly bodies call for a child — the linked child while a build runs
 otherwise. `tests/conftest.py` makes an accidental top-level call under pytest fail loudly.
 
 ## Two machines (Fedora Linux PC + arm64 Mac)
-Push before leaving a machine, pull on arrival — git is the only sync channel (root `CLAUDE.md` "Two development
-machines"; CI is the third machine: root `CLAUDE.md` "CI").
+Push before leaving a machine, pull on arrival — git is the only sync channel (root `AGENTS.md` "Two development
+machines"; CI is the third machine: root `AGENTS.md` "CI").
 - **Per-machine state git does not carry** — after a pull that changes `pyproject.toml` / `uv.lock`, follow
   `docs/toolchain.md`.
 - **What is committed:** only the inputs — `reference/**/*.step`, `vendor/*.step` — and `robot/meshes/*.stl`, all
@@ -133,8 +133,8 @@ machines"; CI is the third machine: root `CLAUDE.md` "CI").
   builds its own; a fresh clone has none until `./cadtool gen assemblies/arm.py`. Nothing else lands in the tree: no
   `__cadgen__/`, no sidecar unless a model declares `kinematics=` (then `<name>.step.json`, committed beside it).
 - **Written once, on one machine:** the committed files a tool generates — `robot/meshes/*.stl` (re-exported per
-  change, never as a side effect), `vendor/*.step` (`vendor/CLAUDE.md`), `reference/native/` (`reference/CLAUDE.md`).
-- `cadtool` runs on bash 3.2 (root `CLAUDE.md`): under `set -u` an empty array is unset — expand optional arrays as
+  change, never as a side effect), `vendor/*.step` (`vendor/AGENTS.md`), `reference/native/` (`reference/AGENTS.md`).
+- `cadtool` runs on bash 3.2 (root `AGENTS.md`): under `set -u` an empty array is unset — expand optional arrays as
   `${arr[@]+"${arr[@]}"}`. No exact-equality asserts on floating-point results (tessellations of spline geometry
   differ per architecture). Changes must work on both machines by construction; there is no per-machine sign-off to
   track or report.
@@ -151,9 +151,9 @@ machines"; CI is the third machine: root `CLAUDE.md` "CI").
   `./cadtool python -c`.
 
 ## Docs
-- A rule lives in the ONE CLAUDE.md / README of the folder it governs; a rule that spans folders lives here. Change it
+- A rule lives in the ONE AGENTS.md / README of the folder it governs; a rule that spans folders lives here. Change it
   there — never restate it in a second file (point at it instead).
 - Docs name constants, never numbers, and point at code; they never list inventories (parts, counts) or quote totals
   (leaves / solids / bought pieces / pinned children) — `./cadtool help`, `parts.names()`, the tests and the locks
-  (`tests/CLAUDE.md` "Where the locks live") are those lists; their history is `git log -p` on the lock files.
-- `docs/open_issues.md`, the commit message as the record, no dated history: root `CLAUDE.md` Docs / Git workflow.
+  (`tests/AGENTS.md` "Where the locks live") are those lists; their history is `git log -p` on the lock files.
+- `docs/open_issues.md`, the commit message as the record, no dated history: root `AGENTS.md` Docs / Git workflow.

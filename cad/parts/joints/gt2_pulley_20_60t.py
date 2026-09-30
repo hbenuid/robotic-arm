@@ -11,9 +11,9 @@ Source export:      'GT2 Pulley - 20 - 60 teeth.STEP' (1 974 574 bytes, sha256 5
 Export: mm units, 1 solid, volume 10693.26 mm^3,
         bbox size (40.089, 18.8, 40.089) mm, bbox min (-20.045, -1.2, -20.045) mm.
 
-A measured conversion (parts/CLAUDE.md Part states): the export was measured once and is not committed - no reference
+A measured conversion (parts/AGENTS.md Part states): the export was measured once and is not committed - no reference
 file, no manifest entry; tests/pulley/test_gt2_pulley_20_60t.py locks the build to the export's numbers (its arc
-centres, surfaces, volume, bbox). NOT PLACED yet (UNPLACED below, parts/CLAUDE.md "Modelled, not placed yet").
+centres, surfaces, volume, bbox). NOT PLACED yet (UNPLACED below, parts/AGENTS.md "Modelled, not placed yet").
 """
 import pathlib
 

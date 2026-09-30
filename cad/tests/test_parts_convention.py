@@ -81,7 +81,7 @@ def test_part_declares_its_contract(name):
         f"parts.{name}: the file must end with `if __name__ == \"__main__\": {name}()` - without it `./cadtool gen` builds nothing")
     unplaced = getattr(mod, "UNPLACED", None)
     assert unplaced is None or (isinstance(unplaced, str) and unplaced.strip()), (
-        f"{name}.UNPLACED must say why no assembly places it yet (parts/CLAUDE.md \"Modelled, not placed yet\")")
+        f"{name}.UNPLACED must say why no assembly places it yet (parts/AGENTS.md \"Modelled, not placed yet\")")
     if getattr(mod, "COTS", False):
         assert name in R.COTS, f"{name} declares COTS but is not in lib.reference.COTS"
         mass = getattr(mod, "MASS_G", None)
@@ -100,7 +100,7 @@ def test_part_declares_its_contract(name):
         assert name in R.CUSTOM or name in R.DESIGNED or name in R.NATIVE or name in R.MEASURED, (
             f"{name} is not in lib.reference.CUSTOM / DESIGNED / NATIVE / MEASURED (and not COTS)")
         if name in R.MEASURED:
-            # a measured conversion keeps no reference: its own tests hold the export's numbers (parts/CLAUDE.md)
+            # a measured conversion keeps no reference: its own tests hold the export's numbers (parts/AGENTS.md)
             assert getattr(mod, "REFERENCE", "unset") is None, f"{name} is a measured conversion - REFERENCE must be None"
             assert getattr(mod, "CONVERTED", None) is True, f"{name} is a measured conversion - CONVERTED must be True"
             assert not hasattr(mod, "REFERENCE_BUILD"), f"{name} is a measured conversion - nothing to match a LEGACY build to"

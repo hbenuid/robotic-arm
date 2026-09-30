@@ -1,5 +1,5 @@
 """The body every purchased (COTS) part module builds through: the vendor STEP when vendor/<name>.step exists,
-else the module's envelope (parts/_templates/cots.py, parts/CLAUDE.md Purchased (COTS) parts).
+else the module's envelope (parts/_templates/cots.py, parts/AGENTS.md Purchased (COTS) parts).
 
 Each module keeps the house COTS contract (COTS, MASS_G, VENDOR_STEP, VENDOR_TO_REF, _envelope, the `@step`
 model) and returns hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope). pattern() is the multi-body form of the

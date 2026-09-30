@@ -75,19 +75,31 @@ def test_daemon_stop_finds_the_daemon_on_both_platforms():
 
 def test_claude_settings_are_the_same_in_the_root_and_in_cad():
     """A Claude Code session reads the shared .claude/settings.json of the directory it starts in only (it is not
-    inherited like CLAUDE.md), so cad/.claude/settings.json is a copy of the root one: the ruff hook and the
+    inherited like AGENTS.md), so cad/.claude/settings.json is a copy of the root one: the ruff hook and the
     cad@text-to-cad plugin, whether the session starts in the repo root or in cad/."""
     root = json.loads((CAD_DIR.parent / ".claude" / "settings.json").read_text())
     cad = json.loads((CAD_DIR / ".claude" / "settings.json").read_text())
     assert cad == root, "the two .claude/settings.json differ - edit the root one and copy it to cad/.claude/"
 
 
+def tracked_names() -> list[str]:
+    """Every path git tracks in the repo, relative to its root."""
+    return subprocess.run(["git", "-C", str(CAD_DIR.parent), "ls-files", "-z"], capture_output=True, text=True,
+                          check=True).stdout.split("\0")[:-1]
+
+
+def test_no_claude_md_hides_the_agents_md():
+    """Claude Code reads a folder's AGENTS.md only when it finds no CLAUDE.md there (a CLAUDE.local.md counts as one),
+    so a tracked CLAUDE.md would silently stop the AGENTS.md beside it loading (root AGENTS.md "Docs")."""
+    hiding = [n for n in tracked_names() if n.rpartition("/")[2].lower() in ("claude.md", "claude.local.md")]
+    assert not hiding, f"the agent instructions are AGENTS.md files - move these into the AGENTS.md there: {hiding}"
+
+
 def test_every_tracked_name_is_lowercase():
     """git and the *.step / *.stl rules are case-sensitive, the Mac's filesystem is not: git there runs with
     core.ignorecase=true, so a case-only rename goes unnoticed on the Mac and arrives on Linux as a second file.
-    Every tracked path is lowercase except the README / CLAUDE.md docs (root CLAUDE.md "Git workflow")."""
-    names = subprocess.run(["git", "-C", str(CAD_DIR.parent), "ls-files", "-z"], capture_output=True, text=True,
-                           check=True).stdout.split("\0")[:-1]
-    checked = [n.rpartition("/")[0] if n.rpartition("/")[2] in ("README", "README.md", "CLAUDE.md") else n for n in names]
+    Every tracked path is lowercase except the README / AGENTS.md docs (root AGENTS.md "Git workflow")."""
+    names = tracked_names()
+    checked = [n.rpartition("/")[0] if n.rpartition("/")[2] in ("README", "README.md", "AGENTS.md") else n for n in names]
     upper = [n for n, c in zip(names, checked, strict=True) if c != c.lower()]
     assert not upper, f"uppercase in tracked names (rename with git mv -f): {upper}"

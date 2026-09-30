@@ -5,7 +5,7 @@ No vendor model (step.parts' 5 mm-bore idlers are one generic model, not this on
 SolidWorks export: a NATIVE COTS part (lib/reference.py NATIVE_COTS) - its envelope IS the geometry, built from the
 seller's drawing, and its reference is that envelope (reference/native/gt2_idler_20t.step,
 tools/reference/import_native.py). Frame: axis on Z, standing on z=0.
-Dimensions: lib/belts.py GT2_IDLER_*. NOT PLACED yet (UNPLACED below, parts/CLAUDE.md "Modelled, not placed yet").
+Dimensions: lib/belts.py GT2_IDLER_*. NOT PLACED yet (UNPLACED below, parts/AGENTS.md "Modelled, not placed yet").
 """
 import pathlib
 

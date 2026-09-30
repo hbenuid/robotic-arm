@@ -1,6 +1,6 @@
 # tools/ — scripts that derive, check and export
 
-Loads when you work in `tools/`. Tools sit near the right end of the layering (`cad/CLAUDE.md` Layering): they may
+Loads when you work in `tools/`. Tools sit near the right end of the layering (`cad/AGENTS.md` Layering): they may
 import `lib`, `parts`, `assemblies` and `robot`; only `tests` imports them.
 
 ## Rules
@@ -8,17 +8,17 @@ import `lib`, `parts`, `assemblies` and `robot`; only `tests` imports them.
   `python`. `./cadtool inspect` is `tools/step_facts.py`.
 - A tool is not a model: it may import build123d at module level (the lazy-kernel rule covers models and their
   import closure), and it builds bodies in-process — `parts.build(name)` / `lib.models.raw(model)` — never by calling
-  a model (`cad/CLAUDE.md` "Never call a model outside a build").
+  a model (`cad/AGENTS.md` "Never call a model outside a build").
 - `tools/cycloidal/export_cadquery.py` runs in the cycloidal_drive repo's CadQuery venv, never ours, and holds the
   tree's one `sys.path` line (`tests/test_layering.py SYS_PATH_ALLOWED`).
 - The tools marked *writes* below change committed inputs: run them only as their recipe says — Recipe C
-  (`cad/CLAUDE.md`), the regeneration order (`reference/CLAUDE.md`), Recipe D (`vendor/CLAUDE.md`). The ones that
+  (`cad/AGENTS.md`), the regeneration order (`reference/AGENTS.md`), Recipe D (`vendor/AGENTS.md`). The ones that
   write a STEP or STL (its bytes differ per run and per machine) run on ONE machine per change.
 
 ## What is here
 | tool | does | writes |
 |---|---|---|
-| `bom.py` | the print list and the buy list from the make/buy label; `EXTRAS` = purchased items with no geometry, and the order line of a part modelled but not placed yet (`parts/CLAUDE.md`) | — (stdout) |
+| `bom.py` | the print list and the buy list from the make/buy label; `EXTRAS` = purchased items with no geometry, and the order line of a part modelled but not placed yet (`parts/AGENTS.md`) | — (stdout) |
 | `export_printables.py` | one STL per printed part into `print/` (git-ignored) | — |
 | `step_facts.py` | `./cadtool inspect` / `inspect diff` of saved STEPs | — |
 | `robot/derive.py` | joint origins, link inertials, URDF / SDF drafts; `--check` compares the checked-in files | — (stdout) |

@@ -25,6 +25,6 @@ repo keeps both sides in one commit.
 ## Development
 
 The working rules — branches (never `main`), commit messages, uv only (never `pip install`), lint, the git and Claude
-Code hooks, when to run CI — are in [`CLAUDE.md`](CLAUDE.md). Claude Code reads that file; the rules hold for people too.
-Each part of the repo has its own guide next to its code (`cad/CLAUDE.md` and its folders, `software/control/CLAUDE.md`).
+Code hooks, when to run CI — are in [`AGENTS.md`](AGENTS.md). Claude Code reads that file; the rules hold for people too.
+Each part of the repo has its own guide next to its code (`cad/AGENTS.md` and its folders, `software/control/AGENTS.md`).
 What is not settled yet — fits, estimates, unmodelled hardware, unconfirmed mappings: [`cad/docs/open_issues.md`](cad/docs/open_issues.md).
