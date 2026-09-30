@@ -26,7 +26,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 
 from lib.bearings import THRUST_BORE
-from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, centre_distance
+from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_120T_TEETH, centre_distance
 from lib.cycloidal.params import DEFAULT_CONFIG as _DRIVE
 from lib.fasteners import M3_CLEAR, M4_CLEAR, M4_NUT, M4_SHCS, NutSize, ShcsSize
 from lib.forearm.params import LEGACY as _FOREARM
@@ -173,8 +173,9 @@ LEGACY = BaseConfig()     # the SolidWorks part, exactly
 # The seat ring centres the thrust bearing (the washers' and the cage's bore THRUST_BORE): the SolidWorks Ø65.1 would
 # not go into a Ø65 bore; RING_CLEAR a side.
 # The motor has a bolt-on mount of its own (base_motor_mount, JointParams + MountParams: a box round the motor and its
-# board with room for the wiring, in place of the SolidWorks lobe the base's full width). It sits where a stock belt puts it:
-# the SolidWorks centre (78.97 from the axis) wants a 274.2 mm belt; YAW_BELT sets 81.97, the holes are slots of
+# board with room for the wiring, in place of the SolidWorks lobe the base's full width). It sits where a stock belt puts it
+# round the base_yaw pulleys - the 120T on the joint (parts/base/gt2_pulley_120t), the 20T on the motor: YAW_BELT sets
+# 83.97 from the axis (the SolidWorks centre, 78.97, belonged to a 90T), the holes are slots of
 # +/- MOTOR_TRAVEL along X (the belt's tension), the window lets the pilot slide with them (WINDOW_CLEAR a side - only
 # the pilot's height in Z: the SolidWorks window's +/- 21.3 would run into the -X slots).
 # The bottom face (the mounting face, lib/datum.py BASE_BOTTOM_Y) sits BOARD_CLEAR under the motor's MKS board: the
@@ -182,10 +183,10 @@ LEGACY = BaseConfig()     # the SolidWorks part, exactly
 # walls, its posts and the whole motor mount reach down to it.
 RING_CLEAR = 0.1          # [DESIGN]
 BOARD_CLEAR = 5.0         # [DESIGN] the base_yaw motor's board above the table
-YAW_BELT = 280            # [ESTIMATE] base_yaw belt, 280-2GT (lib/belts.py STANDARD_2GT_LENGTHS): 20T motor - 90T joint
+YAW_BELT = 320            # [ESTIMATE] base_yaw belt, 320-2GT (lib/belts.py STANDARD_2GT_LENGTHS): 20T motor - 120T joint
 MOTOR_TRAVEL = 2.5        # [DESIGN] the roll motor's slots' +/- 2.5 (lib/forearm/params.py)
 WINDOW_CLEAR = 0.2        # [DESIGN]
-_MOTOR_X = round(centre_distance(YAW_BELT, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH), 6)
+_MOTOR_X = round(centre_distance(YAW_BELT, GT2_PULLEY_120T_TEETH, GT2_PULLEY_20T_TEETH), 6)
 _WINDOW_HALF = NEMA17_PILOT_DIA / 2.0 + MOTOR_TRAVEL + WINDOW_CLEAR
 _BOTTOM_Y = round(LEGACY.plate.y[0] - _DRIVE.motor.body_length - MKS_SERVO42D_STACK - BOARD_CLEAR, 6)
 DEFAULT = replace(LEGACY, shell=replace(LEGACY.shell, y0=_BOTTOM_Y),                                  # [DESIGN]

@@ -14,7 +14,7 @@ The toolchain, its pins and upgrades: `docs/toolchain.md`.
 | run / build / inspect / snapshot anything | Running things (below) | — |
 | add or convert a printed part | `parts/AGENTS.md` | Recipe C after the geometry |
 | add a purchased part | `parts/AGENTS.md` Purchased (COTS) parts | Recipe A (there) |
-| add a part designed HERE (no SolidWorks / CadQuery origin), or a purchased part with no model at all | `parts/AGENTS.md` Part states → *native* | `tools/reference/import_native.py` once, then Recipe C |
+| add a part designed HERE (no SolidWorks / CadQuery origin), or a purchased part with no model at all | `parts/AGENTS.md` Part states → *no reference* | its numbers in a test of its own, then Recipe C |
 | place something the SolidWorks capture never had (a motor, a board) | `assemblies/AGENTS.md` → Mounted occurrences | Recipe B (there) |
 | produce or swap a vendor STEP | `vendor/AGENTS.md` | Recipe D (there) |
 | a new SolidWorks / vendor export was handed over | `reference/AGENTS.md` | Recipe E (there) |

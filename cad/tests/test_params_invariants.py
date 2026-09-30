@@ -17,6 +17,7 @@ def test_gt2_belt_drive():
     assert p.GT2_PITCH == 2.0
     assert (p.GT2_PULLEY_90T_TEETH, p.GT2_PULLEY_20T_TEETH) == (90, 20)
     assert math.isclose(p.GT2_RATIO, 4.5)
+    assert p.GT2_PULLEY_120T_TEETH == 120 and math.isclose(p.BASE_YAW_RATIO, 6.0)   # the base_yaw belt: 120T on the 20T
     assert math.isclose(p.GT2_PULLEY_90T_PITCH_DIA, 90 * 2 / math.pi)
     # the printed 90T pulley's outer diameter must sit just under its pitch diameter + tooth
     assert p.GT2_PULLEY_90T_PITCH_DIA < MANIFEST["gt2_pulley_90t"]["bbox_size"][0] < p.GT2_PULLEY_90T_PITCH_DIA + 3
