@@ -18,6 +18,8 @@ from lib.forearm import (
     DEFAULT,
     belt_window,
     cap_bolt_points,
+    end_nut_pocket,
+    flange_bolt_points_module,
     module_frame_in_host,
     mount_bolt_points,
     mount_nut_pocket_open_y,
@@ -158,10 +160,19 @@ def test_stack():
     assert half_x < D.ring_flange_dia / 2.0 and y0 < D.cavity_dia / 2.0 < D.block_y[1]      # a slot for the runs, not the ring
     assert all(abs(x) - D.cap_tap_dia / 2.0 >= half_x + 2.0 for x, _ in cap_bolt_points(DEFAULT))   # the cap's taps beside the window
     assert D.motor_spin_deg == 90.0                                                               # the connector toward +X, away from the upper arm
-    # the wall bolts into the shaft's end wall: 2 mm of PETG round each tap hole, between the bore and the spigot
-    assert D.bore == w.cable_bore and D.cable_exit_dia > D.bore
-    assert w.bolt_circle_dia / 2.0 - D.end_bolt_tap_dia / 2.0 >= D.bore / 2.0 + 2.0
-    assert w.bolt_circle_dia / 2.0 + D.end_bolt_tap_dia / 2.0 <= w.flange_dia / 2.0 - 2.0
+    # the wall's screws into nuts in the shaft: each clearance hole centred in the neck's wall (between the bore and the
+    # neck's outside), the head on the wall's wrist face, the tip 2 pitches past its nut; the nut behind bearing 2 in the
+    # Ø44 core, clear of the ring, 3 mm of the core outside it, its pocket open into the bore - so head and nut clamp the
+    # spigot, the neck and journal 2 between them
+    rc, hole_r, corner = w.bolt_circle_dia / 2.0, w.bolt_dia / 2.0, D.end_nut.af / math.sqrt(3.0)
+    assert D.bore == w.cable_bore and D.cable_exit_dia > D.bore and w.bolt_dia == PARAMS.M3_CLEAR and w.screw.d == D.end_nut.d
+    assert math.isclose(rc - hole_r - D.bore / 2.0, D.neck_od / 2.0 - rc - hole_r) and D.neck_od / 2.0 - rc - hole_r >= 1.5
+    assert S["z_wall_back"] == -w.wall_x[0] and S["z_end_tip"] == S["z_wall_back"] - w.screw_len
+    assert math.isclose(S["z_end_nut"] - S["z_end_tip"], 2 * PARAMS.M3_PITCH) and math.isclose(S["z_end_nut_seat"] - S["z_end_nut"], D.end_nut.h)
+    assert S["z_ring_end"] + 2.0 <= S["z_end_nut"] - D.end_nut_fit and S["z_end_nut_seat"] <= S["z_bearing_2"] - 1.5
+    r_in, r_out, z0, z1 = end_nut_pocket(DEFAULT)
+    assert r_in < D.bore / 2.0 < rc - corner and r_out == rc + corner + D.end_nut_fit and D.shoulder_od / 2.0 - r_out >= 3.0
+    assert (z0, z1) == (S["z_end_nut"] - D.end_nut_fit, S["z_end_nut_seat"]) and S["z_wall_back"] - S["z_end_nut_seat"] >= 20.0
     assert D.stop_deg == PARAMS.FOREARM_ROLL_LIMIT_DEG == 180.0 - D.stop_deg_width
     assert D.stop_lug_r[1] > D.stop_post_r[0] and D.stop_lug_r[0] < D.neck_od / 2.0 < D.stop_post_r[0]
     # the cap's four bolts: inside the outline's rounded corners, outside the cavity
@@ -288,14 +299,29 @@ def test_block_and_shaft_features(module):
         assert not is_inside(block, x + s * (flat - 0.2), y_nut, z) and is_inside(block, x + s * (flat + 0.3), y_nut, z)
         assert not is_inside(block, x, y_nut, z + corner - 0.2) and is_inside(block, x, y_nut, z + corner + 0.3)
         assert not is_inside(block, x + s * (flat - 0.3), S["y_mount_tip"], z)                                           # on down to the bore
-    # the shaft: the bore, the core, journal 1, the ring (a land, a groove, all round), the neck, the lug, the spigot, a tap
+    # the shaft: the bore, the core, journal 1, the ring (a land, a groove, all round), the neck, the lug, the spigot, the
+    # wall screws' holes and nut pockets
     assert not is_inside(shaft, 0, 0, zm) and is_inside(shaft, D.bore / 2.0 + 1.0, 0, zm)
     assert is_inside(shaft, D.bearing_bore / 2.0 - 0.5, 0, S["z_seat"] + 3.0) and not is_inside(shaft, D.bearing_bore / 2.0 + 1.0, 0, S["z_seat"] + 3.0)
     assert is_inside(shaft, 27.0, 0, zm) and not is_inside(shaft, 28.3, 0, zm) and is_inside(shaft, 0, 27.5, zm)
     assert is_inside(shaft, 0, D.neck_od / 2.0 - 1.0, S["z_stop_lug"] + 1.0) and not is_inside(shaft, 0, D.neck_od / 2.0 + 1.0, S["z_stop_lug"] + 1.0)
     assert is_inside(shaft, (D.stop_lug_r[0] + D.stop_lug_r[1]) / 2.0, 0, S["z_stop_lug"] + 1.0)
     assert is_inside(shaft, DEFAULT.roll_end.flange_dia / 2.0 - 0.5, 0, S["z_wall"] + 1.0)
-    assert not is_inside(shaft, DEFAULT.roll_end.bolt_circle_dia / 2.0, 0, S["z_wall"] + 1.0)
+    _r_in, r_out, z0, z1 = end_nut_pocket(DEFAULT)
+    zn, hole_r, flat = (z0 + z1) / 2.0, DEFAULT.roll_end.bolt_dia / 2.0, D.end_nut.af / 2.0
+    for x, y in flange_bolt_points_module(DEFAULT):
+        rc = math.hypot(x, y)
+        u, t = (x / rc, y / rc), (-y / rc, x / rc)                                 # radial, tangential
+        assert not is_inside(shaft, x, y, S["z_wall"] + 1.0) and not is_inside(shaft, x, y, S["z_neck"] + 1.0)   # the hole ...
+        assert not is_inside(shaft, x, y, S["z_end_tip"] - D.end_nut_fit + 0.3)                                  # ... to the tip
+        assert is_inside(shaft, x, y, S["z_end_tip"] - D.end_nut_fit - 0.3)
+        assert is_inside(shaft, x + (hole_r + 0.5) * t[0], y + (hole_r + 0.5) * t[1], S["z_neck"] + 1.0)
+        assert is_inside(shaft, x + (hole_r + 0.5) * t[0], y + (hole_r + 0.5) * t[1], z1 + 0.3)              # the nut's seat
+        assert not is_inside(shaft, x + (flat - 0.2) * t[0], y + (flat - 0.2) * t[1], zn)                    # the pocket: a flat
+        assert is_inside(shaft, x + (flat + 0.3) * t[0], y + (flat + 0.3) * t[1], zn)                        # either side, ...
+        assert not is_inside(shaft, (r_out - 0.2) * u[0], (r_out - 0.2) * u[1], zn)                          # ... past the nut's corner,
+        assert is_inside(shaft, (r_out + 0.3) * u[0], (r_out + 0.3) * u[1], zn)
+        assert not is_inside(shaft, (D.bore / 2.0 + 0.3) * u[0], (D.bore / 2.0 + 0.3) * u[1], zn)          # ... open into the bore
     bb = shaft.bounding_box()
     assert math.isclose(bb.max.Z, S["z_spigot_end"], abs_tol=1e-6) and math.isclose(bb.min.Z, S["z_shaft_end"], abs_tol=1e-6)
     # the cap: seat 2, the lip, the stop post (-X), the rounded corner, a bolt hole

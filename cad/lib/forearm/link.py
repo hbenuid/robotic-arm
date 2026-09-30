@@ -10,6 +10,8 @@ from lib.forearm.layout import (
     flange_bolt_points,
     link_socket_points,
     neck_tangent,
+    screw_channel,
+    screws_under_the_web,
 )
 from lib.forearm.params import DEFAULT, ForearmConfig
 from lib.geom import align_min, cylinder, hex_prism, single_solid, through
@@ -106,6 +108,11 @@ def build_link(cfg: ForearmConfig = DEFAULT):
         body = necked_web(cfg) + roll_wall(cfg)
         for rib in wall_gussets(cfg):
             body = body + rib
+        # the way in for a wall screw whose head would land in the web: a channel in the web's underside, into the
+        # motor slot
+        for y, z in screws_under_the_web(cfg):
+            x0, x1, half_w, z_top = screw_channel(z, cfg)
+            body = body - slab(x1 - x0, 2.0 * half_w, z_top - w.z0 + NUDGE, (x0 + x1) / 2.0, w.z0 - NUDGE, y)
     else:
         # the web: a stadium from the elbow pivot to the wrist pivot; the elbow disc under it
         body = stadium(abs(w.wrist_x), 2.0 * w.half_w, w.thickness, w.wrist_x / 2.0, w.z0)

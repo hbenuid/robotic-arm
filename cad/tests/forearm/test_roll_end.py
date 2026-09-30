@@ -17,6 +17,8 @@ from lib.forearm import (
     flange_bolt_points,
     link_socket_points,
     neck_tangent,
+    screw_channel,
+    screws_under_the_web,
     web_half_width,
 )
 from lib.forearm.params import SHORTENING
@@ -48,6 +50,21 @@ def test_default_layout():
     assert s.centre_x[0] <= lo and s.centre_x[1] >= hi
     assert len(flange_bolt_points(DEFAULT)) == 4 and (R.bolt_circle_dia / 2.0, 25.0) in flange_bolt_points(DEFAULT)
     assert PARAMS.J2_MOTOR_SLIDE_X == x and PARAMS.FOREARM_ROLL_AXIS_Z == R.axis_z
+
+
+def test_the_wall_screws_way_in():
+    """Only the bottom screw's head would land in the web: its channel opens to the web's underside (the screw lays in
+    from the belt side), runs from the wall into the central motor slot (a key reaches the head) and leaves the web whole
+    over it; every other head clears the web's top face."""
+    w, s = DEFAULT.web, DEFAULT.slot
+    reach = R.screw.head_dia / 2.0 + R.channel_clear
+    under = screws_under_the_web(DEFAULT)
+    assert under == [(y, z) for y, z in flange_bolt_points(DEFAULT) if z < R.axis_z and abs(y) < 1e-9]
+    assert all(z - reach >= w.z1 for y, z in flange_bolt_points(DEFAULT) if (y, z) not in under)
+    (_, z_low), = under
+    x0, x1, half_w, z_top = screw_channel(z_low)
+    assert z_low - reach < w.z0 and x1 == elbow_end_x(DEFAULT) and x0 == s.centre_x[1] and half_w == reach
+    assert x1 - x0 >= R.screw_len + R.screw.head_h and w.z1 - z_top >= 5.0
 
 
 def test_the_neck_the_round_wall_and_its_gussets():
@@ -107,8 +124,19 @@ def test_link_ends_at_the_wall_and_keeps_its_wrist_end(link):
     assert not is_inside(link, x_face - 1.0, 0, 25 + rr - 1.0) and is_inside(link, x_face - 3.0, 0, 25 + rr - 1.0)   # the spigot recess, 2 deep
     assert not is_inside(link, xm, 0, 25) and not is_inside(link, xm, 0, 25 + rb - 1.0)               # the cable bore
     assert is_inside(link, xm, 0, 25 + rb + 1.5)
+    # every screw goes in from the wrist side: its head's room behind the wall is open (the bottom one's in the channel
+    # under the web, open to the underside, the web whole over it)
+    head_r = R.screw.head_dia / 2.0
     for y, z in flange_bolt_points(DEFAULT):
         assert not is_inside(link, xm, y, z) and not is_inside(link, R.wall_x[0] + 0.1, y, z)
+        for dy, dz in ((0.0, 0.0), (head_r, 0.0), (-head_r, 0.0), (0.0, head_r), (0.0, -head_r)):
+            assert not is_inside(link, R.wall_x[0] - 1.0, y + dy, z + dz)
+            assert not is_inside(link, R.wall_x[0] - R.screw.head_h - 1.0, y + dy, z + dz)
+    (y_low, z_low), = screws_under_the_web(DEFAULT)
+    x0, x1, half_w, z_top = screw_channel(z_low)
+    xc = (x0 + x1) / 2.0
+    assert not is_inside(link, xc, y_low, w.z0 + 0.5) and not is_inside(link, xc, y_low + half_w - 0.3, z_top - 0.3)
+    assert is_inside(link, xc, y_low, z_top + 0.3) and is_inside(link, xc, y_low + half_w + 0.3, w.z0 + 0.5)
     # the slots: the central one passes the pilot, both stop before the wall
     assert not is_inside(link, DEFAULT.motor_x, 11.0, 13.5) and is_inside(link, DEFAULT.motor_x, 11.3, 13.5)
     assert is_inside(link, R.wall_x[0] - 4.0, 0, 13.5)

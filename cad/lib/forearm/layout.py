@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import math
 
+from lib.fasteners import M3_PITCH
 from lib.forearm.params import DEFAULT, ForearmConfig
 
 
@@ -62,6 +63,32 @@ def flange_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]
             for i in range(r.bolt_count)]
 
 
+def screws_under_the_web(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
+    """The wall's screws (y, z) whose heads, channel_clear all round, would land in the web behind the wall: each
+    gets a channel in the web's underside (screw_channel)."""
+    r, w = cfg.roll_end, cfg.web
+    reach = r.screw.head_dia / 2.0 + r.channel_clear
+    return [(y, z) for y, z in flange_bolt_points(cfg) if z - reach < w.z1 and z + reach > w.z0]
+
+
+def screw_channel(z: float, cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float, float]:
+    """(x0, x1, half_width, z_top) of the channel for the screw at height z: from the central motor slot's elbow-end
+    arc centre (the channel runs into the slot) to the wall, the head + channel_clear either side, open to the web's
+    underside up to the head's top + channel_clear."""
+    r = cfg.roll_end
+    reach = r.screw.head_dia / 2.0 + r.channel_clear
+    return cfg.slot.centre_x[1], elbow_end_x(cfg), reach, z + reach
+
+
+def end_nut_pocket(cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float, float]:
+    """(r_in, r_out, z0, z1) of each wall screw's nut pocket in the shaft, module frame, radially along its screw's
+    angle: from inside the cable bore (it opens there) past the nut's outer corner (a corner radial, a flat either side)
+    by end_nut_fit; from end_nut_fit under the nut to its bearing face."""
+    d, S = cfg.drive, stack_positions(cfg)
+    r_out = cfg.roll_end.bolt_circle_dia / 2.0 + d.end_nut.af / math.sqrt(3.0) + d.end_nut_fit
+    return d.bore / 2.0 - 1.0, r_out, S["z_end_nut"] - d.end_nut_fit, S["z_end_nut_seat"]
+
+
 def module_frame_in_host(cfg: ForearmConfig = DEFAULT) -> tuple:
     """The roll drive's module frame as data in j2_link's frame (lib/mounts.py ModuleMount): origin on the roll axis
     at the elbow-axis crossing, module +Z = host -X (toward the wrist), module +X = host +Z."""
@@ -86,6 +113,8 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
     z_neck = z_face + d.bearing_width                             # 43
     z_cap_outer = z_neck + d.cap_lip                              # 45: the cap's outer face, the stops stand on it
     z_wall = -w.wall_x[1]                                         # 48: the forearm wall's elbow face = the spigot starts
+    z_wall_back = -w.wall_x[0]                                    # 56: its wrist face
+    z_end_tip = z_wall_back - w.screw_len                         # 31
     z_motor_face = z_ring_mid - d.t20                             # 6.05
     z_motor_board = z_motor_face - d.motor.body_length            # -33.45
     y_step = d.block_y[1] - d.mount_base_t                        # 32: the pocket's floor = the motor mount's underside
@@ -104,6 +133,10 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
         "z_stop_lug": z_cap_outer,                                # 45..47.5 on the neck
         "z_wall": z_wall,                                         # 48: the spigot starts here
         "z_spigot_end": z_wall + w.flange_recess_depth,           # 50
+        "z_wall_back": z_wall_back,                               # 56: the wall's wrist face = the screws' heads
+        "z_end_tip": z_end_tip,                                   # 31: the screws' tips
+        "z_end_nut": z_end_tip + 2 * M3_PITCH,                    # 32: each nut's far face, 2 pitches short of the tip ...
+        "z_end_nut_seat": z_end_tip + 2 * M3_PITCH + d.end_nut.h,   # 34.4: ... its bearing face, toward the wall
         "z_motor_face": z_motor_face,
         "z_motor_board": z_motor_board,
         "z_pad_top": z_motor_face + d.pad_t,                      # 10.05: the plate's front face

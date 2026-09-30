@@ -27,7 +27,7 @@ PETG_DENSITY = 1.27e-3  # [DESIGN] g/mm^3 - printed-part mass estimates
 
 # --- Fasteners - lib/fasteners.py (a leaf: the sizes, the clearance holes, the plain screw / nut builders) ----
 from lib.fasteners import (  # noqa: E402, F401
-    M3_CLEAR, M3_CSK, M3_NUT, M3_PITCH, M4_CLEAR, M4_NUT, M4_PITCH, M4_SHCS, M5_CLEAR, csk_volume, nut_volume, shcs_volume,
+    M3_CLEAR, M3_CSK, M3_NUT, M3_PITCH, M3_SHCS, M4_CLEAR, M4_NUT, M4_PITCH, M4_SHCS, M5_CLEAR, csk_volume, nut_volume, shcs_volume,
 )
 
 # --- Belt drive (GT2) - lib/belts.py (a leaf: lib/forearm/ imports it directly) ------------------

@@ -132,9 +132,9 @@
   </link>
   <link name="forearm_link">
     <inertial>
-      <origin xyz="0.004589 -0.000012 0.100201" rpy="0 0 0" />
-      <mass value="0.708332" />
-      <inertia ixx="2.441454e-03" ixy="2.488887e-07" ixz="8.800633e-05" iyy="2.420877e-03" iyz="6.559725e-08" izz="3.847050e-04" />
+      <origin xyz="0.004618 -0.000012 0.100337" rpy="0 0 0" />
+      <mass value="0.706435" />
+      <inertia ixx="2.435994e-03" ixy="2.486815e-07" ixz="8.885513e-05" iyy="2.415092e-03" iyz="6.462437e-08" izz="3.841204e-04" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />

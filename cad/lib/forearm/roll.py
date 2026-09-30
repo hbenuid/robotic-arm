@@ -13,6 +13,7 @@ from lib.forearm.layout import (
     belt_window,
     cap_bolt_points,
     coupler_steps,
+    end_nut_pocket,
     flange_bolt_points_module,
     module_frame_in_host,
     mount_bolt_points,
@@ -150,8 +151,14 @@ def build_shaft(cfg: ForearmConfig = DEFAULT):
     body = body + cylinder(cfg.roll_end.flange_dia / 2.0, S["z_spigot_end"] - S["z_wall"], z0=S["z_wall"])
     body = body + _wedge(d.stop_lug_r[0], d.stop_lug_r[1], S["z_stop_lug"], d.stop_t, d.stop_deg_width, 0.0)
     body = body - cylinder(d.bore / 2.0, S["z_spigot_end"] - S["z_shaft_end"] + 2 * NUDGE, z0=S["z_shaft_end"] - NUDGE)   # the cable bore
-    for xy in flange_bolt_points_module(cfg):                                                      # 4x M3 self-tapping from the end face
-        body = body - cylinder(d.end_bolt_tap_dia / 2.0, d.end_bolt_depth + NUDGE, xy, z0=S["z_spigot_end"] - d.end_bolt_depth)
+    # the forearm wall's 4x M3: clearance from the end face on past each nut to the screw's tip, and each nut's pocket - a
+    # slot from the cable bore outward along the screw's angle, a flat either side - behind bearing 2
+    r_in, r_out, z0, z1 = end_nut_pocket(cfg)
+    for x, y in flange_bolt_points_module(cfg):
+        z_hole = S["z_end_tip"] - d.end_nut_fit
+        body = body - cylinder(cfg.roll_end.bolt_dia / 2.0, S["z_spigot_end"] - z_hole + NUDGE, (x, y), z0=z_hole)
+        pocket = bd.Pos((r_in + r_out) / 2.0, 0.0, z0) * bd.Box(r_out - r_in, d.end_nut.af, z1 - z0, align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MIN))
+        body = body - bd.Rot(0.0, 0.0, math.degrees(math.atan2(y, x))) * pocket
     ring = gt2_ring(d.ring_teeth, d.ring_width, d.ring_flange_dia, d.ring_flange_t, z0=S["z_ring"], inner_dia=d.shoulder_od - 0.2)
     return single_solid(body + ring)
 

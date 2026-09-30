@@ -81,7 +81,8 @@ def test_the_roll_motor_mount_takes_its_m3_screws_and_nuts():
     assert all((r["pieces"], r["geometry"]) == (4, "envelope") for r in rows.values())
     assert rows["forearm_roll_mount_screws"]["order"].startswith("M3 x 16 countersunk socket screw (ISO 10642)")
     assert rows["forearm_roll_mount_nuts"]["order"].startswith("M3 hex nut (ISO 4032)")
-    assert not any("countersunk" in spec or "M3 hex nut" in spec for owner, spec, _, _ in bom.EXTRAS if owner == "forearm_roll_drive")
+    assert not any(("countersunk" in spec or "M3 hex nut" in spec) and "mount" in spec
+                   for owner, spec, _, _ in bom.EXTRAS if owner == "forearm_roll_drive")
 
 
 def test_the_base_motor_mount_takes_its_m4_screws_and_nuts():

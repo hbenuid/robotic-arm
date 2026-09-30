@@ -7,12 +7,12 @@ j3_coupler#1 is retired, lib/placements.py RETIRED) and the roll housing round t
 end cap with bearing 2 on the front face, the bolt-on motor mount (its base in the pocket on the block's top, 4x M3
 countersunk into M3 nuts pressed into the block's top wall from the bore), the 40 mm kit motor + MKS board on the mount's vertical plate UP in
 the swing plane (its body behind the elbow axis) and the 20T on the motor shaft. Rotor: the hollow
-roll shaft with its integral 90T ring between the bearings and the end spigot the forearm's wall bolts onto
-(forearm_link). MODULE FRAME (lib/forearm/params.py RollDriveParams): origin on the roll axis at the elbow-axis
+roll shaft with its integral 90T ring between the bearings and the end spigot the forearm's wall bolts onto (4x M3
+into nuts in pockets behind bearing 2; forearm_link). MODULE FRAME (lib/forearm/params.py RollDriveParams): origin on the roll axis at the elbow-axis
 crossing, +Z along the roll axis toward the wrist, +X = host +Z (N), +Y = up in the arm's swing plane; the arm places
 it through lib/mounts.py MODULE_MOUNTS ("forearm_roll_drive#1" on j2_link#1). Every station comes from
 lib/forearm stack_positions() - never type one here. Gear ratio 90 / 20 = 4.5 (FOREARM_ROLL_RATIO); the belt
-(240-2GT) and the self-tapping / motor M3 screws are tools/bom.py EXTRAS, the mount's countersunk M3s + nuts are rows
+(240-2GT), the forearm wall's M3 screws + nuts and the cap's / motor's M3 screws are tools/bom.py EXTRAS, the mount's countersunk M3s + nuts are rows
 here; the elbow 90T's M4 screws + nuts into the block are the arm's (lib/mounts.py FASTENER_MOUNTS).
 """
 from cadgen import step
@@ -61,9 +61,9 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("stator") after any geometry change.
 EXPECTED = {
-    "leaves": 11, "solids": 32, "solid_volume": 421502.356,
+    "leaves": 11, "solids": 32, "solid_volume": 420657.246,
     "bodies": {"stator": {"leaves": 10, "solids": 31, "solid_volume": 326279.448},
-               "rotor": {"leaves": 1, "solids": 1, "solid_volume": 95222.909}},
+               "rotor": {"leaves": 1, "solids": 1, "solid_volume": 94377.799}},
 }
 
 
