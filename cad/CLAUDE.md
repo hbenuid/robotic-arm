@@ -40,7 +40,7 @@ The toolchain, its pins and upgrades: `docs/toolchain.md`.
    "Where the locks live"; a drive's `EXPECTED` from
    `./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals(), totals('stator'))"`).
 6. A mounted part's geometry changed → `./cadtool python tools/reference/mount_placements.py` (its records carry
-   solids / volume / bbox); a SolidWorks-derived change → `extract_placements.py --no-pancake`.
+   solids / volume / bbox); a SolidWorks-derived change → `extract_placements.py --monolith <full assembly> --no-pancake`.
 7. `./cadtool python tools/robot/derive.py --check robot/arm.urdf robot/arm.sdf`; for every link it names, copy that
    link's `<inertial>` block from `--urdf-draft` / `--sdf-draft` into `robot/arm.urdf` / `arm.sdf` (never a generator).
 8. `./cadtool python tools/robot/export_link_meshes.py --links <those links>` and `./cadtool gen robot/links/<link>.py`

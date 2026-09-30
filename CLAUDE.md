@@ -47,8 +47,9 @@ own) — rules in `cad/CLAUDE.md` "Two machines". Scripts must run on macOS's ba
 ## The SolidWorks inputs are in the repo; the raw exports are not
 The CAD reads only committed inputs (Git LFS): `cad/reference/` (the renamed SolidWorks / CadQuery exports,
 `placements.json`, `manifest.json`) and `cad/vendor/`. The raw exports they were derived from are **never committed**
-and need not exist on a machine; a new export the user hands over stays outside the tree (lowercase `.step`) and goes
-through Recipe E in `cad/reference/CLAUDE.md`.
+and need not exist on a machine, and they have no fixed place: the tools that read one take its path. A new export
+the user hands over is read where the user put it — never moved, renamed or copied elsewhere on the machine, and no
+folder is made for it outside the repo — and goes through Recipe E in `cad/reference/CLAUDE.md`.
 
 ## Toolchain
 - Always use `uv` — never `pip install` directly. `uv add <pkg>` for new deps;

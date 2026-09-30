@@ -14,9 +14,11 @@ the designed module, the skipped products, the `placements.json` schema — is `
   OCCT converts every unit correctly on import; the manifest's `units` field is the one that would lie.
 
 ## Regenerating, in this order
-- `./cadtool python tools/reference/split_mks_motor.py` (once, on one machine — STEP bytes are per machine),
-  `./cadtool python tools/reference/import_solidworks.py` (copies + `manifest.json`), then
-  `./cadtool python tools/reference/extract_placements.py --no-pancake` (`placements.json`, the mounted records of
+- Each of these reads raw exports, so each takes their path (`README.md` Provenance names the files):
+  `./cadtool python tools/reference/split_mks_motor.py --src <x40 kit> --src48 <x48 kit>` (once, on one machine — STEP
+  bytes are per machine), `./cadtool python tools/reference/import_solidworks.py --src <export tree>` (copies +
+  `manifest.json`), then
+  `./cadtool python tools/reference/extract_placements.py --monolith <full assembly> --no-pancake` (`placements.json`, the mounted records of
   `lib/mounts.py` appended; without the flag also `vendor/nema17_pancake.step`, whose bytes would then change),
   then `import_solidworks.py` once more so the manifest describes the extracted pancake. A changed mount alone:
   `./cadtool python tools/reference/mount_placements.py` (merge mode, no monolith needed).
@@ -31,12 +33,13 @@ the designed module, the skipped products, the `placements.json` schema — is `
   tools keep the entries.
 
 ## Recipe E — a new SolidWorks / vendor export arrives
-Keep it OUTSIDE the tree with a lowercase `.step` name (the raw
-exports are never committed; the tools take `--src` / `--monolith`, default `lib/reference.py DEFAULT_SOURCE_DIR`
-or `ARM_REFERENCE_SRC` where `README.md` Provenance says); record file, size, sha256 and what it is under
+Read it where the user put it, by the path they give: never move, rename or copy it elsewhere on the machine (the
+committed copies its tool derives in `reference/` / `vendor/` excepted), and never make a folder for it outside the
+repo (the raw exports are never committed and have no fixed place — every tool that reads one takes its
+path: `--src` / `--src48` / `--monolith`). Record its file name as handed over, size, sha256 and what it is under
 `README.md` Provenance; name it in `lib/reference.py` (`MONOLITH_NAME`, `MKS_EXPORT_NAME`, … or a `CUSTOM` / `COTS`
 row); measure before trusting it (`./cadtool inspect <file> --planes` — units, frame, shaft / pilot / bolt pattern);
 then Recipe A (`parts/CLAUDE.md`) or D (`vendor/CLAUDE.md`). What the CAD keeps is the derived, committed copy
-(`reference/`, `vendor/`) — the raw file can be discarded afterwards. A printed part's export is not copied here at
-all: a *measured* conversion (`parts/CLAUDE.md` Part states, `lib/reference.py MEASURED`) keeps only its numbers, in
-the part's params and tests - keep the raw file (its sha256 in `MEASURED`) until the tests are committed.
+(`reference/`, `vendor/`) — the raw file is the user's, to keep or discard. A printed part's export is not copied here
+at all: a *measured* conversion (`parts/CLAUDE.md` Part states, `lib/reference.py MEASURED`) keeps only its numbers, in
+the part's params and tests - the raw file is needed until the tests are committed (its sha256 in `MEASURED`).

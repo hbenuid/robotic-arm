@@ -3,7 +3,7 @@ reference/placements.json, and flatten the NEMA 17 pancake sub-assembly into ONE
 part (vendor/nema17_pancake.step).
 
     ./cadtool python tools/reference/extract_placements.py \
-        [--monolith "~/Documents/arm_assembly_organized/final Arm Assembly Fully Movable.STEP"] \
+        --monolith "<the SolidWorks export tree>/final Arm Assembly Fully Movable.STEP" \
         [--out reference/placements.json] [--pancake-out vendor/nema17_pancake.step]
 
 build123d.import_step() walks the STEP's XCAF document and keeps the hierarchy: each node
@@ -127,7 +127,8 @@ class Extractor:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--monolith", type=pathlib.Path, default=R.DEFAULT_SOURCE_DIR / R.MONOLITH_NAME)
+    ap.add_argument("--monolith", type=pathlib.Path, required=True,
+                    help=f"the full-assembly export ({R.MONOLITH_NAME!r} in the SolidWorks export tree)")
     ap.add_argument("--out", type=pathlib.Path, default=R.REF_DIR / "placements.json")
     ap.add_argument("--pancake-out", type=pathlib.Path, default=R.VENDOR_DIR / "nema17_pancake.step")
     ap.add_argument("--no-pancake", action="store_true", help="do not (re)write the pancake vendor STEP")

@@ -17,10 +17,10 @@ lib/cycloidal/motor.py pilot() (Ø22 x 2, bored for the shaft) is fused onto the
 onto the rotor (x48) or added as the motor's second solid (x40).
 
     ./cadtool python tools/reference/split_mks_motor.py [--write all|kit|drive]
-            [--src  ~/Documents/arm_assembly_organized/mks/nema17x40_with_mks.step]
-            [--src48 ~/Documents/arm_assembly_organized/mks/nema17x48_with_mks.step]
+            --src  <the export tree>/mks/nema17x40_with_mks.step      (the x40 kit; not needed for --write drive)
+            --src48 <the export tree>/mks/nema17x48_with_mks.step     (the x48 kit; not needed for --write kit)
             [--motor-out vendor/nema17_40mm.step] [--board-out vendor/mks_servo42d.step] [--drive-out vendor/nema17_48mm.step]
-    ./cadtool python tools/reference/import_solidworks.py               # then: the kit parts' reference copies + manifest entries
+    ./cadtool python tools/reference/import_solidworks.py --src <the export tree>   # then: the kit parts' reference copies + manifest entries
     ./cadtool python tools/cycloidal/import_cadquery.py --only nema17_48mm   # and the drive motor's vendor block
     ./cadtool gen parts/<group>/<name>.py --force                       # a NEW vendor file is not yet a tracked input
 
@@ -30,14 +30,13 @@ the tie rods the solids centred on the bolt pattern, the front plate the solid w
 export is authored in centimetres and sits ~(673, 881, 1302) mm off the origin; OCCT converts, the tool
 re-frames from the measured axis and mounting face. build123d's STEP writer stamps the time into the header,
 so every run writes new bytes: the files are written ONCE (here) and committed as Git LFS inputs - `--write
-kit|drive` leaves the others alone. The raw exports stay outside the repo next to the monolith
-(lib.reference.MKS_EXPORT_NAME / MKS48_EXPORT_NAME); reference/README.md records their sha256.
+kit|drive` leaves the others alone. The raw exports are not in the repo (lib.reference.MKS_EXPORT_NAME /
+MKS48_EXPORT_NAME name them); reference/README.md records their sha256.
 """
 from __future__ import annotations
 
 import argparse
 import math
-import os
 import pathlib
 import sys
 
@@ -223,9 +222,8 @@ def compose_drive_motor(src48: pathlib.Path, m):
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    src_dir = pathlib.Path(os.environ.get("ARM_REFERENCE_SRC", R.DEFAULT_SOURCE_DIR))
-    ap.add_argument("--src", type=pathlib.Path, default=src_dir / R.MKS_EXPORT_NAME, help="the x40 kit export")
-    ap.add_argument("--src48", type=pathlib.Path, default=src_dir / R.MKS48_EXPORT_NAME, help="the x48 kit export")
+    ap.add_argument("--src", type=pathlib.Path, help=f"the x40 kit export ({R.MKS_EXPORT_NAME} in the export tree)")
+    ap.add_argument("--src48", type=pathlib.Path, help=f"the x48 kit export ({R.MKS48_EXPORT_NAME} in the export tree)")
     ap.add_argument("--write", choices=("all", "kit", "drive"), default="all",
                     help="which vendor files to write (the writer stamps the time: rewriting changes bytes)")
     ap.add_argument("--motor-out", type=pathlib.Path, default=R.VENDOR_DIR / f"{MOTOR_NAME}.step")
@@ -233,8 +231,10 @@ def main(argv=None) -> int:
     ap.add_argument("--drive-out", type=pathlib.Path, default=R.VENDOR_DIR / f"{DRIVE_NAME}.step")
     args = ap.parse_args(argv)
     m = DEFAULT_CONFIG.motor
-    sources = ((args.src,) if args.write != "drive" else ()) + ((args.src48,) if args.write != "kit" else ())
-    for src in sources:
+    sources = ((("--src", args.src),) if args.write != "drive" else ()) + ((("--src48", args.src48),) if args.write != "kit" else ())
+    for flag, src in sources:
+        if src is None:
+            ap.error(f"--write {args.write} needs {flag}")
         if not src.expanduser().exists():
             print(f"kit export not found: {src}", file=sys.stderr)
             return 1
