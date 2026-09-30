@@ -93,7 +93,7 @@ Custom parts declare `REFERENCE = NAME` (`None` for a *measured* one), `CONVERTE
    `./cadtool gen assemblies/arm.py` + `./cadtool snapshot …` to eyeball it in place — and the rest of Recipe C.
 
 A NEW export (Recipe E, `reference/CLAUDE.md`) goes straight to a *measured* conversion (Part states): step 1 on the
-raw file (outside the tree), the part written as in steps 2-3 with `REFERENCE = None` and a `lib/reference.py MEASURED`
+raw file (where the user put it), the part written as in steps 2-3 with `REFERENCE = None` and a `lib/reference.py MEASURED`
 row, and in place of step 4 its own tests - the export's numbers written into them, checked against the raw file once
 before they are committed; then step 5.
 
@@ -123,7 +123,7 @@ envelope reuses with other `MotorParams`.
 **Recipe A — add a purchased part** (`parts/<group>/<name>.py`): copy `parts/_templates/cots.py` → declare `COTS`,
 `MASS_G`, `PURCHASE_SPEC` / `PURCHASE_QTY` / `PURCHASE_NOTE`, an `_envelope()` from `lib/params.py` → register in
 `lib/reference.py COTS` (`rel=None` when the vendor file IS the reference) → put `vendor/<name>.step` in place (Recipe D,
-`vendor/CLAUDE.md`) → `./cadtool python tools/reference/import_solidworks.py` (mirrors it into `reference/solidworks/`,
+`vendor/CLAUDE.md`) → `./cadtool python tools/reference/import_solidworks.py --src <export tree>` (mirrors it into `reference/solidworks/`,
 manifest entry) → `tests/test_parts_convention.py MULTI_BODY` if it is several solids → give it an occurrence (a
 SolidWorks key, a module row, or Recipe B in `assemblies/CLAUDE.md`) → Recipe C.
 

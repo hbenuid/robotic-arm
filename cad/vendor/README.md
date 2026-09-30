@@ -14,7 +14,7 @@ swap one (Recipe D) and the rules for these files: [`CLAUDE.md`](CLAUDE.md); thi
 |---|---|---|---|
 | `gt2_pulley_20t.step` | `parts/wrist/gt2_pulley_20t.py` | SolidWorks re-export of the downloaded `GT2_20T` model (148 faces, real teeth, Ø5 bore, 6 mm belt, Ø16 flanges, 2 set screws) | `gt2_pulley_20t_bore5_w6` **tried and rejected**: analytic simplified (10 faces, Ø18.2 flanges, 10 mm long — >1.5 mm off) |
 | `gripper_rail_6mm.step` | `parts/gripper/gripper_rail_6mm.py` | SolidWorks export, Ø6 × 125 mm rail | no Ø6 round rod in the catalog (only 8/10/12 mm supported rails) |
-| `mg996r_servo.step` | `parts/gripper/mg996r_servo.py` | SolidWorks re-export of a third-party MG996R model (4 bodies); original: `arm_assembly_organized/gripper/Servo Motor MG996R 3D Model.step` | `MG996R`/`towerpro` not in the catalog; only generic servo envelopes — keep |
+| `mg996r_servo.step` | `parts/gripper/mg996r_servo.py` | SolidWorks re-export of a third-party MG996R model (4 bodies); original: `gripper/Servo Motor MG996R 3D Model.step` in the SolidWorks export tree | `MG996R`/`towerpro` not in the catalog; only generic servo envelopes — keep |
 | `mg996r_horn.step` | `parts/gripper/mg996r_horn.py` | idem; original `…/gripper/Servo MG996R Horn.step` | not a catalog part |
 | `nema17_pancake.step` | `parts/wrist/nema17_pancake.py` | the 7-part pancake-motor sub-assembly of the SolidWorks arm, flattened into one 11-solid part by `tools/reference/extract_placements.py` | `stepper_motor_nema17_l0020_single_shaft` exists but is analytic simplified — keep |
 | `bearing_625.step` | `parts/cycloidal/bearing_625.py` | step.parts `bearing_625_2rs_sealed_simple` (1 solid, 16 faces, Ø16 × 5, axis Z standing on z=0 — identity `VENDOR_TO_REF`) | adopted 2026-08-28; the reference is the drive repo's annulus |
@@ -44,7 +44,7 @@ lists the purchased items that have no geometry at all).
 ## Where the vendor files come from
 Besides step.parts downloads (Recipe D, `CLAUDE.md`) and `tools/reference/extract_placements.py` (the flattened
 `nema17_pancake.step`), the third producer of vendor files is `tools/reference/split_mks_motor.py`: it splits the
-"NEMA 17 x 40 + MKS SERVO42D" kit export (`lib/reference.py MKS_EXPORT_NAME`, outside the repo next to the monolith)
+"NEMA 17 x 40 + MKS SERVO42D" kit export (`lib/reference.py MKS_EXPORT_NAME`, a raw export not in the repo)
 by GEOMETRY into `vendor/nema17_40mm.step` and `vendor/mks_servo42d.step` (what each holds and its frame: the table
 above); `import_solidworks.py` then mirrors both into `reference/solidworks/` (`rel=None`, the `nema17_pancake`
 pattern). `--write drive` composes `vendor/nema17_48mm.step` for the drive motor from the x48 export's body

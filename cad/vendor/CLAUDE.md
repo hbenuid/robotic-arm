@@ -18,7 +18,8 @@ file came from is `README.md`; this file holds the rules.
   Gotchas).
 
 ## Recipe D — produce or swap a vendor STEP
-From an export → `./cadtool python tools/reference/split_mks_motor.py --write kit|drive|all` (the motor kits). From
+From an export → `./cadtool python tools/reference/split_mks_motor.py --write kit|drive|all --src <x40 kit> --src48
+<x48 kit>` (the motor kits; each path only where `--write` needs it). From
 the catalog:
 ```bash
 ./cadtool parts "GT2 20" --limit 20                         # search (ANDed tokens; facets --tag/--family/--standard)
@@ -27,11 +28,11 @@ the catalog:
 # set VENDOR_TO_REF in parts/<group>/<name>.py so the model lands in the reference frame (reference/<origin>/<name>.step)
 ./cadtool pytest -k <name>                                  # vendor-frame + envelope + convention tests
 ```
-Then the manifest: `./cadtool python tools/reference/import_solidworks.py` for SolidWorks-origin parts,
+Then the manifest: `./cadtool python tools/reference/import_solidworks.py --src <export tree>` for SolidWorks-origin parts,
 `./cadtool python tools/cycloidal/import_cadquery.py --only <name>` for the drive's parts (their manifest is owned by
 that tool) → `./cadtool gen parts/<group>/<name>.py --force` → Recipe C (`cad/CLAUDE.md`), on one machine only.
 
 A catalog model worse than the SolidWorks re-export is restored:
-`cp reference/solidworks/<name>.step vendor/<name>.step && ./cadtool python tools/reference/import_solidworks.py`;
+`cp reference/solidworks/<name>.step vendor/<name>.step && ./cadtool python tools/reference/import_solidworks.py --src <export tree>`;
 for the drive's parts a worse catalog model is simply deleted — the envelope takes over and the manifest entry loses
 its `vendor` block. Record what was tried in `README.md`.

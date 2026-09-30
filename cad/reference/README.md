@@ -12,10 +12,9 @@ against them. The rules for them — never edit, the regeneration order, the man
 are [`CLAUDE.md`](CLAUDE.md); this file is the record of what is here.
 
 ## Provenance
-- Source tree: the SolidWorks 2026 STEP AP214 exports of 2026-08-27 (the tools' default `--src`, `lib/reference.py
-  DEFAULT_SOURCE_DIR`, or `ARM_REFERENCE_SRC` for `import_solidworks.py` / `split_mks_motor.py` — `extract_placements.py`
-  takes only `--monolith`); **not in git and not needed on a machine** — the committed copies here
-  are the inputs, the raw tree only for re-running the derivation tools.
+- Source tree: the SolidWorks 2026 STEP AP214 exports of 2026-08-27, **not in git, not needed on a machine and with
+  no fixed place** — the committed copies here are the inputs, the raw tree only for re-running the derivation tools,
+  which take its path (`--src` / `--src48` / `--monolith`).
 - Full assembly: `final Arm Assembly Fully Movable.STEP` (13.5 MB, inch units, sha256 `67c39d5dc9ff1d7b…`) —
   not committed; `placements.json` captures its structure.
 - NEMA 17 x 40 + MKS SERVO42D kit: `mks/nema17x40_with_mks.step` under the source tree (SolidWorks 2026 export of
@@ -29,7 +28,7 @@ are [`CLAUDE.md`](CLAUDE.md); this file is the record of what is here.
   22 mm one - so `split_mks_motor.py --write drive` composes `vendor/nema17_48mm.step` from its body and the drive's
   own pilot + shaft; the drive motor's reference stays `cycloidal/nema17_48mm.step` (`import_cadquery.py --only nema17_48mm`
   records the vendor block).
-- Measured, not committed: `step/gt2_pulley_20_60t.step` under the source tree (SolidWorks 2026 export of 2026-09-26,
+- Measured, not committed: `GT2 Pulley - 20 - 60 teeth.STEP` (SolidWorks 2026 export of 2026-09-26,
   mm, 1 solid, 1 974 574 bytes, sha256 `55733855bdc5…`; `lib/reference.py MEASURED`) — the 20-60T compound pulley,
   converted by measuring it (`parts/CLAUDE.md` Part states → *measured*): nothing of it is in this folder, its numbers
   are in `lib/pulley/params.py` and `tests/pulley/test_gt2_pulley_20_60t.py`.

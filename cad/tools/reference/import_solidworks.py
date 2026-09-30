@@ -3,7 +3,7 @@
 purchased parts, and write reference/manifest.json. The cycloidal drive's parts are not
 SolidWorks exports: tools/cycloidal/import_cadquery.py owns them (their entries are kept).
 
-    ./cadtool python tools/reference/import_solidworks.py [--src DIR] [--force]
+    ./cadtool python tools/reference/import_solidworks.py --src <the SolidWorks export tree> [--force]
 
 Copies go through the explicit map in lib/reference.py - never shell globs: the source
 names contain spaces, parentheses, a trailing space and a Cyrillic configuration name.
@@ -14,7 +14,6 @@ tools/reference/extract_placements.py and after replacing a vendor file, so the 
 from __future__ import annotations
 
 import argparse
-import os
 import pathlib
 import shutil
 import sys
@@ -25,11 +24,11 @@ from lib import reference as R
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--src", type=pathlib.Path,
-                    default=pathlib.Path(os.environ.get("ARM_REFERENCE_SRC", R.DEFAULT_SOURCE_DIR)),
-                    help="SolidWorks export tree (default: %(default)s)")
+    ap.add_argument("--src", type=pathlib.Path, required=True,
+                    help="the SolidWorks export tree (the directory holding the paths lib/reference.py names)")
     ap.add_argument("--force", action="store_true", help="overwrite existing copies")
     args = ap.parse_args(argv)
+    args.src = args.src.expanduser()
     if not args.src.is_dir():
         print(f"source dir not found: {args.src}", file=sys.stderr)
         return 1
@@ -44,7 +43,6 @@ def main(argv=None) -> int:
     # tools/reference/import_native.py - keep them.
     existing = M.read()["parts"]
     manifest = {
-        "source_dir": str(args.src),
         "monolith": None,
         "parts": {name: entry for name, entry in existing.items() if name in others},
     }

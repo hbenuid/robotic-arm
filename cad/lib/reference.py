@@ -1,7 +1,7 @@
 """SolidWorks reference geometry: the naming map, loaders and the reference-match check.
 
-The originals live outside the repo (~/Documents/arm_assembly_organized/, SolidWorks 2026
-AP214 exports of 2026-08-27). `tools/reference/import_solidworks.py` copies the per-part exports into
+The originals (SolidWorks 2026 AP214 exports of 2026-08-27) are not in the repo and have no fixed place: the tools
+that read them take their path (--src / --monolith). `tools/reference/import_solidworks.py` copies the per-part exports into
 reference/solidworks/<clean_name>.step (immutable inputs) and vendor/<clean_name>.step (purchased
 parts); `tools/reference/extract_placements.py` extracts the assembly placements from the
 full-assembly STEP into reference/placements.json (and the motor mounts declared in lib/mounts.py,
@@ -10,7 +10,7 @@ reference/cycloidal/ (tools/cycloidal/import_cadquery.py); the parts designed in
 their accepted build in reference/native/ (tools/reference/import_native.py); path_of() resolves the
 origin. A measured conversion (MEASURED) keeps no reference at all: its export was measured once, its own tests hold
 the numbers. The third producer of vendor files is tools/reference/split_mks_motor.py: it splits the "NEMA 17
-x 40 + MKS SERVO42D" kit export (MKS_EXPORT_NAME, next to the monolith) into vendor/nema17_40mm.step and
+x 40 + MKS SERVO42D" kit export (MKS_EXPORT_NAME) into vendor/nema17_40mm.step and
 vendor/mks_servo42d.step, which import_solidworks.py then mirrors into reference/solidworks/.
 
 `lib/` never imports `parts/`.
@@ -31,15 +31,14 @@ REF_CYCLOIDAL_DIR = REF_DIR / "cycloidal"    # the CadQuery exports of the drive
 REF_NATIVE_DIR = REF_DIR / "native"          # accepted builds of the parts designed HERE (NATIVE | NATIVE_COTS)
 VENDOR_DIR = CAD_DIR / "vendor"
 
-# Where the SolidWorks export tree lives on this machine (override: --src / ARM_REFERENCE_SRC).
-DEFAULT_SOURCE_DIR = pathlib.Path.home() / "Documents" / "arm_assembly_organized"
+# The raw exports, by their path inside the SolidWorks export tree (the tools take the tree or the file as an argument).
 MONOLITH_NAME = "final Arm Assembly Fully Movable.STEP"   # 13 MB, inch units, the full positioned assembly
 MKS_EXPORT_NAME = "mks/nema17x40_with_mks.step"           # 0.5 MB, mm, SolidWorks 2026 export of the NEMA 17 x 40 + MKS SERVO42D kit
 #   (sha256 4e51a159...; tools/reference/split_mks_motor.py splits it into vendor/nema17_40mm.step + vendor/mks_servo42d.step)
 MKS48_EXPORT_NAME = "mks/nema17x48_with_mks.step"         # 3.3 MB, cm, the same kit with a 48 mm motor (a 17HS19-2004S1: 24 mm shaft, 15 mm D-cut)
 #   (sha256 c1958e60...; the same tool composes vendor/nema17_48mm.step from its body + the x40's shaft trimmed to 22)
 
-# Custom / printed parts: clean name -> (SolidWorks product name, export path under the source dir).
+# Custom / printed parts: clean name -> (SolidWorks product name, export path inside the export tree).
 # Each gets parts/<group>/<name>.py (an import wrapper until converted) + reference/solidworks/<name>.step.
 CUSTOM: dict[str, tuple[str, str]] = {
     "base":                  ("base of robot arm 62126",                 "step/base of robot arm 62126.STEP"),
@@ -148,10 +147,10 @@ NATIVE_PARTS: set[str] = set(NATIVE) | set(NATIVE_COTS)
 
 # Measured conversions: printed parts converted from a SolidWorks export that was measured once and is NOT committed -
 # no reference file, no manifest entry, so the import tools and tests/test_reference_match.py never see them; the
-# part's own tests lock its build to the export's numbers. clean name -> (SolidWorks product, export path under the
-# source dir, the export's sha256 - what was measured).
+# part's own tests lock its build to the export's numbers. clean name -> (SolidWorks product, the export's file name as
+# SolidWorks wrote it (its STEP header's FILE_NAME), the export's sha256 - what was measured).
 MEASURED: dict[str, tuple[str, str, str]] = {
-    "gt2_pulley_20_60t": ("GT2 Pulley - 20 - 60 teeth", "step/gt2_pulley_20_60t.step",
+    "gt2_pulley_20_60t": ("GT2 Pulley - 20 - 60 teeth", "GT2 Pulley - 20 - 60 teeth.STEP",
                           "55733855bdc50452499682bef5add391cdd0363c7bed4f4b5c5a44a83dbd0523"),
 }
 
