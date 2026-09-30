@@ -15,10 +15,10 @@ def seat_bolt_points(cfg: WristConfig = DEFAULT) -> list[tuple[float, float, flo
 
 
 def end_face_holes(cfg: WristConfig = DEFAULT) -> tuple[list[tuple[float, float]], list[tuple[float, float]]]:
-    """((y, z) of the 4 M3, (y, z) of the 4 M4) on the end face, about the roll axis."""
+    """((y, z) of the M3 - 2 per row in m3_rows -, (y, z) of the 4 M4) on the end face, about the roll axis."""
     e = cfg.end_face
     h = e.m3_sp / 2.0
-    m3 = [(sy * h, e.axis_z + sz * h) for sy in (-1.0, 1.0) for sz in (-1.0, 1.0)]
+    m3 = [(sy * h, e.axis_z + sz * h) for sy in (-1.0, 1.0) for sz in e.m3_rows]
     m4 = [(sy * e.m4_y, e.axis_z + sz * e.m4_dz) for sy in (-1.0, 1.0) for sz in (-1.0, 1.0)]
     return m3, m4
 

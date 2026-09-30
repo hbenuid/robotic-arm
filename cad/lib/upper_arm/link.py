@@ -32,7 +32,7 @@ def _slot(x: float, half_len: float, width: float, y0: float, y1: float):
 
 def _plate(cfg: UpperArmConfig):
     """The stadium plate with its lip and rounded edge, the elbow half's step below, the square opening, the slots,
-    the x 128 bearing seats and the elbow bearing stack."""
+    the second stage's bearing seats and the elbow bearing stack."""
     s, e, sl, b = cfg.slab, cfg.elbow, cfg.slots, cfg.bearing
     top = s.lip_top + NUDGE
     body = stadium(s.elbow_x, 2.0 * s.r, s.y1 - e.y0, s.elbow_x / 2.0, e.y0)
@@ -53,7 +53,7 @@ def _plate(cfg: UpperArmConfig):
         body = body - _slot(x, sl.through_half_len, sl.width, s.y0 - NUDGE, top)
     body = body - _slot(sl.stepped_x, sl.stepped_half_len, sl.width, sl.counterbore_y - NUDGE, top)
     body = body - _slot(sl.stepped_x, sl.stepped_half_len, sl.counterbore_w, e.y0 - NUDGE, sl.counterbore_y)
-    # x 128: the boss under the plate, a seat from each side, the hole through the web between them
+    # the second stage (BearingParams.x): the boss under the plate, a seat from each side, the hole through the web
     body = body + _bore(b.boss_dia / 2.0, b.boss_y, s.y0 + NUDGE, b.x)
     body = body - _bore(b.seat_dia / 2.0, b.web_y[1], top, b.x)
     body = body - _bore(b.hole_dia / 2.0, b.web_y[0] - NUDGE, b.web_y[1] + NUDGE, b.x)

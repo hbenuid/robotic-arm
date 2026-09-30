@@ -13,7 +13,10 @@ in the bore, and a block out to the end face the bracket bolts to - the NEMA 17 
 drilled through the whole part along X (the SolidWorks through-all: the z 6.5 pair score the plate's top).
 
 Two configurations: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
-tests/test_reference_match.py); DEFAULT is what the part builds (= LEGACY: the port changes no geometry).
+tests/test_reference_match.py); DEFAULT is what the part builds: the block SHORTENING shorter (its end face nearer
+the pitch axis - lib/placements.py SHIFTS moves what bolts to it), the slope steeper so the weight-saving pocket
+behind it stays inside the shorter block, the NEMA 17 pattern's upper pair of M3 dropped (nothing uses them; they
+would run through the pocket).
 
 Every number below was measured on the reference 2026-09-27 (face / vertex census; tests/wrist/test_wrist_link.py
 re-checks the builds against it): [REFERENCE] unless tagged. SolidWorks' float noise (<= 6e-4) is rounded off the end
@@ -21,7 +24,7 @@ face's holes and the block. Units mm. Frozen dataclasses; variants via dataclass
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 
 @dataclass(frozen=True)
@@ -76,12 +79,13 @@ class TowerParams:
 @dataclass(frozen=True)
 class EndFaceParams:
     """The end face's holes, on the roll axis (y 0, z axis_z): the NEMA 17 pattern's M3 on an m3_sp square (the
-    bracket's motor), the bracket's M4 at y = +/-m4_y, z = axis_z +/- m4_dz; every one drilled along X through the
-    whole part."""
+    bracket's motor) - the rows at z = axis_z + r * m3_sp / 2 for r in m3_rows -, the bracket's M4 at y = +/-m4_y,
+    z = axis_z +/- m4_dz; every one drilled along X through the whole part."""
 
     axis_z: float = 22.0
     m3_sp: float = 31.0
     m3_dia: float = 3.2
+    m3_rows: tuple = (-1.0, 1.0)
     m4_y: float = 26.5
     m4_dz: float = 15.5
     m4_dia: float = 4.2
@@ -96,4 +100,15 @@ class WristConfig:
 
 
 LEGACY = WristConfig()     # the SolidWorks part, exactly
-DEFAULT = LEGACY           # what the part builds
+
+SHORTENING = -20.0   # [DESIGN] the end face this much nearer the pitch axis than the SolidWorks part's: the arm's
+#                      reach is long for its NEMA 17 drives
+
+# What the part builds: the block SHORTENING shorter; the slope's top at slope_x1 14 - the steepest whose cut stays
+# inside the fillet's core (slope_x at the core's top < block_x1 + 1), 6 mm of block left over the pocket at the top;
+# the upper M3 pair gone.
+DEFAULT = replace(
+    LEGACY,
+    tower=replace(LEGACY.tower, block_x1=LEGACY.tower.block_x1 + SHORTENING, slope_x1=14.0),   # [DESIGN]
+    end_face=replace(LEGACY.end_face, m3_rows=(-1.0,)),                                          # [DESIGN]
+)

@@ -44,11 +44,12 @@ def _bore(cfg: WristConfig, z0: float, z1: float):
 
 
 def _plate(cfg: WristConfig):
-    """The plate: a round end on each axis, clipped to the flats."""
+    """The plate: a round end on each axis, clipped to the flats and at the end face (the round end's r wall_r reaches
+    past a block shorter than it)."""
     p, t = cfg.plate, cfg.tower
     plate = cylinder(p.pitch_r, p.thickness, (p.pitch_x, 0.0)) + cylinder(t.wall_r, p.thickness)
     plate = plate + _box((p.pitch_x, 0.0), (-p.half_width, p.half_width), (0.0, p.thickness))
-    return plate & _box((-_FAR, _FAR), (-p.half_width, p.half_width), (-NUDGE, p.thickness + NUDGE))
+    return plate & _box((-_FAR, t.block_x1), (-p.half_width, p.half_width), (-NUDGE, p.thickness + NUDGE))
 
 
 def _tower(cfg: WristConfig):
@@ -63,15 +64,15 @@ def _tower(cfg: WristConfig):
     slope = max(core.faces().filter_by(bd.GeomType.PLANE), key=lambda f: f.normal_at().dot(n))
     edges = [e for e in slope.edges() if e.geom_type != bd.GeomType.LINE]
     core = core.fillet(t.fillet_r, edges)
-    wall = cylinder(t.wall_r, t.z1) & _box((t.x0, _FAR), (-_FAR, _FAR), (-_FAR, _FAR))
+    wall = cylinder(t.wall_r, t.z1) & _box((t.x0, t.block_x1), (-_FAR, _FAR), (-_FAR, _FAR))   # ends at the end face
     block = _box((t.x0, t.block_x1), (-t.block_half_width, t.block_half_width), t.block_z)
     return core & (wall + block)
 
 
 def _cheeks(cfg: WristConfig):
-    """The cheeks either side of the slot, inside the bore, from the plate's top up to cheek_z1."""
+    """The cheeks either side of the slot, inside the bore (and the block), from the plate's top up to cheek_z1."""
     t, z0 = cfg.tower, cfg.plate.thickness
-    return [_box((t.cheek_x, t.bore_r), y, (z0, t.cheek_z1))
+    return [_box((t.cheek_x, min(t.bore_r, t.block_x1)), y, (z0, t.cheek_z1))
             for y in ((t.slot_half, t.bore_r), (-t.bore_r, -t.slot_half))]
 
 

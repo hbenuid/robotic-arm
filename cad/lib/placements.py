@@ -14,13 +14,24 @@ declared as frames in lib/mounts.py and materialised by tools/reference/mount_pl
 (parent None, rel == world = host world * mount frame). A MODULE record with a `mount` block
 ("forearm_roll_drive#1", listed under both `designed_modules` and `mounted`) is a designed module the capture
 never placed - its pose is a lib/mounts.py ModuleMount, its contents assemblies/<module>.py.
+
+The design may also MOVE capture records without editing the file: SHIFTS translates every record beyond a link
+whose length the design changed (location() applies it; to_location() / to_record() stay raw for the writers).
 """
 from __future__ import annotations
 
 import json
 import pathlib
+from dataclasses import dataclass
 
 from cadgen import build123d as bd
+
+from lib.forearm.params import DEFAULT as _FOREARM
+from lib.forearm.params import LEGACY as _FOREARM_LEGACY
+from lib.upper_arm.params import DEFAULT as _UPPER_ARM
+from lib.upper_arm.params import LEGACY as _UPPER_ARM_LEGACY
+from lib.wrist.params import DEFAULT as _WRIST
+from lib.wrist.params import LEGACY as _WRIST_LEGACY
 
 PLACEMENTS_PATH = pathlib.Path(__file__).resolve().parent.parent / "reference" / "placements.json"
 
@@ -49,6 +60,61 @@ OCCURRENCES: dict[str, dict] = {o["key"]: o for o in DATA["occurrences"]}
 RETIRED: tuple[str, ...] = ("j3_coupler#1", "gt2_pulley_90t#1", "gt2_pulley_90t#2")
 
 
+@dataclass(frozen=True)
+class LinkShift:
+    """A link whose length the design changed: every capture record beyond it moves `along_x` along the link's +X.
+
+    `along_x` is the link parameter's DEFAULT - LEGACY (the part's geometry and these poses have one source);
+    `axis_w` is the anchor record's +X in W - data, so no file read is needed (tests/test_placements.py checks it
+    against the record); `moves` lists the TOP-LEVEL capture records beyond the link, the retired hosts included (a
+    module's children follow its world pose; the mounted records never: mount_placements.py bakes their hosts'
+    shifts in)."""
+
+    link: str
+    anchor: str
+    axis_w: tuple[float, float, float]
+    along_x: float
+    moves: tuple[str, ...]
+
+
+_BEYOND_WRIST_ROLL = ("gripper_clamp_bracket#1", "nema17_pancake#1", "gt2_pulley_20t#1", "gripper#1")
+_BEYOND_WRIST_PITCH = ("gt2_pulley_90t#2", "j3_coupler#2", "wrist_link#1") + _BEYOND_WRIST_ROLL
+_BEYOND_ELBOW = ("j2_link#1", "j3_coupler#1", "gt2_pulley_90t#1") + _BEYOND_WRIST_PITCH
+
+SHIFTS: tuple[LinkShift, ...] = (
+    # the upper arm: its elbow axis at slab.elbow_x from the shoulder axis
+    LinkShift("j1_link", "j1_link#1", (-0.673104702, 0.73826898, 0.043462315),   # [REFERENCE]
+              _UPPER_ARM.slab.elbow_x - _UPPER_ARM_LEGACY.slab.elbow_x, _BEYOND_ELBOW),
+    # the forearm: its wrist_pitch axis at web.wrist_x from the elbow axis (along -X)
+    LinkShift("j2_link", "j2_link#1", (0.680611117, -0.731325624, -0.043947003),   # [REFERENCE]
+              _FOREARM.web.wrist_x - _FOREARM_LEGACY.web.wrist_x, _BEYOND_WRIST_PITCH),
+    # the wrist body: the gripper bracket bolts to its end face at tower.block_x1
+    LinkShift("wrist_link", "wrist_link#1", (-0.865418936, 0.497923174, 0.055880029),   # [REFERENCE]
+              _WRIST.tower.block_x1 - _WRIST_LEGACY.tower.block_x1, _BEYOND_WRIST_ROLL),
+)
+
+
+def shift(key: str) -> tuple[float, float, float]:
+    """The translation (W, mm) SHIFTS applies to occurrence `key`'s world pose: (0, 0, 0) for any other record."""
+    t = [0.0, 0.0, 0.0]
+    for s in SHIFTS:
+        if key in s.moves:
+            for i in range(3):
+                t[i] += s.along_x * s.axis_w[i]
+    return (t[0], t[1], t[2])
+
+
+def record_shift(record: dict) -> tuple[float, float, float]:
+    """What a record's WORLD pose moves by: its own shift, or its parent module's (the children follow it)."""
+    return shift(record.get("parent") or record["key"])
+
+
+def shifted(key: str, point: tuple[float, float, float]) -> tuple[float, float, float]:
+    """A capture point (W) that moves with occurrence `key` (robot/frames.py's joint origins)."""
+    d = shift(key)
+    return (point[0] + d[0], point[1] + d[1], point[2] + d[2])
+
+
 def to_location(record: dict) -> bd.Location:
     return bd.Location(tuple(record["position"]), tuple(record["rotation_xyz_deg"]))
 
@@ -65,11 +131,22 @@ def to_record(loc: bd.Location) -> dict:
     }
 
 
+def record_location(record: dict, frame: str = "rel") -> bd.Location:
+    """A record's Location with SHIFTS applied: its world pose moves by record_shift(); so does `rel` of a top-level
+    record (rel == world), never a child's (relative to its parent, which carries the shift)."""
+    loc = to_location(record[frame])
+    if frame == "world" or record.get("parent") is None:
+        d = record_shift(record)
+        if any(d):
+            loc = bd.Location(d) * loc
+    return loc
+
+
 def location(key: str, frame: str = "rel") -> bd.Location:
-    """Location of occurrence `key`; frame = "rel" (to its parent node) or "world"."""
+    """Location of occurrence `key`; frame = "rel" (to its parent node) or "world"; SHIFTS applied."""
     if not OCCURRENCES:
         raise FileNotFoundError(MISSING_HINT)
-    return to_location(OCCURRENCES[key][frame])
+    return record_location(OCCURRENCES[key], frame)
 
 
 def keys(*, part: str | None = None, parent: str | None = None, kind: str | None = None,

@@ -30,6 +30,8 @@ zero = capture, the committed meshes vs a fresh export, inertials, URDF/SRDF/SDF
 the base stack above the base bottom, the 90T planes within the shafts; the 90T pulley bolts: seats, reach, the opened
 holes, the nuts' designed press; the base_yaw thrust stack under `j1_coupler`),
 `test_layering.py` (the package layering, no `sys.path`, no direct part-module imports — AST scan),
+`test_sweeps.py` (the joint limits keep the arm off itself: exact distances between the robot links' parts at poses
+on the limits - the shoulder's upper limit over the elbow's range, poses with the arm down in the table skipped),
 `test_lazy_kernel.py` (a fresh interpreter imports every template, part, assembly and link model without
 loading `build123d` / `OCP`; names the first offender — a new assembly model goes in its module list),
 `source_checks.py` (the shared `runs_its_model()` check that a model file ends with its build call),

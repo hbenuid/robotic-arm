@@ -2,13 +2,14 @@
 the forearm roll drive that splits it, in j2_link's part frame.
 
 Frame (= the SolidWorks part frame of j2_link, which placements.json places): origin on the elbow pivot, the
-wrist pivot at x = wrist_x (-210), +Z = N (the pitch-axis direction: the motor-body side; -Z = the belt side;
+wrist pivot at x = WebParams.wrist_x, +Z = N (the pitch-axis direction: the motor-body side; -Z = the belt side;
 the upper arm lies at z < -8.5).
 
 Two configurations: LEGACY reproduces the SolidWorks reference exactly (the part's REFERENCE_BUILD -
 tests/test_reference_match.py), DEFAULT is what the part builds. In M1 they were the same; the forearm roll
-(M2) makes DEFAULT end the forearm at a flange wall instead of the elbow disc, and the link caps' removal
-(2026-09-25: j2_cap_1 the lid, j2_cap_2 the belt tray) leaves out the sockets that located them.
+(M2) makes DEFAULT end the forearm at a flange wall instead of the elbow disc, the link caps' removal
+(2026-09-25: j2_cap_1 the lid, j2_cap_2 the belt tray) leaves out the sockets that located them, and SHORTENING
+brings the wrist pivot nearer the elbow (lib/placements.py SHIFTS moves what lies beyond).
 
 Every number below was measured on the references 2026-09-22 (planar / cylindrical face census;
 tests/forearm/test_forearm_legacy.py re-checks the builds against them): [REFERENCE] unless tagged.
@@ -116,7 +117,7 @@ class RollEndParams:
     bolt_dia: float = 3.4                 # [DESIGN] M3 clearance through the wall (heads on the wrist face; self-tapping in the shaft's end)
     cable_bore: float = 24.0              # [DESIGN] = the shaft's bore (the shaft's Ø39.7 end leaves ~8 mm of wall for the bolts)
     plug_clearance: float = 10.0          # [DESIGN] the wrist motor's connector plug needs this much room to the wall
-    wrist_belt: int = 264                 # [ESTIMATE] 264-2GT closed belt, 6 mm: sets the motor slide (motor_x)
+    wrist_belt: int = 258                 # [ESTIMATE] 258-2GT closed belt, 6 mm: sets the motor slide (motor_x)
 
 
 @dataclass(frozen=True)
@@ -276,14 +277,19 @@ class ForearmConfig:
 
 LEGACY = ForearmConfig()     # the SolidWorks part, exactly
 
-# The forearm with the roll joint: the wall replaces the elbow disc; the wrist-pitch motor slides toward the wrist
-# so its connector plug clears the wall - its position is what a stock 264-2GT belt sets (lib/belts.py) -, the slots
-# shorten to that range (>= 4 mm before the wall) and the central one widens to pass the Ø22 pilot boss; the caps
-# are gone, so are the sockets that located them.
+SHORTENING = 40.0   # [DESIGN] the wrist pivot this much nearer the elbow than the SolidWorks part's: the arm's reach
+#                     is long for its NEMA 17 drives (the shoulder's and the elbow's holding torque)
+_WEB = replace(LEGACY.web, wrist_x=LEGACY.web.wrist_x + SHORTENING)
+
+# The forearm with the roll joint, SHORTENING shorter: the wall replaces the elbow disc; the wrist-pitch motor sits
+# where the stock belt puts it (lib/belts.py) - between the wall, its connector plug clear by plug_clearance, and the
+# wrist boss -, the slots shorten to the slide that leaves (>= 4 mm before the wall; its ends: the plug's clearance,
+# 0.5 off the boss) and the central one widens to pass the Ø22 pilot boss; the caps are gone, so are the sockets
+# that located them.
 DEFAULT = replace(
-    LEGACY, roll=True,
-    motor_x=LEGACY.web.wrist_x + centre_distance(RollEndParams().wrist_belt, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH),   # -136.37
-    slide_range=(-141.5, -130.0),
-    slot=SlotParams(centre_w=22.3, centre_x=(-148.0, -124.0), side_x=(-157.0, -114.5)),
+    LEGACY, roll=True, web=_WEB,
+    motor_x=_WEB.wrist_x + centre_distance(RollEndParams().wrist_belt, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH),   # -99.52
+    slide_range=(-103.5, -94.0),
+    slot=SlotParams(centre_w=22.3, centre_x=(-110.0, -88.0), side_x=(-119.0, -78.5)),
     sockets=None,
 )
