@@ -20,9 +20,10 @@ Two configurations: LEGACY reproduces the SolidWorks reference (the part's REFER
 tests/test_reference_match.py); DEFAULT is what the part builds: it stands on the base_yaw thrust bearing in the
 base's groove (lib/bearings.py THRUST_*) - the recess's ceiling is the seat on the upper washer, wide enough to clear
 the stack, and the rim is lifted clear of the base's top face (the SolidWorks rim sat on it, the coupler turning on
-the base's face); its hub takes the base_yaw 90T like j3_coupler's the wrist's: the stub the bearings' bore, on
-through the lip to its lower face, where the 90T's hub end meets it, drilled for the 90T's 4 bolts (M4 clearance, on
-its bolt circle at the diagonals, the nuts in hex pockets in the pocket's floor) round the 90T's bore; and its yoke
+the base's face); its hub takes the base_yaw 120T as j3_coupler's the wrist's 90T: the stub the bearings' bore, on
+through the lip to its lower face, where the 120T's hub end meets it (gt2_pulley_120t#1, lib/mounts.py), drilled for the
+pulley's 4 bolts (M4 clearance, on its bolt circle at the diagonals, the nuts in hex pockets in the pocket's floor -
+parts/base/yaw_pulley_screws / _nuts) round the pulley's bore; and its yoke
 holds the drive's 6-pillar housing (lib/cycloidal/params.py DEFAULT_CONFIG): a socket round each pillar at +/-30
 degrees from the bottom, their bolts' nut pockets in the cheek - no channel, no notch, no V-grooves.
 
@@ -63,6 +64,9 @@ class HubParams:
     hole_deg: float = 45.0           # ... the first at this angle (from +X toward +Z), 90 apart
     nut_af: float | None = None      # the holes' nut pockets (none in the SolidWorks part) ...
     nut_depth: float = 0.0           # ... this deep
+    pulley_screw_len: float = 45.0   # [DESIGN] M4 x 45 (ISO 4762, parts/base/yaw_pulley_screws) from the base_yaw 120T's outer
+    #                                  face: 38.7 ends flush with the nut's outer face (DEFAULT's pockets), 45 runs 6.3 past it
+    #                                  into the pocket over the hub (an M4 x 40 ends 1.3 past: under two pitches)
 
 
 @dataclass(frozen=True)
@@ -149,7 +153,7 @@ PILLAR_DEG = (-30.0, 30.0)        # [DESIGN] the drive's pillars the yoke holds,
 DEFAULT = replace(LEGACY,
                   hub=replace(LEGACY.hub, recess_dia=THRUST_OD + 2.0 * THRUST_CLEAR,
                               recess_y1=round(_CAP.groove_y0 - _CAP.ring_top_y + THRUST_STACK, 6),
-                              # the hub the base_yaw 90T bolts to: the stub the bearings' bore, on to the lip's lower
+                              # the hub the base_yaw 120T bolts to (the 90T's hub): the stub the bearings' bore, on to the lip's lower
                               # face (1.1 longer); the 90T's bolt circle at the diagonals (where the SolidWorks Ø3.3
                               # holes were - the nuts clear of the pocket's walls), M4 clearance, the nuts sunk flush
                               # in the pocket's floor in j3_coupler's press-fit pockets; the 90T's bore (the SolidWorks

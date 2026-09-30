@@ -33,8 +33,10 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   the lip of its housing's bore) and the base_yaw thrust bearing (`washer_as6590#1`, `bearing_axk6590#1` in the base's groove,
   `washer_as6590#2` under `j1_coupler`'s seat) never existed in the SolidWorks capture; the elbow's and the wrist's 90T
   (`gt2_pulley_90t#3` / `#4`) did, but where the lower bearing had no room - their mounts are hosted on the retired
-  records they correct, `PULLEY_SEAT_SHIFT` out along the pulley's own axis; each 90T's 4x M4 screws + nuts
-  (`elbow_pulley_screws#1` / `elbow_pulley_nuts#1`, `wrist_pulley_*#1` - COTS pattern parts) are hosted on the pulley and
+  records they correct, `PULLEY_SEAT_SHIFT` out along the pulley's own axis; the base_yaw 120T (`gt2_pulley_120t#1`, the 90T with
+  more teeth) the capture never had - hosted on `j1_coupler#1`, hub up on its stub's end in the lower base bearing, turned
+  `HubParams.hole_deg` onto the stub's diagonal holes; each pulley's 4x M4 screws + nuts
+  (`elbow_pulley_screws#1` / `elbow_pulley_nuts#1`, `wrist_pulley_*#1`, `yaw_pulley_*#1` - COTS pattern parts) are hosted on the pulley and
   on the screws, centred on the joint axis. They are declared as
   frames-as-data in the host occurrence's frame (`Mount(key, part, host, link, joint, frame)`; a board's host is its
   motor, a nut set's its screw set) and `tools/reference/mount_placements.py` materialises them into `placements.json` as ordinary part records
@@ -86,7 +88,8 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   M3 screws + nuts) lives only in
   `tools/bom.py EXTRAS` — it is on the buy list and absent from the model, the totals and the inertials; model it as a
   COTS pattern part (`cycloidal_housing_bolts` is the pattern, `elbow_pulley_screws` a native mounted one,
-  `forearm_roll_mount_screws` a native module row) to change that.
+  `forearm_roll_mount_screws` a native module row, `yaw_pulley_screws` a mounted one with no reference file - the state
+  for a new one, `parts/AGENTS.md` Part states → *no reference*) to change that.
 - `arm.py GROUPS` buckets the occurrences into the component tree
   `arm → base_link/shoulder_link/upper_arm_link/elbow_link/forearm_link/wrist_pitch_link/wrist` — the
   `robot/frames.py LINKS` partition with the three modules kept whole (`wrist` = wrist_roll_link + jaw

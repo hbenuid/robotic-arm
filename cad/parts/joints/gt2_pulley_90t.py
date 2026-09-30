@@ -7,7 +7,7 @@ toothed rim - the tooth band (the GT2 groove of lib/belts.py, lib/pulley/teeth.p
 underneath between the hub's step and the rim; a Ø12.5 bore; 4x M4 on the pulley's own X / Z axes (lib/belts.py
 pulley_90t_bolt_points()) through the hub end to end (GT2_PULLEY_90T_FACE_Y): the pulley bolts' heads sit on its outer
 face (elbow_pulley_screws, wrist_pulley_screws). Every number: lib/pulley/params.py (PulleyParams; measured on the
-reference 2026-09-27).
+reference 2026-09-27). The base_yaw belt's pulley is this one with 120 teeth: parts/base/gt2_pulley_120t.
 
 SolidWorks product: 'GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric'
 Source export:      step/GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric.STEP

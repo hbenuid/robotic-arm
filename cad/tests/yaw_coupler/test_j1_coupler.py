@@ -4,7 +4,7 @@ regression names what moved), the yoke's shapes are the drive's housing's - its 
 its bolt circle and nut pockets (lib/cycloidal/params.py HousingParams; LEGACY's the port's housing, LEGACY_CONFIG) -,
 and DEFAULT - what the part builds - changes its underside, its hub and the yoke's hold on the housing: the seat on the
 thrust bearing, the rim clear of the base (tests/test_mounts.py checks the stack in place), the stub on to the lip's
-lower face and drilled for the base_yaw 90T, the cradle, od points and nut pockets on the housing the drive builds
+lower face and drilled for the base_yaw pulley, the cradle, od points and nut pockets on the housing the drive builds
 (DEFAULT_CONFIG's smaller one) and the sockets round its two pillars at +/-30 degrees (tests/cycloidal/test_assembly.py
 checks the drive in place)."""
 import math
