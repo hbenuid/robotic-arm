@@ -36,12 +36,7 @@ def socket_points(cfg: UpperArmConfig = DEFAULT) -> tuple[list, list]:
     return list(cfg.sockets.shoulder), list(cfg.sockets.elbow)
 
 
-def shell_bolt_points(cfg: UpperArmConfig = DEFAULT) -> list[tuple[float, float, float]]:
-    """(x, z, angle_deg) of the drive's housing bolts through the root, bolted to its turning shell (ShellMountParams):
-    bolt_count on bolt_circle_dia from bolt_angle_deg (atan2(z, x)); none without a shell mount."""
-    m = cfg.shell
-    if m is None:
-        return []
-    r = m.bolt_circle_dia / 2.0
-    angles = [m.bolt_angle_deg + 360.0 / m.bolt_count * k for k in range(m.bolt_count)]
-    return [(r * math.cos(math.radians(a)), r * math.sin(math.radians(a)), a) for a in angles]
+def arm_slide(cfg: UpperArmConfig = DEFAULT) -> float:
+    """How far along +Y the plate's elbow end and the motor pad slide with the arm rising off the drive's shell
+    (ArmParams): the plate's underside (SlabParams.y0) onto the arm's outer face; 0 without an arm (39.27)."""
+    return 0.0 if cfg.arm is None else cfg.arm.y_outer - cfg.slab.y0

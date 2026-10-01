@@ -178,7 +178,7 @@ class OutputHubParams:
     output_hub_pin_ceiling: float = 1.0    # closed top above the blind pin holes
     proud_above_housing: float = 5.0   # output face past the housing output face (z=60 -> 65)
     # the arm-mount pattern: the port bolts j1_link to it; with the shell turning (ShellParams) it bolts the hub to the
-    # j1_coupler yoke's end plate instead
+    # j1_coupler yoke's hub-side leg instead
     arm_mount_bolt_circle_dia: float = 50.0
     arm_mount_bolt_count: int = 4      # 4x M4 clearance holes into captive nuts
     arm_mount_angle_offset_deg: float = 45.0   # offset from the output pins so the nut pockets clear them
@@ -261,25 +261,30 @@ class StackUp:
 class ShellParams:
     """The turning shell (docs/cycloidal_drive.md §5.5): the carrier - the output hub and its pins - and the motor are
     held, the j1_coupler yoke gripping the hub at one end and the motor plate's sleeve at the other, and the housing
-    shell - the ring gear body, the shell ring (parts/cycloidal/cycloidal_shell_ring) and the ring pins - turns as the
-    output, on one 6814 at each end: the hub's in the seat's outer slot, the other on the sleeve just behind the motor
-    plate, its outer race in the shell ring's skirt. The motor plate is then the carrier's motor end - a plate inside
-    the shell ring, holding the motor, and a sleeve back over the motor (its bore clears the motor's and the MKS board's
-    corners) - and the ring pins' inboard ends go into the shell ring. j1_link bolts to the ring gear body's output face
-    with the housing bolts, their nuts sunk in j1_link; the hub runs on through j1_link to the yoke's end plate."""
+    shell - the shell ring (parts/cycloidal/cycloidal_shell_ring), the body round the discs (lib/cycloidal/housing.py
+    build_shell_body, printed with j1_link: the upper arm rises off it) and the ring pins - turns as the output, on one
+    6814 at each end. Both ends are alike, from the outside in: an end_lip on the shell (its bore
+    HousingParams.lip_bore_dia, the bearing's outer race's stop), the 6814 (its outer race in the shell's seat), a
+    plate_dia plate inside the shell's ring_bore_dia pin ring (the ring pins' ends in it) - the motor plate at the motor
+    end, the hub's flange at the other, each the port's motor plate thick (StackUp.z_motor_plate_inner), its face cut
+    back over the 6814's turning outer race - and the stack's clearance to its disc (StackUp.input_clearance). So the
+    shell is symmetric about the middle of the discs. The motor plate's sleeve runs back over the motor (its bore clears
+    the motor's and the MKS board's corners) through the yoke's motor-side leg; the hub runs on to the yoke's other
+    leg. Both legs are yoke_leg thick, end_plate_gap off the shell's ends."""
 
-    plate_dia: float = 90.0            # [DESIGN] the motor plate inside the shell ring ...
-    ring_bore_dia: float = 92.0        # [DESIGN] ... the shell ring's bore round it (1 a side); the ring-pin holes 1.9 outside it
-    plate_relief_dia: float = 79.0     # [DESIGN] the plate's outer face cut back from here out, over the 6814's turning outer race ...
+    plate_dia: float = 90.0            # [DESIGN] the motor plate and the hub's flange inside the shell's pin rings ...
+    ring_bore_dia: float = 92.0        # [DESIGN] ... the pin rings' bore round them (1 a side); the ring-pin holes 1.9 outside it
+    plate_relief_dia: float = 79.0     # [DESIGN] each plate's face on its 6814 cut back from here out, over the turning outer race ...
     plate_relief_depth: float = 0.6    # [DESIGN] ... this deep (the inner race bears on the face inside it)
     sleeve_bore_dia: float = 62.0      # [DESIGN] the sleeve's bore: the motor (42 x 43) and the MKS board (43 x 43) are 61 across the corners
     sleeve_od: float = 70.0            # [DESIGN] the sleeve behind the seat: the 6814 slides on over it ...
     #                                    ... and presses on over the last out_width, at the hub's grip (OutputHubParams.od)
-    skirt_od: float = 100.0            # [DESIGN] the shell ring's skirt round the 6814's outer race (its seat: HousingParams.output_bearing_seat_dia)
-    skirt_lip: float = 2.0             # [DESIGN] the skirt's lip past the 6814 (its bore HousingParams.lip_bore_dia): the outer race's stop
-    hub_shoulder_dia: float = 76.0     # [DESIGN] the hub's shoulder over the seat's inner slot: the hub-end 6814's inner race stops on it
-    arm_plate: float = 13.271993       # [REFERENCE] j1_link's plate at the shoulder (lib/upper_arm/params.py SlabParams lip_top - y0) ...
-    end_plate_gap: float = 1.0         # [DESIGN] ... and the gap past it to the yoke's end plate, where the hub's face bolts on
+    end_lip: float = 3.0               # [DESIGN] the shell's lip past each 6814 (the port's output wall, StackUp.output_wall)
+    hub_nut_depth: float = 4.7         # [DESIGN] the hub's 4 captive nuts' pockets from its flange's inner face: the yoke's
+    #                                    M4 x 25 (lib/yaw_coupler/params.py ForkParams.hub_screw_len) end flush with the nuts
+    yoke_leg: float = 8.0              # [DESIGN] the j1_coupler yoke's two legs (lib/yaw_coupler/params.py ForkParams) ...
+    end_plate_gap: float = 1.0         # [DESIGN] ... each this far off an end of the shell; the hub's face and the sleeve's
+    #                                    end on their outer faces
 
 
 @dataclass(frozen=True)
@@ -331,9 +336,10 @@ LEGACY_CONFIG = DriveConfig()
 #    corner); the edge chamfer 1.0, so the external faces keep 1.5 past the nut pockets and 1.4 past the counterbores.
 #    The bolt circle stays at the pins' distance.
 #  * the turning shell (ShellParams): the carrier and the motor held by the yoke at both ends, the housing shell the
-#    output on one 6814 at each end - 57 mm apart where the port stacked two side by side (10) - and so 21:1
-#    (DriveConfig.ratio). The gear stack stays; the ring gear body's end wall grows (StackUp.output_wall) so j1_link,
-#    bolted to it, keeps its place; the hub runs on through j1_link to the yoke; the housing bolts reach into j1_link.
+#    output on one 6814 at each end - 58 mm apart where the port stacked two side by side (10) - and so 21:1
+#    (DriveConfig.ratio). The gear stack stays; the hub-end 6814 moves out past a flange on the hub, the motor plate's
+#    mirror (StackUp: output_clearance = the input clearance + that flange, one bearing), so the shell is the same at
+#    both ends; the ring pins span both pin rings; the housing bolts run end to end; the hub reaches the yoke's leg.
 RING_INSET = 4.0   # [DESIGN] mm, radial
 LUG_WALL = 2.5     # [DESIGN] mm, radial, past the housing nuts' pockets at the pillar tips
 _SHELL = ShellParams()
@@ -341,15 +347,18 @@ _HOUSING = replace(LEGACY_CONFIG.housing, bolt_count=6,
                    bore_dia=LEGACY_CONFIG.housing.bore_dia - 2 * RING_INSET,                   # 108
                    bolt_circle_dia=LEGACY_CONFIG.housing.bolt_circle_dia - 2 * RING_INSET,     # 117
                    bolt_nut_turn_deg=30.0, edge_chamfer=1.0,
-                   bolt_length=70.0)   # the turning shell's: shell ring -> body -> into j1_link, the nuts flush with the ends
-# the turning shell's end wall past the hub-end 6814 (the port's 3): the housing 65 deep, j1_link's face at the port's hub face
-_STACK = replace(LEGACY_CONFIG.stack_up, output_wall=8.0)
+                   bolt_length=65.0)   # the turning shell's: end to end, the shell ring's counterbores to nuts in the body
+_PORT_STACK = LEGACY_CONFIG.stack_up
+# the turning shell's hub end, the motor end's mirror: disc 2 -> its 6814 is the input clearance + the hub's flange (the
+# motor plate's thickness), one 6814 there, the port's 3 mm wall past it (= ShellParams.end_lip): the housing 61 deep
+_STACK = replace(_PORT_STACK, output_clearance=_PORT_STACK.input_clearance + _PORT_STACK.z_motor_plate_inner,   # 13
+                 output_bearing_total=LEGACY_CONFIG.bearings.out_width, output_wall=_SHELL.end_lip)            # 10, 3
 DEFAULT_CONFIG = replace(
     LEGACY_CONFIG,
-    gear=replace(LEGACY_CONFIG.gear, ring_pin_circle_dia=LEGACY_CONFIG.gear.ring_pin_circle_dia - 2 * RING_INSET),  # 100
+    gear=replace(LEGACY_CONFIG.gear, ring_pin_circle_dia=LEGACY_CONFIG.gear.ring_pin_circle_dia - 2 * RING_INSET,  # 100
+                 ring_pin_length=40.0),   # the turning shell's: 5 into each pin ring past the 30 between the plates
     housing=replace(_HOUSING, od=_HOUSING.bolt_circle_dia + _HOUSING.bolt_nut_pocket_af + 2 * LUG_WALL),       # 129.2
     stack_up=_STACK,
-    # the hub's face past the housing: through j1_link and the gap to the yoke's end plate (14.27; the hub 42.27 tall)
-    output_hub=replace(LEGACY_CONFIG.output_hub, proud_above_housing=round(_SHELL.arm_plate + _SHELL.end_plate_gap, 6)),
+    output_hub=replace(LEGACY_CONFIG.output_hub, proud_above_housing=_SHELL.end_plate_gap),   # the hub's face on the yoke's leg
     shell=_SHELL,
 )   # [DESIGN]

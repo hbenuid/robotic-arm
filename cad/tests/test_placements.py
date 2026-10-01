@@ -11,6 +11,7 @@ import lib.wrist.params as WRIST
 from assemblies import arm, cycloidal_drive, forearm_roll_drive, gripper
 from lib import placements as P
 from lib import reference as R
+from lib.upper_arm.layout import arm_slide
 from robot import frames as RF
 
 
@@ -137,11 +138,11 @@ def _capture_records(*links: str) -> set:
     return out
 
 
-def _check_links_carry_what_lies_beyond(elbow_x: float, wrist_x: float, end_dx: float):
-    """j2_link#1 (on the elbow axis) sits at (elbow_x, 10, 0) in j1_link's frame, j3_coupler#2 (on the wrist_pitch
-    axis) at (wrist_x, 0, 42) in j2_link's; what bolts to the wrist body's end face keeps its capture pose in the
-    wrist body's frame but for x + end_dx."""
-    assert _near(_position_in("j1_link#1", "j2_link#1"), (elbow_x, 10.0, 0.0))
+def _check_links_carry_what_lies_beyond(elbow_x: float, wrist_x: float, end_dx: float, across: float = 0.0):
+    """j2_link#1 (on the elbow axis) sits at (elbow_x, 10 + across, 0) in j1_link's frame, j3_coupler#2 (on the
+    wrist_pitch axis) at (wrist_x, 0, 42) in j2_link's; what bolts to the wrist body's end face keeps its capture pose in
+    the wrist body's frame but for x + end_dx."""
+    assert _near(_position_in("j1_link#1", "j2_link#1"), (elbow_x, 10.0 + across, 0.0))
     assert _near(_position_in("j2_link#1", "j3_coupler#2"), (wrist_x, 0.0, 42.0))
     wrist_raw = P.to_location(P.OCCURRENCES["wrist_link#1"]["world"])
     for key in P.SHIFTS[2].moves:
@@ -149,10 +150,13 @@ def _check_links_carry_what_lies_beyond(elbow_x: float, wrist_x: float, end_dx: 
         assert _near(_position_in("wrist_link#1", key), (raw[0] + end_dx, raw[1], raw[2])), key
 
 
-def test_shift_axes_are_their_anchors_x():
+def test_shift_axes_are_their_anchors_x_and_y():
     for s in P.SHIFTS:
         x = [row[0] for row in P.OCCURRENCES[s.anchor]["world"]["matrix_3x4"]]
         assert all(math.isclose(a, b, abs_tol=1e-9) for a, b in zip(x, s.axis_w, strict=True)), s.link
+        if s.across_y:
+            y = [row[1] for row in P.OCCURRENCES[s.anchor]["world"]["matrix_3x4"]]
+            assert all(math.isclose(a, b, abs_tol=1e-9) for a, b in zip(y, s.across_w, strict=True)), s.link
 
 
 def test_shifts_move_the_capture_records_beyond_each_link():
@@ -169,19 +173,25 @@ def test_shifts_move_the_capture_records_beyond_each_link():
         UPPER_ARM.DEFAULT.slab.elbow_x - UPPER_ARM.LEGACY.slab.elbow_x,
         FOREARM.DEFAULT.web.wrist_x - FOREARM.LEGACY.web.wrist_x,
         WRIST.DEFAULT.tower.block_x1 - WRIST.LEGACY.tower.block_x1)
+    # the upper arm's elbow end also slides across it (its +Y, N) with the arm rising off the drive's shell
+    assert (upper_arm.across_y, forearm.across_y, wrist.across_y) == (
+        arm_slide(UPPER_ARM.DEFAULT) - arm_slide(UPPER_ARM.LEGACY), 0.0, 0.0)
 
 
 def test_the_links_carry_what_lies_beyond_them():
     _check_links_carry_what_lies_beyond(UPPER_ARM.DEFAULT.slab.elbow_x, FOREARM.DEFAULT.web.wrist_x,
-                                        WRIST.DEFAULT.tower.block_x1 - WRIST.LEGACY.tower.block_x1)
+                                        WRIST.DEFAULT.tower.block_x1 - WRIST.LEGACY.tower.block_x1,
+                                        arm_slide(UPPER_ARM.DEFAULT))
 
 
 def test_shifted_links_keep_the_records_consistent(monkeypatch):
-    """Shorter links (any lengths): each moves what lies beyond it, a module's children follow it, the rest stays."""
+    """Shorter links (any lengths) and a slid elbow end: each moves what lies beyond it, a module's children follow it,
+    the rest stays."""
     along = {"j1_link": -40.0, "j2_link": 40.0, "wrist_link": -20.0}
+    across = {"j1_link": 25.0, "j2_link": 0.0, "wrist_link": 0.0}
     before = {key: P.location(key, "world") for key in ("base#1", "j1_link#1", "cycloidal_drive#1")}
-    monkeypatch.setattr(P, "SHIFTS", tuple(replace(s, along_x=along[s.link]) for s in P.SHIFTS))
-    _check_links_carry_what_lies_beyond(UPPER_ARM.LEGACY.slab.elbow_x - 40.0, FOREARM.LEGACY.web.wrist_x + 40.0, -20.0)
+    monkeypatch.setattr(P, "SHIFTS", tuple(replace(s, along_x=along[s.link], across_y=across[s.link]) for s in P.SHIFTS))
+    _check_links_carry_what_lies_beyond(UPPER_ARM.LEGACY.slab.elbow_x - 40.0, FOREARM.LEGACY.web.wrist_x + 40.0, -20.0, 25.0)
     _check_world_equals_parent_world_times_rel()
     for key, loc in before.items():
         assert _close(_matrix(P.location(key, "world")), _matrix(loc), tol=1e-9), key

@@ -65,8 +65,8 @@ def _closest(movers, fixed, prune: float = 5.0) -> tuple:
 
 def test_the_shoulder_range_keeps_the_upper_arm_off_the_fork_and_the_base():
     """The drive's turning shell and its held parts are coaxial (its own tests): the shoulder link's parts here are the
-    fork, its cap and what rides on them outside the drive; every 15 degrees and both limits. The nearest is the fork's
-    end plate, its running gap (ShellParams.end_plate_gap) under j1_link at every angle."""
+    fork, its cap and what rides on them outside the drive; every 15 degrees and both limits. The nearest are the fork's
+    legs, their running gap (ShellParams.end_plate_gap) off the shell's ends at every angle."""
     fixed = [*_link_parts("base_link"), *(p for p in _link_parts("shoulder_link") if not p[0].startswith("cycloidal_drive"))]
     movers = _link_parts("upper_arm_link")
     lo, hi = PARAMS.SHOULDER_PITCH_LIMITS_DEG

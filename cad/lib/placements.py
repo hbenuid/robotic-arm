@@ -16,7 +16,8 @@ declared as frames in lib/mounts.py and materialised by tools/reference/mount_pl
 never placed - its pose is a lib/mounts.py ModuleMount, its contents assemblies/<module>.py.
 
 The design may also MOVE capture records without editing the file: SHIFTS translates every record beyond a link
-whose length the design changed (location() applies it; to_location() / to_record() stay raw for the writers).
+whose length the design changed, or whose far end it moved across the link (location() applies it; to_location() /
+to_record() stay raw for the writers).
 """
 from __future__ import annotations
 
@@ -28,6 +29,7 @@ from cadgen import build123d as bd
 
 from lib.forearm.params import DEFAULT as _FOREARM
 from lib.forearm.params import LEGACY as _FOREARM_LEGACY
+from lib.upper_arm.layout import arm_slide as _arm_slide
 from lib.upper_arm.params import DEFAULT as _UPPER_ARM
 from lib.upper_arm.params import LEGACY as _UPPER_ARM_LEGACY
 from lib.wrist.params import DEFAULT as _WRIST
@@ -62,19 +64,22 @@ RETIRED: tuple[str, ...] = ("j3_coupler#1", "gt2_pulley_90t#1", "gt2_pulley_90t#
 
 @dataclass(frozen=True)
 class LinkShift:
-    """A link whose length the design changed: every capture record beyond it moves `along_x` along the link's +X.
+    """A link whose length the design changed: every capture record beyond it moves `along_x` along the link's +X -
+    and `across_y` along its +Y, where the design moved the link's far end across it.
 
-    `along_x` is the link parameter's DEFAULT - LEGACY (the part's geometry and these poses have one source);
-    `axis_w` is the anchor record's +X in W - data, so no file read is needed (tests/test_placements.py checks it
-    against the record); `moves` lists the TOP-LEVEL capture records beyond the link, the retired hosts included (a
-    module's children follow its world pose; the mounted records never: mount_placements.py bakes their hosts'
-    shifts in)."""
+    `along_x` / `across_y` are the link parameters' DEFAULT - LEGACY (the part's geometry and these poses have one
+    source); `axis_w` / `across_w` are the anchor record's +X / +Y in W - data, so no file read is needed
+    (tests/test_placements.py checks them against the record); `moves` lists the TOP-LEVEL capture records beyond the
+    link, the retired hosts included (a module's children follow its world pose; the mounted records never:
+    mount_placements.py bakes their hosts' shifts in)."""
 
     link: str
     anchor: str
     axis_w: tuple[float, float, float]
     along_x: float
     moves: tuple[str, ...]
+    across_w: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    across_y: float = 0.0
 
 
 _BEYOND_WRIST_ROLL = ("gripper_clamp_bracket#1", "nema17_pancake#1", "gt2_pulley_20t#1", "gripper#1")
@@ -82,9 +87,11 @@ _BEYOND_WRIST_PITCH = ("gt2_pulley_90t#2", "j3_coupler#2", "wrist_link#1") + _BE
 _BEYOND_ELBOW = ("j2_link#1", "j3_coupler#1", "gt2_pulley_90t#1") + _BEYOND_WRIST_PITCH
 
 SHIFTS: tuple[LinkShift, ...] = (
-    # the upper arm: its elbow axis at slab.elbow_x from the shoulder axis
+    # the upper arm: its elbow axis at slab.elbow_x from the shoulder axis, and its elbow end slid along +Y (N) with the
+    # arm rising off the drive's shell (lib/upper_arm/params.py ArmParams)
     LinkShift("j1_link", "j1_link#1", (-0.673104702, 0.73826898, 0.043462315),   # [REFERENCE]
-              _UPPER_ARM.slab.elbow_x - _UPPER_ARM_LEGACY.slab.elbow_x, _BEYOND_ELBOW),
+              _UPPER_ARM.slab.elbow_x - _UPPER_ARM_LEGACY.slab.elbow_x, _BEYOND_ELBOW,
+              (0.064435732, 0.0, 0.997921859), _arm_slide(_UPPER_ARM) - _arm_slide(_UPPER_ARM_LEGACY)),   # [REFERENCE] its +Y
     # the forearm: its wrist_pitch axis at web.wrist_x from the elbow axis (along -X)
     LinkShift("j2_link", "j2_link#1", (0.680611117, -0.731325624, -0.043947003),   # [REFERENCE]
               _FOREARM.web.wrist_x - _FOREARM_LEGACY.web.wrist_x, _BEYOND_WRIST_PITCH),
@@ -100,7 +107,7 @@ def shift(key: str) -> tuple[float, float, float]:
     for s in SHIFTS:
         if key in s.moves:
             for i in range(3):
-                t[i] += s.along_x * s.axis_w[i]
+                t[i] += s.along_x * s.axis_w[i] + s.across_y * s.across_w[i]
     return (t[0], t[1], t[2])
 
 

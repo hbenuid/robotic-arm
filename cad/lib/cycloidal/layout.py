@@ -13,9 +13,10 @@ from lib.cycloidal.params import DEFAULT_CONFIG, DriveConfig, compute_housing_bo
 from lib.geom import hex_circumdiameter  # the arm-wide helper, re-exported for the drive's callers
 
 __all__ = [
-    "PILLAR_OVERSHOOT", "arm_mount_angles", "arm_mount_points", "compute_housing_bolt_angles", "hex_circumdiameter",
-    "housing_bolt_points", "hub_height", "motor_bolt_counterbore_depth", "motor_bolt_points", "output_pin_points",
-    "pillar_corners", "pillar_half_width", "ring_pin_engagement", "ring_pin_hole_depth", "ring_pin_hole_dia", "ring_pin_points", "stack_positions",
+    "PILLAR_OVERSHOOT", "arm_mount_angles", "arm_mount_points", "arm_zone", "compute_housing_bolt_angles", "hex_circumdiameter",
+    "housing_bolt_points", "hub_flange", "hub_height", "motor_bolt_counterbore_depth", "motor_bolt_points", "output_pin_points",
+    "pillar_corners", "pillar_half_width", "ring_pin_engagement", "ring_pin_hole_depth", "ring_pin_hole_dia", "ring_pin_points",
+    "shell_ends", "sleeve_end", "stack_positions",
 ]
 
 
@@ -90,8 +91,12 @@ def ring_pin_hole_dia(cfg: DriveConfig = DEFAULT_CONFIG) -> float:
 
 
 def ring_pin_engagement(cfg: DriveConfig = DEFAULT_CONFIG) -> float:
-    """Pin length outside the bore zone, per end (3.5): motor plate one side, bearing-zone wall the other."""
-    return (cfg.gear.ring_pin_length - cfg.stack_up.bore_zone) / 2.0
+    """Pin length outside the bore zone, per end: the port's 3.5 - motor plate one side, bearing-zone wall the other -;
+    the turning shell's 5, into the pin ring at each end past arm_zone (the plates' inner faces apart)."""
+    if cfg.shell is None:
+        return (cfg.gear.ring_pin_length - cfg.stack_up.bore_zone) / 2.0
+    z0, z1 = arm_zone(cfg)
+    return (cfg.gear.ring_pin_length - (z1 - z0)) / 2.0
 
 
 def ring_pin_hole_depth(cfg: DriveConfig = DEFAULT_CONFIG) -> float:
@@ -107,10 +112,38 @@ def motor_bolt_counterbore_depth(cfg: DriveConfig = DEFAULT_CONFIG) -> float:
     return plate_t - (m.motor_bolt_thread_length - (m.bolt_hole_depth - m.motor_bolt_thread_margin))
 
 
+def hub_flange(cfg: DriveConfig = DEFAULT_CONFIG) -> float:
+    """The hub's flange under its 6814: none in the port; the turning shell's, the motor plate's mirror (9)."""
+    return 0.0 if cfg.shell is None else cfg.stack_up.z_motor_plate_inner
+
+
 def hub_height(cfg: DriveConfig = DEFAULT_CONFIG) -> float:
-    """Output hub height (28): bearing-grip zone + output wall + proud extension."""
+    """Output hub height: (the flange +) bearing-grip zone + output wall + proud extension - the port's 28, the turning
+    shell's 23."""
     s = cfg.stack_up
-    return s.output_bearing_total + s.output_wall + cfg.output_hub.proud_above_housing
+    return hub_flange(cfg) + s.output_bearing_total + s.output_wall + cfg.output_hub.proud_above_housing
+
+
+def shell_ends(cfg: DriveConfig = DEFAULT_CONFIG) -> tuple[float, float]:
+    """z of the housing's two ends: the port's 0 .. 60 (the motor plate's outer face .. the output face); the turning
+    shell's -13 .. 61 (the motor end's lip past its 6814 .. the hub end's)."""
+    z1 = cfg.stack_up.total_housing_depth
+    if cfg.shell is None:
+        return 0.0, z1
+    return -(cfg.bearings.out_width + cfg.shell.end_lip), z1
+
+
+def arm_zone(cfg: DriveConfig = DEFAULT_CONFIG) -> tuple[float, float]:
+    """z of the two plates' inner faces - the motor plate's and the hub flange's: the gear's stretch of the turning shell
+    (9 .. 39), symmetric about the middle of the discs, where the upper arm leaves it (lib/upper_arm/params.py ArmParams)."""
+    s = cfg.stack_up
+    return s.z_motor_plate_inner, s.z_output_bearings - hub_flange(cfg)
+
+
+def sleeve_end(cfg: DriveConfig = DEFAULT_CONFIG) -> float:
+    """z of the motor plate's sleeve's end: through the yoke's motor-side leg, flush with its outer face (-22)."""
+    sh = cfg.shell
+    return shell_ends(cfg)[0] - sh.end_plate_gap - sh.yoke_leg
 
 
 def stack_positions(cfg: DriveConfig = DEFAULT_CONFIG) -> dict[str, float]:
@@ -118,16 +151,18 @@ def stack_positions(cfg: DriveConfig = DEFAULT_CONFIG) -> dict[str, float]:
 
     Parts whose builder already emits geometry at its stack position (eccentric shaft, motor,
     motor plate, shell ring) are at 0. The port's two 6814s fill the seat's two slots (37, 47); the turning shell's
-    are the hub's in the outer slot and the one on the motor plate's sleeve, behind the plate (-10), and its housing
-    nuts sit on the bolts' ends in j1_link (the port's in the ring gear body's output face)."""
+    are the hub's past its flange (48) and the one on the motor plate's sleeve, behind the plate (-10), its housing
+    bolts run from the shell ring's end (-13) and their nuts sit on their ends in the body (the port's in the ring gear
+    body's output face)."""
     s, e, h, m = cfg.stack_up, cfg.gear.eccentricity, cfg.housing, cfg.motor
-    bolts_z = h.bolt_counterbore_depth - h.bolt_head_height                         # 0.5: the heads' tops
+    bolts_z = shell_ends(cfg)[0] + h.bolt_counterbore_depth - h.bolt_head_height     # the heads' tops: 0.5 (port), -12.5
     if cfg.shell is None:
         bearings = (s.z_output_bearings, s.z_output_bearings + cfg.bearings.out_width)              # 37, 47
         nuts_z = s.total_housing_depth - h.bolt_nut_depth                                          # 56
     else:
-        bearings = (s.z_output_bearings + cfg.bearings.out_width, -cfg.bearings.out_width)          # 47, -10
-        nuts_z = bolts_z + h.bolt_head_height + h.bolt_length - h.bolt_nut_thickness               # 71.3
+        bearings = (s.z_output_bearings, -cfg.bearings.out_width)                                  # 48, -10
+        nuts_z = bolts_z + h.bolt_head_height + h.bolt_length - h.bolt_nut_thickness               # 53.3
+    z_hub = s.z_output_bearings - hub_flange(cfg)                                    # 37 (port), 39
     return {
         "x_disc1": +e, "x_disc2": -e,
         "z_motor_plate": 0.0,
@@ -140,13 +175,13 @@ def stack_positions(cfg: DriveConfig = DEFAULT_CONFIG) -> dict[str, float]:
         "z_disc2": s.z_disc2,                                                        # 25
         "z_6814_1": bearings[0],
         "z_6814_2": bearings[1],
-        "z_hub": s.z_output_bearings,                                                # 37
-        "z_625": s.z_output_bearings,                                                # 37
-        "z_ring_pins": s.z_motor_plate_inner - ring_pin_engagement(cfg),             # 5.5
-        "z_output_pins": s.z_bearing_top - cfg.output_hub.output_hub_pin_ceiling - cfg.disc.output_pin_length,   # 11
+        "z_hub": z_hub,
+        "z_625": z_hub,
+        "z_ring_pins": s.z_motor_plate_inner - ring_pin_engagement(cfg),             # 5.5 (port), 4
+        "z_output_pins": s.z_bearing_top - cfg.output_hub.output_hub_pin_ceiling - cfg.disc.output_pin_length,   # 11 (port), 12
         "z_support_pin": s.z_disc2 + cfg.disc.thickness - cfg.shaft.support_pin_hole_depth,    # 24
         "z_motor_bolts": s.z_motor_plate_inner - m.motor_bolt_total_length - m.motor_bolt_recess,   # -5
         "z_housing_bolts": bolts_z,
         "z_housing_nuts": nuts_z,
-        "hub_top": s.z_output_bearings + hub_height(cfg),                            # 65 (the port), 79.27 (the turning shell)
+        "hub_top": z_hub + hub_height(cfg),                                          # 65 (the port), 62 (the turning shell)
     }

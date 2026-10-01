@@ -89,10 +89,12 @@ BASE_MOTOR_TABLE_CLEAR = _BOARD_CLEAR   # [DESIGN] 5.0 - the 48 mm motor + board
 BASE_YAW_RATIO = GT2_PULLEY_120T_TEETH / GT2_PULLEY_20T_TEETH   # 6:1 [DESIGN] the base_yaw belt: the 120T (parts/base/gt2_pulley_120t) on the 48 mm motor's 20T
 # j1_link and j2_link are parametric (lib/upper_arm/params.py UpperArmConfig, lib/forearm/params.py ForearmConfig -
 # leaves like lib/cycloidal/params.py): the motors' pad faces and j2_link's slide come from their DEFAULT configurations.
+from lib.upper_arm.layout import arm_slide as _arm_slide  # noqa: E402
 from lib.upper_arm.params import DEFAULT as _UPPER_ARM  # noqa: E402
 from lib.upper_arm.params import ELBOW_BELT as _ELBOW_BELT  # noqa: E402
 
-J1_MOTOR_PAD_FACE_Y = _UPPER_ARM.pad.face_y        # -32.5 [REFERENCE] j1_link: the 48 x 48 pad's outer face (the -N side), the holes about the pad's axis
+J1_ARM_SLIDE = _arm_slide(_UPPER_ARM)              # 39.27 [DESIGN] j1_link: its elbow end and pad slid along +Y (N) onto the arm's outer face (ArmParams)
+J1_MOTOR_PAD_FACE_Y = _UPPER_ARM.pad.face_y + J1_ARM_SLIDE   # 6.77 [DESIGN] j1_link: the 48 x 48 pad's outer face (the -N side; the SolidWorks -32.5, slid), the holes about the pad's axis
 ELBOW_BELT_LENGTH = _ELBOW_BELT                    # 280-2GT [DESIGN] the elbow belt (20T on j1_link's motor, 90T at the elbow); it sets the pad's x
 from lib.forearm.params import DEFAULT as _FOREARM  # noqa: E402
 
@@ -117,26 +119,31 @@ FOREARM_ROLL_BLOCK_X = _FOREARM.drive.block_x       # (-33, 33) [DESIGN] the elb
 # from that config so every number exists exactly once. Drive frame: Z = motor axis, z=0 = the
 # motor-plate outer face, +Z toward the output hub; it sits in the arm at placements.json
 # "cycloidal_drive#1" and IS the robot's shoulder_pitch joint. Its shell turns (ShellParams): the j1_coupler yoke holds
-# the hub and the motor plate's sleeve (robot/frames.py: shoulder_link), j1_link is bolted to the shell's output face
-# (upper_arm_link).
+# the hub and the motor plate's sleeve (robot/frames.py: shoulder_link), j1_link rises off the shell's middle, printed
+# with its body (upper_arm_link).
+from lib.cycloidal.layout import arm_zone as _arm_zone  # noqa: E402
+from lib.cycloidal.layout import shell_ends as _shell_ends  # noqa: E402
+from lib.cycloidal.layout import sleeve_end as _sleeve_end  # noqa: E402
 from lib.cycloidal.params import DEFAULT_CONFIG as _DRIVE  # noqa: E402
 
 CYCLOIDAL_RATIO = _DRIVE.ratio                                    # 21:1 [DESIGN] the 21 ring pins, the carrier held; the output (the shell) turns with the motor.
 #   NOTE: software/control/src/config.py JOINTS still carries gear_ratio 1.0 on J1..J3 - which MKS motor drives the
 #   shoulder_pitch joint (if any of them) is unconfirmed.
 CYCLOIDAL_HOUSING_OD = _DRIVE.housing.od                          # 129.2 [DESIGN] the pillar tips; lib/cycloidal/params.py RING_INSET, LUG_WALL
-CYCLOIDAL_STACK_DEPTH = _DRIVE.stack_up.total_housing_depth       # 65 [DESIGN] motor-plate outer face -> the shell's output face
+CYCLOIDAL_STACK_DEPTH = _DRIVE.stack_up.total_housing_depth       # 61 [DESIGN] motor-plate outer face -> the shell's hub end
+CYCLOIDAL_SHELL_ENDS_Z = _shell_ends(_DRIVE)                      # (-13, 61) [DESIGN] the turning shell's two ends: a lip past each 6814
+CYCLOIDAL_ARM_ZONE_Z = _arm_zone(_DRIVE)                          # (9, 39) [DESIGN] where j1_link rises off the shell: between the two plates
 CYCLOIDAL_MOTOR_BODY_LEN = _DRIVE.motor.body_length               # 48 [DATASHEET] NEMA 17 body behind the plate (-Z)
 CYCLOIDAL_HUB_OD = _DRIVE.output_hub.od                           # 70.3 [DESIGN]
-CYCLOIDAL_HUB_PROUD = _DRIVE.output_hub.proud_above_housing       # 14.27 [DESIGN] hub face past the shell's output face: through j1_link to the yoke
-CYCLOIDAL_OUTPUT_FACE_Z = CYCLOIDAL_STACK_DEPTH                   # 65 [DESIGN] the j1_link mounting face: the shell's output face
-CYCLOIDAL_HUB_FACE_Z = CYCLOIDAL_STACK_DEPTH + CYCLOIDAL_HUB_PROUD   # 79.27 [DESIGN] the hub's face on the yoke's end plate
-CYCLOIDAL_HUB_BOLT_CIRCLE = _DRIVE.output_hub.arm_mount_bolt_circle_dia       # 50 [DESIGN] the hub's bolts into the yoke's end plate ...
+CYCLOIDAL_HUB_PROUD = _DRIVE.output_hub.proud_above_housing       # 1 [DESIGN] hub face past the shell's hub end: on the yoke's leg
+CYCLOIDAL_HUB_FACE_Z = CYCLOIDAL_STACK_DEPTH + CYCLOIDAL_HUB_PROUD   # 62 [DESIGN] the hub's face on the yoke's hub-side leg
+CYCLOIDAL_SLEEVE_END_Z = _sleeve_end(_DRIVE)                      # -22 [DESIGN] the motor plate's sleeve's end on the yoke's motor-side leg
+CYCLOIDAL_HUB_BOLT_CIRCLE = _DRIVE.output_hub.arm_mount_bolt_circle_dia       # 50 [DESIGN] the hub's bolts into the yoke's leg ...
 CYCLOIDAL_HUB_BOLT_COUNT = _DRIVE.output_hub.arm_mount_bolt_count             # ... 4x M4 into captive nuts in the hub
 CYCLOIDAL_HUB_BOLT_ANGLE_OFFSET_DEG = _DRIVE.output_hub.arm_mount_angle_offset_deg # 45 (between the output pins)
 CYCLOIDAL_HUB_BOLT_DIA = _DRIVE.housing.bolt_dia                  # 4 (M4)
-CYCLOIDAL_SHELL_BOLT_CIRCLE = _DRIVE.housing.bolt_circle_dia      # 117 [DESIGN] the housing bolts, through the shell into j1_link ...
-CYCLOIDAL_SHELL_BOLT_COUNT = _DRIVE.housing.bolt_count            # ... 6x M4, their nuts in j1_link
+CYCLOIDAL_SHELL_BOLT_CIRCLE = _DRIVE.housing.bolt_circle_dia      # 117 [DESIGN] the housing bolts, through the shell end to end ...
+CYCLOIDAL_SHELL_BOLT_COUNT = _DRIVE.housing.bolt_count            # ... 6x M4, their nuts in its body (j1_link's)
 
 # Purchased parts of the drive (parts/cycloidal/bearing_*.py, nema17_48mm, cycloidal_*_pins/bolts/nuts).
 STEEL_DENSITY = 7.85e-3          # [DATASHEET] g/mm^3 - dowel pins, bolts, nuts
@@ -157,11 +164,11 @@ def _hex_vol(across_flats, height):
 
 
 # [ESTIMATE] simplified-geometry volumes x steel density (the parts are plain cylinders / hex prisms)
-CYCLOIDAL_RING_PINS_MASS_G = STEEL_DENSITY * _DRIVE.gear.num_ring_pins * _cyl_vol(_DRIVE.gear.ring_pin_radius, _DRIVE.gear.ring_pin_length)            # 72.5, 21x
+CYCLOIDAL_RING_PINS_MASS_G = STEEL_DENSITY * _DRIVE.gear.num_ring_pins * _cyl_vol(_DRIVE.gear.ring_pin_radius, _DRIVE.gear.ring_pin_length)            # 82.9, 21x 4 x 40
 CYCLOIDAL_OUTPUT_PINS_MASS_G = STEEL_DENSITY * _DRIVE.disc.output_pin_count * _cyl_vol(_DRIVE.disc.output_pin_dia / 2, _DRIVE.disc.output_pin_length)   # 17.8, 4x
 CYCLOIDAL_SUPPORT_PIN_MASS_G = STEEL_DENSITY * _cyl_vol(_DRIVE.shaft.support_pin_dia / 2, _DRIVE.shaft.support_pin_length)                             # 3.1
 CYCLOIDAL_HOUSING_BOLTS_MASS_G = STEEL_DENSITY * _DRIVE.housing.bolt_count * (
-    _cyl_vol(_DRIVE.housing.bolt_head_dia / 2, _DRIVE.housing.bolt_head_height) + _cyl_vol(_DRIVE.housing.bolt_dia / 2, _DRIVE.housing.bolt_length))    # 48.7, 6x M4x70
+    _cyl_vol(_DRIVE.housing.bolt_head_dia / 2, _DRIVE.housing.bolt_head_height) + _cyl_vol(_DRIVE.housing.bolt_dia / 2, _DRIVE.housing.bolt_length))    # 45.7, 6x M4x65
 CYCLOIDAL_HOUSING_NUTS_MASS_G = STEEL_DENSITY * _DRIVE.housing.bolt_count * _hex_vol(_DRIVE.housing.bolt_nut_af, _DRIVE.housing.bolt_nut_thickness)     # 6.4, 6x M4
 CYCLOIDAL_MOTOR_BOLTS_MASS_G = STEEL_DENSITY * 4 * (
     _cyl_vol(_DRIVE.motor.bolt_dia / 2, _DRIVE.motor.motor_bolt_thread_length) + _cyl_vol(_DRIVE.motor.motor_bolt_head_dia / 2, _DRIVE.motor.motor_bolt_head_height))   # 4.3, 4x M3x10
@@ -197,9 +204,9 @@ BASE_MOUNT_NUTS_MASS_G = STEEL_DENSITY * _JOINT_BOLTS * nut_volume(_BASE.joint.n
 # and SDF are checked against these by tools/robot/derive.py --check.
 BASE_YAW_LIMIT_DEG = 175.0        # [ESTIMATE] symmetric +/- range; j1_coupler (carrying the drive's stator) turns on the base
 # the 21:1 cycloidal drive (CYCLOIDAL_RATIO) between j1_coupler and j1_link: (lower, upper); the upper - the arm pitched
-# down in front - stops 3 deg before the forearm roll drive's motor + board reach j1_coupler with the elbow folded
-# back (tests/test_sweeps.py), the lower is an [ESTIMATE]
-SHOULDER_PITCH_LIMITS_DEG = (-120.0, 75.0)   # [DESIGN]
+# down in front - stops 3 deg before the upper arm, rising off the drive's middle, reaches j1_coupler's disc (70.5 deg;
+# its 1 mm running gap held to 69.5 - tests/test_sweeps.py), the lower is an [ESTIMATE] (the arm clears to -150)
+SHOULDER_PITCH_LIMITS_DEG = (-120.0, 67.0)   # [DESIGN]
 ELBOW_PITCH_LIMIT_DEG = 90.0      # [DESIGN] kept at 90: the necked forearm (j2_link) stays 2 mm off j1_link at any roll to about +/-102 deg,
 #                                   but SHOULDER_PITCH_LIMITS_DEG was set over this range (docs/open_issues.md)
 # the GT2 belt at wrist_link: (lower, upper), the clear range (the wrist body's back corners reach j2_link's web at

@@ -4,10 +4,11 @@ regression names what moved), the yoke's shapes are the drive's housing's - its 
 its bolt circle and nut pockets (lib/cycloidal/params.py HousingParams; LEGACY's the port's housing, LEGACY_CONFIG) -,
 and DEFAULT - what the part builds - changes its underside, its hub and the yoke: the seat on the thrust bearing, the
 rim clear of the base (tests/test_mounts.py checks the stack in place), the stub on to the lip's lower face and drilled
-for the base_yaw pulley, and the fork (ForkParams) round the drive whose shell turns (DEFAULT_CONFIG's ShellParams): the
-end plate the held hub bolts to, the clamp round the motor plate's sleeve - its saddle this part, its cap
-parts/base/j1_coupler_cap (no reference: its numbers are here) -, the ring lowered under the shell, the disc cut back
-where j1_link swings (tests/cycloidal/test_assembly.py checks the drive in place, tests/test_sweeps.py the swing)."""
+for the base_yaw pulley, and the fork (ForkParams) round the drive whose shell turns (DEFAULT_CONFIG's ShellParams): two
+alike legs past the shell's ends, mirrored about the middle of the discs - the held hub bolts to one, the other clamps
+the motor plate's sleeve: its lower half this part, its upper half the cap parts/base/j1_coupler_cap (no reference: its
+numbers are here) -, the ring lowered under the shell (tests/cycloidal/test_assembly.py checks the drive in place,
+tests/test_sweeps.py the arm's swing)."""
 import math
 from dataclasses import replace
 
@@ -19,14 +20,15 @@ from lib.base import DEFAULT as BASE
 from lib.bearings import BEARING_6806_BORE, THRUST_OD, THRUST_STACK
 from lib.belts import GT2_PULLEY_90T_BOLT_R
 from lib.coupler import DEFAULT as J3_COUPLER
-from lib.cycloidal import arm_mount_points, stack_positions
+from lib.cycloidal import arm_mount_points, shell_ends, sleeve_end, stack_positions
 from lib.cycloidal.layout import PILLAR_OVERSHOOT
 from lib.cycloidal.params import DEFAULT_CONFIG as DRIVE
 from lib.cycloidal.params import LEGACY_CONFIG as PORT
-from lib.fasteners import M4_CLEAR, M4_NUT
+from lib.fasteners import M3_NUT, M4_CLEAR, M4_NUT, M4_SHCS
 from lib.geom import hex_circumdiameter
+from lib.upper_arm import DEFAULT as ARM
 from lib.yaw_coupler import DEFAULT, LEGACY, hole_points, nut_centres, od_point
-from lib.yaw_coupler.layout import below_axis, fork_cap_bolts, fork_clamp_x, fork_hub_bolts, fork_plate_x, fork_x
+from lib.yaw_coupler.layout import below_axis, fork_cap_bolts, fork_hub_bolts, fork_hub_leg_x, fork_motor_leg_x, fork_x
 from tests import built
 from tests.helpers import is_inside
 
@@ -75,28 +77,35 @@ def test_the_yoke_is_the_housings_shape():
 
 def test_default_fork_holds_the_drives_ends():
     """DEFAULT's fork on the drive's own axis (placements.json cycloidal_drive#1 in this frame, its +Z this frame's -X):
-    the end plate's inner face on the held hub's face (hub_top), the hub's 4 bolts on the drive's arm-mount pattern; the
-    clamp round the motor plate's sleeve (its bore 0.2 a side), 2 behind the shell ring's skirt and short of the motor's
-    rear; the cap's bolts inside the clamp, clear of its bore; the ring lowered under the turning shell's pillars
-    (RING_DROP: 2.68 of clearance); the disc cut back where j1_link swings (1 off its face)."""
+    two legs ShellParams.yoke_leg thick, end_plate_gap past the shell's two ends - the hub's face (hub_top) on the hub
+    leg's inner face, the sleeve's end (sleeve_end) on the motor leg's outer face -, mirror images about the middle of the
+    discs; the hub's 4 bolts on the drive's arm-mount pattern, their ends flush with the hub's captive nuts; the motor
+    leg round the sleeve (its bore 0.2 a side), the cap's 2 screws in the leg's middle, their nuts' slots clear of the
+    bore; the ring lowered under the turning shell's pillars (RING_DROP: 2.68 of clearance) and the arm's collar."""
     f, sh, S = DEFAULT.fork, DRIVE.shell, stack_positions(DRIVE)
     world = P.location("j1_coupler#1", "world").inverse() * P.location("cycloidal_drive#1", "world")
     assert (world.position.X, world.position.Y, world.position.Z) == pytest.approx((f.face_x, f.axis_y, f.axis_z), abs=1e-5)
     assert fork_x(DEFAULT, 0.0) == f.face_x and fork_x(DEFAULT, 1.0) == f.face_x - 1.0
-    assert fork_plate_x(DEFAULT) == pytest.approx((fork_x(DEFAULT, S["hub_top"]) - f.plate_t, fork_x(DEFAULT, S["hub_top"])))
+    (hx0, hx1), (mx0, mx1), (end_0, end_1) = fork_hub_leg_x(DEFAULT), fork_motor_leg_x(DEFAULT), shell_ends(DRIVE)
+    assert (hx0, hx1) == pytest.approx((fork_x(DEFAULT, S["hub_top"] + sh.yoke_leg), fork_x(DEFAULT, S["hub_top"])))
+    assert S["hub_top"] == pytest.approx(end_1 + sh.end_plate_gap)
+    assert (mx0, mx1) == pytest.approx((fork_x(DEFAULT, end_0 - sh.end_plate_gap), fork_x(DEFAULT, sleeve_end(DRIVE))))
+    middle = fork_x(DEFAULT, (S["z_disc1"] + S["z_disc2"] + DRIVE.disc.thickness) / 2.0)
+    assert hx1 + mx0 == pytest.approx(2.0 * middle) and hx0 + mx1 == pytest.approx(2.0 * middle)
     assert sorted(fork_hub_bolts(DEFAULT)) == pytest.approx(sorted((f.axis_y + y, f.axis_z + x) for x, y in arm_mount_points(DRIVE)))
-    near, far = fork_clamp_x(DEFAULT)
-    skirt_end = -(DRIVE.bearings.out_width + sh.skirt_lip)
-    assert near == pytest.approx(fork_x(DEFAULT, skirt_end) + 2.0) and far < fork_x(DEFAULT, -DRIVE.motor.body_length)
+    head = S["hub_top"] + sh.yoke_leg - (M4_SHCS.head_h + 0.5)        # the screws' heads' seats, drive z
+    assert head - f.hub_screw_len == pytest.approx(S["z_hub"] + sh.hub_nut_depth - DRIVE.housing.bolt_nut_thickness)
     assert f.clamp_bore_dia == pytest.approx(sh.sleeve_od + 0.4)
     for x, z in fork_cap_bolts(DEFAULT):
-        assert near < x - M4_NUT.af / 2.0 and x + M4_NUT.af / 2.0 < far
-        assert abs(z - f.axis_z) - hex_circumdiameter(M4_NUT.af + 0.2) / 2.0 - f.clamp_bore_dia / 2.0 > 2.5
+        assert x == pytest.approx((mx0 + mx1) / 2.0) and mx0 < x - (M3_NUT.af + 0.2) / 2.0 and x + (M3_NUT.af + 0.2) / 2.0 < mx1
+        dy = f.cap_nut_y + M3_NUT.h + 0.2                            # the slot's floor below the split
+        bore_z = math.sqrt((f.clamp_bore_dia / 2.0) ** 2 - dy ** 2)
+        assert abs(z - f.axis_z) - hex_circumdiameter(M3_NUT.af + 0.2) / 2.0 - bore_z > 2.5
+        assert abs(z - f.axis_z) + 1.7 < f.plate_r
     sweep = DRIVE.housing.od / 2.0                                  # the pillars' tips, turning
     assert f.axis_y - sweep - DEFAULT.disc.ring_y1 == pytest.approx(2.68, abs=0.005)
+    assert f.axis_y - ARM.arm.root_r - DEFAULT.disc.ring_y1 > 1.0   # the arm's collar, turning
     assert LEGACY.disc.ring_y1 - DEFAULT.disc.ring_y1 == 2.0
-    link_face = fork_x(DEFAULT, stack_positions(DRIVE)["hub_top"]) + sh.arm_plate + sh.end_plate_gap   # the shell's output face
-    assert f.swing_x == pytest.approx(link_face + 1.0, abs=1e-3)
 
 
 @pytest.fixture(scope="module")
@@ -225,45 +234,48 @@ def test_default_changes_the_hub_and_the_underside(coupler, legacy):
 
 @pytest.mark.slow
 def test_default_is_the_fork(coupler, legacy):
-    """The fork round the drive whose shell turns (ForkParams): the end plate on its leg and the low bridge on -X, the
-    clamp's saddle on its windowed post and foot on +X, split at the drive's axis (the cap is its own part); the yoke's
-    cheek, middle body, cradle and sockets gone; the ring lowered; the disc cut back where j1_link swings."""
+    """The fork round the drive whose shell turns (ForkParams): the hub leg on -X - its disc round the axis on a leg down
+    to the disc's underside, inside the disc's flat -, the motor leg on +X the same, bored to the sleeve and split at the
+    drive's axis (the cap is its own part), with a low bridge out of the disc's flat; the yoke's cheek, middle body,
+    cradle and sockets gone; the ring lowered."""
     f, d = DEFAULT.fork, DEFAULT.disc
-    (px0, px1), (cx0, cx1) = fork_plate_x(DEFAULT), fork_clamp_x(DEFAULT)
+    (hx0, hx1), (mx0, mx1) = fork_hub_leg_x(DEFAULT), fork_motor_leg_x(DEFAULT)
     bb = coupler.bounding_box()
     r0 = d.band_r + (d.top_r - d.band_r) * (d.y0 - d.band_y1) / (d.top_y - d.band_y1)     # the disc at the rim, lifted
-    assert (bb.min.X, bb.max.X, bb.max.Y) == pytest.approx((px0, cx1, f.axis_y + f.plate_r), abs=1e-6)
+    assert (bb.min.X, bb.max.X, bb.max.Y) == pytest.approx((-d.ear_r, mx1, f.axis_y + f.plate_r), abs=1e-6)
     assert (bb.min.Z, bb.max.Z) == pytest.approx((-r0, r0), abs=1e-6)
-    pm = (px0 + px1) / 2.0
-    # the end plate: a disc round the axis on a leg down to the disc's underside, the low bridge to the disc
-    assert is_inside(coupler, pm, f.axis_y + f.plate_r - 0.3, f.axis_z) and not is_inside(coupler, pm, f.axis_y + f.plate_r + 0.3, f.axis_z)
-    assert is_inside(coupler, pm, 30.0, f.axis_z + f.leg_half_z - 0.3) and not is_inside(coupler, pm, 30.0, f.axis_z + f.leg_half_z + 0.3)
-    assert is_inside(coupler, px0 + 0.3, d.y0 + 0.3, 0.0) and not is_inside(coupler, px0 - 0.3, d.y0 + 0.3, 0.0)
-    assert is_inside(coupler, -45.0, f.bridge_y1 - 0.3, 0.0) and not is_inside(coupler, -45.0, f.bridge_y1 + 0.3, 0.0)
+    assert -d.flat_x < hx0 and mx1 > d.flat_x                       # the hub leg on the disc, the motor leg past its flat
+    for x0, x1 in ((hx0, hx1), (mx0, mx1)):
+        m = (x0 + x1) / 2.0
+        # each leg: a disc round the axis (the motor leg's upper half the cap's) on a leg down to the disc's underside
+        assert is_inside(coupler, m, 30.0, f.axis_z + f.leg_half_z - 0.3) and not is_inside(coupler, m, 30.0, f.axis_z + f.leg_half_z + 0.3)
+        assert is_inside(coupler, m, 20.0, 0.0)
+        if x0 > d.flat_x:                                       # (over the hub, the coupler's recess for the thrust stack)
+            assert is_inside(coupler, m, d.y0 + 0.3, 0.0)
+        assert is_inside(coupler, m, f.axis_y - 0.3, f.axis_z + f.plate_r - 1.0) and not is_inside(coupler, m, f.axis_y - 0.3, f.axis_z + f.plate_r + 0.3)
+        assert is_inside(coupler, x0 + 0.3, 40.0, 0.0) and not is_inside(coupler, x0 - 0.3, 40.0, 0.0)
+        assert is_inside(coupler, x1 - 0.3, 40.0, 0.0) and not is_inside(coupler, x1 + 0.3, 40.0, 0.0)
+    hm = (hx0 + hx1) / 2.0
+    assert is_inside(coupler, hm, f.axis_y + f.plate_r - 0.3, f.axis_z) and not is_inside(coupler, hm, f.axis_y + f.plate_r + 0.3, f.axis_z)
+    assert is_inside(coupler, (d.flat_x + mx0) / 2.0, f.bridge_y1 - 0.3, 0.0) and not is_inside(coupler, (d.flat_x + mx0) / 2.0, f.bridge_y1 + 0.3, 0.0)
     for y, z in fork_hub_bolts(DEFAULT):
-        assert not is_inside(coupler, px1 - 0.3, y, z) and not is_inside(coupler, px0 + 0.3, y + 3.0, z)   # the hole, the counterbore
-        assert is_inside(coupler, px1 - 0.3, y + 3.0, z)                                                  # ... 4.5 deep
-    # the swing cut over the low bridge, the ring lowered
-    assert not is_inside(coupler, -36.0, 12.0, 0.0) and is_inside(legacy, -36.0, 12.0, 0.0)
-    assert is_inside(coupler, -30.0, 12.0, 0.0)
+        assert not is_inside(coupler, hx1 - 0.3, y, z) and not is_inside(coupler, hx0 + 0.3, y + 3.0, z)   # the hole, the counterbore
+        assert is_inside(coupler, hx1 - 0.3, y + 3.0, z)                                                  # ... 4.5 deep
+    # the ring lowered
     assert is_inside(coupler, -25.0, d.ring_y1 - 0.3, 25.0) and not is_inside(coupler, -25.0, d.ring_y1 + 0.3, 25.0)
     assert is_inside(legacy, -25.0, d.ring_y1 + 0.3, 25.0)
-    # the clamp's saddle: bored to the sleeve, split at the axis, on a post with a window through it, on a foot
-    cm = (cx0 + cx1) / 2.0
+    # the motor leg: bored to the sleeve, split at the axis
+    mm = (mx0 + mx1) / 2.0
     r = f.clamp_bore_dia / 2.0
-    assert not is_inside(coupler, cm, f.axis_y - r + 0.2, f.axis_z) and is_inside(coupler, cm, f.axis_y - r - 0.2, f.axis_z)
-    assert is_inside(coupler, cm, f.axis_y - 0.3, f.axis_z + f.clamp_half - 1.0)
-    assert not is_inside(coupler, cm, f.axis_y + 0.3, f.axis_z + f.clamp_half - 1.0)            # the cap's
-    assert not is_inside(coupler, cm, 20.0, 0.0) and is_inside(coupler, cx0 + f.post_wall - 0.3, 20.0, 0.0)   # the window
-    assert is_inside(coupler, cm, d.y0 + f.post_wall - 0.3, 0.0)
-    assert is_inside(coupler, (d.flat_x + cx0) / 2.0, f.foot_y1 - 0.3, 0.0) and not is_inside(coupler, (d.flat_x + cx0) / 2.0, f.foot_y1 + 0.3, 0.0)
+    assert not is_inside(coupler, mm, f.axis_y - r + 0.2, f.axis_z) and is_inside(coupler, mm, f.axis_y - r - 0.2, f.axis_z)
+    assert not is_inside(coupler, mm, f.axis_y + 0.3, f.axis_z + f.plate_r - 1.0)              # the cap's
     for x, z in fork_cap_bolts(DEFAULT):
         out = 1.0 if z > f.axis_z else -1.0
-        assert not is_inside(coupler, x, f.axis_y - 2.0, z)                                    # the bolt's hole ...
-        slot = f.axis_y - f.cap_nut_y - (M4_NUT.h + 0.2) / 2.0
-        assert not is_inside(coupler, x, slot, z) and not is_inside(coupler, x, slot, f.axis_z + out * (f.clamp_half - 0.3))   # ... its nut's slot to the side
-        assert is_inside(coupler, x, f.axis_y - f.cap_nut_y + 0.3, f.axis_z + out * (f.clamp_half - 0.3))
-        assert is_inside(coupler, x + 3.8, slot, z)                                             # ... the nut's AF wide
+        assert not is_inside(coupler, x, f.axis_y - 2.0, z)                                    # the screw's hole ...
+        slot = f.axis_y - f.cap_nut_y - (M3_NUT.h + 0.2) / 2.0
+        assert not is_inside(coupler, x, slot, z) and not is_inside(coupler, x, slot, f.axis_z + out * 42.0)   # ... its nut's slot to the side
+        assert is_inside(coupler, x, f.axis_y - f.cap_nut_y + 0.3, f.axis_z + out * 42.0)
+        assert is_inside(coupler, x + 3.4, slot, z)                                             # ... the nut's AF wide
     # the yoke that held the port's housing is gone
     for probe in ((0, 40, 52.9), (20, 34.5, 20), (-31, 45.8, 49.2)):
         assert not is_inside(coupler, *probe) and is_inside(legacy, *probe)
@@ -276,18 +288,18 @@ def cap():
 
 @pytest.mark.slow
 def test_cap(cap):
-    """The clamp's upper half (parts/base/j1_coupler_cap, no reference - its numbers are here): one solid, its box and
-    volume, bored to the sleeve, its 4 bolts through it from counterbores cap_seat above the split."""
+    """The motor leg's upper half (parts/base/j1_coupler_cap, no reference - its numbers are here): one solid, its box
+    and volume, bored to the sleeve, its 2 screws through it from counterbores cap_seat above the split."""
     f = DEFAULT.fork
-    cx0, cx1 = fork_clamp_x(DEFAULT)
+    mx0, mx1 = fork_motor_leg_x(DEFAULT)
     assert cap.label == "j1_coupler_cap" and cap.is_valid and len(cap.solids()) == 1
-    assert R.solid_volume(cap) == pytest.approx(72706.126, abs=0.5)
+    assert R.solid_volume(cap) == pytest.approx(9182.805, abs=0.5)
     bb = cap.bounding_box()
-    assert (bb.min.X, bb.min.Y, bb.min.Z) == pytest.approx((cx0, f.axis_y, f.axis_z - f.clamp_half), abs=1e-6)
-    assert (bb.size.X, bb.size.Y, bb.size.Z) == pytest.approx((cx1 - cx0, f.clamp_half, 2.0 * f.clamp_half), abs=1e-6)
-    cm, r = (cx0 + cx1) / 2.0, f.clamp_bore_dia / 2.0
+    assert (bb.min.X, bb.min.Y, bb.min.Z) == pytest.approx((mx0, f.axis_y, f.axis_z - f.plate_r), abs=1e-6)
+    assert (bb.size.X, bb.size.Y, bb.size.Z) == pytest.approx((mx1 - mx0, f.plate_r, 2.0 * f.plate_r), abs=1e-6)
+    cm, r = (mx0 + mx1) / 2.0, f.clamp_bore_dia / 2.0
     assert not is_inside(cap, cm, f.axis_y + r - 0.2, f.axis_z) and is_inside(cap, cm, f.axis_y + r + 0.2, f.axis_z)
     for x, z in fork_cap_bolts(DEFAULT):
         assert not is_inside(cap, x, f.axis_y + 1.0, z)                                         # the hole through ...
-        assert is_inside(cap, x + 3.0, f.axis_y + f.cap_seat - 0.5, z)                          # ... under the head ...
-        assert not is_inside(cap, x + 3.0, f.axis_y + f.cap_seat + 0.5, z)                      # ... in its counterbore
+        assert is_inside(cap, x + 2.4, f.axis_y + f.cap_seat - 0.5, z)                          # ... under the head ...
+        assert not is_inside(cap, x + 2.4, f.axis_y + f.cap_seat + 0.5, z)                      # ... in its counterbore

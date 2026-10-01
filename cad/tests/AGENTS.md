@@ -43,17 +43,18 @@ loading `build123d` / `OCP`; names the first offender — a new assembly model g
 converted — shared by `test_assembly.py` and `test_robot.py`), `built.py` (above),
 `tests/cycloidal/` (the drive: one module per part + housing / purchased / fitment / assembly / port,
 `from tests.cycloidal.helpers import CFG, …` for the drive's config, the
-`stack` fixture is `tests/cycloidal/conftest.py`; the shell ring, with no reference, keeps its numbers in its own module),
+`stack` fixture is `tests/cycloidal/conftest.py`; the shell ring and the shell's body (`test_shell_body.py`: the stack
+symmetric about the middle of the discs), with no reference, keep their numbers in their own modules),
 `tests/upper_arm/` (`j1_link`: the LEGACY build's feature probes, DEFAULT's numbers, the elbow motor's pad and its
-holes, the root on the drive's turning shell - its housing bolts' holes and nut pockets, the hub's hole -, no sockets,
-the elbow block's relief), `tests/base/` (`base`: the LEGACY build's
+holes, the arm rising off the drive's turning shell - the drive's frame in the link's, the shell's body inside, the
+elbow end and the pad slid onto the arm's face -, no sockets, the elbow block's relief), `tests/base/` (`base`: the LEGACY build's
 feature probes, the interface values lib/params.py and lib/datum.py take from it; `base_motor_mount`: the wiring room, the
 joint to the base's posts, the slotted seat at the stock belt's centre distance, the motor clear across the travel;
 `yaw_pulley_screws` / `yaw_pulley_nuts`, purchased parts with no reference: the numbers no reference file holds for them - pieces, volume,
 bbox - and feature probes), `tests/coupler/` (`j3_coupler`: the
 LEGACY build's feature probes, the stub the roll drive's block repeats), `tests/yaw_coupler/` (`j1_coupler`: the LEGACY
 build's feature probes, the yoke on the port's housing - its bore, od, pillars, bolt circle; DEFAULT's fork on the
-drive's own axis - the end plate on the hub, the clamp round the motor sleeve, the lowered ring - and its cap's numbers), `tests/wrist/` (`wrist_link`: the LEGACY build's feature probes, the seat on the
+drive's own axis - two alike legs past the shell's ends, the hub on one, the other round the motor sleeve, the lowered ring - and its cap's numbers), `tests/wrist/` (`wrist_link`: the LEGACY build's feature probes, the seat on the
 coupler's flange, the end face on the NEMA 17 pattern), `tests/pulley/` (`gt2_pulley_90t`: the GT2 groove's tangency
 solve against the export's arcs, the LEGACY build's feature probes and surfaces, DEFAULT's opened holes;
 `gt2_pulley_20_60t`, a measured conversion: its export's numbers written into the test - both bands' arc centres, the

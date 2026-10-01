@@ -3,8 +3,9 @@
 Ported from cycloidal_drive@2f1f67d src/purchased_parts.py; reference/bearing_6814.step is that
 builder's export (kind "cots"). vendor/bearing_6814.step, when present, is a step.parts catalog model
 re-oriented by VENDOR_TO_REF into the same frame: axis Z, standing on z=0. In the drive, twice (lib/cycloidal/layout.py stack_positions z_6814_*): the port stacked both in the
-ring gear body's seat (z 37 / 47) on the output hub; the turning shell has one in the seat's outer slot (47) on the
-hub, the other behind the motor plate (-10), on its sleeve inside the shell ring's skirt - the outer races turn.
+ring gear body's seat (z 37 / 47) on the output hub; the turning shell has one at each end, mirror images: on the
+hub past its flange (48) in the body's seat, and behind the motor plate (-10) on its sleeve in the shell ring's seat -
+the outer races turn.
 """
 import pathlib
 

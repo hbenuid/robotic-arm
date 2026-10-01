@@ -37,14 +37,14 @@ from lib.yaw_coupler import DEFAULT as _YAW_COUPLER
 # forearm_roll_mount_{screws,nuts}) and the electronics are not listed yet.
 EXTRAS = [
     ("cycloidal_drive", (f"M{CYCLOIDAL_HUB_BOLT_DIA:g} x {_YAW_COUPLER.fork.hub_screw_len:g} socket head cap screw (ISO 4762) - "
-                         "the output hub to the j1_coupler yoke's end plate"), CYCLOIDAL_HUB_BOLT_COUNT,
-     "heads in the end plate's counterbores, through the hub into its captive nuts (lib/yaw_coupler/params.py ForkParams)"),
-    ("cycloidal_drive", f"M{CYCLOIDAL_HUB_BOLT_DIA:g} hex nut (ISO 4032) - captive in the output hub's inner face",
-     CYCLOIDAL_HUB_BOLT_COUNT, "drop them in before pressing the hub through its 6814"),
-    (None, f"M4 x {_YAW_COUPLER.fork.cap_screw_len:g} socket head cap screw (ISO 4762) - j1_coupler's clamp cap onto its saddle", 4,
-     "heads in the cap's counterbores, down into the nuts in the saddle's side slots (lib/yaw_coupler/params.py ForkParams)"),
-    (None, "M4 hex nut (ISO 4032) - in the side slots of j1_coupler's saddle, for the clamp cap's screws", 4,
-     "slid in from the saddle's sides before the drive is lowered in"),
+                         "the output hub to the j1_coupler yoke's hub-side leg"), CYCLOIDAL_HUB_BOLT_COUNT,
+     "heads in the leg's counterbores, through the hub into its captive nuts (lib/yaw_coupler/params.py ForkParams)"),
+    ("cycloidal_drive", f"M{CYCLOIDAL_HUB_BOLT_DIA:g} hex nut (ISO 4032) - captive in the output hub's flange",
+     CYCLOIDAL_HUB_BOLT_COUNT, "drop them into the flange's inner face before pressing the hub through its 6814"),
+    (None, f"M3 x {_YAW_COUPLER.fork.cap_screw_len:g} socket head cap screw (ISO 4762) - j1_coupler's cap onto its motor-side leg", 2,
+     "heads in the cap's counterbores, down into the nuts in the leg's side slots (lib/yaw_coupler/params.py ForkParams)"),
+    (None, "M3 hex nut (ISO 4032) - in the side slots of j1_coupler's motor-side leg, for the cap's screws", 2,
+     "slid in from the leg's sides before the drive is lowered in"),
     (None, f"{ELBOW_BELT_LENGTH}-2GT closed belt, 6 mm - the elbow belt (20T on the elbow motor, 90T at the elbow)", 1,
      "belts are not modelled; the length sets the motor's pad on j1_link (lib/upper_arm/params.py ELBOW_MOTOR_CENTRES)"),
     ("cycloidal_drive", "bearing grease", 1, "the output pins are a greased sliding fit through the discs"),

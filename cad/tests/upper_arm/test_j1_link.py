@@ -2,11 +2,11 @@
 (the volume / bbox match is tests/test_reference_match.py's; here the features are probed by name so a regression
 names what moved), and DEFAULT - what the part builds - changes exactly these: SHORTENING at the elbow end (every
 elbow-end feature moves with the axis), no through slots, no cap sockets, the elbow block's clearance (the relief round
-the elbow axis, the recess floor deeper), and the cycloidal drive's turning shell: the round root bolted to the shell by
-the drive's housing bolts (their nuts in pockets from the underside) round the hole its held hub passes through
-(ShellMountParams), the elbow motor's pad - the NEMA 17 holes on the motor's pattern - moved out along the link to the
-stock elbow belt's centre distance from the elbow axis, where the second stage's seat was (gone). DEFAULT's own numbers
-(volume, box) are locked here."""
+the elbow axis, the recess floor deeper), and the cycloidal drive's turning shell: the arm rises straight off the
+shell's middle (ArmParams), printed as one with the shell's body round the discs - the plate's elbow end and the elbow
+motor's pad slid along Y onto the arm's outer face (arm_slide), the pad - the NEMA 17 holes on the motor's pattern -
+moved out along the link to the stock elbow belt's centre distance from the elbow axis, where the second stage's seat
+was (gone). DEFAULT's own numbers (volume, box) are locked here."""
 import math
 from dataclasses import replace
 
@@ -18,14 +18,17 @@ from lib import params as PARAMS
 from lib import placements as P
 from lib import reference as R
 from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, centre_distance
-from lib.cycloidal import housing_bolt_points, stack_positions
+from lib.cycloidal import arm_zone, housing_bolt_points, shell_ends, stack_positions
 from lib.cycloidal.params import DEFAULT_CONFIG
 from lib.datum import to_location
 from lib.motors import NEMA17_BOLT_SP
-from lib.upper_arm import DEFAULT, LEGACY, hub_bolt_points, pad_holes, shell_bolt_points, socket_points
+from lib.upper_arm import DEFAULT, LEGACY, arm_slide, hub_bolt_points, pad_holes, socket_points
+from lib.upper_arm.link import drive_frame
 from lib.upper_arm.params import ELBOW_BELT, ELBOW_MOTOR_CENTRES, SHORTENING
 from tests import built
 from tests.helpers import is_inside
+
+SLIDE = arm_slide(DEFAULT)   # 39.27
 
 
 def _in_link(key: str, local=(0.0, 0.0, 0.0)) -> Location:
@@ -33,9 +36,14 @@ def _in_link(key: str, local=(0.0, 0.0, 0.0)) -> Location:
     return P.location("j1_link#1", "world").inverse() * P.location(key, "world") * Location(local)
 
 
+def _drive(x: float, y: float, z: float) -> tuple:
+    """A point of the drive's frame in j1_link's (ArmParams.drive_z_at_y0 / drive_x_deg)."""
+    p = (drive_frame(DEFAULT) * Location((x, y, z))).position
+    return (p.X, p.Y, p.Z)
+
+
 def test_layout():
-    assert len(hub_bolt_points(LEGACY)) == 4 and len(shell_bolt_points(LEGACY)) == 0
-    assert len(shell_bolt_points(DEFAULT)) == DEFAULT_CONFIG.housing.bolt_count
+    assert len(hub_bolt_points(LEGACY)) == 4 and LEGACY.arm is None and arm_slide(LEGACY) == 0.0
     assert [len(s) for s in socket_points(LEGACY)] == [7, 3] and socket_points(DEFAULT) == ([], [])
     # SHORTENING at the elbow end: the axis and every elbow-end feature move with it; the shoulder end stays; the
     # through slots are gone
@@ -47,17 +55,36 @@ def test_layout():
                    recess_y=LEGACY.elbow.recess_y, chamfer_x=DEFAULT.elbow.chamfer_x - dx,
                    step_x=DEFAULT.elbow.step_x - dx) == LEGACY.elbow
     # the elbow motor off the shoulder axis (the drive's yoke holds it now): its pad the stock belt's centre distance
-    # from the elbow, where the second stage's seat was - gone
+    # from the elbow, where the second stage's seat was - gone; its face slid with the arm
     assert LEGACY.pad.x == 0.0 and DEFAULT.bearing is None and LEGACY.bearing is not None
     assert ELBOW_MOTOR_CENTRES == centre_distance(ELBOW_BELT, GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH) == pytest.approx(81.97, abs=0.01)
     assert DEFAULT.pad.x == pytest.approx(DEFAULT.slab.elbow_x - ELBOW_MOTOR_CENTRES, abs=1e-6)
     assert replace(DEFAULT.pad, x=0.0, holes=LEGACY.pad.holes) == LEGACY.pad
-    assert PARAMS.J1_MOTOR_PAD_FACE_Y == DEFAULT.pad.face_y == -32.5 and PARAMS.ELBOW_BELT_LENGTH == ELBOW_BELT
+    assert DEFAULT.pad.face_y == -32.5 and PARAMS.J1_MOTOR_PAD_FACE_Y == pytest.approx(-32.5 + SLIDE)
+    assert PARAMS.J1_ARM_SLIDE == SLIDE and PARAMS.ELBOW_BELT_LENGTH == ELBOW_BELT
+
+
+def test_the_arm_rises_off_the_drives_shell():
+    """ArmParams: the drive's frame in this one is the capture's (placements.json cycloidal_drive#1 and j1_link#1, to
+    1e-6); the arm spans the drive's arm_zone (its two plates' inner faces, the middle of the discs between) and the
+    plate's underside slides onto its outer face; the collar over the shell's od, the fusion past the housing bolts'
+    holes and inside the od."""
+    a, h = DEFAULT.arm, DEFAULT_CONFIG.housing
+    capture = P.location("j1_link#1", "world").inverse() * P.location("cycloidal_drive#1", "world")
+    mine = drive_frame(DEFAULT)
+    for v in ((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)):
+        assert tuple((capture * Location(v)).position) == pytest.approx(tuple((mine * Location(v)).position), abs=1e-6)
+    z0, z1 = arm_zone(DEFAULT_CONFIG)
+    assert (a.y_inner, a.y_outer) == (a.drive_z_at_y0 - z0, a.drive_z_at_y0 - z1) == (57.5, 27.5)
+    assert SLIDE == pytest.approx(a.y_outer - DEFAULT.slab.y0) == pytest.approx(39.271993)
+    assert a.root_r > h.od / 2.0 > a.fuse_r > (h.bolt_circle_dia + h.bolt_dia + DEFAULT_CONFIG.tolerances.bolt_clearance_add) / 2.0
+    assert a.fuse_r > h.bore_dia / 2.0
 
 
 def test_default_pad_holes_are_the_motors_pattern():
     """The elbow motor (lib/mounts.py nema17_40mm#2: face on the pad, shaft +N on the pad's axis) has its 4 bolts
-    on the NEMA 17 square in its own frame (face z = 0): each one is a DEFAULT hole's axis (the holes about the pad's x)."""
+    on the NEMA 17 square in its own frame (face z = 0): each one is a DEFAULT hole's axis (the holes about the pad's x),
+    on the slid pad's face."""
     m = mounts.BY_KEY["nema17_40mm#2"]
     frame = to_location(m.frame)
     half = NEMA17_BOLT_SP / 2.0
@@ -65,7 +92,7 @@ def test_default_pad_holes_are_the_motors_pattern():
         (frame * Location((sx * half, sy * half, 0.0))).position for sx in (1, -1) for sy in (1, -1)))
     holes = sorted((round(DEFAULT.pad.x + x, 6), round(z, 6)) for x, z, _ in pad_holes(DEFAULT))
     assert bolts == holes
-    assert all((frame * Location((sx * half, sy * half, 0.0))).position.Y == pytest.approx(DEFAULT.pad.face_y)
+    assert all((frame * Location((sx * half, sy * half, 0.0))).position.Y == pytest.approx(DEFAULT.pad.face_y + SLIDE)
                for sx in (1, -1) for sy in (1, -1))
     # LEGACY's holes were 0.38 off the axis and uneven - the reason DEFAULT moves them
     cx = sum(x for x, _, _ in pad_holes(LEGACY)) / 4.0
@@ -73,26 +100,16 @@ def test_default_pad_holes_are_the_motors_pattern():
     assert 0.35 < math.hypot(cx, cz) < 0.4
 
 
-def test_default_shell_holes_are_the_drives_housing_bolts():
-    """The drive's housing bolts (lib/cycloidal/layout.py housing_bolt_points), placed by placements.json, run along -Y
-    through j1_link on DEFAULT's shell holes (the [REFERENCE] bolt angle re-derived), the shell's output face on the top
-    face; their nuts (stack z_housing_nuts) seat on the pockets' floors; the held hub passes the hole 2 a side."""
-    m, face_z = DEFAULT.shell, PARAMS.CYCLOIDAL_OUTPUT_FACE_Z
-    holes = [(x, z) for x, z, _ in shell_bolt_points(DEFAULT)]
-    nut_z = stack_positions(DEFAULT_CONFIG)["z_housing_nuts"]
+def test_the_drives_housing_bolts_run_along_the_links_y():
+    """The drive's housing bolts, placed by placements.json, run along -Y through j1_link's body: their seats at the
+    drive's z through ArmParams.drive_z_at_y0."""
+    nut_z, (_, end) = stack_positions(DEFAULT_CONFIG)["z_housing_nuts"], shell_ends(DEFAULT_CONFIG)
     for x, y in housing_bolt_points(DEFAULT_CONFIG):
-        head = _in_link("cycloidal_drive#1", (x, y, face_z)).position
-        tip = _in_link("cycloidal_drive#1", (x, y, face_z + 10.0)).position
+        head = _in_link("cycloidal_drive#1", (x, y, 0.0)).position
+        tip = _in_link("cycloidal_drive#1", (x, y, 10.0)).position
         assert abs(abs((tip - head).Y) - 10.0) < 1e-6                              # along the link's Y
-        assert head.Y == pytest.approx(DEFAULT.slab.lip_top, abs=1e-5)            # the shell's face on the top face
-        assert min(math.hypot(head.X - hx, head.Z - hz) for hx, hz in holes) < 1e-4
-        nut = _in_link("cycloidal_drive#1", (x, y, nut_z)).position
-        assert nut.Y == pytest.approx(DEFAULT.slab.y0 + m.nut_depth, abs=1e-5)    # the nut's inner face on the floor
-    assert m.bolt_angle_deg == pytest.approx(DEFAULT.hub.bolt_angle_deg - DEFAULT_CONFIG.output_hub.arm_mount_angle_offset_deg, abs=1e-6)
-    assert (m.bolt_circle_dia, m.bolt_count) == (PARAMS.CYCLOIDAL_SHELL_BOLT_CIRCLE, PARAMS.CYCLOIDAL_SHELL_BOLT_COUNT)
-    assert (m.nut_af, m.nut_turn_deg) == (DEFAULT_CONFIG.housing.bolt_nut_pocket_af, DEFAULT_CONFIG.housing.bolt_nut_turn_deg)
-    assert m.hole_dia - DEFAULT_CONFIG.output_hub.od == pytest.approx(4.1)
-    assert m.root_r - m.bolt_circle_dia / 2.0 - m.nut_af / math.sqrt(3.0) > 3.0          # plastic past the pockets
+        for z in (nut_z, end):
+            assert _in_link("cycloidal_drive#1", (x, y, z)).position.Y == pytest.approx(DEFAULT.arm.drive_z_at_y0 - z, abs=1e-5)
 
 
 @pytest.fixture(scope="module")
@@ -149,51 +166,54 @@ def test_legacy_features(legacy):
 
 @pytest.mark.slow
 def test_default(link, legacy):
-    """DEFAULT's numbers (no reference holds them) and its features: the shortened elbow end, no sockets (the through
-    slots' places are the pad's opening now), the elbow's relief and deeper recess; the round root on the shell - its hole, the shell's bolts and their
-    nut pockets -; the pad moved out to its x, nothing of it left on the shoulder axis; the second stage's seat gone."""
-    dx = SHORTENING
+    """DEFAULT's numbers (no reference holds them) and its features: the arm off the shell - its collar, its faces, the
+    swing cut and the relief near the elbow -, the shell's body inside; the plate's shortened elbow end and the pad slid
+    onto the arm's outer face, the pad out at its x, its opening through the arm; no sockets, the second stage's seat
+    gone."""
+    dx, a = SHORTENING, DEFAULT.arm
     assert link.is_valid and len(link.solids()) == 1
-    assert R.solid_volume(link) == pytest.approx(308908.639, abs=0.5)
-    bb, m = link.bounding_box(), DEFAULT.shell
-    assert (bb.min.X, bb.min.Y, bb.min.Z) == pytest.approx((-m.root_r, DEFAULT.pad.face_y, -m.root_r), abs=1e-6)
-    assert (bb.max.X, bb.max.Y, bb.max.Z) == pytest.approx((legacy.bounding_box().max.X + dx, DEFAULT.slab.lip_top, m.root_r), abs=1e-6)
-    shoulder, elbow = socket_points(LEGACY)
-    for x, z in shoulder:
-        if math.hypot(x, z) > m.hole_dia / 2.0 + 1.0 and abs(x - DEFAULT.pad.x) > DEFAULT.hub.opening_half + 1.0:
-            assert is_inside(link, x, -11.0, z)                                       # no sockets
-    for x, z in elbow:
-        assert is_inside(link, x + dx, -23.0, z)
-    # the root and the hole
-    y = (DEFAULT.slab.y0 + DEFAULT.slab.lip_top) / 2.0
-    assert is_inside(link, -(m.root_r - 0.3), y, 0) and not is_inside(link, -(m.root_r + 0.3), y, 0)
-    assert not is_inside(link, 0, y, m.hole_dia / 2.0 - 0.3) and is_inside(link, 0, y, m.hole_dia / 2.0 + 0.3)
-    for x, z, a in shell_bolt_points(DEFAULT):
-        assert not is_inside(link, x, DEFAULT.slab.lip_top - 0.3, z)                  # the bolt's hole, through ...
-        u = (math.cos(math.radians(a)), math.sin(math.radians(a)))                    # ... its nut's pocket, a flat outward
-        flat = m.nut_af / 2.0
-        assert not is_inside(link, x + u[0] * (flat - 0.3), DEFAULT.slab.y0 + 0.5, z + u[1] * (flat - 0.3))
-        assert is_inside(link, x + u[0] * (flat + 0.3), DEFAULT.slab.y0 + 0.5, z + u[1] * (flat + 0.3))
-        assert is_inside(link, x + u[0] * (flat - 0.3), DEFAULT.slab.y0 + m.nut_depth + 0.3, z + u[1] * (flat - 0.3))
-    # the pad at its x (its face, the pilot opening, the NEMA 17 holes), nothing of it left under the shoulder axis
+    assert R.solid_volume(link) == pytest.approx(378596.739, abs=0.5)
+    bb = link.bounding_box()
+    assert (bb.min.X, bb.min.Y, bb.min.Z) == pytest.approx((-a.root_r, a.drive_z_at_y0 - shell_ends(DEFAULT_CONFIG)[1], -a.root_r), abs=1e-6)
+    assert (bb.max.X, bb.max.Y, bb.max.Z) == pytest.approx((legacy.bounding_box().max.X + dx, a.y_inner, a.root_r), abs=1e-6)
+    # the arm: full width near the shell, the collar round it, its faces
+    assert is_inside(link, 70, a.y_inner - 0.5, 30) and not is_inside(link, 70, a.y_inner + 0.5, 30)
+    assert not is_inside(link, 70, a.y_outer - 0.5, 30)
+    y = (a.y_inner + a.y_outer) / 2.0
+    assert is_inside(link, -(a.root_r - 0.3), y, 0) and not is_inside(link, -(a.root_r + 0.3), y, 0)
+    # ... cut back over the elbow: the swing cut (the roll drive's stator), then the relief
+    s, e = DEFAULT.slab, DEFAULT.elbow
+    cut_y = s.lip_top + SLIDE + a.swing_above_top
+    assert not is_inside(link, 100, cut_y + 1.0, 30) and is_inside(link, 100, cut_y - 1.0, 30)
+    x_edge = s.elbow_x - e.relief_r
+    assert not is_inside(link, x_edge + 1.0, e.relief_y + SLIDE + 0.5, 0) and is_inside(link, x_edge + 1.0, e.relief_y + SLIDE - 0.5, 0)
+    assert is_inside(link, x_edge - 1.0, e.relief_y + SLIDE + 0.5, 30)              # the arm, outside the relief
+    # the shell's body inside, at the drive's places: the bore round the discs, the hub-end seat and lip, the bolts'
+    # holes through the collar, the nuts' pockets
+    sh, hh, (z_0, z_1) = DEFAULT_CONFIG.shell, DEFAULT_CONFIG.housing, arm_zone(DEFAULT_CONFIG)
+    mid = (z_0 + z_1) / 2.0
+    assert not is_inside(link, *_drive(hh.bore_dia / 2.0 - 0.3, 0.0, mid)) and is_inside(link, *_drive(hh.bore_dia / 2.0 + 0.3, 0.0, mid))
+    seat = DEFAULT_CONFIG.stack_up.z_output_bearings + 5.0
+    assert not is_inside(link, *_drive(hh.output_bearing_seat_dia / 2.0 - 0.1, 0.0, seat))
+    assert is_inside(link, *_drive(hh.lip_bore_dia / 2.0 + 0.3, 0.0, shell_ends(DEFAULT_CONFIG)[1] - sh.end_lip / 2.0))
+    nut_z = stack_positions(DEFAULT_CONFIG)["z_housing_nuts"]
+    for x, y_ in housing_bolt_points(DEFAULT_CONFIG):
+        assert not is_inside(link, *_drive(x, y_, mid)) and not is_inside(link, *_drive(x, y_, nut_z + 1.0))
+    # the plate's elbow end, slid: the elbow bearing stack, the stepped slot, the chamfer
+    r_floor = (e.recess_dia + e.bore_dia) / 4.0
+    assert not is_inside(link, s.elbow_x, e.recess_y + SLIDE + 0.5, r_floor) and is_inside(link, s.elbow_x, e.recess_y + SLIDE - 0.5, r_floor)
+    sl = DEFAULT.slots
+    assert not is_inside(link, sl.stepped_x, -5 + SLIDE, 0) and is_inside(link, sl.stepped_x + 4.0, -5 + SLIDE, 0)
+    assert is_inside(link, 149.5 + dx, -15.5 + SLIDE, 30) and not is_inside(link, 149.5 + dx, -16.0 + SLIDE, 30)
+    for x, z in socket_points(LEGACY)[1]:
+        assert is_inside(link, x + dx, -23.0 + SLIDE, z)                              # no sockets
+    # the pad at its x, slid (its face, the pilot opening, the NEMA 17 holes); the opening over it through the arm
     px = DEFAULT.pad.x
-    assert is_inside(link, px + 20, -32, 20) and not is_inside(link, px + 20, -33, 20)
-    assert not is_inside(link, px, -28, 0) and is_inside(link, px - 16, -28, 0)
+    assert is_inside(link, px + 20, -32 + SLIDE, 20) and not is_inside(link, px + 20, -33 + SLIDE, 20)
+    assert not is_inside(link, px, -28 + SLIDE, 0) and is_inside(link, px - 16, -28 + SLIDE, 0)
     for x, z, _ in pad_holes(DEFAULT):
-        assert not is_inside(link, px + x, -28, z)
-    assert not is_inside(link, 20, -32, 20) and is_inside(legacy, 20, -32, 20)
-    assert not is_inside(link, px, -5, 0)                                             # the plate's opening over it
+        assert not is_inside(link, px + x, -28 + SLIDE, z)
+    assert not is_inside(link, px, y, 0) and is_inside(link, px, y, DEFAULT.hub.opening_half + 1.0)
     # the second stage's seat is gone (its boss under the plate, its web) - the pad's opening took its place
     b = LEGACY.bearing
-    assert not is_inside(link, b.x + dx, -14, 15) and is_inside(legacy, b.x, -14, 15)
-    # the elbow-end features where the shortening puts them: the stepped slot, the chamfer
-    sl = DEFAULT.slots
-    assert not is_inside(link, sl.stepped_x, -5, 0) and is_inside(link, sl.stepped_x + 4.0, -5, 0)
-    assert is_inside(link, 149.5 + dx, -15.5, 30) and not is_inside(link, 149.5 + dx, -16.0, 30)
-    # the elbow: the top face down to relief_y within relief_r of the axis, the lip still there beyond; the recess floor
-    s, e = DEFAULT.slab, DEFAULT.elbow
-    x_edge = s.elbow_x - e.relief_r
-    assert not is_inside(link, x_edge + 1.0, e.relief_y + 0.5, 0) and is_inside(link, x_edge + 1.0, e.relief_y - 0.5, 0)
-    assert is_inside(link, x_edge - 1.0, s.y1 + 1.0, 30) and is_inside(legacy, x_edge - dx + 1.0, s.y1 + 1.0, 30)   # beside the pad's opening
-    r_floor = (e.recess_dia + e.bore_dia) / 4.0
-    assert not is_inside(link, s.elbow_x, e.recess_y + 0.5, r_floor) and is_inside(link, s.elbow_x, e.recess_y - 0.5, r_floor)
+    assert not is_inside(link, b.x + dx, -14 + SLIDE, 15) and is_inside(legacy, b.x, -14, 15)

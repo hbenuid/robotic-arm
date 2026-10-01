@@ -2,7 +2,7 @@
 their pockets (a corner radially outward, turned bolt_nut_turn_deg).
 
 In the drive: at stack z_housing_nuts, on the bolts' ends - the port's (56) in the ring gear body's output-face
-pockets, the turning shell's (71.3) in j1_link's pockets under the shell (lib/upper_arm/params.py ShellMountParams).
+pockets, the turning shell's (53.3) in its body's pockets from the hub end (lib/cycloidal/housing.py build_shell_body).
 Solid hexagons (no thread).
 Ported from cycloidal_drive@2f1f67d src/purchased_parts.py; reference/cycloidal_housing_nuts.step is that builder's
 export (kind "cots"). No catalog model (the envelope is the geometry); a vendor/cycloidal_housing_nuts.step would be

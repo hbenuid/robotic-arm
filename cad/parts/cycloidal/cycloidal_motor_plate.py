@@ -1,5 +1,5 @@
 """cycloidal_motor_plate - the plate the NEMA 17 bolts to (z 0..9): the port's housing half, or the turning shell's
-held carrier end with its sleeve back over the motor.
+held carrier end with its sleeve back over the motor (to z -22).
 
 Ported from cycloidal_drive@2f1f67d src/motor_plate.py (build_motor_plate()); reference/
 cycloidal_motor_plate.step is that builder's export (kind "designed"). PETG.
@@ -10,11 +10,12 @@ The port (LEGACY_CONFIG, `shell` None): a housing half - 21 ring-pin through-hol
 inserted one at a time from this face); the M4 through-holes (bolt_count) with counterbores on the bolt circle; the
 shared pillar / reveal-window silhouette; outer silhouette chamfered. The inner face seats on the ring gear body.
 The turning shell (DEFAULT_CONFIG, ShellParams): held, not part of the housing - a plate_dia plate inside the shell
-ring's bore (parts/cycloidal/cycloidal_shell_ring, which takes the ring pins and the housing bolts), its outer face cut
-back plate_relief_depth from plate_relief_dia out, over the motor-end 6814's turning outer race (its inner race bears
-on the face inside), and a sleeve back over the motor to z = -body_length: sleeve_bore_dia (the motor's and the board's
-corners), sleeve_od, and the hub's grip (OutputHubParams.od) over the last out_width - the 6814 slides on from the
-motor's end and presses on there. The j1_coupler yoke clamps the sleeve behind the bearing.
+ring's pin ring (parts/cycloidal/cycloidal_shell_ring, which takes the ring pins and the housing bolts), its outer face
+cut back plate_relief_depth from plate_relief_dia out, over the motor-end 6814's turning outer race (its inner race
+bears on the face inside), and a sleeve back over the motor: sleeve_bore_dia (the motor's and the board's corners),
+sleeve_od, and the hub's grip (OutputHubParams.od) over the last out_width - the 6814 slides on from the sleeve's end
+and presses on there. The sleeve runs through the j1_coupler yoke's motor-side leg, which clamps it, to the leg's outer
+face (lib/cycloidal/layout.py sleeve_end: -22).
 
 Diverged from the port: build(LEGACY_CONFIG) reproduces the export (REFERENCE_BUILD - tests/cycloidal/test_port.py,
 tests/test_reference_match.py); the model builds DEFAULT_CONFIG (the turning shell's carrier plate).
@@ -32,6 +33,7 @@ from lib.cycloidal import (
     motor_bolt_points,
     ring_pin_hole_dia,
     ring_pin_points,
+    sleeve_end,
 )
 from lib.cycloidal.housing import chamfer_outer_silhouette, reveal_window_cutter
 from lib.datum import IDENTITY
@@ -68,7 +70,7 @@ def _carrier(cfg: DriveConfig):
     plate = _motor_face(cylinder(sh.plate_dia / 2.0, t), cfg, t)
     relief = cylinder(sh.plate_dia / 2.0 + 1.0, sh.plate_relief_depth + NUDGE, z0=-NUDGE)
     plate = plate - (relief - cylinder(sh.plate_relief_dia / 2.0, sh.plate_relief_depth + 3 * NUDGE, z0=-2 * NUDGE))
-    back = -cfg.motor.body_length
+    back = sleeve_end(cfg)
     sleeve = cylinder(cfg.output_hub.od / 2.0, b.out_width + NUDGE, z0=-b.out_width)                    # the 6814's seat
     sleeve = sleeve + cylinder(sh.sleeve_od / 2.0, -back - b.out_width + NUDGE, z0=back)                # the rest
     sleeve = sleeve - cylinder(sh.sleeve_bore_dia / 2.0, -back + 2 * NUDGE, z0=back - NUDGE)

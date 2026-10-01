@@ -11,7 +11,7 @@ import pytest
 
 import parts
 from lib import reference as R
-from lib.cycloidal import LEGACY_CONFIG, motor_bolt_counterbore_depth, ring_pin_hole_dia
+from lib.cycloidal import LEGACY_CONFIG, motor_bolt_counterbore_depth, ring_pin_hole_dia, sleeve_end
 from tests.cycloidal.helpers import CFG
 from tests.helpers import is_inside
 
@@ -137,16 +137,17 @@ def carrier():
 
 @pytest.mark.slow
 class TestCarrier:
-    """DEFAULT's plate: held, inside the turning shell ring, its sleeve back over the motor (ShellParams)."""
+    """DEFAULT's plate: held, inside the turning shell ring, its sleeve back over the motor through the yoke's
+    motor-side leg (ShellParams)."""
 
     def test_numbers(self, carrier):
         sh, b = CFG.shell, CFG.bearings
         assert len(carrier.solids()) == 1 and carrier.is_valid
-        assert R.solid_volume(carrier) == pytest.approx(93978.074, abs=0.5)
+        assert R.solid_volume(carrier) == pytest.approx(72414.182, abs=0.5)
         bb = carrier.bounding_box()
-        assert (bb.min.X, bb.min.Y, bb.min.Z) == pytest.approx((-sh.plate_dia / 2.0, -sh.plate_dia / 2.0, -CFG.motor.body_length), abs=1e-6)
-        assert (bb.size.X, bb.size.Y, bb.size.Z) == pytest.approx((sh.plate_dia, sh.plate_dia, PLATE_T + CFG.motor.body_length), abs=1e-6)
-        assert b.out_width < CFG.motor.body_length
+        assert (bb.min.X, bb.min.Y, bb.min.Z) == pytest.approx((-sh.plate_dia / 2.0, -sh.plate_dia / 2.0, sleeve_end(CFG)), abs=1e-6)
+        assert (bb.size.X, bb.size.Y, bb.size.Z) == pytest.approx((sh.plate_dia, sh.plate_dia, PLATE_T - sleeve_end(CFG)), abs=1e-6)
+        assert sleeve_end(CFG) == -22.0 and b.out_width < -sleeve_end(CFG)
 
     def test_relief_seat_and_sleeve(self, carrier):
         """The face cut back over the outer race, the inner race's face inside it; the seat at the hub's grip over the

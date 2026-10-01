@@ -11,7 +11,7 @@ Chain: base_link -base_yaw-> shoulder_link -shoulder_pitch-> upper_arm_link -elb
 -forearm_roll-> forearm_link -wrist_pitch-> wrist_pitch_link -wrist_roll-> wrist_roll_link -jaw_a/jaw_b->
 jaw_*_link, + tool0 (frame-only). The cycloidal drive IS the shoulder_pitch joint: its stator
 (the held carrier + motor, in the j1_coupler fork) rides in shoulder_link, its rotor (the turning
-shell, bolted to j1_link) in upper_arm_link (docs/cycloidal_drive.md "Attachment").
+shell, whose body is printed with j1_link) in upper_arm_link (docs/cycloidal_drive.md "Attachment").
 
 Frames (all in the SolidWorks WORLD frame W, millimetres; W is +Y up, the arm extends toward
 -X, see reference/README.md):
@@ -55,7 +55,7 @@ PJ = (0.499699, 0.865884, 0.023354)          # jaw travel: the two Ø6 gripper r
 
 BASE_YAW_ORIGIN = (0.0, 85.010435, 0.0)      # [REFERENCE] on the base_yaw axis at the cycloidal drive's axis height (its node's Y)
 SHOULDER_ORIGIN = (-2.440595, 85.010435, -34.915297)   # [REFERENCE] j1_link#1 origin: on the cycloidal drive's axis, 66.5 mm along it from the
-#                                                        motor-plate face (1.5 past the shell's output face, CYCLOIDAL_OUTPUT_FACE_Z)
+#                                                        motor-plate face (lib/upper_arm/params.py ArmParams.drive_z_at_y0)
 # The origins beyond a link move with it: the capture point [REFERENCE] + the SHIFTS of the record it sits on.
 ELBOW_ORIGIN = P.shifted("j2_link#1", (-143.15, 240.05, -15.81))   # j2_link#1's origin (on the elbow_pitch axis; the retired j3_coupler#1 shared it)
 WRIST_PITCH_ORIGIN = P.shifted("j3_coupler#2", (-283.37, 393.63, 35.33))   # j3_coupler#2 origin (on the wrist_pitch axis)

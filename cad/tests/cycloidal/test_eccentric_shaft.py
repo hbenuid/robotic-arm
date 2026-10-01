@@ -10,6 +10,7 @@ import pytest
 
 import parts
 from lib import reference as R
+from lib.cycloidal import stack_positions
 from tests.cycloidal.helpers import CFG
 
 cycloidal_eccentric_shaft = parts.load("cycloidal_eccentric_shaft")
@@ -128,10 +129,11 @@ class TestOutputPinHole:
         assert z_pin_hole_bottom - z_d_bore_end >= 1.0
 
     def test_pin_reaches_625_bearing(self):
-        """The pin's protrusion (9) spans the 2 mm gap plus the 5 mm 625 bearing."""
+        """The pin's protrusion (9) spans the gap to the 625 (the turning shell's 4: the hub's flange) plus the 5 mm
+        625 bearing."""
         shaft, stack = CFG.shaft, CFG.stack_up
         protrusion = shaft.support_pin_length - shaft.support_pin_hole_depth
-        gap = stack.z_output_bearings - (stack.z_disc2 + CFG.disc.thickness)
+        gap = stack_positions(CFG)["z_625"] - (stack.z_disc2 + CFG.disc.thickness)
         assert protrusion >= gap + CFG.bearings.inp_width
 
     def test_pin_fits_625_bore(self):

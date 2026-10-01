@@ -32,8 +32,9 @@ Geometry (lib/params.py, kernel-verified 2026-09-21 - tests/test_mounts.py re-ch
                48 mm body hangs in -Y, shaft +Y through the plate into the plane of the base_yaw 120T's teeth; motor +
                board end BASE_MOTOR_TABLE_CLEAR above the base's bottom face (lowered under them, lib/base/params.py
                BOARD_CLEAR)
-  elbow_pitch  j1_link's 48 x 48 pad (outer face y = J1_MOTOR_PAD_FACE_Y, the -N side), pattern on the pad's axis
-               (PadParams.x: ELBOW_MOTOR_CENTRES short of the elbow axis - the shoulder axis is the drive's yoke's);
+  elbow_pitch  j1_link's 48 x 48 pad (outer face y = J1_MOTOR_PAD_FACE_Y, the -N side, slid J1_ARM_SLIDE with the
+               arm's elbow end), pattern on the pad's axis (PadParams.x: ELBOW_MOTOR_CENTRES short of the elbow axis -
+               the shoulder axis is the drive's yoke's);
                shaft +N through the pad opening, its 20T on the belt to the elbow 90T (a stock 280-2GT; not modelled -
                docs/open_issues.md)
   wrist_pitch  j2_link's web (+Z face z = J2_MOTOR_WEB_FACE_Z), motor axis at x = J2_MOTOR_SLIDE_X on the side
@@ -80,6 +81,7 @@ from lib.params import (
     BEARING_6806_WIDTH,
     CYCLOIDAL_MOTOR_BODY_LEN,
     GT2_PULLEY_90T_FACE_Y,
+    J1_ARM_SLIDE,
     J1_MOTOR_PAD_FACE_Y,
     J2_MOTOR_SLIDE_X,
     J2_MOTOR_WEB_FACE_Z,
@@ -173,8 +175,8 @@ def _bearing_pair(key_n: int, host: str, link: str, joint: str, lip: tuple, at: 
 BEARING_MOUNTS: tuple[Mount, ...] = (
     *_bearing_pair(1, "base#1", "base_link", "base_yaw", _BASE.bore.lip_y, (0.0, None, 0.0), (-90.0, 0.0, 0.0),
                    "the base's bore (axis +Y)"),
-    *_bearing_pair(3, "j1_link#1", "upper_arm_link", "elbow_pitch", _UPPER_ARM.elbow.lip_y, (_UPPER_ARM.slab.elbow_x, None, 0.0),
-                   (-90.0, 0.0, 0.0), "j1_link's elbow bore (axis +Y)"),
+    *_bearing_pair(3, "j1_link#1", "upper_arm_link", "elbow_pitch", tuple(y + J1_ARM_SLIDE for y in _UPPER_ARM.elbow.lip_y),
+                   (_UPPER_ARM.slab.elbow_x, None, 0.0), (-90.0, 0.0, 0.0), "j1_link's elbow bore (axis +Y; slid with the elbow end)"),
     *_bearing_pair(5, "j2_link#1", "forearm_link", "wrist_pitch", _FOREARM.boss.lip_z, (_FOREARM.web.wrist_x, 0.0, None),
                    (0.0, 0.0, 0.0), "j2_link's wrist boss (axis +Z)"),
 )
@@ -225,10 +227,10 @@ FASTENER_MOUNTS: tuple[Mount, ...] = (
           "the base_yaw screws' nuts in j1_coupler's hex pockets, flush with the floor of the pocket over its hub "
           "(nut_depth under pocket_y0), a corner along the coupler's Z"),
 )
-# The yoke's clamp cap: the upper half of j1_coupler's clamp round the drive's motor sleeve, built in the coupler's frame.
+# The yoke's cap: the upper half of j1_coupler's motor-side leg round the drive's motor sleeve, built in the coupler's frame.
 YOKE_MOUNTS: tuple[Mount, ...] = (
     Mount("j1_coupler_cap#1", YOKE_CAP, "j1_coupler#1", "shoulder_link", "base_yaw", ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)),
-          "the clamp's upper half on j1_coupler's saddle, round the drive's motor sleeve; built in the coupler's part frame"),
+          "the motor-side leg's upper half on j1_coupler, round the drive's motor sleeve; built in the coupler's part frame"),
 )
 MOUNTS: tuple[Mount, ...] = (BASE_MOUNTS + YOKE_MOUNTS + MOTOR_MOUNTS + BEARING_MOUNTS + THRUST_MOUNTS + PULLEY_MOUNTS
                              + FASTENER_MOUNTS)

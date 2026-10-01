@@ -2,18 +2,23 @@
 
 Every feature runs along the part's Y (its thickness), so the body is built in a working frame whose +Z is the
 part's +Y - part (x, y, z) = working (x, -z, y), the helpers below take part coordinates - and turned into the part
-frame once at the end (Rot(-90, 0, 0))."""
+frame once at the end (Rot(-90, 0, 0)). DEFAULT's arm (ArmParams) adds the cycloidal drive's shell body, built in the
+drive's frame (lib/cycloidal/housing.py build_shell_body), through drive_frame()."""
 from __future__ import annotations
 
 import math
 
 from cadgen import build123d as bd
 
+from lib.cycloidal import DEFAULT_CONFIG as DRIVE
+from lib.cycloidal.housing import build_shell_body
 from lib.forearm.link import stadium, x_cylinder
-from lib.geom import align_min, cylinder, hex_prism, single_solid
+from lib.geom import align_min, cylinder, single_solid
 from lib.units import NUDGE
-from lib.upper_arm.layout import cove_axes, hub_bolt_points, pad_holes, shell_bolt_points, socket_points
+from lib.upper_arm.layout import arm_slide, cove_axes, hub_bolt_points, pad_holes, socket_points
 from lib.upper_arm.params import DEFAULT, UpperArmConfig
+
+_FAR = 400.0   # past the part: the span of a cutter only its radius limits
 
 
 def _bore(radius: float, y0: float, y1: float, x: float = 0.0, z: float = 0.0):
@@ -33,16 +38,13 @@ def _slot(x: float, half_len: float, width: float, y0: float, y1: float):
 
 
 def _plate(cfg: UpperArmConfig):
-    """The stadium plate with its lip and rounded edge (and the round root a shell mount bolts to the drive's shell),
-    the elbow half's step below, the square opening over the pad, the slots, the second stage's bearing seats (if any)
-    and the elbow bearing stack."""
+    """The stadium plate with its lip and rounded edge, the elbow half's step below, the square opening over the pad,
+    the slots, the second stage's bearing seats (if any) and the elbow bearing stack."""
     s, e, sl, b = cfg.slab, cfg.elbow, cfg.slots, cfg.bearing
     top = s.lip_top + NUDGE
     body = stadium(s.elbow_x, 2.0 * s.r, s.y1 - e.y0, s.elbow_x / 2.0, e.y0)
     body = body.fillet(s.round_r, body.faces().sort_by(bd.Axis.Z)[-1].edges())
     body = body + stadium(s.elbow_x, 2.0 * s.lip_r, s.lip_top - s.y1, s.elbow_x / 2.0, s.y1)
-    if cfg.shell is not None:
-        body = body + _bore(cfg.shell.root_r, s.y0, s.lip_top)
     if e.relief_r:
         body = body - _bore(e.relief_r, e.relief_y, top, s.elbow_x)
     # the shoulder half is thinner: its underside, the 45 degree chamfer, the step down to the elbow half
@@ -102,23 +104,37 @@ def _pad(cfg: UpperArmConfig):
     return pad
 
 
-def _shell_mount(body, cfg: UpperArmConfig):
-    """The hole the drive's held hub passes through; the housing bolts through the root, their nuts' pockets from the
-    underside (hex_prism's first vertex on its +X is this frame's angle -a, so a + nut_turn_deg turns to -(a + turn))."""
-    m, s = cfg.shell, cfg.slab
-    body = body - _bore(m.hole_dia / 2.0, s.y0 - NUDGE, s.lip_top + NUDGE)
-    for x, z, a in shell_bolt_points(cfg):
-        body = body - _bore(m.bolt_dia / 2.0, s.y0 - NUDGE, s.lip_top + NUDGE, x, z)
-        body = body - bd.Pos(x, -z, s.y0 - NUDGE) * hex_prism(m.nut_af, math.radians(-(a + m.nut_turn_deg)), m.nut_depth + NUDGE)
-    return body
+def _arm(cfg: UpperArmConfig):
+    """The arm rising off the drive's shell (ArmParams): the plate's outline seen along Y - the stadium and the root
+    disc - from y_outer to y_inner, stopping at the elbow's relief round the elbow axis, its top cut back where the
+    forearm roll drive's stator swings over it."""
+    a, s, e = cfg.arm, cfg.slab, cfg.elbow
+    body = stadium(s.elbow_x, 2.0 * s.r, a.y_inner - a.y_outer, s.elbow_x / 2.0, a.y_outer) + _bore(a.root_r, a.y_outer, a.y_inner)
+    body = body - _bore(e.relief_r, a.y_outer - 1.0, a.y_inner + 1.0, s.elbow_x)
+    return body - _bore(a.swing_r, s.lip_top + arm_slide(cfg) + a.swing_above_top, a.y_inner + 1.0, s.elbow_x)
+
+
+def drive_frame(cfg: UpperArmConfig = DEFAULT) -> bd.Location:
+    """The cycloidal drive's frame in this one (ArmParams): its axis this frame's Y, its +Z this frame's -Y, its z
+    drive_z_at_y0 at y = 0, its +X at drive_x_deg."""
+    a = cfg.arm
+    t = math.radians(a.drive_x_deg)
+    return bd.Location(bd.Plane(origin=(0.0, a.drive_z_at_y0, 0.0), x_dir=(math.cos(t), 0.0, math.sin(t)), z_dir=(0.0, -1.0, 0.0)))
 
 
 def build_link(cfg: UpperArmConfig = DEFAULT):
     s, e = cfg.slab, cfg.elbow
-    body = _plate(cfg) + bd.Pos(cfg.pad.x, 0.0, 0.0) * _pad(cfg)
-    if cfg.shell is not None:
-        body = _shell_mount(body, cfg)
+    plate, pad = _plate(cfg), bd.Pos(cfg.pad.x, 0.0, 0.0) * _pad(cfg)
+    if cfg.arm is not None:
+        # the arm, and the plate slid along Y onto its outer face, both cut back inside the shell's wall; the square
+        # opening over the pad through the arm too; then the pad, slid with the plate
+        a, up = cfg.arm, bd.Pos(0.0, 0.0, arm_slide(cfg))
+        body = (_arm(cfg) + up * plate) - _bore(a.fuse_r, -_FAR, _FAR)
+        oh, px = cfg.hub.opening_half, cfg.pad.x
+        body = body - _block((px - oh, px + oh), (-oh, oh), (a.y_outer - 1.0, a.y_inner + 1.0))
+        body = body + up * pad
     else:
+        body = plate + pad
         # the drive's hub bolts, through the plate (the pad's windows lie under them)
         for x, z in hub_bolt_points(cfg):
             body = body - _bore(cfg.hub.bolt_dia / 2.0, s.y0 - NUDGE, s.lip_top + NUDGE, x, z)
@@ -130,4 +146,7 @@ def build_link(cfg: UpperArmConfig = DEFAULT):
             body = body - _bore(r, s.y0 - NUDGE, s.y0 + depth, x, z)
         for x, z in elbow:
             body = body - _bore(r, e.y0 - NUDGE, e.y0 + depth, x, z)
-    return single_solid(bd.Rot(-90.0, 0.0, 0.0) * body)
+    part = bd.Rot(-90.0, 0.0, 0.0) * body
+    if cfg.arm is not None:   # one print with the shell's body round the discs
+        part = part + drive_frame(cfg) * build_shell_body(DRIVE)
+    return single_solid(part)

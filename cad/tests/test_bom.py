@@ -11,7 +11,7 @@ def test_every_part_is_counted_once_per_occurrence():
     counts = bom.part_counts()
     leaves = (len(arm.OCCURRENCES) - len(arm.MODULES) + len(gripper.OCCURRENCES) + len(cycloidal_drive.OCCURRENCES)
               + len(forearm_roll_drive.OCCURRENCES))
-    assert sum(counts.values()) == leaves == 87
+    assert sum(counts.values()) == leaves == 86
     assert set(counts) == set(parts.names()) - set(parts.unplaced()), "a part under parts/ that no assembly places (or the reverse)"
     assert not set(counts) & set(parts.unplaced()), "a placed part still declares UNPLACED - drop it (and its EXTRAS row)"
     assert sum(bom.part_counts("gripper").values()) == len(gripper.OCCURRENCES)
@@ -24,11 +24,11 @@ def test_the_two_lists_partition_the_parts_by_the_cots_flag():
     assert {r["part"] for r in printed} | {r["part"] for r in bought} == set(parts.names()) - set(parts.unplaced())
     assert not {r["part"] for r in printed} & {r["part"] for r in bought}
     assert {r["part"] for r in bought} == (set(R.COTS) | {n for n in R.NO_REFERENCE if parts.bought(n)}) - set(parts.unplaced())
-    assert (len(printed), sum(r["qty"] for r in printed)) == (31, 38)
+    assert (len(printed), sum(r["qty"] for r in printed)) == (30, 37)
     assert (len(bought), sum(bom.part_counts()[r["part"]] for r in bought)) == (31, 49)
     assert {r["state"] for r in printed} <= {"wrapper", "parametric", "designed", "native", "measured", "no reference"}
     assert {r["part"] for r in printed if r["state"] == "no reference"} == {n for n in R.NO_REFERENCE if not parts.bought(n)}
-    assert {r["part"] for r in printed if r["state"] == "designed"} == set(R.DESIGNED)
+    assert {r["part"] for r in printed if r["state"] == "designed"} == set(R.DESIGNED) - set(parts.unplaced())
     assert {r["part"] for r in printed if r["state"] == "native"} == set(R.NATIVE)
 
 
@@ -41,7 +41,9 @@ def test_drive_buy_list_matches_the_drive_config():
         "cycloidal_shaft_support_pin": 1, "cycloidal_motor_bolts": 4,
         "cycloidal_housing_bolts": CFG.housing.bolt_count, "cycloidal_housing_nuts": CFG.housing.bolt_count,
     }
-    assert {r["part"] for r in bom.print_rows("cycloidal_drive")} == set(R.DESIGNED) | {"cycloidal_shell_ring"}
+    # the port's ring gear body is modelled, not placed: the turning shell's body is printed with j1_link
+    assert "cycloidal_ring_gear_body" in parts.unplaced()
+    assert {r["part"] for r in bom.print_rows("cycloidal_drive")} == (set(R.DESIGNED) - set(parts.unplaced())) | {"cycloidal_shell_ring"}
     assert [r["part"] for r in bom.buy_rows("cycloidal_drive") if r["geometry"] == "vendor"] == ["bearing_625", "mks_servo42d", "nema17_48mm"]
 
 
@@ -116,4 +118,4 @@ def test_extras_are_well_formed_and_scoped_to_a_module():
 def test_cli_prints_the_three_lists(capsys):
     assert bom.main(["--module", "cycloidal_drive", "--md"]) == 0
     out = capsys.readouterr().out
-    assert "## PRINT - 7 parts" in out and "## BUY - 11 parts, 49 pieces" in out and "## BUY, NOT MODELLED" in out
+    assert "## PRINT - 6 parts" in out and "## BUY - 11 parts, 49 pieces" in out and "## BUY, NOT MODELLED" in out

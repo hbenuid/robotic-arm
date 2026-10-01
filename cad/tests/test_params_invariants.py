@@ -86,7 +86,8 @@ def test_belt_motor_and_mks_board_track_reference():
     assert hi + p.NEMA17_40_BODY_W / 2 + p.NEMA17_40_CONNECTOR_D + p.FOREARM_PLUG_CLEARANCE <= p.FOREARM_WALL_X[0] + 1e-9
     assert lo - p.NEMA17_40_BODY_W / 2 >= wrist_x + boss_r
     assert p.FOREARM_WALL_X[0] < p.FOREARM_WALL_X[1] < 0 and p.FOREARM_ROLL_AXIS_Z == 42.0 - 17.0
-    assert p.J1_MOTOR_PAD_FACE_Y < 0 < p.J2_MOTOR_WEB_FACE_Z
+    assert p.J2_MOTOR_WEB_FACE_Z > 0 and math.isclose(p.J1_MOTOR_PAD_FACE_Y, -32.5 + p.J1_ARM_SLIDE)   # the pad slid with the arm
+    assert math.isclose(p.J1_ARM_SLIDE, 39.271993)
 
 
 def test_gripper_rail_tracks_reference():
@@ -131,11 +132,11 @@ def test_cycloidal_interface():
     # the shell turns (ShellParams): the ring pins' count, the port's lobes
     assert p.CYCLOIDAL_RATIO == 21 and LEGACY_CONFIG.ratio == 20 and DEFAULT_CONFIG.shell is not None
     assert p.CYCLOIDAL_HOUSING_OD == 129.2
-    assert p.CYCLOIDAL_STACK_DEPTH == 65.0
+    assert p.CYCLOIDAL_STACK_DEPTH == 61.0 and p.CYCLOIDAL_SHELL_ENDS_Z == (-13.0, 61.0)
+    assert p.CYCLOIDAL_ARM_ZONE_Z == (9.0, 39.0)    # the plates' inner faces: the middle of the discs (24) between
     assert p.CYCLOIDAL_MOTOR_BODY_LEN == 48.0
     assert p.CYCLOIDAL_HUB_OD == 70.3
-    assert math.isclose(p.CYCLOIDAL_HUB_PROUD, 14.271993)
-    assert p.CYCLOIDAL_OUTPUT_FACE_Z == 65.0 and math.isclose(p.CYCLOIDAL_HUB_FACE_Z, 79.271993)
+    assert p.CYCLOIDAL_HUB_PROUD == 1.0 and p.CYCLOIDAL_HUB_FACE_Z == 62.0 and p.CYCLOIDAL_SLEEVE_END_Z == -22.0
     assert (p.CYCLOIDAL_HUB_BOLT_CIRCLE, p.CYCLOIDAL_HUB_BOLT_COUNT) == (50.0, 4)
     assert (p.CYCLOIDAL_HUB_BOLT_ANGLE_OFFSET_DEG, p.CYCLOIDAL_HUB_BOLT_DIA) == (45.0, 4.0)
     assert (p.CYCLOIDAL_SHELL_BOLT_CIRCLE, p.CYCLOIDAL_SHELL_BOLT_COUNT) == (117.0, 6)
@@ -152,16 +153,17 @@ def test_cycloidal_config_agrees_with_nema17_constants():
 
 
 def test_cycloidal_stack_positions():
-    """The module layout (assemblies/cycloidal_drive.py) - the drive repo's assembly.py numbers, the turning shell's
-    6814s (the hub's in the seat's outer slot, the other behind the motor plate), its nuts in j1_link, its longer hub."""
+    """The module layout (assemblies/cycloidal_drive.py) - the drive repo's assembly.py numbers for the gear stack, the
+    turning shell's mirrored ends: the 6814s (the hub's past its flange, the other behind the motor plate), the ring
+    pins across both pin rings, the bolts end to end, the hub to the yoke's leg."""
     from lib.cycloidal import DEFAULT_CONFIG, stack_positions
 
     got = stack_positions(DEFAULT_CONFIG)
     expected = {
         "x_disc1": 1.5, "x_disc2": -1.5, "z_motor_plate": 0.0, "z_shell_ring": 0.0, "z_motor": 0.0, "z_mks_board": -48.0,
-        "z_eccentric_shaft": 0.0, "z_ring_gear_body": 9.0, "z_disc1": 13.0, "z_disc2": 25.0, "z_6814_1": 47.0, "z_6814_2": -10.0,
-        "z_hub": 37.0, "z_625": 37.0, "z_ring_pins": 5.5, "z_output_pins": 11.0, "z_support_pin": 24.0,
-        "z_motor_bolts": -5.0, "z_housing_bolts": 0.5, "z_housing_nuts": 71.3, "hub_top": 79.271993,
+        "z_eccentric_shaft": 0.0, "z_ring_gear_body": 9.0, "z_disc1": 13.0, "z_disc2": 25.0, "z_6814_1": 48.0, "z_6814_2": -10.0,
+        "z_hub": 39.0, "z_625": 39.0, "z_ring_pins": 4.0, "z_output_pins": 12.0, "z_support_pin": 24.0,
+        "z_motor_bolts": -5.0, "z_housing_bolts": -12.5, "z_housing_nuts": 53.3, "hub_top": 62.0,
     }
     assert got.keys() == expected.keys()
     for key, value in expected.items():
@@ -170,8 +172,10 @@ def test_cycloidal_stack_positions():
 
 def test_cycloidal_derived_numbers():
     from lib.cycloidal import DEFAULT_CONFIG as cfg
+    from lib.cycloidal import LEGACY_CONFIG as port
     from lib.cycloidal import (
         hex_circumdiameter,
+        hub_flange,
         hub_height,
         motor_bolt_counterbore_depth,
         ring_pin_engagement,
@@ -179,23 +183,25 @@ def test_cycloidal_derived_numbers():
         ring_pin_hole_dia,
     )
 
-    assert cfg.stack_up.bore_zone == 28.0
-    assert cfg.stack_up.ring_gear_body_height == 56.0   # the turning shell's 8 mm end wall (the port's 3: 51)
+    assert port.stack_up.bore_zone == 28.0 and port.stack_up.ring_gear_body_height == 51.0
+    assert cfg.stack_up.bore_zone == 39.0              # the turning shell's: the gear's 26 + the clearance + the hub's flange
+    assert cfg.stack_up.ring_gear_body_height == 52.0   # the turning shell's body (j1_link's): the motor plate's face to the hub end
+    assert hub_flange(cfg) == 9.0 and hub_flange(port) == 0.0
     assert math.isclose(cfg.housing.lip_bore_dia, 86.15)
     assert math.isclose(cfg.shaft.bridge_flange_od, 23.10)
     assert math.isclose(ring_pin_hole_dia(cfg), 4.20)
-    assert ring_pin_engagement(cfg) == 3.5 and ring_pin_hole_depth(cfg) == 31.5
+    assert ring_pin_engagement(cfg) == 5.0 and ring_pin_engagement(port) == 3.5 and ring_pin_hole_depth(port) == 31.5
     assert motor_bolt_counterbore_depth(cfg) == 3.0
-    assert math.isclose(hub_height(cfg), 42.271993)   # through j1_link to the yoke (the port's 28)
+    assert hub_height(cfg) == 23.0 and hub_height(port) == 28.0   # the flange, the 6814's grip, the lip, onto the yoke
     assert math.isclose(hex_circumdiameter(7.2), 8.3138, abs_tol=1e-3)
     assert cfg.gear.disc2_phase_deg == -9.0
 
 
 def test_cycloidal_steel_masses_track_volumes():
-    assert math.isclose(p.CYCLOIDAL_RING_PINS_MASS_G, 72.5, abs_tol=0.1)
+    assert math.isclose(p.CYCLOIDAL_RING_PINS_MASS_G, 82.9, abs_tol=0.1)    # 21x 4 x 40
     assert math.isclose(p.CYCLOIDAL_OUTPUT_PINS_MASS_G, 17.8, abs_tol=0.1)
     assert math.isclose(p.CYCLOIDAL_SUPPORT_PIN_MASS_G, 3.1, abs_tol=0.1)
-    assert math.isclose(p.CYCLOIDAL_HOUSING_BOLTS_MASS_G, 48.7, abs_tol=0.1)   # 6x M4 x 70
+    assert math.isclose(p.CYCLOIDAL_HOUSING_BOLTS_MASS_G, 45.7, abs_tol=0.1)   # 6x M4 x 65
     assert math.isclose(p.CYCLOIDAL_HOUSING_NUTS_MASS_G, 6.4, abs_tol=0.1)
     assert math.isclose(p.CYCLOIDAL_MOTOR_BOLTS_MASS_G, 4.3, abs_tol=0.1)
     for mass in (p.CYCLOIDAL_MOTOR_MASS_G, p.BEARING_6003_MASS_G, p.BEARING_6814_MASS_G, p.BEARING_625_MASS_G):

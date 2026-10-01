@@ -11,11 +11,13 @@ lib/mounts.py). Between them: two through slots, the stepped slot (purpose unkno
 (the elbow drive's second stage, not modelled). DEFAULT (what the part builds) is SHORTENING shorter at the elbow
 end (the elbow-end features move with the axis), leaves out the through slots and LEGACY's 10 Ø5.15 x 2 sockets in
 the underside (j1_cap's dowel seats - the cap was removed 2026-09-25), puts the 4 NEMA 17 holes on a 31 square
-about the pad's axis (the SolidWorks ones are 0.38 off and uneven) and bolts to the drive's turning shell: a round
-root (r 66) with the drive's 6 housing bolts on Ø117, their nuts in pockets from the underside, round a hole the
-drive's held hub passes through to the j1_coupler fork - the elbow motor's pad (and the opening over it) moved out to
-ELBOW_MOTOR_CENTRES from the elbow axis, where the second stage's seat was (gone: the elbow belt runs straight to the
-90T). Every number: lib/upper_arm/params.py (UpperArmConfig; measured on the reference 2026-09-24).
+about the pad's axis (the SolidWorks ones are 0.38 off and uneven) and rises straight off the middle of the drive's
+turning shell, printed as one with the shell's body round the discs (ArmParams, lib/cycloidal/housing.py
+build_shell_body): the plate's outline 30 wide over the gear, a collar round the shell, its top cut back where the
+forearm roll drive swings over it near the elbow; the plate's elbow end and the elbow motor's pad slid along +Y onto
+the arm's outer face (lib/upper_arm/layout.py arm_slide), the pad (and the opening over it, through the arm) moved out
+to ELBOW_MOTOR_CENTRES from the elbow axis, where the second stage's seat was (gone: the elbow belt runs straight to
+the 90T). Every number: lib/upper_arm/params.py (UpperArmConfig; measured on the reference 2026-09-24).
 
 SolidWorks product: 'first joint edit 62126'
 Source export:      step/first joint edit 62126.STEP

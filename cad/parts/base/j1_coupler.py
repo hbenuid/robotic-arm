@@ -7,10 +7,11 @@ ceiling the seat on the base_yaw thrust bearing, the rim 0.5 over the base's top
 bearing (DEFAULT: Ø30, on to the lip's lower face, where the base_yaw 120T's hub end meets it), a bore (DEFAULT: the
 pulley's Ø12.5) and 4 holes on the diagonals up to the pocket over the hub (DEFAULT: the 90T's bolt circle, M4 clearance,
 the nuts flush in hex pockets in the pocket's floor); on the disc a ring (DEFAULT: lowered under the drive's turning
-shell) and DEFAULT's fork round the drive (ForkParams) on the drive's own axis: the -X end plate past j1_link, the
-held hub bolted to it, on a leg down to a low bridge to the disc (cut back over it where j1_link swings), and the +X
-clamp's saddle round the motor plate's sleeve on a windowed post and a foot out of the +X flat - its upper half the
-cap, parts/base/j1_coupler_cap, on 4 M4s into nuts in the saddle's side slots. Every number: lib/yaw_coupler/params.py
+shell) and DEFAULT's fork round the drive (ForkParams) on the drive's own axis: two alike thin legs past the turning
+shell's two ends, each a disc round the axis on a leg down to the disc - the -X one the held hub bolts to, the +X one
+round the motor plate's sleeve, split at the axis, with a low bridge out of the +X flat; its upper half the cap,
+parts/base/j1_coupler_cap, on 2 M3s into nuts in the leg's side slots (the disc cut back on -X where the elbow motor
+swings). Every number: lib/yaw_coupler/params.py
 (YawCouplerConfig; measured on the reference 2026-09-27; LEGACY: the Ø90.05 recess on the base's face, a Ø29.8 stub
 0.2 into the lip, a Ø15 bore, 4x Ø3.3, the -X cheek and the middle body under the housing's Ø116 cradle, a channel and
 two V-grooves round the 8-pillar housing's bottom and +/-45 degree pillars, 3 nut pockets).

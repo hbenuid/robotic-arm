@@ -1,10 +1,10 @@
-"""j1_coupler_cap - the upper half of j1_coupler's clamp round the cycloidal drive's motor sleeve, PETG.
+"""j1_coupler_cap - the upper half of j1_coupler's motor-side leg, round the cycloidal drive's motor sleeve, PETG.
 
 Designed here, no reference: tests/yaw_coupler/test_j1_coupler.py holds its numbers. DEFAULT's j1_coupler is a fork
-round the drive whose shell turns (lib/yaw_coupler/params.py ForkParams): at the motor end it clamps the motor plate's
-sleeve in a block split at the drive's axis - the lower half, the saddle, is j1_coupler, this is the upper half: the
-block's clamp_half square above the axis, bored to the sleeve (clamp_bore_dia), its 4x M4 x cap_screw_len through it
-from counterbores cap_seat above the split, into nuts in slots from the saddle's sides (lib/yaw_coupler/body.py
+round the drive whose shell turns (lib/yaw_coupler/params.py ForkParams): two alike legs past the shell's ends; the
+motor-side one clamps the motor plate's sleeve, split at the drive's axis - its lower half is j1_coupler, this is the
+upper half: the leg's plate_r disc above the axis, bored to the sleeve (clamp_bore_dia), its 2x M3 x cap_screw_len
+through it from counterbores cap_seat above the split, into nuts in slots from the leg's sides (lib/yaw_coupler/body.py
 build_cap, in j1_coupler's part frame - lib/mounts.py places it at identity on j1_coupler#1). The screws and nuts are on
 the buy list (tools/bom.py EXTRAS).
 """

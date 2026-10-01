@@ -17,7 +17,10 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   record to `skipped` as the entry an extraction writes (pose, totals, reason) - `test_skipped_nodes_are_the_dropped_products`.
 - **Shifted occurrences** (`lib/placements.py SHIFTS`): a link whose length the design changes (`j1_link`
   `slab.elbow_x`, `j2_link` `web.wrist_x`, `wrist_link` `tower.block_x1`) moves every capture record beyond it along
-  its own +X by the parameter's DEFAULT − LEGACY — the file stays as extracted, `location()` applies the shift
+  its own +X by the parameter's DEFAULT − LEGACY - and along its +Y by `across_y` where the design moved its far end
+  across it (`j1_link`'s elbow end, slid onto the arm rising off the drive's shell: `lib/upper_arm/layout.py arm_slide`;
+  the mounts hosted on `j1_link#1` itself add it to their frames, `lib/params.py J1_ARM_SLIDE`) — the file stays as
+  extracted, `location()` applies the shift
   (`to_location()` / `to_record()` stay raw: the writers and the round-trip test use them). A `LinkShift` lists the
   TOP-LEVEL records beyond its link, the retired hosts included; a module's children follow its world pose (their
   `rel` is to it); mounted records are never listed — `mount_placements.py` resolves their hosts through

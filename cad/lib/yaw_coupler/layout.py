@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 
 from lib.cycloidal import DEFAULT_CONFIG as DRIVE
-from lib.cycloidal import PILLAR_OVERSHOOT, arm_mount_points, pillar_half_width
+from lib.cycloidal import PILLAR_OVERSHOOT, arm_mount_points, pillar_half_width, shell_ends
 from lib.yaw_coupler.params import DEFAULT, YawCouplerConfig
 
 
@@ -117,30 +117,27 @@ def fork_x(cfg: YawCouplerConfig, z: float) -> float:
     return cfg.fork.face_x - z
 
 
-def hub_face_z() -> float:
-    """The drive's z of the output hub's face - past the shell and j1_link - where the end plate's inner face is."""
-    return DRIVE.stack_up.total_housing_depth + DRIVE.output_hub.proud_above_housing
+def fork_hub_leg_x(cfg: YawCouplerConfig = DEFAULT) -> tuple[float, float]:
+    """(outer, inner) x of the hub leg: end_plate_gap past the shell's hub end, yoke_leg thick (the hub's face on its
+    inner face)."""
+    sh, z = DRIVE.shell, shell_ends(DRIVE)[1] + DRIVE.shell.end_plate_gap
+    return fork_x(cfg, z + sh.yoke_leg), fork_x(cfg, z)
 
 
-def fork_plate_x(cfg: YawCouplerConfig = DEFAULT) -> tuple[float, float]:
-    """(outer, inner) x of the end plate: its inner face on the hub's face, plate_t out."""
-    inner = fork_x(cfg, hub_face_z())
-    return inner - cfg.fork.plate_t, inner
-
-
-def fork_clamp_x(cfg: YawCouplerConfig = DEFAULT) -> tuple[float, float]:
-    """(near, far) x of the clamp round the motor plate's sleeve (ForkParams.clamp_z)."""
-    return tuple(sorted(fork_x(cfg, z) for z in cfg.fork.clamp_z))
+def fork_motor_leg_x(cfg: YawCouplerConfig = DEFAULT) -> tuple[float, float]:
+    """(inner, outer) x of the motor leg: end_plate_gap past the shell's motor end, yoke_leg thick (the sleeve's end on
+    its outer face)."""
+    sh, z = DRIVE.shell, shell_ends(DRIVE)[0] - DRIVE.shell.end_plate_gap
+    return fork_x(cfg, z), fork_x(cfg, z - sh.yoke_leg)
 
 
 def fork_hub_bolts(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[float, float]]:
-    """(y, z) of the hub's 4 bolts through the end plate: the drive's arm-mount pattern (its +X is this frame's +Z)."""
+    """(y, z) of the hub's 4 bolts through the hub leg: the drive's arm-mount pattern (its +X is this frame's +Z)."""
     f = cfg.fork
     return [(f.axis_y + y, f.axis_z + x) for x, y in arm_mount_points(DRIVE)]
 
 
 def fork_cap_bolts(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[float, float]]:
-    """(x, z) of the cap's 4 bolts: cap_bolt_inset in from the clamp's ends and sides."""
-    f = cfg.fork
-    (x0, x1), half = fork_clamp_x(cfg), f.clamp_half - f.cap_bolt_inset
-    return [(x, f.axis_z + sz * half) for x in (x0 + f.cap_bolt_inset, x1 - f.cap_bolt_inset) for sz in (-1.0, 1.0)]
+    """(x, z) of the cap's 2 screws: in the motor leg's middle, cap_bolt_r either side of the axis."""
+    f, (x0, x1) = cfg.fork, fork_motor_leg_x(cfg)
+    return [((x0 + x1) / 2.0, f.axis_z + sz * f.cap_bolt_r) for sz in (-1.0, 1.0)]

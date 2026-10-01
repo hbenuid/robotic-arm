@@ -25,9 +25,9 @@ the base's face); its hub takes the base_yaw 120T as j3_coupler's the wrist's 90
 through the lip to its lower face, where the 120T's hub end meets it (gt2_pulley_120t#1, lib/mounts.py), drilled for the
 pulley's 4 bolts (M4 clearance, on its bolt circle at the diagonals, the nuts in hex pockets in the pocket's floor -
 parts/base/yaw_pulley_screws / _nuts) round the pulley's bore; and its yoke is a fork round the drive whose shell
-turns (lib/cycloidal/params.py DEFAULT_CONFIG, ShellParams): an end plate the held hub bolts to, a clamp round the
-motor plate's sleeve (its cap parts/base/j1_coupler_cap), the ring lowered under the shell, the disc cut back where
-j1_link swings - no cheek, no middle body, no cradle.
+turns (lib/cycloidal/params.py DEFAULT_CONFIG, ShellParams): two alike thin legs past the shell's ends - the held hub
+bolts to one, the other clamps the motor plate's sleeve (its cap parts/base/j1_coupler_cap) -, the ring lowered under
+the shell, the disc cut back where the elbow motor swings - no cheek, no middle body, no cradle.
 
 Every number below was measured on the reference 2026-09-27 (face census; tests/yaw_coupler/test_j1_coupler.py
 re-checks the builds against it): [REFERENCE] unless tagged. Three simplifications, all inside the reference-match
@@ -137,36 +137,31 @@ class YokeParams:
 @dataclass(frozen=True)
 class ForkParams:
     """DEFAULT's yoke: a fork round the cycloidal drive whose shell turns (lib/cycloidal/params.py ShellParams), holding
-    its two held ends on the drive's own axis. The -X END PLATE: plate_t out from the output hub's face
-    (CYCLOIDAL_HUB_FACE_Z, past j1_link), a disc of plate_r round the axis - the hub's 4x M4 (its arm-mount pattern)
-    from counterbores in the outer face into the hub's captive nuts - on a leg down to the disc's underside, and a low
-    bridge from the leg to the disc at the ears' height, under j1_link's swing (the disc cut back above it from swing_x
-    on -X). The +X CLAMP round the motor plate's sleeve, clamp_z along the drive: a square of clamp_half round the axis,
-    bored clamp_bore_dia and split at the axis - the lower half (the saddle) this part, on a post from the disc's
-    underside (a window through it along Z, post_wall round it) and a foot out of its +X flat, the upper half the cap (parts/base/j1_coupler_cap) - on 4x M4 x
-    cap_screw_len, cap_bolt_inset in from the clamp's corners, from counterbores cap_seat above the split into nuts in
-    slots from the saddle's sides, their tops cap_nut_y below it. Positions along the drive are the drive's z: this
-    frame's x = face_x - z."""
+    its two held ends on the drive's own axis with two alike LEGS, one past each end of the shell - each the drive's
+    ShellParams.yoke_leg thick and end_plate_gap off its end, so the two mirror each other about the middle of the
+    discs: a disc of plate_r round the axis on a leg down to the disc's underside (leg_half_z either side), and a low
+    bridge to the disc at the ears' height where the leg stands past the disc's flat. The HUB leg (-X): the hub's 4x M4 x
+    hub_screw_len (its arm-mount pattern) from counterbores in the outer face, their ends flush with the hub's captive
+    nuts (ShellParams.hub_nut_depth). The MOTOR leg (+X): bored clamp_bore_dia round the motor plate's sleeve and split
+    at the axis - the lower half this part, the upper half the cap (parts/base/j1_coupler_cap) - on 2x M3 x
+    cap_screw_len, cap_bolt_r either side of the axis, from counterbores cap_seat above the split into M3 nuts in slots
+    from the leg's sides, their tops cap_nut_y below it. The disc is cut back above bridge_y1 from swing_x on -X (where
+    the elbow motor, beside the arm, swings past). Positions along the drive are the drive's z: this frame's x =
+    face_x - z."""
 
     axis_y: float = 90.103183        # [REFERENCE] the drive's axis in this frame (placements.json cycloidal_drive#1), 0.21 off
     axis_z: float = 0.18573          # [REFERENCE] YokeParams' cradle axis (the 6-pillar housing sat in it; docs/open_issues.md)
     face_x: float = 31.5             # [REFERENCE] the drive's z = 0 (the motor plate's outer face); its +Z is this frame's -X
-    plate_t: float = 8.0             # [DESIGN] the end plate, from the hub's face outward
-    plate_r: float = 45.0            # [DESIGN] round the axis (the hub's bolts on Ø50)
-    leg_half_z: float = 25.0         # [DESIGN] the end plate's leg down to the disc's underside, and the bridge along it
-    bridge_y1: float = 8.0           # [DESIGN] the low bridge's top: the ears' height (DiscParams.ear_y1), under j1_link's swing
-    swing_x: float = -32.5           # [DESIGN] the disc cut back above bridge_y1 from here to -X: j1_link's face (x -33.5) + 1
-    clamp_z: tuple = (-44.0, -14.0)  # [DESIGN] along the drive: 2 behind the shell ring's skirt (z -12) .. 4 short of the motor's rear
-    clamp_half: float = 48.0         # [DESIGN] the clamp's square round the axis
-    clamp_bore_dia: float = 70.4     # [DESIGN] the sleeve's 70 + 0.2 a side
-    post_wall: float = 6.0           # [DESIGN] the post under the saddle: a window through it along Z, this much wall round it
-    foot_y1: float = 20.0            # [DESIGN] the post's foot out of the disc's +X flat, up to the disc's top ...
-    foot_half_z: float = 40.0        # [DESIGN] ... this wide
-    cap_bolt_inset: float = 6.0      # [DESIGN] the cap's 4 bolts: this far in from the clamp's ends (x) and sides (z)
-    cap_seat: float = 10.0           # [DESIGN] the cap under the bolts' heads, above the split
-    cap_screw_len: float = 25.0      # [DESIGN] M4 x 25 (ISO 4762) ...
-    cap_nut_y: float = 11.0          # [DESIGN] ... into M4 nuts in slots from the saddle's sides, their tops this far below the split
-    hub_screw_len: float = 45.0      # [DESIGN] M4 x 45 (ISO 4762) from the end plate's counterbores: flush with the hub's captive nuts
+    plate_r: float = 45.0            # [DESIGN] each leg's disc round the axis (the hub's bolts on Ø50)
+    leg_half_z: float = 25.0         # [DESIGN] each leg down to the disc's underside, and its bridge
+    bridge_y1: float = 8.0           # [DESIGN] the low bridges' top: the ears' height (DiscParams.ear_y1)
+    swing_x: float = -32.5           # [DESIGN] the disc cut back above bridge_y1 from here to -X
+    clamp_bore_dia: float = 70.4     # [DESIGN] the motor leg round the sleeve: its 70 + 0.2 a side
+    cap_bolt_r: float = 40.0         # [DESIGN] the cap's 2 screws this far either side of the axis (z), in the leg's middle
+    cap_seat: float = 12.0           # [DESIGN] the cap under the screws' heads, above the split
+    cap_screw_len: float = 25.0      # [DESIGN] M3 x 25 (ISO 4762) ...
+    cap_nut_y: float = 10.1          # [DESIGN] ... into M3 nuts in slots from the leg's sides, their tops this far below the split
+    hub_screw_len: float = 25.0      # [DESIGN] M4 x 25 (ISO 4762) from the hub leg's counterbores: flush with the hub's captive nuts
 
 
 @dataclass(frozen=True)
