@@ -28,11 +28,12 @@ class TestOutputHubDimensions:
     def test_hub_height_matches_bearing_stack(self):
         assert CFG.stack_up.output_bearing_total == CFG.bearings.out_width * CFG.bearings.out_qty
 
-    def test_proud_extension_is_5mm(self):
-        """Spec 5.3: the hub output face sits 5 mm proud of the housing (z=65)."""
+    def test_proud_extension_reaches_the_yoke(self):
+        """The turning shell's hub runs on past the shell (z 65) through j1_link to the yoke's end plate (z 79.27); the
+        port's sat 5 mm proud (spec 5.3)."""
         stack, hub = CFG.stack_up, CFG.output_hub
-        assert hub.proud_above_housing == pytest.approx(5.0)
-        assert stack.z_output_bearings + hub_height(CFG) == pytest.approx(65.0)
+        assert hub.proud_above_housing == pytest.approx(CFG.shell.arm_plate + CFG.shell.end_plate_gap) == pytest.approx(14.271993)
+        assert stack.z_output_bearings + hub_height(CFG) == pytest.approx(79.271993)
 
     def test_shaft_bore_clears_spine(self):
         clearance = CFG.output_hub.shaft_clearance_bore - CFG.shaft.spine_od
@@ -80,16 +81,24 @@ class TestSolid:
         assert hub_solid.is_valid
 
     def test_outer_diameter(self, hub_solid):
+        """The shoulder (ShellParams.hub_shoulder_dia) sets the box; the grip is the hub's od."""
         size = hub_solid.bounding_box().size
-        assert abs(size.X - CFG.output_hub.od) < 0.2
-        assert abs(size.Y - CFG.output_hub.od) < 0.2
+        assert abs(size.X - CFG.shell.hub_shoulder_dia) < 0.2
+        assert abs(size.Y - CFG.shell.hub_shoulder_dia) < 0.2
+
+    def test_shoulder_under_the_seats_inner_slot(self, hub_solid):
+        """Solid out to the shoulder over the seat's inner slot (local z 0..10), only the od over the 6814's grip and on."""
+        r = (CFG.output_hub.od + CFG.shell.hub_shoulder_dia) / 4.0
+        w = CFG.bearings.out_width
+        assert is_inside(hub_solid, 0.0, r, w - 1.0, 1e-3), "no shoulder under the hub-end 6814's inner race"
+        assert not is_inside(hub_solid, 0.0, r, w + 1.0, 1e-3), "the shoulder runs on under the 6814"
 
     def test_height(self, hub_solid):
-        """Z = bearing grip + output wall + proud extension (28)."""
+        """Z = bearing grip + output wall + proud extension (42.27)."""
         assert abs(hub_solid.bounding_box().size.Z - hub_height(CFG)) < 0.1
 
     def test_output_face_proud_of_housing(self, hub_solid):
-        """Placed at z_output_bearings, the top face lands at total_housing_depth + proud (65)."""
+        """Placed at z_output_bearings, the top face lands at total_housing_depth + proud (79.27)."""
         stack, hub = CFG.stack_up, CFG.output_hub
         global_top = stack.z_output_bearings + hub_solid.bounding_box().max.Z
         assert abs(global_top - (stack.total_housing_depth + hub.proud_above_housing)) < 0.1
@@ -140,7 +149,8 @@ class TestSolid:
         hub, d, b, tol, stack, h = CFG.output_hub, CFG.disc, CFG.bearings, CFG.tolerances, CFG.stack_up, CFG.housing
         hub_r, grip, height = hub.od / 2.0, stack.output_bearing_total, hub_height(CFG)
         shaft_r = hub.shaft_clearance_bore / 2.0
-        upper = math.pi * hub_r ** 2 * height - math.pi * shaft_r ** 2 * grip
+        shoulder = math.pi * ((CFG.shell.hub_shoulder_dia / 2.0) ** 2 - hub_r ** 2) * (grip - b.out_width)
+        upper = math.pi * hub_r ** 2 * height + shoulder - math.pi * shaft_r ** 2 * grip
         pocket_vol = math.pi * ((b.inp_od + tol.bearing_seat_bore_add) / 2.0) ** 2 * b.inp_width
         pin_vol = d.output_pin_count * math.pi * ((d.output_pin_dia - tol.ring_pin_press_sub) / 2.0) ** 2 * (grip - hub.output_hub_pin_ceiling)
         arm_hole_vol = hub.arm_mount_bolt_count * math.pi * ((h.bolt_dia + tol.bolt_clearance_add) / 2.0) ** 2 * height

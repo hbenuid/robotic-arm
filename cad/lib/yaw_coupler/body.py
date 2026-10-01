@@ -1,13 +1,16 @@
-"""build123d builder of j1_coupler from YawCouplerConfig, in the coupler's part frame.
+"""build123d builder of j1_coupler (and of DEFAULT's clamp cap, j1_coupler_cap) from YawCouplerConfig, in the coupler's
+part frame.
 
 Built in the part frame directly: the disc, the flare and the hub turn about the part's Y (the base_yaw axis), the
-yoke is prisms along X (the drive's axis) - their outlines in the YZ plane, lib/yaw_coupler/layout.py."""
+yoke is prisms along X (the drive's axis) - their outlines in the YZ plane, lib/yaw_coupler/layout.py; DEFAULT's fork
+(ForkParams) is boxes and cylinders along X on the drive's own axis."""
 from __future__ import annotations
 
 import math
 
 from cadgen import build123d as bd
 
+from lib.fasteners import M4_CLEAR, M4_NUT, M4_SHCS
 from lib.geom import align_min, hex_prism, single_solid
 from lib.units import NUDGE
 from lib.yaw_coupler.layout import (
@@ -15,6 +18,10 @@ from lib.yaw_coupler.layout import (
     cheek_outline,
     disc_profile,
     flare_r,
+    fork_cap_bolts,
+    fork_clamp_x,
+    fork_hub_bolts,
+    fork_plate_x,
     hole_points,
     middle_outline,
     nut_centres,
@@ -94,6 +101,62 @@ def _yoke_cuts(cfg: YawCouplerConfig):
     return cuts
 
 
+COUNTERBORE = M4_SHCS.head_dia + 0.4    # [DESIGN] the fork's M4 heads' counterbores (the drive's housing bolts' 7.4)
+HEAD_SEAT = M4_SHCS.head_h + 0.5         # [DESIGN] ... this deep (4.5, the drive's)
+NUT_SLOT = 0.2                           # [DESIGN] the cap nuts' slots: this over the nut's AF and height
+
+
+def _fork(cfg: YawCouplerConfig):
+    """The end plate round the hub on its leg, the low bridge to the disc, the clamp's saddle on its post and foot."""
+    f, d = cfg.fork, cfg.disc
+    (px0, px1), (cx0, cx1) = fork_plate_x(cfg), fork_clamp_x(cfg)
+    fork = _xcyl(f.plate_r, px0, px1, f.axis_y, f.axis_z)
+    fork = fork + _box((px0, px1), (d.y0, f.axis_y), (f.axis_z - f.leg_half_z, f.axis_z + f.leg_half_z))
+    fork = fork + _box((px0, -d.flat_x + NUDGE), (d.y0, f.bridge_y1), (f.axis_z - f.leg_half_z, f.axis_z + f.leg_half_z))
+    fork = fork + _box((cx0, cx1), (d.y0, f.axis_y), (f.axis_z - f.clamp_half, f.axis_z + f.clamp_half))
+    return fork + _box((d.flat_x - NUDGE, cx0 + NUDGE), (d.y0, f.foot_y1), (-f.foot_half_z, f.foot_half_z))
+
+
+def _fork_cuts(cfg: YawCouplerConfig):
+    """The pocket over the hub; the clamp's bore; the post's window; the hub's bolts through the end plate, counterbored from outside; the
+    cap's bolts into the saddle and the nuts' slots from its sides."""
+    f, k = cfg.fork, cfg.yoke
+    (px0, px1), (cx0, cx1), (hx, hz) = fork_plate_x(cfg), fork_clamp_x(cfg), k.pocket_half
+    cuts = [_box((-hx, hx), (k.pocket_y0, f.axis_y), (-hz, hz)),
+            _xcyl(f.clamp_bore_dia / 2.0, cx0 - NUDGE, cx1 + NUDGE, f.axis_y, f.axis_z),
+            _box((cx0 + f.post_wall, cx1 - f.post_wall), (cfg.disc.y0 + f.post_wall, f.axis_y - f.clamp_half), (-_FAR, _FAR))]
+    for y, z in fork_hub_bolts(cfg):
+        cuts += [_xcyl(M4_CLEAR / 2.0, px0 - NUDGE, px1 + NUDGE, y, z), _xcyl(COUNTERBORE / 2.0, px0 - NUDGE, px0 + HEAD_SEAT, y, z)]
+    slot_top = f.axis_y - f.cap_nut_y
+    slot = (slot_top - M4_NUT.h - NUT_SLOT, slot_top)
+    half_af, corner = (M4_NUT.af + NUT_SLOT) / 2.0, (M4_NUT.af + NUT_SLOT) / math.sqrt(3.0)
+    for x, z in fork_cap_bolts(cfg):
+        cuts.append(_ycyl(M4_CLEAR / 2.0, f.axis_y + f.cap_seat - f.cap_screw_len - 2.0, f.axis_y + NUDGE, x, z))
+        out = 1.0 if z > f.axis_z else -1.0
+        cuts.append(_box((x - half_af, x + half_af), slot, sorted((z - out * corner, f.axis_z + out * (f.clamp_half + 1.0)))))
+    return cuts
+
+
+def _swing_cut(cfg: YawCouplerConfig):
+    """The disc and the ring cut back over the low bridge on -X, where j1_link swings past."""
+    f = cfg.fork
+    return _box((-_FAR, f.swing_x), (f.bridge_y1, _FAR), (-_FAR, _FAR))
+
+
+def build_cap(cfg: YawCouplerConfig):
+    """DEFAULT's clamp cap (parts/base/j1_coupler_cap): the clamp's upper half, bored to the sleeve, its 4 bolts through
+    it from counterbores cap_seat above the split."""
+    f = cfg.fork
+    cx0, cx1 = fork_clamp_x(cfg)
+    top = f.axis_y + f.clamp_half
+    cap = _box((cx0, cx1), (f.axis_y, top), (f.axis_z - f.clamp_half, f.axis_z + f.clamp_half))
+    cap = cap - _xcyl(f.clamp_bore_dia / 2.0, cx0 - NUDGE, cx1 + NUDGE, f.axis_y, f.axis_z)
+    for x, z in fork_cap_bolts(cfg):
+        cap = cap - _ycyl(M4_CLEAR / 2.0, f.axis_y - NUDGE, top + NUDGE, x, z)
+        cap = cap - _ycyl(COUNTERBORE / 2.0, f.axis_y + f.cap_seat, top + NUDGE, x, z)
+    return single_solid(cap)
+
+
 def _stub(cfg: YawCouplerConfig):
     """The stub from its end up into the recess's ceiling, the round on its end's outer edge."""
     h = cfg.hub
@@ -105,8 +168,11 @@ def _stub(cfg: YawCouplerConfig):
 
 def build_yaw_coupler(cfg: YawCouplerConfig = DEFAULT):
     d, h, k = cfg.disc, cfg.hub, cfg.yoke
-    body = _disc(cfg) + _yoke(cfg)
-    for cut in _yoke_cuts(cfg):
+    if cfg.fork is None:
+        body, cuts = _disc(cfg) + _yoke(cfg), _yoke_cuts(cfg)
+    else:
+        body, cuts = (_disc(cfg) - _swing_cut(cfg)) + _fork(cfg), _fork_cuts(cfg)
+    for cut in cuts:
         body = body - cut
     body = body - _ycyl(h.recess_dia / 2.0, d.y0 - NUDGE, h.recess_y1)
     body = body + _stub(cfg)

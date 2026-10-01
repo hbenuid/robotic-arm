@@ -32,7 +32,8 @@ coupler's stub and its 90T; the 90T pulley bolts: seats, reach, the opened holes
 thrust stack under `j1_coupler`),
 `test_layering.py` (the package layering, no `sys.path`, no direct part-module imports — AST scan),
 `test_sweeps.py` (the joint limits keep the arm off itself: exact distances between the robot links' parts at poses
-on the limits - the shoulder's upper limit over the elbow's range, poses with the arm down in the table skipped),
+on the limits - the upper arm over the shoulder's range against the fork and the base, the shoulder's upper limit over
+the elbow's range, poses with the arm down in the table skipped),
 `test_lazy_kernel.py` (a fresh interpreter imports every template, part, assembly and link model without
 loading `build123d` / `OCP`; names the first offender — a new assembly model goes in its module list),
 `source_checks.py` (the shared `runs_its_model()` check that a model file ends with its build call),
@@ -42,15 +43,17 @@ loading `build123d` / `OCP`; names the first offender — a new assembly model g
 converted — shared by `test_assembly.py` and `test_robot.py`), `built.py` (above),
 `tests/cycloidal/` (the drive: one module per part + housing / purchased / fitment / assembly / port,
 `from tests.cycloidal.helpers import CFG, …` for the drive's config, the
-`stack` fixture is `tests/cycloidal/conftest.py`), `tests/upper_arm/` (`j1_link`: the LEGACY build's feature probes, DEFAULT's
-holes on the elbow motor's pattern and the drive's arm-mount bolts, no sockets, the elbow block's relief), `tests/base/` (`base`: the LEGACY build's
+`stack` fixture is `tests/cycloidal/conftest.py`; the shell ring, with no reference, keeps its numbers in its own module),
+`tests/upper_arm/` (`j1_link`: the LEGACY build's feature probes, DEFAULT's numbers, the elbow motor's pad and its
+holes, the root on the drive's turning shell - its housing bolts' holes and nut pockets, the hub's hole -, no sockets,
+the elbow block's relief), `tests/base/` (`base`: the LEGACY build's
 feature probes, the interface values lib/params.py and lib/datum.py take from it; `base_motor_mount`: the wiring room, the
 joint to the base's posts, the slotted seat at the stock belt's centre distance, the motor clear across the travel;
 `yaw_pulley_screws` / `yaw_pulley_nuts`, purchased parts with no reference: the numbers no reference file holds for them - pieces, volume,
 bbox - and feature probes), `tests/coupler/` (`j3_coupler`: the
 LEGACY build's feature probes, the stub the roll drive's block repeats), `tests/yaw_coupler/` (`j1_coupler`: the LEGACY
-build's feature probes, the yoke on the drive's housing - its bore, od, pillars, bolt circle; DEFAULT's sockets round the
-6-pillar housing's two pillars), `tests/wrist/` (`wrist_link`: the LEGACY build's feature probes, the seat on the
+build's feature probes, the yoke on the port's housing - its bore, od, pillars, bolt circle; DEFAULT's fork on the
+drive's own axis - the end plate on the hub, the clamp round the motor sleeve, the lowered ring - and its cap's numbers), `tests/wrist/` (`wrist_link`: the LEGACY build's feature probes, the seat on the
 coupler's flange, the end face on the NEMA 17 pattern), `tests/pulley/` (`gt2_pulley_90t`: the GT2 groove's tangency
 solve against the export's arcs, the LEGACY build's feature probes and surfaces, DEFAULT's opened holes;
 `gt2_pulley_20_60t`, a measured conversion: its export's numbers written into the test - both bands' arc centres, the

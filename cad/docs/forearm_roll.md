@@ -133,6 +133,6 @@ circle (the screws' nuts in the shaft) and the Ø24 cable bore, on the web's nec
 
 ## 6. Not modelled / to confirm
 `docs/open_issues.md`: the belts, the home sensor's mount (the modelled `ky003_hall_sensor`'s chip on the cap's outer face, a magnet in the stop lug, to the MKS board's
-limit input), the cable route; the elbow drive's second stage; the 6806 seats' PETG fit; the block's print orientation and its
+limit input), the cable route; the elbow belt's plane; the 6806 seats' PETG fit; the block's print orientation and its
 nut channels' and pockets' fit (the pulley's and the mount's), the mount's countersinks; the motor plate's flex without cheeks; the 6808's mass and inner-race edge, `t20_hub`, the belt lengths, the limit and the printed stop lugs'
 strength, the spigot's joint (its screws' nut pockets' fit, its creep); the roll motor's **CAN id** (`software/control/src/config.py` has no row for it: it names fewer boards than the arm carries).

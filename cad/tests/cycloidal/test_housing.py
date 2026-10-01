@@ -1,7 +1,8 @@
 """The shared housing profile (ported from cycloidal_drive tests/test_housing_profile.py).
 
-lib/cycloidal/housing.py defines the pillar / window outer profile (one per housing bolt) shared by the motor
-plate and the ring gear body and the outer-silhouette chamfer. Any change to the profile
+lib/cycloidal/housing.py defines the pillar / window outer profile (one per housing bolt) shared by the two housing
+parts - the shell ring (the port's motor plate; the turning shell's plate is held, inside it) and the ring gear body -
+and the outer-silhouette chamfer. Any change to the profile
 (pillar dims, bolt angles, bore radii) is caught here before the dependent part tests.
 """
 import math
@@ -15,8 +16,10 @@ from lib.cycloidal.housing import CUTTER_OVERSHOOT, chamfer_outer_silhouette, re
 from tests.cycloidal.helpers import CFG, no_chamfer
 from tests.helpers import is_inside
 
-cycloidal_motor_plate = parts.load("cycloidal_motor_plate")
+cycloidal_shell_ring = parts.load("cycloidal_shell_ring")
 cycloidal_ring_gear_body = parts.load("cycloidal_ring_gear_body")
+BODY_H = CFG.stack_up.ring_gear_body_height                    # 56
+RING_H = CFG.stack_up.z_motor_plate_inner + CFG.bearings.out_width + CFG.shell.skirt_lip   # 21: 9 + the skirt
 
 
 @pytest.fixture(scope="module")
@@ -27,15 +30,15 @@ def cutter():
 @pytest.fixture(scope="module")
 def sample_parts():
     # (name, part, z near mid-thickness of the pillar zone)
-    return [("motor_plate", cycloidal_motor_plate.build(), 5.0), ("ring_gear_body", cycloidal_ring_gear_body.build(), 23.5)]
+    return [("shell_ring", cycloidal_shell_ring.build(), 5.0), ("ring_gear_body", cycloidal_ring_gear_body.build(), 23.5)]
 
 
 @pytest.fixture(scope="module")
 def chamfer_parts():
     # name -> (build fn, thickness, external_z, [mating_z, ...])
     return {
-        "motor_plate": (cycloidal_motor_plate.build, 9.0, 0.0, [9.0]),
-        "ring_gear_body": (cycloidal_ring_gear_body.build, 51.0, 51.0, [0.0]),
+        "shell_ring": (cycloidal_shell_ring.build, RING_H, 0.0, [9.0]),
+        "ring_gear_body": (cycloidal_ring_gear_body.build, BODY_H, BODY_H, [0.0]),
     }
 
 
@@ -98,7 +101,7 @@ class TestProfileAlignment:
 @pytest.mark.slow
 class TestOuterChamfer:
     """Both parts bevel their outer silhouette while the faces that mate against a neighbour
-    stay sharp: the motor plate's motor face (z=0) and the ring gear body's output face (z=51)
+    stay sharp: the shell ring's outer face (z=0) and the ring gear body's output face (z=56)
     bevel their whole perimeter; the inner mating faces stay sharp."""
 
     PILLAR_TIP_R = CFG.housing.od / 2.0 - 0.5   # just inside the pillar's outer face, at a pillar centre
@@ -136,12 +139,12 @@ class TestOuterChamfer:
         """Passing external_z bevels the whole perimeter (pillar sides + inner arcs), removing
         materially more than the barrel verticals alone."""
         cfg0 = no_chamfer(CFG)
-        for fn, external_z in ((cycloidal_motor_plate.build, 0.0), (cycloidal_ring_gear_body.build, 51.0)):
+        for fn, external_z in ((cycloidal_shell_ring.build, 0.0), (cycloidal_ring_gear_body.build, BODY_H)):
             base = fn(cfg0)
             verticals_only = chamfer_outer_silhouette(base, CFG, external_z=None)
             full = chamfer_outer_silhouette(base, CFG, external_z=external_z)
             assert R.solid_volume(full) < R.solid_volume(verticals_only) - 50.0
 
     def test_chamfer_can_be_disabled(self):
-        part = cycloidal_motor_plate.build(no_chamfer(CFG))
+        part = cycloidal_shell_ring.build(no_chamfer(CFG))
         assert is_inside(part, self.PILLAR_TIP_R, 0.0, 0.1)

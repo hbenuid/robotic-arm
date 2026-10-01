@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-  arm: 6-axis desktop arm - base yaw, shoulder pitch (20:1 cycloidal drive), elbow pitch (GT2 belt),
+  arm: 6-axis desktop arm - base yaw, shoulder pitch (21:1 cycloidal drive), elbow pitch (GT2 belt),
   FOREARM ROLL (GT2 belt in the elbow block, cad/assemblies/forearm_roll_drive.py), wrist pitch (GT2
   belt) and the NEMA17-pancake wrist roll - + MG996R parallel gripper. Five joints are driven by
   NEMA 17 + MKS SERVO42D kits: the base_yaw / elbow_pitch / wrist_pitch motors are NEMA 17s on the
@@ -47,7 +47,7 @@
   cage with base_link, its upper washer with j1_coupler (shoulder_link); the MG996R crank linkage is merged into wrist_roll_link;
   jaw_b mirrors jaw_a (mimic, multiplier -1); positive jaw_a = opening.
   UNCONFIRMED: which CAN id (software/control/src/config.py J1..J3) drives which joint - the motors are placed
-  (cad/lib/mounts.py) but not mapped; the shoulder_pitch motor is the drive's own NEMA 17 at 20:1
+  (cad/lib/mounts.py) but not mapped; the shoulder_pitch motor is the drive's own NEMA 17 at 21:1
   (cad/lib/params.py CYCLOIDAL_RATIO; software/control/src/config.py still carries gear_ratio 1.0 everywhere). The
   belt motors' masses (280 g) and boards (35 g) are estimates, the wrist_pitch motor's slide position
   (J2_MOTOR_SLIDE_X - what a stock 264-2GT belt sets) too; FOREARM_ROLL_LIMIT_DEG is the hard stop's
@@ -75,9 +75,9 @@
   </link>
   <link name="shoulder_link">
     <inertial>
-      <origin xyz="-0.00082 0.015255 -0.01817" rpy="0 0 0" />
-      <mass value="1.667132" />
-      <inertia ixx="4.365000e-03" ixy="2.413298e-05" ixz="2.378057e-05" iyy="3.936070e-03" iyz="-4.600069e-04" izz="2.737501e-03" />
+      <origin xyz="-0.001366 0.02394 -0.01883" rpy="0 0 0" />
+      <mass value="1.639152" />
+      <inertia ixx="5.026391e-03" ixy="9.874940e-05" ixz="2.265458e-05" iyy="3.453456e-03" iyz="-4.293541e-04" izz="3.144143e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -94,9 +94,9 @@
   </link>
   <link name="upper_arm_link">
     <inertial>
-      <origin xyz="0.04954 0.000008 -0.021353" rpy="0 0 0" />
-      <mass value="0.893701" />
-      <inertia ixx="1.112860e-03" ixy="3.554079e-07" ixz="-4.020589e-04" iyy="5.281005e-03" iyz="3.920609e-07" izz="4.920055e-03" />
+      <origin xyz="0.052316 0.000005 -0.00045" rpy="0 0 0" />
+      <mass value="1.324862" />
+      <inertia ixx="3.364121e-03" ixy="-2.081754e-07" ixz="2.046714e-03" iyy="8.408771e-03" iyz="5.383473e-07" izz="7.297419e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />

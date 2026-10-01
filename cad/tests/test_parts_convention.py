@@ -68,8 +68,11 @@ def test_naming_map_matches_part_files():
 
 
 def test_cycloidal_group_is_the_drive():
-    """parts/cycloidal/ holds exactly the drive's parts (their references live in reference/cycloidal/)."""
-    assert {n for n, g in parts.GROUPS.items() if g == "cycloidal"} == R.CYCLOIDAL_PARTS
+    """parts/cycloidal/ holds exactly the drive's parts: the port's (their references live in reference/cycloidal/) and
+    the ones designed here since, which keep no reference (lib/reference.py NO_REFERENCE)."""
+    since = {n for n in R.NO_REFERENCE if n.startswith("cycloidal_")}
+    assert since == {"cycloidal_shell_ring"}
+    assert {n for n, g in parts.GROUPS.items() if g == "cycloidal"} == R.CYCLOIDAL_PARTS | since
     assert set(parts.GROUPS.values()) == {"base", "joints", "wrist", "gripper", "cycloidal"}
 
 

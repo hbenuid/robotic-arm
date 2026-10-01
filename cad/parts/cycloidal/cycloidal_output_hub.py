@@ -1,5 +1,5 @@
-"""cycloidal_output_hub - passes through the two 6814 inner races, carries the output pins and
-the arm-mount face (local z 0..28; sits at stack z 37..65, 5 mm proud of the housing).
+"""cycloidal_output_hub - the carrier: through the 6814 inner races, carries the output pins and the arm-mount face
+(local z 0..28, the turning shell's 0..42.27; sits at stack z 37).
 
 Ported from cycloidal_drive@2f1f67d src/output_hub.py (build_output_hub()); reference/
 cycloidal_output_hub.step is that builder's export (kind "designed"). PETG.
@@ -9,12 +9,28 @@ Inner face z=0: 625 bearing pocket, 6 mm shaft clearance bore over the bearing-g
 M4 arm-mount clearance holes on the 50 mm circle at 45 deg from the pins. Output face z=28: the
 36 mm lightening recess. Print output-face-down; drop the 4 nuts in before pressing the hub
 through the 6814s.
+The turning shell (ShellParams) holds the hub: the same holes bolt its face to the j1_coupler yoke's end plate, which
+it reaches through j1_link (proud_above_housing = j1_link's plate + a gap: 42.27 tall); one 6814 in the seat's outer
+slot, its inner race on the grip's outer half, stopped by a hub_shoulder_dia shoulder over the inner half (the
+shell is held both ways: this race, the shell's end wall on its outer race, and the motor-end 6814). It is the carrier
+the output pins hold the discs from turning with, so the housing turns.
+
+Diverged from the port: build(LEGACY_CONFIG) reproduces the export (REFERENCE_BUILD - tests/cycloidal/test_port.py,
+tests/test_reference_match.py); the model builds DEFAULT_CONFIG (the turning shell's hub).
 """
 import pathlib
 
 from cadgen import step
 
-from lib.cycloidal import DEFAULT_CONFIG, DriveConfig, arm_mount_angles, arm_mount_points, hub_height, output_pin_points
+from lib.cycloidal import (
+    DEFAULT_CONFIG,
+    LEGACY_CONFIG,
+    DriveConfig,
+    arm_mount_angles,
+    arm_mount_points,
+    hub_height,
+    output_pin_points,
+)
 from lib.cycloidal.housing import hex_pocket
 from lib.datum import IDENTITY
 from lib.geom import cylinder, single_solid, through
@@ -34,6 +50,8 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     height = hub_height(cfg)                # 28
 
     result = cylinder(hub.od / 2.0, height)
+    if cfg.shell is not None:   # the shoulder over the seat's inner slot, under the hub-end 6814's inner race
+        result = result + cylinder(cfg.shell.hub_shoulder_dia / 2.0, grip - b.out_width)
     result = result - cylinder(hub.shaft_clearance_bore / 2.0, grip + NUDGE, z0=-NUDGE)                 # shaft clearance, grip zone only
     result = result - cylinder((b.inp_od + tol.bearing_seat_bore_add) / 2.0, b.inp_width + NUDGE, z0=-NUDGE)   # 625 pocket
     pin_r = (d.output_pin_dia - tol.ring_pin_press_sub) / 2.0                                          # 4.20 / 2
@@ -48,6 +66,11 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
         z0 = grip + hub.arm_mount_pocket_floor                                                          # 21
         result = result - cylinder(hub.arm_mount_pocket_dia / 2.0, height - z0 + NUDGE, z0=z0)
     return single_solid(result)
+
+
+def REFERENCE_BUILD():
+    """The CadQuery port (LEGACY_CONFIG) - what reference/cycloidal/cycloidal_output_hub.step holds (tests/cycloidal/test_port.py)."""
+    return build(LEGACY_CONFIG)
 
 
 @step

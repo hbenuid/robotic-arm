@@ -4,7 +4,7 @@ Pure-Python config and layout here (lib/upper_arm/params.py, layout.py); the bui
 lib/upper_arm/link.py (imported explicitly by the part, so importing this package never pulls in OCCT). Never
 imports lib/params.py - that module re-exports the interface values from here.
 """
-from lib.upper_arm.layout import cove_axes, hub_bolt_points, pad_holes, socket_points  # noqa: F401
+from lib.upper_arm.layout import cove_axes, hub_bolt_points, pad_holes, shell_bolt_points, socket_points  # noqa: F401
 from lib.upper_arm.params import (  # noqa: F401
     DEFAULT,
     LEGACY,
@@ -12,6 +12,7 @@ from lib.upper_arm.params import (  # noqa: F401
     ElbowParams,
     HubParams,
     PadParams,
+    ShellMountParams,
     SlabParams,
     SlotParams,
     SocketParams,

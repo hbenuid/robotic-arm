@@ -1,17 +1,19 @@
-"""j1_coupler - the base_yaw coupler: the yoke that turns on the base about the base_yaw axis and cradles the cycloidal
-drive's housing (parametric build123d, lib/yaw_coupler/body.py build_yaw_coupler(cfg), in the SolidWorks part frame -
+"""j1_coupler - the base_yaw coupler: the yoke that turns on the base about the base_yaw axis and holds the cycloidal
+drive (parametric build123d, lib/yaw_coupler/body.py build_yaw_coupler(cfg), in the SolidWorks part frame -
 origin on the base_yaw axis at the base's seat-ring top, +Y up the axis, the drive's axis along X at y 90).
 
 A drafted disc (flats at x +/-40, ears of a Ø96 disc beyond them, a recess in its underside - DEFAULT: Ø90.4, its
 ceiling the seat on the base_yaw thrust bearing, the rim 0.5 over the base's top face) on a stub through the upper base
 bearing (DEFAULT: Ø30, on to the lip's lower face, where the base_yaw 120T's hub end meets it), a bore (DEFAULT: the
 pulley's Ø12.5) and 4 holes on the diagonals up to the pocket over the hub (DEFAULT: the 90T's bolt circle, M4 clearance,
-the nuts flush in hex pockets in the pocket's floor); on the disc a ring and the yoke flaring out of it: the -X cheek
-and the middle body under the housing's Ø116 cradle, a closed socket round each of the 6-pillar housing's two pillars
-at +/-30 degrees from the bottom (a 2 mm wall round it, a rib out of the flare near the +X end), their bolts' nut
-pockets in the cheek's outer face. Every number: lib/yaw_coupler/params.py (YawCouplerConfig; measured on the
-reference 2026-09-27; LEGACY: the Ø90.05 recess on the base's face, a Ø29.8 stub 0.2 into the lip, a Ø15 bore, 4x
-Ø3.3, a channel and two V-grooves round the 8-pillar housing's bottom and +/-45 degree pillars, 3 nut pockets).
+the nuts flush in hex pockets in the pocket's floor); on the disc a ring (DEFAULT: lowered under the drive's turning
+shell) and DEFAULT's fork round the drive (ForkParams) on the drive's own axis: the -X end plate past j1_link, the
+held hub bolted to it, on a leg down to a low bridge to the disc (cut back over it where j1_link swings), and the +X
+clamp's saddle round the motor plate's sleeve on a windowed post and a foot out of the +X flat - its upper half the
+cap, parts/base/j1_coupler_cap, on 4 M4s into nuts in the saddle's side slots. Every number: lib/yaw_coupler/params.py
+(YawCouplerConfig; measured on the reference 2026-09-27; LEGACY: the Ø90.05 recess on the base's face, a Ø29.8 stub
+0.2 into the lip, a Ø15 bore, 4x Ø3.3, the -X cheek and the middle body under the housing's Ø116 cradle, a channel and
+two V-grooves round the 8-pillar housing's bottom and +/-45 degree pillars, 3 nut pockets).
 
 SolidWorks product: 'Base couple updated 62126 _J1 coupler'
 Source export:      step/Base couple updated 62126 _J1 coupler.STEP

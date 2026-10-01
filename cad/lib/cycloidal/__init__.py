@@ -1,4 +1,4 @@
-"""The 20:1 cycloidal drive, ported from the cycloidal_drive repo (docs/cycloidal_drive.md).
+"""The shoulder's cycloidal drive, ported from the cycloidal_drive repo (docs/cycloidal_drive.md).
 
 Pure-Python config and layout here; build123d builders in lib/cycloidal/disc.py and
 lib/cycloidal/housing.py (imported explicitly by the parts that need them, so importing this
@@ -12,5 +12,5 @@ from lib.cycloidal.layout import (  # noqa: F401
 )
 from lib.cycloidal.params import (  # noqa: F401
     DEFAULT_CONFIG, LEGACY_CONFIG, BearingParams, DiscParams, DriveConfig, GearParams, HousingParams, MotorParams,
-    OutputHubParams, PETGTolerances, ProfileParams, ShaftParams, StackUp,
+    OutputHubParams, PETGTolerances, ProfileParams, ShaftParams, ShellParams, StackUp,
 )

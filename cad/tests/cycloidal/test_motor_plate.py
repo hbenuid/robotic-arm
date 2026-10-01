@@ -1,7 +1,9 @@
 """Motor plate (ported from cycloidal_drive tests/test_motor_plate.py).
 
   1. Dimensional checks - feature clearances, bolt patterns (config only)
-  2. The built solid - topology, bounding box, volume sanity
+  2. The built solid - the port's housing half (LEGACY_CONFIG, its REFERENCE_BUILD): topology, bounding box, volume sanity
+  3. The turning shell's carrier plate (DEFAULT_CONFIG, ShellParams): its numbers (the port's export does not hold
+     them) and probes - the plate inside the shell ring, the relief over the 6814's outer race, the sleeve over the motor
 """
 import math
 
@@ -9,8 +11,9 @@ import pytest
 
 import parts
 from lib import reference as R
-from lib.cycloidal import motor_bolt_counterbore_depth, ring_pin_hole_dia
+from lib.cycloidal import LEGACY_CONFIG, motor_bolt_counterbore_depth, ring_pin_hole_dia
 from tests.cycloidal.helpers import CFG
+from tests.helpers import is_inside
 
 cycloidal_motor_plate = parts.load("cycloidal_motor_plate")
 PLATE_T = CFG.stack_up.motor_plate_wall + CFG.stack_up.motor_plate_inner_wall    # 9
@@ -94,7 +97,7 @@ class TestMotorPlateDimensions:
 
 @pytest.fixture(scope="module")
 def plate_solid():
-    return cycloidal_motor_plate.build()
+    return cycloidal_motor_plate.REFERENCE_BUILD()
 
 
 @pytest.mark.slow
@@ -105,18 +108,17 @@ class TestSolid:
         assert plate_solid.is_valid
 
     def test_bounding_box_xy(self, plate_solid):
-        """The od on X (the pillars at 0 / 180 degrees); on Y no pillar - the chamfered corners of the ones at
-        +/-60 and +/-120 degrees."""
+        """The port's od (8 pillars, one on each axis)."""
         size = plate_solid.bounding_box().size
-        assert abs(size.X - CFG.housing.od) < 0.2, f"X extent {size.X:.2f}mm, expected {CFG.housing.od}mm"
-        assert abs(size.Y - 116.023) < 0.01
+        assert abs(size.X - LEGACY_CONFIG.housing.od) < 0.2, f"X extent {size.X:.2f}mm, expected {LEGACY_CONFIG.housing.od}mm"
+        assert abs(size.Y - LEGACY_CONFIG.housing.od) < 0.2
 
     def test_bounding_box_z(self, plate_solid):
         assert abs(plate_solid.bounding_box().size.Z - PLATE_T) < 0.1
 
     def test_volume_sanity(self, plate_solid):
         """Between 85 % of the inner solid disc (bore radius) and the full uncut disc."""
-        h = CFG.housing
+        h = LEGACY_CONFIG.housing
         full_disc_vol = math.pi * (h.od / 2.0) ** 2 * PLATE_T
         floor = math.pi * (h.bore_dia / 2.0) ** 2 * PLATE_T * 0.85
         vol = R.solid_volume(plate_solid)
@@ -124,5 +126,38 @@ class TestSolid:
 
     def test_reveal_windows_present(self, plate_solid):
         """The windows cut most of the outer ring: volume < 85 % of the solid-disc baseline."""
-        full_disc_vol = math.pi * (CFG.housing.od / 2.0) ** 2 * PLATE_T
+        full_disc_vol = math.pi * (LEGACY_CONFIG.housing.od / 2.0) ** 2 * PLATE_T
         assert R.solid_volume(plate_solid) < full_disc_vol * 0.85, "reveal windows missing?"
+
+
+@pytest.fixture(scope="module")
+def carrier():
+    return cycloidal_motor_plate.build()
+
+
+@pytest.mark.slow
+class TestCarrier:
+    """DEFAULT's plate: held, inside the turning shell ring, its sleeve back over the motor (ShellParams)."""
+
+    def test_numbers(self, carrier):
+        sh, b = CFG.shell, CFG.bearings
+        assert len(carrier.solids()) == 1 and carrier.is_valid
+        assert R.solid_volume(carrier) == pytest.approx(93978.074, abs=0.5)
+        bb = carrier.bounding_box()
+        assert (bb.min.X, bb.min.Y, bb.min.Z) == pytest.approx((-sh.plate_dia / 2.0, -sh.plate_dia / 2.0, -CFG.motor.body_length), abs=1e-6)
+        assert (bb.size.X, bb.size.Y, bb.size.Z) == pytest.approx((sh.plate_dia, sh.plate_dia, PLATE_T + CFG.motor.body_length), abs=1e-6)
+        assert b.out_width < CFG.motor.body_length
+
+    def test_relief_seat_and_sleeve(self, carrier):
+        """The face cut back over the outer race, the inner race's face inside it; the seat at the hub's grip over the
+        last out_width, the sleeve's od behind it; the bore round the motor."""
+        sh, b = CFG.shell, CFG.bearings
+        r_relief = (sh.plate_relief_dia + sh.plate_dia) / 4.0
+        assert not is_inside(carrier, r_relief, 0, sh.plate_relief_depth / 2.0) and is_inside(carrier, r_relief, 0, sh.plate_relief_depth + 0.2)
+        assert is_inside(carrier, sh.plate_relief_dia / 2.0 - 0.5, 0, 0.2)
+        seat_r, od_r = CFG.output_hub.od / 2.0, sh.sleeve_od / 2.0
+        assert is_inside(carrier, (seat_r + od_r) / 2.0, 0, -b.out_width / 2.0)              # the seat (70.3) ...
+        assert not is_inside(carrier, (seat_r + od_r) / 2.0, 0, -b.out_width - 5.0)          # ... the sleeve (70) behind it
+        assert is_inside(carrier, od_r - 0.3, 0, -b.out_width - 5.0)
+        assert not is_inside(carrier, sh.sleeve_bore_dia / 2.0 - 0.3, 0, -20.0) and is_inside(carrier, sh.sleeve_bore_dia / 2.0 + 0.3, 0, -20.0)
+        assert not is_inside(carrier, 0, 0, -20.0)                                           # the motor's room

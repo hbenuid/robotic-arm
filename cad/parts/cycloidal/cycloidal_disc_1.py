@@ -1,4 +1,4 @@
-"""cycloidal_disc_1 - cycloidal disc 1 of the 20:1 drive (20 lobes, 0 deg profile phase).
+"""cycloidal_disc_1 - cycloidal disc 1 of the shoulder drive (20 lobes, 0 deg profile phase).
 
 Ported from cycloidal_drive@2f1f67d src/cycloidal_disc.py (build_cycloidal_disc()). The reference
 reference/cycloidal_disc_1.step is that CadQuery builder's own export (manifest kind "designed").

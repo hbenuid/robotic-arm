@@ -168,11 +168,11 @@ def test_base_motor_stack_clears_the_table():
 
 @pytest.mark.slow
 def test_belt_pulley_planes_are_reachable():
-    """The wrist motor's and the base motor's shafts (22 mm past the mounting face) reach the plane of the driven pulley
-    each drives: the 90T's bore-axis station lies between the mounting face and the shaft tip along the motor axis. (The
-    elbow 90T is driven from a second stage through j1_link's second-stage seats, not from its motor - not modelled,
-    docs/open_issues.md.)"""
-    for m, pulley_key in (("nema17_40mm#3", "gt2_pulley_90t#4"), ("nema17_48mm#1", "gt2_pulley_120t#1")):
+    """The elbow, wrist and base motors' shafts (22 mm past the mounting face) reach the plane of the driven pulley each
+    drives straight: the pulley's mid-plane lies between the mounting face and the shaft tip along the motor axis (the
+    20T's band in the driven pulley's: docs/open_issues.md)."""
+    for m, pulley_key in (("nema17_40mm#2", "gt2_pulley_90t#3"), ("nema17_40mm#3", "gt2_pulley_90t#4"),
+                          ("nema17_48mm#1", "gt2_pulley_120t#1")):
         world = _world(m)
         z = _dir(world).normalized()
         pulley = built.placed(pulley_key)

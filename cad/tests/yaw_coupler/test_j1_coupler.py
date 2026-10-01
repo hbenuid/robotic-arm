@@ -2,28 +2,31 @@
 feature (the volume / bbox match is tests/test_reference_match.py's; here the features are probed by name so a
 regression names what moved), the yoke's shapes are the drive's housing's - its bore, its od, its pillars' sides,
 its bolt circle and nut pockets (lib/cycloidal/params.py HousingParams; LEGACY's the port's housing, LEGACY_CONFIG) -,
-and DEFAULT - what the part builds - changes its underside, its hub and the yoke's hold on the housing: the seat on the
-thrust bearing, the rim clear of the base (tests/test_mounts.py checks the stack in place), the stub on to the lip's
-lower face and drilled for the base_yaw pulley, the cradle, od points and nut pockets on the housing the drive builds
-(DEFAULT_CONFIG's smaller one) and the sockets round its two pillars at +/-30 degrees (tests/cycloidal/test_assembly.py
-checks the drive in place)."""
+and DEFAULT - what the part builds - changes its underside, its hub and the yoke: the seat on the thrust bearing, the
+rim clear of the base (tests/test_mounts.py checks the stack in place), the stub on to the lip's lower face and drilled
+for the base_yaw pulley, and the fork (ForkParams) round the drive whose shell turns (DEFAULT_CONFIG's ShellParams): the
+end plate the held hub bolts to, the clamp round the motor plate's sleeve - its saddle this part, its cap
+parts/base/j1_coupler_cap (no reference: its numbers are here) -, the ring lowered under the shell, the disc cut back
+where j1_link swings (tests/cycloidal/test_assembly.py checks the drive in place, tests/test_sweeps.py the swing)."""
 import math
 from dataclasses import replace
 
 import pytest
 
+from lib import placements as P
+from lib import reference as R
 from lib.base import DEFAULT as BASE
 from lib.bearings import BEARING_6806_BORE, THRUST_OD, THRUST_STACK
 from lib.belts import GT2_PULLEY_90T_BOLT_R
 from lib.coupler import DEFAULT as J3_COUPLER
-from lib.cycloidal import compute_housing_bolt_angles
+from lib.cycloidal import arm_mount_points, stack_positions
 from lib.cycloidal.layout import PILLAR_OVERSHOOT
 from lib.cycloidal.params import DEFAULT_CONFIG as DRIVE
 from lib.cycloidal.params import LEGACY_CONFIG as PORT
 from lib.fasteners import M4_CLEAR, M4_NUT
 from lib.geom import hex_circumdiameter
-from lib.yaw_coupler import DEFAULT, LEGACY, hole_points, nut_centres, od_point, socket_outline
-from lib.yaw_coupler.layout import below_axis, flare_r, pillar_point
+from lib.yaw_coupler import DEFAULT, LEGACY, hole_points, nut_centres, od_point
+from lib.yaw_coupler.layout import below_axis, fork_cap_bolts, fork_clamp_x, fork_hub_bolts, fork_plate_x, fork_x
 from tests import built
 from tests.helpers import is_inside
 
@@ -70,38 +73,30 @@ def test_the_yoke_is_the_housings_shape():
     assert [math.hypot(k.axis_y - y, z) for y, z in nut_centres(LEGACY)] == pytest.approx([k.bolt_circle_r] * 3)
 
 
-def _from_bottom(drive_rad: float) -> float:
-    """A drive angle (radians from the drive's +X) as the yoke's: degrees from straight down, toward +Z
-    (placements.json turns the drive's +X onto the coupler's +Z, its +Y onto +Y)."""
-    return (math.degrees(drive_rad) - 270.0 + 180.0) % 360.0 - 180.0
-
-
-def test_default_yoke_holds_the_housings_pillars():
-    """DEFAULT's yoke on the drive's housing (lib/cycloidal/params.py DEFAULT_CONFIG): its cradle, od points and bolt
-    circle that housing's (the drive's axis where LEGACY has it), a socket round each pillar it holds - on a housing
-    bolt, its walls and floor socket_clear off the pillar -, the nut pockets under those bolts, and every other pillar
-    clear of the yoke (past the cheek's top on the cradle and the od point on the od)."""
-    k, h = DEFAULT.yoke, DRIVE.housing
-    assert (2.0 * k.cradle_r, 2.0 * k.od_r, 2.0 * k.bolt_circle_r) == (h.bore_dia, h.od, h.bolt_circle_dia)
-    assert k.axis_y == LEGACY.yoke.axis_y
-    pillars = [_from_bottom(a) for a in compute_housing_bolt_angles(DRIVE)]
-    assert k.socket_deg and k.bolt_deg == k.socket_deg and k.groove_z is None and not k.channel
-    assert all(any(abs(d - p) < 1e-9 for p in pillars) for d in k.socket_deg)
-    reach = max(math.degrees(math.asin(k.cheek_top_z / k.cradle_r)), math.degrees(math.asin(od_point(DEFAULT)[1] / k.od_r)))
-    half = math.degrees(math.asin(_pillar_half_w(k.cradle_r) / k.cradle_r))      # the pillar's widest, at the bore
-    for p in pillars:
-        if not any(abs(d - p) < 1e-9 for d in k.socket_deg):
-            assert abs(p) - half > reach + 1.0, f"the pillar at {p:.0f} degrees reaches into the yoke"
-    grow = math.hypot(1.0, _pillar_half_w(1.0) - _pillar_half_w(0.0))
-    for d in k.socket_deg:
-        outline = socket_outline(DEFAULT, d)
-        for y, z in outline:
-            along, across = _polar(y, z, d)
-            assert across == pytest.approx(_pillar_half_w(along) + k.socket_clear * grow, abs=1e-9)   # the walls
-        floor = sorted(_polar(y, z, d)[0] for y, z in outline)[2:]
-        assert floor == pytest.approx([h.od / 2.0 + k.socket_clear] * 2)                            # the floor
-        assert max(math.hypot(*_polar(y, z, d)) for y, z in outline if _polar(y, z, d)[0] < k.cradle_r) < k.cradle_r
-        assert pillar_point(DEFAULT, d, k.bolt_circle_r, 0.0) in [pytest.approx(c) for c in nut_centres(DEFAULT)]
+def test_default_fork_holds_the_drives_ends():
+    """DEFAULT's fork on the drive's own axis (placements.json cycloidal_drive#1 in this frame, its +Z this frame's -X):
+    the end plate's inner face on the held hub's face (hub_top), the hub's 4 bolts on the drive's arm-mount pattern; the
+    clamp round the motor plate's sleeve (its bore 0.2 a side), 2 behind the shell ring's skirt and short of the motor's
+    rear; the cap's bolts inside the clamp, clear of its bore; the ring lowered under the turning shell's pillars
+    (RING_DROP: 2.68 of clearance); the disc cut back where j1_link swings (1 off its face)."""
+    f, sh, S = DEFAULT.fork, DRIVE.shell, stack_positions(DRIVE)
+    world = P.location("j1_coupler#1", "world").inverse() * P.location("cycloidal_drive#1", "world")
+    assert (world.position.X, world.position.Y, world.position.Z) == pytest.approx((f.face_x, f.axis_y, f.axis_z), abs=1e-5)
+    assert fork_x(DEFAULT, 0.0) == f.face_x and fork_x(DEFAULT, 1.0) == f.face_x - 1.0
+    assert fork_plate_x(DEFAULT) == pytest.approx((fork_x(DEFAULT, S["hub_top"]) - f.plate_t, fork_x(DEFAULT, S["hub_top"])))
+    assert sorted(fork_hub_bolts(DEFAULT)) == pytest.approx(sorted((f.axis_y + y, f.axis_z + x) for x, y in arm_mount_points(DRIVE)))
+    near, far = fork_clamp_x(DEFAULT)
+    skirt_end = -(DRIVE.bearings.out_width + sh.skirt_lip)
+    assert near == pytest.approx(fork_x(DEFAULT, skirt_end) + 2.0) and far < fork_x(DEFAULT, -DRIVE.motor.body_length)
+    assert f.clamp_bore_dia == pytest.approx(sh.sleeve_od + 0.4)
+    for x, z in fork_cap_bolts(DEFAULT):
+        assert near < x - M4_NUT.af / 2.0 and x + M4_NUT.af / 2.0 < far
+        assert abs(z - f.axis_z) - hex_circumdiameter(M4_NUT.af + 0.2) / 2.0 - f.clamp_bore_dia / 2.0 > 2.5
+    sweep = DRIVE.housing.od / 2.0                                  # the pillars' tips, turning
+    assert f.axis_y - sweep - DEFAULT.disc.ring_y1 == pytest.approx(2.68, abs=0.005)
+    assert LEGACY.disc.ring_y1 - DEFAULT.disc.ring_y1 == 2.0
+    link_face = fork_x(DEFAULT, stack_positions(DRIVE)["hub_top"]) + sh.arm_plate + sh.end_plate_gap   # the shell's output face
+    assert f.swing_x == pytest.approx(link_face + 1.0, abs=1e-3)
 
 
 @pytest.fixture(scope="module")
@@ -170,9 +165,10 @@ def test_legacy_hub(legacy):
 def test_default_stands_on_the_thrust_bearing():
     """The seat on the upper washer: the groove's floor (the base's frame; this part's origin at its ring_top_y) plus
     the stack; the recess round the stack's OD; the rim over the base's top face - nothing else changes (but the
-    yoke's hold on the housing: test_default_yoke_holds_the_housings_pillars)."""
+    fork and the ring under it: test_default_fork_holds_the_drives_ends)."""
     h, c = DEFAULT.hub, BASE.cap
-    assert replace(DEFAULT, hub=LEGACY.hub, disc=replace(DEFAULT.disc, y0=LEGACY.disc.y0), yoke=LEGACY.yoke) == LEGACY
+    assert replace(DEFAULT, hub=LEGACY.hub, disc=replace(DEFAULT.disc, y0=LEGACY.disc.y0, ring_y1=LEGACY.disc.ring_y1),
+                   fork=None) == LEGACY
     assert h.recess_y1 == pytest.approx(c.groove_y0 - c.ring_top_y + THRUST_STACK)
     assert h.recess_dia > THRUST_OD and h.recess_dia / 2.0 > c.groove_r[1]          # the rim wholly over the top face
     assert DEFAULT.disc.y0 > c.top_y - c.ring_top_y and LEGACY.disc.y0 == pytest.approx(c.top_y - c.ring_top_y)
@@ -199,15 +195,9 @@ def test_default_hub_takes_the_base_yaw_90t():
 
 
 @pytest.mark.slow
-def test_default_changes_the_hub_the_underside_and_the_yoke(coupler, legacy):
+def test_default_changes_the_hub_and_the_underside(coupler, legacy):
     assert coupler.label == "j1_coupler" and coupler.is_valid and len(coupler.solids()) == 1
-    bb, lb = coupler.bounding_box(), legacy.bounding_box()
-    assert (bb.min.X, bb.min.Z, bb.max.X, bb.max.Z) == pytest.approx((lb.min.X, lb.min.Z, lb.max.X, lb.max.Z), abs=1e-6)
-    top = below_axis(DEFAULT, DEFAULT.yoke.cradle_r, DEFAULT.yoke.cheek_top_z)
-    assert bb.max.Y == pytest.approx(top, abs=1e-6) and lb.max.Y == pytest.approx(below_axis(LEGACY, LEGACY.yoke.cradle_r,
-                                                                                               LEGACY.yoke.cheek_top_z), abs=1e-6)
-    assert bb.max.Y > lb.max.Y             # the cheek's top: the same |z| on the smaller housing's cradle, so higher
-    assert bb.min.Y == pytest.approx(DEFAULT.hub.stub_y0, abs=1e-6)                           # the stub's end, lower
+    assert coupler.bounding_box().min.Y == pytest.approx(DEFAULT.hub.stub_y0, abs=1e-6)       # the stub's end, lower
     assert is_inside(coupler, 0, -9.2, 12) and not is_inside(coupler, 0, -9.4, 12) and not is_inside(legacy, 0, -9.2, 12)
     assert is_inside(coupler, 0, -5, 14.95) and not is_inside(coupler, 0, -5, 15.05)          # the stub Ø30 ...
     assert not is_inside(legacy, 0, -5, 14.95)                                                # ... was Ø29.8
@@ -228,42 +218,76 @@ def test_default_changes_the_hub_the_underside_and_the_yoke(coupler, legacy):
     assert is_inside(legacy, 0, y0 - 0.05, 50)
     assert not is_inside(coupler, 47.5, y0 - 0.05, 0) and is_inside(coupler, 47.5, y0 + 0.05, 0)   # the ears with it
     assert is_inside(coupler, 0, y1 - 0.05, 14.5) and is_inside(coupler, 0, -5, 14.7)          # the stub up into the seat
-    for probe in ((0, 40, 52.9), (20, 34.5, 20), (-31, 45.8, 49.2), (25, 20.0, 0), (0, 2, 7.7)):
-        assert is_inside(coupler, *probe) == is_inside(legacy, *probe)                         # the rest as before
-    k = DEFAULT.yoke
-    flare = DEFAULT.disc.ring_r / (DEFAULT.disc.ring_y1 - k.flare_apex_y)     # the flare's dr / dy
-    od = DRIVE.housing.od / 2.0
-    for d in k.socket_deg:
-        hw = _pillar_half_w(od - 6.0)
-        for x in (-28.3, 0.0, 22.0, 31.3):
-            assert not is_inside(coupler, x, *pillar_point(DEFAULT, d, od - 6.0, 0.0))        # the socket, end to end ...
-        assert is_inside(legacy, 22.0, *pillar_point(DEFAULT, d, od - 6.0, 0.0))
-        assert not is_inside(coupler, 22.0, *pillar_point(DEFAULT, d, od - 6.0, hw + 0.1))    # ... its walls 0.2 off ...
-        assert is_inside(coupler, 22.0, *pillar_point(DEFAULT, d, od - 6.0, hw + 0.35))
-        assert not is_inside(coupler, 22.0, *pillar_point(DEFAULT, d, od + 0.1, 0.0))         # ... its floor 0.2 off the od
-        assert is_inside(coupler, 22.0, *pillar_point(DEFAULT, d, od + 0.35, 0.0))
-        assert is_inside(coupler, -29.0, *pillar_point(DEFAULT, d, od - 1.0, 0.0))            # ... stopped by the cheek (past its nut pocket)
-        # its wall under the floor's corner nearest the ring, socket_wall thick even at the ends; where the flare
-        # (the cone out of the ring's top edge) would leave less, a rib stands out of it (the port's housing; the
-        # smaller one's sockets sit inside the flare, whose body is thicker there)
-        y, z = min(socket_outline(DEFAULT, d), key=lambda p: p[0])
-        n = (-flare, math.copysign(1.0, z))
-        n = (n[0] / math.hypot(*n), n[1] / math.hypot(*n))
-        for x in (-28.3, 31.3):
-            assert is_inside(coupler, x, y + n[0] * (k.socket_wall - 0.1), z + n[1] * (k.socket_wall - 0.1))
-            py, pz = y + n[0] * (k.socket_wall + 0.3), z + n[1] * (k.socket_wall + 0.3)
-            if math.hypot(x, pz) > flare_r(DEFAULT, py):                                        # the rib, no thicker
-                assert not is_inside(coupler, x, py, pz)
-    for r, solid in ((DRIVE.housing.bore_dia / 2.0 - 0.3, False), (DRIVE.housing.bore_dia / 2.0 + 2.0, True)):
-        y = k.axis_y - math.sqrt(r * r - 10.0 ** 2)
-        assert is_inside(coupler, 22.0, y, 10.0) == solid                                     # the cradle on the smaller
-        assert not is_inside(legacy, 22.0, y, 10.0)                                           # housing: its floor risen
-    for y, z in nut_centres(DEFAULT):
-        assert not is_inside(coupler, -31, y, z) and not is_inside(coupler, -28.7, y, z)      # the nut pockets at +/-30 ...
-        assert is_inside(legacy, -31, y, z)
-    for y, z in nut_centres(LEGACY):
-        assert is_inside(coupler, -31, y, z)                                                  # ... not at 0 and +/-45
-    pillar = (k.axis_y - 64 * math.cos(math.radians(45)), 64 * math.sin(math.radians(45)))
-    assert is_inside(coupler, 0, *pillar) and not is_inside(legacy, 0, *pillar)              # the V-groove filled
-    assert is_inside(coupler, 25, 21, 0) and not is_inside(legacy, 25, 21, 0)                # the channel filled
-    assert is_inside(coupler, 35, 23.5, 0) and not is_inside(legacy, 35, 23.5, 0)            # the notch filled
+    for probe in ((0, 2, 7.7), (0, 7.8, 20)):
+        assert is_inside(coupler, *probe) == is_inside(legacy, *probe)                         # the hub, the pocket's floor
+    assert not is_inside(coupler, 0, 10, 20) and not is_inside(legacy, 0, 10, 20)             # the pocket over the hub
+
+
+@pytest.mark.slow
+def test_default_is_the_fork(coupler, legacy):
+    """The fork round the drive whose shell turns (ForkParams): the end plate on its leg and the low bridge on -X, the
+    clamp's saddle on its windowed post and foot on +X, split at the drive's axis (the cap is its own part); the yoke's
+    cheek, middle body, cradle and sockets gone; the ring lowered; the disc cut back where j1_link swings."""
+    f, d = DEFAULT.fork, DEFAULT.disc
+    (px0, px1), (cx0, cx1) = fork_plate_x(DEFAULT), fork_clamp_x(DEFAULT)
+    bb = coupler.bounding_box()
+    r0 = d.band_r + (d.top_r - d.band_r) * (d.y0 - d.band_y1) / (d.top_y - d.band_y1)     # the disc at the rim, lifted
+    assert (bb.min.X, bb.max.X, bb.max.Y) == pytest.approx((px0, cx1, f.axis_y + f.plate_r), abs=1e-6)
+    assert (bb.min.Z, bb.max.Z) == pytest.approx((-r0, r0), abs=1e-6)
+    pm = (px0 + px1) / 2.0
+    # the end plate: a disc round the axis on a leg down to the disc's underside, the low bridge to the disc
+    assert is_inside(coupler, pm, f.axis_y + f.plate_r - 0.3, f.axis_z) and not is_inside(coupler, pm, f.axis_y + f.plate_r + 0.3, f.axis_z)
+    assert is_inside(coupler, pm, 30.0, f.axis_z + f.leg_half_z - 0.3) and not is_inside(coupler, pm, 30.0, f.axis_z + f.leg_half_z + 0.3)
+    assert is_inside(coupler, px0 + 0.3, d.y0 + 0.3, 0.0) and not is_inside(coupler, px0 - 0.3, d.y0 + 0.3, 0.0)
+    assert is_inside(coupler, -45.0, f.bridge_y1 - 0.3, 0.0) and not is_inside(coupler, -45.0, f.bridge_y1 + 0.3, 0.0)
+    for y, z in fork_hub_bolts(DEFAULT):
+        assert not is_inside(coupler, px1 - 0.3, y, z) and not is_inside(coupler, px0 + 0.3, y + 3.0, z)   # the hole, the counterbore
+        assert is_inside(coupler, px1 - 0.3, y + 3.0, z)                                                  # ... 4.5 deep
+    # the swing cut over the low bridge, the ring lowered
+    assert not is_inside(coupler, -36.0, 12.0, 0.0) and is_inside(legacy, -36.0, 12.0, 0.0)
+    assert is_inside(coupler, -30.0, 12.0, 0.0)
+    assert is_inside(coupler, -25.0, d.ring_y1 - 0.3, 25.0) and not is_inside(coupler, -25.0, d.ring_y1 + 0.3, 25.0)
+    assert is_inside(legacy, -25.0, d.ring_y1 + 0.3, 25.0)
+    # the clamp's saddle: bored to the sleeve, split at the axis, on a post with a window through it, on a foot
+    cm = (cx0 + cx1) / 2.0
+    r = f.clamp_bore_dia / 2.0
+    assert not is_inside(coupler, cm, f.axis_y - r + 0.2, f.axis_z) and is_inside(coupler, cm, f.axis_y - r - 0.2, f.axis_z)
+    assert is_inside(coupler, cm, f.axis_y - 0.3, f.axis_z + f.clamp_half - 1.0)
+    assert not is_inside(coupler, cm, f.axis_y + 0.3, f.axis_z + f.clamp_half - 1.0)            # the cap's
+    assert not is_inside(coupler, cm, 20.0, 0.0) and is_inside(coupler, cx0 + f.post_wall - 0.3, 20.0, 0.0)   # the window
+    assert is_inside(coupler, cm, d.y0 + f.post_wall - 0.3, 0.0)
+    assert is_inside(coupler, (d.flat_x + cx0) / 2.0, f.foot_y1 - 0.3, 0.0) and not is_inside(coupler, (d.flat_x + cx0) / 2.0, f.foot_y1 + 0.3, 0.0)
+    for x, z in fork_cap_bolts(DEFAULT):
+        out = 1.0 if z > f.axis_z else -1.0
+        assert not is_inside(coupler, x, f.axis_y - 2.0, z)                                    # the bolt's hole ...
+        slot = f.axis_y - f.cap_nut_y - (M4_NUT.h + 0.2) / 2.0
+        assert not is_inside(coupler, x, slot, z) and not is_inside(coupler, x, slot, f.axis_z + out * (f.clamp_half - 0.3))   # ... its nut's slot to the side
+        assert is_inside(coupler, x, f.axis_y - f.cap_nut_y + 0.3, f.axis_z + out * (f.clamp_half - 0.3))
+        assert is_inside(coupler, x + 3.8, slot, z)                                             # ... the nut's AF wide
+    # the yoke that held the port's housing is gone
+    for probe in ((0, 40, 52.9), (20, 34.5, 20), (-31, 45.8, 49.2)):
+        assert not is_inside(coupler, *probe) and is_inside(legacy, *probe)
+
+
+@pytest.fixture(scope="module")
+def cap():
+    return built.part("j1_coupler_cap")
+
+
+@pytest.mark.slow
+def test_cap(cap):
+    """The clamp's upper half (parts/base/j1_coupler_cap, no reference - its numbers are here): one solid, its box and
+    volume, bored to the sleeve, its 4 bolts through it from counterbores cap_seat above the split."""
+    f = DEFAULT.fork
+    cx0, cx1 = fork_clamp_x(DEFAULT)
+    assert cap.label == "j1_coupler_cap" and cap.is_valid and len(cap.solids()) == 1
+    assert R.solid_volume(cap) == pytest.approx(72706.126, abs=0.5)
+    bb = cap.bounding_box()
+    assert (bb.min.X, bb.min.Y, bb.min.Z) == pytest.approx((cx0, f.axis_y, f.axis_z - f.clamp_half), abs=1e-6)
+    assert (bb.size.X, bb.size.Y, bb.size.Z) == pytest.approx((cx1 - cx0, f.clamp_half, 2.0 * f.clamp_half), abs=1e-6)
+    cm, r = (cx0 + cx1) / 2.0, f.clamp_bore_dia / 2.0
+    assert not is_inside(cap, cm, f.axis_y + r - 0.2, f.axis_z) and is_inside(cap, cm, f.axis_y + r + 0.2, f.axis_z)
+    for x, z in fork_cap_bolts(DEFAULT):
+        assert not is_inside(cap, x, f.axis_y + 1.0, z)                                         # the hole through ...
+        assert is_inside(cap, x + 3.0, f.axis_y + f.cap_seat - 0.5, z)                          # ... under the head ...
+        assert not is_inside(cap, x + 3.0, f.axis_y + f.cap_seat + 0.5, z)                      # ... in its counterbore

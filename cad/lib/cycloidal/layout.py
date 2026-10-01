@@ -117,26 +117,36 @@ def stack_positions(cfg: DriveConfig = DEFAULT_CONFIG) -> dict[str, float]:
     """Z (and eccentric X) positions of every part in the module frame (Z=0 = motor-plate outer face).
 
     Parts whose builder already emits geometry at its stack position (eccentric shaft, motor,
-    motor plate) are at 0."""
+    motor plate, shell ring) are at 0. The port's two 6814s fill the seat's two slots (37, 47); the turning shell's
+    are the hub's in the outer slot and the one on the motor plate's sleeve, behind the plate (-10), and its housing
+    nuts sit on the bolts' ends in j1_link (the port's in the ring gear body's output face)."""
     s, e, h, m = cfg.stack_up, cfg.gear.eccentricity, cfg.housing, cfg.motor
+    bolts_z = h.bolt_counterbore_depth - h.bolt_head_height                         # 0.5: the heads' tops
+    if cfg.shell is None:
+        bearings = (s.z_output_bearings, s.z_output_bearings + cfg.bearings.out_width)              # 37, 47
+        nuts_z = s.total_housing_depth - h.bolt_nut_depth                                          # 56
+    else:
+        bearings = (s.z_output_bearings + cfg.bearings.out_width, -cfg.bearings.out_width)          # 47, -10
+        nuts_z = bolts_z + h.bolt_head_height + h.bolt_length - h.bolt_nut_thickness               # 71.3
     return {
         "x_disc1": +e, "x_disc2": -e,
         "z_motor_plate": 0.0,
+        "z_shell_ring": 0.0,
         "z_motor": 0.0,
         "z_mks_board": -m.body_length,                                               # -48: the MKS SERVO42D kit on the motor's rear face
         "z_eccentric_shaft": 0.0,
         "z_ring_gear_body": s.z_motor_plate_inner,                                   # 9
         "z_disc1": s.z_disc1,                                                        # 13
         "z_disc2": s.z_disc2,                                                        # 25
-        "z_6814_1": s.z_output_bearings,                                             # 37
-        "z_6814_2": s.z_output_bearings + cfg.bearings.out_width,                    # 47
+        "z_6814_1": bearings[0],
+        "z_6814_2": bearings[1],
         "z_hub": s.z_output_bearings,                                                # 37
         "z_625": s.z_output_bearings,                                                # 37
         "z_ring_pins": s.z_motor_plate_inner - ring_pin_engagement(cfg),             # 5.5
         "z_output_pins": s.z_bearing_top - cfg.output_hub.output_hub_pin_ceiling - cfg.disc.output_pin_length,   # 11
         "z_support_pin": s.z_disc2 + cfg.disc.thickness - cfg.shaft.support_pin_hole_depth,    # 24
         "z_motor_bolts": s.z_motor_plate_inner - m.motor_bolt_total_length - m.motor_bolt_recess,   # -5
-        "z_housing_bolts": h.bolt_counterbore_depth - h.bolt_head_height,            # 0.5
-        "z_housing_nuts": s.total_housing_depth - h.bolt_nut_depth,                  # 56
-        "hub_top": s.z_output_bearings + hub_height(cfg),                            # 65
+        "z_housing_bolts": bolts_z,
+        "z_housing_nuts": nuts_z,
+        "hub_top": s.z_output_bearings + hub_height(cfg),                            # 65 (the port), 79.27 (the turning shell)
     }

@@ -151,7 +151,9 @@ NATIVE_PARTS: set[str] = set(NATIVE) | set(NATIVE_COTS)
 # an export's). Neither in NATIVE nor in COTS: no reference file, no manifest entry, so the import tools and the
 # reference checks never see them. clean name -> builder label.
 NO_REFERENCE: dict[str, str] = {
+    "cycloidal_shell_ring": "parts/cycloidal/cycloidal_shell_ring.py:build(DEFAULT_CONFIG)",
     "gt2_pulley_120t": "lib/pulley/body.py:build_pulley(YAW)",
+    "j1_coupler_cap": "lib/yaw_coupler/body.py:build_cap(DEFAULT)",
     "yaw_pulley_screws": "parts/base/yaw_pulley_screws.py:_envelope()",
     "yaw_pulley_nuts": "parts/base/yaw_pulley_nuts.py:_envelope()",
 }

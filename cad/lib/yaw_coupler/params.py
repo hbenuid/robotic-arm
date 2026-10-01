@@ -1,5 +1,6 @@
 """YawCouplerConfig - every dimension of the base_yaw coupler, j1_coupler (the yoke that turns on the base about the
-base_yaw axis and cradles the cycloidal drive's housing - the shoulder_pitch stator), in its part frame.
+base_yaw axis and holds the cycloidal drive - the shoulder_pitch stator: LEGACY cradles its housing, DEFAULT is a fork
+round its turning shell), in its part frame.
 
 Frame (= the SolidWorks part frame of j1_coupler, which placements.json places): origin on the base_yaw axis at the
 height of the base's seat-ring top (lib/base/params.py CapParams.ring_top_y), +Y up the axis; the drive's axis (the
@@ -8,10 +9,10 @@ through the -X cheek.
 
 The body, bottom up: the hub on the axis (a stub down into the upper base bearing, a bore, 4 small holes) under a
 drafted disc (flats at x = +/-40, an ear of the Ø96 disc beyond each flat) with a recess in its underside; a ring on
-the disc, then the yoke flaring out of it - a -X cheek (outboard of the housing's output face) and a middle body that
-holds the housing's pillars (LEGACY: the 8-pillar housing's bottom and +/-45 degree ones, in a channel and two
-V-grooves; DEFAULT: the 6-pillar housing's two at +/-30 degrees, in closed sockets), all under the housing's cradle,
-the nut pockets of the bolts through those pillars in the cheek's outer face, a pocket open to the cradle over the hub.
+the disc, then LEGACY's yoke flaring out of it - a -X cheek (outboard of the housing's output face) and a middle body
+that holds the 8-pillar housing's bottom and +/-45 degree pillars in a channel and two V-grooves, all under the
+housing's cradle, the nut pockets of the bolts through those pillars in the cheek's outer face, a pocket open to the
+cradle over the hub - or DEFAULT's fork (ForkParams), the pocket over the hub kept.
 The yoke's shapes follow the drive's housing (lib/cycloidal/params.py HousingParams: the cradle r against the bore,
 the grooves and sockets on the pillars' sides, their points on the housing's od, the nut pockets on its bolt circle -
 tests/yaw_coupler/ checks they agree).
@@ -23,9 +24,10 @@ the stack, and the rim is lifted clear of the base's top face (the SolidWorks ri
 the base's face); its hub takes the base_yaw 120T as j3_coupler's the wrist's 90T: the stub the bearings' bore, on
 through the lip to its lower face, where the 120T's hub end meets it (gt2_pulley_120t#1, lib/mounts.py), drilled for the
 pulley's 4 bolts (M4 clearance, on its bolt circle at the diagonals, the nuts in hex pockets in the pocket's floor -
-parts/base/yaw_pulley_screws / _nuts) round the pulley's bore; and its yoke
-holds the drive's 6-pillar housing (lib/cycloidal/params.py DEFAULT_CONFIG): a socket round each pillar at +/-30
-degrees from the bottom, their bolts' nut pockets in the cheek - no channel, no notch, no V-grooves.
+parts/base/yaw_pulley_screws / _nuts) round the pulley's bore; and its yoke is a fork round the drive whose shell
+turns (lib/cycloidal/params.py DEFAULT_CONFIG, ShellParams): an end plate the held hub bolts to, a clamp round the
+motor plate's sleeve (its cap parts/base/j1_coupler_cap), the ring lowered under the shell, the disc cut back where
+j1_link swings - no cheek, no middle body, no cradle.
 
 Every number below was measured on the reference 2026-09-27 (face census; tests/yaw_coupler/test_j1_coupler.py
 re-checks the builds against it): [REFERENCE] unless tagged. Three simplifications, all inside the reference-match
@@ -42,7 +44,6 @@ from lib.base.params import DEFAULT as _BASE
 from lib.bearings import BEARING_6806_BORE, THRUST_OD, THRUST_STACK
 from lib.belts import GT2_PULLEY_90T_BOLT_R
 from lib.coupler.params import DEFAULT as _J3_COUPLER
-from lib.cycloidal.params import DEFAULT_CONFIG as _DRIVE
 from lib.fasteners import M4_CLEAR, M4_NUT
 
 
@@ -134,10 +135,46 @@ class YokeParams:
 
 
 @dataclass(frozen=True)
+class ForkParams:
+    """DEFAULT's yoke: a fork round the cycloidal drive whose shell turns (lib/cycloidal/params.py ShellParams), holding
+    its two held ends on the drive's own axis. The -X END PLATE: plate_t out from the output hub's face
+    (CYCLOIDAL_HUB_FACE_Z, past j1_link), a disc of plate_r round the axis - the hub's 4x M4 (its arm-mount pattern)
+    from counterbores in the outer face into the hub's captive nuts - on a leg down to the disc's underside, and a low
+    bridge from the leg to the disc at the ears' height, under j1_link's swing (the disc cut back above it from swing_x
+    on -X). The +X CLAMP round the motor plate's sleeve, clamp_z along the drive: a square of clamp_half round the axis,
+    bored clamp_bore_dia and split at the axis - the lower half (the saddle) this part, on a post from the disc's
+    underside (a window through it along Z, post_wall round it) and a foot out of its +X flat, the upper half the cap (parts/base/j1_coupler_cap) - on 4x M4 x
+    cap_screw_len, cap_bolt_inset in from the clamp's corners, from counterbores cap_seat above the split into nuts in
+    slots from the saddle's sides, their tops cap_nut_y below it. Positions along the drive are the drive's z: this
+    frame's x = face_x - z."""
+
+    axis_y: float = 90.103183        # [REFERENCE] the drive's axis in this frame (placements.json cycloidal_drive#1), 0.21 off
+    axis_z: float = 0.18573          # [REFERENCE] YokeParams' cradle axis (the 6-pillar housing sat in it; docs/open_issues.md)
+    face_x: float = 31.5             # [REFERENCE] the drive's z = 0 (the motor plate's outer face); its +Z is this frame's -X
+    plate_t: float = 8.0             # [DESIGN] the end plate, from the hub's face outward
+    plate_r: float = 45.0            # [DESIGN] round the axis (the hub's bolts on Ø50)
+    leg_half_z: float = 25.0         # [DESIGN] the end plate's leg down to the disc's underside, and the bridge along it
+    bridge_y1: float = 8.0           # [DESIGN] the low bridge's top: the ears' height (DiscParams.ear_y1), under j1_link's swing
+    swing_x: float = -32.5           # [DESIGN] the disc cut back above bridge_y1 from here to -X: j1_link's face (x -33.5) + 1
+    clamp_z: tuple = (-44.0, -14.0)  # [DESIGN] along the drive: 2 behind the shell ring's skirt (z -12) .. 4 short of the motor's rear
+    clamp_half: float = 48.0         # [DESIGN] the clamp's square round the axis
+    clamp_bore_dia: float = 70.4     # [DESIGN] the sleeve's 70 + 0.2 a side
+    post_wall: float = 6.0           # [DESIGN] the post under the saddle: a window through it along Z, this much wall round it
+    foot_y1: float = 20.0            # [DESIGN] the post's foot out of the disc's +X flat, up to the disc's top ...
+    foot_half_z: float = 40.0        # [DESIGN] ... this wide
+    cap_bolt_inset: float = 6.0      # [DESIGN] the cap's 4 bolts: this far in from the clamp's ends (x) and sides (z)
+    cap_seat: float = 10.0           # [DESIGN] the cap under the bolts' heads, above the split
+    cap_screw_len: float = 25.0      # [DESIGN] M4 x 25 (ISO 4762) ...
+    cap_nut_y: float = 11.0          # [DESIGN] ... into M4 nuts in slots from the saddle's sides, their tops this far below the split
+    hub_screw_len: float = 45.0      # [DESIGN] M4 x 45 (ISO 4762) from the end plate's counterbores: flush with the hub's captive nuts
+
+
+@dataclass(frozen=True)
 class YawCouplerConfig:
     hub: HubParams = HubParams()
     disc: DiscParams = DiscParams()
     yoke: YokeParams = YokeParams()
+    fork: ForkParams | None = None   # DEFAULT: the fork round the turning-shell drive (the yoke's cheek, cradle and sockets go)
 
 
 LEGACY = YawCouplerConfig()     # the SolidWorks part, exactly
@@ -148,8 +185,8 @@ LEGACY = YawCouplerConfig()     # the SolidWorks part, exactly
 # at the base's ring_top_y), so the seat is 1.1 higher than the SolidWorks ceiling, the stub 1.1 longer up into it.
 THRUST_CLEAR = 0.2                # [DESIGN] the recess round the washers and the cage (radial)
 RIM_CLEAR = 0.5                   # [DESIGN] the rim over the base's top face
+RING_DROP = 2.0                   # [DESIGN] the ring's top lowered under the drive's turning shell: its pillars 2.68 over it
 _CAP = _BASE.cap                  # the base's frame: this part's origin at its ring_top_y
-PILLAR_DEG = (-30.0, 30.0)        # [DESIGN] the drive's pillars the yoke holds, from straight down (DEFAULT below)
 DEFAULT = replace(LEGACY,
                   hub=replace(LEGACY.hub, recess_dia=THRUST_OD + 2.0 * THRUST_CLEAR,
                               recess_y1=round(_CAP.groove_y0 - _CAP.ring_top_y + THRUST_STACK, 6),
@@ -161,14 +198,10 @@ DEFAULT = replace(LEGACY,
                               stub_dia=BEARING_6806_BORE, stub_y0=round(_BASE.bore.lip_y[0] - _CAP.ring_top_y, 6),
                               bore_dia=_J3_COUPLER.bore_dia, hole_dia=M4_CLEAR, hole_r=GT2_PULLEY_90T_BOLT_R,
                               nut_af=_J3_COUPLER.nut_af, nut_depth=M4_NUT.h),
-                  disc=replace(LEGACY.disc, y0=round(_CAP.top_y - _CAP.ring_top_y + RIM_CLEAR, 6)),
-                  # the drive's 6-pillar housing (lib/cycloidal/params.py DEFAULT_CONFIG): its bolts at 0, 60 .. 300
-                  # degrees from the drive's +X, which placements.json turns onto this frame's +Z - two straddle the
-                  # cradle's bottom (the drive's 240 and 300), two stand at the axis's height past the outer faces, and
-                  # none at the bottom or at +/-45 degrees: a socket round each of the two, their bolts' nut pockets in
-                  # the cheek; the channel, the notch and the V-grooves go (the middle body up to the cheek's top). The
-                  # cradle, the od points and the nut pockets are that housing's (its RING_INSET smaller gear): the
-                  # drive's axis stays put, so the cradle's floor rises to meet the smaller housing
-                  yoke=replace(LEGACY.yoke, groove_z=None, channel=False, socket_deg=PILLAR_DEG, bolt_deg=PILLAR_DEG,
-                               cradle_r=_DRIVE.housing.bore_dia / 2.0, od_r=_DRIVE.housing.od / 2.0,
-                               bolt_circle_r=_DRIVE.housing.bolt_circle_dia / 2.0))
+                  # the ring RING_DROP lower: the drive's shell turns over it, its pillars sweeping 0.68 above the ring's top
+                  disc=replace(LEGACY.disc, y0=round(_CAP.top_y - _CAP.ring_top_y + RIM_CLEAR, 6),
+                               ring_y1=round(LEGACY.disc.ring_y1 - RING_DROP, 6)),
+                  # the drive's shell turns (lib/cycloidal/params.py DEFAULT_CONFIG, ShellParams): the yoke holds its ends as
+                  # a fork (ForkParams) - the cheek, the middle body, the cradle and the sockets round the 6-pillar
+                  # housing's pillars go; YokeParams keeps the pocket over the hub
+                  fork=ForkParams())

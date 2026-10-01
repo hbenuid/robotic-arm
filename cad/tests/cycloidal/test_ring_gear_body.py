@@ -9,14 +9,14 @@ import pytest
 
 import parts
 from lib import reference as R
-from lib.cycloidal import compute_housing_bolt_angles, ring_pin_engagement, ring_pin_hole_dia
+from lib.cycloidal import LEGACY_CONFIG, compute_housing_bolt_angles, ring_pin_engagement, ring_pin_hole_dia
 from lib.cycloidal.layout import PILLAR_OVERSHOOT
 from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii
 from tests.cycloidal.helpers import CFG
 from tests.helpers import probe_volume, section_area
 
 cycloidal_ring_gear_body = parts.load("cycloidal_ring_gear_body")
-BODY_H = CFG.stack_up.ring_gear_body_height      # 51
+BODY_H = CFG.stack_up.ring_gear_body_height      # 56 (the turning shell's end wall; the port's 51)
 
 
 class TestRingGearBodyDimensions:
@@ -213,10 +213,14 @@ class TestSolid:
         assert probe_volume(body_solid, (r_probe, 0.0), (seat_top + BODY_H) / 2.0) > 0.1, "retention lip missing"
         assert probe_volume(body_solid, (r_probe, 0.0), seat_top - 3.0) < 0.01, "seat bore blocked"
 
-    def test_output_nut_pockets_present(self, body_solid):
-        """3 mm off each bolt axis, 1 mm below the output face, inside the hex (inradius 3.6): void."""
-        h = CFG.housing
-        bolt_r = h.bolt_circle_dia / 2.0
-        for a in compute_housing_bolt_angles(CFG):
-            xy = ((bolt_r + 3.0) * math.cos(a), (bolt_r + 3.0) * math.sin(a))
-            assert probe_volume(body_solid, xy, BODY_H - 1.0, size=0.6, height=0.6) < 0.01, f"No nut pocket at bolt angle {math.degrees(a):.0f} deg"
+    def test_output_nut_pockets_only_in_the_port(self, body_solid):
+        """3 mm off each bolt axis, 1 mm below the output face, inside the hex (inradius 3.6): void in the port's body
+        (LEGACY_CONFIG, its nuts there); solid in the turning shell's - j1_link bolts to the face and holds the nuts."""
+        legacy = cycloidal_ring_gear_body.REFERENCE_BUILD()
+        legacy_h = LEGACY_CONFIG.stack_up.ring_gear_body_height
+        for cfg, solid, top, empty in ((LEGACY_CONFIG, legacy, legacy_h, True), (CFG, body_solid, BODY_H, False)):
+            bolt_r = cfg.housing.bolt_circle_dia / 2.0
+            for a in compute_housing_bolt_angles(cfg):
+                xy = ((bolt_r + 3.0) * math.cos(a), (bolt_r + 3.0) * math.sin(a))
+                vol = probe_volume(solid, xy, top - 1.0, size=0.6, height=0.6)
+                assert (vol < 0.01) == empty, f"nut pocket {'missing' if empty else 'found'} at bolt angle {math.degrees(a):.0f} deg"

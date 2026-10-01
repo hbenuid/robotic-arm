@@ -346,21 +346,14 @@ def _placed_part(label: str):
     return built.leaf(M.forearm_roll_drive, label).moved(to_location(module_frame_in_host(DEFAULT)))
 
 
-def _radii_about_the_elbow_axis(shape) -> tuple[float, float]:
-    """(nearest, farthest) distance of the shape's bounding box from host z (the elbow axis): bounds on the shape's."""
-    bb = shape.bounding_box()
-    near = [0.0 if lo <= 0.0 <= hi else min(abs(lo), abs(hi)) for lo, hi in ((bb.min.X, bb.max.X), (bb.min.Y, bb.max.Y))]
-    return math.hypot(*near), max(math.hypot(x, y) for x in (bb.min.X, bb.max.X) for y in (bb.min.Y, bb.max.Y))
-
-
 @pytest.mark.slow
 def test_module_clears_its_neighbours_in_the_arm():
     """In j2_link's frame, at the capture pose: the module against the forearm and the upper arm - the stub through its
     lip -; the block's stub end on the elbow pulley's face (contact, no overlap), the shaft's spigot in j2_link's recess.
     (The mounted motors, boards, bearings and pulleys against the whole module: tests/test_mounts.py
-    test_motors_and_boards_clear_their_neighbours.) The upper arm's own motor and board, at the shoulder, stay farther
-    from the elbow axis than any of the module - a turn about the axis keeps every point's distance to it - so no elbow
-    angle brings them to it."""
+    test_motors_and_boards_clear_their_neighbours.) The upper arm's own motor and board, under j1_link's pad
+    ELBOW_MOTOR_CENTRES from the elbow axis, turned about it (this frame's Z through the origin) over the elbow's range
+    stay 10 mm off the whole module (18 measured at the nearest, its shaft)."""
     module = _placed_module()
     for key, other in (("j2_link", built.part("j2_link")), ("j1_link#1", in_host("j1_link#1"))):
         vol = interference(module, other)
@@ -370,10 +363,11 @@ def test_module_clears_its_neighbours_in_the_arm():
     assert math.isclose(in_host("gt2_pulley_90t#3").bounding_box().max.Z, ELBOW_PULLEY_FACE_Z, abs_tol=0.05)
     shaft = _placed_part("forearm_roll_shaft")
     assert math.isclose(shaft.bounding_box().min.X, -S["z_spigot_end"], abs_tol=1e-6)
-    reach = _radii_about_the_elbow_axis(module)[1]
+    axis, lim = Axis((0, 0, 0), (0, 0, 1)), int(PARAMS.ELBOW_PITCH_LIMIT_DEG)
     for key in ("nema17_40mm#2", "mks_servo42d#2"):
-        near = _radii_about_the_elbow_axis(in_host(key))[0]
-        assert near > reach, f"{key} {near:.1f} from the elbow axis, the module reaches {reach:.1f}"
+        for deg in range(-lim, lim + 1, 10):
+            gap = in_host(key).rotate(axis, deg).distance_to(module)
+            assert gap > 10.0, f"{key} at {deg} degrees: {gap:.1f} mm from the module"
 
 
 @pytest.mark.slow

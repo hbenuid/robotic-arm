@@ -1,6 +1,6 @@
 # robotic-arm — CAD (build123d)
 
-Parametric CAD-as-code for the desktop arm (base yaw, 20:1 cycloidal shoulder pitch, belt-driven
+Parametric CAD-as-code for the desktop arm (base yaw, 21:1 cycloidal shoulder pitch, belt-driven
 elbow pitch, forearm roll and wrist pitch, wrist roll, MG996R parallel gripper), converted part-by-part from the original
 SolidWorks design. This folder is a **separate uv project** (Python 3.12) — the motor-control
 software (`software/control/`) never depends on it.
@@ -9,10 +9,11 @@ software (`software/control/`) never depends on it.
 geometry (`reference/solidworks/<name>.step`) until it is converted, purchased parts use their vendor STEPs, and
 `assemblies/arm.py` places all of them from placements extracted from the SolidWorks
 assembly — so the whole arm already assembles, renders and is tested. Converting a part means
-replacing its wrapper body with real build123d code (see [`parts/AGENTS.md`](parts/AGENTS.md) "Converting a part"). The **20:1
+replacing its wrapper body with real build123d code (see [`parts/AGENTS.md`](parts/AGENTS.md) "Converting a part"). The **21:1
 cycloidal shoulder drive is fully parametric build123d** (`lib/cycloidal/`,
 `assemblies/cycloidal_drive.py`), ported from the `cycloidal_drive` repo and verified against its
-CadQuery exports — see [`docs/cycloidal_drive.md`](docs/cycloidal_drive.md).
+CadQuery exports, its shell turning since (the yoke holds its hub and motor) — see
+[`docs/cycloidal_drive.md`](docs/cycloidal_drive.md).
 
 ## Setup (once per machine)
 
