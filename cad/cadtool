@@ -3,7 +3,7 @@
 # RUN; every other verb is the `cadgen` console script) plus the usual dev commands, all inside THIS
 # uv project (Python 3.12 + build123d + cadgen), always from cad/ with PYTHONPATH=cad/ so `lib`,
 # `parts`, `assemblies` and `robot` import the same way for you, for cadgen's closure scan and for
-# its daemon workers. Only `parts`, `skill` and `doctor` need the cad@text-to-cad plugin itself
+# its daemon workers. Only `parts`, `skill` and `doctor` need the text-to-cad@earthtojake plugin itself
 # (CAD_PLUGIN=<dir> overrides its auto-detection).
 set -euo pipefail
 
@@ -47,11 +47,14 @@ USAGE
 CAD_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$CAD_DIR"   # cadgen resolves targets from cwd; the viewer serves cwd
 export PYTHONPATH="$CAD_DIR${PYTHONPATH:+:$PYTHONPATH}"
+# No __pycache__/ written into the tree: cadgen hashes the parts/ group folders parts._scan() lists by
+# their entry names, so a __pycache__/ appearing there (pytest importing a part) reads every model stale.
+export PYTHONDONTWRITEBYTECODE=1
 
 cadgen_version() { uv run --frozen cadgen --version 2>/dev/null | awk '{print $NF}'; }
 
 plugin_dir() {  # the plugin cache entry whose version matches the venv's cadgen, else the newest (warned)
-  local cache="$HOME/.claude/plugins/cache/text-to-cad/cad" ver newest
+  local cache="$HOME/.claude/plugins/cache/earthtojake/text-to-cad" ver newest
   ver="$(cadgen_version || true)"
   if [[ -n "$ver" && -d "$cache/$ver" ]]; then echo "$cache/$ver"; return; fi
   newest="$(ls -d "$cache"/*/ 2>/dev/null | sort -V | tail -1 || true)"; newest="${newest%/}"
@@ -63,9 +66,10 @@ CAD_PLUGIN="${CAD_PLUGIN:-}"
 need_plugin() {
   [[ -n "$CAD_PLUGIN" ]] || CAD_PLUGIN="$(plugin_dir)"
   if [[ -z "$CAD_PLUGIN" || ! -d "$CAD_PLUGIN/skills" ]]; then
-    echo "cadtool: cad@text-to-cad plugin not found under ~/.claude/plugins/cache/text-to-cad" >&2
+    echo "cadtool: text-to-cad@earthtojake plugin not found under ~/.claude/plugins/cache/earthtojake" >&2
     echo "  install:  claude plugin marketplace add https://github.com/earthtojake/text-to-cad.git" >&2
-    echo "            claude plugin install cad@text-to-cad      (needs git-lfs on PATH)" >&2
+    echo "            claude plugin install text-to-cad@earthtojake      (needs git-lfs on PATH)" >&2
+    echo "  (a machine with the old cad@text-to-cad switches once: docs/toolchain.md Gotchas)" >&2
     exit 1
   fi
 }
