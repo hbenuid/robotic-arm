@@ -181,12 +181,15 @@ the ring gear body modelled but not placed (`UNPLACED`).
 circle (pillars `pillar_inner_w` 18 at the bore, `pillar_outer_w` 10 at the OD, one per bolt -
 `lib/cycloidal/layout.py pillar_corners`) from end to end; the shell ring seats on the body's pillar faces, no
 continuous rim. One shared cutter (`lib/cycloidal/housing.py reveal_window_cutter`) is subtracted from every housing
-base solid.
+base solid. The turning shell's body keeps `ShellParams.arm_windows` (2) of its windows solid - the two either side of
+its first pillar, where the upper arm rises off it (`arm_root`, §12); the other four, and all six of the shell ring's,
+open on the discs and the ring pins.
 
 **Bolt count** (`bolt_count`) — a departure from the port (the others: the gear size and the pillar tips, §5.4): `DEFAULT_CONFIG` builds 6 bolts where the port
-(`LEGACY_CONFIG`) had 8, at 60° from +X with the same start (0°) (the yoke that cradled the housing held the two
-pillars straddling its bottom; the fork holds the drive's ends now, §12); three bolts sit in line with ring pins,
-8.5 mm out, as the port's first did. The port's two housing parts and the housing bolts / nuts declare
+(`LEGACY_CONFIG`) had 8, at 60°, the first at `bolt_start_deg` = `ARM_DEG` (47.584167°, the port's 0°): on the
+centreline of the upper arm, which rises off the turning shell between the two windows either side of it (§12;
+`tests/upper_arm/test_j1_link.py` checks the angle against `j1_link`'s frame). The bolt circle sits 8.5 mm outside the
+ring pins', so any start clears them. The port's two housing parts and the housing bolts / nuts declare
 `REFERENCE_BUILD` (their `LEGACY_CONFIG` build), which `tests/cycloidal/test_port.py` (the parts) and
 `test_cots_envelope_tracks_reference_bbox` (the bolts / nuts) compare with the CadQuery exports.
 
@@ -251,9 +254,9 @@ bolts the arm to the shell's end.
 - **The shell ring** (`parts/cycloidal/cycloidal_shell_ring.py`) and **the body** (`build_shell_body`, j1_link's): §5.2.
 - **Held both ways along the axis:** at each end the shell's lip stops that 6814's outer race, the held plate's face
   its inner race (`test_the_shell_is_held_both_ways_along_the_axis`).
-- **The fork's clearances:** the shell's pillars sweep r 64.6, `RING_DROP` above the yoke's lowered ring (2.68), the
-  arm's collar (r 66) 1.3 above it; the shoulder's whole range keeps the upper arm - `j1_link`, the elbow motor, the
-  shell - its 1 mm running gap off the fork's two legs (`tests/test_sweeps.py`).
+- **The fork's clearances:** the shell's pillars sweep r 64.6, `RING_DROP` above the yoke's lowered ring (2.68); the
+  shoulder's whole range keeps the upper arm - `j1_link`, the elbow motor, the shell - its 1 mm running gap off the
+  fork's two legs (`tests/test_sweeps.py`).
 - **Assembly, from the motor end:** the hub's nuts into its flange; the hub-end 6814 into the body's seat from inside
   (`j1_link` face down), the hub pressed into it grip first to its flange; the gear stack (output pins in the hub,
   discs, shaft, the ring pins into the body's pin ring) as before; the motor plate with its 6814 on its seat, the
@@ -409,10 +412,12 @@ cd cad
   lower half and the cap `j1_coupler_cap` - grips the motor plate's sleeve; the shell turns between them, over the
   yoke's lowered ring. The SolidWorks yoke cradled the port's housing on its pillars at 225° / 270° / 315°, the
   6-pillar housing's yoke at 240° / 300° in sockets - `LEGACY` / git history. **The upper arm rises off the shell:**
-  `j1_link` (parametric, `lib/upper_arm/`, `ArmParams`) is printed with the shell's body, its arm leaving the shell
-  over the gear (the drive's z 9..39) - the plate's outline 30 wide, a collar round the shell -, its elbow end and the
-  elbow motor's pad slid along N onto the arm's outer face (`arm_slide`), and everything past the elbow with them
-  (`lib/placements.py SHIFTS`): the end effector is no longer over the base_yaw axis. The drive's frame in `j1_link`'s
+  `j1_link` (parametric, `lib/upper_arm/`, `ArmParams`) is printed with the shell's body, its arm - a plain bar, the
+  plate's width, 30 thick over the gear (the drive's z 9..39) - rising out of the body's two solid windows, the four
+  others open on the discs; its elbow end slid along N onto the arm's outer face (`arm_slide`), and everything past
+  the elbow with it (`lib/placements.py SHIFTS`): the end effector is no longer over the base_yaw axis. The elbow
+  motor stands on the arm's motor side (+N, with the forearm), down a hole through the bar onto a plate under its
+  outer face, its shaft back through the plate to the elbow belt. The drive's frame in `j1_link`'s
   is the capture's (`tests/upper_arm/`), the shell's body and the hub on the legs `TestPoseInTheArm`.
 - **Kinematics:** the drive **is the `shoulder_pitch` joint** of `robot/frames.py` (axis `N` = the
   drive's −Z; origin `SHOULDER_ORIGIN` = `j1_link#1`'s origin, on the drive axis; limits

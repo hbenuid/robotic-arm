@@ -121,6 +121,7 @@ class HousingParams:
     edge_chamfer: float = 1.5          # 45 deg chamfer on the outer silhouette of both housing parts; 0 disables
     bolt_count: int = 8
     bolt_circle_dia: float = 125.0     # outside the bore
+    bolt_start_deg: float = 0.0        # [DESIGN] the first bolt (and its pillar) from +X, the rest evenly on round
     bolt_dia: float = 4.0              # M4
     bolt_length: float = 55.0          # M4 x 55 SHCS
     bolt_head_dia: float = 7.0
@@ -285,6 +286,9 @@ class ShellParams:
     yoke_leg: float = 8.0              # [DESIGN] the j1_coupler yoke's two legs (lib/yaw_coupler/params.py ForkParams) ...
     end_plate_gap: float = 1.0         # [DESIGN] ... each this far off an end of the shell; the hub's face and the sleeve's
     #                                    end on their outer faces
+    arm_windows: int = 2               # [DESIGN] the body's windows left solid under the upper arm: this many, centred on the
+    #                                    first pillar (HousingParams.bolt_start_deg, on the arm's centreline) - the arm's root;
+    #                                    the others open on the discs
 
 
 @dataclass(frozen=True)
@@ -313,24 +317,23 @@ class DriveConfig:
 
 
 def compute_housing_bolt_angles(cfg: DriveConfig) -> list[float]:
-    """Evenly spaced housing-bolt angles (radians, from +X). The bolt circle sits 8.5 mm outside the
-    ring-pin circle (radially, in both configs), so no angular offset is needed (a bolt may line up with a
-    ring pin: DEFAULT_CONFIG's do every 120 degrees)."""
-    n = cfg.housing.bolt_count
-    return [2 * math.pi * i / n for i in range(n)]
+    """Evenly spaced housing-bolt angles (radians, from +X), the first at bolt_start_deg. The bolt circle sits 8.5 mm
+    outside the ring-pin circle (radially, in both configs), so any start clears the ring pins."""
+    h = cfg.housing
+    return [math.radians(h.bolt_start_deg) + 2 * math.pi * i / h.bolt_count for i in range(h.bolt_count)]
 
 
 # The port: the CadQuery drive exactly (the designed parts' REFERENCE_BUILD - tests/cycloidal/test_port.py).
 LEGACY_CONFIG = DriveConfig()
 
 # What the parts build - three departures from the port:
-#  * the housing on 6 bolts, not 8 - 6 pillars at 60 degrees from +X (same start), so the j1_coupler yoke holds the
-#    two that straddle its bottom (lib/yaw_coupler/params.py DEFAULT);
+#  * the housing on 6 bolts, not 8 - 6 pillars at 60 degrees, the first at ARM_DEG: on the centreline of the upper arm,
+#    which rises off the turning shell between the two windows either side of it (ShellParams.arm_windows);
 #  * a smaller gear: the ring-pin circle and everything outside it (the bore, the bolt circle, the od) RING_INSET
 #    further in, so each wall outside the pins keeps the port's thickness (the housing's outline between its pillars
 #    is the bore: 1.9 outside the pin holes) and the drive is 2 * RING_INSET smaller across. The discs follow the
 #    pins (their epitrochoid is the pin circle's); the 6814s, the hub, the shaft and the stack-up do not change. The
-#    limit is the wall between the pins' far ends and the 6814 seat, 6.8 -> 2.8 (tests/cycloidal/test_ring_gear_body.py);
+#    limit is the wall between the pins' far ends and the 6814 seat, 6.8 -> 2.8 (tests/cycloidal/test_shell_body.py);
 #  * trimmed pillar tips: each housing nut (and its pocket) turned a flat outward (bolt_nut_turn_deg), with LUG_WALL of
 #    plastic past the pocket - the od is the bolt circle + the pocket's AF + 2 * LUG_WALL (the port kept 3.3 past a
 #    corner); the edge chamfer 1.0, so the external faces keep 1.5 past the nut pockets and 1.4 past the counterbores.
@@ -342,8 +345,11 @@ LEGACY_CONFIG = DriveConfig()
 #    both ends; the ring pins span both pin rings; the housing bolts run end to end; the hub reaches the yoke's leg.
 RING_INSET = 4.0   # [DESIGN] mm, radial
 LUG_WALL = 2.5     # [DESIGN] mm, radial, past the housing nuts' pockets at the pillar tips
+ARM_DEG = 47.584167   # [DESIGN] the upper arm's centreline in the drive's frame, atan2(y, x): lib/upper_arm/params.py
+#                       ArmParams.drive_x_deg turned round (a literal - lib/cycloidal never imports lib/upper_arm;
+#                       tests/upper_arm/test_j1_link.py checks the two agree)
 _SHELL = ShellParams()
-_HOUSING = replace(LEGACY_CONFIG.housing, bolt_count=6,
+_HOUSING = replace(LEGACY_CONFIG.housing, bolt_count=6, bolt_start_deg=ARM_DEG,
                    bore_dia=LEGACY_CONFIG.housing.bore_dia - 2 * RING_INSET,                   # 108
                    bolt_circle_dia=LEGACY_CONFIG.housing.bolt_circle_dia - 2 * RING_INSET,     # 117
                    bolt_nut_turn_deg=30.0, edge_chamfer=1.0,

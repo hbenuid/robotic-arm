@@ -26,7 +26,6 @@ from lib.cycloidal.params import DEFAULT_CONFIG as DRIVE
 from lib.cycloidal.params import LEGACY_CONFIG as PORT
 from lib.fasteners import M3_NUT, M4_CLEAR, M4_NUT, M4_SHCS
 from lib.geom import hex_circumdiameter
-from lib.upper_arm import DEFAULT as ARM
 from lib.yaw_coupler import DEFAULT, LEGACY, hole_points, nut_centres, od_point
 from lib.yaw_coupler.layout import below_axis, fork_cap_bolts, fork_hub_bolts, fork_hub_leg_x, fork_motor_leg_x, fork_x
 from tests import built
@@ -81,7 +80,7 @@ def test_default_fork_holds_the_drives_ends():
     leg's inner face, the sleeve's end (sleeve_end) on the motor leg's outer face -, mirror images about the middle of the
     discs; the hub's 4 bolts on the drive's arm-mount pattern, their ends flush with the hub's captive nuts; the motor
     leg round the sleeve (its bore 0.2 a side), the cap's 2 screws in the leg's middle, their nuts' slots clear of the
-    bore; the ring lowered under the turning shell's pillars (RING_DROP: 2.68 of clearance) and the arm's collar."""
+    bore; the ring lowered under the turning shell's pillars (RING_DROP: 2.68 of clearance)."""
     f, sh, S = DEFAULT.fork, DRIVE.shell, stack_positions(DRIVE)
     world = P.location("j1_coupler#1", "world").inverse() * P.location("cycloidal_drive#1", "world")
     assert (world.position.X, world.position.Y, world.position.Z) == pytest.approx((f.face_x, f.axis_y, f.axis_z), abs=1e-5)
@@ -104,7 +103,6 @@ def test_default_fork_holds_the_drives_ends():
         assert abs(z - f.axis_z) + 1.7 < f.plate_r
     sweep = DRIVE.housing.od / 2.0                                  # the pillars' tips, turning
     assert f.axis_y - sweep - DEFAULT.disc.ring_y1 == pytest.approx(2.68, abs=0.005)
-    assert f.axis_y - ARM.arm.root_r - DEFAULT.disc.ring_y1 > 1.0   # the arm's collar, turning
     assert LEGACY.disc.ring_y1 - DEFAULT.disc.ring_y1 == 2.0
 
 

@@ -5,6 +5,7 @@ to end. The body's mirror: tests/cycloidal/test_shell_body.py."""
 import math
 
 import pytest
+from build123d import Axis
 
 import parts
 from lib import reference as R
@@ -36,7 +37,8 @@ def test_numbers(ring):
     assert R.solid_volume(ring) == pytest.approx(75740.748, abs=0.5)
     bb = ring.bounding_box()
     assert (bb.min.Z, bb.max.Z) == pytest.approx((END, T), abs=1e-6)
-    assert (bb.size.X, bb.size.Y) == pytest.approx((CFG.housing.od, 116.023), abs=1e-3)   # as the body's (pillars on X)
+    bb = ring.rotate(Axis.Z, -CFG.housing.bolt_start_deg).bounding_box()                 # its first pillar on X
+    assert (bb.size.X, bb.size.Y) == pytest.approx((CFG.housing.od, 116.023), abs=1e-3)   # as the body's
 
 
 @pytest.mark.slow

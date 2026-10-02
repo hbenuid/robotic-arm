@@ -93,8 +93,9 @@ from lib.upper_arm.layout import arm_slide as _arm_slide  # noqa: E402
 from lib.upper_arm.params import DEFAULT as _UPPER_ARM  # noqa: E402
 from lib.upper_arm.params import ELBOW_BELT as _ELBOW_BELT  # noqa: E402
 
-J1_ARM_SLIDE = _arm_slide(_UPPER_ARM)              # 39.27 [DESIGN] j1_link: its elbow end and pad slid along +Y (N) onto the arm's outer face (ArmParams)
-J1_MOTOR_PAD_FACE_Y = _UPPER_ARM.pad.face_y + J1_ARM_SLIDE   # 6.77 [DESIGN] j1_link: the 48 x 48 pad's outer face (the -N side; the SolidWorks -32.5, slid), the holes about the pad's axis
+J1_ARM_SLIDE = _arm_slide(_UPPER_ARM)              # 39.27 [DESIGN] j1_link: its elbow end slid along +Y (N) onto the arm's outer face (ArmParams)
+J1_MOTOR_PAD_FACE_Y = _UPPER_ARM.arm.y_outer       # 27.5 [DESIGN] j1_link: the elbow motor's face, on its plate under the arm's outer face (the
+#                                                    -N side; ArmParams), the motor on +N down the hole through the arm, its shaft -N; the holes about the pad's axis
 ELBOW_BELT_LENGTH = _ELBOW_BELT                    # 280-2GT [DESIGN] the elbow belt (20T on j1_link's motor, 90T at the elbow); it sets the pad's x
 from lib.forearm.params import DEFAULT as _FOREARM  # noqa: E402
 
@@ -207,8 +208,11 @@ BASE_YAW_LIMIT_DEG = 175.0        # [ESTIMATE] symmetric +/- range; j1_coupler (
 # down in front - stops 3 deg before the upper arm, rising off the drive's middle, reaches j1_coupler's disc (70.5 deg;
 # its 1 mm running gap held to 69.5 - tests/test_sweeps.py), the lower is an [ESTIMATE] (the arm clears to -150)
 SHOULDER_PITCH_LIMITS_DEG = (-120.0, 67.0)   # [DESIGN]
-ELBOW_PITCH_LIMIT_DEG = 90.0      # [DESIGN] kept at 90: the necked forearm (j2_link) stays 2 mm off j1_link at any roll to about +/-102 deg,
-#                                   but SHOULDER_PITCH_LIMITS_DEG was set over this range (docs/open_issues.md)
+# the 4.5:1 elbow belt: (lower, upper); the lower - the forearm lifted back - stops 3 deg before the forearm roll drive's
+# MKS board comes within 1 mm of the elbow motor, which stands on the same side of the upper arm (-24.4 deg -
+# tests/forearm/test_roll_drive.py); the upper kept at 90 although the necked forearm (j2_link) stays 2 mm off j1_link at any roll
+# to about +102 deg: SHOULDER_PITCH_LIMITS_DEG was set over this range (docs/open_issues.md)
+ELBOW_PITCH_LIMITS_DEG = (-21.0, 90.0)   # [DESIGN]
 # the GT2 belt at wrist_link: (lower, upper), the clear range (the wrist body's back corners reach j2_link's web at
 # -109 / +74.5 at any roll, tests/test_sweeps.py) less 4 deg
 WRIST_PITCH_LIMITS_DEG = (-105.0, 70.0)   # [DESIGN]

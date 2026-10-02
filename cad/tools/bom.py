@@ -46,7 +46,7 @@ EXTRAS = [
     (None, "M3 hex nut (ISO 4032) - in the side slots of j1_coupler's motor-side leg, for the cap's screws", 2,
      "slid in from the leg's sides before the drive is lowered in"),
     (None, f"{ELBOW_BELT_LENGTH}-2GT closed belt, 6 mm - the elbow belt (20T on the elbow motor, 90T at the elbow)", 1,
-     "belts are not modelled; the length sets the motor's pad on j1_link (lib/upper_arm/params.py ELBOW_MOTOR_CENTRES)"),
+     "belts are not modelled; the length sets the motor's place on j1_link (lib/upper_arm/params.py ELBOW_MOTOR_CENTRES)"),
     ("cycloidal_drive", "bearing grease", 1, "the output pins are a greased sliding fit through the discs"),
     ("forearm_roll_drive", f"{FOREARM_ROLL_BELT_LENGTH}-2GT closed belt, 6 mm - the roll belt (90T ring on the shaft, 20T on the motor)", 1,
      "belts are not modelled; the length sets the motor's centre distance (lib/forearm/params.py roll_belt, [ESTIMATE])"),

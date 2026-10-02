@@ -26,7 +26,7 @@ well-formed), `test_params_invariants.py` (locks), `test_robot.py` (link partiti
 zero = capture, the committed meshes vs a fresh export, inertials, URDF/SRDF/SDF consistency + cadgen's validators via
 `./cadtool validate`), `test_tooling.py` (the installed cadgen and OCP kernel are the pinned ones, one complete OCP distribution,
 `./cadtool inspect` agrees with the kernel),
-`test_mounts.py` (the mounted motors: axis on the joint, face on the pad, board on the rear face, interference budget,
+`test_mounts.py` (the mounted motors: axis on the joint, face on the host's pad / plate, board on the rear face, interference budget,
 the base stack above the base bottom, the 90T planes within the shafts; each belt joint's bearing stack between its
 coupler's stub and its 90T; the 90T pulley bolts: seats, reach, the opened holes, the nuts' designed press; the base_yaw
 thrust stack under `j1_coupler`),
@@ -45,9 +45,10 @@ converted — shared by `test_assembly.py` and `test_robot.py`), `built.py` (abo
 `from tests.cycloidal.helpers import CFG, …` for the drive's config, the
 `stack` fixture is `tests/cycloidal/conftest.py`; the shell ring and the shell's body (`test_shell_body.py`: the stack
 symmetric about the middle of the discs), with no reference, keep their numbers in their own modules),
-`tests/upper_arm/` (`j1_link`: the LEGACY build's feature probes, DEFAULT's numbers, the elbow motor's pad and its
-holes, the arm rising off the drive's turning shell - the drive's frame in the link's, the shell's body inside, the
-elbow end and the pad slid onto the arm's face -, no sockets, the elbow block's relief), `tests/base/` (`base`: the LEGACY build's
+`tests/upper_arm/` (`j1_link`: the LEGACY build's feature probes, DEFAULT's numbers, the elbow motor's plate and its
+holes, the arm - a bar - rising off the drive's turning shell - the drive's frame in the link's, its first pillar on
+the arm's centreline, the shell's body inside, its windows under the arm solid, the others open, the elbow end slid
+onto the arm's face -, no sockets, the elbow block's relief), `tests/base/` (`base`: the LEGACY build's
 feature probes, the interface values lib/params.py and lib/datum.py take from it; `base_motor_mount`: the wiring room, the
 joint to the base's posts, the slotted seat at the stock belt's centre distance, the motor clear across the travel;
 `yaw_pulley_screws` / `yaw_pulley_nuts`, purchased parts with no reference: the numbers no reference file holds for them - pieces, volume,

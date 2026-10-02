@@ -2,9 +2,10 @@
 + body), and the turning shell's body (build_shell_body).
 
 Port of cycloidal_drive@2f1f67d src/helpers/housing_profile.py. Both parts present the same
-silhouette: trapezoidal pillars (one per M4 housing bolt, HousingParams.bolt_count) joined only at
-the inner annulus, with reveal windows between them. ``reveal_window_cutter`` is subtracted from an
-annular housing solid to imprint that profile; ``chamfer_outer_silhouette`` bevels the result's outer edges.
+silhouette: trapezoidal pillars (one per M4 housing bolt, HousingParams.bolt_count, from bolt_start_deg) joined only
+at the inner annulus, with reveal windows between them. ``reveal_window_cutter`` is subtracted from an
+annular housing solid to imprint that profile; ``chamfer_outer_silhouette`` bevels the result's outer edges. The
+turning shell's body keeps the windows under the upper arm solid (``arm_root``).
 
 Pillar (radially flipped trapezoid, lib/cycloidal/layout.py pillar_corners): ``pillar_inner_w`` (18)
 tangential at the bore, ``pillar_outer_w`` (10) at the OD; the radial bounds overshoot the bore (-1)
@@ -88,12 +89,27 @@ def hex_pocket(cfg: DriveConfig, xy, angle_rad: float, depth: float, z0: float =
 
 
 PIN_END_CLEAR = 0.5   # [DESIGN] the ring pins' blind holes this far past the pins' ends
+SECTOR_STEP_DEG = 7.5  # [DESIGN] the arm root's sector polygon: a vertex this often, its radius past the od covering the arcs
+
+
+def arm_root(cfg: DriveConfig, height: float, z_offset: float = 0.0):
+    """The sector over the windows the upper arm rises from (ShellParams.arm_windows, centred on the first pillar at
+    bolt_start_deg), z_offset .. + height: taken out of the window cutter, it leaves them solid. Its edges run through
+    the middle of the pillars that bound them."""
+    h = cfg.housing
+    half = cfg.shell.arm_windows / 2.0 * 360.0 / h.bolt_count
+    n = max(2, math.ceil(2.0 * half / SECTOR_STEP_DEG))
+    r = h.od / 2.0 + 2.0 * CUTTER_OVERSHOOT + 1.0
+    angles = [math.radians(h.bolt_start_deg - half + 2.0 * half * i / n) for i in range(n + 1)]
+    pts = [(0.0, 0.0)] + [(r * math.cos(a), r * math.sin(a)) for a in angles]
+    return bd.Pos(0.0, 0.0, z_offset) * bd.extrude(bd.make_face(bd.Polyline(*pts, close=True)), amount=height)
 
 
 def build_shell_body(cfg: DriveConfig = DEFAULT_CONFIG) -> bd.Solid:
     """The turning shell's body round the discs (ShellParams), at its stack position: z = arm_zone's start (9, on the
     shell ring) .. the shell's hub end (61) - printed as one with j1_link, the upper arm rising off it
-    (lib/upper_arm/link.py). The housing's od with its pillars and windows from end to end; inside, the shell ring's
+    (lib/upper_arm/link.py). The housing's od with its pillars and windows from end to end, but the arm_windows under
+    the arm (arm_root): solid, the arm's root; inside, the shell ring's
     mirror: the bore round the discs (to the hub's flange, arm_zone's end), a ring_bore_dia pin ring round the flange
     with the 21 ring pins' blind holes from its face on the bore, the hub-end 6814's seat, the end_lip; the housing
     bolts' holes through it and their nuts' hex pockets from the hub end, a flat outward (bolt_nut_turn_deg), their
@@ -115,5 +131,8 @@ def build_shell_body(cfg: DriveConfig = DEFAULT_CONFIG) -> bd.Solid:
     for angle, xy in zip(compute_housing_bolt_angles(cfg), housing_bolt_points(cfg), strict=True):
         body = body - cylinder((h.bolt_dia + tol.bolt_clearance_add) / 2.0, z1 - z0 + 2 * NUDGE, xy, z0=z0 - NUDGE)
         body = body - hex_pocket(cfg, xy, angle + turn, z1 - at["z_housing_nuts"] + NUDGE, z0=at["z_housing_nuts"])
-    body = body - reveal_window_cutter(cfg, z1 - z0, z_offset=z0)
+    windows = reveal_window_cutter(cfg, z1 - z0, z_offset=z0)
+    if sh.arm_windows:
+        windows = windows - arm_root(cfg, z1 - z0 + 2.0, z0 - 1.0)
+    body = body - windows
     return chamfer_outer_silhouette(single_solid(body), cfg, external_z=z1)

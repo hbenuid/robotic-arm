@@ -154,10 +154,10 @@ JOINTS: list[Joint] = [
           notes="the 21:1 cycloidal drive (CYCLOIDAL_RATIO, its own NEMA 17 x 48 + MKS board): the j1_coupler fork holds its "
                 "hub and motor, its shell - the output, turning with the motor - is bolted to j1_link [which CAN id: unconfirmed]"),
     Joint("elbow_pitch", "revolute", "upper_arm_link", "elbow_link", ELBOW_ORIGIN, N, ELBOW_TO_WRIST_INPLANE,
-          -PARAMS.ELBOW_PITCH_LIMIT_DEG * DEG, PARAMS.ELBOW_PITCH_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
+          PARAMS.ELBOW_PITCH_LIMITS_DEG[0] * DEG, PARAMS.ELBOW_PITCH_LIMITS_DEG[1] * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
           notes="GT2 90T pulley + the roll drive's block (its stator) at the elbow, turning in the bearing_6806#3 / #4 pair; "
-                "belt-driven (GT2_RATIO, one stage) by nema17_40mm#2 + mks_servo42d#2 on j1_link's pad (lib/mounts.py) "
-                "[which CAN id: unconfirmed]"),
+                "belt-driven (GT2_RATIO, one stage) by nema17_40mm#2 + mks_servo42d#2 on j1_link's motor plate, on the "
+                "arm's +N side (lib/mounts.py) [which CAN id: unconfirmed]"),
     # the roll: Z along the forearm (its child link's long direction IS the axis), so X = N, the pitch-axis direction
     Joint("forearm_roll", "revolute", "elbow_link", "forearm_link", FOREARM_ROLL_ORIGIN, FOREARM_ROLL_AXIS, N,
           -PARAMS.FOREARM_ROLL_LIMIT_DEG * DEG, PARAMS.FOREARM_ROLL_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,

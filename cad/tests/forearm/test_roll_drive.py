@@ -346,14 +346,28 @@ def _placed_part(label: str):
     return built.leaf(M.forearm_roll_drive, label).moved(to_location(module_frame_in_host(DEFAULT)))
 
 
+def _upper_arm_at(shape, elbow: float):
+    """A part of the upper arm (in this frame at the capture pose) with the elbow at `elbow` degrees (elbow_pitch's
+    sign): this frame turns with the forearm, so the upper arm turns the other way about the elbow axis (Z, the
+    origin)."""
+    return shape.rotate(Axis((0.0, 0.0, 0.0), (0.0, 0.0, 1.0)), -elbow)
+
+
+def _elbow_range(step: int = 10) -> list[float]:
+    """The elbow's range every `step` degrees from its lower limit, and the upper limit."""
+    lo, hi = PARAMS.ELBOW_PITCH_LIMITS_DEG
+    return sorted({*(lo + step * i for i in range(int((hi - lo) // step) + 1)), hi})
+
+
 @pytest.mark.slow
 def test_module_clears_its_neighbours_in_the_arm():
     """In j2_link's frame, at the capture pose: the module against the forearm and the upper arm - the stub through its
     lip -; the block's stub end on the elbow pulley's face (contact, no overlap), the shaft's spigot in j2_link's recess.
     (The mounted motors, boards, bearings and pulleys against the whole module: tests/test_mounts.py
-    test_motors_and_boards_clear_their_neighbours.) The upper arm's own motor and board, under j1_link's pad
-    ELBOW_MOTOR_CENTRES from the elbow axis, turned about it (this frame's Z through the origin) over the elbow's range
-    stay 10 mm off the whole module (18 measured at the nearest, its shaft)."""
+    test_motors_and_boards_clear_their_neighbours.) The upper arm's own motor and board - on its +N side like the
+    module's, ELBOW_MOTOR_CENTRES from the elbow axis - turned about it over the elbow's range stay 1 mm off the whole
+    module: the lower limit, the forearm lifted back, is set 3 deg short of where the module's board comes that near
+    (lib/params.py ELBOW_PITCH_LIMITS_DEG); 3.6 mm there."""
     module = _placed_module()
     for key, other in (("j2_link", built.part("j2_link")), ("j1_link#1", in_host("j1_link#1"))):
         vol = interference(module, other)
@@ -363,15 +377,14 @@ def test_module_clears_its_neighbours_in_the_arm():
     assert math.isclose(in_host("gt2_pulley_90t#3").bounding_box().max.Z, ELBOW_PULLEY_FACE_Z, abs_tol=0.05)
     shaft = _placed_part("forearm_roll_shaft")
     assert math.isclose(shaft.bounding_box().min.X, -S["z_spigot_end"], abs_tol=1e-6)
-    axis, lim = Axis((0, 0, 0), (0, 0, 1)), int(PARAMS.ELBOW_PITCH_LIMIT_DEG)
     for key in ("nema17_40mm#2", "mks_servo42d#2"):
-        for deg in range(-lim, lim + 1, 10):
-            gap = in_host(key).rotate(axis, deg).distance_to(module)
-            assert gap > 10.0, f"{key} at {deg} degrees: {gap:.1f} mm from the module"
+        for elbow in _elbow_range(5):
+            gap = _upper_arm_at(in_host(key), elbow).distance_to(module)
+            assert gap > 1.0, f"{key} at elbow {elbow:+.0f} deg: {gap:.1f} mm from the module"
 
 
 @pytest.mark.slow
-@pytest.mark.parametrize("deg", [-PARAMS.ELBOW_PITCH_LIMIT_DEG, PARAMS.ELBOW_PITCH_LIMIT_DEG])
+@pytest.mark.parametrize("deg", PARAMS.ELBOW_PITCH_LIMITS_DEG)
 def test_module_clears_the_folded_upper_arm(deg):
     """The upper arm (j1_link) swung about the elbow axis (host z through the origin) to the elbow's limits never runs
     into the block, its motor, the board or the end cap - and never comes near what turns over it: the end cap's
@@ -381,8 +394,7 @@ def test_module_clears_the_folded_upper_arm(deg):
     pose is test_module_clears_its_neighbours_in_the_arm's. Widen the sample if the relief stops being a cylinder about
     the elbow axis."""
     module = _placed_module()
-    axis = Axis((0.0, 0.0, 0.0), (0.0, 0.0, 1.0))
-    upper_arm = in_host("j1_link#1").rotate(axis, deg)
+    upper_arm = _upper_arm_at(in_host("j1_link#1"), deg)
     vol = interference(module, upper_arm)
     assert vol < 1.0, f"elbow {deg:+.0f} deg: module x j1_link#1: {vol:.1f} mm^3"
     cap_gap = closest_points(_placed_part("forearm_roll_retainer"), upper_arm).distance
@@ -410,13 +422,13 @@ def test_forearm_clears_the_elbow_while_rolling():
 
 
 @pytest.mark.slow
-@pytest.mark.parametrize("elbow", [-PARAMS.ELBOW_PITCH_LIMIT_DEG, PARAMS.ELBOW_PITCH_LIMIT_DEG])
+@pytest.mark.parametrize("elbow", PARAMS.ELBOW_PITCH_LIMITS_DEG)
 @pytest.mark.parametrize("roll", [-PARAMS.FOREARM_ROLL_LIMIT_DEG, -90.0, 0.0, 90.0, PARAMS.FOREARM_ROLL_LIMIT_DEG])
 def test_forearm_clears_the_upper_arm_at_the_elbow_limits(elbow, roll):
     """The elbow folded to its limits, the forearm rolled anywhere: j2_link (its round wall 48 from the elbow axis, its
-    necked web) stays 2 mm off the upper arm beside it. It would to about +/-102 deg (sampled every 5 deg of roll), past
-    ELBOW_PITCH_LIMIT_DEG, which stays at 90 (lib/params.py)."""
+    necked web) stays 2 mm off the upper arm beside it. It would to about +102 deg (sampled every 5 deg of roll), past
+    ELBOW_PITCH_LIMITS_DEG's upper 90 (lib/params.py)."""
     link = built.part("j2_link").rotate(Axis((0.0, 0.0, DEFAULT.roll_end.axis_z), (-1.0, 0.0, 0.0)), roll)
-    upper_arm = in_host("j1_link#1").rotate(Axis((0.0, 0.0, 0.0), (0.0, 0.0, 1.0)), elbow)
+    upper_arm = _upper_arm_at(in_host("j1_link#1"), elbow)
     gap = closest_points(link, upper_arm).distance
     assert gap >= 2.0, f"elbow {elbow:+.0f} deg, roll {roll:+.0f} deg: j2_link {gap:.2f} mm off j1_link"

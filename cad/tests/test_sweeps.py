@@ -79,9 +79,10 @@ def test_the_shoulder_limit_keeps_the_forearm_off_the_base_and_the_shoulder():
     fixed = _link_parts("base_link") + _link_parts("shoulder_link")
     movers = [p for link in BEYOND_ELBOW for p in _link_parts(link)]
     upper = PARAMS.SHOULDER_PITCH_LIMITS_DEG[1]
+    lo, hi = PARAMS.ELBOW_PITCH_LIMITS_DEG
     checked = []
     for shoulder in (upper, upper - 5.0):
-        for elbow in range(-int(PARAMS.ELBOW_PITCH_LIMIT_DEG), int(PARAMS.ELBOW_PITCH_LIMIT_DEG) + 1, 10):
+        for elbow in sorted({*range(int(lo), int(hi) + 1, 10), hi}):
             posed = _posed(movers, ("elbow_pitch", elbow), ("shoulder_pitch", shoulder))
             if min(s.bounding_box(optimal=True).min.Y for _, s in posed) < BASE_BOTTOM_Y:
                 continue               # the arm is down in the table
@@ -89,7 +90,7 @@ def test_the_shoulder_limit_keeps_the_forearm_off_the_base_and_the_shoulder():
             assert d >= 1.0, f"shoulder {shoulder}, elbow {elbow}: {ml} {d:.2f} mm from {fl}"
             checked.append((shoulder, elbow))
     # the folded-back side, where the roll drive's motor + board come nearest, is above the table at the limit
-    assert (upper, -int(PARAMS.ELBOW_PITCH_LIMIT_DEG)) in checked, checked
+    assert (upper, lo) in checked, checked
 
 
 def test_the_wrist_pitch_limits_keep_the_wrist_off_the_forearm():
