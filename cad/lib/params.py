@@ -96,6 +96,9 @@ from lib.upper_arm.params import ELBOW_BELT as _ELBOW_BELT  # noqa: E402
 J1_ARM_SLIDE = _arm_slide(_UPPER_ARM)              # 39.27 [DESIGN] j1_link: its elbow end slid along +Y (N) onto the arm's outer face (ArmParams)
 J1_MOTOR_PAD_FACE_Y = _UPPER_ARM.arm.y_outer       # 27.5 [DESIGN] j1_link: the elbow motor's face, on its plate under the arm's outer face (the
 #                                                    -N side; ArmParams), the motor on +N down the hole through the arm, its shaft -N; the holes about the pad's axis
+J1_MOTOR_20T_HUB_Z = 8.978                         # [DESIGN] the elbow motor's 20T (lib/mounts.py gt2_pulley_20t#2): its hub face this far out
+#                                                    along the shaft from the motor's face - through the plate, 2.98 under it -, its tooth band
+#                                                    (RollDriveParams.t20_hub on) level with the elbow 90T's (tests/test_mounts.py)
 ELBOW_BELT_LENGTH = _ELBOW_BELT                    # 280-2GT [DESIGN] the elbow belt (20T on j1_link's motor, 90T at the elbow); it sets the pad's x
 from lib.forearm.params import DEFAULT as _FOREARM  # noqa: E402
 

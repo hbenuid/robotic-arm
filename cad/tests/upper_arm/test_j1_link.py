@@ -182,7 +182,7 @@ def test_default(link, legacy):
     at the pad's x and its plate under it; no pad, no sockets, the second stage's seat gone."""
     dx, a = SHORTENING, DEFAULT.arm
     assert link.is_valid and len(link.solids()) == 1
-    assert R.solid_volume(link) == pytest.approx(376985.495, abs=0.5)
+    assert R.solid_volume(link) == pytest.approx(376960.613, abs=0.5)
     bb, hh = link.bounding_box(), DEFAULT_CONFIG.housing
     # across (Z) the body's pillars either side of +/-Z reach furthest: the windows on +/-Z are open
     assert (bb.min.X, bb.min.Y, bb.min.Z) == pytest.approx((-hh.od / 2.0, a.drive_z_at_y0 - shell_ends(DEFAULT_CONFIG)[1], -58.0117), abs=1e-4)

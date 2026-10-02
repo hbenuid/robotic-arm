@@ -32,6 +32,9 @@ from lib.datum import BASE_BOTTOM_Y, to_location
 from lib.fasteners import hex_area
 from lib.forearm import DEFAULT as FOREARM
 from lib.forearm import pulley_bolt_points
+from lib.pulley import DEFAULT as PULLEY_90T
+from lib.upper_arm import DEFAULT as UPPER_ARM
+from lib.upper_arm.params import ELBOW_MOTOR_CENTRES
 from lib.yaw_coupler import DEFAULT as YAW_COUPLER
 from lib.yaw_coupler.params import RIM_CLEAR, THRUST_CLEAR
 from robot import frames as F
@@ -180,6 +183,25 @@ def test_belt_pulley_planes_are_reachable():
         centre = Vector((bb.min.X + bb.max.X) / 2, (bb.min.Y + bb.max.Y) / 2, (bb.min.Z + bb.max.Z) / 2)
         station = (centre - world.position).dot(z)
         assert 0.0 < station < DEFAULT_CONFIG.motor.shaft_length, f"{m}: the 90T's mid-plane is {station:.1f} mm along the shaft"
+
+
+def test_elbow_motor_20t_runs_in_the_90ts_band():
+    """The elbow motor's 20T (gt2_pulley_20t#2, MOTOR_PULLEY_MOUNTS): its bore along the motor's shaft, its tooth band's
+    centre (RollDriveParams.t20_hub from its hub face) level with the elbow 90T's along the elbow axis and the stock
+    belt's centre distance from it across; its hub face clear under j1_link's motor plate, its band end within reach of
+    the shaft's tip (the pulley rides on most of its bore)."""
+    motor, t20 = P.location("nema17_40mm#2", "world"), P.location("gt2_pulley_20t#2", "world")
+    t90, axis = P.location("gt2_pulley_90t#3", "world"), Vector(*F.JOINT_BY_NAME["elbow_pitch"].axis_w).normalized()
+    assert abs(abs((t20 * Location((1.0, 0.0, 0.0))).position.sub(t20.position).dot(axis)) - 1.0) < 1e-6
+    band20 = (t20 * Location((FOREARM.drive.t20_hub, 0.0, 0.0))).position
+    band90 = (t90 * Location((0.0, PULLEY_90T.band_y1 / 2.0, 0.0))).position
+    along = (band20 - band90).dot(axis)
+    assert abs(along) < 0.01, f"the 20T's band {along:+.3f} mm off the 90T's"
+    assert math.sqrt((band20 - band90).length ** 2 - along ** 2) == pytest.approx(ELBOW_MOTOR_CENTRES, abs=0.01)
+    hub = (motor.inverse() * t20).position
+    assert (hub.X, hub.Y) == pytest.approx((0.0, 0.0), abs=1e-6) and hub.Z == pytest.approx(PARAMS.J1_MOTOR_20T_HUB_Z)
+    assert hub.Z - UPPER_ARM.arm.motor_plate_t > 2.5                                 # under the plate, past the screws' heads (3)
+    assert DEFAULT_CONFIG.motor.shaft_length - hub.Z > 12.5                           # 13 of the shaft in the 14.45 long bore
 
 
 def test_wrist_pitch_slide_position_is_inside_the_slots():

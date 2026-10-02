@@ -27,6 +27,7 @@ from dataclasses import dataclass, replace
 from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, centre_distance
 from lib.cycloidal import DEFAULT_CONFIG as _DRIVE
 from lib.cycloidal import arm_zone as _arm_zone
+from lib.fasteners import M3_CLEAR
 from lib.motors import NEMA17_BOLT_SP
 
 
@@ -213,8 +214,8 @@ _SHORTENED = shortened(replace(
     LEGACY,
     sockets=None,
     slots=replace(LEGACY.slots, through_x=()),   # [DESIGN]
-    pad=replace(LEGACY.pad, holes=tuple((sx * NEMA17_BOLT_SP / 2.0, sz * NEMA17_BOLT_SP / 2.0, LEGACY.pad.hole_dia)
-                                        for sx, sz in ((1, -1), (1, 1), (-1, 1), (-1, -1)))),   # [DESIGN]
+    pad=replace(LEGACY.pad, holes=tuple((sx * NEMA17_BOLT_SP / 2.0, sz * NEMA17_BOLT_SP / 2.0, M3_CLEAR)
+                                        for sx, sz in ((1, -1), (1, 1), (-1, 1), (-1, -1)))),   # [DESIGN] M3 clearance (LEGACY's 3.2)
     hub=replace(LEGACY.hub, bolt_angle_deg=-2.584167),   # [REFERENCE] the drive's bolts, 3.36 degrees from the SolidWorks holes
     # the elbow block (lib/forearm/ RollDriveParams) turns with the elbow over this top face: its flat underside and its
     # end cap's, swept to r 57.6, ride 3.0 above the relief's floor (0.5 over the lip), its Ø62 boss 2.0 above the

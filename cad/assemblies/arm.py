@@ -89,8 +89,9 @@ OCCURRENCES = [
     ("j1_link",               None, "j1_link#1"),
     ("bearing_6806",          "elbow_pitch_1", "bearing_6806#3"),  # mounted: j1_link's elbow bore
     ("bearing_6806",          "elbow_pitch_2", "bearing_6806#4"),
-    ("nema17_40mm",           "elbow_pitch", "nema17_40mm#2"),     # mounted: j1_link's pad
+    ("nema17_40mm",           "elbow_pitch", "nema17_40mm#2"),     # mounted: j1_link's motor plate
     ("mks_servo42d",          "elbow_pitch", "mks_servo42d#2"),
+    ("gt2_pulley_20t",        "elbow_pitch", "gt2_pulley_20t#2"),  # mounted: on the elbow motor's shaft, level with the elbow 90T
     ("gt2_pulley_90t",        "j2", "gt2_pulley_90t#3"),           # mounted: re-seated on the lower elbow bearing (#1 retired)
     ("elbow_pulley_screws",   "elbow_pitch", "elbow_pulley_screws#1"),   # mounted: the elbow 90T's 4x M4 ...
     ("elbow_pulley_nuts",     "elbow_pitch", "elbow_pulley_nuts#1"),     # ... into the block's captive nuts
@@ -126,7 +127,8 @@ GROUPS = [
                                      "nema17_48mm#1", "mks_servo42d#1")),
     ("shoulder_link",    "#4C72B0", ("j1_coupler#1", "j1_coupler_cap#1", "washer_as6590#2", "gt2_pulley_120t#1", "yaw_pulley_screws#1",
                                      "yaw_pulley_nuts#1", DRIVE_KEY)),
-    ("upper_arm_link",   "#CCB974", ("j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2")),
+    ("upper_arm_link",   "#CCB974", ("j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2",
+                                     "gt2_pulley_20t#2")),
     ("elbow_link",       "#DA8BC3", ("gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", ROLL_KEY)),
     ("forearm_link",     "#DD8452", ("j2_link#1", "bearing_6806#5", "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3")),
     ("wrist_pitch_link", "#55A868", ("gt2_pulley_90t#4", "wrist_pulley_screws#1", "wrist_pulley_nuts#1", "j3_coupler#2", "wrist_link#1",

@@ -27,7 +27,7 @@ zero = capture, the committed meshes vs a fresh export, inertials, URDF/SRDF/SDF
 `./cadtool validate`), `test_tooling.py` (the installed cadgen and OCP kernel are the pinned ones, one complete OCP distribution,
 `./cadtool inspect` agrees with the kernel),
 `test_mounts.py` (the mounted motors: axis on the joint, face on the host's pad / plate, board on the rear face, interference budget,
-the base stack above the base bottom, the 90T planes within the shafts; each belt joint's bearing stack between its
+the base stack above the base bottom, the 90T planes within the shafts, the elbow motor's 20T level with its 90T; each belt joint's bearing stack between its
 coupler's stub and its 90T; the 90T pulley bolts: seats, reach, the opened holes, the nuts' designed press; the base_yaw
 thrust stack under `j1_coupler`),
 `test_layering.py` (the package layering, no `sys.path`, no direct part-module imports — AST scan),
