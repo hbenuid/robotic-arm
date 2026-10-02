@@ -1,5 +1,5 @@
-"""cycloidal_ring_gear_body - the housing cylinder: ring-pin holes, 6814 seat, retention lip,
-captive nut pockets (local z 0..51; sits at stack z 9..60).
+"""cycloidal_ring_gear_body - the port's housing cylinder: ring-pin holes, 6814 seat, retention lip, captive nut
+pockets (local z 0..51; sits at stack z 9). Modelled, not placed: the turning shell's body is printed with j1_link.
 
 Ported from cycloidal_drive@2f1f67d src/ring_gear_body.py (build_ring_gear_body()); reference/
 cycloidal_ring_gear_body.step is that builder's export (kind "designed"). PETG.
@@ -9,10 +9,10 @@ Stepped bore: bore_dia (z 0..28, disc orbit + clearance), 90.15 mm 6814 press-fi
 (31.5 deep) with 1 mm entry funnels at the bore/bearing transition; the M4 through-holes (bolt_count)
 with hex nut pockets on the output face; the shared pillar / reveal-window silhouette; the output face
 (z=51, external) and barrel edges chamfered, the motor-plate face (z=0) sharp.
-
-Diverged from the port: build(LEGACY_CONFIG) reproduces the export (REFERENCE_BUILD - tests/cycloidal/test_port.py,
-tests/test_reference_match.py); the model builds DEFAULT_CONFIG (6 bolts, not the port's 8, and the smaller gear:
-RING_INSET).
+The turning shell (DEFAULT_CONFIG, ShellParams) has no ring gear body: its body round the discs is the shell ring's
+mirror (lib/cycloidal/housing.py build_shell_body), printed as one with j1_link (the upper arm rises off it). So the
+model builds the port (LEGACY_CONFIG, what reference/cycloidal/cycloidal_ring_gear_body.step holds - tests/cycloidal/
+test_port.py) and no assembly places it (UNPLACED); build(cfg) takes any port-layout config.
 """
 import math
 import pathlib
@@ -21,7 +21,6 @@ from cadgen import build123d as bd
 from cadgen import step
 
 from lib.cycloidal import (
-    DEFAULT_CONFIG,
     LEGACY_CONFIG,
     DriveConfig,
     compute_housing_bolt_angles,
@@ -41,9 +40,11 @@ CONVERTED = True
 LOCAL_FROM_REF = IDENTITY
 REF_VOL_TOL = 1e-4
 REF_BBOX_TOL = 0.02
+UNPLACED = ("the port's ring gear body, kept for tests/cycloidal/test_port.py: the turning shell (DEFAULT_CONFIG) prints "
+            "its body with j1_link (lib/cycloidal/housing.py build_shell_body) - nothing will place this one")
 
 
-def build(cfg: DriveConfig = DEFAULT_CONFIG):
+def build(cfg: DriveConfig = LEGACY_CONFIG):
     h, tol, stack = cfg.housing, cfg.tolerances, cfg.stack_up
     height = stack.ring_gear_body_height                # 51
     bore_zone = stack.bore_zone                         # 28
@@ -80,7 +81,7 @@ def REFERENCE_BUILD():
 
 @step
 def cycloidal_ring_gear_body():
-    """Return the body at its LOCAL origin (input face at z=0; the assembly lifts it to z=9)."""
+    """Return the port's body at its LOCAL origin (input face at z=0; the port's assembly lifted it to z=9)."""
     part = build()
     part.label = NAME
     return part

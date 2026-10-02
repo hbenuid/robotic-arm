@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 
 from lib.cycloidal import DEFAULT_CONFIG as DRIVE
-from lib.cycloidal import PILLAR_OVERSHOOT, pillar_half_width
+from lib.cycloidal import PILLAR_OVERSHOOT, arm_mount_points, pillar_half_width, shell_ends
 from lib.yaw_coupler.params import DEFAULT, YawCouplerConfig
 
 
@@ -109,3 +109,35 @@ def hole_points(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[float, float]]:
     h = cfg.hub
     return [(h.hole_r * math.cos(math.radians(h.hole_deg + 90.0 * i)), h.hole_r * math.sin(math.radians(h.hole_deg + 90.0 * i)))
             for i in range(4)]
+
+
+# ---- the fork (ForkParams, DEFAULT) -------------------------------------------------------------------------------------
+def fork_x(cfg: YawCouplerConfig, z: float) -> float:
+    """This frame's x at the drive's z (the drive's +Z is this frame's -X)."""
+    return cfg.fork.face_x - z
+
+
+def fork_hub_leg_x(cfg: YawCouplerConfig = DEFAULT) -> tuple[float, float]:
+    """(outer, inner) x of the hub leg: end_plate_gap past the shell's hub end, yoke_leg thick (the hub's face on its
+    inner face)."""
+    sh, z = DRIVE.shell, shell_ends(DRIVE)[1] + DRIVE.shell.end_plate_gap
+    return fork_x(cfg, z + sh.yoke_leg), fork_x(cfg, z)
+
+
+def fork_motor_leg_x(cfg: YawCouplerConfig = DEFAULT) -> tuple[float, float]:
+    """(inner, outer) x of the motor leg: end_plate_gap past the shell's motor end, yoke_leg thick (the sleeve's end on
+    its outer face)."""
+    sh, z = DRIVE.shell, shell_ends(DRIVE)[0] - DRIVE.shell.end_plate_gap
+    return fork_x(cfg, z), fork_x(cfg, z - sh.yoke_leg)
+
+
+def fork_hub_bolts(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[float, float]]:
+    """(y, z) of the hub's 4 bolts through the hub leg: the drive's arm-mount pattern (its +X is this frame's +Z)."""
+    f = cfg.fork
+    return [(f.axis_y + y, f.axis_z + x) for x, y in arm_mount_points(DRIVE)]
+
+
+def fork_cap_bolts(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[float, float]]:
+    """(x, z) of the cap's 2 screws: in the motor leg's middle, cap_bolt_r either side of the axis."""
+    f, (x0, x1) = cfg.fork, fork_motor_leg_x(cfg)
+    return [((x0 + x1) / 2.0, f.axis_z + sz * f.cap_bolt_r) for sz in (-1.0, 1.0)]

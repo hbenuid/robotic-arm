@@ -10,8 +10,8 @@ BODIES) - which assemblies/_occurrences.world_rows expands into world-placed par
 Chain: base_link -base_yaw-> shoulder_link -shoulder_pitch-> upper_arm_link -elbow_pitch-> elbow_link
 -forearm_roll-> forearm_link -wrist_pitch-> wrist_pitch_link -wrist_roll-> wrist_roll_link -jaw_a/jaw_b->
 jaw_*_link, + tool0 (frame-only). The cycloidal drive IS the shoulder_pitch joint: its stator
-(housing + motor, seated in the j1_coupler yoke) rides in shoulder_link, its rotor (output
-hub + pins, bolted to j1_link) in upper_arm_link (docs/cycloidal_drive.md "Attachment").
+(the held carrier + motor, in the j1_coupler fork) rides in shoulder_link, its rotor (the turning
+shell, whose body is printed with j1_link) in upper_arm_link (docs/cycloidal_drive.md "Attachment").
 
 Frames (all in the SolidWorks WORLD frame W, millimetres; W is +Y up, the arm extends toward
 -X, see reference/README.md):
@@ -54,9 +54,9 @@ F = (-0.865419, 0.497923, 0.055880)          # wrist-roll axis: NEMA17 pancake s
 PJ = (0.499699, 0.865884, 0.023354)          # jaw travel: the two Ø6 gripper rails (slider#1 -> slider#2)
 
 BASE_YAW_ORIGIN = (0.0, 85.010435, 0.0)      # [REFERENCE] on the base_yaw axis at the cycloidal drive's axis height (its node's Y)
-SHOULDER_ORIGIN = (-2.440595, 85.010435, -34.915297)   # [REFERENCE] j1_link#1 origin: on the cycloidal drive's axis, 66.5 mm along it from the
-#                                                        motor-plate face (1.5 past the hub's arm-mount face, CYCLOIDAL_OUTPUT_FACE_Z)
 # The origins beyond a link move with it: the capture point [REFERENCE] + the SHIFTS of the record it sits on.
+SHOULDER_ORIGIN = P.shifted("j1_link#1", (-2.440595, 85.010435, -34.915297))   # j1_link#1 origin: on the cycloidal drive's axis, 66.5
+#                                                        mm along it from the motor-plate face (lib/upper_arm/params.py ArmParams.drive_z_at_y0)
 ELBOW_ORIGIN = P.shifted("j2_link#1", (-143.15, 240.05, -15.81))   # j2_link#1's origin (on the elbow_pitch axis; the retired j3_coupler#1 shared it)
 WRIST_PITCH_ORIGIN = P.shifted("j3_coupler#2", (-283.37, 393.63, 35.33))   # j3_coupler#2 origin (on the wrist_pitch axis)
 WRIST_ROLL_ORIGIN = P.shifted("gt2_pulley_20t#1", (-379.355, 448.22, 24.495))   # 20T pulley origin, on the pancake shaft axis
@@ -90,15 +90,17 @@ LINKS: dict[str, list[str]] = {
     "base_link": ["base#1", "bearing_6806#1", "bearing_6806#2", "washer_as6590#1", "bearing_axk6590#1",
                   "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1", "nema17_48mm#1",
                   "mks_servo42d#1"],
-    # j1_coupler (the holder) turns on the base; the cycloidal drive's stator - housing, motor (+ its
-    # MKS board) and the gear train - sits in its yoke (assemblies/cycloidal_drive.py BODIES); the thrust
-    # bearing's upper washer turns with it, under its seat, and so does the base_yaw 120T bolted to its stub's end
-    # inside the base (the base_yaw output, the driven side of its belt), with the M4 screws + nuts that clamp it.
-    "shoulder_link": ["j1_coupler#1", "washer_as6590#2", "gt2_pulley_120t#1", "yaw_pulley_screws#1", "yaw_pulley_nuts#1",
-                      "cycloidal_drive#1:stator"],
-    # the drive's rotor (output hub + output pins) is bolted to j1_link: the shoulder_pitch output;
+    # j1_coupler (the holder) turns on the base, its clamp cap bolted on; the cycloidal drive's stator - the held carrier
+    # (motor plate, output hub, output pins), the motor (+ its MKS board) and the gear train - sits in its fork
+    # (assemblies/cycloidal_drive.py BODIES); the thrust bearing's upper washer turns with it, under its seat, and so does
+    # the base_yaw 120T bolted to its stub's end inside the base (the base_yaw output, the driven side of its belt), with
+    # the M4 screws + nuts that clamp it.
+    "shoulder_link": ["j1_coupler#1", "j1_coupler_cap#1", "washer_as6590#2", "gt2_pulley_120t#1", "yaw_pulley_screws#1",
+                      "yaw_pulley_nuts#1", "cycloidal_drive#1:stator"],
+    # the drive's rotor (its turning shell, the ring pins and both 6814s) is bolted to j1_link: the shoulder_pitch output;
     # the elbow_pitch motor + board bolt to j1_link's pad, the elbow bearing pair sits in its elbow bore (lib/mounts.py)
-    "upper_arm_link": ["cycloidal_drive#1:rotor", "j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2"],
+    "upper_arm_link": ["cycloidal_drive#1:rotor", "j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2",
+                       "gt2_pulley_20t#2"],
     # the elbow 90T pulley (the elbow_pitch output, assumed the driven side  [ASSUMPTION]) and the M4 screws + nuts
     # that clamp it carry the forearm roll drive's STATOR - the elbow block that IS the elbow coupler now (j3_coupler#1
     # is retired, lib/placements.py), both bearings, the end cap, the roll motor + board and its 20T
@@ -150,13 +152,13 @@ JOINTS: list[Joint] = [
                 "[which CAN id (software/control/src/config.py J1..J3) it is: unconfirmed]"),
     Joint("shoulder_pitch", "revolute", "shoulder_link", "upper_arm_link", SHOULDER_ORIGIN, N, SHOULDER_TO_ELBOW_INPLANE,
           PARAMS.SHOULDER_PITCH_LIMITS_DEG[0] * DEG, PARAMS.SHOULDER_PITCH_LIMITS_DEG[1] * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
-          notes="the 20:1 cycloidal drive (CYCLOIDAL_RATIO, its own NEMA 17 x 48 + MKS board): stator in the j1_coupler yoke, "
-                "output hub bolted to j1_link [which CAN id: unconfirmed]"),
+          notes="the 21:1 cycloidal drive (CYCLOIDAL_RATIO, its own NEMA 17 x 48 + MKS board): the j1_coupler fork holds its "
+                "hub and motor, its shell - the output, turning with the motor - is bolted to j1_link [which CAN id: unconfirmed]"),
     Joint("elbow_pitch", "revolute", "upper_arm_link", "elbow_link", ELBOW_ORIGIN, N, ELBOW_TO_WRIST_INPLANE,
-          -PARAMS.ELBOW_PITCH_LIMIT_DEG * DEG, PARAMS.ELBOW_PITCH_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
+          PARAMS.ELBOW_PITCH_LIMITS_DEG[0] * DEG, PARAMS.ELBOW_PITCH_LIMITS_DEG[1] * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
           notes="GT2 90T pulley + the roll drive's block (its stator) at the elbow, turning in the bearing_6806#3 / #4 pair; "
-                "belt-driven by nema17_40mm#2 + mks_servo42d#2 on j1_link's pad (lib/mounts.py) through a second stage at "
-                "j1_link's second-stage seats (BearingParams.x, not modelled) [which CAN id: unconfirmed]"),
+                "belt-driven (GT2_RATIO, one stage) by nema17_40mm#2 + mks_servo42d#2 on j1_link's motor plate, on the "
+                "arm's +N side (lib/mounts.py) [which CAN id: unconfirmed]"),
     # the roll: Z along the forearm (its child link's long direction IS the axis), so X = N, the pitch-axis direction
     Joint("forearm_roll", "revolute", "elbow_link", "forearm_link", FOREARM_ROLL_ORIGIN, FOREARM_ROLL_AXIS, N,
           -PARAMS.FOREARM_ROLL_LIMIT_DEG * DEG, PARAMS.FOREARM_ROLL_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,

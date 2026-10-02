@@ -1,7 +1,9 @@
-"""cycloidal_ring_pins - the 21 ring pins (4 x 35 mm h6 dowels) on the ring-pin circle, standing on z=0.
+"""cycloidal_ring_pins - the 21 ring pins (h6 dowels, GearParams.ring_pin_length) on the ring-pin circle, standing on
+z=0.
 
-In the drive: at stack z_ring_pins (5.5) - 3.5 mm in the motor plate, 28 mm across the bore, 3.5 mm
-into the ring gear body's bearing-zone wall. The disc lobes roll on them.
+In the drive: at stack z_ring_pins - the port's 4 x 35 (5.5): 3.5 mm in the motor plate, 28 mm across the bore, 3.5 mm
+into the ring gear body's bearing-zone wall; the turning shell's 4 x 40 (4): 5 mm in the shell ring's pin ring, 30
+across the plates' gap, 5 in the body's pin ring. The disc lobes roll on them.
 Ported from cycloidal_drive@2f1f67d src/purchased_parts.py; reference/cycloidal_ring_pins.step is that builder's
 export (kind "cots"). No catalog model (the envelope is the geometry); a vendor/cycloidal_ring_pins.step would be
 re-oriented by VENDOR_TO_REF into the same frame. The export is the port's 108 mm circle (REFERENCE_BUILD); the model

@@ -6,6 +6,7 @@ test_cots_* tests compare any step.parts vendor model against them."""
 import math
 
 import pytest
+from build123d import Axis
 
 import parts
 from lib import reference as R
@@ -196,8 +197,10 @@ class TestHousingBolts:
         assert abs(housing_bolts.bounding_box().size.Z - (h.bolt_head_height + h.bolt_length)) < 0.2
 
     def test_bounding_box_xy_span(self, housing_bolts):
+        """Turned so the first bolt lies on X (bolt_start_deg), the pattern spans the bolt circle + a head across X."""
         h = CFG.housing
-        assert abs(housing_bolts.bounding_box().size.X - (h.bolt_circle_dia + h.bolt_head_dia)) < 0.5
+        size = housing_bolts.rotate(Axis.Z, -h.bolt_start_deg).bounding_box().size
+        assert abs(size.X - (h.bolt_circle_dia + h.bolt_head_dia)) < 0.5
 
 
 class TestHousingNuts:

@@ -32,9 +32,12 @@ Geometry (lib/params.py, kernel-verified 2026-09-21 - tests/test_mounts.py re-ch
                48 mm body hangs in -Y, shaft +Y through the plate into the plane of the base_yaw 120T's teeth; motor +
                board end BASE_MOTOR_TABLE_CLEAR above the base's bottom face (lowered under them, lib/base/params.py
                BOARD_CLEAR)
-  elbow_pitch  j1_link's 48 x 48 pad (outer face y = J1_MOTOR_PAD_FACE_Y, the -N side), pattern on the
-               shoulder axis; shaft +N through the pad opening into the elbow drive, whose second stage runs through
-               j1_link's second-stage seats (BearingParams.x; not modelled - docs/open_issues.md) to the elbow 90T
+  elbow_pitch  j1_link's motor plate under the arm's outer face (y = J1_MOTOR_PAD_FACE_Y, the -N side;
+               lib/upper_arm/params.py ArmParams), pattern on the pad's axis (PadParams.x: ELBOW_MOTOR_CENTRES short of
+               the elbow axis - the shoulder axis is the drive's yoke's); the body +N down the square hole through the
+               arm, standing out on the forearm's side; shaft -N through the plate, its 20T (gt2_pulley_20t#2, under the
+               plate, MOTOR_PULLEY_MOUNTS) level with the elbow 90T, on the belt to it (a stock 280-2GT; not modelled -
+               docs/open_issues.md)
   wrist_pitch  j2_link's web (+Z face z = J2_MOTOR_WEB_FACE_Z), motor axis at x = J2_MOTOR_SLIDE_X on the side
                slots (lib/forearm/params.py: where the stock wrist belt puts it, its plug clear of the roll wall);
                body +N, shaft -N through the web, the 20T under it
@@ -79,6 +82,8 @@ from lib.params import (
     BEARING_6806_WIDTH,
     CYCLOIDAL_MOTOR_BODY_LEN,
     GT2_PULLEY_90T_FACE_Y,
+    J1_ARM_SLIDE,
+    J1_MOTOR_20T_HUB_Z,
     J1_MOTOR_PAD_FACE_Y,
     J2_MOTOR_SLIDE_X,
     J2_MOTOR_WEB_FACE_Z,
@@ -90,16 +95,17 @@ from lib.yaw_coupler.params import DEFAULT as _YAW_COUPLER
 
 MOTOR_48, MOTOR_40, BOARD = "nema17_48mm", "nema17_40mm", "mks_servo42d"
 MOTORS = (MOTOR_48, MOTOR_40)
-BEARING, PULLEY, YAW_PULLEY = "bearing_6806", "gt2_pulley_90t", "gt2_pulley_120t"
+BEARING, PULLEY, YAW_PULLEY, MOTOR_PULLEY = "bearing_6806", "gt2_pulley_90t", "gt2_pulley_120t", "gt2_pulley_20t"
 THRUST_CAGE, THRUST_WASHER = "bearing_axk6590", "washer_as6590"
 PULLEY_BOLTS = ("elbow_pulley_screws", "elbow_pulley_nuts", "wrist_pulley_screws", "wrist_pulley_nuts",
                 "yaw_pulley_screws", "yaw_pulley_nuts")
 BASE_MOUNT, BASE_MOUNT_SCREWS, BASE_MOUNT_NUTS = "base_motor_mount", "base_motor_mount_screws", "base_motor_mount_nuts"
+YOKE_CAP = "j1_coupler_cap"
 
 # The part-frame axis tools/reference/mount_placements.py checks for each mounted part, and whether it lies ON its
 # joint's axis (a motor's shaft runs beside its joint, parallel; a bearing, a pulley or a pulley-bolt pattern sits on it).
 AXES: dict[str, tuple[tuple[float, float, float], bool]] = {
-    MOTOR_48: ((0.0, 0.0, 1.0), False), MOTOR_40: ((0.0, 0.0, 1.0), False),
+    MOTOR_48: ((0.0, 0.0, 1.0), False), MOTOR_40: ((0.0, 0.0, 1.0), False), MOTOR_PULLEY: ((1.0, 0.0, 0.0), False),
     BEARING: ((0.0, 0.0, 1.0), True), PULLEY: ((0.0, 1.0, 0.0), True), YAW_PULLEY: ((0.0, 1.0, 0.0), True),
     THRUST_CAGE: ((0.0, 0.0, 1.0), True), THRUST_WASHER: ((0.0, 0.0, 1.0), True),
     **{part: ((0.0, 0.0, 1.0), True) for part in PULLEY_BOLTS},
@@ -147,13 +153,23 @@ MOTOR_MOUNTS: tuple[Mount, ...] = (
           "middle; motor + board end BASE_MOTOR_TABLE_CLEAR above the base's bottom face; connector toward +X [ESTIMATE]"),
     Mount("mks_servo42d#1", BOARD, "nema17_48mm#1", "base_link", "base_yaw", BOARD_FRAME_48),
     Mount("nema17_40mm#2", MOTOR_40, "j1_link#1", "upper_arm_link", "elbow_pitch",
-          ((0.0, J1_MOTOR_PAD_FACE_Y, 0.0), (-90.0, 0.0, 90.0)),
-          "on j1_link's pad, on the shoulder axis (on its 4 holes), shaft +N; connector toward the elbow [ESTIMATE]"),
+          ((_UPPER_ARM.pad.x, J1_MOTOR_PAD_FACE_Y, 0.0), (90.0, 0.0, 0.0)),
+          "on j1_link's motor plate (on its 4 holes), ELBOW_MOTOR_CENTRES short of the elbow axis, the body +N down the "
+          "hole through the arm, shaft -N through the plate; connector toward -Z [ESTIMATE] (toward the elbow the roll "
+          "block would pass it 0.2 mm off)"),
     Mount("mks_servo42d#2", BOARD, "nema17_40mm#2", "upper_arm_link", "elbow_pitch", BOARD_FRAME_40),
     Mount("nema17_40mm#3", MOTOR_40, "j2_link#1", "forearm_link", "wrist_pitch",
           ((J2_MOTOR_SLIDE_X, 0.0, J2_MOTOR_WEB_FACE_Z), (180.0, 0.0, 90.0)),
           "on j2_link's web (+Z face), shaft -N; slide position J2_MOTOR_SLIDE_X [ESTIMATE]; connector toward the elbow [ESTIMATE]"),
     Mount("mks_servo42d#3", BOARD, "nema17_40mm#3", "forearm_link", "wrist_pitch", BOARD_FRAME_40),
+)
+# The belt joints' motor-side pulleys the arm models, on their motors' shafts (the vendor 20T: its bore along its +X,
+# its hub face at x 0): the elbow motor's, under its plate - the wrist's and the base_yaw's are not placed yet.
+MOTOR_PULLEY_MOUNTS: tuple[Mount, ...] = (
+    Mount("gt2_pulley_20t#2", MOTOR_PULLEY, "nema17_40mm#2", "upper_arm_link", "elbow_pitch",
+          ((0.0, 0.0, J1_MOTOR_20T_HUB_Z), (0.0, -90.0, 0.0)),
+          "the elbow motor's 20T on its shaft, hub toward the motor, J1_MOTOR_20T_HUB_Z out from its face (under the "
+          "plate): its tooth band level with the elbow 90T's"),
 )
 
 
@@ -170,8 +186,8 @@ def _bearing_pair(key_n: int, host: str, link: str, joint: str, lip: tuple, at: 
 BEARING_MOUNTS: tuple[Mount, ...] = (
     *_bearing_pair(1, "base#1", "base_link", "base_yaw", _BASE.bore.lip_y, (0.0, None, 0.0), (-90.0, 0.0, 0.0),
                    "the base's bore (axis +Y)"),
-    *_bearing_pair(3, "j1_link#1", "upper_arm_link", "elbow_pitch", _UPPER_ARM.elbow.lip_y, (_UPPER_ARM.slab.elbow_x, None, 0.0),
-                   (-90.0, 0.0, 0.0), "j1_link's elbow bore (axis +Y)"),
+    *_bearing_pair(3, "j1_link#1", "upper_arm_link", "elbow_pitch", tuple(y + J1_ARM_SLIDE for y in _UPPER_ARM.elbow.lip_y),
+                   (_UPPER_ARM.slab.elbow_x, None, 0.0), (-90.0, 0.0, 0.0), "j1_link's elbow bore (axis +Y; slid with the elbow end)"),
     *_bearing_pair(5, "j2_link#1", "forearm_link", "wrist_pitch", _FOREARM.boss.lip_z, (_FOREARM.web.wrist_x, 0.0, None),
                    (0.0, 0.0, 0.0), "j2_link's wrist boss (axis +Z)"),
 )
@@ -222,7 +238,13 @@ FASTENER_MOUNTS: tuple[Mount, ...] = (
           "the base_yaw screws' nuts in j1_coupler's hex pockets, flush with the floor of the pocket over its hub "
           "(nut_depth under pocket_y0), a corner along the coupler's Z"),
 )
-MOUNTS: tuple[Mount, ...] = BASE_MOUNTS + MOTOR_MOUNTS + BEARING_MOUNTS + THRUST_MOUNTS + PULLEY_MOUNTS + FASTENER_MOUNTS
+# The yoke's cap: the upper half of j1_coupler's motor-side leg round the drive's motor sleeve, built in the coupler's frame.
+YOKE_MOUNTS: tuple[Mount, ...] = (
+    Mount("j1_coupler_cap#1", YOKE_CAP, "j1_coupler#1", "shoulder_link", "base_yaw", ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)),
+          "the motor-side leg's upper half on j1_coupler, round the drive's motor sleeve; built in the coupler's part frame"),
+)
+MOUNTS: tuple[Mount, ...] = (BASE_MOUNTS + YOKE_MOUNTS + MOTOR_MOUNTS + MOTOR_PULLEY_MOUNTS + BEARING_MOUNTS + THRUST_MOUNTS
+                             + PULLEY_MOUNTS + FASTENER_MOUNTS)
 BY_KEY: dict[str, Mount] = {m.key: m for m in MOUNTS}
 
 

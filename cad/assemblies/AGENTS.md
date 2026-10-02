@@ -17,7 +17,12 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   record to `skipped` as the entry an extraction writes (pose, totals, reason) - `test_skipped_nodes_are_the_dropped_products`.
 - **Shifted occurrences** (`lib/placements.py SHIFTS`): a link whose length the design changes (`j1_link`
   `slab.elbow_x`, `j2_link` `web.wrist_x`, `wrist_link` `tower.block_x1`) moves every capture record beyond it along
-  its own +X by the parameter's DEFAULT − LEGACY — the file stays as extracted, `location()` applies the shift
+  its own +X by the parameter's DEFAULT − LEGACY - and along its +Y by `across_y` where the design moved its far end
+  across it (`j1_link`'s elbow end, slid onto the arm rising off the drive's shell: `lib/upper_arm/layout.py arm_slide`;
+  the mounts hosted on `j1_link#1` itself add it to their frames, `lib/params.py J1_ARM_SLIDE`); the yoke
+  (`j1_coupler`) moves the drive, `j1_link` and all beyond along its +X (N) by `ForkParams.face_x` −
+  `CAPTURE_FACE_X`, the middle of the discs onto the base_yaw axis — the file stays as
+  extracted, `location()` applies the shift
   (`to_location()` / `to_record()` stay raw: the writers and the round-trip test use them). A `LinkShift` lists the
   TOP-LEVEL records beyond its link, the retired hosts included; a module's children follow its world pose (their
   `rel` is to it); mounted records are never listed — `mount_placements.py` resolves their hosts through
@@ -84,7 +89,7 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   module's DIRECT linked children does reach its STEP, so the modules stay linked (the arm's inline copies predate
   that finding and were left alone). Separate make/buy models were tried and removed as duplicates — one STEP per
   assembly. A purchased item that is **not modelled** (the
-  drive's arm-mount bolts + captive nuts, the belts, the roll drive's cap and motor M3 screws and the forearm wall's
+  drive's hub bolts + captive nuts, the yoke cap's screws + nuts, the belts, the roll drive's cap and motor M3 screws and the forearm wall's
   M3 screws + nuts) lives only in
   `tools/bom.py EXTRAS` — it is on the buy list and absent from the model, the totals and the inertials; model it as a
   COTS pattern part (`cycloidal_housing_bolts` is the pattern, `elbow_pulley_screws` a native mounted one,

@@ -22,24 +22,39 @@ from assemblies import arm
 from assemblies._occurrences import module_rows
 from lib import reference as R
 from lib.forearm import DEFAULT as _FOREARM
+from lib.motors import MOTOR_40
 from lib.params import (
-    CYCLOIDAL_ARM_MOUNT_BOLT_COUNT,
-    CYCLOIDAL_ARM_MOUNT_BOLT_DIA,
+    CYCLOIDAL_HUB_BOLT_COUNT,
+    CYCLOIDAL_HUB_BOLT_DIA,
+    ELBOW_BELT_LENGTH,
     FOREARM_ROLL_BELT_LENGTH,
     WRIST_BELT_LENGTH,
 )
 from lib.upper_arm import DEFAULT as _UPPER_ARM
+from lib.yaw_coupler import DEFAULT as _YAW_COUPLER
+
+ELBOW_MOTOR_SCREW_THREAD = 4.0   # [DESIGN] the elbow motor's M3s this far into its tapped holes (MOTOR_40.bolt_hole_depth)
 
 # (module or None = the arm itself, what to order, pieces, why it is not modelled). Seeded with what
-# docs/cycloidal_drive.md states; the elbow belt, the arm's own fasteners (but the 90T pulley bolts and the roll motor
+# docs/cycloidal_drive.md states; the arm's own fasteners (but the 90T pulley bolts and the roll motor
 # mount's, modelled: parts/joints/{elbow,wrist}_pulley_{screws,nuts}, parts/base/yaw_pulley_{screws,nuts},
 # forearm_roll_mount_{screws,nuts}) and the electronics are not listed yet.
 EXTRAS = [
-    ("cycloidal_drive", f"M{CYCLOIDAL_ARM_MOUNT_BOLT_DIA:g} socket head cap screw (ISO 4762), 40-50 mm long - arm-mount bolts",
-     CYCLOIDAL_ARM_MOUNT_BOLT_COUNT,
-     f"length = j1_link's plate ({_UPPER_ARM.slab.lip_top - _UPPER_ARM.slab.y0:.2f} mm, lib/upper_arm) + the hub to its captive nuts"),
-    ("cycloidal_drive", f"M{CYCLOIDAL_ARM_MOUNT_BOLT_DIA:g} hex nut (ISO 4032) - captive in the output hub's inner face",
-     CYCLOIDAL_ARM_MOUNT_BOLT_COUNT, "drop them in before pressing the hub through the 6814s"),
+    ("cycloidal_drive", (f"M{CYCLOIDAL_HUB_BOLT_DIA:g} x {_YAW_COUPLER.fork.hub_screw_len:g} socket head cap screw (ISO 4762) - "
+                         "the output hub to the j1_coupler yoke's hub-side leg"), CYCLOIDAL_HUB_BOLT_COUNT,
+     "heads in the leg's counterbores, through the hub into its captive nuts (lib/yaw_coupler/params.py ForkParams)"),
+    ("cycloidal_drive", f"M{CYCLOIDAL_HUB_BOLT_DIA:g} hex nut (ISO 4032) - captive in the output hub's flange",
+     CYCLOIDAL_HUB_BOLT_COUNT, "drop them into the flange's inner face before pressing the hub through its 6814"),
+    (None, f"M3 x {_YAW_COUPLER.fork.cap_screw_len:g} socket head cap screw (ISO 4762) - j1_coupler's cap onto its motor-side leg", 2,
+     "heads in the cap's counterbores, down into the nuts in the leg's side slots (lib/yaw_coupler/params.py ForkParams)"),
+    (None, "M3 hex nut (ISO 4032) - in the side slots of j1_coupler's motor-side leg, for the cap's screws", 2,
+     "slid in from the leg's sides before the drive is lowered in"),
+    (None, f"{ELBOW_BELT_LENGTH}-2GT closed belt, 6 mm - the elbow belt (20T on the elbow motor, 90T at the elbow)", 1,
+     "belts are not modelled; the length sets the motor's place on j1_link (lib/upper_arm/params.py ELBOW_MOTOR_CENTRES)"),
+    (None, (f"M3 x {_UPPER_ARM.arm.motor_plate_t + ELBOW_MOTOR_SCREW_THREAD:g} socket head cap screw (ISO 4762) - the elbow "
+            "motor to its plate under j1_link"), 4,
+     (f"up through the plate (lib/upper_arm/params.py ArmParams.motor_plate_t) into the motor's tapped holes: "
+      f"{ELBOW_MOTOR_SCREW_THREAD:g} of thread in their {MOTOR_40.bolt_hole_depth:g}")),
     ("cycloidal_drive", "bearing grease", 1, "the output pins are a greased sliding fit through the discs"),
     ("forearm_roll_drive", f"{FOREARM_ROLL_BELT_LENGTH}-2GT closed belt, 6 mm - the roll belt (90T ring on the shaft, 20T on the motor)", 1,
      "belts are not modelled; the length sets the motor's centre distance (lib/forearm/params.py roll_belt, [ESTIMATE])"),

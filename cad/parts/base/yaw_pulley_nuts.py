@@ -5,7 +5,8 @@ The base_yaw 120T's screws run into them, in the hex pockets of the floor of the
 In the arm (lib/mounts.py, hosted on yaw_pulley_screws): each nut on its pocket's floor (lib/yaw_coupler/params.py
 HubParams.nut_depth: sunk flush with the floor of the pocket over the hub), all four with a corner along the coupler's
 Z as the pockets are cut (lib/yaw_coupler/body.py); the pockets are nut_af across flats, a press for the nut
-(docs/open_issues.md). They go in from the cradle before the drive's housing covers the pocket.
+(docs/open_issues.md). They go in from above, through the pocket over the hub, before the drive is lowered into the
+coupler's fork.
 
 No catalog model (the catalog has single fasteners only, vendor/README.md), no SolidWorks export and NO reference
 file: a pattern part with no reference (lib/reference.py NO_REFERENCE) - its envelope IS the geometry (lib/fasteners.py

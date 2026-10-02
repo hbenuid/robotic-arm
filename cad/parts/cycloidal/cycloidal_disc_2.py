@@ -1,4 +1,4 @@
-"""cycloidal_disc_2 - cycloidal disc 2 of the 20:1 drive (20 lobes, -9 deg profile phase).
+"""cycloidal_disc_2 - cycloidal disc 2 of the shoulder drive (20 lobes, -9 deg profile phase).
 
 Ported from cycloidal_drive@2f1f67d src/cycloidal_disc.py (build_cycloidal_disc(phase_offset_deg=disc2_phase)). The reference
 reference/cycloidal_disc_2.step is that CadQuery builder's own export (manifest kind "designed").

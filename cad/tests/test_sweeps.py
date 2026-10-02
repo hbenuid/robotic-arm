@@ -1,6 +1,8 @@
-"""The joint limits keep the arm off itself (slow). Along the shoulder's upper limit - the arm pitched down in front -
-the parts beyond the elbow (the forearm roll drive's motor + board first) stay off the base and the shoulder over the
-elbow's whole range; at the wrist_pitch limits the wrist body and the gripper stay off the forearm at any roll.
+"""The joint limits keep the arm off itself (slow). Over the shoulder's whole range the upper arm itself - j1_link, its
+elbow motor + board, the cycloidal drive's turning shell - stays off the j1_coupler fork that holds the drive and off
+the base; along the shoulder's upper limit - the arm pitched down in front - the parts beyond the elbow (the forearm
+roll drive's motor + board first) stay off the base and the shoulder over the elbow's whole range; at the wrist_pitch
+limits the wrist body and the gripper stay off the forearm at any roll.
 Exact distances (BRepExtrema) at poses on the limits, the part pairs whose boxes are apart pruned; a pose with the
 arm down in the table the base stands on (below its bottom face) is skipped."""
 from __future__ import annotations
@@ -13,6 +15,7 @@ from build123d import Axis
 
 from assemblies._occurrences import placement_at, world_rows
 from lib import params as PARAMS
+from lib.cycloidal import DEFAULT_CONFIG as DRIVE
 from lib.datum import BASE_BOTTOM_Y
 from robot import frames as F
 from tests import built
@@ -60,13 +63,26 @@ def _closest(movers, fixed, prune: float = 5.0) -> tuple:
     return best
 
 
+def test_the_shoulder_range_keeps_the_upper_arm_off_the_fork_and_the_base():
+    """The drive's turning shell and its held parts are coaxial (its own tests): the shoulder link's parts here are the
+    fork, its cap and what rides on them outside the drive; every 15 degrees and both limits. The nearest are the fork's
+    legs, their running gap (ShellParams.end_plate_gap) off the shell's ends at every angle."""
+    fixed = [*_link_parts("base_link"), *(p for p in _link_parts("shoulder_link") if not p[0].startswith("cycloidal_drive"))]
+    movers = _link_parts("upper_arm_link")
+    lo, hi = PARAMS.SHOULDER_PITCH_LIMITS_DEG
+    for shoulder in sorted({lo, hi, *range(int(lo), int(hi) + 1, 15)}):
+        d, ml, fl = _closest(_posed(movers, ("shoulder_pitch", shoulder)), fixed)
+        assert d >= DRIVE.shell.end_plate_gap - 0.01, f"shoulder {shoulder}: {ml} {d:.2f} mm from {fl}"
+
+
 def test_the_shoulder_limit_keeps_the_forearm_off_the_base_and_the_shoulder():
     fixed = _link_parts("base_link") + _link_parts("shoulder_link")
     movers = [p for link in BEYOND_ELBOW for p in _link_parts(link)]
     upper = PARAMS.SHOULDER_PITCH_LIMITS_DEG[1]
+    lo, hi = PARAMS.ELBOW_PITCH_LIMITS_DEG
     checked = []
     for shoulder in (upper, upper - 5.0):
-        for elbow in range(-int(PARAMS.ELBOW_PITCH_LIMIT_DEG), int(PARAMS.ELBOW_PITCH_LIMIT_DEG) + 1, 10):
+        for elbow in sorted({*range(int(lo), int(hi) + 1, 10), hi}):
             posed = _posed(movers, ("elbow_pitch", elbow), ("shoulder_pitch", shoulder))
             if min(s.bounding_box(optimal=True).min.Y for _, s in posed) < BASE_BOTTOM_Y:
                 continue               # the arm is down in the table
@@ -74,7 +90,7 @@ def test_the_shoulder_limit_keeps_the_forearm_off_the_base_and_the_shoulder():
             assert d >= 1.0, f"shoulder {shoulder}, elbow {elbow}: {ml} {d:.2f} mm from {fl}"
             checked.append((shoulder, elbow))
     # the folded-back side, where the roll drive's motor + board come nearest, is above the table at the limit
-    assert (upper, -int(PARAMS.ELBOW_PITCH_LIMIT_DEG)) in checked, checked
+    assert (upper, lo) in checked, checked
 
 
 def test_the_wrist_pitch_limits_keep_the_wrist_off_the_forearm():

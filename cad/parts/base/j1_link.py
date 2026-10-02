@@ -1,6 +1,6 @@
 """j1_link - the upper arm: the link between the shoulder_pitch and elbow_pitch axes (parametric build123d,
 lib/upper_arm/link.py build_link(cfg), in the SolidWorks part frame - origin on the shoulder axis, the elbow axis at
-x = SlabParams.elbow_x, +Y = N, the cycloidal drive's hub on the y = +1.5 top face).
+x = SlabParams.elbow_x, +Y = N, the cycloidal drive on the y = +1.5 top face).
 
 A stadium plate, 90 wide (y -11.77..1.5 at the shoulder half, stepping down to y -24 under the elbow half) with a
 r 44.5 lip on top. Shoulder end: the Ø50 4x M4 bolts of the drive's output hub around a 42.5 square opening, over
@@ -10,10 +10,16 @@ NEMA 17 holes in its floor; lib/mounts.py places nema17_40mm#2 on it). Elbow end
 lib/mounts.py). Between them: two through slots, the stepped slot (purpose unknown) and a Ø22.2 seat from each side
 (the elbow drive's second stage, not modelled). DEFAULT (what the part builds) is SHORTENING shorter at the elbow
 end (the elbow-end features move with the axis), leaves out the through slots and LEGACY's 10 Ø5.15 x 2 sockets in
-the underside (j1_cap's dowel seats - the cap was removed 2026-09-25), puts the 4 NEMA 17
-holes on a 31 square about the shoulder axis (the SolidWorks ones are 0.38 off and uneven) and the hub holes on the
-drive's bolts (3.36 degrees from the SolidWorks ones). Every number: lib/upper_arm/params.py (UpperArmConfig;
-measured on the reference 2026-09-24).
+the underside (j1_cap's dowel seats - the cap was removed 2026-09-25), puts the 4 NEMA 17 holes on a 31 square
+about the pad's axis (the SolidWorks ones are 0.38 off and uneven) and rises straight off the middle of the drive's
+turning shell, printed as one with the shell's body round the discs (ArmParams, lib/cycloidal/housing.py
+build_shell_body): a plain bar (a placeholder), the plate's 90 width, 30 thick over the gear, out of the two windows
+of the body it fills (its other four open on the discs), its top stepped down where the forearm roll drive swings over
+it near the elbow; the plate's elbow end slid along +Y onto the arm's outer face (lib/upper_arm/layout.py arm_slide);
+the elbow motor moved out to ELBOW_MOTOR_CENTRES from the elbow axis, where the second stage's seat was (gone: the
+elbow belt runs straight to the 90T), and turned over onto the arm's +Y side - down a square hole through the bar onto
+a plate under its outer face, the pad gone. Every number: lib/upper_arm/params.py (UpperArmConfig; measured on the
+reference 2026-09-24).
 
 SolidWorks product: 'first joint edit 62126'
 Source export:      step/first joint edit 62126.STEP

@@ -8,9 +8,12 @@ from build123d import Location
 import lib.forearm.params as FOREARM
 import lib.upper_arm.params as UPPER_ARM
 import lib.wrist.params as WRIST
+import lib.yaw_coupler.params as YAW
 from assemblies import arm, cycloidal_drive, forearm_roll_drive, gripper
 from lib import placements as P
 from lib import reference as R
+from lib.upper_arm.layout import arm_slide
+from lib.yaw_coupler.params import CAPTURE_FACE_X
 from robot import frames as RF
 
 
@@ -25,13 +28,13 @@ def _close(a, b, tol=1e-6):
 
 def test_record_counts_match_expected():
     parts_ = P.keys(kind="part", retired=True)
-    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 58      # 31 SolidWorks + 27 mounted (j3_coupler#1, the two 90Ts retired, still records)
+    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 60      # 31 SolidWorks + 29 mounted (j3_coupler#1, the two 90Ts retired, still records)
     assert P.keys(kind="module") == ["cycloidal_drive#1", "gripper#1", "forearm_roll_drive#1"]
     assert P.keys(kind="module", designed=True) == P.DATA["designed_modules"] == ["cycloidal_drive#1", "forearm_roll_drive#1"]
-    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 142  # 47 + the base motor mount (1 + 4 + 4) + (7 + 13) + 2 x (2 + 13) + 6 bearings + 3 thrust + 3 pulleys + 6 x 4 pulley bolts
+    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 146  # 47 + the base motor mount (1 + 4 + 4) + j1_coupler's cap + (7 + 13) + 2 x (2 + 13) + the elbow motor's 20T (3) + 6 bearings + 3 thrust + 3 pulleys + 6 x 4 pulley bolts
     assert len(P.keys(kind="part", mounted=False, retired=True)) == 31
     assert P.RETIRED == ("j3_coupler#1", "gt2_pulley_90t#1", "gt2_pulley_90t#2") and set(P.RETIRED) <= set(P.OCCURRENCES)
-    assert len(P.keys(kind="part")) == 58 - len(P.RETIRED)
+    assert len(P.keys(kind="part")) == 60 - len(P.RETIRED)
 
 
 def test_mounted_records_follow_lib_mounts():
@@ -44,9 +47,9 @@ def test_mounted_records_follow_lib_mounts():
 
     keys = P.keys(kind="part", mounted=True)
     assert keys == mounts.keys() == [
-        "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1",
+        "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1", "j1_coupler_cap#1",
         "nema17_48mm#1", "mks_servo42d#1", "nema17_40mm#2", "mks_servo42d#2", "nema17_40mm#3", "mks_servo42d#3",
-        *(f"bearing_6806#{n}" for n in range(1, 7)), "washer_as6590#1", "bearing_axk6590#1", "washer_as6590#2",
+        "gt2_pulley_20t#2", *(f"bearing_6806#{n}" for n in range(1, 7)), "washer_as6590#1", "bearing_axk6590#1", "washer_as6590#2",
         "gt2_pulley_90t#3", "gt2_pulley_90t#4", "gt2_pulley_120t#1",
         "elbow_pulley_screws#1", "elbow_pulley_nuts#1", "wrist_pulley_screws#1", "wrist_pulley_nuts#1",
         "yaw_pulley_screws#1", "yaw_pulley_nuts#1"]
@@ -137,11 +140,11 @@ def _capture_records(*links: str) -> set:
     return out
 
 
-def _check_links_carry_what_lies_beyond(elbow_x: float, wrist_x: float, end_dx: float):
-    """j2_link#1 (on the elbow axis) sits at (elbow_x, 10, 0) in j1_link's frame, j3_coupler#2 (on the wrist_pitch
-    axis) at (wrist_x, 0, 42) in j2_link's; what bolts to the wrist body's end face keeps its capture pose in the
-    wrist body's frame but for x + end_dx."""
-    assert _near(_position_in("j1_link#1", "j2_link#1"), (elbow_x, 10.0, 0.0))
+def _check_links_carry_what_lies_beyond(elbow_x: float, wrist_x: float, end_dx: float, across: float = 0.0):
+    """j2_link#1 (on the elbow axis) sits at (elbow_x, 10 + across, 0) in j1_link's frame, j3_coupler#2 (on the
+    wrist_pitch axis) at (wrist_x, 0, 42) in j2_link's; what bolts to the wrist body's end face keeps its capture pose in
+    the wrist body's frame but for x + end_dx."""
+    assert _near(_position_in("j1_link#1", "j2_link#1"), (elbow_x, 10.0 + across, 0.0))
     assert _near(_position_in("j2_link#1", "j3_coupler#2"), (wrist_x, 0.0, 42.0))
     wrist_raw = P.to_location(P.OCCURRENCES["wrist_link#1"]["world"])
     for key in P.SHIFTS[2].moves:
@@ -149,15 +152,18 @@ def _check_links_carry_what_lies_beyond(elbow_x: float, wrist_x: float, end_dx: 
         assert _near(_position_in("wrist_link#1", key), (raw[0] + end_dx, raw[1], raw[2])), key
 
 
-def test_shift_axes_are_their_anchors_x():
+def test_shift_axes_are_their_anchors_x_and_y():
     for s in P.SHIFTS:
         x = [row[0] for row in P.OCCURRENCES[s.anchor]["world"]["matrix_3x4"]]
         assert all(math.isclose(a, b, abs_tol=1e-9) for a, b in zip(x, s.axis_w, strict=True)), s.link
+        if s.across_y:
+            y = [row[1] for row in P.OCCURRENCES[s.anchor]["world"]["matrix_3x4"]]
+            assert all(math.isclose(a, b, abs_tol=1e-9) for a, b in zip(y, s.across_w, strict=True)), s.link
 
 
 def test_shifts_move_the_capture_records_beyond_each_link():
-    upper_arm, forearm, wrist = (s for s in P.SHIFTS)
-    assert (upper_arm.anchor, forearm.anchor, wrist.anchor) == ("j1_link#1", "j2_link#1", "wrist_link#1")
+    upper_arm, forearm, wrist, yoke = P.SHIFTS
+    assert (upper_arm.anchor, forearm.anchor, wrist.anchor, yoke.anchor) == ("j1_link#1", "j2_link#1", "wrist_link#1", "j1_coupler#1")
     assert set(upper_arm.moves) == _capture_records("elbow_link", "forearm_link", "wrist_pitch_link", "wrist_roll_link",
                                                     "jaw_a_link", "jaw_b_link") | set(P.RETIRED)
     assert set(forearm.moves) == _capture_records("wrist_pitch_link", "wrist_roll_link", "jaw_a_link", "jaw_b_link") | {
@@ -169,19 +175,29 @@ def test_shifts_move_the_capture_records_beyond_each_link():
         UPPER_ARM.DEFAULT.slab.elbow_x - UPPER_ARM.LEGACY.slab.elbow_x,
         FOREARM.DEFAULT.web.wrist_x - FOREARM.LEGACY.web.wrist_x,
         WRIST.DEFAULT.tower.block_x1 - WRIST.LEGACY.tower.block_x1)
+    # the upper arm's elbow end also slides across it (its +Y, N) with the arm rising off the drive's shell
+    assert (upper_arm.across_y, forearm.across_y, wrist.across_y) == (
+        arm_slide(UPPER_ARM.DEFAULT) - arm_slide(UPPER_ARM.LEGACY), 0.0, 0.0)
+    # the yoke holds the drive with the middle of its discs on the base_yaw axis: the drive, the upper arm and all beyond
+    # move along its +X (N) from where the capture had them
+    assert set(yoke.moves) == {"cycloidal_drive#1", "j1_link#1"} | set(upper_arm.moves) and yoke.across_y == 0.0
+    assert yoke.along_x == YAW.DEFAULT.fork.face_x - CAPTURE_FACE_X == -7.5
 
 
 def test_the_links_carry_what_lies_beyond_them():
     _check_links_carry_what_lies_beyond(UPPER_ARM.DEFAULT.slab.elbow_x, FOREARM.DEFAULT.web.wrist_x,
-                                        WRIST.DEFAULT.tower.block_x1 - WRIST.LEGACY.tower.block_x1)
+                                        WRIST.DEFAULT.tower.block_x1 - WRIST.LEGACY.tower.block_x1,
+                                        arm_slide(UPPER_ARM.DEFAULT))
 
 
 def test_shifted_links_keep_the_records_consistent(monkeypatch):
-    """Shorter links (any lengths): each moves what lies beyond it, a module's children follow it, the rest stays."""
-    along = {"j1_link": -40.0, "j2_link": 40.0, "wrist_link": -20.0}
+    """Shorter links (any lengths) and a slid elbow end: each moves what lies beyond it, a module's children follow it,
+    the rest stays."""
+    along = {"j1_link": -40.0, "j2_link": 40.0, "wrist_link": -20.0, "j1_coupler": P.SHIFTS[3].along_x}   # the yoke's kept
+    across = {"j1_link": 25.0, "j2_link": 0.0, "wrist_link": 0.0, "j1_coupler": 0.0}
     before = {key: P.location(key, "world") for key in ("base#1", "j1_link#1", "cycloidal_drive#1")}
-    monkeypatch.setattr(P, "SHIFTS", tuple(replace(s, along_x=along[s.link]) for s in P.SHIFTS))
-    _check_links_carry_what_lies_beyond(UPPER_ARM.LEGACY.slab.elbow_x - 40.0, FOREARM.LEGACY.web.wrist_x + 40.0, -20.0)
+    monkeypatch.setattr(P, "SHIFTS", tuple(replace(s, along_x=along[s.link], across_y=across[s.link]) for s in P.SHIFTS))
+    _check_links_carry_what_lies_beyond(UPPER_ARM.LEGACY.slab.elbow_x - 40.0, FOREARM.LEGACY.web.wrist_x + 40.0, -20.0, 25.0)
     _check_world_equals_parent_world_times_rel()
     for key, loc in before.items():
         assert _close(_matrix(P.location(key, "world")), _matrix(loc), tol=1e-9), key

@@ -1,22 +1,37 @@
 """The shared housing profile (ported from cycloidal_drive tests/test_housing_profile.py).
 
-lib/cycloidal/housing.py defines the pillar / window outer profile (one per housing bolt) shared by the motor
-plate and the ring gear body and the outer-silhouette chamfer. Any change to the profile
-(pillar dims, bolt angles, bore radii) is caught here before the dependent part tests.
+lib/cycloidal/housing.py defines the pillar / window outer profile (one per housing bolt) shared by the housing parts
+- the port's motor plate and ring gear body, the turning shell's shell ring and body (build_shell_body, printed with
+j1_link) - and the outer-silhouette chamfer. Any change to the profile (pillar dims, bolt angles, bore radii) is caught
+here before the dependent part tests; DEFAULT's two shell parts stand for them.
 """
 import math
 
 import pytest
+from build123d import Axis
 
 import parts
 from lib import reference as R
-from lib.cycloidal import compute_housing_bolt_angles
-from lib.cycloidal.housing import CUTTER_OVERSHOOT, chamfer_outer_silhouette, reveal_window_cutter
+from lib.cycloidal import arm_zone, compute_housing_bolt_angles, shell_ends
+from lib.cycloidal.housing import CUTTER_OVERSHOOT, build_shell_body, chamfer_outer_silhouette, reveal_window_cutter
 from tests.cycloidal.helpers import CFG, no_chamfer
 from tests.helpers import is_inside
 
-cycloidal_motor_plate = parts.load("cycloidal_motor_plate")
-cycloidal_ring_gear_body = parts.load("cycloidal_ring_gear_body")
+cycloidal_shell_ring = parts.load("cycloidal_shell_ring")
+(END_0, END_1), JOINT = shell_ends(CFG), arm_zone(CFG)[0]       # -13, 61: the shell's ends; 9: the ring on the body
+START = math.radians(CFG.housing.bolt_start_deg)                 # the first pillar, on the upper arm's centreline
+STEP = 2 * math.pi / CFG.housing.bolt_count
+
+
+def _aligned(part):
+    """`part` turned so its first pillar lies on +X (and so, with 6, one on -X): its X span is the od."""
+    return part.rotate(Axis.Z, -CFG.housing.bolt_start_deg)
+
+
+def _under_the_arm(mid: float) -> bool:
+    """The window centred at `mid` is one the body keeps solid under the upper arm (ShellParams.arm_windows)."""
+    off = math.remainder(mid - START, 2 * math.pi)
+    return abs(off) < CFG.shell.arm_windows / 2.0 * STEP
 
 
 @pytest.fixture(scope="module")
@@ -27,15 +42,15 @@ def cutter():
 @pytest.fixture(scope="module")
 def sample_parts():
     # (name, part, z near mid-thickness of the pillar zone)
-    return [("motor_plate", cycloidal_motor_plate.build(), 5.0), ("ring_gear_body", cycloidal_ring_gear_body.build(), 23.5)]
+    return [("shell_ring", cycloidal_shell_ring.build(), 5.0), ("body", build_shell_body(), 24.0)]
 
 
 @pytest.fixture(scope="module")
 def chamfer_parts():
-    # name -> (build fn, thickness, external_z, [mating_z, ...])
+    # name -> (build fn, thickness, (external_z, its inward sense), (mating_z, its inward sense))
     return {
-        "motor_plate": (cycloidal_motor_plate.build, 9.0, 0.0, [9.0]),
-        "ring_gear_body": (cycloidal_ring_gear_body.build, 51.0, 51.0, [0.0]),
+        "shell_ring": (cycloidal_shell_ring.build, JOINT - END_0, (END_0, 1.0), (JOINT, -1.0)),
+        "body": (build_shell_body, END_1 - JOINT, (END_1, -1.0), (JOINT, 1.0)),
     }
 
 
@@ -50,9 +65,9 @@ class TestCutter:
             assert s.is_valid
 
     def test_bounding_box(self, cutter):
-        """XY span between the bore and the OD overshoot (the pillars eat into the outer ring at the
-        bolt axes - on X; a window on Y reaches the overshoot); Z span exact."""
-        size = cutter.bounding_box().size
+        """XY span between the bore and the OD overshoot (turned so the first pillar is on X: the pillars eat into the
+        outer ring at the bolt axes - on X; a window on Y reaches the overshoot); Z span exact."""
+        size = _aligned(cutter).bounding_box().size
         span = CFG.housing.od + 2.0 * CUTTER_OVERSHOOT
         assert CFG.housing.bore_dia < size.X < span
         assert CFG.housing.bore_dia < size.Y <= span + 1e-6
@@ -86,22 +101,28 @@ class TestProfileAlignment:
 
     def test_window_centres_are_void(self, sample_parts):
         parts = sample_parts
-        """Midway between bolt angles at r=64 (pillar_inner_r 57 < r < housing_r 70): void."""
-        step, sample_r = 2 * math.pi / CFG.housing.bolt_count, 64.0
+        """Midway between bolt angles at r=64 (bore 54 < r < od 64.6): void - but the body's windows under the upper arm,
+        solid (ShellParams.arm_windows)."""
+        sample_r = 64.0
         for angle in compute_housing_bolt_angles(CFG):
-            mid = angle + step / 2.0
+            mid = angle + STEP / 2.0
             x, y = sample_r * math.cos(mid), sample_r * math.sin(mid)
             for name, part, z in parts:
-                assert not is_inside(part, x, y, z), f"{name}: expected void at window centre angle={math.degrees(mid):.1f} deg"
+                solid = name == "body" and _under_the_arm(mid)
+                assert is_inside(part, x, y, z) == solid, f"{name}: window centre angle={math.degrees(mid):.1f} deg, solid {solid}"
 
 
 @pytest.mark.slow
 class TestOuterChamfer:
     """Both parts bevel their outer silhouette while the faces that mate against a neighbour
-    stay sharp: the motor plate's motor face (z=0) and the ring gear body's output face (z=51)
-    bevel their whole perimeter; the inner mating faces stay sharp."""
+    stay sharp: the shell's two ends (the shell ring's z=-13, the body's z=61) bevel their whole perimeter; the faces
+    where they meet (z=9) stay sharp."""
 
     PILLAR_TIP_R = CFG.housing.od / 2.0 - 0.5   # just inside the pillar's outer face, at a pillar centre
+
+    def tip(self, z: float) -> tuple:
+        """The first pillar's tip at height z."""
+        return self.PILLAR_TIP_R * math.cos(START), self.PILLAR_TIP_R * math.sin(START), z
 
     def test_edge_chamfer_param(self):
         assert CFG.housing.edge_chamfer == 1.0
@@ -112,7 +133,7 @@ class TestOuterChamfer:
         for name, (fn, th, _ext, _mates) in parts.items():
             part = fn()
             assert len(part.solids()) == 1 and part.is_valid, f"{name}: not a single valid solid"
-            size = part.bounding_box().size
+            size = _aligned(part).bounding_box().size
             assert abs(size.X - CFG.housing.od) < 0.2, f"{name}: OD {size.X:.2f}"
             assert abs(size.Z - th) < 0.05, f"{name}: thickness {size.Z:.2f}"
 
@@ -124,24 +145,21 @@ class TestOuterChamfer:
 
     def test_external_rim_beveled_but_mating_face_sharp(self, chamfer_parts):
         parts = chamfer_parts
-        for name, (fn, _th, ext, mates) in parts.items():
+        for name, (fn, _th, (ext, ext_in), (mate, mate_in)) in parts.items():
             part = fn()
-            z_ext = ext + 0.1 if ext == 0 else ext - 0.1
-            assert not is_inside(part, self.PILLAR_TIP_R, 0.0, z_ext), f"{name}: external rim should be beveled at the pillar tip"
-            mz = mates[0]
-            z_mate = mz + 0.1 if mz == 0 else mz - 0.1
-            assert is_inside(part, self.PILLAR_TIP_R, 0.0, z_mate), f"{name}: mating face must stay sharp"
+            assert not is_inside(part, *self.tip(ext + 0.1 * ext_in)), f"{name}: external rim should be beveled at the pillar tip"
+            assert is_inside(part, *self.tip(mate + 0.1 * mate_in)), f"{name}: mating face must stay sharp"
 
     def test_full_external_perimeter_beveled(self):
         """Passing external_z bevels the whole perimeter (pillar sides + inner arcs), removing
         materially more than the barrel verticals alone."""
         cfg0 = no_chamfer(CFG)
-        for fn, external_z in ((cycloidal_motor_plate.build, 0.0), (cycloidal_ring_gear_body.build, 51.0)):
+        for fn, external_z in ((cycloidal_shell_ring.build, END_0), (build_shell_body, END_1)):
             base = fn(cfg0)
             verticals_only = chamfer_outer_silhouette(base, CFG, external_z=None)
             full = chamfer_outer_silhouette(base, CFG, external_z=external_z)
             assert R.solid_volume(full) < R.solid_volume(verticals_only) - 50.0
 
     def test_chamfer_can_be_disabled(self):
-        part = cycloidal_motor_plate.build(no_chamfer(CFG))
-        assert is_inside(part, self.PILLAR_TIP_R, 0.0, 0.1)
+        part = cycloidal_shell_ring.build(no_chamfer(CFG))
+        assert is_inside(part, *self.tip(END_0 + 0.1))

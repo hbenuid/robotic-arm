@@ -9,7 +9,7 @@ import pytest
 
 import parts
 from lib import reference as R
-from lib.cycloidal import hub_height
+from lib.cycloidal import hub_flange, hub_height, stack_positions
 from tests.cycloidal.helpers import CFG
 from tests.helpers import is_inside
 
@@ -26,13 +26,16 @@ class TestOutputHubDimensions:
         assert abs(CFG.bearings.out_bore - CFG.output_hub.od) < 0.5
 
     def test_hub_height_matches_bearing_stack(self):
-        assert CFG.stack_up.output_bearing_total == CFG.bearings.out_width * CFG.bearings.out_qty
+        """The turning shell's hub carries one 6814 (the other is on the motor plate's sleeve), past its flange."""
+        assert CFG.stack_up.output_bearing_total == CFG.bearings.out_width
+        assert hub_height(CFG) == hub_flange(CFG) + CFG.bearings.out_width + CFG.shell.end_lip + CFG.output_hub.proud_above_housing == 23.0
 
-    def test_proud_extension_is_5mm(self):
-        """Spec 5.3: the hub output face sits 5 mm proud of the housing (z=65)."""
-        stack, hub = CFG.stack_up, CFG.output_hub
-        assert hub.proud_above_housing == pytest.approx(5.0)
-        assert stack.z_output_bearings + hub_height(CFG) == pytest.approx(65.0)
+    def test_proud_extension_reaches_the_yoke(self):
+        """The turning shell's hub runs on past the shell (z 61) onto the yoke's hub-side leg (z 62); the port's sat
+        5 mm proud (spec 5.3)."""
+        hub = CFG.output_hub
+        assert hub.proud_above_housing == CFG.shell.end_plate_gap == 1.0
+        assert stack_positions(CFG)["z_hub"] + hub_height(CFG) == pytest.approx(62.0)
 
     def test_shaft_bore_clears_spine(self):
         clearance = CFG.output_hub.shaft_clearance_bore - CFG.shaft.spine_od
@@ -80,18 +83,30 @@ class TestSolid:
         assert hub_solid.is_valid
 
     def test_outer_diameter(self, hub_solid):
+        """The flange (ShellParams.plate_dia, the motor plate's) sets the box; the grip is the hub's od."""
         size = hub_solid.bounding_box().size
-        assert abs(size.X - CFG.output_hub.od) < 0.2
-        assert abs(size.Y - CFG.output_hub.od) < 0.2
+        assert abs(size.X - CFG.shell.plate_dia) < 0.2
+        assert abs(size.Y - CFG.shell.plate_dia) < 0.2
+
+    def test_the_flange(self, hub_solid):
+        """Solid out to the flange over local z 0..9, its face on the 6814 cut back over the outer race (the inner race
+        bears inside the relief); only the od over the 6814's grip and on."""
+        sh, f = CFG.shell, hub_flange(CFG)
+        r_relief = (sh.plate_relief_dia + sh.plate_dia) / 4.0
+        assert is_inside(hub_solid, 0.0, r_relief, f / 2.0, 1e-3), "no flange"
+        assert not is_inside(hub_solid, 0.0, r_relief, f - sh.plate_relief_depth / 2.0, 1e-3), "no relief over the outer race"
+        assert is_inside(hub_solid, 0.0, sh.plate_relief_dia / 2.0 - 0.5, f - 0.2, 1e-3), "no face for the inner race"
+        r = (CFG.output_hub.od + sh.plate_relief_dia) / 4.0
+        assert not is_inside(hub_solid, 0.0, r, f + 1.0, 1e-3), "the flange runs on under the 6814"
 
     def test_height(self, hub_solid):
-        """Z = bearing grip + output wall + proud extension (28)."""
+        """Z = bearing grip + output wall + proud extension (42.27)."""
         assert abs(hub_solid.bounding_box().size.Z - hub_height(CFG)) < 0.1
 
     def test_output_face_proud_of_housing(self, hub_solid):
-        """Placed at z_output_bearings, the top face lands at total_housing_depth + proud (65)."""
+        """Placed at z_hub, the top face lands at total_housing_depth + proud (62)."""
         stack, hub = CFG.stack_up, CFG.output_hub
-        global_top = stack.z_output_bearings + hub_solid.bounding_box().max.Z
+        global_top = stack_positions(CFG)["z_hub"] + hub_solid.bounding_box().max.Z
         assert abs(global_top - (stack.total_housing_depth + hub.proud_above_housing)) < 0.1
 
     def test_arm_mount_holes_through(self, hub_solid):
@@ -115,12 +130,12 @@ class TestSolid:
         hole_r = (h.bolt_dia + tol.bolt_clearance_add) / 2.0
         probe_r = arm_r + (apothem + hole_r) / 2.0
         x, y = probe_r * math.cos(off), probe_r * math.sin(off)
-        assert not is_inside(hub_solid, x, y, h.bolt_nut_depth / 2.0, 1e-3), "No hex nut pocket near the inner face"
+        assert not is_inside(hub_solid, x, y, CFG.shell.hub_nut_depth - 0.3, 1e-3), "No hex nut pocket near the inner face"
         assert is_inside(hub_solid, x, y, bb.max.Z - 1.0, 1e-3), "Nut pocket extends too far - the proud section should be solid"
 
     def test_pin_holes_blind_from_output_face(self, hub_solid):
         """A 1 mm ceiling stays solid above the pin holes (probe mid-ceiling above pin #1)."""
-        probe_z = CFG.stack_up.output_bearing_total - CFG.output_hub.output_hub_pin_ceiling / 2.0
+        probe_z = CFG.stack_up.z_bearing_top - stack_positions(CFG)["z_hub"] - CFG.output_hub.output_hub_pin_ceiling / 2.0
         assert is_inside(hub_solid, CFG.disc.output_pin_circle_dia / 2.0, 0.0, probe_z, 1e-3), "blind ceiling above the output pins is missing"
 
     def test_central_lightening_pocket(self, hub_solid):
@@ -131,16 +146,17 @@ class TestSolid:
             pytest.skip("lightening pocket disabled")
         bb = hub_solid.bounding_box()
         assert not is_inside(hub_solid, 0, 0, bb.max.Z - 0.5, 1e-4), "central lightening pocket missing"
-        z_floor = stack.output_bearing_total + hub.arm_mount_pocket_floor
+        z_floor = stack.z_bearing_top - stack_positions(CFG)["z_hub"] + hub.arm_mount_pocket_floor
         assert is_inside(hub_solid, 0, 0, z_floor - 0.3, 1e-4), "pocket floor missing"
         assert is_inside(hub_solid, hub.arm_mount_bolt_circle_dia / 2.0, 0, bb.max.Z - 0.5, 1e-4), "pocket should not reach the arm-bolt circle"
 
     def test_volume_sanity(self, hub_solid):
         """Between the cylinder minus every feature (generously) and the cylinder minus the shaft bore."""
         hub, d, b, tol, stack, h = CFG.output_hub, CFG.disc, CFG.bearings, CFG.tolerances, CFG.stack_up, CFG.housing
-        hub_r, grip, height = hub.od / 2.0, stack.output_bearing_total, hub_height(CFG)
+        hub_r, height, flange = hub.od / 2.0, hub_height(CFG), hub_flange(CFG)
+        grip = stack.z_bearing_top - stack_positions(CFG)["z_hub"]       # the pins' holes' reach + the ceiling
         shaft_r = hub.shaft_clearance_bore / 2.0
-        upper = math.pi * hub_r ** 2 * height - math.pi * shaft_r ** 2 * grip
+        upper = math.pi * (hub_r ** 2 * height + ((CFG.shell.plate_dia / 2.0) ** 2 - hub_r ** 2) * flange - shaft_r ** 2 * flange)
         pocket_vol = math.pi * ((b.inp_od + tol.bearing_seat_bore_add) / 2.0) ** 2 * b.inp_width
         pin_vol = d.output_pin_count * math.pi * ((d.output_pin_dia - tol.ring_pin_press_sub) / 2.0) ** 2 * (grip - hub.output_hub_pin_ceiling)
         arm_hole_vol = hub.arm_mount_bolt_count * math.pi * ((h.bolt_dia + tol.bolt_clearance_add) / 2.0) ** 2 * height
