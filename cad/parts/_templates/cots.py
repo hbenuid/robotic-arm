@@ -5,7 +5,7 @@ The source of truth is the vendor STEP / datasheet, not this Python:
   * the model (`@step def <name>()`; rename `cots` to the part NAME when you copy the template)
     is HYBRID (lib.cots.hybrid, the body every COTS part shares): it returns vendor/<name>.step (cadgen.read_step - a tracked input, so a swapped
     vendor file makes the part stale) when that file exists, else a parametric ENVELOPE from
-    lib.params - dropping a real STEP into cad/vendor/ (e.g. via /cad:step-parts) upgrades the
+    lib.params - dropping a real STEP into cad/vendor/ (e.g. via /text-to-cad:step-parts) upgrades the
     part to exact geometry with no code change;
   * keep mating-critical dims (bolt pattern, shaft, bore) in lib.params so the designed
     parts that mate to it import the SAME numbers.
