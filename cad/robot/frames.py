@@ -54,9 +54,9 @@ F = (-0.865419, 0.497923, 0.055880)          # wrist-roll axis: NEMA17 pancake s
 PJ = (0.499699, 0.865884, 0.023354)          # jaw travel: the two Ø6 gripper rails (slider#1 -> slider#2)
 
 BASE_YAW_ORIGIN = (0.0, 85.010435, 0.0)      # [REFERENCE] on the base_yaw axis at the cycloidal drive's axis height (its node's Y)
-SHOULDER_ORIGIN = (-2.440595, 85.010435, -34.915297)   # [REFERENCE] j1_link#1 origin: on the cycloidal drive's axis, 66.5 mm along it from the
-#                                                        motor-plate face (lib/upper_arm/params.py ArmParams.drive_z_at_y0)
 # The origins beyond a link move with it: the capture point [REFERENCE] + the SHIFTS of the record it sits on.
+SHOULDER_ORIGIN = P.shifted("j1_link#1", (-2.440595, 85.010435, -34.915297))   # j1_link#1 origin: on the cycloidal drive's axis, 66.5
+#                                                        mm along it from the motor-plate face (lib/upper_arm/params.py ArmParams.drive_z_at_y0)
 ELBOW_ORIGIN = P.shifted("j2_link#1", (-143.15, 240.05, -15.81))   # j2_link#1's origin (on the elbow_pitch axis; the retired j3_coupler#1 shared it)
 WRIST_PITCH_ORIGIN = P.shifted("j3_coupler#2", (-283.37, 393.63, 35.33))   # j3_coupler#2 origin (on the wrist_pitch axis)
 WRIST_ROLL_ORIGIN = P.shifted("gt2_pulley_20t#1", (-379.355, 448.22, 24.495))   # 20T pulley origin, on the pancake shaft axis

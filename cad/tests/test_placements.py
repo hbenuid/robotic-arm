@@ -8,10 +8,12 @@ from build123d import Location
 import lib.forearm.params as FOREARM
 import lib.upper_arm.params as UPPER_ARM
 import lib.wrist.params as WRIST
+import lib.yaw_coupler.params as YAW
 from assemblies import arm, cycloidal_drive, forearm_roll_drive, gripper
 from lib import placements as P
 from lib import reference as R
 from lib.upper_arm.layout import arm_slide
+from lib.yaw_coupler.params import CAPTURE_FACE_X
 from robot import frames as RF
 
 
@@ -160,8 +162,8 @@ def test_shift_axes_are_their_anchors_x_and_y():
 
 
 def test_shifts_move_the_capture_records_beyond_each_link():
-    upper_arm, forearm, wrist = (s for s in P.SHIFTS)
-    assert (upper_arm.anchor, forearm.anchor, wrist.anchor) == ("j1_link#1", "j2_link#1", "wrist_link#1")
+    upper_arm, forearm, wrist, yoke = P.SHIFTS
+    assert (upper_arm.anchor, forearm.anchor, wrist.anchor, yoke.anchor) == ("j1_link#1", "j2_link#1", "wrist_link#1", "j1_coupler#1")
     assert set(upper_arm.moves) == _capture_records("elbow_link", "forearm_link", "wrist_pitch_link", "wrist_roll_link",
                                                     "jaw_a_link", "jaw_b_link") | set(P.RETIRED)
     assert set(forearm.moves) == _capture_records("wrist_pitch_link", "wrist_roll_link", "jaw_a_link", "jaw_b_link") | {
@@ -176,6 +178,10 @@ def test_shifts_move_the_capture_records_beyond_each_link():
     # the upper arm's elbow end also slides across it (its +Y, N) with the arm rising off the drive's shell
     assert (upper_arm.across_y, forearm.across_y, wrist.across_y) == (
         arm_slide(UPPER_ARM.DEFAULT) - arm_slide(UPPER_ARM.LEGACY), 0.0, 0.0)
+    # the yoke holds the drive with the middle of its discs on the base_yaw axis: the drive, the upper arm and all beyond
+    # move along its +X (N) from where the capture had them
+    assert set(yoke.moves) == {"cycloidal_drive#1", "j1_link#1"} | set(upper_arm.moves) and yoke.across_y == 0.0
+    assert yoke.along_x == YAW.DEFAULT.fork.face_x - CAPTURE_FACE_X == -7.5
 
 
 def test_the_links_carry_what_lies_beyond_them():
@@ -187,8 +193,8 @@ def test_the_links_carry_what_lies_beyond_them():
 def test_shifted_links_keep_the_records_consistent(monkeypatch):
     """Shorter links (any lengths) and a slid elbow end: each moves what lies beyond it, a module's children follow it,
     the rest stays."""
-    along = {"j1_link": -40.0, "j2_link": 40.0, "wrist_link": -20.0}
-    across = {"j1_link": 25.0, "j2_link": 0.0, "wrist_link": 0.0}
+    along = {"j1_link": -40.0, "j2_link": 40.0, "wrist_link": -20.0, "j1_coupler": P.SHIFTS[3].along_x}   # the yoke's kept
+    across = {"j1_link": 25.0, "j2_link": 0.0, "wrist_link": 0.0, "j1_coupler": 0.0}
     before = {key: P.location(key, "world") for key in ("base#1", "j1_link#1", "cycloidal_drive#1")}
     monkeypatch.setattr(P, "SHIFTS", tuple(replace(s, along_x=along[s.link], across_y=across[s.link]) for s in P.SHIFTS))
     _check_links_carry_what_lies_beyond(UPPER_ARM.LEGACY.slab.elbow_x - 40.0, FOREARM.LEGACY.web.wrist_x + 40.0, -20.0, 25.0)

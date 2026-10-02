@@ -34,6 +34,8 @@ from lib.upper_arm.params import DEFAULT as _UPPER_ARM
 from lib.upper_arm.params import LEGACY as _UPPER_ARM_LEGACY
 from lib.wrist.params import DEFAULT as _WRIST
 from lib.wrist.params import LEGACY as _WRIST_LEGACY
+from lib.yaw_coupler.params import CAPTURE_FACE_X as _CAPTURE_FACE_X
+from lib.yaw_coupler.params import DEFAULT as _YAW_COUPLER
 
 PLACEMENTS_PATH = pathlib.Path(__file__).resolve().parent.parent / "reference" / "placements.json"
 
@@ -98,6 +100,11 @@ SHIFTS: tuple[LinkShift, ...] = (
     # the wrist body: the gripper bracket bolts to its end face at tower.block_x1
     LinkShift("wrist_link", "wrist_link#1", (-0.865418936, 0.497923174, 0.055880029),   # [REFERENCE]
               _WRIST.tower.block_x1 - _WRIST_LEGACY.tower.block_x1, _BEYOND_WRIST_ROLL),
+    # the yoke: the drive held with the middle of its discs on the base_yaw axis (lib/yaw_coupler/params.py
+    # ForkParams.face_x, the capture's CAPTURE_FACE_X), so the drive, the upper arm and everything beyond move along its
+    # +X - the drive's axis, N
+    LinkShift("j1_coupler", "j1_coupler#1", (0.064435732, 0.0, 0.997921859),   # [REFERENCE]
+              _YAW_COUPLER.fork.face_x - _CAPTURE_FACE_X, ("cycloidal_drive#1", "j1_link#1") + _BEYOND_ELBOW),
 )
 
 

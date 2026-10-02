@@ -145,12 +145,6 @@ def _fork_cuts(cfg: YawCouplerConfig):
     return cuts
 
 
-def _swing_cut(cfg: YawCouplerConfig):
-    """The disc and the ring cut back over the low bridge on -X, where the elbow motor swings past."""
-    f = cfg.fork
-    return _box((-_FAR, f.swing_x), (f.bridge_y1, _FAR), (-_FAR, _FAR))
-
-
 def build_cap(cfg: YawCouplerConfig):
     """DEFAULT's cap (parts/base/j1_coupler_cap): the motor leg's upper half, its disc above the split, bored to the
     sleeve, its 2 screws through it from counterbores cap_seat above the split."""
@@ -178,7 +172,7 @@ def build_yaw_coupler(cfg: YawCouplerConfig = DEFAULT):
     if cfg.fork is None:
         body, cuts = _disc(cfg) + _yoke(cfg), _yoke_cuts(cfg)
     else:
-        body, cuts = (_disc(cfg) - _swing_cut(cfg)) + _fork(cfg), _fork_cuts(cfg)
+        body, cuts = _disc(cfg) + _fork(cfg), _fork_cuts(cfg)
     for cut in cuts:
         body = body - cut
     body = body - _ycyl(h.recess_dia / 2.0, d.y0 - NUDGE, h.recess_y1)

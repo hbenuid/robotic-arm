@@ -438,12 +438,13 @@ class TestPoseInTheArm:
         """The SolidWorks node never carried the MKS board (2026-09-21): compare the module without it. The node
         holds the port's 8-pillar housing (lib/cycloidal/params.py LEGACY_CONFIG): across the axis the module lies inside
         its box (DEFAULT_CONFIG's housing is RING_INSET smaller all round); along the axis it starts at the node's motor
-        end and runs to the held hub's face (hub_top) where the node ran to its hub face (65)."""
+        end and runs to the held hub's face (hub_top) where the node ran to its hub face (65) - the node's box moved by the
+        drive's shift (lib/placements.py SHIFTS: the yoke holds the middle of its discs on the base_yaw axis)."""
         sw = P.OCCURRENCES[DRIVE_KEY]["solidworks"]
         # the children keep their module-frame locations; the module's world pose sits on the Compound
         node = Compound([c for c in drive_world.children if c.label.split(":")[0] != "mks_servo42d"]).moved(drive_world.location)
         lo, size = R.bbox_min(node), R.bbox_size(node)
-        sw_lo, sw_size = sw["world_bbox_min"], sw["world_bbox_size"]
+        sw_lo, sw_size = [a + d for a, d in zip(sw["world_bbox_min"], P.shift(DRIVE_KEY), strict=True)], sw["world_bbox_size"]
         world = P.location(DRIVE_KEY, "world")
         axis = (world * Location((0, 0, 1))).position - world.position
         along = max(range(3), key=lambda i: abs(tuple(axis)[i]))

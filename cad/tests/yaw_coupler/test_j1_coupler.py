@@ -78,7 +78,7 @@ def test_default_fork_holds_the_drives_ends():
     """DEFAULT's fork on the drive's own axis (placements.json cycloidal_drive#1 in this frame, its +Z this frame's -X):
     two legs ShellParams.yoke_leg thick, end_plate_gap past the shell's two ends - the hub's face (hub_top) on the hub
     leg's inner face, the sleeve's end (sleeve_end) on the motor leg's outer face -, mirror images about the middle of the
-    discs; the hub's 4 bolts on the drive's arm-mount pattern, their ends flush with the hub's captive nuts; the motor
+    discs, which the shift (lib/placements.py SHIFTS) puts on the base_yaw axis; the hub's 4 bolts on the drive's arm-mount pattern, their ends flush with the hub's captive nuts; the motor
     leg round the sleeve (its bore 0.2 a side), the cap's 2 screws in the leg's middle, their nuts' slots clear of the
     bore; the ring lowered under the turning shell's pillars (RING_DROP: 2.68 of clearance)."""
     f, sh, S = DEFAULT.fork, DRIVE.shell, stack_positions(DRIVE)
@@ -91,6 +91,8 @@ def test_default_fork_holds_the_drives_ends():
     assert (mx0, mx1) == pytest.approx((fork_x(DEFAULT, end_0 - sh.end_plate_gap), fork_x(DEFAULT, sleeve_end(DRIVE))))
     middle = fork_x(DEFAULT, (S["z_disc1"] + S["z_disc2"] + DRIVE.disc.thickness) / 2.0)
     assert hx1 + mx0 == pytest.approx(2.0 * middle) and hx0 + mx1 == pytest.approx(2.0 * middle)
+    assert middle == pytest.approx(0.0, abs=1e-9)                     # ... on the base_yaw axis: the legs mirror about it too
+    assert hx0 < -DEFAULT.disc.flat_x < hx1 and mx0 < DEFAULT.disc.flat_x < mx1   # each straddling a flat of the disc
     assert sorted(fork_hub_bolts(DEFAULT)) == pytest.approx(sorted((f.axis_y + y, f.axis_z + x) for x, y in arm_mount_points(DRIVE)))
     head = S["hub_top"] + sh.yoke_leg - (M4_SHCS.head_h + 0.5)        # the screws' heads' seats, drive z
     assert head - f.hub_screw_len == pytest.approx(S["z_hub"] + sh.hub_nut_depth - DRIVE.housing.bolt_nut_thickness)
@@ -172,10 +174,11 @@ def test_legacy_hub(legacy):
 def test_default_stands_on_the_thrust_bearing():
     """The seat on the upper washer: the groove's floor (the base's frame; this part's origin at its ring_top_y) plus
     the stack; the recess round the stack's OD; the rim over the base's top face - nothing else changes (but the
-    fork and the ring under it: test_default_fork_holds_the_drives_ends)."""
+    fork and the ring under it, flat to flat: test_default_fork_holds_the_drives_ends)."""
     h, c = DEFAULT.hub, BASE.cap
-    assert replace(DEFAULT, hub=LEGACY.hub, disc=replace(DEFAULT.disc, y0=LEGACY.disc.y0, ring_y1=LEGACY.disc.ring_y1),
-                   fork=None) == LEGACY
+    assert replace(DEFAULT, hub=LEGACY.hub, disc=replace(DEFAULT.disc, y0=LEGACY.disc.y0, ring_y1=LEGACY.disc.ring_y1,
+                                                         ring_x0=LEGACY.disc.ring_x0), fork=None) == LEGACY
+    assert DEFAULT.disc.ring_x0 == -DEFAULT.disc.flat_x
     assert h.recess_y1 == pytest.approx(c.groove_y0 - c.ring_top_y + THRUST_STACK)
     assert h.recess_dia > THRUST_OD and h.recess_dia / 2.0 > c.groove_r[1]          # the rim wholly over the top face
     assert DEFAULT.disc.y0 > c.top_y - c.ring_top_y and LEGACY.disc.y0 == pytest.approx(c.top_y - c.ring_top_y)
@@ -233,16 +236,17 @@ def test_default_changes_the_hub_and_the_underside(coupler, legacy):
 @pytest.mark.slow
 def test_default_is_the_fork(coupler, legacy):
     """The fork round the drive whose shell turns (ForkParams): the hub leg on -X - its disc round the axis on a leg down
-    to the disc's underside, inside the disc's flat -, the motor leg on +X the same, bored to the sleeve and split at the
-    drive's axis (the cap is its own part), with a low bridge out of the disc's flat; the yoke's cheek, middle body,
-    cradle and sockets gone; the ring lowered."""
+    to the disc's underside, straddling the disc's flat on a low bridge -, the motor leg on +X the same, bored to the
+    sleeve and split at the drive's axis (the cap is its own part); along X the disc's ears the widest (the legs within
+    them); the yoke's cheek, middle body, cradle and sockets gone; the ring lowered."""
     f, d = DEFAULT.fork, DEFAULT.disc
     (hx0, hx1), (mx0, mx1) = fork_hub_leg_x(DEFAULT), fork_motor_leg_x(DEFAULT)
     bb = coupler.bounding_box()
     r0 = d.band_r + (d.top_r - d.band_r) * (d.y0 - d.band_y1) / (d.top_y - d.band_y1)     # the disc at the rim, lifted
-    assert (bb.min.X, bb.max.X, bb.max.Y) == pytest.approx((-d.ear_r, mx1, f.axis_y + f.plate_r), abs=1e-6)
+    assert (bb.min.X, bb.max.X, bb.max.Y) == pytest.approx((-d.ear_r, d.ear_r, f.axis_y + f.plate_r), abs=1e-6)
+    assert -d.ear_r < hx0 and mx1 < d.ear_r
     assert (bb.min.Z, bb.max.Z) == pytest.approx((-r0, r0), abs=1e-6)
-    assert -d.flat_x < hx0 and mx1 > d.flat_x                       # the hub leg on the disc, the motor leg past its flat
+    assert hx0 < -d.flat_x < hx1 and mx0 < d.flat_x < mx1           # each leg straddling a flat
     for x0, x1 in ((hx0, hx1), (mx0, mx1)):
         m = (x0 + x1) / 2.0
         # each leg: a disc round the axis (the motor leg's upper half the cap's) on a leg down to the disc's underside
@@ -255,7 +259,8 @@ def test_default_is_the_fork(coupler, legacy):
         assert is_inside(coupler, x1 - 0.3, 40.0, 0.0) and not is_inside(coupler, x1 + 0.3, 40.0, 0.0)
     hm = (hx0 + hx1) / 2.0
     assert is_inside(coupler, hm, f.axis_y + f.plate_r - 0.3, f.axis_z) and not is_inside(coupler, hm, f.axis_y + f.plate_r + 0.3, f.axis_z)
-    assert is_inside(coupler, (d.flat_x + mx0) / 2.0, f.bridge_y1 - 0.3, 0.0) and not is_inside(coupler, (d.flat_x + mx0) / 2.0, f.bridge_y1 + 0.3, 0.0)
+    for x in (hx0 + 0.3, mx1 - 0.3):                                   # each leg down to the disc's underside, past the recess
+        assert is_inside(coupler, x, d.y0 + 0.3, 0.0) and DEFAULT.hub.recess_dia / 2.0 < abs(x)
     for y, z in fork_hub_bolts(DEFAULT):
         assert not is_inside(coupler, hx1 - 0.3, y, z) and not is_inside(coupler, hx0 + 0.3, y + 3.0, z)   # the hole, the counterbore
         assert is_inside(coupler, hx1 - 0.3, y + 3.0, z)                                                  # ... 4.5 deep
