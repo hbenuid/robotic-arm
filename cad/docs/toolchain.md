@@ -9,9 +9,9 @@ of every bump is `git log -- pyproject.toml uv.lock` from `cad/` (the older bump
   `cadgen[snapshot]==<ver>`; the `text-to-cad@earthtojake` plugin **v0.7.x**
   (`~/.claude/plugins/cache/earthtojake/text-to-cad/<ver>/`) pins the same cadgen version twice: its skills
   (`skills/cad/requirements.txt`; the skill docs + their scripts) and its MCP server `cad` (`claude.mcp.json`: `uvx
-  --from cadgen==<ver> cadgen mcp`, started by Claude Code with every session, in uv's cache — never this venv; in a
-  terminal its `cad_show` answers with a CAD Viewer link, `/mcp` turns it off). Bump both together, `./cadtool doctor`
-  checks the skills' pin. `claude plugin install` / `update` take the marketplace's newest release, so update the plugin
+  --no-config --from cadgen==<ver> cadgen mcp`, started by Claude Code with every session, in uv's cache — never this
+  venv; in a terminal its `cad_show` answers with a CAD Viewer link, `/mcp` turns it off). Bump both together,
+  `./cadtool doctor` checks the skills' pin. `claude plugin install` / `update` take the marketplace's newest release, so update the plugin
   WITH a bump here, not before: the server's Viewer and this venv write the same store, and a cadgen never cleans a
   store a newer one wrote to in the last 30 days. Up to 0.7.6 it was `cad@text-to-cad` (plugin `cad`, marketplace
   `text-to-cad`): a machine that still has that one switches once (Gotchas below).

@@ -67,8 +67,12 @@ Every command, its flags and what it prints: `./cadtool help` (for people: the `
   rewrites its STEP; the gripper, the drives and the robot links link their children's trees, the arm inlines tinted
   copies (`assemblies/AGENTS.md`). Pull semantics: a rebuilt part does not update the arm until the arm is rebuilt
   (`why` shows the pinned child).
-- **Look at what you built**: hand every created / updated STEP to `./cadtool viewer`; snapshot review
-  (`./cadtool snapshot …`) is mandatory after visible geometry changes. No `ocp-vscode`.
+- **Look at what you built**: show every created / updated STEP (or URDF) in the CAD Viewer — from a Claude session
+  with the `cad` MCP server's `cad_show` (absolute path; it answers with a link: share it once, the page reloads on
+  every rebuild), from a terminal with `./cadtool viewer`. Snapshot review (`./cadtool snapshot …`) is mandatory
+  after visible geometry changes; a change inside a housing (a bearing seat, a fit) also gets a cut — `--mode section
+  --section XZ:<mm>` (plane `XY` / `XZ` / `YZ`, the offset along its normal) — and `--focus '#<label>'` ghosts all
+  but one occurrence. No `ocp-vscode`.
 - `./cadtool inspect` is a local tool (`tools/step_facts.py`). Anything it doesn't answer is Python over
   `cadgen.read_scene(path)` (`.leaves()`, `.resolve("#o1.2.f7").shape()` — world-frame build123d geometry, the refs the
   viewer shows) + `cadgen.geometry` (`closest_points`, `overlap_volume`, `topology_errors`), kept as a test when it is

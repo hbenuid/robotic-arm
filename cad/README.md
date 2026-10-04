@@ -55,7 +55,7 @@ Always run through `./cadtool …` (or `uv run …`) from `cad/`; `./cadtool doc
 | `./cadtool viewer [--port N]` | the CAD Viewer: `http://127.0.0.1:3245/?file=assemblies/arm.step` |
 | `./cadtool validate robot/arm.urdf --strict` (`.srdf`, `.sdf --gz-check never`) | robot-description validators |
 | `./cadtool parts "<query>" [--download --id <id> --filename <name>.step]` | step.parts search / download into `vendor/` |
-| `./cadtool skill <skill> <tool> [args]` | a plugin skill script (`dfam-check dfam_tool.py`, `dfm mold_tool.py`, …) |
+| `./cadtool skill <skill> <tool> [args]` | a plugin skill script (`dfam-check dfam_tool.py`, `dfm mold_tool.py`, …), its `requirements.txt` fetched into uv's cache |
 | `./cadtool cadgen …` / `store …` / `daemon …` | any `cadgen` subcommand; `./cadtool daemon stop` ends the warm build daemon |
 | `./cadtool doctor` | installed cadgen vs the plugin's pin, Node, Playwright Chromium |
 | `./cadtool pytest [-m "not slow"] [-n 4]` | test suite (the fast lane skips geometry builds; `-n`: worker processes, a whole test file each) |
@@ -113,6 +113,6 @@ this repo is aligned with (plus `dfam-check` for printability, `step-parts`, and
 skills); they assume the `cadgen` CLI on `PATH` — inside this project that is `./cadtool cadgen …`.
 The plugin also starts CAD's MCP server (`cad`) with every Claude Code session: asked to show a model, Claude
 answers with a link that opens it in the CAD Viewer (in Claude Desktop, a viewer card in the chat). It shows saved
-STEPs only, runs its own pinned cadgen (not this venv), and asks once before sending anonymous usage counts; `/mcp`
-turns it off.
+files only (STEP, URDF, STL …), runs its own pinned cadgen (not this venv), and asks once before sending anonymous
+usage counts; `/mcp` turns it off.
 Agent-facing conventions live in `AGENTS.md` and each folder's own `AGENTS.md`.

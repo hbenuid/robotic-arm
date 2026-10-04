@@ -30,6 +30,7 @@ cadtool - cadgen 0.7 + this uv project (paths relative to cad/)
                                                     (12 h auto-stop; ./cadtool cadgen viewer list|stop --port N)
   ./cadtool parts "<query>" [--download] [--id <id>] [--filename <name>.step]   step.parts search / download into vendor/
   ./cadtool skill <skill> <tool> [args]             a plugin skill script: skills/<skill>/scripts/<tool>
+                                                    (+ the skill's requirements.txt, unlocked, in uv's cache)
   ./cadtool cadgen|store|daemon ...                 any cadgen subcommand (`./cadtool cadgen --help`)
   ./cadtool daemon stop                             stop the warm build daemon + its workers (a fresh one starts on the next gen;
                                                     they reload code only when restarted; ./cadtool cadgen daemon status shows them)
@@ -82,7 +83,12 @@ run_skill() {  # run_skill <skill> <tool> [args...]  ->  python skills/<skill>/s
     echo "cadtool: no such plugin tool: $target" >&2
     exit 1
   fi
-  exec uv run --frozen python "$target" "$@"
+  # The skill's own libraries (dfam-check / dfm: trimesh, rtree, scipy ...) ride in uv's cached overlay for
+  # this run, never in this project's lock. A requirements file that pins cadgen is left out: this venv's
+  # cadgen IS that pin (`./cadtool doctor`), and resolving it afresh could pull a second cadgen + kernel.
+  local reqs="$CAD_PLUGIN/skills/$skill/requirements.txt" with=()
+  if [[ -f "$reqs" ]] && ! grep -q '^cadgen' "$reqs"; then with=(--with-requirements "$reqs"); fi
+  exec uv run --frozen ${with[@]+"${with[@]}"} python "$target" "$@"
 }
 
 cg() { exec uv run --frozen cadgen "$@"; }
