@@ -7,10 +7,14 @@ of every bump is `git log -- pyproject.toml uv.lock` from `cad/` (the older bump
 ## Pins
 - cadgen and the plugin (what each one is: `cad/AGENTS.md` "Running things"): `pyproject.toml` pins
   `cadgen[snapshot]==<ver>`; the `text-to-cad@earthtojake` plugin **v0.7.x**
-  (`~/.claude/plugins/cache/earthtojake/text-to-cad/<ver>/skills/`, the skill docs + the step.parts script) pins the same
-  cadgen version in its `skills/cad/requirements.txt` — bump both together, `./cadtool doctor` checks (plugin updates
-  need `git-lfs` on `PATH`). Up to 0.7.6 it was `cad@text-to-cad` (plugin `cad`, marketplace `text-to-cad`): a machine
-  that still has that one switches once (Gotchas below).
+  (`~/.claude/plugins/cache/earthtojake/text-to-cad/<ver>/`) pins the same cadgen version twice: its skills
+  (`skills/cad/requirements.txt`; the skill docs + their scripts) and its MCP server `cad` (`claude.mcp.json`: `uvx
+  --from cadgen==<ver> cadgen mcp`, started by Claude Code with every session, in uv's cache — never this venv; in a
+  terminal its `cad_show` answers with a CAD Viewer link, `/mcp` turns it off). Bump both together, `./cadtool doctor`
+  checks the skills' pin. `claude plugin install` / `update` take the marketplace's newest release, so update the plugin
+  WITH a bump here, not before: the server's Viewer and this venv write the same store, and a cadgen never cleans a
+  store a newer one wrote to in the last 30 days. Up to 0.7.6 it was `cad@text-to-cad` (plugin `cad`, marketplace
+  `text-to-cad`): a machine that still has that one switches once (Gotchas below).
 - **build123d 0.11.1 / OCP 7.9.3**: cadgen 0.7.x requires `build123d>=0.11.1,<0.12` and
   `cadquery-ocp-novtk>=7.9,<8`; `pyproject.toml` pins the exact kernel (`cadquery-ocp-novtk==…`, the
   STEP bytes are per-kernel) and must never gain `cadquery-ocp`, the VTK build (see Gotchas below). On 0.10 / 7.8.1 cadgen could not
@@ -60,7 +64,10 @@ the new version for both, `doctor` cannot tell — see Gotchas below; restart Cl
   inspect diff`; 0.7.6: the store drops 0.7.4's op cache (`index/op`) and keeps itself under `CADGEN_STORE_MAX` (default
   20G) by evicting derived meshes / surfaces, never records or outputs; 0.7.7: the plugin's rename (Pins, above) and
   opt-in anonymous analytics in `cadgen viewer` / `cadgen mcp` — off until allowed on its card or in Settings,
-  `cadgen analytics status|off`, `DO_NOT_TRACK=1`): a retired interface fails
+  `cadgen analytics status|off`, `DO_NOT_TRACK=1`; 0.7.8–0.7.11: the plugin starts CAD's MCP server (Pins, above), its
+  `gcode` / `bambu-labs` skills became an OrcaSlicer route and a Bambu Connect handoff (their old scripts are gone), the
+  upstream repo dropped Git LFS (plugin installs need no `git-lfs`), and cadgen's own changes are the MCP server's and
+  the bundled viewer's (STEPs with empty components load); same STEP bytes, no stale wave): a retired interface fails
   with a teaching error, never an alias (a bad `--display` value is refused with the list of presets). The freshness gate
   does not hash cadgen's own version, so a bump makes no model stale (a record-schema change aside, as in 0.7.5) and a
   plain `gen` afterwards rewrites nothing: to
@@ -78,8 +85,8 @@ the new version for both, `doctor` cannot tell — see Gotchas below; restart Cl
   while the plugin may still be INSTALLED at the old version (`claude plugin marketplace update` alone creates the
   new cache directory while both scopes still record the old version). Update the plugin in BOTH
   scopes (`claude plugin update text-to-cad@earthtojake`, then `--scope project`), check that file shows the new `version` +
-  `installPath` for each, and restart Claude Code; the marketplace clone's LFS pointers (`assets/**`, `models/**`)
-  are excluded by its own `.lfsconfig` and need no `git lfs pull`. A session first started in `cad/` records a third
+  `installPath` for each, and restart Claude Code (its first start after an update fetches the server's new cadgen;
+  on a slow connection start once with `MCP_TIMEOUT=300000 claude`). A session first started in `cad/` records a third
   entry (project scope, `projectPath` = `cad/`) that no `update` reaches: run from `cad/`, `update --scope project`
   answers for the repo root's entry ("already at the latest version") while `install` there still reports the old one.
   Copy the root entry's `version`, `installPath`, `gitCommitSha` and `lastUpdated` into it by hand (back the file up
@@ -92,4 +99,6 @@ the new version for both, `doctor` cannot tell — see Gotchas below; restart Cl
   `claude plugin marketplace add https://github.com/earthtojake/text-to-cad.git` and
   `claude plugin install text-to-cad@earthtojake` in each scope (`--scope project` from the repo root and from `cad/`),
   and restart Claude Code. Do it after the pull that brings the rename: a checkout older than it still enables
-  `cad@text-to-cad`.
+  `cad@text-to-cad`. Run on the Mac: `marketplace add` declares `earthtojake` in `~/.claude/settings.json` by itself,
+  and each `install --scope project` rewrites the repo's two `.claude/settings.json` with the same content in another
+  key order — `git checkout` them.

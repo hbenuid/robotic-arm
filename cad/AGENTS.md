@@ -57,8 +57,8 @@ Every command, its flags and what it prints: `./cadtool help` (for people: the `
 - **Never call bare `python`** — the system Python is 3.14 without build123d.
 - **Never add `cadquery-ocp`** (the VTK build) to `pyproject.toml`: it owns the same `OCP/` files as
   `cadquery-ocp-novtk`, so uv removing one guts the other (`docs/toolchain.md` Gotchas). The `cadgen` package is the
-  whole runtime — decorators, CLI, viewer, snapshots; the `text-to-cad@earthtojake` plugin only ships the
-  `/text-to-cad:*` skill docs.
+  whole runtime — decorators, CLI, viewer, snapshots; the `text-to-cad@earthtojake` plugin ships the
+  `/text-to-cad:*` skill docs and CAD's MCP server `cad` (its own uvx-pinned cadgen: `docs/toolchain.md` Pins).
 - **A model is a script you run.** `./cadtool gen <model.py>` writes its sibling STEP (git-ignored); a second run
   prints `current …` — the freshness gate hashes the source closure, the tracked inputs and the outputs (`./cadtool
   why` explains a verdict clause by clause). Every derived artefact lives in the store `~/.cache/cadgen` — nothing in
