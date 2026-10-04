@@ -161,5 +161,10 @@ generated from the label:
   hand-kept table, `EXTRAS` in that tool (`assemblies/AGENTS.md`).
 - **STLs** — `./cadtool python tools/export_printables.py [--parts …]` writes `print/<name>.stl` for every printed part
   (git-ignored, mm, part-local frame, with the quantity to print); bought parts are refused.
+- **Printability** — before a printed part's first print, and after its geometry changes: `./cadtool skill dfam-check
+  dfam_tool.py measure print/<name>.stl --angle-limit 45` (watertight, wall thickness, overhang area, support volume;
+  45° is FDM's self-supporting angle in the skill's `references/process-limits.md`) and the same with `orientations`
+  (the build orientations ranked by support); how to read the JSON is the skill's `SKILL.md`. A finding that holds
+  up the print is a row in `docs/open_issues.md`.
 - **Colours** — the grey of purchased parts in `arm.step` and every module's STEP (`gripper.step`,
   `cycloidal_drive.step`, `forearm_roll_drive.step`; `assemblies/AGENTS.md`).

@@ -113,6 +113,6 @@ this repo is aligned with (plus `dfam-check` for printability, `step-parts`, and
 skills); they assume the `cadgen` CLI on `PATH` — inside this project that is `./cadtool cadgen …`.
 The plugin also starts CAD's MCP server (`cad`) with every Claude Code session: asked to show a model, Claude
 answers with a link that opens it in the CAD Viewer (in Claude Desktop, a viewer card in the chat). It shows saved
-STEPs only, runs its own pinned cadgen (not this venv), and asks once before sending anonymous usage counts; `/mcp`
-turns it off.
+files only (STEP, URDF, STL …), runs its own pinned cadgen (not this venv), and asks once before sending anonymous
+usage counts; `/mcp` turns it off.
 Agent-facing conventions live in `AGENTS.md` and each folder's own `AGENTS.md`.
