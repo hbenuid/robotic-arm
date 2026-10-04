@@ -19,7 +19,7 @@ dependencies = [
     # The text-to-cad runtime (decorators, `cadgen` CLI, viewer, snapshots via the [snapshot]
     # extra = playwright). Same version as the installed text-to-cad@earthtojake plugin, whose
     # skills/cad/requirements.txt pins it: bump both together (`./cadtool doctor` checks).
-    "cadgen[snapshot]==0.7.7",
+    "cadgen[snapshot]==0.7.11",
     "numpy>=2.4.6",
 ]
 
