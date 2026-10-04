@@ -20,12 +20,12 @@ CadQuery exports, its shell turning since (the yoke holds its hub and motor) —
 Requirements: [`uv`](https://docs.astral.sh/uv/), `git-lfs` on `PATH` — every committed STEP/STL here (the inputs in
 `reference/` and `vendor/`, plus `robot/meshes/`) is a Git LFS object, so `git lfs install` before cloning (a clone that
 shows ~130-byte pointer files needs `git lfs pull`) — and Node 20+ (only for STL/3MF/GLB export). For Claude Code, the
-[`cad@text-to-cad`](https://github.com/earthtojake/text-to-cad) plugin **v0.7.x** (AI CAD assistance, below; the repo's
-`.claude/settings.json` enables its marketplace) — install it once per scope, `--scope project` for the repo's own:
+[`text-to-cad@earthtojake`](https://github.com/earthtojake/text-to-cad) plugin **v0.7.x** (AI CAD assistance, below; the
+repo's `.claude/settings.json` enables its marketplace) — install it once per scope, `--scope project` for the repo's own:
 
 ```bash
 claude plugin marketplace add https://github.com/earthtojake/text-to-cad.git
-claude plugin install cad@text-to-cad
+claude plugin install text-to-cad@earthtojake
 cd cad
 ./cadtool setup                  # uv sync (build123d/OCP/cadgen into ./.venv; reinstalls the OCP kernel if it does not import)
                                  # + the git pre-commit hook (ruff on staged .py files) + git notes fetching
@@ -108,7 +108,7 @@ uv run pytest                    # equivalent (cadgen is a normal dependency)
 
 ## AI CAD assistance
 
-The `cad@text-to-cad` plugin's `/cad:*` skills drive the run-the-model → inspect → snapshot loop
+The `text-to-cad@earthtojake` plugin's `/text-to-cad:*` skills drive the run-the-model → inspect → snapshot loop
 this repo is aligned with (plus `dfam-check` for printability, `step-parts`, and the URDF/SRDF/SDF
 skills); they assume the `cadgen` CLI on `PATH` — inside this project that is `./cadtool cadgen …`.
 Agent-facing conventions live in `AGENTS.md` and each folder's own `AGENTS.md`.

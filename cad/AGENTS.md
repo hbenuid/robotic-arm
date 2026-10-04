@@ -57,7 +57,8 @@ Every command, its flags and what it prints: `./cadtool help` (for people: the `
 - **Never call bare `python`** — the system Python is 3.14 without build123d.
 - **Never add `cadquery-ocp`** (the VTK build) to `pyproject.toml`: it owns the same `OCP/` files as
   `cadquery-ocp-novtk`, so uv removing one guts the other (`docs/toolchain.md` Gotchas). The `cadgen` package is the
-  whole runtime — decorators, CLI, viewer, snapshots; the `cad@text-to-cad` plugin only ships the `/cad:*` skill docs.
+  whole runtime — decorators, CLI, viewer, snapshots; the `text-to-cad@earthtojake` plugin only ships the
+  `/text-to-cad:*` skill docs.
 - **A model is a script you run.** `./cadtool gen <model.py>` writes its sibling STEP (git-ignored); a second run
   prints `current …` — the freshness gate hashes the source closure, the tracked inputs and the outputs (`./cadtool
   why` explains a verdict clause by clause). Every derived artefact lives in the store `~/.cache/cadgen` — nothing in
@@ -141,8 +142,14 @@ machines"; CI is the third machine: root `AGENTS.md` "CI").
 
 ## Gotchas (all verified)
 - cadgen's freshness gate tracks only the inputs the LAST build actually read: a part whose vendor file appears after
-  its last build still reads `current` (its body never called `read_step` on that file) — `./cadtool gen <part> --force`
-  once; the assemblies then follow. Verified: `nema17_48mm` kept its envelope STEP until forced.
+  its last build still reads `current` (its body never opened that file: `lib/cots.hybrid()` asks `exists()` first, and
+  the gate records opens, not existence checks) — `./cadtool gen <part> --force` once; the assemblies then follow.
+  Verified: `nema17_48mm` kept its envelope STEP until forced; `bearing_6003` read `current` with a vendor file added.
+- A folder the model's code LISTS is an input, hashed by its entry names: `parts._scan()` lists every `parts/` group
+  folder, so any new entry there — a `__pycache__/`, a stray file — reads the arm and the parts stale (verified with an
+  empty `parts/base/__pycache__/`). `cadtool` and `.env` set `PYTHONDONTWRITEBYTECODE=1` for that, and a subprocess
+  given its own env passes `-B` (`tests/test_lazy_kernel.py`): the test suite wrote one into every group, and the next
+  `gen` rebuilt everything.
 - Don't compare large STEP artifacts with `git diff`; compare source, `inspect` output and snapshots.
   A STEP edited by anything but its model (or built under another `CADGEN_CACHE_DIR`) reads as stale
   in `./cadtool why` — rebuild it.
