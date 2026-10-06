@@ -29,7 +29,7 @@ claude plugin install text-to-cad@earthtojake
 cd cad
 ./cadtool setup                  # uv sync (build123d/OCP/cadgen into ./.venv; reinstalls the OCP kernel if it does not import)
                                  # + the git pre-commit hook (ruff on staged .py files) + git notes fetching
-                                 # + Playwright Chromium (~150 MB, snapshots only)
+                                 # + Playwright's headless shell (~100 MB, snapshots only)
 ./cadtool gen assemblies/arm.py  # build the arm (~35 s the first time): generated STEPs are git-ignored, each machine builds its own
 ./cadtool pytest                 # everything green?
 ```
@@ -57,7 +57,7 @@ Always run through `./cadtool …` (or `uv run …`) from `cad/`; `./cadtool doc
 | `./cadtool parts "<query>" [--download --id <id> --filename <name>.step]` | step.parts search / download into `vendor/` |
 | `./cadtool skill <skill> <tool> [args]` | a plugin skill script (`dfam-check dfam_tool.py`, `dfm mold_tool.py`, …), its `requirements.txt` fetched into uv's cache |
 | `./cadtool cadgen …` / `store …` / `daemon …` | any `cadgen` subcommand; `./cadtool daemon stop` ends the warm build daemon |
-| `./cadtool doctor` | installed cadgen vs the plugin's pin, Node, Playwright Chromium |
+| `./cadtool doctor` | installed cadgen vs the plugin's pin, Node, Playwright's headless shell |
 | `./cadtool pytest [-m "not slow"] [-n 4]` | test suite (the fast lane skips geometry builds; `-n`: worker processes, a whole test file each) |
 | `./cadtool lint [--fix] [path…]` | `ruff check` over `cad/` |
 | `./cadtool python …` | any python in the venv with `PYTHONPATH=cad/` (`-c "from assemblies.cycloidal_drive import totals; print(totals())"`) |

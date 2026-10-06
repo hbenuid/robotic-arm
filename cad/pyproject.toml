@@ -16,10 +16,10 @@ dependencies = [
     # files, so removing either one guts the other (`uv sync --reinstall-package cadquery-ocp-novtk`).
     "build123d==0.11.1",
     "cadquery-ocp-novtk==7.9.3.1.1",
-    # The text-to-cad runtime (decorators, `cadgen` CLI, viewer, snapshots via the [snapshot]
-    # extra = playwright). Same version as the installed text-to-cad@earthtojake plugin, whose
-    # skills/cad/requirements.txt pins it: bump both together (`./cadtool doctor` checks).
-    "cadgen[snapshot]==0.7.11",
+    # The text-to-cad runtime (decorators, `cadgen` CLI, viewer, snapshots - playwright is a plain
+    # dependency since 0.7.12). Same version as the installed text-to-cad@earthtojake plugin, whose
+    # skills/cad/SKILL.md pins it: bump both together (`./cadtool doctor` checks).
+    "cadgen==0.7.15",
     "numpy>=2.4.6",
 ]
 
