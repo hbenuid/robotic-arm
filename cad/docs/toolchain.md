@@ -6,15 +6,20 @@ of every bump is `git log -- pyproject.toml uv.lock` from `cad/` (the older bump
 
 ## Pins
 - cadgen and the plugin (what each one is: `cad/AGENTS.md` "Running things"): `pyproject.toml` pins
-  `cadgen[snapshot]==<ver>`; the `text-to-cad@earthtojake` plugin **v0.7.x**
-  (`~/.claude/plugins/cache/earthtojake/text-to-cad/<ver>/`) pins the same cadgen version twice: its skills
-  (`skills/cad/requirements.txt`; the skill docs + their scripts) and its MCP server `cad` (`claude.mcp.json`: `uvx
-  --no-config --from cadgen==<ver> cadgen mcp`, started by Claude Code with every session, in uv's cache — never this
-  venv; in a terminal its `cad_show` answers with a CAD Viewer link, `/mcp` turns it off). Bump both together,
-  `./cadtool doctor` checks the skills' pin. `claude plugin install` / `update` take the marketplace's newest release, so update the plugin
+  `cadgen==<ver>` (Playwright, the snapshot browser's driver, is a plain cadgen dependency since 0.7.12: no `[snapshot]`
+  extra); the `text-to-cad@earthtojake` plugin **v0.7.x** (`~/.claude/plugins/cache/earthtojake/text-to-cad/<ver>/`)
+  pins the same cadgen version in one launch command, `uvx --no-config --managed-python --python 3.13 --from
+  cadgen==<ver>`, written into every skill's `SKILL.md` (the skill docs + their scripts) and into its MCP server `cad`
+  (`claude.mcp.json`: that command + `cadgen mcp`, started by Claude Code with every session, in uv's cache on a
+  uv-managed Python 3.13 — never this venv; in a terminal its `cad_show` answers with a CAD Viewer link, `/mcp` turns
+  it off). Bump both together, `./cadtool doctor` checks the skills' pin (`cadgen doctor` reads it from
+  `skills/cad/SKILL.md`). `claude plugin install` / `update` take the marketplace's newest release, so update the plugin
   WITH a bump here, not before: the server's Viewer and this venv write the same store, and a cadgen never cleans a
-  store a newer one wrote to in the last 30 days. Up to 0.7.6 it was `cad@text-to-cad` (plugin `cad`, marketplace
-  `text-to-cad`): a machine that still has that one switches once (Gotchas below).
+  store a newer one wrote to in the last 30 days. Since 0.7.12 the server asks `api.texttocad.dev` once a day for the
+  latest release (one anonymous request; `CADGEN_UPDATE_CHECK=0` turns it off) and, while it is behind, shows an
+  Update button in the viewer and a line on the session's first `cad_show`: here that update IS a bump (the pin with
+  the plugin: "After a pull …" below), never the plugin alone. Up to 0.7.6 it was `cad@text-to-cad` (plugin `cad`,
+  marketplace `text-to-cad`): a machine that still has that one switches once (Gotchas below).
 - **build123d 0.11.1 / OCP 7.9.3**: cadgen 0.7.x requires `build123d>=0.11.1,<0.12` and
   `cadquery-ocp-novtk>=7.9,<8`; `pyproject.toml` pins the exact kernel (`cadquery-ocp-novtk==…`, the
   STEP bytes are per-kernel) and must never gain `cadquery-ocp`, the VTK build (see Gotchas below). On 0.10 / 7.8.1 cadgen could not
@@ -67,8 +72,15 @@ the new version for both, `doctor` cannot tell — see Gotchas below; restart Cl
   `cadgen analytics status|off`, `DO_NOT_TRACK=1`; 0.7.8–0.7.11: the plugin starts CAD's MCP server (Pins, above), its
   `gcode` / `bambu-labs` skills became an OrcaSlicer route and a Bambu Connect handoff (their old scripts are gone), the
   upstream repo dropped Git LFS (plugin installs need no `git-lfs`), and cadgen's own changes are the MCP server's and
-  the bundled viewer's (STEPs with empty components load); same STEP bytes, no stale wave): a retired interface fails
-  with a teaching error, never an alias (a bad `--display` value is refused with the list of presets). The freshness gate
+  the bundled viewer's (STEPs with empty components load); same STEP bytes, no stale wave; 0.7.12–0.7.15: faster gates
+  and rebuilds (a rebuild whose STEP bytes would not change keeps the file: `kept STEP: …`), every process cadgen starts
+  runs as `python -P` (the daemon's: `./cadtool daemon stop`, below), Playwright became a plain dependency (the
+  `[snapshot]` extra is gone) and a snapshot fetches its headless shell itself when it is missing, cadgen's mesher closes
+  the holes and non-manifold edges it left on some filleted / swept faces (the display meshes re-tessellate once), the
+  plugin's skills pin cadgen in their `SKILL.md` launch command (their pinning `requirements.txt` and the
+  `cad-mcp-setup` skill are gone) and its server tells of new releases (Pins, above); same STEP bytes, no stale wave):
+  a retired interface fails with a teaching error, never an alias (a bad `--display` value is refused with the list of
+  presets). The freshness gate
   does not hash cadgen's own version, so a bump makes no model stale (a record-schema change aside, as in 0.7.5) and a
   plain `gen` afterwards rewrites nothing: to
   hash-gate a bump, build every model on the old pin (a fresh worktree has no STEPs), hash, then `./cadtool gen <every
@@ -76,9 +88,10 @@ the new version for both, `doctor` cannot tell — see Gotchas below; restart Cl
   private names this repo leans on — `cadgen.authoring.build_in_progress` / `_build` / `ModelDef.func|fmt|script_path|out`
   (a model's `__cadgen_model__`; `lib/models.py`, `tests/conftest.py`, `test_parts_convention.py`),
   `cadgen._internal.component_package` (`_shape_brep_bytes`, `_build123d_shape_from_brep_bytes`), the `-m cadgen.daemon` cmdline
-  of the venv interpreter (`./cadtool daemon stop`; it is `.venv/bin/python3` on Linux and `.venv/bin/python` on macOS —
-  the pattern takes both, `test_tooling.py`) — and that `./cadtool why assemblies/arm.py` still lists every child (one per
-  occurrence of `arm.py OCCURRENCES`, the modules' rows included) as
+  of the venv interpreter (`./cadtool daemon stop`; it is `.venv/bin/python3` on Linux and `.venv/bin/python` on macOS,
+  and `python -P -m cadgen.daemon` since 0.7.13 — the pattern takes all of them, `test_tooling.py`) — and that
+  `./cadtool why assemblies/arm.py` still lists every child (one per occurrence of `arm.py OCCURRENCES`, the modules'
+  rows included) as
   pinned (a `build_in_progress` that silently read False would inline every child and still build).
 - `./cadtool doctor` never reads `~/.claude/plugins/installed_plugins.json`: `plugin_dir()` pairs the venv's cadgen
   version with the plugin cache directory of the same name, so after `uv sync` to a new cadgen it reports `pin OK`

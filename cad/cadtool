@@ -11,8 +11,9 @@ usage() {
   cat <<'USAGE'
 cadtool - cadgen 0.7 + this uv project (paths relative to cad/)
   ./cadtool setup                                   per machine: uv sync (+ the OCP kernel check) + the git pre-commit hook (ruff) + git notes fetching
-                                                    + Playwright Chromium (for snapshots)
-  ./cadtool doctor                                  installed cadgen vs the plugin's pin (cadgen doctor imports OCP; a gutted kernel: setup), node, chromium
+                                                    + Playwright's headless shell (the snapshot browser)
+  ./cadtool doctor                                  installed cadgen vs the plugin's pin (cadgen doctor imports OCP; a gutted kernel: setup), node,
+                                                    the headless shell
   ./cadtool gen <model.py>... [--force] [--verbose] [--json] [--mesh-tolerance X]
                                                     build: run the model script(s) -> the sibling <name>.step
                                                     (an assembly rebuilds + rewrites its stale child parts too)
@@ -164,8 +165,9 @@ case "$cmd" in
   daemon)
     if [[ "${1:-}" == "stop" ]]; then   # cadgen has no stop verb: SIGTERM the daemon (it shuts its pool down), then sweep
       # the daemon + its workers (`… -m cadgen.daemon.worker`). The interpreter's name is per platform: the venv's
-      # `python3` on Linux, `python` on macOS (where python3 is the symlink) - [0-9.]* takes both, and python3.12
-      daemon="^$CAD_DIR/.venv/bin/python[0-9.]* -m cadgen\.daemon"
+      # `python3` on Linux, `python` on macOS (where python3 is the symlink) - [0-9.]* takes both, and python3.12;
+      # cadgen 0.7.13+ starts every process of its own with `-P` (no cwd on sys.path), older ones without
+      daemon="^$CAD_DIR/.venv/bin/python[0-9.]*( -P)? -m cadgen\.daemon"
       pids="$(pgrep -f "$daemon" || true)"
       if [[ -z "$pids" ]]; then echo "cadtool: no cadgen daemon running for this venv"; exit 0; fi
       pkill -TERM -f "$daemon\$" || true
@@ -185,9 +187,9 @@ case "$cmd" in
     uv run --frozen cadgen doctor "$CAD_PLUGIN/skills/cad" || rc=$?
     if command -v node >/dev/null 2>&1; then echo "node $(node --version)   (mesh export needs >= 20)"
     else echo "node: NOT on PATH - ./cadtool export needs node >= 20"; rc=1; fi
-    loc="$(uv run --frozen python -m playwright install --dry-run chromium 2>/dev/null | awk -F': +' '/Install location/ {print $2; exit}')"
-    if [[ -n "$loc" && -d "$loc" ]]; then echo "playwright chromium: ok   ($loc)"
-    else echo "playwright chromium: MISSING - run ./cadtool setup   (${loc:-playwright not installed})"; rc=1; fi
+    loc="$(uv run --frozen python -m playwright install --dry-run --only-shell chromium 2>/dev/null | awk -F': +' '/Install location/ {print $2; exit}')"
+    if [[ -n "$loc" && -d "$loc" ]]; then echo "playwright headless shell: ok   ($loc)"
+    else echo "playwright headless shell: MISSING - run ./cadtool setup   (${loc:-playwright not installed})"; rc=1; fi
     exit $rc ;;
   setup)
     uv sync
@@ -200,7 +202,9 @@ case "$cmd" in
     fi
     install_git_hook
     fetch_git_notes
-    uv run --frozen python -m playwright install chromium ;;
+    # The browser snapshots launch: Playwright's headless shell alone, not the full Chromium (~350 MB more) beside it.
+    # cadgen 0.7.12+ also fetches it on the first snapshot that misses it; setup leaves a machine ready offline.
+    uv run --frozen python -m playwright install --only-shell chromium ;;
   python)
     exec uv run --frozen python "$@" ;;
   pytest)

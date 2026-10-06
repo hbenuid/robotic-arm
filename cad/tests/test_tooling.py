@@ -24,7 +24,7 @@ def pinned(package: str) -> str:
 
 
 def test_installed_cadgen_is_the_pinned_one():
-    # The plugin's skills/cad/requirements.txt carries the same pin; ./cadtool doctor checks that side.
+    # The plugin's skills/cad/SKILL.md carries the same pin; ./cadtool doctor checks that side.
     assert metadata.version("cadgen") == pinned("cadgen"), "run ./cadtool setup"
 
 
@@ -60,12 +60,13 @@ def test_daemon_stop_finds_the_daemon_on_both_platforms():
     """./cadtool daemon stop greps the process list for the venv interpreter running cadgen.daemon. That
     interpreter is named per platform - `.venv/bin/python3` on Linux, `.venv/bin/python` on macOS (where
     python3 is the symlink) - and a pattern that knows only one of them reports "no cadgen daemon running"
-    while the daemon keeps its old code loaded (2026-09-21, the arm64 Mac)."""
+    while the daemon keeps its old code loaded (2026-09-21, the arm64 Mac). cadgen 0.7.13+ starts the daemon and
+    its workers as `python -P -m …` (no cwd on their import path): the pattern takes both forms."""
     source = (CAD_DIR / "cadtool").read_text()
     match = re.search(r'^\s*daemon="\^\$CAD_DIR(?P<tail>[^"]+)"$', source, re.MULTILINE)
     assert match, "cadtool: the daemon= process pattern of `daemon stop` moved - update this test"
     pattern = re.compile("^/repo/cad" + match.group("tail"))
-    for exe in ("python", "python3", "python3.12"):
+    for exe in ("python", "python3", "python3.12", "python -P", "python3 -P"):
         assert pattern.search(f"/repo/cad/.venv/bin/{exe} -m cadgen.daemon"), exe
         assert pattern.search(f"/repo/cad/.venv/bin/{exe} -m cadgen.daemon.worker"), exe
     assert not pattern.search("/repo/cad/.venv/bin/python -m cadgen viewer")
