@@ -120,7 +120,6 @@ NATIVE: dict[str, str] = {
     "forearm_roll_block":    "lib/forearm/roll.py:build_block(DEFAULT)",
     "forearm_roll_shaft":    "lib/forearm/roll.py:build_shaft(DEFAULT)",
     "forearm_roll_retainer": "lib/forearm/roll.py:build_retainer(DEFAULT)",
-    "forearm_roll_motor_mount": "lib/forearm/roll.py:build_motor_mount(DEFAULT)",
     "base_motor_mount":      "lib/base/body.py:build_motor_mount(DEFAULT)",
 }
 
@@ -136,8 +135,6 @@ NATIVE_COTS: dict[str, str] = {
     "elbow_pulley_nuts": "parts/joints/elbow_pulley_nuts.py:_envelope()",
     "wrist_pulley_screws": "parts/joints/wrist_pulley_screws.py:_envelope()",
     "wrist_pulley_nuts": "parts/joints/wrist_pulley_nuts.py:_envelope()",
-    "forearm_roll_mount_screws": "parts/joints/forearm_roll_mount_screws.py:_envelope()",
-    "forearm_roll_mount_nuts": "parts/joints/forearm_roll_mount_nuts.py:_envelope()",
     "base_motor_mount_screws": "parts/base/base_motor_mount_screws.py:_envelope()",
     "base_motor_mount_nuts": "parts/base/base_motor_mount_nuts.py:_envelope()",
     "ky003_hall_sensor": "parts/joints/ky003_hall_sensor.py:_envelope()",

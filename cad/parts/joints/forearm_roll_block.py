@@ -1,12 +1,12 @@
-"""forearm_roll_block - the forearm roll drive's STATOR - the elbow block, which is also the elbow's output flange: a rounded box
-round the roll axis (66 x 72 x 76) whose underside repeats the SolidWorks j3_coupler's lip, Ø62 boss, Ø40 journal and Ø30 stub down
-into j1_link's recess and bore (the elbow 90T pulley bolts up through the stub into 4x M4 nuts in hex channels that open into the
-core bore - j3_coupler#1 is retired),
-the housing bore that CROSSES the elbow axis - the rear end wall with the Ø26 cable exit on the axis, the lip bearing 1 stops on,
-its Ø52.15 seat, the clearance bore round the shaft's core, the Ø62 cavity the shaft's 90T ring runs in (open through the front
-face, the belt window in the top wall), the end cap's 4x M3 in the front face - and, on the block's top UP in the swing plane, the
-pocket in the flat top the bolt-on motor mount's base fills (forearm_roll_motor_mount: the 40 mm kit motor's plate; the rounded edges
-stay), its 4 clearance holes down through the top wall and the hex pockets the mount's M3 nuts press into from inside the core bore.
+"""forearm_roll_block - the forearm roll drive's STATOR - the roll frame (the elbow block), which is also the elbow's output
+flange, one printed part: the HOUSING round the roll axis (a 66 x 72 x 62 rounded box - the rear end wall with the Ø26 cable
+exit on the axis, the lip bearing 1 stops on, its Ø52.15 seat, the clearance bore round the shaft's core, the Ø62 cavity the
+shaft's 90T ring runs in, open through the front face, the end cap's 4x M3 in that face, the belt window in its bottom wall),
+the WEB under the roll motor on the upper arm's side, from the housing down past the elbow axis (ELBOW_ROLL_OFFSET under the
+roll axis), whose underside repeats the SolidWorks j3_coupler's lip, Ø62 boss, Ø40 journal and Ø30 stub about the elbow axis
+down into j1_link's recess and bore (the elbow 90T pulley bolts up through the stub into 4x M4 nuts in hex channels that open
+up into the motor's cradle - j3_coupler#1 is retired), and the PLATE in front of the motor (the 40 mm kit motor's tension
+slots and pilot slot), the motor sitting on the elbow axis in the cradle between the three.
 
 NATIVE part (lib/reference.py NATIVE): designed here in build123d (lib/forearm/roll.py build_block(cfg), every number
 lib/forearm/params.py RollDriveParams, in the drive's MODULE frame at its stack station - assemblies/forearm_roll_drive.py

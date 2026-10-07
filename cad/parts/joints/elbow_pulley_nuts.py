@@ -29,7 +29,7 @@ COTS = True
 MASS_G = PULLEY_NUTS_MASS_G   # [ESTIMATE] the modelled steel (lib/params.py)
 PURCHASE_SPEC = f"M{M4_NUT.d:g} hex nut (ISO 4032)"
 PURCHASE_QTY = len(pulley_90t_bolt_points())   # pieces per occurrence (the whole pattern)
-PURCHASE_NOTE = "captive in the elbow block's hex channels (pressed in from the core bore before the roll shaft)"
+PURCHASE_NOTE = "captive in the roll frame's hex channels (dropped in from the motor's cradle before the roll motor)"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 

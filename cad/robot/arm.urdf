@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--
   arm: 6-axis desktop arm - base yaw, shoulder pitch (21:1 cycloidal drive), elbow pitch (GT2 belt),
-  FOREARM ROLL (GT2 belt in the elbow block, cad/assemblies/forearm_roll_drive.py), wrist pitch (GT2
+  FOREARM ROLL (GT2 belt in the roll frame at the elbow, cad/assemblies/forearm_roll_drive.py), wrist pitch (GT2
   belt) and the NEMA17-pancake wrist roll - + MG996R parallel gripper. Five joints are driven by
   NEMA 17 + MKS SERVO42D kits: the base_yaw / elbow_pitch / wrist_pitch motors are NEMA 17s on the
   mounts the links carry (cad/lib/mounts.py: the 48 mm nema17_48mm#1 under the base, nema17_40mm#2..3 on
@@ -23,12 +23,14 @@
   captured pose, not a design offset); the shoulder_pitch, elbow_pitch and wrist_pitch axes are
   parallel (SlabParams.elbow_x and -WebParams.wrist_x apart in the pitch plane, with 10 mm and 42 mm offsets
   along the axis).
-  forearm_roll's Z runs along the forearm (elbow -> wrist_pitch, the pitch plane's in-plane direction)
-  through the WRIST CENTRE - where the wrist_pitch and wrist_roll axes meet, 17 mm back along the pitch
-  axis from the wrist_pitch origin - so the last three axes are concurrent (a spherical wrist); its X is
-  the pitch-axis direction (its child's long direction IS the axis). elbow_link is the elbow's driven
-  side (the 90T pulley + coupler carrying the roll drive's stator), forearm_link the roll drive's rotor
-  (the hollow shaft) + the forearm.
+  forearm_roll's Z runs along the forearm (the pitch plane's in-plane direction) through the WRIST
+  CENTRE - where the wrist_pitch and wrist_roll axes meet, 17 mm back along the pitch axis from the
+  wrist_pitch origin - so the last three axes are concurrent (a spherical wrist); its X is the
+  pitch-axis direction (its child's long direction IS the axis). It does NOT cross the elbow axis: the
+  roll motor sits on the elbow axis and the roll housing ELBOW_ROLL_OFFSET (60.9 mm, the roll belt's centre
+  distance) above it, so forearm_roll's origin sits that far across elbow_link's frame (its -Y) - an elbow
+  offset. elbow_link is the elbow's driven side (the 90T pulley carrying the roll drive's stator, the
+  frame whose web is the elbow coupler), forearm_link the roll drive's rotor (the hollow shaft) + the forearm.
 
   UNITS: metres, kilograms, radians. MESHES: meshes/<link>.stl in millimetres (scale 0.001),
   one per link in the link frame (visual and collision reuse them; simplified collision
@@ -113,9 +115,9 @@
   </link>
   <link name="elbow_link">
     <inertial>
-      <origin xyz="-0.006658 -0.027232 0.019402" rpy="0 0 0" />
-      <mass value="0.739978" />
-      <inertia ixx="1.327244e-03" ixy="-1.709609e-04" ixz="3.118701e-05" iyy="7.830866e-04" iyz="1.181823e-04" izz="1.301175e-03" />
+      <origin xyz="-0.003976 -0.022128 0.017163" rpy="0 0 0" />
+      <mass value="0.754696" />
+      <inertia ixx="1.318728e-03" ixy="1.964212e-04" ixz="2.222805e-05" iyy="7.586526e-04" iyz="1.394198e-04" izz="1.262434e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -132,9 +134,9 @@
   </link>
   <link name="forearm_link">
     <inertial>
-      <origin xyz="0.004618 -0.000012 0.100337" rpy="0 0 0" />
-      <mass value="0.706435" />
-      <inertia ixx="2.435994e-03" ixy="2.486815e-07" ixz="8.885513e-05" iyy="2.415092e-03" iyz="6.462437e-08" izz="3.841204e-04" />
+      <origin xyz="0.004746 -0.000012 0.10386" rpy="0 0 0" />
+      <mass value="0.687443" />
+      <inertia ixx="2.115198e-03" ixy="2.476764e-07" ixz="1.003446e-04" iyy="2.093880e-03" iyz="3.700675e-08" izz="3.777410e-04" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -245,12 +247,12 @@
     <child link="elbow_link" />
     <origin xyz="0.170004 0 0.049271" rpy="0 0 0.010227" />
     <axis xyz="0 0 1" />
-    <limit lower="-0.366519" upper="1.570796" effort="5" velocity="1" />
+    <limit lower="-0.820305" upper="1.570796" effort="5" velocity="1" />
   </joint>
   <joint name="forearm_roll" type="revolute">
     <parent link="elbow_link" />
     <child link="forearm_link" />
-    <origin xyz="0 0 0.025" rpy="3.141593 -1.570795 0" />
+    <origin xyz="0.000001 -0.060926 0.025" rpy="3.141593 -1.570795 0" />
     <axis xyz="0 0 1" />
     <limit lower="-2.96706" upper="2.96706" effort="5" velocity="1" />
   </joint>

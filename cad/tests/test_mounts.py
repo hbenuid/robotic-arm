@@ -277,13 +277,13 @@ def test_the_elbow_pulley_holes_line_up_with_the_block_bolts():
         p = (module * Location((x, y, z))).position
         return p.X, p.Y, p.Z
 
-    face = D.stub_x[0]
+    face, ye = D.stub_x[0], D.elbow_y   # the pattern is about the elbow axis, at module y = elbow_y (the elbow offset)
     for y, z in pulley_bolt_points(FOREARM):
         for x in (face - 1.0, face - D.pulley_hub_len / 2.0, face - D.pulley_hub_len + 1.0):
-            assert not is_inside(pulley, *at(x, y, z)), (y, z, x)
-        assert not is_inside(block, *at(face + 1.0, y, z)), (y, z)
+            assert not is_inside(pulley, *at(x, ye + y, z)), (y, z, x)
+        assert not is_inside(block, *at(face + 1.0, ye + y, z)), (y, z)
         r = D.pulley_bolt_r
-        assert is_inside(pulley, *at(face - 1.0, y + 3.0 * z / r, z - 3.0 * y / r)), (y, z)
+        assert is_inside(pulley, *at(face - 1.0, ye + y + 3.0 * z / r, z - 3.0 * y / r)), (y, z)
 
 
 def test_the_pulley_bolts_reach_their_nuts():

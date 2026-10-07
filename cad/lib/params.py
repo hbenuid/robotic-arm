@@ -117,9 +117,11 @@ FOREARM_WALL_OD = _FOREARM.roll_end.wall_od        # 60 [DESIGN] the flange wall
 FOREARM_PLUG_CLEARANCE = _FOREARM.roll_end.plug_clearance   # 10 [DESIGN] the wrist motor's connector plug to the wall
 FOREARM_FLANGE_DIA = _FOREARM.roll_end.flange_dia  # 39.7 [DESIGN] the roll shaft's end spigot the forearm wall bolts onto
 FOREARM_ROLL_BELT_LENGTH = _FOREARM.drive.roll_belt          # 240-2GT [ESTIMATE] the roll belt (90T ring on the shaft, 20T on the motor)
-FOREARM_ROLL_MOTOR_XY = (0.0, _FOREARM.drive.motor_y)        # (0, 60.9) [DESIGN] the roll motor's axis in the module frame: on the roll axis in X, up in the swing plane by what the belt sets
+FOREARM_ROLL_MOTOR_XY = (0.0, _FOREARM.drive.motor_y)        # (0, -60.9) [DESIGN] the roll motor's axis in the module frame: on the elbow axis, under the housing by what the belt sets
+ELBOW_ROLL_OFFSET = _FOREARM.elbow_offset                    # 60.9 [DESIGN] the roll axis' distance from the elbow axis (along j2_link's +Y): the roll belt's centre
+#                                                              distance, the roll motor on the elbow axis - the arm's elbow offset (lib/placements.py SHIFTS)
 FOREARM_ROLL_RATIO = _FOREARM.drive.ring_teeth / GT2_PULLEY_20T_TEETH   # 4.5:1 [DESIGN] like the other belt joints
-FOREARM_ROLL_BLOCK_X = _FOREARM.drive.block_x       # (-33, 33) [DESIGN] the elbow block's extent along N: its underside 3.0 mm above the upper arm's elbow relief (host z -11)
+FOREARM_ROLL_BLOCK_X = _FOREARM.drive.block_x       # (-33, 33) [DESIGN] the roll frame's extent along N: its underside 3.0 mm above the upper arm's flat top (host z -11)
 
 # --- Cycloidal drive (lib/cycloidal/, assemblies/cycloidal_drive.py, docs/cycloidal_drive.md) -----
 # The drive's own dimensions live in lib/cycloidal/params.py (DriveConfig, ported from the
@@ -193,13 +195,6 @@ WRIST_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS
 YAW_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _YAW_COUPLER.hub.pulley_screw_len)   # 20.1, 4x M4x40
 PULLEY_NUTS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * nut_volume(M4_NUT)                                              # 3.0, 4x M4 (each joint)
 
-# The roll motor mount's screws and nuts (parts/joints/forearm_roll_mount_{screws,nuts}): the same estimate
-from lib.forearm.layout import mount_bolt_points as _mount_bolt_points  # noqa: E402
-
-_MOUNT_BOLTS = len(_mount_bolt_points(_FOREARM))
-ROLL_MOUNT_SCREWS_MASS_G = STEEL_DENSITY * _MOUNT_BOLTS * csk_volume(M3_CSK, _FOREARM.drive.mount_screw_len)   # 4.2, 4x M3x16 countersunk
-ROLL_MOUNT_NUTS_MASS_G = STEEL_DENSITY * _MOUNT_BOLTS * nut_volume(M3_NUT)                                      # 1.4, 4x M3
-
 # The base motor mount's screws and nuts (parts/base/base_motor_mount_{screws,nuts}): the same estimate
 from lib.base.layout import joint_bolt_points as _joint_bolt_points  # noqa: E402
 
@@ -221,10 +216,10 @@ BASE_YAW_LIMIT_DEG = 175.0        # [ESTIMATE] symmetric +/- range; j1_coupler (
 # its 1 mm running gap held to 69.5 - tests/test_sweeps.py), the lower is an [ESTIMATE] (the arm clears to -150)
 SHOULDER_PITCH_LIMITS_DEG = (-120.0, 67.0)   # [DESIGN]
 # the 4.5:1 elbow belt: (lower, upper); the lower - the forearm lifted back - stops 3 deg before the forearm roll drive's
-# MKS board comes within 1 mm of the elbow motor, which stands on the same side of the upper arm (-24.4 deg -
-# tests/forearm/test_roll_drive.py); the upper kept at 90 although the necked forearm (j2_link) stays 2 mm off j1_link at any roll
-# to about +102 deg: SHOULDER_PITCH_LIMITS_DEG was set over this range (docs/open_issues.md)
-ELBOW_PITCH_LIMITS_DEG = (-21.0, 90.0)   # [DESIGN]
+# housing (its rear end, ELBOW_ROLL_OFFSET over the elbow axis) comes within 1 mm of the elbow motor, which stands on the
+# same side of the upper arm (-50.0 deg - tests/forearm/test_roll_drive.py; the roll motor, on the elbow axis, never
+# reaches it); the upper kept at 90 (docs/open_issues.md): SHOULDER_PITCH_LIMITS_DEG was set over this range
+ELBOW_PITCH_LIMITS_DEG = (-47.0, 90.0)   # [DESIGN]
 # the GT2 belt at wrist_link: (lower, upper), the clear range (the wrist body's back corners reach j2_link's web at
 # -109 / +74.5 at any roll, tests/test_sweeps.py) less 4 deg
 WRIST_PITCH_LIMITS_DEG = (-105.0, 70.0)   # [DESIGN]

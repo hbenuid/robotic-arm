@@ -42,9 +42,6 @@ MULTI_BODY = {
     # ... and of the base_yaw joint
     "yaw_pulley_screws": 4,
     "yaw_pulley_nuts": 4,
-    # the roll motor mount's countersunk screws + nuts (assemblies/forearm_roll_drive.py rows)
-    "forearm_roll_mount_screws": 4,
-    "forearm_roll_mount_nuts": 4,
     # the base motor mount's M4 screws + nuts (lib/mounts.py BASE_MOUNTS)
     "base_motor_mount_screws": 4,
     "base_motor_mount_nuts": 4,

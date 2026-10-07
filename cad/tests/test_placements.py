@@ -140,11 +140,20 @@ def _capture_records(*links: str) -> set:
     return out
 
 
-def _check_links_carry_what_lies_beyond(elbow_x: float, wrist_x: float, end_dx: float, across: float = 0.0):
-    """j2_link#1 (on the elbow axis) sits at (elbow_x, 10 + across, 0) in j1_link's frame, j3_coupler#2 (on the
+def _j2_y_in_j1() -> tuple:
+    """j2_link's +Y in j1_link's part frame (the raw records: the shifts only translate)."""
+    rel = P.to_location(P.OCCURRENCES["j1_link#1"]["world"]).inverse() * P.to_location(P.OCCURRENCES["j2_link#1"]["world"])
+    return tuple((rel * Location((0.0, 1.0, 0.0))).position - rel.position)
+
+
+def _check_links_carry_what_lies_beyond(elbow_x: float, wrist_x: float, end_dx: float, across: float = 0.0,
+                                        offset: float = 0.0):
+    """j2_link#1 (whose capture origin is on the elbow axis) sits at (elbow_x, 10 + across, 0) in j1_link's frame, plus
+    `offset` along its own +Y (the forearm across the elbow axis: the roll drive's elbow offset); j3_coupler#2 (on the
     wrist_pitch axis) at (wrist_x, 0, 42) in j2_link's; what bolts to the wrist body's end face keeps its capture pose in
     the wrist body's frame but for x + end_dx."""
-    assert _near(_position_in("j1_link#1", "j2_link#1"), (elbow_x, 10.0 + across, 0.0))
+    y2 = _j2_y_in_j1()
+    assert _near(_position_in("j1_link#1", "j2_link#1"), tuple(a + offset * b for a, b in zip((elbow_x, 10.0 + across, 0.0), y2, strict=True)))
     assert _near(_position_in("j2_link#1", "j3_coupler#2"), (wrist_x, 0.0, 42.0))
     wrist_raw = P.to_location(P.OCCURRENCES["wrist_link#1"]["world"])
     for key in P.SHIFTS[2].moves:
@@ -162,8 +171,9 @@ def test_shift_axes_are_their_anchors_x_and_y():
 
 
 def test_shifts_move_the_capture_records_beyond_each_link():
-    upper_arm, forearm, wrist, yoke = P.SHIFTS
-    assert (upper_arm.anchor, forearm.anchor, wrist.anchor, yoke.anchor) == ("j1_link#1", "j2_link#1", "wrist_link#1", "j1_coupler#1")
+    upper_arm, forearm, wrist, yoke, roll = P.SHIFTS
+    assert (upper_arm.anchor, forearm.anchor, wrist.anchor, yoke.anchor, roll.anchor) == (
+        "j1_link#1", "j2_link#1", "wrist_link#1", "j1_coupler#1", "j2_link#1")
     assert set(upper_arm.moves) == _capture_records("elbow_link", "forearm_link", "wrist_pitch_link", "wrist_roll_link",
                                                     "jaw_a_link", "jaw_b_link") | set(P.RETIRED)
     assert set(forearm.moves) == _capture_records("wrist_pitch_link", "wrist_roll_link", "jaw_a_link", "jaw_b_link") | {
@@ -182,22 +192,28 @@ def test_shifts_move_the_capture_records_beyond_each_link():
     # move along its +X (N) from where the capture had them
     assert set(yoke.moves) == {"cycloidal_drive#1", "j1_link#1"} | set(upper_arm.moves) and yoke.across_y == 0.0
     assert yoke.along_x == YAW.DEFAULT.fork.face_x - CAPTURE_FACE_X == -7.5
+    # the roll drive's elbow offset: the forearm and all beyond it across along j2_link's +Y; the elbow's own records
+    # (the retired j3_coupler#1 / gt2_pulley_90t#1 its 90T and bolts are hosted on) stay
+    assert set(roll.moves) == set(forearm.moves) | {"j2_link#1"} and roll.along_x == 0.0
+    assert not {"j3_coupler#1", "gt2_pulley_90t#1"} & set(roll.moves)
+    assert roll.across_y == FOREARM.DEFAULT.elbow_offset - FOREARM.LEGACY.elbow_offset == FOREARM.DEFAULT.drive.centre_distance
 
 
 def test_the_links_carry_what_lies_beyond_them():
     _check_links_carry_what_lies_beyond(UPPER_ARM.DEFAULT.slab.elbow_x, FOREARM.DEFAULT.web.wrist_x,
                                         WRIST.DEFAULT.tower.block_x1 - WRIST.LEGACY.tower.block_x1,
-                                        arm_slide(UPPER_ARM.DEFAULT))
+                                        arm_slide(UPPER_ARM.DEFAULT), FOREARM.DEFAULT.elbow_offset)
 
 
 def test_shifted_links_keep_the_records_consistent(monkeypatch):
     """Shorter links (any lengths) and a slid elbow end: each moves what lies beyond it, a module's children follow it,
     the rest stays."""
-    along = {"j1_link": -40.0, "j2_link": 40.0, "wrist_link": -20.0, "j1_coupler": P.SHIFTS[3].along_x}   # the yoke's kept
-    across = {"j1_link": 25.0, "j2_link": 0.0, "wrist_link": 0.0, "j1_coupler": 0.0}
+    along = {"j1_link": -40.0, "j2_link": 40.0, "wrist_link": -20.0, "j1_coupler": P.SHIFTS[3].along_x,   # the yoke's kept
+             "forearm_roll_drive": 0.0}
+    across = {"j1_link": 25.0, "j2_link": 0.0, "wrist_link": 0.0, "j1_coupler": 0.0, "forearm_roll_drive": 30.0}
     before = {key: P.location(key, "world") for key in ("base#1", "j1_link#1", "cycloidal_drive#1")}
     monkeypatch.setattr(P, "SHIFTS", tuple(replace(s, along_x=along[s.link], across_y=across[s.link]) for s in P.SHIFTS))
-    _check_links_carry_what_lies_beyond(UPPER_ARM.LEGACY.slab.elbow_x - 40.0, FOREARM.LEGACY.web.wrist_x + 40.0, -20.0, 25.0)
+    _check_links_carry_what_lies_beyond(UPPER_ARM.LEGACY.slab.elbow_x - 40.0, FOREARM.LEGACY.web.wrist_x + 40.0, -20.0, 25.0, 30.0)
     _check_world_equals_parent_world_times_rel()
     for key, loc in before.items():
         assert _close(_matrix(P.location(key, "world")), _matrix(loc), tol=1e-9), key
