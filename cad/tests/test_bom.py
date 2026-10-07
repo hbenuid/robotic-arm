@@ -11,7 +11,7 @@ def test_every_part_is_counted_once_per_occurrence():
     counts = bom.part_counts()
     leaves = (len(arm.OCCURRENCES) - len(arm.MODULES) + len(gripper.OCCURRENCES) + len(cycloidal_drive.OCCURRENCES)
               + len(forearm_roll_drive.OCCURRENCES))
-    assert sum(counts.values()) == leaves == 87
+    assert sum(counts.values()) == leaves == 88
     assert set(counts) == set(parts.names()) - set(parts.unplaced()), "a part under parts/ that no assembly places (or the reverse)"
     assert not set(counts) & set(parts.unplaced()), "a placed part still declares UNPLACED - drop it (and its EXTRAS row)"
     assert sum(bom.part_counts("gripper").values()) == len(gripper.OCCURRENCES)
@@ -25,7 +25,7 @@ def test_the_two_lists_partition_the_parts_by_the_cots_flag():
     assert not {r["part"] for r in printed} & {r["part"] for r in bought}
     assert {r["part"] for r in bought} == (set(R.COTS) | {n for n in R.NO_REFERENCE if parts.bought(n)}) - set(parts.unplaced())
     assert (len(printed), sum(r["qty"] for r in printed)) == (30, 37)
-    assert (len(bought), sum(bom.part_counts()[r["part"]] for r in bought)) == (31, 50)
+    assert (len(bought), sum(bom.part_counts()[r["part"]] for r in bought)) == (32, 51)
     assert {r["state"] for r in printed} <= {"wrapper", "parametric", "designed", "native", "measured", "no reference"}
     assert {r["part"] for r in printed if r["state"] == "no reference"} == {n for n in R.NO_REFERENCE if not parts.bought(n)}
     assert {r["part"] for r in printed if r["state"] == "designed"} == set(R.DESIGNED) - set(parts.unplaced())
@@ -102,6 +102,15 @@ def test_the_base_motor_mount_takes_its_m4_screws_and_nuts():
     assert all((r["pieces"], r["geometry"]) == (4, "envelope") for r in rows.values())
     assert rows["base_motor_mount_screws"]["order"].startswith("M4 x 20 socket head cap screw (ISO 4762)")
     assert rows["base_motor_mount_nuts"]["order"].startswith("M4 hex nut (ISO 4032)")
+
+
+def test_the_elbow_motor_takes_its_m3_screws():
+    """The elbow motor is held down on the web across j1_link's motor hole by 4x M3 SHCS (lib/mounts.py
+    MOTOR_SCREW_MOUNTS): a modelled pattern part on the buy list, no vendor model - no EXTRAS row."""
+    rows = [r for r in bom.buy_rows() if r["part"] == "elbow_motor_screws"]
+    assert [(r["pieces"], r["geometry"]) for r in rows] == [(4, "envelope")]
+    assert rows[0]["order"].startswith("M3 x 10 socket head cap screw (ISO 4762)")
+    assert not any(spec.startswith("M3") and "elbow motor" in spec for owner, spec, _, _ in bom.EXTRAS if owner is None)
 
 
 def test_extras_are_well_formed_and_scoped_to_a_module():
