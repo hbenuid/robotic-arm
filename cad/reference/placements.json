@@ -3472,7 +3472,7 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "on j1_link's motor plate (on its 4 holes), ELBOW_MOTOR_CENTRES short of the elbow axis, the body +N down the hole through the arm, shaft -N through the plate; connector toward -Z [ESTIMATE] (toward the elbow the roll block would pass it 0.2 mm off)"
+    "note": "on the web across j1_link's motor hole (on its 4 holes), ELBOW_MOTOR_CENTRES short of the elbow axis, the body +N down the hole through the slab, shaft -N through the web; connector toward -Z [ESTIMATE] (toward the elbow the roll block would pass it 0.2 mm off)"
    },
    "solids": 2,
    "solid_volume": 66449.22,

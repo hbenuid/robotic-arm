@@ -2,9 +2,9 @@
 
 Every feature runs along the part's Y (its thickness), so the body is built in a working frame whose +Z is the
 part's +Y - part (x, y, z) = working (x, -z, y), the helpers below take part coordinates - and turned into the part
-frame once at the end (Rot(-90, 0, 0)). DEFAULT's arm (ArmParams) - a bar in place of the pad, a plate under it for
-the elbow motor - adds the cycloidal drive's shell body, built in the drive's frame (lib/cycloidal/housing.py
-build_shell_body), through drive_frame()."""
+frame once at the end (Rot(-90, 0, 0)). DEFAULT's arm (ArmParams) - one flat slab in place of the plate and the pad,
+the elbow motor's hole through it - adds the cycloidal drive's shell body, built in the drive's frame
+(lib/cycloidal/housing.py build_shell_body), through drive_frame()."""
 from __future__ import annotations
 
 import math
@@ -38,6 +38,23 @@ def _slot(x: float, half_len: float, width: float, y0: float, y1: float):
     return bd.Pos(x, 0.0, y0) * bd.Rot(0.0, 0.0, 90.0) * bd.extrude(bd.SlotCenterToCenter(2.0 * half_len, width), amount=y1 - y0)
 
 
+def _cut_stepped_slot(body, cfg: UpperArmConfig, top: float):
+    """`body` less the slot at SlotParams.stepped_x: through from its counterbore's floor up to `top`, the counterbore
+    from the elbow half's underside."""
+    sl, e = cfg.slots, cfg.elbow
+    body = body - _slot(sl.stepped_x, sl.stepped_half_len, sl.width, sl.counterbore_y - NUDGE, top)
+    return body - _slot(sl.stepped_x, sl.stepped_half_len, sl.counterbore_w, e.y0 - NUDGE, sl.counterbore_y)
+
+
+def _cut_elbow_stack(body, cfg: UpperArmConfig, top: float):
+    """`body` less the elbow axis's bearing stack: the recess from `top`, the bore, the lip, the seat from below."""
+    e, x = cfg.elbow, cfg.slab.elbow_x
+    body = body - _bore(e.recess_dia / 2.0, e.recess_y, top, x)
+    body = body - _bore(e.bore_dia / 2.0, e.lip_y[1], e.recess_y + NUDGE, x)
+    body = body - _bore(e.lip_dia / 2.0, e.lip_y[0] - NUDGE, e.lip_y[1] + NUDGE, x)
+    return body - _bore(e.seat_dia / 2.0, e.y0 - NUDGE, e.lip_y[0], x)
+
+
 def _plate(cfg: UpperArmConfig):
     """The stadium plate with its lip and rounded edge, the elbow half's step below, the square opening over the pad,
     the slots, the second stage's bearing seats (if any) and the elbow bearing stack."""
@@ -59,21 +76,14 @@ def _plate(cfg: UpperArmConfig):
     # the slots: two through, one with a counterbore from below
     for x in sl.through_x:
         body = body - _slot(x, sl.through_half_len, sl.width, s.y0 - NUDGE, top)
-    body = body - _slot(sl.stepped_x, sl.stepped_half_len, sl.width, sl.counterbore_y - NUDGE, top)
-    body = body - _slot(sl.stepped_x, sl.stepped_half_len, sl.counterbore_w, e.y0 - NUDGE, sl.counterbore_y)
+    body = _cut_stepped_slot(body, cfg, top)
     # the second stage (BearingParams.x): the boss under the plate, a seat from each side, the hole through the web
     if b is not None:
         body = body + _bore(b.boss_dia / 2.0, b.boss_y, s.y0 + NUDGE, b.x)
         body = body - _bore(b.seat_dia / 2.0, b.web_y[1], top, b.x)
         body = body - _bore(b.hole_dia / 2.0, b.web_y[0] - NUDGE, b.web_y[1] + NUDGE, b.x)
         body = body - _bore(b.seat_dia / 2.0, b.boss_y - NUDGE, b.web_y[0], b.x)
-    # the elbow axis: recess, bore, lip, seat
-    x = s.elbow_x
-    body = body - _bore(e.recess_dia / 2.0, e.recess_y, top, x)
-    body = body - _bore(e.bore_dia / 2.0, e.lip_y[1], e.recess_y + NUDGE, x)
-    body = body - _bore(e.lip_dia / 2.0, e.lip_y[0] - NUDGE, e.lip_y[1] + NUDGE, x)
-    body = body - _bore(e.seat_dia / 2.0, e.y0 - NUDGE, e.lip_y[0], x)
-    return body
+    return _cut_elbow_stack(body, cfg, top)
 
 
 def _pad(cfg: UpperArmConfig):
@@ -105,27 +115,23 @@ def _pad(cfg: UpperArmConfig):
     return pad
 
 
-def _arm(cfg: UpperArmConfig):
-    """The arm rising off the drive's shell (ArmParams), a plain bar: the plate's width from the shoulder axis to the
-    elbow axis, from y_outer to y_inner, stopping at the elbow's relief round the elbow axis, its top stepped down flat
-    where the forearm roll drive's stator swings over it."""
-    a, s, e = cfg.arm, cfg.slab, cfg.elbow
-    body = _block((0.0, s.elbow_x), (-s.r, s.r), (a.y_outer, a.y_inner))
-    body = body - _bore(e.relief_r, a.y_outer - 1.0, a.y_inner + 1.0, s.elbow_x)
-    top = s.lip_top + arm_slide(cfg) + a.swing_above_top
-    return body - _block((s.elbow_x - a.swing_r, s.elbow_x + 1.0), (-s.r - 1.0, s.r + 1.0), (top, a.y_inner + 1.0))
-
-
-def _motor_plate(cfg: UpperArmConfig):
-    """The elbow motor's plate (ArmParams), about the pad's axis, under the arm's outer face (here the unslid plate's
-    underside, SlabParams.y0): the hole for the motor's pilot, its 4 holes (PadParams.holes)."""
-    a, y0 = cfg.arm, cfg.slab.y0
-    h = a.motor_plate_half
-    plate = _block((-h, h), (-h, h), (y0 - a.motor_plate_t, y0))
-    plate = plate - _bore(a.motor_pilot_dia / 2.0, y0 - a.motor_plate_t - 1.0, y0 + 1.0)
-    for x, z, dia in cfg.pad.holes:
-        plate = plate - _bore(dia / 2.0, y0 - a.motor_plate_t - 1.0, y0 + 1.0, x, z)
-    return plate
+def _slab(cfg: UpperArmConfig):
+    """The arm rising off the drive's shell (ArmParams), in the unslid plate's frame: one flat slab of the plate's
+    outline (the stadium from the shoulder axis to the elbow axis) from the elbow half's underside up to the relief's
+    floor, end to end; the stepped slot and the elbow bearing stack; the elbow motor's square hole through it about the
+    pad's axis, a web left across the hole under the motor's face (SlabParams.y0: y_outer once slid) with the hole for
+    its pilot and its 4 holes (PadParams.holes)."""
+    s, e, a, px = cfg.slab, cfg.elbow, cfg.arm, cfg.pad.x
+    top = e.relief_y + NUDGE
+    body = stadium(s.elbow_x, 2.0 * s.r, e.relief_y - e.y0, s.elbow_x / 2.0, e.y0)
+    body = _cut_elbow_stack(_cut_stepped_slot(body, cfg, top), cfg, top)
+    hh, face, t = a.motor_hole_half, s.y0, a.motor_plate_t
+    body = body - _block((px - hh, px + hh), (-hh, hh), (e.y0 - 1.0, top + 1.0))
+    web = _block((px - hh, px + hh), (-hh, hh), (face - t, face))
+    web = web - _bore(a.motor_pilot_dia / 2.0, face - t - 1.0, face + 1.0, px)
+    for x, z, dia in pad_holes(cfg):
+        web = web - _bore(dia / 2.0, face - t - 1.0, face + 1.0, px + x, z)
+    return body + web
 
 
 def drive_frame(cfg: UpperArmConfig = DEFAULT) -> bd.Location:
@@ -138,17 +144,12 @@ def drive_frame(cfg: UpperArmConfig = DEFAULT) -> bd.Location:
 
 def build_link(cfg: UpperArmConfig = DEFAULT):
     s, e = cfg.slab, cfg.elbow
-    plate, px = _plate(cfg), cfg.pad.x
     if cfg.arm is not None:
-        # the arm, and the plate slid along Y onto its outer face, both cut back inside the shell's wall; the square
-        # hole for the elbow motor through both; then the motor's plate under the hole, slid with the plate
-        a, up = cfg.arm, bd.Pos(0.0, 0.0, arm_slide(cfg))
-        body = (_arm(cfg) + up * plate) - _bore(a.fuse_r, -_FAR, _FAR)
-        hh = a.motor_hole_half
-        body = body - _block((px - hh, px + hh), (-hh, hh), (a.y_outer, a.y_inner + 1.0))
-        body = body + up * bd.Pos(px, 0.0, 0.0) * _motor_plate(cfg)
+        # the slab, slid along Y with the plate (its shoulder half's underside onto y_outer), cut back inside the
+        # shell's wall
+        body = bd.Pos(0.0, 0.0, arm_slide(cfg)) * _slab(cfg) - _bore(cfg.arm.fuse_r, -_FAR, _FAR)
     else:
-        body = plate + bd.Pos(px, 0.0, 0.0) * _pad(cfg)
+        body = _plate(cfg) + bd.Pos(cfg.pad.x, 0.0, 0.0) * _pad(cfg)
         # the drive's hub bolts, through the plate (the pad's windows lie under them)
         for x, z in hub_bolt_points(cfg):
             body = body - _bore(cfg.hub.bolt_dia / 2.0, s.y0 - NUDGE, s.lip_top + NUDGE, x, z)

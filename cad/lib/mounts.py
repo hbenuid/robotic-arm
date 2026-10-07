@@ -32,11 +32,11 @@ Geometry (lib/params.py, kernel-verified 2026-09-21 - tests/test_mounts.py re-ch
                48 mm body hangs in -Y, shaft +Y through the plate into the plane of the base_yaw 120T's teeth; motor +
                board end BASE_MOTOR_TABLE_CLEAR above the base's bottom face (lowered under them, lib/base/params.py
                BOARD_CLEAR)
-  elbow_pitch  j1_link's motor plate under the arm's outer face (y = J1_MOTOR_PAD_FACE_Y, the -N side;
+  elbow_pitch  the web across j1_link's motor hole (its top y = J1_MOTOR_PAD_FACE_Y, the -N side;
                lib/upper_arm/params.py ArmParams), pattern on the pad's axis (PadParams.x: ELBOW_MOTOR_CENTRES short of
                the elbow axis - the shoulder axis is the drive's yoke's); the body +N down the square hole through the
-               arm, standing out on the forearm's side; shaft -N through the plate, its 20T (gt2_pulley_20t#2, under the
-               plate, MOTOR_PULLEY_MOUNTS) level with the elbow 90T, on the belt to it (a stock 280-2GT; not modelled -
+               slab, standing out on the forearm's side; shaft -N through the web, its 20T (gt2_pulley_20t#2, under the
+               web, MOTOR_PULLEY_MOUNTS) level with the elbow 90T, on the belt to it (a stock 280-2GT; not modelled -
                docs/open_issues.md)
   wrist_pitch  j2_link's web (+Z face z = J2_MOTOR_WEB_FACE_Z), motor axis at x = J2_MOTOR_SLIDE_X on the side
                slots (lib/forearm/params.py: where the stock wrist belt puts it, its plug clear of the roll wall);
@@ -154,9 +154,9 @@ MOTOR_MOUNTS: tuple[Mount, ...] = (
     Mount("mks_servo42d#1", BOARD, "nema17_48mm#1", "base_link", "base_yaw", BOARD_FRAME_48),
     Mount("nema17_40mm#2", MOTOR_40, "j1_link#1", "upper_arm_link", "elbow_pitch",
           ((_UPPER_ARM.pad.x, J1_MOTOR_PAD_FACE_Y, 0.0), (90.0, 0.0, 0.0)),
-          "on j1_link's motor plate (on its 4 holes), ELBOW_MOTOR_CENTRES short of the elbow axis, the body +N down the "
-          "hole through the arm, shaft -N through the plate; connector toward -Z [ESTIMATE] (toward the elbow the roll "
-          "block would pass it 0.2 mm off)"),
+          "on the web across j1_link's motor hole (on its 4 holes), ELBOW_MOTOR_CENTRES short of the elbow axis, the body "
+          "+N down the hole through the slab, shaft -N through the web; connector toward -Z [ESTIMATE] (toward the elbow "
+          "the roll block would pass it 0.2 mm off)"),
     Mount("mks_servo42d#2", BOARD, "nema17_40mm#2", "upper_arm_link", "elbow_pitch", BOARD_FRAME_40),
     Mount("nema17_40mm#3", MOTOR_40, "j2_link#1", "forearm_link", "wrist_pitch",
           ((J2_MOTOR_SLIDE_X, 0.0, J2_MOTOR_WEB_FACE_Z), (180.0, 0.0, 90.0)),

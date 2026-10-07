@@ -188,7 +188,7 @@ def test_belt_pulley_planes_are_reachable():
 def test_elbow_motor_20t_runs_in_the_90ts_band():
     """The elbow motor's 20T (gt2_pulley_20t#2, MOTOR_PULLEY_MOUNTS): its bore along the motor's shaft, its tooth band's
     centre (RollDriveParams.t20_hub from its hub face) level with the elbow 90T's along the elbow axis and the stock
-    belt's centre distance from it across; its hub face clear under j1_link's motor plate, its band end within reach of
+    belt's centre distance from it across; its hub face clear under the web across j1_link's motor hole, its band end within reach of
     the shaft's tip (the pulley rides on most of its bore)."""
     motor, t20 = P.location("nema17_40mm#2", "world"), P.location("gt2_pulley_20t#2", "world")
     t90, axis = P.location("gt2_pulley_90t#3", "world"), Vector(*F.JOINT_BY_NAME["elbow_pitch"].axis_w).normalized()

@@ -89,7 +89,7 @@ OCCURRENCES = [
     ("j1_link",               None, "j1_link#1"),
     ("bearing_6806",          "elbow_pitch_1", "bearing_6806#3"),  # mounted: j1_link's elbow bore
     ("bearing_6806",          "elbow_pitch_2", "bearing_6806#4"),
-    ("nema17_40mm",           "elbow_pitch", "nema17_40mm#2"),     # mounted: j1_link's motor plate
+    ("nema17_40mm",           "elbow_pitch", "nema17_40mm#2"),     # mounted: the web across j1_link's motor hole
     ("mks_servo42d",          "elbow_pitch", "mks_servo42d#2"),
     ("gt2_pulley_20t",        "elbow_pitch", "gt2_pulley_20t#2"),  # mounted: on the elbow motor's shaft, level with the elbow 90T
     ("gt2_pulley_90t",        "j2", "gt2_pulley_90t#3"),           # mounted: re-seated on the lower elbow bearing (#1 retired)

@@ -413,12 +413,12 @@ cd cad
   lower half and the cap `j1_coupler_cap` - grips the motor plate's sleeve; the shell turns between them, over the
   yoke's lowered ring. The SolidWorks yoke cradled the port's housing on its pillars at 225° / 270° / 315°, the
   6-pillar housing's yoke at 240° / 300° in sockets - `LEGACY` / git history. **The upper arm rises off the shell:**
-  `j1_link` (parametric, `lib/upper_arm/`, `ArmParams`) is printed with the shell's body, its arm - a plain bar, the
-  plate's width, 30 thick over the gear (the drive's z 9..39) - rising out of the body's two solid windows, the four
-  others open on the discs; its elbow end slid along N onto the arm's outer face (`arm_slide`), and everything past
-  the elbow with it (`lib/placements.py SHIFTS`): the end effector is no longer over the base_yaw axis. The elbow
-  motor stands on the arm's motor side (+N, with the forearm), down a hole through the bar onto a plate under its
-  outer face, its shaft back through the plate to the elbow belt. The drive's frame in `j1_link`'s
+  `j1_link` (parametric, `lib/upper_arm/`, `ArmParams`) is printed with the shell's body, its arm - one flat slab, the
+  old plate's outline from its elbow half's underside up to the elbow block's floor, end to end - rising out of the
+  body's two solid windows, the four others open on the discs; slid along N with the plate's elbow end (`arm_slide`),
+  and everything past the elbow with it (`lib/placements.py SHIFTS`): the end effector is no longer over the base_yaw
+  axis. The elbow motor stands on the arm's motor side (+N, with the forearm), down a square hole through the slab
+  onto a web across it, its shaft back through the web to the elbow belt. The drive's frame in `j1_link`'s
   is the capture's (`tests/upper_arm/`), the shell's body and the hub on the legs `TestPoseInTheArm`.
 - **Kinematics:** the drive **is the `shoulder_pitch` joint** of `robot/frames.py` (axis `N` = the
   drive's −Z; origin `SHOULDER_ORIGIN` = `j1_link#1`'s origin, on the drive axis; limits

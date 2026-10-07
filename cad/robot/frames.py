@@ -157,7 +157,7 @@ JOINTS: list[Joint] = [
     Joint("elbow_pitch", "revolute", "upper_arm_link", "elbow_link", ELBOW_ORIGIN, N, ELBOW_TO_WRIST_INPLANE,
           PARAMS.ELBOW_PITCH_LIMITS_DEG[0] * DEG, PARAMS.ELBOW_PITCH_LIMITS_DEG[1] * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
           notes="GT2 90T pulley + the roll drive's block (its stator) at the elbow, turning in the bearing_6806#3 / #4 pair; "
-                "belt-driven (GT2_RATIO, one stage) by nema17_40mm#2 + mks_servo42d#2 on j1_link's motor plate, on the "
+                "belt-driven (GT2_RATIO, one stage) by nema17_40mm#2 + mks_servo42d#2 on the web across j1_link's motor hole, on the "
                 "arm's +N side (lib/mounts.py) [which CAN id: unconfirmed]"),
     # the roll: Z along the forearm (its child link's long direction IS the axis), so X = N, the pitch-axis direction
     Joint("forearm_roll", "revolute", "elbow_link", "forearm_link", FOREARM_ROLL_ORIGIN, FOREARM_ROLL_AXIS, N,
