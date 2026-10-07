@@ -1,26 +1,33 @@
-"""build123d builder of j1_coupler (and of DEFAULT's clamp cap, j1_coupler_cap) from YawCouplerConfig, in the coupler's
+"""build123d builder of j1_coupler (and of DEFAULT's motor leg, j1_motor_leg) from YawCouplerConfig, in the coupler's
 part frame.
 
 Built in the part frame directly: the disc, the flare and the hub turn about the part's Y (the base_yaw axis), the
 yoke is prisms along X (the drive's axis) - their outlines in the YZ plane, lib/yaw_coupler/layout.py; DEFAULT's fork
-(ForkParams) is boxes and cylinders along X on the drive's own axis."""
+(ForkParams) is boxes and cylinders along X on the drive's own axis, and the disc's drafted side carried up the legs'
+outer faces, a cone about Y."""
 from __future__ import annotations
 
 import math
 
 from cadgen import build123d as bd
 
-from lib.fasteners import M3_CLEAR, M3_NUT, M3_SHCS, M4_CLEAR, M4_SHCS
+from lib.fasteners import M4_CLEAR, M4_NUT
 from lib.geom import align_min, hex_prism, single_solid
 from lib.units import NUDGE
 from lib.yaw_coupler.layout import (
+    COUNTERBORE,
+    HEAD_SEAT,
+    NUT_SLOT,
     channel_outline,
     cheek_outline,
     disc_profile,
+    disc_r,
     flare_r,
-    fork_cap_bolts,
+    fork_flare_top,
     fork_hub_bolts,
     fork_hub_leg_x,
+    fork_motor_bolt_x,
+    fork_motor_bolts,
     fork_motor_leg_x,
     hole_points,
     middle_outline,
@@ -101,61 +108,64 @@ def _yoke_cuts(cfg: YawCouplerConfig):
     return cuts
 
 
-COUNTERBORE = M4_SHCS.head_dia + 0.4    # [DESIGN] the hub leg's M4 heads' counterbores (the drive's housing bolts' 7.4)
-HEAD_SEAT = M4_SHCS.head_h + 0.5         # [DESIGN] ... this deep (4.5, the drive's)
-CAP_COUNTERBORE = M3_SHCS.head_dia + 0.5   # [DESIGN] the cap's M3 heads' counterbores
-NUT_SLOT = 0.2                           # [DESIGN] the cap nuts' slots: this over the nut's AF and height
+def _cone(cfg: YawCouplerConfig, y0: float, y1: float):
+    """The disc's drafted side as a solid about the part's Y from y0 to y1 - past the disc's top face, the legs' outer
+    faces."""
+    return _revolved([(0.0, y0), (disc_r(cfg, y0), y0), (disc_r(cfg, y1), y1), (0.0, y1)])
 
 
-def _leg(cfg: YawCouplerConfig, x0: float, x1: float):
-    """A leg from x0 to x1: its disc round the drive's axis, down to the disc's underside, and a low bridge to the disc's
-    nearer flat where it stands past it."""
-    f, d = cfg.fork, cfg.disc
-    leg = _xcyl(f.plate_r, x0, x1, f.axis_y, f.axis_z)
-    leg = leg + _box((x0, x1), (d.y0, f.axis_y), (f.axis_z - f.leg_half_z, f.axis_z + f.leg_half_z))
-    if x0 < -d.flat_x:
-        leg = leg + _box((x0, -d.flat_x + NUDGE), (d.y0, f.bridge_y1), (f.axis_z - f.leg_half_z, f.axis_z + f.leg_half_z))
-    if x1 > d.flat_x:
-        leg = leg + _box((d.flat_x - NUDGE, x1), (d.y0, f.bridge_y1), (f.axis_z - f.leg_half_z, f.axis_z + f.leg_half_z))
-    return leg
+def _post_z(cfg: YawCouplerConfig) -> tuple[float, float]:
+    """A leg's post, across: leg_half_z either side of the drive's axis."""
+    f = cfg.fork
+    return (f.axis_z - f.leg_half_z, f.axis_z + f.leg_half_z)
 
 
 def _fork(cfg: YawCouplerConfig):
-    """The two legs: the hub's on -X, the motor's on +X."""
-    return _leg(cfg, *fork_hub_leg_x(cfg)) + _leg(cfg, *fork_motor_leg_x(cfg))
+    """The hub leg - its disc round the drive's axis on a post down to the disc, the disc's draft up its outer face - and
+    the disc drafted round to its rim under both legs (its flats and ears filled): on the motor side to the leg's outer
+    face, the motor leg's foot past it."""
+    f, d = cfg.fork, cfg.disc
+    (hx0, hx1), (mx0, mx1) = fork_hub_leg_x(cfg), fork_motor_leg_x(cfg)
+    leg = _xcyl(f.hub_plate_r, hx0, hx1, f.axis_y, f.axis_z) + _box((hx0, hx1), (d.y0, f.axis_y), _post_z(cfg))
+    leg = leg + (_cone(cfg, d.y0, fork_flare_top(cfg)) & _box((-_FAR, hx1), (d.y0, _FAR), _post_z(cfg)))
+    rim = _box((-_FAR, hx1), (d.y0, d.top_y), (-_FAR, _FAR)) + _box((mx0, mx1), (d.y0, d.top_y), (-_FAR, _FAR))
+    return leg + (_cone(cfg, d.y0, d.top_y) & rim)
 
 
 def _fork_cuts(cfg: YawCouplerConfig):
-    """The pocket over the hub; the hub's bolts through the hub leg, counterbored from outside; the motor leg's bore
-    and its upper half (the cap), the cap's screws into the lower half and the nuts' slots from its sides."""
-    f, k = cfg.fork, cfg.yoke
+    """The pocket over the hub; the hub's bolts through the hub leg, counterbored from outside; the motor side cut back
+    for the motor leg (the ring motor_leg_gap off it, the disc at its outer face, where the foot butts on); the motor
+    leg's 2 M4s and their nuts' slots, from the disc's top face down past the screws, flats across z."""
+    f, d, k = cfg.fork, cfg.disc, cfg.yoke
     (hx0, hx1), (mx0, mx1), (px, pz) = fork_hub_leg_x(cfg), fork_motor_leg_x(cfg), k.pocket_half
     cuts = [_box((-px, px), (k.pocket_y0, f.axis_y), (-pz, pz)),
-            _xcyl(f.clamp_bore_dia / 2.0, mx0 - NUDGE, mx1 + NUDGE, f.axis_y, f.axis_z),
-            _box((mx0 - NUDGE, mx1 + NUDGE), (f.axis_y, f.axis_y + f.plate_r + 1.0), (-_FAR, _FAR))]
+            _box((mx0 - f.motor_leg_gap, _FAR), (d.top_y, _FAR), (-_FAR, _FAR)),
+            _box((mx1, _FAR), (-_FAR, _FAR), (-_FAR, _FAR))]
     for y, z in fork_hub_bolts(cfg):
         cuts += [_xcyl(M4_CLEAR / 2.0, hx0 - NUDGE, hx1 + NUDGE, y, z), _xcyl(COUNTERBORE / 2.0, hx0 - NUDGE, hx0 + HEAD_SEAT, y, z)]
-    slot_top = f.axis_y - f.cap_nut_y
-    slot = (slot_top - M3_NUT.h - NUT_SLOT, slot_top)
-    half_af, corner = (M3_NUT.af + NUT_SLOT) / 2.0, (M3_NUT.af + NUT_SLOT) / math.sqrt(3.0)
-    for x, z in fork_cap_bolts(cfg):
-        cuts.append(_ycyl(M3_CLEAR / 2.0, f.axis_y + f.cap_seat - f.cap_screw_len - 1.0, f.axis_y + NUDGE, x, z))
-        out = 1.0 if z > f.axis_z else -1.0
-        cuts.append(_box((x - half_af, x + half_af), slot, sorted((z - out * corner, f.axis_z + out * (f.plate_r + 1.0)))))
+    _, nut_x1, nut_x0 = fork_motor_bolt_x(cfg)
+    half_af, corner = (M4_NUT.af + NUT_SLOT) / 2.0, (M4_NUT.af + NUT_SLOT) / math.sqrt(3.0)
+    for y, z in fork_motor_bolts(cfg):
+        cuts += [_xcyl(M4_CLEAR / 2.0, nut_x0 - 1.0, mx1 + NUDGE, y, z),
+                 _box((nut_x0, nut_x1), (y - corner, d.top_y + NUDGE), (z - half_af, z + half_af))]
     return cuts
 
 
-def build_cap(cfg: YawCouplerConfig):
-    """DEFAULT's cap (parts/base/j1_coupler_cap): the motor leg's upper half, its disc above the split, bored to the
-    sleeve, its 2 screws through it from counterbores cap_seat above the split."""
-    f = cfg.fork
+def build_motor_leg(cfg: YawCouplerConfig):
+    """DEFAULT's motor leg (parts/base/j1_motor_leg), in the coupler's frame: a solid plate_r ring round the drive's
+    axis, bored to the sleeve, on a post standing on the disc's top face, the disc's draft up its outer face; its foot
+    the disc's rim past the leg's outer face, down to the underside; the 2 M4s through the foot from counterbores."""
+    f, d = cfg.fork, cfg.disc
     x0, x1 = fork_motor_leg_x(cfg)
-    cap = _xcyl(f.plate_r, x0, x1, f.axis_y, f.axis_z) - _box((x0 - 1.0, x1 + 1.0), (f.axis_y - _FAR, f.axis_y), (-_FAR, _FAR))
-    cap = cap - _xcyl(f.clamp_bore_dia / 2.0, x0 - NUDGE, x1 + NUDGE, f.axis_y, f.axis_z)
-    for x, z in fork_cap_bolts(cfg):
-        cap = cap - _ycyl(M3_CLEAR / 2.0, f.axis_y - NUDGE, f.axis_y + f.plate_r + 1.0, x, z)
-        cap = cap - _ycyl(CAP_COUNTERBORE / 2.0, f.axis_y + f.cap_seat, f.axis_y + f.plate_r + 1.0, x, z)
-    return single_solid(cap)
+    leg = _xcyl(f.plate_r, x0, x1, f.axis_y, f.axis_z) + _box((x0, x1), (d.top_y, f.axis_y), _post_z(cfg))
+    # the draft up the post and the foot: one cut of the cone (two meeting on the top face leave the solid invalid)
+    reach = _box((x0, _FAR), (d.top_y, _FAR), _post_z(cfg)) + _box((x1, _FAR), (d.y0, d.top_y), (-_FAR, _FAR))
+    leg = leg + (_cone(cfg, d.y0, fork_flare_top(cfg)) & reach)
+    leg = leg - _xcyl(f.ring_bore_dia / 2.0, x0 - NUDGE, _FAR, f.axis_y, f.axis_z)
+    seat_x = fork_motor_bolt_x(cfg)[0]
+    for y, z in fork_motor_bolts(cfg):
+        leg = leg - _xcyl(M4_CLEAR / 2.0, x1 - NUDGE, _FAR, y, z) - _xcyl(COUNTERBORE / 2.0, seat_x, _FAR, y, z)
+    return single_solid(leg)
 
 
 def _stub(cfg: YawCouplerConfig):

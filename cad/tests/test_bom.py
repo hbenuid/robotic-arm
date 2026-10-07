@@ -104,7 +104,7 @@ def test_the_elbow_motor_takes_its_m3_screws():
 
 
 def test_extras_are_well_formed_and_scoped_to_a_module():
-    assert bom.EXTRAS, "the hub's and the clamp cap's fasteners and the grease are purchased but not modelled - keep them listed"
+    assert bom.EXTRAS, "the hub's and the motor leg's fasteners and the grease are purchased but not modelled - keep them listed"
     for owner, spec, pieces, why in bom.EXTRAS:
         assert owner is None or owner in arm.MODULES
         assert isinstance(spec, str) and spec.strip() and isinstance(why, str) and why.strip()

@@ -459,23 +459,22 @@ class TestPoseInTheArm:
     def test_drive_clears_arm_neighbours(self, drive_world):
         """No intersection with the base, j1_link (the shell's body: the shell ring on it, the housing bolts through its
         holes, the nuts in its pockets, the ring pins in its pin ring, the hub-end 6814 in its seat), the j1_coupler
-        fork (the hub's face on its hub-side leg, the sleeve through the motor-side one) or the fork's cap - all
-        contact at most."""
-        for key in ("base#1", "j1_link#1", "j1_coupler#1", "j1_coupler_cap#1"):
+        fork (the hub's face on its hub-side leg) or its motor leg (the sleeve through its ring) - all contact at most."""
+        for key in ("base#1", "j1_link#1", "j1_coupler#1", "j1_motor_leg#1"):
             vol = interference(drive_world, built.placed(key))
             assert vol <= 1.0, f"drive x {key}: {vol:.1f} mm^3"
 
     def test_the_shell_in_j1_link_and_the_hub_and_sleeve_on_the_yoke(self):
         """j1_link holds the shell's body: its face on the shell ring (arm_zone's start - the body's end face, in pieces
         between its windows), its hub end (shell_ends); the held hub's face (hub_top) on the inner face of the
-        j1_coupler fork's hub-side leg, the sleeve's end on the motor-side leg's outer face. Each seat: the planar faces
+        j1_coupler fork's hub-side leg, the sleeve's end on the outer face of its motor leg (j1_motor_leg). Each seat: the planar faces
         perpendicular to the drive axis in its plane, their area together."""
         from lib.cycloidal import arm_zone
 
         world = P.location(DRIVE_KEY, "world")
         axis = (world * Location((0, 0, 1))).position - world.position      # the drive axis in world
         for key, z, area in (("j1_link#1", arm_zone(CFG)[0], 1500), ("j1_link#1", shell_ends(CFG)[1], 2000),
-                             ("j1_coupler#1", stack_positions(CFG)["hub_top"], 2000), ("j1_coupler#1", sleeve_end(CFG), 500)):
+                             ("j1_coupler#1", stack_positions(CFG)["hub_top"], 2000), ("j1_motor_leg#1", sleeve_end(CFG), 500)):
             centre = (world * Location((0, 0, z))).position
             faces = [f for f in built.placed(key).faces().filter_by(GeomType.PLANE)
                      if abs(f.normal_at().dot(axis)) > 0.99 and abs((centre - f.center()).dot(f.normal_at())) < 0.1]

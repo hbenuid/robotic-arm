@@ -31,7 +31,7 @@ def test_record_counts_match_expected():
     assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 61      # 31 SolidWorks + 30 mounted (j3_coupler#1, the two 90Ts retired, still records)
     assert P.keys(kind="module") == ["cycloidal_drive#1", "gripper#1", "forearm_roll_drive#1"]
     assert P.keys(kind="module", designed=True) == P.DATA["designed_modules"] == ["cycloidal_drive#1", "forearm_roll_drive#1"]
-    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 150  # 47 + the base motor mount (1 + 4 + 4) + j1_coupler's cap + (7 + 13) + 2 x (2 + 13) + the elbow motor's 20T (3) + its 4 screws + 6 bearings + 3 thrust + 3 pulleys + 6 x 4 pulley bolts
+    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 150  # 47 + the base motor mount (1 + 4 + 4) + j1_coupler's motor leg + (7 + 13) + 2 x (2 + 13) + the elbow motor's 20T (3) + its 4 screws + 6 bearings + 3 thrust + 3 pulleys + 6 x 4 pulley bolts
     assert len(P.keys(kind="part", mounted=False, retired=True)) == 31
     assert P.RETIRED == ("j3_coupler#1", "gt2_pulley_90t#1", "gt2_pulley_90t#2") and set(P.RETIRED) <= set(P.OCCURRENCES)
     assert len(P.keys(kind="part")) == 61 - len(P.RETIRED)
@@ -47,7 +47,7 @@ def test_mounted_records_follow_lib_mounts():
 
     keys = P.keys(kind="part", mounted=True)
     assert keys == mounts.keys() == [
-        "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1", "j1_coupler_cap#1",
+        "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1", "j1_motor_leg#1",
         "nema17_48mm#1", "mks_servo42d#1", "nema17_40mm#2", "mks_servo42d#2", "nema17_40mm#3", "mks_servo42d#3",
         "gt2_pulley_20t#2", "elbow_motor_screws#1", *(f"bearing_6806#{n}" for n in range(1, 7)), "washer_as6590#1", "bearing_axk6590#1", "washer_as6590#2",
         "gt2_pulley_90t#3", "gt2_pulley_90t#4", "gt2_pulley_120t#1",
