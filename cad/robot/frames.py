@@ -90,12 +90,12 @@ LINKS: dict[str, list[str]] = {
     "base_link": ["base#1", "bearing_6806#1", "bearing_6806#2", "washer_as6590#1", "bearing_axk6590#1",
                   "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1", "nema17_48mm#1",
                   "mks_servo42d#1"],
-    # j1_coupler (the holder) turns on the base, its clamp cap bolted on; the cycloidal drive's stator - the held carrier
+    # j1_coupler (the holder) turns on the base, its motor leg bolted on; the cycloidal drive's stator - the held carrier
     # (motor plate, output hub, output pins), the motor (+ its MKS board) and the gear train - sits in its fork
     # (assemblies/cycloidal_drive.py BODIES); the thrust bearing's upper washer turns with it, under its seat, and so does
     # the base_yaw 120T bolted to its stub's end inside the base (the base_yaw output, the driven side of its belt), with
     # the M4 screws + nuts that clamp it.
-    "shoulder_link": ["j1_coupler#1", "j1_coupler_cap#1", "washer_as6590#2", "gt2_pulley_120t#1", "yaw_pulley_screws#1",
+    "shoulder_link": ["j1_coupler#1", "j1_motor_leg#1", "washer_as6590#2", "gt2_pulley_120t#1", "yaw_pulley_screws#1",
                       "yaw_pulley_nuts#1", "cycloidal_drive#1:stator"],
     # the drive's rotor (its turning shell, the ring pins and both 6814s) is bolted to j1_link: the shoulder_pitch output;
     # the elbow_pitch motor + board bolt to the web across j1_link's motor hole (its 4x M3), the elbow bearing pair sits

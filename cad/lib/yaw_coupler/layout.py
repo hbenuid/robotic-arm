@@ -6,7 +6,12 @@ import math
 
 from lib.cycloidal import DEFAULT_CONFIG as DRIVE
 from lib.cycloidal import PILLAR_OVERSHOOT, arm_mount_points, pillar_half_width, shell_ends
+from lib.fasteners import M4_NUT, M4_SHCS
 from lib.yaw_coupler.params import DEFAULT, YawCouplerConfig
+
+COUNTERBORE = M4_SHCS.head_dia + 0.4    # [DESIGN] the fork's M4 heads' counterbores (the drive's housing bolts' 7.4)
+HEAD_SEAT = M4_SHCS.head_h + 0.5         # [DESIGN] ... the hub leg's this deep (4.5, the drive's)
+NUT_SLOT = 0.2                           # [DESIGN] the motor leg's nuts' slots: this over the nut's AF and height
 
 
 def disc_r(cfg: YawCouplerConfig, y: float) -> float:
@@ -137,7 +142,21 @@ def fork_hub_bolts(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[float, float]]
     return [(f.axis_y + y, f.axis_z + x) for x, y in arm_mount_points(DRIVE)]
 
 
-def fork_cap_bolts(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[float, float]]:
-    """(x, z) of the cap's 2 screws: in the motor leg's middle, cap_bolt_r either side of the axis."""
-    f, (x0, x1) = cfg.fork, fork_motor_leg_x(cfg)
-    return [((x0 + x1) / 2.0, f.axis_z + sz * f.cap_bolt_r) for sz in (-1.0, 1.0)]
+def fork_flare_top(cfg: YawCouplerConfig = DEFAULT) -> float:
+    """y where the disc's draft up the legs' outer faces stops: flare_seat_flat under the counterbores of the hub's
+    lowest bolts (the mounting area above it is the leg's flat yoke_leg)."""
+    return min(y for y, _ in fork_hub_bolts(cfg)) - COUNTERBORE / 2.0 - cfg.fork.flare_seat_flat
+
+
+def fork_motor_bolts(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[float, float]]:
+    """(y, z) of the motor leg's 2 M4s along the drive's axis: motor_bolt_y high, motor_bolt_z either side of it."""
+    f = cfg.fork
+    return [(f.motor_bolt_y, f.axis_z + sz * f.motor_bolt_z) for sz in (-1.0, 1.0)]
+
+
+def fork_motor_bolt_x(cfg: YawCouplerConfig = DEFAULT) -> tuple[float, float, float]:
+    """x of the motor leg's M4s: (their heads' seats in the foot, their nuts' slot - its outer and inner wall) - the
+    foot butting this part at the leg's outer face."""
+    f, x1 = cfg.fork, fork_motor_leg_x(cfg)[1]
+    nut_x1 = x1 - f.motor_nut_wall
+    return x1 + f.motor_head_seat, nut_x1, nut_x1 - M4_NUT.h - NUT_SLOT
