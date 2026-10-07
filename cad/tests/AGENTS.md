@@ -55,7 +55,7 @@ joint to the base's posts, the slotted seat at the stock belt's centre distance,
 bbox - and feature probes), `tests/coupler/` (`j3_coupler`: the
 LEGACY build's feature probes, the stub the roll drive's block repeats), `tests/yaw_coupler/` (`j1_coupler`: the LEGACY
 build's feature probes, the yoke on the port's housing - its bore, od, pillars, bolt circle; DEFAULT's fork on the
-drive's own axis - two alike legs past the shell's ends, the hub on one, the other round the motor sleeve, the lowered ring - and its cap's numbers), `tests/wrist/` (`wrist_link`: the LEGACY build's feature probes, the seat on the
+drive's own axis - two legs past the shell's ends, the disc's draft up them, the hub on one, the other its own part round the motor sleeve, the lowered ring - and the motor leg's numbers), `tests/wrist/` (`wrist_link`: the LEGACY build's feature probes, the seat on the
 coupler's flange, the end face on the NEMA 17 pattern), `tests/pulley/` (`gt2_pulley_90t`: the GT2 groove's tangency
 solve against the export's arcs, the LEGACY build's feature probes and surfaces, DEFAULT's opened holes;
 `gt2_pulley_20_60t`, a measured conversion: its export's numbers written into the test - both bands' arc centres, the

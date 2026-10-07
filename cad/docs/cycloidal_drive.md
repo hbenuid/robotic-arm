@@ -406,12 +406,13 @@ cd cad
 - **Frame:** module Z = motor axis, z = 0 the motor-plate outer face, motor body in −Z, the shell z −13..61, the
   hub's face at 62, the sleeve's end at −22. In the arm the axis is horizontal (module +Z → world −N, N = the J2/J3
   pitch direction; module +Y → world up). The `j1_coupler` **fork** (`lib/yaw_coupler/params.py ForkParams`, DEFAULT)
-  holds the drive on its own axis - the SolidWorks pose, 0.21 off the old cradle's - with two alike thin legs
+  holds the drive on its own axis - the SolidWorks pose, 0.21 off the old cradle's - with two legs
   (`ShellParams.yoke_leg`) 1 mm past the shell's ends, mirror images about the middle of the discs, which sits on the
   base_yaw axis (`ForkParams.face_x`; the capture had it 7.5 off, toward the motor - the drive and all it carries moved
-  along N, `lib/placements.py SHIFTS`), each leg straddling a flat of the yoke's disc: the hub-side leg takes the hub's face and its 4 bolts, the motor-side one - its
-  lower half and the cap `j1_coupler_cap` - grips the motor plate's sleeve; the shell turns between them, over the
-  yoke's lowered ring. The SolidWorks yoke cradled the port's housing on its pillars at 225° / 270° / 315°, the
+  along N, `lib/placements.py SHIFTS`), the yoke's disc drafted round and carried up their outer faces: the hub-side leg takes the hub's face and its 4 bolts on a
+  disc of the hub's own diameter; the motor-side one - its own part, `j1_motor_leg`, a solid ring slid on over the motor
+  and bolted to the yoke's disc - holds the motor plate's sleeve; the shell turns between them, over the yoke's lowered
+  ring. The SolidWorks yoke cradled the port's housing on its pillars at 225° / 270° / 315°, the
   6-pillar housing's yoke at 240° / 300° in sockets - `LEGACY` / git history. **The upper arm rises off the shell:**
   `j1_link` (parametric, `lib/upper_arm/`, `ArmParams`) is printed with the shell's body, its arm - one flat slab, the
   old plate's outline from its elbow half's underside up to the elbow block's floor, end to end - rising out of the

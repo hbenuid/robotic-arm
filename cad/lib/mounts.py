@@ -101,7 +101,7 @@ THRUST_CAGE, THRUST_WASHER = "bearing_axk6590", "washer_as6590"
 PULLEY_BOLTS = ("elbow_pulley_screws", "elbow_pulley_nuts", "wrist_pulley_screws", "wrist_pulley_nuts",
                 "yaw_pulley_screws", "yaw_pulley_nuts")
 BASE_MOUNT, BASE_MOUNT_SCREWS, BASE_MOUNT_NUTS = "base_motor_mount", "base_motor_mount_screws", "base_motor_mount_nuts"
-YOKE_CAP = "j1_coupler_cap"
+YOKE_MOTOR_LEG = "j1_motor_leg"
 MOTOR_SCREWS = "elbow_motor_screws"
 
 # The part-frame axis tools/reference/mount_placements.py checks for each mounted part, and whether it lies ON its
@@ -249,10 +249,11 @@ FASTENER_MOUNTS: tuple[Mount, ...] = (
           "the base_yaw screws' nuts in j1_coupler's hex pockets, flush with the floor of the pocket over its hub "
           "(nut_depth under pocket_y0), a corner along the coupler's Z"),
 )
-# The yoke's cap: the upper half of j1_coupler's motor-side leg round the drive's motor sleeve, built in the coupler's frame.
+# The yoke's motor leg: j1_coupler's motor-side leg, its own part - a ring round the drive's motor sleeve bolted to the
+# coupler's disc - built in the coupler's frame.
 YOKE_MOUNTS: tuple[Mount, ...] = (
-    Mount("j1_coupler_cap#1", YOKE_CAP, "j1_coupler#1", "shoulder_link", "base_yaw", ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)),
-          "the motor-side leg's upper half on j1_coupler, round the drive's motor sleeve; built in the coupler's part frame"),
+    Mount("j1_motor_leg#1", YOKE_MOTOR_LEG, "j1_coupler#1", "shoulder_link", "base_yaw", ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)),
+          "the motor-side leg on j1_coupler's disc, round the drive's motor sleeve; built in the coupler's part frame"),
 )
 MOUNTS: tuple[Mount, ...] = (BASE_MOUNTS + YOKE_MOUNTS + MOTOR_MOUNTS + MOTOR_PULLEY_MOUNTS + MOTOR_SCREW_MOUNTS + BEARING_MOUNTS
                              + THRUST_MOUNTS + PULLEY_MOUNTS + FASTENER_MOUNTS)
