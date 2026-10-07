@@ -106,10 +106,13 @@ def test_the_base_motor_mount_takes_its_m4_screws_and_nuts():
 
 def test_the_elbow_motor_takes_its_m3_screws():
     """The elbow motor is held down on the web across j1_link's motor hole by 4x M3 SHCS (lib/mounts.py
-    MOTOR_SCREW_MOUNTS): a modelled pattern part on the buy list, no vendor model - no EXTRAS row."""
+    MOTOR_SCREW_MOUNTS) - the drive motor's screw, the same order line: a modelled pattern part on the buy list, no vendor
+    model - no EXTRAS row."""
     rows = [r for r in bom.buy_rows() if r["part"] == "elbow_motor_screws"]
     assert [(r["pieces"], r["geometry"]) for r in rows] == [(4, "envelope")]
     assert rows[0]["order"].startswith("M3 x 10 socket head cap screw (ISO 4762)")
+    drive = [r for r in bom.buy_rows("cycloidal_drive") if r["part"] == "cycloidal_motor_bolts"]
+    assert [r["order"].split(" - ")[0] for r in drive] == [rows[0]["order"].split(" - ")[0]]
     assert not any(spec.startswith("M3") and "elbow motor" in spec for owner, spec, _, _ in bom.EXTRAS if owner is None)
 
 

@@ -2,7 +2,7 @@
 tools/reference/mount_placements.py): each NEMA 17 sits on the pad its printed host carries (a SolidWorks link, or
 the base's bolt-on motor mount, itself bolted to the base by 4x M4 into nuts pressed into the base) with its shaft
 parallel to the joint axis, its MKS board on its rear face, the elbow motor held down by its 4x M3 up through the web
-across j1_link's motor hole; each joint's 6806 pair stands on the lip of its bore
+across j1_link's motor hole, flush in its pockets; each joint's 6806 pair stands on the lip of its bore
 with the coupler's shoulder on the upper inner ring and the 90T's ring under the lower one; each 90T clamped
 by its 4x M4 screws + nuts; j1_coupler stands on the base_yaw thrust bearing in the base's groove, held down by its
 120T; and nothing runs into the neighbours but the nuts' designed press in their pockets."""
@@ -201,14 +201,15 @@ def test_elbow_motor_20t_runs_in_the_90ts_band():
     assert math.sqrt((band20 - band90).length ** 2 - along ** 2) == pytest.approx(ELBOW_MOTOR_CENTRES, abs=0.01)
     hub = (motor.inverse() * t20).position
     assert (hub.X, hub.Y) == pytest.approx((0.0, 0.0), abs=1e-6) and hub.Z == pytest.approx(PARAMS.J1_MOTOR_20T_HUB_Z)
-    assert hub.Z - UPPER_ARM.arm.motor_plate_t > 2.5                                 # under the web, past the screws' heads (3)
+    assert hub.Z - UPPER_ARM.arm.motor_plate_t > 2.5                                 # in the web's pilot hole, beside the screws' heads (3)
     assert DEFAULT_CONFIG.motor.shaft_length - hub.Z > 12.5                           # 13 of the shaft in the 14.45 long bore
 
 
 def test_elbow_motor_screws_hold_it_down_through_the_web():
-    """The elbow motor's 4x M3 (elbow_motor_screws#1, MOTOR_SCREW_MOUNTS): each screw on one of the motor's bolt axes,
-    its head's bearing face on the web's underside (motor_plate_t out from the motor's face, on its shaft's side), its
-    tip J1_MOTOR_SCREW_THREAD into the motor - short of its tapped holes' bottoms."""
+    """The elbow motor's 4x M3 SHCS (elbow_motor_screws#1, MOTOR_SCREW_MOUNTS) - the drive motor's: each screw on one of
+    the motor's bolt axes, its head's bearing face on its pocket's floor in the web (motor_plate_t out from the motor's
+    face, on its shaft's side), the head's end flush with the web's underside, its tip J1_MOTOR_SCREW_THREAD into the
+    motor - short of its tapped holes' bottoms."""
     motor, screws = P.location("nema17_40mm#2", "world"), P.location("elbow_motor_screws#1", "world")
     rel = motor.inverse() * screws                       # the screws' frame in the motor's (its face z = 0, its shaft +Z)
     assert tuple((rel * Location((0.0, 0.0, 1.0))).position - rel.position) == pytest.approx((0.0, 0.0, -1.0), abs=1e-9)
@@ -216,7 +217,8 @@ def test_elbow_motor_screws_hold_it_down_through_the_web():
     bolts = sorted((sx * half, sy * half) for sx in (1, -1) for sy in (1, -1))
     axes = sorted((p.X, p.Y) for p in ((rel * Location((x, y, 0.0))).position for x, y in parts.load("elbow_motor_screws").POINTS))
     assert all(a == pytest.approx(b, abs=1e-6) for a, b in zip(axes, bolts, strict=True)), axes
-    assert rel.position.Z == pytest.approx(UPPER_ARM.arm.motor_plate_t)                 # the heads on the web's underside
+    assert rel.position.Z == pytest.approx(UPPER_ARM.arm.motor_plate_t)                 # the heads on the pockets' floors ...
+    assert PARAMS.M3_SHCS == UPPER_ARM.arm.motor_screw                                  # ... flush with the web's underside
     tip = (rel * Location((0.0, 0.0, PARAMS.J1_MOTOR_SCREW_LEN))).position.Z
     assert tip == pytest.approx(-PARAMS.J1_MOTOR_SCREW_THREAD) and -tip < PARAMS.MOTOR_40.bolt_hole_depth
 

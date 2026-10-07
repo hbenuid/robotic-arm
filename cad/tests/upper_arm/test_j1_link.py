@@ -185,7 +185,7 @@ def test_default(link, legacy):
     sockets, the second stage's seat gone."""
     dx, a = SHORTENING, DEFAULT.arm
     assert link.is_valid and len(link.solids()) == 1
-    assert R.solid_volume(link) == pytest.approx(361439.548, abs=0.5)
+    assert R.solid_volume(link) == pytest.approx(365539.233, abs=0.5)
     bb, hh, (z_0, z_1) = link.bounding_box(), DEFAULT_CONFIG.housing, arm_zone(DEFAULT_CONFIG)
     # across (Z) the body's pillars either side of +/-Z reach furthest: the windows on +/-Z are open; along Y the
     # shell's body, from its hub end to the shell ring's face (arm_zone's start)
@@ -227,14 +227,20 @@ def test_default(link, legacy):
     for x, z in socket_points(LEGACY)[1]:
         assert is_inside(link, x + dx, -23.0 + SLIDE, z)                              # no sockets
     # the elbow motor at the pad's x: its square hole through the slab, the slab beside it; the web across it (the
-    # motor's face on its top, the pilot's hole, the NEMA 17 holes), the hole open below it; the pad's tube gone
+    # motor's face on its top, the pilot's hole, the NEMA 17 holes, the screws' head pockets in its underside - motor_plate_t
+    # under their floors, the heads' height deep, as the drive's motor plate), the hole open below it; the pad's tube gone
     px, hole, t, yh = DEFAULT.pad.x, a.motor_hole_half, a.motor_plate_t, (a.y_outer + hi) / 2.0
+    head, r_pocket = a.motor_screw.head_h, a.motor_pocket_dia / 2.0
+    under, floor = a.y_outer - t - head, a.y_outer - t
     assert not is_inside(link, px, yh, 0) and not is_inside(link, px + hole - 0.3, yh, hole - 0.3)
     assert is_inside(link, px, yh, hole + 0.3) and is_inside(link, px - hole - 0.3, yh, 0)
     assert not is_inside(link, px + hole - 0.3, lo + 0.5, 0) and is_inside(link, px + hole + 0.3, lo + 0.5, 0)
     assert is_inside(link, px + 20, a.y_outer - 0.1, 20) and not is_inside(link, px + 20, a.y_outer + 0.1, 20)
-    assert is_inside(link, px + 20, a.y_outer - t + 0.1, 20) and not is_inside(link, px + 20, a.y_outer - t - 0.1, 20)
+    assert is_inside(link, px + 20, under + 0.1, 20) and not is_inside(link, px + 20, under - 0.1, 20)
     assert not is_inside(link, px, a.y_outer - 1.0, 0) and not is_inside(link, px + a.motor_pilot_dia / 2.0 - 0.3, a.y_outer - 1.0, 0)
-    for x, z, _ in pad_holes(DEFAULT):
+    for x, z, dia in pad_holes(DEFAULT):
         assert not is_inside(link, px + x, a.y_outer - 1.0, z)
+        assert not is_inside(link, px + x + r_pocket - 0.2, under + 1.0, z) and is_inside(link, px + x + r_pocket + 0.2, under + 1.0, z)
+        r = (dia / 2.0 + r_pocket) / 2.0                       # between the hole and the pocket's wall: the pocket's floor
+        assert is_inside(link, px + x + r, floor + 0.3, z) and not is_inside(link, px + x + r, floor - 0.3, z)
     assert not is_inside(link, px + 20, -28 + SLIDE, 20) and is_inside(legacy, 20, -28, 20)   # the pad's wall, LEGACY's only

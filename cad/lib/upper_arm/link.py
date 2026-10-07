@@ -120,17 +120,19 @@ def _slab(cfg: UpperArmConfig):
     outline (the stadium from the shoulder axis to the elbow axis) from the elbow half's underside up to the relief's
     floor, end to end; the stepped slot and the elbow bearing stack; the elbow motor's square hole through it about the
     pad's axis, a web left across the hole under the motor's face (SlabParams.y0: y_outer once slid) with the hole for
-    its pilot and its 4 holes (PadParams.holes)."""
+    its pilot and its 4 holes (PadParams.holes), as the drive's motor plate holds its motor: motor_plate_t of web under
+    the screws' heads, the heads flush in pockets in its underside (ArmParams.motor_screw, motor_pocket_dia)."""
     s, e, a, px = cfg.slab, cfg.elbow, cfg.arm, cfg.pad.x
     top = e.relief_y + NUDGE
     body = stadium(s.elbow_x, 2.0 * s.r, e.relief_y - e.y0, s.elbow_x / 2.0, e.y0)
     body = _cut_elbow_stack(_cut_stepped_slot(body, cfg, top), cfg, top)
-    hh, face, t = a.motor_hole_half, s.y0, a.motor_plate_t
+    hh, face, t, head = a.motor_hole_half, s.y0, a.motor_plate_t, a.motor_screw.head_h
     body = body - _block((px - hh, px + hh), (-hh, hh), (e.y0 - 1.0, top + 1.0))
-    web = _block((px - hh, px + hh), (-hh, hh), (face - t, face))
-    web = web - _bore(a.motor_pilot_dia / 2.0, face - t - 1.0, face + 1.0, px)
+    web = _block((px - hh, px + hh), (-hh, hh), (face - t - head, face))
+    web = web - _bore(a.motor_pilot_dia / 2.0, face - t - head - 1.0, face + 1.0, px)
     for x, z, dia in pad_holes(cfg):
-        web = web - _bore(dia / 2.0, face - t - 1.0, face + 1.0, px + x, z)
+        web = web - _bore(dia / 2.0, face - t - head - 1.0, face + 1.0, px + x, z)
+        web = web - _bore(a.motor_pocket_dia / 2.0, face - t - head - 1.0, face - t, px + x, z)
     return body + web
 
 

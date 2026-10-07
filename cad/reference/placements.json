@@ -3988,7 +3988,7 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the elbow motor's 4x M3 x J1_MOTOR_SCREW_LEN: heads on the underside of the web across j1_link's motor hole, up through it into the motor's tapped holes"
+    "note": "the elbow motor's 4x M3 x J1_MOTOR_SCREW_LEN SHCS (the drive motor's): heads flush in the pockets in the underside of the web across j1_link's motor hole, up through it into the motor's tapped holes"
    },
    "solids": 4,
    "solid_volume": 539.697,

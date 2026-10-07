@@ -37,8 +37,8 @@ Geometry (lib/params.py, kernel-verified 2026-09-21 - tests/test_mounts.py re-ch
                the elbow axis - the shoulder axis is the drive's yoke's); the body +N down the square hole through the
                slab, standing out on the forearm's side; shaft -N through the web, its 20T (gt2_pulley_20t#2, under the
                web, MOTOR_PULLEY_MOUNTS) level with the elbow 90T, on the belt to it (a stock 280-2GT; not modelled -
-               docs/open_issues.md); held down by its 4x M3 (elbow_motor_screws#1, MOTOR_SCREW_MOUNTS), up through the
-               web from under it
+               docs/open_issues.md); held down by its 4x M3 SHCS (elbow_motor_screws#1, MOTOR_SCREW_MOUNTS), up
+               through the web from its underside, the heads flush in its pockets - the drive motor's screws and seat
   wrist_pitch  j2_link's web (+Z face z = J2_MOTOR_WEB_FACE_Z), motor axis at x = J2_MOTOR_SLIDE_X on the side
                slots (lib/forearm/params.py: where the stock wrist belt puts it, its plug clear of the roll wall);
                body +N, shaft -N through the web, the 20T under it
@@ -174,13 +174,13 @@ MOTOR_PULLEY_MOUNTS: tuple[Mount, ...] = (
           "the elbow motor's 20T on its shaft, hub toward the motor, J1_MOTOR_20T_HUB_Z out from its face (under the "
           "web): its tooth band level with the elbow 90T's"),
 )
-# The elbow motor's 4x M3: +Z up j1_link's +Y from the heads under the web across its motor hole (the web's underside
-# motor_plate_t under the motor's face), the pattern on the web's holes about the pad's axis.
+# The elbow motor's 4x M3 SHCS: +Z up j1_link's +Y from the heads' bearing faces on the floors of the pockets in the
+# underside of the web across its motor hole (motor_plate_t under the motor's face), the pattern on the web's holes.
 MOTOR_SCREW_MOUNTS: tuple[Mount, ...] = (
     Mount("elbow_motor_screws#1", MOTOR_SCREWS, "j1_link#1", "upper_arm_link", "elbow_pitch",
           ((_UPPER_ARM.pad.x, round(J1_MOTOR_PAD_FACE_Y - _UPPER_ARM.arm.motor_plate_t, 6), 0.0), (-90.0, 0.0, 0.0)),
-          "the elbow motor's 4x M3 x J1_MOTOR_SCREW_LEN: heads on the underside of the web across j1_link's motor hole, up "
-          "through it into the motor's tapped holes"),
+          "the elbow motor's 4x M3 x J1_MOTOR_SCREW_LEN SHCS (the drive motor's): heads flush in the pockets in the underside "
+          "of the web across j1_link's motor hole, up through it into the motor's tapped holes"),
 )
 
 
