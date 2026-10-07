@@ -87,11 +87,11 @@
     <link name="elbow_link">
       <pose relative_to="elbow_pitch">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>-0.006658 -0.027232 0.019402 0 0 0</pose>
-        <mass>0.739978</mass>
+        <pose>-0.003976 -0.022128 0.017163 0 0 0</pose>
+        <mass>0.754696</mass>
         <inertia>
-          <ixx>1.327244e-03</ixx><ixy>-1.709609e-04</ixy><ixz>3.118701e-05</ixz>
-          <iyy>7.830866e-04</iyy><iyz>1.181823e-04</iyz><izz>1.301175e-03</izz>
+          <ixx>1.318728e-03</ixx><ixy>1.964212e-04</ixy><ixz>2.222805e-05</ixz>
+          <iyy>7.586526e-04</iyy><iyz>1.394198e-04</iyz><izz>1.262434e-03</izz>
         </inertia>
       </inertial>
       <visual name="elbow_link_visual">
@@ -114,11 +114,11 @@
   <link name="forearm_link">
       <pose relative_to="forearm_roll">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.004618 -0.000012 0.100337 0 0 0</pose>
-        <mass>0.706435</mass>
+        <pose>0.004746 -0.000012 0.10386 0 0 0</pose>
+        <mass>0.687443</mass>
         <inertia>
-          <ixx>2.435994e-03</ixx><ixy>2.486815e-07</ixy><ixz>8.885513e-05</ixz>
-          <iyy>2.415092e-03</iyy><iyz>6.462437e-08</iyz><izz>3.841204e-04</izz>
+          <ixx>2.115198e-03</ixx><ixy>2.476764e-07</ixy><ixz>1.003446e-04</ixz>
+          <iyy>2.093880e-03</iyy><iyz>3.700675e-08</iyz><izz>3.777410e-04</izz>
         </inertia>
       </inertial>
       <visual name="forearm_link_visual">
@@ -280,13 +280,13 @@
       <axis>
         <xyz expressed_in="elbow_pitch">0 0 1</xyz>
         <limit>
-          <lower>-0.366519</lower><upper>1.570796</upper>
+          <lower>-0.820305</lower><upper>1.570796</upper>
           <effort>5</effort><velocity>1</velocity>
         </limit>
       </axis>
     </joint>
     <joint name="forearm_roll" type="revolute">
-      <pose relative_to="elbow_link">0 0 0.025 3.141593 -1.570795 0</pose>
+      <pose relative_to="elbow_link">0.000001 -0.060926 0.025 3.141593 -1.570795 0</pose>
       <parent>elbow_link</parent>
       <child>forearm_link</child>
       <axis>

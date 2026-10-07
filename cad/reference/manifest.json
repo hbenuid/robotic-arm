@@ -552,89 +552,23 @@
   "forearm_roll_block": {
    "bbox_min": [
     -50.0,
-    -36.0,
+    -98.926,
     -40.0
    ],
    "bbox_size": [
     83.0,
-    72.0,
+    134.926,
     76.0
    ],
-   "bytes": 389817,
+   "bytes": 383543,
    "file": "native/forearm_roll_block.step",
    "kind": "native",
    "origin": "native",
    "product": "forearm_roll_block - the forearm roll drive's STATOR - the elbow block, which is also the elbow's output flange: a rounded box",
-   "sha256": "4a63fcd1e3af28ebff9e933c2c13947275bb517aadc315228fe68b152a22df81",
-   "solid_volume": 192191.808,
+   "sha256": "af619279d5399400c2d7976d4a17049cdec4bbf6a92e542f8ad16518acaca823",
+   "solid_volume": 223565.789,
    "solids": 1,
    "source": "lib/forearm/roll.py:build_block(DEFAULT)",
-   "units": "mm"
-  },
-  "forearm_roll_motor_mount": {
-   "bbox_min": [
-    -23.0,
-    32.0,
-    -40.0
-   ],
-   "bbox_size": [
-    46.0,
-    51.926,
-    50.05
-   ],
-   "bytes": 140206,
-   "file": "native/forearm_roll_motor_mount.step",
-   "kind": "native",
-   "origin": "native",
-   "product": "forearm_roll_motor_mount - the forearm roll motor's MOUNT, bolted onto the elbow block's top, one thickness throughout",
-   "sha256": "a2918fb2f423da87402cdebae8d22f3013f5b96f334c8ffe468e635c57b8c247",
-   "solid_volume": 15378.66,
-   "solids": 1,
-   "source": "lib/forearm/roll.py:build_motor_mount(DEFAULT)",
-   "units": "mm"
-  },
-  "forearm_roll_mount_nuts": {
-   "bbox_min": [
-    -20.75,
-    -25.175,
-    0.0
-   ],
-   "bbox_size": [
-    41.5,
-    29.351,
-    2.4
-   ],
-   "bytes": 106491,
-   "file": "native/forearm_roll_mount_nuts.step",
-   "kind": "cots",
-   "origin": "native",
-   "product": "forearm_roll_mount_nuts - purchased (COTS) part: the roll motor mount's 4 M3 hex nuts (ISO 4032), in the elbow block.",
-   "sha256": "a025e30b39e365cf0fc77576c6c332bb0d7fae06c1b169ef372ef67d924f74d6",
-   "solid_volume": 183.635,
-   "solids": 4,
-   "source": "parts/joints/forearm_roll_mount_nuts.py:_envelope()",
-   "units": "mm"
-  },
-  "forearm_roll_mount_screws": {
-   "bbox_min": [
-    -21.36,
-    -25.36,
-    0.0
-   ],
-   "bbox_size": [
-    42.72,
-    29.72,
-    16.0
-   ],
-   "bytes": 123398,
-   "file": "native/forearm_roll_mount_screws.step",
-   "kind": "cots",
-   "origin": "native",
-   "product": "forearm_roll_mount_screws - purchased (COTS) part: the roll motor mount's 4 M3 countersunk screws (ISO 10642).",
-   "sha256": "bc45685e493b525526e82c8670a4d176d462e51c74bf9edac76d3f0228f0d272",
-   "solid_volume": 529.313,
-   "solids": 4,
-   "source": "parts/joints/forearm_roll_mount_screws.py:_envelope()",
    "units": "mm"
   },
   "forearm_roll_retainer": {
@@ -663,20 +597,20 @@
    "bbox_min": [
     -29.595,
     -29.595,
-    -36.0
+    -22.0
    ],
    "bbox_size": [
     59.19,
     59.19,
-    86.0
+    72.0
    ],
-   "bytes": 3728785,
+   "bytes": 3728894,
    "file": "native/forearm_roll_shaft.step",
    "kind": "native",
    "origin": "native",
    "product": "forearm_roll_shaft - the forearm roll drive's ROTOR - the hollow roll shaft that crosses the elbow axis: a Ø40.3 journal at each",
-   "sha256": "9d7db36086e720262efe1bb32b6d19e3ba3ca942e8565f3e120ab0fc0ddb6ceb",
-   "solid_volume": 94377.799,
+   "sha256": "2b358d19ccf8606a68b279138e9fdb7327ac302e7b9153c092cee8ec0e436cde",
+   "solid_volume": 79423.818,
    "solids": 1,
    "source": "lib/forearm/roll.py:build_shaft(DEFAULT)",
    "units": "mm"

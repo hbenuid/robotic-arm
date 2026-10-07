@@ -57,7 +57,9 @@ BASE_YAW_ORIGIN = (0.0, 85.010435, 0.0)      # [REFERENCE] on the base_yaw axis 
 # The origins beyond a link move with it: the capture point [REFERENCE] + the SHIFTS of the record it sits on.
 SHOULDER_ORIGIN = P.shifted("j1_link#1", (-2.440595, 85.010435, -34.915297))   # j1_link#1 origin: on the cycloidal drive's axis, 66.5
 #                                                        mm along it from the motor-plate face (lib/upper_arm/params.py ArmParams.drive_z_at_y0)
-ELBOW_ORIGIN = P.shifted("j2_link#1", (-143.15, 240.05, -15.81))   # j2_link#1's origin (on the elbow_pitch axis; the retired j3_coupler#1 shared it)
+ELBOW_ORIGIN = P.shifted("j3_coupler#1", (-143.15, 240.05, -15.81))   # the retired j3_coupler#1's origin, on the elbow_pitch axis (j2_link#1's
+#                                                        capture origin too, but the forearm sits ELBOW_ROLL_OFFSET across from it)
+_J2_ORIGIN = P.shifted("j2_link#1", (-143.15, 240.05, -15.81))     # j2_link#1's origin: the roll axis runs FOREARM_ROLL_AXIS_Z along N from it
 WRIST_PITCH_ORIGIN = P.shifted("j3_coupler#2", (-283.37, 393.63, 35.33))   # j3_coupler#2 origin (on the wrist_pitch axis)
 WRIST_ROLL_ORIGIN = P.shifted("gt2_pulley_20t#1", (-379.355, 448.22, 24.495))   # 20T pulley origin, on the pancake shaft axis
 JAW_A_ORIGIN = P.shifted("gripper#1", (-453.626, 429.287, 26.317))   # gripper_slider#1 world bbox centre
@@ -66,17 +68,19 @@ TOOL0_ORIGIN = P.shifted("gripper#1", (-480.567, 506.452, 31.03))    # midpoint 
 # The link directions (only their direction is used - lib/datum.py frame() projects them; the SHIFTS are parallel):
 SHOULDER_TO_ELBOW_INPLANE = (-141.353693, 155.039565, 9.127651)   # [REFERENCE] upper_arm_link long direction: the capture's
 #                                                                   ELBOW_ORIGIN - SHOULDER_ORIGIN minus its 10.0 mm component along N
-ELBOW_TO_WRIST_INPLANE = (-142.926, 153.58, 9.229)   # [REFERENCE] forearm_link long direction (elbow -> wrist_pitch, perpendicular to N)
+ELBOW_TO_WRIST_INPLANE = (-142.926, 153.58, 9.229)   # [REFERENCE] forearm_link long direction (the capture's elbow -> wrist_pitch,
+#                                                       perpendicular to N): the roll axis' direction (the forearm moved across it, parallel)
 
 # --- the forearm roll (the 6th joint, assemblies/forearm_roll_drive.py): its axis runs along the forearm through the
 # WRIST CENTRE - the point where the wrist_pitch and wrist_roll axes meet (the wrist_roll origin sits
 # WRIST_CENTRE_ALONG_N back along N from WRIST_PITCH_ORIGIN: the URDF's wrist_roll z = -0.016998) - so the last three
-# axes stay concurrent (a spherical wrist). It crosses the elbow axis FOREARM_ROLL_AXIS_Z along N from the elbow
-# origin (42 - 17 = 25, lib/params.py); tests/forearm/test_roll_drive.py checks WRIST_CENTRE lies on it.
+# axes stay concurrent (a spherical wrist). It passes FOREARM_ROLL_AXIS_Z along N from j2_link's origin (42 - 17 = 25,
+# lib/params.py) - ELBOW_ROLL_OFFSET across the elbow axis (the roll motor sits on the elbow axis): an elbow offset,
+# the axes no longer cross; tests/forearm/test_roll_drive.py checks WRIST_CENTRE lies on it.
 WRIST_CENTRE_ALONG_N = -17.0                 # [REFERENCE] see above
 _len = math.sqrt(sum(v * v for v in ELBOW_TO_WRIST_INPLANE))
 FOREARM_ROLL_AXIS = tuple(v / _len for v in ELBOW_TO_WRIST_INPLANE)                    # unit, elbow -> wrist
-FOREARM_ROLL_ORIGIN = tuple(o + PARAMS.FOREARM_ROLL_AXIS_Z * n for o, n in zip(ELBOW_ORIGIN, N, strict=True))   # on the elbow axis
+FOREARM_ROLL_ORIGIN = tuple(o + PARAMS.FOREARM_ROLL_AXIS_Z * n for o, n in zip(_J2_ORIGIN, N, strict=True))   # at the elbow axis' station
 WRIST_CENTRE = tuple(o + WRIST_CENTRE_ALONG_N * n for o, n in zip(WRIST_PITCH_ORIGIN, N, strict=True))
 
 # --- rigid links: placement keys that move together -----------------------------------------
@@ -103,8 +107,8 @@ LINKS: dict[str, list[str]] = {
     "upper_arm_link": ["cycloidal_drive#1:rotor", "j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2",
                        "gt2_pulley_20t#2", "elbow_motor_screws#1"],
     # the elbow 90T pulley (the elbow_pitch output, assumed the driven side  [ASSUMPTION]) and the M4 screws + nuts
-    # that clamp it carry the forearm roll drive's STATOR - the elbow block that IS the elbow coupler now (j3_coupler#1
-    # is retired, lib/placements.py), both bearings, the end cap, the roll motor + board and its 20T
+    # that clamp it carry the forearm roll drive's STATOR - the roll frame, whose web IS the elbow coupler now (j3_coupler#1
+    # is retired, lib/placements.py), both bearings, the end cap, the roll motor + board (on the elbow axis) and its 20T
     # (assemblies/forearm_roll_drive.py BODIES)
     "elbow_link": ["gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", "forearm_roll_drive#1:stator"],
     # the drive's ROTOR - the hollow roll shaft - IS the forearm's elbow end (its flange bolts to j2_link's wall);
@@ -157,15 +161,16 @@ JOINTS: list[Joint] = [
                 "hub and motor, its shell - the output, turning with the motor - is bolted to j1_link [which CAN id: unconfirmed]"),
     Joint("elbow_pitch", "revolute", "upper_arm_link", "elbow_link", ELBOW_ORIGIN, N, ELBOW_TO_WRIST_INPLANE,
           PARAMS.ELBOW_PITCH_LIMITS_DEG[0] * DEG, PARAMS.ELBOW_PITCH_LIMITS_DEG[1] * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
-          notes="GT2 90T pulley + the roll drive's block (its stator) at the elbow, turning in the bearing_6806#3 / #4 pair; "
+          notes="GT2 90T pulley + the roll drive's frame (its stator) at the elbow, turning in the bearing_6806#3 / #4 pair; "
                 "belt-driven (GT2_RATIO, one stage) by nema17_40mm#2 + mks_servo42d#2 on the web across j1_link's motor hole, on the "
                 "arm's +N side (lib/mounts.py) [which CAN id: unconfirmed]"),
     # the roll: Z along the forearm (its child link's long direction IS the axis), so X = N, the pitch-axis direction
     Joint("forearm_roll", "revolute", "elbow_link", "forearm_link", FOREARM_ROLL_ORIGIN, FOREARM_ROLL_AXIS, N,
           -PARAMS.FOREARM_ROLL_LIMIT_DEG * DEG, PARAMS.FOREARM_ROLL_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
           notes="the forearm roll drive (assemblies/forearm_roll_drive.py, FOREARM_ROLL_RATIO 4.5): the hollow roll shaft's "
-                "flange bolts to j2_link's wall; belt-driven by the drive's own nema17_40mm + mks_servo42d on the elbow "
-                "block's pad [a 4th CAN id - software/control/src/config.py has three: unconfirmed]; hard stop +/- FOREARM_ROLL_LIMIT_DEG"),
+                "flange bolts to j2_link's wall; its axis ELBOW_ROLL_OFFSET across the elbow axis (an elbow offset); belt-driven "
+                "by the drive's own nema17_40mm + mks_servo42d on the elbow axis, in the roll frame's cradle "
+                "[a 4th CAN id - software/control/src/config.py has three: unconfirmed]; hard stop +/- FOREARM_ROLL_LIMIT_DEG"),
     Joint("wrist_pitch", "revolute", "forearm_link", "wrist_pitch_link", WRIST_PITCH_ORIGIN, N, F,
           PARAMS.WRIST_PITCH_LIMITS_DEG[0] * DEG, PARAMS.WRIST_PITCH_LIMITS_DEG[1] * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
           notes="GT2 90T pulley + J3-coupler at the wrist, turning in the bearing_6806#5 / #6 pair; belt-driven by nema17_40mm#3 + mks_servo42d#3 on "

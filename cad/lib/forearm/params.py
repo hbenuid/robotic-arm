@@ -3,7 +3,8 @@ the forearm roll drive that splits it, in j2_link's part frame.
 
 Frame (= the SolidWorks part frame of j2_link, which placements.json places): origin on the elbow pivot, the
 wrist pivot at x = WebParams.wrist_x, +Z = N (the pitch-axis direction: the motor-body side; -Z = the belt side;
-the upper arm lies at z < -8.5).
+the upper arm lies at z < -8.5). With the roll joint (DEFAULT) the forearm sits elbow_offset across (+Y) from the
+elbow: the elbow axis then runs along Z through y = -elbow_offset of this frame (lib/placements.py SHIFTS).
 
 Two configurations: LEGACY reproduces the SolidWorks reference exactly (the part's REFERENCE_BUILD -
 tests/test_reference_match.py), DEFAULT is what the part builds. In M1 they were the same; the forearm roll
@@ -22,7 +23,7 @@ from dataclasses import dataclass, replace
 from lib.bearings import BEARING_6806_SHOULDER_DIA, PULLEY_SEAT_SHIFT
 from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_FACE_Y, GT2_PULLEY_90T_TEETH, centre_distance
 from lib.cycloidal.params import MotorParams
-from lib.fasteners import M3_CLEAR, M3_CSK, M3_NUT, M3_SHCS, M4_CLEAR, M4_NUT, CskSize, NutSize, ShcsSize
+from lib.fasteners import M3_CLEAR, M3_NUT, M3_SHCS, M4_CLEAR, M4_NUT, NutSize, ShcsSize
 from lib.motors import MOTOR_40
 
 
@@ -104,7 +105,8 @@ class RollEndParams:
     the wall's elbow face; 4x M3 from the wall's wrist face run through the wall and the shaft's end into nuts buried
     in the shaft, behind bearing 2 (the bottom one's head in a channel under the web); the cables pass through the
     bore. The wall stands 48 mm
-    from the elbow axis: whatever the forearm's roll angle, it clears the upper arm's r 45 round end by 3 mm. It is a
+    along the roll axis from the elbow axis' station (and ForearmConfig.elbow_offset across from it): whatever the
+    forearm's roll angle, it clears the upper arm's r 45 round end. It is a
     round flange about the roll axis on a foot as wide as itself - the web tapers to that width from the wrist boss
     (the neck) - braced by two gussets on the web's top face, either side of the wrist motor.
     Elbow block + shaft: lib/forearm/roll.py (M6)."""
@@ -137,21 +139,23 @@ class RollEndParams:
 
 @dataclass(frozen=True)
 class RollDriveParams:
-    """The forearm roll drive (assemblies/forearm_roll_drive.py; docs/forearm_roll.md): ONE elbow block (stator) that
-    is also the elbow's output flange - its underside repeats the SolidWorks j3_coupler's lip / boss / journal / stub
-    down into j1_link's bore and the elbow 90T pulley bolts straight into it - round a hollow roll shaft (rotor) that
-    CROSSES the elbow axis: bearing 1's seat in the block's rear end, the shaft's integral 90T ring in the Ø cavity_dia
-    cavity that is OPEN to the front face (the ring passes through it on assembly), bearing 2 in the bolt-on END CAP on
-    that face, the 40 mm kit motor on the bolt-on MOTOR MOUNT whose base fills a pocket cut into the block's flat top (its
-    vertical plate UP in the swing plane, the motor's body behind the elbow axis), the belt down through the top wall,
-    the cables out of the rear end wall on the axis. MODULE FRAME:
-    origin at the roll axis' crossing with the elbow axis (host (0, 0, axis_z)); +Z along the roll axis toward the
-    wrist (host −X); +X = host +Z (N, away from the upper arm); +Y = host +Y = up in the arm's swing plane. Stations in
-    that frame: layout.stack_positions(). Assembly: bearing 1 into the rear seat, the shaft in from the front (its
-    rear journal into bearing 1, the ring through the cavity), bearing 2 over the spigot and the neck onto journal 2,
-    the cap over it (4x M3 into the front face), the forearm wall onto the spigot (4x M3 into the nuts pushed into the
-    shaft's pockets from its bore). Bearing 1
-    is pressed onto the shaft's rear journal first and rides in through the cavity and the core bore to its seat."""
+    """The forearm roll drive (assemblies/forearm_roll_drive.py; docs/forearm_roll.md): ONE printed FRAME (stator, the
+    forearm_roll_block) that is also the elbow's output flange, round a hollow roll shaft (rotor). The roll motor sits ON
+    the elbow axis and the roll housing above it, the belt's centre distance away (centre_distance = the arm's elbow
+    offset, ForearmConfig.elbow_offset): the frame is the housing round the roll axis (bearing 1's seat in its rear end,
+    the shaft's integral 90T ring in the Ø cavity_dia cavity OPEN to the front face, the belt window in its bottom
+    wall), a web under the motor (on the upper arm's side, -X) down past the elbow axis whose underside repeats the
+    SolidWorks j3_coupler's lip / boss / journal / stub into j1_link's bore - the elbow 90T bolts straight into it -, and
+    the motor's plate in front of the motor (its tension slots); bearing 2 in the bolt-on END CAP on the housing's front
+    face, the cables out of its rear end wall on the axis. MODULE FRAME: origin on the roll axis at the elbow axis'
+    station (host (0, 0, axis_z)); +Z along the roll axis toward the wrist (host −X); +X = host +Z (N, away from the
+    upper arm); +Y = host +Y = up in the arm's swing plane; the elbow axis runs along X through y = elbow_y (below the
+    roll axis). Stations in that frame: layout.stack_positions(). Assembly: the elbow 90T's nuts into the web's channels
+    from the motor's cradle, the motor into the cradle onto the plate, bearing 1 into the rear seat, the shaft in from
+    the front (its rear journal into bearing 1, the ring through the cavity), bearing 2 over the spigot and the neck onto
+    journal 2, the cap over it (4x M3 into the front face), the forearm wall onto the spigot (4x M3 into the nuts pushed
+    into the shaft's pockets from its bore). Bearing 1 is pressed onto the shaft's rear journal first and rides in
+    through the cavity and the core bore to its seat."""
 
     # bearings: 2x 6808-2RS - bearing 1 in the block's rear seat against its lip, bearing 2 in the cap's seat against the cap's lip
     bearing_bore: float = 40.0            # [DATASHEET] 6808-2RS (61808)
@@ -160,15 +164,22 @@ class RollDriveParams:
     seat_add: float = 0.15                # [DESIGN] PETG press allowance on the seat diameter (cf. the drive's 6814 seat)
     journal_add: float = 0.3              # [DESIGN] the printed journal's interference in the inner race (cf. the drive's hub)
     inner_race_od: float = 44.5           # [ESTIMATE] 6808 inner-race outer edge - the shaft's Ø44 core must not touch the outer race
-    # the block (stator): a rounded box round the roll axis - x along N (its underside at -X rides 3.0 mm above the
-    # upper arm's elbow relief, host z -11), y up in the swing plane (the motor mount sits on +Y), z along the roll axis
+    # the frame's housing: a rounded box round the roll axis - x along N (its underside at -X, the web's, rides 3.0 mm
+    # above the upper arm's flat top, host z -11), y up in the swing plane (the motor below it, -Y), z along the roll axis
     block_x: tuple = (-33.0, 33.0)        # [DESIGN] host z -8 .. 58
-    block_y: tuple = (-36.0, 36.0)        # [DESIGN] 5 mm of wall over the cavity; the motor's body clears the top at the slot's low end
-    block_z: tuple = (-40.0, 36.0)        # [DESIGN] the rear end wall .. the front face (the cap sits on it)
+    block_y: tuple = (-36.0, 36.0)        # [DESIGN] 5 mm of wall round the cavity; the motor's body clears the bottom at the slot's top end
+    block_z: tuple = (-26.0, 36.0)        # [DESIGN] the rear end wall .. the front face (the cap sits on it): the bearings 57 apart; the housing's
+    #                                       rear end is what the elbow motor meets first as the forearm lifts back (ELBOW_PITCH_LIMITS_DEG)
     block_corner_r: float = 8.0           # [DESIGN] the four edges along Z
-    # the coupler features on the block's underside (module -X), where j3_coupler#1 was - measured on the SolidWorks
-    # coupler 2026-09-23 in j2_link's frame (host z = module x + axis_z); they turn in j1_link's Ø80 recess / Ø42 bore
-    lip_dia: float = 72.0                 # [DESIGN] a dust lip in j1_link's Ø80 recess (the coupler's Ø78 flange, kept inside the block's outline)
+    # the web under the motor: a slab on the upper arm's side (x block_x[0] .. + web_t) from the housing down past the
+    # elbow axis, carrying the elbow flange (below) - the motor sits on it in a cradle between it, the plate and the housing
+    web_t: float = 10.0                   # [DESIGN] 2 mm under the motor's -N side (its body +/- 21 about the roll axis in X)
+    web_z: tuple = (-40.0, 36.0)          # [DESIGN] along the roll axis: over the lip about the elbow axis (lip_dia / 2 either side) .. the housing's front
+    web_margin: float = 2.0               # [DESIGN] the web's lower end this far past the lip's edge
+    # the coupler features on the web's underside (module -X) about the elbow axis (y = elbow_y), where j3_coupler#1 was -
+    # measured on the SolidWorks coupler 2026-09-23 in j2_link's frame (host z = module x + axis_z); they turn in
+    # j1_link's Ø80 recess / Ø42 bore
+    lip_dia: float = 72.0                 # [DESIGN] a dust lip in j1_link's Ø80 recess (the coupler's Ø78 flange, kept inside the web's outline)
     lip_x: tuple = (-35.0, -33.0)         # [REFERENCE] host -10 .. -8: 1.5 inside the recess (its floor at host -14.5), 2 proud of the underside
     boss_dia: float = 62.0                # [REFERENCE]
     boss_x: tuple = (-39.0, -35.0)        # [REFERENCE] host -14 .. -10
@@ -182,8 +193,7 @@ class RollDriveParams:
     pin_bore_dia: float = 12.5            # [REFERENCE] the coupler's through bore
     pin_bore_x: tuple = (-47.0 - PULLEY_SEAT_SHIFT, -37.0)   # [DESIGN] from the stub's end, blind: stops 1 mm under the nut seats
     pulley_bolt_r: float = 11.0           # [REFERENCE] the elbow 90T's 4x M4 at r 11 (the SolidWorks coupler's pattern) ...
-    pulley_bolt_deg: float = 45.0         # [DESIGN] ... turned off the axes, the elbow 90T with it (lib/mounts.py): on the axes the +z
-    #                                       nut channel would stop 1.6 mm short of the cavity (cavity_z0), at 45 deg 4.4
+    pulley_bolt_deg: float = 45.0         # [DESIGN] ... turned off the axes, the elbow 90T with it (lib/mounts.py)
     pulley_bolt_dia: float = M4_CLEAR     # [DESIGN] 4.4, M4 clearance up through the stub, the journal and the boss to the nut seat
     pulley_hub_len: float = GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_FACE_Y[0]   # [REFERENCE] 21.4, the 90T's length through its bolt holes:
     #                                       the screw heads sit in its counterbores (parts/joints/elbow_pulley_screws)
@@ -191,9 +201,9 @@ class RollDriveParams:
     #                                       (GT2_PULLEY_90T_HEAD_SEAT under its outer face)
     nut_af: float = 6.85                  # [DESIGN] the M4 nuts' (ISO 4032, s 7) hex channels - j3_coupler's pocket (lib/coupler/params.py)
     nut_t: float = M4_NUT.h               # [DATASHEET] 3.2, ISO 4032 M4 nut height (parts/joints/elbow_pulley_nuts)
-    nut_seat_x: float = -36.0             # [DESIGN] in the boss: the screw ends 1.4 mm (2 pitches) past its nut, 6.5 mm under the core bore
-    nut_channel_past: float = 1.0         # [DESIGN] each channel runs up from its seat into the core bore, this far past its outermost corner:
-    #                                       the nuts drop in from inside the bore (block underside down) before the shaft goes in
+    nut_seat_x: float = -36.0             # [DESIGN] in the boss: the screw ends 2 pitches past its nut, under the motor's cradle
+    nut_channel_past: float = 1.0         # [DESIGN] each channel runs up from its seat through the web into the motor's cradle, this far past
+    #                                       the web's top: the nuts drop in from the cradle before the motor goes in
     # the housing bore, rear end wall -> front face
     end_wall: float = 3.0                 # [DESIGN] block_z[0] .. +3, the cable exit through it
     cable_exit_dia: float = 26.0          # [DESIGN] on the axis: the shaft's Ø24 bore + 1 mm all round
@@ -202,9 +212,9 @@ class RollDriveParams:
     core_bore_dia: float = 52.6           # [DESIGN] the bore from the seat to the cavity: bearing 1 (on the shaft) slides through it to its
     #                                       seat with 0.3 mm of radial clearance; the shaft's Ø44 core turns in it
     cavity_dia: float = 62.0              # [DESIGN] round the ring's flanges (+1.4), 2 mm of wall under it (block_x[0])
-    cavity_z0: float = 16.0               # [DESIGN] the cavity's rear wall: 4.4 mm past the pulley-bolt nut channels (z to 11.6); open to the front
-    belt_window_half_x: float = 22.0      # [DESIGN] the belt's two runs cross the top wall at |x| ~ 16..19 (tangent points on the ring at +/- 26.4, on the 20T at +/- 5.7)
-    belt_window_y0: float = 29.0          # [DESIGN] from inside the cavity out through the top wall
+    cavity_z0: float = 16.0               # [DESIGN] the cavity's rear wall, 0.8 before the ring's first flange; open to the front
+    belt_window_half_x: float = 22.0      # [DESIGN] the belt's two runs cross the bottom wall at |x| ~ 16..19 (tangent points on the ring at +/- 26.4, on the 20T at +/- 5.7)
+    belt_window_y0: float = 29.0          # [DESIGN] from inside the cavity (y -29) out through the bottom wall
     belt_window_margin: float = 1.0       # [DESIGN] past the ring's flanges, both sides
     # the end cap (forearm_roll_retainer): the block's outline, seat 2 + lip, 4x M3 at the corners, the stop post on its outer face
     cap_lip: float = 2.0                  # [DESIGN] past bearing 2's seat, ID lip_id
@@ -231,38 +241,21 @@ class RollDriveParams:
     ring_width: float = 7.0               # [DATASHEET] 6 mm belt
     ring_flange_dia: float = 59.19        # [REFERENCE] the SolidWorks 90T's flanges
     ring_flange_t: float = 1.2
-    ring_z0: float = 18.0                 # [DESIGN] the teeth start here (the motor's body then ends 7.5 mm before the block's rear)
-    # the motor: over the block's top, up in the swing plane, centred on the roll axis in X, body toward the elbow (-Z),
-    # shaft toward the wrist, spun motor_spin_deg about its axis so its cable connector points +X (away from the upper
-    # arm, clear of the block's top); the motor mount's vertical plate (normal to Z) carries it - slotted along Y for
-    # belt tension
+    ring_z0: float = 18.0                 # [DESIGN] the teeth start here (sets the motor's station: its plate in front of it, t20 behind the ring)
+    # the motor: ON the elbow axis, under the housing, centred on the roll axis in X, body toward the elbow (-Z), shaft
+    # toward the wrist, spun motor_spin_deg about its axis so its cable connector points +X (away from the upper arm);
+    # the frame's plate (normal to Z, in front of it) carries it - slotted along Y for belt tension
     motor: MotorParams = MOTOR_40
     motor_spin_deg: float = 90.0          # [DESIGN] about the motor axis: the connector (the motor frame's -Y) -> module +X
-    roll_belt: int = 240                  # [ESTIMATE] 240-2GT closed belt, 6 mm: sets the centre distance (60.9) = the motor's height
+    roll_belt: int = 240                  # [ESTIMATE] 240-2GT closed belt, 6 mm: sets the centre distance (60.9) = the elbow axis' depth under the
+    #                                       roll axis (ForearmConfig.elbow_offset - the arm's elbow offset)
     t20_hub: float = 10.95                # [REFERENCE] vendor 20T: its tooth band's centre from its hub face (7.45 + 3.5)
-    pulley_lift: float = 0.5              # [DESIGN] the 20T's hub face above the plate's front face
-    pad_t: float = 4.0                    # [DESIGN] the plate = mount_base_t: the mount one thickness throughout (the Ø22 x 2 pilot boss centres in it)
-    plate_w: float = 46.0                 # [DESIGN] the plate's width (X) = the mount's base; it reaches plate_w / 2 above the motor axis
+    pulley_lift: float = 0.5              # [DESIGN] the 20T's hub face before the plate's front face
+    pad_t: float = 4.0                    # [DESIGN] the plate's thickness (the Ø22 x 2 pilot boss centres in it)
+    plate_w: float = 46.0                 # [DESIGN] the plate's width (X); it reaches plate_w / 2 (+ the slot's half) below the motor axis
     pad_slot_len: float = 5.0             # [DESIGN] +/- 2.5 belt-tension slide along Y
     pad_bolt_dia: float = 3.4
     pad_pilot_w: float = 22.3             # [DESIGN] the pilot boss slot
-    # the motor mount (forearm_roll_motor_mount): a plain base plate_w wide in a pocket cut into the block's flat top
-    # (the block keeps its rounded edges), from the rear face to the plate's front face, its top where the block's top
-    # was (the motor keeps its clearance), the plate rooted in it; 4x M3 countersunk (flush, under the motor) down
-    # through the base and the block's top wall into M3 nuts pressed into hex pockets that open into the core bore (the
-    # elbow pulley nuts' way: in from inside the bore before the shaft goes in)
-    mount_base_t: float = 4.0             # [DESIGN] the base = the pocket's depth: 5.7 mm of wall left over the core bore
-    mount_fit: float = 0.2                # [DESIGN] PETG clearance round the base in its pocket (the sides and the riser)
-    mount_bolt_x: float = 18.0            # [DESIGN] the screws at x +/- this (the heads 1.6 inside the base's sides) ...
-    mount_bolt_z: tuple = (-22.0, 1.0)    # [DESIGN] ... and these z: over the core bore (its nut pockets clear of the seat and the cavity), the front heads 1.7 behind the plate
-    mount_screw: CskSize = M3_CSK         # [DATASHEET] ISO 10642 M3 (parts/joints/forearm_roll_mount_screws)
-    mount_screw_len: float = 16.0         # [DESIGN] M3 x 16 countersunk (length overall): through the base, the top wall and its nut, the tip
-    #                                       out in the core bore's clearance round the shaft's core (take them out before the shaft)
-    mount_bolt_dia: float = M3_CLEAR      # [DESIGN] 3.4, through the base and the block's top wall to the nut
-    mount_nut: NutSize = M3_NUT           # [DATASHEET] ISO 4032 M3 (parts/joints/forearm_roll_mount_nuts)
-    mount_nut_clear: float = 1.0          # [DESIGN] each nut's inner edge this far outside the core bore: as near its pocket's mouth as
-    #                                       bearing 1, sliding through the core bore, allows - sets the nut's seat (the pocket's ceiling)
-    mount_nut_pocket_af: float = 5.35     # [DESIGN] the nuts' hex pockets, a flat toward +/-X: a press on the 5.5 nut (cf. nut_af 6.85 on the 7.0), so it stays when its screw is out
 
     @property
     def t20(self) -> float:
@@ -275,9 +268,14 @@ class RollDriveParams:
         return centre_distance(self.roll_belt, self.ring_teeth, GT2_PULLEY_20T_TEETH)
 
     @property
+    def elbow_y(self) -> float:
+        """Module y of the elbow axis (along X): the whole centre distance below the roll axis - the motor sits on it."""
+        return -self.centre_distance
+
+    @property
     def motor_y(self) -> float:
-        """The motor axis' +Y offset - the whole centre distance (the motor is centred on the roll axis in X)."""
-        return self.centre_distance
+        """The motor axis' module y: on the elbow axis (centred on the roll axis in X)."""
+        return self.elbow_y
 
 
 @dataclass(frozen=True)
@@ -292,6 +290,8 @@ class ForearmConfig:
     sockets: SocketParams | None = SocketParams()   # None: no locating sockets
     roll_end: RollEndParams = RollEndParams()
     drive: RollDriveParams = RollDriveParams()
+    elbow_offset: float = 0.0              # the roll axis' distance from the elbow axis along +Y (j2_link's, the module's): 0 = they cross
+    #                                        (lib/placements.py SHIFTS moves the forearm and all beyond it across by DEFAULT - LEGACY)
 
 
 LEGACY = ForearmConfig()     # the SolidWorks part, exactly
@@ -304,11 +304,13 @@ _WEB = replace(LEGACY.web, wrist_x=LEGACY.web.wrist_x + SHORTENING)
 # where the stock belt puts it (lib/belts.py) - between the wall, its connector plug clear by plug_clearance, and the
 # wrist boss -, the slots shorten to the slide that leaves (>= 4 mm before the wall; its ends: the plug's clearance,
 # 0.5 off the boss) and the central one widens to pass the Ø22 pilot boss; the caps are gone, so are the sockets
-# that located them.
+# that located them. The roll axis runs elbow_offset above the elbow axis - the roll motor sits on the elbow axis, the
+# roll belt's centre distance under the ring - so the forearm and everything beyond it sit that far across (+Y).
 DEFAULT = replace(
     LEGACY, roll=True, web=_WEB,
     motor_x=_WEB.wrist_x + centre_distance(RollEndParams().wrist_belt, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH),   # -99.52
     slide_range=(-103.5, -94.0),
     slot=SlotParams(centre_w=22.3, centre_x=(-110.0, -88.0), side_x=(-119.0, -78.5)),
     sockets=None,
+    elbow_offset=RollDriveParams().centre_distance,   # [DESIGN] 60.9: the 240-2GT roll belt's centre distance
 )

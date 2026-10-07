@@ -32,10 +32,9 @@ from lib.params import (
 from lib.yaw_coupler import DEFAULT as _YAW_COUPLER
 
 # (module or None = the arm itself, what to order, pieces, why it is not modelled). Seeded with what
-# docs/cycloidal_drive.md states; the arm's own fasteners (but the 90T pulley bolts, the motor mounts' and the elbow
-# motor's, modelled: parts/joints/{elbow,wrist}_pulley_{screws,nuts}, parts/base/yaw_pulley_{screws,nuts},
-# forearm_roll_mount_{screws,nuts}, parts/base/base_motor_mount_{screws,nuts}, parts/joints/elbow_motor_screws) and the
-# electronics are not listed yet.
+# docs/cycloidal_drive.md states; the arm's own fasteners (but the 90T pulley bolts, the base motor mount's and the
+# elbow motor's, modelled: parts/joints/{elbow,wrist}_pulley_{screws,nuts}, parts/base/yaw_pulley_{screws,nuts},
+# parts/base/base_motor_mount_{screws,nuts}, parts/joints/elbow_motor_screws) and the electronics are not listed yet.
 EXTRAS = [
     ("cycloidal_drive", (f"M{CYCLOIDAL_HUB_BOLT_DIA:g} x {_YAW_COUPLER.fork.hub_screw_len:g} socket head cap screw (ISO 4762) - "
                          "the output hub to the j1_coupler yoke's hub-side leg"), CYCLOIDAL_HUB_BOLT_COUNT,

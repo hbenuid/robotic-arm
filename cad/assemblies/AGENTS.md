@@ -21,7 +21,9 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   across it (`j1_link`'s elbow end, slid onto the arm rising off the drive's shell: `lib/upper_arm/layout.py arm_slide`;
   the mounts hosted on `j1_link#1` itself add it to their frames, `lib/params.py J1_ARM_SLIDE`); the yoke
   (`j1_coupler`) moves the drive, `j1_link` and all beyond along its +X (N) by `ForkParams.face_x` −
-  `CAPTURE_FACE_X`, the middle of the discs onto the base_yaw axis — the file stays as
+  `CAPTURE_FACE_X`, the middle of the discs onto the base_yaw axis; the forearm roll drive (`forearm_roll_drive`, anchor
+  `j2_link#1`) moves `j2_link#1` and all beyond along j2_link's +Y by `ForearmConfig.elbow_offset` (its roll axis across
+  the elbow axis, the elbow's own records - the retired `j3_coupler#1` / `gt2_pulley_90t#1` - staying) — the file stays as
   extracted, `location()` applies the shift
   (`to_location()` / `to_record()` stay raw: the writers and the round-trip test use them). A `LinkShift` lists the
   TOP-LEVEL records beyond its link, the retired hosts included; a module's children follow its world pose (their
@@ -94,7 +96,7 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   M3 screws + nuts) lives only in
   `tools/bom.py EXTRAS` — it is on the buy list and absent from the model, the totals and the inertials; model it as a
   COTS pattern part (`cycloidal_housing_bolts` is the pattern, `elbow_pulley_screws` a native mounted one,
-  `forearm_roll_mount_screws` a native module row, `yaw_pulley_screws` a mounted one with no reference file - the state
+  `yaw_pulley_screws` a mounted one with no reference file - the state
   for a new one, `parts/AGENTS.md` Part states → *no reference*) to change that.
 - `arm.py GROUPS` buckets the occurrences into the component tree
   `arm → base_link/shoulder_link/upper_arm_link/elbow_link/forearm_link/wrist_pitch_link/wrist` — the

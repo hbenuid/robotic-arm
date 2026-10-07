@@ -110,10 +110,20 @@ def test_rpy_round_trip():
 
 
 def test_joint_origins_sit_on_their_shifted_records():
-    """The origins beyond a link follow its SHIFTS (lib/placements.py): each is its record's world origin."""
-    for origin, key in ((F.ELBOW_ORIGIN, "j2_link#1"), (F.WRIST_PITCH_ORIGIN, "j3_coupler#2"),
+    """The origins beyond a link follow its SHIFTS (lib/placements.py): each is its record's world origin - the elbow's
+    the retired j3_coupler#1's (the forearm, j2_link#1, sits ELBOW_ROLL_OFFSET across it), the roll's
+    FOREARM_ROLL_AXIS_Z along N from j2_link#1's."""
+    for origin, key in ((F.ELBOW_ORIGIN, "j3_coupler#1"), (F.WRIST_PITCH_ORIGIN, "j3_coupler#2"),
                         (F.WRIST_ROLL_ORIGIN, "gt2_pulley_20t#1")):
         assert math.dist(origin, tuple(P.location(key, "world").position)) < 0.01, key
+    j2 = tuple(P.location("j2_link#1", "world").position)
+    roll = tuple(o + PARAMS.FOREARM_ROLL_AXIS_Z * n for o, n in zip(j2, F.N, strict=True))
+    assert math.dist(F.FOREARM_ROLL_ORIGIN, roll) < 0.01
+    # the elbow offset: the roll origin ELBOW_ROLL_OFFSET across the elbow axis, FOREARM_ROLL_AXIS_Z along it
+    d = [b - a for a, b in zip(F.ELBOW_ORIGIN, F.FOREARM_ROLL_ORIGIN, strict=True)]
+    along = sum(x * n for x, n in zip(d, F.N, strict=True))
+    assert math.isclose(along, PARAMS.FOREARM_ROLL_AXIS_Z, abs_tol=0.01)
+    assert math.isclose(math.sqrt(sum(x * x for x in d) - along ** 2), PARAMS.ELBOW_ROLL_OFFSET, abs_tol=0.05)
 
 
 def test_meshes_exist_and_are_referenced_by_the_urdf():
