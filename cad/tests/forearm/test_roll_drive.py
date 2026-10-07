@@ -96,6 +96,8 @@ def test_stack():
     assert D.step_x[1] == D.journal_x[0] and D.stub_x[1] == D.step_x[0] and D.stub_dia < D.step_dia < D.journal_dia
     assert z_axis + D.boss_x[0] >= UPPER_ARM_RECESS[1] + FACE_GAP and D.journal_dia / 2.0 < UPPER_ARM_BORE_R and D.stub_dia / 2.0 < UPPER_ARM_BORE_R
     assert z_axis + D.stub_x[0] == ELBOW_PULLEY_FACE_Z and D.pin_bore_x[0] == D.stub_x[0]
+    # the lip and the boss, round the elbow axis, inside the block's length behind it (its rear end the nearer)
+    assert D.lip_dia / 2.0 <= -D.block_z[0] and D.boss_dia < D.lip_dia
     # the stations, rear end wall -> the forearm wall
     assert S["z_end"] == D.block_z[0] and S["z_lip"] == S["z_end"] + D.end_wall and S["z_seat"] == S["z_lip"] + D.lip == S["z_bearing_1"]
     assert S["z_bore"] == S["z_seat"] + D.bearing_width and S["z_bore"] < S["z_cavity"] == D.cavity_z0 < S["z_ring_flange_1"]
@@ -106,6 +108,9 @@ def test_stack():
     assert math.isclose(S["z_ring_mid"] - S["z_motor_face"], D.t20) and S["z_20t"] - S["z_pad_top"] == D.pulley_lift
     # the shaft CROSSES the elbow axis: the bearings straddle it inside the block
     assert S["z_end"] < S["z_bearing_1"] and S["z_bearing_1"] + D.bearing_width < 0 < S["z_bearing_2"] <= S["z_face"]
+    # ... bearing 1 as near the elbow axis as the elbow 90T's nut channels let it: its seat 2 mm behind their reach
+    reach = max(abs(z) for _, z in pulley_bolt_points(DEFAULT)) + D.nut_af / math.sqrt(3.0)
+    assert -reach - 2.5 < S["z_bore"] <= -reach - 2.0
     # the forearm wall: the rolling forearm, whatever its roll angle, clears j1_link's round end
     assert S["z_wall"] >= UPPER_ARM_END_R + 1.5
     # walls: 2 mm under the cavity and the seat

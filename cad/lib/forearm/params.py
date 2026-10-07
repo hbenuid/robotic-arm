@@ -164,13 +164,15 @@ class RollDriveParams:
     # upper arm's elbow relief, host z -11), y up in the swing plane (the motor mount sits on +Y), z along the roll axis
     block_x: tuple = (-33.0, 33.0)        # [DESIGN] host z -8 .. 58
     block_y: tuple = (-36.0, 36.0)        # [DESIGN] 5 mm of wall over the cavity; the motor's body clears the top at the slot's low end
-    block_z: tuple = (-40.0, 36.0)        # [DESIGN] the rear end wall .. the front face (the cap sits on it)
+    block_z: tuple = (-26.0, 36.0)        # [DESIGN] the rear end wall .. the front face (the cap sits on it): the rear as near the elbow axis
+    #                                       as bearing 1 can sit - its seat's front face (z_bore -14) 2 mm behind the elbow 90T's nut channels (|z| to 11.73)
     block_corner_r: float = 8.0           # [DESIGN] the four edges along Z
     # the coupler features on the block's underside (module -X), where j3_coupler#1 was - measured on the SolidWorks
     # coupler 2026-09-23 in j2_link's frame (host z = module x + axis_z); they turn in j1_link's Ø80 recess / Ø42 bore
-    lip_dia: float = 72.0                 # [DESIGN] a dust lip in j1_link's Ø80 recess (the coupler's Ø78 flange, kept inside the block's outline)
+    lip_dia: float = 52.0                 # [DESIGN] a dust lip in j1_link's Ø80 recess (the coupler's Ø78 flange), kept inside the block's length
+    #                                       behind the elbow axis (2 x -block_z[0])
     lip_x: tuple = (-35.0, -33.0)         # [REFERENCE] host -10 .. -8: 1.5 inside the recess (its floor at host -14.5), 2 proud of the underside
-    boss_dia: float = 62.0                # [REFERENCE]
+    boss_dia: float = 50.0                # [DESIGN] the coupler's Ø62, 2 under the lip (inside the block's length too)
     boss_x: tuple = (-39.0, -35.0)        # [REFERENCE] host -14 .. -10
     journal_dia: float = 40.0             # [REFERENCE] in j1_link's Ø42 bore
     journal_x: tuple = (-40.3, -39.0)     # [REFERENCE] host -15.3 .. -14
@@ -230,7 +232,7 @@ class RollDriveParams:
     ring_width: float = 7.0               # [DATASHEET] 6 mm belt
     ring_flange_dia: float = 59.19        # [REFERENCE] the SolidWorks 90T's flanges
     ring_flange_t: float = 1.2
-    ring_z0: float = 18.0                 # [DESIGN] the teeth start here (the motor's body then ends 7.5 mm before the block's rear)
+    ring_z0: float = 18.0                 # [DESIGN] the teeth start here (the motor's body then reaches 7.45 mm past the block's rear, its board 21.55)
     # the motor: over the block's top, up in the swing plane, centred on the roll axis in X, body toward the elbow (-Z),
     # shaft toward the wrist, spun motor_spin_deg about its axis so its cable connector points +X (away from the upper
     # arm, clear of the block's top); the motor mount's vertical plate (normal to Z) carries it - slotted along Y for
@@ -253,7 +255,8 @@ class RollDriveParams:
     mount_base_t: float = 4.0             # [DESIGN] the base = the pocket's depth: 5.7 mm of wall left over the core bore
     mount_fit: float = 0.2                # [DESIGN] PETG clearance round the base in its pocket (the sides and the riser)
     mount_bolt_x: float = 18.0            # [DESIGN] the screws at x +/- this (the heads 1.6 inside the base's sides) ...
-    mount_bolt_z: tuple = (-22.0, 1.0)    # [DESIGN] ... and these z: over the core bore (its nut pockets clear of the seat and the cavity), the front heads 1.7 behind the plate
+    mount_bolt_z: tuple = (-8.5, 1.0)     # [DESIGN] ... and these z: over the core bore (its nut pockets clear of the seat and the cavity: the rear pair
+    #                                       as far back as the seat allows), the front heads 1.7 behind the plate
     mount_screw: CskSize = M3_CSK         # [DATASHEET] ISO 10642 M3 (parts/joints/forearm_roll_mount_screws)
     mount_screw_len: float = 16.0         # [DESIGN] M3 x 16 countersunk (length overall): through the base, the top wall and its nut, the tip
     #                                       out in the core bore's clearance round the shaft's core (take them out before the shaft)

@@ -218,7 +218,7 @@ _SHORTENED = shortened(replace(
                                         for sx, sz in ((1, -1), (1, 1), (-1, 1), (-1, -1)))),   # [DESIGN] M3 clearance (LEGACY's 3.2)
     hub=replace(LEGACY.hub, bolt_angle_deg=-2.584167),   # [REFERENCE] the drive's bolts, 3.36 degrees from the SolidWorks holes
     # the elbow block (lib/forearm/ RollDriveParams) turns with the elbow over this top face: its flat underside and its
-    # end cap's, swept to r 57.6, ride 3.0 above the relief's floor (0.5 over the lip), its Ø62 boss 2.0 above the
+    # end cap's, swept to r 57.6, ride 3.0 above the relief's floor (0.5 over the lip), its Ø50 boss 2.0 above the
     # recess floor (0.5 at the SolidWorks -4.5), which is level with the upper 6806's top: its seat exactly 7.0 deep,
     # the most the boss can get (tests/forearm/test_roll_drive.py)
     elbow=replace(LEGACY.elbow, relief_r=60.0, relief_y=-1.0, recess_y=-6.0),   # [DESIGN]

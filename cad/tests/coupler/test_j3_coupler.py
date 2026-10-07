@@ -19,9 +19,10 @@ def test_layout():
     assert len(pulley_bolt_points(LEGACY)) == len(flange_bolt_points(LEGACY)) == 4
     assert all(math.isclose(math.hypot(x, z), LEGACY.pulley_bolt_r) for x, z in pulley_bolt_points(LEGACY))
     d = FOREARM.drive
-    # the roll drive's block repeats the coupler's features at the elbow, the inner-ring shoulder included
-    assert (d.stub_dia, d.journal_dia, d.boss_dia, d.pulley_bolt_r) == (LEGACY.stub_dia, LEGACY.journal_dia, LEGACY.lip_dia[1],
-                                                                        LEGACY.pulley_bolt_r)
+    # the roll drive's block repeats the coupler's features at the elbow, the inner-ring shoulder included; its boss
+    # narrower than the coupler's, to stay inside the block's length behind the elbow axis
+    assert (d.stub_dia, d.journal_dia, d.pulley_bolt_r) == (LEGACY.stub_dia, LEGACY.journal_dia, LEGACY.pulley_bolt_r)
+    assert d.journal_dia < d.boss_dia < LEGACY.lip_dia[1]
     assert LEGACY.step is None and DEFAULT.step[0] == d.step_dia
     assert d.step_x[1] - d.step_x[0] == pytest.approx(DEFAULT.step[1] - DEFAULT.journal_y1)
     assert d.stub_x[1] - d.stub_x[0] == pytest.approx(DEFAULT.stub_y1 - DEFAULT.step[1])

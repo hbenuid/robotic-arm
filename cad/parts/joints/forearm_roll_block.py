@@ -1,5 +1,6 @@
 """forearm_roll_block - the forearm roll drive's STATOR - the elbow block, which is also the elbow's output flange: a rounded box
-round the roll axis (66 x 72 x 76) whose underside repeats the SolidWorks j3_coupler's lip, Ø62 boss, Ø40 journal and Ø30 stub down
+round the roll axis (66 x 72 x 62) whose underside repeats the SolidWorks j3_coupler's lip and boss (both narrowed to the block's
+length), Ø40 journal and Ø30 stub down
 into j1_link's recess and bore (the elbow 90T pulley bolts up through the stub into 4x M4 nuts in hex channels that open into the
 core bore - j3_coupler#1 is retired),
 the housing bore that CROSSES the elbow axis - the rear end wall with the Ø26 cable exit on the axis, the lip bearing 1 stops on,

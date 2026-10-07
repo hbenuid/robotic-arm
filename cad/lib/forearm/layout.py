@@ -100,10 +100,10 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
     geometry at these stations - the block's and the shaft's rows are at 0, the cap's at z_cap). The elbow axis
     crosses the roll axis at z = 0, inside the block. Every number a row or a test needs comes from here."""
     d, w = cfg.drive, cfg.roll_end
-    z_end = d.block_z[0]                                          # -40: the rear end wall's outer face
-    z_lip = z_end + d.end_wall                                    # -37: the end wall's inner face, the lip begins
-    z_seat = z_lip + d.lip                                        # -35: bearing 1
-    z_bore = z_seat + d.bearing_width                             # -28: the clearance bore (the shaft's shoulder 1)
+    z_end = d.block_z[0]                                          # -26: the rear end wall's outer face
+    z_lip = z_end + d.end_wall                                    # -23: the end wall's inner face, the lip begins
+    z_seat = z_lip + d.lip                                        # -21: bearing 1
+    z_bore = z_seat + d.bearing_width                             # -14: the clearance bore (the shaft's shoulder 1)
     z_cavity = d.cavity_z0                                        # 16: the cavity, open to the front face
     z_ring = d.ring_z0                                            # 18: the teeth
     z_ring_flange_1 = z_ring - d.ring_flange_t                    # 16.8
@@ -125,7 +125,7 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
         "z_block": 0.0, "z_shaft": 0.0,
         "z_end": z_end, "z_lip": z_lip, "z_seat": z_seat, "z_bore": z_bore, "z_cavity": z_cavity,
         "z_bearing_1": z_seat, "z_bearing_2": z_face,
-        "z_shaft_end": z_lip + d.shaft_end_clear,                 # -36
+        "z_shaft_end": z_lip + d.shaft_end_clear,                 # -22
         "z_shoulder_1": z_bore, "z_ring_flange_1": z_ring_flange_1, "z_ring": z_ring, "z_ring_mid": z_ring_mid,
         "z_ring_end": z_ring_end,
         "z_face": z_face, "z_cap": z_face, "z_neck": z_neck, "z_cap_outer": z_cap_outer,
