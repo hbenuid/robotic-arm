@@ -30,7 +30,7 @@ def _inside(shape, x: float, y: float, z: float) -> bool:
 
 
 def test_they_are_purchased_parts_with_no_reference_in_the_base_group():
-    assert set(LOCKS) == {n for n in R.NO_REFERENCE if parts.bought(n)}
+    assert set(LOCKS) == {n for n in R.NO_REFERENCE if parts.bought(n) and parts.GROUPS[n] == "base"}
     for name in LOCKS:
         mod = parts.load(name)
         assert parts.GROUPS[name] == "base" and parts.bought(name) and mod.PURCHASE_QTY == len(POINTS) == LOCKS[name][0]

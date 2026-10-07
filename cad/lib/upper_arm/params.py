@@ -10,11 +10,12 @@ Two configurations: LEGACY reproduces the SolidWorks reference (the part's REFER
 tests/test_reference_match.py), DEFAULT is what the part builds: SHORTENING nearer the shoulder at the elbow (every
 elbow-end feature moves with the axis - lib/placements.py SHIFTS moves what lies beyond), no cap-locating sockets
 (the caps were removed 2026-09-25), no through slots, the NEMA 17 holes on a true square about the pad's axis, the
-elbow's clearance for the elbow block (the relief round the axis, the recess 1.5 mm deeper), and the drive's turning
-shell: the arm, a plain bar, rises straight off the shell's middle, printed as one with the shell's body (ArmParams),
-its elbow end slid along Y to its outer face; the elbow motor moved out along the link to ELBOW_MOTOR_CENTRES from the
-elbow axis, where the second stage's seat was (gone), and turned over onto the arm's other side, down a hole through it
-onto a plate under its outer face (the pad's tube gone).
+elbow's clearance for the elbow block (the top face at the relief's floor, the recess 1.5 mm deeper), and the drive's
+turning shell: the arm, one flat slab from the elbow half's underside to the relief's floor, end to end, rises off the
+shell's middle, printed as one with the shell's body (ArmParams), slid along Y with the plate's elbow end; the elbow
+motor moved out along the link to ELBOW_MOTOR_CENTRES from the elbow axis, where the second stage's seat was (gone),
+and turned over onto the arm's other side, down a square hole through the slab onto a web across it (the pad's tube
+gone).
 
 Every number below was measured on the reference 2026-09-24 (planar / cylindrical face census;
 tests/upper_arm/test_j1_link.py re-checks the builds against it): [REFERENCE] unless tagged.
@@ -27,7 +28,7 @@ from dataclasses import dataclass, replace
 from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, centre_distance
 from lib.cycloidal import DEFAULT_CONFIG as _DRIVE
 from lib.cycloidal import arm_zone as _arm_zone
-from lib.fasteners import M3_CLEAR
+from lib.fasteners import M3_CLEAR, M3_SHCS, ShcsSize
 from lib.motors import NEMA17_BOLT_SP
 
 
@@ -48,8 +49,9 @@ class SlabParams:
 @dataclass(frozen=True)
 class ElbowParams:
     """The elbow half: thicker below (a 45 degree chamfer, then a step down), and the elbow_pitch bearing stack on
-    its axis - a recess from the top, the bore, a lip and a seat from below; DEFAULT also cuts the slab's lip away
-    round the axis (`relief_r`), where the elbow block turns over the top face."""
+    its axis - a recess from the top, the bore, a lip and a seat from below; DEFAULT gives the elbow block, which turns
+    over the top face, its floor (`relief_y`): the plate would cut its lip away down to it round the axis
+    (`relief_r`), DEFAULT's arm (ArmParams) - a slab from the underside y0 up to that floor - has its whole top there."""
 
     chamfer_x: float = 145.5          # the chamfer starts at the underside ...
     step_x: float = 153.5             # ... and meets the step wall here (45 degrees: 8 down)
@@ -62,7 +64,7 @@ class ElbowParams:
     seat_dia: float = 42.2            # lip .. underside
     relief_r: float = 0.0             # [DESIGN] the top face down to relief_y within this radius of the elbow axis;
     #                                   0: none (the SolidWorks part)
-    relief_y: float = 0.0             # [DESIGN] the relief's floor (0: the lip's root, SlabParams.y1)
+    relief_y: float = 0.0             # [DESIGN] the relief's floor (0: the lip's root, SlabParams.y1); DEFAULT's slab top
 
 
 @dataclass(frozen=True)
@@ -145,30 +147,36 @@ class ArmParams:
     """DEFAULT's shoulder end: PAROL6-like, the arm rises straight off the cycloidal drive's turning shell over its gear
     stretch - the drive's z between its two plates (lib/cycloidal/layout.py arm_zone), symmetric about the middle of the
     discs - printed as one with the shell's body (lib/cycloidal/housing.py build_shell_body), not bolted to the shell's
-    end. The arm is a plain bar, a placeholder: the plate's width (2 SlabParams.r) from y_outer to y_inner, from the
-    shoulder axis to the elbow axis, fused into the shell's wall from fuse_r out - where the body's two windows under it
-    are solid (lib/cycloidal/params.py ShellParams.arm_windows; its other windows open on the discs) - and stopping at
-    the elbow's relief (ElbowParams.relief_r round the elbow axis); its motor-side top stepped down flat from swing_r
-    short of the elbow axis, swing_above_top over the slid plate's top face, where the forearm roll drive's motor mount,
-    motor and board turn with the elbow (they never roll: their height along Y is fixed). The plate as built - its elbow
-    end with the bearing stack, the step, the slot - slides along +Y until the plate's underside (SlabParams.y0) is flush
-    with the arm's outer face (lib/upper_arm/layout.py arm_slide): what lies beyond the elbow moves with it
-    (lib/placements.py SHIFTS), the elbow's belt stays under the arm. The elbow motor stands on the arm's motor side
-    (+Y, with the forearm), on the pad's axis (PadParams.x): its body down a square hole through the arm
-    (motor_hole_half), its face on a plate under the arm's outer face (motor_plate_t, at y_outer), its shaft (-Y)
-    through the plate to its 20T in the belt's plane; the pad's tube is LEGACY's only. The drive's frame in this one:
+    end. The arm is one flat slab, solid (a placeholder for its mass: docs/open_issues.md): the plate's outline (the
+    stadium 2 SlabParams.r wide from the shoulder axis to the elbow axis) from the elbow half's underside
+    (ElbowParams.y0) up to the relief's floor (ElbowParams.relief_y), end to end - the elbow block and its end cap turn
+    over its top face, the forearm roll drive's motor mount, motor and board (they turn with the elbow and never roll:
+    their height along Y is fixed) clear it further up - fused into the shell's wall from fuse_r out, where the body's two
+    windows under it are solid (lib/cycloidal/params.py ShellParams.arm_windows; its other windows open on the discs).
+    The slab lies where the plate's elbow half lay: the plate as built slides along +Y until its shoulder half's
+    underside (SlabParams.y0) is on y_outer (lib/upper_arm/layout.py arm_slide), the slab with it - what lies beyond
+    the elbow moves with it (lib/placements.py SHIFTS), the elbow's belt stays under the arm. The elbow motor stands on
+    the arm's motor side (+Y, with the forearm), on the pad's axis (PadParams.x): its body down a square hole through
+    the slab (motor_hole_half), its face on a web left across the hole (its top at y_outer), held by 4 socket head cap
+    screws up through it - the drive's motor's, as the drive's motor plate holds them: motor_plate_t of web under their
+    heads, the heads flush in pockets in its underside (motor_screw, motor_pocket_dia) -, its shaft (-Y) through the
+    web to its 20T in the belt's plane; the pad's tube is LEGACY's only. The drive's frame in this one:
     its axis this frame's Y, its +Z this frame's -Y, its z drive_z_at_y0 at y = 0, its +X at drive_x_deg (atan2(z, x))."""
 
-    y_outer: float                   # [DESIGN] the arm's face toward the drive's hub end ...
-    y_inner: float                   # [DESIGN] ... and toward its motor (lib/cycloidal/layout.py arm_zone, through drive_z_at_y0)
+    y_outer: float                   # [DESIGN] the elbow motor's face: the drive's arm_zone end toward its hub
+    #                                  (lib/cycloidal/layout.py arm_zone, through drive_z_at_y0); the plate slides onto it
     fuse_r: float = 61.0             # [DESIGN] the arm from here out: in the shell's wall (its bore 54 .. od 64.6), past
     #                                  the housing bolts' holes (60.7)
-    swing_r: float = 96.0            # [DESIGN] the top stepped down from this far short of the elbow axis: past the roll drive's board (95.2) ...
-    swing_above_top: float = 9.5     # [DESIGN] ... from this far over the slid plate's top: under its motor mount (10.5)
-    motor_plate_t: float = 6.0       # [DESIGN] the elbow motor's plate under the arm's outer face ...
-    motor_plate_half: float = 26.0   # [DESIGN] ... 52 square about the pad's axis, its 4 holes PadParams.holes ...
+    motor_plate_t: float = 6.0       # [DESIGN] the web across the elbow motor's hole, under its face, its 4 holes PadParams.holes,
+    #                                  to the screws' heads (the drive's motor plate's, under its motor's: the M3 x 10 less the
+    #                                  thread in the motor) ...
+    motor_screw: ShcsSize = M3_SHCS  # [DATASHEET] ... the motor's 4x M3 SHCS, the drive's motor's (parts/cycloidal/
+    #                                  cycloidal_motor_bolts), their heads flush in pockets in the web's underside, head_h
+    #                                  deep - the web motor_plate_t + head_h thick, as the drive's motor plate (9) ...
+    motor_pocket_dia: float = _DRIVE.motor.motor_bolt_head_dia + _DRIVE.tolerances.bolt_clearance_add   # [DESIGN] ... the
+    #                                  drive's motor plate's head pockets (5.7)
     motor_pilot_dia: float = 22.5    # [DESIGN] ... the hole for the motor's Ø22 pilot boss, the shaft and its 20T through it
-    motor_hole_half: float = 21.6    # [DESIGN] the square hole through the arm round the motor's 42.3 body
+    motor_hole_half: float = 21.6    # [DESIGN] the square hole through the slab round the motor's 42.3 body
     drive_z_at_y0: float = 66.5      # [REFERENCE] the drive's z at this frame's y = 0 (placements.json cycloidal_drive#1,
     #                                  j1_link#1: the SolidWorks hub face bolted to the top face, y 1.5, at the port's z 65)
     drive_x_deg: float = -47.584167  # [REFERENCE] the drive's +X in this frame, atan2(z, x), as the capture pose places it
@@ -230,6 +238,6 @@ _SHORTENED = shortened(replace(
 ELBOW_BELT = 280   # [DESIGN] a stock 280-2GT closed belt, the elbow motor's 20T to the elbow's 90T ...
 ELBOW_MOTOR_CENTRES = centre_distance(ELBOW_BELT, GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH)   # ... sets its axis 81.97 from the elbow's
 _ZONE = _arm_zone(_DRIVE)   # the drive's z 9 .. 39
-_ARM_Z0 = ArmParams(0.0, 0.0).drive_z_at_y0
-DEFAULT = replace(_SHORTENED, bearing=None, arm=ArmParams(y_outer=_ARM_Z0 - _ZONE[1], y_inner=_ARM_Z0 - _ZONE[0]),   # 27.5, 57.5
+_ARM_Z0 = ArmParams(0.0).drive_z_at_y0
+DEFAULT = replace(_SHORTENED, bearing=None, arm=ArmParams(y_outer=_ARM_Z0 - _ZONE[1]),   # 27.5
                   pad=replace(_SHORTENED.pad, x=round(_SHORTENED.slab.elbow_x - ELBOW_MOTOR_CENTRES, 6)))

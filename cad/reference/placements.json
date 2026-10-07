@@ -11,9 +11,9 @@
  "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. A record with a `mount` block (keys under `mounted`) is a motor mount declared in lib/mounts.py, not a SolidWorks node: parent None, rel == world = host world * mount frame.",
  "root_label": "final_Arm_Assembly_Fully_Movable",
  "expected": {
-  "leaf_occurrences": 60,
-  "solids": 146,
-  "solid_volume": 2057558.549
+  "leaf_occurrences": 61,
+  "solids": 150,
+  "solid_volume": 2058098.246
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -31,6 +31,7 @@
   "nema17_40mm#3",
   "mks_servo42d#3",
   "gt2_pulley_20t#2",
+  "elbow_motor_screws#1",
   "bearing_6806#1",
   "bearing_6806#2",
   "bearing_6806#3",
@@ -3472,7 +3473,7 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "on j1_link's motor plate (on its 4 holes), ELBOW_MOTOR_CENTRES short of the elbow axis, the body +N down the hole through the arm, shaft -N through the plate; connector toward -Z [ESTIMATE] (toward the elbow the roll block would pass it 0.2 mm off)"
+    "note": "on the web across j1_link's motor hole (on its 4 holes), ELBOW_MOTOR_CENTRES short of the elbow axis, the body +N down the hole through the slab, shaft -N through the web; connector toward -Z [ESTIMATE] (toward the elbow the roll block would pass it 0.2 mm off)"
    },
    "solids": 2,
    "solid_volume": 66449.22,
@@ -3884,7 +3885,7 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the elbow motor's 20T on its shaft, hub toward the motor, J1_MOTOR_20T_HUB_Z out from its face (under the plate): its tooth band level with the elbow 90T's"
+    "note": "the elbow motor's 20T on its shaft, hub toward the motor, J1_MOTOR_20T_HUB_Z out from its face (under the web): its tooth band level with the elbow 90T's"
    },
    "solids": 3,
    "solid_volume": 1878.627,
@@ -3961,6 +3962,109 @@
     16.389,
     16.0,
     15.278
+   ]
+  },
+  {
+   "key": "elbow_motor_screws#1",
+   "part": "elbow_motor_screws",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j1_link#1",
+    "link": "upper_arm_link",
+    "joint": "elbow_pitch",
+    "frame_in_host": {
+     "position": [
+      88.028325,
+      21.5,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      -90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the elbow motor's 4x M3 x J1_MOTOR_SCREW_LEN SHCS (the drive motor's): heads flush in the pockets in the underside of the web across j1_link's motor hole, up through it into the motor's tapped holes"
+   },
+   "solids": 4,
+   "solid_volume": 539.697,
+   "rel": {
+    "position": [
+     -60.790775,
+     149.999016,
+     -17.118476
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     132.415833
+    ],
+    "matrix_3x4": [
+     [
+      -0.673104708,
+      -0.736734748,
+      0.064435727,
+      -60.790774871
+     ],
+     [
+      0.738268975,
+      -0.674506428,
+      -2e-09,
+      149.99901621
+     ],
+     [
+      0.043462313,
+      0.047570897,
+      0.997921859,
+      -17.118476321
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -60.790775,
+     149.999016,
+     -17.118476
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     132.415833
+    ],
+    "matrix_3x4": [
+     [
+      -0.673104708,
+      -0.736734748,
+      0.064435727,
+      -60.790774871
+     ],
+     [
+      0.738268975,
+      -0.674506428,
+      -2e-09,
+      149.99901621
+     ],
+     [
+      0.043462313,
+      0.047570897,
+      0.997921859,
+      -17.118476321
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -85.581,
+    125.351,
+    -21.7
+   ],
+   "world_bbox_size": [
+    49.387,
+    49.296,
+    16.069
    ]
   },
   {

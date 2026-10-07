@@ -466,19 +466,21 @@ class TestPoseInTheArm:
             assert vol <= 1.0, f"drive x {key}: {vol:.1f} mm^3"
 
     def test_the_shell_in_j1_link_and_the_hub_and_sleeve_on_the_yoke(self):
-        """j1_link holds the shell's body: its face on the shell ring (arm_zone's start), its hub end (shell_ends); the
-        held hub's face (hub_top) on the inner face of the j1_coupler fork's hub-side leg, the sleeve's end on the
-        motor-side leg's outer face."""
+        """j1_link holds the shell's body: its face on the shell ring (arm_zone's start - the body's end face, in pieces
+        between its windows), its hub end (shell_ends); the held hub's face (hub_top) on the inner face of the
+        j1_coupler fork's hub-side leg, the sleeve's end on the motor-side leg's outer face. Each seat: the planar faces
+        perpendicular to the drive axis in its plane, their area together."""
         from lib.cycloidal import arm_zone
 
         world = P.location(DRIVE_KEY, "world")
         axis = (world * Location((0, 0, 1))).position - world.position      # the drive axis in world
-        for key, z, area in (("j1_link#1", arm_zone(CFG)[0], 2000), ("j1_link#1", shell_ends(CFG)[1], 2000),
+        for key, z, area in (("j1_link#1", arm_zone(CFG)[0], 1500), ("j1_link#1", shell_ends(CFG)[1], 2000),
                              ("j1_coupler#1", stack_positions(CFG)["hub_top"], 2000), ("j1_coupler#1", sleeve_end(CFG), 500)):
             centre = (world * Location((0, 0, z))).position
             faces = [f for f in built.placed(key).faces().filter_by(GeomType.PLANE)
-                     if abs(f.normal_at().dot(axis)) > 0.99 and f.area > area and abs((centre - f.center()).dot(f.normal_at())) < 0.1]
-            assert faces, f"{key} has no large planar face perpendicular to the drive axis at module z {z:.3f}"
+                     if abs(f.normal_at().dot(axis)) > 0.99 and abs((centre - f.center()).dot(f.normal_at())) < 0.1]
+            seat = sum(f.area for f in faces)
+            assert seat > area, f"{key}'s planar faces perpendicular to the drive axis at module z {z:.3f}: {seat:.0f} mm^2"
         assert axis.dot(Vector(*F.N)) < -0.99, "the drive axis should point along -N (toward j1_link)"
         joint = F.JOINT_BY_NAME["shoulder_pitch"]                       # the drive IS this joint
         off_axis = (Vector(*joint.origin_w) - world.position).cross(axis).length
