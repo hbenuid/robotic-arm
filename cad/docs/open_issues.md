@@ -68,6 +68,8 @@ and totals are never quoted (`cad/AGENTS.md` Docs).
 | Link-membership assumptions (90T pulleys + J3 couplers with the driven links, the gripper linkage merged into `wrist_roll_link`) | `robot/frames.py LINKS` comments, the URDF ledger |
 | A **4th CAN id** for the forearm roll: `software/control/src/config.py` J1..J3 name three MKS boards, the arm now carries five (base_yaw, shoulder_pitch, elbow_pitch, forearm_roll, wrist_pitch) - the control side is out of the CAD's scope | `software/control/src/config.py`, `software/control/README.md` Hardware |
 | Whether the elbow 90T pulley is the driven side (it carries the roll drive's stator - the block that replaced `j3_coupler#1` - in `elbow_link`) | `robot/frames.py LINKS` [ASSUMPTION] |
+| Which joints get an endstop / home sensor (a KY-003 each): only the forearm roll's is planned (Not modelled yet, above); the other joints are not chosen | `lib/sensors.py`, `tools/bom.py EXTRAS` |
+| The KY-003 on the MKS SERVO42D's limit input: the A3144 needs at least 4.5 V (a 3.3 V supply is out of its range), so the module runs from 5 V - whether the board's limit input takes the module's output at that level | `lib/sensors.py`, `parts/joints/mks_servo42d.py` |
 
 ## Not converted yet (SolidWorks geometry, not build123d)
 The part's model still returns its SolidWorks export (`CONVERTED = False`, `parts/_templates/wrapper.py`), so its

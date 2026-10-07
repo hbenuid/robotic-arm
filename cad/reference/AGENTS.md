@@ -4,6 +4,13 @@ Loads when you work in `reference/`. What is here and where each file came from 
 the designed module, the skipped products, the `placements.json` schema — is `README.md`; this file holds the rules.
 
 ## Rules
+- **These references were a bootstrap, on their way out** — the user's direction, not a current task. The CAD is to
+  stand on its own code (parametric builds locked by numeric tests, poses declared in code like `lib/mounts.py`'s)
+  with nothing here needed: the SolidWorks and CadQuery exports, `placements.json`, `native/` (`vendor/` is bought-part
+  data, not a reference). So: add no new dependency on a file here in a test, a lock or a tool; a new part or a new
+  export gets no reference file (`parts/AGENTS.md` Part states: *no reference*, *measured*); when a task touches a
+  check measured against a reference, say what code or test could replace it; start no migration of the existing
+  references unasked.
 - Every file here is an **immutable input**, committed as a Git LFS object: its checksum is locked in `manifest.json`
   (whose `file` field names its origin directory; `lib.reference.path_of(name)` resolves it) and
   `tests/test_reference_match.py` compares every converted part against it. Regenerate with its tool — never edit.
