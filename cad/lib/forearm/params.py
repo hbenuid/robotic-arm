@@ -186,8 +186,9 @@ class RollDriveParams:
     #                                       nut channel would stop 1.6 mm short of the cavity (cavity_z0), at 45 deg 4.4
     pulley_bolt_dia: float = M4_CLEAR     # [DESIGN] 4.4, M4 clearance up through the stub, the journal and the boss to the nut seat
     pulley_hub_len: float = GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_FACE_Y[0]   # [REFERENCE] 21.4, the 90T's length through its bolt holes:
-    #                                       the screw heads sit on its outer face (parts/joints/elbow_pulley_screws)
-    pulley_screw_len: float = 40.0        # [DESIGN] M4 x 40 (ISO 4762) from the pulley's outer face
+    #                                       the screw heads sit in its counterbores (parts/joints/elbow_pulley_screws)
+    pulley_screw_len: float = 35.0        # [DESIGN] M4 x 35 (ISO 4762) from the floors of the pulley's counterbores
+    #                                       (GT2_PULLEY_90T_HEAD_SEAT under its outer face)
     nut_af: float = 6.85                  # [DESIGN] the M4 nuts' (ISO 4032, s 7) hex channels - j3_coupler's pocket (lib/coupler/params.py)
     nut_t: float = M4_NUT.h               # [DATASHEET] 3.2, ISO 4032 M4 nut height (parts/joints/elbow_pulley_nuts)
     nut_seat_x: float = -36.0             # [DESIGN] in the boss: the screw ends 1.4 mm (2 pitches) past its nut, 6.5 mm under the core bore

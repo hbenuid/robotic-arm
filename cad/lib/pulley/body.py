@@ -4,8 +4,8 @@ part frame.
 Every feature runs along the part's Y (the axis), so the body is built in a working frame whose +Z is the part's +Y -
 part (x, y, z) = working (x, -z, y) - and turned into the part frame once at the end (Rot(-90, 0, 0)), like
 lib/coupler/body.py. The web and the toothed rim (lib/pulley/teeth.py, an annulus round the web) come first, then the
-step, the hub and its ring, then the bore and the bolt holes - every boolean after the rim stays near the axis, far from
-its grooves. The compound pulley is its two toothed rings alone, each an annulus on the bore, fused where the upper
+step, the hub and its ring, then the bore, the bolt holes and their counterbores - every boolean after the rim stays near
+the axis, far from its grooves. The compound pulley is its two toothed rings alone, each an annulus on the bore, fused where the upper
 band's lower flange stands on the lower band's upper flange - away from both bands' grooves."""
 from __future__ import annotations
 
@@ -34,8 +34,11 @@ def build_pulley(cfg: PulleyParams = DEFAULT):
     body = body + _disc(cfg.hub_dia / 2.0, cfg.end_y, step_y0 + NUDGE)
     body = body + _disc(ring_dia / 2.0, ring_y0, ring_y1)
     body = body - _disc(cfg.bore_dia / 2.0, cfg.end_y - NUDGE, cfg.face_y + NUDGE)
+    cb_dia, cb_depth = cfg.counterbore
     for x, z in cfg.bolt_points():
         body = body - _disc(cfg.hole_dia / 2.0, cfg.end_y - NUDGE, cfg.face_y + NUDGE, x, z)
+        if cb_depth > 0.0:
+            body = body - _disc(cb_dia / 2.0, cfg.face_y - cb_depth, cfg.face_y + NUDGE, x, z)
     return single_solid(bd.Rot(-90.0, 0.0, 0.0) * body)
 
 

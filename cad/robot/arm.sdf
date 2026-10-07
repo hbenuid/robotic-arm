@@ -33,11 +33,11 @@
     <link name="shoulder_link">
       <pose relative_to="base_yaw">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>-0.000727 0.014022 -0.019493 0 0 0</pose>
-        <mass>1.332521</mass>
+        <pose>-0.000729 0.01405 -0.019278 0 0 0</pose>
+        <mass>1.329842</mass>
         <inertia>
-          <ixx>3.607446e-03</ixx><ixy>5.770706e-05</ixy><ixz>1.814189e-05</ixz>
-          <iyy>2.671331e-03</iyy><iyz>-3.590909e-04</iyz><izz>1.968791e-03</izz>
+          <ixx>3.576147e-03</ixx><ixy>5.767965e-05</ixy><ixz>1.793318e-05</ixz>
+          <iyy>2.640559e-03</iyy><iyz>-3.550661e-04</iyz><izz>1.967927e-03</izz>
         </inertia>
       </inertial>
       <visual name="shoulder_link_visual">
@@ -87,11 +87,11 @@
     <link name="elbow_link">
       <pose relative_to="elbow_pitch">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>-0.006634 -0.027133 0.019145 0 0 0</pose>
-        <mass>0.742657</mass>
+        <pose>-0.006658 -0.027232 0.019402 0 0 0</pose>
+        <mass>0.739978</mass>
         <inertia>
-          <ixx>1.342914e-03</ixx><ixy>-1.714447e-04</ixy><ixz>3.245559e-05</ixz>
-          <iyy>7.968956e-04</iyy><iyz>1.233733e-04</iyz><izz>1.303608e-03</izz>
+          <ixx>1.327244e-03</ixx><ixy>-1.709609e-04</ixy><ixz>3.118701e-05</ixz>
+          <iyy>7.830866e-04</iyy><iyz>1.181823e-04</iyz><izz>1.301175e-03</izz>
         </inertia>
       </inertial>
       <visual name="elbow_link_visual">
@@ -141,11 +141,11 @@
     <link name="wrist_pitch_link">
       <pose relative_to="wrist_pitch">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.044801 0.000072 -0.015628 0 0 0</pose>
-        <mass>0.416999</mass>
+        <pose>0.04509 0.000072 -0.015393 0 0 0</pose>
+        <mass>0.41432</mass>
         <inertia>
-          <ixx>1.980835e-04</ixx><ixy>-6.067706e-07</ixy><ixz>1.562280e-05</ixz>
-          <iyy>6.681027e-04</iyy><iyz>3.610497e-08</iyz><izz>6.966356e-04</izz>
+          <ixx>1.944365e-04</ixx><ixy>-5.986097e-07</ixy><ixz>2.001746e-05</ixz>
+          <iyy>6.590431e-04</iyy><iyz>4.273051e-08</iyz><izz>6.908884e-04</izz>
         </inertia>
       </inertial>
       <visual name="wrist_pitch_link_visual">

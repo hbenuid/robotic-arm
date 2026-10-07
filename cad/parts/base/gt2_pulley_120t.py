@@ -3,8 +3,8 @@ build_pulley(YAW), in the 90T's part frame - origin on the axis at the lower fla
 outer face).
 
 The 90T (parts/joints/gt2_pulley_90t) with GT2_PULLEY_120T_TEETH: the same hub - its Ø30 journal in the lower base
-bearing, its ring under that bearing's inner ring -, the same web height, bore and 4x M4 through the hub end to end
-(the base_yaw pulley bolts: yaw_pulley_screws, yaw_pulley_nuts); the toothed rim grown with the teeth, the 90T's wall
+bearing, its ring under that bearing's inner ring -, the same web height, bore and 4x M4 through the hub end to end,
+counterbored for the heads (the base_yaw pulley bolts: yaw_pulley_screws, yaw_pulley_nuts); the toothed rim grown with the teeth, the 90T's wall
 kept under them. With the 48 mm motor's 20T it gives the base_yaw ratio (lib/params.py BASE_YAW_RATIO). Every number:
 lib/pulley/params.py (YAW).
 
