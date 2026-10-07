@@ -156,6 +156,7 @@ NO_REFERENCE: dict[str, str] = {
     "j1_coupler_cap": "lib/yaw_coupler/body.py:build_cap(DEFAULT)",
     "yaw_pulley_screws": "parts/base/yaw_pulley_screws.py:_envelope()",
     "yaw_pulley_nuts": "parts/base/yaw_pulley_nuts.py:_envelope()",
+    "elbow_motor_screws": "parts/joints/elbow_motor_screws.py:_envelope()",
 }
 
 # Measured conversions: printed parts converted from a SolidWorks export that was measured once and is NOT committed -

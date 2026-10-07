@@ -86,7 +86,7 @@ def test_belt_motor_and_mks_board_track_reference():
     assert hi + p.NEMA17_40_BODY_W / 2 + p.NEMA17_40_CONNECTOR_D + p.FOREARM_PLUG_CLEARANCE <= p.FOREARM_WALL_X[0] + 1e-9
     assert lo - p.NEMA17_40_BODY_W / 2 >= wrist_x + boss_r
     assert p.FOREARM_WALL_X[0] < p.FOREARM_WALL_X[1] < 0 and p.FOREARM_ROLL_AXIS_Z == 42.0 - 17.0
-    assert p.J2_MOTOR_WEB_FACE_Z > 0 and p.J1_MOTOR_PAD_FACE_Y == 27.5   # the elbow motor's face: its plate under the arm's outer face
+    assert p.J2_MOTOR_WEB_FACE_Z > 0 and p.J1_MOTOR_PAD_FACE_Y == 27.5   # the elbow motor's face: the web across its hole
     assert math.isclose(p.J1_ARM_SLIDE, 39.271993)
     lo, hi = p.ELBOW_PITCH_LIMITS_DEG
     assert lo == -21.0 and hi == 90.0                                    # the roll drive's board reaches the elbow motor at -24.4
