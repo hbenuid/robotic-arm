@@ -13,7 +13,16 @@ table, the drive ratios) to agree with `software/control/src/config.py`, and one
 
 ## Git workflow
 - Work on a branch — `cad/<topic>` for CAD work, `<area>/<topic>` otherwise — and push the **branch**.
-- **Every branch reaches `main` through a pull request.** When the branch is done (committed, the local suite green,
+- **A session works in its own git worktree**, never in the main checkout (`~/Documents/GitHub/robotic-arm`, shared
+  with the user and other sessions: it stays on `main`, clean). Before the first edit:
+  `git worktree add .claude/worktrees/<topic> -b <branch> origin/main` (git-ignored), then Claude Code's EnterWorktree
+  with that path. The new branch tracks `origin/main`: `git branch --unset-upstream`, and push it with
+  `git push -u origin <branch>`. A worktree gets its own `cad/.venv` (`./cadtool setup` in its `cad/`) and has no
+  generated STEPs (Recipe C's "before" hashes: `cad/AGENTS.md`); the git hooks and `~/.cache/cadgen` are shared. In a
+  worktree Claude Code refuses Bash commands it cannot confirm stay there (loops, heredocs, long `sed` / redirect
+  chains on a path that contains `GitHub`): write a script and run it as one plain command, make edits with Edit.
+- **Every branch reaches `main` through a pull request** — several sessions work on branches at once and `main` moves
+  under them. When the branch is done (committed, the local suite green,
   pushed), open one: `gh pr create --base main --head <branch> --title "<what it did, one line>" --body "<why, what
   changed, the checks run>"` (the commits stay the record: the body summarises, it does not replace them).
   `gh pr list` is then the list of branches waiting for `main`, each with its diff against today's `main` and a
@@ -110,7 +119,9 @@ fixed.
 - The agent instructions are `AGENTS.md` files — this one, and one per folder that has rules of its own. Claude Code
   (2.1.277 or later) reads an `AGENTS.md` only where it finds no `CLAUDE.md`, and a `CLAUDE.local.md` counts as one:
   never add either file anywhere in the repo, or the `AGENTS.md` files there stop loading
-  (`cad/tests/test_tooling.py` checks the tracked tree).
+  (`cad/tests/test_tooling.py` checks the tracked tree). The name is a preference, not a move to other coding agents:
+  the content stays written for Claude Code (its hooks, the plugin, `.claude/settings.json`) — don't rewrite it to be
+  tool-neutral.
 - No CHANGELOG and no "Last updated" lines: git dates every change (Git workflow above). Docs describe the current
   state and the reasons for it, never a dated history.
 - `cad/docs/open_issues.md` is the ONE list of what is not settled (fit problems, estimates to confirm on

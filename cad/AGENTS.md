@@ -25,12 +25,14 @@ The toolchain, its pins and upgrades: `docs/toolchain.md`.
 | print list, buy list, STLs to print | `parts/AGENTS.md` Printed vs. bought | — |
 | bump cadgen / build123d / OCP / Python, or a pull changed `pyproject.toml` / `uv.lock` | `docs/toolchain.md` | — |
 | work on the cycloidal drive / the forearm roll drive | `docs/cycloidal_drive.md` / `docs/forearm_roll.md` | — |
+| make a design choice (how far to shrink a part, which fastener, what moves) | Design choices (below) | the preview first, then Recipe C |
 | know what is unsettled (fit problems, estimates, unmodelled hardware) | `docs/open_issues.md` | add / remove rows as you go |
 | something behaves oddly | Gotchas (below), then the Gotchas of the folder's AGENTS.md and `docs/toolchain.md` | — |
 
 ## Recipe C — the regeneration checklist, after ANY geometry / mass / placement change, in this order
 1. `./cadtool daemon stop` when `lib/reference.py`, `pyproject.toml` or the kernel changed (workers keep old code).
-2. `shasum -a 256 parts/*/*.step assemblies/*.step robot/links/*.step > /tmp/before.txt` (the hash gate).
+2. `shasum -a 256 parts/*/*.step assemblies/*.step robot/links/*.step > /tmp/before.txt` (the hash gate); a fresh
+   worktree has no STEPs: run it in the main checkout's `cad/` (same machine, so the same bytes).
 3. `./cadtool gen assemblies/arm.py` (every stale child rebuilds);
    a part whose vendor file is NEW needs `./cadtool gen parts/<group>/<name>.py --force` first (see Gotchas below).
 4. `shasum -a 256 -c /tmp/before.txt` on the SAME machine (STEP bytes differ per machine: Two machines, below) —
@@ -124,6 +126,14 @@ call runs the whole pipeline (gate, writes the STEP, talks to the warm daemon). 
 is what assembly bodies call for a child — the linked child while a build runs, the raw body
 otherwise. `tests/conftest.py` makes an accidental top-level call under pytest fail loudly.
 
+### Design choices
+A change that is a design choice — how far to shrink a part, which fastener, what moves — is the user's to make: ask,
+with 2–4 concrete options, each with its measured numbers and explained simply (AskUserQuestion). Then SHOW the chosen
+geometry before the branch is touched: build it from the part builders with the proposed config in a scratch script
+(nothing in the repo) and publish a page with matched before / after renders and a to-scale overlay, close-ups where
+the difference is subtle; the work starts once the user has seen it. Renders at one scale: Gotchas (`snapshot` fits
+every view).
+
 ## Two machines (Fedora Linux PC + arm64 Mac)
 Push before leaving a machine, pull on arrival — git is the only sync channel (root `AGENTS.md` "Two development
 machines"; CI is the third machine: root `AGENTS.md` "CI").
@@ -168,6 +178,10 @@ machines"; CI is the third machine: root `AGENTS.md` "CI").
 - A model run accepts only `--force --mesh-tolerance --mesh-angular-tolerance --verbose --json` (`./cadtool gen
   <model.py> --help` lists them); anything else (`--totals`, a preview flag) is an argparse error — use
   `./cadtool python -c`.
+- `./cadtool snapshot` fits every view to its model: the `--camera` JSON's `orthographicHalfHeight` is ignored, whatever
+  `--help` says (verified on cadgen 0.7.15: `bearing_625` and `base` both fill the frame at `orthographicHalfHeight`
+  100, with a preset and without). To render versions at one scale, give each the same bounding box — tiny marker
+  cubes at fixed corners, in the scratch build — and crop.
 
 ## Docs
 - A rule lives in the ONE AGENTS.md / README of the folder it governs; a rule that spans folders lives here. Change it
