@@ -1,7 +1,8 @@
 """gt2_pulley_90t, parametric (lib/pulley/): the groove's tangency solve lands on the SolidWorks arcs, the LEGACY
 configuration reproduces the SolidWorks part feature by feature (the volume / bbox match is
 tests/test_reference_match.py's; here the features are probed by name so a regression names what moved, and its
-surfaces are the reference's own), and DEFAULT - what the part builds - opens the bolt holes and changes nothing else."""
+surfaces are the reference's own), and DEFAULT - what the part builds - opens the bolt holes, counterbores them for the
+heads and changes nothing else."""
 import itertools
 import math
 from dataclasses import replace
@@ -9,7 +10,7 @@ from dataclasses import replace
 import pytest
 
 from lib import belts
-from lib.fasteners import M4_CLEAR
+from lib.fasteners import M4_CLEAR, M4_SHCS
 from lib.pulley import DEFAULT, LEGACY
 from lib.pulley.teeth import groove_arcs, groove_centres
 from tests import built
@@ -27,7 +28,8 @@ def test_params():
     assert LEGACY.bolt_points() == belts.pulley_90t_bolt_points()
     assert LEGACY.band_y1 - 1.0 == pytest.approx(belts.GT2_BELT_W)                     # the band: the belt + 1
     assert LEGACY.hub_dia == 30.0 and LEGACY.flange_dia == pytest.approx(59.188, abs=1e-3)   # the 6806's bore; the bbox
-    assert DEFAULT == replace(LEGACY, hole_dia=M4_CLEAR)
+    assert DEFAULT == replace(LEGACY, hole_dia=M4_CLEAR, counterbore=(M4_SHCS.head_dia + 0.4, belts.GT2_PULLEY_90T_HEAD_SEAT))
+    assert LEGACY.counterbore == (0.0, 0.0)
 
 
 def test_groove_centres():
@@ -92,12 +94,17 @@ def test_legacy_features(legacy):
 
 
 @pytest.mark.slow
-def test_default_opens_the_bolt_holes(pulley, legacy):
-    holes = 4 * math.pi * ((DEFAULT.hole_dia / 2.0) ** 2 - (LEGACY.hole_dia / 2.0) ** 2) * (DEFAULT.face_y - DEFAULT.end_y)
-    assert legacy.volume - pulley.volume == pytest.approx(holes, abs=1e-3)
+def test_default_opens_and_counterbores_the_bolt_holes(pulley, legacy):
+    (cb_dia, cb_depth), r_hole = DEFAULT.counterbore, DEFAULT.hole_dia / 2.0
+    holes = 4 * math.pi * (r_hole ** 2 - (LEGACY.hole_dia / 2.0) ** 2) * (DEFAULT.face_y - DEFAULT.end_y)
+    counterbores = 4 * math.pi * ((cb_dia / 2.0) ** 2 - r_hole ** 2) * cb_depth
+    assert legacy.volume - pulley.volume == pytest.approx(holes + counterbores, abs=1e-3)
     for x, z in DEFAULT.bolt_points():
         u = (x / DEFAULT.bolt_r, z / DEFAULT.bolt_r)
-        assert not is_inside(pulley, x + 2.1 * u[0], 0.0, z + 2.1 * u[1]) and is_inside(pulley, x + 2.3 * u[0], 0.0, z + 2.3 * u[1])
+        for y, r in ((DEFAULT.end_y + 0.5, r_hole), (0.0, r_hole), (DEFAULT.face_y - cb_depth - 0.2, r_hole),
+                     (DEFAULT.face_y - cb_depth + 0.2, cb_dia / 2.0), (DEFAULT.face_y - 0.2, cb_dia / 2.0)):
+            assert not is_inside(pulley, x + (r - 0.1) * u[0], y, z + (r - 0.1) * u[1]), (x, z, y)
+            assert is_inside(pulley, x + (r + 0.1) * u[0], y, z + (r + 0.1) * u[1]), (x, z, y)
     lb, pb = legacy.bounding_box(), pulley.bounding_box()
     assert (pb.min.X, pb.min.Y, pb.min.Z, pb.max.X, pb.max.Y, pb.max.Z) == pytest.approx(
         (lb.min.X, lb.min.Y, lb.min.Z, lb.max.X, lb.max.Y, lb.max.Z), abs=1e-6)

@@ -13,7 +13,7 @@
  "expected": {
   "leaf_occurrences": 61,
   "solids": 150,
-  "solid_volume": 2095693.894
+  "solid_volume": 2093271.726
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -5021,7 +5021,7 @@
     "note": "the elbow 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower elbow bearing; turned pulley_bolt_deg about its axis with the block's bolt pattern (the nut channels clear of the ring cavity)"
    },
    "solids": 1,
-   "solid_volume": 24531.703,
+   "solid_volume": 23975.641,
    "rel": {
     "position": [
      -116.63823,
@@ -5124,7 +5124,7 @@
     "note": "the wrist 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower wrist bearing"
    },
    "solids": 1,
-   "solid_volume": 24531.703,
+   "solid_volume": 23975.641,
    "rel": {
     "position": [
      -229.635819,
@@ -5227,7 +5227,7 @@
     "note": "the base_yaw 120T under j1_coupler, hub up: its hub end on the stub's end, its journal in the lower base bearing, its ring under that bearing's inner ring (it holds the coupler down on the thrust bearing); turned hole_deg about its axis onto the stub's diagonal holes"
    },
    "solids": 1,
-   "solid_volume": 37623.954,
+   "solid_volume": 37067.892,
    "rel": {
     "position": [
      0.0,
@@ -5317,7 +5317,7 @@
     "frame_in_host": {
      "position": [
       0.0,
-      8.2,
+      3.2,
       0.0
      ],
      "rotation_xyz_deg": [
@@ -5327,15 +5327,15 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the elbow 90T's 4x M4 x pulley_screw_len: heads on its outer face, down through its hub and the block's stub"
+    "note": "the elbow 90T's 4x M4 x pulley_screw_len: heads in its counterbores, down through its hub and the block's stub"
    },
    "solids": 4,
-   "solid_volume": 2564.018,
+   "solid_volume": 2312.69,
    "rel": {
     "position": [
-     -117.166604,
+     -116.844425,
      210.516162,
-     -32.145093
+     -27.155484
     ],
     "rotation_xyz_deg": [
      -0.0,
@@ -5347,27 +5347,27 @@
       -0.997315384,
       -0.034785919,
       0.064435734,
-      -117.16660352
+      -116.844424848
      ],
      [
       0.034858359,
       -0.999392263,
       2e-09,
-      210.516161779
+      210.516161789
      ],
      [
       0.064396574,
       0.002246126,
       0.997921859,
-      -32.145093099
+      -27.155483805
      ]
     ]
    },
    "world": {
     "position": [
-     -117.166604,
+     -116.844425,
      210.516162,
-     -32.145093
+     -27.155484
     ],
     "rotation_xyz_deg": [
      -0.0,
@@ -5379,31 +5379,31 @@
       -0.997315384,
       -0.034785919,
       0.064435734,
-      -117.16660352
+      -116.844424848
      ],
      [
       0.034858359,
       -0.999392263,
       2e-09,
-      210.516161779
+      210.516161789
      ],
      [
       0.064396574,
       0.002246126,
       0.997921859,
-      -32.145093099
+      -27.155483805
      ]
     ]
    },
    "world_bbox_min": [
-    -131.888,
+    -131.565,
     196.023,
-    -37.071
+    -32.081
    ],
    "world_bbox_size": [
-    30.265,
+    29.943,
     28.987,
-    45.68
+    40.69
    ]
   },
   {
@@ -5421,7 +5421,7 @@
      "position": [
       0.0,
       0.0,
-      35.4
+      30.4
      ],
      "rotation_xyz_deg": [
       0.0,
@@ -5523,7 +5523,7 @@
     "frame_in_host": {
      "position": [
       0.0,
-      8.2,
+      3.2,
       0.0
      ],
      "rotation_xyz_deg": [
@@ -5533,15 +5533,15 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the wrist 90T's 4x M4 x pulley_screw_len: heads on its outer face, down through its hub and j3_coupler's stub"
+    "note": "the wrist 90T's 4x M4 x pulley_screw_len: heads in its counterbores, down through its hub and j3_coupler's stub"
    },
    "solids": 4,
-   "solid_volume": 3066.672,
+   "solid_volume": 2815.345,
    "rel": {
     "position": [
-     -230.164192,
+     -229.842013,
      334.841518,
-     17.238616
+     22.228225
     ],
     "rotation_xyz_deg": [
      0.0,
@@ -5553,27 +5553,27 @@
       -0.496888416,
       0.865418938,
       0.064435728,
-      -230.164191762
+      -229.842013125
      ],
      [
       -0.867221146,
       -0.497923171,
       -4e-09,
-      334.841517889
+      334.841517867
      ],
      [
       0.032084038,
       -0.055880028,
       0.997921859,
-      17.238615776
+      22.228225072
      ]
     ]
    },
    "world": {
     "position": [
-     -230.164192,
+     -229.842013,
      334.841518,
-     17.238616
+     22.228225
     ],
     "rotation_xyz_deg": [
      0.0,
@@ -5585,31 +5585,31 @@
       -0.496888416,
       0.865418938,
       0.064435728,
-      -230.164191762
+      -229.842013125
      ],
      [
       -0.867221146,
       -0.497923171,
       -4e-09,
-      334.841517889
+      334.841517867
      ],
      [
       0.032084038,
       -0.055880028,
       0.997921859,
-      17.238615776
+      22.228225072
      ]
     ]
    },
    "world_bbox_min": [
-    -243.434,
+    -243.112,
     321.802,
-    12.407
+    17.396
    ],
    "world_bbox_size": [
-    28.007,
+    27.685,
     26.079,
-    55.472
+    50.482
    ]
   },
   {
@@ -5627,7 +5627,7 @@
      "position": [
       0.0,
       0.0,
-      43.6
+      38.6
      ],
      "rotation_xyz_deg": [
       0.0,
@@ -5729,7 +5729,7 @@
     "frame_in_host": {
      "position": [
       0.0,
-      8.2,
+      3.2,
       0.0
      ],
      "rotation_xyz_deg": [
@@ -5739,14 +5739,14 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the base_yaw 120T's 4x M4 x pulley_screw_len: heads on its outer face (under it), up through its hub and j1_coupler's stub"
+    "note": "the base_yaw 120T's 4x M4 x pulley_screw_len: heads in its counterbores (under it), up through its hub and j1_coupler's stub"
    },
    "solids": 4,
-   "solid_volume": 2815.345,
+   "solid_volume": 2564.018,
    "rel": {
     "position": [
      -0.0,
-     -35.8,
+     -30.8,
      0.0
     ],
     "rotation_xyz_deg": [
@@ -5765,7 +5765,7 @@
       0.0,
       -0.0,
       1.0,
-      -35.8
+      -30.8
      ],
      [
       0.751200256,
@@ -5778,7 +5778,7 @@
    "world": {
     "position": [
      -0.0,
-     -35.8,
+     -30.8,
      0.0
     ],
     "rotation_xyz_deg": [
@@ -5797,7 +5797,7 @@
       0.0,
       -0.0,
       1.0,
-      -35.8
+      -30.8
      ],
      [
       0.751200256,
@@ -5809,12 +5809,12 @@
    },
    "world_bbox_min": [
     -11.763,
-    -39.8,
+    -34.8,
     -11.763
    ],
    "world_bbox_size": [
     23.526,
-    49.0,
+    44.0,
     23.526
    ]
   },
@@ -5833,7 +5833,7 @@
      "position": [
       0.0,
       0.0,
-      35.507252
+      30.507252
      ],
      "rotation_xyz_deg": [
       0.0,

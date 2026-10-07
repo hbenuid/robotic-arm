@@ -3,17 +3,18 @@ wrist belts - its hub turns in the joint's lower 6806 and bolts flat onto the st
 the base_yaw belt's 120T (gt2_pulley_120t), the same pulley with more teeth.
 
 Frame (= the SolidWorks part frame of gt2_pulley_90t, which placements.json and lib/mounts.py place): origin on the axis
-at the lower flange's top (where the teeth start), +Y up the axis toward the outer face, under the pulley bolts' heads.
-Every feature is a disc or a bore along Y.
+at the lower flange's top (where the teeth start), +Y up the axis toward the outer face, the pulley bolts' heads sunk in
+it. Every feature is a disc or a bore along Y.
 
 The body: the hub from its end - the Ø30 journal in the lower 6806, a ring under that bearing's inner ring, on up to a
 step -, the web on top of it, the toothed rim round the web (the tooth band between two flanges, each chamfered on the
 teeth's side; the groove is lib/belts.py's), open underneath between the step and the rim; the bore on the axis and the
-4 bolts on the X / Z axes (lib/belts.py pulley_90t_bolt_points()), from the hub's end to the outer face.
+4 bolts on the X / Z axes (lib/belts.py pulley_90t_bolt_points()), from the hub's end to the outer face, each with a
+counterbore from the face for its head (DEFAULT).
 
 Two configurations of the 90T: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
-tests/test_reference_match.py); DEFAULT is what the part builds: the bolt holes at M4 clearance. YAW is DEFAULT with 120
-teeth (below).
+tests/test_reference_match.py); DEFAULT is what the part builds: the bolt holes at M4 clearance, the heads in
+counterbores. YAW is DEFAULT with 120 teeth (below).
 
 Every number below was measured on the reference 2026-09-27 (face census; tests/pulley/test_gt2_pulley_90t.py re-checks
 the builds against it): [REFERENCE] unless tagged. Units mm. Frozen dataclasses; variants via dataclasses.replace.
@@ -29,11 +30,12 @@ from lib.belts import (
     GT2_PULLEY_20_60T_TEETH,
     GT2_PULLEY_90T_BOLT_R,
     GT2_PULLEY_90T_FACE_Y,
+    GT2_PULLEY_90T_HEAD_SEAT,
     GT2_PULLEY_90T_TEETH,
     GT2_PULLEY_120T_TEETH,
     pulley_od,
 )
-from lib.fasteners import M4_CLEAR
+from lib.fasteners import M4_CLEAR, M4_SHCS
 
 _AXES = ((1.0, 0.0), (0.0, 1.0), (-1.0, 0.0), (0.0, -1.0))
 
@@ -53,7 +55,8 @@ class PulleyParams:
     ring: tuple = (34.7592031398, -6.2, -4.7)   # (dia, y0, y1): a ring round the hub, under the lower 6806's inner ring
     bore_dia: float = 12.5
     bolt_r: float = GT2_PULLEY_90T_BOLT_R   # the 4 bolts, on the axes ...
-    hole_dia: float = 3.9              # ... in holes under an M4's shank (the export's)
+    hole_dia: float = 3.9              # ... in holes under an M4's shank (the export's) ...
+    counterbore: tuple = (0.0, 0.0)    # ... (dia, depth): a counterbore from the outer face round each, for its head (none)
 
     @property
     def band_y1(self) -> float:
@@ -72,12 +75,15 @@ class PulleyParams:
 LEGACY = PulleyParams()     # the SolidWorks part, exactly
 
 # What the part builds: the bolt holes opened to M4 clearance (the export's Ø3.9 sits under an M4's shank) - the bolts
-# pass through the pulley into the nuts under the stub.
-DEFAULT = replace(LEGACY, hole_dia=M4_CLEAR)   # [DESIGN]
+# pass through the pulley into the nuts under the stub -, each head sunk in a counterbore: 0.4 over the head (j1_coupler's
+# hub leg's and the drive's housing bolts' 7.4), its floor GT2_PULLEY_90T_HEAD_SEAT under the face (the head 1 under it);
+# 1.05 of wall left to the bore.
+DEFAULT = replace(LEGACY, hole_dia=M4_CLEAR, counterbore=(M4_SHCS.head_dia + 0.4, GT2_PULLEY_90T_HEAD_SEAT))   # [DESIGN]
 
 # The base_yaw joint's driven pulley (gt2_pulley_120t): DEFAULT with GT2_PULLEY_120T_TEETH - the base_yaw ratio 6:1 on the
 # motor's 20T, where the elbow's and the wrist's 90T give 4.5:1 - and its rim's inside grown with the teeth, keeping the
-# 90T's wall under them. The hub (journal, ring, step), the web's height, the bore and the bolts are the 90T's: it sits
+# 90T's wall under them. The hub (journal, ring, step), the web's height, the bore, the bolts and their counterbores are
+# the 90T's: it sits
 # on j1_coupler's stub in the lower base bearing the same way, clamped by the same screws.
 YAW = replace(DEFAULT, teeth=GT2_PULLEY_120T_TEETH,
               rim_dia=round(pulley_od(GT2_PULLEY_120T_TEETH) - (pulley_od(LEGACY.teeth) - LEGACY.rim_dia), 6))   # [DESIGN]

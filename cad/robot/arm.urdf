@@ -75,9 +75,9 @@
   </link>
   <link name="shoulder_link">
     <inertial>
-      <origin xyz="-0.000748 0.014197 -0.022301" rpy="0 0 0" />
-      <mass value="1.372986" />
-      <inertia ixx="3.821325e-03" ixy="5.875142e-05" ixz="2.293973e-05" iyy="2.866005e-03" iyz="-4.443663e-04" izz="2.066692e-03" />
+      <origin xyz="-0.00075 0.014225 -0.022097" rpy="0 0 0" />
+      <mass value="1.370307" />
+      <inertia ixx="3.791606e-03" ixy="5.872290e-05" ixz="2.273055e-05" iyy="2.836825e-03" iyz="-4.403984e-04" izz="2.065815e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -113,9 +113,9 @@
   </link>
   <link name="elbow_link">
     <inertial>
-      <origin xyz="-0.006634 -0.027133 0.019145" rpy="0 0 0" />
-      <mass value="0.742657" />
-      <inertia ixx="1.342914e-03" ixy="-1.714447e-04" ixz="3.245559e-05" iyy="7.968956e-04" iyz="1.233733e-04" izz="1.303608e-03" />
+      <origin xyz="-0.006658 -0.027232 0.019402" rpy="0 0 0" />
+      <mass value="0.739978" />
+      <inertia ixx="1.327244e-03" ixy="-1.709609e-04" ixz="3.118701e-05" iyy="7.830866e-04" iyz="1.181823e-04" izz="1.301175e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -151,9 +151,9 @@
   </link>
   <link name="wrist_pitch_link">
     <inertial>
-      <origin xyz="0.044801 0.000072 -0.015628" rpy="0 0 0" />
-      <mass value="0.416999" />
-      <inertia ixx="1.980835e-04" ixy="-6.067706e-07" ixz="1.562280e-05" iyy="6.681027e-04" iyz="3.610497e-08" izz="6.966356e-04" />
+      <origin xyz="0.04509 0.000072 -0.015393" rpy="0 0 0" />
+      <mass value="0.41432" />
+      <inertia ixx="1.944365e-04" ixy="-5.986097e-07" ixz="2.001746e-05" iyy="6.590431e-04" iyz="4.273051e-08" izz="6.908884e-04" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />

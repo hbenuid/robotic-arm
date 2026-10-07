@@ -536,15 +536,15 @@
    "bbox_size": [
     29.0,
     29.0,
-    44.0
+    39.0
    ],
-   "bytes": 128841,
+   "bytes": 128681,
    "file": "native/elbow_pulley_screws.step",
    "kind": "cots",
    "origin": "native",
    "product": "elbow_pulley_screws - purchased (COTS) part: the elbow 90T's 4 M4 socket head cap screws (ISO 4762).",
-   "sha256": "3908bced8d812bfa36551ca85f470d7be4c283f79911bbf39521dbd2f64b529c",
-   "solid_volume": 2564.018,
+   "sha256": "f03589b4e9dabefc235ed2d3ec217e52026ef793ef8033370367249680920e89",
+   "solid_volume": 2312.69,
    "solids": 4,
    "source": "parts/joints/elbow_pulley_screws.py:_envelope()",
    "units": "mm"
@@ -1419,15 +1419,15 @@
    "bbox_size": [
     29.0,
     29.0,
-    54.0
+    49.0
    ],
-   "bytes": 128841,
+   "bytes": 128681,
    "file": "native/wrist_pulley_screws.step",
    "kind": "cots",
    "origin": "native",
    "product": "wrist_pulley_screws - purchased (COTS) part: the wrist 90T's 4 M4 socket head cap screws (ISO 4762).",
-   "sha256": "9b5403f99162f204a2a047ceb4f765afe8e5e2e76cf0b81b1da5d73bea7cb996",
-   "solid_volume": 3066.672,
+   "sha256": "53a4de2d347068c65f493ca98523dac302085296c222a0885c8fb1dfda458927",
+   "solid_volume": 2815.345,
    "solids": 4,
    "source": "parts/joints/wrist_pulley_screws.py:_envelope()",
    "units": "mm"

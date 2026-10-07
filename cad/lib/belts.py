@@ -34,9 +34,13 @@ GT2_BLEND_R = 0.6385333225                          # [REFERENCE] flank -> botto
 GT2_TIP_R = 0.15                                    # [REFERENCE] flank -> land
 
 # The printed 90T's hub (parts/joints/gt2_pulley_90t, in its SolidWorks part frame, its axis +Y): its end, which bolts
-# flat onto the coupler's stub, and its outer face, under the pulley bolts' heads; the 4x M4 run through it end to end.
+# flat onto the coupler's stub, and its outer face, the pulley bolts' heads sunk in counterbores in it; the 4x M4 run
+# through it end to end.
 GT2_PULLEY_90T_FACE_Y = (-13.2, 8.2)                # [REFERENCE] the hub's end .. the outer face, along +Y
 GT2_PULLEY_90T_BOLT_R = 11.0                        # [REFERENCE] the 4x M4 on the pulley's own X / Z axes (the SolidWorks pattern)
+GT2_PULLEY_90T_HEAD_SEAT = 5.0                      # [DESIGN] the M4 heads' seats (the counterbores' floors) this far under
+#                                                     the outer face: the heads 1 under it, each screw 5 shorter than with
+#                                                     its head on the face and every tip where it was (lib/pulley/params.py)
 
 # The purchased toothless idler (parts/joints/gt2_idler_20t), a 20T-size smooth idler for the 6 mm belt, as the seller's
 # drawing gives it (WINSINN "GT2 Idler Pulley - 20 Toothless, 5mm Bore", aluminium): two flanges on a smooth belt seat,

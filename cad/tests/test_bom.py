@@ -72,9 +72,9 @@ def test_the_90t_pulleys_take_their_m4_screws_and_nuts():
     assert set(rows) == {"elbow_pulley_screws", "elbow_pulley_nuts", "wrist_pulley_screws", "wrist_pulley_nuts",
                          "yaw_pulley_screws", "yaw_pulley_nuts"}
     assert all((r["pieces"], r["geometry"]) == (4, "envelope") for r in rows.values())
-    assert rows["elbow_pulley_screws"]["order"].startswith("M4 x 40 socket head cap screw")
-    assert rows["wrist_pulley_screws"]["order"].startswith("M4 x 50 socket head cap screw")
-    assert rows["yaw_pulley_screws"]["order"].startswith("M4 x 45 socket head cap screw")
+    assert rows["elbow_pulley_screws"]["order"].startswith("M4 x 35 socket head cap screw")
+    assert rows["wrist_pulley_screws"]["order"].startswith("M4 x 45 socket head cap screw")
+    assert rows["yaw_pulley_screws"]["order"].startswith("M4 x 40 socket head cap screw")
     assert all(rows[n]["order"] == "M4 hex nut (ISO 4032)" for n in ("elbow_pulley_nuts", "wrist_pulley_nuts", "yaw_pulley_nuts"))
     driven = {r["part"]: r["qty"] for r in bom.print_rows() if r["part"] in ("gt2_pulley_90t", "gt2_pulley_120t")}
     assert driven == {"gt2_pulley_90t": 2, "gt2_pulley_120t": 1} and sum(driven.values()) == len(rows) // 2   # a pulley per bolted joint
