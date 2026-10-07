@@ -94,8 +94,9 @@ under the belt's pull).
    down, each nut into its pocket and pressed down onto its seat (`mount_nut_pocket_af` holds it).
 2. The elbow's 6806-2RS pair into `j1_link`'s bore, one each side of the lip; the block's stub into the upper one
    (its Ø33 shoulder on the inner ring, its end through the lip), the elbow 90T's hub into the lower one from below
-   (its Ø34.76 ring on that inner ring, its end on the stub's end): 4× M4 × 40 (`elbow_pulley_screws`) up through the
-   pulley's hub (its holes opened to `M4_CLEAR`), the stub,
+   (its Ø34.76 ring on that inner ring, its end on the stub's end): 4× M4 × 35 (`elbow_pulley_screws`, the heads in
+   the pulley's counterbores, `GT2_PULLEY_90T_HEAD_SEAT` under its face) up through the pulley's hub (its holes opened
+   to `M4_CLEAR`), the stub,
    the journal and the boss into the nuts (the tips 1.4 mm past them) bolt the pulley flat onto the stub and clamp
    both inner rings - the stub's 2 mm in the lip spaces them as the lip spaces the outer rings. The hex holds each nut,
    so the screws re-tighten from the pulley side at any time; a screw taken right out once the shaft is in can drop its

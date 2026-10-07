@@ -110,11 +110,11 @@ def test_stack():
     assert S["z_wall"] >= UPPER_ARM_END_R + 1.5
     # walls: 2 mm under the cavity and the seat
     assert -D.block_x[0] - D.cavity_dia / 2.0 >= 2.0 and -D.block_x[0] - (D.bearing_od + D.seat_add) / 2.0 >= 2.0
-    # the elbow 90T's nuts: seated in the boss, the M4 from the pulley's outer face 2 pitches past its nut, nut and tip
+    # the elbow 90T's nuts: seated in the boss, the M4 from the pulley's counterbores 2 pitches past its nut, nut and tip
     # 2 mm under the core bore (bearing 1 slides past the channels' mouths); each hex channel 2 mm from the cavity's
     # rear wall (the pattern turned pulley_bolt_deg for it) and clear of the pin bore, which ends under the seats
     corner = D.nut_af / math.sqrt(3.0)
-    tip = D.stub_x[0] - D.pulley_hub_len + D.pulley_screw_len
+    tip = D.stub_x[0] - D.pulley_hub_len + PARAMS.GT2_PULLEY_90T_HEAD_SEAT + D.pulley_screw_len
     assert D.boss_x[0] < D.nut_seat_x < D.boss_x[1] and D.pulley_bolt_r + corner <= D.boss_dia / 2.0 - 2.0
     assert tip - (D.nut_seat_x + D.nut_t) >= 2 * 0.7 - 1e-9 and tip <= -D.core_bore_dia / 2.0 - 2.0
     assert D.nut_seat_x + D.nut_t <= -D.core_bore_dia / 2.0 - 2.0 and D.pin_bore_x[1] == D.nut_seat_x - 1.0

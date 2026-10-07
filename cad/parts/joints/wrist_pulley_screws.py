@@ -2,8 +2,8 @@
 
 They clamp the pulley onto j3_coupler's stub (gt2_pulley_90t#4 -> j3_coupler#2).
 
-In the arm (lib/mounts.py, hosted on the wrist 90T): the heads on the pulley's outer face, the shanks down through its
-M4 clearance holes and the coupler's stub into the nuts in the hex pockets of its flange's underside
+In the arm (lib/mounts.py, hosted on the wrist 90T): the heads in the counterbores in the pulley's outer face
+(lib/belts.py GT2_PULLEY_90T_HEAD_SEAT), the shanks down through its M4 clearance holes and the coupler's stub into the nuts in the hex pockets of its flange's underside
 (wrist_pulley_nuts); the tips end past the nuts inside wrist_link's central hole. Length: lib/coupler/params.py
 CouplerParams.pulley_screw_len.
 
@@ -11,7 +11,7 @@ No catalog model (the catalog has single fasteners only, vendor/README.md) and n
 pattern part (lib/reference.py NATIVE_COTS) like the drive's cycloidal_housing_bolts - its envelope IS the geometry
 (lib/fasteners.py shcs(): no thread, the head's hex socket) and its reference is that envelope
 (reference/native/wrist_pulley_screws.step, tools/reference/import_native.py). Frame: axis on Z, the heads' bearing
-face on z=0 (the heads in -Z), the shanks in +Z; the four on the 90T's hole circle (lib/belts.py
+face on z=0 (the heads in -Z, on the counterbores' floors), the shanks in +Z; the four on the 90T's hole circle (lib/belts.py
 pulley_90t_bolt_points()).
 """
 import pathlib

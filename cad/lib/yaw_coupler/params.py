@@ -66,9 +66,10 @@ class HubParams:
     hole_deg: float = 45.0           # ... the first at this angle (from +X toward +Z), 90 apart
     nut_af: float | None = None      # the holes' nut pockets (none in the SolidWorks part) ...
     nut_depth: float = 0.0           # ... this deep
-    pulley_screw_len: float = 45.0   # [DESIGN] M4 x 45 (ISO 4762, parts/base/yaw_pulley_screws) from the base_yaw 120T's outer
-    #                                  face: 38.7 ends flush with the nut's outer face (DEFAULT's pockets), 45 runs 6.3 past it
-    #                                  into the pocket over the hub (an M4 x 40 ends 1.3 past: under two pitches)
+    pulley_screw_len: float = 40.0   # [DESIGN] M4 x 40 (ISO 4762, parts/base/yaw_pulley_screws) from the floors of the base_yaw
+    #                                  120T's counterbores (GT2_PULLEY_90T_HEAD_SEAT under its outer face): 33.7 ends flush with
+    #                                  the nut's outer face (DEFAULT's pockets), 40 runs 6.3 past it into the pocket over the
+    #                                  hub (an M4 x 35 ends 1.3 past: under two pitches)
 
 
 @dataclass(frozen=True)

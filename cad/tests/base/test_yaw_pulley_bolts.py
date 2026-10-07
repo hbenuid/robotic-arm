@@ -3,7 +3,7 @@
 volume and the bounding box, measured on the build and written in) and what they are: every screw on the pulley's hole
 circle (the 90T's, which the 120T keeps) with its head's bearing face on z=0, every nut on it with a corner where
 j1_coupler's pockets have theirs.
-The patterns in place - the heads on the pulley, the nuts in the pockets with the designed press, the reach past the
+The patterns in place - the heads in the pulley's counterbores, the nuts in the pockets with the designed press, the reach past the
 nuts - are tests/test_mounts.py."""
 import math
 
@@ -20,7 +20,7 @@ from tests.helpers import is_inside
 POINTS = PARAMS.pulley_90t_bolt_points()
 # name -> (solids, volume mm^3, bbox min, bbox size): the build's own numbers
 LOCKS = {
-    "yaw_pulley_screws": (4, 2815.345, (-14.5, -14.5, -4.0), (29.0, 29.0, 49.0)),
+    "yaw_pulley_screws": (4, 2564.018, (-14.5, -14.5, -4.0), (29.0, 29.0, 44.0)),
     "yaw_pulley_nuts": (4, 382.322, (-14.903743, -14.903743, 0.0), (29.807486, 29.807486, 3.2)),
 }
 
@@ -40,7 +40,7 @@ def test_they_are_purchased_parts_with_no_reference_in_the_base_group():
 def test_the_order_lines_and_masses_follow_the_hub():
     screws, nuts = (parts.load(n) for n in LOCKS)
     length = YAW_COUPLER.hub.pulley_screw_len
-    assert screws.LENGTH == length == 45.0 and screws.PURCHASE_SPEC == "M4 x 45 socket head cap screw (ISO 4762)"
+    assert screws.LENGTH == length == 40.0 and screws.PURCHASE_SPEC == "M4 x 40 socket head cap screw (ISO 4762)"
     assert nuts.PURCHASE_SPEC == "M4 hex nut (ISO 4032)"
     steel = PARAMS.STEEL_DENSITY * len(POINTS)
     assert screws.MASS_G == PARAMS.YAW_PULLEY_SCREWS_MASS_G == pytest.approx(steel * PARAMS.shcs_volume(PARAMS.M4_SHCS, length))
@@ -62,7 +62,7 @@ def test_the_build_matches_its_numbers(name):
 def test_the_modelled_volumes_are_the_analytic_ones():
     """lib/fasteners.py's volumes (what the masses are estimated from) are those of the modelled geometry."""
     n = len(POINTS)
-    assert R.solid_volume(built.part("yaw_pulley_screws")) == pytest.approx(n * PARAMS.shcs_volume(PARAMS.M4_SHCS, 45.0), rel=1e-6)
+    assert R.solid_volume(built.part("yaw_pulley_screws")) == pytest.approx(n * PARAMS.shcs_volume(PARAMS.M4_SHCS, 40.0), rel=1e-6)
     assert R.solid_volume(built.part("yaw_pulley_nuts")) == pytest.approx(n * PARAMS.nut_volume(PARAMS.M4_NUT), rel=1e-6)
 
 

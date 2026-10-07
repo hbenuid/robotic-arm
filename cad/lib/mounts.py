@@ -61,11 +61,11 @@ HubParams.hole_deg about the axis onto the stub's diagonal holes (lib/yaw_couple
 coupler down on the thrust bearing: the lower bearing's outer ring stands under the base's lip.
 The PULLEY BOLTS (FASTENER_MOUNTS): each pulley's 4x M4 screws and nuts, purchased pattern parts
 (parts/joints/{elbow,wrist}_pulley_{screws,nuts}, parts/base/yaw_pulley_{screws,nuts}) centred on the joint axis (their
-+Z on it). A screw set is hosted on its pulley, its heads' bearing face on the pulley's outer face
-(GT2_PULLEY_90T_FACE_Y) and its shanks into the hub; a nut set is hosted on its screw set, its bearing face where the
-host's seat lies along the screws - the elbow block's channel seats (RollDriveParams.nut_seat_x), j3_coupler's pocket
-floors (CouplerParams.nut_depth), j1_coupler's pockets in the floor of the pocket over its hub (HubParams.nut_depth
-under YokeParams.pocket_y0).
++Z on it). A screw set is hosted on its pulley, its heads' bearing face on the floors of the pulley's counterbores
+(GT2_PULLEY_90T_HEAD_SEAT under its outer face, GT2_PULLEY_90T_FACE_Y) and its shanks into the hub; a nut set is hosted
+on its screw set, its bearing face where the host's seat lies along the screws - the elbow block's channel seats
+(RollDriveParams.nut_seat_x), j3_coupler's pocket floors (CouplerParams.nut_depth), j1_coupler's pockets in the floor of
+the pocket over its hub (HubParams.nut_depth under YokeParams.pocket_y0).
 """
 from __future__ import annotations
 
@@ -82,6 +82,7 @@ from lib.params import (
     BEARING_6806_WIDTH,
     CYCLOIDAL_MOTOR_BODY_LEN,
     GT2_PULLEY_90T_FACE_Y,
+    GT2_PULLEY_90T_HEAD_SEAT,
     J1_ARM_SLIDE,
     J1_MOTOR_20T_HUB_Z,
     J1_MOTOR_PAD_FACE_Y,
@@ -216,24 +217,25 @@ PULLEY_MOUNTS: tuple[Mount, ...] = (
           "its ring under that bearing's inner ring (it holds the coupler down on the thrust bearing); turned hole_deg "
           "about its axis onto the stub's diagonal holes"),
 )
-# A pulley's screw set: +Z into the hub (the pulley's -Y) from its outer face; the pattern on the pulley's own X / Z axes.
-_SCREWS_ON_FACE = ((0.0, GT2_PULLEY_90T_FACE_Y[1], 0.0), (90.0, 0.0, 0.0))
-_HUB_LEN = GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_FACE_Y[0]
+# A pulley's screw set: +Z into the hub (the pulley's -Y) from its counterbores' floors; the pattern on the pulley's own
+# X / Z axes. A nut set's frame runs from those floors: the hub's end lies _SEAT_TO_END down the screws.
+_SCREWS_IN_COUNTERBORES = ((0.0, round(GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_HEAD_SEAT, 6), 0.0), (90.0, 0.0, 0.0))
+_SEAT_TO_END = GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_HEAD_SEAT - GT2_PULLEY_90T_FACE_Y[0]
 FASTENER_MOUNTS: tuple[Mount, ...] = (
-    Mount("elbow_pulley_screws#1", "elbow_pulley_screws", "gt2_pulley_90t#3", "elbow_link", "elbow_pitch", _SCREWS_ON_FACE,
-          "the elbow 90T's 4x M4 x pulley_screw_len: heads on its outer face, down through its hub and the block's stub"),
+    Mount("elbow_pulley_screws#1", "elbow_pulley_screws", "gt2_pulley_90t#3", "elbow_link", "elbow_pitch", _SCREWS_IN_COUNTERBORES,
+          "the elbow 90T's 4x M4 x pulley_screw_len: heads in its counterbores, down through its hub and the block's stub"),
     Mount("elbow_pulley_nuts#1", "elbow_pulley_nuts", "elbow_pulley_screws#1", "elbow_link", "elbow_pitch",
-          ((0.0, 0.0, round(_FOREARM.drive.nut_seat_x - (_FOREARM.drive.stub_x[0] - _HUB_LEN), 6)), (0.0, 0.0, 0.0)),
+          ((0.0, 0.0, round(_FOREARM.drive.nut_seat_x - (_FOREARM.drive.stub_x[0] - _SEAT_TO_END), 6)), (0.0, 0.0, 0.0)),
           "the elbow screws' nuts on the block's channel seats (nut_seat_x), a flat toward the axis"),
-    Mount("wrist_pulley_screws#1", "wrist_pulley_screws", "gt2_pulley_90t#4", "wrist_pitch_link", "wrist_pitch", _SCREWS_ON_FACE,
-          "the wrist 90T's 4x M4 x pulley_screw_len: heads on its outer face, down through its hub and j3_coupler's stub"),
+    Mount("wrist_pulley_screws#1", "wrist_pulley_screws", "gt2_pulley_90t#4", "wrist_pitch_link", "wrist_pitch", _SCREWS_IN_COUNTERBORES,
+          "the wrist 90T's 4x M4 x pulley_screw_len: heads in its counterbores, down through its hub and j3_coupler's stub"),
     Mount("wrist_pulley_nuts#1", "wrist_pulley_nuts", "wrist_pulley_screws#1", "wrist_pitch_link", "wrist_pitch",
-          ((0.0, 0.0, round(_COUPLER.stub_y1 + _HUB_LEN - _COUPLER.nut_depth, 6)), (0.0, 0.0, 0.0)),
+          ((0.0, 0.0, round(_COUPLER.stub_y1 + _SEAT_TO_END - _COUPLER.nut_depth, 6)), (0.0, 0.0, 0.0)),
           "the wrist screws' nuts on j3_coupler's pocket floors (nut_depth), a corner along the coupler's Z"),
-    Mount("yaw_pulley_screws#1", "yaw_pulley_screws", "gt2_pulley_120t#1", "shoulder_link", "base_yaw", _SCREWS_ON_FACE,
-          "the base_yaw 120T's 4x M4 x pulley_screw_len: heads on its outer face (under it), up through its hub and j1_coupler's stub"),
+    Mount("yaw_pulley_screws#1", "yaw_pulley_screws", "gt2_pulley_120t#1", "shoulder_link", "base_yaw", _SCREWS_IN_COUNTERBORES,
+          "the base_yaw 120T's 4x M4 x pulley_screw_len: heads in its counterbores (under it), up through its hub and j1_coupler's stub"),
     Mount("yaw_pulley_nuts#1", "yaw_pulley_nuts", "yaw_pulley_screws#1", "shoulder_link", "base_yaw",
-          ((0.0, 0.0, round(_HUB_LEN + _YAW_COUPLER.yoke.pocket_y0 - _YAW_COUPLER.hub.nut_depth - _YAW_COUPLER.hub.stub_y0, 6)),
+          ((0.0, 0.0, round(_SEAT_TO_END + _YAW_COUPLER.yoke.pocket_y0 - _YAW_COUPLER.hub.nut_depth - _YAW_COUPLER.hub.stub_y0, 6)),
            (0.0, 0.0, 0.0)),
           "the base_yaw screws' nuts in j1_coupler's hex pockets, flush with the floor of the pocket over its hub "
           "(nut_depth under pocket_y0), a corner along the coupler's Z"),

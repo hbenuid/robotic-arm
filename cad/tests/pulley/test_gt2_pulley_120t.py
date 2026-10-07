@@ -1,7 +1,8 @@
 """gt2_pulley_120t, the base_yaw joint's driven pulley (lib/pulley/params.py YAW): a part with no reference file
 (lib/reference.py NO_REFERENCE), so THIS file locks its numbers - the volume and the bounding box, measured on the build
 and written in - and what it is: the 90T's DEFAULT with 120 teeth, its rim grown with them and the 90T's wall kept under
-them, every other feature - the hub, the web's height, the bore, the bolt holes - the 90T's, probed by name."""
+them, every other feature - the hub, the web's height, the bore, the bolt holes and their counterbores - the 90T's,
+probed by name."""
 import math
 from dataclasses import replace
 
@@ -15,7 +16,7 @@ from tests import built
 from tests.helpers import is_inside
 from tests.pulley.helpers import at
 
-VOLUME = 37623.954                                   # mm^3, the build's
+VOLUME = 37067.892                                   # mm^3, the build's
 BBOX_MIN = (-39.143186, -13.2, -39.143186)
 BBOX_SIZE = (78.286373, 21.4, 78.286373)
 
@@ -53,8 +54,10 @@ def test_the_hub_web_and_holes_are_the_90ts(pulley):
     assert not is_inside(p, *at(6.0, 0.0)) and is_inside(p, *at(6.5, 0.0))                  # the bore
     for x, z in YAW.bolt_points():
         u = (x / YAW.bolt_r, z / YAW.bolt_r)
-        for y in (YAW.end_y + 0.5, 0.0, YAW.face_y - 0.5):                                  # M4 clearance, end to face
+        for y in (YAW.end_y + 0.5, 0.0, YAW.face_y - YAW.counterbore[1] - 0.5):            # M4 clearance, end to counterbore
             assert not is_inside(p, x + 2.1 * u[0], y, z + 2.1 * u[1]) and is_inside(p, x + 2.3 * u[0], y, z + 2.3 * u[1])
+        for y in (YAW.face_y - YAW.counterbore[1] + 0.5, YAW.face_y - 0.5):                # the head's counterbore, Ø7.4
+            assert not is_inside(p, x + 3.6 * u[0], y, z + 3.6 * u[1]) and is_inside(p, x + 3.8 * u[0], y, z + 3.8 * u[1])
 
 
 @pytest.mark.slow
