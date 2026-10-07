@@ -93,11 +93,15 @@ from lib.upper_arm.layout import arm_slide as _arm_slide  # noqa: E402
 from lib.upper_arm.params import DEFAULT as _UPPER_ARM  # noqa: E402
 from lib.upper_arm.params import ELBOW_BELT as _ELBOW_BELT  # noqa: E402
 
-J1_ARM_SLIDE = _arm_slide(_UPPER_ARM)              # 39.27 [DESIGN] j1_link: its elbow end slid along +Y (N) onto the arm's outer face (ArmParams)
-J1_MOTOR_PAD_FACE_Y = _UPPER_ARM.arm.y_outer       # 27.5 [DESIGN] j1_link: the elbow motor's face, on its plate under the arm's outer face (the
-#                                                    -N side; ArmParams), the motor on +N down the hole through the arm, its shaft -N; the holes about the pad's axis
+J1_ARM_SLIDE = _arm_slide(_UPPER_ARM)              # 39.27 [DESIGN] j1_link: the plate - its elbow end, the arm's slab - slid along +Y (N) (ArmParams)
+J1_MOTOR_PAD_FACE_Y = _UPPER_ARM.arm.y_outer       # 27.5 [DESIGN] j1_link: the elbow motor's face, on the web across its hole through the slab (the
+#                                                    -N side; ArmParams), the motor on +N down the hole, its shaft -N; the holes about the pad's axis
+J1_MOTOR_SCREW_THREAD = 4.0                        # [DESIGN] the elbow motor's 4x M3 (parts/joints/elbow_motor_screws) this far into its
+#                                                    tapped holes - the drive's motor bolts' (bolt_hole_depth - motor_bolt_thread_margin) ...
+J1_MOTOR_SCREW_LEN = _UPPER_ARM.arm.motor_plate_t + J1_MOTOR_SCREW_THREAD   # 10 ... under the head, through the web (ArmParams.motor_plate_t)
 J1_MOTOR_20T_HUB_Z = 8.978                         # [DESIGN] the elbow motor's 20T (lib/mounts.py gt2_pulley_20t#2): its hub face this far out
-#                                                    along the shaft from the motor's face - through the plate, 2.98 under it -, its tooth band
+#                                                    along the shaft from the motor's face - through the web's pilot hole, level with its
+#                                                    underside -, its tooth band
 #                                                    (RollDriveParams.t20_hub on) level with the elbow 90T's (tests/test_mounts.py)
 ELBOW_BELT_LENGTH = _ELBOW_BELT                    # 280-2GT [DESIGN] the elbow belt (20T on j1_link's motor, 90T at the elbow); it sets the pad's x
 from lib.forearm.params import DEFAULT as _FOREARM  # noqa: E402
@@ -202,6 +206,11 @@ from lib.base.layout import joint_bolt_points as _joint_bolt_points  # noqa: E40
 _JOINT_BOLTS = len(_joint_bolt_points(_BASE))
 BASE_MOUNT_SCREWS_MASS_G = STEEL_DENSITY * _JOINT_BOLTS * shcs_volume(_BASE.joint.screw, _BASE.joint.screw_len)   # 12.2, 4x M4x20
 BASE_MOUNT_NUTS_MASS_G = STEEL_DENSITY * _JOINT_BOLTS * nut_volume(_BASE.joint.nut)                              # 3.0, 4x M4
+
+# The elbow motor's screws (parts/joints/elbow_motor_screws): the same estimate
+from lib.upper_arm.layout import pad_holes as _pad_holes  # noqa: E402
+
+ELBOW_MOTOR_SCREWS_MASS_G = STEEL_DENSITY * len(_pad_holes(_UPPER_ARM)) * shcs_volume(_UPPER_ARM.arm.motor_screw, J1_MOTOR_SCREW_LEN)   # 4.2, 4x M3x10
 
 # --- Robot description (robot/frames.py, robot/arm.urdf) --------------------------------------
 # Joint limits and actuator ratings are PLACEHOLDERS until measured on the hardware; the URDF

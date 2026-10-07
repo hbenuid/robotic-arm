@@ -32,12 +32,13 @@ Geometry (lib/params.py, kernel-verified 2026-09-21 - tests/test_mounts.py re-ch
                48 mm body hangs in -Y, shaft +Y through the plate into the plane of the base_yaw 120T's teeth; motor +
                board end BASE_MOTOR_TABLE_CLEAR above the base's bottom face (lowered under them, lib/base/params.py
                BOARD_CLEAR)
-  elbow_pitch  j1_link's motor plate under the arm's outer face (y = J1_MOTOR_PAD_FACE_Y, the -N side;
+  elbow_pitch  the web across j1_link's motor hole (its top y = J1_MOTOR_PAD_FACE_Y, the -N side;
                lib/upper_arm/params.py ArmParams), pattern on the pad's axis (PadParams.x: ELBOW_MOTOR_CENTRES short of
                the elbow axis - the shoulder axis is the drive's yoke's); the body +N down the square hole through the
-               arm, standing out on the forearm's side; shaft -N through the plate, its 20T (gt2_pulley_20t#2, under the
-               plate, MOTOR_PULLEY_MOUNTS) level with the elbow 90T, on the belt to it (a stock 280-2GT; not modelled -
-               docs/open_issues.md)
+               slab, standing out on the forearm's side; shaft -N through the web, its 20T (gt2_pulley_20t#2, under the
+               web, MOTOR_PULLEY_MOUNTS) level with the elbow 90T, on the belt to it (a stock 280-2GT; not modelled -
+               docs/open_issues.md); held down by its 4x M3 SHCS (elbow_motor_screws#1, MOTOR_SCREW_MOUNTS), up
+               through the web from its underside, the heads flush in its pockets - the drive motor's screws and seat
   wrist_pitch  j2_link's web (+Z face z = J2_MOTOR_WEB_FACE_Z), motor axis at x = J2_MOTOR_SLIDE_X on the side
                slots (lib/forearm/params.py: where the stock wrist belt puts it, its plug clear of the roll wall);
                body +N, shaft -N through the web, the 20T under it
@@ -101,11 +102,13 @@ PULLEY_BOLTS = ("elbow_pulley_screws", "elbow_pulley_nuts", "wrist_pulley_screws
                 "yaw_pulley_screws", "yaw_pulley_nuts")
 BASE_MOUNT, BASE_MOUNT_SCREWS, BASE_MOUNT_NUTS = "base_motor_mount", "base_motor_mount_screws", "base_motor_mount_nuts"
 YOKE_CAP = "j1_coupler_cap"
+MOTOR_SCREWS = "elbow_motor_screws"
 
 # The part-frame axis tools/reference/mount_placements.py checks for each mounted part, and whether it lies ON its
 # joint's axis (a motor's shaft runs beside its joint, parallel; a bearing, a pulley or a pulley-bolt pattern sits on it).
 AXES: dict[str, tuple[tuple[float, float, float], bool]] = {
     MOTOR_48: ((0.0, 0.0, 1.0), False), MOTOR_40: ((0.0, 0.0, 1.0), False), MOTOR_PULLEY: ((1.0, 0.0, 0.0), False),
+    MOTOR_SCREWS: ((0.0, 0.0, 1.0), False),
     BEARING: ((0.0, 0.0, 1.0), True), PULLEY: ((0.0, 1.0, 0.0), True), YAW_PULLEY: ((0.0, 1.0, 0.0), True),
     THRUST_CAGE: ((0.0, 0.0, 1.0), True), THRUST_WASHER: ((0.0, 0.0, 1.0), True),
     **{part: ((0.0, 0.0, 1.0), True) for part in PULLEY_BOLTS},
@@ -154,9 +157,9 @@ MOTOR_MOUNTS: tuple[Mount, ...] = (
     Mount("mks_servo42d#1", BOARD, "nema17_48mm#1", "base_link", "base_yaw", BOARD_FRAME_48),
     Mount("nema17_40mm#2", MOTOR_40, "j1_link#1", "upper_arm_link", "elbow_pitch",
           ((_UPPER_ARM.pad.x, J1_MOTOR_PAD_FACE_Y, 0.0), (90.0, 0.0, 0.0)),
-          "on j1_link's motor plate (on its 4 holes), ELBOW_MOTOR_CENTRES short of the elbow axis, the body +N down the "
-          "hole through the arm, shaft -N through the plate; connector toward -Z [ESTIMATE] (toward the elbow the roll "
-          "block would pass it 0.2 mm off)"),
+          "on the web across j1_link's motor hole (on its 4 holes), ELBOW_MOTOR_CENTRES short of the elbow axis, the body "
+          "+N down the hole through the slab, shaft -N through the web; connector toward -Z [ESTIMATE] (toward the elbow "
+          "the roll block would pass it 0.2 mm off)"),
     Mount("mks_servo42d#2", BOARD, "nema17_40mm#2", "upper_arm_link", "elbow_pitch", BOARD_FRAME_40),
     Mount("nema17_40mm#3", MOTOR_40, "j2_link#1", "forearm_link", "wrist_pitch",
           ((J2_MOTOR_SLIDE_X, 0.0, J2_MOTOR_WEB_FACE_Z), (180.0, 0.0, 90.0)),
@@ -164,12 +167,20 @@ MOTOR_MOUNTS: tuple[Mount, ...] = (
     Mount("mks_servo42d#3", BOARD, "nema17_40mm#3", "forearm_link", "wrist_pitch", BOARD_FRAME_40),
 )
 # The belt joints' motor-side pulleys the arm models, on their motors' shafts (the vendor 20T: its bore along its +X,
-# its hub face at x 0): the elbow motor's, under its plate - the wrist's and the base_yaw's are not placed yet.
+# its hub face at x 0): the elbow motor's, under the web - the wrist's and the base_yaw's are not placed yet.
 MOTOR_PULLEY_MOUNTS: tuple[Mount, ...] = (
     Mount("gt2_pulley_20t#2", MOTOR_PULLEY, "nema17_40mm#2", "upper_arm_link", "elbow_pitch",
           ((0.0, 0.0, J1_MOTOR_20T_HUB_Z), (0.0, -90.0, 0.0)),
           "the elbow motor's 20T on its shaft, hub toward the motor, J1_MOTOR_20T_HUB_Z out from its face (under the "
-          "plate): its tooth band level with the elbow 90T's"),
+          "web): its tooth band level with the elbow 90T's"),
+)
+# The elbow motor's 4x M3 SHCS: +Z up j1_link's +Y from the heads' bearing faces on the floors of the pockets in the
+# underside of the web across its motor hole (motor_plate_t under the motor's face), the pattern on the web's holes.
+MOTOR_SCREW_MOUNTS: tuple[Mount, ...] = (
+    Mount("elbow_motor_screws#1", MOTOR_SCREWS, "j1_link#1", "upper_arm_link", "elbow_pitch",
+          ((_UPPER_ARM.pad.x, round(J1_MOTOR_PAD_FACE_Y - _UPPER_ARM.arm.motor_plate_t, 6), 0.0), (-90.0, 0.0, 0.0)),
+          "the elbow motor's 4x M3 x J1_MOTOR_SCREW_LEN SHCS (the drive motor's): heads flush in the pockets in the underside "
+          "of the web across j1_link's motor hole, up through it into the motor's tapped holes"),
 )
 
 
@@ -243,8 +254,8 @@ YOKE_MOUNTS: tuple[Mount, ...] = (
     Mount("j1_coupler_cap#1", YOKE_CAP, "j1_coupler#1", "shoulder_link", "base_yaw", ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)),
           "the motor-side leg's upper half on j1_coupler, round the drive's motor sleeve; built in the coupler's part frame"),
 )
-MOUNTS: tuple[Mount, ...] = (BASE_MOUNTS + YOKE_MOUNTS + MOTOR_MOUNTS + MOTOR_PULLEY_MOUNTS + BEARING_MOUNTS + THRUST_MOUNTS
-                             + PULLEY_MOUNTS + FASTENER_MOUNTS)
+MOUNTS: tuple[Mount, ...] = (BASE_MOUNTS + YOKE_MOUNTS + MOTOR_MOUNTS + MOTOR_PULLEY_MOUNTS + MOTOR_SCREW_MOUNTS + BEARING_MOUNTS
+                             + THRUST_MOUNTS + PULLEY_MOUNTS + FASTENER_MOUNTS)
 BY_KEY: dict[str, Mount] = {m.key: m for m in MOUNTS}
 
 

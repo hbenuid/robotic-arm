@@ -34,8 +34,8 @@ from tests.helpers import interference, is_inside, module_tints
 
 S = stack_positions(DEFAULT)
 D = DEFAULT.drive
-UPPER_ARM_FACE_Z = -11.0         # host z of j1_link's +N face under the block: its elbow relief's floor (1 under the lip's root) ...
-UPPER_ARM_RELIEF_R = 60.0        # ... within this radius of the elbow axis (lib/upper_arm/params.py ElbowParams.relief_r)
+UPPER_ARM_FACE_Z = -11.0         # host z of j1_link's +N face under the block: its flat top, the relief's floor (1 under the lip's root) ...
+UPPER_ARM_RELIEF_R = 60.0        # ... at least this far round the elbow axis (lib/upper_arm/params.py ElbowParams.relief_r; the slab: to its end)
 UPPER_ARM_RECESS = (40.0, -16.0)  # j1_link's recess round the elbow axis: radius, floor (host z)
 FACE_GAP = 2.0                   # the least axial gap between a face the elbow turns and j1_link's (printed PETG; the
 #                                  forearm's moment tilts the block on its 6806 pair)
@@ -85,7 +85,7 @@ def test_the_elbow_coupler_is_retired_for_the_block():
 
 def test_stack():
     w, z_axis = DEFAULT.roll_end, DEFAULT.roll_end.axis_z
-    # the block round the elbow axis: its underside and the cap's FACE_GAP clear of the upper arm's relief, which
+    # the block round the elbow axis: its underside and the cap's FACE_GAP clear of the upper arm's flat top, which
     # reaches past their corners, the coupler features below it in j1_link's recess and bore where the SolidWorks
     # coupler's were, an inner-ring shoulder between the journal and the stub, the stub on through the lip to the
     # elbow pulley's face (the Ø12.5 bore open at its end)
@@ -393,11 +393,11 @@ def test_module_clears_its_neighbours_in_the_arm():
 def test_module_clears_the_folded_upper_arm(deg):
     """The upper arm (j1_link) swung about the elbow axis (host z through the origin) to the elbow's limits never runs
     into the block, its motor, the board or the end cap - and never comes near what turns over it: the end cap's
-    underside (level with the block's) its designed height above the relief's floor, the block nowhere nearer than its
+    underside (level with the block's) its designed height above j1_link's flat top, the block nowhere nearer than its
     journal's edge to the bore's rim (a radial gap: the bearings set it). Both gaps are the same at every elbow angle
-    (the block and the cap turn over j1_link's r60 relief), so the two limits stand for the angles between; the capture
-    pose is test_module_clears_its_neighbours_in_the_arm's. Widen the sample if the relief stops being a cylinder about
-    the elbow axis."""
+    (the block and the cap turn over j1_link's flat top, round its bore), so the two limits stand for the angles
+    between; the capture pose is test_module_clears_its_neighbours_in_the_arm's. Widen the sample if the top stops being
+    flat under them."""
     module = _placed_module()
     upper_arm = _upper_arm_at(in_host("j1_link#1"), deg)
     vol = interference(module, upper_arm)
