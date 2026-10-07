@@ -154,6 +154,14 @@ machines"; CI is the third machine: root `AGENTS.md` "CI").
   empty `parts/base/__pycache__/`). `cadtool` and `.env` set `PYTHONDONTWRITEBYTECODE=1` for that, and a subprocess
   given its own env passes `-B` (`tests/test_lazy_kernel.py`): the test suite wrote one into every group, and the next
   `gen` rebuilt everything.
+- That listing is hashed when a build records its result, every entry included, so parts built in parallel race: each
+  stages its STEP in a hidden `.<name>-xxxxxxxx/` folder beside it, and a sibling recorded meanwhile keeps that name.
+  Right after `./cadtool gen assemblies/arm.py` some parts (and so their assemblies) can read STALE `closure changed:
+  ./` or `…/parts/<group>/`: run `gen` again, it rebuilds them with the same bytes. A hash can only differ, never match
+  falsely, so no real change is missed. A first build into group folders with no STEPs yet (a fresh clone or worktree)
+  does the same, every time: each part is recorded before its siblings' STEPs appear. cadgen's, not this repo's:
+  earthtojake/text-to-cad#564, with a fix tested on a patched copy; drop this entry with the cadgen bump that ships
+  one.
 - Don't compare large STEP artifacts with `git diff`; compare source, `inspect` output and snapshots.
   A STEP edited by anything but its model (or built under another `CADGEN_CACHE_DIR`) reads as stale
   in `./cadtool why` — rebuild it.
