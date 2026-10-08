@@ -292,7 +292,7 @@
       <axis>
         <xyz expressed_in="forearm_roll">0 0 1</xyz>
         <limit>
-          <lower>-2.96706</lower><upper>2.96706</upper>
+          <lower>-2.897247</lower><upper>2.897247</upper>
           <effort>5</effort><velocity>1</velocity>
         </limit>
       </axis>

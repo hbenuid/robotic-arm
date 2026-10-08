@@ -10,7 +10,7 @@ Numbers below name the constants; the values live in `lib/forearm/params.py`.
 | item | value | where |
 |---|---|---|
 | joint | `forearm_roll`, revolute, `elbow_link → forearm_link`; axis along the forearm through the wrist centre, `ELBOW_ROLL_OFFSET` (60.9, the roll belt's centre distance) across the elbow axis - **an elbow offset: the two axes do not cross** -, `FOREARM_ROLL_AXIS_Z` along N from `j2_link`'s origin | `robot/frames.py`, `lib/placements.py SHIFTS` |
-| range | ±170° (`FOREARM_ROLL_LIMIT_DEG`), printed hard stop (a lug on the shaft's flange, a post on the frame's tower, in the bay behind bearing 1); home sensor modelled (`ky003_hall_sensor`), not placed | `lib/params.py`, `RollDriveParams stop_*` |
+| range | ±`FOREARM_ROLL_LIMIT_DEG`, 2° short of the printed hard stop (a lug on the shaft's flange, a post on the frame's tower, in the bay behind bearing 1 - straight-sided, `stop_deg_width` wide at their outer radius, so they meet before 180° − `stop_deg_width`: `tests/test_sweeps.py` measures where); home sensor modelled (`ky003_hall_sensor`), not placed | `lib/params.py`, `RollDriveParams stop_*` |
 | drive | NEMA 17 × 40 mm + MKS SERVO42D (a 4th CAN id) **on the elbow axis**, GT2 20T on the motor, the 90T ring **integral to the pulley - the output**, **4.5 : 1**, 240-2GT × 6 mm belt (`roll_belt`, centre distance 60.9 = the offset) | `RollDriveParams`, `lib/belts.py` |
 | torque | ≈ 1.1–1.8 N·m at the roll vs ≈ 0.9 N·m worst-case static load | §2 |
 | bearings | 2× 6806-2RS (30 × 42 × 7, the arm's other joints' bearing), **back to back on a 2 mm lip** in the frame's tower, bearing 2 right under the ring (seats Ø42.15, journals Ø30.3) | `RollDriveParams bearing_*`, `lib/bearings.py` |
@@ -135,7 +135,7 @@ the shaft rear face down (its nut pockets open to the bed).
    pushed out against the pocket's end. Then the forearm wall onto the spigot (2 mm into the recess) BEFORE the
    wrist-pitch motor goes on: 4× M3 × 16 from the wall's wrist face through the spigot into the nuts; the bottom one
    lays into the channel under the web from the belt side, its key through the channel or the motor slot. A screw taken
-   right out can drop its nut into the bore. The stop lug on the shaft's flange meets the frame's post at
+   right out can drop its nut into the bore. The stop lug on the shaft's flange meets the frame's post just past
    ±`FOREARM_ROLL_LIMIT_DEG`.
 
 ## 5. Attachment to the arm (`robot/`)

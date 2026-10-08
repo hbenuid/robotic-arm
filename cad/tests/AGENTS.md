@@ -33,7 +33,9 @@ thrust stack under `j1_coupler`),
 `test_layering.py` (the package layering, no `sys.path`, no direct part-module imports — AST scan),
 `test_sweeps.py` (the joint limits keep the arm off itself: exact distances between the robot links' parts at poses
 on the limits - the upper arm over the shoulder's range against the fork and the base, the shoulder's upper limit over
-the elbow's range, poses with the arm down in the table skipped),
+the elbow's range, the wrist at its limits, the forearm and the gripper at the elbow's limits at any roll and wrist
+pitch, the shoulder's limits at any yaw against the base, the forearm roll's limit short of its hard stop; poses with
+the arm down in the table skipped),
 `test_lazy_kernel.py` (a fresh interpreter imports every template, part, assembly and link model without
 loading `build123d` / `OCP`; names the first offender — a new assembly model goes in its module list),
 `source_checks.py` (the shared `runs_its_model()` check that a model file ends with its build call),
@@ -82,3 +84,8 @@ step 5 in `cad/AGENTS.md` has the `totals()` one-liner).
   A line-to-line fit (coincident cylinders: a bearing in a seat of its own diameter) is the kernel's fragile case: one
   such pass on x86_64 Linux returned the whole bearing as common (arm64 macOS: 0), so the Common's fuzzy value
   `COINCIDENT_MM` makes faces that near one face.
+- `distance_to` (BRepExtrema, and `cadgen.geometry.closest_points`, the same query - on the shapes' faces too) now and
+  then returns 0 at one exact pose of two solids that neither touch nor overlap: the roll shaft against the roll frame
+  read 0.000 at -140 and -145 deg (1.004 either side, no overlap), the frame against `j1_link` at elbow +92 (1.217
+  either side). A zero is a false contact until a second look agrees - `tests/test_sweeps.py _distance` measures it
+  again with the pose moved 0.01 mm three ways and keeps the median; an overlap (`helpers.interference`) is real.

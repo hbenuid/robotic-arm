@@ -2,7 +2,7 @@
 behind bearing 1 (the rear 6806) - its hub a Ø30.3 journal up through bearing 1 to the lip's middle, where the pulley's hub
 meets it (forearm_roll_pulley, the front piece and the output), the Ø33 shoulder on bearing 1's inner ring, the Ø40 flange
 behind it with the rotor clamp's 4 M3 nuts (on Ø24.5, pockets open to its rear face and into the bore: the clamp's screws
-come from the pulley's front face through both hubs) and the hard-stop lug, at +X, that meets the frame's post at
+come from the pulley's front face through both hubs) and the hard-stop lug, at +X, that meets the frame's post just past
 +/- FOREARM_ROLL_LIMIT_DEG; the Ø18 cable bore (the cables leave into the frame's bay behind it).
 
 NATIVE part (lib/reference.py NATIVE): designed here in build123d (lib/forearm/roll.py build_shaft(cfg), every number

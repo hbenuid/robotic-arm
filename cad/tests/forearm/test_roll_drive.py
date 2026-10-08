@@ -159,12 +159,12 @@ def test_stack():
     assert S["z_bearing_1"] - S["z_bay"] >= S["z_meet"] - S["z_shaft_end"] + 1.0 - 1e-9   # the whole shaft fits in the bay before it slides
     assert D.bay_r >= D.stop_lug_r[1] + 1.0 and D.bay_r > r_seat and D.tower_y - D.bay_r >= 3.0
     # the stop: the lug on the shaft's flange, the post on the tower's rear face, 2.5 of each beside the other, each clear
-    # of the other's part; contact at +/- stop_deg
+    # of the other's part; where they meet: tests/test_sweeps.py
     lug_top = S["z_stop_lug"] + D.stop_lug_t
     assert S["z_stop_lug"] == S["z_shaft_end"] and S["z_stop_post"] == S["z_bearing_1"] - D.stop_post_t
     assert lug_top - S["z_stop_post"] >= 2.5 - 1e-9 and S["z_bearing_1"] - lug_top >= 2.0
     assert D.stop_lug_r[0] < D.collar_od / 2.0 < D.stop_post_r[0] - 1.0 and D.bearing_od / 2.0 + 0.5 <= D.stop_post_r[0] < D.stop_lug_r[1]
-    assert D.stop_post_r[1] > D.bay_r and D.stop_deg == PARAMS.FOREARM_ROLL_LIMIT_DEG == 180.0 - D.stop_deg_width
+    assert D.stop_post_r[1] > D.bay_r
     # the motor: ON the elbow axis, centred on the roll axis in X, the belt setting the offset; 2 mm over the pocket's
     # floor; its pocket round it and its board past the tension travel, inside the round end, under the bay
     assert S["x_motor"] == 0.0 and S["y_motor"] == S["y_elbow"] == D.elbow_y and D.motor_spin_deg == 90.0
