@@ -13,10 +13,38 @@ def motor_holes(cfg: BaseConfig = DEFAULT) -> list[tuple[float, float]]:
     return [(cx + sx * h, cz + sz * h) for sx in (-1, 1) for sz in (-1, 1)]
 
 
-def side_stub_x(cfg: BaseConfig = DEFAULT) -> float:
-    """Where the straight sides stop above the plate: the inside of a side (z = +/- (r - wall)) meets the outer round."""
+def outer_r(cfg: BaseConfig, y: float) -> float:
+    """The walls' outer radius (the round half's, the sides' |z|) at height y: r at the cap's top face, `draft` more per
+    mm down."""
     s = cfg.shell
-    return math.sqrt(s.r ** 2 - (s.r - s.wall) ** 2)
+    return s.r + s.draft * (cfg.cap.top_y - y)
+
+
+def inner_r(cfg: BaseConfig, y: float) -> float:
+    """The walls' inner radius at height y: `wall` in from the outside."""
+    return outer_r(cfg, y) - cfg.shell.wall
+
+
+def side_stub_x(cfg: BaseConfig = DEFAULT) -> float:
+    """Where the straight sides stop above the plate: the inside of a side (z = +/- (r - wall)) meets the outer round -
+    at the plate's top face, where the leaning walls are widest above it."""
+    r = outer_r(cfg, cfg.plate.y[1])
+    return math.sqrt(r ** 2 - (r - cfg.shell.wall) ** 2)
+
+
+def flare_points(cfg: BaseConfig = DEFAULT) -> tuple[tuple[float, float], tuple[float, float]]:
+    """The foot's chamfer as (radius, y) ends: its foot on the flange's top, its top on the wall's outside."""
+    s, f = cfg.shell, cfg.foot
+    top_y = s.y0 + f.flare_h
+    return (f.flare_r, s.y0 + f.t), (outer_r(cfg, top_y), top_y)
+
+
+def foot_holes(cfg: BaseConfig = DEFAULT) -> list[tuple[float, float]]:
+    """(x, z) of the foot's screw holes: on the circle hole_r at hole_deg on the round half, at side_hole_x on the
+    sides."""
+    f = cfg.foot
+    pts = [(f.hole_r * math.cos(math.radians(a)), f.hole_r * math.sin(math.radians(a))) for a in f.hole_deg]
+    return pts + [(f.side_hole_x, sz * f.hole_r) for sz in (1, -1)]
 
 
 def chamfer_inset(cfg: BaseConfig = DEFAULT) -> float:

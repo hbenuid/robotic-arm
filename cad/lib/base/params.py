@@ -15,7 +15,8 @@ Two configurations: LEGACY reproduces the SolidWorks reference (the part's REFER
 tests/test_reference_match.py); DEFAULT is what the parts build: the bearing bore sized for the 6806-2RS pair, the seat
 ring sized for the thrust bearing's bore, and the +X lobe cut off at a joint face (JointParams): in its place a
 narrower bolt-on motor mount (MountParams, parts/base/base_motor_mount), its motor seat slotted where a stock belt puts
-the motor.
+the motor; the walls j1_coupler's cone carried on down (ShellParams.r / draft: BASE_R, BASE_DRAFT) onto a Ø200 foot - a
+flange, a straight chamfer up the wall, 6 screw holes (FootParams).
 
 Every number below was measured on the reference 2026-09-25 (vertex / face census; tests/base/test_base.py
 re-checks the builds against it): [REFERENCE] unless tagged. Units mm, degrees where named *_deg (in the XZ plane,
@@ -28,16 +29,18 @@ from dataclasses import dataclass, replace
 from lib.bearings import THRUST_BORE
 from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_120T_TEETH, centre_distance
 from lib.cycloidal.params import DEFAULT_CONFIG as _DRIVE
-from lib.fasteners import M3_CLEAR, M4_CLEAR, M4_NUT, M4_SHCS, NutSize, ShcsSize
+from lib.fasteners import M3_CLEAR, M4_CLEAR, M4_NUT, M4_SHCS, M5_CLEAR, NutSize, ShcsSize
 from lib.forearm.params import LEGACY as _FOREARM
 from lib.motors import MKS_SERVO42D_STACK, NEMA17_PILOT_DIA
 
 
 @dataclass(frozen=True)
 class ShellParams:
-    """The D-shaped wall: the round half's outer radius r (= the straight sides' half width), `wall` thick, the flat
-    +X end at x1; full height up to the plate's top face, the round half and the sides' stubs on up to the cap. A
-    notch through the +X end at the bottom (the base_yaw motor's cable)."""
+    """The D-shaped wall: the round half's outer radius r at the cap's top face (= the straight sides' half width),
+    `wall` thick (along the horizontal), the flat +X end at x1; full height up to the plate's top face, the round half
+    and the sides' stubs on up to the cap. With a `draft` the wall leans out going down - its radius r + draft * the
+    depth under the cap's top face, inside and out: the round half a cone, the sides planes. A notch through the +X end
+    at the bottom (the base_yaw motor's cable)."""
 
     r: float = 53.33946
     wall: float = 5.0
@@ -45,6 +48,7 @@ class ShellParams:
     y0: float = -100.9             # the bottom face
     notch_half_z: float = 15.0
     notch_y1: float = -72.996154   # the notch: from the bottom face up to here
+    draft: float = 0.0             # dr / dy, outward going down (0: the SolidWorks base's vertical walls)
 
 
 @dataclass(frozen=True)
@@ -155,6 +159,27 @@ class MountParams:
 
 
 @dataclass(frozen=True)
+class FootParams:
+    """[DESIGN] The foot: a D flange on the table (a round of r about the axis on -X, the straight sides z = +/- r out
+    to the joint face), t thick, hollow like the walls (the base's inside runs through it); a straight chamfer - the
+    flare - from the flange's top at flare_r up to the wall's outside flare_h above the bottom face. 6 screw holes
+    (hole_dia) down through the flange for fixing the base to the table: on the circle hole_r at hole_deg (in the XZ
+    plane, from +X toward +Z: the round half's 4) and at x = side_hole_x on the sides (z = +/- hole_r), each with a
+    spot-face of spot_dia from the flange's top up through the chamfer - the screw's head (or its washer) on a flat."""
+
+    r: float = 100.0               # Ø200: the stretched arm's centre of mass (131 mm out) still past it standing free -
+    #                                the holes fix it; it prints on any bed (155 x 200 with the base cut at the joint)
+    t: float = 6.0
+    flare_r: float = 95.5          # the chamfer's foot on the flange: 4.5 of flat rim outside it
+    flare_h: float = 24.0          # ... its top on the wall: ~39.7 degrees from the table
+    hole_dia: float = M5_CLEAR     # M5 (or a 5 mm wood screw)
+    hole_r: float = 92.5
+    spot_dia: float = 11.0         # an M5 washer's 10 and room
+    hole_deg: tuple = (112.5, 157.5, 202.5, 247.5)
+    side_hole_x: float = 43.0
+
+
+@dataclass(frozen=True)
 class BaseConfig:
     shell: ShellParams = ShellParams()
     cap: CapParams = CapParams()
@@ -163,6 +188,7 @@ class BaseConfig:
     motor: MotorParams = MotorParams()
     joint: JointParams | None = None   # None: one part, the lobe included (the SolidWorks base)
     mount: MountParams | None = None   # the bolt-on motor mount (with joint)
+    foot: FootParams | None = None     # None: the walls stand straight on the table (the SolidWorks base)
 
 
 LEGACY = BaseConfig()     # the SolidWorks part, exactly
@@ -181,6 +207,14 @@ LEGACY = BaseConfig()     # the SolidWorks part, exactly
 # The bottom face (the mounting face, lib/datum.py BASE_BOTTOM_Y) sits BOARD_CLEAR under the motor's MKS board: the
 # SolidWorks base's -100.9 left the 48 mm motor + board (48 + 14.1 under the plate) hanging 6.1 below it. The base's
 # walls, its posts and the whole motor mount reach down to it.
+# The tower is j1_coupler's disc carried on down: the disc is BASE_R at its rim (the coupler's frame origin, the ring's
+# top ring_top_y) and drafted in at BASE_DRAFT going up (lib/yaw_coupler/params.py), so the base's walls take the same
+# cone on down - r at the cap's top face the cone's there (flush under the rim, RIM_CLEAR above it), BASE_DRAFT
+# outward going down - where the SolidWorks Ø106.7 stood under the coupler's Ø116. At the table it stands on the foot
+# (FootParams: Ø200, a straight chamfer up the wall, 6 screw holes), the arm's stance: stretched out, its centre of mass
+# is 131 mm off the axis (165 with 0.5 kg in the gripper), the SolidWorks base reached 53.
+BASE_R = 58.0             # [DESIGN] j1_coupler's disc at its rim (Ø116, the SolidWorks Ø106): room under the fork's legs for their root ...
+BASE_DRAFT = 12.0 / 63.0  # [DESIGN] ... its side drafted in at dr/dy (10.8 degrees) going up, the base's walls out going down
 RING_CLEAR = 0.1          # [DESIGN]
 BOARD_CLEAR = 5.0         # [DESIGN] the base_yaw motor's board above the table
 YAW_BELT = 320            # [ESTIMATE] base_yaw belt, 320-2GT (lib/belts.py STANDARD_2GT_LENGTHS): 20T motor - 120T joint
@@ -189,11 +223,12 @@ WINDOW_CLEAR = 0.2        # [DESIGN]
 _MOTOR_X = round(centre_distance(YAW_BELT, GT2_PULLEY_120T_TEETH, GT2_PULLEY_20T_TEETH), 6)
 _WINDOW_HALF = NEMA17_PILOT_DIA / 2.0 + MOTOR_TRAVEL + WINDOW_CLEAR
 _BOTTOM_Y = round(LEGACY.plate.y[0] - _DRIVE.motor.body_length - MKS_SERVO42D_STACK - BOARD_CLEAR, 6)
-DEFAULT = replace(LEGACY, shell=replace(LEGACY.shell, y0=_BOTTOM_Y),                                  # [DESIGN]
+_TOP_R = round(BASE_R + BASE_DRAFT * (LEGACY.cap.ring_top_y - LEGACY.cap.top_y), 6)   # the cone at the cap's top face
+DEFAULT = replace(LEGACY, shell=replace(LEGACY.shell, y0=_BOTTOM_Y, r=_TOP_R, draft=BASE_DRAFT),      # [DESIGN]
                   bore=replace(LEGACY.bore, upper_dia=_FOREARM.boss.seat_dia, lower_dia=_FOREARM.boss.seat_dia,
                                        lip_dia=_FOREARM.boss.lip_dia),                                    # [DESIGN]
                   cap=replace(LEGACY.cap, groove_r=(THRUST_BORE / 2.0 - RING_CLEAR, LEGACY.cap.groove_r[1])),   # [DESIGN]
                   motor=replace(LEGACY.motor, centre=(_MOTOR_X, LEGACY.motor.centre[1]), hole_dia=M3_CLEAR,
                                 window_x=(round(_MOTOR_X - _WINDOW_HALF, 6), round(_MOTOR_X + _WINDOW_HALF, 6)),
                                 window_half_z=NEMA17_PILOT_DIA / 2.0 + WINDOW_CLEAR, travel=MOTOR_TRAVEL),   # [DESIGN]
-                  joint=JointParams(), mount=MountParams())                                             # [DESIGN]
+                  joint=JointParams(), mount=MountParams(), foot=FootParams())                          # [DESIGN]

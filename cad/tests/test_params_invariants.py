@@ -245,3 +245,19 @@ def test_the_6806_pair_fits_every_belt_joint_bore():
         assert dia >= od and hi - lo >= width, (dia, lo, hi)
     for lip in (e.lip_dia, b.lip_dia, c.lip_dia):
         assert shoulder + 2.0 < lip < od
+
+
+def test_the_base_stands_on_the_couplers_cone_and_a_foot():
+    """lib/base/params.py: j1_coupler's disc and the base's walls are one cone (BASE_R, BASE_DRAFT - the coupler
+    imports them from the base); the foot's numbers (FootParams; tests/base/test_foot.py measures the build)."""
+    from lib.base import DEFAULT as BASE
+    from lib.base import LEGACY
+    from lib.base import params as B
+    from lib.yaw_coupler import params as Y
+
+    assert (Y.BASE_R, Y.BASE_DRAFT) == (B.BASE_R, B.BASE_DRAFT) == (58.0, 12.0 / 63.0)
+    assert BASE.shell.draft == B.BASE_DRAFT and math.isclose(BASE.shell.r, 58.07619, abs_tol=1e-6)
+    assert LEGACY.shell.draft == 0.0 and LEGACY.foot is None
+    f = BASE.foot
+    assert (f.r, f.t, f.flare_r, f.flare_h, f.hole_r, f.spot_dia, f.side_hole_x) == (100.0, 6.0, 95.5, 24.0, 92.5, 11.0, 43.0)
+    assert f.hole_dia == p.M5_CLEAR and f.hole_deg == (112.5, 157.5, 202.5, 247.5)
