@@ -22,6 +22,7 @@ from assemblies import arm
 from assemblies._occurrences import module_rows
 from lib import reference as R
 from lib.forearm import DEFAULT as _FOREARM
+from lib.forearm import clamp_points
 from lib.params import (
     CYCLOIDAL_HUB_BOLT_COUNT,
     CYCLOIDAL_HUB_BOLT_DIA,
@@ -48,17 +49,21 @@ EXTRAS = [
     (None, f"{ELBOW_BELT_LENGTH}-2GT closed belt, 6 mm - the elbow belt (20T on the elbow motor, 90T at the elbow)", 1,
      "belts are not modelled; the length sets the motor's place on j1_link (lib/upper_arm/params.py ELBOW_MOTOR_CENTRES)"),
     ("cycloidal_drive", "bearing grease", 1, "the output pins are a greased sliding fit through the discs"),
-    ("forearm_roll_drive", f"{FOREARM_ROLL_BELT_LENGTH}-2GT closed belt, 6 mm - the roll belt (90T ring on the shaft, 20T on the motor)", 1,
+    ("forearm_roll_drive", f"{FOREARM_ROLL_BELT_LENGTH}-2GT closed belt, 6 mm - the roll belt (90T ring on the pulley, 20T on the motor)", 1,
      "belts are not modelled; the length sets the motor's centre distance (lib/forearm/params.py roll_belt, [ESTIMATE])"),
-    ("forearm_roll_drive", f"M3 x {_FOREARM.roll_end.screw_len:g} socket head cap screw (ISO 4762) - the forearm wall onto the roll shaft's end spigot",
+    ("forearm_roll_drive", (f"M3 x {_FOREARM.drive.clamp_screw_len:g} socket head cap screw (ISO 4762) - the roll rotor's clamp: the pulley "
+                            "through both 6806s into the shaft"), len(clamp_points(_FOREARM)),
+     "heads in the pulley's front-face counterbores, into the nuts in the shaft's flange; tighten before the forearm wall goes on"),
+    ("forearm_roll_drive", "M3 hex nut (ISO 4032) - in the roll shaft's flange, for the rotor clamp", len(clamp_points(_FOREARM)),
+     "pushed into the pockets from the shaft's rear face (in the frame's bay)"),
+    ("forearm_roll_drive", f"M3 x {_FOREARM.roll_end.screw_len:g} socket head cap screw (ISO 4762) - the forearm wall onto the roll pulley's face",
      _FOREARM.roll_end.bolt_count,
-     ("heads on the wall's wrist face (the bottom one in the channel under the web), through the wall and the shaft's end into its "
-      "nuts; bolt the wall on before the wrist-pitch motor goes on")),
-    ("forearm_roll_drive", "M3 hex nut (ISO 4032) - in the roll shaft's pockets, for the forearm wall's screws", _FOREARM.roll_end.bolt_count,
-     "pushed into the pockets from the shaft's cable bore before the wall goes on"),
-    ("forearm_roll_drive", "M3 x 16 socket head cap screw - the end cap to the elbow block's front face (self-tapping in PETG)", 4, "or heat-set inserts"),
-    ("forearm_roll_drive", "M3 x 8 socket head cap screw - the roll motor to the motor mount's plate", 4, "through the plate's tension slots into the motor"),
-    ("forearm_roll_drive", "home sensor: KY-003 hall module (A3144, 5 V) on the end cap's outer face + a magnet in the shaft's stop lug", 1,
+     ("heads on the wall's wrist face (the bottom one in the channel under the web), through the wall and the pulley's spigot into "
+      "its nuts; bolt the wall on before the wrist-pitch motor goes on")),
+    ("forearm_roll_drive", "M3 hex nut (ISO 4032) - in the roll pulley's core, for the forearm wall's screws", _FOREARM.roll_end.bolt_count,
+     "pushed into the pockets from the pulley's cable bore before the wall goes on"),
+    ("forearm_roll_drive", "M3 x 8 socket head cap screw - the roll motor to the frame's plate", 4, "through the plate's tension slots into the motor"),
+    ("forearm_roll_drive", "home sensor: KY-003 hall module (A3144, 5 V) on the frame's tower beside the stop post + a magnet in the shaft's stop lug", 1,
      ("modelled, not placed yet (parts/joints/ky003_hall_sensor, UNPLACED); the magnet is not modelled; wired to the MKS "
       "board's limit input (docs/open_issues.md); the hard stop itself is the printed lug + post")),
     (None, f"{WRIST_BELT_LENGTH}-2GT closed belt, 6 mm - the wrist-pitch belt (90T at the wrist, 20T on the forearm motor)", 1,

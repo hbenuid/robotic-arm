@@ -81,12 +81,30 @@ def screw_channel(z: float, cfg: ForearmConfig = DEFAULT) -> tuple[float, float,
 
 
 def end_nut_pocket(cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float, float]:
-    """(r_in, r_out, z0, z1) of each wall screw's nut pocket in the shaft, module frame, radially along its screw's
-    angle: from inside the cable bore (it opens there) past the nut's outer corner (a corner radial, a flat either side)
-    by end_nut_fit; from end_nut_fit under the nut to its bearing face."""
+    """(r_in, r_out, z0, z1) of each wall screw's nut pocket in the pulley's core, module frame, radially along its
+    screw's angle: from inside the cable bore (it opens there) past the nut's outer corner (a corner radial, a flat
+    either side) by end_nut_fit; from end_nut_fit under the nut to its bearing face."""
     d, S = cfg.drive, stack_positions(cfg)
     r_out = cfg.roll_end.bolt_circle_dia / 2.0 + d.end_nut.af / math.sqrt(3.0) + d.end_nut_fit
     return d.bore / 2.0 - 1.0, r_out, S["z_end_nut"] - d.end_nut_fit, S["z_end_nut_seat"]
+
+
+def clamp_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
+    """The rotor clamp's 4x M3 in the module x-y plane: on clamp_circle_dia, from clamp_angle_deg (between the wall's
+    screws)."""
+    d = cfg.drive
+    r = d.clamp_circle_dia / 2.0
+    return [(r * math.cos(math.radians(d.clamp_angle_deg + 90.0 * k)), r * math.sin(math.radians(d.clamp_angle_deg + 90.0 * k)))
+            for k in range(4)]
+
+
+def clamp_nut_pocket(cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float, float]:
+    """(r_in, r_out, z0, z1) of each clamp screw's nut pocket in the shaft's flange, radially along its screw's angle
+    like end_nut_pocket's: from inside the cable bore past the nut's corner; from the shaft's rear face (open: the nut
+    goes in there) to the nut's bearing face."""
+    d, S = cfg.drive, stack_positions(cfg)
+    r_out = d.clamp_circle_dia / 2.0 + d.clamp_nut.af / math.sqrt(3.0) + d.end_nut_fit
+    return d.bore / 2.0 - 1.0, r_out, S["z_shaft_end"], S["z_clamp_nut_seat"]
 
 
 def module_frame_in_host(cfg: ForearmConfig = DEFAULT) -> tuple:
@@ -97,54 +115,70 @@ def module_frame_in_host(cfg: ForearmConfig = DEFAULT) -> tuple:
 
 
 def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
-    """Module-frame stations of the roll drive (RollDriveParams; the frame, the shaft and the cap builders emit their
-    geometry at these stations - the frame's and the shaft's rows are at 0, the cap's at z_cap). The elbow axis runs
-    along X at y = y_elbow, under the housing at z = 0; the motor sits on it. Every number a row or a test needs comes
-    from here."""
+    """Module-frame stations of the roll drive (RollDriveParams; the frame, the shaft and the pulley builders emit their
+    geometry at these stations, their rows at 0). From the forearm wall back: the ring's front face on the wall, the
+    ring, bearing 2 right under it (the cup's floor), the lip, bearing 1 (the tower's rear face), the shaft behind it -
+    its rear face at the rotor clamp's tips -, the bay, the tower's rear; the motor's face where its 20T meets the
+    ring, the plate in front of it the block's front face. The elbow axis runs along X at y = y_elbow, under the tower at
+    z = 0; the motor sits on it. Every number a row or a test needs comes from here."""
     d, w = cfg.drive, cfg.roll_end
-    z_end = d.block_z[0]                                          # -26: the rear end wall's outer face
-    z_lip = z_end + d.end_wall                                    # -23: the end wall's inner face, the lip begins
-    z_seat = z_lip + d.lip                                        # -21: bearing 1
-    z_bore = z_seat + d.bearing_width                             # -14: the clearance bore (the shaft's shoulder 1)
-    z_cavity = d.cavity_z0                                        # 16: the cavity, open to the front face
-    z_ring = d.ring_z0                                            # 18: the teeth
-    z_ring_flange_1 = z_ring - d.ring_flange_t                    # 16.8
-    z_ring_mid = z_ring + d.ring_width / 2.0                      # 21.5
-    z_ring_end = z_ring + d.ring_width + d.ring_flange_t          # 26.2: the second flange's face
-    z_face = d.block_z[1]                                         # 36: the front face = the cap = bearing 2
-    z_neck = z_face + d.bearing_width                             # 43
-    z_cap_outer = z_neck + d.cap_lip                              # 45: the cap's outer face, the stops stand on it
-    z_wall = -w.wall_x[1]                                         # 48: the forearm wall's elbow face = the spigot starts
-    z_wall_back = -w.wall_x[0]                                    # 56: its wrist face
-    z_end_tip = z_wall_back - w.screw_len                         # 31
-    z_motor_face = z_ring_mid - d.t20                             # 6.05
-    z_motor_board = z_motor_face - d.motor.body_length            # -33.45
+    z_wall = -w.wall_x[1]                                         # 48: the forearm wall's elbow face = the ring's front face
+    z_ring = z_wall - d.ring_flange_t - d.ring_width              # 39.8: the teeth
+    z_ring_flange_1 = z_ring - d.ring_flange_t                    # 38.6: the ring's rear flange
+    z_cup = z_ring_flange_1 - d.run_gap                           # 37.6: the cup's floor = bearing 2's front face
+    z_bearing_2 = z_cup - d.bearing_width                         # 30.6
+    z_lip = z_bearing_2 - d.lip                                   # 28.6
+    z_bearing_1 = z_lip - d.bearing_width                         # 21.6: the tower's rear face
+    z_wall_back = -w.wall_x[0]                                    # 56: the wall's wrist face = its screws' heads
+    z_end_tip = z_wall_back - w.screw_len                         # 40: their tips, in the pulley's core
+    z_end_nut = z_end_tip + 2 * M3_PITCH                          # 41: each nut's far face, 2 pitches short of the tip
+    z_spigot_end = z_wall + w.flange_recess_depth                 # 50: the pulley's front face
+    z_clamp_head = z_spigot_end - d.clamp_screw.head_h - d.clamp_head_clear   # 46.8: the clamp's counterbores' floor
+    z_shaft_end = z_clamp_head - d.clamp_screw_len                # 11.8: the clamp's tips = the shaft's rear face
+    z_clamp_nut = z_shaft_end + 2 * M3_PITCH                      # 12.8: each clamp nut's far face
+    z_meet = z_lip + d.lip / 2.0                                  # 29.6: the shaft's hub meets the pulley's, in the lip's middle
+    z_bay = z_shaft_end - (z_meet - z_bearing_1) - d.bay_clear    # 2.75: the bay's floor - room to slide the shaft in
+    z_ring_mid = z_ring + d.ring_width / 2.0                      # 43.3
+    z_motor_face = z_ring_mid - d.t20                             # 24.85: the 20T's teeth level with the ring's
+    z_front = z_motor_face + d.pad_t                              # 28.85: the plate's front face = the block's front face
     return {
-        "z_block": 0.0, "z_shaft": 0.0,
-        "z_end": z_end, "z_lip": z_lip, "z_seat": z_seat, "z_bore": z_bore, "z_cavity": z_cavity,
-        "z_bearing_1": z_seat, "z_bearing_2": z_face,
-        "z_shaft_end": z_lip + d.shaft_end_clear,                 # -22
-        "z_shoulder_1": z_bore, "z_ring_flange_1": z_ring_flange_1, "z_ring": z_ring, "z_ring_mid": z_ring_mid,
-        "z_ring_end": z_ring_end,
-        "z_face": z_face, "z_cap": z_face, "z_neck": z_neck, "z_cap_outer": z_cap_outer,
-        "z_stop_post": z_cap_outer,                               # 45..47.5 on the cap's outer face
-        "z_stop_lug": z_cap_outer,                                # 45..47.5 on the neck
+        "z_block": 0.0, "z_shaft": 0.0, "z_pulley": 0.0,
+        "z_tower_rear": z_bay - d.tower_wall,                     # 0.75: the tower's rear in the profile
+        "z_bay": z_bay, "z_shaft_end": z_shaft_end,
+        "z_clamp_nut": z_clamp_nut,
+        "z_clamp_nut_seat": z_clamp_nut + d.clamp_nut.h,          # 15.2: its bearing face, toward the pulley
+        "z_clamp_head": z_clamp_head,
+        "z_end_tip": z_end_tip, "z_end_nut": z_end_nut,
+        "z_end_nut_seat": z_end_nut + d.end_nut.h,                # 43.4: each wall nut's bearing face, toward the wall
+        "z_stop_lug": z_shaft_end,                                # 11.8 .. +stop_lug_t on the shaft's flange
+        "z_stop_post": z_bearing_1 - d.stop_post_t,               # 16.8 .. 21.6 on the tower's rear face
+        "z_shoulder_1": z_bearing_1 - d.run_gap,                  # 20.6: the shaft's Ø33 shoulder on bearing 1's inner ring
+        "z_bearing_1": z_bearing_1, "z_lip": z_lip,
+        "z_meet": z_meet,
+        "z_bearing_2": z_bearing_2, "z_cup": z_cup,
+        "z_ring_flange_1": z_ring_flange_1, "z_ring": z_ring, "z_ring_mid": z_ring_mid,
+        "z_ring_end": z_wall,                                     # 48: the ring's front flange face
+        "z_rim": z_ring - d.rim_under_teeth,                      # 39.5: the cup's rim, under the belt
+        "z_front": z_front,
         "z_wall": z_wall,                                         # 48: the spigot starts here
-        "z_spigot_end": z_wall + w.flange_recess_depth,           # 50
-        "z_wall_back": z_wall_back,                               # 56: the wall's wrist face = the screws' heads
-        "z_end_tip": z_end_tip,                                   # 31: the screws' tips
-        "z_end_nut": z_end_tip + 2 * M3_PITCH,                    # 32: each nut's far face, 2 pitches short of the tip ...
-        "z_end_nut_seat": z_end_tip + 2 * M3_PITCH + d.end_nut.h,   # 34.4: ... its bearing face, toward the wall
+        "z_spigot_end": z_spigot_end,
+        "z_wall_back": z_wall_back,
         "z_motor_face": z_motor_face,
-        "z_motor_board": z_motor_board,
-        "z_pad_top": z_motor_face + d.pad_t,                      # 10.05: the plate's front face
-        "z_20t": z_motor_face + d.pad_t + d.pulley_lift,          # 10.55: the 20T's hub face
+        "z_motor_board": z_motor_face - d.motor.body_length,      # -14.65: the board's frame (the motor's rear face)
+        "z_20t": z_front + d.pulley_lift,                         # 32.35: the 20T's hub face
         "y_elbow": d.elbow_y,                                     # -60.9: the elbow axis (along X)
         "x_motor": 0.0, "y_motor": d.motor_y,                     # on the elbow axis
-        "y_plate_low": d.motor_y - d.plate_w / 2.0 - d.pad_slot_len / 2.0,   # -86.4: the plate's lower end (the slot's travel under the motor)
-        "y_web_low": d.elbow_y - d.lip_dia / 2.0 - d.web_margin,  # -98.9: the web's lower end, past the lip
-        "x_cradle": d.block_x[0] + d.web_t,                       # -23: the web's top = the motor cradle's floor
+        "x_cradle": d.block_x[0] + d.web_t,                       # -23: the pocket's floor
     }
+
+
+def motor_pocket(cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float, float]:
+    """(y0, y1, z0, z1) of the motor's pocket in the frame (from the floor, x_cradle, out through the open +N face): the
+    motor and its board (the wider: the board's cover) + pocket_clear, along Y past the tension travel either way;
+    from pocket_rear behind the board's cover to the plate (the motor's face)."""
+    d, S = cfg.drive, stack_positions(cfg)
+    half = max(d.motor.body_width, d.board_w) / 2.0 + d.pad_slot_len / 2.0 + d.pocket_clear
+    return (S["y_motor"] - half, S["y_motor"] + half, S["z_motor_board"] - d.board_stack - d.pocket_rear, S["z_motor_face"])
 
 
 def pad_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
@@ -152,14 +186,6 @@ def pad_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
     from lib.cycloidal.layout import motor_bolt_points
     S = stack_positions(cfg)
     return [(S["x_motor"] + x, S["y_motor"] + y) for x, y in motor_bolt_points()]
-
-
-def cap_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
-    """The end cap's 4x M3 into the block's front face: cap_bolt_inset inside the outline's corners."""
-    d = cfg.drive
-    xs = (d.block_x[1] - d.cap_bolt_inset, d.block_x[0] + d.cap_bolt_inset)
-    ys = (d.block_y[0] + d.cap_bolt_inset, d.block_y[1] - d.cap_bolt_inset)
-    return [(x, y) for y in ys for x in xs]
 
 
 def pulley_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
@@ -171,28 +197,20 @@ def pulley_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]
 
 
 def nut_channel_end(cfg: ForearmConfig = DEFAULT) -> float:
-    """Module x where each pulley bolt's hex channel ends: up through the web, nut_channel_past into the motor's cradle
-    (the nuts go in from there before the motor)."""
+    """Module x where each pulley bolt's hex channel ends: up through the floor, nut_channel_past into the motor's
+    pocket (the nuts go in from there before the motor)."""
     return stack_positions(cfg)["x_cradle"] + cfg.drive.nut_channel_past
 
 
 def coupler_steps(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float, float]]:
-    """The web's underside as (diameter, x0, x1) cylinders about the elbow axis, the face downward: the lip in
+    """The frame's underside as (diameter, x0, x1) cylinders about the elbow axis, the face downward: the lip in
     j1_link's recess, the boss, the journal, the shoulder on the upper elbow bearing's inner ring, the stub in it."""
     d = cfg.drive
     return [(d.lip_dia, *d.lip_x), (d.boss_dia, *d.boss_x), (d.journal_dia, *d.journal_x), (d.step_dia, *d.step_x),
             (d.stub_dia, *d.stub_x)]
 
 
-def belt_window(cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float, float]:
-    """(z0, z1, half_x, y0) of the belt window through the housing's bottom wall: the ring's flanges + the margin along
-    Z, +/- half_x, from y0 (below the roll axis, inside the cavity) down out through the bottom."""
-    d, S = cfg.drive, stack_positions(cfg)
-    return (S["z_ring_flange_1"] - d.belt_window_margin, S["z_ring_end"] + d.belt_window_margin,
-            d.belt_window_half_x, -d.belt_window_y0)
-
-
 def flange_bolt_points_module(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
-    """The wall's bolts in the module x-y plane (they run into the shaft's end wall): the wall's (y, z) pattern seen
-    from the module (module x = host z - axis_z, module y = host y)."""
+    """The wall's bolts in the module x-y plane (they run through the pulley and the shaft): the wall's (y, z) pattern
+    seen from the module (module x = host z - axis_z, module y = host y)."""
     return [(z - cfg.roll_end.axis_z, y) for y, z in flange_bolt_points(cfg)]

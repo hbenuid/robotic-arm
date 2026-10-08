@@ -30,8 +30,7 @@ geometry; `test_cots_vendor_matches_reference_frame` leaves them out):
 |---|---|
 | `parts/cycloidal/bearing_6003.py` | `bearing_6003_2rs_sealed_simple` **tried and rejected**: the file is a Ø24 × 8 bearing (a 628 size), not 17 × 35 × 10 |
 | `parts/cycloidal/bearing_6814.py` | no 6814 / 61814 entry in the catalog (search and direct ids 404) |
-| `parts/joints/bearing_6808.py` | no 6808 / 61808 / 6908 entry (2026-09-22: nothing above a 17 mm bore in the catalog) - a native COTS part (`lib/reference.py NATIVE_COTS`, reference `reference/native/`) |
-| `parts/joints/bearing_6806.py` | no 6806 / 61806 / 30 x 42 x 7 entry (2026-09-25: the catalog's 132 bearings stop at a 20 mm bore) - a native COTS part like the 6808 |
+| `parts/joints/bearing_6806.py` | no 6806 / 61806 / 30 x 42 x 7 entry (2026-09-25: the catalog's 132 bearings stop at a 20 mm bore) - a native COTS part (`lib/reference.py NATIVE_COTS`, reference `reference/native/`) |
 | `parts/joints/gt2_idler_20t.py` | `gt2_smooth_idler_bore5_w6` / `gt2_flanged_smooth_idler_bore5_w6` **tried and rejected** (2026-09-29): one generic model under both ids - Ø18.2 flanges on a Ø15.2 seat, 10 mm long, three loose solids with no bore - where the seller's drawing is a Ø12.1 seat, 9 mm long; a native COTS part built from that drawing (`lib/belts.py GT2_IDLER_*`) |
 | `cycloidal_ring_pins`, `cycloidal_output_pins`, `cycloidal_shaft_support_pin`, `cycloidal_motor_bolts`, `cycloidal_housing_bolts`, `cycloidal_housing_nuts` | pattern parts (21 / 4 / 1 / 4 / 8 / 8 solids); the catalog has single fasteners only |
 | `parts/joints/elbow_pulley_screws.py`, `elbow_pulley_nuts.py`, `wrist_pulley_screws.py`, `wrist_pulley_nuts.py` | the 90T pulley bolts: pattern parts (4 solids each), native COTS (`lib/reference.py NATIVE_COTS`) - the catalog has single fasteners only |

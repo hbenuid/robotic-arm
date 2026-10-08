@@ -1,5 +1,5 @@
 """The printed GT2 pulleys: the 90T pulley (gt2_pulley_90t), its 120T variant (gt2_pulley_120t) and the 20-60T compound pulley (gt2_pulley_20_60t) as
-parametric build123d, and the GT2 groove and toothed ring every printed pulley carries (the roll shaft's integral 90T
+parametric build123d, and the GT2 groove and toothed ring every printed pulley carries (the roll pulley's integral 90T
 too).
 
 Pure-Python config here (lib/pulley/params.py); the build123d builders in lib/pulley/teeth.py and body.py (imported

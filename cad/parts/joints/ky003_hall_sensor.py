@@ -3,9 +3,9 @@
 The joints' endstop / home sensor: the A3144 switches when a magnet's SOUTH pole comes up to its branded face; the
 board carries its pull-up, a status LED and the 3-pin header (-, +, S) - S reads low while the magnet is there. The
 chip is rated 4.5..24 V: run it at 5 V. NOT PLACED yet (UNPLACED below, parts/AGENTS.md "Modelled, not placed yet"):
-the forearm roll's home sensor, the chip in a pocket in the end cap's outer face (forearm_roll_retainer) and a magnet
-in the shaft's stop lug (forearm_roll_shaft) - neither is designed yet, and the board will not fit in the 3 mm between
-the cap and the forearm wall, so the chip goes there on its leads or on wires (docs/open_issues.md).
+the forearm roll's home sensor, the chip on the frame's tower beside the stop post, in the shaft's bay behind bearing 1
+(forearm_roll_block), and a magnet in the shaft's stop lug (forearm_roll_shaft) - neither is designed yet; the bay is
+open on the frame's +N face, so the board can sit there or the chip go on its leads (docs/open_issues.md).
 
 No catalog model (step.parts has no KY-003 and no A3144, only bare TO-92S packages - vendor/README.md) and no
 SolidWorks export: a NATIVE COTS part (lib/reference.py NATIVE_COTS) - its envelope IS the geometry and its reference
@@ -55,7 +55,7 @@ MASS_G = KY003_MASS_G   # [ESTIMATE] see lib/sensors.py
 PURCHASE_SPEC = "KY-003 hall-effect sensor module (A3144 / 3144E unipolar hall switch, 3-pin 2.54 header), 5 V"
 PURCHASE_QTY = 1    # pieces per occurrence
 PURCHASE_NOTE = "sold in packs of 10; the chip is rated 4.5-24 V (not the listings' 3.3 V) - power it at 5 V"
-UNPLACED = ("the forearm roll's home sensor: its pocket in the end cap and the magnet in the shaft's stop lug are not "
+UNPLACED = ("the forearm roll's home sensor: its seat beside the frame's stop post and the magnet in the shaft's stop lug are not "
             "designed yet (docs/open_issues.md) - tools/bom.py EXTRAS carries the order line")
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY

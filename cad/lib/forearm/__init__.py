@@ -5,9 +5,9 @@ lib/forearm/link.py and roll.py (imported explicitly by the parts that need them
 never pulls in OCCT). Never imports lib/params.py - that module re-exports the interface values from here.
 """
 from lib.forearm.layout import (  # noqa: F401
-    belt_window, cap_bolt_points, coupler_steps, disc_bolt_angles, end_nut_pocket, screw_channel, screws_under_the_web,
+    clamp_nut_pocket, clamp_points, coupler_steps, disc_bolt_angles, end_nut_pocket, screw_channel, screws_under_the_web,
     disc_bolt_points, elbow_end_x, flange_bolt_points, flange_bolt_points_module, link_socket_points,
-    module_frame_in_host, neck_tangent, nut_channel_end, pad_bolt_points, pulley_bolt_points,
+    module_frame_in_host, motor_pocket, neck_tangent, nut_channel_end, pad_bolt_points, pulley_bolt_points,
     stack_positions, web_half_width,
 )
 from lib.forearm.params import (  # noqa: F401

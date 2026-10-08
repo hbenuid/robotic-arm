@@ -175,28 +175,6 @@
    "source": "parts/joints/bearing_6806.py:_envelope()",
    "units": "mm"
   },
-  "bearing_6808": {
-   "bbox_min": [
-    -26.0,
-    -26.0,
-    0.0
-   ],
-   "bbox_size": [
-    52.0,
-    52.0,
-    7.0
-   ],
-   "bytes": 9245,
-   "file": "native/bearing_6808.step",
-   "kind": "cots",
-   "origin": "native",
-   "product": "bearing_6808 - purchased (COTS) part: 6808-2RS (61808) thin-section deep-groove ball bearing, 40 x 52 x 7 - the",
-   "sha256": "b31a5880fb7e8b6f39b6ebd99dfc3d70001a95f105ab88876bf87ed99de61c86",
-   "solid_volume": 6069.557,
-   "solids": 1,
-   "source": "parts/joints/bearing_6808.py:_envelope()",
-   "units": "mm"
-  },
   "bearing_6814": {
    "bbox_min": [
     -45.0,
@@ -552,65 +530,43 @@
   "forearm_roll_block": {
    "bbox_min": [
     -50.0,
-    -98.926,
-    -40.0
+    -105.926,
+    -45.0
    ],
    "bbox_size": [
     83.0,
-    134.926,
-    76.0
+    138.926,
+    84.5
    ],
-   "bytes": 383543,
+   "bytes": 364259,
    "file": "native/forearm_roll_block.step",
    "kind": "native",
    "origin": "native",
-   "product": "forearm_roll_block - the forearm roll drive's STATOR - the elbow block, which is also the elbow's output flange: a rounded box",
-   "sha256": "af619279d5399400c2d7976d4a17049cdec4bbf6a92e542f8ad16518acaca823",
-   "solid_volume": 223565.789,
+   "product": "forearm_roll_block - the forearm roll drive's STATOR - the roll frame (the elbow block), which is also the elbow's output",
+   "sha256": "79be6cd4fc1f9652010dbfb4248cc27584b356adef07b9a6f73a43970f8449dc",
+   "solid_volume": 299709.793,
    "solids": 1,
    "source": "lib/forearm/roll.py:build_block(DEFAULT)",
    "units": "mm"
   },
-  "forearm_roll_retainer": {
-   "bbox_min": [
-    -33.0,
-    -36.0,
-    0.0
-   ],
-   "bbox_size": [
-    66.0,
-    72.0,
-    11.5
-   ],
-   "bytes": 69289,
-   "file": "native/forearm_roll_retainer.step",
-   "kind": "native",
-   "origin": "native",
-   "product": "forearm_roll_retainer - the forearm roll drive's END CAP on the block's front face: bearing 2's Ø52.15 seat and the lip its",
-   "sha256": "a75086eda00b6179f1d76830303cee7cac8bf61f59cf367b4316905151cd035d",
-   "solid_volume": 23749.735,
-   "solids": 1,
-   "source": "lib/forearm/roll.py:build_retainer(DEFAULT)",
-   "units": "mm"
-  },
   "forearm_roll_shaft": {
    "bbox_min": [
-    -29.595,
-    -29.595,
-    -22.0
+    -20.0,
+    -20.0,
+    11.75
    ],
    "bbox_size": [
-    59.19,
-    59.19,
-    72.0
+    44.5,
+    40.0,
+    17.85
    ],
-   "bytes": 3728894,
+   "bytes": 111377,
    "file": "native/forearm_roll_shaft.step",
    "kind": "native",
    "origin": "native",
-   "product": "forearm_roll_shaft - the forearm roll drive's ROTOR - the hollow roll shaft that crosses the elbow axis: a Ø40.3 journal at each",
-   "sha256": "2b358d19ccf8606a68b279138e9fdb7327ac302e7b9153c092cee8ec0e436cde",
-   "solid_volume": 79423.818,
+   "product": "forearm_roll_shaft - the rear piece of the forearm roll drive's ROTOR, ELBOW_ROLL_OFFSET above the elbow axis: a collar",
+   "sha256": "00f77422faeba214939596246c605ebd71333ef2d749d59cff67e7209088b8b4",
+   "solid_volume": 12317.725,
    "solids": 1,
    "source": "lib/forearm/roll.py:build_shaft(DEFAULT)",
    "units": "mm"
