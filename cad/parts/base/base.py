@@ -20,7 +20,11 @@ the lobe beyond it is gone, the motor sits in base_motor_mount, a narrower box b
 ears into the M4 nuts pressed into the posts (hex pockets from the posts' back faces, a corner up). The window between
 the posts is the mount's inside: the cables come through it into the base (their way out of the base:
 docs/open_issues.md). The base keeps the tower, the plate's neck with the curved slot, and the D walls up to the joint
-face.
+face. Its walls are j1_coupler's cone carried on down (ShellParams.r / draft: flush under the coupler's rim, leaning out
+at BASE_DRAFT, 10.8 degrees, going down; the SolidWorks Ø106.7 stood under the coupler's Ø116), the inside leaning with
+them, the cap a full disc; at the table a Ø200 foot (FootParams): a flange, a straight chamfer up the wall, 6 screw
+holes through the flange with spot-faces in the chamfer, for fixing the base down (the stretched arm's centre of mass
+is 131 mm off the axis).
 
 SolidWorks product: 'base of robot arm 62126'
 Source export:      step/base of robot arm 62126.STEP

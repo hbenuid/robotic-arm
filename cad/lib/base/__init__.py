@@ -6,11 +6,15 @@ that module re-exports the interface values from here.
 """
 from lib.base.layout import (  # noqa: F401
     chamfer_inset,
+    flare_points,
+    foot_holes,
+    inner_r,
     joint_bolt_points,
     joint_stations,
     motor_holes,
     mount_inner_half,
     mount_x1,
+    outer_r,
     side_stub_x,
 )
 from lib.base.params import (  # noqa: F401
@@ -19,6 +23,7 @@ from lib.base.params import (  # noqa: F401
     BaseConfig,
     BoreParams,
     CapParams,
+    FootParams,
     JointParams,
     MotorParams,
     MountParams,

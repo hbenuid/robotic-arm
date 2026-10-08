@@ -43,6 +43,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
+from lib.base.params import BASE_DRAFT, BASE_R
 from lib.base.params import DEFAULT as _BASE
 from lib.bearings import BEARING_6806_BORE, THRUST_OD, THRUST_STACK
 from lib.belts import GT2_PULLEY_90T_BOLT_R
@@ -199,9 +200,9 @@ LEGACY = YawCouplerConfig()     # the SolidWorks part, exactly
 THRUST_CLEAR = 0.2                # [DESIGN] the recess round the washers and the cage (radial)
 RIM_CLEAR = 0.5                   # [DESIGN] the rim over the base's top face
 RING_DROP = 2.0                   # [DESIGN] the ring's top lowered under the drive's turning shell: its pillars 2.68 over it
-BASE_R = 58.0                     # [DESIGN] the disc at its rim (Ø116, the SolidWorks Ø106): room under the legs for their root ...
-BASE_DRAFT = 12.0 / 63.0          # [DESIGN] ... and its side drafted in at dr/dy (10.8 degrees), carried on up the legs' outer
-#                                   faces (x +/-46) to meet them at y 63 - the legs' root 20 thick, the motor leg's foot room for its M4s
+# BASE_R / BASE_DRAFT (lib/base/params.py: the base's walls carry the same cone on down): the disc at its rim, its side
+# drafted in at BASE_DRAFT, carried on up the legs' outer faces (x +/-46) to meet them at y 63 - the legs' root 20
+# thick, the motor leg's foot room for its M4s
 _CAP = _BASE.cap                  # the base's frame: this part's origin at its ring_top_y
 DEFAULT = replace(LEGACY,
                   hub=replace(LEGACY.hub, recess_dia=THRUST_OD + 2.0 * THRUST_CLEAR,

@@ -8,20 +8,28 @@ With cfg.joint (DEFAULT) the SolidWorks body is cut at x = split_x: build_base k
 plate's neck) and ends in two posts with the M4 holes and the nuts' pockets, the window between them opening into the
 motor mount; build_motor_mount is a box of its own (cfg.mount) round the motor and its board - trussed walls and end
 wall, the plate with the motor's seat - with an ear each side at the joint face for the M4. Without it (LEGACY)
-build_base is the whole SolidWorks part."""
+build_base is the whole SolidWorks part. With a shell draft (DEFAULT) the walls lean out going down, inside and out:
+_d's cylinder becomes a cone round the axis and its block a wedge between leaning planes (_dd); with cfg.foot (DEFAULT)
+they stand on a flange with a straight chamfer up the wall (a cone and a wedge again) and the screw holes through it.
+With neither (LEGACY) the cones are _d's cylinders and the wedges its blocks."""
 from __future__ import annotations
 
 import math
+from functools import partial
 
 from cadgen import build123d as bd
 
 from lib.base.layout import (
     chamfer_inset,
+    flare_points,
+    foot_holes,
+    inner_r,
     joint_bolt_points,
     joint_stations,
     motor_holes,
     mount_inner_half,
     mount_x1,
+    outer_r,
     side_stub_x,
     truss_panels,
 )
@@ -81,6 +89,39 @@ def _d(r: float, x1: float, y: tuple, x0: float = 0.0):
     return _bore(r, *y) + _block((x0, x1), (-r, r), y)
 
 
+def _cone(r0: float, r1: float, y: tuple):
+    """A cone round the axis from y[0] (radius r0) to y[1] (radius r1) - _bore's cylinder when they are equal."""
+    if r0 == r1:
+        return _bore(r0, *y)
+    return bd.Pos(0.0, 0.0, y[0]) * bd.Cone(r0, r1, y[1] - y[0], align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MIN))
+
+
+def _wedge(r0: float, r1: float, x: tuple, y: tuple):
+    """The block from x[0] to x[1] between the planes through z = +/- r0 at y[0] and z = +/- r1 at y[1]."""
+    pts = [(x[0], -r0, y[0]), (x[0], r0, y[0]), (x[0], r1, y[1]), (x[0], -r1, y[1])]
+    return bd.extrude(bd.Face(bd.Wire.make_polygon(pts, close=True)), amount=x[1] - x[0], dir=(1.0, 0.0, 0.0))
+
+
+def _dd(r_of, x1: float, y: tuple):
+    """_d with the radius r_of(y) at each end: a cone round the axis and the block out to x1 between the leaning
+    planes z = +/- r_of (_d itself when the walls stand straight)."""
+    r0, r1 = r_of(y[0]), r_of(y[1])
+    return _cone(r0, r1, y) + _wedge(r0, r1, (0.0, x1), y)
+
+
+def _foot(cfg: BaseConfig):
+    """The foot, solid: the flange (_d of foot.r, t thick, its sides out to x1) and the chamfer from its top up to the
+    wall - a cone round the axis, the leaning planes on the sides."""
+    s, f = cfg.shell, cfg.foot
+    (rf, yt), (rw, yw) = flare_points(cfg)
+    return _d(f.r, s.x1, (s.y0, yt)) + _cone(rf, rw, (yt, yw)) + _wedge(rf, rw, (0.0, s.x1), (yt, yw))
+
+
+def _reach(cfg: BaseConfig) -> float:
+    """How far the base reaches from the axis: the walls at the bottom face, or the foot."""
+    return max(outer_r(cfg, cfg.shell.y0), cfg.foot.r if cfg.foot is not None else 0.0)
+
+
 def _d_section(r: float, x1: float, y: float):
     """The D outline (the round of r on -X, the sides out to x1) as a face at height y - a loft section."""
     edges = [bd.ThreePointArc((0.0, r), (-r, 0.0), (0.0, -r)), bd.Line((0.0, -r), (x1, -r)), bd.Line((x1, -r), (x1, r)),
@@ -97,17 +138,23 @@ def _sector(r: float, deg: tuple, y: tuple):
 
 
 def _walls(cfg: BaseConfig):
-    """The D wall from the bottom face to the plate's top, hollow; above it the round half and the sides' stubs up to
-    the cap's top face, hollow up to the chamfer under the cap."""
+    """The D wall (on its foot, cfg.foot) from the bottom face to the plate's top, hollow; above it the round half and
+    the sides' stubs up to the cap's top face, hollow up to the chamfer under the cap (the cap a full disc). The outside
+    is one cone from the bottom face to the top face, the sides' blocks on it: two cones met at the plate's top would
+    fuse into a bad face."""
     s, c, p = cfg.shell, cfg.cap, cfg.plate
-    ri, far = s.r - s.wall, s.r + 1.0
-    lower = _d(s.r, s.x1, (s.y0, p.y[1])) - _d(ri, s.x1 - s.wall, (s.y0 - NUDGE, p.y[1] + NUDGE))
-    lower = lower - _block((s.x1 - s.wall - NUDGE, s.x1 + NUDGE), (-s.notch_half_z, s.notch_half_z), (s.y0 - NUDGE, s.notch_y1))
-    upper = _d(s.r, side_stub_x(cfg), (p.y[1], c.top_y))
-    inset = chamfer_inset(cfg)
-    cavity = _d(ri, far, (p.y[1] - NUDGE, c.chamfer_y0)) + bd.loft(
+    r_in = partial(inner_r, cfg)
+    r0, rp, rt = (outer_r(cfg, y) for y in (s.y0, p.y[1], c.top_y))
+    body = (_cone(r0, rt, (s.y0, c.top_y)) + _wedge(r0, rp, (0.0, s.x1), (s.y0, p.y[1]))
+            + _wedge(rp, rt, (0.0, side_stub_x(cfg)), (p.y[1], c.top_y)))
+    if cfg.foot is not None:
+        body = body + _foot(cfg)
+    body = body - _dd(r_in, s.x1 - s.wall, (s.y0 - NUDGE, p.y[1] + NUDGE))
+    body = body - _block((s.x1 - s.wall - NUDGE, s.x1 + NUDGE), (-s.notch_half_z, s.notch_half_z), (s.y0 - NUDGE, s.notch_y1))
+    inset, ri, far = chamfer_inset(cfg), inner_r(cfg, c.chamfer_y0), r0 + 1.0
+    cavity = _dd(r_in, far, (p.y[1] - NUDGE, c.chamfer_y0)) + bd.loft(
         [_d_section(ri, far, c.chamfer_y0), _d_section(ri - inset, far, c.underside_y)], ruled=True)
-    return lower + (upper - cavity)
+    return body - cavity
 
 
 def _cap(cfg: BaseConfig, body):
@@ -140,7 +187,7 @@ def _plate(cfg: BaseConfig):
     """The motor plate across the D: the central opening (out to the wall on the -X side), the curved slot, the
     motor's seat and, on the SolidWorks base, the belt slot (the motor mount has none)."""
     s, p, m = cfg.shell, cfg.plate, cfg.motor
-    ri, y = s.r - s.wall, (p.y[0] - NUDGE, p.y[1] + NUDGE)
+    ri, y = inner_r(cfg, p.y[0]), (p.y[0] - NUDGE, p.y[1] + NUDGE)   # the inside at the plate's underside, its widest
     plate = _d(ri, s.x1 - s.wall, p.y)
     plate = plate - _bore(p.opening_r, *y) - _sector(ri + 1.0, p.open_deg, y)
     arc = bd.CenterArc((0.0, 0.0), p.arc_slot_r, -p.arc_slot_half_deg, 2.0 * p.arc_slot_half_deg)
@@ -164,17 +211,21 @@ def _rim(cfg: BaseConfig):
 
 def _side(cfg: BaseConfig, x: tuple):
     """Everything of the SolidWorks body between x[0] and x[1] (a box past it on every other side)."""
-    s = cfg.shell
-    return _block(x, (-s.r - 1.0, s.r + 1.0), (s.y0 - 1.0, cfg.cap.top_y + 1.0))
+    s, half = cfg.shell, _reach(cfg) + 1.0
+    return _block(x, (-half, half), (s.y0 - 1.0, cfg.cap.top_y + 1.0))
 
 
 def _posts(cfg: BaseConfig):
     """The base's two posts at the joint: post_t thick behind the joint face, from each side wall in to the motor
-    mount's inside (the window between them), from the bottom face up to the plate's underside."""
+    mount's inside (the window between them), from the bottom face up to the plate's underside - out to the inside at
+    the bottom face and, when the walls lean, cut back to their outside above."""
     s, p, j = cfg.shell, cfg.plate, cfg.joint
-    ri, w_in = s.r - s.wall, mount_inner_half(cfg)
+    ri, w_in = inner_r(cfg, s.y0), mount_inner_half(cfg)
     x, y = (j.split_x - j.post_t, j.split_x), (s.y0, p.y[0] + NUDGE)
-    return _block(x, (w_in, ri + NUDGE), y) + _block(x, (-ri - NUDGE, -w_in), y)
+    posts = _block(x, (w_in, ri + NUDGE), y) + _block(x, (-ri - NUDGE, -w_in), y)
+    if s.draft == 0.0:
+        return posts
+    return posts & _dd(partial(outer_r, cfg), s.x1, (s.y0 - 1.0, p.y[1]))
 
 
 def _bolt_holes(cfg: BaseConfig, body):
@@ -186,19 +237,31 @@ def _bolt_holes(cfg: BaseConfig, body):
     return body
 
 
+def _foot_holes(cfg: BaseConfig, body):
+    """`body` less the foot's screw holes down through the flange and their spot-faces from the flange's top up through
+    the chamfer (none without a foot)."""
+    f, s = cfg.foot, cfg.shell
+    if f is None:
+        return body
+    yt, y1 = s.y0 + f.t, s.y0 + f.flare_h + NUDGE
+    for x, z in foot_holes(cfg):
+        body = body - _bore(f.hole_dia / 2.0, s.y0 - NUDGE, yt + NUDGE, x, z) - _bore(f.spot_dia / 2.0, yt, y1, x, z)
+    return body
+
+
 def build_base(cfg: BaseConfig = DEFAULT):
     """The base: the whole SolidWorks part (cfg.joint None), else its -X side up to the joint face, the posts, the M4
-    holes and the nuts' hex pockets (from the posts' back face, nut.h deep)."""
+    holes and the nuts' hex pockets (from the posts' back face, nut.h deep); the foot's screw holes (cfg.foot)."""
     body = _cap(cfg, _walls(cfg)) + _plate(cfg)
     if cfg.joint is None:
-        return single_solid(bd.Rot(-90.0, 0.0, 0.0) * (body + _rim(cfg)))
-    j, st = cfg.joint, joint_stations(cfg)
-    s = cfg.shell
-    body = (body & _side(cfg, (-s.r - 1.0, j.split_x))) + _posts(cfg)
-    body = _bolt_holes(cfg, body)
-    for z, y in joint_bolt_points(cfg):
-        body = body - _x_hex(j.nut_pocket_af, (st["x_post"] - NUDGE, st["x_nut_face"]), z, y)
-    return single_solid(bd.Rot(-90.0, 0.0, 0.0) * body)
+        body = body + _rim(cfg)
+    else:
+        j, st = cfg.joint, joint_stations(cfg)
+        body = (body & _side(cfg, (-_reach(cfg) - 1.0, j.split_x))) + _posts(cfg)
+        body = _bolt_holes(cfg, body)
+        for z, y in joint_bolt_points(cfg):
+            body = body - _x_hex(j.nut_pocket_af, (st["x_post"] - NUDGE, st["x_nut_face"]), z, y)
+    return single_solid(bd.Rot(-90.0, 0.0, 0.0) * _foot_holes(cfg, body))
 
 
 def _truss_windows(cfg: BaseConfig):
