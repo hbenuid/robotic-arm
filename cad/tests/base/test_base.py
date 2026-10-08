@@ -3,8 +3,9 @@ volume / bbox match is tests/test_reference_match.py's; here the features are pr
 what moved), the interface values lib/params.py and lib/datum.py take from it are the ones the rest of the arm
 uses (the base_yaw motor's seat, the bottom face), and DEFAULT - what the part builds - changes the bearing bore (the
 6806-2RS pair's seats and lip, the wrist's) and the seat ring (inside the thrust bearing's bore), lowers the bottom
-face under the base_yaw motor's board, and cuts the motor lobe off at the joint face (base_motor_mount, its seat
-slotted where the stock belt puts the motor: tests/base/test_motor_mount.py)."""
+face under the base_yaw motor's board, cuts the motor lobe off at the joint face (base_motor_mount, its seat
+slotted where the stock belt puts the motor: tests/base/test_motor_mount.py), and leans the walls out along
+j1_coupler's cone onto the flared foot (tests/base/test_foot.py)."""
 from dataclasses import replace
 
 import pytest
@@ -36,7 +37,7 @@ def test_layout():
 def test_interface_values_come_from_the_base():
     assert PARAMS.BASE_MOTOR_PATTERN_CENTRE == (DEFAULT.motor.centre[0], DEFAULT.plate.y[0], DEFAULT.motor.centre[1])
     assert BASE_BOTTOM_Y == DEFAULT.shell.y0 < LEGACY.shell.y0 == P.OCCURRENCES["base#1"]["world_bbox_min"][1]
-    assert DEFAULT.shell == replace(LEGACY.shell, y0=DEFAULT.shell.y0)        # the SolidWorks base, deeper
+    assert DEFAULT.shell == replace(LEGACY.shell, y0=DEFAULT.shell.y0, r=DEFAULT.shell.r, draft=DEFAULT.shell.draft)   # deeper, on the cone
     assert P.OCCURRENCES["base#1"]["world"]["position"] == [0.0, 0.0, 0.0]   # the part frame IS the capture frame
 
 
@@ -94,7 +95,8 @@ def test_legacy_features(legacy):
 
 def test_default_bore_takes_the_6806_pair():
     b = DEFAULT.bore
-    assert replace(DEFAULT, shell=LEGACY.shell, bore=LEGACY.bore, cap=LEGACY.cap, motor=LEGACY.motor, joint=None, mount=None) == LEGACY
+    assert replace(DEFAULT, shell=LEGACY.shell, bore=LEGACY.bore, cap=LEGACY.cap, motor=LEGACY.motor, joint=None, mount=None,
+                   foot=None) == LEGACY
     assert (b.upper_dia, b.lower_dia, b.lip_dia) == (FOREARM.boss.seat_dia, FOREARM.boss.seat_dia, FOREARM.boss.lip_dia)
     assert b.upper_dia > BEARING_6806_OD and LEGACY.bore.lower_dia - BEARING_6806_OD > 1.0   # the SolidWorks lower seat: 1.4 over
     c = DEFAULT.cap
@@ -112,10 +114,10 @@ def test_default_ring_centres_the_thrust_bearing():
 @pytest.mark.slow
 def test_default_changes_the_bore_and_the_ring_and_ends_at_the_joint(base, legacy):
     assert base.is_valid and len(base.solids()) == 1
-    lmin = legacy.bounding_box().min
-    assert tuple(base.bounding_box().min) == pytest.approx((lmin.X, DEFAULT.shell.y0, lmin.Z), abs=1e-6)   # deeper
+    foot = DEFAULT.foot.r
+    assert tuple(base.bounding_box().min) == pytest.approx((-foot, DEFAULT.shell.y0, -foot), abs=1e-6)   # deeper, on the foot
     lmax = legacy.bounding_box().max
-    assert tuple(base.bounding_box().max) == pytest.approx((DEFAULT.joint.split_x, lmax.Y, lmax.Z), abs=1e-6)   # the lobe is the mount's
+    assert tuple(base.bounding_box().max) == pytest.approx((DEFAULT.joint.split_x, lmax.Y, foot), abs=1e-6)   # the lobe is the mount's
     assert is_inside(base, 0, -10, 21.15) and not is_inside(legacy, 0, -10, 21.15)   # the upper seat Ø42.4 -> Ø42.2
     assert is_inside(base, 0, -18, 21.5) and not is_inside(legacy, 0, -18, 21.5)     # the lower seat Ø43.4 -> Ø42.2
     assert not is_inside(base, 0, -13.8, 17) and is_inside(legacy, 0, -13.8, 17)     # the lip Ø31.73 -> Ø37.65
