@@ -246,8 +246,10 @@ class RollDriveParams:
     stop_post_r: tuple = (21.6, 26.0)     # [DESIGN] the frame's post on the tower's rear face at -X, inside the bay (fused into its wall, r 25.5):
     #                                       they overlap r 21.6..24.5; clear of bearing 1 (r 21) and the shaft's flange (r 20)
     stop_post_t: float = 4.85             # [DESIGN] ... back from the tower's rear face: 2.5 of the lug's length beside it
-    stop_deg_width: float = 10.0          # [DESIGN] angular width of each: contact at +/- (180 - width) = +/- stop_deg
-    stop_deg: float = 170.0               # [ESTIMATE] = FOREARM_ROLL_LIMIT_DEG
+    stop_deg_width: float = 10.0          # [DESIGN] angular width of each at its outer radius - its sides parallel
+    #                                       (roll.py _wedge), so wider in: the post's inner corner meets the lug's side
+    #                                       at +/- 168.3, not 180 - width (tests/test_sweeps.py); FOREARM_ROLL_LIMIT_DEG
+    #                                       stops 2 deg short of it
     # the 90T ring (integral to the pulley; the 20T is flanged on its hub side only, so the ring carries two flanges)
     ring_teeth: int = 90
     ring_width: float = 7.0               # [DATASHEET] 6 mm belt

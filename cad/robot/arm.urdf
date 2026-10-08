@@ -52,8 +52,9 @@
   (cad/lib/mounts.py) but not mapped; the shoulder_pitch motor is the drive's own NEMA 17 at 21:1
   (cad/lib/params.py CYCLOIDAL_RATIO; software/control/src/config.py still carries gear_ratio 1.0 everywhere). The
   belt motors' masses (280 g) and boards (35 g) are estimates, the wrist_pitch motor's slide position
-  (J2_MOTOR_SLIDE_X - what a stock 264-2GT belt sets) too; FOREARM_ROLL_LIMIT_DEG is the hard stop's
-  estimate. wrist_roll and the jaws are not driven by software/control/src/config.py, and forearm_roll needs a 4th CAN id.
+  (J2_MOTOR_SLIDE_X - what a stock 264-2GT belt sets) too; FOREARM_ROLL_LIMIT_DEG stops 2 deg short of the
+  printed hard stop. The jaw travel (JAW_TRAVEL_MM) is an estimate that does not fit the gripper (cad/docs/open_issues.md).
+  wrist_roll and the jaws are not driven by software/control/src/config.py, and forearm_roll needs a 4th CAN id.
 -->
 <robot name="arm">
   <link name="base_link">
@@ -254,7 +255,7 @@
     <child link="forearm_link" />
     <origin xyz="0.000001 -0.060926 0.025" rpy="3.141593 -1.570795 0" />
     <axis xyz="0 0 1" />
-    <limit lower="-2.96706" upper="2.96706" effort="5" velocity="1" />
+    <limit lower="-2.897247" upper="2.897247" effort="5" velocity="1" />
   </joint>
   <joint name="wrist_pitch" type="revolute">
     <parent link="forearm_link" />

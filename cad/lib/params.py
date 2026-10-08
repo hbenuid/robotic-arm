@@ -211,21 +211,29 @@ ELBOW_MOTOR_SCREWS_MASS_G = STEEL_DENSITY * len(_pad_holes(_UPPER_ARM)) * shcs_v
 # and SDF are checked against these by tools/robot/derive.py --check.
 BASE_YAW_LIMIT_DEG = 175.0        # [ESTIMATE] symmetric +/- range; j1_coupler (carrying the drive's stator) turns on the base
 # the 21:1 cycloidal drive (CYCLOIDAL_RATIO) between j1_coupler and j1_link: (lower, upper); the upper - the arm pitched
-# down in front - stops 3 deg before the upper arm, rising off the drive's middle, reaches j1_coupler's disc (70.5 deg;
-# its 1 mm running gap held to 69.5 - tests/test_sweeps.py), the lower is an [ESTIMATE] (the arm clears to -150)
+# down in front - stops 2.5 deg before the upper arm, rising off the drive's middle, reaches j1_coupler's disc (69.5 deg;
+# inside its 1 mm running gap from 68.6 - tests/test_sweeps.py), the lower is an [ESTIMATE] (the upper arm reaches the
+# fork at -154, the forearm stays off the base and the shoulder to -140 at any elbow)
 SHOULDER_PITCH_LIMITS_DEG = (-120.0, 67.0)   # [DESIGN]
 # the 4.5:1 elbow belt: (lower, upper); the lower - the forearm lifted back - kept where the old roll housing set it:
 # the roll drive's frame (round about the elbow axis, its tower ELBOW_ROLL_OFFSET over it) is 9.3 mm off the elbow motor,
-# which stands on the same side of the upper arm, there and comes within 1 mm of it only at -60 deg
-# (tests/forearm/test_roll_drive.py; the room to lift further: docs/open_issues.md); the upper kept at 90
-# (docs/open_issues.md): SHOULDER_PITCH_LIMITS_DEG was set over this range
+# which stands on the same side of the upper arm, there and comes within 1 mm of its board only at -59.8 deg
+# (tests/forearm/test_roll_drive.py) - the forearm, the wrist and the gripper stay 1 mm off the upper arm to -62 at any
+# roll and wrist pitch (tests/test_sweeps.py), so the frame sets the room to lift further (docs/open_issues.md); the
+# upper kept at 90 (the gripper, the wrist pitched up, reaches j1_coupler at 104.8): SHOULDER_PITCH_LIMITS_DEG was set
+# over this range
 ELBOW_PITCH_LIMITS_DEG = (-47.0, 90.0)   # [DESIGN]
-# the GT2 belt at wrist_link: (lower, upper), the clear range (the wrist body's back corners reach j2_link's web at
-# -109 / +74.5 at any roll, tests/test_sweeps.py) less 4 deg
+# the GT2 belt at wrist_link: (lower, upper), set 4 deg short of where the wrist body's back corners met j2_link's web
+# (-109 / +74.5); since the web was necked they reach it at -116.9 / +82.6 at any roll (tests/test_sweeps.py) - the
+# room to open up: docs/open_issues.md
 WRIST_PITCH_LIMITS_DEG = (-105.0, 70.0)   # [DESIGN]
-FOREARM_ROLL_LIMIT_DEG = 170.0    # [ESTIMATE] the forearm roll (GT2 belt in the elbow block): a hard stop keeps the cables from winding
+# the forearm roll: 2 deg short of its printed hard stop - the lug on the roll shaft's flange meets the post on the
+# frame's tower at +/- 168.3 (lib/forearm/params.py stop_deg_width; tests/test_sweeps.py measures it), which keeps the
+# cables from winding
+FOREARM_ROLL_LIMIT_DEG = 166.0    # [DESIGN]
 WRIST_ROLL_LIMIT_DEG = 180.0      # [ESTIMATE] NEMA17 pancake wrist roll (not CAN-driven yet)
-JAW_TRAVEL_MM = 10.0            # [ESTIMATE] symmetric +/- jaw travel about the capture pose
+JAW_TRAVEL_MM = 10.0            # [ESTIMATE] symmetric +/- jaw travel about the capture pose - which is open already: it
+#                                 does not fit the gripper (docs/open_issues.md)
 ARM_JOINT_EFFORT_NM = 5.0       # [ESTIMATE] MKS SERVO42D through the reductions
 ARM_JOINT_VELOCITY_RAD_S = 1.0  # [ESTIMATE]
 WRIST_EFFORT_NM = 1.0           # [ESTIMATE]
