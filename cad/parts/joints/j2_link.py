@@ -3,8 +3,8 @@ lib/forearm/link.py build_link(cfg), in the SolidWorks part frame - origin on th
 x = WebParams.wrist_x, +Z = N toward the motor-body side).
 
 Elbow end (DEFAULT, the forearm roll): the flange wall at x -56..-48 - a Ø60 round flange on the roll axis (y 0, z 25
-= the wrist centre's N-station) standing on a 60 mm foot, the web's neck - with the roll shaft's Ø40 x 2 spigot recess
-on its elbow face, 4x M3 on Ø32 and the Ø24 cable bore on the roll axis, braced by two gussets on the web either side
+= the wrist centre's N-station) standing on a 60 mm foot, the web's neck - with the roll pulley's Ø40 x 2 spigot recess
+on its elbow face, 4x M3 on Ø31 and the Ø24 cable bore on the roll axis, braced by two gussets on the web either side
 of the wrist motor; the web necks down to the wall from the wrist boss (its sides tangent to the boss). The roll frame
 (parts/joints/forearm_roll_block) is the elbow coupler now, so no disc and no j3_coupler#1; the forearm sits
 ELBOW_ROLL_OFFSET across the elbow axis (lib/placements.py SHIFTS). LEGACY: the Ø90 disc whose

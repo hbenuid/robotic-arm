@@ -3,8 +3,8 @@
 **Purpose:** the original design, as exported from SolidWorks, renamed to the clean part
 names used everywhere in `cad/` (`solidworks/`) — plus, for the cycloidal drive, the CadQuery
 exports of the `cycloidal_drive` repo the build123d parts were ported from (`cycloidal/`) — and, for the parts
-designed here with no external origin (`lib/reference.py NATIVE` / `NATIVE_COTS`: the forearm roll drive's block,
-shaft, retainer and its 6808 bearing envelope), their **accepted builds** (`native/`, written once by
+designed here with no external origin (`lib/reference.py NATIVE` / `NATIVE_COTS`: the forearm roll drive's block
+and shaft, the 6806 bearing envelope), their **accepted builds** (`native/`, written once by
 `tools/reference/import_native.py`; `--force` accepts a changed design). These
 files are **immutable inputs** (committed as Git LFS objects): each custom part's wrapper returns
 them until it is converted, and `tests/test_reference_match.py` compares every converted part

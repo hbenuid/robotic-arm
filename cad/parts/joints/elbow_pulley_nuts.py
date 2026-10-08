@@ -4,8 +4,8 @@ The elbow 90T's screws run into them, in the block's hex channels (forearm_roll_
 
 In the arm (lib/mounts.py, hosted on elbow_pulley_screws): each nut on its channel's seat (lib/forearm/params.py
 RollDriveParams.nut_seat_x), a flat toward the elbow axis as the channel holds it (lib/forearm/roll.py); the channels
-are nut_af across flats, a press for the nut (docs/open_issues.md). Each drops in from inside the block's core bore
-before the roll shaft goes in (docs/forearm_roll.md §4).
+are nut_af across flats, a press for the nut (docs/open_issues.md). Each drops in from the block's motor pocket before
+the motor goes in (docs/forearm_roll.md §4).
 
 No catalog model (the catalog has single fasteners only, vendor/README.md) and no SolidWorks export: a NATIVE COTS
 pattern part (lib/reference.py NATIVE_COTS) like the drive's cycloidal_housing_nuts - its envelope IS the geometry

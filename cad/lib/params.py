@@ -115,7 +115,7 @@ FOREARM_ROLL_AXIS_Z = _FOREARM.roll_end.axis_z     # 25 [REFERENCE] the roll axi
 FOREARM_WALL_X = _FOREARM.roll_end.wall_x          # (-56, -48) [DESIGN] the flange wall: wrist face .. elbow face (48 from the elbow axis)
 FOREARM_WALL_OD = _FOREARM.roll_end.wall_od        # 60 [DESIGN] the flange wall's round outline about the roll axis (on a foot as wide as the web's neck)
 FOREARM_PLUG_CLEARANCE = _FOREARM.roll_end.plug_clearance   # 10 [DESIGN] the wrist motor's connector plug to the wall
-FOREARM_FLANGE_DIA = _FOREARM.roll_end.flange_dia  # 39.7 [DESIGN] the roll shaft's end spigot the forearm wall bolts onto
+FOREARM_FLANGE_DIA = _FOREARM.roll_end.flange_dia  # 39.7 [DESIGN] the roll pulley's spigot the forearm wall bolts onto
 FOREARM_ROLL_BELT_LENGTH = _FOREARM.drive.roll_belt          # 240-2GT [ESTIMATE] the roll belt (90T ring on the shaft, 20T on the motor)
 FOREARM_ROLL_MOTOR_XY = (0.0, _FOREARM.drive.motor_y)        # (0, -60.9) [DESIGN] the roll motor's axis in the module frame: on the elbow axis, under the housing by what the belt sets
 ELBOW_ROLL_OFFSET = _FOREARM.elbow_offset                    # 60.9 [DESIGN] the roll axis' distance from the elbow axis (along j2_link's +Y): the roll belt's centre
@@ -161,7 +161,6 @@ CYCLOIDAL_MOTOR_MASS_G = 400.0   # [DATASHEET] 48 mm-body NEMA 17 (17HS19-2004S1
 BEARING_6003_MASS_G = 39.0       # [DATASHEET] 6003-2RS 17x35x10
 BEARING_6814_MASS_G = 110.0      # [DATASHEET] 6814-2RS (61814) 70x90x10; verify
 BEARING_625_MASS_G = 5.0         # [DATASHEET] 625-2RS 5x16x5
-BEARING_6808_MASS_G = 33.0       # [DATASHEET] 6808-2RS (61808) 40x52x7 - the forearm roll's ring bearings (parts/joints/bearing_6808); verify
 
 
 def _cyl_vol(radius, height):
@@ -215,10 +214,11 @@ BASE_YAW_LIMIT_DEG = 175.0        # [ESTIMATE] symmetric +/- range; j1_coupler (
 # down in front - stops 3 deg before the upper arm, rising off the drive's middle, reaches j1_coupler's disc (70.5 deg;
 # its 1 mm running gap held to 69.5 - tests/test_sweeps.py), the lower is an [ESTIMATE] (the arm clears to -150)
 SHOULDER_PITCH_LIMITS_DEG = (-120.0, 67.0)   # [DESIGN]
-# the 4.5:1 elbow belt: (lower, upper); the lower - the forearm lifted back - stops 3 deg before the forearm roll drive's
-# housing (its rear end, ELBOW_ROLL_OFFSET over the elbow axis) comes within 1 mm of the elbow motor, which stands on the
-# same side of the upper arm (-50.0 deg - tests/forearm/test_roll_drive.py; the roll motor, on the elbow axis, never
-# reaches it); the upper kept at 90 (docs/open_issues.md): SHOULDER_PITCH_LIMITS_DEG was set over this range
+# the 4.5:1 elbow belt: (lower, upper); the lower - the forearm lifted back - kept where the old roll housing set it:
+# the roll drive's frame (round about the elbow axis, its tower ELBOW_ROLL_OFFSET over it) is 9.3 mm off the elbow motor,
+# which stands on the same side of the upper arm, there and comes within 1 mm of it only at -60 deg
+# (tests/forearm/test_roll_drive.py; the room to lift further: docs/open_issues.md); the upper kept at 90
+# (docs/open_issues.md): SHOULDER_PITCH_LIMITS_DEG was set over this range
 ELBOW_PITCH_LIMITS_DEG = (-47.0, 90.0)   # [DESIGN]
 # the GT2 belt at wrist_link: (lower, upper), the clear range (the wrist body's back corners reach j2_link's web at
 # -109 / +74.5 at any roll, tests/test_sweeps.py) less 4 deg

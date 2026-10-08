@@ -119,14 +119,12 @@ CYCLOIDAL_PARTS: set[str] = set(DESIGNED) | set(CYCLOIDAL_COTS)
 NATIVE: dict[str, str] = {
     "forearm_roll_block":    "lib/forearm/roll.py:build_block(DEFAULT)",
     "forearm_roll_shaft":    "lib/forearm/roll.py:build_shaft(DEFAULT)",
-    "forearm_roll_retainer": "lib/forearm/roll.py:build_retainer(DEFAULT)",
     "base_motor_mount":      "lib/base/body.py:build_motor_mount(DEFAULT)",
 }
 
 # Purchased parts with neither a SolidWorks export nor a catalog model (their envelope IS the geometry):
 # clean name -> builder label. The same tool writes their reference (kind "cots") from the envelope.
 NATIVE_COTS: dict[str, str] = {
-    "bearing_6808": "parts/joints/bearing_6808.py:_envelope()",
     "bearing_6806": "parts/joints/bearing_6806.py:_envelope()",
     "gt2_idler_20t": "parts/joints/gt2_idler_20t.py:_envelope()",
     "bearing_axk6590": "parts/base/bearing_axk6590.py:_envelope()",
@@ -154,6 +152,7 @@ NO_REFERENCE: dict[str, str] = {
     "yaw_pulley_screws": "parts/base/yaw_pulley_screws.py:_envelope()",
     "yaw_pulley_nuts": "parts/base/yaw_pulley_nuts.py:_envelope()",
     "elbow_motor_screws": "parts/joints/elbow_motor_screws.py:_envelope()",
+    "forearm_roll_pulley": "lib/forearm/roll.py:build_pulley(DEFAULT)",
 }
 
 # Measured conversions: printed parts converted from a SolidWorks export that was measured once and is NOT committed -

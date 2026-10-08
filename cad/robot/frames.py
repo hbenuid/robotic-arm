@@ -108,10 +108,11 @@ LINKS: dict[str, list[str]] = {
                        "gt2_pulley_20t#2", "elbow_motor_screws#1"],
     # the elbow 90T pulley (the elbow_pitch output, assumed the driven side  [ASSUMPTION]) and the M4 screws + nuts
     # that clamp it carry the forearm roll drive's STATOR - the roll frame, whose web IS the elbow coupler now (j3_coupler#1
-    # is retired, lib/placements.py), both bearings, the end cap, the roll motor + board (on the elbow axis) and its 20T
+    # is retired, lib/placements.py), both bearings, the roll motor + board (on the elbow axis) and its 20T
     # (assemblies/forearm_roll_drive.py BODIES)
     "elbow_link": ["gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", "forearm_roll_drive#1:stator"],
-    # the drive's ROTOR - the hollow roll shaft - IS the forearm's elbow end (its flange bolts to j2_link's wall);
+    # the drive's ROTOR - the pulley (its 90T ring, the roll's output, bolts to j2_link's wall) and the shaft clamped to
+    # it - IS the forearm's elbow end;
     # the wrist_pitch motor + board bolt to j2_link's web, the wrist bearing pair sits in its wrist boss (lib/mounts.py)
     "forearm_link": ["forearm_roll_drive#1:rotor", "j2_link#1", "bearing_6806#5", "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3"],
     # likewise the wrist 90T pulley, its M4 screws + nuts and the J3-coupler ride with the wrist-pitch body  [ASSUMPTION]
@@ -167,9 +168,9 @@ JOINTS: list[Joint] = [
     # the roll: Z along the forearm (its child link's long direction IS the axis), so X = N, the pitch-axis direction
     Joint("forearm_roll", "revolute", "elbow_link", "forearm_link", FOREARM_ROLL_ORIGIN, FOREARM_ROLL_AXIS, N,
           -PARAMS.FOREARM_ROLL_LIMIT_DEG * DEG, PARAMS.FOREARM_ROLL_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
-          notes="the forearm roll drive (assemblies/forearm_roll_drive.py, FOREARM_ROLL_RATIO 4.5): the hollow roll shaft's "
-                "flange bolts to j2_link's wall; its axis ELBOW_ROLL_OFFSET across the elbow axis (an elbow offset); belt-driven "
-                "by the drive's own nema17_40mm + mks_servo42d on the elbow axis, in the roll frame's cradle "
+          notes="the forearm roll drive (assemblies/forearm_roll_drive.py, FOREARM_ROLL_RATIO 4.5): j2_link's wall bolts onto "
+                "the roll pulley's 90T ring; its axis ELBOW_ROLL_OFFSET across the elbow axis (an elbow offset); belt-driven "
+                "by the drive's own nema17_40mm + mks_servo42d on the elbow axis, in the roll frame's pocket "
                 "[a 4th CAN id - software/control/src/config.py has three: unconfirmed]; hard stop +/- FOREARM_ROLL_LIMIT_DEG"),
     Joint("wrist_pitch", "revolute", "forearm_link", "wrist_pitch_link", WRIST_PITCH_ORIGIN, N, F,
           PARAMS.WRIST_PITCH_LIMITS_DEG[0] * DEG, PARAMS.WRIST_PITCH_LIMITS_DEG[1] * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,

@@ -68,13 +68,13 @@ def test_the_wall_screws_way_in():
 
 
 def test_the_neck_the_round_wall_and_its_gussets():
-    """The wall is a round flange about the roll axis - over the recess with room to spare, and over the stop lug and
-    post that turn in front of it - standing on a foot as wide as itself, which the web necks down to from the wrist
-    boss (its sides tangent to the boss); the gussets stand beside the wrist motor and its board, inside the neck."""
+    """The wall is a round flange about the roll axis - over the recess with room to spare, and over the roll pulley's
+    ring it bolts onto - standing on a foot as wide as itself, which the web necks down to from the wrist boss (its sides
+    tangent to the boss); the gussets stand beside the wrist motor and its board, inside the neck."""
     D, w, b = DEFAULT.drive, DEFAULT.web, DEFAULT.boss
     assert R.neck_half_w == R.wall_od / 2.0 < w.half_w and PARAMS.FOREARM_WALL_OD == R.wall_od
     assert R.wall_od / 2.0 >= (R.flange_dia + R.flange_recess_add) / 2.0 + 8.0
-    assert R.wall_od / 2.0 >= max(D.stop_lug_r[1], D.stop_post_r[1])
+    assert R.wall_od >= D.ring_flange_dia
     # the neck: tangent to the boss, widening all the way from the wall; the motor's footprint on it over the whole slide
     tx, ty = neck_tangent(DEFAULT)
     px, py = elbow_end_x(DEFAULT), R.neck_half_w

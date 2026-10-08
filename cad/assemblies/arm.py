@@ -30,7 +30,7 @@ lip / boss / journal / stub and the elbow 90T bolts straight into it - the recor
 table claims it; likewise gt2_pulley_90t#1 / #2, whose re-seated poses are the mounts gt2_pulley_90t#3 / #4. The SolidWorks link caps (j1_cap, j2_cap_1, j2_cap_2) were removed 2026-09-25: their products are
 lib/reference.py SKIPPED_PRODUCTS, their poses sit in placements.json `skipped`. A drive module is one linked child, so this tree keeps it whole - the cycloidal drive under shoulder_link
 although its rotor body (output hub + pins) belongs to upper_arm_link, the forearm roll drive under elbow_link
-although its rotor (the roll shaft) belongs to forearm_link - in robot/frames.py LINKS, the kinematic truth,
+although its rotor (the roll pulley + shaft) belongs to forearm_link - in robot/frames.py LINKS, the kinematic truth,
 which the per-link meshes follow (each in its own MODULE_TINTS colour).
 
 Frame: the placements are in the SolidWorks capture frame W (+Y up), but the arm is EMITTED in

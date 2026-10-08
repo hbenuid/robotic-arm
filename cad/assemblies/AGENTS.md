@@ -92,7 +92,7 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   module's DIRECT linked children does reach its STEP, so the modules stay linked (the arm's inline copies predate
   that finding and were left alone). Separate make/buy models were tried and removed as duplicates — one STEP per
   assembly. A purchased item that is **not modelled** (the
-  drive's hub bolts + captive nuts, the yoke's motor leg's screws + nuts, the belts, the roll drive's cap and motor M3 screws and the forearm wall's
+  drive's hub bolts + captive nuts, the yoke's motor leg's screws + nuts, the belts, the roll drive's motor M3 screws, its rotor clamp's and the forearm wall's
   M3 screws + nuts) lives only in
   `tools/bom.py EXTRAS` — it is on the buy list and absent from the model, the totals and the inertials; model it as a
   COTS pattern part (`cycloidal_housing_bolts` is the pattern, `elbow_pulley_screws` a native mounted one,
