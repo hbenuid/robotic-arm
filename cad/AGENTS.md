@@ -164,14 +164,13 @@ machines"; CI is the third machine: root `AGENTS.md` "CI").
   empty `parts/base/__pycache__/`). `cadtool` and `.env` set `PYTHONDONTWRITEBYTECODE=1` for that, and a subprocess
   given its own env passes `-B` (`tests/test_lazy_kernel.py`): the test suite wrote one into every group, and the next
   `gen` rebuilt everything.
-- That listing is hashed when a build records its result, every entry included, so parts built in parallel race: each
-  stages its STEP in a hidden `.<name>-xxxxxxxx/` folder beside it, and a sibling recorded meanwhile keeps that name.
-  Right after `./cadtool gen assemblies/arm.py` some parts (and so their assemblies) can read STALE `closure changed:
-  ./` or `…/parts/<group>/`: run `gen` again, it rebuilds them with the same bytes. A hash can only differ, never match
-  falsely, so no real change is missed. A first build into group folders with no STEPs yet (a fresh clone or worktree)
-  does the same, every time: each part is recorded before its siblings' STEPs appear. cadgen's, not this repo's:
-  earthtojake/text-to-cad#564, with a fix tested on a patched copy; drop this entry with the cadgen bump that ships
-  one.
+- That listing is hashed when a build records its result, less the model's own outputs and cadgen's hidden
+  `.<name>-xxxxxxxx/` staging folders (cadgen 0.7.18, earthtojake/text-to-cad#564), so parts built in parallel read
+  `current` afterwards. A sibling's STEP still counts (a model may list a folder to find it): a first build into group
+  folders with no STEPs yet (a fresh clone or worktree) leaves the parts that list them (and so their assemblies)
+  STALE `closure changed: …/parts/<group>/` once, as each is recorded before its siblings' STEPs appear — run `gen`
+  again, it rebuilds them with the same bytes. A hash can only differ, never match falsely, so no real change is
+  missed.
 - Don't compare large STEP artifacts with `git diff`; compare source, `inspect` output and snapshots.
   A STEP edited by anything but its model (or built under another `CADGEN_CACHE_DIR`) reads as stale
   in `./cadtool why` — rebuild it.
@@ -179,9 +178,9 @@ machines"; CI is the third machine: root `AGENTS.md` "CI").
   <model.py> --help` lists them); anything else (`--totals`, a preview flag) is an argparse error — use
   `./cadtool python -c`.
 - `./cadtool snapshot` fits every view to its model: the `--camera` JSON's `orthographicHalfHeight` is ignored, whatever
-  `--help` says (verified on cadgen 0.7.15: `bearing_625` and `base` both fill the frame at `orthographicHalfHeight`
-  100, with a preset and without). To render versions at one scale, give each the same bounding box — tiny marker
-  cubes at fixed corners, in the scratch build — and crop.
+  `--help` says (verified on cadgen 0.7.15 and again on 0.7.19: `bearing_625` and `base` both fill the frame at
+  `orthographicHalfHeight` 100, with a preset and without). To render versions at one scale, give each the same
+  bounding box — tiny marker cubes at fixed corners, in the scratch build — and crop.
 
 ## Docs
 - A rule lives in the ONE AGENTS.md / README of the folder it governs; a rule that spans folders lives here. Change it

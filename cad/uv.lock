@@ -56,7 +56,7 @@ wheels = [
 
 [[package]]
 name = "cadgen"
-version = "0.7.15"
+version = "0.7.19"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "build123d" },
@@ -67,9 +67,9 @@ dependencies = [
     { name = "playwright" },
     { name = "shapely" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7c/91/8c0fe682300a56e0e07b010d662ed246e8842deba6af9138c1c9f7b83d92/cadgen-0.7.15.tar.gz", hash = "sha256:f72a430716a979cf56fccec475ae49940bb4430bc2c85962a32604ef09e8e39b", size = 11320523, upload-time = "2026-10-06T05:44:33.904Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/11/c1/46d323dca4e364124ce5d802409b00a665641d9c588d550b38133bd3cfd4/cadgen-0.7.19.tar.gz", hash = "sha256:2105adedadf7ba62b4d68cfc98a9c0e30cfa87947fe9943730222527eb192082", size = 11403508, upload-time = "2026-10-09T01:39:52.145Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/58/47/00b926ba9f1a0fb73a318308999152f01ef142738e4046efec12161073c5/cadgen-0.7.15-py3-none-any.whl", hash = "sha256:6cdaee5020521ff462b91e0dc426ffc98b0745398d02adc3c23beb63d9d164e8", size = 11547471, upload-time = "2026-10-06T05:44:31.164Z" },
+    { url = "https://files.pythonhosted.org/packages/94/b9/306bbbf05fdaf1ac2073061f82dd2e7d07884010bba3b5e0cbf10bd110af/cadgen-0.7.19-py3-none-any.whl", hash = "sha256:e979dbdeb2a2b421d50901b6458d38f1ef9dfff51e0285f4eaa2b05c7002459b", size = 11634995, upload-time = "2026-10-09T01:39:49.056Z" },
 ]
 
 [[package]]
@@ -218,7 +218,7 @@ resolution-markers = [
     "python_full_version < '3.12'",
 ]
 dependencies = [
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" } },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/58/01/1253e6698a07380cd31a736d248a3f2a50a7c88779a1813da27503cadc2a/contourpy-1.3.3.tar.gz", hash = "sha256:083e12155b210502d0bca491432bb04d56dc3432f95a979b429f2848c3dbe880", size = 13466174, upload-time = "2025-07-26T12:03:12.549Z" }
 wheels = [
@@ -281,7 +281,7 @@ resolution-markers = [
     "python_full_version >= '3.12'",
 ]
 dependencies = [
-    { name = "numpy", version = "2.5.2", source = { registry = "https://pypi.org/simple" } },
+    { name = "numpy", version = "2.5.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/83/5a/a55177dd22553a277388e8a1b3220e92de91bacb28356cdc73caa240121d/contourpy-1.4.0.tar.gz", hash = "sha256:20156f5a1ac4f8ce02656e39a61e82164a3d359796dc8026f75b062783d500e1", size = 13323726, upload-time = "2026-09-11T19:05:05.808Z" }
 wheels = [
@@ -1086,7 +1086,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "build123d", specifier = "==0.11.1" },
-    { name = "cadgen", specifier = "==0.7.15" },
+    { name = "cadgen", specifier = "==0.7.19" },
     { name = "cadquery-ocp-novtk", specifier = "==7.9.3.1.1" },
     { name = "numpy", specifier = ">=2.4.6" },
 ]
@@ -1166,7 +1166,7 @@ resolution-markers = [
     "python_full_version < '3.12'",
 ]
 dependencies = [
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" } },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/7a/97/5a3609c4f8d58b039179648e62dd220f89864f56f7357f5d4f45c29eb2cc/scipy-1.17.1.tar.gz", hash = "sha256:95d8e012d8cb8816c226aef832200b1d45109ed4464303e997c5b13122b297c0", size = 30573822, upload-time = "2026-02-23T00:26:24.851Z" }
 wheels = [
@@ -1220,7 +1220,7 @@ resolution-markers = [
     "python_full_version >= '3.12'",
 ]
 dependencies = [
-    { name = "numpy", version = "2.5.2", source = { registry = "https://pypi.org/simple" } },
+    { name = "numpy", version = "2.5.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/7e/74/66de6258867beb2ef08f35f9f2ac017a52cacd5081714d239ff1a442d458/scipy-1.18.1.tar.gz", hash = "sha256:52c4b7422442aba924d03ad4019852b08a92e64ea187b933135687bfe2747307", size = 30781235, upload-time = "2026-08-21T23:28:50.599Z" }
 wheels = [
