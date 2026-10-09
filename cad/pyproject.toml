@@ -19,7 +19,7 @@ dependencies = [
     # The text-to-cad runtime (decorators, `cadgen` CLI, viewer, snapshots - playwright is a plain
     # dependency since 0.7.12). Same version as the installed text-to-cad@earthtojake plugin, whose
     # skills/cad/SKILL.md pins it: bump both together (`./cadtool doctor` checks).
-    "cadgen==0.7.15",
+    "cadgen==0.7.19",
     "numpy>=2.4.6",
 ]
 

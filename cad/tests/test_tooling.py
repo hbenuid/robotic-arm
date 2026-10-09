@@ -74,6 +74,17 @@ def test_daemon_stop_finds_the_daemon_on_both_platforms():
     assert source.count("-m cadgen\\.daemon") == 1, "one pattern, reused by pgrep and both pkills"
 
 
+def test_cadgen_telemetry_stays_off():
+    """cadgen 0.7.16+ sends usage stats and crash reports by default once a cadgen command has shown its notice; this
+    repo keeps them off (docs/toolchain.md Pins). In the environment of every cadtool command (and VS Code's, `.env`)
+    nothing shows the notice or sends; `./cadtool setup` stores the "off" the plugin's server and the viewer go by."""
+    source = (CAD_DIR / "cadtool").read_text()
+    assert re.search(r"^export CADGEN_TELEMETRY=0$", source, re.MULTILINE), "cadtool no longer exports it"
+    setup = re.search(r"^  setup\)\n(?P<body>.*?);;$", source, re.MULTILINE | re.DOTALL)
+    assert setup and "cadgen telemetry off" in setup["body"], "./cadtool setup no longer stores the off"
+    assert "CADGEN_TELEMETRY=0" in (CAD_DIR / ".env").read_text().splitlines()
+
+
 def test_claude_settings_are_the_same_in_the_root_and_in_cad():
     """A Claude Code session reads the shared .claude/settings.json of the directory it starts in only (it is not
     inherited like AGENTS.md), so cad/.claude/settings.json is a copy of the root one: the ruff hook and the

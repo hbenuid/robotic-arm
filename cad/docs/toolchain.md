@@ -20,6 +20,15 @@ of every bump is `git log -- pyproject.toml uv.lock` from `cad/` (the older bump
   Update button in the viewer and a line on the session's first `cad_show`: here that update IS a bump (the pin with
   the plugin: "After a pull …" below), never the plugin alone. Up to 0.7.6 it was `cad@text-to-cad` (plugin `cad`,
   marketplace `text-to-cad`): a machine that still has that one switches once (Gotchas below).
+- **cadgen's telemetry stays off.** Since 0.7.16 cadgen sends usage stats and crash reports by default (a random
+  install id; never file names, paths, contents or prompts) from every process — builds, the daemon, the viewer, the
+  plugin's server — once a cadgen command has shown its one-line notice. This repo keeps them off, two ways:
+  `cadtool` and `.env` export `CADGEN_TELEMETRY=0`, so no command of theirs shows the notice or sends; and
+  `./cadtool setup` stores `cadgen telemetry off` in cadgen's state directory (`settings.json`:
+  `~/.local/state/cadgen/` on Linux, `~/Library/Application Support/cadgen/` on the Mac), which the processes cadtool
+  does not start go by — the environment does not reach them. The stored answer is per machine, and 0.7.7–0.7.15's
+  opt-in `analytics` answer does not carry over: `telemetry` → `choice: off` in that file is the check
+  (`./cadtool doctor`'s `sharing` line reports cadtool's own environment). `test_tooling.py` holds both.
 - **build123d 0.11.1 / OCP 7.9.3**: cadgen 0.7.x requires `build123d>=0.11.1,<0.12` and
   `cadquery-ocp-novtk>=7.9,<8`; `pyproject.toml` pins the exact kernel (`cadquery-ocp-novtk==…`, the
   STEP bytes are per-kernel) and must never gain `cadquery-ocp`, the VTK build (see Gotchas below). On 0.10 / 7.8.1 cadgen could not
@@ -32,8 +41,9 @@ of every bump is `git log -- pyproject.toml uv.lock` from `cad/` (the older bump
 ## After a pull that changes `pyproject.toml` / `uv.lock` (per-machine state git does not carry)
 `./cadtool daemon stop && ./cadtool setup` (it also (re)installs the ruff git pre-commit hook: a stub
 `.git/hooks/pre-commit` → the committed `.githooks/pre-commit`; never `core.hooksPath`, which would switch off
-git-lfs's hooks in `.git/hooks` — and makes `git fetch` bring the git notes), `claude plugin marketplace update earthtojake && claude plugin
-update text-to-cad@earthtojake` (each scope — `--scope project` too; `~/.claude/plugins/installed_plugins.json` must show
+git-lfs's hooks in `.git/hooks` — makes `git fetch` bring the git notes, and stores cadgen's telemetry off: Pins,
+above — so run it before the plugin update, whose skills run cadgen outside cadtool),
+`claude plugin marketplace update earthtojake && claude plugin update text-to-cad@earthtojake` (each scope — `--scope project` too; `~/.claude/plugins/installed_plugins.json` must show
 the new version for both, `doctor` cannot tell — see Gotchas below; restart Claude Code), then `./cadtool doctor` must be clean. No
 `CAD_PLUGIN` in a shell profile (it overrides the plugin detection).
 
@@ -78,7 +88,12 @@ the new version for both, `doctor` cannot tell — see Gotchas below; restart Cl
   `[snapshot]` extra is gone) and a snapshot fetches its headless shell itself when it is missing, cadgen's mesher closes
   the holes and non-manifold edges it left on some filleted / swept faces (the display meshes re-tessellate once), the
   plugin's skills pin cadgen in their `SKILL.md` launch command (their pinning `requirements.txt` and the
-  `cad-mcp-setup` skill are gone) and its server tells of new releases (Pins, above); same STEP bytes, no stale wave):
+  `cad-mcp-setup` skill are gone) and its server tells of new releases (Pins, above); same STEP bytes, no stale wave;
+  0.7.16–0.7.19: telemetry on by default (Pins, above: `cadgen analytics` became `cadgen telemetry`,
+  `CADGEN_ANALYTICS` is no longer read), a listed folder's digest leaves out the model's own outputs and cadgen's STEP
+  staging folders (#564: `cad/AGENTS.md` Gotchas), a build whose worker died names why (`worker N was killed by
+  SIGTERM (signal 15)` / `SIGKILL`: on the Linux PC, earlyoom), stricter URDF / SDF / SRDF validators, every URDF
+  visual pickable in the viewer; no record-schema change (`closure.own` is optional), same STEP bytes, no stale wave):
   a retired interface fails with a teaching error, never an alias (a bad `--display` value is refused with the list of
   presets). The freshness gate
   does not hash cadgen's own version, so a bump makes no model stale (a record-schema change aside, as in 0.7.5) and a

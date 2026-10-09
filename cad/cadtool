@@ -52,6 +52,10 @@ export PYTHONPATH="$CAD_DIR${PYTHONPATH:+:$PYTHONPATH}"
 # No __pycache__/ written into the tree: cadgen hashes the parts/ group folders parts._scan() lists by
 # their entry names, so a __pycache__/ appearing there (pytest importing a part) reads every model stale.
 export PYTHONDONTWRITEBYTECODE=1
+# cadgen 0.7.16+ sends usage stats and crash reports by default once a cadgen command has shown its notice; this
+# repo keeps them off. In the environment, no cadtool command shows the notice or sends anything; `setup` also
+# stores the "off" that what cadtool does not start (the plugin's MCP server, the viewer, the daemon) goes by.
+export CADGEN_TELEMETRY=0
 
 cadgen_version() { uv run --frozen cadgen --version 2>/dev/null | awk '{print $NF}'; }
 
@@ -202,6 +206,8 @@ case "$cmd" in
     fi
     install_git_hook
     fetch_git_notes
+    # The stored choice, per machine (cadgen's state directory); local only while no install id was ever made.
+    uv run --frozen cadgen telemetry off >/dev/null && echo "cadtool: cadgen telemetry off (stored)"
     # The browser snapshots launch: Playwright's headless shell alone, not the full Chromium (~350 MB more) beside it.
     # cadgen 0.7.12+ also fetches it on the first snapshot that misses it; setup leaves a machine ready offline.
     uv run --frozen python -m playwright install --only-shell chromium ;;
