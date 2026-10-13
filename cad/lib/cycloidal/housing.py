@@ -105,6 +105,22 @@ def arm_root(cfg: DriveConfig, height: float, z_offset: float = 0.0):
     return bd.Pos(0.0, 0.0, z_offset) * bd.extrude(bd.make_face(bd.Polyline(*pts, close=True)), amount=height)
 
 
+def housing_bolt_cutters(cfg: DriveConfig = DEFAULT_CONFIG) -> list:
+    """The turning shell's body's housing-bolt holes, end to end (arm_zone's start .. the shell's hub end), each with
+    its nut's hex pocket from the hub end, a flat outward (bolt_nut_turn_deg), its floor where the nut sits on the
+    bolt's end (stack_positions z_housing_nuts) - in the drive's frame, bolt by bolt (hole, pocket). build_shell_body
+    cuts them; j1_link cuts them again once its arm is fused on (lib/upper_arm/link.py: the arm, flush with the hub end,
+    covers the pocket on the lug under it)."""
+    h, tol = cfg.housing, cfg.tolerances
+    z0, z1, nut_z = arm_zone(cfg)[0], shell_ends(cfg)[1], stack_positions(cfg)["z_housing_nuts"]
+    turn = math.radians(h.bolt_nut_turn_deg)
+    cut = []
+    for angle, xy in zip(compute_housing_bolt_angles(cfg), housing_bolt_points(cfg), strict=True):
+        cut.append(cylinder((h.bolt_dia + tol.bolt_clearance_add) / 2.0, z1 - z0 + 2 * NUDGE, xy, z0=z0 - NUDGE))
+        cut.append(hex_pocket(cfg, xy, angle + turn, z1 - nut_z + NUDGE, z0=nut_z))
+    return cut
+
+
 def build_shell_body(cfg: DriveConfig = DEFAULT_CONFIG) -> bd.Solid:
     """The turning shell's body round the discs (ShellParams), at its stack position: z = arm_zone's start (9, on the
     shell ring) .. the shell's hub end (61) - printed as one with j1_link, the upper arm rising off it
@@ -112,10 +128,9 @@ def build_shell_body(cfg: DriveConfig = DEFAULT_CONFIG) -> bd.Solid:
     the arm (arm_root): solid, the arm's root; inside, the shell ring's
     mirror: the bore round the discs (to the hub's flange, arm_zone's end), a ring_bore_dia pin ring round the flange
     with the 21 ring pins' blind holes from its face on the bore, the hub-end 6814's seat, the end_lip; the housing
-    bolts' holes through it and their nuts' hex pockets from the hub end, a flat outward (bolt_nut_turn_deg), their
-    floors where the nuts sit on the bolts' ends (stack_positions z_housing_nuts). The hub end chamfered like the port's
-    output face; the face on the shell ring sharp."""
-    h, sh, b, tol, s = cfg.housing, cfg.shell, cfg.bearings, cfg.tolerances, cfg.stack_up
+    bolts' holes through it and their nuts' hex pockets from the hub end (housing_bolt_cutters). The hub end chamfered
+    like the port's output face; the face on the shell ring sharp."""
+    h, sh, b, s = cfg.housing, cfg.shell, cfg.bearings, cfg.stack_up
     (z0, flange), z1 = arm_zone(cfg), shell_ends(cfg)[1]            # 9, 39, 61
     seat = s.z_output_bearings                                       # 48
     body = cylinder(h.od / 2.0, z1 - z0, z0=z0)
@@ -127,10 +142,8 @@ def build_shell_body(cfg: DriveConfig = DEFAULT_CONFIG) -> bd.Solid:
     pins_top = at["z_ring_pins"] + cfg.gear.ring_pin_length + PIN_END_CLEAR
     for xy in ring_pin_points(cfg):
         body = body - cylinder(ring_pin_hole_dia(cfg) / 2.0, pins_top - flange + NUDGE, xy, z0=flange - NUDGE)
-    turn = math.radians(h.bolt_nut_turn_deg)
-    for angle, xy in zip(compute_housing_bolt_angles(cfg), housing_bolt_points(cfg), strict=True):
-        body = body - cylinder((h.bolt_dia + tol.bolt_clearance_add) / 2.0, z1 - z0 + 2 * NUDGE, xy, z0=z0 - NUDGE)
-        body = body - hex_pocket(cfg, xy, angle + turn, z1 - at["z_housing_nuts"] + NUDGE, z0=at["z_housing_nuts"])
+    for cutter in housing_bolt_cutters(cfg):
+        body = body - cutter
     windows = reveal_window_cutter(cfg, z1 - z0, z_offset=z0)
     if sh.arm_windows:
         windows = windows - arm_root(cfg, z1 - z0 + 2.0, z0 - 1.0)

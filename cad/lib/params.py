@@ -93,15 +93,15 @@ from lib.upper_arm.layout import arm_slide as _arm_slide  # noqa: E402
 from lib.upper_arm.params import DEFAULT as _UPPER_ARM  # noqa: E402
 from lib.upper_arm.params import ELBOW_BELT as _ELBOW_BELT  # noqa: E402
 
-J1_ARM_SLIDE = _arm_slide(_UPPER_ARM)              # 39.27 [DESIGN] j1_link: the plate - its elbow end, the arm's slab - slid along +Y (N) (ArmParams)
-J1_MOTOR_PAD_FACE_Y = _UPPER_ARM.arm.y_outer       # 27.5 [DESIGN] j1_link: the elbow motor's face, on the web across its hole through the slab (the
+J1_ARM_SLIDE = _arm_slide(_UPPER_ARM)              # 29.5 [DESIGN] j1_link: the plate - its elbow end, the arm's slab - slid along +Y (N), its
+#                                                    underside onto the shell's hub end (ArmParams)
+J1_MOTOR_PAD_FACE_Y = _UPPER_ARM.arm.y_outer       # 16.5 [DESIGN] j1_link: the elbow motor's face, on the web across its hole through the slab (the
 #                                                    -N side; ArmParams), the motor on +N down the hole, its shaft -N; the holes about the pad's axis
 J1_MOTOR_SCREW_THREAD = 4.0                        # [DESIGN] the elbow motor's 4x M3 (parts/joints/elbow_motor_screws) this far into its
 #                                                    tapped holes - the drive's motor bolts' (bolt_hole_depth - motor_bolt_thread_margin) ...
-J1_MOTOR_SCREW_LEN = _UPPER_ARM.arm.motor_plate_t + J1_MOTOR_SCREW_THREAD   # 10 ... under the head, through the web (ArmParams.motor_plate_t)
-J1_MOTOR_20T_HUB_Z = 8.978                         # [DESIGN] the elbow motor's 20T (lib/mounts.py gt2_pulley_20t#2): its hub face this far out
-#                                                    along the shaft from the motor's face - through the web's pilot hole, level with its
-#                                                    underside -, its tooth band
+J1_MOTOR_SCREW_LEN = _UPPER_ARM.arm.motor_plate_t + J1_MOTOR_SCREW_THREAD   # 12 ... under the head, through the web (ArmParams.motor_plate_t)
+J1_MOTOR_20T_HUB_Z = 7.75                          # [DESIGN] the elbow motor's 20T (lib/mounts.py gt2_pulley_20t#2): its hub face this far out
+#                                                    along the shaft from the motor's face - up in the web's pilot hole -, its tooth band
 #                                                    (RollDriveParams.t20_hub on) level with the elbow 90T's (tests/test_mounts.py)
 ELBOW_BELT_LENGTH = _ELBOW_BELT                    # 280-2GT [DESIGN] the elbow belt (20T on j1_link's motor, 90T at the elbow); it sets the pad's x
 from lib.forearm.params import DEFAULT as _FOREARM  # noqa: E402
@@ -142,7 +142,7 @@ CYCLOIDAL_RATIO = _DRIVE.ratio                                    # 21:1 [DESIGN
 CYCLOIDAL_HOUSING_OD = _DRIVE.housing.od                          # 129.2 [DESIGN] the pillar tips; lib/cycloidal/params.py RING_INSET, LUG_WALL
 CYCLOIDAL_STACK_DEPTH = _DRIVE.stack_up.total_housing_depth       # 61 [DESIGN] motor-plate outer face -> the shell's hub end
 CYCLOIDAL_SHELL_ENDS_Z = _shell_ends(_DRIVE)                      # (-13, 61) [DESIGN] the turning shell's two ends: a lip past each 6814
-CYCLOIDAL_ARM_ZONE_Z = _arm_zone(_DRIVE)                          # (9, 39) [DESIGN] where j1_link rises off the shell: between the two plates
+CYCLOIDAL_ARM_ZONE_Z = _arm_zone(_DRIVE)                          # (9, 39) [DESIGN] the gear's stretch between the two plates: the turning shell's body from its start
 CYCLOIDAL_MOTOR_BODY_LEN = _DRIVE.motor.body_length               # 48 [DATASHEET] NEMA 17 body behind the plate (-Z)
 CYCLOIDAL_HUB_OD = _DRIVE.output_hub.od                           # 70.3 [DESIGN]
 CYCLOIDAL_HUB_PROUD = _DRIVE.output_hub.proud_above_housing       # 1 [DESIGN] hub face past the shell's hub end: on the yoke's leg
@@ -204,7 +204,7 @@ BASE_MOUNT_NUTS_MASS_G = STEEL_DENSITY * _JOINT_BOLTS * nut_volume(_BASE.joint.n
 # The elbow motor's screws (parts/joints/elbow_motor_screws): the same estimate
 from lib.upper_arm.layout import pad_holes as _pad_holes  # noqa: E402
 
-ELBOW_MOTOR_SCREWS_MASS_G = STEEL_DENSITY * len(_pad_holes(_UPPER_ARM)) * shcs_volume(_UPPER_ARM.arm.motor_screw, J1_MOTOR_SCREW_LEN)   # 4.2, 4x M3x10
+ELBOW_MOTOR_SCREWS_MASS_G = STEEL_DENSITY * len(_pad_holes(_UPPER_ARM)) * shcs_volume(_UPPER_ARM.arm.motor_screw, J1_MOTOR_SCREW_LEN)   # 4.7, 4x M3x12
 
 # --- Robot description (robot/frames.py, robot/arm.urdf) --------------------------------------
 # Joint limits and actuator ratings are PLACEHOLDERS until measured on the hardware; the URDF
