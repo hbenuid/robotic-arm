@@ -93,7 +93,13 @@ the new version for both, `doctor` cannot tell — see Gotchas below; restart Cl
   `CADGEN_ANALYTICS` is no longer read), a listed folder's digest leaves out the model's own outputs and cadgen's STEP
   staging folders (#564: `cad/AGENTS.md` Gotchas), a build whose worker died names why (`worker N was killed by
   SIGTERM (signal 15)` / `SIGKILL`: on the Linux PC, earlyoom), stricter URDF / SDF / SRDF validators, every URDF
-  visual pickable in the viewer; no record-schema change (`closure.own` is optional), same STEP bytes, no stale wave):
+  visual pickable in the viewer; no record-schema change (`closure.own` is optional), same STEP bytes, no stale wave;
+  0.7.20–0.7.21: fixes only — a STEP write no longer fails with an `IndexError` from inside cadgen when the range of
+  entity numbers it rewrites in the file's tail differs only in its last digit (a bug since 0.7.14), a model or child
+  that returns an empty shape is refused in words, a first snapshot waits out a headless-shell install another command
+  has in flight, and Windows-only worker deaths and console windows; the rest is telemetry (off here: Pins, above) —
+  the plugin's server now writes `install-channels.json` into cadgen's state directory whatever the choice (its
+  channel name per uv installation, read only into telemetry batches); same STEP bytes, no stale wave):
   a retired interface fails with a teaching error, never an alias (a bad `--display` value is refused with the list of
   presets). The freshness gate
   does not hash cadgen's own version, so a bump makes no model stale (a record-schema change aside, as in 0.7.5) and a

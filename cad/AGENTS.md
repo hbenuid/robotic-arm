@@ -178,7 +178,7 @@ machines"; CI is the third machine: root `AGENTS.md` "CI").
   <model.py> --help` lists them); anything else (`--totals`, a preview flag) is an argparse error — use
   `./cadtool python -c`.
 - `./cadtool snapshot` fits every view to its model: the `--camera` JSON's `orthographicHalfHeight` is ignored, whatever
-  `--help` says (verified on cadgen 0.7.15 and again on 0.7.19: `bearing_625` and `base` both fill the frame at
+  `--help` says (verified on cadgen 0.7.15 and again on 0.7.21: `bearing_625` and `base` both fill the frame at
   `orthographicHalfHeight` 100, with a preset and without). To render versions at one scale, give each the same
   bounding box — tiny marker cubes at fixed corners, in the scratch build — and crop.
 
