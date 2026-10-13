@@ -215,7 +215,8 @@ def test_elbow_motor_screws_hold_it_down_through_the_web():
     assert tuple((rel * Location((0.0, 0.0, 1.0))).position - rel.position) == pytest.approx((0.0, 0.0, -1.0), abs=1e-9)
     half = PARAMS.NEMA17_BOLT_SP / 2.0
     bolts = sorted((sx * half, sy * half) for sx in (1, -1) for sy in (1, -1))
-    axes = sorted((p.X, p.Y) for p in ((rel * Location((x, y, 0.0))).position for x, y in parts.load("elbow_motor_screws").POINTS))
+    axes = sorted(((p.X, p.Y) for p in ((rel * Location((x, y, 0.0))).position for x, y in parts.load("elbow_motor_screws").POINTS)),
+                  key=lambda a: (round(a[0], 3), round(a[1], 3)))  # paired by rounded keys: equal Xs differ by float noise
     assert all(a == pytest.approx(b, abs=1e-6) for a, b in zip(axes, bolts, strict=True)), axes
     assert rel.position.Z == pytest.approx(UPPER_ARM.arm.motor_plate_t)                 # the heads on the pockets' floors ...
     assert PARAMS.M3_SHCS == UPPER_ARM.arm.motor_screw                                  # ... flush with the web's underside
