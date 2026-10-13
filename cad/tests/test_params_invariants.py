@@ -90,7 +90,7 @@ def test_belt_motor_and_mks_board_track_reference():
     assert math.isclose(p.J1_ARM_SLIDE, 39.271993)
     lo, hi = p.ELBOW_PITCH_LIMITS_DEG
     assert lo == -47.0 and hi == 90.0                                    # the roll housing reaches the elbow motor at -50.0
-    assert math.isclose(p.ELBOW_ROLL_OFFSET, 60.92557, abs_tol=1e-4)   # the elbow offset: the 240-2GT roll belt's centre distance
+    assert math.isclose(p.ELBOW_ROLL_OFFSET, 81.97167, abs_tol=1e-4)   # the elbow offset: the 280-2GT roll belt's centre distance
     assert p.FOREARM_ROLL_MOTOR_XY == (0.0, -p.ELBOW_ROLL_OFFSET)                                      # the roll motor on the elbow axis
 
 

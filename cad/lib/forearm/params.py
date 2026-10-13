@@ -262,8 +262,8 @@ class RollDriveParams:
     motor_spin_deg: float = 90.0          # [DESIGN] about the motor axis: the connector (the motor frame's -Y) -> module +X
     board_w: float = MKS_SERVO42D_W       # [REFERENCE] 43: the MKS board's cover square (in the pocket with the motor)
     board_stack: float = MKS_SERVO42D_STACK   # [REFERENCE] 14.1: the board behind the motor's rear face
-    roll_belt: int = 240                  # [ESTIMATE] 240-2GT closed belt, 6 mm: sets the centre distance (60.9) = the elbow axis' depth under the
-    #                                       roll axis (ForearmConfig.elbow_offset - the arm's elbow offset)
+    roll_belt: int = 280                  # [DESIGN] 280-2GT closed belt, 6 mm (a multipack length, lib/belts.py STANDARD_2GT_LENGTHS): sets the centre
+    #                                       distance (81.97) = the elbow axis' depth under the roll axis (ForearmConfig.elbow_offset - the arm's elbow offset)
     t20_hub: float = 10.95                # [REFERENCE] vendor 20T: its tooth band's centre from its hub face (7.45 + 3.5)
     t20_len: float = 14.45                # [REFERENCE] vendor 20T: hub face .. its far end
     pulley_lift: float = 3.5              # [DESIGN] the 20T's hub face before the plate's front face: its far end at the motor shaft's tip, the tip
@@ -328,5 +328,5 @@ DEFAULT = replace(
     slide_range=(-103.5, -94.0),
     slot=SlotParams(centre_w=22.3, centre_x=(-110.0, -88.0), side_x=(-119.0, -78.5)),
     sockets=None,
-    elbow_offset=RollDriveParams().centre_distance,   # [DESIGN] 60.9: the 240-2GT roll belt's centre distance
+    elbow_offset=RollDriveParams().centre_distance,   # [DESIGN] 81.97: the roll belt's centre distance
 )

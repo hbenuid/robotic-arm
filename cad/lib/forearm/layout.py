@@ -166,7 +166,7 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
         "z_motor_face": z_motor_face,
         "z_motor_board": z_motor_face - d.motor.body_length,      # -14.65: the board's frame (the motor's rear face)
         "z_20t": z_front + d.pulley_lift,                         # 32.35: the 20T's hub face
-        "y_elbow": d.elbow_y,                                     # -60.9: the elbow axis (along X)
+        "y_elbow": d.elbow_y,                                     # -81.97: the elbow axis (along X)
         "x_motor": 0.0, "y_motor": d.motor_y,                     # on the elbow axis
         "x_cradle": d.block_x[0] + d.web_t,                       # -23: the pocket's floor
     }

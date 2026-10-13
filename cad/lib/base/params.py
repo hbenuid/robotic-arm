@@ -201,7 +201,7 @@ LEGACY = BaseConfig()     # the SolidWorks part, exactly
 # The motor has a bolt-on mount of its own (base_motor_mount, JointParams + MountParams: a box round the motor and its
 # board with room for the wiring, in place of the SolidWorks lobe the base's full width). It sits where a stock belt puts it
 # round the base_yaw pulleys - the 120T on the joint (parts/base/gt2_pulley_120t), the 20T on the motor: YAW_BELT sets
-# 83.97 from the axis (the SolidWorks centre, 78.97, belonged to a 90T), the holes are slots of
+# its distance from the axis (the SolidWorks centre, 78.97, belonged to a 90T), the holes are slots of
 # +/- MOTOR_TRAVEL along X (the belt's tension), the window lets the pilot slide with them (WINDOW_CLEAR a side - only
 # the pilot's height in Z: the SolidWorks window's +/- 21.3 would run into the -X slots).
 # The bottom face (the mounting face, lib/datum.py BASE_BOTTOM_Y) sits BOARD_CLEAR under the motor's MKS board: the
@@ -217,7 +217,7 @@ BASE_R = 58.0             # [DESIGN] j1_coupler's disc at its rim (Ø116, the So
 BASE_DRAFT = 12.0 / 63.0  # [DESIGN] ... its side drafted in at dr/dy (10.8 degrees) going up, the base's walls out going down
 RING_CLEAR = 0.1          # [DESIGN]
 BOARD_CLEAR = 5.0         # [DESIGN] the base_yaw motor's board above the table
-YAW_BELT = 320            # [ESTIMATE] base_yaw belt, 320-2GT (lib/belts.py STANDARD_2GT_LENGTHS): 20T motor - 120T joint
+YAW_BELT = 300            # [DESIGN] base_yaw belt, 300-2GT (a multipack length, lib/belts.py STANDARD_2GT_LENGTHS): 20T motor - 120T joint
 MOTOR_TRAVEL = 2.5        # [DESIGN] the roll motor's slots' +/- 2.5 (lib/forearm/params.py)
 WINDOW_CLEAR = 0.2        # [DESIGN]
 _MOTOR_X = round(centre_distance(YAW_BELT, GT2_PULLEY_120T_TEETH, GT2_PULLEY_20T_TEETH), 6)

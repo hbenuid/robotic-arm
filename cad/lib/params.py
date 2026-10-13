@@ -83,7 +83,7 @@ from lib.sensors import (  # noqa: E402, F401
 from lib.base.params import BOARD_CLEAR as _BOARD_CLEAR  # noqa: E402
 from lib.base.params import DEFAULT as _BASE  # noqa: E402
 
-BASE_MOTOR_PATTERN_CENTRE = (_BASE.motor.centre[0], _BASE.plate.y[0], _BASE.motor.centre[1])   # (81.972, -44.9, 0.084) [DESIGN] the motor mount: 4x M3 on 31 x 31 through the 5 mm plate (slots of +/- travel along X), on its -Y face; x where the 280-2GT belt puts it
+BASE_MOTOR_PATTERN_CENTRE = (_BASE.motor.centre[0], _BASE.plate.y[0], _BASE.motor.centre[1])   # (73.067, -44.9, 0.084) [DESIGN] the motor mount: 4x M3 on 31 x 31 through the 5 mm plate (slots of +/- travel along X), on its -Y face; x where YAW_BELT puts it
 BASE_MOTOR_TABLE_CLEAR = _BOARD_CLEAR   # [DESIGN] 5.0 - the 48 mm motor + board (48 + 14.1 under the plate) end this far
 #                                          ABOVE the base's bottom face (lib/base/params.py: the face sits under them)
 BASE_YAW_RATIO = GT2_PULLEY_120T_TEETH / GT2_PULLEY_20T_TEETH   # 6:1 [DESIGN] the base_yaw belt: the 120T (parts/base/gt2_pulley_120t) on the 48 mm motor's 20T
@@ -116,9 +116,9 @@ FOREARM_WALL_X = _FOREARM.roll_end.wall_x          # (-56, -48) [DESIGN] the fla
 FOREARM_WALL_OD = _FOREARM.roll_end.wall_od        # 60 [DESIGN] the flange wall's round outline about the roll axis (on a foot as wide as the web's neck)
 FOREARM_PLUG_CLEARANCE = _FOREARM.roll_end.plug_clearance   # 10 [DESIGN] the wrist motor's connector plug to the wall
 FOREARM_FLANGE_DIA = _FOREARM.roll_end.flange_dia  # 39.7 [DESIGN] the roll pulley's spigot the forearm wall bolts onto
-FOREARM_ROLL_BELT_LENGTH = _FOREARM.drive.roll_belt          # 240-2GT [ESTIMATE] the roll belt (90T ring on the shaft, 20T on the motor)
-FOREARM_ROLL_MOTOR_XY = (0.0, _FOREARM.drive.motor_y)        # (0, -60.9) [DESIGN] the roll motor's axis in the module frame: on the elbow axis, under the housing by what the belt sets
-ELBOW_ROLL_OFFSET = _FOREARM.elbow_offset                    # 60.9 [DESIGN] the roll axis' distance from the elbow axis (along j2_link's +Y): the roll belt's centre
+FOREARM_ROLL_BELT_LENGTH = _FOREARM.drive.roll_belt          # 280-2GT [DESIGN] the roll belt (90T ring on the shaft, 20T on the motor)
+FOREARM_ROLL_MOTOR_XY = (0.0, _FOREARM.drive.motor_y)        # (0, -81.97) [DESIGN] the roll motor's axis in the module frame: on the elbow axis, under the housing by what the belt sets
+ELBOW_ROLL_OFFSET = _FOREARM.elbow_offset                    # 81.97 [DESIGN] the roll axis' distance from the elbow axis (along j2_link's +Y): the roll belt's centre
 #                                                              distance, the roll motor on the elbow axis - the arm's elbow offset (lib/placements.py SHIFTS)
 FOREARM_ROLL_RATIO = _FOREARM.drive.ring_teeth / GT2_PULLEY_20T_TEETH   # 4.5:1 [DESIGN] like the other belt joints
 FOREARM_ROLL_BLOCK_X = _FOREARM.drive.block_x       # (-33, 33) [DESIGN] the roll frame's extent along N: its underside 3.0 mm above the upper arm's flat top (host z -11)

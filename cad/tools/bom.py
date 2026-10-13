@@ -50,7 +50,7 @@ EXTRAS = [
      "belts are not modelled; the length sets the motor's place on j1_link (lib/upper_arm/params.py ELBOW_MOTOR_CENTRES)"),
     ("cycloidal_drive", "bearing grease", 1, "the output pins are a greased sliding fit through the discs"),
     ("forearm_roll_drive", f"{FOREARM_ROLL_BELT_LENGTH}-2GT closed belt, 6 mm - the roll belt (90T ring on the pulley, 20T on the motor)", 1,
-     "belts are not modelled; the length sets the motor's centre distance (lib/forearm/params.py roll_belt, [ESTIMATE])"),
+     "belts are not modelled; the length sets the motor's centre distance (lib/forearm/params.py roll_belt)"),
     ("forearm_roll_drive", (f"M3 x {_FOREARM.drive.clamp_screw_len:g} socket head cap screw (ISO 4762) - the roll rotor's clamp: the pulley "
                             "through both 6806s into the shaft"), len(clamp_points(_FOREARM)),
      "heads in the pulley's front-face counterbores, into the nuts in the shaft's flange; tighten before the forearm wall goes on"),
