@@ -115,11 +115,13 @@ def test_stack():
     assert _eq(S["z_lip"], S["z_bearing_2"] - D.lip) and _eq(S["z_bearing_1"], S["z_lip"] - D.bearing_width)
     assert _eq(S["z_meet"], S["z_lip"] + D.lip / 2.0) and _eq(S["z_shoulder_1"], S["z_bearing_1"] - D.run_gap)
     assert S["z_wall"] >= UPPER_ARM_END_R + 1.5                 # the rolling forearm, whatever its roll angle, clears j1_link's round end
-    # the cup: its rim under the belt's edge, the ring's rear flange sunk in it, run_gap round it; its boss's -N side on
-    # the underside's plane; the front face runs through the tower (the pair straddles it)
+    # the cup: its rim under the belt's edge, the ring's rear flange sunk in it, run_gap round it; its boss flush with the
+    # frame on three sides - the underside's plane, the open +N face, the tower's top; the front face runs through the
+    # tower (the pair straddles it)
     assert _eq(S["z_rim"], S["z_ring"] - D.rim_under_teeth) and S["z_ring_flange_1"] < S["z_rim"] < S["z_ring_mid"] - BELT_W / 2.0
     cup_r = (D.ring_flange_dia + D.cup_id_add) / 2.0
-    assert _eq(cup_r - D.ring_flange_dia / 2.0, RUN_GAP) and D.cup_od / 2.0 - cup_r >= 2.0 and _eq(D.cup_od / 2.0, -D.block_x[0])
+    assert _eq(cup_r - D.ring_flange_dia / 2.0, RUN_GAP) and D.cup_od / 2.0 - cup_r >= 2.0
+    assert _eq(D.cup_od / 2.0, -D.block_x[0], D.block_x[1], D.tower_y)
     assert S["z_bearing_1"] < S["z_front"] < S["z_cup"]
     # the 6806 pair: the lip stops the outer rings and clears the hubs and the shoulders, which bear on the inner rings
     # only; the tower round the seats

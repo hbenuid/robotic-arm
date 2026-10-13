@@ -143,6 +143,11 @@ class RollEndParams:
     wrist_belt: int = 258                 # [ESTIMATE] 258-2GT closed belt, 6 mm: sets the motor slide (motor_x)
 
 
+ROLL_FRAME_R = 33.0   # [DESIGN] the roll frame's half width round the roll axis: its underside (3.0 over the upper arm's flat top),
+#                       its open +N face and its tower's top, and the cup's radius - the cup flush with the frame on all three
+#                       (RollDriveParams block_x, tower_y, cup_od; tests/forearm/test_roll_drive.py test_stack holds them equal)
+
+
 @dataclass(frozen=True)
 class RollDriveParams:
     """The forearm roll drive (assemblies/forearm_roll_drive.py; docs/forearm_roll.md): ONE printed FRAME (stator, the
@@ -179,16 +184,17 @@ class RollDriveParams:
     run_gap: float = 1.0                  # [DESIGN] the ring's rear flange over bearing 2 and the cup's floor (the pulley's Ø33 shoulder spans it)
     # the frame: x along N (its underside at -X, 3.0 over the upper arm's flat top, host z -11), y up in the swing plane
     # (the motor below the roll axis, -Y), z along the roll axis
-    block_x: tuple = (-33.0, 26.0)        # [DESIGN] host z -8 .. 51: the underside (the web's plane) .. the open +N face (the motor's
-    #                                       connector, spun to +X, stands out of it)
+    block_x: tuple = (-ROLL_FRAME_R, ROLL_FRAME_R)   # [DESIGN] host z -8 .. 58: the underside (the web's plane) .. the open +N face, both
+    #                                       flush with the cup (the motor's connector, spun to +X, ends 5 inside the open pocket)
     end_r: float = 45.0                   # [DESIGN] the round end about the elbow axis = j1_link's round end (concentric)
-    tower_y: float = 29.0                 # [DESIGN] the tower's top over the roll axis: the bay + 3.4
+    tower_y: float = ROLL_FRAME_R         # [DESIGN] the tower's top over the roll axis, flush with the cup's: the bay + 7.4
     tower_corner_r: float = 6.0           # [DESIGN] its two corners in the profile
     tower_wall: float = 2.0               # [DESIGN] the tower's rear in the profile, behind the bay's floor
     web_t: float = 10.0                   # [DESIGN] the pocket's floor (the cradle's): 2 mm under the motor's -N side
     pocket_clear: float = 0.75            # [DESIGN] round the motor + board in the pocket, along Y past the tension travel
     pocket_rear: float = 1.0              # [DESIGN] behind the board's cover
-    cup_od: float = 66.0                  # [DESIGN] the cup's boss on the front face round the roll axis (its -X side on the underside's plane)
+    cup_od: float = 2.0 * ROLL_FRAME_R    # [DESIGN] the cup's boss on the front face round the roll axis, flush with the underside, the +N face
+    #                                       and the tower's top
     cup_id_add: float = 2.0               # [DESIGN] the cup round the ring's flange: + this on the diameter
     rim_under_teeth: float = 0.3          # [DESIGN] the cup's rim this far under the ring's teeth: the belt (its edge 0.5 above them) runs clear
     bay_r: float = 25.6                   # [DESIGN] the shaft's bay behind bearing 1, open through the +N face: round the stop lug's corners
