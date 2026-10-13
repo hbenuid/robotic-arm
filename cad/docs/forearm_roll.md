@@ -149,14 +149,14 @@ origin, `ELBOW_ORIGIN` from the retired `j3_coupler#1`'s). The forearm side of t
 recess, the Ø31 bolt circle (the screws' nuts in the pulley) and the Ø24 cable bore, on the web's neck (`neck_half_w`,
 tangent to the wrist boss) with two gussets — `j2_link`'s DEFAULT build (`lib/forearm/link.py roll_wall`,
 `necked_web`, `wall_gussets`). In `arm.py` the module is kept whole under the `elbow_link` group. The wrist-pitch motor
-sits where the stock wrist belt (`WRIST_BELT_LENGTH`) puts it (`J2_MOTOR_SLIDE_X`) so its plug clears the wall
-(`plug_clearance`).
+sits at its slide's wall end (`J2_MOTOR_SLIDE_X`), its plug clear of the wall (`plug_clearance`); the stock wrist belt
+(`WRIST_BELT_LENGTH`) goes round an idler under the web (`IdlerParams`).
 
 ## 6. Not modelled / to confirm
 `docs/open_issues.md`: the belts, the home sensor's mount (the modelled `ky003_hall_sensor`'s chip beside the stop
 post on the tower, a magnet in the stop lug, to the MKS board's limit input), the cable route through the Ø18 bore; the
 elbow belt's plane; the 6806 seats' PETG fit; the frame's print orientation and its flex under the forearm's load, the
-6806 pair's tilt play at the roll, the rotor clamp's thin walls and its nut pockets' fit; `t20_hub`, the belt lengths,
+6806 pair's tilt play at the roll, the rotor clamp's thin walls and its nut pockets' fit; `t20_hub`,
 the limit and the printed stop's strength; the elbow offset in a future IK; the room to lift the forearm further back
 than −47°; the roll motor's **CAN id** (`software/control/src/config.py` has no row for it: it names fewer boards than
 the arm carries).

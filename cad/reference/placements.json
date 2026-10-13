@@ -11,9 +11,9 @@
  "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. A record with a `mount` block (keys under `mounted`) is a motor mount declared in lib/mounts.py, not a SolidWorks node: parent None, rel == world = host world * mount frame.",
  "root_label": "final_Arm_Assembly_Fully_Movable",
  "expected": {
-  "leaf_occurrences": 61,
-  "solids": 150,
-  "solid_volume": 2088119.757
+  "leaf_occurrences": 64,
+  "solids": 153,
+  "solid_volume": 2090066.91
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -50,6 +50,9 @@
   "wrist_pulley_nuts#1",
   "yaw_pulley_screws#1",
   "yaw_pulley_nuts#1",
+  "gt2_idler_20t#1",
+  "wrist_idler_screw#1",
+  "wrist_idler_nut#1",
   "forearm_roll_drive#1"
  ],
  "occurrences": [
@@ -3668,7 +3671,7 @@
     "joint": "wrist_pitch",
     "frame_in_host": {
      "position": [
-      -99.52219989192432,
+      -94.0,
       0.0,
       19.0
      ],
@@ -3679,15 +3682,15 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "on j2_link's web (+Z face), shaft -N; slide position J2_MOTOR_SLIDE_X [ESTIMATE]; connector toward the elbow [ESTIMATE]"
+    "note": "on j2_link's web (+Z face), shaft -N; at the slide's wall end, J2_MOTOR_SLIDE_X; connector toward the elbow [ESTIMATE]"
    },
    "solids": 2,
    "solid_volume": 66449.22,
    "rel": {
     "position": [
-     -120.865017,
-     339.206312,
-     33.629906
+     -117.106546,
+     335.167786,
+     33.387222
     ],
     "rotation_xyz_deg": [
      180.0,
@@ -3699,27 +3702,27 @@
       -0.729805824,
       -0.68061112,
       -0.064435731,
-      -120.865016569
+      -117.106545918
      ],
      [
       -0.682028471,
       0.731325622,
       -0.0,
-      339.206312178
+      335.16778591
      ],
      [
       0.047123501,
       0.043947003,
       -0.997921859,
-      33.629906102
+      33.387221965
      ]
     ]
    },
    "world": {
     "position": [
-     -120.865017,
-     339.206312,
-     33.629906
+     -117.106546,
+     335.167786,
+     33.387222
     ],
     "rotation_xyz_deg": [
      180.0,
@@ -3731,26 +3734,26 @@
       -0.729805824,
       -0.68061112,
       -0.064435731,
-      -120.865016569
+      -117.106545918
      ],
      [
       -0.682028471,
       0.731325622,
       -0.0,
-      339.206312178
+      335.16778591
      ],
      [
       0.047123501,
       0.043947003,
       -0.997921859,
-      33.629906102
+      33.387221965
      ]
     ]
    },
    "world_bbox_min": [
-    -147.081,
-    312.936,
-    11.515
+    -143.322,
+    308.897,
+    11.272
    ],
    "world_bbox_size": [
     54.977,
@@ -3788,9 +3791,9 @@
    "solid_volume": 13779.335,
    "rel": {
     "position": [
-     -118.319805,
-     339.206312,
-     73.04782
+     -114.561335,
+     335.167786,
+     72.805135
     ],
     "rotation_xyz_deg": [
      180.0,
@@ -3802,27 +3805,27 @@
       -0.729805824,
       -0.68061112,
       -0.064435731,
-      -118.319805188
+      -114.561334537
      ],
      [
       -0.682028471,
       0.731325622,
       -0.0,
-      339.206312178
+      335.16778591
      ],
      [
       0.047123501,
       0.043947003,
       -0.997921859,
-      73.04781953
+      72.805135394
      ]
     ]
    },
    "world": {
     "position": [
-     -118.319805,
-     339.206312,
-     73.04782
+     -114.561335,
+     335.167786,
+     72.805135
     ],
     "rotation_xyz_deg": [
      180.0,
@@ -3834,26 +3837,26 @@
       -0.729805824,
       -0.68061112,
       -0.064435731,
-      -118.319805188
+      -114.561334537
      ],
      [
       -0.682028471,
       0.731325622,
       -0.0,
-      339.206312178
+      335.16778591
      ],
      [
       0.047123501,
       0.043947003,
       -0.997921859,
-      73.04781953
+      72.805135394
      ]
     ]
    },
    "world_bbox_min": [
-    -145.921,
-    311.547,
-    51.98
+    -142.163,
+    307.509,
+    51.738
    ],
    "world_bbox_size": [
     55.873,
@@ -5919,6 +5922,315 @@
     24.593,
     3.2,
     23.772
+   ]
+  },
+  {
+   "key": "gt2_idler_20t#1",
+   "part": "gt2_idler_20t",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j2_link#1",
+    "link": "forearm_link",
+    "joint": "wrist_pitch",
+    "frame_in_host": {
+     "position": [
+      -118.0,
+      0.966099,
+      -4.2
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the wrist belt's idler on the belt's back under the web, its top on the web's rib; slid along y to tension"
+   },
+   "solids": 1,
+   "solid_volume": 1137.154,
+   "rel": {
+    "position": [
+     -134.231057,
+     353.378508,
+     11.244637
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     -46.997641
+    ],
+    "matrix_3x4": [
+     [
+      0.68061112,
+      0.729805824,
+      0.064435731,
+      -134.231057076
+     ],
+     [
+      -0.731325622,
+      0.682028471,
+      0.0,
+      353.378507851
+     ],
+     [
+      -0.043947003,
+      -0.047123501,
+      0.997921859,
+      11.244636948
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -134.231057,
+     353.378508,
+     11.244637
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     -46.997641
+    ],
+    "matrix_3x4": [
+     [
+      0.68061112,
+      0.729805824,
+      0.064435731,
+      -134.231057076
+     ],
+     [
+      -0.731325622,
+      0.682028471,
+      0.0,
+      353.378507851
+     ],
+     [
+      -0.043947003,
+      -0.047123501,
+      0.997921859,
+      11.244636948
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -143.212,
+    344.379,
+    10.665
+   ],
+   "world_bbox_size": [
+    18.543,
+    18.0,
+    10.141
+   ]
+  },
+  {
+   "key": "wrist_idler_screw#1",
+   "part": "wrist_idler_screw",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "gt2_idler_20t#1",
+    "link": "forearm_link",
+    "joint": "wrist_pitch",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the idler's M5 axle: its head under the idler, up through the rib and the web's slot into its nut"
+   },
+   "solids": 1,
+   "solid_volume": 641.783,
+   "rel": {
+    "position": [
+     -134.231057,
+     353.378508,
+     11.244637
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     -46.997641
+    ],
+    "matrix_3x4": [
+     [
+      0.68061112,
+      0.729805824,
+      0.064435731,
+      -134.231057076
+     ],
+     [
+      -0.731325622,
+      0.682028471,
+      0.0,
+      353.378507851
+     ],
+     [
+      -0.043947003,
+      -0.047123501,
+      0.997921859,
+      11.244636948
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -134.231057,
+     353.378508,
+     11.244637
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     -46.997641
+    ],
+    "matrix_3x4": [
+     [
+      0.68061112,
+      0.729805824,
+      0.064435731,
+      -134.231057076
+     ],
+     [
+      -0.731325622,
+      0.682028471,
+      0.0,
+      353.378507851
+     ],
+     [
+      -0.043947003,
+      -0.047123501,
+      0.997921859,
+      11.244636948
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -138.794,
+    349.129,
+    5.981
+   ],
+   "world_bbox_size": [
+    8.805,
+    8.5,
+    25.383
+   ]
+  },
+  {
+   "key": "wrist_idler_nut#1",
+   "part": "wrist_idler_nut",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j2_link#1",
+    "link": "forearm_link",
+    "joint": "wrist_pitch",
+    "frame_in_host": {
+     "position": [
+      -118.0,
+      0.966099,
+      11.0
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the axle's nut on its channel's floor in the web's top face, flats across x, under the wrist motor's edge"
+   },
+   "solids": 1,
+   "solid_volume": 168.216,
+   "rel": {
+    "position": [
+     -133.251634,
+     353.378508,
+     26.413049
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     -46.997641
+    ],
+    "matrix_3x4": [
+     [
+      0.68061112,
+      0.729805824,
+      0.064435731,
+      -133.251633962
+     ],
+     [
+      -0.731325622,
+      0.682028471,
+      0.0,
+      353.378507851
+     ],
+     [
+      -0.043947003,
+      -0.047123501,
+      0.997921859,
+      26.413049204
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -133.251634,
+     353.378508,
+     26.413049
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     -46.997641
+    ],
+    "matrix_3x4": [
+     [
+      0.68061112,
+      0.729805824,
+      0.064435731,
+      -133.251633962
+     ],
+     [
+      -0.731325622,
+      0.682028471,
+      0.0,
+      353.378507851
+     ],
+     [
+      -0.043947003,
+      -0.047123501,
+      0.997921859,
+      26.413049204
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -137.659,
+    348.878,
+    26.128
+   ],
+   "world_bbox_size": [
+    9.119,
+    9.001,
+    5.259
    ]
   },
   {

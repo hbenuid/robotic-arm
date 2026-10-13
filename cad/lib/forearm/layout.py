@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import math
 
+from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, idler_on_run, pulley_circle
 from lib.fasteners import M3_PITCH
 from lib.forearm.params import DEFAULT, ForearmConfig
 
@@ -105,6 +106,29 @@ def clamp_nut_pocket(cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float,
     d, S = cfg.drive, stack_positions(cfg)
     r_out = d.clamp_circle_dia / 2.0 + d.clamp_nut.af / math.sqrt(3.0) + d.end_nut_fit
     return d.bore / 2.0 - 1.0, r_out, S["z_shaft_end"], S["z_clamp_nut_seat"]
+
+
+def wrist_belt_loop(cfg: ForearmConfig = DEFAULT, *, idler: bool = True) -> list[tuple[float, float, float]]:
+    """The wrist belt's loop (lib/belts.py) in the belt's own frame: the motor's 20T on the origin, the wrist 90T on +X
+    (the belt frame sits on the motor's axis at wrist_belt_z, turned 180 deg about Z from j2_link's: wrist_belt_frame());
+    with cfg.idler, the idler on the run leaving the 20T (local -Y), IdlerParams.along from the motor, pushed in till
+    the loop is RollEndParams.wrist_belt long."""
+    loop = [pulley_circle(0.0, 0.0, GT2_PULLEY_20T_TEETH), pulley_circle(cfg.motor_x - cfg.web.wrist_x, 0.0, GT2_PULLEY_90T_TEETH)]
+    if idler and cfg.idler is not None:
+        loop.insert(1, idler_on_run(loop, 0, cfg.idler.along, cfg.roll_end.wrist_belt))
+    return loop
+
+
+def wrist_belt_frame(cfg: ForearmConfig = DEFAULT) -> tuple:
+    """The wrist belt's frame as data in j2_link's frame: on the motor's axis at the belt's mid-plane, its +X toward the
+    wrist (j2_link's -X), +Z = j2_link's +Z."""
+    return ((cfg.motor_x, 0.0, cfg.roll_end.wrist_belt_z), (0.0, 0.0, 180.0))
+
+
+def wrist_idler_xy(cfg: ForearmConfig = DEFAULT) -> tuple[float, float]:
+    """The wrist idler's axis in j2_link's frame (x, y): wrist_belt_loop()'s idler through wrist_belt_frame()."""
+    x, y, _ = wrist_belt_loop(cfg)[1]
+    return (cfg.motor_x - x, -y)
 
 
 def module_frame_in_host(cfg: ForearmConfig = DEFAULT) -> tuple:

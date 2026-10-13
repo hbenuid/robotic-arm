@@ -27,7 +27,8 @@ PETG_DENSITY = 1.27e-3  # [DESIGN] g/mm^3 - printed-part mass estimates
 
 # --- Fasteners - lib/fasteners.py (a leaf: the sizes, the clearance holes, the plain screw / nut builders) ----
 from lib.fasteners import (  # noqa: E402, F401
-    M3_CLEAR, M3_CSK, M3_NUT, M3_PITCH, M3_SHCS, M4_CLEAR, M4_NUT, M4_PITCH, M4_SHCS, M5_CLEAR, csk_volume, nut_volume, shcs_volume,
+    M3_CLEAR, M3_CSK, M3_NUT, M3_PITCH, M3_SHCS, M4_CLEAR, M4_NUT, M4_PITCH, M4_SHCS, M5_CLEAR, M5_NUT, M5_SHCS, csk_volume, nut_volume,
+    shcs_volume,
 )
 
 # --- Belt drive (GT2) - lib/belts.py (a leaf: lib/forearm/ imports it directly) ------------------
@@ -107,9 +108,13 @@ ELBOW_BELT_LENGTH = _ELBOW_BELT                    # 280-2GT [DESIGN] the elbow 
 from lib.forearm.params import DEFAULT as _FOREARM  # noqa: E402
 
 J2_MOTOR_WEB_FACE_Z = _FOREARM.web.z1              # 19 [REFERENCE] j2_link: the web's +Z face; the motor bolts through its slots
-J2_MOTOR_SLIDE_RANGE = _FOREARM.slide_range        # (-103.5, -94) [DESIGN] motor-axis x range the (shortened) slots allow
-J2_MOTOR_SLIDE_X = _FOREARM.motor_x                # -99.52: set by the stock WRIST_BELT_LENGTH (lib/belts.py centre_distance) [ESTIMATE]
-WRIST_BELT_LENGTH = _FOREARM.roll_end.wrist_belt   # 258-2GT [ESTIMATE] the wrist-pitch belt (90T at the wrist, 20T on the motor)
+J2_MOTOR_SLIDE_RANGE = _FOREARM.slide_range        # (-99.5, -94) [DESIGN] motor-axis x range the (shortened) slots allow
+J2_MOTOR_SLIDE_X = _FOREARM.motor_x                # -94 [DESIGN] the slide's wall end (its plug clear of the wall); the idler takes up the belt
+WRIST_BELT_LENGTH = _FOREARM.roll_end.wrist_belt   # 280-2GT [DESIGN] the wrist-pitch belt (90T at the wrist, 20T on the motor, round the idler)
+J2_BELT_Z = _FOREARM.roll_end.wrist_belt_z         # 0.3 [REFERENCE] the wrist belt's mid-plane in j2_link's frame (the wrist 90T's band)
+from lib.forearm.layout import wrist_idler_xy as _wrist_idler_xy  # noqa: E402
+
+J2_IDLER_XY = _wrist_idler_xy(_FOREARM)            # (-118, 0.97) [DESIGN] the wrist idler's axis in j2_link's frame: the belt pushed in till it fits
 # The forearm roll (lib/forearm/params.py RollEndParams; the rotor's wall on j2_link, the elbow block + shaft in M3):
 FOREARM_ROLL_AXIS_Z = _FOREARM.roll_end.axis_z     # 25 [REFERENCE] the roll axis' N-station in j2_link's frame = the wrist centre's (42 - 17)
 FOREARM_WALL_X = _FOREARM.roll_end.wall_x          # (-56, -48) [DESIGN] the flange wall: wrist face .. elbow face (48 from the elbow axis)
@@ -193,6 +198,9 @@ ELBOW_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS
 WRIST_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _COUPLER.pulley_screw_len)         # 22.1, 4x M4x45
 YAW_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _YAW_COUPLER.hub.pulley_screw_len)   # 20.1, 4x M4x40
 PULLEY_NUTS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * nut_volume(M4_NUT)                                              # 3.0, 4x M4 (each joint)
+# the wrist idler's axle and its nut (parts/joints/wrist_idler_{screw,nut}; lib/forearm/params.py IdlerParams), likewise
+WRIST_IDLER_SCREW_MASS_G = STEEL_DENSITY * shcs_volume(_FOREARM.idler.screw, _FOREARM.idler.screw_len)   # 5.0, M5x20
+WRIST_IDLER_NUT_MASS_G = STEEL_DENSITY * nut_volume(_FOREARM.idler.nut)                                    # 1.3, M5
 
 # The base motor mount's screws and nuts (parts/base/base_motor_mount_{screws,nuts}): the same estimate
 from lib.base.layout import joint_bolt_points as _joint_bolt_points  # noqa: E402

@@ -40,8 +40,8 @@ Geometry (lib/params.py, kernel-verified 2026-09-21 - tests/test_mounts.py re-ch
                docs/open_issues.md); held down by its 4x M3 SHCS (elbow_motor_screws#1, MOTOR_SCREW_MOUNTS), up
                through the web from its underside, the heads flush in its pockets - the drive motor's screws and seat
   wrist_pitch  j2_link's web (+Z face z = J2_MOTOR_WEB_FACE_Z), motor axis at x = J2_MOTOR_SLIDE_X on the side
-               slots (lib/forearm/params.py: where the stock wrist belt puts it, its plug clear of the roll wall);
-               body +N, shaft -N through the web, the 20T under it
+               slots (lib/forearm/params.py: the slide's wall end, its plug clear of the roll wall); body +N, shaft -N
+               through the web, the 20T under it; the stock belt's slack round an idler under the web (IDLER_MOUNTS)
 
 The BEARINGS (parts/joints/bearing_6806, BEARING_MOUNTS): the 6806-2RS pair each belt joint's housing takes, one
 each side of the lip that splits its bore - in the base (base_yaw), in j1_link's elbow end (elbow_pitch), in
@@ -67,6 +67,9 @@ The PULLEY BOLTS (FASTENER_MOUNTS): each pulley's 4x M4 screws and nuts, purchas
 on its screw set, its bearing face where the host's seat lies along the screws - the elbow block's channel seats
 (RollDriveParams.nut_seat_x), j3_coupler's pocket floors (CouplerParams.nut_depth), j1_coupler's pockets in the floor of
 the pocket over its hub (HubParams.nut_depth under YokeParams.pocket_y0).
+The wrist belt's IDLER (IDLER_MOUNTS): the purchased GT2 idler under j2_link's web, level with the belt, on the belt's
+back where the stock belt pushed in fits (lib/forearm/params.py IdlerParams); its M5 axle up from under it and the nut
+in the web's top face.
 """
 from __future__ import annotations
 
@@ -82,11 +85,14 @@ from lib.params import (
     BASE_MOTOR_PATTERN_CENTRE,
     BEARING_6806_WIDTH,
     CYCLOIDAL_MOTOR_BODY_LEN,
+    GT2_IDLER_WIDTH,
     GT2_PULLEY_90T_FACE_Y,
     GT2_PULLEY_90T_HEAD_SEAT,
     J1_ARM_SLIDE,
     J1_MOTOR_20T_HUB_Z,
     J1_MOTOR_PAD_FACE_Y,
+    J2_BELT_Z,
+    J2_IDLER_XY,
     J2_MOTOR_SLIDE_X,
     J2_MOTOR_WEB_FACE_Z,
     NEMA17_40_BODY_LEN,
@@ -104,12 +110,13 @@ PULLEY_BOLTS = ("elbow_pulley_screws", "elbow_pulley_nuts", "wrist_pulley_screws
 BASE_MOUNT, BASE_MOUNT_SCREWS, BASE_MOUNT_NUTS = "base_motor_mount", "base_motor_mount_screws", "base_motor_mount_nuts"
 YOKE_MOTOR_LEG = "j1_motor_leg"
 MOTOR_SCREWS = "elbow_motor_screws"
+IDLER, IDLER_SCREW, IDLER_NUT = "gt2_idler_20t", "wrist_idler_screw", "wrist_idler_nut"
 
 # The part-frame axis tools/reference/mount_placements.py checks for each mounted part, and whether it lies ON its
 # joint's axis (a motor's shaft runs beside its joint, parallel; a bearing, a pulley or a pulley-bolt pattern sits on it).
 AXES: dict[str, tuple[tuple[float, float, float], bool]] = {
     MOTOR_48: ((0.0, 0.0, 1.0), False), MOTOR_40: ((0.0, 0.0, 1.0), False), MOTOR_PULLEY: ((1.0, 0.0, 0.0), False),
-    MOTOR_SCREWS: ((0.0, 0.0, 1.0), False),
+    MOTOR_SCREWS: ((0.0, 0.0, 1.0), False), IDLER: ((0.0, 0.0, 1.0), False),
     BEARING: ((0.0, 0.0, 1.0), True), PULLEY: ((0.0, 1.0, 0.0), True), YAW_PULLEY: ((0.0, 1.0, 0.0), True),
     THRUST_CAGE: ((0.0, 0.0, 1.0), True), THRUST_WASHER: ((0.0, 0.0, 1.0), True),
     **{part: ((0.0, 0.0, 1.0), True) for part in PULLEY_BOLTS},
@@ -164,7 +171,7 @@ MOTOR_MOUNTS: tuple[Mount, ...] = (
     Mount("mks_servo42d#2", BOARD, "nema17_40mm#2", "upper_arm_link", "elbow_pitch", BOARD_FRAME_40),
     Mount("nema17_40mm#3", MOTOR_40, "j2_link#1", "forearm_link", "wrist_pitch",
           ((J2_MOTOR_SLIDE_X, 0.0, J2_MOTOR_WEB_FACE_Z), (180.0, 0.0, 90.0)),
-          "on j2_link's web (+Z face), shaft -N; slide position J2_MOTOR_SLIDE_X [ESTIMATE]; connector toward the elbow [ESTIMATE]"),
+          "on j2_link's web (+Z face), shaft -N; at the slide's wall end, J2_MOTOR_SLIDE_X; connector toward the elbow [ESTIMATE]"),
     Mount("mks_servo42d#3", BOARD, "nema17_40mm#3", "forearm_link", "wrist_pitch", BOARD_FRAME_40),
 )
 # The belt joints' motor-side pulleys the arm models, on their motors' shafts (the vendor 20T: its bore along its +X,
@@ -257,8 +264,22 @@ YOKE_MOUNTS: tuple[Mount, ...] = (
     Mount("j1_motor_leg#1", YOKE_MOTOR_LEG, "j1_coupler#1", "shoulder_link", "base_yaw", ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)),
           "the motor-side leg on j1_coupler's disc, round the drive's motor sleeve; built in the coupler's part frame"),
 )
+# The wrist belt's idler under j2_link's web (lib/forearm/params.py IdlerParams): standing on its bottom face, level with
+# the belt (its 9 centred on J2_BELT_Z), its axis where the stock belt is pushed in to fit (J2_IDLER_XY); its axle up
+# from its bottom face; the nut on its channel's floor in the web.
+_IDLER_XY = tuple(round(v, 6) for v in J2_IDLER_XY)
+IDLER_MOUNTS: tuple[Mount, ...] = (
+    Mount("gt2_idler_20t#1", IDLER, "j2_link#1", "forearm_link", "wrist_pitch",
+          ((*_IDLER_XY, round(J2_BELT_Z - GT2_IDLER_WIDTH / 2.0, 6)), (0.0, 0.0, 0.0)),
+          "the wrist belt's idler on the belt's back under the web, its top on the web's rib; slid along y to tension"),
+    Mount("wrist_idler_screw#1", IDLER_SCREW, "gt2_idler_20t#1", "forearm_link", "wrist_pitch", ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)),
+          "the idler's M5 axle: its head under the idler, up through the rib and the web's slot into its nut"),
+    Mount("wrist_idler_nut#1", IDLER_NUT, "j2_link#1", "forearm_link", "wrist_pitch",
+          ((*_IDLER_XY, _FOREARM.idler.nut_floor), (0.0, 0.0, 0.0)),
+          "the axle's nut on its channel's floor in the web's top face, flats across x, under the wrist motor's edge"),
+)
 MOUNTS: tuple[Mount, ...] = (BASE_MOUNTS + YOKE_MOUNTS + MOTOR_MOUNTS + MOTOR_PULLEY_MOUNTS + MOTOR_SCREW_MOUNTS + BEARING_MOUNTS
-                             + THRUST_MOUNTS + PULLEY_MOUNTS + FASTENER_MOUNTS)
+                             + THRUST_MOUNTS + PULLEY_MOUNTS + FASTENER_MOUNTS + IDLER_MOUNTS)
 BY_KEY: dict[str, Mount] = {m.key: m for m in MOUNTS}
 
 

@@ -226,7 +226,7 @@ def test_elbow_motor_screws_hold_it_down_through_the_web():
 
 def test_wrist_pitch_slide_position_is_inside_the_slots():
     lo, hi = PARAMS.J2_MOTOR_SLIDE_RANGE
-    assert lo < PARAMS.J2_MOTOR_SLIDE_X < hi
+    assert lo < PARAMS.J2_MOTOR_SLIDE_X <= hi      # at the wall end: the idler tensions the belt
     m = mounts.BY_KEY["nema17_40mm#3"]
     assert m.frame[0][0] == PARAMS.J2_MOTOR_SLIDE_X and m.frame[0][2] == PARAMS.J2_MOTOR_WEB_FACE_Z
 

@@ -67,10 +67,7 @@ EXTRAS = [
      ("modelled, not placed yet (parts/joints/ky003_hall_sensor, UNPLACED); the magnet is not modelled; wired to the MKS "
       "board's limit input (docs/open_issues.md); the hard stop itself is the printed lug + post")),
     (None, f"{WRIST_BELT_LENGTH}-2GT closed belt, 6 mm - the wrist-pitch belt (90T at the wrist, 20T on the forearm motor)", 1,
-     "belts are not modelled; the length sets J2_MOTOR_SLIDE_X (lib/forearm/params.py wrist_belt, [ESTIMATE])"),
-    (None, parts.load("gt2_idler_20t").PURCHASE_SPEC, 1,
-     ("modelled, not placed yet (parts/joints/gt2_idler_20t, UNPLACED): which belt it serves - and so how many - is "
-      "open (docs/open_issues.md); sold in 5-packs")),
+     "belts are not modelled; round the idler under the web (lib/forearm/params.py wrist_belt, IdlerParams)"),
 ]
 
 
