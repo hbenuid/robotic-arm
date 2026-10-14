@@ -67,6 +67,11 @@ The PULLEY BOLTS (FASTENER_MOUNTS): each pulley's 4x M4 screws and nuts, purchas
 on its screw set, its bearing face where the host's seat lies along the screws - the elbow block's channel seats
 (RollDriveParams.nut_seat_x), j3_coupler's pocket floors (CouplerParams.nut_depth), j1_coupler's pockets in the floor of
 the pocket over its hub (HubParams.nut_depth under YokeParams.pocket_y0).
+The elbow belt's TENSIONER (IDLER_MOUNTS; lib/upper_arm/params.py ElbowIdlerParams): the idler (parts/joints/
+gt2_idler_20t), its printed spacer, its M5 axle and nut on j1_link, on the stepped slot's line where the stock belt puts
+the idler (lib/upper_arm/layout.py elbow_idler_z), each +Z up j1_link's +Y (N): the idler level with the belt, the spacer
+between it and the slab's underside, the screw's head under the idler, the nut on its slot's floor (lib/params.py
+J1_IDLER_*). The forearm roll's tensioner is a row of its module (assemblies/forearm_roll_drive.py).
 The wrist belt has no idler: its motor sits at the stock belt's centre distance (lib/forearm/params.py IdlerParams - the
 idler, its M5 axle and its nut stay modelled, UNPLACED).
 """
@@ -85,10 +90,13 @@ from lib.params import (
     BASE_MOTOR_PATTERN_CENTRE,
     BEARING_6806_WIDTH,
     CYCLOIDAL_MOTOR_BODY_LEN,
+    GT2_IDLER_WIDTH,
     GT2_PULLEY_90T_FACE_Y,
     GT2_PULLEY_90T_HEAD_SEAT,
     J1_ARM_SLIDE,
     J1_BELT_Y,
+    J1_IDLER_LEDGE_Y,
+    J1_IDLER_Y,
     J1_MOTOR_20T_HUB_Z,
     J1_MOTOR_PAD_FACE_Y,
     J2_MOTOR_20T_HUB_Z,
@@ -97,6 +105,7 @@ from lib.params import (
     NEMA17_40_BODY_LEN,
     PULLEY_SEAT_SHIFT,
 )
+from lib.upper_arm.layout import elbow_idler_z
 from lib.upper_arm.params import DEFAULT as _UPPER_ARM
 from lib.yaw_coupler.params import DEFAULT as _YAW_COUPLER
 
@@ -109,6 +118,7 @@ PULLEY_BOLTS = ("elbow_pulley_screws", "elbow_pulley_nuts", "wrist_pulley_screws
 BASE_MOUNT, BASE_MOUNT_SCREWS, BASE_MOUNT_NUTS = "base_motor_mount", "base_motor_mount_screws", "base_motor_mount_nuts"
 YOKE_MOTOR_LEG = "j1_motor_leg"
 MOTOR_SCREWS = "elbow_motor_screws"
+IDLER_KIT = ("gt2_idler_20t", "elbow_idler_spacer", "elbow_idler_screw", "elbow_idler_nut")
 
 # The part-frame axis tools/reference/mount_placements.py checks for each mounted part, and whether it lies ON its
 # joint's axis (a motor's shaft runs beside its joint, parallel; a bearing, a pulley or a pulley-bolt pattern sits on it).
@@ -118,6 +128,7 @@ AXES: dict[str, tuple[tuple[float, float, float], bool]] = {
     BEARING: ((0.0, 0.0, 1.0), True), PULLEY: ((0.0, 1.0, 0.0), True), YAW_PULLEY: ((0.0, 1.0, 0.0), True),
     THRUST_CAGE: ((0.0, 0.0, 1.0), True), THRUST_WASHER: ((0.0, 0.0, 1.0), True),
     **{part: ((0.0, 0.0, 1.0), True) for part in PULLEY_BOLTS},
+    **{part: ((0.0, 0.0, 1.0), False) for part in IDLER_KIT},
 }
 
 
@@ -284,8 +295,27 @@ BELT_MOUNTS: tuple[Mount, ...] = (
     Mount("wrist_belt#1", "wrist_belt", "j2_link#1", "forearm_link", "wrist_pitch", wrist_belt_frame(_FOREARM),
           "the wrist belt under j2_link's web: the wrist motor's 20T to the wrist 90T"),
 )
+# The elbow belt's tensioner (lib/upper_arm/params.py ElbowIdlerParams), on j1_link at the idler's place for the stock
+# belt - the stepped slot's x, elbow_idler_z() across -, each part's +Z up j1_link's +Y (N): the idler standing on its
+# lower face level with the belt, the spacer's land on its upper face, the screw's head under it, the nut on its slot's
+# floor (lib/params.py J1_IDLER_*).
+_IDLER_X, _IDLER_Z = _UPPER_ARM.slots.stepped_x, round(elbow_idler_z(_UPPER_ARM), 6)
+IDLER_MOUNTS: tuple[Mount, ...] = (
+    Mount("gt2_idler_20t#1", "gt2_idler_20t", "j1_link#1", "upper_arm_link", "elbow_pitch",
+          ((_IDLER_X, J1_IDLER_Y, _IDLER_Z), _UP),
+          "the elbow belt's tensioner under j1_link's slab, level with the belt, on its back on the 90T -> 20T run"),
+    Mount("elbow_idler_spacer#1", "elbow_idler_spacer", "j1_link#1", "upper_arm_link", "elbow_pitch",
+          ((_IDLER_X, round(J1_IDLER_Y + GT2_IDLER_WIDTH, 6), _IDLER_Z), _UP),
+          "its printed spacer: the land on the idler's inner ring, the riser on the slab's underside"),
+    Mount("elbow_idler_screw#1", "elbow_idler_screw", "j1_link#1", "upper_arm_link", "elbow_pitch",
+          ((_IDLER_X, J1_IDLER_Y, _IDLER_Z), _UP),
+          "its M5 axle: the head under the idler, up through the idler, the spacer and the floor's slot into the nut"),
+    Mount("elbow_idler_nut#1", "elbow_idler_nut", "j1_link#1", "upper_arm_link", "elbow_pitch",
+          ((_IDLER_X, J1_IDLER_LEDGE_Y, _IDLER_Z), _UP),
+          "its nut on the floor of its slot down from the slab's top face, its flats across the link's X"),
+)
 MOUNTS: tuple[Mount, ...] = (BASE_MOUNTS + YOKE_MOUNTS + MOTOR_MOUNTS + MOTOR_PULLEY_MOUNTS + MOTOR_SCREW_MOUNTS + BEARING_MOUNTS
-                             + THRUST_MOUNTS + PULLEY_MOUNTS + FASTENER_MOUNTS + BELT_MOUNTS)
+                             + THRUST_MOUNTS + PULLEY_MOUNTS + FASTENER_MOUNTS + BELT_MOUNTS + IDLER_MOUNTS)
 BY_KEY: dict[str, Mount] = {m.key: m for m in MOUNTS}
 
 

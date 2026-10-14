@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import math
 
-from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, pulley_circle
-from lib.upper_arm.params import DEFAULT, UpperArmConfig
+from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, idler_on_run, pulley_circle
+from lib.upper_arm.params import DEFAULT, ELBOW_BELT, UpperArmConfig
 
 
 def hub_bolt_points(cfg: UpperArmConfig = DEFAULT) -> list[tuple[float, float]]:
@@ -48,7 +48,19 @@ def arm_slide(cfg: UpperArmConfig = DEFAULT) -> float:
     return a.y_outer - a.motor_plate_t - a.motor_screw.head_h - cfg.elbow.y0
 
 
-def elbow_belt_loop(cfg: UpperArmConfig = DEFAULT) -> list[tuple[float, float, float]]:
+def elbow_belt_loop(cfg: UpperArmConfig = DEFAULT, *, idler: bool = True) -> list[tuple[float, float, float]]:
     """The elbow belt's loop (lib/belts.py) in the belt's own frame: the elbow motor's 20T on the origin (the pad's
-    axis), the elbow 90T on +X (the elbow axis, ELBOW_MOTOR_CENTRES on)."""
-    return [pulley_circle(0.0, 0.0, GT2_PULLEY_20T_TEETH), pulley_circle(cfg.slab.elbow_x - cfg.pad.x, 0.0, GT2_PULLEY_90T_TEETH)]
+    axis), the elbow 90T on +X (the elbow axis, ELBOW_MOTOR_CENTRES on) and - with cfg.idler - the tensioner on the run
+    ElbowIdlerParams.run, on the stepped slot's line (SlotParams.stepped_x), pushed in till the loop is ELBOW_BELT long
+    (the stock belt is longer than the open loop). The belt's row (lib/mounts.py elbow_belt#1) puts its +Y on
+    j1_link's +Z."""
+    loop = [pulley_circle(0.0, 0.0, GT2_PULLEY_20T_TEETH), pulley_circle(cfg.slab.elbow_x - cfg.pad.x, 0.0, GT2_PULLEY_90T_TEETH)]
+    if idler and cfg.idler is not None:
+        loop.insert(cfg.idler.run + 1, idler_on_run(loop, cfg.idler.run, cfg.slots.stepped_x - cfg.pad.x, ELBOW_BELT))
+    return loop
+
+
+def elbow_idler_z(cfg: UpperArmConfig = DEFAULT) -> float:
+    """The elbow idler's axis across the link (j1_link's z) with the stock belt: elbow_belt_loop()'s idler, its belt-frame
+    y; its x is the stepped slot's (SlotParams.stepped_x)."""
+    return elbow_belt_loop(cfg)[cfg.idler.run + 1][1]

@@ -7,7 +7,7 @@ r 44.5 lip on top. Shoulder end: the Ø50 4x M4 bolts of the drive's output hub 
 the elbow motor's 48 square pad (face y -32.5, a window in each wall - the +X one is the elbow belt's exit - the
 NEMA 17 holes in its floor; lib/mounts.py places nema17_40mm#2 on it). Elbow end: the Ø80 recess, the Ø42 bore, a
 Ø37.64 lip and the Ø42.2 seat from below on the elbow axis (the elbow's 6806-2RS pair, one each side of the lip -
-lib/mounts.py). Between them: two through slots, the stepped slot (purpose unknown) and a Ø22.2 seat from each side
+lib/mounts.py). Between them: two through slots, the stepped slot (for the elbow belt's tensioner) and a Ø22.2 seat from each side
 (the elbow drive's second stage, not modelled). DEFAULT (what the part builds) is SHORTENING shorter at the elbow
 end (the elbow-end features move with the axis), leaves out the through slots and LEGACY's 10 Ø5.15 x 2 sockets in
 the underside (j1_cap's dowel seats - the cap was removed 2026-09-25), puts the 4 NEMA 17 holes on a 31 square
@@ -18,12 +18,14 @@ floor, end to end, out of the two windows of the body it fills (its other four o
 until its underside is flush with the shell's hub end (lib/upper_arm/layout.py arm_slide); the elbow motor moved out
 to ELBOW_MOTOR_CENTRES from the elbow axis, where the second stage's seat was (gone: the elbow belt runs straight to
 the 90T), and turned over onto the arm's +Y side - down a square hole through the slab onto a web across it, flush
-with the slab's underside, the pad gone. Every number: lib/upper_arm/params.py (UpperArmConfig; measured on the
-reference 2026-09-24).
+with the slab's underside, the pad gone; the stepped slot - the elbow belt's tensioner slot - gives way to the
+tensioner's own (ElbowIdlerParams): an M5 slot through the slab's floor for the idler's axle, a nut slot down from the
+top face, both along Z on its line. Every number: lib/upper_arm/params.py (UpperArmConfig; measured on the reference
+2026-09-24).
 
 Print: on the shell's hub end - the slab's underside and the motor web flush with it, one flat face - turned 45
 degrees on a 256 bed (it is longer than the bed's side); no support: what hangs over open air is short bridges (the
-nut and screw pockets' roofs, the stepped slot's step, the elbow seat's lip).
+nut and screw pockets' roofs, the elbow seat's lip; the idler's nut slot opens upward, its spacer is a part of its own).
 
 SolidWorks product: 'first joint edit 62126'
 Source export:      step/first joint edit 62126.STEP
