@@ -1,5 +1,5 @@
 """forearm_roll_pulley - the forearm roll drive's OUTPUT, the front piece of its rotor: the integral 90T GT2 ring (two
-flanges) on a Ø44 core, its rear flange turning sunk in the frame's cup, its hub a Ø30.3 journal down through bearing 2
+flanges) on a Ø44 core, its rear flange turning over the frame's bearing boss, its hub a Ø30.3 journal down through bearing 2
 (the front 6806) to the lip's middle, where the shaft's hub meets it; the Ø39.7 spigot on its front face in the forearm
 wall's recess - the wall bolts onto the ring's face, 4x M3 on Ø31 into nuts in pockets in the core (pushed in from the
 Ø18 cable bore); the rotor clamp's 4x M3 on Ø24.5 from counterbores in its front face through both hubs into the

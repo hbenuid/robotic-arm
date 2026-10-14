@@ -144,8 +144,8 @@ class RollEndParams:
 
 
 ROLL_FRAME_R = 33.0   # [DESIGN] the roll frame's half width round the roll axis: its underside (3.0 over the upper arm's flat top),
-#                       its open +N face and its tower's top, and the cup's radius - the cup flush with the frame on all three
-#                       (RollDriveParams block_x, tower_y, cup_od; tests/forearm/test_roll_drive.py test_stack holds them equal)
+#                       its open +N face and its tower's top - the frame symmetric about the roll axis, the bearing boss centred
+#                       on its front face (RollDriveParams block_x, tower_y; tests/forearm/test_roll_drive.py test_stack)
 
 
 @dataclass(frozen=True)
@@ -158,8 +158,8 @@ class RollDriveParams:
     to the tower round the roll axis, extruded from its underside (block_x[0], the elbow flange's - its underside repeats
     the SolidWorks j3_coupler's lip / boss / journal / stub into j1_link's bore, the elbow 90T bolts straight into it) to
     its open +N face; the motor in a pocket open on that face, the pocket's front wall its plate (the tension slots), the
-    block's one flat front face the plate's; a round cup on that face round the roll axis, the 6806 pair in the tower
-    under it. Rotor: the PULLEY (forearm_roll_pulley: the integral 90T ring sunk in the cup, its hub down through
+    block's one flat front face the plate's; a round bearing boss on that face round the roll axis, the 6806 pair in it
+    and the tower under it. Rotor: the PULLEY (forearm_roll_pulley: the integral 90T ring over the boss, its hub down through
     bearing 2, the spigot the forearm wall bolts onto - the roll's output) and the SHAFT (forearm_roll_shaft: a collar,
     its hub up through bearing 1 to the pulley's, its flange behind bearing 1 with the clamp's nuts and the stop lug);
     the rotor's own clamp - 4x M3 from the pulley's front face through both hubs into the shaft's nuts - holds the
@@ -181,22 +181,21 @@ class RollDriveParams:
     shoulder_dia: float = BEARING_6806_SHOULDER_DIA   # [DATASHEET] the rotor's shoulders bear on the inner rings only
     lip: float = 2.0                      # [DESIGN] between the pair's outer rings (the elbow's)
     lip_id: float = 37.6                  # [DESIGN] j1_link's elbow lip (37.64): clear of the hubs (Ø30.3) and the shoulders' Ø33
-    run_gap: float = 1.0                  # [DESIGN] the ring's rear flange over bearing 2 and the cup's floor (the pulley's Ø33 shoulder spans it)
+    run_gap: float = 1.0                  # [DESIGN] the ring's rear flange over bearing 2 and the bearing boss's top (the pulley's Ø33 shoulder spans it)
     # the frame: x along N (its underside at -X, 3.0 over the upper arm's flat top, host z -11), y up in the swing plane
     # (the motor below the roll axis, -Y), z along the roll axis
-    block_x: tuple = (-ROLL_FRAME_R, ROLL_FRAME_R)   # [DESIGN] host z -8 .. 58: the underside (the web's plane) .. the open +N face, both
-    #                                       flush with the cup (the motor's connector, spun to +X, ends 5 inside the open pocket)
+    block_x: tuple = (-ROLL_FRAME_R, ROLL_FRAME_R)   # [DESIGN] host z -8 .. 58: the underside (the web's plane) .. the open +N face,
+    #                                       symmetric about the roll axis (the motor's connector, spun to +X, ends 5 inside the open pocket)
     end_r: float = 45.0                   # [DESIGN] the round end about the elbow axis = j1_link's round end (concentric)
-    tower_y: float = ROLL_FRAME_R         # [DESIGN] the tower's top over the roll axis, flush with the cup's: the bay + 7.4
+    tower_y: float = ROLL_FRAME_R         # [DESIGN] the tower's top over the roll axis, as far as the underside and the +N face: the bay + 7.4
     tower_corner_r: float = 6.0           # [DESIGN] its two corners in the profile
     tower_wall: float = 2.0               # [DESIGN] the tower's rear in the profile, behind the bay's floor
     web_t: float = 10.0                   # [DESIGN] the pocket's floor (the cradle's): 2 mm under the motor's -N side
     pocket_clear: float = 0.75            # [DESIGN] round the motor + board in the pocket, along Y past the tension travel
     pocket_rear: float = 1.0              # [DESIGN] behind the board's cover
-    cup_od: float = 2.0 * ROLL_FRAME_R    # [DESIGN] the cup's boss on the front face round the roll axis, flush with the underside, the +N face
-    #                                       and the tower's top
-    cup_id_add: float = 2.0               # [DESIGN] the cup round the ring's flange: + this on the diameter
-    rim_under_teeth: float = 0.3          # [DESIGN] the cup's rim this far under the ring's teeth: the belt (its edge 0.5 above them) runs clear
+    bearing_boss_dia: float = 52.0        # [DESIGN] the boss on the front face round the roll axis, bearing 2's seat in it (4.9 of wall), its top
+    #                                       bearing 2's front face: the ring's rear flange turns run_gap over it, 3.6 past its edge (no cup round
+    #                                       the flange); 7 inside the frame's underside, +N face and tower top, on the flat of the front face
     bay_r: float = 25.6                   # [DESIGN] the shaft's bay behind bearing 1, open through the +N face: round the stop lug's corners
     #                                       (r 24.6) + 1 (bearing 1 goes in from it)
     bay_clear: float = 1.0                # [DESIGN] the bay's floor behind the shaft's rear face by its hub's length through bearing 1 + this: the

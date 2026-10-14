@@ -117,7 +117,7 @@ def module_frame_in_host(cfg: ForearmConfig = DEFAULT) -> tuple:
 def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
     """Module-frame stations of the roll drive (RollDriveParams; the frame, the shaft and the pulley builders emit their
     geometry at these stations, their rows at 0). From the forearm wall back: the ring's front face on the wall, the
-    ring, bearing 2 right under it (the cup's floor), the lip, bearing 1 (the tower's rear face), the shaft behind it -
+    ring, bearing 2 right under it (the bearing boss's top), the lip, bearing 1 (the tower's rear face), the shaft behind it -
     its rear face at the rotor clamp's tips -, the bay, the tower's rear; the motor's face where its 20T meets the
     ring, the plate in front of it the block's front face. The elbow axis runs along X at y = y_elbow, under the tower at
     z = 0; the motor sits on it. Every number a row or a test needs comes from here."""
@@ -125,8 +125,8 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
     z_wall = -w.wall_x[1]                                         # 48: the forearm wall's elbow face = the ring's front face
     z_ring = z_wall - d.ring_flange_t - d.ring_width              # 39.8: the teeth
     z_ring_flange_1 = z_ring - d.ring_flange_t                    # 38.6: the ring's rear flange
-    z_cup = z_ring_flange_1 - d.run_gap                           # 37.6: the cup's floor = bearing 2's front face
-    z_bearing_2 = z_cup - d.bearing_width                         # 30.6
+    z_boss = z_ring_flange_1 - d.run_gap                          # 37.6: the bearing boss's top = bearing 2's front face
+    z_bearing_2 = z_boss - d.bearing_width                        # 30.6
     z_lip = z_bearing_2 - d.lip                                   # 28.6
     z_bearing_1 = z_lip - d.bearing_width                         # 21.6: the tower's rear face
     z_wall_back = -w.wall_x[0]                                    # 56: the wall's wrist face = its screws' heads
@@ -155,10 +155,9 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
         "z_shoulder_1": z_bearing_1 - d.run_gap,                  # 20.6: the shaft's Ø33 shoulder on bearing 1's inner ring
         "z_bearing_1": z_bearing_1, "z_lip": z_lip,
         "z_meet": z_meet,
-        "z_bearing_2": z_bearing_2, "z_cup": z_cup,
+        "z_bearing_2": z_bearing_2, "z_boss": z_boss,
         "z_ring_flange_1": z_ring_flange_1, "z_ring": z_ring, "z_ring_mid": z_ring_mid,
         "z_ring_end": z_wall,                                     # 48: the ring's front flange face
-        "z_rim": z_ring - d.rim_under_teeth,                      # 39.5: the cup's rim, under the belt
         "z_front": z_front,
         "z_wall": z_wall,                                         # 48: the spigot starts here
         "z_spigot_end": z_spigot_end,
