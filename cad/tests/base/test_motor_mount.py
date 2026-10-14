@@ -3,16 +3,15 @@ MountParams): room round the motor's board for the wiring, the window between th
 walls V trusses that print plate-down without supports;
 the joint - the two parts meet at split_x without overlapping, flush on the plate's top and the bottom face, 4x M4
 through the mount's ears and the base's posts from heads turned outside into nuts pressed into the posts, the tips past
-the nuts - and the motor's slotted seat where the stock belt puts the motor: the motor and its board clear the mount
-at both ends of the slots' travel."""
+the nuts - and the motor's seat on round holes YAW_MOTOR_X out, short of the stock belt's own centre distance (its idler
+takes up the rest - tests/base/test_yaw_idler.py): the motor and its board clear the mount."""
 import math
 
 import pytest
-from build123d import Location
 
 from lib.base import DEFAULT, LEGACY, joint_bolt_points, joint_stations, motor_holes, mount_inner_half, mount_x1
 from lib.base.layout import truss_panels
-from lib.base.params import MOTOR_TRAVEL, YAW_BELT
+from lib.base.params import YAW_BELT, YAW_MOTOR_X
 from lib.belts import (
     GT2_PULLEY_20T_TEETH,
     GT2_PULLEY_90T_TEETH,
@@ -38,33 +37,32 @@ def _belt(x: float, teeth: int = GT2_PULLEY_120T_TEETH) -> float:
     return closed_belt_length(x, teeth, GT2_PULLEY_20T_TEETH)
 
 
-def test_the_motor_sits_where_the_stock_belt_puts_it():
-    assert YAW_BELT in STANDARD_2GT_LENGTHS and M.travel == MOTOR_TRAVEL > 0.0
-    assert _belt(M.centre[0]) == pytest.approx(YAW_BELT, abs=1e-4)                             # round the base_yaw 120T
+def test_the_motor_sits_short_of_the_stock_belt():
+    """On round holes YAW_MOTOR_X out, short of the stock belt's own centre distance round the base_yaw 120T: the idler
+    takes up the rest (tests/base/test_yaw_idler.py)."""
+    assert YAW_BELT in STANDARD_2GT_LENGTHS and M.travel == 0.0 and M.centre[0] == YAW_MOTOR_X
+    assert _belt(M.centre[0]) < YAW_BELT - 5.0                                                     # round the base_yaw 120T
     assert _belt(LEGACY.motor.centre[0], GT2_PULLEY_90T_TEETH) == pytest.approx(274.2, abs=0.05)   # the SolidWorks centre (a 90T): no stock belt
-    assert _belt(M.centre[0] - M.travel) < YAW_BELT - 4.0 and _belt(M.centre[0] + M.travel) > YAW_BELT + 4.0   # slack / tension
 
 
-def test_the_seat_follows_the_slots():
-    """The pilot slides in the window; the slots keep a web to the window. The stock belt puts the motor so near the axis
-    that its face reaches across the joint onto the base's side of the plate (flush with the mount's, both cut with the
-    seat - lib/base/body.py _motor_seat): at the slots' near end it still rests on the plate outside the base's posts."""
+def test_the_seat():
+    """The pilot in its window; a web between each hole and the window; the motor's face wholly on the mount's plate,
+    clear of the ears at the joint face."""
     c, cz = M.centre
-    assert M.window_x[0] < c - M.travel - NEMA17_PILOT_DIA / 2.0 and M.window_x[1] > c + M.travel + NEMA17_PILOT_DIA / 2.0
+    assert M.window_x[0] < c - NEMA17_PILOT_DIA / 2.0 and M.window_x[1] > c + NEMA17_PILOT_DIA / 2.0
     assert M.window_half_z > NEMA17_PILOT_DIA / 2.0
-    assert c - M.travel - NEMA17_FACE / 2.0 - (J.split_x - J.post_t) > 2.0
+    assert c - NEMA17_FACE / 2.0 - (J.split_x + MT.ear_t) > 2.0
     for _, z in motor_holes():
-        assert abs(z - cz) - M.hole_dia / 2.0 - M.window_half_z >= 2.0   # the web between a slot and the window
+        assert abs(z - cz) - M.hole_dia / 2.0 - M.window_half_z >= 2.0   # the web between a hole and the window
 
 
 def test_the_mount_leaves_room_for_the_wiring():
-    """MountParams.room clear of the MKS board's square in Z at any travel, and to the end wall at the slots' middle
-    (less the travel at its far end); narrower than the base, its ears on the base's end face."""
+    """MountParams.room clear of the MKS board's square in Z and to the end wall; narrower than the base, its ears on the
+    base's end face."""
     c, cz = M.centre
     half = MKS_SERVO42D_W / 2.0
     assert W_IN - (abs(cz) + half) == pytest.approx(MT.room)
     assert X1 - MT.wall - (c + half) == pytest.approx(MT.room)
-    assert X1 - MT.wall - (c + M.travel + half) == pytest.approx(MT.room - M.travel)
     assert W_OUT + MT.ear_w < S.r and W_OUT < S.r - 15.0
 
 
@@ -87,11 +85,16 @@ def test_joint_layout():
 
 
 def test_the_walls_are_trussed():
-    """Three trussed walls (lib/base/layout.py truss_panels()): each frame's window the wall's height less a rail at
-    each end, a V of two struts at >= 45 deg (self-supporting when printed plate-down) and two side triangles whose
-    table edge - a bridge in print - spans <= 30 mm; the side walls' post at the joint backs the whole ear."""
+    """Three trussed walls (lib/base/layout.py truss_panels()), the side walls in two bays (MountParams.bay) with a
+    strut wide post between: each frame's window the wall's height less a rail at each end, a V of two struts at >= 45
+    deg (self-supporting when printed plate-down) and two side triangles whose table edge - a bridge in print - spans
+    <= 30 mm; the side walls' post at the joint backs the whole ear."""
     panels = truss_panels()
-    assert [pn["axis"] for pn in panels] == ["z", "z", "x"]
+    assert [pn["axis"] for pn in panels] == ["z"] * 4 + ["x"] and [pn["span"][0] > 0 for pn in panels[:4]] == [True] * 2 + [False] * 2
+    for a, b in ((panels[0], panels[1]), (panels[2], panels[3])):
+        assert b["window"][0][0] - a["window"][0][1] == pytest.approx(MT.strut)                 # the post between the bays
+        width = a["window"][0][1] - a["window"][0][0]
+        assert b["window"][0][1] - b["window"][0][0] == pytest.approx(width) and width <= MT.bay
     for pn in panels:
         (u0, u1), (v0, v1) = pn["window"]
         assert v1 - v0 == pytest.approx(PL.y[0] - S.y0 - 2.0 * MT.strut)
@@ -170,18 +173,17 @@ def test_the_base_holds_the_nuts(base):
 
 
 @pytest.mark.slow
-def test_the_mount_carries_the_slotted_seat(mount, base):
+def test_the_mount_carries_the_seat(mount):
     c, cz = M.centre
+    r = M.hole_dia / 2.0
     for x, z in motor_holes():
-        r = M.hole_dia / 2.0
-        for dx in (-M.travel, 0.0, M.travel):
-            assert not is_inside(mount, x + dx, -42, z)                                                   # the slot
-        near = x - M.travel - r - 0.2
-        holder = mount if near > J.split_x else base      # the -X slots' near ends cross the joint into the base's plate
-        assert is_inside(mount, x + M.travel + r + 0.2, -42, z) and is_inside(holder, near, -42, z)
-        assert is_inside(mount, x, -42, z + (r + 0.2) * (1 if z > cz else -1))
-    assert not is_inside(mount, c, -42, cz + M.window_half_z - 0.1) and is_inside(mount, c, -42, cz + M.window_half_z + 0.1)
-    for x, z in ((c + M.travel + NEMA17_FACE / 2.0 + 1.3, cz), (c, cz + NEMA17_FACE / 2.0 + 1.3)):
+        assert not is_inside(mount, x, -42, z)                                                        # the hole ...
+        for dx, dz in ((r + 0.2, 0.0), (-r - 0.2, 0.0), (0.0, r + 0.2), (0.0, -r - 0.2)):
+            assert is_inside(mount, x + dx, -42, z + dz)                                              # ... round
+    for dx, dz in ((0.0, M.window_half_z), (M.window_x[1] - c, 0.0), (M.window_x[0] - c, 0.0)):
+        sx, sz = math.copysign(0.1, dx) if dx else 0.0, math.copysign(0.1, dz) if dz else 0.0
+        assert not is_inside(mount, c + dx - sx, -42, cz + dz - sz) and is_inside(mount, c + dx + sx, -42, cz + dz + sz)
+    for x, z in ((c + NEMA17_FACE / 2.0 + 1.3, cz), (c, cz + NEMA17_FACE / 2.0 + 1.3)):
         assert not is_inside(mount, x, PL.y[0] - 3.0, z)                                              # no rim under the plate
 
 
@@ -201,13 +203,11 @@ def test_the_screws_clamp_the_joint():
 
 
 @pytest.mark.slow
-@pytest.mark.parametrize("dx", [-MOTOR_TRAVEL, MOTOR_TRAVEL], ids=["slack", "tension"])
-def test_the_motor_clears_the_mount_across_the_travel(mount, dx):
-    """The 48 mm motor and its board slid to either end of the slots: nothing runs into the mount (the motor's face on
-    the plate's underside, the pilot in the window), the board the wiring room clear of it, less the travel."""
-    shift = Location((dx, 0.0, 0.0))
-    for key, clear in (("nema17_48mm#1", 0.0), ("mks_servo42d#1", MT.room - M.travel - 0.1)):
-        part = built.placed(key).moved(shift)
+def test_the_motor_clears_the_mount(mount):
+    """The 48 mm motor and its board on their round holes: nothing runs into the mount (the motor's face on the plate's
+    underside, the pilot in the window), the board the wiring room clear of it."""
+    for key, clear in (("nema17_48mm#1", 0.0), ("mks_servo42d#1", MT.room - 0.1)):
+        part = built.placed(key)
         assert interference(part, mount) < 1e-3, key
         if clear:
             assert part.distance_to(mount) >= clear, key

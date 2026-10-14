@@ -28,7 +28,7 @@ totals are its EXPECTED), listed under both `designed_modules` and `mounted`, wh
 like the drive's SolidWorks-placed record.
 
 Geometry (lib/params.py, kernel-verified 2026-09-21 - tests/test_mounts.py re-checks it):
-  base_yaw     the motor mount's plate -Y face, pattern centre BASE_MOTOR_PATTERN_CENTRE (the slots' middle); the
+  base_yaw     the motor mount's plate -Y face, pattern centre BASE_MOTOR_PATTERN_CENTRE (its round holes); the
                48 mm body hangs in -Y, shaft +Y through the plate into the plane of the base_yaw 120T's teeth; motor +
                board end BASE_MOTOR_TABLE_CLEAR above the base's bottom face (lowered under them, lib/base/params.py
                BOARD_CLEAR)
@@ -71,7 +71,11 @@ The elbow belt's TENSIONER (IDLER_MOUNTS; lib/upper_arm/params.py ElbowIdlerPara
 gt2_idler_20t), its printed spacer, its M5 axle and nut on j1_link, on the stepped slot's line where the stock belt puts
 the idler (lib/upper_arm/layout.py elbow_idler_z), each +Z up j1_link's +Y (N): the idler level with the belt, the spacer
 between it and the slab's underside, the screw's head under the idler, the nut on its slot's floor (lib/params.py
-J1_IDLER_*). The forearm roll's tensioner is a row of its module (assemblies/forearm_roll_drive.py).
+J1_IDLER_*). The base_yaw belt's (YAW_IDLER_MOUNTS; lib/base/params.py YawIdlerParams): the same kit on the base's motor
+mount, where the stock belt puts the idler on the belt's open run (lib/base/layout.py yaw_idler_xz): the idler standing on
+its lower face level with the belt, each other part's +Z down the base's -Y - the spacer's land under the idler, its
+riser on the mount's plate, the screw's head on the idler, the nut on the plate's underside between its rails
+(lib/params.py YAW_IDLER_*). The forearm roll's tensioner is a row of its module (assemblies/forearm_roll_drive.py).
 The wrist belt has no idler: its motor sits at the stock belt's centre distance (lib/forearm/params.py IdlerParams - the
 idler, its M5 axle and its nut stay modelled, UNPLACED).
 """
@@ -79,7 +83,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from lib.base.layout import joint_stations, yaw_belt_frame
+from lib.base.layout import joint_stations, yaw_belt_frame, yaw_idler_xz
 from lib.base.params import DEFAULT as _BASE
 from lib.bearings import THRUST_WASHER_WIDTH
 from lib.coupler.params import DEFAULT as _COUPLER
@@ -104,6 +108,8 @@ from lib.params import (
     J2_MOTOR_WEB_FACE_Z,
     NEMA17_40_BODY_LEN,
     PULLEY_SEAT_SHIFT,
+    YAW_IDLER_NUT_Y,
+    YAW_IDLER_Y,
 )
 from lib.upper_arm.layout import elbow_idler_z
 from lib.upper_arm.params import DEFAULT as _UPPER_ARM
@@ -118,7 +124,8 @@ PULLEY_BOLTS = ("elbow_pulley_screws", "elbow_pulley_nuts", "wrist_pulley_screws
 BASE_MOUNT, BASE_MOUNT_SCREWS, BASE_MOUNT_NUTS = "base_motor_mount", "base_motor_mount_screws", "base_motor_mount_nuts"
 YOKE_MOTOR_LEG = "j1_motor_leg"
 MOTOR_SCREWS = "elbow_motor_screws"
-IDLER_KIT = ("gt2_idler_20t", "elbow_idler_spacer", "elbow_idler_screw", "elbow_idler_nut")
+IDLER_KIT = ("gt2_idler_20t", "elbow_idler_spacer", "elbow_idler_screw", "elbow_idler_nut", "yaw_idler_spacer",
+             "yaw_idler_screw", "yaw_idler_nut")
 
 # The part-frame axis tools/reference/mount_placements.py checks for each mounted part, and whether it lies ON its
 # joint's axis (a motor's shaft runs beside its joint, parallel; a bearing, a pulley or a pulley-bolt pattern sits on it).
@@ -169,8 +176,8 @@ BASE_MOUNTS: tuple[Mount, ...] = (
 MOTOR_MOUNTS: tuple[Mount, ...] = (
     Mount("nema17_48mm#1", MOTOR_48, "base_motor_mount#1", "base_link", "base_yaw",
           (BASE_MOTOR_PATTERN_CENTRE, (-90.0, 0.0, 270.0)),
-          "the 48 mm motor under the motor mount's plate (in the base's part frame), shaft up through it, at the slots' "
-          "middle; motor + board end BASE_MOTOR_TABLE_CLEAR above the base's bottom face; connector toward +X [ESTIMATE]"),
+          "the 48 mm motor under the motor mount's plate (in the base's part frame), shaft up through it, on its round "
+          "holes; motor + board end BASE_MOTOR_TABLE_CLEAR above the base's bottom face; connector toward +X [ESTIMATE]"),
     Mount("mks_servo42d#1", BOARD, "nema17_48mm#1", "base_link", "base_yaw", BOARD_FRAME_48),
     Mount("nema17_40mm#2", MOTOR_40, "j1_link#1", "upper_arm_link", "elbow_pitch",
           ((_UPPER_ARM.pad.x, J1_MOTOR_PAD_FACE_Y, 0.0), (90.0, 0.0, 0.0)),
@@ -288,7 +295,7 @@ YOKE_MOUNTS: tuple[Mount, ...] = (
 # (assemblies/forearm_roll_drive.py).
 BELT_MOUNTS: tuple[Mount, ...] = (
     Mount("yaw_belt#1", "yaw_belt", "base#1", "base_link", "base_yaw", yaw_belt_frame(_BASE),
-          "the base_yaw belt inside the base: the motor's 20T to the 120T under j1_coupler"),
+          "the base_yaw belt inside the base: the motor's 20T to the 120T under j1_coupler, round its idler"),
     Mount("elbow_belt#1", "elbow_belt", "j1_link#1", "upper_arm_link", "elbow_pitch",
           ((_UPPER_ARM.pad.x, J1_BELT_Y, 0.0), (90.0, 0.0, 0.0)),
           "the elbow belt under j1_link's web: the elbow motor's 20T to the elbow 90T"),
@@ -314,8 +321,28 @@ IDLER_MOUNTS: tuple[Mount, ...] = (
           ((_IDLER_X, J1_IDLER_LEDGE_Y, _IDLER_Z), _UP),
           "its nut on the floor of its slot down from the slab's top face, its flats across the link's X"),
 )
+# The base_yaw belt's tensioner (lib/base/params.py YawIdlerParams), on the motor mount at the idler's place for the stock
+# belt (yaw_idler_xz()), in the base's part frame: the idler standing on its lower face level with the belt (+Z up the
+# base's +Y); the spacer, the screw and the nut turned over (+Z down the base's -Y) - the spacer's land under the idler,
+# the screw's head on its top face, the nut's bearing face on the plate's underside (lib/params.py YAW_IDLER_*).
+_DOWN = (90.0, 0.0, 0.0)
+_YAW_IDLER_X, _YAW_IDLER_Z = (round(v, 6) for v in yaw_idler_xz(_BASE))
+YAW_IDLER_MOUNTS: tuple[Mount, ...] = (
+    Mount("gt2_idler_20t#2", "gt2_idler_20t", "base_motor_mount#1", "base_link", "base_yaw",
+          ((_YAW_IDLER_X, YAW_IDLER_Y, _YAW_IDLER_Z), _UP),
+          "the base_yaw belt's tensioner on the motor mount's plate, level with the belt, on its back on the 120T -> 20T run"),
+    Mount("yaw_idler_spacer#1", "yaw_idler_spacer", "base_motor_mount#1", "base_link", "base_yaw",
+          ((_YAW_IDLER_X, YAW_IDLER_Y, _YAW_IDLER_Z), _DOWN),
+          "its printed spacer: the land under the idler's inner ring, the riser on the mount's plate"),
+    Mount("yaw_idler_screw#1", "yaw_idler_screw", "base_motor_mount#1", "base_link", "base_yaw",
+          ((_YAW_IDLER_X, round(YAW_IDLER_Y + GT2_IDLER_WIDTH, 6), _YAW_IDLER_Z), _DOWN),
+          "its M5 axle: the head on the idler, down through the idler, the spacer and the plate's slot into the nut"),
+    Mount("yaw_idler_nut#1", "yaw_idler_nut", "base_motor_mount#1", "base_link", "base_yaw",
+          ((_YAW_IDLER_X, YAW_IDLER_NUT_Y, _YAW_IDLER_Z), _DOWN),
+          "its nut on the plate's underside between the rails, its flats across the slot"),
+)
 MOUNTS: tuple[Mount, ...] = (BASE_MOUNTS + YOKE_MOUNTS + MOTOR_MOUNTS + MOTOR_PULLEY_MOUNTS + MOTOR_SCREW_MOUNTS + BEARING_MOUNTS
-                             + THRUST_MOUNTS + PULLEY_MOUNTS + FASTENER_MOUNTS + BELT_MOUNTS + IDLER_MOUNTS)
+                             + THRUST_MOUNTS + PULLEY_MOUNTS + FASTENER_MOUNTS + BELT_MOUNTS + IDLER_MOUNTS + YAW_IDLER_MOUNTS)
 BY_KEY: dict[str, Mount] = {m.key: m for m in MOUNTS}
 
 

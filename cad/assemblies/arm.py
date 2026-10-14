@@ -13,7 +13,8 @@ rails, the 20T pulleys, the belts) is _occurrences.BOUGHT_TINT grey, inside the 
     arm
     |- base_link         base, bearing_6806:base_yaw_1 / _2, washer_as6590:base_yaw_1, bearing_axk6590:base_yaw,
     |                    base_motor_mount, base_motor_mount_screws / _nuts:base_yaw, nema17_48mm:base_yaw,
-    |                    mks_servo42d:base_yaw, gt2_pulley_20t:base_yaw, yaw_belt:base_yaw
+    |                    mks_servo42d:base_yaw, gt2_pulley_20t:base_yaw, yaw_belt:base_yaw,
+    |                    gt2_idler_20t / yaw_idler_spacer / _screw / _nut:base_yaw
     |- shoulder_link     j1_coupler, j1_motor_leg, washer_as6590:base_yaw_2, gt2_pulley_120t:base_yaw,
     |                    yaw_pulley_screws / _nuts:base_yaw, cycloidal_drive (kept whole - see below)
     |- upper_arm_link    j1_link, bearing_6806:elbow_pitch_1 / _2, nema17_40mm:elbow_pitch, mks_servo42d:elbow_pitch,
@@ -83,7 +84,11 @@ OCCURRENCES = [
     ("nema17_48mm",           "base_yaw", "nema17_48mm#1"),        # mounted: the 48 mm motor under the motor mount's plate
     ("mks_servo42d",          "base_yaw", "mks_servo42d#1"),
     ("gt2_pulley_20t",        "base_yaw", "gt2_pulley_20t#3"),     # mounted: on the base_yaw motor's shaft, level with the 120T ...
-    ("yaw_belt",              "base_yaw", "yaw_belt#1"),           # ... and its belt to it
+    ("yaw_belt",              "base_yaw", "yaw_belt#1"),           # ... and its belt to it, ...
+    ("gt2_idler_20t",         "base_yaw", "gt2_idler_20t#2"),      # mounted: ... its tensioner on the motor mount's plate, ...
+    ("yaw_idler_spacer",      "base_yaw", "yaw_idler_spacer#1"),   # ... its spacer, ...
+    ("yaw_idler_screw",       "base_yaw", "yaw_idler_screw#1"),    # ... its M5 axle down through the plate's slot ...
+    ("yaw_idler_nut",         "base_yaw", "yaw_idler_nut#1"),      # ... into its nut, between the rails under the plate
     ("j1_coupler",            None, "j1_coupler#1"),
     ("j1_motor_leg",          None, "j1_motor_leg#1"),     # mounted: the motor-side leg, a ring round the drive's motor sleeve
     ("washer_as6590",         "base_yaw_2", "washer_as6590#2"),    # ... its upper washer under j1_coupler's seat
@@ -137,7 +142,8 @@ MODULES = {"gripper": gripper.gripper, "cycloidal_drive": cycloidal_drive.cycloi
 GROUPS = [
     ("base_link",        "#937860", ("base#1", "bearing_6806#1", "bearing_6806#2", "washer_as6590#1", "bearing_axk6590#1",
                                      "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1",
-                                     "nema17_48mm#1", "mks_servo42d#1", "gt2_pulley_20t#3", "yaw_belt#1")),
+                                     "nema17_48mm#1", "mks_servo42d#1", "gt2_pulley_20t#3", "yaw_belt#1", "gt2_idler_20t#2",
+                                     "yaw_idler_spacer#1", "yaw_idler_screw#1", "yaw_idler_nut#1")),
     ("shoulder_link",    "#4C72B0", ("j1_coupler#1", "j1_motor_leg#1", "washer_as6590#2", "gt2_pulley_120t#1", "yaw_pulley_screws#1",
                                      "yaw_pulley_nuts#1", DRIVE_KEY)),
     ("upper_arm_link",   "#CCB974", ("j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2",

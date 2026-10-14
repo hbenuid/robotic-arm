@@ -31,7 +31,7 @@ def test_layout():
     m = LEGACY.motor
     assert m.slot_x1 == pytest.approx(m.centre[0] + m.rim_half)             # the belt slot runs to the rim's +X inside
     assert 2.0 * m.rim_half > NEMA17_FACE                                    # the rim takes the motor's face
-    assert LEGACY.motor.travel == 0.0 and DEFAULT.motor.travel > 0.0                # DEFAULT's holes are slots
+    assert LEGACY.motor.travel == 0.0 == DEFAULT.motor.travel                       # round holes both (DEFAULT's idler tensions the belt)
 
 
 def test_interface_values_come_from_the_base():
@@ -96,7 +96,7 @@ def test_legacy_features(legacy):
 def test_default_bore_takes_the_6806_pair():
     b = DEFAULT.bore
     assert replace(DEFAULT, shell=LEGACY.shell, bore=LEGACY.bore, cap=LEGACY.cap, motor=LEGACY.motor, joint=None, mount=None,
-                   foot=None) == LEGACY
+                   foot=None, idler=None) == LEGACY
     assert (b.upper_dia, b.lower_dia, b.lip_dia) == (FOREARM.boss.seat_dia, FOREARM.boss.seat_dia, FOREARM.boss.lip_dia)
     assert b.upper_dia > BEARING_6806_OD and LEGACY.bore.lower_dia - BEARING_6806_OD > 1.0   # the SolidWorks lower seat: 1.4 over
     c = DEFAULT.cap
