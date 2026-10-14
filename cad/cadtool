@@ -99,7 +99,7 @@ run_skill() {  # run_skill <skill> <tool> [args...]  ->  python skills/<skill>/s
 cg() { exec uv run --frozen cadgen "$@"; }
 
 install_git_hook() {  # .git/hooks/pre-commit = a stub that runs the committed ../.githooks/pre-commit (ruff on the staged
-  # .py files). Not core.hooksPath: that would switch off git-lfs's own hooks in .git/hooks (pre-push uploads the LFS objects).
+  # .py files).
   local hooks stub marker="installed by cad/cadtool setup"
   hooks="$(git rev-parse --git-path hooks)" || return 0
   stub="$hooks/pre-commit"

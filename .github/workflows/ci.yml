@@ -23,19 +23,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # Git LFS: the objects are cached by the list of their ids, so a run only downloads them (LFS bandwidth quota)
-      # when a committed reference / vendor / mesh file changed.
-      - name: LFS object list
-        id: lfs
-        run: echo "key=lfs-$(git lfs ls-files --long | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache@v6
-        with:
-          path: .git/lfs
-          key: ${{ steps.lfs.outputs.key }}
-          restore-keys: lfs-
-      - name: git lfs pull
-        run: git lfs pull
-
       - uses: astral-sh/setup-uv@v10.2.0  # exact tags only: setup-uv publishes no floating major tag (v10)
         with:
           cache-python: true
