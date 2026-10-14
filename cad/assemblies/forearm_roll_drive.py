@@ -13,8 +13,8 @@ from the pulley's front face. MODULE FRAME (lib/forearm/params.py RollDriveParam
 axis' station, +Z along the roll axis toward the wrist, +X = host +Z (N), +Y = up in the arm's swing plane, the elbow
 axis along X at y_elbow (the arm's elbow offset below the roll axis); the arm places it through lib/mounts.py
 MODULE_MOUNTS ("forearm_roll_drive#1" on j2_link#1). Every station comes from lib/forearm stack_positions() - never type
-one here. Gear ratio 90 / 20 = 4.5 (FOREARM_ROLL_RATIO); the belt (FOREARM_ROLL_BELT_LENGTH), the rotor clamp's and the forearm wall's M3
-screws + nuts and the motor's M3 are tools/bom.py EXTRAS; the elbow 90T's M4 screws + nuts into the frame are the arm's
+one here. Gear ratio 90 / 20 = 4.5 (FOREARM_ROLL_RATIO) on the belt (forearm_roll_belt, FOREARM_ROLL_BELT_LENGTH); the rotor clamp's and
+the forearm wall's M3 screws + nuts and the motor's M3 are tools/bom.py EXTRAS; the elbow 90T's M4 screws + nuts into the frame are the arm's
 (lib/mounts.py FASTENER_MOUNTS).
 """
 from cadgen import step
@@ -49,6 +49,7 @@ OCCURRENCES = [
     ("nema17_40mm",           "forearm_roll", ((S["x_motor"], S["y_motor"], S["z_motor_face"]), (0.0, 0.0, DEFAULT.drive.motor_spin_deg))),    # spun: connector toward +X
     ("mks_servo42d",          "forearm_roll", ((S["x_motor"], S["y_motor"], S["z_motor_board"]), (0.0, 0.0, DEFAULT.drive.motor_spin_deg))),
     ("gt2_pulley_20t",        "forearm_roll", ((S["x_motor"], S["y_motor"], S["z_20t"]), (0.0, -90.0, 0.0))),   # hub face pulley_lift in front of the plate, bore axis along +Z
+    ("forearm_roll_belt",     "forearm_roll", ((S["x_motor"], S["y_motor"], S["z_ring_mid"]), (0.0, 0.0, 90.0))),   # the 20T to the ring: its frame's +X up module +Y
 ]
 
 # The module's rigid bodies (robot/frames.py LINKS: "forearm_roll_drive#1:stator" in elbow_link, ":rotor" in forearm_link).
@@ -58,8 +59,8 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("stator") after any geometry change.
 EXPECTED = {
-    "leaves": 8, "solids": 23, "solid_volume": 489009.4,
-    "bodies": {"stator": {"leaves": 6, "solids": 21, "solid_volume": 450748.752},
+    "leaves": 9, "solids": 24, "solid_volume": 490069.393,
+    "bodies": {"stator": {"leaves": 7, "solids": 22, "solid_volume": 451808.745},
                "rotor": {"leaves": 2, "solids": 2, "solid_volume": 38260.648}},
 }
 

@@ -155,6 +155,10 @@ NO_REFERENCE: dict[str, str] = {
     "forearm_roll_pulley": "lib/forearm/roll.py:build_pulley(DEFAULT)",
     "wrist_idler_screw": "parts/joints/wrist_idler_screw.py:_envelope()",
     "wrist_idler_nut": "parts/joints/wrist_idler_nut.py:_envelope()",
+    "yaw_belt": "parts/base/yaw_belt.py:_envelope()",
+    "elbow_belt": "parts/joints/elbow_belt.py:_envelope()",
+    "forearm_roll_belt": "parts/joints/forearm_roll_belt.py:_envelope()",
+    "wrist_belt": "parts/joints/wrist_belt.py:_envelope()",
 }
 
 # Measured conversions: printed parts converted from a SolidWorks export that was measured once and is NOT committed -

@@ -88,12 +88,13 @@ LINK_ORDER = ["base_link", "shoulder_link", "upper_arm_link", "elbow_link", "for
               "wrist_roll_link", "jaw_a_link", "jaw_b_link", "tool0"]
 LINKS: dict[str, list[str]] = {
     # the base's motor mount (its +X lobe) is bolted to it with its M4 screws + nuts; the base_yaw motor + its MKS
-    # board hang under the mount's plate (lib/mounts.py) - they turn nothing themselves; the base_yaw bearing pair sits
+    # board hang under the mount's plate, its 20T and the belt to the 120T with them (lib/mounts.py) - they turn nothing
+    # themselves (the belt's path is fixed here, both its pulleys' axes are); the base_yaw bearing pair sits
     # in the base's bore (a bearing rides with its housing), the thrust bearing's lower washer and its cage in the
     # base's groove
     "base_link": ["base#1", "bearing_6806#1", "bearing_6806#2", "washer_as6590#1", "bearing_axk6590#1",
                   "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1", "nema17_48mm#1",
-                  "mks_servo42d#1"],
+                  "mks_servo42d#1", "gt2_pulley_20t#3", "yaw_belt#1"],
     # j1_coupler (the holder) turns on the base, its motor leg bolted on; the cycloidal drive's stator - the held carrier
     # (motor plate, output hub, output pins), the motor (+ its MKS board) and the gear train - sits in its fork
     # (assemblies/cycloidal_drive.py BODIES); the thrust bearing's upper washer turns with it, under its seat, and so does
@@ -102,10 +103,10 @@ LINKS: dict[str, list[str]] = {
     "shoulder_link": ["j1_coupler#1", "j1_motor_leg#1", "washer_as6590#2", "gt2_pulley_120t#1", "yaw_pulley_screws#1",
                       "yaw_pulley_nuts#1", "cycloidal_drive#1:stator"],
     # the drive's rotor (its turning shell, the ring pins and both 6814s) is bolted to j1_link: the shoulder_pitch output;
-    # the elbow_pitch motor + board bolt to the web across j1_link's motor hole (its 4x M3), the elbow bearing pair sits
-    # in its elbow bore (lib/mounts.py)
+    # the elbow_pitch motor + board bolt to the web across j1_link's motor hole (its 4x M3), its 20T and the elbow belt
+    # with them, the elbow bearing pair sits in its elbow bore (lib/mounts.py)
     "upper_arm_link": ["cycloidal_drive#1:rotor", "j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2",
-                       "gt2_pulley_20t#2", "elbow_motor_screws#1"],
+                       "gt2_pulley_20t#2", "elbow_motor_screws#1", "elbow_belt#1"],
     # the elbow 90T pulley (the elbow_pitch output, assumed the driven side  [ASSUMPTION]) and the M4 screws + nuts
     # that clamp it carry the forearm roll drive's STATOR - the roll frame, whose web IS the elbow coupler now (j3_coupler#1
     # is retired, lib/placements.py), both bearings, the roll motor + board (on the elbow axis) and its 20T
@@ -113,10 +114,10 @@ LINKS: dict[str, list[str]] = {
     "elbow_link": ["gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", "forearm_roll_drive#1:stator"],
     # the drive's ROTOR - the pulley (its 90T ring, the roll's output, bolts to j2_link's wall) and the shaft clamped to
     # it - IS the forearm's elbow end;
-    # the wrist_pitch motor + board bolt to j2_link's web, the wrist bearing pair sits in its wrist boss, the wrist belt's
-    # idler hangs under the web on its axle + nut (lib/mounts.py)
+    # the wrist_pitch motor + board bolt to j2_link's web, its 20T and the wrist belt with them, the belt's idler hangs
+    # under the web on its axle + nut, the wrist bearing pair sits in its wrist boss (lib/mounts.py)
     "forearm_link": ["forearm_roll_drive#1:rotor", "j2_link#1", "bearing_6806#5", "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3",
-                     "gt2_idler_20t#1", "wrist_idler_screw#1", "wrist_idler_nut#1"],
+                     "gt2_pulley_20t#4", "wrist_belt#1", "gt2_idler_20t#1", "wrist_idler_screw#1", "wrist_idler_nut#1"],
     # likewise the wrist 90T pulley, its M4 screws + nuts and the J3-coupler ride with the wrist-pitch body  [ASSUMPTION]
     "wrist_pitch_link": ["wrist_link#1", "gripper_clamp_bracket#1", "nema17_pancake#1", "gt2_pulley_90t#4",
                          "wrist_pulley_screws#1", "wrist_pulley_nuts#1", "j3_coupler#2"],

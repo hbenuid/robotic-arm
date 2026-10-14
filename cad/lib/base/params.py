@@ -218,6 +218,8 @@ BASE_DRAFT = 12.0 / 63.0  # [DESIGN] ... its side drafted in at dr/dy (10.8 degr
 RING_CLEAR = 0.1          # [DESIGN]
 BOARD_CLEAR = 5.0         # [DESIGN] the base_yaw motor's board above the table
 YAW_BELT = 300            # [DESIGN] base_yaw belt, 300-2GT (a multipack length, lib/belts.py STANDARD_2GT_LENGTHS): 20T motor - 120T joint
+YAW_BELT_Y = -31.1        # [REFERENCE] the base_yaw belt's mid-plane in the base's frame: the 120T's tooth band (its mount under
+#                           j1_coupler, lib/mounts.py) - the motor's 20T level with it (tests/test_mounts.py)
 MOTOR_TRAVEL = 2.5        # [DESIGN] the roll motor's slots' +/- 2.5 (lib/forearm/params.py)
 WINDOW_CLEAR = 0.2        # [DESIGN]
 _MOTOR_X = round(centre_distance(YAW_BELT, GT2_PULLEY_120T_TEETH, GT2_PULLEY_20T_TEETH), 6)

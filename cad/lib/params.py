@@ -33,7 +33,7 @@ from lib.fasteners import (  # noqa: E402, F401
 
 # --- Belt drive (GT2) - lib/belts.py (a leaf: lib/forearm/ imports it directly) ------------------
 from lib.belts import (  # noqa: E402, F401
-    GT2_BELT_W, GT2_BLEND_R, GT2_FLANK_ANGLE, GT2_FLANK_R, GT2_GROOVE_R, GT2_IDLER_BORE, GT2_IDLER_CHANNEL_W,
+    GT2_BELT_BACK, GT2_BELT_MASS_G_PER_M, GT2_BELT_THICKNESS, GT2_BELT_W, GT2_BLEND_R, GT2_FLANK_ANGLE, GT2_FLANK_R, GT2_GROOVE_R, GT2_IDLER_BORE, GT2_IDLER_CHANNEL_W,
     GT2_IDLER_FLANGE_DIA, GT2_IDLER_SEAT_DIA, GT2_IDLER_WIDTH, GT2_PITCH, GT2_PLD, GT2_PULLEY_20T_PITCH_DIA,
     GT2_PULLEY_20_60T_TEETH, GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_BOLT_R, GT2_PULLEY_90T_FACE_Y, GT2_PULLEY_90T_HEAD_SEAT, GT2_PULLEY_90T_PITCH_DIA,
     GT2_PULLEY_90T_TEETH, GT2_PULLEY_120T_TEETH, GT2_RATIO, GT2_TIP_R, GT2_TOOTH_DEPTH, STANDARD_2GT_LENGTHS, flank_offset, pulley_90t_bolt_points,
@@ -115,6 +115,13 @@ J2_BELT_Z = _FOREARM.roll_end.wrist_belt_z         # 0.3 [REFERENCE] the wrist b
 from lib.forearm.layout import wrist_idler_xy as _wrist_idler_xy  # noqa: E402
 
 J2_IDLER_XY = _wrist_idler_xy(_FOREARM)            # (-118, 0.97) [DESIGN] the wrist idler's axis in j2_link's frame: the belt pushed in till it fits
+# The motors' 20T pulleys (the vendor 20T: its tooth band t20_hub from its hub face) on their shafts, their bands level
+# with the driven pulleys' - each belt's plane (lib/mounts.py MOTOR_PULLEY_MOUNTS, tests/test_mounts.py):
+from lib.base.params import YAW_BELT_Y  # noqa: E402
+
+J1_BELT_Y = round(J1_MOTOR_PAD_FACE_Y - J1_MOTOR_20T_HUB_Z - _FOREARM.drive.t20_hub, 6)        # 7.572 the elbow belt's plane in j1_link's frame
+J2_MOTOR_20T_HUB_Z = round(J2_MOTOR_WEB_FACE_Z - J2_BELT_Z - _FOREARM.drive.t20_hub, 6)        # 7.75 the wrist motor's 20T, from its face
+BASE_MOTOR_20T_HUB_Z = round(YAW_BELT_Y - BASE_MOTOR_PATTERN_CENTRE[1] - _FOREARM.drive.t20_hub, 6)   # 2.85 the base_yaw motor's 20T, from its face
 # The forearm roll (lib/forearm/params.py RollEndParams; the rotor's wall on j2_link, the elbow block + shaft in M3):
 FOREARM_ROLL_AXIS_Z = _FOREARM.roll_end.axis_z     # 25 [REFERENCE] the roll axis' N-station in j2_link's frame = the wrist centre's (42 - 17)
 FOREARM_WALL_X = _FOREARM.roll_end.wall_x          # (-56, -48) [DESIGN] the flange wall: wrist face .. elbow face (48 from the elbow axis)

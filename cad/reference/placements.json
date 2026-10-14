@@ -11,9 +11,9 @@
  "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. A record with a `mount` block (keys under `mounted`) is a motor mount declared in lib/mounts.py, not a SolidWorks node: parent None, rel == world = host world * mount frame.",
  "root_label": "final_Arm_Assembly_Fully_Movable",
  "expected": {
-  "leaf_occurrences": 64,
-  "solids": 153,
-  "solid_volume": 2090066.91
+  "leaf_occurrences": 69,
+  "solids": 162,
+  "solid_volume": 2097080.336
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -31,6 +31,8 @@
   "nema17_40mm#3",
   "mks_servo42d#3",
   "gt2_pulley_20t#2",
+  "gt2_pulley_20t#3",
+  "gt2_pulley_20t#4",
   "elbow_motor_screws#1",
   "bearing_6806#1",
   "bearing_6806#2",
@@ -53,6 +55,9 @@
   "gt2_idler_20t#1",
   "wrist_idler_screw#1",
   "wrist_idler_nut#1",
+  "yaw_belt#1",
+  "elbow_belt#1",
+  "wrist_belt#1",
   "forearm_roll_drive#1"
  ],
  "occurrences": [
@@ -3968,6 +3973,212 @@
    ]
   },
   {
+   "key": "gt2_pulley_20t#3",
+   "part": "gt2_pulley_20t",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "nema17_48mm#1",
+    "link": "base_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      0.0,
+      2.85
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      -90.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the base_yaw motor's 20T on its shaft, its hub in the motor plate's window: its tooth band level with the 120T's"
+   },
+   "solids": 3,
+   "solid_volume": 1878.627,
+   "rel": {
+    "position": [
+     73.06651,
+     -42.05,
+     0.08362
+    ],
+    "rotation_xyz_deg": [
+     -180.0,
+     0.0,
+     -90.0
+    ],
+    "matrix_3x4": [
+     [
+      -0.0,
+      1.0,
+      0.0,
+      73.06651
+     ],
+     [
+      1.0,
+      0.0,
+      0.0,
+      -42.05
+     ],
+     [
+      0.0,
+      0.0,
+      -1.0,
+      0.08362
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     73.06651,
+     -42.05,
+     0.08362
+    ],
+    "rotation_xyz_deg": [
+     -180.0,
+     0.0,
+     -90.0
+    ],
+    "matrix_3x4": [
+     [
+      -0.0,
+      1.0,
+      0.0,
+      73.06651
+     ],
+     [
+      1.0,
+      0.0,
+      0.0,
+      -42.05
+     ],
+     [
+      0.0,
+      0.0,
+      -1.0,
+      0.08362
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    65.067,
+    -42.05,
+    -7.916
+   ],
+   "world_bbox_size": [
+    16.0,
+    14.45,
+    16.0
+   ]
+  },
+  {
+   "key": "gt2_pulley_20t#4",
+   "part": "gt2_pulley_20t",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "nema17_40mm#3",
+    "link": "forearm_link",
+    "joint": "wrist_pitch",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      0.0,
+      7.75
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      -90.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the wrist motor's 20T on its shaft, its hub up in the web's pilot slot: its tooth band level with the wrist 90T's"
+   },
+   "solids": 3,
+   "solid_volume": 1878.627,
+   "rel": {
+    "position": [
+     -117.605923,
+     335.167786,
+     25.653328
+    ],
+    "rotation_xyz_deg": [
+     -93.952465,
+     46.870118,
+     95.408263
+    ],
+    "matrix_3x4": [
+     [
+      -0.064435731,
+      -0.68061112,
+      0.729805824,
+      -117.605922834
+     ],
+     [
+      -0.0,
+      0.731325622,
+      0.682028471,
+      335.16778591
+     ],
+     [
+      -0.997921859,
+      0.043947003,
+      -0.047123501,
+      25.653327559
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -117.605923,
+     335.167786,
+     25.653328
+    ],
+    "rotation_xyz_deg": [
+     -93.952465,
+     46.870118,
+     95.408263
+    ],
+    "matrix_3x4": [
+     [
+      -0.064435731,
+      -0.68061112,
+      0.729805824,
+      -117.605922834
+     ],
+     [
+      -0.0,
+      0.731325622,
+      0.682028471,
+      335.16778591
+     ],
+     [
+      -0.997921859,
+      0.043947003,
+      -0.047123501,
+      25.653327559
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -126.04,
+    327.168,
+    10.84
+   ],
+   "world_bbox_size": [
+    16.389,
+    16.0,
+    15.278
+   ]
+  },
+  {
    "key": "elbow_motor_screws#1",
    "part": "elbow_motor_screws",
    "kind": "part",
@@ -6231,6 +6442,315 @@
     9.119,
     9.001,
     5.259
+   ]
+  },
+  {
+   "key": "yaw_belt#1",
+   "part": "yaw_belt",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "base#1",
+    "link": "base_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      73.06651,
+      -31.1,
+      0.08362
+     ],
+     "rotation_xyz_deg": [
+      -90.0,
+      0.0,
+      179.934429
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the base_yaw belt inside the base: the motor's 20T to the 120T under j1_coupler"
+   },
+   "solids": 1,
+   "solid_volume": 1136.33,
+   "rel": {
+    "position": [
+     73.06651,
+     -31.1,
+     0.08362
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     179.934429
+    ],
+    "matrix_3x4": [
+     [
+      -0.999999345,
+      -0.00114443,
+      0.0,
+      73.06651
+     ],
+     [
+      0.0,
+      -0.0,
+      1.0,
+      -31.1
+     ],
+     [
+      -0.00114443,
+      0.999999345,
+      0.0,
+      0.08362
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     73.06651,
+     -31.1,
+     0.08362
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     179.934429
+    ],
+    "matrix_3x4": [
+     [
+      -0.999999345,
+      -0.00114443,
+      0.0,
+      73.06651
+     ],
+     [
+      0.0,
+      -0.0,
+      1.0,
+      -31.1
+     ],
+     [
+      -0.00114443,
+      0.999999345,
+      0.0,
+      0.08362
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -38.573,
+    -34.1,
+    -38.573
+   ],
+   "world_bbox_size": [
+    118.382,
+    6.0,
+    77.146
+   ]
+  },
+  {
+   "key": "elbow_belt#1",
+   "part": "elbow_belt",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j1_link#1",
+    "link": "upper_arm_link",
+    "joint": "elbow_pitch",
+    "frame_in_host": {
+     "position": [
+      88.028325,
+      7.572,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the elbow belt under j1_link's web: the elbow motor's 20T to the elbow 90T"
+   },
+   "solids": 1,
+   "solid_volume": 1059.993,
+   "rel": {
+    "position": [
+     -61.688236,
+     149.999016,
+     -31.017532
+    ],
+    "rotation_xyz_deg": [
+     -180.0,
+     -3.694455,
+     -132.415833
+    ],
+    "matrix_3x4": [
+     [
+      -0.673104708,
+      0.736734748,
+      -0.064435727,
+      -61.688235682
+     ],
+     [
+      0.738268975,
+      0.674506428,
+      2e-09,
+      149.999016231
+     ],
+     [
+      0.043462313,
+      -0.047570897,
+      -0.997921859,
+      -31.017531976
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -61.688236,
+     149.999016,
+     -31.017532
+    ],
+    "rotation_xyz_deg": [
+     -180.0,
+     -3.694455,
+     -132.415833
+    ],
+    "matrix_3x4": [
+     [
+      -0.673104708,
+      0.736734748,
+      -0.064435727,
+      -61.688235682
+     ],
+     [
+      0.738268975,
+      0.674506428,
+      2e-09,
+      149.999016231
+     ],
+     [
+      0.043462313,
+      -0.047570897,
+      -0.997921859,
+      -31.017531976
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -146.021,
+    143.257,
+    -34.446
+   ],
+   "world_bbox_size": [
+    91.254,
+    96.283,
+    11.855
+   ]
+  },
+  {
+   "key": "wrist_belt#1",
+   "part": "wrist_belt",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j2_link#1",
+    "link": "forearm_link",
+    "joint": "wrist_pitch",
+    "frame_in_host": {
+     "position": [
+      -94.0,
+      0.0,
+      0.3
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      180.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the wrist belt under j2_link's web: the wrist motor's 20T round the idler to the wrist 90T"
+   },
+   "solids": 1,
+   "solid_volume": 1059.849,
+   "rel": {
+    "position": [
+     -118.311494,
+     335.167786,
+     14.726083
+    ],
+    "rotation_xyz_deg": [
+     -0.0,
+     3.694455,
+     133.002359
+    ],
+    "matrix_3x4": [
+     [
+      -0.68061112,
+      -0.729805824,
+      0.064435731,
+      -118.311494091
+     ],
+     [
+      0.731325622,
+      -0.682028471,
+      0.0,
+      335.16778591
+     ],
+     [
+      0.043947003,
+      0.047123501,
+      0.997921859,
+      14.726083203
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -118.311494,
+     335.167786,
+     14.726083
+    ],
+    "rotation_xyz_deg": [
+     -0.0,
+     3.694455,
+     133.002359
+    ],
+    "matrix_3x4": [
+     [
+      -0.68061112,
+      -0.729805824,
+      0.064435731,
+      -118.311494091
+     ],
+     [
+      0.731325622,
+      -0.682028471,
+      0.0,
+      335.16778591
+     ],
+     [
+      0.043947003,
+      0.047123501,
+      0.997921859,
+      14.726083203
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -199.195,
+    328.426,
+    11.298
+   ],
+   "world_bbox_size": [
+    87.805,
+    91.347,
+    11.632
    ]
   },
   {

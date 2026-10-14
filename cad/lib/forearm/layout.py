@@ -119,6 +119,14 @@ def wrist_belt_loop(cfg: ForearmConfig = DEFAULT, *, idler: bool = True) -> list
     return loop
 
 
+def roll_belt_loop(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float, float]]:
+    """The roll belt's loop (lib/belts.py) in the belt's own frame: the roll motor's 20T on the origin (the elbow axis),
+    the pulley's 90T ring on +X (the roll axis, its centre distance on) - the belt's row in
+    assemblies/forearm_roll_drive.py turns +X onto the module's +Y."""
+    d = cfg.drive
+    return [pulley_circle(0.0, 0.0, GT2_PULLEY_20T_TEETH), pulley_circle(d.centre_distance, 0.0, d.ring_teeth)]
+
+
 def wrist_belt_frame(cfg: ForearmConfig = DEFAULT) -> tuple:
     """The wrist belt's frame as data in j2_link's frame: on the motor's axis at the belt's mid-plane, its +X toward the
     wrist (j2_link's -X), +Z = j2_link's +Z."""

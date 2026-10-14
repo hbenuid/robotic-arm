@@ -8,20 +8,21 @@ forearm_roll_drive module (code-driven, placed by lib/mounts.py MODULE_MOUNTS) -
 tests/test_assembly.py - bucketed into the GROUPS component tree (arm -> base_link/shoulder_link/upper_arm_link/
 elbow_link/forearm_link/wrist_pitch_link/wrist) so each rigid link toggles as one node in the viewers. Colors: a PRINTED part carries its link's
 (or its module's) tint, every PURCHASED part (COTS = True - motors, boards, servo, bearings, pins, bolts, nuts,
-rails, the 20T pulleys) is _occurrences.BOUGHT_TINT grey, inside the modules too:
+rails, the 20T pulleys, the belts) is _occurrences.BOUGHT_TINT grey, inside the modules too:
 
     arm
     |- base_link         base, bearing_6806:base_yaw_1 / _2, washer_as6590:base_yaw_1, bearing_axk6590:base_yaw,
     |                    base_motor_mount, base_motor_mount_screws / _nuts:base_yaw, nema17_48mm:base_yaw,
-    |                    mks_servo42d:base_yaw
+    |                    mks_servo42d:base_yaw, gt2_pulley_20t:base_yaw, yaw_belt:base_yaw
     |- shoulder_link     j1_coupler, j1_motor_leg, washer_as6590:base_yaw_2, gt2_pulley_120t:base_yaw,
     |                    yaw_pulley_screws / _nuts:base_yaw, cycloidal_drive (kept whole - see below)
     |- upper_arm_link    j1_link, bearing_6806:elbow_pitch_1 / _2, nema17_40mm:elbow_pitch, mks_servo42d:elbow_pitch,
-    |                    gt2_pulley_20t:elbow_pitch, elbow_motor_screws:elbow_pitch
+    |                    gt2_pulley_20t:elbow_pitch, elbow_motor_screws:elbow_pitch, elbow_belt:elbow_pitch
     |- elbow_link        gt2_pulley_90t:j2, elbow_pulley_screws / _nuts:elbow_pitch, forearm_roll_drive (kept whole - see
     |                    below; its block IS the elbow coupler)
     |- forearm_link      j2_link, bearing_6806:wrist_pitch_1 / _2, nema17_40mm:wrist_pitch, mks_servo42d:wrist_pitch,
-    |                    gt2_idler_20t:wrist_pitch, wrist_idler_screw / _nut:wrist_pitch
+    |                    gt2_pulley_20t:wrist_pitch, wrist_belt:wrist_pitch, gt2_idler_20t:wrist_pitch,
+    |                    wrist_idler_screw / _nut:wrist_pitch
     |- wrist_pitch_link  gt2_pulley_90t:j3, wrist_pulley_screws / _nuts:wrist_pitch, j3_coupler:j3, wrist_link,
     |                    gripper_clamp_bracket, nema17_pancake
     |- wrist             gt2_pulley_20t, gripper
@@ -81,6 +82,8 @@ OCCURRENCES = [
     ("base_motor_mount_nuts", "base_yaw", "base_motor_mount_nuts#1"),       # ... into the nuts in the base's ribs
     ("nema17_48mm",           "base_yaw", "nema17_48mm#1"),        # mounted: the 48 mm motor under the motor mount's plate
     ("mks_servo42d",          "base_yaw", "mks_servo42d#1"),
+    ("gt2_pulley_20t",        "base_yaw", "gt2_pulley_20t#3"),     # mounted: on the base_yaw motor's shaft, level with the 120T ...
+    ("yaw_belt",              "base_yaw", "yaw_belt#1"),           # ... and its belt to it
     ("j1_coupler",            None, "j1_coupler#1"),
     ("j1_motor_leg",          None, "j1_motor_leg#1"),     # mounted: the motor-side leg, a ring round the drive's motor sleeve
     ("washer_as6590",         "base_yaw_2", "washer_as6590#2"),    # ... its upper washer under j1_coupler's seat
@@ -95,6 +98,7 @@ OCCURRENCES = [
     ("mks_servo42d",          "elbow_pitch", "mks_servo42d#2"),
     ("gt2_pulley_20t",        "elbow_pitch", "gt2_pulley_20t#2"),  # mounted: on the elbow motor's shaft, level with the elbow 90T
     ("elbow_motor_screws",    "elbow_pitch", "elbow_motor_screws#1"),   # mounted: the elbow motor's 4x M3, up through the web
+    ("elbow_belt",            "elbow_pitch", "elbow_belt#1"),      # mounted: the elbow belt, the 20T to the elbow 90T
     ("gt2_pulley_90t",        "j2", "gt2_pulley_90t#3"),           # mounted: re-seated on the lower elbow bearing (#1 retired)
     ("elbow_pulley_screws",   "elbow_pitch", "elbow_pulley_screws#1"),   # mounted: the elbow 90T's 4x M4 ...
     ("elbow_pulley_nuts",     "elbow_pitch", "elbow_pulley_nuts#1"),     # ... into the block's captive nuts
@@ -105,6 +109,8 @@ OCCURRENCES = [
     ("bearing_6806",          "wrist_pitch_2", "bearing_6806#6"),
     ("nema17_40mm",           "wrist_pitch", "nema17_40mm#3"),     # mounted: j2_link's web slots
     ("mks_servo42d",          "wrist_pitch", "mks_servo42d#3"),
+    ("gt2_pulley_20t",        "wrist_pitch", "gt2_pulley_20t#4"),  # mounted: on the wrist motor's shaft, level with the wrist 90T
+    ("wrist_belt",            "wrist_pitch", "wrist_belt#1"),      # mounted: the wrist belt, round the idler
     ("gt2_idler_20t",         "wrist_pitch", "gt2_idler_20t#1"),   # mounted: the wrist belt's idler under the web ...
     ("wrist_idler_screw",     "wrist_pitch", "wrist_idler_screw#1"),   # ... its M5 axle ...
     ("wrist_idler_nut",       "wrist_pitch", "wrist_idler_nut#1"),     # ... into the nut in the web's top
@@ -130,14 +136,14 @@ MODULES = {"gripper": gripper.gripper, "cycloidal_drive": cycloidal_drive.cycloi
 GROUPS = [
     ("base_link",        "#937860", ("base#1", "bearing_6806#1", "bearing_6806#2", "washer_as6590#1", "bearing_axk6590#1",
                                      "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1",
-                                     "nema17_48mm#1", "mks_servo42d#1")),
+                                     "nema17_48mm#1", "mks_servo42d#1", "gt2_pulley_20t#3", "yaw_belt#1")),
     ("shoulder_link",    "#4C72B0", ("j1_coupler#1", "j1_motor_leg#1", "washer_as6590#2", "gt2_pulley_120t#1", "yaw_pulley_screws#1",
                                      "yaw_pulley_nuts#1", DRIVE_KEY)),
     ("upper_arm_link",   "#CCB974", ("j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2",
-                                     "gt2_pulley_20t#2", "elbow_motor_screws#1")),
+                                     "gt2_pulley_20t#2", "elbow_motor_screws#1", "elbow_belt#1")),
     ("elbow_link",       "#DA8BC3", ("gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", ROLL_KEY)),
     ("forearm_link",     "#DD8452", ("j2_link#1", "bearing_6806#5", "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3",
-                                     "gt2_idler_20t#1", "wrist_idler_screw#1", "wrist_idler_nut#1")),
+                                     "gt2_pulley_20t#4", "wrist_belt#1", "gt2_idler_20t#1", "wrist_idler_screw#1", "wrist_idler_nut#1")),
     ("wrist_pitch_link", "#55A868", ("gt2_pulley_90t#4", "wrist_pulley_screws#1", "wrist_pulley_nuts#1", "j3_coupler#2", "wrist_link#1",
                                      "gripper_clamp_bracket#1", "nema17_pancake#1")),
     ("wrist",            "#8172B3", ("gt2_pulley_20t#1", GRIPPER_KEY)),
