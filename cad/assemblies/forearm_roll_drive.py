@@ -6,7 +6,7 @@ SolidWorks j3_coupler's lip, boss, journal and stub down into j1_link's bore; th
 so j3_coupler#1 is retired, lib/placements.py RETIRED); the 40 mm kit motor + MKS board ON the elbow axis in its pocket
 (open on the +N face, the pocket's front wall the plate with the tension slots) and the 20T on the motor shaft, out in
 front of the frame's front face; the 6806 pair back to back on the tower's lip. Rotor: the pulley (forearm_roll_pulley,
-the output: the integral 90T ring sunk in the cup on the frame's front face, its hub down through bearing 2, the spigot
+the output: the integral 90T ring over the bearing boss on the frame's front face, its hub down through bearing 2, the spigot
 the forearm's wall bolts onto - 4x M3 into nuts in its core; forearm_link) and the shaft (forearm_roll_shaft, a collar:
 its hub up through bearing 1 to the pulley's, the rotor clamp's nuts and the stop lug in its flange), clamped by 4x M3
 from the pulley's front face. MODULE FRAME (lib/forearm/params.py RollDriveParams): origin on the roll axis at the elbow
@@ -59,8 +59,8 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("stator") after any geometry change.
 EXPECTED = {
-    "leaves": 9, "solids": 24, "solid_volume": 490069.393,
-    "bodies": {"stator": {"leaves": 7, "solids": 22, "solid_volume": 451808.745},
+    "leaves": 9, "solids": 24, "solid_volume": 524411.105,
+    "bodies": {"stator": {"leaves": 7, "solids": 22, "solid_volume": 486150.457},
                "rotor": {"leaves": 2, "solids": 2, "solid_volume": 38260.648}},
 }
 
