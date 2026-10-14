@@ -22,7 +22,10 @@
   identity. In that pose shoulder_link is yawed +3.694 deg about base_yaw relative to base X (a
   captured pose, not a design offset); the shoulder_pitch, elbow_pitch and wrist_pitch axes are
   parallel (SlabParams.elbow_x and -WebParams.wrist_x apart in the pitch plane, with 10 mm and 42 mm offsets
-  along the axis).
+  along the axis). The capture pose is the design's: the forearm and everything beyond it are turned half a
+  turn about the forearm_roll axis from the SolidWorks capture (cad/lib/placements.py TURNS: the wrist_pitch
+  motor on the upper arm's side), so at zero the wrist and the gripper are rolled 180 deg from the capture and
+  wrist_pitch's axis is the capture's -N.
   forearm_roll's Z runs along the forearm (the pitch plane's in-plane direction) through the WRIST
   CENTRE - where the wrist_pitch and wrist_roll axes meet, 17 mm back along the pitch axis from the
   wrist_pitch origin - so the last three axes are concurrent (a spherical wrist); its X is the
@@ -135,9 +138,9 @@
   </link>
   <link name="forearm_link">
     <inertial>
-      <origin xyz="0.005138 -0.000013 0.112869" rpy="0 0 0" />
+      <origin xyz="-0.005123 0.000008 0.112869" rpy="0 0 0" />
       <mass value="0.635166" />
-      <inertia ixx="1.440980e-03" ixy="2.446769e-07" ixz="1.299114e-04" iyy="1.418393e-03" iyz="-3.164737e-08" izz="3.582283e-04" />
+      <inertia ixx="1.440981e-03" ixy="2.482208e-07" ixz="-1.291062e-04" iyy="1.418477e-03" iyz="5.993678e-08" izz="3.583121e-04" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -260,7 +263,7 @@
   <joint name="wrist_pitch" type="revolute">
     <parent link="forearm_link" />
     <child link="wrist_pitch_link" />
-    <origin xyz="0.016998 0 0.17" rpy="-1.570799 -1.271722 -1.570793" />
+    <origin xyz="-0.016997 -0.000007 0.17" rpy="-1.570808 -1.271748 1.570808" />
     <axis xyz="0 0 1" />
     <limit lower="-1.832596" upper="1.22173" effort="5" velocity="1" />
   </joint>

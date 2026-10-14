@@ -33,6 +33,15 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   link with `P.shifted()`, `tests/totals.py` a record's bbox with `record_shift()`. `test_placements.py` checks the
   lists against `robot/frames.py LINKS`, each anchor axis against its record, and where the links put what lies
   beyond them.
+- **Turned occurrences** (`lib/placements.py TURNS`, after the SHIFTS): a link the design turned about an axis of its
+  own turns every record it lists - the forearm: `j2_link#1` and all beyond it half a turn about its roll axis
+  (`ForearmConfig.roll_turn_deg`; the wrist-pitch motor on the upper arm's side, the wrist and the gripper rolled with
+  it). `location()` applies it (`turned=False`: the frame before it); `robot/frames.py` turns its points with
+  `P.shifted()` and its directions with `P.turned()`; a turned record's bbox in `tests/totals.py` is its placed build's.
+  The mounted records hosted on turned ones follow (`mount_placements.py`); a `ModuleMount` resolves its host
+  UNTURNED - the roll drive drives the joint the turn is about, so it keeps its pose (its frame, its tests and
+  `tests/forearm/helpers.py in_drive_frame()` are in `j2_link`'s frame before the turn). `test_placements.py
+  test_the_forearm_turns_about_its_roll_axis` locks it.
 - **Mounted occurrences** (`lib/mounts.py`): the base's bolt-on motor mount (`base_motor_mount#1`, a box round the motor bolted to
   the base's end - designed here, at identity on `base#1` - with its 4x M4 screws + nuts, `base_motor_mount_screws#1` /
   `_nuts#1`, hosted on the mount and on the screws); the belt joints' motors - `nema17_48mm#1` (the 48 mm motor, under the

@@ -313,6 +313,8 @@ class ForearmConfig:
     drive: RollDriveParams = RollDriveParams()
     elbow_offset: float = 0.0              # the roll axis' distance from the elbow axis along +Y (j2_link's, the module's): 0 = they cross
     #                                        (lib/placements.py SHIFTS moves the forearm and all beyond it across by DEFAULT - LEGACY)
+    roll_turn_deg: float = 0.0             # the forearm and everything beyond it turned this far about the roll axis (j2_link's +X) from the
+    #                                        capture (lib/placements.py TURNS); the roll drive keeps its pose
 
 
 LEGACY = ForearmConfig()     # the SolidWorks part, exactly
@@ -326,7 +328,10 @@ _WEB = replace(LEGACY.web, wrist_x=LEGACY.web.wrist_x + SHORTENING)
 # wrist boss -, the slots shorten to the slide that leaves (>= 4 mm before the wall; its ends: the plug's clearance,
 # 0.5 off the boss) and the central one widens to pass the Ø22 pilot boss; the caps are gone, so are the sockets
 # that located them. The roll axis runs elbow_offset above the elbow axis - the roll motor sits on the elbow axis, the
-# roll belt's centre distance under the ring - so the forearm and everything beyond it sit that far across (+Y).
+# roll belt's centre distance under the ring - so the forearm and everything beyond it sit that far across (+Y). The
+# forearm is turned half a turn about the roll axis from the capture: the wrist-pitch motor on the upper arm's side of
+# the roll axis, the wrist belt on the other, the wrist and the gripper rolled with it; the wall's 4 bolts at 0 / 90 /
+# 180 / 270 deg take the roll pulley as before.
 DEFAULT = replace(
     LEGACY, roll=True, web=_WEB,
     motor_x=_WEB.wrist_x + centre_distance(RollEndParams().wrist_belt, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH),   # -99.52
@@ -334,4 +339,5 @@ DEFAULT = replace(
     slot=SlotParams(centre_w=22.3, centre_x=(-110.0, -88.0), side_x=(-119.0, -78.5)),
     sockets=None,
     elbow_offset=RollDriveParams().centre_distance,   # [DESIGN] 60.9: the 240-2GT roll belt's centre distance
+    roll_turn_deg=180.0,                              # [DESIGN] the wrist-pitch motor on the other side of the forearm
 )

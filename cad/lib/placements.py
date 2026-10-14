@@ -16,12 +16,14 @@ declared as frames in lib/mounts.py and materialised by tools/reference/mount_pl
 never placed - its pose is a lib/mounts.py ModuleMount, its contents assemblies/<module>.py.
 
 The design may also MOVE capture records without editing the file: SHIFTS translates every record beyond a link
-whose length the design changed, or whose far end it moved across the link (location() applies it; to_location() /
-to_record() stay raw for the writers).
+whose length the design changed, or whose far end it moved across the link, and TURNS then turns the records of a link
+the design turned about an axis of its own (location() applies both; to_location() / to_record() stay raw for the
+writers).
 """
 from __future__ import annotations
 
 import json
+import math
 import pathlib
 from dataclasses import dataclass
 
@@ -115,6 +117,78 @@ SHIFTS: tuple[LinkShift, ...] = (
 )
 
 
+@dataclass(frozen=True)
+class LinkTurn:
+    """A link the design turned about an axis of its own: every capture record in `moves` (the link's own record and all
+    beyond it, as a LinkShift's) turns `deg` about the line through `point` along `axis` - both in the anchor record's
+    frame, the anchor SHIFTED (the turn comes after the translations). `deg` is the link parameter's DEFAULT - LEGACY;
+    `axis_w` / `across_w` are the anchor's +X / +Y in W, data as a LinkShift's (tests/test_placements.py checks them).
+    A designed module mounted on a turned record keeps its pose - it drives the joint the turn is about:
+    tools/reference/mount_placements.py resolves a ModuleMount's host unturned (location(turned=False))."""
+
+    link: str
+    anchor: str
+    axis_w: tuple[float, float, float]
+    across_w: tuple[float, float, float]
+    point: tuple[float, float, float]
+    axis: tuple[float, float, float]
+    deg: float
+    moves: tuple[str, ...]
+
+
+TURNS: tuple[LinkTurn, ...] = (
+    # the forearm half a turn about its roll axis (y 0, z axis_z, along j2_link's +X; lib/forearm/params.py roll_turn_deg):
+    # the wrist-pitch motor on the upper arm's side of it, the wrist and the gripper rolled with it; the roll drive (its
+    # rotor too) keeps its pose and j2_link's wall bolts onto the pulley turned (its 4 bolts at 0 / 90 / 180 / 270 deg)
+    LinkTurn("j2_link", "j2_link#1", (0.680611117, -0.731325624, -0.043947003), (0.729805826, 0.682028468, -0.047123502),   # [REFERENCE]
+             (0.0, 0.0, _FOREARM.roll_end.axis_z), (1.0, 0.0, 0.0), _FOREARM.roll_turn_deg - _FOREARM_LEGACY.roll_turn_deg,
+             ("j2_link#1",) + _BEYOND_WRIST_PITCH),
+)
+
+
+def _cross(a, b) -> tuple[float, float, float]:
+    return (a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
+
+
+def _dot(a, b) -> float:
+    return sum(x * y for x, y in zip(a, b, strict=True))
+
+
+def _turns_of(key: str) -> list[LinkTurn]:
+    return [t for t in TURNS if key in t.moves and t.deg]
+
+
+def turn_line(t: LinkTurn) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
+    """(a point on the turn's axis, its unit direction) in W: `point` / `axis` of the anchor's record, shifted."""
+    o, d = OCCURRENCES[t.anchor]["world"]["position"], shift(t.anchor)
+    ex, ey = t.axis_w, t.across_w
+    ez = _cross(ex, ey)
+    c = tuple(o[i] + d[i] + t.point[0] * ex[i] + t.point[1] * ey[i] + t.point[2] * ez[i] for i in range(3))
+    u = tuple(t.axis[0] * ex[i] + t.axis[1] * ey[i] + t.axis[2] * ez[i] for i in range(3))
+    n = math.sqrt(_dot(u, u))
+    return (c[0], c[1], c[2]), (u[0] / n, u[1] / n, u[2] / n)
+
+
+def _rotate(v, u, deg: float) -> tuple[float, float, float]:
+    """`v` turned `deg` about the unit direction `u` (Rodrigues)."""
+    c, s = math.cos(math.radians(deg)), math.sin(math.radians(deg))
+    k, d = _cross(u, v), _dot(u, v)
+    return (v[0] * c + k[0] * s + u[0] * d * (1.0 - c), v[1] * c + k[1] * s + u[1] * d * (1.0 - c),
+            v[2] * c + k[2] * s + u[2] * d * (1.0 - c))
+
+
+def is_turned(key: str) -> bool:
+    """Whether a TURN moves occurrence `key` (a module's children follow it: pass the module's key)."""
+    return bool(_turns_of(key))
+
+
+def turned(key: str, direction: tuple[float, float, float]) -> tuple[float, float, float]:
+    """A capture direction (W) that turns with occurrence `key` (robot/frames.py's axes beyond a turned link)."""
+    for t in _turns_of(key):
+        direction = _rotate(direction, turn_line(t)[1], t.deg)
+    return direction
+
+
 def shift(key: str) -> tuple[float, float, float]:
     """The translation (W, mm) SHIFTS applies to occurrence `key`'s world pose: (0, 0, 0) for any other record."""
     t = [0.0, 0.0, 0.0]
@@ -130,10 +204,22 @@ def record_shift(record: dict) -> tuple[float, float, float]:
     return shift(record.get("parent") or record["key"])
 
 
-def shifted(key: str, point: tuple[float, float, float]) -> tuple[float, float, float]:
-    """A capture point (W) that moves with occurrence `key` (robot/frames.py's joint origins)."""
+def shifted(key: str, point: tuple[float, float, float], *, turned: bool = True) -> tuple[float, float, float]:
+    """A capture point (W) that moves with occurrence `key` (robot/frames.py's joint origins): SHIFTS, then TURNS
+    (`turned=False`: SHIFTS only - for a point ON a turn's axis, which the turn leaves where it is)."""
     d = shift(key)
-    return (point[0] + d[0], point[1] + d[1], point[2] + d[2])
+    p = (point[0] + d[0], point[1] + d[1], point[2] + d[2])
+    for t in _turns_of(key) if turned else ():
+        c, u = turn_line(t)
+        r = _rotate((p[0] - c[0], p[1] - c[1], p[2] - c[2]), u, t.deg)
+        p = (c[0] + r[0], c[1] + r[1], c[2] + r[2])
+    return p
+
+
+def _turn_location(t: LinkTurn) -> bd.Location:
+    c, u = turn_line(t)
+    f = bd.Location(bd.Plane(origin=c, z_dir=u))
+    return f * bd.Location((0.0, 0.0, 0.0), (0.0, 0.0, t.deg)) * f.inverse()
 
 
 def to_location(record: dict) -> bd.Location:
@@ -152,22 +238,27 @@ def to_record(loc: bd.Location) -> dict:
     }
 
 
-def record_location(record: dict, frame: str = "rel") -> bd.Location:
-    """A record's Location with SHIFTS applied: its world pose moves by record_shift(); so does `rel` of a top-level
-    record (rel == world), never a child's (relative to its parent, which carries the shift)."""
+def record_location(record: dict, frame: str = "rel", *, turned: bool = True) -> bd.Location:
+    """A record's Location with SHIFTS and TURNS applied: its world pose moves by record_shift() and turns with its TURNS
+    (`turned=False`: shifted only); so does `rel` of a top-level record (rel == world), never a child's (relative to its
+    parent, which carries both)."""
     loc = to_location(record[frame])
     if frame == "world" or record.get("parent") is None:
         d = record_shift(record)
         if any(d):
             loc = bd.Location(d) * loc
+        if turned:
+            for t in _turns_of(record.get("parent") or record["key"]):
+                loc = _turn_location(t) * loc
     return loc
 
 
-def location(key: str, frame: str = "rel") -> bd.Location:
-    """Location of occurrence `key`; frame = "rel" (to its parent node) or "world"; SHIFTS applied."""
+def location(key: str, frame: str = "rel", *, turned: bool = True) -> bd.Location:
+    """Location of occurrence `key`; frame = "rel" (to its parent node) or "world"; SHIFTS and TURNS applied (`turned=False`:
+    SHIFTS only - the frame a turned link had before its turn)."""
     if not OCCURRENCES:
         raise FileNotFoundError(MISSING_HINT)
-    return record_location(OCCURRENCES[key], frame)
+    return record_location(OCCURRENCES[key], frame, turned=turned)
 
 
 def keys(*, part: str | None = None, parent: str | None = None, kind: str | None = None,

@@ -33,7 +33,7 @@ FAR = 500.0   # past every part: the half-plane behind the frame's front face
 
 
 def host_to_module(cfg: ForearmConfig = DEFAULT) -> bd.Location:
-    """j2_link's frame -> the module frame (the inverse of the module's mount frame)."""
+    """j2_link's frame before the forearm's turn -> the module frame (the inverse of the module's mount frame)."""
     return to_location(module_frame_in_host(cfg)).inverse()
 
 

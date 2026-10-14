@@ -112,6 +112,8 @@ J2_MOTOR_SLIDE_X = _FOREARM.motor_x                # -99.52: set by the stock WR
 WRIST_BELT_LENGTH = _FOREARM.roll_end.wrist_belt   # 258-2GT [ESTIMATE] the wrist-pitch belt (90T at the wrist, 20T on the motor)
 # The forearm roll (lib/forearm/params.py RollEndParams; the rotor's wall on j2_link, the elbow block + shaft in M3):
 FOREARM_ROLL_AXIS_Z = _FOREARM.roll_end.axis_z     # 25 [REFERENCE] the roll axis' N-station in j2_link's frame = the wrist centre's (42 - 17)
+FOREARM_ROLL_TURN_DEG = _FOREARM.roll_turn_deg     # 180 [DESIGN] the forearm + all beyond it turned about the roll axis from the capture
+#                                                    (lib/placements.py TURNS): the wrist-pitch motor on the upper arm's side of it
 FOREARM_WALL_X = _FOREARM.roll_end.wall_x          # (-56, -48) [DESIGN] the flange wall: wrist face .. elbow face (48 from the elbow axis)
 FOREARM_WALL_OD = _FOREARM.roll_end.wall_od        # 60 [DESIGN] the flange wall's round outline about the roll axis (on a foot as wide as the web's neck)
 FOREARM_PLUG_CLEARANCE = _FOREARM.roll_end.plug_clearance   # 10 [DESIGN] the wrist motor's connector plug to the wall

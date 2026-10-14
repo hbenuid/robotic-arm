@@ -6,8 +6,8 @@ pulleys, the M4 screws + nuts that clamp them and the pose of a code-driven modu
 The SolidWorks capture never contained the belt joints' motors or bearings; lib/mounts.py declares each one (a
 motor's MKS board too, and the two 90T pulleys it re-seats) as a frame in its host occurrence's frame. This tool
 resolves `world = host world * frame` (the host is a SolidWorks record - a retired one for a re-seated pulley -, its
-world pose moved by lib/placements.py SHIFTS, or the motor record for a board, the pulley for its screws, the screws
-for their nuts - declaration order), builds the part
+world pose moved by lib/placements.py SHIFTS and TURNS, or the motor record for a board, the pulley for its screws, the
+screws for their nuts - declaration order), builds the part
 in-process (parts.build) to fill `solids` / `solid_volume` / `world_bbox_*`, and writes ordinary
 `kind: "part"` records with parent None, rel == world and a `mount` block naming the host, link, joint
 and the frame - so assemblies/arm.py, robot/frames.py LINKS, the inertials and tools/bom.py read them
@@ -22,7 +22,9 @@ entry's reason is re-read from there, so the document equals what a fresh extrac
 A ModuleMount (lib/mounts.py MODULE_MOUNTS - the forearm roll drive, which no SolidWorks node places) becomes
 a `kind: "module", designed: true` record with the same `mount` block and no solids / volume (the module's
 own totals are its EXPECTED; expected_totals() counts part records only), listed under `designed_modules`
-AND `mounted`, exactly like the drive's SolidWorks-placed record otherwise.
+AND `mounted`, exactly like the drive's SolidWorks-placed record otherwise. Its host resolves UNTURNED (shifted only):
+the module drives the joint a lib/placements.py TURN is about (the forearm turned about its roll axis), so it keeps its
+pose while the host's own record and all beyond it turn.
 
 Checks: every motor's +Z must be parallel to its joint's axis (robot/frames.py JOINTS); a bearing's +Z, a pulley's
 +Y, a pulley-bolt pattern's +Z (lib/mounts.py AXES) and a module's +Z must lie ON that axis (parallel, origin on the line) - a wrong rotation
@@ -79,6 +81,7 @@ def mounted_records(records: list[dict]) -> list[dict]:
     occurrences; the boards resolve against the motors declared before them): the part mounts first, then the
     module mounts."""
     worlds = {o["key"]: P.record_location(o, "world") for o in records}
+    unturned = {o["key"]: P.record_location(o, "world", turned=False) for o in records}   # a ModuleMount's host
     joints = RF.JOINT_BY_NAME
     out = []
     for m in mounts.MOUNTS:
@@ -104,7 +107,7 @@ def mounted_records(records: list[dict]) -> list[dict]:
             raise SystemExit(f"{m.key}: host {m.host!r} has no placement record")
         if m.module not in R.DESIGNED_MODULES:
             raise SystemExit(f"{m.key}: {m.module!r} is not in lib/reference.py DESIGNED_MODULES")
-        world = worlds[m.host] * to_location(m.frame)
+        world = unturned.get(m.host, worlds[m.host]) * to_location(m.frame)
         _check_axis(m.key, world, joints[m.joint], on_axis=True)
         out.append({
             "key": m.key, "part": m.module, "kind": "module", "designed": True, "path": None, "parent": None,
