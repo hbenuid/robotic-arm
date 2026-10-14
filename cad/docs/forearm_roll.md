@@ -144,8 +144,9 @@ the shaft rear face down (its nut pockets open to the bed).
    pushed out against the pocket's end. Then the forearm wall onto the spigot (2 mm into the recess) BEFORE the
    wrist-pitch motor goes on: 4× M3 × 16 from the wall's wrist face through the spigot into the nuts; the bottom one
    lays into the channel under the web from the belt side, its key through the channel or the motor slot. A screw taken
-   right out can drop its nut into the bore. The stop lug on the shaft's flange meets the frame's post just past
-   ±`FOREARM_ROLL_LIMIT_DEG`.
+   right out can drop its nut into the bore. The wrist-pitch motor's body stands in front of three of the heads (it
+   sits `motor_wall_clear` off them at its slots' wall end): take it off to reach them later. The stop lug on the
+   shaft's flange meets the frame's post just past ±`FOREARM_ROLL_LIMIT_DEG`.
 
 ## 5. Attachment to the arm (`robot/`)
 `elbow_link` = `gt2_pulley_90t#3` (the re-seated elbow 90T) + its screws and nuts + `forearm_roll_drive#1:stator` (the
@@ -160,8 +161,10 @@ forearm (`WRIST_PITCH_AXIS` the capture's −N): the forearm's turn changes `for
 recess, the Ø31 bolt circle (the screws' nuts in the pulley) and the Ø24 cable bore, on the web's neck (`neck_half_w`,
 tangent to the wrist boss) with two gussets — `j2_link`'s DEFAULT build (`lib/forearm/link.py roll_wall`,
 `necked_web`, `wall_gussets`). In `arm.py` the module is kept whole under the `elbow_link` group. The wrist-pitch motor
-sits where the stock wrist belt (`WRIST_BELT_LENGTH`) puts it (`J2_MOTOR_SLIDE_X`) so its plug clears the wall
-(`plug_clearance`).
+sits where the stock wrist belt (`WRIST_BELT_LENGTH`, a multipack length: no idler, its slots tension it) puts it
+(`J2_MOTOR_SLIDE_X`), its slots (`J2_MOTOR_SLIDE_RANGE`) ending with its body `motor_wall_clear` off the wall screws'
+heads; its connector faces sideways - away from the elbow axis, the forearm turned - with `plug_clearance` of room
+beside it (`tests/forearm/test_roll_end.py`).
 
 ## 6. Not modelled / to confirm
 `docs/open_issues.md`: the belts, the home sensor's mount (the modelled `ky003_hall_sensor`'s chip beside the stop

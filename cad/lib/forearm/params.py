@@ -139,8 +139,11 @@ class RollEndParams:
     channel_clear: float = 0.5            # [DESIGN] the channel under the web for a screw whose head would land in the web (the bottom one): the head
     #                                       + this all round, open to the web's underside, from the wall into the motor slot (the screw lays in, a key reaches it)
     cable_bore: float = 24.0              # [DESIGN] round the rotor's Ø18 bore (RollDriveParams.bore)
-    plug_clearance: float = 10.0          # [DESIGN] the wrist motor's connector plug needs this much room to the wall
-    wrist_belt: int = 258                 # [ESTIMATE] 258-2GT closed belt, 6 mm: sets the motor slide (motor_x)
+    plug_clearance: float = 10.0          # [DESIGN] the wrist motor's connector plug needs this much room beyond its connector (turned
+    #                                       sideways, lib/mounts.py: clear of the web, the gussets and the wall)
+    motor_wall_clear: float = 4.5         # [DESIGN] the wrist motor's body this far off the wall screws' heads at the slots' wall end
+    wrist_belt: int = 280                 # [DESIGN] 280-2GT closed belt, 6 mm (a multipack length, lib/belts.py STANDARD_2GT_LENGTHS):
+    #                                       sets the motor slide (motor_x) - no idler, the slots tension it
 
 
 ROLL_FRAME_R = 33.0   # [DESIGN] the roll frame's half width round the roll axis: its underside (3.0 over the upper arm's flat top),
@@ -324,19 +327,19 @@ SHORTENING = 40.0   # [DESIGN] the wrist pivot this much nearer the elbow than t
 _WEB = replace(LEGACY.web, wrist_x=LEGACY.web.wrist_x + SHORTENING)
 
 # The forearm with the roll joint, SHORTENING shorter: the wall replaces the elbow disc; the wrist-pitch motor sits
-# where the stock belt puts it (lib/belts.py) - between the wall, its connector plug clear by plug_clearance, and the
-# wrist boss -, the slots shorten to the slide that leaves (>= 4 mm before the wall; its ends: the plug's clearance,
-# 0.5 off the boss) and the central one widens to pass the Ø22 pilot boss; the caps are gone, so are the sockets
-# that located them. The roll axis runs elbow_offset above the elbow axis - the roll motor sits on the elbow axis, the
+# where the stock belt puts it (lib/belts.py) - near the wall, its connector turned sideways (lib/mounts.py) -, the
+# slots shorten to the slide round it (>= 4 mm before the wall; its wall end the body motor_wall_clear off the wall
+# screws' heads, its other end the same travel back: the belt goes on there, the slots tension it) and the central
+# one widens to pass the Ø22 pilot boss; the caps are gone, so are the sockets that located them. The roll axis runs elbow_offset above the elbow axis - the roll motor sits on the elbow axis, the
 # roll belt's centre distance under the ring - so the forearm and everything beyond it sit that far across (+Y). The
 # forearm is turned half a turn about the roll axis from the capture: the wrist-pitch motor on the upper arm's side of
 # the roll axis, the wrist belt on the other, the wrist and the gripper rolled with it; the wall's 4 bolts at 0 / 90 /
 # 180 / 270 deg take the roll pulley as before.
 DEFAULT = replace(
     LEGACY, roll=True, web=_WEB,
-    motor_x=_WEB.wrist_x + centre_distance(RollEndParams().wrist_belt, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH),   # -99.52
-    slide_range=(-103.5, -94.0),
-    slot=SlotParams(centre_w=22.3, centre_x=(-110.0, -88.0), side_x=(-119.0, -78.5)),
+    motor_x=_WEB.wrist_x + centre_distance(RollEndParams().wrist_belt, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH),   # -88.03
+    slide_range=(-94.0, -84.5),
+    slot=SlotParams(centre_w=22.3, centre_x=(-100.5, -78.5), side_x=(-109.5, -69.0)),
     sockets=None,
     elbow_offset=RollDriveParams().centre_distance,   # [DESIGN] 60.9: the 240-2GT roll belt's centre distance
     roll_turn_deg=180.0,                              # [DESIGN] the wrist-pitch motor on the other side of the forearm

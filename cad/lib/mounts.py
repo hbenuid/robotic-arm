@@ -40,8 +40,9 @@ Geometry (lib/params.py, kernel-verified 2026-09-21 - tests/test_mounts.py re-ch
                docs/open_issues.md); held down by its 4x M3 SHCS (elbow_motor_screws#1, MOTOR_SCREW_MOUNTS), up
                through the web from its underside, the heads flush in its pockets - the drive motor's screws and seat
   wrist_pitch  j2_link's web (+Z face z = J2_MOTOR_WEB_FACE_Z), motor axis at x = J2_MOTOR_SLIDE_X on the side
-               slots (lib/forearm/params.py: where the stock wrist belt puts it, its plug clear of the roll wall);
-               body +N, shaft -N through the web, the 20T under it
+               slots (lib/forearm/params.py: where the stock wrist belt puts it, its body clear of the wall screws'
+               heads, its connector sideways); body +N, shaft -N through the web, the 20T under it (the forearm
+               turned about its roll axis: lib/placements.py TURNS - the motor on the upper arm's side)
 
 The BEARINGS (parts/joints/bearing_6806, BEARING_MOUNTS): the 6806-2RS pair each belt joint's housing takes, one
 each side of the lip that splits its bore - in the base (base_yaw), in j1_link's elbow end (elbow_pitch), in
@@ -163,8 +164,10 @@ MOTOR_MOUNTS: tuple[Mount, ...] = (
           "the roll block would pass it 0.2 mm off)"),
     Mount("mks_servo42d#2", BOARD, "nema17_40mm#2", "upper_arm_link", "elbow_pitch", BOARD_FRAME_40),
     Mount("nema17_40mm#3", MOTOR_40, "j2_link#1", "forearm_link", "wrist_pitch",
-          ((J2_MOTOR_SLIDE_X, 0.0, J2_MOTOR_WEB_FACE_Z), (180.0, 0.0, 90.0)),
-          "on j2_link's web (+Z face), shaft -N; slide position J2_MOTOR_SLIDE_X [ESTIMATE]; connector toward the elbow [ESTIMATE]"),
+          ((J2_MOTOR_SLIDE_X, 0.0, J2_MOTOR_WEB_FACE_Z), (180.0, 0.0, 180.0)),
+          "on j2_link's web (+Z face), shaft -N; slide position J2_MOTOR_SLIDE_X (the stock wrist belt's); connector sideways toward "
+          "j2_link's -Y - away from the elbow axis once the forearm is turned -, its plug's room beside the motor (toward the "
+          "wall the motor would stop short of the belt's centre distance)"),
     Mount("mks_servo42d#3", BOARD, "nema17_40mm#3", "forearm_link", "wrist_pitch", BOARD_FRAME_40),
 )
 # The belt joints' motor-side pulleys the arm models, on their motors' shafts (the vendor 20T: its bore along its +X,

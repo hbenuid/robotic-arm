@@ -54,8 +54,8 @@
   UNCONFIRMED: which CAN id (software/control/src/config.py J1..J3) drives which joint - the motors are placed
   (cad/lib/mounts.py) but not mapped; the shoulder_pitch motor is the drive's own NEMA 17 at 21:1
   (cad/lib/params.py CYCLOIDAL_RATIO; software/control/src/config.py still carries gear_ratio 1.0 everywhere). The
-  belt motors' masses (280 g) and boards (35 g) are estimates, the wrist_pitch motor's slide position
-  (J2_MOTOR_SLIDE_X - what a stock 264-2GT belt sets) too; FOREARM_ROLL_LIMIT_DEG stops 2 deg short of the
+  belt motors' masses (280 g) and boards (35 g) are estimates; the wrist_pitch motor sits where the stock
+  wrist belt puts it (J2_MOTOR_SLIDE_X, WRIST_BELT_LENGTH); FOREARM_ROLL_LIMIT_DEG stops 2 deg short of the
   printed hard stop. The jaw travel (JAW_TRAVEL_MM) is an estimate that does not fit the gripper (cad/docs/open_issues.md).
   wrist_roll and the jaws are not driven by software/control/src/config.py, and forearm_roll needs a 4th CAN id.
 -->
@@ -138,9 +138,9 @@
   </link>
   <link name="forearm_link">
     <inertial>
-      <origin xyz="-0.005123 0.000008 0.112869" rpy="0 0 0" />
-      <mass value="0.635166" />
-      <inertia ixx="1.440981e-03" ixy="2.482208e-07" ixz="-1.291062e-04" iyy="1.418477e-03" iyz="5.993678e-08" izz="3.583121e-04" />
+      <origin xyz="-0.005111 0.000136 0.107539" rpy="0 0 0" />
+      <mass value="0.635538" />
+      <inertia ixx="1.553398e-03" ixy="3.050343e-06" ixz="-1.687204e-04" iyy="1.530835e-03" iyz="1.779991e-06" izz="3.586626e-04" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
