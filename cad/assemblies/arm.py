@@ -17,7 +17,8 @@ rails, the 20T pulleys, the belts) is _occurrences.BOUGHT_TINT grey, inside the 
     |- shoulder_link     j1_coupler, j1_motor_leg, washer_as6590:base_yaw_2, gt2_pulley_120t:base_yaw,
     |                    yaw_pulley_screws / _nuts:base_yaw, cycloidal_drive (kept whole - see below)
     |- upper_arm_link    j1_link, bearing_6806:elbow_pitch_1 / _2, nema17_40mm:elbow_pitch, mks_servo42d:elbow_pitch,
-    |                    gt2_pulley_20t:elbow_pitch, elbow_motor_screws:elbow_pitch, elbow_belt:elbow_pitch
+    |                    gt2_pulley_20t:elbow_pitch, elbow_motor_screws:elbow_pitch, elbow_belt:elbow_pitch,
+    |                    gt2_idler_20t / elbow_idler_spacer / _screw / _nut:elbow_pitch
     |- elbow_link        gt2_pulley_90t:j2, elbow_pulley_screws / _nuts:elbow_pitch, forearm_roll_drive (kept whole - see
     |                    below; its block IS the elbow coupler)
     |- forearm_link      j2_link, bearing_6806:wrist_pitch_1 / _2, nema17_40mm:wrist_pitch, mks_servo42d:wrist_pitch,
@@ -97,7 +98,11 @@ OCCURRENCES = [
     ("mks_servo42d",          "elbow_pitch", "mks_servo42d#2"),
     ("gt2_pulley_20t",        "elbow_pitch", "gt2_pulley_20t#2"),  # mounted: on the elbow motor's shaft, level with the elbow 90T
     ("elbow_motor_screws",    "elbow_pitch", "elbow_motor_screws#1"),   # mounted: the elbow motor's 4x M3, up through the web
-    ("elbow_belt",            "elbow_pitch", "elbow_belt#1"),      # mounted: the elbow belt, the 20T to the elbow 90T
+    ("elbow_belt",            "elbow_pitch", "elbow_belt#1"),      # mounted: the elbow belt, the 20T to the elbow 90T round ...
+    ("gt2_idler_20t",         "elbow_pitch", "gt2_idler_20t#1"),   # mounted: ... its tensioner under j1_link's slab, ...
+    ("elbow_idler_spacer",    "elbow_pitch", "elbow_idler_spacer#1"),   # ... its spacer, ...
+    ("elbow_idler_screw",     "elbow_pitch", "elbow_idler_screw#1"),    # ... its M5 axle up through the slab's floor ...
+    ("elbow_idler_nut",       "elbow_pitch", "elbow_idler_nut#1"),      # ... into its nut, in the slot from the top face
     ("gt2_pulley_90t",        "j2", "gt2_pulley_90t#3"),           # mounted: re-seated on the lower elbow bearing (#1 retired)
     ("elbow_pulley_screws",   "elbow_pitch", "elbow_pulley_screws#1"),   # mounted: the elbow 90T's 4x M4 ...
     ("elbow_pulley_nuts",     "elbow_pitch", "elbow_pulley_nuts#1"),     # ... into the block's captive nuts
@@ -136,7 +141,8 @@ GROUPS = [
     ("shoulder_link",    "#4C72B0", ("j1_coupler#1", "j1_motor_leg#1", "washer_as6590#2", "gt2_pulley_120t#1", "yaw_pulley_screws#1",
                                      "yaw_pulley_nuts#1", DRIVE_KEY)),
     ("upper_arm_link",   "#CCB974", ("j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2",
-                                     "gt2_pulley_20t#2", "elbow_motor_screws#1", "elbow_belt#1")),
+                                     "gt2_pulley_20t#2", "elbow_motor_screws#1", "elbow_belt#1", "gt2_idler_20t#1",
+                                     "elbow_idler_spacer#1", "elbow_idler_screw#1", "elbow_idler_nut#1")),
     ("elbow_link",       "#DA8BC3", ("gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", ROLL_KEY)),
     ("forearm_link",     "#DD8452", ("j2_link#1", "bearing_6806#5", "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3",
                                      "gt2_pulley_20t#4", "wrist_belt#1")),

@@ -104,7 +104,8 @@ J1_MOTOR_SCREW_LEN = _UPPER_ARM.arm.motor_plate_t + J1_MOTOR_SCREW_THREAD   # 12
 J1_MOTOR_20T_HUB_Z = 7.75                          # [DESIGN] the elbow motor's 20T (lib/mounts.py gt2_pulley_20t#2): its hub face this far out
 #                                                    along the shaft from the motor's face - up in the web's pilot hole -, its tooth band
 #                                                    (RollDriveParams.t20_hub on) level with the elbow 90T's (tests/test_mounts.py)
-ELBOW_BELT_LENGTH = _ELBOW_BELT                    # 280-2GT [DESIGN] the elbow belt (20T on j1_link's motor, 90T at the elbow); it sets the pad's x
+ELBOW_BELT_LENGTH = _ELBOW_BELT                    # 280-2GT [DESIGN] the elbow belt (20T on j1_link's motor, 90T at the elbow), round its
+#                                                    idler (lib/upper_arm/params.py ElbowIdlerParams)
 from lib.forearm.params import DEFAULT as _FOREARM  # noqa: E402
 
 J2_MOTOR_WEB_FACE_Z = _FOREARM.web.z1              # 19 [REFERENCE] j2_link: the web's +Z face; the motor bolts through its slots
@@ -117,6 +118,11 @@ J2_BELT_Z = _FOREARM.roll_end.wrist_belt_z         # 0.3 [REFERENCE] the wrist b
 from lib.base.params import YAW_BELT_Y  # noqa: E402
 
 J1_BELT_Y = round(J1_MOTOR_PAD_FACE_Y - J1_MOTOR_20T_HUB_Z - _FOREARM.drive.t20_hub, 6)        # -2.2 the elbow belt's plane in j1_link's frame
+# The elbow belt's tensioner (lib/upper_arm/params.py ElbowIdlerParams): its stations along N in j1_link's frame
+J1_SLAB_UNDERSIDE_Y = round(_UPPER_ARM.elbow.y0 + J1_ARM_SLIDE, 6)                   # 5.5 the slab's underside, the face j1_link prints on
+J1_IDLER_Y = round(J1_BELT_Y - GT2_IDLER_WIDTH / 2.0, 6)                             # -6.7 the idler's lower face (level with the belt): the screw's head
+J1_IDLER_SPACER_H = round(J1_SLAB_UNDERSIDE_Y - J1_IDLER_Y - GT2_IDLER_WIDTH, 6)     # 3.2 the spacer, the idler's upper face to the underside
+J1_IDLER_LEDGE_Y = round(J1_SLAB_UNDERSIDE_Y + _UPPER_ARM.idler.floor, 6)            # 12.0 the nut's seat, the floor of its slot
 J2_MOTOR_20T_HUB_Z = round(J2_MOTOR_WEB_FACE_Z - J2_BELT_Z - _FOREARM.drive.t20_hub, 6)        # 7.75 the wrist motor's 20T, from its face
 BASE_MOTOR_20T_HUB_Z = round(YAW_BELT_Y - BASE_MOTOR_PATTERN_CENTRE[1] - _FOREARM.drive.t20_hub, 6)   # 2.85 the base_yaw motor's 20T, from its face
 # The forearm roll (lib/forearm/params.py RollEndParams; the rotor's wall on j2_link, the elbow block + shaft in M3):
@@ -214,6 +220,9 @@ WRIST_IDLER_NUT_MASS_G = STEEL_DENSITY * nut_volume(_IdlerParams().nut)         
 # the roll belt's tensioner's axle and its nut (parts/joints/roll_idler_{screw,nut}; lib/forearm/params.py RollIdlerParams)
 ROLL_IDLER_SCREW_MASS_G = STEEL_DENSITY * shcs_volume(_FOREARM.drive.idler.screw, _FOREARM.drive.idler.screw_len)   # 5.8, M5x25
 ROLL_IDLER_NUT_MASS_G = STEEL_DENSITY * nut_volume(_FOREARM.drive.idler.nut)                                       # 1.3, M5
+# the elbow belt's tensioner's axle and its nut (parts/joints/elbow_idler_{screw,nut}; lib/upper_arm/params.py ElbowIdlerParams)
+ELBOW_IDLER_SCREW_MASS_G = STEEL_DENSITY * shcs_volume(_UPPER_ARM.idler.screw, _UPPER_ARM.idler.screw_len)   # 5.8, M5x25
+ELBOW_IDLER_NUT_MASS_G = STEEL_DENSITY * nut_volume(_UPPER_ARM.idler.nut)                                    # 1.3, M5
 
 # The base motor mount's screws and nuts (parts/base/base_motor_mount_{screws,nuts}): the same estimate
 from lib.base.layout import joint_bolt_points as _joint_bolt_points  # noqa: E402

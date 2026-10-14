@@ -5,10 +5,11 @@ elbow-end feature moves with the axis), no through slots, no cap sockets, the el
 the relief's floor, the recess floor deeper), and the cycloidal drive's turning shell: the arm, one flat slab from the
 elbow half's underside to the relief's floor, rises off the shell (ArmParams), printed as one with the shell's body
 round the discs - out of the two windows it fills, the others open - slid along Y until its underside is flush with
-the shell's hub end (arm_slide); the elbow motor - the NEMA 17 holes on its pattern - moved out along the link to the
-stock elbow belt's centre distance from the elbow axis, where the second stage's seat was (gone), and turned over
-onto the arm's +Y side: down a square hole through the slab onto a web across it, flush with the slab's underside,
-the pad gone. DEFAULT's own numbers (volume, box) are locked here."""
+the shell's hub end (arm_slide); the elbow motor - the NEMA 17 holes on its pattern - moved out along the link to
+ELBOW_MOTOR_CENTRES from the elbow axis, where the second stage's seat was (gone), and turned over onto the arm's +Y
+side: down a square hole through the slab onto a web across it, flush with the slab's underside, the pad gone; the
+stepped slot gives way to the elbow belt's idler's slots (tests/upper_arm/test_elbow_idler.py). DEFAULT's own numbers
+(volume, box) are locked here."""
 import math
 from dataclasses import replace
 
@@ -56,11 +57,13 @@ def test_layout():
     assert replace(DEFAULT.elbow, relief_r=LEGACY.elbow.relief_r, relief_y=LEGACY.elbow.relief_y,
                    recess_y=LEGACY.elbow.recess_y, chamfer_x=DEFAULT.elbow.chamfer_x - dx,
                    step_x=DEFAULT.elbow.step_x - dx) == LEGACY.elbow
-    # the elbow motor off the shoulder axis (the drive's yoke holds it now): the stock belt's centre distance from the
-    # elbow, where the second stage's seat was - gone; turned over onto the arm's +Y side, its face on the web across
-    # the slab's motor hole (LEGACY's pad face stays in PadParams)
+    # the elbow motor off the shoulder axis (the drive's yoke holds it now): ELBOW_MOTOR_CENTRES from the elbow, where
+    # the second stage's seat was - gone -, nearer than the stock belt's own centre distance (its idler takes up the
+    # rest: test_elbow_idler.py); turned over onto the arm's +Y side, its face on the web across the slab's motor hole
+    # (LEGACY's pad face stays in PadParams)
     assert LEGACY.pad.x == 0.0 and DEFAULT.bearing is None and LEGACY.bearing is not None
-    assert ELBOW_MOTOR_CENTRES == centre_distance(ELBOW_BELT, GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH) == pytest.approx(81.97, abs=0.01)
+    assert LEGACY.idler is None and DEFAULT.idler is not None
+    assert ELBOW_MOTOR_CENTRES == 78.0 < centre_distance(ELBOW_BELT, GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH)
     assert DEFAULT.pad.x == pytest.approx(DEFAULT.slab.elbow_x - ELBOW_MOTOR_CENTRES, abs=1e-6)
     assert replace(DEFAULT.pad, x=0.0, holes=LEGACY.pad.holes) == LEGACY.pad
     assert DEFAULT.pad.face_y == -32.5 and PARAMS.J1_MOTOR_PAD_FACE_Y == DEFAULT.arm.y_outer == 16.5
@@ -187,7 +190,7 @@ def test_default(link, legacy):
     the underside; no pad, no sockets, the second stage's seat gone."""
     dx, a = SHORTENING, DEFAULT.arm
     assert link.is_valid and len(link.solids()) == 1
-    assert R.solid_volume(link) == pytest.approx(368453.715, abs=0.5)
+    assert R.solid_volume(link) == pytest.approx(372731.723, abs=0.5)
     bb, hh, (z_0, z_1) = link.bounding_box(), DEFAULT_CONFIG.housing, arm_zone(DEFAULT_CONFIG)
     # across (Z) the body's pillars either side of +/-Z reach furthest: the windows on +/-Z are open; along Y the
     # shell's body, from its hub end to the shell ring's face (arm_zone's start)
@@ -223,13 +226,13 @@ def test_default(link, legacy):
         assert not is_inside(link, *_drive(x, y_, mid)) and not is_inside(link, *_drive(x, y_, nut_z + 1.0))
         out = flat / math.hypot(x, y_)
         assert not is_inside(link, *_drive(x * (1.0 + out), y_ * (1.0 + out), nut_z + 1.0))   # the slab leaves it open
-    # the plate's elbow end, in the slab: the elbow bearing stack, the stepped slot and its counterbore from below
+    # the plate's elbow end, in the slab: the elbow bearing stack; the stepped slot gives way to the elbow idler's slots
+    # (test_elbow_idler.py probes them) - solid where the slit and its counterbore ran, past the idler's slots
     r_floor = (e.recess_dia + e.bore_dia) / 4.0
     assert not is_inside(link, s.elbow_x, e.recess_y + SLIDE + 0.5, r_floor) and is_inside(link, s.elbow_x, e.recess_y + SLIDE - 0.5, r_floor)
     sl = DEFAULT.slots
-    assert not is_inside(link, sl.stepped_x, -5 + SLIDE, 0) and is_inside(link, sl.stepped_x + 4.0, -5 + SLIDE, 0)
-    assert not is_inside(link, sl.stepped_x + 4.0, sl.counterbore_y + SLIDE - 1.0, 0)
-    assert is_inside(link, sl.stepped_x + 4.0, sl.counterbore_y + SLIDE + 1.0, 0)
+    for y in (-5 + SLIDE, sl.counterbore_y + SLIDE - 1.0):
+        assert is_inside(link, sl.stepped_x, y, -15.0) and is_inside(link, sl.stepped_x + 4.0, y, -15.0)
     for x, z in socket_points(LEGACY)[1]:
         assert is_inside(link, x + dx, -23.0 + SLIDE, z)                              # no sockets
     # the elbow motor at the pad's x: its square hole through the slab, the slab beside it; the web across it (the

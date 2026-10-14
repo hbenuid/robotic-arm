@@ -14,7 +14,7 @@ from cadgen import build123d as bd
 from lib.cycloidal import DEFAULT_CONFIG as DRIVE
 from lib.cycloidal.housing import build_shell_body, housing_bolt_cutters
 from lib.forearm.link import stadium, x_cylinder
-from lib.geom import align_min, cylinder, single_solid
+from lib.geom import align_min, cylinder, hex_circumdiameter, single_solid, through
 from lib.units import NUDGE
 from lib.upper_arm.layout import arm_slide, cove_axes, hub_bolt_points, pad_holes, socket_points
 from lib.upper_arm.params import DEFAULT, UpperArmConfig
@@ -33,9 +33,9 @@ def _block(x: tuple, z: tuple, y: tuple):
     return bd.Pos((x0 + x1) / 2.0, -(z0 + z1) / 2.0, y0) * bd.Box(x1 - x0, z1 - z0, y1 - y0, align=align_min())
 
 
-def _slot(x: float, half_len: float, width: float, y0: float, y1: float):
-    """A stadium slot along the part's Z (end centres at z = +/- half_len) through x, from y0 to y1."""
-    return bd.Pos(x, 0.0, y0) * bd.Rot(0.0, 0.0, 90.0) * bd.extrude(bd.SlotCenterToCenter(2.0 * half_len, width), amount=y1 - y0)
+def _slot(x: float, half_len: float, width: float, y0: float, y1: float, z: float = 0.0):
+    """A stadium slot along the part's Z (end centres at z +/- half_len) through x, from y0 to y1."""
+    return bd.Pos(x, -z, y0) * bd.Rot(0.0, 0.0, 90.0) * bd.extrude(bd.SlotCenterToCenter(2.0 * half_len, width), amount=y1 - y0)
 
 
 def _cut_stepped_slot(body, cfg: UpperArmConfig, top: float):
@@ -44,6 +44,17 @@ def _cut_stepped_slot(body, cfg: UpperArmConfig, top: float):
     sl, e = cfg.slots, cfg.elbow
     body = body - _slot(sl.stepped_x, sl.stepped_half_len, sl.width, sl.counterbore_y - NUDGE, top)
     return body - _slot(sl.stepped_x, sl.stepped_half_len, sl.counterbore_w, e.y0 - NUDGE, sl.counterbore_y)
+
+
+def _cut_idler_slots(body, cfg: UpperArmConfig, top: float):
+    """`body` less the elbow idler's slots (ElbowIdlerParams), on the stepped slot's line in its place, both along Z
+    between slot_z's ends: the axle's (slot_w) through the floor from the underside, and the nut's from the floor up
+    through `top` - its flats + nut_fit across X, its corners + nut_fit past each end."""
+    i, x, y0 = cfg.idler, cfg.slots.stepped_x, cfg.elbow.y0
+    (za, zb), ledge = i.slot_z, y0 + i.floor
+    body = body - _slot(x, (zb - za) / 2.0, i.slot_w, y0 - NUDGE, ledge + NUDGE, (za + zb) / 2.0)
+    half_x, reach = (i.nut.af + i.nut_fit) / 2.0, hex_circumdiameter(i.nut.af) / 2.0 + i.nut_fit
+    return body - _block((x - half_x, x + half_x), (za - reach, zb + reach), (ledge, top + 1.0))
 
 
 def _cut_elbow_stack(body, cfg: UpperArmConfig, top: float):
@@ -118,14 +129,16 @@ def _pad(cfg: UpperArmConfig):
 def _slab(cfg: UpperArmConfig):
     """The arm rising off the drive's shell (ArmParams), in the unslid plate's frame: one flat slab of the plate's
     outline (the stadium from the shoulder axis to the elbow axis) from the elbow half's underside up to the relief's
-    floor, end to end; the stepped slot and the elbow bearing stack; the elbow motor's square hole through it about the
-    pad's axis, a web left across the hole, flush with the slab's underside, up to the motor's face (y_outer once slid)
-    with the hole for its pilot and its 4 holes (PadParams.holes): motor_plate_t of web under the screws' heads, the
-    heads flush in pockets in its underside (ArmParams.motor_screw, motor_pocket_dia)."""
+    floor, end to end; the stepped slot (with an idler: the idler's slots in its place) and the elbow bearing stack; the
+    elbow motor's square hole through it about the pad's axis, a web left across the hole, flush with the slab's
+    underside, up to the motor's face (y_outer once slid) with the hole for its pilot and its 4 holes (PadParams.holes):
+    motor_plate_t of web under the screws' heads, the heads flush in pockets in its underside (ArmParams.motor_screw,
+    motor_pocket_dia)."""
     s, e, a, px = cfg.slab, cfg.elbow, cfg.arm, cfg.pad.x
     top = e.relief_y + NUDGE
     body = stadium(s.elbow_x, 2.0 * s.r, e.relief_y - e.y0, s.elbow_x / 2.0, e.y0)
-    body = _cut_elbow_stack(_cut_stepped_slot(body, cfg, top), cfg, top)
+    body = _cut_stepped_slot(body, cfg, top) if cfg.idler is None else _cut_idler_slots(body, cfg, top)
+    body = _cut_elbow_stack(body, cfg, top)
     hh, t, head = a.motor_hole_half, a.motor_plate_t, a.motor_screw.head_h
     face = e.y0 + t + head
     body = body - _block((px - hh, px + hh), (-hh, hh), (e.y0 - 1.0, top + 1.0))
@@ -135,6 +148,15 @@ def _slab(cfg: UpperArmConfig):
         web = web - _bore(dia / 2.0, face - t - head - 1.0, face + 1.0, px + x, z)
         web = web - _bore(a.motor_pocket_dia / 2.0, face - t - head - 1.0, face - t, px + x, z)
     return body + web
+
+
+def build_idler_spacer(height: float, cfg: UpperArmConfig = DEFAULT):
+    """The elbow idler's printed spacer (ElbowIdlerParams; parts/joints/elbow_idler_spacer), axis on Z: its land
+    (land_dia x land_h) on z=0, on the idler's bearing inner ring; its riser (riser_dia) on up to z=height, on the slab's
+    underside; the axle's slot_w through both."""
+    i = cfg.idler
+    body = cylinder(i.land_dia / 2.0, i.land_h) + cylinder(i.riser_dia / 2.0, height - i.land_h, z0=i.land_h)
+    return single_solid(body - through(i.slot_w / 2.0, height))
 
 
 def drive_frame(cfg: UpperArmConfig = DEFAULT) -> bd.Location:

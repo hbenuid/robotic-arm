@@ -33,7 +33,7 @@ T20_HUB = FOREARM.drive.t20_hub     # the vendor 20T's tooth band from its hub f
 # name -> (group, volume mm^3, bbox min, bbox size): the build's own numbers
 LOCKS = {
     "yaw_belt": ("base", 1136.33, (-6.742198, -38.573186, -3.0), (118.381942, 77.146373, 6.0)),
-    "elbow_belt": ("joints", 1059.993, (-6.742198, -29.02389, -3.0), (117.737762, 58.04778, 6.0)),
+    "elbow_belt": ("joints", 1059.849, (-6.742198, -29.02389, -3.0), (113.766087, 58.04778, 6.0)),
     "forearm_roll_belt": ("joints", 1059.849, (-6.742198, -29.02389, -3.0), (109.766087, 58.04778, 6.0)),
     "wrist_belt": ("joints", 1059.993, (-6.742198, -29.02389, -3.0), (117.737762, 58.04778, 6.0)),
 }

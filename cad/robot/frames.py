@@ -115,9 +115,11 @@ LINKS: dict[str, list[str]] = {
                       "yaw_pulley_nuts#1", "cycloidal_drive#1:stator"],
     # the drive's rotor (its turning shell, the ring pins and both 6814s) is bolted to j1_link: the shoulder_pitch output;
     # the elbow_pitch motor + board bolt to the web across j1_link's motor hole (its 4x M3), its 20T and the elbow belt
-    # with them, the elbow bearing pair sits in its elbow bore (lib/mounts.py)
+    # with them - the belt's tensioner (the idler, its spacer, axle and nut) on j1_link's slab -, the elbow bearing pair
+    # sits in its elbow bore (lib/mounts.py)
     "upper_arm_link": ["cycloidal_drive#1:rotor", "j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2",
-                       "gt2_pulley_20t#2", "elbow_motor_screws#1", "elbow_belt#1"],
+                       "gt2_pulley_20t#2", "elbow_motor_screws#1", "elbow_belt#1", "gt2_idler_20t#1", "elbow_idler_spacer#1",
+                       "elbow_idler_screw#1", "elbow_idler_nut#1"],
     # the elbow 90T pulley (the elbow_pitch output, assumed the driven side  [ASSUMPTION]) and the M4 screws + nuts
     # that clamp it carry the forearm roll drive's STATOR - the roll frame, whose web IS the elbow coupler now (j3_coupler#1
     # is retired, lib/placements.py), both bearings, the roll motor + board (on the elbow axis) and its 20T
