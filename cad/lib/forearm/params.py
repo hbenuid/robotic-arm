@@ -197,9 +197,10 @@ class RollIdlerParams:
     tip_clear: float = 1.0                # [DESIGN] the screw's hole on past its tip
 
 
-ROLL_FRAME_R = 33.0   # [DESIGN] the roll frame's half width round the roll axis: its underside (3.0 over the upper arm's flat top),
+ROLL_FRAME_R = 30.0   # [DESIGN] the roll frame's half width round the roll axis: its underside (6.0 over the upper arm's flat top),
 #                       its open +N face and its tower's top - the frame symmetric about the roll axis, the bearing boss centred
-#                       on its front face (RollDriveParams block_x, tower_y; tests/forearm/test_roll_drive.py test_stack)
+#                       on its front face -, the forearm wall's radius (RollEndParams.wall_od / 2): the frame flush with the
+#                       round parts that turn about the roll axis (RollDriveParams block_x, tower_y; tests/forearm/test_roll_drive.py test_stack)
 
 
 @dataclass(frozen=True)
@@ -237,15 +238,15 @@ class RollDriveParams:
     lip: float = 2.0                      # [DESIGN] between the pair's outer rings (the elbow's)
     lip_id: float = 37.6                  # [DESIGN] j1_link's elbow lip (37.64): clear of the hubs (Ø30.3) and the shoulders' Ø33
     run_gap: float = 1.0                  # [DESIGN] the ring's rear flange over bearing 2 and the bearing boss's top (the pulley's Ø33 shoulder spans it)
-    # the frame: x along N (its underside at -X, 3.0 over the upper arm's flat top, host z -11), y up in the swing plane
+    # the frame: x along N (its underside at -X, 6.0 over the upper arm's flat top, host z -11), y up in the swing plane
     # (the motor below the roll axis, -Y), z along the roll axis
-    block_x: tuple = (-ROLL_FRAME_R, ROLL_FRAME_R)   # [DESIGN] host z -8 .. 58: the underside (the web's plane) .. the open +N face,
-    #                                       symmetric about the roll axis (the motor's connector, spun to +X, ends 5 inside the open pocket)
+    block_x: tuple = (-ROLL_FRAME_R, ROLL_FRAME_R)   # [DESIGN] host z -5 .. 55: the underside (the web's plane) .. the open +N face,
+    #                                       symmetric about the roll axis (the motor's connector, spun to +X, ends 2 inside the open pocket)
     end_r: float = 45.0                   # [DESIGN] the round end about the elbow axis = j1_link's round end (concentric)
-    tower_y: float = ROLL_FRAME_R         # [DESIGN] the tower's top over the roll axis, as far as the underside and the +N face: the bay + 7.4
-    tower_corner_r: float = 6.0           # [DESIGN] its two corners in the profile
+    tower_y: float = ROLL_FRAME_R         # [DESIGN] the tower's top over the roll axis, as far as the underside and the +N face: the bay + 4.4
+    tower_corner_r: float = 3.0           # [DESIGN] its two corners in the profile: the bearing boss 1 inside them, on the flat of the front face
     tower_wall: float = 2.0               # [DESIGN] the tower's rear in the profile, behind the bay's floor
-    web_t: float = 10.0                   # [DESIGN] the pocket's floor (the cradle's): 2 mm under the motor's -N side
+    web_t: float = 7.0                    # [DESIGN] the pocket's floor (the cradle's) over the underside: 2 mm under the motor's -N side
     pocket_clear: float = 0.75            # [DESIGN] round the motor + board in the pocket, along Y past the tension travel
     pocket_rear: float = 2.5              # [DESIGN] behind the board's cover: the motor + board go in from the +N face motor_drop low (the
     #                                       pilot boss under the plate), then lift into the plate's pilot slot
@@ -254,7 +255,7 @@ class RollDriveParams:
     #                                       shaft passes it as the motor slides in (the tension slots stay whole either side)
     bearing_boss_dia: float = 52.0        # [DESIGN] the boss on the front face round the roll axis, bearing 2's seat in it (4.9 of wall), its top
     #                                       bearing 2's front face: the ring's rear flange turns run_gap over it, 3.6 past its edge (no cup round
-    #                                       the flange); 7 inside the frame's underside, +N face and tower top, on the flat of the front face
+    #                                       the flange); 4 inside the frame's underside, +N face and tower top, on the flat of the front face
     bay_r: float = 25.6                   # [DESIGN] the shaft's bay behind bearing 1, open through the +N face: round the stop lug's corners
     #                                       (r 24.6) + 1 (bearing 1 goes in from it)
     bay_clear: float = 1.0                # [DESIGN] the bay's floor behind the shaft's rear face by its hub's length through bearing 1 + this: the
@@ -263,7 +264,8 @@ class RollDriveParams:
     # - measured on the SolidWorks coupler 2026-09-23 in j2_link's frame (host z = module x + axis_z); they turn in
     # j1_link's Ø80 recess / Ø42 bore
     lip_dia: float = 72.0                 # [DESIGN] a dust lip in j1_link's Ø80 recess (the coupler's Ø78 flange, kept inside the end's outline)
-    lip_x: tuple = (-35.0, -33.0)         # [REFERENCE] host -10 .. -8: 1.5 inside the recess (its floor at host -14.5), 2 proud of the underside
+    lip_x: tuple = (-35.0, -ROLL_FRAME_R)   # [REFERENCE] its foot at host -10, 1.5 inside the recess (its floor at host -14.5), [DESIGN] up to
+    #                                       the underside (host -5): 5 proud of it, bridging the gap over the upper arm's flat top
     boss_dia: float = 62.0                # [REFERENCE]
     boss_x: tuple = (-39.0, -35.0)        # [REFERENCE] host -14 .. -10
     journal_dia: float = 40.0             # [REFERENCE] in j1_link's Ø42 bore

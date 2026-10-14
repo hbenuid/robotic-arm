@@ -1,6 +1,6 @@
 """forearm_roll_block - the forearm roll drive's STATOR - the roll frame (the elbow block), which is also the elbow's output
 flange, ONE body round the roll motor: seen along the elbow axis round about it (r 45, concentric with j1_link's round end)
-and tangent up to the TOWER round the roll axis (ELBOW_ROLL_OFFSET above the elbow axis), from its underside (3.0 over
+and tangent up to the TOWER round the roll axis (ELBOW_ROLL_OFFSET above the elbow axis), from its underside (6.0 over
 j1_link's flat top, repeating the SolidWorks j3_coupler's lip, Ø62 boss, Ø40 journal and Ø30 stub about the elbow axis down
 into j1_link's recess and bore - the elbow 90T pulley bolts up through the stub into 4x M4 nuts in hex channels that open
 up into the motor's pocket; j3_coupler#1 is retired) to its open +N face. The 40 mm kit motor sits on the elbow axis in
