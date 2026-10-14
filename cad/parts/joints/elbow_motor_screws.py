@@ -1,7 +1,8 @@
 """elbow_motor_screws - purchased (COTS) part: the elbow motor's 4 M3 socket head cap screws (ISO 4762).
 
-They hold the elbow motor (nema17_40mm#2) down on the web across j1_link's motor hole - the same screw, and the same
-seat, as the cycloidal drive's motor's (cycloidal_motor_bolts in the drive's motor plate).
+They hold the elbow motor (nema17_40mm#2) down on the web across j1_link's motor hole - the cycloidal drive's motor's
+seat (cycloidal_motor_bolts in the drive's motor plate) and thread in the motor, 2 mm longer: the web is flush with
+the slab's underside, the face j1_link prints on.
 
 In the arm (lib/mounts.py, hosted on j1_link#1): the heads in pockets in the web's underside, flush with it
 (lib/upper_arm/params.py ArmParams.motor_screw, motor_pocket_dia), the shanks up through the web's M3 clearance holes
@@ -36,7 +37,7 @@ MASS_G = ELBOW_MOTOR_SCREWS_MASS_G   # [ESTIMATE] the modelled steel (lib/params
 PURCHASE_SPEC = f"M{SCREW.d:g} x {LENGTH:g} socket head cap screw (ISO 4762)"
 PURCHASE_QTY = len(POINTS)   # pieces per occurrence (the whole pattern)
 PURCHASE_NOTE = ("the elbow motor onto the web across j1_link's motor hole, the heads flush in its pockets, up into the motor's "
-                 "tapped holes - the drive motor's screw (cycloidal_motor_bolts)")
+                 "tapped holes")
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 

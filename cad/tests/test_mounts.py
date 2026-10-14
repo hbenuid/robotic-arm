@@ -189,8 +189,9 @@ def test_belt_pulley_planes_are_reachable():
 def test_elbow_motor_20t_runs_in_the_90ts_band():
     """The elbow motor's 20T (gt2_pulley_20t#2, MOTOR_PULLEY_MOUNTS): its bore along the motor's shaft, its tooth band's
     centre (RollDriveParams.t20_hub from its hub face) level with the elbow 90T's along the elbow axis and the stock
-    belt's centre distance from it across; its hub face clear under the web across j1_link's motor hole, its band end within reach of
-    the shaft's tip (the pulley rides on most of its bore)."""
+    belt's centre distance from it across; its hub face up in the pilot hole of the web across j1_link's motor hole, clear of
+    the motor's pilot boss, its grub screws (4 from the hub face, the vendor model's) past the web's face where a key
+    reaches them; its band end within reach of the shaft's tip (the pulley rides on most of its bore)."""
     motor, t20 = P.location("nema17_40mm#2", "world"), P.location("gt2_pulley_20t#2", "world")
     t90, axis = P.location("gt2_pulley_90t#3", "world"), Vector(*F.JOINT_BY_NAME["elbow_pitch"].axis_w).normalized()
     assert abs(abs((t20 * Location((1.0, 0.0, 0.0))).position.sub(t20.position).dot(axis)) - 1.0) < 1e-6
@@ -201,7 +202,9 @@ def test_elbow_motor_20t_runs_in_the_90ts_band():
     assert math.sqrt((band20 - band90).length ** 2 - along ** 2) == pytest.approx(ELBOW_MOTOR_CENTRES, abs=0.01)
     hub = (motor.inverse() * t20).position
     assert (hub.X, hub.Y) == pytest.approx((0.0, 0.0), abs=1e-6) and hub.Z == pytest.approx(PARAMS.J1_MOTOR_20T_HUB_Z)
-    assert hub.Z - UPPER_ARM.arm.motor_plate_t > 2.5                                 # in the web's pilot hole, beside the screws' heads (3)
+    web = UPPER_ARM.arm.motor_plate_t + UPPER_ARM.arm.motor_screw.head_h            # 11, flush with the slab's underside
+    assert DEFAULT_CONFIG.motor.pilot_height < hub.Z < web                          # up in the web's pilot hole
+    assert hub.Z + 4.0 - web > 0.5                                                   # the grub screws' axis past the web's face
     assert DEFAULT_CONFIG.motor.shaft_length - hub.Z > 12.5                           # 13 of the shaft in the 14.45 long bore
 
 

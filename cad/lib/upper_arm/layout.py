@@ -39,9 +39,13 @@ def socket_points(cfg: UpperArmConfig = DEFAULT) -> tuple[list, list]:
 
 def arm_slide(cfg: UpperArmConfig = DEFAULT) -> float:
     """How far along +Y the plate - DEFAULT's slab, its elbow half's depth end to end - slides with the arm rising off
-    the drive's shell (ArmParams): the plate's shoulder-half underside (SlabParams.y0) onto y_outer, the elbow motor's
-    face; 0 without an arm (39.27)."""
-    return 0.0 if cfg.arm is None else cfg.arm.y_outer - cfg.slab.y0
+    the drive's shell (ArmParams): its underside (ElbowParams.y0) onto the underside of the web under the elbow motor's
+    face (y_outer, less motor_plate_t and the screws' heads) - the shell's hub end, the face the part prints on; 0
+    without an arm (29.5)."""
+    if cfg.arm is None:
+        return 0.0
+    a = cfg.arm
+    return a.y_outer - a.motor_plate_t - a.motor_screw.head_h - cfg.elbow.y0
 
 
 def elbow_belt_loop(cfg: UpperArmConfig = DEFAULT) -> list[tuple[float, float, float]]:
