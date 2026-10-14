@@ -97,9 +97,9 @@
   </link>
   <link name="upper_arm_link">
     <inertial>
-      <origin xyz="0.058948 0.000069 0.039363" rpy="0 0 0" />
-      <mass value="1.294643" />
-      <inertia ixx="1.601839e-03" ixy="-2.548876e-06" ixz="3.665239e-04" iyy="6.145592e-03" iyz="-2.969747e-06" izz="6.604746e-03" />
+      <origin xyz="0.059039 0.000069 0.034048" rpy="0 0 0" />
+      <mass value="1.298788" />
+      <inertia ixx="1.660568e-03" ixy="-2.539946e-06" ixz="7.202599e-04" iyy="6.207716e-03" iyz="-2.465453e-06" izz="6.609814e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -246,7 +246,7 @@
   <joint name="elbow_pitch" type="revolute">
     <parent link="upper_arm_link" />
     <child link="elbow_link" />
-    <origin xyz="0.170004 0 0.049271" rpy="0 0 0.010227" />
+    <origin xyz="0.170004 0 0.039499" rpy="0 0 0.010227" />
     <axis xyz="0 0 1" />
     <limit lower="-0.820305" upper="1.570796" effort="5" velocity="1" />
   </joint>

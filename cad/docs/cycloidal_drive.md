@@ -138,7 +138,7 @@ is a step.parts catalog model (`bearing_625_2rs_sealed_simple`); see `vendor/REA
 
 Behind z = 0, the mirror: the motor-end 6814 (−10..0) and the shell ring's lip (−13..−10) - the shell runs
 **z −13..61** (`shell_ends`), symmetric about the middle of the discs (z 24); the two plates' inner faces bound the gear
-at 9 and 39 (`arm_zone`, where `j1_link` rises off the shell). Derived: `disc_zone` 26, `bore_zone` 39,
+at 9 and 39 (`arm_zone`, where the shell's body starts on the shell ring). Derived: `disc_zone` 26, `bore_zone` 39,
 `ring_gear_body_height` 52 (the body, 9..61).
 **The ends:** the held hub is 23 tall (flange 9 + grip 10 + lip 3 + `proud_above_housing` 1 = `ShellParams.end_plate_gap`)
 at z 39, its face at **z = 62** (`CYCLOIDAL_HUB_FACE_Z`) on the `j1_coupler` fork's hub-side leg; the motor plate's
@@ -237,9 +237,9 @@ at the other (`lib/yaw_coupler/params.py ForkParams`, §12); the **housing shell
 discs and the ring pins - is the output, so the ratio is the ring pins' 21 (`DriveConfig.ratio`), the shell turning
 the same way as the motor. **Why:** the port carried the whole arm on two 6814s stacked in one seat, centres 10 apart,
 so their play and the PETG's give tipped the arm; the turning shell runs on one 6814 at each end of the gear stack,
-centres **58** apart (`test_the_6814s_are_58_apart`). **The upper arm rises off the shell's middle** (PAROL6-like):
-`j1_link` is printed as one with the shell's body, its arm leaving the shell over the gear (`arm_zone`, §12) - nothing
-bolts the arm to the shell's end.
+centres **58** apart (`test_the_6814s_are_58_apart`). **The upper arm rises off the shell** (PAROL6-like):
+`j1_link` is printed as one with the shell's body, its arm's underside flush with the shell's hub end (§12) - one flat
+face, the one the part prints on; nothing bolts the arm to the shell's end.
 
 - **The two ends mirror each other** about the middle of the discs (`tests/cycloidal/test_shell_body.py`): from the
   outside in, an `end_lip`, the 6814 (its outer race in the shell's seat), a `plate_dia` plate inside the shell's
@@ -416,10 +416,12 @@ cd cad
   6-pillar housing's yoke at 240° / 300° in sockets - `LEGACY` / git history. **The upper arm rises off the shell:**
   `j1_link` (parametric, `lib/upper_arm/`, `ArmParams`) is printed with the shell's body, its arm - one flat slab, the
   old plate's outline from its elbow half's underside up to the elbow block's floor, end to end - rising out of the
-  body's two solid windows, the four others open on the discs; slid along N with the plate's elbow end (`arm_slide`),
-  and everything past the elbow with it (`lib/placements.py SHIFTS`): the end effector is no longer over the base_yaw
-  axis. The elbow motor stands on the arm's motor side (+N, with the forearm), down a square hole through the slab
-  onto a web across it, its shaft back through the web to the elbow belt. The drive's frame in `j1_link`'s
+  body's two solid windows, the four others open on the discs; slid along N until its underside is flush with the
+  shell's hub end (`arm_slide`: the part prints on that face, no support under the arm), and everything past the elbow
+  with it (`lib/placements.py SHIFTS`): the end effector is no longer over the base_yaw axis. The elbow motor stands on
+  the arm's motor side (+N, with the forearm), down a square hole through the slab onto a web across it, flush with
+  the slab's underside, its shaft back through the web to the elbow belt - which runs past the shell's hub end, level
+  with the yoke's hub-side leg. The drive's frame in `j1_link`'s
   is the capture's (`tests/upper_arm/`), the shell's body and the hub on the legs `TestPoseInTheArm`.
 - **Kinematics:** the drive **is the `shoulder_pitch` joint** of `robot/frames.py` (axis `N` = the
   drive's −Z; origin `SHOULDER_ORIGIN` = `j1_link#1`'s origin, on the drive axis; limits

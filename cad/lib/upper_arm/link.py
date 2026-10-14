@@ -12,7 +12,7 @@ import math
 from cadgen import build123d as bd
 
 from lib.cycloidal import DEFAULT_CONFIG as DRIVE
-from lib.cycloidal.housing import build_shell_body
+from lib.cycloidal.housing import build_shell_body, housing_bolt_cutters
 from lib.forearm.link import stadium, x_cylinder
 from lib.geom import align_min, cylinder, single_solid
 from lib.units import NUDGE
@@ -119,14 +119,15 @@ def _slab(cfg: UpperArmConfig):
     """The arm rising off the drive's shell (ArmParams), in the unslid plate's frame: one flat slab of the plate's
     outline (the stadium from the shoulder axis to the elbow axis) from the elbow half's underside up to the relief's
     floor, end to end; the stepped slot and the elbow bearing stack; the elbow motor's square hole through it about the
-    pad's axis, a web left across the hole under the motor's face (SlabParams.y0: y_outer once slid) with the hole for
-    its pilot and its 4 holes (PadParams.holes), as the drive's motor plate holds its motor: motor_plate_t of web under
-    the screws' heads, the heads flush in pockets in its underside (ArmParams.motor_screw, motor_pocket_dia)."""
+    pad's axis, a web left across the hole, flush with the slab's underside, up to the motor's face (y_outer once slid)
+    with the hole for its pilot and its 4 holes (PadParams.holes): motor_plate_t of web under the screws' heads, the
+    heads flush in pockets in its underside (ArmParams.motor_screw, motor_pocket_dia)."""
     s, e, a, px = cfg.slab, cfg.elbow, cfg.arm, cfg.pad.x
     top = e.relief_y + NUDGE
     body = stadium(s.elbow_x, 2.0 * s.r, e.relief_y - e.y0, s.elbow_x / 2.0, e.y0)
     body = _cut_elbow_stack(_cut_stepped_slot(body, cfg, top), cfg, top)
-    hh, face, t, head = a.motor_hole_half, s.y0, a.motor_plate_t, a.motor_screw.head_h
+    hh, t, head = a.motor_hole_half, a.motor_plate_t, a.motor_screw.head_h
+    face = e.y0 + t + head
     body = body - _block((px - hh, px + hh), (-hh, hh), (e.y0 - 1.0, top + 1.0))
     web = _block((px - hh, px + hh), (-hh, hh), (face - t - head, face))
     web = web - _bore(a.motor_pilot_dia / 2.0, face - t - head - 1.0, face + 1.0, px)
@@ -147,8 +148,7 @@ def drive_frame(cfg: UpperArmConfig = DEFAULT) -> bd.Location:
 def build_link(cfg: UpperArmConfig = DEFAULT):
     s, e = cfg.slab, cfg.elbow
     if cfg.arm is not None:
-        # the slab, slid along Y with the plate (its shoulder half's underside onto y_outer), cut back inside the
-        # shell's wall
+        # the slab, slid along Y (its underside onto the shell's hub end: arm_slide), cut back inside the shell's wall
         body = bd.Pos(0.0, 0.0, arm_slide(cfg)) * _slab(cfg) - _bore(cfg.arm.fuse_r, -_FAR, _FAR)
     else:
         body = _plate(cfg) + bd.Pos(cfg.pad.x, 0.0, 0.0) * _pad(cfg)
@@ -164,6 +164,10 @@ def build_link(cfg: UpperArmConfig = DEFAULT):
         for x, z in elbow:
             body = body - _bore(r, e.y0 - NUDGE, e.y0 + depth, x, z)
     part = bd.Rot(-90.0, 0.0, 0.0) * body
-    if cfg.arm is not None:   # one print with the shell's body round the discs
-        part = part + drive_frame(cfg) * build_shell_body(DRIVE)
+    if cfg.arm is not None:   # one print with the shell's body round the discs; its housing bolts' holes and nut
+        # pockets cut again through the arm, which covers the lug under it (flush with the hub end)
+        frame = drive_frame(cfg)
+        part = part + frame * build_shell_body(DRIVE)
+        for cutter in housing_bolt_cutters(DRIVE):
+            part = part - frame * cutter
     return single_solid(part)

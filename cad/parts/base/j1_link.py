@@ -11,14 +11,19 @@ lib/mounts.py). Between them: two through slots, the stepped slot (purpose unkno
 (the elbow drive's second stage, not modelled). DEFAULT (what the part builds) is SHORTENING shorter at the elbow
 end (the elbow-end features move with the axis), leaves out the through slots and LEGACY's 10 Ø5.15 x 2 sockets in
 the underside (j1_cap's dowel seats - the cap was removed 2026-09-25), puts the 4 NEMA 17 holes on a 31 square
-about the pad's axis (the SolidWorks ones are 0.38 off and uneven) and rises straight off the middle of the drive's
-turning shell, printed as one with the shell's body round the discs (ArmParams, lib/cycloidal/housing.py
-build_shell_body): one flat slab, solid (a placeholder for its mass), the plate's outline from the elbow half's
-underside up to the elbow block's floor, end to end, out of the two windows of the body it fills (its other four open
-on the discs), slid along +Y with the plate's elbow end (lib/upper_arm/layout.py arm_slide); the elbow motor moved out
+about the pad's axis (the SolidWorks ones are 0.38 off and uneven) and rises straight off the drive's turning shell,
+printed as one with the shell's body round the discs (ArmParams, lib/cycloidal/housing.py build_shell_body): one flat
+slab, solid (a placeholder for its mass), the plate's outline from the elbow half's underside up to the elbow block's
+floor, end to end, out of the two windows of the body it fills (its other four open on the discs), slid along +Y
+until its underside is flush with the shell's hub end (lib/upper_arm/layout.py arm_slide); the elbow motor moved out
 to ELBOW_MOTOR_CENTRES from the elbow axis, where the second stage's seat was (gone: the elbow belt runs straight to
-the 90T), and turned over onto the arm's +Y side - down a square hole through the slab onto a web across it, the pad
-gone. Every number: lib/upper_arm/params.py (UpperArmConfig; measured on the reference 2026-09-24).
+the 90T), and turned over onto the arm's +Y side - down a square hole through the slab onto a web across it, flush
+with the slab's underside, the pad gone. Every number: lib/upper_arm/params.py (UpperArmConfig; measured on the
+reference 2026-09-24).
+
+Print: on the shell's hub end - the slab's underside and the motor web flush with it, one flat face - turned 45
+degrees on a 256 bed (it is longer than the bed's side); no support: what hangs over open air is short bridges (the
+nut and screw pockets' roofs, the stepped slot's step, the elbow seat's lip).
 
 SolidWorks product: 'first joint edit 62126'
 Source export:      step/first joint edit 62126.STEP

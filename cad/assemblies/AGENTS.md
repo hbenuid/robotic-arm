@@ -18,7 +18,8 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
 - **Shifted occurrences** (`lib/placements.py SHIFTS`): a link whose length the design changes (`j1_link`
   `slab.elbow_x`, `j2_link` `web.wrist_x`, `wrist_link` `tower.block_x1`) moves every capture record beyond it along
   its own +X by the parameter's DEFAULT − LEGACY - and along its +Y by `across_y` where the design moved its far end
-  across it (`j1_link`'s elbow end, slid onto the arm rising off the drive's shell: `lib/upper_arm/layout.py arm_slide`;
+  across it (`j1_link`'s elbow end, slid with the arm until its underside is flush with the drive shell's hub end:
+  `lib/upper_arm/layout.py arm_slide`;
   the mounts hosted on `j1_link#1` itself add it to their frames, `lib/params.py J1_ARM_SLIDE`); the yoke
   (`j1_coupler`) moves the drive, `j1_link` and all beyond along its +X (N) by `ForkParams.face_x` −
   `CAPTURE_FACE_X`, the middle of the discs onto the base_yaw axis; the forearm roll drive (`forearm_roll_drive`, anchor
