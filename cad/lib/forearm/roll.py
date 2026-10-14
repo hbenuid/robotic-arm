@@ -1,6 +1,6 @@
 """build123d builders of the forearm roll drive's printed parts (RollDriveParams, module frame, at their stack
 stations): the frame (stator, forearm_roll_block - one body round the motor: the round elbow end with the elbow's
-output flange under it, the motor's pocket and plate, the tower with the 6806 pair and the cup on its front face), the
+output flange under it, the motor's pocket and plate, the tower with the 6806 pair and the bearing boss on its front face), the
 pulley (rotor, the output - its integral 90T is the GT2 ring of lib/pulley/teeth.py) and the shaft (rotor, a collar
 behind bearing 1)."""
 from __future__ import annotations
@@ -82,16 +82,16 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     axis, tangent up to the tower round the roll axis) from the underside (block_x[0], the elbow flange's lip / boss /
     journal / stub under it) to the open +N face; the motor's pocket open on that face, its front wall the plate (the
     tension slots, the pilot slot), the plate's face the frame's one front face; the tower: bearing 1's seat from the
-    shaft's bay behind it, the lip, bearing 2's seat under the cup - a round boss on the front face the ring's flange
-    turns sunk in -, the stop post on the tower's rear face in the bay."""
+    shaft's bay behind it, the lip, bearing 2's seat in the bearing boss - round on the front face, the ring's flange
+    turning over it -, the stop post on the tower's rear face in the bay."""
     d, S = cfg.drive, stack_positions(cfg)
     y_e = S["y_elbow"]
-    # the material first: the profile across the frame's depth, the elbow flange under it, the cup's boss (from 1 mm
-    # inside the front face: one body) up to the rim
+    # the material first: the profile across the frame's depth, the elbow flange under it, the bearing boss (from 1 mm
+    # inside the front face: one body) up to bearing 2's front face
     body = yz_prism(profile(cfg), d.block_x[0], d.block_x[1])
     for dia, a, b in coupler_steps(cfg):
         body = body + x_cylinder(dia / 2.0, b - a, (y_e, 0.0), a)
-    body = body + cylinder(d.cup_od / 2.0, S["z_rim"] - S["z_front"] + 1.0, z0=S["z_front"] - 1.0)
+    body = body + cylinder(d.bearing_boss_dia / 2.0, S["z_boss"] - S["z_front"] + 1.0, z0=S["z_front"] - 1.0)
     # the motor's pocket, from the floor out through the open face; the plate in front of it: the motor's four tension
     # slots and the pilot slot, the motor centred on the elbow axis
     y0, y1, z0, z1 = motor_pocket(cfg)
@@ -99,12 +99,11 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     for x, y in pad_bolt_points(cfg):
         body = body - _slot_y(x, y, d.pad_bolt_dia, d.pad_slot_len, S["z_motor_face"], d.pad_t)
     body = body - _slot_y(S["x_motor"], S["y_motor"], d.pad_pilot_w, d.pad_slot_len, S["z_motor_face"], d.pad_t)
-    # the tower, from the bay to the cup: bearing 1's seat, the lip, bearing 2's seat, the cup round the ring's flange
+    # the tower, from the bay to the boss's top: bearing 1's seat, the lip, bearing 2's seat (open through the top)
     r_seat = (d.bearing_od + d.seat_add) / 2.0
     body = body - cylinder(r_seat, d.bearing_width + NUDGE, z0=S["z_bearing_1"] - NUDGE)
     body = body - cylinder(d.lip_id / 2.0, d.lip + 2 * NUDGE, z0=S["z_lip"] - NUDGE)
     body = body - cylinder(r_seat, d.bearing_width + NUDGE, z0=S["z_bearing_2"])
-    body = body - cylinder((d.ring_flange_dia + d.cup_id_add) / 2.0, S["z_rim"] - S["z_cup"] + NUDGE, z0=S["z_cup"])
     # the shaft's bay behind bearing 1, open through the +N face (the shaft and bearing 1 go in from it); the stop post on
     # the tower's rear face inside it, at -X
     bay = (S["z_bay"], S["z_bearing_1"])
@@ -133,8 +132,8 @@ def build_pulley(cfg: ForearmConfig = DEFAULT):
     z_end = S["z_spigot_end"]
     # the core: the hub, the shoulder, the core under the ring, the spigot - then every cut, then the ring fused on LAST
     # (an annulus on the core, so no boolean ever runs through its 90 grooves)
-    body = cylinder(j_r, S["z_cup"] - S["z_meet"], z0=S["z_meet"])
-    body = body + cylinder(d.shoulder_dia / 2.0, d.run_gap, z0=S["z_cup"])
+    body = cylinder(j_r, S["z_boss"] - S["z_meet"], z0=S["z_meet"])
+    body = body + cylinder(d.shoulder_dia / 2.0, d.run_gap, z0=S["z_boss"])
     body = body + cylinder(d.ring_core_dia / 2.0, S["z_ring_end"] - S["z_ring_flange_1"], z0=S["z_ring_flange_1"])
     body = body + cylinder(w.flange_dia / 2.0, z_end - S["z_wall"], z0=S["z_wall"])
     body = body - cylinder(d.bore / 2.0, z_end - S["z_meet"] + 2 * NUDGE, z0=S["z_meet"] - NUDGE)

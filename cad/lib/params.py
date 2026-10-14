@@ -216,8 +216,8 @@ BASE_YAW_LIMIT_DEG = 175.0        # [ESTIMATE] symmetric +/- range; j1_coupler (
 # fork at -154, the forearm stays off the base and the shoulder to -140 at any elbow)
 SHOULDER_PITCH_LIMITS_DEG = (-120.0, 67.0)   # [DESIGN]
 # the 4.5:1 elbow belt: (lower, upper); the lower - the forearm lifted back - kept where the old roll housing set it:
-# the roll drive's frame (round about the elbow axis, its tower ELBOW_ROLL_OFFSET over it) is 9.3 mm off the elbow motor,
-# which stands on the same side of the upper arm, there and comes within 1 mm of its board only at -59.8 deg
+# the roll drive's frame (round about the elbow axis, its tower ELBOW_ROLL_OFFSET over it) is 8.4 mm off the elbow motor,
+# which stands on the same side of the upper arm, there and comes within 1 mm of its board only at -58.1 deg
 # (tests/forearm/test_roll_drive.py) - the forearm, the wrist and the gripper stay 1 mm off the upper arm to -62 at any
 # roll and wrist pitch (tests/test_sweeps.py), so the frame sets the room to lift further (docs/open_issues.md); the
 # upper kept at 90 (the gripper, the wrist pitched up, reaches j1_coupler at 104.8): SHOULDER_PITCH_LIMITS_DEG was set
