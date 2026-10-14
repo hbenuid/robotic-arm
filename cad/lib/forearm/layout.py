@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import math
 
-from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, idler_on_run, pulley_circle
+from lib.belts import GT2_IDLER_WIDTH, GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, idler_on_run, pulley_circle
 from lib.fasteners import M3_PITCH
 from lib.forearm.params import DEFAULT, ForearmConfig
 
@@ -119,12 +119,24 @@ def wrist_belt_loop(cfg: ForearmConfig = DEFAULT, *, idler: bool = True) -> list
     return loop
 
 
-def roll_belt_loop(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float, float]]:
+def roll_belt_loop(cfg: ForearmConfig = DEFAULT, *, idler: bool = True) -> list[tuple[float, float, float]]:
     """The roll belt's loop (lib/belts.py) in the belt's own frame: the roll motor's 20T on the origin (the elbow axis),
-    the pulley's 90T ring on +X (the roll axis, its centre distance on) - the belt's row in
-    assemblies/forearm_roll_drive.py turns +X onto the module's +Y."""
+    the pulley's 90T ring on +X (the roll axis, centre_distance on) and - with idler - the tensioner on the run back from
+    the ring, RollIdlerParams.along from the motor, pushed in till the loop is roll_belt long (the stock belt is longer
+    than the open loop). The belt's row in assemblies/forearm_roll_drive.py turns +X onto the module's +Y."""
     d = cfg.drive
-    return [pulley_circle(0.0, 0.0, GT2_PULLEY_20T_TEETH), pulley_circle(d.centre_distance, 0.0, d.ring_teeth)]
+    loop = [pulley_circle(0.0, 0.0, GT2_PULLEY_20T_TEETH), pulley_circle(d.centre_distance, 0.0, d.ring_teeth)]
+    if idler:
+        loop.append(idler_on_run(loop, 1, d.idler.along, d.roll_belt))
+    return loop
+
+
+def roll_idler_xy(cfg: ForearmConfig = DEFAULT) -> tuple[float, float]:
+    """The roll belt's idler axis in the module frame (x, y): roll_belt_loop()'s idler through the belt's row (its +X on
+    the module's +Y, its +Y on the module's -X, from the motor's axis)."""
+    S = stack_positions(cfg)
+    bx, by, _ = roll_belt_loop(cfg)[2]
+    return (S["x_motor"] - by, S["y_motor"] + bx)
 
 
 def wrist_belt_frame(cfg: ForearmConfig = DEFAULT) -> tuple:
@@ -172,8 +184,9 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
     z_meet = z_lip + d.lip / 2.0                                  # 29.6: the shaft's hub meets the pulley's, in the lip's middle
     z_bay = z_shaft_end - (z_meet - z_bearing_1) - d.bay_clear    # 2.75: the bay's floor - room to slide the shaft in
     z_ring_mid = z_ring + d.ring_width / 2.0                      # 43.3
-    z_motor_face = z_ring_mid - d.t20                             # 24.85: the 20T's teeth level with the ring's
-    z_front = z_motor_face + d.pad_t                              # 28.85: the plate's front face = the block's front face
+    z_motor_face = z_ring_mid - d.t20                             # 29.85: the 20T's teeth level with the ring's, its hub on the pilot boss
+    z_front = z_motor_face + d.pad_t                              # 33.85: the plate's front face = the block's front face
+    z_idler = z_ring_mid - GT2_IDLER_WIDTH / 2.0                  # 38.8: the idler's underside (its channel on the belt) = the riser's land
     return {
         "z_block": 0.0, "z_shaft": 0.0, "z_pulley": 0.0,
         "z_tower_rear": z_bay - d.tower_wall,                     # 0.75: the tower's rear in the profile
@@ -196,9 +209,11 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
         "z_spigot_end": z_spigot_end,
         "z_wall_back": z_wall_back,
         "z_motor_face": z_motor_face,
-        "z_motor_board": z_motor_face - d.motor.body_length,      # -14.65: the board's frame (the motor's rear face)
-        "z_20t": z_front + d.pulley_lift,                         # 32.35: the 20T's hub face
-        "y_elbow": d.elbow_y,                                     # -81.97: the elbow axis (along X)
+        "z_motor_board": z_motor_face - d.motor.body_length,      # -9.65: the board's frame (the motor's rear face)
+        "z_20t": z_motor_face + d.motor.pilot_height + d.pulley_seat,   # 32.35: the 20T's hub face, in the plate's pilot slot
+        "z_idler": z_idler, "z_idler_top": z_idler + GT2_IDLER_WIDTH,   # 47.8: its top, the screw head's bearing face
+        "z_idler_roof": z_front - d.idler.roof,                   # 30.85: the nut's channel's roof = the nut's bearing face
+        "y_elbow": d.elbow_y,                                     # -74: the elbow axis (along X)
         "x_motor": 0.0, "y_motor": d.motor_y,                     # on the elbow axis
         "x_cradle": d.block_x[0] + d.web_t,                       # -23: the pocket's floor
     }

@@ -93,6 +93,10 @@ Every command, its flags and what it prints: `./cadtool help` (for people: the `
   `if __name__ == "__main__": <name>()` — that call IS the build (`./cadtool gen` runs the file; without it `gen`
   silently builds nothing — source-checked for every part, every assembly and every `robot/links/<link>.py`); no `show()` in the
   file, no import side effects.
+- **Belts**: every GT2 belt is a stock length (`lib/belts.py STANDARD_2GT_LENGTHS`: what the belts are bought as,
+  never an odd length ordered on its own) and every belt gets a **tensioner** - an idler on its back taking up what the
+  stock length has over its open loop (`idler_on_run()`), adjustable; so a belt joint's centre distance is a design
+  value, not the belt's. A belt still without its tensioner is a `docs/open_issues.md` row.
 - Import `lib` / `parts` plainly — **no `sys.path` shim**: `cadtool` exports `PYTHONPATH=cad/`, pytest
   has `pythonpath = ["."]`, `.env` covers VS Code. **Never add `cad/__init__.py`** (the package root would become the
   repo root). The one `sys.path` line in the tree is `tools/cycloidal/export_cadquery.py` (it runs in the OTHER repo's

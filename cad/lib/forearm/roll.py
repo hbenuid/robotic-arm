@@ -21,6 +21,7 @@ from lib.forearm.layout import (
     nut_channel_end,
     pad_bolt_points,
     pulley_bolt_points,
+    roll_idler_xy,
     stack_positions,
 )
 from lib.forearm.link import x_cylinder, yz_prism
@@ -81,7 +82,8 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     """The frame (forearm_roll_block) in the module frame: ONE body round the motor - the profile (round about the elbow
     axis, tangent up to the tower round the roll axis) from the underside (block_x[0], the elbow flange's lip / boss /
     journal / stub under it) to the open +N face; the motor's pocket open on that face, its front wall the plate (the
-    tension slots, the pilot slot), the plate's face the frame's one front face; the tower: bearing 1's seat from the
+    tension slots, the pilot slot, the shaft's slit out to the open face), the plate's face the frame's one front face - on
+    it the roll belt's tensioner's riser, its M5's slot and its nut's channel under the face -; the tower: bearing 1's seat from the
     shaft's bay behind it, the lip, bearing 2's seat in the bearing boss - round on the front face, the ring's flange
     turning over it -, the stop post on the tower's rear face in the bay."""
     d, S = cfg.drive, stack_positions(cfg)
@@ -92,6 +94,12 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     for dia, a, b in coupler_steps(cfg):
         body = body + x_cylinder(dia / 2.0, b - a, (y_e, 0.0), a)
     body = body + cylinder(d.bearing_boss_dia / 2.0, S["z_boss"] - S["z_front"] + 1.0, z0=S["z_front"] - 1.0)
+    # the roll belt's tensioner's riser on the front face (from 1 mm inside it: one body), its land on top under the idler's
+    # bearing inner ring; both stadiums along X, the idler's push, +/- travel
+    i, (ix, iy) = d.idler, roll_idler_xy(cfg)
+    land0 = S["z_idler"] - i.land_h
+    body = body + bd.Pos(ix, iy, S["z_front"] - 1.0) * bd.extrude(bd.SlotCenterToCenter(2.0 * i.travel, i.riser_w), amount=land0 - S["z_front"] + 1.0)
+    body = body + bd.Pos(ix, iy, land0 - NUDGE) * bd.extrude(bd.SlotCenterToCenter(2.0 * i.travel, i.land_w), amount=i.land_h + NUDGE)
     # the motor's pocket, from the floor out through the open face; the plate in front of it: the motor's four tension
     # slots and the pilot slot, the motor centred on the elbow axis
     y0, y1, z0, z1 = motor_pocket(cfg)
@@ -99,6 +107,10 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     for x, y in pad_bolt_points(cfg):
         body = body - _slot_y(x, y, d.pad_bolt_dia, d.pad_slot_len, S["z_motor_face"], d.pad_t)
     body = body - _slot_y(S["x_motor"], S["y_motor"], d.pad_pilot_w, d.pad_slot_len, S["z_motor_face"], d.pad_t)
+    # the shaft's slit through the plate, from the pilot slot out through the +N face: the motor + board slide in from
+    # that face motor_drop low (the shaft in the slit, the pilot boss under the plate), then lift into the pilot slot
+    slit = (S["y_motor"] - d.shaft_slit / 2.0, S["y_motor"] + d.shaft_slit / 2.0)
+    body = body - _box((S["x_motor"], d.block_x[1] + 1.0), slit, (S["z_motor_face"] - NUDGE, S["z_front"] + NUDGE))
     # the tower, from the bay to the boss's top: bearing 1's seat, the lip, bearing 2's seat (open through the top)
     r_seat = (d.bearing_od + d.seat_add) / 2.0
     body = body - cylinder(r_seat, d.bearing_width + NUDGE, z0=S["z_bearing_1"] - NUDGE)
@@ -118,6 +130,13 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     for y, z in pulley_bolt_points(cfg):
         body = body - x_cylinder(d.pulley_bolt_dia / 2.0, d.nut_seat_x - d.stub_x[0] + 2 * NUDGE, (y_e + y, z), d.stub_x[0] - NUDGE)
         body = body - _x_hex(d.nut_af, x_end - d.nut_seat_x, (y_e + y, z), d.nut_seat_x, math.degrees(math.atan2(z, y)))
+    # the tensioner's M5: its slot through the land, the riser and the plate, on down past the screw's tip; the nut's
+    # channel under the face, from the open +N face along X past the slot's far end (the nut flats-on, sliding with it)
+    tip = S["z_idler_top"] - i.screw_len
+    body = body - bd.Pos(ix, iy, tip - i.tip_clear) * bd.extrude(bd.SlotCenterToCenter(2.0 * i.travel, i.slot_w), amount=S["z_idler"] - tip + i.tip_clear + NUDGE)
+    half = i.nut.af / 2.0 + i.nut_fit
+    x0 = ix - i.travel - i.nut.af / math.sqrt(3.0) - i.nut_fit
+    body = body - _box((x0, d.block_x[1] + 1.0), (iy - half, iy + half), (S["z_idler_roof"] - i.nut.h - i.nut_fit, S["z_idler_roof"]))
     return single_solid(body)
 
 

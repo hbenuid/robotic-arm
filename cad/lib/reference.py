@@ -155,6 +155,8 @@ NO_REFERENCE: dict[str, str] = {
     "forearm_roll_pulley": "lib/forearm/roll.py:build_pulley(DEFAULT)",
     "wrist_idler_screw": "parts/joints/wrist_idler_screw.py:_envelope()",
     "wrist_idler_nut": "parts/joints/wrist_idler_nut.py:_envelope()",
+    "roll_idler_screw": "parts/joints/roll_idler_screw.py:_envelope()",
+    "roll_idler_nut": "parts/joints/roll_idler_nut.py:_envelope()",
     "yaw_belt": "parts/base/yaw_belt.py:_envelope()",
     "elbow_belt": "parts/joints/elbow_belt.py:_envelope()",
     "forearm_roll_belt": "parts/joints/forearm_roll_belt.py:_envelope()",

@@ -27,7 +27,7 @@ PETG_DENSITY = 1.27e-3  # [DESIGN] g/mm^3 - printed-part mass estimates
 
 # --- Fasteners - lib/fasteners.py (a leaf: the sizes, the clearance holes, the plain screw / nut builders) ----
 from lib.fasteners import (  # noqa: E402, F401
-    M3_CLEAR, M3_CSK, M3_NUT, M3_PITCH, M3_SHCS, M4_CLEAR, M4_NUT, M4_PITCH, M4_SHCS, M5_CLEAR, M5_NUT, M5_SHCS, csk_volume, nut_volume,
+    M3_CLEAR, M3_CSK, M3_NUT, M3_PITCH, M3_SHCS, M4_CLEAR, M4_NUT, M4_PITCH, M4_SHCS, M5_CLEAR, M5_NUT, M5_PITCH, M5_SHCS, csk_volume, nut_volume,
     shcs_volume,
 )
 
@@ -128,10 +128,11 @@ FOREARM_WALL_OD = _FOREARM.roll_end.wall_od        # 60 [DESIGN] the flange wall
 FOREARM_PLUG_CLEARANCE = _FOREARM.roll_end.plug_clearance   # 10 [DESIGN] the wrist motor's connector plug: its room beyond the connector (sideways)
 FOREARM_MOTOR_WALL_CLEAR = _FOREARM.roll_end.motor_wall_clear   # 4.5 [DESIGN] the wrist motor's body to the wall screws' heads at the slots' wall end
 FOREARM_FLANGE_DIA = _FOREARM.roll_end.flange_dia  # 39.7 [DESIGN] the roll pulley's spigot the forearm wall bolts onto
-FOREARM_ROLL_BELT_LENGTH = _FOREARM.drive.roll_belt          # 280-2GT [DESIGN] the roll belt (90T ring on the shaft, 20T on the motor)
-FOREARM_ROLL_MOTOR_XY = (0.0, _FOREARM.drive.motor_y)        # (0, -81.97) [DESIGN] the roll motor's axis in the module frame: on the elbow axis, under the housing by what the belt sets
-ELBOW_ROLL_OFFSET = _FOREARM.elbow_offset                    # 81.97 [DESIGN] the roll axis' distance from the elbow axis (along j2_link's +Y): the roll belt's centre
-#                                                              distance, the roll motor on the elbow axis - the arm's elbow offset (lib/placements.py SHIFTS)
+FOREARM_ROLL_BELT_LENGTH = _FOREARM.drive.roll_belt          # 280-2GT [DESIGN] the roll belt (90T ring on the shaft, 20T on the motor, round its idler)
+FOREARM_ROLL_MOTOR_XY = (0.0, _FOREARM.drive.motor_y)        # (0, -74) [DESIGN] the roll motor's axis in the module frame: on the elbow axis, the drive's centre distance under the roll axis
+ELBOW_ROLL_OFFSET = _FOREARM.elbow_offset                    # 74 [DESIGN] the roll axis' distance from the elbow axis (along j2_link's +Y): the roll drive's
+#                                                              centre distance (the stock belt round its idler), the roll motor on the elbow axis - the arm's
+#                                                              elbow offset (lib/placements.py SHIFTS)
 FOREARM_ROLL_RATIO = _FOREARM.drive.ring_teeth / GT2_PULLEY_20T_TEETH   # 4.5:1 [DESIGN] like the other belt joints
 FOREARM_ROLL_BLOCK_X = _FOREARM.drive.block_x       # (-33, 33) [DESIGN] the roll frame's extent along N: its underside 3.0 mm above the upper arm's flat top (host z -11)
 
@@ -210,6 +211,9 @@ from lib.forearm.params import IdlerParams as _IdlerParams  # noqa: E402
 
 WRIST_IDLER_SCREW_MASS_G = STEEL_DENSITY * shcs_volume(_IdlerParams().screw, _IdlerParams().screw_len)   # 5.0, M5x20
 WRIST_IDLER_NUT_MASS_G = STEEL_DENSITY * nut_volume(_IdlerParams().nut)                                   # 1.3, M5
+# the roll belt's tensioner's axle and its nut (parts/joints/roll_idler_{screw,nut}; lib/forearm/params.py RollIdlerParams)
+ROLL_IDLER_SCREW_MASS_G = STEEL_DENSITY * shcs_volume(_FOREARM.drive.idler.screw, _FOREARM.drive.idler.screw_len)   # 5.8, M5x25
+ROLL_IDLER_NUT_MASS_G = STEEL_DENSITY * nut_volume(_FOREARM.drive.idler.nut)                                       # 1.3, M5
 
 # The base motor mount's screws and nuts (parts/base/base_motor_mount_{screws,nuts}): the same estimate
 from lib.base.layout import joint_bolt_points as _joint_bolt_points  # noqa: E402
@@ -233,8 +237,8 @@ BASE_YAW_LIMIT_DEG = 175.0        # [ESTIMATE] symmetric +/- range; j1_coupler (
 # fork at -154, the forearm stays off the base and the shoulder to -140 at any elbow)
 SHOULDER_PITCH_LIMITS_DEG = (-120.0, 67.0)   # [DESIGN]
 # the 4.5:1 elbow belt: (lower, upper); the lower - the forearm lifted back - kept where the old roll housing set it:
-# the roll drive's frame (round about the elbow axis, its tower ELBOW_ROLL_OFFSET over it) is 4.6 mm off the elbow
-# motor's board, which stands on the same side of the upper arm, there and comes within 1 mm of it at -51.0 deg
+# the roll drive's frame (round about the elbow axis, its tower ELBOW_ROLL_OFFSET over it) is 5.9 mm off the elbow
+# motor's board, which stands on the same side of the upper arm, there and comes within 1 mm of it at -54.0 deg
 # (tests/forearm/test_roll_drive.py) - the forearm, the wrist and the gripper stay 1 mm off the upper arm at any roll
 # and wrist pitch there (tests/test_sweeps.py), so the frame sets the room to lift further (docs/open_issues.md); the
 # upper kept at 90 (the gripper, the wrist pitched up, stays 1 mm off j1_coupler there - tests/test_sweeps.py):

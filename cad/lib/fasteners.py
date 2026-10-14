@@ -26,6 +26,7 @@ M5_CLEAR = 5.5          # [DESIGN] M5
 
 M3_PITCH = 0.5          # [DATASHEET] M3 coarse thread
 M4_PITCH = 0.7          # [DATASHEET] M4 coarse thread
+M5_PITCH = 0.8          # [DATASHEET] M5 coarse thread
 
 
 @dataclass(frozen=True)

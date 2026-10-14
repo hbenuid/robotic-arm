@@ -1,6 +1,6 @@
 """The GT2 belts (parts/base/yaw_belt, parts/joints/{elbow,forearm_roll,wrist}_belt): purchased parts with no reference
 (lib/reference.py NO_REFERENCE) - THIS file locks their numbers (the modelled band's volume and bounding box, measured
-on the build and written in) and what they are: each a stock multipack length, its loop that long along its pitch line
+on the build and written in) and what they are: each a stock length, its loop that long along its pitch line
 (lib/belts.py), the band on its pulleys' tooth tips (and an idler's seat, were one in its loop); in the arm, each loop's
 circles on its pulleys' axes in their tooth bands' plane. The wrist idler kit (unplaced): tests/forearm/test_wrist_idler.py."""
 import math
@@ -16,6 +16,7 @@ from lib.belts import (
     GT2_BELT_BACK,
     GT2_BELT_MASS_G_PER_M,
     GT2_BELT_W,
+    GT2_IDLER_WIDTH,
     GT2_PLD,
     STANDARD_2GT_LENGTHS,
     belt_length,
@@ -33,7 +34,7 @@ T20_HUB = FOREARM.drive.t20_hub     # the vendor 20T's tooth band from its hub f
 LOCKS = {
     "yaw_belt": ("base", 1136.33, (-6.742198, -38.573186, -3.0), (118.381942, 77.146373, 6.0)),
     "elbow_belt": ("joints", 1059.993, (-6.742198, -29.02389, -3.0), (117.737762, 58.04778, 6.0)),
-    "forearm_roll_belt": ("joints", 1059.993, (-6.742198, -29.02389, -3.0), (117.737762, 58.04778, 6.0)),
+    "forearm_roll_belt": ("joints", 1059.849, (-6.742198, -29.02389, -3.0), (109.766087, 58.04778, 6.0)),
     "wrist_belt": ("joints", 1059.993, (-6.742198, -29.02389, -3.0), (117.737762, 58.04778, 6.0)),
 }
 # a mounted belt -> its loop's circles' pulleys (key, its band centre in its own frame: the 20T's along +X, a 90T's /
@@ -103,13 +104,16 @@ def test_each_mounted_belt_runs_on_its_pulleys(key):
 
 def test_the_roll_belt_runs_on_its_pulleys():
     """In the roll module: the belt's row on the motor's axis at the ring's mid-plane, its 20T's band there, the ring
-    (on the roll axis) on the loop's second circle."""
+    (on the roll axis) on the loop's second circle, its tensioner's idler (the third, on the belt's back) on the idler's
+    row, its channel centred on the belt (tests/forearm/test_roll_idler.py: the idler itself)."""
     rows = {part: frame for part, _, frame in ROLL.OCCURRENCES}
     belt, t20 = to_location(rows["forearm_roll_belt"]), to_location(rows["gt2_pulley_20t"])
-    (x0, y0, _), (x1, y1, _) = parts.load("forearm_roll_belt").loop()
+    (x0, y0, _), (x1, y1, _), (x2, y2, r2) = parts.load("forearm_roll_belt").loop()
     assert ((belt * Location((x0, y0, 0.0))).position - (t20 * Location((T20_HUB, 0.0, 0.0))).position).length < 1e-6
     ring = (belt * Location((x1, y1, 0.0))).position
     assert (ring.X, ring.Y, ring.Z) == pytest.approx((0.0, 0.0, ROLL.S["z_ring_mid"]), abs=1e-6)
+    idler = (Location(rows["gt2_idler_20t"]) * Location((0.0, 0.0, GT2_IDLER_WIDTH / 2.0))).position   # a bare position row
+    assert r2 < 0.0 and ((belt * Location((x2, y2, 0.0))).position - idler).length < 1e-6
 
 
 @pytest.mark.slow
