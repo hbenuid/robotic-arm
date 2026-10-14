@@ -12,7 +12,7 @@ file came from is `README.md`; this file holds the rules.
   D-bore) are fused onto every motor body `tools/reference/split_mks_motor.py` writes, in place of the export's own.
 - **Written once, on one machine:** build123d's `export_step` writes the time into the STEP header, so re-running a
   vendor-producing tool changes the file's bytes (and its manifest sha) with identical geometry. Vendor files are
-  committed as LFS and never regenerated on the other machine — the tools' selectors
+  committed and never regenerated on the other machine — the tools' selectors
   (`split_mks_motor.py --write kit|drive`) leave the others alone.
 - A NEW vendor file needs `./cadtool gen parts/<group>/<name>.py --force` on its part once (why: `cad/AGENTS.md`
   Gotchas).

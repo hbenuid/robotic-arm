@@ -17,9 +17,7 @@ CadQuery exports, its shell turning since (the yoke holds its hub and motor) —
 
 ## Setup (once per machine)
 
-Requirements: [`uv`](https://docs.astral.sh/uv/), `git-lfs` on `PATH` — every committed STEP/STL here (the inputs in
-`reference/` and `vendor/`, plus `robot/meshes/`) is a Git LFS object, so `git lfs install` before cloning (a clone that
-shows ~130-byte pointer files needs `git lfs pull`) — and Node 20+ (only for STL/3MF/GLB export). For Claude Code, the
+Requirements: [`uv`](https://docs.astral.sh/uv/) and Node 20+ (only for STL/3MF/GLB export). For Claude Code, the
 [`text-to-cad@earthtojake`](https://github.com/earthtojake/text-to-cad) plugin **v0.7.x** (AI CAD assistance, below; the
 repo's `.claude/settings.json` enables its marketplace) — install it once per scope, `--scope project` for the repo's own:
 

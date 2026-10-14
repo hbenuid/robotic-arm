@@ -3,8 +3,7 @@
 # (software/control/ or cad/; a .py file outside both is not checked). A finding blocks the commit; fix it
 # (`./cadtool lint --fix` in cad/, `uv run ruff check --fix` in software/control/), re-stage, commit again - or skip
 # the gate once with `git commit --no-verify`.
-# Installed per machine by `cad/cadtool setup`: a stub .git/hooks/pre-commit that runs this committed file. Not
-# core.hooksPath - that would switch off the git-lfs hooks in .git/hooks (pre-push uploads the LFS objects).
+# Installed per machine by `cad/cadtool setup`: a stub .git/hooks/pre-commit that runs this committed file.
 # Lints the working-tree copy of each staged file (a partly staged file is checked as it is on disk).
 # macOS bash 3.2, no GNU coreutils.
 set -euo pipefail
