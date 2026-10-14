@@ -61,6 +61,8 @@ M4_NUT = NutSize(4.0, 7.0, 3.2)               # [DATASHEET] ISO 4032 M4
 M3_SHCS = ShcsSize(3.0, 5.5, 3.0, 2.5, 1.3)   # [DATASHEET] ISO 4762 M3
 M3_CSK = CskSize(3.0, 6.72, 1.86, 2.0, 1.1)   # [DATASHEET] ISO 10642 M3
 M3_NUT = NutSize(3.0, 5.5, 2.4)               # [DATASHEET] ISO 4032 M3
+M5_SHCS = ShcsSize(5.0, 8.5, 5.0, 4.0, 2.5)   # [DATASHEET] ISO 4762 M5 (the wrist idler's axle)
+M5_NUT = NutSize(5.0, 8.0, 4.7)               # [DATASHEET] ISO 4032 M5
 
 
 def hex_area(across_flats: float) -> float:

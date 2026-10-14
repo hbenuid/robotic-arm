@@ -3,8 +3,23 @@ from __future__ import annotations
 
 import math
 
-from lib.base.params import DEFAULT, BaseConfig
+from lib.base.params import DEFAULT, YAW_BELT_Y, BaseConfig
+from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_120T_TEETH, pulley_circle
 from lib.motors import MKS_SERVO42D_W, NEMA17_BOLT_SP
+
+
+def yaw_belt_loop(cfg: BaseConfig = DEFAULT) -> list[tuple[float, float, float]]:
+    """The base_yaw belt's loop (lib/belts.py) in the belt's own frame (yaw_belt_frame()): the motor's 20T on the
+    origin, the 120T on the base_yaw axis on +X, the motor's centre distance from it."""
+    cx, cz = cfg.motor.centre
+    return [pulley_circle(0.0, 0.0, GT2_PULLEY_20T_TEETH), pulley_circle(math.hypot(cx, cz), 0.0, GT2_PULLEY_120T_TEETH)]
+
+
+def yaw_belt_frame(cfg: BaseConfig = DEFAULT) -> tuple:
+    """The base_yaw belt's frame as data in the base's: on the motor's axis at YAW_BELT_Y, its +Z up the base_yaw axis
+    (the base's +Y), its +X toward the axis."""
+    cx, cz = cfg.motor.centre
+    return ((cx, YAW_BELT_Y, cz), (-90.0, 0.0, round(180.0 - math.degrees(math.atan2(cz, cx)), 6)))
 
 
 def motor_holes(cfg: BaseConfig = DEFAULT) -> list[tuple[float, float]]:

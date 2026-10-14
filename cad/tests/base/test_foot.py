@@ -17,7 +17,7 @@ from tests import built
 from tests.helpers import is_inside
 
 S, C, P, F, J = DEFAULT.shell, DEFAULT.cap, DEFAULT.plate, DEFAULT.foot, DEFAULT.joint
-VOLUME = 413546.1          # mm^3, measured on the build (the SolidWorks base: 286169.1, cut at the joint 235439.1)
+VOLUME = 413503.0          # mm^3, measured on the build (the SolidWorks base: 286169.1, cut at the joint 235439.1)
 
 
 def test_legacy_stands_straight_without_a_foot():

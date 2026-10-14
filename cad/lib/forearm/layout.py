@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import math
 
+from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, idler_on_run, pulley_circle
 from lib.fasteners import M3_PITCH
 from lib.forearm.params import DEFAULT, ForearmConfig
 
@@ -107,6 +108,37 @@ def clamp_nut_pocket(cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float,
     return d.bore / 2.0 - 1.0, r_out, S["z_shaft_end"], S["z_clamp_nut_seat"]
 
 
+def wrist_belt_loop(cfg: ForearmConfig = DEFAULT, *, idler: bool = True) -> list[tuple[float, float, float]]:
+    """The wrist belt's loop (lib/belts.py) in the belt's own frame: the motor's 20T on the origin, the wrist 90T on +X
+    (the belt frame sits on the motor's axis at wrist_belt_z, turned 180 deg about Z from j2_link's: wrist_belt_frame());
+    with cfg.idler, the idler on the run leaving the 20T (local -Y), IdlerParams.along from the motor, pushed in till
+    the loop is RollEndParams.wrist_belt long."""
+    loop = [pulley_circle(0.0, 0.0, GT2_PULLEY_20T_TEETH), pulley_circle(cfg.motor_x - cfg.web.wrist_x, 0.0, GT2_PULLEY_90T_TEETH)]
+    if idler and cfg.idler is not None:
+        loop.insert(1, idler_on_run(loop, 0, cfg.idler.along, cfg.roll_end.wrist_belt))
+    return loop
+
+
+def roll_belt_loop(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float, float]]:
+    """The roll belt's loop (lib/belts.py) in the belt's own frame: the roll motor's 20T on the origin (the elbow axis),
+    the pulley's 90T ring on +X (the roll axis, its centre distance on) - the belt's row in
+    assemblies/forearm_roll_drive.py turns +X onto the module's +Y."""
+    d = cfg.drive
+    return [pulley_circle(0.0, 0.0, GT2_PULLEY_20T_TEETH), pulley_circle(d.centre_distance, 0.0, d.ring_teeth)]
+
+
+def wrist_belt_frame(cfg: ForearmConfig = DEFAULT) -> tuple:
+    """The wrist belt's frame as data in j2_link's frame: on the motor's axis at the belt's mid-plane, its +X toward the
+    wrist (j2_link's -X), +Z = j2_link's +Z."""
+    return ((cfg.motor_x, 0.0, cfg.roll_end.wrist_belt_z), (0.0, 0.0, 180.0))
+
+
+def wrist_idler_xy(cfg: ForearmConfig = DEFAULT) -> tuple[float, float]:
+    """The wrist idler's axis in j2_link's frame (x, y): wrist_belt_loop()'s idler through wrist_belt_frame()."""
+    x, y, _ = wrist_belt_loop(cfg)[1]
+    return (cfg.motor_x - x, -y)
+
+
 def module_frame_in_host(cfg: ForearmConfig = DEFAULT) -> tuple:
     """The roll drive's module frame as data in j2_link's frame (lib/mounts.py ModuleMount): origin on the roll axis
     at the elbow axis' station (the elbow axis runs along module X, elbow_offset below it), module +Z = host -X (toward
@@ -165,7 +197,7 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
         "z_motor_face": z_motor_face,
         "z_motor_board": z_motor_face - d.motor.body_length,      # -14.65: the board's frame (the motor's rear face)
         "z_20t": z_front + d.pulley_lift,                         # 32.35: the 20T's hub face
-        "y_elbow": d.elbow_y,                                     # -60.9: the elbow axis (along X)
+        "y_elbow": d.elbow_y,                                     # -81.97: the elbow axis (along X)
         "x_motor": 0.0, "y_motor": d.motor_y,                     # on the elbow axis
         "x_cradle": d.block_x[0] + d.web_t,                       # -23: the pocket's floor
     }

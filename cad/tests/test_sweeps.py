@@ -171,7 +171,8 @@ def test_any_yaw_keeps_the_arm_off_the_base():
     (tests/test_mounts.py) - keeps those gaps to the base itself and 1 mm to its off-axis parts."""
     riding = ("j1_coupler#1:", "j1_motor_leg#1:")
     inside = ("washer_as6590#2:", "gt2_pulley_120t#1:", "yaw_pulley_screws#1:", "yaw_pulley_nuts#1:")
-    in_bore = ("base#1:", "bearing_6806#1:", "bearing_6806#2:", "washer_as6590#1:", "bearing_axk6590#1:")
+    in_bore = ("base#1:", "bearing_6806#1:", "bearing_6806#2:", "washer_as6590#1:", "bearing_axk6590#1:",
+               "yaw_belt#1:")   # the belt rides the 120T (tests/test_belts.py)
     shoulder = _link_parts("shoulder_link")
     rims = _boxed([p for p in shoulder if p[0].startswith(riding)])
     turning = rims + _boxed([p for p in shoulder if p[0].startswith(inside)])

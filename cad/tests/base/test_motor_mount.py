@@ -46,12 +46,13 @@ def test_the_motor_sits_where_the_stock_belt_puts_it():
 
 
 def test_the_seat_follows_the_slots():
-    """The pilot slides in the window, the whole motor stays on the mount at the slots' near end; the slots keep a web
-    to the window."""
+    """The pilot slides in the window; the slots keep a web to the window. The stock belt puts the motor so near the axis
+    that its face reaches across the joint onto the base's side of the plate (flush with the mount's, both cut with the
+    seat - lib/base/body.py _motor_seat): at the slots' near end it still rests on the plate outside the base's posts."""
     c, cz = M.centre
     assert M.window_x[0] < c - M.travel - NEMA17_PILOT_DIA / 2.0 and M.window_x[1] > c + M.travel + NEMA17_PILOT_DIA / 2.0
     assert M.window_half_z > NEMA17_PILOT_DIA / 2.0
-    assert c - M.travel - NEMA17_FACE / 2.0 - J.split_x > 1.0
+    assert c - M.travel - NEMA17_FACE / 2.0 - (J.split_x - J.post_t) > 2.0
     for _, z in motor_holes():
         assert abs(z - cz) - M.hole_dia / 2.0 - M.window_half_z >= 2.0   # the web between a slot and the window
 
@@ -169,13 +170,15 @@ def test_the_base_holds_the_nuts(base):
 
 
 @pytest.mark.slow
-def test_the_mount_carries_the_slotted_seat(mount):
+def test_the_mount_carries_the_slotted_seat(mount, base):
     c, cz = M.centre
     for x, z in motor_holes():
         r = M.hole_dia / 2.0
         for dx in (-M.travel, 0.0, M.travel):
             assert not is_inside(mount, x + dx, -42, z)                                                   # the slot
-        assert is_inside(mount, x + M.travel + r + 0.2, -42, z) and is_inside(mount, x - M.travel - r - 0.2, -42, z)
+        near = x - M.travel - r - 0.2
+        holder = mount if near > J.split_x else base      # the -X slots' near ends cross the joint into the base's plate
+        assert is_inside(mount, x + M.travel + r + 0.2, -42, z) and is_inside(holder, near, -42, z)
         assert is_inside(mount, x, -42, z + (r + 0.2) * (1 if z > cz else -1))
     assert not is_inside(mount, c, -42, cz + M.window_half_z - 0.1) and is_inside(mount, c, -42, cz + M.window_half_z + 0.1)
     for x, z in ((c + M.travel + NEMA17_FACE / 2.0 + 1.3, cz), (c, cz + NEMA17_FACE / 2.0 + 1.3)):

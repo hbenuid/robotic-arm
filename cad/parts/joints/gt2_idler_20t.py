@@ -5,7 +5,11 @@ No vendor model (step.parts' 5 mm-bore idlers are one generic model, not this on
 SolidWorks export: a NATIVE COTS part (lib/reference.py NATIVE_COTS) - its envelope IS the geometry, built from the
 seller's drawing, and its reference is that envelope (reference/native/gt2_idler_20t.step,
 tools/reference/import_native.py). Frame: axis on Z, standing on z=0.
-Dimensions: lib/belts.py GT2_IDLER_*. NOT PLACED yet (UNPLACED below, parts/AGENTS.md "Modelled, not placed yet").
+Dimensions: lib/belts.py GT2_IDLER_*.
+
+In the arm (lib/mounts.py IDLER_MOUNTS): the wrist belt's idler, on the belt's back under j2_link's web - it takes up
+what the stock belt has over the open loop (lib/forearm/params.py IdlerParams); on an M5 SHCS up from under it
+(wrist_idler_screw) through the web's rib and slot into a nut in the web's top (wrist_idler_nut).
 """
 import pathlib
 
@@ -29,9 +33,7 @@ MASS_G = 5.0    # [ESTIMATE] aluminium body + its bearing; weigh one
 PURCHASE_SPEC = (f"GT2 20T toothless idler, {GT2_IDLER_BORE:g} mm bore, {GT2_BELT_W:g} mm belt, "
                  f"{GT2_IDLER_FLANGE_DIA:g} mm flanges x {GT2_IDLER_WIDTH:g}")
 PURCHASE_QTY = 1    # pieces per occurrence
-PURCHASE_NOTE = "sold in 5-packs; a bearing inside"
-UNPLACED = ("which belt it guides or tensions, its axle and what holds it are not decided - a Recipe B mount on that "
-            "belt's host places it (docs/open_issues.md)")
+PURCHASE_NOTE = "sold in 5-packs; a bearing inside - the wrist belt's, on its back under the forearm's web"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 

@@ -35,11 +35,12 @@ def test_default_layout():
     assert DEFAULT.web == replace(LEGACY.web, wrist_x=LEGACY.web.wrist_x + SHORTENING) and SHORTENING > 0.0
     assert DEFAULT.boss == LEGACY.boss
     assert DEFAULT.sockets is None and LEGACY.sockets is not None and link_socket_points(DEFAULT) == ([], [])
-    # the slide: set by the belt, inside the (shortened) slots, the plug clear of the wall, the body clear of the boss
+    # the slide: the motor at its wall end (the idler takes up the belt: tests/forearm/test_wrist_idler.py), the plug
+    # clear of the wall, the body clear of the boss
     x = DEFAULT.motor_x
-    assert math.isclose(closed_belt_length(x - DEFAULT.web.wrist_x, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH), R.wrist_belt, abs_tol=1e-6)
+    assert closed_belt_length(x - DEFAULT.web.wrist_x, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH) < R.wrist_belt
     lo, hi = DEFAULT.slide_range
-    assert lo < x < hi
+    assert lo < x == hi
     assert x + NEMA17_40_BODY_W / 2.0 + NEMA17_40_CONNECTOR_D + R.plug_clearance <= R.wall_x[0]
     assert x - NEMA17_40_BODY_W / 2.0 >= DEFAULT.web.wrist_x + DEFAULT.boss.dia / 2.0
     # the slots stop >= 4 mm before the wall and their arc centres bracket the slide range (the pilot boss in the

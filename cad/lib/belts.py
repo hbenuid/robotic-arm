@@ -1,6 +1,8 @@
 """GT2 belt drives - a leaf module (no imports): the tooth pitch, the groove every printed pulley cuts, the pulleys the
-arm uses and the closed-belt arithmetic every belt joint needs (the elbow / wrist belts on the 90T pulleys, the forearm
-roll's 90T ring). lib/params.py re-exports the constants; lib/pulley/ and lib/forearm/ import from HERE (they must not
+arm uses, the stock belt lengths, the belt's section, the closed-belt arithmetic every belt joint needs (the elbow /
+wrist belts on the 90T pulleys, the forearm roll's 90T ring, the base_yaw 120T) and a belt's exact path round its
+pulleys and a back-side idler (belt_runs() / belt_wraps() / belt_length(), idler_on_run()). lib/params.py re-exports the
+constants; lib/pulley/ and lib/forearm/ import from HERE (they must not
 import lib/params.py, which imports them back).
 
 Tags as in lib/params.py. Units mm.
@@ -51,9 +53,16 @@ GT2_IDLER_SEAT_DIA = 12.1                           # [DATASHEET] the smooth bel
 GT2_IDLER_WIDTH = 9.0                               # [DATASHEET] flange face to flange face
 GT2_IDLER_CHANNEL_W = 7.0                           # [DATASHEET] between the flanges: 1 mm flanges, the belt + 1
 
-# Closed-loop 2GT belts, 6 mm wide, as commonly stocked (mm = teeth x 2) [ESTIMATE] - confirm with the vendor.
-STANDARD_2GT_LENGTHS = (110, 112, 122, 124, 130, 150, 158, 160, 188, 200, 202, 208, 210, 220, 224, 230, 232,
-                        240, 250, 252, 254, 258, 260, 264, 280, 288, 294, 300, 320, 336, 350, 360, 400)
+# Closed-loop 2GT belts, 6 mm wide (mm = teeth x 2): the lengths the GT2 multipacks the arm's belts are bought as hold,
+# one of each per pack [DESIGN] - every belt length in the arm is one of them (tests/test_params_invariants.py).
+STANDARD_2GT_LENGTHS = (110, 112, 122, 158, 200, 280, 300, 400, 610)
+
+# The belt itself (2GT, 6 mm): tooth tip to back; its pitch line (the cords) runs GT2_PLD outside its land (the tooth
+# side's flat, on a pulley's tooth tips), so its back runs GT2_BELT_BACK outside the pitch line - what a back-side idler's
+# seat carries.
+GT2_BELT_THICKNESS = 1.38                           # [DATASHEET]
+GT2_BELT_BACK = GT2_BELT_THICKNESS - GT2_TOOTH_DEPTH - GT2_PLD   # 0.376
+GT2_BELT_MASS_G_PER_M = 7.5                         # [ESTIMATE] a 6 mm glass-cord neoprene belt
 
 
 def pitch_dia(teeth: int) -> float:
@@ -91,3 +100,74 @@ def centre_distance(belt_length: float, teeth_a: int, teeth_b: int) -> float:
     d1, d2 = sorted((pitch_dia(teeth_a), pitch_dia(teeth_b)), reverse=True)
     b = belt_length - math.pi * (d1 + d2) / 2.0          # 2C + (d1-d2)^2 / 4C = b  ->  8C^2 - 4bC + (d1-d2)^2 = 0
     return (b + math.sqrt(b * b - 2.0 * (d1 - d2) ** 2)) / 4.0
+
+
+# A belt's path, exactly: a loop is a list of circles (x, y, signed pitch radius) in counter-clockwise order round it -
+# a pulley inside the loop +r, a back-side idler outside it -r. A line `offset` outside the pitch line (the land:
+# -GT2_PLD, the back: +GT2_BELT_BACK) is the same loop with every signed radius + offset. closed_belt_length() above is
+# the textbook approximation for two pulleys: at its centre distance the exact loop runs 0.04 (20T-90T) to 0.23
+# (20T-120T) longer - well inside a belt's tolerance, so the motors stay where it puts them.
+
+def pulley_circle(x: float, y: float, teeth: int) -> tuple[float, float, float]:
+    """A pulley in a loop: its axis and pitch radius."""
+    return (x, y, pitch_dia(teeth) / 2.0)
+
+
+def idler_pitch_r() -> float:
+    """A back-side idler (GT2_IDLER_*): the belt's back on its seat, so its pitch line this far from the axis (6.426)."""
+    return GT2_IDLER_SEAT_DIA / 2.0 + GT2_BELT_BACK
+
+
+def belt_runs(circles, offset: float = 0.0) -> list[tuple[tuple[float, float], tuple[float, float], float]]:
+    """The loop's straight runs, one leaving each circle for the next: (start, end, normal angle) - the normal the unit
+    vector from a circle's centre to its tangent point, times the sign of its radius."""
+    runs = []
+    for (xi, yi, ri), (xj, yj, rj) in zip(circles, circles[1:] + circles[:1], strict=True):
+        ri, rj = ri + offset, rj + offset
+        d = math.hypot(xj - xi, yj - yi)
+        phi = math.atan2(yj - yi, xj - xi) - math.acos((ri - rj) / d)
+        nx, ny = math.cos(phi), math.sin(phi)
+        runs.append(((xi + ri * nx, yi + ri * ny), (xj + rj * nx, yj + rj * ny), phi))
+    return runs
+
+
+def belt_wraps(circles, offset: float = 0.0) -> list[tuple[float, float]]:
+    """Each circle's arc: (start normal angle, signed sweep) - counter-clockwise (+) round a pulley, clockwise (-) round a
+    back-side idler - from the run arriving from the previous circle to the one leaving for the next."""
+    runs = belt_runs(circles, offset)
+    wraps = []
+    for j, (_, _, r) in enumerate(circles):
+        a_in, a_out = runs[j - 1][2], runs[j][2]
+        sweep = (a_out - a_in) % (2.0 * math.pi) if r > 0 else -((a_in - a_out) % (2.0 * math.pi))
+        wraps.append((a_in, sweep))
+    return wraps
+
+
+def belt_length(circles, offset: float = 0.0) -> float:
+    """The loop's length along its pitch line (or the line `offset` outside it): runs + arcs."""
+    runs = sum(math.dist(a, b) for a, b, _ in belt_runs(circles, offset))
+    arcs = sum(abs(r + offset) * abs(sweep) for (_, _, r), (_, sweep) in zip(circles, belt_wraps(circles, offset), strict=True))
+    return runs + arcs
+
+
+def idler_on_run(circles, run: int, x: float, belt: float) -> tuple[float, float, float]:
+    """A back-side idler on the run leaving circles[run] (a run along x), its axis at `x`, moved across it (along y)
+    into the loop until the loop is `belt` long. Raises if the belt is shorter than the open loop."""
+    r = idler_pitch_r()
+    (x0, y0), (x1, y1), phi = belt_runs(circles)[run]
+    y_run = y0 + (y1 - y0) * (x - x0) / (x1 - x0)   # the run's pitch line at x
+    out = math.copysign(1.0, math.sin(phi))           # the loop's outside across the run, along y
+
+    def length(push: float) -> float:
+        return belt_length(circles[:run + 1] + [(x, y_run + out * (r - push), -r)] + circles[run + 1:])
+
+    lo = 1e-6
+    if belt < length(lo):
+        raise ValueError(f"a {belt} belt is shorter than the open loop ({length(lo):.2f})")
+    hi = lo
+    while length(hi) < belt:        # walk in, a step at a time (the solved loop stays valid), then halve the last step
+        lo, hi = hi, hi + 0.5
+    for _ in range(60):
+        mid = (lo + hi) / 2.0
+        lo, hi = (mid, hi) if length(mid) < belt else (lo, mid)
+    return (x, y_run + out * (r - lo), -r)
