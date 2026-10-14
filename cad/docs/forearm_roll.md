@@ -18,7 +18,7 @@ Numbers below name the constants; the values live in `lib/forearm/params.py`.
 | shaft (rotor, PETG) | a collar behind bearing 1: its hub through bearing 1 to the lip's middle (it meets the pulley's there), the Ø33 shoulder, the Ø40 flange with the rotor clamp's 4 nuts (pockets open to its rear face) and the stop lug; the Ø18 cable bore through both rotor pieces | `forearm_roll_shaft` |
 | rotor clamp | 4× M3 × 35 on Ø24.5 (`clamp_*`, turned 45° off the wall's screws) from the pulley's front face through both hubs into the shaft's nuts: the pulley, both inner rings and the shaft one block, the drive whole without the forearm | `RollDriveParams clamp_*` |
 | frame (stator, PETG) | ONE printed part round the motor, also the elbow's output flange: seen along the elbow axis **round about it** (`end_r` 45, concentric with `j1_link`'s round end) and tangent up to the **tower** round the roll axis (`tower_y`), from the underside (`block_x[0]`, the elbow flange's lip / boss / journal / stub under it) to the open +N face (`block_x[1]`); the motor's **pocket** open on that face, its front wall the **plate** (the tension slots, the pilot slot), the plate's face the frame's one **front face**; the **bearing boss** on the front face round the roll axis (`bearing_boss_dia`, bearing 2's seat in it), centred on the frame - the underside, the +N face and the tower's top all `ROLL_FRAME_R` from the roll axis; the shaft's **bay** behind bearing 1, open on +N | `forearm_roll_block` |
-| forearm interface | `j2_link`'s wall at 48…56 mm along the roll axis (`wall_x` −56…−48): a Ø60 round flange on the roll axis (`wall_od`, over the ring's Ø59.19 flanges) on a foot as wide as itself, the web necked down to it from the wrist boss (`neck_half_w`), two gussets beside the wrist motor (`rib_*`); Ø40 × 2 recess, Ø24 bore, 4× M3 × 16 on Ø31 from its wrist face (`screw`, `screw_len`; the bottom one's head in a channel under the web, `screw_channel`) | `RollEndParams` |
+| forearm interface | `j2_link`'s wall at 48…56 mm along the roll axis (`wall_x` −56…−48): a Ø60 round flange on the roll axis (`wall_od`, over the ring's Ø59.19 flanges) on a foot as wide as itself, the web necked down to it from the wrist boss (`neck_half_w`), two gussets beside the wrist motor (`rib_*`); Ø40 × 2 recess, Ø24 bore, 4× M3 × 16 on Ø31 from its wrist face (`screw`, `screw_len`; the bottom one's head in a channel under the web, `screw_channel`); the forearm turned `FOREARM_ROLL_TURN_DEG` about the roll axis from the capture, the wall on the ring turned with it (§1) | `RollEndParams`, `ForearmConfig.roll_turn_deg` |
 | clearances held by tests | the frame's underside FACE_GAP or more above `j1_link`'s flat top, the boss 2.0 above its recess floor, level with the upper 6806's top (`FACE_GAP`: the least gap a face the elbow turns may keep); the rotor 1 mm off the frame (`run_gap`: the ring's flange over the bearing boss, the shaft in the bay); folded elbow (to `ELBOW_PITCH_LIMITS_DEG`, −47° / +90°) and rolled forearm (±170°) < 1 mm³ against every neighbour; at the elbow's limits the forearm, rolled anywhere, ≥ 2 mm off `j1_link`; over the elbow's range the drive ≥ 1 mm off the elbow motor on the upper arm's same side (8.4 mm at −47°; 1 mm only at −58°); the motor shaft's tip, the 20T and the whole stator behind the forearm wall's plane; journals 0.9–1.0 × the 99 mm³ press | `tests/forearm/test_roll_drive.py` |
 | link masses (URDF) | `elbow_link` carries the stator (the frame, both bearings, the motor + board, the 20T), `forearm_link` the rotor (the pulley + the shaft) + forearm + wrist motor; the masses are the `<inertial>` blocks (`tools/robot/derive.py`), their sum checked by `test_link_masses_add_up` | `robot/arm.urdf` |
 | purchased per drive | the 6806-2RS pair, a NEMA 17 × 40 kit + MKS SERVO42D, a GT2 20T (5 mm bore), the roll belt, the motor's M3, the rotor clamp's and the forearm wall's M3 screws + nuts — with quantities: `./cadtool python tools/bom.py --module forearm_roll_drive`; the elbow 90T's M4 screws and nuts are the arm's (`elbow_pulley_screws`, `elbow_pulley_nuts`) | `tools/bom.py` |
@@ -42,6 +42,15 @@ stays spherical); in exchange the forearm lifts back to `ELBOW_PITCH_LIMITS_DEG`
 about the elbow axis, sweeps nothing as the elbow turns). In `j2_link`'s frame the elbow axis runs along Z through
 y = −`elbow_offset`.
 
+**The forearm is turned.** `j2_link` and everything beyond it - the wrist-pitch motor and its board, the wrist, the
+gripper - are turned half a turn about the roll axis from the capture (`ForearmConfig.roll_turn_deg`,
+`lib/placements.py TURNS`): the wrist-pitch motor sits on the upper arm's side of the roll axis, its belt on the
+other, and at zero the gripper is rolled with it (the URDF's capture pose; `robot/AGENTS.md`). The drive keeps its
+pose - the rotor too, so the hard stop and ±`FOREARM_ROLL_LIMIT_DEG` stay where they were - and the wall's 4 bolts,
+at 0 / 90 / 180 / 270° about the roll axis, take the pulley as before. The drive's frame and its tests stay in
+`j2_link`'s frame BEFORE the turn (the elbow side's view of the forearm: `lib/mounts.py ModuleMount`,
+`tests/forearm/helpers.py in_drive_frame()`); "`j2_link`'s frame" below is that one.
+
 **The pulley is the output.** The 90T ring is the front end of the rotor, outside the bearings, and the forearm
 bolts straight onto it: the belt drives the ring, the ring the forearm. With both bearings pressed onto printed
 journals, each needs its own journal entered from its own end - so the rotor splits between them, the elbow's 6806
@@ -50,7 +59,8 @@ the outer rings as the meeting hubs space the inner ones, and the rotor clamp ho
 rings together. No end cap: the frame's tower is one piece, its lip between the bearings.
 
 ## 2. Layout (module frame)
-Module frame (`lib/forearm/layout.py module_frame_in_host`, `lib/mounts.py MODULE_MOUNTS` on `j2_link#1`):
+Module frame (`lib/forearm/layout.py module_frame_in_host`, `lib/mounts.py MODULE_MOUNTS` on `j2_link#1`, in its
+frame before the forearm's turn):
 origin on the roll axis at the elbow axis' station, **+Z along the roll axis toward the wrist** (host −X),
 **+X = host +Z** (N, away from the upper arm), **+Y = host +Y = up in the arm's swing plane** (the tower above the
 motor); the **elbow axis runs along X at y = `y_elbow`** (−`elbow_offset`). Every station: `stack_positions()`.
@@ -134,8 +144,9 @@ the shaft rear face down (its nut pockets open to the bed).
    pushed out against the pocket's end. Then the forearm wall onto the spigot (2 mm into the recess) BEFORE the
    wrist-pitch motor goes on: 4× M3 × 16 from the wall's wrist face through the spigot into the nuts; the bottom one
    lays into the channel under the web from the belt side, its key through the channel or the motor slot. A screw taken
-   right out can drop its nut into the bore. The stop lug on the shaft's flange meets the frame's post just past
-   ±`FOREARM_ROLL_LIMIT_DEG`.
+   right out can drop its nut into the bore. The wrist-pitch motor's body stands in front of three of the heads (it
+   sits `motor_wall_clear` off them at its slots' wall end): take it off to reach them later. The stop lug on the
+   shaft's flange meets the frame's post just past ±`FOREARM_ROLL_LIMIT_DEG`.
 
 ## 5. Attachment to the arm (`robot/`)
 `elbow_link` = `gt2_pulley_90t#3` (the re-seated elbow 90T) + its screws and nuts + `forearm_roll_drive#1:stator` (the
@@ -143,13 +154,18 @@ elbow's driven side: the frame whose underside is the coupler, both bearings, th
 20T); `forearm_link` = `forearm_roll_drive#1:rotor` (the pulley and the shaft) + `j2_link` + the wrist-pitch motor.
 `Joint("forearm_roll")` has Z along the forearm and X = N (its child's long direction IS the axis); its origin sits
 `ELBOW_ROLL_OFFSET` across `elbow_link`'s frame (`robot/frames.py FOREARM_ROLL_ORIGIN` from `j2_link#1`'s shifted
-origin, `ELBOW_ORIGIN` from the retired `j3_coupler#1`'s). The forearm side of the interface is
+origin, on the turn's axis; `ELBOW_ORIGIN` from the retired `j3_coupler#1`'s). Beyond it the axes are turned with the
+forearm (`WRIST_PITCH_AXIS` the capture's −N): the forearm's turn changes `forearm_link`'s mesh and inertial and the
+`wrist_pitch` origin, nothing further out. The forearm side of the interface is
 `lib/forearm/params.py RollEndParams`: the wall at `wall_x` (−56…−48), round about the roll axis (`wall_od`), its Ø40
 recess, the Ø31 bolt circle (the screws' nuts in the pulley) and the Ø24 cable bore, on the web's neck (`neck_half_w`,
 tangent to the wrist boss) with two gussets — `j2_link`'s DEFAULT build (`lib/forearm/link.py roll_wall`,
 `necked_web`, `wall_gussets`). In `arm.py` the module is kept whole under the `elbow_link` group. The wrist-pitch motor
-sits at its slide's wall end (`J2_MOTOR_SLIDE_X`), its plug clear of the wall (`plug_clearance`); the stock wrist belt
-(`WRIST_BELT_LENGTH`) goes round an idler under the web (`IdlerParams`).
+sits where the stock wrist belt (`WRIST_BELT_LENGTH`, a multipack length: no idler, its slots tension it) puts it
+(`J2_MOTOR_SLIDE_X`), its slots (`J2_MOTOR_SLIDE_RANGE`) ending with its body `motor_wall_clear` off the wall screws'
+heads; its connector faces sideways - away from the elbow axis, the forearm turned - with `plug_clearance` of room
+beside it (`tests/forearm/test_roll_end.py`). `IdlerParams` keeps an idler under the web for a belt that would need one
+(the idler and its M5 axle and nut modelled, UNPLACED: `tests/forearm/test_wrist_idler.py`).
 
 ## 6. Not modelled / to confirm
 `docs/open_issues.md`: the home sensor's mount (the modelled `ky003_hall_sensor`'s chip beside the stop

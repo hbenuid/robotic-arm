@@ -9,8 +9,9 @@
   Group "arm" = the serial chain base_link -> tool0 (base_yaw, shoulder_pitch, elbow_pitch, forearm_roll,
   wrist_pitch, wrist_roll - six revolute joints, the last three concurrent at the wrist centre); group
   "gripper" = the jaw joint(s) and links; end effector "gripper" hangs off wrist_roll_link (the jaws' parent).
-  Group states: radians / metres. "home" = the SolidWorks capture pose (all joints 0, see the
-  URDF ledger); "open"/"closed" use the placeholder jaw travel (cad/lib/params.py JAW_TRAVEL_MM).
+  Group states: radians / metres. "home" = the capture pose (all joints 0, see the URDF ledger: the
+  SolidWorks capture with the forearm turned half a turn about its roll axis, the gripper rolled with it);
+  "open"/"closed" use the placeholder jaw travel (cad/lib/params.py JAW_TRAVEL_MM).
   Disabled collisions: adjacent pairs only; add Never/Default pairs after a viewer sweep.
 -->
 <robot name="arm">

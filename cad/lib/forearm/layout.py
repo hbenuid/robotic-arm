@@ -140,9 +140,10 @@ def wrist_idler_xy(cfg: ForearmConfig = DEFAULT) -> tuple[float, float]:
 
 
 def module_frame_in_host(cfg: ForearmConfig = DEFAULT) -> tuple:
-    """The roll drive's module frame as data in j2_link's frame (lib/mounts.py ModuleMount): origin on the roll axis
-    at the elbow axis' station (the elbow axis runs along module X, elbow_offset below it), module +Z = host -X (toward
-    the wrist), module +X = host +Z."""
+    """The roll drive's module frame as data in j2_link's frame before the forearm's turn (lib/mounts.py ModuleMount,
+    roll_turn_deg - the elbow side's view of the forearm: the drive keeps its pose, j2_link turns about the roll axis):
+    origin on the roll axis at the elbow axis' station (the elbow axis runs along module X, elbow_offset below it),
+    module +Z = host -X (toward the wrist), module +X = host +Z."""
     return ((0.0, 0.0, cfg.roll_end.axis_z), (0.0, -90.0, 0.0))
 
 

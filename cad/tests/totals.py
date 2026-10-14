@@ -31,9 +31,9 @@ def solids_and_volume(key: str) -> tuple[int, float]:
 
 def world_bbox(key: str) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
     """(min, size) of a part occurrence's world bounding box: the record's (moved by lib/placements.py SHIFTS), or
-    the placed build's when converted."""
+    the placed build's when converted or turned (lib/placements.py TURNS: a turned box is no translated box)."""
     o = P.OCCURRENCES[key]
-    if is_converted(o["part"]):
+    if is_converted(o["part"]) or P.is_turned(o.get("parent") or key):
         bb = built.placed(key).bounding_box()
         return (bb.min.X, bb.min.Y, bb.min.Z), (bb.size.X, bb.size.Y, bb.size.Z)
     lo = tuple(a + d for a, d in zip(o["world_bbox_min"], P.record_shift(o), strict=True))

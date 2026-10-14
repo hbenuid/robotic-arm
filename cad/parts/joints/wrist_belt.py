@@ -1,14 +1,14 @@
 """wrist_belt - purchased (COTS) part: the wrist-pitch belt, a closed GT2 (2GT) belt, 6 mm, WRIST_BELT_LENGTH long -
 one of the multipack lengths (lib/belts.py STANDARD_2GT_LENGTHS).
 
-It runs under j2_link's web from the wrist motor's 20T (gt2_pulley_20t#4) to the wrist 90T, round the idler
-(gt2_idler_20t#1) on its back: the motor sits at its slide's wall end and the idler takes up the rest of the stock
-length (lib/forearm/params.py IdlerParams); sliding the idler tensions it.
+It runs under j2_link's web from the wrist motor's 20T (gt2_pulley_20t#4) to the wrist 90T: the motor sits at the
+stock length's centre distance (J2_MOTOR_SLIDE_X), no idler; sliding the motor along its slots tensions it.
 
 No catalog model, no export and NO reference file: a purchased part with no reference (lib/reference.py
 NO_REFERENCE) - its envelope IS the geometry: a smooth band round its loop (lib/pulley/belt.py closed_belt(); no
 teeth), and tests/test_belts.py locks its numbers. Frame (lib/forearm/layout.py wrist_belt_loop()): the motor's 20T on
-the origin, the 90T on +X, the idler between on the run leaving the 20T, the band centred on z=0; the arm places it by
+the origin, the 90T on +X (an idler between them on the run leaving the 20T when ForearmConfig.idler is set), the
+band centred on z=0; the arm places it by
 wrist_belt_frame() (lib/mounts.py BELT_MOUNTS).
 """
 import pathlib
@@ -28,13 +28,13 @@ COTS = True
 MASS_G = LENGTH * GT2_BELT_MASS_G_PER_M / 1000.0   # [ESTIMATE] lib/belts.py
 PURCHASE_SPEC = f"{LENGTH}-2GT closed GT2 belt, {GT2_BELT_W:g} mm"
 PURCHASE_QTY = 1   # pieces per occurrence
-PURCHASE_NOTE = "the wrist-pitch belt: a GT2 multipack length, round the idler under the forearm's web"
+PURCHASE_NOTE = "the wrist-pitch belt: a GT2 multipack length, under the forearm's web (no idler: the motor's slots tension it)"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 
 
 def loop():
-    """The belt's loop in its own frame (lib/belts.py), round the idler."""
+    """The belt's loop in its own frame (lib/belts.py)."""
     return wrist_belt_loop()
 
 

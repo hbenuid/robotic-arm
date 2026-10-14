@@ -21,8 +21,7 @@ rails, the 20T pulleys, the belts) is _occurrences.BOUGHT_TINT grey, inside the 
     |- elbow_link        gt2_pulley_90t:j2, elbow_pulley_screws / _nuts:elbow_pitch, forearm_roll_drive (kept whole - see
     |                    below; its block IS the elbow coupler)
     |- forearm_link      j2_link, bearing_6806:wrist_pitch_1 / _2, nema17_40mm:wrist_pitch, mks_servo42d:wrist_pitch,
-    |                    gt2_pulley_20t:wrist_pitch, wrist_belt:wrist_pitch, gt2_idler_20t:wrist_pitch,
-    |                    wrist_idler_screw / _nut:wrist_pitch
+    |                    gt2_pulley_20t:wrist_pitch, wrist_belt:wrist_pitch
     |- wrist_pitch_link  gt2_pulley_90t:j3, wrist_pulley_screws / _nuts:wrist_pitch, j3_coupler:j3, wrist_link,
     |                    gripper_clamp_bracket, nema17_pancake
     |- wrist             gt2_pulley_20t, gripper
@@ -110,10 +109,7 @@ OCCURRENCES = [
     ("nema17_40mm",           "wrist_pitch", "nema17_40mm#3"),     # mounted: j2_link's web slots
     ("mks_servo42d",          "wrist_pitch", "mks_servo42d#3"),
     ("gt2_pulley_20t",        "wrist_pitch", "gt2_pulley_20t#4"),  # mounted: on the wrist motor's shaft, level with the wrist 90T
-    ("wrist_belt",            "wrist_pitch", "wrist_belt#1"),      # mounted: the wrist belt, round the idler
-    ("gt2_idler_20t",         "wrist_pitch", "gt2_idler_20t#1"),   # mounted: the wrist belt's idler under the web ...
-    ("wrist_idler_screw",     "wrist_pitch", "wrist_idler_screw#1"),   # ... its M5 axle ...
-    ("wrist_idler_nut",       "wrist_pitch", "wrist_idler_nut#1"),     # ... into the nut in the web's top
+    ("wrist_belt",            "wrist_pitch", "wrist_belt#1"),      # mounted: the wrist belt (no idler)
     ("gt2_pulley_90t",        "j3", "gt2_pulley_90t#4"),           # mounted: re-seated on the lower wrist bearing (#2 retired)
     ("wrist_pulley_screws",   "wrist_pitch", "wrist_pulley_screws#1"),   # mounted: the wrist 90T's 4x M4 ...
     ("wrist_pulley_nuts",     "wrist_pitch", "wrist_pulley_nuts#1"),     # ... into the nuts in j3_coupler's flange
@@ -143,7 +139,7 @@ GROUPS = [
                                      "gt2_pulley_20t#2", "elbow_motor_screws#1", "elbow_belt#1")),
     ("elbow_link",       "#DA8BC3", ("gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", ROLL_KEY)),
     ("forearm_link",     "#DD8452", ("j2_link#1", "bearing_6806#5", "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3",
-                                     "gt2_pulley_20t#4", "wrist_belt#1", "gt2_idler_20t#1", "wrist_idler_screw#1", "wrist_idler_nut#1")),
+                                     "gt2_pulley_20t#4", "wrist_belt#1")),
     ("wrist_pitch_link", "#55A868", ("gt2_pulley_90t#4", "wrist_pulley_screws#1", "wrist_pulley_nuts#1", "j3_coupler#2", "wrist_link#1",
                                      "gripper_clamp_bracket#1", "nema17_pancake#1")),
     ("wrist",            "#8172B3", ("gt2_pulley_20t#1", GRIPPER_KEY)),

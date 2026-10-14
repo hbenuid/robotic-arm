@@ -73,21 +73,23 @@ def test_belt_motor_and_mks_board_track_reference():
     stack = p.CYCLOIDAL_MOTOR_BODY_LEN + p.MKS_SERVO42D_STACK                 # 62.1
     assert math.isclose((p.BASE_MOTOR_PATTERN_CENTRE[1] - stack) - BASE_BOTTOM_Y, p.BASE_MOTOR_TABLE_CLEAR, abs_tol=0.05)
     assert p.BASE_MOTOR_TABLE_CLEAR > 0.0
-    # the wrist_pitch motor sits at the wall end of j2_link's slide, its connector plug clear of the forearm roll's
-    # flange wall (its body clear of the wrist boss over the whole slide); the stock wrist belt is longer than that open
-    # loop and goes round the idler (tests/forearm/test_wrist_idler.py)
+    # the wrist_pitch motor slides along j2_link's slots to where the stock wrist belt puts it (lib/belts.py: no idler,
+    # tests/forearm/test_wrist_idler.py), its body clear of the forearm roll's flange wall's screw heads and of the wrist
+    # boss (its connector sideways)
     from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, STANDARD_2GT_LENGTHS, closed_belt_length
     from lib.forearm import DEFAULT as FOREARM
     lo, hi = p.J2_MOTOR_SLIDE_RANGE
-    assert lo < p.J2_MOTOR_SLIDE_X == hi
+    assert lo < p.J2_MOTOR_SLIDE_X < hi
     wrist_x, boss_r = FOREARM.web.wrist_x, FOREARM.boss.dia / 2.0
-    assert closed_belt_length(p.J2_MOTOR_SLIDE_X - wrist_x, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH) < p.WRIST_BELT_LENGTH - 10.0
+    assert math.isclose(closed_belt_length(p.J2_MOTOR_SLIDE_X - wrist_x, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH), p.WRIST_BELT_LENGTH, abs_tol=1e-6)
     # every belt is a stock multipack length (lib/belts.py STANDARD_2GT_LENGTHS)
     from lib.base.params import YAW_BELT
     for belt in (YAW_BELT, p.ELBOW_BELT_LENGTH, p.FOREARM_ROLL_BELT_LENGTH, p.WRIST_BELT_LENGTH):
         assert belt in STANDARD_2GT_LENGTHS, belt
-    # over the whole slide: the plug clear of the wall at its wall end, the body clear of the boss at its wrist end
-    assert hi + p.NEMA17_40_BODY_W / 2 + p.NEMA17_40_CONNECTOR_D + p.FOREARM_PLUG_CLEARANCE <= p.FOREARM_WALL_X[0] + 1e-9
+    # over the whole slide: the body FOREARM_MOTOR_WALL_CLEAR off the wall screws' heads at its wall end, clear of the
+    # boss at its wrist end; the belt's centre distance inside it with room to tension
+    assert hi + p.NEMA17_40_BODY_W / 2 + p.M3_SHCS.head_h + p.FOREARM_MOTOR_WALL_CLEAR <= p.FOREARM_WALL_X[0] + 1e-9
+    assert hi - p.J2_MOTOR_SLIDE_X >= 3.0 and p.WRIST_BELT_LENGTH == 280
     assert lo - p.NEMA17_40_BODY_W / 2 >= wrist_x + boss_r
     assert p.FOREARM_WALL_X[0] < p.FOREARM_WALL_X[1] < 0 and p.FOREARM_ROLL_AXIS_Z == 42.0 - 17.0
     assert p.J2_MOTOR_WEB_FACE_Z > 0 and p.J1_MOTOR_PAD_FACE_Y == 16.5   # the elbow motor's face: the web across its hole

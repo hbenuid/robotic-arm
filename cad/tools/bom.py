@@ -56,6 +56,9 @@ EXTRAS = [
     ("forearm_roll_drive", "home sensor: KY-003 hall module (A3144, 5 V) on the frame's tower beside the stop post + a magnet in the shaft's stop lug", 1,
      ("modelled, not placed yet (parts/joints/ky003_hall_sensor, UNPLACED); the magnet is not modelled; wired to the MKS "
       "board's limit input (docs/open_issues.md); the hard stop itself is the printed lug + post")),
+    (None, parts.load("gt2_idler_20t").PURCHASE_SPEC, 1,
+     ("modelled, not placed yet (parts/joints/gt2_idler_20t, UNPLACED): which belt it serves - and so how many - is "
+      "open (docs/open_issues.md); the wrist belt needs none; sold in 5-packs")),
 ]
 
 

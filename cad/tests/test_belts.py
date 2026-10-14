@@ -1,8 +1,8 @@
 """The GT2 belts (parts/base/yaw_belt, parts/joints/{elbow,forearm_roll,wrist}_belt): purchased parts with no reference
 (lib/reference.py NO_REFERENCE) - THIS file locks their numbers (the modelled band's volume and bounding box, measured
 on the build and written in) and what they are: each a stock multipack length, its loop that long along its pitch line
-(lib/belts.py), the band on its pulleys' tooth tips and its idler's seat; in the arm, each loop's circles on its pulleys'
-axes in their tooth bands' plane. The wrist idler itself: tests/forearm/test_wrist_idler.py."""
+(lib/belts.py), the band on its pulleys' tooth tips (and an idler's seat, were one in its loop); in the arm, each loop's
+circles on its pulleys' axes in their tooth bands' plane. The wrist idler kit (unplaced): tests/forearm/test_wrist_idler.py."""
 import math
 
 import pytest
@@ -34,10 +34,10 @@ LOCKS = {
     "yaw_belt": ("base", 1136.33, (-6.742198, -38.573186, -3.0), (118.381942, 77.146373, 6.0)),
     "elbow_belt": ("joints", 1059.993, (-6.742198, -29.02389, -3.0), (117.737762, 58.04778, 6.0)),
     "forearm_roll_belt": ("joints", 1059.993, (-6.742198, -29.02389, -3.0), (117.737762, 58.04778, 6.0)),
-    "wrist_belt": ("joints", 1059.849, (-6.742198, -29.02389, -3.0), (111.766087, 58.04778, 6.0)),
+    "wrist_belt": ("joints", 1059.993, (-6.742198, -29.02389, -3.0), (117.737762, 58.04778, 6.0)),
 }
 # a mounted belt -> its loop's circles' pulleys (key, its band centre in its own frame: the 20T's along +X, a 90T's /
-# 120T's along +Y); the wrist idler's place: tests/forearm/test_wrist_idler.py
+# 120T's along +Y)
 PULLEYS = {
     "yaw_belt#1": [("gt2_pulley_20t#3", (T20_HUB, 0.0, 0.0)), ("gt2_pulley_120t#1", (0.0, PULLEY_120T.band_y1 / 2.0, 0.0))],
     "elbow_belt#1": [("gt2_pulley_20t#2", (T20_HUB, 0.0, 0.0)), ("gt2_pulley_90t#3", (0.0, PULLEY_90T.band_y1 / 2.0, 0.0))],
@@ -57,12 +57,12 @@ def test_every_belt_is_a_purchased_stock_length_with_no_reference():
 
 def test_each_loop_is_its_belt_long():
     """Along the pitch line, exactly: a two-pulley loop at the textbook centre distance (lib/belts.py
-    closed_belt_length()) runs a little long - 0.04 round a 90T, 0.23 round the 120T; the wrist's idler is solved to the
-    length."""
+    closed_belt_length()) runs a little long - 0.04 round a 90T, 0.23 round the 120T (the wrist's has no idler: a plain
+    pair too)."""
     for name in LOCKS:
         mod = parts.load(name)
         assert abs(belt_length(mod.loop()) - mod.LENGTH) <= 0.25, name
-    assert belt_length(parts.load("wrist_belt").loop()) == pytest.approx(parts.load("wrist_belt").LENGTH, abs=1e-6)
+    assert belt_length(parts.load("wrist_belt").loop()) - parts.load("wrist_belt").LENGTH == pytest.approx(0.038, abs=0.002)
     assert belt_length(parts.load("yaw_belt").loop()) - parts.load("yaw_belt").LENGTH == pytest.approx(0.233, abs=0.002)
 
 
@@ -114,10 +114,10 @@ def test_the_roll_belt_runs_on_its_pulleys():
 
 @pytest.mark.slow
 def test_the_belts_ride_line_to_line():
-    """In the arm (built), each belt touches its pulleys and its idler and overlaps them by no more than float noise."""
+    """In the arm (built), each belt touches its pulleys and overlaps them by no more than float noise."""
     from cadgen.geometry import closest_points
 
     for key, pulleys in PULLEYS.items():
         belt = built.placed(key)
-        for pulley, _ in pulleys + ([("gt2_idler_20t#1", None)] if key == "wrist_belt#1" else []):
+        for pulley, _ in pulleys:
             assert closest_points(belt, built.placed(pulley)).distance < 0.01, (key, pulley)

@@ -65,7 +65,9 @@ surfaces, volume, bbox - and feature probes;
 `gt2_pulley_120t`, a part with no reference: its volume and bbox written in, the 90T's hub and holes, 120 grooves; `helpers.py`: probe points about the axis, the surface census),
 `tests/forearm/` (the forearm: the LEGACY
 build vs the SolidWorks part + feature probes, the roll end, the roll drive - axis through the wrist centre, stack, press fits, clean pairs,
-clearances in the arm with the elbow folded; `helpers.in_host()` places any occurrence in `j2_link`'s frame). Geometry tests are
+clearances in the arm with the elbow folded; `helpers.in_host()` places any occurrence in `j2_link`'s frame,
+`helpers.in_drive_frame()` in the roll drive's mount frame - `j2_link`'s before the forearm's turn,
+`lib/placements.py TURNS` - and `j2_link_in_drive_frame()` the turned `j2_link` in it). Geometry tests are
 `slow`.
 
 ## Where the locks live

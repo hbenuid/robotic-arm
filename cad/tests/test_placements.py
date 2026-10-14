@@ -1,5 +1,5 @@
 """reference/placements.json integrity and its coverage by the assembly tables, and the design's link-length
-shifts of its records (lib/placements.py SHIFTS) (no geometry)."""
+shifts of its records and the forearm's turn (lib/placements.py SHIFTS, TURNS) (no geometry)."""
 import math
 from dataclasses import replace
 
@@ -28,13 +28,13 @@ def _close(a, b, tol=1e-6):
 
 def test_record_counts_match_expected():
     parts_ = P.keys(kind="part", retired=True)
-    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 69      # 31 SolidWorks + 38 mounted (j3_coupler#1, the two 90Ts retired, still records)
+    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 66      # 31 SolidWorks + 35 mounted (j3_coupler#1, the two 90Ts retired, still records)
     assert P.keys(kind="module") == ["cycloidal_drive#1", "gripper#1", "forearm_roll_drive#1"]
     assert P.keys(kind="module", designed=True) == P.DATA["designed_modules"] == ["cycloidal_drive#1", "forearm_roll_drive#1"]
-    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 162  # 47 + the base motor mount (1 + 4 + 4) + j1_coupler's motor leg + (7 + 13) + 2 x (2 + 13) + the elbow motor's 20T (3) + its 4 screws + 6 bearings + 3 thrust + 3 pulleys + 6 x 4 pulley bolts + the wrist idler, its screw and nut + the base_yaw and wrist motors' 20Ts (2 x 3) + 3 belts
+    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 159  # 47 + the base motor mount (1 + 4 + 4) + j1_coupler's motor leg + (7 + 13) + 2 x (2 + 13) + the elbow motor's 20T (3) + its 4 screws + 6 bearings + 3 thrust + 3 pulleys + 6 x 4 pulley bolts + the base_yaw and wrist motors' 20Ts (2 x 3) + 3 belts
     assert len(P.keys(kind="part", mounted=False, retired=True)) == 31
     assert P.RETIRED == ("j3_coupler#1", "gt2_pulley_90t#1", "gt2_pulley_90t#2") and set(P.RETIRED) <= set(P.OCCURRENCES)
-    assert len(P.keys(kind="part")) == 69 - len(P.RETIRED)
+    assert len(P.keys(kind="part")) == 66 - len(P.RETIRED)
 
 
 def test_mounted_records_follow_lib_mounts():
@@ -52,8 +52,7 @@ def test_mounted_records_follow_lib_mounts():
         "gt2_pulley_20t#2", "gt2_pulley_20t#3", "gt2_pulley_20t#4", "elbow_motor_screws#1", *(f"bearing_6806#{n}" for n in range(1, 7)), "washer_as6590#1", "bearing_axk6590#1", "washer_as6590#2",
         "gt2_pulley_90t#3", "gt2_pulley_90t#4", "gt2_pulley_120t#1",
         "elbow_pulley_screws#1", "elbow_pulley_nuts#1", "wrist_pulley_screws#1", "wrist_pulley_nuts#1",
-        "yaw_pulley_screws#1", "yaw_pulley_nuts#1", "gt2_idler_20t#1", "wrist_idler_screw#1", "wrist_idler_nut#1",
-        "yaw_belt#1", "elbow_belt#1", "wrist_belt#1"]
+        "yaw_pulley_screws#1", "yaw_pulley_nuts#1", "yaw_belt#1", "elbow_belt#1", "wrist_belt#1"]
     assert P.keys(mounted=True) == P.DATA["mounted"] == mounts.keys() + mounts.module_keys()
     for key in keys:
         o, m = P.OCCURRENCES[key], mounts.BY_KEY[key]
@@ -68,8 +67,8 @@ def test_mounted_records_follow_lib_mounts():
 
 def test_mounted_module_record_follows_lib_mounts():
     """A designed module the capture never placed (lib/mounts.py MODULE_MOUNTS): a module record with a `mount`
-    block, listed under designed_modules AND mounted, rel == world = host world * the declared frame, no totals
-    (its own EXPECTED is the lock), and its +Z on its joint's axis."""
+    block, listed under designed_modules AND mounted, rel == world = host world (before its TURNS: the module keeps its
+    pose) * the declared frame, no totals (its own EXPECTED is the lock), and its +Z on its joint's axis."""
     from lib import mounts
     from lib.datum import to_location
     from robot import frames as F
@@ -82,7 +81,7 @@ def test_mounted_module_record_follows_lib_mounts():
         assert o["mount"]["frame_in_host"] == {"position": list(m.frame[0]), "rotation_xyz_deg": list(m.frame[1])}
         assert o["rel"] == o["world"] and "solids" not in o and "solid_volume" not in o
         world = P.location(key, "world")
-        assert _close(_matrix(P.location(m.host, "world") * to_location(m.frame)), _matrix(world), tol=1e-4), key
+        assert _close(_matrix(P.location(m.host, "world", turned=False) * to_location(m.frame)), _matrix(world), tol=1e-4), key
         joint = F.JOINT_BY_NAME[m.joint]
         z = (world * Location((0.0, 0.0, 1.0))).position - world.position
         assert abs(abs(z.dot(Location((0, 0, 0)).position + __import__("build123d").Vector(*joint.axis_w))) - 1.0) < 1e-6
@@ -120,9 +119,9 @@ def test_world_equals_parent_world_times_rel():
 
 
 # --- the link-length shifts (lib/placements.py SHIFTS) ---------------------------------------------------------------
-def _position_in(anchor: str, key: str) -> tuple:
-    """`key`'s world origin in `anchor`'s part frame (both with SHIFTS applied)."""
-    return tuple((P.location(anchor, "world").inverse() * P.location(key, "world")).position)
+def _position_in(anchor: str, key: str, *, turned: bool = True) -> tuple:
+    """`key`'s world origin in `anchor`'s part frame (both with SHIFTS applied, and TURNS unless `turned=False`)."""
+    return tuple((P.location(anchor, "world", turned=turned).inverse() * P.location(key, "world", turned=turned)).position)
 
 
 def _near(a, b, tol=1e-3) -> bool:
@@ -152,9 +151,11 @@ def _check_links_carry_what_lies_beyond(elbow_x: float, wrist_x: float, end_dx: 
     """j2_link#1 (whose capture origin is on the elbow axis) sits at (elbow_x, 10 + across, 0) in j1_link's frame, plus
     `offset` along its own +Y (the forearm across the elbow axis: the roll drive's elbow offset); j3_coupler#2 (on the
     wrist_pitch axis) at (wrist_x, 0, 42) in j2_link's; what bolts to the wrist body's end face keeps its capture pose in
-    the wrist body's frame but for x + end_dx."""
+    the wrist body's frame but for x + end_dx. (j2_link#1 before its turn - a turn about its own roll axis:
+    test_the_forearm_turns_about_its_roll_axis.)"""
     y2 = _j2_y_in_j1()
-    assert _near(_position_in("j1_link#1", "j2_link#1"), tuple(a + offset * b for a, b in zip((elbow_x, 10.0 + across, 0.0), y2, strict=True)))
+    assert _near(_position_in("j1_link#1", "j2_link#1", turned=False),
+                 tuple(a + offset * b for a, b in zip((elbow_x, 10.0 + across, 0.0), y2, strict=True)))
     assert _near(_position_in("j2_link#1", "j3_coupler#2"), (wrist_x, 0.0, 42.0))
     wrist_raw = P.to_location(P.OCCURRENCES["wrist_link#1"]["world"])
     for key in P.SHIFTS[2].moves:
@@ -198,6 +199,40 @@ def test_shifts_move_the_capture_records_beyond_each_link():
     assert set(roll.moves) == set(forearm.moves) | {"j2_link#1"} and roll.along_x == 0.0
     assert not {"j3_coupler#1", "gt2_pulley_90t#1"} & set(roll.moves)
     assert roll.across_y == FOREARM.DEFAULT.elbow_offset - FOREARM.LEGACY.elbow_offset == FOREARM.DEFAULT.drive.centre_distance
+
+
+def test_the_forearm_turns_about_its_roll_axis():
+    """lib/placements.py TURNS: j2_link#1 and every record beyond it (the roll drive's SHIFTS list) turn roll_turn_deg
+    about j2_link's roll axis (y 0, z axis_z along its +X), after the shifts. They keep their poses relative to each
+    other; the elbow's records and the roll drive (a ModuleMount, placed on its host before the turn) stay; robot/frames.py's
+    point and direction helpers agree with the records."""
+    (turn,) = P.TURNS
+    assert (turn.link, turn.anchor, set(turn.moves)) == ("j2_link", "j2_link#1", set(P.SHIFTS[4].moves))
+    assert turn.deg == FOREARM.DEFAULT.roll_turn_deg - FOREARM.LEGACY.roll_turn_deg == 180.0
+    assert turn.point == (0.0, 0.0, FOREARM.DEFAULT.roll_end.axis_z) and turn.axis == (1.0, 0.0, 0.0)
+    m = P.OCCURRENCES[turn.anchor]["world"]["matrix_3x4"]
+    for col, v in ((0, turn.axis_w), (1, turn.across_w)):
+        assert all(math.isclose(row[col], a, abs_tol=1e-9) for row, a in zip(m, v, strict=True)), col
+    # in j2_link#1's frame before the turn, the turned frame is half a turn about (y 0, z axis_z) along X
+    before = P.location("j2_link#1", "world", turned=False)
+    want = Location((0.0, 0.0, 2.0 * turn.point[2]), (180.0, 0.0, 0.0))
+    assert _close(_matrix(before.inverse() * P.location("j2_link#1", "world")), _matrix(want), tol=1e-6)
+    for key in turn.moves:
+        assert P.is_turned(key)
+        rel_after = P.location("j2_link#1", "world").inverse() * P.location(key, "world")
+        rel_before = before.inverse() * P.location(key, "world", turned=False)
+        assert _close(_matrix(rel_after), _matrix(rel_before), tol=1e-6), key
+    # the wrist pitch axis' coupler: (wrist_x, 0, 42) in the turned frame, z mirrored about the roll axis in the other
+    wx = FOREARM.DEFAULT.web.wrist_x
+    assert _near(_position_in("j2_link#1", "j3_coupler#2"), (wx, 0.0, 42.0))
+    assert _near(tuple((before.inverse() * P.location("j3_coupler#2", "world")).position), (wx, 0.0, 2.0 * turn.point[2] - 42.0))
+    for key in ("j1_link#1", "j3_coupler#1", "gt2_pulley_90t#1", "forearm_roll_drive#1"):
+        assert not P.is_turned(key)
+        assert _close(_matrix(P.location(key, "world")), _matrix(P.location(key, "world", turned=False)), tol=1e-12), key
+    o, raw = P.location("j3_coupler#2", "world"), P.OCCURRENCES["j3_coupler#2"]["world"]
+    assert _near(P.shifted("j3_coupler#2", tuple(raw["position"])), tuple(o.position), tol=1e-6)
+    x = tuple((o * Location((1.0, 0.0, 0.0))).position - o.position)
+    assert _near(P.turned("j3_coupler#2", tuple(row[0] for row in raw["matrix_3x4"])), x, tol=1e-6)
 
 
 def test_the_links_carry_what_lies_beyond_them():

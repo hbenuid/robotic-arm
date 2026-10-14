@@ -29,7 +29,7 @@ from lib.forearm import (
 )
 from robot import frames as F
 from tests import built
-from tests.forearm.helpers import in_host
+from tests.forearm.helpers import in_drive_frame, j2_link_in_drive_frame
 from tests.helpers import interference, is_inside, module_tints
 
 S = stack_positions(DEFAULT)
@@ -42,7 +42,8 @@ UPPER_ARM_BORE_R = 21.0          # j1_link's bore the coupler's stub / journal t
 UPPER_ARM_END_R = 45.0           # j1_link's round end about the elbow axis
 ELBOW_PULLEY_FACE_Z = -22.0 - PARAMS.PULLEY_SEAT_SHIFT   # host z of the elbow 90T's mating face: the SolidWorks coupler's stub end
 #                                                          (-22), both moved on to the re-seated pulley on j1_link's lip
-ELBOW_AXIS_HOST = (0.0, -DEFAULT.elbow_offset)            # the elbow axis (along host Z) in j2_link's frame: the forearm sits ELBOW_ROLL_OFFSET across it
+ELBOW_AXIS_HOST = (0.0, -DEFAULT.elbow_offset)            # the elbow axis (along host Z) in j2_link's frame before the forearm's turn (the
+#                                                           drive's mount frame, tests/forearm/helpers.py): the forearm sits ELBOW_ROLL_OFFSET across it
 RUN_GAP = 1.0                    # the least gap between the turning rotor and the frame (the ring over the bearing boss, the shaft in the bay)
 BELT_W = 6.0                     # the roll belt's width, centred on the ring's teeth
 
@@ -60,8 +61,11 @@ def _offset_from_line(point, origin, axis) -> float:
 
 def test_roll_axis_through_the_wrist_centre_and_the_wrist_axes_concurrent():
     assert _offset_from_line(F.WRIST_CENTRE, F.FOREARM_ROLL_ORIGIN, F.FOREARM_ROLL_AXIS) < 0.05
-    assert _offset_from_line(F.WRIST_CENTRE, F.WRIST_PITCH_ORIGIN, F.N) < 0.05
-    assert _offset_from_line(F.WRIST_CENTRE, F.WRIST_ROLL_ORIGIN, F.F) < 0.05
+    assert _offset_from_line(F.WRIST_CENTRE, F.WRIST_PITCH_ORIGIN, F.WRIST_PITCH_AXIS) < 0.05
+    assert _offset_from_line(F.WRIST_CENTRE, F.WRIST_ROLL_ORIGIN, F.WRIST_ROLL_AXIS) < 0.05
+    # the forearm turned half a turn about the roll axis (lib/placements.py TURNS): the wrist_pitch axis is the capture's N
+    # turned with it - reversed -, the wrist centre stays on the roll axis
+    assert PARAMS.FOREARM_ROLL_TURN_DEG == 180.0 and sum(x * y for x, y in zip(F.WRIST_PITCH_AXIS, F.N, strict=True)) < -1.0 + 1e-9
     assert abs(sum(x * y for x, y in zip(F.FOREARM_ROLL_AXIS, F.N, strict=True))) < 1e-6           # x_hint perpendicular to the axis
     assert abs(math.sqrt(sum(v * v for v in F.FOREARM_ROLL_AXIS)) - 1.0) < 1e-9
     j = F.JOINT_BY_NAME["forearm_roll"]
@@ -384,13 +388,14 @@ def test_pulley_and_shaft_features(module):
 
 @functools.cache
 def _placed_module():
-    """The module in j2_link's frame (tests/built.py: shared, read-only)."""
+    """The module in its mount frame - j2_link's before the forearm's turn (tests/forearm/helpers.py; tests/built.py:
+    shared, read-only)."""
     return built.model(M.forearm_roll_drive).moved(to_location(module_frame_in_host(DEFAULT)))
 
 
 @functools.cache
 def _placed_part(label: str):
-    """One of the module's parts in j2_link's frame (shared, read-only). A child of _placed_module() stays in the MODULE
+    """One of the module's parts in its mount frame (shared, read-only). A child of _placed_module() stays in the MODULE
     frame (moving the compound moves only the compound), so each part is moved itself."""
     return built.leaf(M.forearm_roll_drive, label).moved(to_location(module_frame_in_host(DEFAULT)))
 
@@ -410,24 +415,25 @@ def _elbow_range(step: int = 10) -> list[float]:
 
 @pytest.mark.slow
 def test_module_clears_its_neighbours_in_the_arm():
-    """In j2_link's frame, at the capture pose: the module against the forearm and the upper arm - the stub through its
-    lip -; the frame's stub end on the elbow pulley's face (contact, no overlap), the pulley's spigot in j2_link's recess.
+    """In the module's mount frame (j2_link's before the forearm's turn), at the capture pose: the module against the
+    turned forearm and the upper arm - the stub through its lip -; the frame's stub end on the elbow pulley's face
+    (contact, no overlap), the pulley's spigot in j2_link's recess.
     (The mounted motors, boards, bearings and pulleys against the whole module: tests/test_mounts.py
     test_motors_and_boards_clear_their_neighbours.) The upper arm's own motor and board - on its +N side like the
     module's, ELBOW_MOTOR_CENTRES from the elbow axis - turned about it over the elbow's range stay 1 mm off the whole
     module (lib/params.py ELBOW_PITCH_LIMITS_DEG: the lower limit keeps room to spare)."""
     module = _placed_module()
-    for key, other in (("j2_link", built.part("j2_link")), ("j1_link#1", in_host("j1_link#1"))):
+    for key, other in (("j2_link", j2_link_in_drive_frame()), ("j1_link#1", in_drive_frame("j1_link#1"))):
         vol = interference(module, other)
         assert vol < 1.0, f"module x {key}: {vol:.1f} mm^3"
     block = _placed_part("forearm_roll_block")
     assert math.isclose(block.bounding_box().min.Z, ELBOW_PULLEY_FACE_Z, abs_tol=1e-6)                   # the stub's end on the pulley
-    assert math.isclose(in_host("gt2_pulley_90t#3").bounding_box().max.Z, ELBOW_PULLEY_FACE_Z, abs_tol=0.05)
+    assert math.isclose(in_drive_frame("gt2_pulley_90t#3").bounding_box().max.Z, ELBOW_PULLEY_FACE_Z, abs_tol=0.05)
     pulley = _placed_part("forearm_roll_pulley")
     assert math.isclose(pulley.bounding_box().min.X, -S["z_spigot_end"], abs_tol=1e-6)
     for key in ("nema17_40mm#2", "mks_servo42d#2"):
         for elbow in _elbow_range(5):
-            gap = _upper_arm_at(in_host(key), elbow).distance_to(module)
+            gap = _upper_arm_at(in_drive_frame(key), elbow).distance_to(module)
             assert gap > 1.0, f"{key} at elbow {elbow:+.0f} deg: {gap:.1f} mm from the module"
 
 
@@ -440,7 +446,7 @@ def test_module_clears_the_folded_upper_arm(deg):
     flat top, round its bore, so the two limits stand for the angles between - the capture pose is
     test_module_clears_its_neighbours_in_the_arm's). Widen the sample if the top stops being flat under it."""
     module = _placed_module()
-    upper_arm = _upper_arm_at(in_host("j1_link#1"), deg)
+    upper_arm = _upper_arm_at(in_drive_frame("j1_link#1"), deg)
     vol = interference(module, upper_arm)
     assert vol < 1.0, f"elbow {deg:+.0f} deg: module x j1_link#1: {vol:.1f} mm^3"
     journal_edge = math.hypot(UPPER_ARM_BORE_R - D.journal_dia / 2.0, DEFAULT.roll_end.axis_z + D.journal_x[0] - UPPER_ARM_RECESS[1])
@@ -454,9 +460,9 @@ def test_forearm_clears_the_elbow_while_rolling():
     link ends at its wall's elbow face, and the upper arm's round end, the elbow pulley and the stator's parts (the
     frame, the motor - its shaft's tip -, the board, the 20T) all lie beyond that plane, so no roll angle brings them
     together. Anything of j2_link past the wall toward the elbow would need a sweep over the roll angles instead."""
-    plane = built.part("j2_link").bounding_box().max.X
+    plane = j2_link_in_drive_frame().bounding_box().max.X
     assert plane == pytest.approx(DEFAULT.roll_end.wall_x[1], abs=1e-6), f"j2_link reaches x {plane:.2f}, past its wall"
-    others = {key: in_host(key) for key in ("j1_link#1", "gt2_pulley_90t#3")}
+    others = {key: in_drive_frame(key) for key in ("j1_link#1", "gt2_pulley_90t#3")}
     others |= {label: _placed_part(label) for label in ("forearm_roll_block", "nema17_40mm:forearm_roll", "mks_servo42d:forearm_roll",
                                                         "gt2_pulley_20t:forearm_roll")}
     for key, other in others.items():
@@ -469,8 +475,9 @@ def test_forearm_clears_the_elbow_while_rolling():
 @pytest.mark.parametrize("roll", [-PARAMS.FOREARM_ROLL_LIMIT_DEG, -90.0, 0.0, 90.0, PARAMS.FOREARM_ROLL_LIMIT_DEG])
 def test_forearm_clears_the_upper_arm_at_the_elbow_limits(elbow, roll):
     """The elbow folded to its limits, the forearm rolled anywhere: j2_link (its round wall 48 along the roll axis from
-    the elbow axis' station and ELBOW_ROLL_OFFSET across it, its necked web) stays 2 mm off the upper arm beside it."""
-    link = built.part("j2_link").rotate(Axis((0.0, 0.0, DEFAULT.roll_end.axis_z), (-1.0, 0.0, 0.0)), roll)
-    upper_arm = _upper_arm_at(in_host("j1_link#1"), elbow)
+    the elbow axis' station and ELBOW_ROLL_OFFSET across it, its necked web; turned with the forearm) stays 2 mm off the
+    upper arm beside it."""
+    link = j2_link_in_drive_frame().rotate(Axis((0.0, 0.0, DEFAULT.roll_end.axis_z), (-1.0, 0.0, 0.0)), roll)
+    upper_arm = _upper_arm_at(in_drive_frame("j1_link#1"), elbow)
     gap = closest_points(link, upper_arm).distance
     assert gap >= 2.0, f"elbow {elbow:+.0f} deg, roll {roll:+.0f} deg: j2_link {gap:.2f} mm off j1_link"

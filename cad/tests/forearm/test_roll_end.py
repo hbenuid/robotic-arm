@@ -1,15 +1,17 @@
 """The DEFAULT forearm - the roll end: the flange wall replaces the elbow disc (a round flange on the roll axis, on
 the foot the web necks down to, braced by two gussets beside the wrist motor), the wrist-pitch motor sits where the
-stock belt puts it and clears the wall, the wrist end is the SolidWorks one SHORTENING nearer the elbow, the removed
-caps' sockets are gone."""
+stock belt puts it, clears the wall's screw heads and has its plug's room beside it, the wrist end is the SolidWorks one
+SHORTENING nearer the elbow, the removed caps' sockets are gone."""
 import math
 from dataclasses import replace
 
 import pytest
-from build123d import Box, Pos
+from build123d import Box, Location, Pos
 
+from lib import mounts
 from lib import params as PARAMS
 from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, closed_belt_length
+from lib.datum import to_location
 from lib.forearm import (
     DEFAULT,
     LEGACY,
@@ -22,7 +24,14 @@ from lib.forearm import (
     web_half_width,
 )
 from lib.forearm.params import SHORTENING
-from lib.motors import MKS_SERVO42D_W, NEMA17_40_BODY_W, NEMA17_40_CONNECTOR_D
+from lib.motors import (
+    MKS_SERVO42D_W,
+    NEMA17_40_BODY_W,
+    NEMA17_40_CONNECTOR_D,
+    NEMA17_40_CONNECTOR_W,
+    NEMA17_40_CONNECTOR_Z0,
+    NEMA17_40_CONNECTOR_Z1,
+)
 from tests import built
 from tests.forearm.helpers import in_host
 from tests.helpers import interference, is_inside
@@ -35,14 +44,15 @@ def test_default_layout():
     assert DEFAULT.web == replace(LEGACY.web, wrist_x=LEGACY.web.wrist_x + SHORTENING) and SHORTENING > 0.0
     assert DEFAULT.boss == LEGACY.boss
     assert DEFAULT.sockets is None and LEGACY.sockets is not None and link_socket_points(DEFAULT) == ([], [])
-    # the slide: the motor at its wall end (the idler takes up the belt: tests/forearm/test_wrist_idler.py), the plug
-    # clear of the wall, the body clear of the boss
+    # the slide: set by the belt (no idler: tests/forearm/test_wrist_idler.py), inside the (shortened) slots, the body
+    # clear of the wall screws' heads at the slots' wall end (the connector turned sideways:
+    # test_wrist_motor_plug_room_is_clear) and of the boss
     x = DEFAULT.motor_x
-    assert closed_belt_length(x - DEFAULT.web.wrist_x, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH) < R.wrist_belt
+    assert math.isclose(closed_belt_length(x - DEFAULT.web.wrist_x, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH), R.wrist_belt, abs_tol=1e-6)
     lo, hi = DEFAULT.slide_range
-    assert lo < x == hi
-    assert x + NEMA17_40_BODY_W / 2.0 + NEMA17_40_CONNECTOR_D + R.plug_clearance <= R.wall_x[0]
-    assert x - NEMA17_40_BODY_W / 2.0 >= DEFAULT.web.wrist_x + DEFAULT.boss.dia / 2.0
+    assert lo < x < hi
+    assert hi + NEMA17_40_BODY_W / 2.0 + R.screw.head_h + R.motor_wall_clear <= R.wall_x[0] + 1e-9
+    assert lo - NEMA17_40_BODY_W / 2.0 >= DEFAULT.web.wrist_x + DEFAULT.boss.dia / 2.0
     # the slots stop >= 4 mm before the wall and their arc centres bracket the slide range (the pilot boss in the
     # central slot, the bolt pattern's +/- 15.5 in the side slots)
     s = DEFAULT.slot
@@ -152,8 +162,17 @@ def test_link_ends_at_the_wall_and_keeps_its_wrist_end(link):
 
 
 @pytest.mark.slow
-def test_wrist_motor_plug_clears_the_wall():
-    """The placed motor's connector end plug_clearance short of the wall (the motor and its board clear of j2_link,
-    the pilot in the central slot: tests/test_mounts.py test_motors_and_boards_clear_their_neighbours)."""
+def test_wrist_motor_plug_room_is_clear():
+    """The placed motor's connector faces sideways (j2_link's -Y) and the plug_clearance of room beyond its boss - the
+    cable's plug - stays clear of j2_link (its web, gussets and wall) and of the motor's own board (the motor and its
+    board clear of j2_link, the pilot in the central slot: tests/test_mounts.py
+    test_motors_and_boards_clear_their_neighbours)."""
     motor = in_host("nema17_40mm#3")
-    assert motor.bounding_box().max.X + R.plug_clearance <= R.wall_x[0] + 1e-6
+    bb = motor.bounding_box()
+    out = NEMA17_40_BODY_W / 2.0 + NEMA17_40_CONNECTOR_D
+    assert math.isclose(bb.min.Y, -out, abs_tol=0.05) and math.isclose(bb.max.Y, NEMA17_40_BODY_W / 2.0, abs_tol=0.05)
+    frame = to_location(mounts.BY_KEY["nema17_40mm#3"].frame)
+    room = Box(NEMA17_40_CONNECTOR_W, R.plug_clearance, NEMA17_40_CONNECTOR_Z1 - NEMA17_40_CONNECTOR_Z0).moved(
+        frame * Location((0.0, -out - R.plug_clearance / 2.0, (NEMA17_40_CONNECTOR_Z0 + NEMA17_40_CONNECTOR_Z1) / 2.0)))
+    for key, other in (("j2_link", built.part("j2_link")), ("mks_servo42d#3", in_host("mks_servo42d#3"))):
+        assert interference(room, other) == 0.0 and room.distance_to(other) > 1.0, key
