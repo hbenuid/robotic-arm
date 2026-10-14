@@ -69,13 +69,14 @@ RETIRED: tuple[str, ...] = ("j3_coupler#1", "gt2_pulley_90t#1", "gt2_pulley_90t#
 @dataclass(frozen=True)
 class LinkShift:
     """A link whose length the design changed: every capture record beyond it moves `along_x` along the link's +X -
-    and `across_y` along its +Y, where the design moved the link's far end across it.
+    and `across_y` along its +Y, where the design moved the link's far end across it, and `normal_z` along its +Z,
+    where the design moved it off the link's plane.
 
-    `along_x` / `across_y` are the link parameters' DEFAULT - LEGACY (the part's geometry and these poses have one
-    source); `axis_w` / `across_w` are the anchor record's +X / +Y in W - data, so no file read is needed
-    (tests/test_placements.py checks them against the record); `moves` lists the TOP-LEVEL capture records beyond the
-    link, the retired hosts included (a module's children follow its world pose; the mounted records never:
-    mount_placements.py bakes their hosts' shifts in)."""
+    `along_x` / `across_y` / `normal_z` are the link parameters' DEFAULT - LEGACY (the part's geometry and these poses
+    have one source); `axis_w` / `across_w` / `normal_w` are the anchor record's +X / +Y / +Z in W - data, so no file
+    read is needed (tests/test_placements.py checks them against the record); `moves` lists the TOP-LEVEL capture
+    records beyond the link, the retired hosts included (a module's children follow its world pose; the mounted
+    records never: mount_placements.py bakes their hosts' shifts in)."""
 
     link: str
     anchor: str
@@ -84,6 +85,8 @@ class LinkShift:
     moves: tuple[str, ...]
     across_w: tuple[float, float, float] = (0.0, 0.0, 0.0)
     across_y: float = 0.0
+    normal_w: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    normal_z: float = 0.0
 
 
 _BEYOND_WRIST_ROLL = ("gripper_clamp_bracket#1", "nema17_pancake#1", "gt2_pulley_20t#1", "gripper#1")
@@ -195,7 +198,7 @@ def shift(key: str) -> tuple[float, float, float]:
     for s in SHIFTS:
         if key in s.moves:
             for i in range(3):
-                t[i] += s.along_x * s.axis_w[i] + s.across_y * s.across_w[i]
+                t[i] += s.along_x * s.axis_w[i] + s.across_y * s.across_w[i] + s.normal_z * s.normal_w[i]
     return (t[0], t[1], t[2])
 
 

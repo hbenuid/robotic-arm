@@ -17,8 +17,8 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   record to `skipped` as the entry an extraction writes (pose, totals, reason) - `test_skipped_nodes_are_the_dropped_products`.
 - **Shifted occurrences** (`lib/placements.py SHIFTS`): a link whose length the design changes (`j1_link`
   `slab.elbow_x`, `j2_link` `web.wrist_x`, `wrist_link` `tower.block_x1`) moves every capture record beyond it along
-  its own +X by the parameter's DEFAULT − LEGACY - and along its +Y by `across_y` where the design moved its far end
-  across it (`j1_link`'s elbow end, slid with the arm until its underside is flush with the drive shell's hub end:
+  its own +X by the parameter's DEFAULT − LEGACY - along its +Y by `across_y` where the design moved its far end
+  across it, and along its +Z by `normal_z` where it moved it off the link's plane (`j1_link`'s elbow end, slid with the arm until its underside is flush with the drive shell's hub end:
   `lib/upper_arm/layout.py arm_slide`;
   the mounts hosted on `j1_link#1` itself add it to their frames, `lib/params.py J1_ARM_SLIDE`); the yoke
   (`j1_coupler`) moves the drive, `j1_link` and all beyond along its +X (N) by `ForkParams.face_x` −

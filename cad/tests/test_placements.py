@@ -164,13 +164,13 @@ def _check_links_carry_what_lies_beyond(elbow_x: float, wrist_x: float, end_dx: 
         assert _near(_position_in("wrist_link#1", key), (raw[0] + end_dx, raw[1], raw[2])), key
 
 
-def test_shift_axes_are_their_anchors_x_and_y():
+def test_shift_axes_are_their_anchors_x_y_and_z():
     for s in P.SHIFTS:
-        x = [row[0] for row in P.OCCURRENCES[s.anchor]["world"]["matrix_3x4"]]
-        assert all(math.isclose(a, b, abs_tol=1e-9) for a, b in zip(x, s.axis_w, strict=True)), s.link
-        if s.across_y:
-            y = [row[1] for row in P.OCCURRENCES[s.anchor]["world"]["matrix_3x4"]]
-            assert all(math.isclose(a, b, abs_tol=1e-9) for a, b in zip(y, s.across_w, strict=True)), s.link
+        m = P.OCCURRENCES[s.anchor]["world"]["matrix_3x4"]
+        for col, used, axis in ((0, True, s.axis_w), (1, s.across_y, s.across_w), (2, s.normal_z, s.normal_w)):
+            if used:
+                v = [row[col] for row in m]
+                assert all(math.isclose(a, b, abs_tol=1e-9) for a, b in zip(v, axis, strict=True)), (s.link, col)
 
 
 def test_shifts_move_the_capture_records_beyond_each_link():
