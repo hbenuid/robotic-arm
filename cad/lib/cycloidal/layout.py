@@ -135,7 +135,8 @@ def shell_ends(cfg: DriveConfig = DEFAULT_CONFIG) -> tuple[float, float]:
 
 def arm_zone(cfg: DriveConfig = DEFAULT_CONFIG) -> tuple[float, float]:
     """z of the two plates' inner faces - the motor plate's and the hub flange's: the gear's stretch of the turning shell
-    (9 .. 39), symmetric about the middle of the discs, where the upper arm leaves it (lib/upper_arm/params.py ArmParams)."""
+    (9 .. 39), symmetric about the middle of the discs; the shell's body (housing.py build_shell_body) runs from its
+    start to the hub end, where the upper arm leaves it (lib/upper_arm/params.py ArmParams)."""
     s = cfg.stack_up
     return s.z_motor_plate_inner, s.z_output_bearings - hub_flange(cfg)
 
