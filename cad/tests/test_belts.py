@@ -1,6 +1,6 @@
 """The GT2 belts (parts/base/yaw_belt, parts/joints/{elbow,forearm_roll,wrist}_belt): purchased parts with no reference
 (lib/reference.py NO_REFERENCE) - THIS file locks their numbers (the modelled band's volume and bounding box, measured
-on the build and written in) and what they are: each a stock multipack length, its loop that long along its pitch line
+on the build and written in) and what they are: each a stock length, its loop that long along its pitch line
 (lib/belts.py), the band on its pulleys' tooth tips (and an idler's seat, were one in its loop); in the arm, each loop's
 circles on its pulleys' axes in their tooth bands' plane. The wrist idler kit (unplaced): tests/forearm/test_wrist_idler.py."""
 import math

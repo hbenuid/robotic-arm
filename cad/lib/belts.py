@@ -53,9 +53,12 @@ GT2_IDLER_SEAT_DIA = 12.1                           # [DATASHEET] the smooth bel
 GT2_IDLER_WIDTH = 9.0                               # [DATASHEET] flange face to flange face
 GT2_IDLER_CHANNEL_W = 7.0                           # [DATASHEET] between the flanges: 1 mm flanges, the belt + 1
 
-# Closed-loop 2GT belts, 6 mm wide (mm = teeth x 2): the lengths the GT2 multipacks the arm's belts are bought as hold,
-# one of each per pack [DESIGN] - every belt length in the arm is one of them (tests/test_params_invariants.py).
-STANDARD_2GT_LENGTHS = (110, 112, 122, 158, 200, 280, 300, 400, 610)
+# Closed-loop 2GT belts, 6 mm wide (mm = teeth x 2): the stock lengths the arm's belts are bought as - the GT2
+# multipack's nine (one of each per pack) and the single-length packs (160, 200, 1000) [DESIGN]. Every belt length in
+# the arm is one of them (tests/test_params_invariants.py), never an odd length ordered on its own; and every belt runs
+# with a tensioner - an idler on its back (lib/belts.py idler_on_run) taking up what the stock length has over its open
+# loop - so a joint's centre distance is the design's, not the belt's (cad/AGENTS.md).
+STANDARD_2GT_LENGTHS = (110, 112, 122, 158, 160, 200, 280, 300, 400, 610, 1000)
 
 # The belt itself (2GT, 6 mm): tooth tip to back; its pitch line (the cords) runs GT2_PLD outside its land (the tooth
 # side's flat, on a pulley's tooth tips), so its back runs GT2_BELT_BACK outside the pitch line - what a back-side idler's

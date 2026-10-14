@@ -82,7 +82,7 @@ def test_belt_motor_and_mks_board_track_reference():
     assert lo < p.J2_MOTOR_SLIDE_X < hi
     wrist_x, boss_r = FOREARM.web.wrist_x, FOREARM.boss.dia / 2.0
     assert math.isclose(closed_belt_length(p.J2_MOTOR_SLIDE_X - wrist_x, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH), p.WRIST_BELT_LENGTH, abs_tol=1e-6)
-    # every belt is a stock multipack length (lib/belts.py STANDARD_2GT_LENGTHS)
+    # every belt is a stock length (lib/belts.py STANDARD_2GT_LENGTHS: what the belts are bought as)
     from lib.base.params import YAW_BELT
     for belt in (YAW_BELT, p.ELBOW_BELT_LENGTH, p.FOREARM_ROLL_BELT_LENGTH, p.WRIST_BELT_LENGTH):
         assert belt in STANDARD_2GT_LENGTHS, belt
