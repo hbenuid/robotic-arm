@@ -123,13 +123,14 @@ def test_stack():
     assert S["z_wall"] >= UPPER_ARM_END_R + 1.5                 # the rolling forearm, whatever its roll angle, clears j1_link's round end
     # the bearing boss: bearing 2's seat in it, 4 mm of wall or more; its top bearing 2's front face, run_gap under the
     # ring's rear flange, which reaches past its edge (no cup round the flange), the belt's edge clear above it; centred
-    # on the frame - the underside's plane, the open +N face and the tower's top all ROLL_FRAME_R off the roll axis - and
-    # on the flat of the front face (the tower's top corner is rounded tower_corner_r); the front face runs through the
-    # tower (the pair straddles it)
+    # on the frame - the underside's plane, the open +N face and the tower's top all ROLL_FRAME_R off the roll axis, the
+    # forearm wall's radius: the frame flush with the round parts that turn about the roll axis - and on the flat of the
+    # front face (the tower's top corner is rounded tower_corner_r); the front face runs through the tower (the pair
+    # straddles it)
     r_boss = D.bearing_boss_dia / 2.0
     assert r_boss - (D.bearing_od + D.seat_add) / 2.0 >= 4.0 and r_boss < D.ring_flange_dia / 2.0
     assert S["z_boss"] < S["z_ring_flange_1"] < S["z_ring_mid"] - BELT_W / 2.0
-    assert _eq(-D.block_x[0], D.block_x[1], D.tower_y) and r_boss <= D.tower_y - D.tower_corner_r - 1.0
+    assert _eq(-D.block_x[0], D.block_x[1], D.tower_y, w.wall_od / 2.0) and r_boss <= D.tower_y - D.tower_corner_r - 1.0
     assert S["z_bearing_1"] < S["z_front"] < S["z_boss"]
     # the 6806 pair: the lip stops the outer rings and clears the hubs and the shoulders, which bear on the inner rings
     # only; the tower round the seats

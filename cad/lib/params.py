@@ -134,7 +134,7 @@ ELBOW_ROLL_OFFSET = _FOREARM.elbow_offset                    # 74 [DESIGN] the r
 #                                                              centre distance (the stock belt round its idler), the roll motor on the elbow axis - the arm's
 #                                                              elbow offset (lib/placements.py SHIFTS)
 FOREARM_ROLL_RATIO = _FOREARM.drive.ring_teeth / GT2_PULLEY_20T_TEETH   # 4.5:1 [DESIGN] like the other belt joints
-FOREARM_ROLL_BLOCK_X = _FOREARM.drive.block_x       # (-33, 33) [DESIGN] the roll frame's extent along N: its underside 3.0 mm above the upper arm's flat top (host z -11)
+FOREARM_ROLL_BLOCK_X = _FOREARM.drive.block_x       # (-30, 30) [DESIGN] the roll frame's extent along N: its underside 6.0 mm above the upper arm's flat top (host z -11)
 
 # --- Cycloidal drive (lib/cycloidal/, assemblies/cycloidal_drive.py, docs/cycloidal_drive.md) -----
 # The drive's own dimensions live in lib/cycloidal/params.py (DriveConfig, ported from the
