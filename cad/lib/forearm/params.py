@@ -220,7 +220,11 @@ class RollDriveParams:
     tower_wall: float = 2.0               # [DESIGN] the tower's rear in the profile, behind the bay's floor
     web_t: float = 10.0                   # [DESIGN] the pocket's floor (the cradle's): 2 mm under the motor's -N side
     pocket_clear: float = 0.75            # [DESIGN] round the motor + board in the pocket, along Y past the tension travel
-    pocket_rear: float = 1.0              # [DESIGN] behind the board's cover
+    pocket_rear: float = 2.5              # [DESIGN] behind the board's cover: the motor + board go in from the +N face motor_drop low (the
+    #                                       pilot boss under the plate), then lift into the plate's pilot slot
+    motor_drop: float = 2.25              # [DESIGN] how low the motor slides in: its pilot boss (pilot_height) under the plate + 0.25
+    shaft_slit: float = 6.0               # [DESIGN] the shaft's slit through the plate, from the pilot slot out through the +N face: the Ø5
+    #                                       shaft passes it as the motor slides in (the tension slots stay whole either side)
     bearing_boss_dia: float = 52.0        # [DESIGN] the boss on the front face round the roll axis, bearing 2's seat in it (4.9 of wall), its top
     #                                       bearing 2's front face: the ring's rear flange turns run_gap over it, 3.6 past its edge (no cup round
     #                                       the flange); 7 inside the frame's underside, +N face and tower top, on the flat of the front face

@@ -24,6 +24,7 @@ from lib.forearm import (
     module_frame_in_host,
     motor_pocket,
     nut_channel_end,
+    pad_bolt_points,
     pulley_bolt_points,
     stack_positions,
 )
@@ -184,6 +185,13 @@ def test_stack():
     assert z0 == S["z_motor_board"] - D.board_stack - D.pocket_rear
     assert max(math.hypot(y - S["y_elbow"], z) for y in (y0, y1) for z in (z0, z1)) <= D.end_r - 5.0
     assert -D.bay_r - y1 >= 5.0
+    # the motor goes in from the open +N face: the pocket deep enough for it to slide in motor_drop low (its pilot boss
+    # under the plate), its shaft in the slit - wider than the shaft, the tension slots whole either side of it
+    play = (z1 - z0) - (D.motor.body_length + D.board_stack)
+    assert D.motor.pilot_height < D.motor_drop <= play - 0.25 + 1e-9
+    assert D.motor.shaft_dia + 1.0 <= D.shaft_slit < D.pad_pilot_w
+    slot_in = min(abs(y - S["y_motor"]) for _x, y in pad_bolt_points(DEFAULT)) - (D.pad_slot_len + D.pad_bolt_dia) / 2.0
+    assert slot_in - D.shaft_slit / 2.0 >= 5.0
     # the elbow 90T's nuts: seated in the boss, the M4 from the pulley's counterbores 2 pitches past its nut, nut and tip
     # 2 mm under the pocket's floor; each hex channel open up into the pocket (the nuts go in from there before the
     # motor), and clear of the pin bore, which ends under the seats
@@ -268,6 +276,24 @@ def test_the_rotor_turns_clear_of_the_frame(module):
     assert closest_points(pulley, shaft).distance < 1e-6 and interference(pulley, shaft) < 1e-3
 
 
+@pytest.mark.slow
+def test_the_motor_slides_in_from_the_open_face(module):
+    """The roll motor and its board go in from the frame's open +N face motor_drop low - the pilot boss under the plate,
+    the shaft along the slit - and lift into the pilot slot: clear of the frame from outside it to the seat, in 2 mm
+    steps, and through the lift."""
+    block = _leaf(module, "forearm_roll_block")
+    kit = [_leaf(module, label) for label in ("nema17_40mm:forearm_roll", "mks_servo42d:forearm_roll")]
+    out = D.block_x[1] - S["x_cradle"] + D.board_w / 2.0   # the board's far side past the open face
+    for k in range(int(out // 2.0) + 2):
+        for part in kit:
+            vol = interference(part.moved(Location((2.0 * k, 0.0, -D.motor_drop))), block)
+            assert vol < 0.5, f"{part.label} {2.0 * k:.0f} mm out, {D.motor_drop} low: {vol:.1f} mm^3 in the frame"
+    for k in range(11):
+        for part in kit:
+            vol = interference(part.moved(Location((0.0, 0.0, -D.motor_drop * k / 10.0))), block)
+            assert vol < 0.5, f"{part.label} lifting, {D.motor_drop * k / 10.0:.2f} low: {vol:.1f} mm^3 in the frame"
+
+
 def _round_trip(part, r: float, a_deg: float, z: float) -> bool:
     return is_inside(part, r * math.cos(math.radians(a_deg)), r * math.sin(math.radians(a_deg)), z)
 
@@ -302,6 +328,11 @@ def test_frame_features(module):
     # the plate, the pocket's front wall: material beside the pilot slot, the slot, the pocket behind, the 20T's room in front
     assert is_inside(block, 10, ye - 10, S["z_motor_face"] + 1.5) and not is_inside(block, 0, ye, S["z_motor_face"] + 1.5)
     assert not is_inside(block, 10, ye - 10, S["z_motor_face"] - 1.5) and not is_inside(block, 10, ye - 10, S["z_front"] + 1.0)
+    # the shaft's slit: open through the plate from the pilot slot out to the +N face, the plate either side of it
+    zp = S["z_motor_face"] + D.pad_t / 2.0
+    for x in (15.0, D.block_x[1] - 0.5):
+        assert not is_inside(block, x, ye, zp) and is_inside(block, x, ye + D.shaft_slit / 2.0 + 1.0, zp)
+        assert is_inside(block, x, ye - D.shaft_slit / 2.0 - 1.0, zp)
     # the shaft's bay behind bearing 1: open through the +N face, its floor, the tower round it; the stop post at -X only
     zb = (S["z_bay"] + S["z_bearing_1"]) / 2.0
     assert not is_inside(block, 0, 0, zb) and not is_inside(block, D.block_x[1] - 0.5, 0, zb)
