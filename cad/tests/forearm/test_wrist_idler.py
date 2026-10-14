@@ -1,6 +1,7 @@
 """The wrist belt's idler kit (lib/forearm/params.py IdlerParams) is NOT in the arm: DEFAULT's wrist motor sits at the
-stock belt's centre distance, so its loop is the plain pair and the idler (gt2_idler_20t), its axle and its nut
-(wrist_idler_screw / wrist_idler_nut) stay modelled, UNPLACED. The axle and the nut are purchased parts with no
+stock belt's centre distance, so its loop is the plain pair and its axle and its nut (wrist_idler_screw /
+wrist_idler_nut) stay modelled, UNPLACED - the idler itself (gt2_idler_20t) is the roll belt's tensioner
+(tests/forearm/test_roll_idler.py). The axle and the nut are purchased parts with no
 reference (lib/reference.py NO_REFERENCE), so THIS file locks their numbers (pieces, the modelled volume and the bounding
 box, measured on the build and written in). The option stays whole: with an idler (a ForearmConfig.idler, the motor
 where the belt is slack) the loop goes round it and j2_link carries its rib, slot and nut channel.
@@ -31,13 +32,13 @@ LOCKS = {
 
 def test_the_arm_has_no_wrist_idler():
     """DEFAULT: the stock belt's loop is the 20T and the 90T alone, the stock length at the motor's centre distance (the
-    exact path within 0.2 of the textbook formula's); the idler kit is modelled, UNPLACED - off the arm and the buy
-    list (the idler's own order line a tools/bom.py EXTRAS row, as before it was placed)."""
+    exact path within 0.2 of the textbook formula's); the wrist kit's axle and nut are modelled, UNPLACED - off the arm
+    and the buy list; the idler is placed, on the roll belt."""
     assert DEFAULT.idler is None
     loop = wrist_belt_loop()
     assert len(loop) == 2 and R_END.wrist_belt in STANDARD_2GT_LENGTHS
     assert belt_length(loop) == pytest.approx(R_END.wrist_belt, abs=0.2)
-    assert set(KIT) <= set(parts.unplaced())
+    assert set(KIT[1:]) <= set(parts.unplaced()) and KIT[0] not in parts.unplaced()
 
 
 def test_an_idler_takes_up_a_slack_belt():

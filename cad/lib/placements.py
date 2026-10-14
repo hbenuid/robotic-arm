@@ -108,7 +108,7 @@ SHIFTS: tuple[LinkShift, ...] = (
     LinkShift("j1_coupler", "j1_coupler#1", (0.064435732, 0.0, 0.997921859),   # [REFERENCE]
               _YAW_COUPLER.fork.face_x - _CAPTURE_FACE_X, ("cycloidal_drive#1", "j1_link#1") + _BEYOND_ELBOW),
     # the forearm roll: its axis runs ForearmConfig.elbow_offset above the elbow axis (the roll motor sits on the elbow
-    # axis, the roll belt's centre distance under the ring - lib/forearm/params.py RollDriveParams), so the forearm and
+    # axis, the drive's centre distance under the ring - lib/forearm/params.py RollDriveParams), so the forearm and
     # everything beyond it sit that far across, along j2_link's +Y; the elbow's own records (the retired j3_coupler#1
     # and gt2_pulley_90t#1, which the elbow 90T and its bolts are hosted on) stay
     LinkShift("forearm_roll_drive", "j2_link#1", (0.680611117, -0.731325624, -0.043947003),   # [REFERENCE]

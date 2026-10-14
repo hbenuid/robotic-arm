@@ -95,8 +95,9 @@ def test_belt_motor_and_mks_board_track_reference():
     assert p.J2_MOTOR_WEB_FACE_Z > 0 and p.J1_MOTOR_PAD_FACE_Y == 16.5   # the elbow motor's face: the web across its hole
     assert math.isclose(p.J1_ARM_SLIDE, 29.5)                            # the slab's underside on the shell's hub end
     lo, hi = p.ELBOW_PITCH_LIMITS_DEG
-    assert lo == -47.0 and hi == 90.0                                    # the roll frame comes within 1 mm of the elbow motor's board at -51.0
-    assert math.isclose(p.ELBOW_ROLL_OFFSET, 81.97167, abs_tol=1e-4)   # the elbow offset: the 280-2GT roll belt's centre distance
+    assert lo == -47.0 and hi == 90.0                                    # the roll frame comes within 1 mm of the elbow motor's board past it
+    assert p.ELBOW_ROLL_OFFSET == 74.0 and p.FOREARM_ROLL_BELT_LENGTH == 280   # the elbow offset: the roll drive's centre distance, its stock belt round its idler
+    assert closed_belt_length(p.ELBOW_ROLL_OFFSET, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH) < p.FOREARM_ROLL_BELT_LENGTH
     assert p.FOREARM_ROLL_MOTOR_XY == (0.0, -p.ELBOW_ROLL_OFFSET)                                      # the roll motor on the elbow axis
 
 

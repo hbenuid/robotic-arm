@@ -87,11 +87,11 @@
     <link name="elbow_link">
       <pose relative_to="elbow_pitch">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.001812 -0.01952 0.019001 0 0 0</pose>
-        <mass>0.922482</mass>
+        <pose>0.004211 -0.01747 0.019125 0 0 0</pose>
+        <mass>0.945106</mass>
         <inertia>
-          <ixx>1.772742e-03</ixx><ixy>1.739753e-04</ixy><ixz>-6.071949e-06</ixz>
-          <iyy>7.709727e-04</iyy><iyz>7.502907e-05</iyz><izz>1.659652e-03</izz>
+          <ixx>1.656093e-03</ixx><ixy>1.619809e-04</ixy><ixz>-1.444732e-05</ixz>
+          <iyy>8.345120e-04</iyy><iyz>6.659479e-05</iyz><izz>1.592376e-03</izz>
         </inertia>
       </inertial>
       <visual name="elbow_link_visual">
@@ -286,7 +286,7 @@
       </axis>
     </joint>
     <joint name="forearm_roll" type="revolute">
-      <pose relative_to="elbow_link">0.000001 -0.081972 0.025 3.141593 -1.570795 0</pose>
+      <pose relative_to="elbow_link">0.000001 -0.074 0.025 3.141593 -1.570795 0</pose>
       <parent>elbow_link</parent>
       <child>forearm_link</child>
       <axis>
