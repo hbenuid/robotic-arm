@@ -16,6 +16,8 @@ from lib.base.layout import (  # noqa: F401
     mount_x1,
     outer_r,
     side_stub_x,
+    yaw_belt_frame,
+    yaw_belt_loop,
 )
 from lib.base.params import (  # noqa: F401
     DEFAULT,

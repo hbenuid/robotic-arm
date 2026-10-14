@@ -30,7 +30,7 @@
   CENTRE - where the wrist_pitch and wrist_roll axes meet, 17 mm back along the pitch axis from the
   wrist_pitch origin - so the last three axes are concurrent (a spherical wrist); its X is the
   pitch-axis direction (its child's long direction IS the axis). It does NOT cross the elbow axis: the
-  roll motor sits on the elbow axis and the roll housing ELBOW_ROLL_OFFSET (60.9 mm, the roll belt's centre
+  roll motor sits on the elbow axis and the roll housing ELBOW_ROLL_OFFSET (the roll belt's centre
   distance) above it, so forearm_roll's origin sits that far across elbow_link's frame (its -Y) - an elbow
   offset. elbow_link is the elbow's driven side (the 90T pulley carrying the roll drive's stator, the
   frame whose web is the elbow coupler), forearm_link the roll drive's rotor (the hollow shaft) + the forearm.
@@ -62,9 +62,9 @@
 <robot name="arm">
   <link name="base_link">
     <inertial>
-      <origin xyz="-0.032609 -0.000038 0.050662" rpy="0 0 0" />
-      <mass value="1.163143" />
-      <inertia ixx="3.015337e-03" ixy="5.748429e-06" ixz="-2.228810e-04" iyy="4.841445e-03" iyz="2.272553e-06" izz="5.296522e-03" />
+      <origin xyz="-0.028237 -0.000037 0.050838" rpy="0 0 0" />
+      <mass value="1.166795" />
+      <inertia ixx="3.016600e-03" ixy="5.136629e-06" ixz="-1.717656e-04" iyy="4.342762e-03" iyz="2.237723e-06" izz="4.791842e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -100,9 +100,9 @@
   </link>
   <link name="upper_arm_link">
     <inertial>
-      <origin xyz="0.059039 0.000069 0.034048" rpy="0 0 0" />
-      <mass value="1.298788" />
-      <inertia ixx="1.660568e-03" ixy="-2.539946e-06" ixz="7.202599e-04" iyy="6.207716e-03" iyz="-2.465453e-06" izz="6.609814e-03" />
+      <origin xyz="0.059178 0.000068 0.03399" rpy="0 0 0" />
+      <mass value="1.300888" />
+      <inertia ixx="1.664087e-03" ixy="-2.527740e-06" ixz="7.267746e-04" iyy="6.228806e-03" iyz="-2.470616e-06" izz="6.628902e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -119,9 +119,9 @@
   </link>
   <link name="elbow_link">
     <inertial>
-      <origin xyz="0.001375 -0.012477 0.018472" rpy="0 0 0" />
-      <mass value="0.841441" />
-      <inertia ixx="1.262483e-03" ixy="1.227444e-04" ixz="-3.186126e-06" iyy="7.183065e-04" iyz="4.399569e-05" izz="1.161466e-03" />
+      <origin xyz="0.001646 -0.019395 0.019084" rpy="0 0 0" />
+      <mass value="0.928428" />
+      <inertia ixx="1.778638e-03" ixy="1.769617e-04" ixz="-4.675741e-06" iyy="7.794448e-04" iyz="7.353976e-05" izz="1.668892e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -138,9 +138,9 @@
   </link>
   <link name="forearm_link">
     <inertial>
-      <origin xyz="-0.005111 0.000136 0.107539" rpy="0 0 0" />
-      <mass value="0.635538" />
-      <inertia ixx="1.553398e-03" ixy="3.050343e-06" ixz="-1.687204e-04" iyy="1.530835e-03" iyz="1.779991e-06" izz="3.586626e-04" />
+      <origin xyz="-0.004707 0.000135 0.107419" rpy="0 0 0" />
+      <mass value="0.645638" />
+      <inertia ixx="1.563251e-03" ixy="3.077238e-06" ixz="-1.672173e-04" iyy="1.546627e-03" iyz="1.777065e-06" izz="3.663589e-04" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -256,7 +256,7 @@
   <joint name="forearm_roll" type="revolute">
     <parent link="elbow_link" />
     <child link="forearm_link" />
-    <origin xyz="0.000001 -0.060926 0.025" rpy="3.141593 -1.570795 0" />
+    <origin xyz="0.000001 -0.081972 0.025" rpy="3.141593 -1.570795 0" />
     <axis xyz="0 0 1" />
     <limit lower="-2.897247" upper="2.897247" effort="5" velocity="1" />
   </joint>

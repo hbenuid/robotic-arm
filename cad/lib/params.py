@@ -27,12 +27,13 @@ PETG_DENSITY = 1.27e-3  # [DESIGN] g/mm^3 - printed-part mass estimates
 
 # --- Fasteners - lib/fasteners.py (a leaf: the sizes, the clearance holes, the plain screw / nut builders) ----
 from lib.fasteners import (  # noqa: E402, F401
-    M3_CLEAR, M3_CSK, M3_NUT, M3_PITCH, M3_SHCS, M4_CLEAR, M4_NUT, M4_PITCH, M4_SHCS, M5_CLEAR, csk_volume, nut_volume, shcs_volume,
+    M3_CLEAR, M3_CSK, M3_NUT, M3_PITCH, M3_SHCS, M4_CLEAR, M4_NUT, M4_PITCH, M4_SHCS, M5_CLEAR, M5_NUT, M5_SHCS, csk_volume, nut_volume,
+    shcs_volume,
 )
 
 # --- Belt drive (GT2) - lib/belts.py (a leaf: lib/forearm/ imports it directly) ------------------
 from lib.belts import (  # noqa: E402, F401
-    GT2_BELT_W, GT2_BLEND_R, GT2_FLANK_ANGLE, GT2_FLANK_R, GT2_GROOVE_R, GT2_IDLER_BORE, GT2_IDLER_CHANNEL_W,
+    GT2_BELT_BACK, GT2_BELT_MASS_G_PER_M, GT2_BELT_THICKNESS, GT2_BELT_W, GT2_BLEND_R, GT2_FLANK_ANGLE, GT2_FLANK_R, GT2_GROOVE_R, GT2_IDLER_BORE, GT2_IDLER_CHANNEL_W,
     GT2_IDLER_FLANGE_DIA, GT2_IDLER_SEAT_DIA, GT2_IDLER_WIDTH, GT2_PITCH, GT2_PLD, GT2_PULLEY_20T_PITCH_DIA,
     GT2_PULLEY_20_60T_TEETH, GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_BOLT_R, GT2_PULLEY_90T_FACE_Y, GT2_PULLEY_90T_HEAD_SEAT, GT2_PULLEY_90T_PITCH_DIA,
     GT2_PULLEY_90T_TEETH, GT2_PULLEY_120T_TEETH, GT2_RATIO, GT2_TIP_R, GT2_TOOTH_DEPTH, STANDARD_2GT_LENGTHS, flank_offset, pulley_90t_bolt_points,
@@ -83,7 +84,7 @@ from lib.sensors import (  # noqa: E402, F401
 from lib.base.params import BOARD_CLEAR as _BOARD_CLEAR  # noqa: E402
 from lib.base.params import DEFAULT as _BASE  # noqa: E402
 
-BASE_MOTOR_PATTERN_CENTRE = (_BASE.motor.centre[0], _BASE.plate.y[0], _BASE.motor.centre[1])   # (81.972, -44.9, 0.084) [DESIGN] the motor mount: 4x M3 on 31 x 31 through the 5 mm plate (slots of +/- travel along X), on its -Y face; x where the 280-2GT belt puts it
+BASE_MOTOR_PATTERN_CENTRE = (_BASE.motor.centre[0], _BASE.plate.y[0], _BASE.motor.centre[1])   # (73.067, -44.9, 0.084) [DESIGN] the motor mount: 4x M3 on 31 x 31 through the 5 mm plate (slots of +/- travel along X), on its -Y face; x where YAW_BELT puts it
 BASE_MOTOR_TABLE_CLEAR = _BOARD_CLEAR   # [DESIGN] 5.0 - the 48 mm motor + board (48 + 14.1 under the plate) end this far
 #                                          ABOVE the base's bottom face (lib/base/params.py: the face sits under them)
 BASE_YAW_RATIO = GT2_PULLEY_120T_TEETH / GT2_PULLEY_20T_TEETH   # 6:1 [DESIGN] the base_yaw belt: the 120T (parts/base/gt2_pulley_120t) on the 48 mm motor's 20T
@@ -110,6 +111,14 @@ J2_MOTOR_WEB_FACE_Z = _FOREARM.web.z1              # 19 [REFERENCE] j2_link: the
 J2_MOTOR_SLIDE_RANGE = _FOREARM.slide_range        # (-94, -84.5) [DESIGN] motor-axis x range the (shortened) slots allow
 J2_MOTOR_SLIDE_X = _FOREARM.motor_x                # -88.03 [DESIGN]: set by the stock WRIST_BELT_LENGTH (lib/belts.py centre_distance)
 WRIST_BELT_LENGTH = _FOREARM.roll_end.wrist_belt   # 280-2GT [DESIGN] the wrist-pitch belt (90T at the wrist, 20T on the motor), no idler
+J2_BELT_Z = _FOREARM.roll_end.wrist_belt_z         # 0.3 [REFERENCE] the wrist belt's mid-plane in j2_link's frame (the wrist 90T's band)
+# The motors' 20T pulleys (the vendor 20T: its tooth band t20_hub from its hub face) on their shafts, their bands level
+# with the driven pulleys' - each belt's plane (lib/mounts.py MOTOR_PULLEY_MOUNTS, tests/test_mounts.py):
+from lib.base.params import YAW_BELT_Y  # noqa: E402
+
+J1_BELT_Y = round(J1_MOTOR_PAD_FACE_Y - J1_MOTOR_20T_HUB_Z - _FOREARM.drive.t20_hub, 6)        # -2.2 the elbow belt's plane in j1_link's frame
+J2_MOTOR_20T_HUB_Z = round(J2_MOTOR_WEB_FACE_Z - J2_BELT_Z - _FOREARM.drive.t20_hub, 6)        # 7.75 the wrist motor's 20T, from its face
+BASE_MOTOR_20T_HUB_Z = round(YAW_BELT_Y - BASE_MOTOR_PATTERN_CENTRE[1] - _FOREARM.drive.t20_hub, 6)   # 2.85 the base_yaw motor's 20T, from its face
 # The forearm roll (lib/forearm/params.py RollEndParams; the rotor's wall on j2_link, the elbow block + shaft in M3):
 FOREARM_ROLL_AXIS_Z = _FOREARM.roll_end.axis_z     # 25 [REFERENCE] the roll axis' N-station in j2_link's frame = the wrist centre's (42 - 17)
 FOREARM_ROLL_TURN_DEG = _FOREARM.roll_turn_deg     # 180 [DESIGN] the forearm + all beyond it turned about the roll axis from the capture
@@ -119,9 +128,9 @@ FOREARM_WALL_OD = _FOREARM.roll_end.wall_od        # 60 [DESIGN] the flange wall
 FOREARM_PLUG_CLEARANCE = _FOREARM.roll_end.plug_clearance   # 10 [DESIGN] the wrist motor's connector plug: its room beyond the connector (sideways)
 FOREARM_MOTOR_WALL_CLEAR = _FOREARM.roll_end.motor_wall_clear   # 4.5 [DESIGN] the wrist motor's body to the wall screws' heads at the slots' wall end
 FOREARM_FLANGE_DIA = _FOREARM.roll_end.flange_dia  # 39.7 [DESIGN] the roll pulley's spigot the forearm wall bolts onto
-FOREARM_ROLL_BELT_LENGTH = _FOREARM.drive.roll_belt          # 240-2GT [ESTIMATE] the roll belt (90T ring on the shaft, 20T on the motor)
-FOREARM_ROLL_MOTOR_XY = (0.0, _FOREARM.drive.motor_y)        # (0, -60.9) [DESIGN] the roll motor's axis in the module frame: on the elbow axis, under the housing by what the belt sets
-ELBOW_ROLL_OFFSET = _FOREARM.elbow_offset                    # 60.9 [DESIGN] the roll axis' distance from the elbow axis (along j2_link's +Y): the roll belt's centre
+FOREARM_ROLL_BELT_LENGTH = _FOREARM.drive.roll_belt          # 280-2GT [DESIGN] the roll belt (90T ring on the shaft, 20T on the motor)
+FOREARM_ROLL_MOTOR_XY = (0.0, _FOREARM.drive.motor_y)        # (0, -81.97) [DESIGN] the roll motor's axis in the module frame: on the elbow axis, under the housing by what the belt sets
+ELBOW_ROLL_OFFSET = _FOREARM.elbow_offset                    # 81.97 [DESIGN] the roll axis' distance from the elbow axis (along j2_link's +Y): the roll belt's centre
 #                                                              distance, the roll motor on the elbow axis - the arm's elbow offset (lib/placements.py SHIFTS)
 FOREARM_ROLL_RATIO = _FOREARM.drive.ring_teeth / GT2_PULLEY_20T_TEETH   # 4.5:1 [DESIGN] like the other belt joints
 FOREARM_ROLL_BLOCK_X = _FOREARM.drive.block_x       # (-33, 33) [DESIGN] the roll frame's extent along N: its underside 3.0 mm above the upper arm's flat top (host z -11)
@@ -196,6 +205,11 @@ ELBOW_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS
 WRIST_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _COUPLER.pulley_screw_len)         # 22.1, 4x M4x45
 YAW_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _YAW_COUPLER.hub.pulley_screw_len)   # 20.1, 4x M4x40
 PULLEY_NUTS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * nut_volume(M4_NUT)                                              # 3.0, 4x M4 (each joint)
+# the wrist idler's axle and its nut (parts/joints/wrist_idler_{screw,nut}, UNPLACED; lib/forearm/params.py IdlerParams), likewise
+from lib.forearm.params import IdlerParams as _IdlerParams  # noqa: E402
+
+WRIST_IDLER_SCREW_MASS_G = STEEL_DENSITY * shcs_volume(_IdlerParams().screw, _IdlerParams().screw_len)   # 5.0, M5x20
+WRIST_IDLER_NUT_MASS_G = STEEL_DENSITY * nut_volume(_IdlerParams().nut)                                   # 1.3, M5
 
 # The base motor mount's screws and nuts (parts/base/base_motor_mount_{screws,nuts}): the same estimate
 from lib.base.layout import joint_bolt_points as _joint_bolt_points  # noqa: E402
@@ -219,12 +233,12 @@ BASE_YAW_LIMIT_DEG = 175.0        # [ESTIMATE] symmetric +/- range; j1_coupler (
 # fork at -154, the forearm stays off the base and the shoulder to -140 at any elbow)
 SHOULDER_PITCH_LIMITS_DEG = (-120.0, 67.0)   # [DESIGN]
 # the 4.5:1 elbow belt: (lower, upper); the lower - the forearm lifted back - kept where the old roll housing set it:
-# the roll drive's frame (round about the elbow axis, its tower ELBOW_ROLL_OFFSET over it) is 8.4 mm off the elbow motor,
-# which stands on the same side of the upper arm, there and comes within 1 mm of its board only at -58.1 deg
-# (tests/forearm/test_roll_drive.py) - the forearm, the wrist and the gripper stay 1 mm off the upper arm to -62 at any
-# roll and wrist pitch (tests/test_sweeps.py), so the frame sets the room to lift further (docs/open_issues.md); the
-# upper kept at 90 (the gripper, the wrist pitched up, reaches j1_coupler at 104.8): SHOULDER_PITCH_LIMITS_DEG was set
-# over this range
+# the roll drive's frame (round about the elbow axis, its tower ELBOW_ROLL_OFFSET over it) is 4.6 mm off the elbow
+# motor's board, which stands on the same side of the upper arm, there and comes within 1 mm of it at -51.0 deg
+# (tests/forearm/test_roll_drive.py) - the forearm, the wrist and the gripper stay 1 mm off the upper arm at any roll
+# and wrist pitch there (tests/test_sweeps.py), so the frame sets the room to lift further (docs/open_issues.md); the
+# upper kept at 90 (the gripper, the wrist pitched up, stays 1 mm off j1_coupler there - tests/test_sweeps.py):
+# SHOULDER_PITCH_LIMITS_DEG was set over this range
 ELBOW_PITCH_LIMITS_DEG = (-47.0, 90.0)   # [DESIGN]
 # the GT2 belt at wrist_link: (lower, upper), set 4 deg short of where the wrist body's back corners met j2_link's web
 # (-109 / +74.5); since the web was necked they reach it at -116.9 / +82.6 at any roll (tests/test_sweeps.py) - the

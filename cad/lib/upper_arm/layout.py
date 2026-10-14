@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 
+from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, pulley_circle
 from lib.upper_arm.params import DEFAULT, UpperArmConfig
 
 
@@ -45,3 +46,9 @@ def arm_slide(cfg: UpperArmConfig = DEFAULT) -> float:
         return 0.0
     a = cfg.arm
     return a.y_outer - a.motor_plate_t - a.motor_screw.head_h - cfg.elbow.y0
+
+
+def elbow_belt_loop(cfg: UpperArmConfig = DEFAULT) -> list[tuple[float, float, float]]:
+    """The elbow belt's loop (lib/belts.py) in the belt's own frame: the elbow motor's 20T on the origin (the pad's
+    axis), the elbow 90T on +X (the elbow axis, ELBOW_MOTOR_CENTRES on)."""
+    return [pulley_circle(0.0, 0.0, GT2_PULLEY_20T_TEETH), pulley_circle(cfg.slab.elbow_x - cfg.pad.x, 0.0, GT2_PULLEY_90T_TEETH)]

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from cadgen import build123d as bd
 
+from lib.belts import GT2_IDLER_WIDTH
 from lib.forearm.layout import (
     disc_bolt_angles,
     disc_bolt_points,
@@ -12,9 +13,10 @@ from lib.forearm.layout import (
     neck_tangent,
     screw_channel,
     screws_under_the_web,
+    wrist_idler_xy,
 )
 from lib.forearm.params import DEFAULT, ForearmConfig
-from lib.geom import align_min, cylinder, hex_prism, single_solid, through
+from lib.geom import align_min, cylinder, hex_circumdiameter, hex_prism, single_solid, through
 from lib.units import NUDGE
 
 
@@ -100,6 +102,23 @@ def elbow_disc(cfg: ForearmConfig = DEFAULT):
     return body
 
 
+def idler_mount(body, cfg: ForearmConfig = DEFAULT):
+    """`body` with the wrist idler's rib under the web (from the idler's top face up to the web), the M5 slot through
+    the rib and the web, and the nut's channel (flats + nut_fit wide across x) from nut_floor up through the top face -
+    each centred on the idler's axis and running +/- travel along y."""
+    w, i = cfg.web, cfg.idler
+    xi, yi = wrist_idler_xy(cfg)
+    z_rib = cfg.roll_end.wrist_belt_z + GT2_IDLER_WIDTH / 2.0     # the idler's top face
+
+    def along_y(length: float, width: float, z0: float, height: float):
+        return bd.Pos(xi, yi, z0) * bd.Rot(0.0, 0.0, 90.0) * bd.extrude(bd.SlotCenterToCenter(length, width), amount=height)
+
+    body = body + along_y(2.0 * i.travel, i.rib_w, z_rib, w.z0 - z_rib + NUDGE)
+    body = body - along_y(2.0 * i.travel, i.slot_w, z_rib - NUDGE, w.z1 - z_rib + 2.0 * NUDGE)
+    channel = (i.nut.af + i.nut_fit, 2.0 * i.travel + hex_circumdiameter(i.nut.af) + i.nut_fit)
+    return body - slab(channel[0], channel[1], w.z1 - i.nut_floor + NUDGE, xi, i.nut_floor, yi)
+
+
 def build_link(cfg: ForearmConfig = DEFAULT):
     w, d, b, s = cfg.web, cfg.disc, cfg.boss, cfg.slot
     if cfg.roll:
@@ -134,6 +153,10 @@ def build_link(cfg: ForearmConfig = DEFAULT):
     body = body - stadium(s.centre_x[1] - s.centre_x[0], s.centre_w, w.thickness + 2 * NUDGE, sum(s.centre_x) / 2.0, w.z0 - NUDGE)
     for sy in (s.side_y, -s.side_y):
         body = body - bd.Pos(0.0, sy, 0.0) * stadium(s.side_x[1] - s.side_x[0], s.side_w, w.thickness + 2 * NUDGE, sum(s.side_x) / 2.0, w.z0 - NUDGE)
+    # the wrist belt's idler (IdlerParams): the rib under the web its top bears on, the axle's slot through both, the
+    # nut's channel down from the top face - all along y over the idler's travel
+    if cfg.roll and cfg.idler is not None:
+        body = idler_mount(body, cfg)
     # the locating sockets, both faces (LEGACY)
     if cfg.sockets is not None:
         top, bottom = link_socket_points(cfg)

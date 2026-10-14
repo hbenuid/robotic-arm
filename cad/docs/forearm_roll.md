@@ -9,9 +9,9 @@ Numbers below name the constants; the values live in `lib/forearm/params.py`.
 ## 0. Specifications at a glance
 | item | value | where |
 |---|---|---|
-| joint | `forearm_roll`, revolute, `elbow_link → forearm_link`; axis along the forearm through the wrist centre, `ELBOW_ROLL_OFFSET` (60.9, the roll belt's centre distance) across the elbow axis - **an elbow offset: the two axes do not cross** -, `FOREARM_ROLL_AXIS_Z` along N from `j2_link`'s origin | `robot/frames.py`, `lib/placements.py SHIFTS` |
+| joint | `forearm_roll`, revolute, `elbow_link → forearm_link`; axis along the forearm through the wrist centre, `ELBOW_ROLL_OFFSET` (the roll belt's centre distance) across the elbow axis - **an elbow offset: the two axes do not cross** -, `FOREARM_ROLL_AXIS_Z` along N from `j2_link`'s origin | `robot/frames.py`, `lib/placements.py SHIFTS` |
 | range | ±`FOREARM_ROLL_LIMIT_DEG`, 2° short of the printed hard stop (a lug on the shaft's flange, a post on the frame's tower, in the bay behind bearing 1 - straight-sided, `stop_deg_width` wide at their outer radius, so they meet before 180° − `stop_deg_width`: `tests/test_sweeps.py` measures where); home sensor modelled (`ky003_hall_sensor`), not placed | `lib/params.py`, `RollDriveParams stop_*` |
-| drive | NEMA 17 × 40 mm + MKS SERVO42D (a 4th CAN id) **on the elbow axis**, GT2 20T on the motor, the 90T ring **integral to the pulley - the output**, **4.5 : 1**, 240-2GT × 6 mm belt (`roll_belt`, centre distance 60.9 = the offset) | `RollDriveParams`, `lib/belts.py` |
+| drive | NEMA 17 × 40 mm + MKS SERVO42D (a 4th CAN id) **on the elbow axis**, GT2 20T on the motor, the 90T ring **integral to the pulley - the output**, **4.5 : 1**, a stock 2GT × 6 mm belt (`roll_belt`, its centre distance = the offset) | `RollDriveParams`, `lib/belts.py` |
 | torque | ≈ 1.1–1.8 N·m at the roll vs ≈ 0.9 N·m worst-case static load | §2 |
 | bearings | 2× 6806-2RS (30 × 42 × 7, the arm's other joints' bearing), **back to back on a 2 mm lip** in the frame's tower, bearing 2 right under the ring (seats Ø42.15, journals Ø30.3) | `RollDriveParams bearing_*`, `lib/bearings.py` |
 | pulley (rotor, PETG - the output) | the integral flanged 90T ring on a Ø44 core, its rear flange turning `run_gap` over the frame's bearing boss; its hub through bearing 2 to the lip's middle, the Ø33 shoulder on bearing 2's inner ring; the Ø39.7 spigot in the forearm wall's recess - the wall bolts onto the ring's face (4× M3 on Ø31 into nuts in the core); the rotor clamp's 4× M3 heads sunk in its front face | `forearm_roll_pulley` |
@@ -104,7 +104,7 @@ Ratio 90 / 20 = 4.5 (`FOREARM_ROLL_RATIO`) → ≈ 1.1–1.8 N·m at the roll fr
 static load of ≈ 0.9 N·m (forearm horizontal, wrist 90°, roll 90°, ≈ 0.5 kg wrist + gripper + 0.2 kg payload). The
 shoulder (`cycloidal_drive.md` §7) carries ≈ 0.35 kg more beyond the elbow. The elbow's torque path is the elbow 90T →
 4× M4 into captive nuts → the frame → the tower → the 6806 pair → the rotor → the forearm wall: the frame carries the
-forearm's load 60.9 mm across from the elbow flange, and the pair, 9 mm apart centre to centre, the forearm's bending
+forearm's load `ELBOW_ROLL_OFFSET` across from the elbow flange, and the pair, 9 mm apart centre to centre, the forearm's bending
 moment (`docs/open_issues.md`: check both on the print).
 
 ## 3. Fits and printing
@@ -136,7 +136,7 @@ the shaft rear face down (its nut pockets open to the bed).
    end onto the pulley's.
 5. Four M3 nuts into the shaft's flange pockets from its rear face (in the bay); 4× M3 × 35 (the rotor clamp) from the
    pulley's front face, the heads into its counterbores, through both hubs into the nuts: the rotor turns, whole.
-6. The 240-2GT belt round the ring; the motor into the pocket from the +N face onto the plate (4× M3 through the
+6. The roll belt (`roll_belt`) round the ring; the motor into the pocket from the +N face onto the plate (4× M3 through the
    tension slots from the front face, connector toward +N), the 20T on its shaft with its teeth level with the ring,
    in the belt; slide the motor down the slots to tension.
 7. Cables from the forearm through the bore, out into the bay and on toward the upper arm.
@@ -164,13 +164,14 @@ tangent to the wrist boss) with two gussets — `j2_link`'s DEFAULT build (`lib/
 sits where the stock wrist belt (`WRIST_BELT_LENGTH`, a multipack length: no idler, its slots tension it) puts it
 (`J2_MOTOR_SLIDE_X`), its slots (`J2_MOTOR_SLIDE_RANGE`) ending with its body `motor_wall_clear` off the wall screws'
 heads; its connector faces sideways - away from the elbow axis, the forearm turned - with `plug_clearance` of room
-beside it (`tests/forearm/test_roll_end.py`).
+beside it (`tests/forearm/test_roll_end.py`). `IdlerParams` keeps an idler under the web for a belt that would need one
+(the idler and its M5 axle and nut modelled, UNPLACED: `tests/forearm/test_wrist_idler.py`).
 
 ## 6. Not modelled / to confirm
-`docs/open_issues.md`: the belts, the home sensor's mount (the modelled `ky003_hall_sensor`'s chip beside the stop
+`docs/open_issues.md`: the home sensor's mount (the modelled `ky003_hall_sensor`'s chip beside the stop
 post on the tower, a magnet in the stop lug, to the MKS board's limit input), the cable route through the Ø18 bore; the
 elbow belt's plane; the 6806 seats' PETG fit; the frame's print orientation and its flex under the forearm's load, the
-6806 pair's tilt play at the roll, the rotor clamp's thin walls and its nut pockets' fit; `t20_hub`, the belt lengths,
+6806 pair's tilt play at the roll, the rotor clamp's thin walls and its nut pockets' fit; `t20_hub`,
 the limit and the printed stop's strength; the elbow offset in a future IK; the room to lift the forearm further back
 than −47°; the roll motor's **CAN id** (`software/control/src/config.py` has no row for it: it names fewer boards than
 the arm carries).

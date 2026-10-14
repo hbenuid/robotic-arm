@@ -44,8 +44,9 @@ def test_default_layout():
     assert DEFAULT.web == replace(LEGACY.web, wrist_x=LEGACY.web.wrist_x + SHORTENING) and SHORTENING > 0.0
     assert DEFAULT.boss == LEGACY.boss
     assert DEFAULT.sockets is None and LEGACY.sockets is not None and link_socket_points(DEFAULT) == ([], [])
-    # the slide: set by the belt, inside the (shortened) slots, the body clear of the wall screws' heads at the slots'
-    # wall end (the connector turned sideways: test_wrist_motor_plug_room_is_clear) and of the boss
+    # the slide: set by the belt (no idler: tests/forearm/test_wrist_idler.py), inside the (shortened) slots, the body
+    # clear of the wall screws' heads at the slots' wall end (the connector turned sideways:
+    # test_wrist_motor_plug_room_is_clear) and of the boss
     x = DEFAULT.motor_x
     assert math.isclose(closed_belt_length(x - DEFAULT.web.wrist_x, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH), R.wrist_belt, abs_tol=1e-6)
     lo, hi = DEFAULT.slide_range

@@ -29,7 +29,7 @@ from lib.bearings import (
 )
 from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_FACE_Y, GT2_PULLEY_90T_TEETH, centre_distance
 from lib.cycloidal.params import MotorParams
-from lib.fasteners import M3_CLEAR, M3_NUT, M3_SHCS, M4_CLEAR, M4_NUT, NutSize, ShcsSize
+from lib.fasteners import M3_CLEAR, M3_NUT, M3_SHCS, M4_CLEAR, M4_NUT, M5_CLEAR, M5_NUT, M5_SHCS, NutSize, ShcsSize
 from lib.motors import MKS_SERVO42D_STACK, MKS_SERVO42D_W, MOTOR_40
 
 
@@ -144,6 +144,31 @@ class RollEndParams:
     motor_wall_clear: float = 4.5         # [DESIGN] the wrist motor's body this far off the wall screws' heads at the slots' wall end
     wrist_belt: int = 280                 # [DESIGN] 280-2GT closed belt, 6 mm (a multipack length, lib/belts.py STANDARD_2GT_LENGTHS):
     #                                       sets the motor slide (motor_x) - no idler, the slots tension it
+    wrist_belt_z: float = 0.3             # [REFERENCE] the wrist belt's mid-plane: the wrist 90T's tooth band (its re-seated pose, lib/mounts.py
+    #                                       gt2_pulley_90t#4), under the web - the motor's 20T level with it (tests/test_mounts.py)
+
+
+@dataclass(frozen=True)
+class IdlerParams:
+    """[DESIGN] A wrist belt idler (parts/joints/gt2_idler_20t, a smooth GT2 idler on the belt's back), for a stock
+    wrist_belt longer than the open loop from the motor: the idler pushes the run leaving the motor's 20T into the loop
+    until the belt fits (lib/belts.py idler_on_run, lib/forearm/layout.py wrist_idler_xy). It hangs under the web, level
+    with the belt, on an M5 SHCS up from under it (parts/joints/wrist_idler_screw) through a rib under the web - the
+    idler's top bears on it - and a slot through both, along y: +/- travel to tension the belt; into the nut
+    (parts/joints/wrist_idler_nut) held flats-on in a channel down from the web's top face, under the motor's edge (the
+    nut slides with the screw and cannot turn: the screw is turned from below). DEFAULT has none (its motor sits at the
+    belt's centre distance); the idler, its axle and its nut stay modelled, UNPLACED."""
+
+    along: float = 24.0                   # its axis this far from the motor's along the belt's run toward the wrist: the nut's channel
+    #                                       between the motor's pilot slot and the wrist boss
+    travel: float = 3.0                   # +/- along y (the push): the slot, the rib and the channel
+    rib_w: float = 7.0                    # [ESTIMATE] the rib's width: the idler's bearing inner ring only (the seller's drawing shows no bearing)
+    slot_w: float = M5_CLEAR              # the axle's slot through the rib and the web
+    screw: ShcsSize = M5_SHCS             # [DATASHEET] ISO 4762 M5 (parts/joints/wrist_idler_screw)
+    screw_len: float = 20.0               # [DESIGN] M5 x 20: from its head under the idler through the nut, its tip under the motor's face
+    nut: NutSize = M5_NUT                 # [DATASHEET] ISO 4032 M5 (parts/joints/wrist_idler_nut)
+    nut_fit: float = 0.2                  # [DESIGN] the channel: the nut's flats + this
+    nut_floor: float = 11.0               # [DESIGN] the channel's floor (the nut's bearing face): 3 of web under it
 
 
 ROLL_FRAME_R = 33.0   # [DESIGN] the roll frame's half width round the roll axis: its underside (3.0 over the upper arm's flat top),
@@ -270,8 +295,8 @@ class RollDriveParams:
     motor_spin_deg: float = 90.0          # [DESIGN] about the motor axis: the connector (the motor frame's -Y) -> module +X
     board_w: float = MKS_SERVO42D_W       # [REFERENCE] 43: the MKS board's cover square (in the pocket with the motor)
     board_stack: float = MKS_SERVO42D_STACK   # [REFERENCE] 14.1: the board behind the motor's rear face
-    roll_belt: int = 240                  # [ESTIMATE] 240-2GT closed belt, 6 mm: sets the centre distance (60.9) = the elbow axis' depth under the
-    #                                       roll axis (ForearmConfig.elbow_offset - the arm's elbow offset)
+    roll_belt: int = 280                  # [DESIGN] 280-2GT closed belt, 6 mm (a multipack length, lib/belts.py STANDARD_2GT_LENGTHS): sets the centre
+    #                                       distance (81.97) = the elbow axis' depth under the roll axis (ForearmConfig.elbow_offset - the arm's elbow offset)
     t20_hub: float = 10.95                # [REFERENCE] vendor 20T: its tooth band's centre from its hub face (7.45 + 3.5)
     t20_len: float = 14.45                # [REFERENCE] vendor 20T: hub face .. its far end
     pulley_lift: float = 3.5              # [DESIGN] the 20T's hub face before the plate's front face: its far end at the motor shaft's tip, the tip
@@ -314,7 +339,8 @@ class ForearmConfig:
     sockets: SocketParams | None = SocketParams()   # None: no locating sockets
     roll_end: RollEndParams = RollEndParams()
     drive: RollDriveParams = RollDriveParams()
-    elbow_offset: float = 0.0              # the roll axis' distance from the elbow axis along +Y (j2_link's, the module's): 0 = they cross
+    idler: IdlerParams | None = None       # the wrist belt's idler under the web (None: no idler, its rib, slot and nut channel)
+    elbow_offset: float = 0.0             # the roll axis' distance from the elbow axis along +Y (j2_link's, the module's): 0 = they cross
     #                                        (lib/placements.py SHIFTS moves the forearm and all beyond it across by DEFAULT - LEGACY)
     roll_turn_deg: float = 0.0             # the forearm and everything beyond it turned this far about the roll axis (j2_link's +X) from the
     #                                        capture (lib/placements.py TURNS); the roll drive keeps its pose
@@ -327,20 +353,21 @@ SHORTENING = 40.0   # [DESIGN] the wrist pivot this much nearer the elbow than t
 _WEB = replace(LEGACY.web, wrist_x=LEGACY.web.wrist_x + SHORTENING)
 
 # The forearm with the roll joint, SHORTENING shorter: the wall replaces the elbow disc; the wrist-pitch motor sits
-# where the stock belt puts it (lib/belts.py) - near the wall, its connector turned sideways (lib/mounts.py) -, the
-# slots shorten to the slide round it (>= 4 mm before the wall; its wall end the body motor_wall_clear off the wall
+# where the stock belt puts it (lib/belts.py) - near the wall, its connector turned sideways (lib/mounts.py), no idler -,
+# the slots shorten to the slide round it (>= 4 mm before the wall; its wall end the body motor_wall_clear off the wall
 # screws' heads, its other end the same travel back: the belt goes on there, the slots tension it) and the central
-# one widens to pass the Ø22 pilot boss; the caps are gone, so are the sockets that located them. The roll axis runs elbow_offset above the elbow axis - the roll motor sits on the elbow axis, the
-# roll belt's centre distance under the ring - so the forearm and everything beyond it sit that far across (+Y). The
-# forearm is turned half a turn about the roll axis from the capture: the wrist-pitch motor on the upper arm's side of
-# the roll axis, the wrist belt on the other, the wrist and the gripper rolled with it; the wall's 4 bolts at 0 / 90 /
-# 180 / 270 deg take the roll pulley as before.
+# one widens to pass the Ø22 pilot boss; the caps are gone, so are the sockets that located them. The roll axis runs
+# elbow_offset above the elbow axis - the roll motor sits on the elbow axis, the roll belt's centre distance under the
+# ring - so the forearm and everything beyond it sit that far across (+Y). The forearm is turned half a turn about the
+# roll axis from the capture: the wrist-pitch motor on the upper arm's side of the roll axis, the wrist belt on the
+# other, the wrist and the gripper rolled with it; the wall's 4 bolts at 0 / 90 / 180 / 270 deg take the roll pulley as
+# before.
 DEFAULT = replace(
     LEGACY, roll=True, web=_WEB,
     motor_x=_WEB.wrist_x + centre_distance(RollEndParams().wrist_belt, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH),   # -88.03
     slide_range=(-94.0, -84.5),
     slot=SlotParams(centre_w=22.3, centre_x=(-100.5, -78.5), side_x=(-109.5, -69.0)),
     sockets=None,
-    elbow_offset=RollDriveParams().centre_distance,   # [DESIGN] 60.9: the 240-2GT roll belt's centre distance
+    elbow_offset=RollDriveParams().centre_distance,   # [DESIGN] 81.97: the roll belt's centre distance
     roll_turn_deg=180.0,                              # [DESIGN] the wrist-pitch motor on the other side of the forearm
 )

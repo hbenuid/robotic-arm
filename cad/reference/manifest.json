@@ -33,17 +33,17 @@
     -47.584
    ],
    "bbox_size": [
-    64.467,
+    53.567,
     72.1,
     95.167
    ],
-   "bytes": 254838,
+   "bytes": 270146,
    "file": "native/base_motor_mount.step",
    "kind": "native",
    "origin": "native",
    "product": "base_motor_mount - the base_yaw motor's MOUNT: a box round the motor, bolted to the base's end across the plane",
-   "sha256": "75effbc977acbdf3c624de21d5c2afa9d59a4c6f32476f172befd74a9a4c0e41",
-   "solid_volume": 57246.053,
+   "sha256": "4f6a55411bcf1203b47e14b1e2228c662d934aa96833275fa1b917fd0ebedb54",
+   "solid_volume": 52094.084,
    "solids": 1,
    "source": "lib/base/body.py:build_motor_mount(DEFAULT)",
    "units": "mm"
@@ -530,21 +530,21 @@
   "forearm_roll_block": {
    "bbox_min": [
     -50.0,
-    -105.926,
+    -126.972,
     -45.0
    ],
    "bbox_size": [
     83.0,
-    138.926,
+    159.972,
     82.6
    ],
-   "bytes": 334460,
+   "bytes": 329269,
    "file": "native/forearm_roll_block.step",
    "kind": "native",
    "origin": "native",
    "product": "forearm_roll_block - the forearm roll drive's STATOR - the roll frame (the elbow block), which is also the elbow's output",
-   "sha256": "4334bb098e10b7b4febf6a56ea41b44207d08a56b24d4285e932ef6db8472127",
-   "solid_volume": 326642.594,
+   "sha256": "2a0b45581f434da720abe26e615e29b0670300035155661eb2a81aa4f6b6af33",
+   "solid_volume": 393483.106,
    "solids": 1,
    "source": "lib/forearm/roll.py:build_block(DEFAULT)",
    "units": "mm"

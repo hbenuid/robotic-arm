@@ -11,7 +11,7 @@ def test_every_part_is_counted_once_per_occurrence():
     counts = bom.part_counts()
     leaves = (len(arm.OCCURRENCES) - len(arm.MODULES) + len(gripper.OCCURRENCES) + len(cycloidal_drive.OCCURRENCES)
               + len(forearm_roll_drive.OCCURRENCES))
-    assert sum(counts.values()) == leaves == 85
+    assert sum(counts.values()) == leaves == 91
     assert set(counts) == set(parts.names()) - set(parts.unplaced()), "a part under parts/ that no assembly places (or the reverse)"
     assert not set(counts) & set(parts.unplaced()), "a placed part still declares UNPLACED - drop it (and its EXTRAS row)"
     assert sum(bom.part_counts("gripper").values()) == len(gripper.OCCURRENCES)
@@ -25,7 +25,7 @@ def test_the_two_lists_partition_the_parts_by_the_cots_flag():
     assert not {r["part"] for r in printed} & {r["part"] for r in bought}
     assert {r["part"] for r in bought} == (set(R.COTS) | {n for n in R.NO_REFERENCE if parts.bought(n)}) - set(parts.unplaced())
     assert (len(printed), sum(r["qty"] for r in printed)) == (29, 36)
-    assert (len(bought), sum(bom.part_counts()[r["part"]] for r in bought)) == (29, 49)
+    assert (len(bought), sum(bom.part_counts()[r["part"]] for r in bought)) == (33, 55)
     assert {r["state"] for r in printed} <= {"wrapper", "parametric", "designed", "native", "measured", "no reference"}
     assert {r["part"] for r in printed if r["state"] == "no reference"} == {n for n in R.NO_REFERENCE if not parts.bought(n)}
     assert {r["part"] for r in printed if r["state"] == "designed"} == set(R.DESIGNED) - set(parts.unplaced())
@@ -49,7 +49,7 @@ def test_drive_buy_list_matches_the_drive_config():
 
 def test_roll_drive_lists_follow_its_rows():
     pieces = {r["part"]: r["pieces"] for r in bom.buy_rows("forearm_roll_drive")}
-    assert pieces == {"bearing_6806": 2, "nema17_40mm": 1, "mks_servo42d": 1, "gt2_pulley_20t": 1}
+    assert pieces == {"bearing_6806": 2, "nema17_40mm": 1, "mks_servo42d": 1, "gt2_pulley_20t": 1, "forearm_roll_belt": 1}
     states = {r["part"]: r["state"] for r in bom.print_rows("forearm_roll_drive")}
     assert states == {"forearm_roll_block": "native", "forearm_roll_shaft": "native", "forearm_roll_pulley": "no reference"}
     assert set(R.NATIVE) - {"base_motor_mount"} == {"forearm_roll_block", "forearm_roll_shaft"}

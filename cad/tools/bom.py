@@ -23,13 +23,7 @@ from assemblies._occurrences import module_rows
 from lib import reference as R
 from lib.forearm import DEFAULT as _FOREARM
 from lib.forearm import clamp_points
-from lib.params import (
-    CYCLOIDAL_HUB_BOLT_COUNT,
-    CYCLOIDAL_HUB_BOLT_DIA,
-    ELBOW_BELT_LENGTH,
-    FOREARM_ROLL_BELT_LENGTH,
-    WRIST_BELT_LENGTH,
-)
+from lib.params import CYCLOIDAL_HUB_BOLT_COUNT, CYCLOIDAL_HUB_BOLT_DIA
 from lib.yaw_coupler import DEFAULT as _YAW_COUPLER
 
 # (module or None = the arm itself, what to order, pieces, why it is not modelled). Seeded with what
@@ -46,11 +40,7 @@ EXTRAS = [
      "heads in the leg's foot's counterbores, along the drive's axis into the nuts in the disc (lib/yaw_coupler/params.py ForkParams)"),
     (None, "M4 hex nut (ISO 4032) - in the slots in j1_coupler's disc, under j1_motor_leg's post, for its screws", 2,
      "dropped into the slots from the disc's top face before the motor leg slides on"),
-    (None, f"{ELBOW_BELT_LENGTH}-2GT closed belt, 6 mm - the elbow belt (20T on the elbow motor, 90T at the elbow)", 1,
-     "belts are not modelled; the length sets the motor's place on j1_link (lib/upper_arm/params.py ELBOW_MOTOR_CENTRES)"),
     ("cycloidal_drive", "bearing grease", 1, "the output pins are a greased sliding fit through the discs"),
-    ("forearm_roll_drive", f"{FOREARM_ROLL_BELT_LENGTH}-2GT closed belt, 6 mm - the roll belt (90T ring on the pulley, 20T on the motor)", 1,
-     "belts are not modelled; the length sets the motor's centre distance (lib/forearm/params.py roll_belt, [ESTIMATE])"),
     ("forearm_roll_drive", (f"M3 x {_FOREARM.drive.clamp_screw_len:g} socket head cap screw (ISO 4762) - the roll rotor's clamp: the pulley "
                             "through both 6806s into the shaft"), len(clamp_points(_FOREARM)),
      "heads in the pulley's front-face counterbores, into the nuts in the shaft's flange; tighten before the forearm wall goes on"),
@@ -66,11 +56,9 @@ EXTRAS = [
     ("forearm_roll_drive", "home sensor: KY-003 hall module (A3144, 5 V) on the frame's tower beside the stop post + a magnet in the shaft's stop lug", 1,
      ("modelled, not placed yet (parts/joints/ky003_hall_sensor, UNPLACED); the magnet is not modelled; wired to the MKS "
       "board's limit input (docs/open_issues.md); the hard stop itself is the printed lug + post")),
-    (None, f"{WRIST_BELT_LENGTH}-2GT closed belt, 6 mm - the wrist-pitch belt (90T at the wrist, 20T on the forearm motor)", 1,
-     "belts are not modelled; the length (a multipack one, no idler) sets J2_MOTOR_SLIDE_X (lib/forearm/params.py wrist_belt)"),
     (None, parts.load("gt2_idler_20t").PURCHASE_SPEC, 1,
      ("modelled, not placed yet (parts/joints/gt2_idler_20t, UNPLACED): which belt it serves - and so how many - is "
-      "open (docs/open_issues.md); sold in 5-packs")),
+      "open (docs/open_issues.md); the wrist belt needs none; sold in 5-packs")),
 ]
 
 
