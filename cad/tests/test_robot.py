@@ -221,7 +221,7 @@ def _stl_facts(path: pathlib.Path) -> dict:
     """Enclosed volume (mm^3), its centroid and the vertex bbox of a binary STL."""
     data = path.read_bytes()
     n = int(np.frombuffer(data, "<u4", count=1, offset=80)[0])
-    assert len(data) == 84 + 50 * n, f"{path.name}: not a binary STL (an LFS pointer? git lfs pull)"
+    assert len(data) == 84 + 50 * n, f"{path.name}: not a binary STL"
     record = np.dtype([("normal", "<f4", 3), ("v", "<f4", (3, 3)), ("attr", "<u2")])
     tris = np.frombuffer(data, record, count=n, offset=84)["v"].astype(np.float64)
     v0, v1, v2 = tris[:, 0], tris[:, 1], tris[:, 2]
