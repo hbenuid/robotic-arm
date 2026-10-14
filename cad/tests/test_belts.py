@@ -1,4 +1,4 @@
-"""The GT2 belts (parts/base/yaw_belt, parts/joints/{elbow,forearm_roll,wrist}_belt): purchased parts with no reference
+"""The GT2 belts (parts/base/yaw_belt, parts/joints/{elbow,forearm_roll,wrist}_belt, parts/wrist/wrist_roll_belt): purchased parts with no reference
 (lib/reference.py NO_REFERENCE) - THIS file locks their numbers (the modelled band's volume and bounding box, measured
 on the build and written in) and what they are: each a stock length, its loop that long along its pitch line
 (lib/belts.py), the band on its pulleys' tooth tips (and an idler's seat, were one in its loop); in the arm, each loop's
@@ -10,6 +10,7 @@ from build123d import Location
 
 import parts
 from assemblies import forearm_roll_drive as ROLL
+from assemblies import wrist_roll_drive as WRIST_ROLL
 from lib import placements as P
 from lib import reference as R
 from lib.belts import (
@@ -36,6 +37,7 @@ LOCKS = {
     "elbow_belt": ("joints", 1059.849, (-6.742198, -29.02389, -3.0), (113.766087, 58.04778, 6.0)),
     "forearm_roll_belt": ("joints", 1059.849, (-6.742198, -29.02389, -3.0), (109.766087, 58.04778, 6.0)),
     "wrist_belt": ("joints", 1059.993, (-6.742198, -29.02389, -3.0), (117.737762, 58.04778, 6.0)),
+    "wrist_roll_belt": ("wrist", 598.693, (-6.742198, -13.108395, -3.0), (68.433487, 26.216791, 6.0)),
 }
 # a mounted belt -> its loop's circles' pulleys (key, its band centre in its own frame: the 20T's along +X, a 90T's /
 # 120T's along +Y)
@@ -114,6 +116,18 @@ def test_the_roll_belt_runs_on_its_pulleys():
     assert (ring.X, ring.Y, ring.Z) == pytest.approx((0.0, 0.0, ROLL.S["z_ring_mid"]), abs=1e-6)
     idler = (Location(rows["gt2_idler_20t"]) * Location((0.0, 0.0, GT2_IDLER_WIDTH / 2.0))).position   # a bare position row
     assert r2 < 0.0 and ((belt * Location((x2, y2, 0.0))).position - idler).length < 1e-6
+
+
+def test_the_wrist_roll_belt_runs_on_its_pulleys():
+    """In the wrist roll module: the belt's row on the pancake's axis at the 40T's mid-plane, its 20T's band there, the
+    40T (on the roll axis) on the loop's second circle - no idler: the stock length at the pancake slots' middle."""
+    rows = {part: frame for part, _, frame in WRIST_ROLL.OCCURRENCES}
+    belt, t20 = to_location(rows["wrist_roll_belt"]), to_location(rows["gt2_pulley_20t"])
+    (x0, y0, _), (x1, y1, _) = parts.load("wrist_roll_belt").loop()
+    assert ((belt * Location((x0, y0, 0.0))).position - (t20 * Location((T20_HUB, 0.0, 0.0))).position).length < 1e-6
+    ring = (belt * Location((x1, y1, 0.0))).position
+    assert (ring.X, ring.Y, ring.Z) == pytest.approx((0.0, 0.0, WRIST_ROLL.S["z_ring_mid"]), abs=1e-6)
+    assert belt_length(parts.load("wrist_roll_belt").loop()) == pytest.approx(parts.load("wrist_roll_belt").LENGTH, abs=0.01)
 
 
 @pytest.mark.slow

@@ -21,7 +21,7 @@ on the pad face at the bolt-pattern centre; the spin about the axis (90 deg step
 only sets which way the connector faces [ESTIMATE]. The board's frame is the motor's, shifted to the rear face.
 
 A MODULE mount (ModuleMount, MODULE_MOUNTS) does the same for a designed module (assemblies/<module>.py,
-lib/reference.py DESIGNED_MODULES) whose pose no SolidWorks node gives - the forearm roll drive: its frame in
+lib/reference.py DESIGNED_MODULES) whose pose no SolidWorks node gives - the forearm and wrist roll drives: its frame in
 the host's frame puts the module's +Z on the joint axis it drives; mount_placements.py writes a
 `kind: "module", designed: true` record with a `mount` block (no solids / volume: the module's own
 totals are its EXPECTED), listed under both `designed_modules` and `mounted`, which world_rows() expands
@@ -107,6 +107,7 @@ from lib.params import (
 )
 from lib.upper_arm.layout import elbow_idler_z
 from lib.upper_arm.params import DEFAULT as _UPPER_ARM
+from lib.wrist.layout import module_frame_in_host as wrist_module_frame_in_host
 from lib.yaw_coupler.params import DEFAULT as _YAW_COUPLER
 
 MOTOR_48, MOTOR_40, BOARD = "nema17_48mm", "nema17_40mm", "mks_servo42d"
@@ -328,6 +329,10 @@ class ModuleMount:
     frame: tuple    # ((x, y, z), (rx, ry, rz)) in the host's frame BEFORE any lib/placements.py TURNS (the module drives the
     #                 joint a turn is about, so it keeps its pose: tools/reference/mount_placements.py) - lib.datum.to_location(frame)
     note: str = ""
+    turned: bool = False   # True: in the host's frame AFTER its TURNS - a module beyond the turned link (the wrist roll drive),
+    #                        which turns with its host like every record there
+
+
 
 
 MODULE_MOUNTS: tuple[ModuleMount, ...] = (
@@ -336,6 +341,12 @@ MODULE_MOUNTS: tuple[ModuleMount, ...] = (
                 "+Z = host -X toward the wrist, module +X = host +Z (N), +Y = up in the swing plane (the motor side); the block IS the "
                 "elbow coupler: its stub turns in j1_link's bore and the elbow 90T bolts into it (j3_coupler#1 retired, "
                 "lib/placements.py RETIRED)"),
+    ModuleMount("wrist_roll_drive#1", "wrist_roll_drive", "wrist_link#1", "wrist_roll", wrist_module_frame_in_host(),
+                "the wrist roll drive on wrist_link's roll axis R' (WRIST_ROLL_OFFSET along +Y from the pitch axis, "
+                "WRIST_ROLL_AXIS_H over the plate's coupler face): module +Z = host +X toward the gripper, module +X = host -Z "
+                "(away from the plate), +Y = host +Y (from the pancake toward R'); wrist_link IS its frame (the stator), the "
+                "pancake and its 20T replace nema17_pancake#1 / gt2_pulley_20t#1 (lib/placements.py RETIRED); beyond the "
+                "forearm's turn, it turns with wrist_link", turned=True),
 )
 MODULES_BY_KEY: dict[str, ModuleMount] = {m.key: m for m in MODULE_MOUNTS}
 

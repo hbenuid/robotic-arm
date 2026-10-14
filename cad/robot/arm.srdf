@@ -7,7 +7,7 @@
   shoulder_pitch, elbow_pitch, forearm_roll, wrist_pitch, wrist_roll (revolute), jaw_a (prismatic), jaw_b
   (prismatic, mimics jaw_a), tool0_joint (fixed).
   Group "arm" = the serial chain base_link -> tool0 (base_yaw, shoulder_pitch, elbow_pitch, forearm_roll,
-  wrist_pitch, wrist_roll - six revolute joints, the last three concurrent at the wrist centre); group
+  wrist_pitch, wrist_roll - six revolute joints; an elbow and a wrist offset: the last three are not concurrent); group
   "gripper" = the jaw joint(s) and links; end effector "gripper" hangs off wrist_roll_link (the jaws' parent).
   Group states: radians / metres. "home" = the capture pose (all joints 0, see the URDF ledger: the
   SolidWorks capture with the forearm turned half a turn about its roll axis, the gripper rolled with it);

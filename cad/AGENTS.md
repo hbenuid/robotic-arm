@@ -24,7 +24,7 @@ The toolchain, its pins and upgrades: `docs/toolchain.md`.
 | touch the URDF / links / inertials | `robot/AGENTS.md` | Recipe C steps 7–9 |
 | print list, buy list, STLs to print | `parts/AGENTS.md` Printed vs. bought | — |
 | bump cadgen / build123d / OCP / Python, or a pull changed `pyproject.toml` / `uv.lock` | `docs/toolchain.md` | — |
-| work on the cycloidal drive / the forearm roll drive | `docs/cycloidal_drive.md` / `docs/forearm_roll.md` | — |
+| work on the cycloidal drive / the forearm roll drive / the wrist roll drive | `docs/cycloidal_drive.md` / `docs/forearm_roll.md` / `docs/wrist_roll.md` | — |
 | make a design choice (how far to shrink a part, which fastener, what moves) | Design choices (below) | the preview first, then Recipe C |
 | know what is unsettled (fit problems, estimates, unmodelled hardware) | `docs/open_issues.md` | add / remove rows as you go |
 | something behaves oddly | Gotchas (below), then the Gotchas of the folder's AGENTS.md and `docs/toolchain.md` | — |

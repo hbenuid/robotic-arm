@@ -65,14 +65,17 @@ ELBOW_ORIGIN = P.shifted("j3_coupler#1", _J2_CAPTURE_ORIGIN)   # the retired j3_
 #                                                        ELBOW_ROLL_OFFSET across from it)
 _WRIST_PITCH_CAPTURE_ORIGIN = (-283.37, 393.63, 35.33)   # [REFERENCE] j3_coupler#2's capture origin (on the wrist_pitch axis)
 WRIST_PITCH_ORIGIN = P.shifted("j3_coupler#2", _WRIST_PITCH_CAPTURE_ORIGIN)
-WRIST_ROLL_ORIGIN = P.shifted("gt2_pulley_20t#1", (-379.355, 448.22, 24.495))   # 20T pulley origin, on the pancake shaft axis
+# the wrist roll: the SolidWorks 20T's origin on the pancake's shaft axis (the capture's roll axis), moved with the gripper
+# onto the wrist roll drive's axis R' - the gripper's shift (lib/placements.py SHIFTS) carries the capture's roll axis
+# onto R', WRIST_ROLL_OFFSET across the pitch axis and WRIST_ROLL_AXIS_H over the plate (a wrist offset)
+WRIST_ROLL_ORIGIN = P.shifted("gripper#1", (-379.355, 448.22, 24.495))   # [REFERENCE] gt2_pulley_20t#1's capture origin
 JAW_A_ORIGIN = P.shifted("gripper#1", (-453.626, 429.287, 26.317))   # gripper_slider#1 world bbox centre
 JAW_B_ORIGIN = P.shifted("gripper#1", (-400.194, 521.876, 28.815))   # gripper_slider#2 world bbox centre
 TOOL0_ORIGIN = P.shifted("gripper#1", (-480.567, 506.452, 31.03))    # midpoint between the two finger ends
 # ... and so do the directions beyond the forearm roll: the wrist_pitch axis (the capture's N turned: -N), the wrist roll
 # axis and the jaw travel
 WRIST_PITCH_AXIS = P.turned("j3_coupler#2", N)
-WRIST_ROLL_AXIS = P.turned("gt2_pulley_20t#1", F)
+WRIST_ROLL_AXIS = P.turned("gripper#1", F)
 JAW_TRAVEL = P.turned("gripper#1", PJ)
 # The link directions (only their direction is used - lib/datum.py frame() projects them; the SHIFTS are parallel):
 SHOULDER_TO_ELBOW_INPLANE = (-141.353693, 155.039565, 9.127651)   # [REFERENCE] upper_arm_link long direction: the capture's
@@ -81,12 +84,13 @@ ELBOW_TO_WRIST_INPLANE = (-142.926, 153.58, 9.229)   # [REFERENCE] forearm_link 
 #                                                       perpendicular to N): the roll axis' direction (the forearm moved across it, parallel)
 
 # --- the forearm roll (the 6th joint, assemblies/forearm_roll_drive.py): its axis runs along the forearm through the
-# WRIST CENTRE - the point where the wrist_pitch and wrist_roll axes meet (the wrist_roll origin sits
-# WRIST_CENTRE_ALONG_N back along N from WRIST_PITCH_ORIGIN: the URDF's wrist_roll z = -0.016998) - so the last three
-# axes stay concurrent (a spherical wrist). It passes FOREARM_ROLL_AXIS_Z along N from j2_link's capture origin (42 - 17
-# = 25, lib/params.py) - ELBOW_ROLL_OFFSET across the elbow axis (the roll motor sits on the elbow axis): an elbow
-# offset, the axes no longer cross; tests/forearm/test_roll_drive.py checks WRIST_CENTRE lies on it. The forearm's turn
-# is about this axis: its points stay put.
+# WRIST CENTRE - the point on the wrist_pitch axis WRIST_CENTRE_ALONG_N back along N from WRIST_PITCH_ORIGIN, where the
+# SolidWorks wrist_roll axis met it. Since the wrist roll drive (assemblies/wrist_roll_drive.py) the wrist_roll axis
+# runs WRIST_ROLL_OFFSET across the pitch axis and WRIST_ROLL_AXIS_H over the wrist plate - a wrist offset: the last
+# three axes are no longer concurrent (an IK must be numeric). The forearm roll's axis passes FOREARM_ROLL_AXIS_Z along N
+# from j2_link's capture origin (42 - 17 = 25, lib/params.py) - ELBOW_ROLL_OFFSET across the elbow axis (the roll motor
+# sits on the elbow axis): an elbow offset, the axes no longer cross; tests/forearm/test_roll_drive.py checks
+# WRIST_CENTRE lies on it and on the pitch axis. The forearm's turn is about this axis: its points stay put.
 WRIST_CENTRE_ALONG_N = -17.0                 # [REFERENCE] see above: along the capture's N (the wrist_pitch axis before the turn)
 _len = math.sqrt(sum(v * v for v in ELBOW_TO_WRIST_INPLANE))
 FOREARM_ROLL_AXIS = tuple(v / _len for v in ELBOW_TO_WRIST_INPLANE)                    # unit, elbow -> wrist
@@ -131,12 +135,15 @@ LINKS: dict[str, list[str]] = {
     # bearing pair sits in its wrist boss (lib/mounts.py)
     "forearm_link": ["forearm_roll_drive#1:rotor", "j2_link#1", "bearing_6806#5", "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3",
                      "gt2_pulley_20t#4", "wrist_belt#1"],
-    # likewise the wrist 90T pulley, its M4 screws + nuts and the J3-coupler ride with the wrist-pitch body  [ASSUMPTION]
-    "wrist_pitch_link": ["wrist_link#1", "gripper_clamp_bracket#1", "nema17_pancake#1", "gt2_pulley_90t#4",
-                         "wrist_pulley_screws#1", "wrist_pulley_nuts#1", "j3_coupler#2"],
-    # the gripper base rolls with the 20T pulley; the servo crank linkage is merged in  [ASSUMPTION]
+    # likewise the wrist 90T pulley, its M4 screws + nuts and the J3-coupler ride with the wrist-pitch body  [ASSUMPTION];
+    # wrist_link IS the wrist roll drive's frame, which carries the drive's STATOR - the pancake (on the pitch axis) and
+    # its 20T, both bearings, the belt (assemblies/wrist_roll_drive.py BODIES)
+    "wrist_pitch_link": ["wrist_link#1", "gt2_pulley_90t#4", "wrist_pulley_screws#1", "wrist_pulley_nuts#1", "j3_coupler#2",
+                         "wrist_roll_drive#1:stator"],
+    # the drive's ROTOR - the pulley (its 40T band, the roll's output, the gripper's connector bolted to its face) and the
+    # shaft clamped to it - carries the gripper base; the servo crank linkage is merged in  [ASSUMPTION]
     "wrist_roll_link": [
-        "gt2_pulley_20t#1", "gripper_j3_connector#1", "servo_holder#1", "mg996r_servo#1", "mg996r_horn#1",
+        "wrist_roll_drive#1:rotor", "gripper_j3_connector#1", "servo_holder#1", "mg996r_servo#1", "mg996r_horn#1",
         "gripper_cover#1", "gripper_rail_6mm#1", "gripper_rail_6mm#2",
         "gripper_link_1#1", "gripper_link_2#1", "gripper_link_1#2", "gripper_link_2#2",
     ],
@@ -195,7 +202,9 @@ JOINTS: list[Joint] = [
                 "j2_link's web (lib/mounts.py) [which CAN id: unconfirmed]"),
     Joint("wrist_roll", "revolute", "wrist_pitch_link", "wrist_roll_link", WRIST_ROLL_ORIGIN, WRIST_ROLL_AXIS, JAW_TRAVEL,
           -PARAMS.WRIST_ROLL_LIMIT_DEG * DEG, PARAMS.WRIST_ROLL_LIMIT_DEG * DEG, PARAMS.WRIST_EFFORT_NM, PARAMS.WRIST_VELOCITY_RAD_S,
-          notes="NEMA17 pancake + 20T pulley; NOT driven by software/control/src/config.py yet"),
+          notes="the wrist roll drive (assemblies/wrist_roll_drive.py, WRIST_ROLL_RATIO 2): the gripper's connector bolts to its "
+                "pulley's face; belt-driven by the NEMA17 pancake on the wrist_pitch axis, WRIST_ROLL_OFFSET across (a wrist "
+                "offset); the printed hard stop 2 deg past +/- WRIST_ROLL_LIMIT_DEG; NOT driven by software/control/src/config.py yet"),
     Joint("jaw_a", "prismatic", "wrist_roll_link", "jaw_a_link", JAW_A_ORIGIN, tuple(-v for v in JAW_TRAVEL), WRIST_ROLL_AXIS,
           -PARAMS.JAW_TRAVEL_MM * 1e-3, PARAMS.JAW_TRAVEL_MM * 1e-3, PARAMS.JAW_EFFORT_N, PARAMS.JAW_VELOCITY_M_S,
           notes="positive = opening (jaw A moves away from jaw B); MG996R crank"),

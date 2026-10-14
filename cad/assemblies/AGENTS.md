@@ -1,7 +1,7 @@
 # assemblies/ — occurrences, placements, modules
 
 Loads when you work in `assemblies/`. `arm.py` (the whole arm), `gripper.py` (the gripper module, placed from
-`placements.json`), `cycloidal_drive.py` / `forearm_roll_drive.py` (code-driven modules), `_occurrences.py` (the
+`placements.json`), `cycloidal_drive.py` / `forearm_roll_drive.py` / `wrist_roll_drive.py` (code-driven modules), `_occurrences.py` (the
 placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every output STEP is git-ignored.
 
 ## Assembly & placements
@@ -9,9 +9,10 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   every occurrence: `rel` (to its parent node) and `world`, as `Location(position, rotation_xyz_deg)`; keys
   `"<part>#<n>"`, module `"gripper#1"`. Treat it as an immutable input. An occurrence the DESIGN has replaced is
   **retired** in `lib/placements.py RETIRED` (`j3_coupler#1`: the roll drive's block took over its
-  features, `docs/forearm_roll.md`; `gt2_pulley_90t#1` / `#2`: re-seated 3 mm out as mounts, below): its record stays, `P.keys()` leaves it out (`retired=True` lists the file), no table / link / total
+  features, `docs/forearm_roll.md`; `gt2_pulley_90t#1` / `#2`: re-seated 3 mm out as mounts, below; `nema17_pancake#1` /
+  `gt2_pulley_20t#1`: the wrist roll drive carries them, `docs/wrist_roll.md`): its record stays, `P.keys()` leaves it out (`retired=True` lists the file), no table / link / total
   claims it (`test_placements.py`, `test_assembly.py`, `test_robot.py` follow `keys()`). A PART the design drops
-  entirely (the link caps `j1_cap` / `j2_cap_1` / `j2_cap_2`) cannot be retired - its part module,
+  entirely (the link caps `j1_cap` / `j2_cap_1` / `j2_cap_2`, `gripper_clamp_bracket`) cannot be retired - its part module,
   `CUSTOM` row and manifest entry go, and a record must name a known part -: its SolidWorks product goes into
   `lib/reference.py SKIPPED_PRODUCTS` and `tools/reference/mount_placements.py` (the merge mode, no monolith) moves the
   record to `skipped` as the entry an extraction writes (pose, totals, reason) - `test_skipped_nodes_are_the_dropped_products`.
@@ -24,7 +25,9 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   (`j1_coupler`) moves the drive, `j1_link` and all beyond along its +X (N) by `ForkParams.face_x` −
   `CAPTURE_FACE_X`, the middle of the discs onto the base_yaw axis; the forearm roll drive (`forearm_roll_drive`, anchor
   `j2_link#1`) moves `j2_link#1` and all beyond along j2_link's +Y by `ForearmConfig.elbow_offset` (its roll axis across
-  the elbow axis, the elbow's own records - the retired `j3_coupler#1` / `gt2_pulley_90t#1` - staying) — the file stays as
+  the elbow axis, the elbow's own records - the retired `j3_coupler#1` / `gt2_pulley_90t#1` - staying); the wrist roll drive
+  (`wrist_roll_drive`, anchor `wrist_link#1`) moves the gripper onto its roll axis - along wrist_link to the roll pulley's
+  face, across it by the drive's centre distance, off its plate (`normal_z`) to the axis' height — the file stays as
   extracted, `location()` applies the shift
   (`to_location()` / `to_record()` stay raw: the writers and the round-trip test use them). A `LinkShift` lists the
   TOP-LEVEL records beyond its link, the retired hosts included; a module's children follow its world pose (their
@@ -40,7 +43,8 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   `P.shifted()` and its directions with `P.turned()`; a turned record's bbox in `tests/totals.py` is its placed build's.
   The mounted records hosted on turned ones follow (`mount_placements.py`); a `ModuleMount` resolves its host
   UNTURNED - the roll drive drives the joint the turn is about, so it keeps its pose (its frame, its tests and
-  `tests/forearm/helpers.py in_drive_frame()` are in `j2_link`'s frame before the turn). `test_placements.py
+  `tests/forearm/helpers.py in_drive_frame()` are in `j2_link`'s frame before the turn) - unless it is `turned`: the
+  wrist roll drive, beyond the turned link, turns with `wrist_link#1`. `test_placements.py
   test_the_forearm_turns_about_its_roll_axis` locks it.
 - **Mounted occurrences** (`lib/mounts.py`): the base's bolt-on motor mount (`base_motor_mount#1`, a box round the motor bolted to
   the base's end - designed here, at identity on `base#1` - with its 4x M4 screws + nuts, `base_motor_mount_screws#1` /
@@ -95,15 +99,15 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   --hide '#<label>'` (label refs; STEP input only, any `--display`, not with `--focus`; the viewer has no `?hide=`
   parameter). A second model would be the only way to get a STEP (a model takes no parameters, the freshness gate
   sees no environment variable).
-- **Printed vs. bought is a colour in every assembly, never a second model.** `gripper.py`, `cycloidal_drive.py` and
-  `forearm_roll_drive.py` declare a `TINT` (their printed parts' colour, reused by `arm.py MODULE_TINTS`) and pass it to
+- **Printed vs. bought is a colour in every assembly, never a second model.** `gripper.py`, `cycloidal_drive.py`,
+  `forearm_roll_drive.py` and `wrist_roll_drive.py` declare a `TINT` (their printed parts' colour, reused by `arm.py MODULE_TINTS`) and pass it to
   `occurrence_children(…, tint=)` / `located_children(…, tint=)`; `_tint_parts` gives every purchased part
   (`parts.bought()`) the one `_occurrences.BOUGHT_TINT` grey instead. Verified by snapshot: a tint set on a
   module's DIRECT linked children does reach its STEP, so the modules stay linked (the arm's inline copies predate
   that finding and were left alone). Separate make/buy models were tried and removed as duplicates — one STEP per
   assembly. A purchased item that is **not modelled** (the
   drive's hub bolts + captive nuts, the yoke's motor leg's screws + nuts, the roll drive's motor M3 screws, its rotor clamp's and the forearm wall's
-  M3 screws + nuts) lives only in
+  M3 screws + nuts, the wrist roll drive's pancake M3 screws, its rotor clamp's and the gripper connector's M3 screws + nuts) lives only in
   `tools/bom.py EXTRAS` — it is on the buy list and absent from the model, the totals and the inertials; model it as a
   COTS pattern part (`cycloidal_housing_bolts` is the pattern, `elbow_pulley_screws` a native mounted one,
   `yaw_pulley_screws` a mounted one with no reference file, the belts (`parts/*/<joint>_belt.py`, a smooth band round
@@ -111,9 +115,10 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   for a new one, `parts/AGENTS.md` Part states → *no reference*) to change that.
 - `arm.py GROUPS` buckets the occurrences into the component tree
   `arm → base_link/shoulder_link/upper_arm_link/elbow_link/forearm_link/wrist_pitch_link/wrist` — the
-  `robot/frames.py LINKS` partition with the three modules kept whole (`wrist` = wrist_roll_link + jaw
+  `robot/frames.py LINKS` partition with the four modules kept whole (`wrist` = wrist_roll_link + jaw
   links; the cycloidal drive under `shoulder_link` although `LINKS` puts its rotor body in
-  `upper_arm_link`; the forearm roll drive under `elbow_link` although its rotor is in `forearm_link`) — via
+  `upper_arm_link`; the forearm roll drive under `elbow_link` although its rotor is in `forearm_link`; the wrist roll
+  drive under `wrist_pitch_link` although its rotor is in `wrist_roll_link`) — via
   `_occurrences.grouped_children()`, which tints each subtree's **printed** parts with its group's color
   (`MODULE_TINTS` overrides for the modules), every **purchased** part — inside the modules too — with the one
   `_occurrences.BOUGHT_TINT` grey (`_tint_parts`: grey always means bought, so no group / module tint may reuse it;
@@ -131,7 +136,8 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   `MODULE_MOUNTS` (`ModuleMount(key, module, host, joint, frame)`: module +Z ON the joint's axis, checked) and
   `mount_placements.py` writes its record (`kind: module, designed: true`, a `mount` block, no totals — listed
   under `designed_modules` AND `mounted`) — `assemblies/forearm_roll_drive.py` is that case (rows from
-  `lib/forearm stack_positions`, key `forearm_roll_drive#1`). `world_rows(key)` expands a designed-module key into
+  `lib/forearm stack_positions`, key `forearm_roll_drive#1`), and `assemblies/wrist_roll_drive.py` (rows from
+  `lib/wrist stack_positions`, key `wrist_roll_drive#1`; its frame is its host, `wrist_link`, not a row). `world_rows(key)` expands a designed-module key into
   world-placed parts for links and inertials; `BODIES` names the drive's rigid bodies (`stator` / `rotor`) and a
   `:<body>` key suffix (`"cycloidal_drive#1:rotor"`, `_occurrences.split_key`) selects one. Keep `EXPECTED`
   (whole module + `bodies`) in step with the geometry (`totals()` / `totals(body)`).

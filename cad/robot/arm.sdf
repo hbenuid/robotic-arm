@@ -141,11 +141,11 @@
     <link name="wrist_pitch_link">
       <pose relative_to="wrist_pitch">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.04509 0.000072 -0.015393 0 0 0</pose>
-        <mass>0.41432</mass>
+        <pose>0.001808 -0.01014 0.013469 0 0 0</pose>
+        <mass>0.461415</mass>
         <inertia>
-          <ixx>1.944365e-04</ixx><ixy>-5.986097e-07</ixy><ixz>2.001746e-05</ixz>
-          <iyy>6.590431e-04</iyy><iyz>4.273051e-08</iyz><izz>6.908884e-04</izz>
+          <ixx>5.621855e-04</ixx><ixy>2.259150e-05</ixy><ixz>-1.217701e-05</ixz>
+          <iyy>3.418316e-04</iyy><iyz>6.019000e-05</iyz><izz>3.579496e-04</izz>
         </inertia>
       </inertial>
       <visual name="wrist_pitch_link_visual">
@@ -168,11 +168,11 @@
     <link name="wrist_roll_link">
       <pose relative_to="wrist_roll">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.000012 -0.008443 0.053776 0 0 0</pose>
-        <mass>0.16664</mass>
+        <pose>0.000009 -0.0071 0.043588 0 0 0</pose>
+        <mass>0.198512</mass>
         <inertia>
-          <ixx>1.259933e-04</ixx><ixy>-1.888508e-09</ixy><ixz>3.634024e-08</ixz>
-          <iyy>1.739991e-04</iyy><iyz>1.495119e-05</iyz><izz>1.150603e-04</izz>
+          <ixx>2.447815e-04</ixx><ixy>4.685240e-09</ixy><ixz>6.452327e-09</ixz>
+          <iyy>2.907905e-04</iyy><iyz>2.913768e-05</iyz><izz>1.235591e-04</izz>
         </inertia>
       </inertial>
       <visual name="wrist_roll_link_visual">
@@ -304,19 +304,19 @@
       <axis>
         <xyz expressed_in="wrist_pitch">0 0 1</xyz>
         <limit>
-          <lower>-1.832596</lower><upper>1.22173</upper>
+          <lower>-1.308997</lower><upper>2.181662</upper>
           <effort>5</effort><velocity>1</velocity>
         </limit>
       </axis>
     </joint>
     <joint name="wrist_roll" type="revolute">
-      <pose relative_to="wrist_pitch_link">0.089643 0.000005 -0.016998 -1.570799 -0.055534 -1.570796</pose>
+      <pose relative_to="wrist_pitch_link">0.026448 -0.048578 0.027003 -1.570799 -0.055534 -1.570796</pose>
       <parent>wrist_pitch_link</parent>
       <child>wrist_roll_link</child>
       <axis>
         <xyz expressed_in="wrist_roll">0 0 1</xyz>
         <limit>
-          <lower>-3.141593</lower><upper>3.141593</upper>
+          <lower>-2.897247</lower><upper>2.897247</upper>
           <effort>1</effort><velocity>2</velocity>
         </limit>
       </axis>

@@ -1,7 +1,7 @@
 """The arm's print list and buy list, generated from the one make/buy label every part carries
 (parts.bought(name): the module declares COTS = True -> bought, anything else -> printed).
 
-    ./cadtool python tools/bom.py [--module cycloidal_drive|forearm_roll_drive|gripper] [--md | --json]
+    ./cadtool python tools/bom.py [--module cycloidal_drive|forearm_roll_drive|gripper|wrist_roll_drive] [--md | --json]
 
 Counts come from the assembly tables - assemblies/arm.py OCCURRENCES, a module row expanding into that
 module's own OCCURRENCES (arm.MODULES) - so a part added to an assembly shows up here with no
@@ -24,6 +24,8 @@ from lib import reference as R
 from lib.forearm import DEFAULT as _FOREARM
 from lib.forearm import clamp_points
 from lib.params import CYCLOIDAL_HUB_BOLT_COUNT, CYCLOIDAL_HUB_BOLT_DIA
+from lib.wrist import DEFAULT as _WRIST
+from lib.wrist.layout import clamp_points as wrist_clamp_points
 from lib.yaw_coupler import DEFAULT as _YAW_COUPLER
 
 # (module or None = the arm itself, what to order, pieces, why it is not modelled). Seeded with what
@@ -56,6 +58,18 @@ EXTRAS = [
     ("forearm_roll_drive", "home sensor: KY-003 hall module (A3144, 5 V) on the frame's tower beside the stop post + a magnet in the shaft's stop lug", 1,
      ("modelled, not placed yet (parts/joints/ky003_hall_sensor, UNPLACED); the magnet is not modelled; wired to the MKS "
       "board's limit input (docs/open_issues.md); the hard stop itself is the printed lug + post")),
+    ("wrist_roll_drive", (f"M3 x {_WRIST.roll.clamp_screw_len:g} socket head cap screw (ISO 4762) - the wrist roll rotor's clamp: the "
+                          "pulley through both 6806s into the shaft"), len(wrist_clamp_points(_WRIST)),
+     "heads in the pulley face's counterbores, into the nuts in the shaft's flange; tighten before the gripper's connector goes on"),
+    ("wrist_roll_drive", "M3 hex nut (ISO 4032) - in the wrist roll shaft's flange, for the rotor clamp", len(wrist_clamp_points(_WRIST)),
+     "pushed into the pockets from the shaft's rear face (in wrist_link's bay)"),
+    ("wrist_roll_drive", (f"M3 x {_WRIST.connector.bolt_len:g} socket head cap screw (ISO 4762) - gripper_j3_connector onto the wrist roll "
+                          "pulley's face"), len(_WRIST.connector.bolt_deg),
+     "heads between the connector's flange and its plate, a key past the plate's flats; bolt it on before the servo holder and the cover"),
+    ("wrist_roll_drive", "M3 hex nut (ISO 4032) - in the wrist roll pulley's face, for the connector's screws", len(_WRIST.connector.bolt_deg),
+     "pushed into the pockets from the face's rim"),
+    ("wrist_roll_drive", "M3 x 8 socket head cap screw - the wrist-roll pancake to wrist_link's plate", 4,
+     "through the plate's tension slots into the pancake's tapped holes"),
 ]
 
 

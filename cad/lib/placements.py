@@ -34,6 +34,7 @@ from lib.forearm.params import LEGACY as _FOREARM_LEGACY
 from lib.upper_arm.layout import arm_slide as _arm_slide
 from lib.upper_arm.params import DEFAULT as _UPPER_ARM
 from lib.upper_arm.params import LEGACY as _UPPER_ARM_LEGACY
+from lib.wrist.layout import stack_positions as _wrist_stack
 from lib.wrist.params import DEFAULT as _WRIST
 from lib.wrist.params import LEGACY as _WRIST_LEGACY
 from lib.yaw_coupler.params import CAPTURE_FACE_X as _CAPTURE_FACE_X
@@ -63,7 +64,9 @@ OCCURRENCES: dict[str, dict] = {o["key"]: o for o in DATA["occurrences"]}
 #                 and stub (lib/forearm/params.py RollDriveParams) and the elbow 90T bolts straight into the block.
 #   gt2_pulley_90t#1 / #2  the elbow's and the wrist's 90T: SolidWorks mated each hub flat onto its coupler's stub, where
 #                 the lower 6806 has no room; lib/mounts.py re-seats them as gt2_pulley_90t#3 / #4 (PULLEY_SEAT_SHIFT).
-RETIRED: tuple[str, ...] = ("j3_coupler#1", "gt2_pulley_90t#1", "gt2_pulley_90t#2")
+#   nema17_pancake#1 / gt2_pulley_20t#1  the wrist-roll pancake and its 20T on the SolidWorks roll axis: since 2026-10-14
+#                 the wrist roll drive (assemblies/wrist_roll_drive.py) carries both, the pancake on the wrist-pitch axis.
+RETIRED: tuple[str, ...] = ("j3_coupler#1", "gt2_pulley_90t#1", "gt2_pulley_90t#2", "nema17_pancake#1", "gt2_pulley_20t#1")
 
 
 @dataclass(frozen=True)
@@ -89,7 +92,10 @@ class LinkShift:
     normal_z: float = 0.0
 
 
-_BEYOND_WRIST_ROLL = ("gripper_clamp_bracket#1", "nema17_pancake#1", "gt2_pulley_20t#1", "gripper#1")
+_BEYOND_WRIST_ROLL = ("nema17_pancake#1", "gt2_pulley_20t#1", "gripper#1")
+# The gripper's connector, its plate's hub-side face (y plate_t) along wrist_link#1's +X in the capture: the station the
+# wrist roll drive's LinkShift moves the gripper from (tests/test_placements.py checks it against the records)
+_CONNECTOR_CAPTURE_X = 79.65   # [REFERENCE] the connector's origin (its plate's servo-side face) at 84.15, less the 4.5 plate
 _BEYOND_WRIST_PITCH = ("gt2_pulley_90t#2", "j3_coupler#2", "wrist_link#1") + _BEYOND_WRIST_ROLL
 _BEYOND_ELBOW = ("j2_link#1", "j3_coupler#1", "gt2_pulley_90t#1") + _BEYOND_WRIST_PITCH
 
@@ -102,9 +108,14 @@ SHIFTS: tuple[LinkShift, ...] = (
     # the forearm: its wrist_pitch axis at web.wrist_x from the elbow axis (along -X)
     LinkShift("j2_link", "j2_link#1", (0.680611117, -0.731325624, -0.043947003),   # [REFERENCE]
               _FOREARM.web.wrist_x - _FOREARM_LEGACY.web.wrist_x, _BEYOND_WRIST_PITCH),
-    # the wrist body: the gripper bracket bolts to its end face at tower.block_x1
-    LinkShift("wrist_link", "wrist_link#1", (-0.865418936, 0.497923174, 0.055880029),   # [REFERENCE]
-              _WRIST.tower.block_x1 - _WRIST_LEGACY.tower.block_x1, _BEYOND_WRIST_ROLL),
+    # the wrist roll drive: the gripper rolls about R', WristRollParams.centre_distance across from the pitch axis (along
+    # wrist_link's +Y) on the plate's underside (axis_h over its coupler face: along its -Z from the SolidWorks roll
+    # axis at EndFaceParams.axis_z), its connector bolted to the roll pulley's face (along its +X)
+    LinkShift("wrist_roll_drive", "wrist_link#1", (-0.865418936, 0.497923174, 0.055880029),   # [REFERENCE]
+              _WRIST.plate.pitch_x + _wrist_stack(_WRIST)["z_connector"] - _CONNECTOR_CAPTURE_X, _BEYOND_WRIST_ROLL,
+              (0.49688842, 0.867221144, -0.032084044), _WRIST.roll.centre_distance,   # [REFERENCE] its +Y
+              (-0.064435732, 0.0, -0.997921859),   # [REFERENCE] its +Z
+              (_WRIST.plate.thickness - _WRIST.roll.axis_h) - _WRIST_LEGACY.end_face.axis_z),
     # the yoke: the drive held with the middle of its discs on the base_yaw axis (lib/yaw_coupler/params.py
     # ForkParams.face_x, the capture's CAPTURE_FACE_X), so the drive, the upper arm and everything beyond move along its
     # +X - the drive's axis, N

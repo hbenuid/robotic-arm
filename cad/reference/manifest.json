@@ -571,27 +571,6 @@
    "source": "lib/forearm/roll.py:build_shaft(DEFAULT)",
    "units": "mm"
   },
-  "gripper_clamp_bracket": {
-   "bbox_min": [
-    -66.2,
-    -32.001,
-    -43.2
-   ],
-   "bbox_size": [
-    26.2,
-    64.0,
-    43.2
-   ],
-   "bytes": 106221,
-   "file": "solidworks/gripper_clamp_bracket.step",
-   "kind": "custom",
-   "product": "brack for hand cmap",
-   "sha256": "d6a8775816cef9211919a151fa99b9fd5d2ff5a9836edb668734bf0174813055",
-   "solid_volume": 11175.598,
-   "solids": 1,
-   "source": "step/brack for hand cmap.STEP",
-   "units": "mm"
-  },
   "gripper_cover": {
    "bbox_min": [
     -22.0,

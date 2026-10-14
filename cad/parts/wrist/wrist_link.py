@@ -1,13 +1,18 @@
-"""wrist_link - the wrist body, the wrist_pitch stage (parametric build123d, lib/wrist/link.py build_wrist_link(cfg), in
-the SolidWorks part frame - origin on the plate's underside at the centre of the tower's round end, +Z up through the
-plate; the pitch axis along Z at x -45.446, the roll axis along X at z 22).
+"""wrist_link - the wrist body, the wrist_pitch stage and the wrist roll drive's frame (parametric build123d,
+lib/wrist/link.py build_wrist_link(cfg), in the SolidWorks part frame - origin on the plate's underside at the centre
+of the SolidWorks tower's round end, +Z up through the plate; the pitch axis along Z at x -45.446).
 
-A 5 mm plate with a round end on each axis: j3_coupler#2's seat on the pitch axis (a Ø29.9 hole clear of the wrist
-90T's nuts, the flange's 4x M4 at r 35 on the axes into hex nut pockets in the underside); on the other end the
-tower - an R39 wall round an R30 bore, a wedge under a slope inside it (its edge with the bore filleted R10), cheeks
-either side of a 42 mm slot, a 64 x 42 block out to the end face gripper_clamp_bracket bolts to (the NEMA 17
-pattern's 4x M3 and the bracket's 4x M4, drilled along X through the whole part). Every number: lib/wrist/params.py
-(WristConfig; measured on the reference 2026-09-27).
+DEFAULT (what the part builds): a 5 mm plate, its round end on the pitch axis j3_coupler#2's seat (a Ø29.9 hole clear
+of the wrist 90T's nuts, the flange's 4x M4 at r 35 on the axes into hex nut pockets in the underside), and on its
+underside - the side away from the forearm - the wrist roll drive's frame (lib/wrist/roll.py build_frame,
+WristRollParams; docs/wrist_roll.md): one body round the pancake, centred on the pitch axis in its pocket (open on the
+far face, its front wall the plate it bolts to, slotted for the belt's tension), and the tower round the roll axis
+beside it, WRIST_ROLL_OFFSET across (the 6806 pair on a lip, the bearing boss, the shaft's bay with the hard stop's
+post); the coupler nut the tower covers drops in through a hex channel from the bay. LEGACY (REFERENCE_BUILD) is the
+SolidWorks part: the plate with a round end on each axis, the tower on the other - an R39 wall round an R30 bore, a
+wedge under a slope inside it (its edge with the bore filleted R10), cheeks either side of a 42 mm slot, a 64 x 42
+block out to the end face the dropped gripper_clamp_bracket bolted to. Every number: lib/wrist/params.py (WristConfig;
+the SolidWorks part measured on the reference 2026-09-27).
 
 SolidWorks product: 'final component arm qwrist movement'
 Source export:      step/final component arm qwrist movement.STEP
@@ -16,7 +21,7 @@ Reference: mm units, 1 solid(s), volume 113601.4 mm^3,
 In the arm: x1 (wrist_link#1).
 
 Conversion: build_wrist_link(LEGACY) reproduces the reference (REFERENCE_BUILD - tests/test_reference_match.py); the
-model builds DEFAULT (= LEGACY; tests/wrist/ lock the features).
+model builds DEFAULT (tests/wrist/ lock the features).
 """
 import pathlib
 
