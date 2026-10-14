@@ -5,7 +5,7 @@ stepper motors over CAN.
 
 ```
 cad/                 the mechanical design: parametric build123d code, its own uv project; also the robot
-                     description (URDF / SRDF / SDF). STEP / STL inputs are Git LFS objects
+                     description (URDF / SRDF / SDF)
 software/
   control/           the motor-control CLI (CAN via a CANable / slcan adapter), its own uv project
   firmware/          microcontroller firmware (archived STM32 test projects)
@@ -17,7 +17,7 @@ repo keeps both sides in one commit.
 
 ## Getting started
 
-- **CAD** — install `git-lfs` before cloning, then [`cad/README.md`](cad/README.md): setup, `./cadtool`, the layout.
+- **CAD** — [`cad/README.md`](cad/README.md): setup, `./cadtool`, the layout.
 - **Motor control** — [`software/control/README.md`](software/control/README.md): hardware, setup (Windows /
   macOS / Linux), configuring the motors, running the CLI.
 - **Firmware** — [`software/firmware/README.md`](software/firmware/README.md).

@@ -11,7 +11,7 @@ the designed module, the skipped products, the `placements.json` schema — is `
   export gets no reference file (`parts/AGENTS.md` Part states: *no reference*, *measured*); when a task touches a
   check measured against a reference, say what code or test could replace it; start no migration of the existing
   references unasked.
-- Every file here is an **immutable input**, committed as a Git LFS object: its checksum is locked in `manifest.json`
+- Every file here is an **immutable input**, committed: its checksum is locked in `manifest.json`
   (whose `file` field names its origin directory; `lib.reference.path_of(name)` resolves it) and
   `tests/test_reference_match.py` compares every converted part against it. Regenerate with its tool — never edit.
 - Each import tool owns its own `manifest.json` entries and keeps the others'; all build them with `lib/manifest.py`
@@ -36,7 +36,7 @@ the designed module, the skipped products, the `placements.json` schema — is `
   `import_solidworks.py` leaves them alone).
 - Native parts (manifest `origin: native`, kind `native` / `cots`): `./cadtool python tools/reference/import_native.py
   [--only NAME] [--force]` builds the part in-process and exports it to `native/<name>.step` (build123d's STEP header
-  carries the time: written once, on one machine, committed as LFS; `--force` accepts a changed design); both other
+  carries the time: written once, on one machine, committed; `--force` accepts a changed design); both other
   tools keep the entries.
 
 ## Recipe E — a new SolidWorks / vendor export arrives

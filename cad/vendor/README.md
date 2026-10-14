@@ -1,7 +1,7 @@
 # vendor/ — purchased-part STEP files (current best model per part)
 
 **Purpose:** the geometry each `COTS = True` part in `parts/<group>/` imports. Committed via the
-`!/cad/vendor/*.step` gitignore exception as Git LFS objects (not regenerable from Python). Unlike
+`!/cad/vendor/*.step` gitignore exception (not regenerable from Python). Unlike
 `reference/solidworks/<name>.step` (or `reference/cycloidal/<name>.step` for the drive) — the
 immutable re-export that fixes each purchased part's **frame and size** — a vendor file may be
 **replaced** by a better catalog model; the manifest

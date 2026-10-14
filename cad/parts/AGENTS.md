@@ -54,7 +54,7 @@ Custom parts declare `REFERENCE = NAME` (`None` for a *measured* one), `CONVERTE
   way; a NEW part designed here keeps none: *no reference*, below):
   designed in this repo with no external origin, so the reference is the build the author ACCEPTED —
   `reference/native/<name>.step` + the manifest entry, written by `./cadtool python
-  tools/reference/import_native.py [--only NAME] [--force]` ONCE on one machine (LFS, like a vendor file;
+  tools/reference/import_native.py [--only NAME] [--force]` ONCE on one machine (committed, like a vendor file;
   `--force` = accept a changed design; `import_solidworks.py` keeps the entries). The reference-match test then
   locks the geometry like every other part's; a native part's own tests hold its design intent.
   Re-accepting an existing native part's changed design: `tools/reference/import_native.py --only NAME --force`, then

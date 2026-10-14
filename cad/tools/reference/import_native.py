@@ -13,8 +13,8 @@ SolidWorks parts get from their exports.
 
 Owns exactly the manifest entries of NATIVE | NATIVE_COTS (kind "native" / "cots", origin "native");
 tools/reference/import_solidworks.py and tools/cycloidal/import_cadquery.py keep them. build123d's STEP
-writer stamps the time into the header, so a reference is written ONCE, on one machine, and committed as an
-LFS object (root .gitignore re-admits reference/**/*.step) - never regenerated on the other machine.
+writer stamps the time into the header, so a reference is written ONCE, on one machine, and committed (root
+.gitignore re-admits reference/**/*.step) - never regenerated on the other machine.
 """
 from __future__ import annotations
 

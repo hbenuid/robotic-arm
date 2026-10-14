@@ -139,9 +139,9 @@ Push before leaving a machine, pull on arrival — git is the only sync channel 
 machines"; CI is the third machine: root `AGENTS.md` "CI").
 - **Per-machine state git does not carry** — after a pull that changes `pyproject.toml` / `uv.lock`, follow
   `docs/toolchain.md`.
-- **What is committed:** only the inputs — `reference/**/*.step`, `vendor/*.step` — and `robot/meshes/*.stl`, all
-  Git LFS objects (`/.gitattributes`); a checkout showing ~130-byte pointer files (checksum tests,
-  `read_step` / `import_step` and cadgen fail on them) needs `git lfs pull`. **No generated STEP is committed**, part
+- **What is committed:** only the inputs — `reference/**/*.step`, `vendor/*.step` — and `robot/meshes/*.stl`, plain git
+  files (older commits hold them as Git LFS pointers - `git log -S filter=lfs -- :/.gitattributes` finds where that
+  ends - so checking one of those out to build it needs `git-lfs`). **No generated STEP is committed**, part
   STEPs included (the root `.gitignore`'s `*.step`: `git check-ignore -v cad/parts/<group>/<name>.step` from the repo
   root must print that rule): cadgen writes deterministic bytes per kernel AND per machine — the other machine writes
   the same geometry with other float noise (≤ 2e-10 mm), and the STEP header names the OCCT version — so each machine
