@@ -44,10 +44,11 @@ table, the drive ratios) to agree with `software/control/src/config.py`, and one
   fits, lock values); one logical change per commit. History is `git log` (`--grep`, `-- <path>`, `-S <CONSTANT>`,
   `-p` on a lock file). The entries of the retired `CHANGELOG.md` (to 2026-09-25) are **git notes** on the commits
   they describe — `git log` prints them under the message; `./cadtool setup` makes a machine fetch them.
-- Case matters: git and the `*.step` / `*.stl` rules are case-sensitive. `.gitignore` also ignores `*.STEP` / `*.STP` /
-  `*.STL`, but keep every file in the tree lowercase (README / AGENTS.md excepted) — the tests and tools assume it, and
-  `cad/tests/test_tooling.py` checks. On the Mac git runs with `core.ignorecase=true`: a case-only rename needs
-  `git mv -f`.
+- Case matters: on Linux (and the CI runners) git and the `*.step` / `*.stl` rules are case-sensitive, so `.gitignore`
+  also ignores `*.STEP` / `*.STP` / `*.STL`; on the Mac git runs with `core.ignorecase=true`: its ignore rules match
+  any case (the lowercase `!` exceptions let an uppercase file in too) and a case-only rename needs `git mv -f`. Keep
+  every file in the tree lowercase (README / AGENTS.md excepted) — the tests and tools assume it, and
+  `cad/tests/test_tooling.py` checks.
 
 ## Two development machines
 Worked on from a **Fedora Linux PC and an arm64 Mac**; git is the only sync channel, venvs / plugin / caches are
@@ -72,8 +73,8 @@ folder is made for it outside the repo — and goes through Recipe E in `cad/ref
   silently truncating —, `False` only where a mismatch is expected and handled.
   Lint only — `ruff format` is not adopted (it would re-flow `cad/`'s hand-aligned tables).
   It runs by itself at three points: a Claude Code PostToolUse hook (`.claude/hooks/ruff-check.sh`) reports
-  findings on every `.py` file Claude edits — fix them in the same turn. It is registered twice, in
-  `.claude/settings.json` AND `cad/.claude/settings.json`: a session reads the shared settings file of the
+  findings on every `.py` file Claude edits in either uv project — fix them in the same turn. It is registered
+  twice, in `.claude/settings.json` AND `cad/.claude/settings.json`: a session reads the shared settings file of the
   directory it starts in only (not inherited like AGENTS.md), so the cad/ file is a copy of the root one (edit the
   root one, copy it; `cad/tests/test_tooling.py` checks);
   the git pre-commit hook (`.githooks/pre-commit`, installed per machine by `./cadtool setup`) blocks a commit
@@ -106,14 +107,13 @@ out until they are fixed.
 
 ## CAD (`cad/`)
 - `cad/` is a **separate uv project** (Python 3.12, build123d) — the motor-control
-  project (`software/control/`) never depends on it, and `launch.bat` never installs it. Never run
+  project (`software/control/`) never depends on it, and `software/control/launch.bat` never installs it. Never run
   CAD code with the motor-control venv.
 - Work from `cad/` via `./cadtool …` (`./cadtool help` lists the commands). Start at `cad/AGENTS.md` — the map and the
   rules for every folder; each folder's own AGENTS.md (`parts/`, `assemblies/`, `robot/`, `lib/`, `tests/`, `tools/`,
   `reference/`, `vendor/`) loads when you work there.
-- What the software has to match — the joints and links, the reductions (`CYCLOIDAL_RATIO`, `GT2_RATIO`,
-  `FOREARM_ROLL_RATIO` in `cad/lib/params.py`, and which way round `config.py`'s `gear_ratio` reads), which motor sits
-  on which joint — is `cad/robot/AGENTS.md`; which CAN id drives which joint is
+- What the software has to match — the joints and links, the reductions (and which way round `config.py`'s
+  `gear_ratio` reads), which motor sits on which joint — is `cad/robot/AGENTS.md`; which CAN id drives which joint is
   unconfirmed (`cad/docs/open_issues.md`).
 
 ## Docs

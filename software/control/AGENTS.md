@@ -11,7 +11,7 @@ CAD: until then it stays as it is.
 - Never run CAD code with this venv: `cad/` is its own uv project.
 
 ## Code layout
-- `launcher.py` auto-detects the CANable via `pyserial.tools.list_ports` and calls `motor_control.main()`.
+- `launcher.py` auto-detects the CANable via `serial.tools.list_ports` (pyserial) and calls `motor_control.main()`.
 - `motor_control.py` is the interactive CLI. Near the top it does `sys.path.insert(0, "src")` so
   `src/can_interface.py`, `src/motor_driver.py`, `src/config.py` import without an `arctos.` prefix. **Don't** convert
   `src/` into a real Python package without also rewriting those imports — the sys.path hack is load-bearing. `"src"`

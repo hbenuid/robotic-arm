@@ -2,26 +2,27 @@
 
 Loads when you work in `assemblies/`. `arm.py` (the whole arm), `gripper.py` (the gripper module, placed from
 `placements.json`), `cycloidal_drive.py` / `forearm_roll_drive.py` / `wrist_roll_drive.py` (code-driven modules), `_occurrences.py` (the
-placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every output STEP is git-ignored.
+placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every output STEP is git-ignored.
 
 ## Assembly & placements
 - `reference/placements.json` (from `tools/reference/extract_placements.py`; schema: `reference/README.md`) holds
   every occurrence: `rel` (to its parent node) and `world`, as `Location(position, rotation_xyz_deg)`; keys
   `"<part>#<n>"`, module `"gripper#1"`. Treat it as an immutable input. An occurrence the DESIGN has replaced is
   **retired** in `lib/placements.py RETIRED` (`j3_coupler#1`: the roll drive's block took over its
-  features, `docs/forearm_roll.md`; `gt2_pulley_90t#1` / `#2`: re-seated 3 mm out as mounts, below; `nema17_pancake#1` /
-  `gt2_pulley_20t#1`: the wrist roll drive carries them, `docs/wrist_roll.md`): its record stays, `P.keys()` leaves it out (`retired=True` lists the file), no table / link / total
+  features, `docs/forearm_roll.md`; `gt2_pulley_90t#1` / `#2`: re-seated `PULLEY_SEAT_SHIFT` out as mounts, below;
+  `nema17_pancake#1` / `gt2_pulley_20t#1`: the wrist roll drive carries them, `docs/wrist_roll.md`): its record stays,
+  `P.keys()` leaves it out (`retired=True` lists the file), no table / link / total
   claims it (`test_placements.py`, `test_assembly.py`, `test_robot.py` follow `keys()`). A PART the design drops
   entirely (the link caps `j1_cap` / `j2_cap_1` / `j2_cap_2`, `gripper_clamp_bracket`) cannot be retired - its part module,
   `CUSTOM` row and manifest entry go, and a record must name a known part -: its SolidWorks product goes into
   `lib/reference.py SKIPPED_PRODUCTS` and `tools/reference/mount_placements.py` (the merge mode, no monolith) moves the
   record to `skipped` as the entry an extraction writes (pose, totals, reason) - `test_skipped_nodes_are_the_dropped_products`.
 - **Shifted occurrences** (`lib/placements.py SHIFTS`): a link whose length the design changes (`j1_link`
-  `slab.elbow_x`, `j2_link` `web.wrist_x`, `wrist_link` `tower.block_x1`) moves every capture record beyond it along
-  its own +X by the parameter's DEFAULT − LEGACY - along its +Y by `across_y` where the design moved its far end
-  across it, and along its +Z by `normal_z` where it moved it off the link's plane (`j1_link`'s elbow end, slid with the arm until its underside is flush with the drive shell's hub end:
-  `lib/upper_arm/layout.py arm_slide`;
-  the mounts hosted on `j1_link#1` itself add it to their frames, `lib/params.py J1_ARM_SLIDE`); the yoke
+  `slab.elbow_x`, `j2_link` `web.wrist_x`) moves every capture record beyond it along its own +X by the parameter's
+  DEFAULT − LEGACY - along its +Y by `across_y` where the design moved its far end across it (`j1_link`'s elbow end,
+  slid with the arm until its underside is flush with the drive shell's hub end: `lib/upper_arm/layout.py arm_slide`;
+  the mounts hosted on `j1_link#1` itself add it to their frames, `lib/params.py J1_ARM_SLIDE`), and along its +Z by
+  `normal_z` where it moved it off the link's plane (the wrist roll drive, below); the yoke
   (`j1_coupler`) moves the drive, `j1_link` and all beyond along its +X (N) by `ForkParams.face_x` −
   `CAPTURE_FACE_X`, the middle of the discs onto the base_yaw axis; the forearm roll drive (`forearm_roll_drive`, anchor
   `j2_link#1`) moves `j2_link#1` and all beyond along j2_link's +Y by `ForearmConfig.elbow_offset` (its roll axis across
@@ -46,33 +47,26 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   `tests/forearm/helpers.py in_drive_frame()` are in `j2_link`'s frame before the turn) - unless it is `turned`: the
   wrist roll drive, beyond the turned link, turns with `wrist_link#1`. `test_placements.py
   test_the_forearm_turns_about_its_roll_axis` locks it.
-- **Mounted occurrences** (`lib/mounts.py`): the base's bolt-on motor mount (`base_motor_mount#1`, a box round the motor bolted to
-  the base's end - designed here, at identity on `base#1` - with its 4x M4 screws + nuts, `base_motor_mount_screws#1` /
-  `_nuts#1`, hosted on the mount and on the screws); the belt joints' motors - `nema17_48mm#1` (the 48 mm motor, under the
-  motor mount's plate; motor + board end `BASE_MOTOR_TABLE_CLEAR` above the base's bottom face) and `nema17_40mm#2..3`,
-  + `mks_servo42d#1..3`, on the NEMA 17 pads `base_motor_mount` / `j1_link` / `j2_link` carry (the elbow motor held down by
-  its 4x M3, `elbow_motor_screws#1`, up through `j1_link`'s web) - and each belt joint's 6806-2RS pair (`bearing_6806#1..6`, on
-  the lip of its housing's bore) and the base_yaw thrust bearing (`washer_as6590#1`, `bearing_axk6590#1` in the base's groove,
-  `washer_as6590#2` under `j1_coupler`'s seat) never existed in the SolidWorks capture; the elbow's and the wrist's 90T
-  (`gt2_pulley_90t#3` / `#4`) did, but where the lower bearing had no room - their mounts are hosted on the retired
-  records they correct, `PULLEY_SEAT_SHIFT` out along the pulley's own axis; the base_yaw 120T (`gt2_pulley_120t#1`, the 90T with
-  more teeth) the capture never had - hosted on `j1_coupler#1`, hub up on its stub's end in the lower base bearing, turned
-  `HubParams.hole_deg` onto the stub's diagonal holes; each pulley's 4x M4 screws + nuts
-  (`elbow_pulley_screws#1` / `elbow_pulley_nuts#1`, `wrist_pulley_*#1`, `yaw_pulley_*#1` - COTS pattern parts) are hosted on the pulley and
-  on the screws, centred on the joint axis. They are declared as
-  frames-as-data in the host occurrence's frame (`Mount(key, part, host, link, joint, frame)`; a board's host is its
-  motor, a nut set's its screw set) and `tools/reference/mount_placements.py` materialises them into `placements.json` as ordinary part records
+- **Mounted occurrences** (`lib/mounts.py MOUNTS`): what the SolidWorks capture never had - the belt joints' motors +
+  boards and their drive (20Ts, belts, tensioners), the bearings, the base_yaw thrust stack and 120T, the base's motor
+  mount, the yoke's motor leg, the fasteners that hold them - and what it had where the lower 6806 has no room: the
+  elbow's and the wrist's 90T (`gt2_pulley_90t#3` / `#4`), hosted on the retired records they correct,
+  `PULLEY_SEAT_SHIFT` out along the pulley's own axis. They are declared as frames-as-data in the host occurrence's
+  frame (`Mount(key, part, host, link, joint, frame)`; a board's host is its motor, a nut set's its screw set) and
+  `tools/reference/mount_placements.py` materialises them into `placements.json` as ordinary part records
   (parent `None`, `rel == world = host world * frame`, solids / volume / bbox from `parts.build`, a `mount` block; keys
-  under top-level `mounted`, `P.keys(mounted=True)`), checking each motor's +Z against its joint axis (a bearing's +Z, a pulley's +Y, a pulley-bolt pattern's +Z ON it - `lib/mounts.py AXES`). The extractor
-  appends them on every run (`extract_placements.py --no-pancake` - the flag keeps this machine's bytes out of
-  `vendor/nema17_pancake.step`); `mount_placements.py` alone is the merge mode that needs no monolith (change a spin or
-  `J2_MOTOR_SLIDE_X` in `lib/params.py` → run it → re-derive the inertials). `assemblies/arm.py OCCURRENCES` /
-  `GROUPS` and `robot/frames.py LINKS` list the keys like any other (roles = the joint names). `tests/test_mounts.py`
+  under top-level `mounted`, `P.keys(mounted=True)`), checking each part's `lib/mounts.py AXES` axis against its joint
+  axis (Recipe B). The extractor appends them on every run (`extract_placements.py --no-pancake` - the flag keeps this
+  machine's bytes out of `vendor/nema17_pancake.step`); `mount_placements.py` alone is the merge mode that needs no
+  monolith (change a spin or a frame in `lib/mounts.py`, or a dimension a frame reads, e.g. `J2_MOTOR_SLIDE_X`, which
+  follows the stock `WRIST_BELT_LENGTH` → run it → re-derive the inertials). `assemblies/arm.py OCCURRENCES` / `GROUPS` and
+  `robot/frames.py LINKS` list the keys like any other (roles mostly the joint names: below). `tests/test_mounts.py`
   re-checks the geometry: axis on the joint, mounting face on the host's pad, each bearing stack's contacts
-  (`test_bearing_stacks`), the pulley bolts' seats and reach (`test_pulley_bolts_clamp_their_joints`), zero interference
-  with the neighbours - the one budget is the nuts' designed press in their pockets (`_press`: the pulley bolts' `nut_af`,
-  the base motor mount's `JointParams.nut_pocket_af`); the base motor mount's joint is `tests/base/test_motor_mount.py`. The drive's own board is a `cycloidal_drive.py` row
-  (`stack_positions["z_mks_board"]`).
+  (`test_bearing_stacks`), the pulley bolts' seats (`test_pulley_bolts_clamp_their_joints`) and reach
+  (`test_the_pulley_bolts_reach_their_nuts`), zero interference with the neighbours - the one budget is the nuts'
+  designed press in their pockets (`_press`: the pulley bolts' `nut_af`, the base motor mount's
+  `JointParams.nut_pocket_af`); the base motor mount's joint is `tests/base/test_motor_mount.py`. The drive's own board
+  is a `cycloidal_drive.py` row (`stack_positions["z_mks_board"]`).
 - `assemblies/arm.py` / `gripper.py`: `OCCURRENCES = [(part, role|None, key), …]` in SolidWorks
   document order; `assemblies/_occurrences.py` places each occurrence as
   `lib.models.geometry(parts.model(part)).moved(rel * LOCAL_FROM_REF⁻¹)` — inside a build the linked
@@ -90,11 +84,13 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   `grouped_children(…, root=)`, which composes `root * rel` into **every occurrence's
   placement**. Never `.moved()` the built root Compound instead: cadgen's STEP packager reads only the
   children's locations, so the in-process shape would rotate and the written STEP would not. The
-  gripper and the drive keep their own module frames (both already have their axis on +Z), and
+  modules keep their own module frames (each already has its axis on +Z), and
   `robot/` never reads the arm compound (it goes `placements.json world` → `world_rows`).
   `test_assembly.py` compares the SolidWorks world bbox through `arm_from_w()`.
-- Roles (`j2`/`j3` = the elbow_pitch / wrist_pitch pulley + coupler pairs, `1`/`2`) only disambiguate
-  duplicates; renaming them after the joints is a follow-up.
+- Roles label a part with the joint it serves (mostly the joint name: `elbow_pitch_1`, `forearm_roll`), which also keeps
+  duplicate labels unique (`test_placements.py test_duplicate_parts_have_unique_labels`): `1` / `2` on the gripper's
+  pairs and the cycloidal and forearm roll drives' bearings, `j2` / `j3` on the elbow's / wrist's 90T and
+  `j3_coupler#2`.
 - A view of the arm with some occurrences hidden needs no model: `./cadtool snapshot assemblies/arm.step out.png
   --hide '#<label>'` (label refs; STEP input only, any `--display`, not with `--focus`; the viewer has no `?hide=`
   parameter). A second model would be the only way to get a STEP (a model takes no parameters, the freshness gate
@@ -103,11 +99,9 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   `forearm_roll_drive.py` and `wrist_roll_drive.py` declare a `TINT` (their printed parts' colour, reused by `arm.py MODULE_TINTS`) and pass it to
   `occurrence_children(…, tint=)` / `located_children(…, tint=)`; `_tint_parts` gives every purchased part
   (`parts.bought()`) the one `_occurrences.BOUGHT_TINT` grey instead. Verified by snapshot: a tint set on a
-  module's DIRECT linked children does reach its STEP, so the modules stay linked (the arm's inline copies predate
-  that finding and were left alone). Separate make/buy models were tried and removed as duplicates — one STEP per
-  assembly. A purchased item that is **not modelled** (the
-  drive's hub bolts + captive nuts, the yoke's motor leg's screws + nuts, the roll drive's motor M3 screws, its rotor clamp's and the forearm wall's
-  M3 screws + nuts, the wrist roll drive's pancake M3 screws, its rotor clamp's and the gripper connector's M3 screws + nuts) lives only in
+  module's DIRECT linked children does reach its STEP, so the modules stay linked (the arm recolours the leaves inside
+  its children, which a link loses: its inline copies, above). Separate make/buy models were tried and removed as
+  duplicates — one STEP per assembly. A purchased item that is **not modelled** lives only in
   `tools/bom.py EXTRAS` — it is on the buy list and absent from the model, the totals and the inertials; model it as a
   COTS pattern part (`cycloidal_housing_bolts` is the pattern, `elbow_pulley_screws` a native mounted one,
   `yaw_pulley_screws` a mounted one with no reference file, the belts (`parts/*/<joint>_belt.py`, a smooth band round
@@ -115,17 +109,15 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   for a new one, `parts/AGENTS.md` Part states → *no reference*) to change that.
 - `arm.py GROUPS` buckets the occurrences into the component tree
   `arm → base_link/shoulder_link/upper_arm_link/elbow_link/forearm_link/wrist_pitch_link/wrist` — the
-  `robot/frames.py LINKS` partition with the four modules kept whole (`wrist` = wrist_roll_link + jaw
+  `robot/frames.py LINKS` partition with the modules (`arm.py MODULES`) kept whole (`wrist` = wrist_roll_link + jaw
   links; the cycloidal drive under `shoulder_link` although `LINKS` puts its rotor body in
   `upper_arm_link`; the forearm roll drive under `elbow_link` although its rotor is in `forearm_link`; the wrist roll
   drive under `wrist_pitch_link` although its rotor is in `wrist_roll_link`) — via
   `_occurrences.grouped_children()`, which tints each subtree's **printed** parts with its group's color
-  (`MODULE_TINTS` overrides for the modules), every **purchased** part — inside the modules too — with the one
-  `_occurrences.BOUGHT_TINT` grey (`_tint_parts`: grey always means bought, so no group / module tint may reuse it;
-  `test_grey_means_bought`), and raises unless the groups cover the keys
+  (`MODULE_TINTS` overrides for the modules), every **purchased** part — inside the modules too — with `BOUGHT_TINT`
+  (above; no group / module tint may reuse it, `test_grey_means_bought`), and raises unless the groups cover the keys
   exactly once — so each component toggles as one node in the viewers. `test_assembly.py` locks the group labels +
-  the LINKS mirror. The tints are per-leaf (a compound-level color did not cascade in the OCP CAD Viewer) — hence the
-  inline copies above.
+  the LINKS mirror. The tints are per-leaf (`_tint` colours every descendant) — hence the inline copies above.
 - `assemblies/cycloidal_drive.py` is **code-driven**: rows are `(part, role, placement)` (data) from
   `lib/cycloidal stack_positions` (`located_children`) — the placement a position `(x, y, z)` when the part's
   frame is the module's shifted, or a frame `((x, y, z), (rx, ry, rz))` when it needs a rotation
@@ -144,7 +136,7 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
 - **Assemblies are native build123d**: a model body returns `lib.assembly.assembly(name, children)` =
   `Compound(label=…, children=[…])`, and the `_occurrences` helpers (`occurrence_children`,
   `grouped_children`, `located_children`) RETURN the placed children, each labelled with cadgen's
-  `label_shape` (`j3_coupler:j2`; `label_shape` / `label_text` are not deprecated). cadgen 0.6.5 deprecated
+  `label_shape` (`gt2_pulley_90t:j2`; `label_shape` / `label_text` are not deprecated). cadgen 0.6.5 deprecated
   its `AssemblyHelper` wrapper (a `FutureWarning` per build) — never reintroduce it.
 - When adding source-level joints, declare them as data — `@step(kinematics={"mates": [cadgen.revolute(name,
   parent="#label", child="#label", …)]})` (viewer sliders, posed snapshots; the plugin's
@@ -158,8 +150,9 @@ placing / tinting helpers, also used by `robot/` and `tests/totals.py`). Every o
   one, each call to a child model is its own linked occurrence).
 
 **Recipe B — add a mounted occurrence** (something SolidWorks never placed, or a SolidWorks pose the design corrects -
-retire the record, host the mount on it): `lib/mounts.py` `Mount(key, part, host,
-link, joint, frame)` — the frame as data in the HOST's frame, +Z on the joint axis → `./cadtool python
-tools/reference/mount_placements.py` (writes the `placements.json` record, checks the axis) → the key into
-`assemblies/arm.py OCCURRENCES` + `GROUPS` and `robot/frames.py LINKS` → a case in `tests/test_mounts.py` (face on the
-host, interference budget) → Recipe C.
+retire the record (`lib/placements.py RETIRED`, above), host the mount on it): `lib/mounts.py` `Mount(key, part, host,
+link, joint, frame)` in the tuple of its kind in `MOUNTS` — the frame as data in the HOST's frame, the part's `AXES`
+axis parallel to the joint axis, ON it where `AXES` says so (a part with no `AXES` row gets no axis check) →
+`./cadtool python tools/reference/mount_placements.py` (writes the `placements.json` record, checks the axis) → the key
+into `assemblies/arm.py OCCURRENCES` + `GROUPS` and `robot/frames.py LINKS` → a case in `tests/test_mounts.py` (face on
+the host, interference budget) → Recipe C.

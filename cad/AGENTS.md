@@ -37,34 +37,35 @@ The toolchain, its pins and upgrades: `docs/toolchain.md`.
    a part whose vendor file is NEW needs `./cadtool gen parts/<group>/<name>.py --force` first (see Gotchas below).
 4. `shasum -a 256 -c /tmp/before.txt` on the SAME machine (STEP bytes differ per machine: Two machines, below) —
    only the STEPs you meant to change may fail; a file can still come back with numerical-zero terms (≤ 1e-17, seen
-   after a `lib/reference.py` edit): settle float noise with `./cadtool inspect diff <old.step> <new.step>`.
+   after a `lib/reference.py` edit): settle float noise with `./cadtool inspect diff <old.step> <new.step>` (the old
+   one from the main checkout's `cad/`, or a copy kept before step 3).
 5. `./cadtool pytest -m "not slow"`, then `./cadtool pytest`; bump the locks the failures name (`tests/AGENTS.md`
-   "Where the locks live"; a drive's `EXPECTED` from
-   `./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals(), totals('stator'))"`).
+   "Where the locks live"; a drive's `EXPECTED` (`assemblies/<drive>.py`) from
+   `./cadtool python -c "from assemblies.<drive> import totals; print(totals(), totals('stator'))"`).
 6. A mounted part's geometry changed → `./cadtool python tools/reference/mount_placements.py` (its records carry
-   solids / volume / bbox); a SolidWorks-derived change → `extract_placements.py --monolith <full assembly> --no-pancake`.
+   solids / volume / bbox); a SolidWorks-derived change →
+   `./cadtool python tools/reference/extract_placements.py --monolith <full assembly> --no-pancake`.
 7. `./cadtool python tools/robot/derive.py --check robot/arm.urdf robot/arm.sdf`; for every link it names, copy that
    link's `<inertial>` block from `--urdf-draft` / `--sdf-draft` into `robot/arm.urdf` / `arm.sdf` (never a generator).
 8. `./cadtool python tools/robot/export_link_meshes.py --links <those links>` and `./cadtool gen robot/links/<link>.py`
    (a mesh left stale fails `tests/test_robot.py`'s slow lane).
 9. `./cadtool validate robot/arm.urdf --strict` (and `arm.srdf --strict`, `arm.sdf --gz-check never`); `--check` again.
-10. `./cadtool snapshot assemblies/arm.step snapshots/arm.png --size-profile assembly --view-labels` (+ the drive,
-    `robot/arm.urdf`) and LOOK at them.
+10. `./cadtool snapshot assemblies/arm.step snapshots/arm.png --size-profile assembly --view-labels` (+ each changed
+    module's `assemblies/<module>.step`, `robot/arm.urdf`) and LOOK at them.
 11. Docs: the doc that owns the changed rule (Docs, below), `docs/open_issues.md`
     rows added / closed. Then commit on the branch, the message being the record — why, and every number that
     changed (root `AGENTS.md` Git workflow).
 
-## Running things (always via `./cadtool` or `uv run`, from `cad/`)
+## Running things (always via `./cadtool`, from `cad/`)
 Every command, its flags and what it prints: `./cadtool help` (for people: the `README.md` table). The rules:
-- **Never call bare `python`** — the system Python is 3.14 without build123d.
-- **Never add `cadquery-ocp`** (the VTK build) to `pyproject.toml`: it owns the same `OCP/` files as
-  `cadquery-ocp-novtk`, so uv removing one guts the other (`docs/toolchain.md` Gotchas). The `cadgen` package is the
-  whole runtime — decorators, CLI, viewer, snapshots; the `text-to-cad@earthtojake` plugin ships the
+- **Never call bare `python`** — the system Python has no build123d (`./cadtool python` is the venv's).
+- **Never add `cadquery-ocp`** (the VTK build) to `pyproject.toml` (why: `docs/toolchain.md` Gotchas). The `cadgen`
+  package is the whole runtime — decorators, CLI, viewer, snapshots; the `text-to-cad@earthtojake` plugin ships the
   `/text-to-cad:*` skill docs and CAD's MCP server `cad` (its own uvx-pinned cadgen: `docs/toolchain.md` Pins).
 - **A model is a script you run.** `./cadtool gen <model.py>` writes its sibling STEP (git-ignored); a second run
   prints `current …` — the freshness gate hashes the source closure, the tracked inputs and the outputs (`./cadtool
-  why` explains a verdict clause by clause). Every derived artefact lives in the store `~/.cache/cadgen` — nothing in
-  the tree.
+  why` explains a verdict clause by clause). Everything else a build derives — trees, tessellations, the freshness
+  records — lives in the store `~/.cache/cadgen`, never in the tree.
 - **An assembly calls its child models**: `./cadtool gen assemblies/arm.py` rebuilds every stale part in parallel and
   rewrites its STEP; the gripper, the drives and the robot links link their children's trees, the arm inlines tinted
   copies (`assemblies/AGENTS.md`). Pull semantics: a rebuilt part does not update the arm until the arm is rebuilt
@@ -86,9 +87,9 @@ Every command, its flags and what it prints: `./cadtool help` (for people: the `
 
 ## Rules for every folder
 - A part's NAME (its module stem, unique across groups) is its key everywhere — the manifest,
-  `reference/<origin>/<name>.step`, `placements.json`, the URDF links. Code reaches a part only through
-  `parts.names()` / `parts.load(name)` / `parts.model(name)` / `parts.build(name)` — never `from parts import <name>`
-  (`parts/AGENTS.md`).
+  `reference/<origin>/<name>.step`, `placements.json`, `robot/frames.py LINKS` (the URDF links' occurrences). Code
+  reaches a part only through `parts.names()` / `parts.load(name)` / `parts.model(name)` / `parts.build(name)` — never
+  `from parts import <name>` (`parts/AGENTS.md`).
 - Every model file — each part, each assembly, each `robot/links/<link>.py` — ends with
   `if __name__ == "__main__": <name>()` — that call IS the build (`./cadtool gen` runs the file; without it `gen`
   silently builds nothing — source-checked for every part, every assembly and every `robot/links/<link>.py`); no `show()` in the
@@ -99,15 +100,14 @@ Every command, its flags and what it prints: `./cadtool help` (for people: the `
   value, not the belt's. A belt still without its tensioner is a `docs/open_issues.md` row.
 - Import `lib` / `parts` plainly — **no `sys.path` shim**: `cadtool` exports `PYTHONPATH=cad/`, pytest
   has `pythonpath = ["."]`, `.env` covers VS Code. **Never add `cad/__init__.py`** (the package root would become the
-  repo root). The one `sys.path` line in the tree is `tools/cycloidal/export_cadquery.py` (it runs in the OTHER repo's
-  venv).
+  repo root). The one `sys.path` line in `cad/` is `tools/cycloidal/export_cadquery.py` (`tools/AGENTS.md`).
 
 ### Layering
 Locked by `tests/test_layering.py` (an AST scan — function-local imports count):
 `lib ← parts ← assemblies ← robot ← tools ← tests`; a package imports only itself and the ones to its
 left. So `assemblies/` never imports `robot/` (the base frame both need is `lib/datum.py`), `robot/`
 builds on `assemblies/_occurrences.py` (`world_rows` reads a designed module's `OCCURRENCES` / `BODIES`),
-and inside `lib/` the packages `lib/params.py` re-exports from never import it (`lib/AGENTS.md`).
+and inside `lib/` no package or leaf imports `lib/params.py` (`lib/AGENTS.md`).
 
 ### Lazy kernel
 **Model files never load the CAD kernel at import** (`tests/test_lazy_kernel.py`, fast lane): cadgen gates a
@@ -121,7 +121,7 @@ function for that reason); kernel types in annotations need `from __future__ imp
 covers the model's whole import closure (`lib/`, `assemblies/_occurrences.py`, `robot/`). Frames a module
 declares are **data** — `(position mm, rotation_xyz_deg)`, `lib.datum.IDENTITY` for none — turned into a
 `Location` by `lib.datum.to_location()` inside a body; `lib.datum.base_frame()` and
-`assemblies.arm.arm_from_w()` are functions, the drive's `OCCURRENCES` rows carry positions.
+`assemblies.arm.arm_from_w()` are functions, the drives' `OCCURRENCES` rows carry positions.
 
 ### Never call a model outside a build
 Never call a model to get its geometry outside a build: with no cadgen build on the thread the
@@ -147,10 +147,11 @@ machines"; CI is the third machine: root `AGENTS.md` "CI").
   files (older commits hold them as Git LFS pointers - `git log -S filter=lfs -- :/.gitattributes` finds where that
   ends - so checking one of those out to build it needs `git-lfs`). **No generated STEP is committed**, part
   STEPs included (the root `.gitignore`'s `*.step`: `git check-ignore -v cad/parts/<group>/<name>.step` from the repo
-  root must print that rule): cadgen writes deterministic bytes per kernel AND per machine — the other machine writes
-  the same geometry with other float noise (≤ 2e-10 mm), and the STEP header names the OCCT version — so each machine
-  builds its own; a fresh clone has none until `./cadtool gen assemblies/arm.py`. Nothing else lands in the tree: no
-  `__cadgen__/`, no sidecar unless a model declares `kinematics=` (then `<name>.step.json`, committed beside it).
+  root must print that rule - on the Mac, with `core.ignorecase=true`, its `*.STEP` twin): cadgen writes deterministic
+  bytes per kernel AND per machine — the other machine writes the same geometry with other float noise (≤ 2e-10 mm),
+  and the STEP header names the OCCT version — so each machine builds its own; a fresh clone has none until
+  `./cadtool gen assemblies/arm.py`. Nothing else lands in the tree: no `__cadgen__/`, no sidecar unless a model
+  declares `kinematics=` (then `<name>.step.json`, committed beside it).
 - **Written once, on one machine:** the committed files a tool generates — `robot/meshes/*.stl` (re-exported per
   change, never as a side effect), `vendor/*.step` (`vendor/AGENTS.md`), `reference/native/` (`reference/AGENTS.md`).
 - `cadtool` runs on bash 3.2 (root `AGENTS.md`): under `set -u` an empty array is unset — expand optional arrays as
