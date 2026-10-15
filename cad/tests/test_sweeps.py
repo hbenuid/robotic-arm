@@ -4,22 +4,25 @@ the base; along the shoulder's upper limit - the arm pitched down in front - the
 roll drive's motor + board first) stay off the base and the shoulder over the elbow's whole range; at the wrist_pitch
 limits the wrist body and the gripper stay off the forearm at any roll; at the elbow's limits the forearm, the wrist and
 the gripper stay off the upper arm at any roll and wrist pitch; at any yaw the arm at the shoulder's limits stays off the
-base (its motor mount stands out on one side); the forearm roll's limit stops short of its printed hard stop.
-Exact distances (BRepExtrema) at poses on the limits, the part pairs whose boxes are apart pruned; a pose with the
-arm down in the table the base stands on (below its bottom face) is skipped."""
+base (its motor mount stands out on one side); the forearm and the wrist roll's limits stop short of their printed hard
+stops; the gripper rolls clear of the wrist roll drive's frame and the forearm.
+Exact distances (BRepExtrema) at poses on the limits, the part pairs whose boxes are apart pruned (a part turning about
+one joint through many angles: its box in that joint's frame, `_hulls`); a pose with the arm down in the table the base
+stands on (below its bottom face) is skipped."""
 from __future__ import annotations
 
 import functools
 import math
 
 import pytest
-from build123d import Axis, Location
+from build123d import Axis, Location, Pos, Solid
 
 from assemblies._occurrences import placement_at, world_rows
 from lib import params as PARAMS
 from lib.cycloidal import DEFAULT_CONFIG as DRIVE
 from lib.datum import BASE_BOTTOM_Y
 from lib.forearm import DEFAULT as FOREARM
+from lib.wrist import DEFAULT as WRIST
 from lib.yaw_coupler.params import RIM_CLEAR
 from robot import frames as F
 from tests import built
@@ -84,13 +87,28 @@ def _distance(a, b) -> float:
     return sorted(a.moved(Location(tuple(0.01 * v for v in j))).distance_to(b) for j in _JITTER)[1]
 
 
-def _closest(movers, fixed, prune: float = 5.0) -> tuple:
-    """(distance, mover, fixed part) of the nearest pair; pairs whose boxes are `prune` apart count as that far."""
+def _hulls(parts, joint: str) -> list:
+    """(label, box) of every part: its bounding box in `joint`'s frame, as a solid. It holds the part and turns with it
+    about the joint's axis, so its distance to a fixed part bounds the part's own from below - snug at every angle,
+    where the world box of a part turned off the world's axes grows."""
+    frame = F.joint_frame_world(joint)
+    out = []
+    for label, shape in parts:
+        bb = shape.moved(frame.inverse()).bounding_box()
+        out.append((label, Solid.make_box(bb.size.X, bb.size.Y, bb.size.Z).moved(frame * Pos(bb.min.X, bb.min.Y, bb.min.Z))))
+    return out
+
+
+def _closest(movers, fixed, prune: float = 5.0, hulls=None) -> tuple:
+    """(distance, mover, fixed part) of the nearest pair; pairs whose boxes are `prune` apart count as that far, and so
+    do pairs whose mover's hull (`_hulls`, posed as the movers, one each) is - the exact distance only under both."""
     best = (math.inf, "", "")
     boxes = _boxed(fixed)
-    for ml, ms, mbb in _boxed(movers):
+    for i, (ml, ms, mbb) in enumerate(_boxed(movers)):
         for fl, fs, fbb in boxes:
             d = _box_gap(mbb, fbb)
+            if d < prune and hulls is not None:
+                d = hulls[i][1].distance_to(fs)
             if d < prune:
                 d = _distance(ms, fs)
             if d < best[0]:
@@ -194,6 +212,36 @@ def test_any_yaw_keeps_the_arm_off_the_base():
         for movers in poses:
             d, ml, fl = _closest(movers, base)
             assert d >= 1.0, f"yaw {yaw}: {ml} {d:.2f} mm from {fl}"
+
+
+def test_the_wrist_roll_limit_stops_short_of_the_hard_stop():
+    """The wrist roll's hard stop - the lug on its shaft's flange against the post in wrist_link's bay - lies between the
+    limit and 180 - stop_deg_width, as the forearm roll's."""
+    shaft = [p for p in _link_parts("wrist_roll_link") if p[0].endswith(":wrist_roll_shaft")]
+    frame = next(s for label, s in _link_parts("wrist_pitch_link") if label.endswith(":wrist_link"))
+    limit, nominal = PARAMS.WRIST_ROLL_LIMIT_DEG, 180.0 - WRIST.roll.stop_deg_width
+    for sign in (1.0, -1.0):
+        (_, at_limit), = _posed(shaft, ("wrist_roll", sign * limit))
+        gap = _distance(at_limit, frame)
+        assert gap >= 0.5, f"roll {sign * limit:+.0f}: the shaft {gap:.2f} mm from the frame"
+        (_, at_nominal), = _posed(shaft, ("wrist_roll", sign * nominal))
+        vol = interference(at_nominal, frame)
+        assert vol > 1.0, f"roll {sign * nominal:+.0f}: the lug only {vol:.2f} mm^3 into the post - no stop"
+
+
+def test_the_gripper_rolls_clear_of_the_wrist():
+    """The gripper rolled through its range - every 15 degrees and the limits - stays 1 mm off the wrist body, the wrist
+    roll drive's stator and the forearm, the wrist level (the drive's rotor, which turns in its bearings and drives the
+    belt, keeps its run_gap: tests/wrist/test_roll_drive.py)."""
+    rolling = [p for link in ("wrist_roll_link", "jaw_a_link", "jaw_b_link") for p in _link_parts(link)
+               if not p[0].endswith((":wrist_roll_pulley", ":wrist_roll_shaft"))]
+    hulls = _hulls(rolling, "wrist_roll")
+    fixed = _boxed(list(_link_parts("wrist_pitch_link")) + list(_link_parts("forearm_link")))
+    lim = PARAMS.WRIST_ROLL_LIMIT_DEG
+    for roll in sorted({*range(-(int(lim) // 15) * 15, int(lim) + 1, 15), -lim, lim}):
+        turn = ("wrist_roll", roll)
+        d, ml, fl = _closest(_posed(rolling, turn), fixed, hulls=_posed(hulls, turn))
+        assert d >= 1.0, f"roll {roll}: {ml} {d:.2f} mm from {fl}"
 
 
 def test_the_forearm_roll_limit_stops_short_of_the_hard_stop():

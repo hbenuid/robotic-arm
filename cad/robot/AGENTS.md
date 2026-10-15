@@ -48,17 +48,18 @@ robot/
   motor's 20T and the belt), `CYCLOIDAL_RATIO` (shoulder_pitch: the drive's shell
   turns, the same way as its motor - the port's hub turned against it), `GT2_RATIO` (the wrist_pitch and the
   elbow_pitch belts, one stage each: the elbow motor's 20T straight to the 90T, `docs/open_issues.md`),
-  `FOREARM_ROLL_RATIO` (forearm_roll). They are motor revolutions per output revolution, while
+  `FOREARM_ROLL_RATIO` (forearm_roll), `WRIST_ROLL_RATIO` (wrist_roll). They are motor revolutions per output revolution, while
   `software/control/src/config.py`'s `gear_ratio` is output revolutions per motor revolution — the software's value
   is the reciprocal (`1 / CYCLOIDAL_RATIO`, …).
 
 ## Joints and links
 `base_link → base_yaw → shoulder_link → shoulder_pitch → upper_arm_link → elbow_pitch → elbow_link →
 forearm_roll → forearm_link → wrist_pitch → wrist_pitch_link → wrist_roll → wrist_roll_link → jaw_a / jaw_b
-(prismatic, jaw_b mimics jaw_a) + tool0` (frame-only) — six revolute joints, the last three concurrent at the
-wrist centre (`forearm_roll`'s axis runs along the forearm through `WRIST_CENTRE`; `docs/forearm_roll.md`). The two
-drives ARE joints: each one's stator stays in the parent link, its rotor moves with the child (`BODIES` in
-`assemblies/cycloidal_drive.py` / `forearm_roll_drive.py`; the URDF ledger, `docs/cycloidal_drive.md` §12). The belt
+(prismatic, jaw_b mimics jaw_a) + tool0` (frame-only) — six revolute joints with an elbow and a wrist offset: the
+last three are NOT concurrent (`forearm_roll`'s axis runs along the forearm through `WRIST_CENTRE` on the `wrist_pitch`
+axis, `docs/forearm_roll.md`; `wrist_roll`'s runs `WRIST_ROLL_OFFSET` across it, `docs/wrist_roll.md`) - an inverse
+kinematics must be numeric. The three drives ARE joints: each one's stator stays in the parent link, its rotor moves with the child (`BODIES` in
+`assemblies/cycloidal_drive.py` / `forearm_roll_drive.py` / `wrist_roll_drive.py`; the URDF ledger, `docs/cycloidal_drive.md` §12). The belt
 joints' motors are mounted occurrences (`lib/mounts.py`, `assemblies/AGENTS.md`); the drives' motors are module rows.
 
 | joint | type | parent → child | actuator | notes |
@@ -68,7 +69,7 @@ joints' motors are mounted occurrences (`lib/mounts.py`, `assemblies/AGENTS.md`)
 | `elbow_pitch` | revolute, `N` | `upper_arm_link → elbow_link` | GT2 90T belt, NEMA 17 x 40 + MKS SERVO42D (`nema17_40mm#2` + `mks_servo42d#2` on the web across `j1_link`'s motor hole, on the arm's +N side, `ELBOW_MOTOR_CENTRES` from the elbow) | the pulley carries the roll drive's frame, whose web is the elbow coupler (`j3_coupler#1` retired) |
 | `forearm_roll` | revolute, along the forearm through the wrist centre, `ELBOW_ROLL_OFFSET` across the elbow axis (an elbow offset: the axes do not cross) | `elbow_link → forearm_link` | GT2 90T ring integral to the roll pulley (the output), NEMA 17 x 40 + MKS SERVO42D on the elbow axis, in the roll frame's pocket on its plate (`assemblies/forearm_roll_drive.py`) | `j2_link`'s wall bolts onto the pulley's ring, 48 mm along the roll axis from the elbow axis' station; the printed hard stop just past ±`FOREARM_ROLL_LIMIT_DEG`; specs `docs/forearm_roll.md` §0 |
 | `wrist_pitch` | revolute, `N` | `forearm_link → wrist_pitch_link` | GT2 90T belt, NEMA 17 x 40 + MKS SERVO42D (`nema17_40mm#3` + `mks_servo42d#3` on `j2_link`'s web slots) | pulley + J3 coupler on the wrist body |
-| `wrist_roll` | revolute, `F` | `wrist_pitch_link → wrist_roll_link` | NEMA17 pancake + 20T pulley (not CAN-driven) | |
+| `wrist_roll` | revolute, `F`, `WRIST_ROLL_OFFSET` across the `wrist_pitch` axis (a wrist offset) | `wrist_pitch_link → wrist_roll_link` | GT2 belt 2 : 1 (`WRIST_ROLL_RATIO`), the NEMA17 pancake ON the `wrist_pitch` axis, in `wrist_link`'s pocket (`assemblies/wrist_roll_drive.py`; not CAN-driven) | the gripper's connector bolts to the roll pulley's face; the printed hard stop just past ±`WRIST_ROLL_LIMIT_DEG`; specs `docs/wrist_roll.md` §0 |
 | `jaw_a`, `jaw_b` (mimic, −1) | prismatic | `wrist_roll_link → jaw_*_link` | MG996R crank linkage | `open` / `closed` SRDF states |
 | `tool0_joint` | fixed | `wrist_roll_link → tool0` | — | fingertip midpoint, Z = approach |
 
@@ -79,8 +80,8 @@ joints' motors are mounted occurrences (`lib/mounts.py`, `assemblies/AGENTS.md`)
 | `upper_arm_link` | the drive's **rotor** (`cycloidal_drive#1:rotor`: the shell ring, ring pins, housing bolts/nuts, both 6814s) + `j1_link` (the arm rising off the shell, printed with the shell's body) + `bearing_6806#3`, `#4` (the elbow pair in its bore) + `nema17_40mm#2`, `mks_servo42d#2`, `gt2_pulley_20t#2`, `elbow_motor_screws#1`, `elbow_belt#1` (the elbow_pitch motor + board on the web across `j1_link`'s motor hole, the 20T on its shaft, the motor's 4x M3 up through the web, the belt to the elbow 90T) + `gt2_idler_20t#1`, `elbow_idler_spacer#1`, `elbow_idler_screw#1`, `elbow_idler_nut#1` (the belt's tensioner under the slab) |
 | `elbow_link` | `gt2_pulley_90t#3` (re-seated, `lib/mounts.py`) + its M4 screws + nuts (`elbow_pulley_screws#1`, `elbow_pulley_nuts#1`) + the roll drive's **stator** (`forearm_roll_drive#1:stator`: the roll frame — one body round the motor, its underside the elbow coupler, `j3_coupler#1` retired —, 2× 6806, its NEMA 17 x 40 + MKS board on the elbow axis, the 20T, the roll belt and its tensioner) |
 | `forearm_link` | the roll drive's **rotor** (`forearm_roll_drive#1:rotor`: the pulley - its 90T ring the output, its spigot in the wall - and the shaft clamped to it) + `j2_link` + `bearing_6806#5`, `#6` (the wrist pair in its boss) + `nema17_40mm#3`, `mks_servo42d#3`, `gt2_pulley_20t#4`, `wrist_belt#1` (the wrist_pitch motor + board on the web, its 20T and the belt) |
-| `wrist_pitch_link` | `wrist_link`, `gripper_clamp_bracket`, `nema17_pancake`, `gt2_pulley_90t#4` (re-seated) + its M4 screws + nuts (`wrist_pulley_screws#1`, `wrist_pulley_nuts#1`), `j3_coupler#2` |
-| `wrist_roll_link` | `gt2_pulley_20t` + the gripper base (connector, servo holder, servo + horn, cover, rails, crank links) |
+| `wrist_pitch_link` | `wrist_link` (the wrist roll drive's frame) + `gt2_pulley_90t#4` (re-seated) + its M4 screws + nuts (`wrist_pulley_screws#1`, `wrist_pulley_nuts#1`), `j3_coupler#2` + the wrist roll drive's **stator** (`wrist_roll_drive#1:stator`: the pancake on the pitch axis, its 20T, the belt, 2× 6806) |
+| `wrist_roll_link` | the wrist roll drive's **rotor** (`wrist_roll_drive#1:rotor`: the pulley - its 40T band, the face the connector bolts to - and the shaft clamped to it) + the gripper base (connector, servo holder, servo + horn, cover, rails, crank links) |
 | `jaw_a_link` / `jaw_b_link` | slider + two fingers + end, each side |
 
 ## Commands
@@ -95,5 +96,7 @@ joints' motors are mounted occurrences (`lib/mounts.py`, `assemblies/AGENTS.md`)
 
 The `shoulder_pitch` slider turns the drive's rotor with `j1_link` while its housing stays with `j1_coupler`; the
 `forearm_roll` slider turns the forearm, wrist and gripper about the forearm while the roll frame stays with the elbow
-pulley. The drives on their own: `?file=assemblies/cycloidal_drive.step` (see `docs/cycloidal_drive.md`, "Viewing the
-drive") and `?file=assemblies/forearm_roll_drive.step` (`docs/forearm_roll.md`).
+pulley; the `wrist_roll` slider turns the gripper about the axis beside the pancake. The drives on their own:
+`?file=assemblies/cycloidal_drive.step` (see `docs/cycloidal_drive.md`, "Viewing the drive"),
+`?file=assemblies/forearm_roll_drive.step` (`docs/forearm_roll.md`) and `?file=assemblies/wrist_roll_drive.step`
+(`docs/wrist_roll.md`; its frame is `wrist_link`).

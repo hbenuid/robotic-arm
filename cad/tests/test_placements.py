@@ -13,6 +13,7 @@ from assemblies import arm, cycloidal_drive, forearm_roll_drive, gripper
 from lib import placements as P
 from lib import reference as R
 from lib.upper_arm.layout import arm_slide
+from lib.wrist.layout import stack_positions
 from lib.yaw_coupler.params import CAPTURE_FACE_X
 from robot import frames as RF
 
@@ -28,13 +29,14 @@ def _close(a, b, tol=1e-6):
 
 def test_record_counts_match_expected():
     parts_ = P.keys(kind="part", retired=True)
-    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 74      # 31 SolidWorks + 43 mounted (j3_coupler#1, the two 90Ts retired, still records)
-    assert P.keys(kind="module") == ["cycloidal_drive#1", "gripper#1", "forearm_roll_drive#1"]
-    assert P.keys(kind="module", designed=True) == P.DATA["designed_modules"] == ["cycloidal_drive#1", "forearm_roll_drive#1"]
-    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 167  # 47 + the base motor mount (1 + 4 + 4) + j1_coupler's motor leg + (7 + 13) + 2 x (2 + 13) + the elbow motor's 20T (3) + its 4 screws + 6 bearings + 3 thrust + 3 pulleys + 6 x 4 pulley bolts + the base_yaw and wrist motors' 20Ts (2 x 3) + 3 belts + the elbow and base_yaw belts' tensioners (2 x 4)
-    assert len(P.keys(kind="part", mounted=False, retired=True)) == 31
-    assert P.RETIRED == ("j3_coupler#1", "gt2_pulley_90t#1", "gt2_pulley_90t#2") and set(P.RETIRED) <= set(P.OCCURRENCES)
-    assert len(P.keys(kind="part")) == 74 - len(P.RETIRED)
+    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 73      # 30 SolidWorks + 43 mounted (j3_coupler#1, the two 90Ts, the pancake and its 20T retired, still records)
+    assert P.keys(kind="module") == ["cycloidal_drive#1", "gripper#1", "forearm_roll_drive#1", "wrist_roll_drive#1"]
+    assert P.keys(kind="module", designed=True) == P.DATA["designed_modules"] == ["cycloidal_drive#1", "forearm_roll_drive#1", "wrist_roll_drive#1"]
+    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 166  # 46 + the base motor mount (1 + 4 + 4) + j1_coupler's motor leg + (7 + 13) + 2 x (2 + 13) + the elbow motor's 20T (3) + its 4 screws + 6 bearings + 3 thrust + 3 pulleys + 6 x 4 pulley bolts + the base_yaw and wrist motors' 20Ts (2 x 3) + 3 belts + the elbow and base_yaw belts' tensioners (2 x 4)
+    assert len(P.keys(kind="part", mounted=False, retired=True)) == 30
+    assert P.RETIRED == ("j3_coupler#1", "gt2_pulley_90t#1", "gt2_pulley_90t#2", "nema17_pancake#1", "gt2_pulley_20t#1")
+    assert set(P.RETIRED) <= set(P.OCCURRENCES)
+    assert len(P.keys(kind="part")) == 73 - len(P.RETIRED)
 
 
 def test_mounted_records_follow_lib_mounts():
@@ -70,12 +72,14 @@ def test_mounted_records_follow_lib_mounts():
 def test_mounted_module_record_follows_lib_mounts():
     """A designed module the capture never placed (lib/mounts.py MODULE_MOUNTS): a module record with a `mount`
     block, listed under designed_modules AND mounted, rel == world = host world (before its TURNS: the module keeps its
-    pose) * the declared frame, no totals (its own EXPECTED is the lock), and its +Z on its joint's axis."""
+    pose - after them for a `turned` one, beyond the turned link) * the declared frame, no totals (its own EXPECTED is the
+    lock), and its +Z on its joint's axis."""
     from lib import mounts
     from lib.datum import to_location
     from robot import frames as F
 
-    assert mounts.module_keys() == ["forearm_roll_drive#1"]
+    assert mounts.module_keys() == ["forearm_roll_drive#1", "wrist_roll_drive#1"]
+    assert [mounts.MODULES_BY_KEY[k].turned for k in mounts.module_keys()] == [False, True]
     for key in mounts.module_keys():
         o, m = P.OCCURRENCES[key], mounts.MODULES_BY_KEY[key]
         assert (o["kind"], o["designed"], o["parent"], o["path"], o["part"], o["source"]) == ("module", True, None, None, m.module, f"assemblies/{m.module}.py")
@@ -83,7 +87,7 @@ def test_mounted_module_record_follows_lib_mounts():
         assert o["mount"]["frame_in_host"] == {"position": list(m.frame[0]), "rotation_xyz_deg": list(m.frame[1])}
         assert o["rel"] == o["world"] and "solids" not in o and "solid_volume" not in o
         world = P.location(key, "world")
-        assert _close(_matrix(P.location(m.host, "world", turned=False) * to_location(m.frame)), _matrix(world), tol=1e-4), key
+        assert _close(_matrix(P.location(m.host, "world", turned=m.turned) * to_location(m.frame)), _matrix(world), tol=1e-4), key
         joint = F.JOINT_BY_NAME[m.joint]
         z = (world * Location((0.0, 0.0, 1.0))).position - world.position
         assert abs(abs(z.dot(Location((0, 0, 0)).position + __import__("build123d").Vector(*joint.axis_w))) - 1.0) < 1e-6
@@ -148,13 +152,13 @@ def _j2_y_in_j1() -> tuple:
     return tuple((rel * Location((0.0, 1.0, 0.0))).position - rel.position)
 
 
-def _check_links_carry_what_lies_beyond(elbow_x: float, wrist_x: float, end_dx: float, across: float = 0.0,
+def _check_links_carry_what_lies_beyond(elbow_x: float, wrist_x: float, end_d: tuple, across: float = 0.0,
                                         offset: float = 0.0):
     """j2_link#1 (whose capture origin is on the elbow axis) sits at (elbow_x, 10 + across, 0) in j1_link's frame, plus
     `offset` along its own +Y (the forearm across the elbow axis: the roll drive's elbow offset); j3_coupler#2 (on the
-    wrist_pitch axis) at (wrist_x, 0, 42) in j2_link's; what bolts to the wrist body's end face keeps its capture pose in
-    the wrist body's frame but for x + end_dx. (j2_link#1 before its turn - a turn about its own roll axis:
-    test_the_forearm_turns_about_its_roll_axis.)"""
+    wrist_pitch axis) at (wrist_x, 0, 42) in j2_link's; what lies beyond the wrist roll (the gripper on the wrist roll
+    drive's axis) keeps its capture pose in the wrist body's frame but for + end_d. (j2_link#1 before its turn - a turn
+    about its own roll axis: test_the_forearm_turns_about_its_roll_axis.)"""
     y2 = _j2_y_in_j1()
     assert _near(_position_in("j1_link#1", "j2_link#1", turned=False),
                  tuple(a + offset * b for a, b in zip((elbow_x, 10.0 + across, 0.0), y2, strict=True)))
@@ -162,16 +166,23 @@ def _check_links_carry_what_lies_beyond(elbow_x: float, wrist_x: float, end_dx: 
     wrist_raw = P.to_location(P.OCCURRENCES["wrist_link#1"]["world"])
     for key in P.SHIFTS[2].moves:
         raw = tuple((wrist_raw.inverse() * P.to_location(P.OCCURRENCES[key]["world"])).position)
-        assert _near(_position_in("wrist_link#1", key), (raw[0] + end_dx, raw[1], raw[2])), key
+        assert _near(_position_in("wrist_link#1", key), tuple(r + d for r, d in zip(raw, end_d, strict=True))), key
 
 
-def test_shift_axes_are_their_anchors_x_and_y():
+def _wrist_end_d() -> tuple:
+    """What the wrist roll drive's shift moves the gripper by in the wrist body's frame: along it to the roll pulley's
+    face, across it to R', off its plate to R' (lib/placements.py SHIFTS)."""
+    s = P.SHIFTS[2]
+    return (s.along_x, s.across_y, s.normal_z)
+
+
+def test_shift_axes_are_their_anchors_x_y_and_z():
     for s in P.SHIFTS:
-        x = [row[0] for row in P.OCCURRENCES[s.anchor]["world"]["matrix_3x4"]]
-        assert all(math.isclose(a, b, abs_tol=1e-9) for a, b in zip(x, s.axis_w, strict=True)), s.link
-        if s.across_y:
-            y = [row[1] for row in P.OCCURRENCES[s.anchor]["world"]["matrix_3x4"]]
-            assert all(math.isclose(a, b, abs_tol=1e-9) for a, b in zip(y, s.across_w, strict=True)), s.link
+        m = P.OCCURRENCES[s.anchor]["world"]["matrix_3x4"]
+        for col, used, axis in ((0, True, s.axis_w), (1, s.across_y, s.across_w), (2, s.normal_z, s.normal_w)):
+            if used:
+                v = [row[col] for row in m]
+                assert all(math.isclose(a, b, abs_tol=1e-9) for a, b in zip(v, axis, strict=True)), (s.link, col)
 
 
 def test_shifts_move_the_capture_records_beyond_each_link():
@@ -180,18 +191,26 @@ def test_shifts_move_the_capture_records_beyond_each_link():
         "j1_link#1", "j2_link#1", "wrist_link#1", "j1_coupler#1", "j2_link#1")
     assert set(upper_arm.moves) == _capture_records("elbow_link", "forearm_link", "wrist_pitch_link", "wrist_roll_link",
                                                     "jaw_a_link", "jaw_b_link") | set(P.RETIRED)
+    retired_wrist = {"nema17_pancake#1", "gt2_pulley_20t#1"}   # the wrist roll drive carries both now
     assert set(forearm.moves) == _capture_records("wrist_pitch_link", "wrist_roll_link", "jaw_a_link", "jaw_b_link") | {
-        "gt2_pulley_90t#2"}
-    assert set(wrist.moves) == _capture_records("wrist_roll_link", "jaw_a_link", "jaw_b_link") | {
-        "gripper_clamp_bracket#1", "nema17_pancake#1"}
+        "gt2_pulley_90t#2"} | retired_wrist
+    assert set(wrist.moves) == _capture_records("wrist_roll_link", "jaw_a_link", "jaw_b_link") | retired_wrist == (
+        {"gripper#1"} | retired_wrist)
     assert all(P.OCCURRENCES[key]["parent"] is None for key in upper_arm.moves)
-    assert (upper_arm.along_x, forearm.along_x, wrist.along_x) == (
-        UPPER_ARM.DEFAULT.slab.elbow_x - UPPER_ARM.LEGACY.slab.elbow_x,
-        FOREARM.DEFAULT.web.wrist_x - FOREARM.LEGACY.web.wrist_x,
-        WRIST.DEFAULT.tower.block_x1 - WRIST.LEGACY.tower.block_x1)
+    assert (upper_arm.along_x, forearm.along_x) == (UPPER_ARM.DEFAULT.slab.elbow_x - UPPER_ARM.LEGACY.slab.elbow_x,
+                                                    FOREARM.DEFAULT.web.wrist_x - FOREARM.LEGACY.web.wrist_x)
+    # the wrist roll drive: the gripper's connector from its capture station (its plate's hub-side face) to the roll
+    # pulley's face plus its hub, across to R' and off the plate - along / across / normal to wrist_link
+    raw = P.to_location(P.OCCURRENCES["wrist_link#1"]["world"]).inverse() * P.to_location(P.OCCURRENCES["gripper_j3_connector#1"]["world"])
+    assert math.isclose(raw.position.X - WRIST.DEFAULT.connector.plate_t, P._CONNECTOR_CAPTURE_X, abs_tol=1e-3)
+    assert math.isclose(raw.position.Y, 0.0, abs_tol=1e-3) and math.isclose(raw.position.Z, WRIST.LEGACY.end_face.axis_z, abs_tol=1e-3)
+    d = WRIST.DEFAULT.roll
+    assert (wrist.link, wrist.along_x, wrist.across_y, wrist.normal_z) == (
+        "wrist_roll_drive", WRIST.DEFAULT.plate.pitch_x + stack_positions(WRIST.DEFAULT)["z_connector"] - P._CONNECTOR_CAPTURE_X,
+        d.centre_distance, WRIST.DEFAULT.plate.thickness - d.axis_h - WRIST.LEGACY.end_face.axis_z)
     # the upper arm's elbow end also slides across it (its +Y, N) with the arm rising off the drive's shell
-    assert (upper_arm.across_y, forearm.across_y, wrist.across_y) == (
-        arm_slide(UPPER_ARM.DEFAULT) - arm_slide(UPPER_ARM.LEGACY), 0.0, 0.0)
+    assert (upper_arm.across_y, forearm.across_y) == (arm_slide(UPPER_ARM.DEFAULT) - arm_slide(UPPER_ARM.LEGACY), 0.0)
+    assert all(s.normal_z == 0.0 for s in P.SHIFTS if s is not wrist)
     # the yoke holds the drive with the middle of its discs on the base_yaw axis: the drive, the upper arm and all beyond
     # move along its +X (N) from where the capture had them
     assert set(yoke.moves) == {"cycloidal_drive#1", "j1_link#1"} | set(upper_arm.moves) and yoke.across_y == 0.0
@@ -238,20 +257,22 @@ def test_the_forearm_turns_about_its_roll_axis():
 
 
 def test_the_links_carry_what_lies_beyond_them():
-    _check_links_carry_what_lies_beyond(UPPER_ARM.DEFAULT.slab.elbow_x, FOREARM.DEFAULT.web.wrist_x,
-                                        WRIST.DEFAULT.tower.block_x1 - WRIST.LEGACY.tower.block_x1,
+    _check_links_carry_what_lies_beyond(UPPER_ARM.DEFAULT.slab.elbow_x, FOREARM.DEFAULT.web.wrist_x, _wrist_end_d(),
                                         arm_slide(UPPER_ARM.DEFAULT), FOREARM.DEFAULT.elbow_offset)
 
 
 def test_shifted_links_keep_the_records_consistent(monkeypatch):
-    """Shorter links (any lengths) and a slid elbow end: each moves what lies beyond it, a module's children follow it,
-    the rest stays."""
-    along = {"j1_link": -40.0, "j2_link": 40.0, "wrist_link": -20.0, "j1_coupler": P.SHIFTS[3].along_x,   # the yoke's kept
+    """Shorter links (any lengths), a slid elbow end and a wrist roll axis moved off the plate: each moves what lies
+    beyond it, a module's children follow it, the rest stays."""
+    along = {"j1_link": -40.0, "j2_link": 40.0, "wrist_roll_drive": -20.0, "j1_coupler": P.SHIFTS[3].along_x,   # the yoke's kept
              "forearm_roll_drive": 0.0}
-    across = {"j1_link": 25.0, "j2_link": 0.0, "wrist_link": 0.0, "j1_coupler": 0.0, "forearm_roll_drive": 30.0}
+    across = {"j1_link": 25.0, "j2_link": 0.0, "wrist_roll_drive": 15.0, "j1_coupler": 0.0, "forearm_roll_drive": 30.0}
+    normal = {"j1_link": 0.0, "j2_link": 0.0, "wrist_roll_drive": -10.0, "j1_coupler": 0.0, "forearm_roll_drive": 0.0}
     before = {key: P.location(key, "world") for key in ("base#1", "j1_link#1", "cycloidal_drive#1")}
-    monkeypatch.setattr(P, "SHIFTS", tuple(replace(s, along_x=along[s.link], across_y=across[s.link]) for s in P.SHIFTS))
-    _check_links_carry_what_lies_beyond(UPPER_ARM.LEGACY.slab.elbow_x - 40.0, FOREARM.LEGACY.web.wrist_x + 40.0, -20.0, 25.0, 30.0)
+    monkeypatch.setattr(P, "SHIFTS", tuple(replace(s, along_x=along[s.link], across_y=across[s.link], normal_z=normal[s.link])
+                                           for s in P.SHIFTS))
+    _check_links_carry_what_lies_beyond(UPPER_ARM.LEGACY.slab.elbow_x - 40.0, FOREARM.LEGACY.web.wrist_x + 40.0, (-20.0, 15.0, -10.0),
+                                        25.0, 30.0)
     _check_world_equals_parent_world_times_rel()
     for key, loc in before.items():
         assert _close(_matrix(P.location(key, "world")), _matrix(loc), tol=1e-9), key
@@ -263,7 +284,7 @@ def test_assembly_tables_claim_every_part_key_exactly_once():
     used = [key for _, _, key in arm.OCCURRENCES if key not in arm.MODULE_KEYS] + [key for _, _, key in gripper.OCCURRENCES]
     assert sorted(used) == sorted(P.keys(kind="part"))
     assert not set(P.RETIRED) & set(used), "a retired occurrence is back in a table"
-    assert [key for _, _, key in arm.OCCURRENCES if key in arm.MODULE_KEYS] == ["cycloidal_drive#1", "forearm_roll_drive#1", "gripper#1"]
+    assert [key for _, _, key in arm.OCCURRENCES if key in arm.MODULE_KEYS] == ["cycloidal_drive#1", "forearm_roll_drive#1", "wrist_roll_drive#1", "gripper#1"]
     assert all(P.OCCURRENCES[key]["parent"] == "gripper#1" for _, _, key in gripper.OCCURRENCES)
     assert all(P.OCCURRENCES[key]["parent"] is None for _, _, key in arm.OCCURRENCES)
     for name, _, key in arm.OCCURRENCES + gripper.OCCURRENCES:
@@ -298,8 +319,9 @@ def test_skipped_nodes_are_the_dropped_products():
     no occurrence: its pose stays under `skipped` (tools/reference/mount_placements.py's merge mode moved them there,
     as an extraction would write them)."""
     skipped = P.DATA["skipped"]
-    assert [s["label"] for s in skipped] == ["cap_1_joint_2_8726", "cap_of_joint_2_piece_2_8526", "first_joint_cap_8726"]
-    assert [s["path"] for s in skipped] == ["1.15", "1.16", "1.17"]
+    assert [s["label"] for s in skipped] == ["brack_for_hand_cmap", "cap_1_joint_2_8726", "cap_of_joint_2_piece_2_8526",
+                                             "first_joint_cap_8726"]
+    assert [s["path"] for s in skipped] == ["1.11", "1.15", "1.16", "1.17"]
     assert all(s["reason"] == R.SKIPPED_LABELS[s["label"]] and (s["leaves"], s["solids"]) == (1, 1) for s in skipped)
     assert not {o["label_in_monolith"] for o in P.DATA["occurrences"]} & set(R.SKIPPED_LABELS)
     for s in skipped:

@@ -148,6 +148,17 @@ ELBOW_ROLL_OFFSET = _FOREARM.elbow_offset                    # 74 [DESIGN] the r
 #                                                              elbow offset (lib/placements.py SHIFTS)
 FOREARM_ROLL_RATIO = _FOREARM.drive.ring_teeth / GT2_PULLEY_20T_TEETH   # 4.5:1 [DESIGN] like the other belt joints
 FOREARM_ROLL_BLOCK_X = _FOREARM.drive.block_x       # (-30, 30) [DESIGN] the roll frame's extent along N: its underside 6.0 mm above the upper arm's flat top (host z -11)
+# The wrist roll (lib/wrist/params.py WristRollParams; assemblies/wrist_roll_drive.py, docs/wrist_roll.md): the pancake ON
+# the wrist-pitch axis, on wrist_link's plate, belted to the roll axis beside it - the forearm roll's pattern
+from lib.wrist.params import DEFAULT as _WRIST  # noqa: E402
+
+WRIST_ROLL_BELT_LENGTH = _WRIST.roll.belt           # 158-2GT [DESIGN] the wrist roll belt (the 20T on the pancake, the 40T band on the pulley)
+WRIST_ROLL_RATIO = _WRIST.roll.ring_teeth / GT2_PULLEY_20T_TEETH   # 2:1 [DESIGN] motor turns per output turn
+WRIST_ROLL_OFFSET = _WRIST.roll.centre_distance     # 48.58 [DESIGN] the roll axis' distance from the pitch axis (along wrist_link's +Y): the
+#                                                     stock belt's centre distance, the pancake on the pitch axis at its slots' middle - the arm's
+#                                                     wrist offset (lib/placements.py SHIFTS; the wrist is no longer spherical)
+WRIST_ROLL_AXIS_H = _WRIST.roll.axis_h              # 27 [DESIGN] the roll axis (and the pancake's) over the plate's coupler face: 44 mm off the
+#                                                     SolidWorks roll axis (EndFaceParams.axis_z 22, the other side of the plate)
 
 # --- Cycloidal drive (lib/cycloidal/, assemblies/cycloidal_drive.py, docs/cycloidal_drive.md) -----
 # The drive's own dimensions live in lib/cycloidal/params.py (DriveConfig, ported from the
@@ -263,20 +274,23 @@ SHOULDER_PITCH_LIMITS_DEG = (-120.0, 67.0)   # [DESIGN]
 # upper kept at 90 (the gripper, the wrist pitched up, stays 1 mm off j1_coupler there - tests/test_sweeps.py):
 # SHOULDER_PITCH_LIMITS_DEG was set over this range
 ELBOW_PITCH_LIMITS_DEG = (-47.0, 90.0)   # [DESIGN]
-# the GT2 belt at wrist_link: (lower, upper), set 4 deg short of where the wrist body's back corners met j2_link's web
-# (-109 / +74.5); since the web was necked they reach it at -116.9 / +82.6 at any roll (tests/test_sweeps.py) - the
-# room to open up: docs/open_issues.md
-WRIST_PITCH_LIMITS_DEG = (-105.0, 70.0)   # [DESIGN]
+# the GT2 belt at wrist_link: (lower, upper). The wrist roll drive's frame on the wrist plate sets the lower: its tower's
+# rear comes 1.49 mm off the wrist-pitch motor's board at -75 and touches it at -77, at any roll; a finger meets that
+# motor near +129 at roll 0 / 180 (tests/test_sweeps.py; docs/open_issues.md)
+WRIST_PITCH_LIMITS_DEG = (-75.0, 125.0)   # [DESIGN]
 # the forearm roll: 2 deg short of its printed hard stop - the lug on the roll shaft's flange meets the post on the
 # frame's tower at +/- 168.3 (lib/forearm/params.py stop_deg_width; tests/test_sweeps.py measures it), which keeps the
 # cables from winding
 FOREARM_ROLL_LIMIT_DEG = 166.0    # [DESIGN]
-WRIST_ROLL_LIMIT_DEG = 180.0      # [ESTIMATE] NEMA17 pancake wrist roll (not CAN-driven yet)
+# the wrist roll: 2 deg short of its printed hard stop - the lug on the wrist roll shaft's flange meets the post in
+# wrist_link's bay at +/- 168.66 (lib/wrist/params.py stop_deg_width; tests/test_sweeps.py measures it), which keeps the
+# gripper servo's cable through the rotor from winding
+WRIST_ROLL_LIMIT_DEG = 166.0      # [DESIGN] the pancake through 2 : 1 (not CAN-driven yet)
 JAW_TRAVEL_MM = 10.0            # [ESTIMATE] symmetric +/- jaw travel about the capture pose - which is open already: it
 #                                 does not fit the gripper (docs/open_issues.md)
 ARM_JOINT_EFFORT_NM = 5.0       # [ESTIMATE] MKS SERVO42D through the reductions
 ARM_JOINT_VELOCITY_RAD_S = 1.0  # [ESTIMATE]
-WRIST_EFFORT_NM = 1.0           # [ESTIMATE]
+WRIST_EFFORT_NM = 1.0           # [ESTIMATE] the wrist roll: the pancake through WRIST_ROLL_RATIO
 WRIST_VELOCITY_RAD_S = 2.0      # [ESTIMATE]
 JAW_EFFORT_N = 20.0             # [ESTIMATE] MG996R through the crank linkage
 JAW_VELOCITY_M_S = 0.05         # [ESTIMATE]

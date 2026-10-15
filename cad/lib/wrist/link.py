@@ -13,8 +13,9 @@ from cadgen import build123d as bd
 
 from lib.geom import align_min, cylinder, hex_prism, single_solid, through
 from lib.units import NUDGE
-from lib.wrist.layout import end_face_holes, seat_bolt_points, slope_x
+from lib.wrist.layout import end_face_holes, motor_pocket, seat_bolt_points, slope_x, stack_positions
 from lib.wrist.params import DEFAULT, WristConfig
+from lib.wrist.roll import build_frame, module_to_host
 
 _FAR = 200.0         # beyond the part: the span of a cutter or a core that only one side limits
 _CORE_BELOW = 5.0    # the fillet's core, under the plate's underside ...
@@ -103,11 +104,37 @@ def _end_face_cuts(cfg: WristConfig):
             + [_xcyl(e.m4_dia / 2.0, x0, x1, y, z) for y, z in m4])
 
 
+def _bay_channels(cfg: WristConfig):
+    """The coupler flange's nuts the roll drive's frame covers: each one's hex pocket carried on from the plate's
+    underside up through the frame into the shaft's bay (the nut drops in from the bay, before the shaft)."""
+    s, d, S = cfg.seat, cfg.roll, stack_positions(cfg)
+    to_module = module_to_host(cfg).inverse()
+    channels = []
+    for x, y, a in seat_bolt_points(cfg):
+        _, my, mz = (to_module * bd.Location((x, y, 0.0))).position
+        if not (S["z_rear"] <= mz <= S["z_front"] and motor_pocket(cfg)[0] - d.pocket_wall <= my <= d.frame_r):
+            continue                                        # on the bare plate: its pocket stays open on the underside
+        if not (abs(my) < d.bay_r and S["z_bay"] <= mz <= S["z_bearing_1"]):
+            raise ValueError(f"the coupler bolt at ({x:.2f}, {y:.2f}) lies under the frame but not under its bay")
+        # part z = (thickness - axis_h) - module x: the bay's floor over the nut, 0.5 into the bay
+        z0 = (cfg.plate.thickness - d.axis_h) + math.sqrt(d.bay_r ** 2 - my * my) - 0.5
+        channels.append(bd.Pos(x, y, z0) * hex_prism(s.nut_af, math.radians(a + 30.0), s.nut_depth - z0))
+    return channels
+
+
 def build_wrist_link(cfg: WristConfig = DEFAULT):
-    body = _plate(cfg) + _tower(cfg)
-    for cheek in _cheeks(cfg):
-        body = body + cheek
-    body = body - _back(cfg)
-    for cut in _seat_cuts(cfg) + _end_face_cuts(cfg):
+    if cfg.roll is None:
+        body = _plate(cfg) + _tower(cfg)
+        for cheek in _cheeks(cfg):
+            body = body + cheek
+        body = body - _back(cfg)
+        for cut in _seat_cuts(cfg) + _end_face_cuts(cfg):
+            body = body - cut
+        return single_solid(body)
+    # the wrist roll drive's frame on the plate's underside (lib/wrist/roll.py); the plate only its round end on the
+    # pitch axis - j3_coupler#2's seat
+    p = cfg.plate
+    body = cylinder(p.pitch_r, p.thickness, (p.pitch_x, 0.0)) + build_frame(cfg).moved(module_to_host(cfg))
+    for cut in _seat_cuts(cfg) + _bay_channels(cfg):
         body = body - cut
     return single_solid(body)

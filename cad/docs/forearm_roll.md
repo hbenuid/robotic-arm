@@ -9,7 +9,7 @@ Numbers below name the constants; the values live in `lib/forearm/params.py`.
 ## 0. Specifications at a glance
 | item | value | where |
 |---|---|---|
-| joint | `forearm_roll`, revolute, `elbow_link → forearm_link`; axis along the forearm through the wrist centre, `ELBOW_ROLL_OFFSET` (the drive's centre distance) across the elbow axis - **an elbow offset: the two axes do not cross** -, `FOREARM_ROLL_AXIS_Z` along N from `j2_link`'s origin | `robot/frames.py`, `lib/placements.py SHIFTS` |
+| joint | `forearm_roll`, revolute, `elbow_link → forearm_link`; axis along the forearm through the wrist centre (on the `wrist_pitch` axis), `ELBOW_ROLL_OFFSET` (the drive's centre distance) across the elbow axis - **an elbow offset: the two axes do not cross** -, `FOREARM_ROLL_AXIS_Z` along N from `j2_link`'s origin | `robot/frames.py`, `lib/placements.py SHIFTS` |
 | range | ±`FOREARM_ROLL_LIMIT_DEG`, 2° short of the printed hard stop (a lug on the shaft's flange, a post on the frame's tower, in the bay behind bearing 1 - straight-sided, `stop_deg_width` wide at their outer radius, so they meet before 180° − `stop_deg_width`: `tests/test_sweeps.py` measures where); home sensor modelled (`ky003_hall_sensor`), not placed | `lib/params.py`, `RollDriveParams stop_*` |
 | drive | NEMA 17 × 40 mm + MKS SERVO42D (a 4th CAN id) **on the elbow axis**, GT2 20T on the motor, the 90T ring **integral to the pulley - the output**, **4.5 : 1**, a stock 2GT × 6 mm belt (`roll_belt`) at the drive's design `centre_distance` (= the offset), its **tensioner** taking up the rest | `RollDriveParams`, `lib/belts.py` |
 | torque | ≈ 1.1–1.8 N·m at the roll vs ≈ 0.9 N·m worst-case static load | §2 |
@@ -30,16 +30,17 @@ The SolidWorks arm had five revolute joints — `base_yaw` and three parallel pi
 `elbow_pitch`, `wrist_pitch`) plus `wrist_roll` — so the tool's approach axis could never leave the vertical
 plane through the base axis. `wrist_pitch` and `wrist_roll` already met at one point, the **wrist centre**
 (`robot/frames.py WRIST_CENTRE`: `WRIST_CENTRE_ALONG_N` = 17 mm back along the pitch axis from the wrist_pitch
-origin, 5 µm off both axes). A roll about the forearm through that point makes the last three axes concurrent —
-the standard 6R arm with a spherical wrist and a closed-form IK. The axis runs along `ELBOW_TO_WRIST_INPLANE`,
+origin, 5 µm off both axes). A roll about the forearm through that point made the last three axes concurrent - a
+spherical wrist; the wrist roll drive (`docs/wrist_roll.md`) has since moved the wrist roll axis `WRIST_ROLL_OFFSET`
+across the pitch axis, so the IK is numeric now. The roll still runs through the wrist centre on the pitch axis. The axis runs along `ELBOW_TO_WRIST_INPLANE`,
 `FOREARM_ROLL_AXIS_Z` = 42 − 17 = 25 mm along N from `j2_link`'s origin — in `j2_link`'s frame: y 0, z 25, along −X.
 
 **The elbow offset.** The roll motor sits ON the elbow axis and the roll axis above it, the drive's design centre
 distance away (`ForearmConfig.elbow_offset` = `RollDriveParams.centre_distance`, `ELBOW_ROLL_OFFSET`; the stock belt runs round its tensioner, §0): so the
 forearm, the wrist and the gripper sit that far across the elbow axis - along `j2_link`'s +Y, up in the arm's swing
 plane -, moved rigidly from the capture (`lib/placements.py SHIFTS`: `j2_link#1` and every record beyond it; the
-elbow's own records stay). The arm gains an elbow offset (the roll axis and the elbow axis no longer cross; the wrist
-stays spherical); in exchange the forearm lifts back to `ELBOW_PITCH_LIMITS_DEG`'s −47° and further (the frame, round
+elbow's own records stay). The arm gains an elbow offset (the roll axis and the elbow axis no longer cross); in
+exchange the forearm lifts back to `ELBOW_PITCH_LIMITS_DEG`'s −47° and further (the frame, round
 about the elbow axis, sweeps nothing as the elbow turns). In `j2_link`'s frame the elbow axis runs along Z through
 y = −`elbow_offset`.
 

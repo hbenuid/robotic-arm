@@ -48,7 +48,6 @@ counts them from the assembly tables.
 | `j2_link` | custom | `Joint 2 change 8126` | `step/Joint 2 change 8126.STEP` | mm | 1 | 300 × 90 × 33.5 |
 | `j3_coupler` | custom | `Joint 2 coupler 62226_J3 Coupler` | `step/Joint 2 coupler 62226_J3 Coupler.STEP` | mm | 1 | 78 × 22 × 78 |
 | `gt2_pulley_90t` | custom | `GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric` | `step/GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric.STEP` | mm | 1 | 59.188 × 21.4 × 59.188 |
-| `gripper_clamp_bracket` | custom | `brack for hand cmap` | `step/brack for hand cmap.STEP` | mm | 1 | 26.2 × 64 × 43.2 |
 | `wrist_link` | custom | `final component arm qwrist movement` | `step/final component arm qwrist movement.STEP` | mm | 1 | 124.446 × 78 × 44 |
 | `gripper_cover` | custom | `Gripper Cover_Gripper Cover` | `step/Gripper Cover_Gripper Cover.STEP` | mm | 1 | 44 × 10.5 × 70 |
 | `gripper_end` | custom | `Gripper End_Gripper End` | `step/Gripper End_Gripper End.STEP` | mm | 1 | 27.123 × 30 × 25.123 |

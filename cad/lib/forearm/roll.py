@@ -26,7 +26,7 @@ from lib.forearm.layout import (
 )
 from lib.forearm.link import x_cylinder, yz_prism
 from lib.forearm.params import DEFAULT, ForearmConfig
-from lib.geom import cylinder, hex_prism, single_solid
+from lib.geom import box, cylinder, hex_prism, nut_slot, single_solid, slot_y, stop_wedge
 from lib.pulley.teeth import gt2_ring
 from lib.units import NUDGE
 
@@ -38,32 +38,9 @@ def host_to_module(cfg: ForearmConfig = DEFAULT) -> bd.Location:
     return to_location(module_frame_in_host(cfg)).inverse()
 
 
-def _box(x, y, z):
-    """A plain box over the x / y / z ranges."""
-    return bd.Pos(x[0], y[0], z[0]) * bd.Box(x[1] - x[0], y[1] - y[0], z[1] - z[0], align=(bd.Align.MIN, bd.Align.MIN, bd.Align.MIN))
-
-
-def _wedge(r_in: float, r_out: float, z0: float, height: float, deg_width: float, at_deg: float):
-    """A hard-stop lug: a radial box from r_in to r_out, deg_width wide at r_out, standing on z0, turned to at_deg."""
-    half = r_out * math.tan(math.radians(deg_width / 2.0))
-    box = bd.Pos(r_in, 0.0, z0) * bd.Box(r_out - r_in, 2 * half, height, align=(bd.Align.MIN, bd.Align.CENTER, bd.Align.MIN))
-    return bd.Rot(0.0, 0.0, at_deg) * box
-
-
 def _x_hex(across_flats: float, length: float, yz, x0: float, flat_deg: float):
     """A hex prism along +X from x0, its axis through (y, z) = yz, one flat facing flat_deg in the y-z plane (0 = +Y)."""
     return bd.Pos(x0, yz[0], yz[1]) * bd.Rot(0.0, 90.0, 0.0) * hex_prism(across_flats, math.radians(flat_deg), length)
-
-
-def _slot_y(x: float, y: float, width: float, length: float, z0: float, depth: float):
-    """A slot `length` long along Y, `width` wide, through a plate from z0 (the plate's tension slots + pilot slot)."""
-    return bd.Pos(x, y, z0 - NUDGE) * bd.Rot(0.0, 0.0, 90.0) * bd.extrude(bd.SlotCenterToCenter(length, width), amount=depth + 2 * NUDGE)
-
-
-def _nut_slot(r_in: float, r_out: float, af: float, z0: float, z1: float, at_rad: float):
-    """A nut's pocket: a radial slot from r_in to r_out, af wide (a flat either side of the nut), z0 .. z1, along at_rad."""
-    slot = bd.Pos((r_in + r_out) / 2.0, 0.0, z0) * bd.Box(r_out - r_in, af, z1 - z0, align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MIN))
-    return bd.Rot(0.0, 0.0, math.degrees(at_rad)) * slot
 
 
 def profile(cfg: ForearmConfig = DEFAULT):
@@ -103,14 +80,14 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     # the motor's pocket, from the floor out through the open face; the plate in front of it: the motor's four tension
     # slots and the pilot slot, the motor centred on the elbow axis
     y0, y1, z0, z1 = motor_pocket(cfg)
-    body = body - _box((S["x_cradle"], d.block_x[1] + 1.0), (y0, y1), (z0, z1))
+    body = body - box((S["x_cradle"], d.block_x[1] + 1.0), (y0, y1), (z0, z1))
     for x, y in pad_bolt_points(cfg):
-        body = body - _slot_y(x, y, d.pad_bolt_dia, d.pad_slot_len, S["z_motor_face"], d.pad_t)
-    body = body - _slot_y(S["x_motor"], S["y_motor"], d.pad_pilot_w, d.pad_slot_len, S["z_motor_face"], d.pad_t)
+        body = body - slot_y(x, y, d.pad_bolt_dia, d.pad_slot_len, S["z_motor_face"], d.pad_t)
+    body = body - slot_y(S["x_motor"], S["y_motor"], d.pad_pilot_w, d.pad_slot_len, S["z_motor_face"], d.pad_t)
     # the shaft's slit through the plate, from the pilot slot out through the +N face: the motor + board slide in from
     # that face motor_drop low (the shaft in the slit, the pilot boss under the plate), then lift into the pilot slot
     slit = (S["y_motor"] - d.shaft_slit / 2.0, S["y_motor"] + d.shaft_slit / 2.0)
-    body = body - _box((S["x_motor"], d.block_x[1] + 1.0), slit, (S["z_motor_face"] - NUDGE, S["z_front"] + NUDGE))
+    body = body - box((S["x_motor"], d.block_x[1] + 1.0), slit, (S["z_motor_face"] - NUDGE, S["z_front"] + NUDGE))
     # the tower, from the bay to the boss's top: bearing 1's seat, the lip, bearing 2's seat (open through the top)
     r_seat = (d.bearing_od + d.seat_add) / 2.0
     body = body - cylinder(r_seat, d.bearing_width + NUDGE, z0=S["z_bearing_1"] - NUDGE)
@@ -120,8 +97,8 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     # the tower's rear face inside it, at -X
     bay = (S["z_bay"], S["z_bearing_1"])
     body = body - cylinder(d.bay_r, bay[1] - bay[0], z0=bay[0])
-    body = body - _box((0.0, d.block_x[1] + 1.0), (-d.bay_r, d.bay_r), bay)
-    body = body + _wedge(d.stop_post_r[0], d.stop_post_r[1], S["z_stop_post"], d.stop_post_t, d.stop_deg_width, 180.0)
+    body = body - box((0.0, d.block_x[1] + 1.0), (-d.bay_r, d.bay_r), bay)
+    body = body + stop_wedge(d.stop_post_r[0], d.stop_post_r[1], S["z_stop_post"], d.stop_post_t, d.stop_deg_width, 180.0)
     # the elbow flange: the pin bore, the elbow pulley's 4x M4 - clearance up through the stub to the nut seat, then each
     # nut's hex channel (a flat toward the elbow axis) on up through the floor into the motor's pocket, where the nut
     # drops in before the motor
@@ -136,7 +113,7 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     body = body - bd.Pos(ix, iy, tip - i.tip_clear) * bd.extrude(bd.SlotCenterToCenter(2.0 * i.travel, i.slot_w), amount=S["z_idler"] - tip + i.tip_clear + NUDGE)
     half = i.nut.af / 2.0 + i.nut_fit
     x0 = ix - i.travel - i.nut.af / math.sqrt(3.0) - i.nut_fit
-    body = body - _box((x0, d.block_x[1] + 1.0), (iy - half, iy + half), (S["z_idler_roof"] - i.nut.h - i.nut_fit, S["z_idler_roof"]))
+    body = body - box((x0, d.block_x[1] + 1.0), (iy - half, iy + half), (S["z_idler_roof"] - i.nut.h - i.nut_fit, S["z_idler_roof"]))
     return single_solid(body)
 
 
@@ -167,7 +144,7 @@ def build_pulley(cfg: ForearmConfig = DEFAULT):
     z_hole = S["z_end_tip"] - d.end_nut_fit
     for x, y in flange_bolt_points_module(cfg):
         body = body - cylinder(w.bolt_dia / 2.0, z_end - z_hole + NUDGE, (x, y), z0=z_hole)
-        body = body - _nut_slot(r_in, r_out, d.end_nut.af, z0, z1, math.atan2(y, x))
+        body = body - nut_slot(r_in, r_out, d.end_nut.af, z0, z1, math.atan2(y, x))
     ring = gt2_ring(d.ring_teeth, d.ring_width, d.ring_flange_dia, d.ring_flange_t, z0=S["z_ring"], inner_dia=d.ring_core_dia - 0.2)
     return single_solid(body + ring)
 
@@ -183,10 +160,10 @@ def build_shaft(cfg: ForearmConfig = DEFAULT):
     body = cylinder(j_r, S["z_meet"] - S["z_bearing_1"], z0=S["z_bearing_1"])
     body = body + cylinder(d.shoulder_dia / 2.0, d.run_gap, z0=S["z_shoulder_1"])
     body = body + cylinder(d.collar_od / 2.0, S["z_shoulder_1"] - z0, z0=z0)
-    body = body + _wedge(d.stop_lug_r[0], d.stop_lug_r[1], S["z_stop_lug"], d.stop_lug_t, d.stop_deg_width, 0.0)
+    body = body + stop_wedge(d.stop_lug_r[0], d.stop_lug_r[1], S["z_stop_lug"], d.stop_lug_t, d.stop_deg_width, 0.0)
     body = body - cylinder(d.bore / 2.0, S["z_meet"] - z0 + 2 * NUDGE, z0=z0 - NUDGE)
     r_in, r_out, p0, p1 = clamp_nut_pocket(cfg)
     for x, y in clamp_points(cfg):
         body = body - cylinder(w.bolt_dia / 2.0, S["z_meet"] - z0 + 2 * NUDGE, (x, y), z0=z0 - NUDGE)
-        body = body - _nut_slot(r_in, r_out, d.clamp_nut.af, p0 - NUDGE, p1, math.atan2(y, x))
+        body = body - nut_slot(r_in, r_out, d.clamp_nut.af, p0 - NUDGE, p1, math.atan2(y, x))
     return single_solid(body)

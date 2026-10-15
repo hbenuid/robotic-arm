@@ -7,7 +7,7 @@ regeneration checklist is Recipe C there.
 ## Authoring a part (`parts/<group>/<name>.py`)
 Parts live in subsystem groups (`base`, `joints`, `wrist`, `gripper`, `cycloidal`; templates in
 `parts/_templates/`). Groups follow the **physical stage along the arm**, not the name prefix and not
-the URDF links (`j1_*` sit in `base/`; `gripper_clamp_bracket` / `gripper_j3_connector` sit in `wrist/`
+the URDF links (`j1_*` sit in `base/`; the wrist roll drive's parts and `gripper_j3_connector` sit in `wrist/`
 as the wrist-side mount, the latter although `assemblies/gripper.py` places it) — put a new part with
 the stage it bolts to. The group is only a directory: the part's NAME is its key and `parts.load(name)` & co. are
 the only way in (`cad/AGENTS.md` "Rules for every folder"; `import parts` raises on a duplicate name) — a stdlib-only

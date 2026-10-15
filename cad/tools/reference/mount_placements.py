@@ -19,12 +19,13 @@ whose SolidWorks product has since been put in lib/reference.py SKIPPED_PRODUCTS
 link caps, 2026-09-25) moves to `skipped` as the entry extract_placements.py would write for it, and every `skipped`
 entry's reason is re-read from there, so the document equals what a fresh extraction gives.
 
-A ModuleMount (lib/mounts.py MODULE_MOUNTS - the forearm roll drive, which no SolidWorks node places) becomes
-a `kind: "module", designed: true` record with the same `mount` block and no solids / volume (the module's
+A ModuleMount (lib/mounts.py MODULE_MOUNTS - the forearm and wrist roll drives, which no SolidWorks node places)
+becomes a `kind: "module", designed: true` record with the same `mount` block and no solids / volume (the module's
 own totals are its EXPECTED; expected_totals() counts part records only), listed under `designed_modules`
 AND `mounted`, exactly like the drive's SolidWorks-placed record otherwise. Its host resolves UNTURNED (shifted only):
 the module drives the joint a lib/placements.py TURN is about (the forearm turned about its roll axis), so it keeps its
-pose while the host's own record and all beyond it turn.
+pose while the host's own record and all beyond it turn - unless it is `turned` (a module beyond the turned link, the
+wrist roll drive on wrist_link#1: it turns with its host).
 
 Checks: every motor's +Z must be parallel to its joint's axis (robot/frames.py JOINTS); a bearing's +Z, a pulley's
 +Y, a pulley-bolt pattern's +Z (lib/mounts.py AXES) and a module's +Z must lie ON that axis (parallel, origin on the line) - a wrong rotation
@@ -107,7 +108,8 @@ def mounted_records(records: list[dict]) -> list[dict]:
             raise SystemExit(f"{m.key}: host {m.host!r} has no placement record")
         if m.module not in R.DESIGNED_MODULES:
             raise SystemExit(f"{m.key}: {m.module!r} is not in lib/reference.py DESIGNED_MODULES")
-        world = unturned.get(m.host, worlds[m.host]) * to_location(m.frame)
+        host = worlds[m.host] if m.turned else unturned.get(m.host, worlds[m.host])
+        world = host * to_location(m.frame)
         _check_axis(m.key, world, joints[m.joint], on_axis=True)
         out.append({
             "key": m.key, "part": m.module, "kind": "module", "designed": True, "path": None, "parent": None,

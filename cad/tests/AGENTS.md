@@ -34,8 +34,8 @@ thrust stack under `j1_coupler`),
 `test_sweeps.py` (the joint limits keep the arm off itself: exact distances between the robot links' parts at poses
 on the limits - the upper arm over the shoulder's range against the fork and the base, the shoulder's upper limit over
 the elbow's range, the wrist at its limits, the forearm and the gripper at the elbow's limits at any roll and wrist
-pitch, the shoulder's limits at any yaw against the base, the forearm roll's limit short of its hard stop; poses with
-the arm down in the table skipped),
+pitch, the shoulder's limits at any yaw against the base, the forearm and the wrist roll's limits short of their hard
+stops, the gripper rolling clear of the wrist; poses with the arm down in the table skipped),
 `test_lazy_kernel.py` (a fresh interpreter imports every template, part, assembly and link model without
 loading `build123d` / `OCP`; names the first offender — a new assembly model goes in its module list),
 `source_checks.py` (the shared `runs_its_model()` check that a model file ends with its build call),
@@ -62,7 +62,10 @@ numbers no reference file holds for them - pieces, volume, bbox - and feature pr
 LEGACY build's feature probes, the stub the roll drive's block repeats), `tests/yaw_coupler/` (`j1_coupler`: the LEGACY
 build's feature probes, the yoke on the port's housing - its bore, od, pillars, bolt circle; DEFAULT's fork on the
 drive's own axis - two legs past the shell's ends, the disc's draft up them, the hub on one, the other its own part round the motor sleeve, the lowered ring - and the motor leg's numbers), `tests/wrist/` (`wrist_link`: the LEGACY build's feature probes, the seat on the
-coupler's flange, the end face on the NEMA 17 pattern), `tests/pulley/` (`gt2_pulley_90t`: the GT2 groove's tangency
+coupler's flange, the end face on the NEMA 17 pattern, DEFAULT the wrist roll drive's frame on its plate; the wrist roll
+drive - its axis the wrist offset across the pitch axis, the stack, the stock belt, the rotor's walls, the press fits,
+clean pairs against `wrist_link`, the pancake's way in; `gripper_j3_connector`: LEGACY's two bodies, DEFAULT's bolted
+hub), `tests/pulley/` (`gt2_pulley_90t`: the GT2 groove's tangency
 solve against the export's arcs, the LEGACY build's feature probes and surfaces, DEFAULT's opened holes;
 `gt2_pulley_20_60t`, a measured conversion: its export's numbers written into the test - both bands' arc centres, the
 surfaces, volume, bbox - and feature probes;
@@ -76,7 +79,8 @@ clearances in the arm with the elbow folded; `helpers.in_host()` places any occu
 
 ## Where the locks live
 The totals the docs never quote (`cad/AGENTS.md` Docs) live in the locks — `tests/test_assembly.py`,
-`assemblies/cycloidal_drive.py EXPECTED`, `assemblies/forearm_roll_drive.py EXPECTED`, `reference/placements.json
+`assemblies/cycloidal_drive.py EXPECTED`, `assemblies/forearm_roll_drive.py EXPECTED`, `assemblies/wrist_roll_drive.py
+EXPECTED`, `reference/placements.json
 expected`, `tests/test_bom.py`, `tests/test_placements.py`, `MULTI_BODY` in `tests/test_parts_convention.py`, the
 interference budgets (`tests/test_mounts.py`, `tests/forearm/`) and the shared dimensions in
 `tests/test_params_invariants.py`. A geometry change bumps the ones its failures name — measure, never guess (Recipe C

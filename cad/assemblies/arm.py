@@ -4,7 +4,7 @@ NEMA 17 motors - 48 mm at the base, 40 mm at the elbow and wrist - and their MKS
 the 6806-2RS bearing pair in each belt joint's bore; the base_yaw thrust bearing in the base's groove; the elbow's and the wrist's 90T re-seated on them
 and the base_yaw 120T under j1_coupler, each clamped by 4x M4 screws + nuts; j1_coupler's motor leg) + the gripper module
 (SolidWorks-driven) + the cycloidal_drive module (code-driven, placed at the SolidWorks node's pose) + the
-forearm_roll_drive module (code-driven, placed by lib/mounts.py MODULE_MOUNTS) - the totals are locked in
+forearm_roll_drive and wrist_roll_drive modules (code-driven, placed by lib/mounts.py MODULE_MOUNTS) - the totals are locked in
 tests/test_assembly.py - bucketed into the GROUPS component tree (arm -> base_link/shoulder_link/upper_arm_link/
 elbow_link/forearm_link/wrist_pitch_link/wrist) so each rigid link toggles as one node in the viewers. Colors: a PRINTED part carries its link's
 (or its module's) tint, every PURCHASED part (COTS = True - motors, boards, servo, bearings, pins, bolts, nuts,
@@ -24,17 +24,21 @@ rails, the 20T pulleys, the belts) is _occurrences.BOUGHT_TINT grey, inside the 
     |                    below; its block IS the elbow coupler)
     |- forearm_link      j2_link, bearing_6806:wrist_pitch_1 / _2, nema17_40mm:wrist_pitch, mks_servo42d:wrist_pitch,
     |                    gt2_pulley_20t:wrist_pitch, wrist_belt:wrist_pitch
-    |- wrist_pitch_link  gt2_pulley_90t:j3, wrist_pulley_screws / _nuts:wrist_pitch, j3_coupler:j3, wrist_link,
-    |                    gripper_clamp_bracket, nema17_pancake
-    |- wrist             gt2_pulley_20t, gripper
+    |- wrist_pitch_link  gt2_pulley_90t:j3, wrist_pulley_screws / _nuts:wrist_pitch, j3_coupler:j3, wrist_link (the wrist
+    |                    roll drive's frame), wrist_roll_drive (kept whole - see below)
+    |- wrist             gripper
 
 j3_coupler#1 (the elbow's SolidWorks coupler) is RETIRED (lib/placements.py): the roll drive's block carries its
 lip / boss / journal / stub and the elbow 90T bolts straight into it - the record stays in placements.json, no
-table claims it; likewise gt2_pulley_90t#1 / #2, whose re-seated poses are the mounts gt2_pulley_90t#3 / #4. The SolidWorks link caps (j1_cap, j2_cap_1, j2_cap_2) were removed 2026-09-25: their products are
-lib/reference.py SKIPPED_PRODUCTS, their poses sit in placements.json `skipped`. A drive module is one linked child, so this tree keeps it whole - the cycloidal drive under shoulder_link
-although its rotor body (output hub + pins) belongs to upper_arm_link, the forearm roll drive under elbow_link
-although its rotor (the roll pulley + shaft) belongs to forearm_link - in robot/frames.py LINKS, the kinematic truth,
-which the per-link meshes follow (each in its own MODULE_TINTS colour).
+table claims it; likewise gt2_pulley_90t#1 / #2, whose re-seated poses are the mounts gt2_pulley_90t#3 / #4, and
+nema17_pancake#1 / gt2_pulley_20t#1, which the wrist roll drive carries (the pancake on the wrist-pitch axis). The
+SolidWorks link caps (j1_cap, j2_cap_1, j2_cap_2) were removed 2026-09-25 and gripper_clamp_bracket 2026-10-14: their
+products are lib/reference.py SKIPPED_PRODUCTS, their poses sit in placements.json `skipped`. A drive module is one
+linked child, so this tree keeps it whole - the cycloidal drive under shoulder_link although its rotor body (output
+hub + pins) belongs to upper_arm_link, the forearm roll drive under elbow_link although its rotor (the roll pulley +
+shaft) belongs to forearm_link, the wrist roll drive under wrist_pitch_link although its rotor (its pulley + shaft)
+belongs to wrist_roll_link - in robot/frames.py LINKS, the kinematic truth, which the per-link meshes follow (each in
+its own MODULE_TINTS colour).
 
 Frame: the placements are in the SolidWorks capture frame W (+Y up), but the arm is EMITTED in
 the base_link frame B (lib/datum.py base_frame(), the frame robot/frames.py gives base_link - REP-103:
@@ -50,7 +54,7 @@ Run:  ./cadtool gen assemblies/arm.py            -> assemblies/arm.step (git-ign
 
 from cadgen import step
 
-from assemblies import cycloidal_drive, forearm_roll_drive, gripper
+from assemblies import cycloidal_drive, forearm_roll_drive, gripper, wrist_roll_drive
 from assemblies._occurrences import grouped_children
 from lib.assembly import assembly
 from lib.datum import base_frame
@@ -66,7 +70,8 @@ def arm_from_w():
 GRIPPER_KEY = "gripper#1"
 DRIVE_KEY = "cycloidal_drive#1"
 ROLL_KEY = "forearm_roll_drive#1"
-MODULE_KEYS = (DRIVE_KEY, ROLL_KEY, GRIPPER_KEY)
+WRIST_ROLL_KEY = "wrist_roll_drive#1"
+MODULE_KEYS = (DRIVE_KEY, ROLL_KEY, WRIST_ROLL_KEY, GRIPPER_KEY)
 
 # (part or module, role, placements.json key) in SolidWorks document order, each mounted bearing pair, motor + board
 # (lib/mounts.py, role = the joint it serves; a bearing's _1 / _2 = the coupler / pulley side) right after its host,
@@ -124,15 +129,16 @@ OCCURRENCES = [
     ("wrist_pulley_screws",   "wrist_pitch", "wrist_pulley_screws#1"),   # mounted: the wrist 90T's 4x M4 ...
     ("wrist_pulley_nuts",     "wrist_pitch", "wrist_pulley_nuts#1"),     # ... into the nuts in j3_coupler's flange
     ("j3_coupler",            "j3", "j3_coupler#2"),
-    ("wrist_link",            None, "wrist_link#1"),
-    ("gripper_clamp_bracket", None, "gripper_clamp_bracket#1"),
-    ("nema17_pancake",        None, "nema17_pancake#1"),
-    ("gt2_pulley_20t",        None, "gt2_pulley_20t#1"),
+    ("wrist_link",            None, "wrist_link#1"),       # the wrist roll drive's frame (its DEFAULT build)
+    # nema17_pancake#1 / gt2_pulley_20t#1 are retired and gripper_clamp_bracket skipped: the wrist roll drive carries the
+    # pancake (on the pitch axis) and its 20T, the gripper's connector bolts to its pulley
+    ("wrist_roll_drive",      None, WRIST_ROLL_KEY),       # module: assemblies/wrist_roll_drive.py (the wrist_roll joint; lib/mounts.py MODULE_MOUNTS)
     ("gripper",               None, GRIPPER_KEY),          # module: assemblies/gripper.py
 ]
 
 MODULES = {"gripper": gripper.gripper, "cycloidal_drive": cycloidal_drive.cycloidal_drive,
-           "forearm_roll_drive": forearm_roll_drive.forearm_roll_drive}   # the child MODELS
+           "forearm_roll_drive": forearm_roll_drive.forearm_roll_drive,
+           "wrist_roll_drive": wrist_roll_drive.wrist_roll_drive}   # the child MODELS
 
 # The component tree: the rigid-link partition of robot/frames.py LINKS with the three modules
 # kept whole (wrist = wrist_roll_link + jaw_a_link + jaw_b_link; the cycloidal drive under shoulder_link;
@@ -153,10 +159,11 @@ GROUPS = [
     ("forearm_link",     "#DD8452", ("j2_link#1", "bearing_6806#5", "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3",
                                      "gt2_pulley_20t#4", "wrist_belt#1")),
     ("wrist_pitch_link", "#55A868", ("gt2_pulley_90t#4", "wrist_pulley_screws#1", "wrist_pulley_nuts#1", "j3_coupler#2", "wrist_link#1",
-                                     "gripper_clamp_bracket#1", "nema17_pancake#1")),
-    ("wrist",            "#8172B3", ("gt2_pulley_20t#1", GRIPPER_KEY)),
+                                     WRIST_ROLL_KEY)),
+    ("wrist",            "#8172B3", (GRIPPER_KEY,)),
 ]
-MODULE_TINTS = {DRIVE_KEY: cycloidal_drive.TINT, ROLL_KEY: forearm_roll_drive.TINT, GRIPPER_KEY: gripper.TINT}  # the modules keep their own color in their group
+MODULE_TINTS = {DRIVE_KEY: cycloidal_drive.TINT, ROLL_KEY: forearm_roll_drive.TINT, WRIST_ROLL_KEY: wrist_roll_drive.TINT,
+                GRIPPER_KEY: gripper.TINT}  # the modules keep their own color in their group
 
 
 @step

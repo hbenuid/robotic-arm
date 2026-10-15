@@ -105,8 +105,9 @@ class SocketParams:
 @dataclass(frozen=True)
 class RollEndParams:
     """The forearm roll's rotor side (roll=True): the forearm ends at a flange wall instead of the elbow disc.
-    The roll axis runs along -X through (y 0, z axis_z) - the wrist centre, where the wrist_pitch and wrist_roll
-    axes meet (42 − 17 along N from the elbow origin), so the three wrist axes stay concurrent. The rotor's pulley
+    The roll axis runs along -X through (y 0, z axis_z) - the wrist centre on the wrist_pitch axis, where the
+    SolidWorks wrist_roll axis met it (42 − 17 along N from the elbow origin; the wrist roll drive moved that axis off
+    it: lib/wrist/params.py WristRollParams). The rotor's pulley
     (parts/joints/forearm_roll_pulley: the roll's 90T ring, the output) puts its Ø39.7 spigot into a shallow locating
     recess on the wall's elbow face, the ring's face on the wall; 4x M3 from the wall's wrist face run through the wall
     and the spigot into nuts in the pulley's core (the bottom one's head in a channel under the web); the cables pass

@@ -21,7 +21,6 @@ PART_NAMES = parts.names()
 # Parts that are DELIBERATELY several disjoint solids (multi-body SolidWorks parts / vendor
 # files): name -> expected solid count. Everything else must be exactly one solid.
 MULTI_BODY = {
-    "gripper_j3_connector": 2,
     "gt2_pulley_20t": 3,
     "mg996r_servo": 4,
     "nema17_pancake": 11,

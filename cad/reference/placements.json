@@ -11,13 +11,14 @@
  "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. A record with a `mount` block (keys under `mounted`) is a motor mount declared in lib/mounts.py, not a SolidWorks node: parent None, rel == world = host world * mount frame.",
  "root_label": "final_Arm_Assembly_Fully_Movable",
  "expected": {
-  "leaf_occurrences": 74,
-  "solids": 167,
-  "solid_volume": 2131677.733
+  "leaf_occurrences": 73,
+  "solids": 166,
+  "solid_volume": 2120502.135
  },
  "designed_modules": [
   "cycloidal_drive#1",
-  "forearm_roll_drive#1"
+  "forearm_roll_drive#1",
+  "wrist_roll_drive#1"
  ],
  "mounted": [
   "base_motor_mount#1",
@@ -63,7 +64,8 @@
   "yaw_idler_spacer#1",
   "yaw_idler_screw#1",
   "yaw_idler_nut#1",
-  "forearm_roll_drive#1"
+  "forearm_roll_drive#1",
+  "wrist_roll_drive#1"
  ],
  "occurrences": [
   {
@@ -910,90 +912,6 @@
     131.537,
     109.298,
     47.619
-   ]
-  },
-  {
-   "key": "gripper_clamp_bracket#1",
-   "part": "gripper_clamp_bracket",
-   "kind": "part",
-   "path": "1.11",
-   "parent": null,
-   "label_in_monolith": "brack_for_hand_cmap",
-   "solids": 1,
-   "solid_volume": 11175.598,
-   "rel": {
-    "position": [
-     -322.44243,
-     416.25339,
-     41.863168
-    ],
-    "rotation_xyz_deg": [
-     0.001348,
-     3.693683,
-     -29.86278
-    ],
-    "matrix_3x4": [
-     [
-      0.865418936,
-      0.496890164,
-      0.064422278,
-      -322.44242956
-     ],
-     [
-      -0.497923174,
-      0.867221144,
-      -2.3482e-05,
-      416.253389788
-     ],
-     [
-      -0.055880029,
-      -0.032057024,
-      0.997922727,
-      41.863168382
-     ]
-    ]
-   },
-   "world": {
-    "position": [
-     -322.44243,
-     416.25339,
-     41.863168
-    ],
-    "rotation_xyz_deg": [
-     0.001348,
-     3.693683,
-     -29.86278
-    ],
-    "matrix_3x4": [
-     [
-      0.865418936,
-      0.496890164,
-      0.064422278,
-      -322.44242956
-     ],
-     [
-      -0.497923174,
-      0.867221144,
-      -2.3482e-05,
-      416.253389788
-     ],
-     [
-      -0.055880029,
-      -0.032057024,
-      0.997922727,
-      41.863168382
-     ]
-    ]
-   },
-   "world_bbox_min": [
-    -394.07,
-    408.419,
-    0.522
-   ],
-   "world_bbox_size": [
-    52.911,
-    60.961,
-    45.786
    ]
   },
   {
@@ -7364,9 +7282,183 @@
     ]
    },
    "source": "assemblies/forearm_roll_drive.py"
+  },
+  {
+   "key": "wrist_roll_drive#1",
+   "part": "wrist_roll_drive",
+   "kind": "module",
+   "designed": true,
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "wrist_link#1",
+    "joint": "wrist_roll",
+    "frame_in_host": {
+     "position": [
+      -45.445774,
+      48.58289358178399,
+      -22.0
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      90.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the wrist roll drive on wrist_link's roll axis R' (WRIST_ROLL_OFFSET along +Y from the pitch axis, WRIST_ROLL_AXIS_H over the plate's coupler face): module +Z = host +X toward the gripper, module +X = host -Z (away from the plate), +Y = host +Y (from the pancake toward R'); wrist_link IS its frame (the stator), the pancake and its 20T replace nema17_pancake#1 / gt2_pulley_20t#1 (lib/placements.py RETIRED); beyond the forearm's turn, it turns with wrist_link"
+   },
+   "rel": {
+    "position": [
+     -221.353326,
+     364.115392,
+     -7.75305
+    ],
+    "rotation_xyz_deg": [
+     -88.210488,
+     -25.809692,
+     94.104499
+    ],
+    "matrix_3x4": [
+     [
+      -0.064435731,
+      -0.897936159,
+      -0.435383384,
+      -221.35332636
+     ],
+     [
+      -0.0,
+      -0.436290056,
+      0.899806083,
+      364.115391641
+     ],
+     [
+      -0.997921859,
+      0.057979663,
+      0.028112669,
+      -7.75304965
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -221.353326,
+     364.115392,
+     -7.75305
+    ],
+    "rotation_xyz_deg": [
+     -88.210488,
+     -25.809692,
+     94.104499
+    ],
+    "matrix_3x4": [
+     [
+      -0.064435731,
+      -0.897936159,
+      -0.435383384,
+      -221.35332636
+     ],
+     [
+      -0.0,
+      -0.436290056,
+      0.899806083,
+      364.115391641
+     ],
+     [
+      -0.997921859,
+      0.057979663,
+      0.028112669,
+      -7.75304965
+     ]
+    ]
+   },
+   "source": "assemblies/wrist_roll_drive.py"
   }
  ],
  "skipped": [
+  {
+   "path": "1.11",
+   "label": "brack_for_hand_cmap",
+   "reason": "gripper_clamp_bracket, the pancake's holder on wrist_link's end face - dropped 2026-10-14: the pancake sits on the wrist-pitch axis in the wrist roll drive's frame",
+   "leaves": 1,
+   "solids": 1,
+   "solid_volume": 11175.598,
+   "rel": {
+    "position": [
+     -322.44243,
+     416.25339,
+     41.863168
+    ],
+    "rotation_xyz_deg": [
+     0.001348,
+     3.693683,
+     -29.86278
+    ],
+    "matrix_3x4": [
+     [
+      0.865418936,
+      0.496890164,
+      0.064422278,
+      -322.44242956
+     ],
+     [
+      -0.497923174,
+      0.867221144,
+      -2.3482e-05,
+      416.253389788
+     ],
+     [
+      -0.055880029,
+      -0.032057024,
+      0.997922727,
+      41.863168382
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -322.44243,
+     416.25339,
+     41.863168
+    ],
+    "rotation_xyz_deg": [
+     0.001348,
+     3.693683,
+     -29.86278
+    ],
+    "matrix_3x4": [
+     [
+      0.865418936,
+      0.496890164,
+      0.064422278,
+      -322.44242956
+     ],
+     [
+      -0.497923174,
+      0.867221144,
+      -2.3482e-05,
+      416.253389788
+     ],
+     [
+      -0.055880029,
+      -0.032057024,
+      0.997922727,
+      41.863168382
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -394.07,
+    408.419,
+    0.522
+   ],
+   "world_bbox_size": [
+    52.911,
+    60.961,
+    45.786
+   ]
+  },
   {
    "path": "1.15",
    "label": "cap_1_joint_2_8726",

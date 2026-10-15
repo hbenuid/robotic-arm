@@ -48,7 +48,6 @@ CUSTOM: dict[str, tuple[str, str]] = {
     "j3_coupler":            ("Joint 2 coupler 62226_J3 Coupler",        "step/Joint 2 coupler 62226_J3 Coupler.STEP"),
     "gt2_pulley_90t":        ("GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric",
                               "step/GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric.STEP"),
-    "gripper_clamp_bracket": ("brack for hand cmap",                     "step/brack for hand cmap.STEP"),
     "wrist_link":            ("final component arm qwrist movement",     "step/final component arm qwrist movement.STEP"),
     "gripper_cover":         ("Gripper Cover_Gripper Cover",             "step/Gripper Cover_Gripper Cover.STEP"),
     "gripper_end":           ("Gripper End_Gripper End",                 "step/Gripper End_Gripper End.STEP"),
@@ -167,6 +166,9 @@ NO_REFERENCE: dict[str, str] = {
     "elbow_belt": "parts/joints/elbow_belt.py:_envelope()",
     "forearm_roll_belt": "parts/joints/forearm_roll_belt.py:_envelope()",
     "wrist_belt": "parts/joints/wrist_belt.py:_envelope()",
+    "wrist_roll_pulley": "lib/wrist/roll.py:build_pulley(DEFAULT)",
+    "wrist_roll_shaft": "lib/wrist/roll.py:build_shaft(DEFAULT)",
+    "wrist_roll_belt": "parts/wrist/wrist_roll_belt.py:_envelope()",
 }
 
 # Measured conversions: printed parts converted from a SolidWorks export that was measured once and is NOT committed -
@@ -184,6 +186,7 @@ MEASURED: dict[str, tuple[str, str, str]] = {
 DESIGNED_MODULES: dict[str, str] = {
     "cycloidal_drive": "New cyloidal assembly",   # sic - the SolidWorks node is misspelled
     "forearm_roll_drive": "forearm roll drive (no SolidWorks node: lib/mounts.py MODULE_MOUNTS places it on j2_link#1)",
+    "wrist_roll_drive": "wrist roll drive (no SolidWorks node: lib/mounts.py MODULE_MOUNTS places it on wrist_link#1)",
 }
 
 # Full-assembly nodes deliberately not modelled here (whole subtree skipped; a top-level one lands in placements.json
@@ -194,6 +197,8 @@ SKIPPED_PRODUCTS: dict[str, str] = {
     "cap 1 joint 2 8726":       "j2_cap_1, the lid over j2_link's motor side - the link caps were removed 2026-09-25",
     "cap of joint 2 piece 2 8526": "j2_cap_2, the belt tray under j2_link - the link caps were removed 2026-09-25",
     "first joint cap 8726":     "j1_cap, the tray under j1_link - the link caps were removed 2026-09-25",
+    "brack for hand cmap":      "gripper_clamp_bracket, the pancake's holder on wrist_link's end face - dropped 2026-10-14: "
+                                "the pancake sits on the wrist-pitch axis in the wrist roll drive's frame",
 }
 
 PRODUCT_TO_PART: dict[str, str] = {

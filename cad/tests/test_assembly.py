@@ -1,5 +1,6 @@
 """The arm assembly rebuilt from parts + placements reproduces the SolidWorks totals (the designed modules counted by
-their own locks, which their own tests hold: tests/cycloidal/test_assembly.py, tests/forearm/test_roll_drive.py) and the
+their own locks, which their own tests hold: tests/cycloidal/test_assembly.py, tests/forearm/test_roll_drive.py,
+tests/wrist/test_roll_drive.py) and the
 colors: in every assembly a purchased part is BOUGHT_TINT grey, a printed one its link's / module's tint (the
 standalone drives' in their own tests)."""
 import importlib
@@ -9,7 +10,7 @@ import pytest
 from build123d import Location, Vector
 
 import parts
-from assemblies import arm, cycloidal_drive, forearm_roll_drive, gripper
+from assemblies import arm, cycloidal_drive, forearm_roll_drive, gripper, wrist_roll_drive
 from assemblies._occurrences import BOUGHT_TINT
 from lib import placements as P
 from lib import reference as R
@@ -91,9 +92,10 @@ def test_every_assembly_runs_its_model():
 
 def test_arm_groups_mirror_links():
     """GROUPS covers every occurrence key exactly once and mirrors robot/frames.py LINKS with the
-    three modules kept whole: wrist = wrist_roll_link + jaw_a_link + jaw_b_link, the cycloidal
+    four modules kept whole: wrist = wrist_roll_link + jaw_a_link + jaw_b_link, the cycloidal
     drive sits under shoulder_link although LINKS puts its rotor body in upper_arm_link, the forearm
-    roll drive under elbow_link although LINKS puts its rotor (the shaft) in forearm_link."""
+    roll drive under elbow_link although LINKS puts its rotor (the shaft) in forearm_link, the wrist roll drive
+    under wrist_pitch_link although LINKS puts its rotor (its pulley and shaft) in wrist_roll_link."""
     from assemblies._occurrences import split_key
     from robot import frames
 
@@ -109,11 +111,11 @@ def test_arm_groups_mirror_links():
     assert groups["upper_arm_link"] == whole("upper_arm_link") - {arm.DRIVE_KEY}
     assert groups["elbow_link"] == whole("elbow_link")
     assert groups["forearm_link"] == whole("forearm_link") - {arm.ROLL_KEY}
-    assert groups["wrist_pitch_link"] == set(frames.LINKS["wrist_pitch_link"])
+    assert groups["wrist_pitch_link"] == whole("wrist_pitch_link")
     wrist = (groups["wrist"] - {arm.GRIPPER_KEY}) | {key for _, _, key in gripper.OCCURRENCES}
     assert wrist == set(
         frames.LINKS["wrist_roll_link"] + frames.LINKS["jaw_a_link"] + frames.LINKS["jaw_b_link"]
-    )
+    ) - {f"{arm.WRIST_ROLL_KEY}:rotor"}
 
 
 def test_grey_means_bought():
@@ -122,7 +124,8 @@ def test_grey_means_bought():
     tints = [tint for _, tint, _ in arm.GROUPS] + list(arm.MODULE_TINTS.values())
     assert BOUGHT_TINT.lower() not in {t.lower() for t in tints}
     assert len({t.lower() for t in tints}) == len(tints), "two groups / modules share a tint"
-    assert arm.MODULE_TINTS == {arm.DRIVE_KEY: cycloidal_drive.TINT, arm.ROLL_KEY: forearm_roll_drive.TINT, arm.GRIPPER_KEY: gripper.TINT}
+    assert arm.MODULE_TINTS == {arm.DRIVE_KEY: cycloidal_drive.TINT, arm.ROLL_KEY: forearm_roll_drive.TINT,
+                                arm.WRIST_ROLL_KEY: wrist_roll_drive.TINT, arm.GRIPPER_KEY: gripper.TINT}
 
 
 def test_arm_is_emitted_z_up():
@@ -149,12 +152,12 @@ def test_arm_assembly_matches_reference_totals():
     assert [c.label for c in a.children] == [label for label, _, _ in arm.GROUPS]
     arm_leaves = leaves(a)
     exp_leaves, exp_solids, exp_volume = _expected_totals()
-    assert len(arm_leaves) == exp_leaves == 102
+    assert len(arm_leaves) == exp_leaves == 106
     labels = [leaf.label for leaf in arm_leaves]
     assert len(set(labels)) == len(labels), f"duplicate leaf labels: {labels}"
-    assert len(a.solids()) == exp_solids == 264
+    assert len(a.solids()) == exp_solids == 267
     assert abs(R.solid_volume(a) - exp_volume) <= 0.5
     exp_min, exp_size = _expected_bbox()
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_min(a), exp_min, strict=True)), (R.bbox_min(a), exp_min)
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_size(a), exp_size, strict=True)), (R.bbox_size(a), exp_size)
-    assert _check_link_tints(a) == {True: 64, False: 38}   # bought / printed leaves (tools/bom.py counts the same)
+    assert _check_link_tints(a) == {True: 67, False: 39}   # bought / printed leaves (tools/bom.py counts the same)
