@@ -18,6 +18,11 @@ from lib.base.layout import (  # noqa: F401
     side_stub_x,
     yaw_belt_frame,
     yaw_belt_loop,
+    yaw_belt_point,
+    yaw_idler_slot,
+    yaw_idler_spacer_h,
+    yaw_idler_xz,
+    yaw_idler_y,
 )
 from lib.base.params import (  # noqa: F401
     DEFAULT,
@@ -31,4 +36,5 @@ from lib.base.params import (  # noqa: F401
     MountParams,
     PlateParams,
     ShellParams,
+    YawIdlerParams,
 )

@@ -6,9 +6,11 @@ MountParams.room round it for the wiring (lib/base/layout.py mount_inner_half(),
 end wall from the bottom face (it stands on the table) up to the 5 mm plate across their tops. The walls are thin
 (wall) and trussed: a frame of rails and posts round a V of two struts, the three triangles between open, so the
 wiring is reachable from the sides and the end too (truss_panels()). The plate carries the 48 mm motor's seat on its
-underside (4 slots of +/- travel along X for the motor's M3s - the base_yaw belt's tension -, the pilot's window
-slotted with them; no rim round the motor's face: the slots hold it). Open underneath, and open toward the base: the
-window between the base's two posts takes the cables into the base. An ear outside each side wall at the joint face
+underside (4 round holes for the motor's M3s, the pilot's window; no rim round the motor's face: the holes hold it)
+and the base_yaw belt's tensioner (lib/base/params.py YawIdlerParams): the idler's axle's slot through the plate
+across the belt, and under the plate two rails either side of its nut's slot - the nut bears up on the plate's
+underside between them and slides with the axle (lib/base/body.py _idler_seat). Open underneath, and open toward the
+base: the window between the base's two posts takes the cables into the base. An ear outside each side wall at the joint face
 (ear_w wide, ear_t thick, full height) with 2 M4 clearance holes along X: 4x M4 SHCS (base_motor_mount_screws), their
 heads on the ears' outer faces - turned from outside, along -X beside the walls - run through the ears and the base's
 posts into the M4 nuts pressed into the posts (base_motor_mount_nuts).

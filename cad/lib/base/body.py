@@ -7,7 +7,8 @@ turned into the part frame once at the end (Rot(-90, 0, 0)), like lib/upper_arm/
 With cfg.joint (DEFAULT) the SolidWorks body is cut at x = split_x: build_base keeps the -X side (the tower, the
 plate's neck) and ends in two posts with the M4 holes and the nuts' pockets, the window between them opening into the
 motor mount; build_motor_mount is a box of its own (cfg.mount) round the motor and its board - trussed walls and end
-wall, the plate with the motor's seat - with an ear each side at the joint face for the M4. Without it (LEGACY)
+wall, the plate with the motor's seat and the belt's idler's seat (cfg.idler) - with an ear each side at the joint
+face for the M4; build_yaw_idler_spacer is that idler's printed spacer. Without it (LEGACY)
 build_base is the whole SolidWorks part. With a shell draft (DEFAULT) the walls lean out going down, inside and out:
 _d's cylinder becomes a cone round the axis and its block a wedge between leaning planes (_dd); with cfg.foot (DEFAULT)
 they stand on a flange with a straight chamfer up the wall (a cone and a wedge again) and the screw holes through it.
@@ -32,9 +33,11 @@ from lib.base.layout import (
     outer_r,
     side_stub_x,
     truss_panels,
+    yaw_idler_slot,
+    yaw_idler_spacer_h,
 )
 from lib.base.params import DEFAULT, BaseConfig
-from lib.geom import align_min, cylinder, hex_prism, single_solid
+from lib.geom import align_min, cylinder, hex_circumdiameter, hex_prism, single_solid, through
 from lib.units import NUDGE
 
 
@@ -278,11 +281,39 @@ def _truss_windows(cfg: BaseConfig):
     return cutter
 
 
+def _band(p0: tuple, p1: tuple, half_w: float, past: float, y: tuple):
+    """A box half_w either side of the line p0 -> p1 (part-frame (x, z) points), `past` beyond each end, from y[0] to
+    y[1]."""
+    (a0, b0), (a1, b1) = _pt(*p0), _pt(*p1)
+    length = math.hypot(a1 - a0, b1 - b0) + 2.0 * past
+    box = bd.Box(length, 2.0 * half_w, y[1] - y[0], align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MIN))
+    return bd.Pos((a0 + a1) / 2.0, (b0 + b1) / 2.0, y[0]) * bd.Rot(0.0, 0.0, math.degrees(math.atan2(b1 - b0, a1 - a0))) * box
+
+
+def _stadium(p0: tuple, p1: tuple, radius: float, y: tuple):
+    """A slot of `radius` round the line p0 -> p1 (part-frame (x, z): its round ends' centres), from y[0] to y[1]."""
+    return _band(p0, p1, radius, 0.0, y) + _bore(radius, *y, *p0) + _bore(radius, *y, *p1)
+
+
+def _idler_seat(cfg: BaseConfig, body):
+    """`body` (the mount) with the base_yaw idler's seat (YawIdlerParams), both across the belt between its slot's ends
+    (lib/base/layout.py yaw_idler_slot()): the axle's slot (slot_w) through the plate, and under the plate two rails
+    either side of the nut's slot - its flats + nut_fit across, its corners + nut_fit past each end, closed there by
+    rail_wall - rail_h deep (the nut bears up on the plate's underside between them), inside the walls' outside."""
+    i, (y0, y1) = cfg.idler, cfg.plate.y
+    ends, w_out = yaw_idler_slot(cfg), mount_inner_half(cfg) + cfg.mount.wall
+    half_nut, reach = (i.nut.af + i.nut_fit) / 2.0, hex_circumdiameter(i.nut.af) / 2.0 + i.nut_fit
+    rails = _band(*ends, half_nut + i.rail_wall, reach + i.rail_wall, (y0 - i.rail_h, y0 + NUDGE))
+    rails = rails & _block((cfg.joint.split_x, mount_x1(cfg)), (-w_out, w_out), (y0 - i.rail_h - 1.0, y0 + 1.0))
+    body = body + rails - _band(*ends, half_nut, reach, (y0 - i.rail_h - 1.0, y0))
+    return body - _stadium(*ends, i.slot_w / 2.0, (y0 - i.rail_h - 1.0, y1 + 1.0))
+
+
 def build_motor_mount(cfg: BaseConfig = DEFAULT):
     """The motor mount (cfg.joint, cfg.mount): a box from the joint face to its end wall, room round the motor's board
     inside, open underneath and toward the base, its walls trussed; the plate across its top with the motor's seat
-    (nothing under it: the slots hold the motor); an ear outside each side wall at the joint face, and the M4 holes
-    through the ears."""
+    (nothing under it: the holes hold the motor) and, with cfg.idler, the belt's tensioner's seat (_idler_seat); an ear
+    outside each side wall at the joint face, and the M4 holes through the ears."""
     s, p, j, mt = cfg.shell, cfg.plate, cfg.joint, cfg.mount
     w_in, x1 = mount_inner_half(cfg), mount_x1(cfg)
     w_out, y = w_in + mt.wall, (s.y0, p.y[1])
@@ -291,5 +322,16 @@ def build_motor_mount(cfg: BaseConfig = DEFAULT):
     ears = (j.split_x, j.split_x + mt.ear_t)
     body = body + _block(ears, (w_out - NUDGE, w_out + mt.ear_w), y) + _block(ears, (-w_out - mt.ear_w, -w_out + NUDGE), y)
     body = _motor_seat(cfg, body) - _truss_windows(cfg)
+    if cfg.idler is not None:
+        body = _idler_seat(cfg, body)
     body = _bolt_holes(cfg, body)
     return single_solid(bd.Rot(-90.0, 0.0, 0.0) * body)
+
+
+def build_yaw_idler_spacer(cfg: BaseConfig = DEFAULT):
+    """The base_yaw idler's printed spacer (YawIdlerParams; parts/base/yaw_idler_spacer), axis on Z: its land
+    (land_dia x land_h) on z=0, on the idler's bearing inner ring; its riser (riser_dia) on up to
+    z = yaw_idler_spacer_h(), on the mount's plate; the axle's slot_w through both."""
+    i, height = cfg.idler, yaw_idler_spacer_h(cfg)
+    body = cylinder(i.land_dia / 2.0, i.land_h) + cylinder(i.riser_dia / 2.0, height - i.land_h, z0=i.land_h)
+    return single_solid(body - through(i.slot_w / 2.0, height))

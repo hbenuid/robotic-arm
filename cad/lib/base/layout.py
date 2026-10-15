@@ -3,16 +3,22 @@ from __future__ import annotations
 
 import math
 
-from lib.base.params import DEFAULT, YAW_BELT_Y, BaseConfig
-from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_120T_TEETH, pulley_circle
+from lib.base.params import DEFAULT, YAW_BELT, YAW_BELT_Y, BaseConfig
+from lib.belts import GT2_IDLER_WIDTH, GT2_PULLEY_20T_TEETH, GT2_PULLEY_120T_TEETH, idler_on_run, pulley_circle
 from lib.motors import MKS_SERVO42D_W, NEMA17_BOLT_SP
 
 
-def yaw_belt_loop(cfg: BaseConfig = DEFAULT) -> list[tuple[float, float, float]]:
+def yaw_belt_loop(cfg: BaseConfig = DEFAULT, *, idler: bool = True) -> list[tuple[float, float, float]]:
     """The base_yaw belt's loop (lib/belts.py) in the belt's own frame (yaw_belt_frame()): the motor's 20T on the
-    origin, the 120T on the base_yaw axis on +X, the motor's centre distance from it."""
+    origin, the 120T on the base_yaw axis on +X, the motor's centre distance from it, and - with cfg.idler - the
+    tensioner on the run YawIdlerParams.run, `x` out from the axis, pushed in till the loop is YAW_BELT long (the stock
+    belt is longer than the open loop)."""
     cx, cz = cfg.motor.centre
-    return [pulley_circle(0.0, 0.0, GT2_PULLEY_20T_TEETH), pulley_circle(math.hypot(cx, cz), 0.0, GT2_PULLEY_120T_TEETH)]
+    c = math.hypot(cx, cz)
+    loop = [pulley_circle(0.0, 0.0, GT2_PULLEY_20T_TEETH), pulley_circle(c, 0.0, GT2_PULLEY_120T_TEETH)]
+    if idler and cfg.idler is not None:
+        loop.insert(cfg.idler.run + 1, idler_on_run(loop, cfg.idler.run, c - cfg.idler.x, YAW_BELT))
+    return loop
 
 
 def yaw_belt_frame(cfg: BaseConfig = DEFAULT) -> tuple:
@@ -20,6 +26,38 @@ def yaw_belt_frame(cfg: BaseConfig = DEFAULT) -> tuple:
     (the base's +Y), its +X toward the axis."""
     cx, cz = cfg.motor.centre
     return ((cx, YAW_BELT_Y, cz), (-90.0, 0.0, round(180.0 - math.degrees(math.atan2(cz, cx)), 6)))
+
+
+def yaw_belt_point(bx: float, by: float, cfg: BaseConfig = DEFAULT) -> tuple[float, float]:
+    """A point of the belt's frame (yaw_belt_frame(): x from the motor's axis toward the base_yaw axis, y across) as the
+    base's (x, z): the frame's +X is -(cx, cz) / c, its +Y the base's +Z turned with it (the motor's small z)."""
+    cx, cz = cfg.motor.centre
+    c = math.hypot(cx, cz)
+    ux, uz = -cx / c, -cz / c          # the frame's +X; its +Y is (uz, -ux)
+    return (cx + bx * ux + by * uz, cz + bx * uz - by * ux)
+
+
+def yaw_idler_xz(cfg: BaseConfig = DEFAULT) -> tuple[float, float]:
+    """The base_yaw idler's axis (the base's x, z) with the stock belt: yaw_belt_loop()'s idler."""
+    bx, by, _ = yaw_belt_loop(cfg)[cfg.idler.run + 1]
+    return yaw_belt_point(bx, by, cfg)
+
+
+def yaw_idler_slot(cfg: BaseConfig = DEFAULT) -> tuple[tuple[float, float], tuple[float, float]]:
+    """The idler's slots' end centres (the base's x, z): `x` out along the belt's centre line, slot_y across it."""
+    cx, cz = cfg.motor.centre
+    bx = math.hypot(cx, cz) - cfg.idler.x
+    return yaw_belt_point(bx, cfg.idler.slot_y[0], cfg), yaw_belt_point(bx, cfg.idler.slot_y[1], cfg)
+
+
+def yaw_idler_y(cfg: BaseConfig = DEFAULT) -> float:
+    """The idler's lower face along Y: level with the belt (its band centred on YAW_BELT_Y); the spacer's land on it."""
+    return YAW_BELT_Y - GT2_IDLER_WIDTH / 2.0
+
+
+def yaw_idler_spacer_h(cfg: BaseConfig = DEFAULT) -> float:
+    """The idler's spacer: the plate's top to the idler's lower face."""
+    return yaw_idler_y(cfg) - cfg.plate.y[1]
 
 
 def motor_holes(cfg: BaseConfig = DEFAULT) -> list[tuple[float, float]]:
@@ -83,7 +121,9 @@ def truss_panels(cfg: BaseConfig = DEFAULT) -> list[dict]:
     "x" the end wall) and the `span` of its thickness on that axis, `u` - the part axis along it ("x" / "z") -, the
     frame's inside `window` ((u0, u1), (v0, v1)), v the part's y (a `strut` wide rail under the plate and on the table,
     a post at each end from the outer corner - the side walls' at the joint as deep as the ears, which it backs), and
-    the V's two `struts`: centrelines from the window's top corners down to the middle of its bottom edge."""
+    the V's two `struts`: centrelines from the window's top corners down to the middle of its bottom edge. A wall wider
+    than MountParams.bay between its end posts splits into equal bays, a `strut` wide post between: each bay a panel of
+    its own, with its V."""
     s, p, j, m = cfg.shell, cfg.plate, cfg.joint, cfg.mount
     w_in, x1 = mount_inner_half(cfg), mount_x1(cfg)
     w_out = w_in + m.wall
@@ -94,10 +134,16 @@ def truss_panels(cfg: BaseConfig = DEFAULT) -> list[dict]:
         return {"axis": axis, "span": span, "u": u_axis, "window": (u, v),
                 "struts": [((u[0], v[1]), (um, v[0])), ((u[1], v[1]), (um, v[0]))]}
 
+    def bays(u: tuple) -> list[tuple[float, float]]:
+        n = max(1, math.ceil((u[1] - u[0]) / m.bay))
+        w = (u[1] - u[0] - (n - 1) * m.strut) / n
+        return [(u[0] + k * (w + m.strut), u[0] + k * (w + m.strut) + w) for k in range(n)]
+
     side_u = (j.split_x + max(m.ear_t, m.strut), x1 - m.strut)
     end_u = (-(w_out - m.strut), w_out - m.strut)
-    return [panel("z", (w_in, w_out), "x", side_u), panel("z", (-w_out, -w_in), "x", side_u),
-            panel("x", (x1 - m.wall, x1), "z", end_u)]
+    return ([panel("z", (w_in, w_out), "x", u) for u in bays(side_u)]
+            + [panel("z", (-w_out, -w_in), "x", u) for u in bays(side_u)]
+            + [panel("x", (x1 - m.wall, x1), "z", u) for u in bays(end_u)])
 
 
 def joint_bolt_points(cfg: BaseConfig = DEFAULT) -> list[tuple[float, float]]:
