@@ -6,16 +6,19 @@ limits the wrist body and the gripper stay off the forearm at any roll; at the e
 the gripper stay off the upper arm at any roll and wrist pitch; at any yaw the arm at the shoulder's limits stays off the
 base (its motor mount stands out on one side); the forearm and the wrist roll's limits stop short of their printed hard
 stops; the gripper rolls clear of the wrist roll drive's frame and the forearm.
-Exact distances (BRepExtrema) at poses on the limits, the part pairs whose boxes are apart pruned (a part turning about
-one joint through many angles: its box in that joint's frame, `_hulls`); a pose with the arm down in the table the base
-stands on (below its bottom face) is skipped."""
+Exact distances (BRepExtrema) at poses on the limits, for every part pair that could come nearer than the limit: a pair
+whose boxes are the limit apart is not measured - the world boxes, each part's own box turned with it (`_oriented`) and,
+for a part turning about one joint through many angles, its box in that joint's frame (`_hulls`); a pose with the arm
+down in the table the base stands on (below its bottom face) is skipped."""
 from __future__ import annotations
 
 import functools
 import math
 
 import pytest
-from build123d import Axis, Location, Pos, Solid
+from build123d import Axis, Compound, Location, Pos, Solid
+from OCP.gp import gp_Trsf
+from OCP.TopLoc import TopLoc_Location
 
 from assemblies._occurrences import placement_at, world_rows
 from lib import params as PARAMS
@@ -29,6 +32,7 @@ from tests import built
 from tests.helpers import interference
 
 pytestmark = pytest.mark.slow
+CLEAR = 1.0   # mm: what a part keeps off another link's parts
 BEYOND_ELBOW = ("elbow_link", "forearm_link", "wrist_pitch_link", "wrist_roll_link", "jaw_a_link", "jaw_b_link")
 _PARENT = {j.child: j for j in F.JOINTS}
 _JITTER = ((1.0, 0.7, 1.3), (-1.1, 0.9, -0.6), (0.4, -1.2, 0.8))   # x 0.01 mm: _distance()
@@ -41,15 +45,29 @@ def _link_parts(link: str) -> tuple:
                  for key in F.LINKS[link] for part, _role, world in world_rows(key))
 
 
+def _turn(joint: str, deg: float) -> Location:
+    """`deg` degrees about `joint`'s axis, in W - what Shape.rotate() moves a shape by."""
+    j = F.JOINT_BY_NAME[joint]
+    t = gp_Trsf()
+    t.SetRotation(Axis(j.origin_w, j.axis_w).wrapped, math.radians(deg))
+    return Location(TopLoc_Location(t))
+
+
+def _moved(shape, loc: Location):
+    """`shape` moved by `loc`: Shape.moved() / .rotate() without the copy of the whole geometry they make first and throw
+    away (Shape.__deepcopy__) - a plain Solid / Compound round the moved TopoDS, with no label, colour or tree (the sweeps
+    label their parts themselves)."""
+    return Compound.cast(shape.wrapped.Moved(loc.wrapped))
+
+
 def _posed(parts, *turns) -> list:
-    """`parts` turned about joints, `turns` = ((joint, degrees), ...) in order, the distal joint first."""
-    out = []
-    for label, shape in parts:
-        for name, deg in turns:
-            j = F.JOINT_BY_NAME[name]
-            shape = shape.rotate(Axis(j.origin_w, j.axis_w), deg)
-        out.append((label, shape))
-    return out
+    """`parts` turned about joints, `turns` = ((joint, degrees), ...) in order, the distal joint first: one move each."""
+    if not turns:
+        return list(parts)
+    loc = Location()
+    for name, deg in turns:
+        loc = _turn(name, deg) * loc
+    return [(label, _moved(shape, loc)) for label, shape in parts]
 
 
 def _at(links, q: dict) -> list:
@@ -99,17 +117,65 @@ def _hulls(parts, joint: str) -> list:
     return out
 
 
-def _closest(movers, fixed, prune: float = 5.0, hulls=None) -> tuple:
-    """(distance, mover, fixed part) of the nearest pair; pairs whose boxes are `prune` apart count as that far, and so
-    do pairs whose mover's hull (`_hulls`, posed as the movers, one each) is - the exact distance only under both."""
+@functools.cache
+def _own_box(part: str) -> tuple:
+    """(low, high) corners of a part's bounding box in its own frame - its shape as built, before any location."""
+    bb = Compound.cast(built.part(part).wrapped.Located(TopLoc_Location())).bounding_box()
+    return (bb.min.X, bb.min.Y, bb.min.Z), (bb.max.X, bb.max.Y, bb.max.Z)
+
+
+def _oriented(label: str, shape) -> tuple:
+    """(centre, axes, half sizes) in W of the part's own box (`_own_box`), carried by its shape's location: it moves with
+    the part, so it stays as snug at any pose, where the world box of a part turned off the world's axes grows."""
+    lo, hi = _own_box(label.rsplit(":", 1)[-1])
+    t = shape.wrapped.Location().Transformation()
+    r = [[t.Value(i, j) for j in (1, 2, 3)] for i in (1, 2, 3)]
+    c = [(lo[k] + hi[k]) / 2 for k in range(3)]
+    centre = [sum(r[i][k] * c[k] for k in range(3)) + t.Value(i + 1, 4) for i in range(3)]
+    return centre, [[r[i][k] for i in range(3)] for k in range(3)], [(hi[k] - lo[k]) / 2 for k in range(3)]
+
+
+def _apart(a, b, margin: float) -> bool:
+    """The oriented boxes a and b (`_oriented`) are more than `margin` apart: a separating axis - one of the 15 of two
+    boxes - with that gap between their shadows on it. A box `margin` bigger all round holds every point within `margin`
+    of a box, so the parts inside are more than `margin` apart too. The axis of two near-parallel edges is skipped (too
+    short to trust; skipping one only ever measures more)."""
+    (ca, xa, ha), (cb, xb, hb) = a, b
+    d = [cb[i] - ca[i] for i in range(3)]
+    for ax in [*xa, *xb, *(_cross(u, v) for u in xa for v in xb)]:
+        n = math.sqrt(_dot(ax, ax))
+        if n < 1e-6:
+            continue
+        span = sum(ha[k] * abs(_dot(xa[k], ax)) + hb[k] * abs(_dot(xb[k], ax)) for k in range(3))
+        if abs(_dot(d, ax)) > span + margin * n:
+            return True
+    return False
+
+
+def _dot(u, v) -> float:
+    return u[0] * v[0] + u[1] * v[1] + u[2] * v[2]
+
+
+def _cross(u, v) -> list:
+    return [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]]
+
+
+def _closest(movers, fixed, limit: float, hulls=None) -> tuple:
+    """(distance, mover, fixed part) of the nearest pair, exact wherever it is under `limit`. A pair whose world boxes
+    are `limit` apart counts as their gap; one whose own boxes (`_oriented`) are, as `limit`; one whose mover's hull
+    (`_hulls`, posed as the movers, one each) is, as the hull's distance - each bounds the pair's distance from below, so
+    such a pair cannot break the limit. The exact distance only under all three."""
     best = (math.inf, "", "")
-    boxes = _boxed(fixed)
+    boxes = [(*p, _oriented(p[0], p[1])) for p in _boxed(fixed)]
     for i, (ml, ms, mbb) in enumerate(_boxed(movers)):
-        for fl, fs, fbb in boxes:
+        mob = _oriented(ml, ms)
+        for fl, fs, fbb, fob in boxes:
             d = _box_gap(mbb, fbb)
-            if d < prune and hulls is not None:
+            if d < limit and _apart(mob, fob, limit):
+                d = limit
+            if d < limit and hulls is not None:
                 d = hulls[i][1].distance_to(fs)
-            if d < prune:
+            if d < limit:
                 d = _distance(ms, fs)
             if d < best[0]:
                 best = (d, ml, fl)
@@ -117,20 +183,21 @@ def _closest(movers, fixed, prune: float = 5.0, hulls=None) -> tuple:
 
 
 def _in_table(parts) -> bool:
-    """A pose with the arm down in the table the base stands on (below its bottom face)."""
-    return min(s.bounding_box(optimal=True).min.Y for _, s in parts) < BASE_BOTTOM_Y
+    """A pose with the arm down in the table the base stands on (below its bottom face); `parts` boxed (`_boxed`)."""
+    return min(bb.min.Y for _, _, bb in parts) < BASE_BOTTOM_Y
 
 
 def test_the_shoulder_range_keeps_the_upper_arm_off_the_fork_and_the_base():
     """The drive's turning shell and its held parts are coaxial (its own tests): the shoulder link's parts here are the
-    fork, its cap and what rides on them outside the drive; every 15 degrees and both limits. The nearest are the fork's
-    legs, their running gap (ShellParams.end_plate_gap) off the shell's ends at every angle."""
+    fork, its motor leg and what rides on them outside the drive; every 15 degrees and both limits. The nearest are the
+    fork's legs, their running gap (ShellParams.end_plate_gap) off the shell's ends at every angle."""
     fixed = [*_link_parts("base_link"), *(p for p in _link_parts("shoulder_link") if not p[0].startswith("cycloidal_drive"))]
     movers = _link_parts("upper_arm_link")
+    gap = DRIVE.shell.end_plate_gap - 0.01
     lo, hi = PARAMS.SHOULDER_PITCH_LIMITS_DEG
     for shoulder in sorted({lo, hi, *range(int(lo), int(hi) + 1, 15)}):
-        d, ml, fl = _closest(_posed(movers, ("shoulder_pitch", shoulder)), fixed)
-        assert d >= DRIVE.shell.end_plate_gap - 0.01, f"shoulder {shoulder}: {ml} {d:.2f} mm from {fl}"
+        d, ml, fl = _closest(_posed(movers, ("shoulder_pitch", shoulder)), fixed, gap)
+        assert d >= gap, f"shoulder {shoulder}: {ml} {d:.2f} mm from {fl}"
 
 
 def test_the_shoulder_limit_keeps_the_forearm_off_the_base_and_the_shoulder():
@@ -141,11 +208,11 @@ def test_the_shoulder_limit_keeps_the_forearm_off_the_base_and_the_shoulder():
     checked = []
     for shoulder in (upper, upper - 5.0):
         for elbow in sorted({*range(int(lo), int(hi) + 1, 10), hi}):
-            posed = _posed(movers, ("elbow_pitch", elbow), ("shoulder_pitch", shoulder))
+            posed = _boxed(_posed(movers, ("elbow_pitch", elbow), ("shoulder_pitch", shoulder)))
             if _in_table(posed):
                 continue
-            d, ml, fl = _closest(posed, fixed)
-            assert d >= 1.0, f"shoulder {shoulder}, elbow {elbow}: {ml} {d:.2f} mm from {fl}"
+            d, ml, fl = _closest(posed, fixed, CLEAR)
+            assert d >= CLEAR, f"shoulder {shoulder}, elbow {elbow}: {ml} {d:.2f} mm from {fl}"
             checked.append((shoulder, elbow))
     # the folded-back side, where the roll drive's motor + board come nearest, is above the table at the limit
     assert (upper, lo) in checked, checked
@@ -159,8 +226,8 @@ def test_the_wrist_pitch_limits_keep_the_wrist_off_the_forearm():
     for wrist in PARAMS.WRIST_PITCH_LIMITS_DEG:
         for roll in (0, 90, 180, 270):
             movers = _posed(pitching, ("wrist_pitch", wrist)) + _posed(rolling, ("wrist_roll", roll), ("wrist_pitch", wrist))
-            d, ml, fl = _closest(movers, fixed)
-            assert d >= 1.0, f"wrist {wrist}, roll {roll}: {ml} {d:.2f} mm from {fl}"
+            d, ml, fl = _closest(movers, fixed, CLEAR)
+            assert d >= CLEAR, f"wrist {wrist}, roll {roll}: {ml} {d:.2f} mm from {fl}"
 
 
 def test_the_elbow_limits_keep_the_forearm_and_the_gripper_off_the_upper_arm():
@@ -176,8 +243,8 @@ def test_the_elbow_limits_keep_the_forearm_and_the_gripper_off_the_upper_arm():
         for w in PARAMS.WRIST_PITCH_LIMITS_DEG:
             movers = _boxed(_at(beyond, {"forearm_roll": r, "wrist_pitch": w}))
             for elbow, fixed in folded.items():
-                d, ml, fl = _closest(movers, fixed)
-                assert d >= 1.0, f"elbow {elbow}, roll {r}, wrist {w}: {ml} {d:.2f} mm from {fl}"
+                d, ml, fl = _closest(movers, fixed, CLEAR)
+                assert d >= CLEAR, f"elbow {elbow}, roll {r}, wrist {w}: {ml} {d:.2f} mm from {fl}"
 
 
 def test_any_yaw_keeps_the_arm_off_the_base():
@@ -198,20 +265,22 @@ def test_any_yaw_keeps_the_arm_off_the_base():
     elo, ehi = PARAMS.ELBOW_PITCH_LIMITS_DEG
     poses = [_boxed(held)]
     for s in PARAMS.SHOULDER_PITCH_LIMITS_DEG:
-        above = [arm for e in sorted({*range(int(elo), int(ehi) + 1, 15), ehi})
-                 if not _in_table(arm := _at(["upper_arm_link", *BEYOND_ELBOW], {"shoulder_pitch": s, "elbow_pitch": e}))]
+        arms = (_boxed(_at(["upper_arm_link", *BEYOND_ELBOW], {"shoulder_pitch": s, "elbow_pitch": e}))
+                for e in sorted({*range(int(elo), int(ehi) + 1, 15), ehi}))
+        above = [arm for arm in arms if not _in_table(arm)]
         assert above, f"shoulder {s}: every elbow pose is down in the table"
-        poses += [_boxed(arm) for arm in above]
+        poses += above
+    rim = RIM_CLEAR - 0.01
     lim = PARAMS.BASE_YAW_LIMIT_DEG
     for yaw in sorted({*range(-(int(lim) // 30) * 30, int(lim) + 1, 30), -lim, lim}):
         base = _boxed(_posed(_link_parts("base_link"), ("base_yaw", -yaw)))
-        d, ml, fl = _closest(turning, [p for p in base if not p[0].startswith(in_bore)])
-        assert d >= 1.0, f"yaw {yaw}: {ml} {d:.2f} mm from {fl}"
-        d, ml, fl = _closest(rims, [p for p in base if p[0].startswith("base#1:")])
-        assert d >= RIM_CLEAR - 0.01, f"yaw {yaw}: {ml} {d:.2f} mm over the base's top face"
+        d, ml, fl = _closest(turning, [p for p in base if not p[0].startswith(in_bore)], CLEAR)
+        assert d >= CLEAR, f"yaw {yaw}: {ml} {d:.2f} mm from {fl}"
+        d, ml, fl = _closest(rims, [p for p in base if p[0].startswith("base#1:")], rim)
+        assert d >= rim, f"yaw {yaw}: {ml} {d:.2f} mm over the base's top face"
         for movers in poses:
-            d, ml, fl = _closest(movers, base)
-            assert d >= 1.0, f"yaw {yaw}: {ml} {d:.2f} mm from {fl}"
+            d, ml, fl = _closest(movers, base, CLEAR)
+            assert d >= CLEAR, f"yaw {yaw}: {ml} {d:.2f} mm from {fl}"
 
 
 def test_the_wrist_roll_limit_stops_short_of_the_hard_stop():
@@ -240,8 +309,8 @@ def test_the_gripper_rolls_clear_of_the_wrist():
     lim = PARAMS.WRIST_ROLL_LIMIT_DEG
     for roll in sorted({*range(-(int(lim) // 15) * 15, int(lim) + 1, 15), -lim, lim}):
         turn = ("wrist_roll", roll)
-        d, ml, fl = _closest(_posed(rolling, turn), fixed, hulls=_posed(hulls, turn))
-        assert d >= 1.0, f"roll {roll}: {ml} {d:.2f} mm from {fl}"
+        d, ml, fl = _closest(_posed(rolling, turn), fixed, CLEAR, hulls=_posed(hulls, turn))
+        assert d >= CLEAR, f"roll {roll}: {ml} {d:.2f} mm from {fl}"
 
 
 def test_the_forearm_roll_limit_stops_short_of_the_hard_stop():
