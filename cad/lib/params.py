@@ -84,7 +84,7 @@ from lib.sensors import (  # noqa: E402, F401
 from lib.base.params import BOARD_CLEAR as _BOARD_CLEAR  # noqa: E402
 from lib.base.params import DEFAULT as _BASE  # noqa: E402
 
-BASE_MOTOR_PATTERN_CENTRE = (_BASE.motor.centre[0], _BASE.plate.y[0], _BASE.motor.centre[1])   # (73.067, -44.9, 0.084) [DESIGN] the motor mount: 4x M3 on 31 x 31 through the 5 mm plate (slots of +/- travel along X), on its -Y face; x where YAW_BELT puts it
+BASE_MOTOR_PATTERN_CENTRE = (_BASE.motor.centre[0], _BASE.plate.y[0], _BASE.motor.centre[1])   # (122.0, -44.9, 0.084) [DESIGN] the motor mount: 4x M3 on 31 x 31 through the 5 mm plate (round holes), on its -Y face; x YAW_MOTOR_X, the belt's idler taking up the rest
 BASE_MOTOR_TABLE_CLEAR = _BOARD_CLEAR   # [DESIGN] 5.0 - the 48 mm motor + board (48 + 14.1 under the plate) end this far
 #                                          ABOVE the base's bottom face (lib/base/params.py: the face sits under them)
 BASE_YAW_RATIO = GT2_PULLEY_120T_TEETH / GT2_PULLEY_20T_TEETH   # 6:1 [DESIGN] the base_yaw belt: the 120T (parts/base/gt2_pulley_120t) on the 48 mm motor's 20T
@@ -125,6 +125,13 @@ J1_IDLER_SPACER_H = round(J1_SLAB_UNDERSIDE_Y - J1_IDLER_Y - GT2_IDLER_WIDTH, 6)
 J1_IDLER_LEDGE_Y = round(J1_SLAB_UNDERSIDE_Y + _UPPER_ARM.idler.floor, 6)            # 12.0 the nut's seat, the floor of its slot
 J2_MOTOR_20T_HUB_Z = round(J2_MOTOR_WEB_FACE_Z - J2_BELT_Z - _FOREARM.drive.t20_hub, 6)        # 7.75 the wrist motor's 20T, from its face
 BASE_MOTOR_20T_HUB_Z = round(YAW_BELT_Y - BASE_MOTOR_PATTERN_CENTRE[1] - _FOREARM.drive.t20_hub, 6)   # 2.85 the base_yaw motor's 20T, from its face
+# The base_yaw belt's tensioner (lib/base/params.py YawIdlerParams): its stations along Y in the base's frame
+from lib.base.layout import yaw_idler_spacer_h as _yaw_idler_spacer_h  # noqa: E402
+from lib.base.layout import yaw_idler_y as _yaw_idler_y  # noqa: E402
+
+YAW_IDLER_Y = round(_yaw_idler_y(_BASE), 6)                   # -35.6 the idler's lower face (level with the belt): the spacer's land
+YAW_IDLER_SPACER_H = round(_yaw_idler_spacer_h(_BASE), 6)     # 4.3 the spacer, the mount's plate's top to the idler's lower face
+YAW_IDLER_NUT_Y = _BASE.plate.y[0]                            # -44.9 the nut's seat: the plate's underside, between the rails
 # The forearm roll (lib/forearm/params.py RollEndParams; the rotor's wall on j2_link, the elbow block + shaft in M3):
 FOREARM_ROLL_AXIS_Z = _FOREARM.roll_end.axis_z     # 25 [REFERENCE] the roll axis' N-station in j2_link's frame = the wrist centre's (42 - 17)
 FOREARM_ROLL_TURN_DEG = _FOREARM.roll_turn_deg     # 180 [DESIGN] the forearm + all beyond it turned about the roll axis from the capture
@@ -234,6 +241,9 @@ ROLL_IDLER_NUT_MASS_G = STEEL_DENSITY * nut_volume(_FOREARM.drive.idler.nut)    
 # the elbow belt's tensioner's axle and its nut (parts/joints/elbow_idler_{screw,nut}; lib/upper_arm/params.py ElbowIdlerParams)
 ELBOW_IDLER_SCREW_MASS_G = STEEL_DENSITY * shcs_volume(_UPPER_ARM.idler.screw, _UPPER_ARM.idler.screw_len)   # 5.8, M5x25
 ELBOW_IDLER_NUT_MASS_G = STEEL_DENSITY * nut_volume(_UPPER_ARM.idler.nut)                                    # 1.3, M5
+# the base_yaw belt's tensioner's axle and its nut (parts/base/yaw_idler_{screw,nut}; lib/base/params.py YawIdlerParams)
+YAW_IDLER_SCREW_MASS_G = STEEL_DENSITY * shcs_volume(_BASE.idler.screw, _BASE.idler.screw_len)   # 5.8, M5x25
+YAW_IDLER_NUT_MASS_G = STEEL_DENSITY * nut_volume(_BASE.idler.nut)                              # 1.3, M5
 
 # The base motor mount's screws and nuts (parts/base/base_motor_mount_{screws,nuts}): the same estimate
 from lib.base.layout import joint_bolt_points as _joint_bolt_points  # noqa: E402

@@ -103,13 +103,15 @@ LINK_ORDER = ["base_link", "shoulder_link", "upper_arm_link", "elbow_link", "for
               "wrist_roll_link", "jaw_a_link", "jaw_b_link", "tool0"]
 LINKS: dict[str, list[str]] = {
     # the base's motor mount (its +X lobe) is bolted to it with its M4 screws + nuts; the base_yaw motor + its MKS
-    # board hang under the mount's plate, its 20T and the belt to the 120T with them (lib/mounts.py) - they turn nothing
-    # themselves (the belt's path is fixed here, both its pulleys' axes are); the base_yaw bearing pair sits
+    # board hang under the mount's plate, its 20T and the belt to the 120T with them - the belt's tensioner (the idler,
+    # its spacer, axle and nut) on the mount's plate (lib/mounts.py) - they turn nothing themselves (the belt's path is
+    # fixed here, both its pulleys' axes are); the base_yaw bearing pair sits
     # in the base's bore (a bearing rides with its housing), the thrust bearing's lower washer and its cage in the
     # base's groove
     "base_link": ["base#1", "bearing_6806#1", "bearing_6806#2", "washer_as6590#1", "bearing_axk6590#1",
                   "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1", "nema17_48mm#1",
-                  "mks_servo42d#1", "gt2_pulley_20t#3", "yaw_belt#1"],
+                  "mks_servo42d#1", "gt2_pulley_20t#3", "yaw_belt#1", "gt2_idler_20t#2", "yaw_idler_spacer#1",
+                  "yaw_idler_screw#1", "yaw_idler_nut#1"],
     # j1_coupler (the holder) turns on the base, its motor leg bolted on; the cycloidal drive's stator - the held carrier
     # (motor plate, output hub, output pins), the motor (+ its MKS board) and the gear train - sits in its fork
     # (assemblies/cycloidal_drive.py BODIES); the thrust bearing's upper washer turns with it, under its seat, and so does
