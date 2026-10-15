@@ -82,19 +82,20 @@ folder is made for it outside the repo — and goes through Recipe E in `cad/ref
 
 ## CI (GitHub Actions)
 `.github/workflows/ci.yml` runs **only by hand** (Actions tab → CI → Run workflow, or
-`gh workflow run ci.yml --ref <branch>`; `gh run watch` follows it): a fresh `ubuntu-24.04` runner clones the repo,
-lints both projects, imports the CLI, runs `cad/`'s fast lane and slow tests and `./cadtool gen`s the arm (~13 min;
+`gh workflow run ci.yml --ref <branch>`; `gh run watch` follows it): fresh `ubuntu-24.04` runners clone the repo and,
+in parallel jobs, lint both projects, import the CLI, run `cad/`'s fast lane, its slow tests in two halves and
+`./cadtool gen` the arm - the run takes as long as its slowest job (`gh run list --workflow ci.yml` shows recent runs;
 the repo is public, so its standard runners cost no Actions minutes, and being manual-only it never runs for
 someone else's fork or pull request). It is the **clean-clone check** neither
 machine can give — no `~/.cache/cadgen`, no raw exports, no generated STEPs — so a test or model that quietly needs
 a file outside git fails there first. Everyday pushes do not need it (the pre-commit hook and the local suite cover
-them); run it on the branch before its pull request is merged after: a cadgen / build123d / OCP bump, a new
-SolidWorks or vendor export or vendor STEP, a change to `lib/reference.py` or to how parts read their inputs, or any
-large change - on the branch as it will merge (with `main` merged in if `main` moved), its result noted on the pull
-request (`gh pr comment <n>`). Suggest it then; never trigger it unasked. It checks and never writes (no hash gate,
-no snapshots, no commits). The runner is a third machine (x86_64 Linux): the "no exact float equality" rule of
-`cad/AGENTS.md` "Two machines" holds for it too. The motor-control `software/control/tests/` stay out until they are
-fixed.
+them); run it on the branch, before its pull request is merged, when the branch carries: a cadgen / build123d / OCP
+bump, a new SolidWorks or vendor export or vendor STEP, a change to `cad/lib/reference.py` or to how parts read their
+inputs, or any large change - on the branch as it will merge (with `main` merged in if `main` moved), its result
+noted on the pull request (`gh pr comment <n>`). Suggest it then; never trigger it unasked. It checks and never
+writes (no hash gate, no snapshots, no commits). The runners are a third machine (x86_64 Linux): the "no exact float
+equality" rule of `cad/AGENTS.md` "Two machines" holds for them too. The motor-control `software/control/tests/` stay
+out until they are fixed.
 
 ## Software (`software/`)
 - `software/control/` is the motor-control CLI, its own uv project. Its rules — running it, the load-bearing

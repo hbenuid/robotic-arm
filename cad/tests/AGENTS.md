@@ -2,8 +2,10 @@
 
 Loads when you work in `tests/`. Run it only through `./cadtool pytest` (`cad/AGENTS.md`); `-m "not slow"` is the fast
 lane. `-n <workers>` (pytest-xdist) spreads the suite over processes, a whole file per worker (`pyproject.toml` sets
-`--dist=loadfile`: a file's fixtures and `built.py` shapes are built once) — `-n 4` on a dev machine (each worker holds
-its own shapes, ~1.5 GB at most; not `-n auto`, which starts one per core), `-n 2` in CI (`.github/workflows/ci.yml`).
+`--dist=loadfile`: a file's fixtures and `built.py` shapes are built once) — `-n 4` on a dev machine and in CI's slow
+lane (each worker holds its own shapes, ~1.5 GB at most; not `-n auto`, which starts one per core). CI runs the slow
+lane as two jobs (`.github/workflows/ci.yml`): `test_sweeps.py`, a few long sweeps, a test per worker
+(`--dist=worksteal`), and the rest.
 Every test module's docstring says what it checks.
 
 ## Tests (`./cadtool pytest`)

@@ -1,7 +1,9 @@
-# CI: a clean clone on a fresh Linux runner - lint both uv projects, the CAD test suite, then build the arm from the
+# CI: a clean clone on fresh Linux runners - lint both uv projects, the CAD test suite, and build the arm from the
 # committed inputs only (no ~/.cache/cadgen, no raw SolidWorks exports, no generated STEPs). It checks and never writes:
 # no hash gate (STEP bytes differ per machine), no snapshots, no commits. Manual only: Actions tab -> CI -> Run
-# workflow, or `gh workflow run ci.yml --ref <branch>` - when to run it, and how long it takes: root AGENTS.md "CI".
+# workflow, or `gh workflow run ci.yml --ref <branch>` - when to run it: root AGENTS.md "CI".
+# The jobs run side by side, each on a runner of its own (a public repo's ubuntu-24.04: 4 vCPUs, 16 GB): the run takes
+# as long as its slowest job - the slow lane's two halves and the arm build - not their sum.
 name: CI
 
 on:
@@ -14,12 +16,14 @@ concurrency:  # a newer run on the same branch cancels the one in progress
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  CADGEN_DAEMON: "0"  # transient build workers, no warm daemon left behind
+
 jobs:
-  test:
+  checks:
+    name: Lint + fast lane
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    env:
-      CADGEN_DAEMON: "0"  # transient build workers, no warm daemon left behind
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
 
@@ -45,10 +49,53 @@ jobs:
       - name: CAD - fast lane
         working-directory: cad
         run: ./cadtool pytest -m "not slow" -p no:cacheprovider
+
+  slow:
+    name: Slow lane (${{ matrix.part }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false  # one half failing still reports the other
+      matrix:
+        include:
+          # tests/test_sweeps.py is most of the slow lane, and a few long sweeps make it up: its tests go to the
+          # workers one by one, an idle worker taking a waiting one (--dist=worksteal; each worker builds the
+          # arm's shapes once), not as one file
+          - part: sweeps
+            args: --dist=worksteal tests/test_sweeps.py
+          # every other slow test, a whole file per worker (pyproject.toml --dist=loadfile)
+          - part: the rest
+            args: --ignore=tests/test_sweeps.py
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          cache-python: true
+
+      - name: CAD - sync
+        working-directory: cad
+        run: |
+          uv sync --frozen
+          echo "runner: $(nproc) vCPUs, $(free -g | awk '/^Mem:/ {print $2}') GB"
       - name: CAD - slow tests
         working-directory: cad
-        # both vCPUs: a whole test file per worker (pyproject.toml --dist=loadfile)
-        run: ./cadtool pytest -m slow -n 2 -p no:cacheprovider -rs --durations=15
+        run: ./cadtool pytest -m slow -n 4 -p no:cacheprovider -rs --durations=15 ${{ matrix.args }}
+
+  arm:
+    name: Build the arm
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          cache-python: true
+
+      - name: CAD - sync
+        working-directory: cad
+        run: uv sync --frozen
       - name: CAD - build the arm
         working-directory: cad
         run: ./cadtool gen assemblies/arm.py
