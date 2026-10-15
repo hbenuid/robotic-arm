@@ -1,11 +1,12 @@
 """The NEMA 17 motor geometry of the drive repo's build_nema17_motor (spec section 3.1) for any
-MotorParams - THE shaft and pilot boss of every motor in the arm.
+MotorParams - THE shaft and pilot boss of every kit motor in the arm (the pancake keeps its export's).
 
 nema17_motor() is the simplified whole motor: parts/cycloidal/nema17_48mm.py's envelope, and - via
 dataclasses.replace - the 40 mm motor's (parts/joints/nema17_40mm.py). pilot() and shaft() are the
-interface features on their own: tools/reference/split_mks_motor.py fuses them onto the real motor
-bodies of the SolidWorks kit exports (whose own bosses and shafts are cut off at the mounting face),
-so the vendor motors carry exactly the drive's shaft - the one the eccentric shaft's D-bore
+interface features on their own: tools/reference/split_mks_motor.py fuses the pilot onto the front
+plate of the real motor bodies of the SolidWorks kit exports (whose own bosses and shafts are cut off
+at the mounting face) and the shaft onto the rotor (x48) or adds it as the body's second solid (x40),
+so the kit motors carry exactly the drive's shaft - the one the eccentric shaft's D-bore
 (parts/cycloidal/cycloidal_eccentric_shaft.py) was designed around.
 
 Frame: mounting face at z=0, the body in -Z, the pilot boss and the shaft in +Z, the D-flat on +Y.

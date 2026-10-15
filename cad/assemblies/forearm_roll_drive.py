@@ -1,4 +1,5 @@
-"""forearm_roll_drive - the belt-driven forearm roll (the 6th joint), a code-driven module like the cycloidal drive.
+"""forearm_roll_drive - the belt-driven forearm roll (the joint added to the SolidWorks arm's five), a code-driven
+module like the cycloidal drive.
 
 Stator: the frame - ONE printed part (forearm_roll_block) round the roll motor: round about the elbow axis (the upper arm's
 round end) and tangent up to the tower round the roll axis; its underside is the elbow's output flange (it repeats the

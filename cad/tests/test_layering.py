@@ -4,10 +4,13 @@
 
 A package imports only itself and the ones to its left - so there is no cycle, `lib/` stays
 importable on its own, and a part never depends on how it is assembled. Function-local imports
-count too (they are still edges). Two finer rules ride along:
-  * lib/cycloidal/, lib/forearm/, lib/upper_arm/, lib/base/ and lib/coupler/ never import lib/params.py: that module re-exports their
-    interface values, so they take their globals from the leaves (lib/units.py, lib/motors.py, lib/belts.py,
-    lib/bearings.py, lib/fasteners.py, lib/geom.py) instead - and the leaves never import lib/params.py either;
+count too (they are still edges). Three finer rules ride along:
+  * the lib/ packages (LEAF_PACKAGES) never import lib/params.py: it re-exports interface values from most of them,
+    so they take their globals from the leaves (lib/units.py, lib/motors.py, lib/belts.py,
+    lib/bearings.py, lib/fasteners.py, lib/geom.py, lib/sensors.py: LEAF_MODULES) instead - and the leaves never
+    import lib/params.py either;
+  * nothing outside parts/ imports from inside it (`parts.<group>.<name>`, `from parts import ...`): `import parts`,
+    then parts.load() / model() / build();
   * nothing mutates sys.path (cadtool / pytest / .env put cad/ on the path) - except the one tool that
     runs in ANOTHER repo's venv.
 """
@@ -28,8 +31,8 @@ SYS_PATH_ALLOWED = {"tools/cycloidal/export_cadquery.py"}
 # included - goes through parts.load() / parts.model() / parts.build() / parts.names().
 PART_MODULE_IMPORT_ALLOWED = {"parts"}
 
-# lib/ packages lib/params.py re-exports from (and yaw_coupler, wrist and pulley, parts' packages like them): they take
-# their globals from the leaves (lib/units.py, lib/motors.py, lib/belts.py) and never import lib.params back.
+# lib/ packages lib/params.py re-exports from (and pulley, a parts' package like them): they take
+# their globals from the leaves (LEAF_MODULES) and never import lib.params back.
 LEAF_PACKAGES = ("cycloidal", "forearm", "upper_arm", "base", "coupler", "yaw_coupler", "wrist", "pulley")
 # The leaves those packages import: importing lib.params from one would close the cycle.
 LEAF_MODULES = ("units.py", "motors.py", "belts.py", "bearings.py", "fasteners.py", "geom.py", "sensors.py")

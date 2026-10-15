@@ -27,7 +27,7 @@ pulley's 4 bolts (M4 clearance, on its bolt circle at the diagonals, the nuts in
 parts/base/yaw_pulley_screws / _nuts) round the pulley's bore; and its yoke is a fork round the drive whose shell
 turns (lib/cycloidal/params.py DEFAULT_CONFIG, ShellParams): two legs past the shell's ends - the held hub bolts to
 one, its disc the hub's own diameter; the other, its own part (parts/base/j1_motor_leg), a solid ring round the motor
-plate's sleeve bolted to the base -, centred on the base_yaw axis with the drive's discs (ForkParams.face_x), the ring
+plate's sleeve bolted to the disc -, centred on the base_yaw axis with the drive's discs (ForkParams.face_x), the ring
 lowered under the shell and run flat to flat - no cheek, no middle body, no cradle. The disc is turned with the legs:
 drafted round to its rim (BASE_R, BASE_DRAFT; its flats and ears filled under the legs), its side carried on up each
 leg's outer face.
@@ -160,7 +160,7 @@ class ForkParams:
     this frame's x = face_x - z."""
 
     axis_y: float = 90.103183        # [REFERENCE] the drive's axis in this frame (placements.json cycloidal_drive#1), 0.21 off
-    axis_z: float = 0.18573          # [REFERENCE] YokeParams' cradle axis (the 6-pillar housing sat in it; docs/open_issues.md)
+    axis_z: float = 0.18573          # [REFERENCE] YokeParams' cradle axis (the 6-pillar housing sat in it)
     face_x: float = 24.0             # [DESIGN] the drive's z = 0 (the motor plate's outer face; its +Z is this frame's -X): the
     #                                  middle of the discs (the drive's z 24) on the base_yaw axis. The capture had it at
     #                                  CAPTURE_FACE_X: lib/placements.py SHIFTS moves the drive and all it carries the difference
@@ -215,7 +215,7 @@ DEFAULT = replace(LEGACY,
                               stub_dia=BEARING_6806_BORE, stub_y0=round(_BASE.bore.lip_y[0] - _CAP.ring_top_y, 6),
                               bore_dia=_J3_COUPLER.bore_dia, hole_dia=M4_CLEAR, hole_r=GT2_PULLEY_90T_BOLT_R,
                               nut_af=_J3_COUPLER.nut_af, nut_depth=M4_NUT.h),
-                  # the ring RING_DROP lower: the drive's shell turns over it, its pillars sweeping 0.68 above the ring's top;
+                  # the ring RING_DROP lower: the drive's shell turns over it, its pillars sweeping 2.68 above the ring's top;
                   # flat to flat, symmetric under the centred fork (LEGACY's from the cheek's outer face); the disc
                   # BASE_R at its rim, drafted in at BASE_DRAFT (no band: the rim is lifted above band_y1) [DESIGN]
                   disc=replace(LEGACY.disc, y0=round(_CAP.top_y - _CAP.ring_top_y + RIM_CLEAR, 6),

@@ -2,8 +2,8 @@
 the house reference-match: identical face sets and identical tessellations, plus the exact
 analytic volume for the parts whose faces OCCT integrates reliably (everything but the two
 spline discs, whose analytic volume wobbles by ~0.3 % on both sides of the comparison, and whose
-tessellation is platform-sensitive: they match the reference lobe spline point for point instead). A part that has left the port (the housing's bolt
-count, lib/cycloidal/params.py DEFAULT_CONFIG) declares REFERENCE_BUILD - the port's build is what is matched."""
+tessellation is platform-sensitive: they match the reference lobe spline point for point instead). A part that has left the port (lib/cycloidal/params.py
+DEFAULT_CONFIG lists its departures) declares REFERENCE_BUILD - the port's build is what is matched."""
 import json
 
 import pytest

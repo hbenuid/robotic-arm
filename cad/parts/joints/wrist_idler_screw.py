@@ -6,7 +6,7 @@ the idler, the rib under j2_link's web and the web's slot into the nut held in t
 from below to clamp the idler where the belt is tight. Length: IdlerParams.screw_len, its tip under the wrist motor's
 face.
 
-No catalog model (the catalog has single fasteners only, vendor/README.md), no SolidWorks export and NO reference
+No catalog model (none adopted), no SolidWorks export and NO reference
 file: a pattern part with no reference (lib/reference.py NO_REFERENCE) - its envelope IS the geometry (lib/fasteners.py
 shcs(): no thread, the head's hex socket) and tests/forearm/test_wrist_idler.py locks its numbers. Frame: axis on Z, the
 head's bearing face on z=0 (the head in -Z), the shank in +Z.

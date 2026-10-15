@@ -5,9 +5,9 @@ wrist_pitch belt joints (lib/mounts.py places it on the NEMA 17 pads j1_link and
 the 48 mm motor, parts/cycloidal/nema17_48mm). The vendor file is the motor body of the "nema17x40_with_mks" SolidWorks export,
 split off by tools/reference/split_mks_motor.py (the board is parts/joints/mks_servo42d) and re-framed like
 the drive motor (parts/cycloidal/nema17_48mm: mounting face z=0, body -Z, pilot boss and shaft +Z, D-flat
-+Y), with the export's own boss and 23 mm shaft cut off and the drive's pilot() + shaft() (lib/cycloidal/motor.py,
-MotorParams: Ø22 x 2, Ø5 x 22 with the 18 mm D-cut) fused on - every motor in the arm carries the same
-interface. The cable connector is a 7 mm boss on the -Y side of the body's rear.
++Y), with the export's own boss and 23 mm shaft cut off, the drive's pilot() fused on and its shaft() added beside it
+(lib/cycloidal/motor.py, MotorParams: Ø22 x 2, Ø5 x 22 with the 18 mm D-cut) - every kit motor in the arm carries the
+same interface (the pancake keeps its export's). The cable connector is a 7 mm boss on the -Y side of the body's rear.
 
 SolidWorks product: 'nema17x40_with_mks' (motor body + shaft)
 Source export:      mks/nema17x40_with_mks.step (lib.reference.MKS_EXPORT_NAME)

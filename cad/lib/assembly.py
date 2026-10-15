@@ -2,7 +2,7 @@
 
 An assembly is a labelled `Compound(children=[...])`: `assembly(name, children)` builds one node
 (the root of a model, or a group / module inside it), `label_shape(shape, name, *details)` labels a
-child and `label_text` gives the compact STEP-friendly label (`j3_coupler:j2`) - both from cadgen,
+child and `label_text` gives the compact STEP-friendly label (`gt2_pulley_90t:j2`) - both from cadgen,
 which normalises the tokens. cadgen 0.6.5 deprecated its `AssemblyHelper` wrapper (its `add` /
 `add_module` / `build` were exactly these three lines); joints are `@step(kinematics=...)` data
 (`cadgen.revolute(...)` mates between `#label` refs), not helper frames.

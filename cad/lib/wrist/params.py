@@ -147,8 +147,8 @@ class WristRollParams:
     ring_core_dia: float = 23.0         # [DESIGN] the core under the band (its root ~Ø23.5): the band is an annulus fused on it
     axis_h: float = 27.0                # [DESIGN] R' (and the motor's axis) over the plate's coupler face (wrist_link z 5 - axis_h): the bay's
     #                                     floor 4.4 over that face, the motor 1.25 over the free face
-    # bearings: 2x 6806-2RS back to back on a lip in the tower (lib/bearings.py, the arm's other joints'): bearing 2 right
-    # under the band, bearing 1 behind it; the rotor's two hubs meet in the lip's middle
+    # bearings: 2x 6806-2RS back to back on a lip in the tower (lib/bearings.py, the belt joints' and the forearm
+    # roll's): bearing 2 right under the band, bearing 1 behind it; the rotor's two hubs meet in the lip's middle
     bearing_bore: float = BEARING_6806_BORE   # [DATASHEET] 6806-2RS (61806), 30 x 42 x 7
     bearing_od: float = BEARING_6806_OD
     bearing_width: float = BEARING_6806_WIDTH

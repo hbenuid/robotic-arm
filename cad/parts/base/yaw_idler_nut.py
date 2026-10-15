@@ -5,7 +5,7 @@ In the arm: one, on the base's motor mount (lib/base/params.py YawIdlerParams; l
 the two rails under the mount's plate, its bearing face on the plate's underside, its flats against the rails - it
 slides across the belt with the tensioner's axle (yaw_idler_screw) and cannot turn.
 
-No catalog model (the catalog has single fasteners only, vendor/README.md), no SolidWorks export and NO reference
+No catalog model (none adopted), no SolidWorks export and NO reference
 file: a pattern part with no reference (lib/reference.py NO_REFERENCE) - its envelope IS the geometry (lib/fasteners.py
 hex_nut(): no thread, the bore at the nominal diameter) and tests/base/test_yaw_idler.py locks its numbers.
 Frame: axis on Z, standing on z=0, a corner on +Y (the flats across x).

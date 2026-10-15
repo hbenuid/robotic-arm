@@ -1,9 +1,9 @@
 """The arm's own fasteners - a leaf (lib/params.py re-exports it; the lib/ packages that size a hole, a nut pocket or a
-screw for them - lib/forearm/ - import it directly).
+screw for them import it directly).
 
-The standard sizes, the clearance holes printed parts take, and the plain-geometry screws and nut the purchased
-pattern parts are built from (parts/joints/*_pulley_screws / *_nuts, parts/base/yaw_pulley_screws / _nuts and
-base_motor_mount_screws / _nuts, like the drive's cycloidal_housing_bolts): no
+The standard sizes, the clearance holes printed parts take, and the plain-geometry screws and nut the arm's purchased
+screw / nut parts are built from (the pulley bolts, the base motor mount's bolts, the elbow motor's screws, the idlers'
+axles and nuts; the drive's patterns, cycloidal_housing_bolts and the rest, are its own): no
 thread; a screw's head carries its hex socket, a nut its bore at the thread's nominal diameter, so a screw runs
 through its nut line-to-line. Volumes are those of that geometry (the masses in lib/params.py).
 

@@ -20,7 +20,8 @@ REFERENCE = NAME
 CONVERTED = True
 LOCAL_FROM_REF = IDENTITY
 # OCCT's basic volume integration is ~0.3 % off on the 2000-knot spline face (both for this part
-# and its reference); tests/cycloidal/test_port.py compares the adaptive-precision volume to 1e-4.
+# and its reference); tests/cycloidal/test_port.py matches the lobe spline (spline_deviation) and the mesh
+# volume to 1e-4.
 REF_VOL_TOL = 0.005
 REF_BBOX_TOL = 0.02
 

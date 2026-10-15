@@ -34,8 +34,8 @@ table claims it; likewise gt2_pulley_90t#1 / #2, whose re-seated poses are the m
 nema17_pancake#1 / gt2_pulley_20t#1, which the wrist roll drive carries (the pancake on the wrist-pitch axis). The
 SolidWorks link caps (j1_cap, j2_cap_1, j2_cap_2) were removed 2026-09-25 and gripper_clamp_bracket 2026-10-14: their
 products are lib/reference.py SKIPPED_PRODUCTS, their poses sit in placements.json `skipped`. A drive module is one
-linked child, so this tree keeps it whole - the cycloidal drive under shoulder_link although its rotor body (output
-hub + pins) belongs to upper_arm_link, the forearm roll drive under elbow_link although its rotor (the roll pulley +
+inlined, tinted copy, so this tree keeps it whole - the cycloidal drive under shoulder_link although its rotor body
+(the turning shell: shell ring, ring pins, housing bolts + nuts, both 6814s) belongs to upper_arm_link, the forearm roll drive under elbow_link although its rotor (the roll pulley +
 shaft) belongs to forearm_link, the wrist roll drive under wrist_pitch_link although its rotor (its pulley + shaft)
 belongs to wrist_roll_link - in robot/frames.py LINKS, the kinematic truth, which the per-link meshes follow (each in
 its own MODULE_TINTS colour).
@@ -140,9 +140,9 @@ MODULES = {"gripper": gripper.gripper, "cycloidal_drive": cycloidal_drive.cycloi
            "forearm_roll_drive": forearm_roll_drive.forearm_roll_drive,
            "wrist_roll_drive": wrist_roll_drive.wrist_roll_drive}   # the child MODELS
 
-# The component tree: the rigid-link partition of robot/frames.py LINKS with the three modules
-# kept whole (wrist = wrist_roll_link + jaw_a_link + jaw_b_link; the cycloidal drive under shoulder_link;
-# the forearm roll drive under elbow_link although LINKS puts its rotor in forearm_link).
+# The component tree: the rigid-link partition of robot/frames.py LINKS with the modules kept whole
+# (wrist = wrist_roll_link + jaw_a_link + jaw_b_link; the cycloidal drive under shoulder_link; the forearm roll
+# drive under elbow_link and the wrist roll drive under wrist_pitch_link although LINKS puts their rotors a link on).
 # Rows are (group label, tint, occurrence keys in document order); tests lock the LINKS mirror.
 # The tints color the PRINTED parts; grey is reserved for the purchased ones (BOUGHT_TINT).
 GROUPS = [

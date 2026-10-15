@@ -48,5 +48,5 @@ MKS_SERVO42D_SCREW_REACH = 19.6 # [REFERENCE] the 4x M3x30 reach this far into t
 MKS_SERVO42D_MASS_G = 35.0      # [ESTIMATE] PCB + cover + 4 screws + 4 standoffs; verify on the unit
 
 # The drive motor's parameters (lib/cycloidal/params.py MotorParams: 31 mm bolt square, Ø22 x 2 pilot,
-# Ø5 x 22 D-shaft - every motor in the arm carries that interface) with the 40 mm body.
+# Ø5 x 22 D-shaft - every kit motor in the arm carries that interface) with the 40 mm body.
 MOTOR_40 = replace(_DRIVE.motor, body_width=NEMA17_40_BODY_W, body_length=NEMA17_40_BODY_LEN)

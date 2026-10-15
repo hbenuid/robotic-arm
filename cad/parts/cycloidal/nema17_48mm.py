@@ -9,8 +9,8 @@ from the user's SolidWorks kit export: the x48 export's real 48 mm body (plates,
 connector, rotor - 7 solids, the tie rods left out because the MKS kit's M3x30 replace them) with its
 own boss and shaft cut off at the mounting face and THIS motor's pilot() + shaft() (lib/cycloidal/motor.py,
 the same MotorParams as the envelope) fused on, already in this frame (VENDOR_TO_REF identity). The
-datasheet 48 mm motor (17HS19-2004S1) ships a 24 mm shaft with a 15 mm D-cut - the user's motor is the
-22 mm one; measure before ordering.
+datasheet 48 mm motor (17HS19-2004S1) ships a 24 mm shaft with a 15 mm D-cut - the drive assumes the
+22 mm one (docs/open_issues.md); measure before ordering.
 In the arm: x2 - inside cycloidal_drive#1 and, mounted under the base plate, nema17_48mm#1 (lib/mounts.py, base_yaw).
 Not the wrist's pancake motor (parts/wrist/nema17_pancake.py) nor the elbow / wrist-pitch 40 mm motors
 (parts/joints/nema17_40mm.py - same builder, lib/cycloidal/motor.py, other MotorParams). The MKS SERVO42D
