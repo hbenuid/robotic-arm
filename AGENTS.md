@@ -84,7 +84,7 @@ folder is made for it outside the repo — and goes through Recipe E in `cad/ref
 ## CI (GitHub Actions)
 `.github/workflows/ci.yml` runs **only by hand** (Actions tab → CI → Run workflow, or
 `gh workflow run ci.yml --ref <branch>`; `gh run watch` follows it): fresh `ubuntu-24.04` runners clone the repo and,
-in parallel jobs, lint both projects, import the CLI, run `cad/`'s fast lane, its slow tests in two halves and
+in parallel jobs, lint both projects, import the CLI, run `cad/`'s fast lane, its slow tests in three parts and
 `./cadtool gen` the arm - the run takes as long as its slowest job (`gh run list --workflow ci.yml` shows recent runs;
 the repo is public, so its standard runners cost no Actions minutes, and being manual-only it never runs for
 someone else's fork or pull request). It is the **clean-clone check** neither

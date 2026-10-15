@@ -3,7 +3,7 @@
 # no hash gate (STEP bytes differ per machine), no snapshots, no commits. Manual only: Actions tab -> CI -> Run
 # workflow, or `gh workflow run ci.yml --ref <branch>` - when to run it: root AGENTS.md "CI".
 # The jobs run side by side, each on a runner of its own (a public repo's ubuntu-24.04: 4 vCPUs, 16 GB): the run takes
-# as long as its slowest job - the slow lane's two halves and the arm build - not their sum.
+# as long as its slowest job - the slow lane's three parts and the arm build - not their sum.
 name: CI
 
 on:
@@ -55,17 +55,21 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:
-      fail-fast: false  # one half failing still reports the other
+      fail-fast: false  # one part failing still reports the others
       matrix:
         include:
-          # tests/test_sweeps.py is most of the slow lane, and a few long sweeps make it up: its tests go to the
-          # workers one by one, an idle worker taking a waiting one (--dist=worksteal; each worker builds the
-          # arm's shapes once), not as one file
+          # tests/test_sweeps.py, a few long sweeps: its tests go to the workers one by one, an idle worker taking a
+          # waiting one (--dist=worksteal; each worker builds the arm's shapes once), not as one file
           - part: sweeps
             args: --dist=worksteal tests/test_sweeps.py
-          # every other slow test, a whole file per worker (pyproject.toml --dist=loadfile)
-          - part: the rest
-            args: --ignore=tests/test_sweeps.py
+          # the other slow tests, a whole file per worker (pyproject.toml --dist=loadfile), in two parts that each
+          # leave out the other's files (a file named outright would run even if ignored), so a new test file
+          # always lands in one: tests/'s own files ...
+          - part: tests/test_*.py
+            args: --ignore=tests/test_sweeps.py --ignore-glob='tests/*/*'
+          # ... and its subfolders'
+          - part: tests/*/
+            args: --ignore-glob='tests/test_*.py'
     steps:
       - uses: actions/checkout@v7
 
