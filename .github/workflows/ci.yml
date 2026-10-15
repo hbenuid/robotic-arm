@@ -16,6 +16,9 @@ concurrency:  # a newer run on the same branch cancels the one in progress
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  CADGEN_DAEMON: "0"  # transient build workers, no warm daemon left behind
+
 jobs:
   checks:
     name: Lint + fast lane
@@ -99,7 +102,4 @@ jobs:
         run: uv sync --frozen
       - name: CAD - build the arm
         working-directory: cad
-        # through cadgen's daemon, its default: its spare workers import build123d while others build, where
-        # CADGEN_DAEMON=0 starts a process per part (each importing it) - a cold arm build 145 -> 88 s on the Mac at
-        # 4 jobs; the runner discards the daemon with the job. (The tests set CADGEN_DAEMON=0 themselves.)
         run: ./cadtool gen assemblies/arm.py
