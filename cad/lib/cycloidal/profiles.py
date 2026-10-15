@@ -13,7 +13,7 @@ from lib.cycloidal.params import DEFAULT_CONFIG, DriveConfig
 
 
 def compute_epitrochoid(R: float, r: float, N: int, e: float, num_points: int = 2000) -> list[tuple[float, float]]:
-    """(x, y) points of the disc profile: ring-pin circle radius R (54), pin radius r (2),
+    """(x, y) points of the disc profile: ring-pin circle radius R (50; the port's 54), pin radius r (2),
     N ring pins (21), eccentricity e (1.5). ``endpoint=False`` leaves no duplicated closing
     point, which is what makes the periodic spline through them legal."""
     theta = np.linspace(0, 2 * np.pi, num_points, endpoint=False)

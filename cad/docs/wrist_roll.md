@@ -12,15 +12,15 @@ tests `tests/wrist/`. Numbers below name the constants; the values live in `lib/
 | joint | `wrist_roll`, revolute, `wrist_pitch_link → wrist_roll_link`; axis R′ parallel to the SolidWorks roll axis, `WRIST_ROLL_OFFSET` (the belt's centre distance) across the `wrist_pitch` axis in the wrist's swing plane and `WRIST_ROLL_AXIS_H` over the plate's coupler face - **a wrist offset: the last three axes are not concurrent** | `robot/frames.py WRIST_ROLL_ORIGIN`, `lib/placements.py SHIFTS` |
 | range | ±`WRIST_ROLL_LIMIT_DEG`, 2° short of the printed hard stop (a lug on the shaft's flange, a post in the frame's bay - the forearm roll's) | `lib/params.py`, `WristRollParams stop_*`, `tests/test_sweeps.py` |
 | drive | the NEMA 17 pancake **on the `wrist_pitch` axis** (centred on it along R′), its 20T on the shaft, the 40T band **integral to the pulley - the output**, **2 : 1** (`WRIST_ROLL_RATIO`), the stock 2GT × 6 mm belt `WRIST_ROLL_BELT_LENGTH` at its centre distance with the pancake at its slots' middle - **no idler yet** (`open_issues.md`) | `WristRollParams`, `lib/belts.py` |
-| bearings | 2× 6806-2RS back to back on a 2 mm lip in the frame's tower, bearing 2 right under the band (the arm's one bearing type) | `WristRollParams bearing_*` |
+| bearings | 2× 6806-2RS back to back on a 2 mm lip in the frame's tower, bearing 2 right under the band (the forearm roll's and the belt joints' bearing, `lib/bearings.py`) | `WristRollParams bearing_*` |
 | pulley (rotor, PETG - the output) | its hub a journal through bearing 2 to the lip's middle, the Ø33 shoulder on bearing 2's inner ring, the 40T band (two flanges) on a core inside its root, the face `gripper_j3_connector` bolts to (4× M3 into nuts in pockets from the face's rim); the rotor clamp's 4× M3 heads sunk in the face | `wrist_roll_pulley` |
 | shaft (rotor, PETG) | its hub through bearing 1 to the pulley's, the Ø33 shoulder, the flange with the clamp's 4 nuts (pockets open to its rear face) and the stop lug; the cable bore through both pieces | `wrist_roll_shaft` |
 | rotor clamp | 4× M3 × `clamp_screw_len` on `clamp_circle_dia` inside the band's core, from the pulley's face through both hubs into the shaft's nuts: the pulley, both inner rings and the shaft one block | `WristRollParams clamp_*` |
-| frame (stator, PETG) | `wrist_link` itself: its plate (j3_coupler#2's seat on the pitch axis) and on the plate's underside - the side away from the forearm - one body: the pancake's **pocket** centred on the pitch axis (its floor the plate, open on the far face), its front wall the **plate** the pancake bolts to (slotted along Y: the belt's tension, the shaft's slit out to the open face), the **tower** round R′ beside it (the 6806 seats, the lip, the **bearing boss** on the front face), the shaft's **bay** behind bearing 1 open on the far face (the shaft goes in there, the cable comes out), the stop's **post** in it; the coupler nut the tower covers drops in from the bay through a hex channel | `lib/wrist/roll.py build_frame`, `lib/wrist/link.py` |
+| frame (stator, PETG) | `wrist_link` itself: its plate (j3_coupler#2's seat on the pitch axis) and on the plate's underside - the side away from the forearm - one body: the pancake's **pocket** centred on the pitch axis (its floor the plate, open on the far face), its front wall the **motor plate** the pancake bolts to (`pad_t`; slotted along Y: the belt's tension, the shaft's slit out to the open face), the **tower** round R′ beside it (the 6806 seats, the lip, the **bearing boss** on the front face), the shaft's **bay** behind bearing 1 open on the far face (the shaft goes in there, the cable comes out), the stop's **post** in it; the coupler nut the tower covers drops in from the bay through a hex channel | `lib/wrist/roll.py build_frame`, `lib/wrist/link.py` |
 | gripper interface | `gripper_j3_connector` (converted): its plate (the servo holder's and the cover's holes) on a hub bolted to the pulley's face - a key reaches every head past the plate's flats, notches in the flange over the plate's holes; the cable bore through it | `ConnectorParams` |
-| clearances held by tests | the bearings' presses (0.9–1.0 × the journal's), every other pair in the module and against `wrist_link` < 1 mm³, the rotor `run_gap` off the frame, the pancake's way in from the open face (`motor_drop` back, the slit) and its slots' travel, the rotor's walls round the clamp and the bore, the gripper 1 mm off the wrist and the forearm while it rolls, the wrist-pitch limits | `tests/wrist/test_roll_drive.py`, `tests/test_sweeps.py` |
+| clearances held by tests | the bearings' presses on the journals (0.9–1.0 × the nominal `journal_add` press), every other pair in the module and against `wrist_link` < 1 mm³, the rotor `run_gap` off the frame, the pancake's way in from the open face (`motor_drop` back, the slit) and its slots' travel, the rotor's walls round the clamp and the bore, the gripper 1 mm off the wrist and the forearm while it rolls, the wrist-pitch limits | `tests/wrist/test_roll_drive.py`, `tests/test_sweeps.py` |
 | link masses (URDF) | `wrist_pitch_link` carries `wrist_link` (the frame) and the stator (the pancake, its 20T, the belt, both bearings), `wrist_roll_link` the rotor + the gripper | `robot/arm.urdf` |
-| purchased per drive | the 6806-2RS pair, the pancake, a GT2 20T (5 mm bore), the belt; the rotor clamp's and the connector's M3 screws + nuts, the pancake's M3 (`./cadtool python tools/bom.py --module wrist_roll_drive`) | `tools/bom.py` |
+| purchased per drive | what to order, with quantities: `./cadtool python tools/bom.py --module wrist_roll_drive` (its BUY list, and BUY, NOT MODELLED from `tools/bom.py EXTRAS`) | `tools/bom.py` |
 | printed per drive | the pulley, the shaft; the frame is `wrist_link` | `print/` |
 
 ## 1. Why, and where
@@ -30,7 +30,7 @@ the elbow axis, belted to a roll axis beside it. Done the same at the wrist, the
 the plate's free face (the forearm's boss and the coupler fill the other side), and belts to R′ beside it; the gripper
 rolls on R′, `WRIST_ROLL_OFFSET` across the pitch axis and `WRIST_ROLL_AXIS_H` off the plate. The gripper comes nearer the
 pitch axis and the wrist side's centre of mass with it, so the wrist-pitch motor carries less (the commit that made it
-quotes the numbers); in exchange the wrist is no longer spherical - the wrist roll axis misses the pitch axis and the
+quotes the numbers); in exchange the wrist is not spherical - the wrist roll axis misses the pitch axis and the
 forearm roll's - and an inverse kinematics in `software/control` must be numeric (`open_issues.md`).
 
 **Which side.** R′ sits on `wrist_link`'s +Y, away from the pancake's plug side in the capture: on the other side the
@@ -46,8 +46,8 @@ Every station: `stack_positions()`.
 | station | what | fixed by |
 |---|---|---|
 | `z_motor_rear` … `z_motor_face` | the pancake, centred on the pitch axis' station, its plug spun to +X | the pitch axis |
-| `z_motor_face` … `z_front` | the plate: the 4 bolt slots and the pilot slot (±`pad_slot_len`/2 along Y), the shaft's slit | `pad_t` |
-| `z_20t` … | the 20T, its hub on the pilot (`pulley_seat`), its band at `z_ring_mid` | `t20` |
+| `z_motor_face` … `z_front` | the motor plate: the 4 bolt slots and the pilot slot (±`pad_slot_len`/2 along Y), the shaft's slit | `pad_t` |
+| `z_20t` … | the 20T, its hub `pulley_seat` over the pilot, its band at `z_ring_mid` | `t20` |
 | `z_ring` … `z_ring_end` | the 40T band between its flanges, level with the 20T's | the 20T |
 | `z_ring_end` … `z_face` | the pulley's face: the connector's nuts, the clamp's heads | `face_t` |
 | `z_boss` | bearing 2's front face, the bearing boss's top, `run_gap` under the band's flange | the band |
@@ -69,9 +69,10 @@ nut pockets open to the bed).
    shaft + bearing 1 into the bay through the open face, then forward into its seat.
 3. Four M3 nuts into the shaft's flange from its rear face (in the bay); 4× M3 × `clamp_screw_len` from the pulley's
    face through both hubs into them: the rotor turns, whole.
-4. The pancake into its pocket from the open face `motor_drop` back - its pilot behind the plate, its shaft along the
-   slit - then forward into the pilot slot; 4× M3 from the plate's front face. The 20T on its shaft, its hub on the
-   pilot; the belt round it and the 40T; slide the pancake along its slots until the belt is tight, tighten.
+4. The pancake into its pocket from the open face `motor_drop` back - its pilot behind the motor plate, its shaft along
+   the slit - then forward into the pilot slot; 4× M3 from the motor plate's front face. The 20T on its shaft, its hub
+   on a `pulley_seat` shim on the pilot; the belt round it and the 40T; slide the pancake along its slots until the belt
+   is tight, tighten.
 5. The gripper servo's cable through the connector's bore, the rotor's bore, out of the bay.
 6. Four M3 nuts into the pulley face's pockets from its rim; the connector onto the face, 4× M3 × `bolt_len` from
    between its flange and its plate; then the servo holder and the cover onto its plate (their screws through the
@@ -87,7 +88,6 @@ SKIPPED_PRODUCTS`); the gripper moves by `lib/placements.py SHIFTS`' `wrist_roll
 `wrist_link`'s plate).
 
 ## 6. Not modelled / to confirm
-`open_issues.md`: the belt's tensioner (an idler on its back - the forearm roll's kit has no room between the pocket, the
-pancake's screws and the tower's seats; the pancake's slots tension it meanwhile), the frame's flex under the gripper's
+`open_issues.md`: the belt's tensioner (none yet: the pancake's slots tension it), the frame's flex under the gripper's
 load and the belt's pull, the 6806 fits in PETG, the cable's route through the rotor, a home sensor (as the forearm roll's,
 not designed), the pancake's exact model and mass, the wrist offset in a future IK.

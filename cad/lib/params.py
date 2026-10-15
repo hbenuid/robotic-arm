@@ -1,6 +1,6 @@
 """Single source of truth for the shared dimensions of the robotic-arm CAD.
 
-Every constant carries a provenance tag:
+Every constant carries a provenance tag (one tag may head a block) or is derived from tagged ones:
   [MEASURE]   verify with calipers on real hardware
   [DATASHEET] manufacturer spec sheet
   [DESIGN]    our chosen value (free to tune)
@@ -258,8 +258,9 @@ from lib.upper_arm.layout import pad_holes as _pad_holes  # noqa: E402
 ELBOW_MOTOR_SCREWS_MASS_G = STEEL_DENSITY * len(_pad_holes(_UPPER_ARM)) * shcs_volume(_UPPER_ARM.arm.motor_screw, J1_MOTOR_SCREW_LEN)   # 4.7, 4x M3x12
 
 # --- Robot description (robot/frames.py, robot/arm.urdf) --------------------------------------
-# Joint limits and actuator ratings are PLACEHOLDERS until measured on the hardware; the URDF
-# and SDF are checked against these by tools/robot/derive.py --check.
+# The [ESTIMATE] joint limits and the actuator ratings are PLACEHOLDERS until measured on the hardware (the [DESIGN]
+# limits are set by the sweeps and the hard stops below); the URDF and SDF are checked against these by
+# tools/robot/derive.py --check.
 BASE_YAW_LIMIT_DEG = 175.0        # [ESTIMATE] symmetric +/- range; j1_coupler (carrying the drive's stator) turns on the base
 # the 21:1 cycloidal drive (CYCLOIDAL_RATIO) between j1_coupler and j1_link: (lower, upper); the upper - the arm pitched
 # down in front - stops 2.5 deg before the upper arm, rising off the drive's middle, reaches j1_coupler's disc (69.5 deg;
@@ -267,8 +268,8 @@ BASE_YAW_LIMIT_DEG = 175.0        # [ESTIMATE] symmetric +/- range; j1_coupler (
 # fork at -154, the forearm stays off the base and the shoulder to -140 at any elbow)
 SHOULDER_PITCH_LIMITS_DEG = (-120.0, 67.0)   # [DESIGN]
 # the 4.5:1 elbow belt: (lower, upper); the lower - the forearm lifted back - kept where the old roll housing set it:
-# the roll drive's frame (round about the elbow axis, its tower ELBOW_ROLL_OFFSET over it) is 5.9 mm off the elbow
-# motor's board, which stands on the same side of the upper arm, there and comes within 1 mm of it at -54.0 deg
+# the roll drive's frame (round about the elbow axis, its tower ELBOW_ROLL_OFFSET over it) is 2.3 mm off the elbow
+# motor's board, which stands on the same side of the upper arm, there and comes within 1 mm of it at -49.0 deg
 # (tests/forearm/test_roll_drive.py) - the forearm, the wrist and the gripper stay 1 mm off the upper arm at any roll
 # and wrist pitch there (tests/test_sweeps.py), so the frame sets the room to lift further (docs/open_issues.md); the
 # upper kept at 90 (the gripper, the wrist pitched up, stays 1 mm off j1_coupler there - tests/test_sweeps.py):
@@ -279,12 +280,12 @@ ELBOW_PITCH_LIMITS_DEG = (-47.0, 90.0)   # [DESIGN]
 # motor near +129 at roll 0 / 180 (tests/test_sweeps.py; docs/open_issues.md)
 WRIST_PITCH_LIMITS_DEG = (-75.0, 125.0)   # [DESIGN]
 # the forearm roll: 2 deg short of its printed hard stop - the lug on the roll shaft's flange meets the post on the
-# frame's tower at +/- 168.3 (lib/forearm/params.py stop_deg_width; tests/test_sweeps.py measures it), which keeps the
-# cables from winding
+# frame's tower at +/- 168.3 (lib/forearm/params.py stop_deg_width; tests/test_sweeps.py holds it between the limit
+# and 180 - stop_deg_width), which keeps the cables from winding
 FOREARM_ROLL_LIMIT_DEG = 166.0    # [DESIGN]
 # the wrist roll: 2 deg short of its printed hard stop - the lug on the wrist roll shaft's flange meets the post in
-# wrist_link's bay at +/- 168.66 (lib/wrist/params.py stop_deg_width; tests/test_sweeps.py measures it), which keeps the
-# gripper servo's cable through the rotor from winding
+# wrist_link's bay at +/- 168.66 (lib/wrist/params.py stop_deg_width; tests/test_sweeps.py holds it between the limit
+# and 180 - stop_deg_width), which keeps the gripper servo's cable through the rotor from winding
 WRIST_ROLL_LIMIT_DEG = 166.0      # [DESIGN] the pancake through 2 : 1 (not CAN-driven yet)
 JAW_TRAVEL_MM = 10.0            # [ESTIMATE] symmetric +/- jaw travel about the capture pose - which is open already: it
 #                                 does not fit the gripper (docs/open_issues.md)

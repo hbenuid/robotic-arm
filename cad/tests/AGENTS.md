@@ -2,8 +2,11 @@
 
 Loads when you work in `tests/`. Run it only through `./cadtool pytest` (`cad/AGENTS.md`); `-m "not slow"` is the fast
 lane. `-n <workers>` (pytest-xdist) spreads the suite over processes, a whole file per worker (`pyproject.toml` sets
-`--dist=loadfile`: a file's fixtures and `built.py` shapes are built once) — `-n 4` on a dev machine (each worker holds
-its own shapes, ~1.5 GB at most; not `-n auto`, which starts one per core), `-n 2` in CI (`.github/workflows/ci.yml`).
+`--dist=loadfile`: a file's fixtures and `built.py` shapes are built once) — `-n 4` on a dev machine and in CI's slow
+lane (each worker holds its own shapes, ~1.5 GB at most; not `-n auto`, which starts one per core). CI runs the slow
+lane as three jobs (`.github/workflows/ci.yml`): `test_sweeps.py`, a few long sweeps, a test per worker
+(`--dist=worksteal`); the other files of `tests/` itself; its subfolders - each part leaving out the others' files, so
+a new test file always lands in one.
 Every test module's docstring says what it checks.
 
 ## Tests (`./cadtool pytest`)
@@ -17,15 +20,21 @@ what is safe) — a test that must do that builds its own (`tests/cycloidal/test
 `test_parts_convention.py` (contract + geometry for
 every part, COTS envelopes + vendor frames), `test_reference_match.py` (manifest checksums; converted and native
 parts vs reference), `test_placements.py` (JSON integrity, tables cover every key once, the designed
-module record + the mounted records vs `lib/mounts.py`), `test_assembly.py` (every assembly file ends with its build call; the arm's leaves / solids / volume / bbox
+module record + the mounted records vs `lib/mounts.py`, the records' `SHIFTS` and the forearm's `TURNS`
+(`lib/placements.py`), the skipped nodes),
+`test_assembly.py` (every assembly file ends with its build call; the arm's leaves / solids / volume / bbox
 vs SolidWorks + the module lock — the numbers are IN that file; the arm's leaf colours -
 purchased = `BOUGHT_TINT`, which no group / module may reuse, printed = the link's / module's tint, in the arm and in
 the standalone gripper; the standalone drives' in their own tests), `test_bom.py` (the print / buy lists
 partition `parts.names()` by the flag, the occurrence counts, the drive's pieces follow `DEFAULT_CONFIG`, `EXTRAS`
-well-formed), `test_params_invariants.py` (locks), `test_robot.py` (link partition, frames, FK at
+well-formed), `test_belts.py` (the GT2 belts, purchased with no reference: each a stock length, its loop that long
+round its pulleys, the band on their tooth tips, their volume / bbox written in), `test_params_invariants.py` (locks),
+`test_robot.py` (link partition, frames, FK at
 zero = capture, the committed meshes vs a fresh export, inertials, URDF/SRDF/SDF consistency + cadgen's validators via
 `./cadtool validate`), `test_tooling.py` (the installed cadgen and OCP kernel are the pinned ones, one complete OCP distribution,
-`./cadtool inspect` agrees with the kernel),
+`./cadtool inspect` agrees with the kernel, the retired inspect verbs, `daemon stop`'s pattern on both platforms,
+telemetry kept off, the two `.claude/settings.json` the same, no tracked `CLAUDE.md` / `CLAUDE.local.md`, every
+tracked name lowercase),
 `test_mounts.py` (the mounted motors: axis on the joint, face on the host's pad / plate, board on the rear face, interference budget,
 the base stack above the base bottom, the 90T planes within the shafts, the elbow motor's 20T level with its 90T; each belt joint's bearing stack between its
 coupler's stub and its 90T; the 90T pulley bolts: seats, reach, the opened holes, the nuts' designed press; the base_yaw
@@ -37,7 +46,7 @@ the elbow's range, the wrist at its limits, the forearm and the gripper at the e
 pitch, the shoulder's limits at any yaw against the base, the forearm and the wrist roll's limits short of their hard
 stops, the gripper rolling clear of the wrist; poses with the arm down in the table skipped),
 `test_lazy_kernel.py` (a fresh interpreter imports every template, part, assembly and link model without
-loading `build123d` / `OCP`; names the first offender — a new assembly model goes in its module list),
+loading `build123d` / `OCP`; names the first offender; its assembly list is kept by hand: `assemblies/AGENTS.md`),
 `source_checks.py` (the shared `runs_its_model()` check that a model file ends with its build call),
 `helpers.py` (the geometry helpers every geometry test shares: `interference`, `is_inside`, `section_area`, …, and
 `module_tints`, a standalone module's colours),
@@ -53,7 +62,9 @@ its axle's, nut's and spacer's numbers (no reference), its slots on `j1_link`, t
 holes, the arm - a flat slab - rising off the drive's turning shell - the drive's frame in the link's, its first pillar
 on the arm's centreline, the shell's body inside, its windows under the arm solid, the others open, the slab's faces
 level end to end -, no sockets, the elbow block's floor), `tests/base/` (`base`: the LEGACY build's
-feature probes, the interface values lib/params.py and lib/datum.py take from it; `base_motor_mount`: the wiring room, the
+feature probes, the interface values lib/params.py and lib/datum.py take from it; DEFAULT's walls carrying
+j1_coupler's cone on down onto the foot's flange, its screw holes, its volume / box (`test_foot`); `base_motor_mount`:
+the wiring room, the
 joint to the base's posts, the walls' truss bays, the seat on round holes short of the stock belt's centre distance, the
 motor clear of it; `yaw_idler`: the base_yaw belt's tensioner - the stock belt round it, the band of belts its slot
 takes, the belt frame's points in the base's, its stations, its axle's, nut's and spacer's numbers (no reference), its
@@ -72,7 +83,10 @@ surfaces, volume, bbox - and feature probes;
 `gt2_pulley_120t`, a part with no reference: its volume and bbox written in, the 90T's hub and holes, 120 grooves; `helpers.py`: probe points about the axis, the surface census),
 `tests/forearm/` (the forearm: the LEGACY
 build vs the SolidWorks part + feature probes, the roll end, the roll drive - axis through the wrist centre, stack, press fits, clean pairs,
-clearances in the arm with the elbow folded; `helpers.in_host()` places any occurrence in `j2_link`'s frame,
+clearances in the arm with the elbow folded; the roll belt's tensioner (`test_roll_idler`: the stock belt round it, its
+riser, slot and nut channel on the roll frame, its axle's and nut's numbers - no reference) and the unplaced wrist
+idler kit (`test_wrist_idler`: its axle's and nut's numbers, the loop with it); `helpers.in_host()` places any
+occurrence in `j2_link`'s frame,
 `helpers.in_drive_frame()` in the roll drive's mount frame - `j2_link`'s before the forearm's turn,
 `lib/placements.py TURNS` - and `j2_link_in_drive_frame()` the turned `j2_link` in it). Geometry tests are
 `slow`.
@@ -82,7 +96,9 @@ The totals the docs never quote (`cad/AGENTS.md` Docs) live in the locks — `te
 `assemblies/cycloidal_drive.py EXPECTED`, `assemblies/forearm_roll_drive.py EXPECTED`, `assemblies/wrist_roll_drive.py
 EXPECTED`, `reference/placements.json
 expected`, `tests/test_bom.py`, `tests/test_placements.py`, `MULTI_BODY` in `tests/test_parts_convention.py`, the
-interference budgets (`tests/test_mounts.py`, `tests/forearm/`) and the shared dimensions in
+interference budgets and press / clean pairs (`tests/test_mounts.py`, `tests/cycloidal/test_assembly.py`,
+`tests/forearm/`, `tests/wrist/`), `tests/test_belts.py` (the belts), the numbers a *no reference*, *measured* or
+diverged part keeps in its own test (`parts/AGENTS.md` Part states) and the shared dimensions in
 `tests/test_params_invariants.py`. A geometry change bumps the ones its failures name — measure, never guess (Recipe C
 step 5 in `cad/AGENTS.md` has the `totals()` one-liner).
 

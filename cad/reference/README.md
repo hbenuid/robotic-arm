@@ -3,13 +3,12 @@
 **Purpose:** the original design, as exported from SolidWorks, renamed to the clean part
 names used everywhere in `cad/` (`solidworks/`) — plus, for the cycloidal drive, the CadQuery
 exports of the `cycloidal_drive` repo the build123d parts were ported from (`cycloidal/`) — and, for the parts
-designed here with no external origin (`lib/reference.py NATIVE` / `NATIVE_COTS`: the forearm roll drive's block
-and shaft, the 6806 bearing envelope), their **accepted builds** (`native/`, written once by
-`tools/reference/import_native.py`; `--force` accepts a changed design). These
-files are **immutable inputs** (committed): each custom part's wrapper returns
-them until it is converted, and `tests/test_reference_match.py` compares every converted part
-against them. The rules for them — never edit, the regeneration order, the manifest, Recipe E for a new export —
-are [`AGENTS.md`](AGENTS.md); this file is the record of what is here.
+designed here with no external origin (`lib/reference.py NATIVE` / `NATIVE_COTS`), their **accepted builds**
+(`native/`, written once by `tools/reference/import_native.py`). These files are **immutable inputs** (committed):
+each custom part's wrapper returns them until it is converted, and `tests/test_reference_match.py` compares the
+converted ones and the native parts against them (the drive's ported parts: `tests/cycloidal/test_port.py`). The rules
+for them — never edit, the regeneration order, the manifest, Recipe E for a new export — are [`AGENTS.md`](AGENTS.md);
+this file is the record of what is here.
 
 ## Provenance
 - Source tree: the SolidWorks 2026 STEP AP214 exports of 2026-08-27, **not in git, not needed on a machine and with
@@ -19,15 +18,11 @@ are [`AGENTS.md`](AGENTS.md); this file is the record of what is here.
   not committed; `placements.json` captures its structure.
 - NEMA 17 x 40 + MKS SERVO42D kit: `mks/nema17x40_with_mks.step` under the source tree (SolidWorks 2026 export of
   2026-09-21, mm, 15 solids, 521 236 bytes, sha256 `4e51a1591030…`; `lib.reference.MKS_EXPORT_NAME`) — not committed
-  and no longer kept anywhere (re-export from SolidWorks if the split must be redone; the sha256 identifies it);
-  `tools/reference/split_mks_motor.py` splits it into `vendor/nema17_40mm.step` (the body, with the drive's pilot + shaft
-  from `lib/cycloidal/motor.py` in place of the export's) and `vendor/mks_servo42d.step` (board kit), which are committed
-  and mirrored into `solidworks/`. The sibling
-  `mks/nema17x48_with_mks.step` (cm units, 24 solids, 3 345 264 bytes, sha256 `c1958e60a14f…`; `MKS48_EXPORT_NAME`) is
-  the same kit with the 48 mm motor - a 17HS19-2004S1 with the datasheet's 24 mm / 15 mm-D-cut shaft, not the drive's
-  22 mm one - so `split_mks_motor.py --write drive` composes `vendor/nema17_48mm.step` from its body and the drive's
-  own pilot + shaft; the drive motor's reference stays `cycloidal/nema17_48mm.step` (`import_cadquery.py --only nema17_48mm`
-  records the vendor block).
+  and kept nowhere (re-export from SolidWorks if the split must be redone; the sha256 identifies it). The
+  sibling `mks/nema17x48_with_mks.step` (cm units, 24 solids, 3 345 264 bytes, sha256 `c1958e60a14f…`;
+  `MKS48_EXPORT_NAME`) is the same kit with the 48 mm motor (a 17HS19-2004S1). What `tools/reference/split_mks_motor.py`
+  derives from the two (the 40 mm kit's vendor files, mirrored into `solidworks/`, and `vendor/nema17_48mm.step`):
+  `vendor/README.md` "Where the vendor files come from".
 - Measured, not committed: `GT2 Pulley - 20 - 60 teeth.STEP` (SolidWorks 2026 export of 2026-09-26,
   mm, 1 solid, 1 974 574 bytes, sha256 `55733855bdc5…`; `lib/reference.py MEASURED`) — the 20-60T compound pulley,
   converted by measuring it (`parts/AGENTS.md` Part states → *measured*): nothing of it is in this folder, its numbers
@@ -91,39 +86,43 @@ Cycloidal drive (`cycloidal/<name>.step`: the named CadQuery builder's export at
 Notes:
 - `gripper_finger_right` is the mirror configuration of `gripper_finger_left`; its SolidWorks
   export is still named `…_Gripper Hand Left` (stale configuration name, geometry is correct).
-- The link caps `j1_cap` (`first joint cap 8726`, inch), `j2_cap_1` (`cap 1 joint 2 8726`) and `j2_cap_2`
-  (`cap of joint 2 piece 2 8526`) were removed from the design 2026-09-25: their reference STEPs and manifest entries
-  are gone, their products are `lib/reference.py SKIPPED_PRODUCTS` and `placements.json` keeps their poses under
-  `skipped`. (They were modelled in assembly context, their geometry up to ~1 m from the part origin.)
+- The link caps `j1_cap` (`first joint cap 8726`, inch), `j2_cap_1` (`cap 1 joint 2 8726`), `j2_cap_2`
+  (`cap of joint 2 piece 2 8526`) and `gripper_clamp_bracket` (`brack for hand cmap`, the pancake's holder on
+  `wrist_link`) are dropped from the design: they have no reference STEP or manifest entry, their products are
+  `lib/reference.py SKIPPED_PRODUCTS` and `placements.json` keeps their poses under `skipped`. (The caps were modelled
+  in assembly context, their geometry up to ~1 m from the part origin.)
 - `gt2_pulley_20t`'s product name carries the Cyrillic configuration name `Конфигурация1`
   ("Configuration1"); it never enters our labels.
 - `gt2_pulley_90t` is a printed parametric pulley (842 faces, ~1 s import); `gripper_j3_connector`
   has two bodies.
 
 ## Designed module: the cycloidal drive
-- `New_cyloidal_assembly` (sic; path 1.3, 15 leaves / 38 solids in SolidWorks) is recorded in
-  `placements.json` as the **designed module** `cycloidal_drive#1`: its pose — position
-  (1.84, 85.01, 31.45) mm, rotation XYZ (-180.00, -3.69, 180.00)° — places
+- `New_cyloidal_assembly` (sic; path 1.3) is recorded in `placements.json` as the **designed module**
+  `cycloidal_drive#1`: its pose (the record's `world`) places
   `assemblies/cycloidal_drive.py`, whose contents come from code (`lib/cycloidal`), not from the
   SolidWorks node. The node's own totals / bbox stay in the record's `solidworks` block as a
   cross-check (`tests/cycloidal/test_assembly.py`); the walker does not descend into it.
 
 ## Skipped from the SolidWorks assembly
 - The 6 zero-geometry assembly-skeleton STEPs, the `base/step/` re-exports and the pancake
-  motor's internal parts (flattened into `vendor/nema17_pancake.step`).
+  motor's internal parts (flattened into `vendor/nema17_pancake.step`); the products the design dropped: Notes, above.
 
 ## placements.json
 `occurrences[]`: one record per placed part (`kind: part`) or sub-assembly (`kind: module`)
 with `key` (`<part>#<n>`), `path` (SolidWorks tree path), `parent` (module key or null),
 `rel` / `world` placements as `{position, rotation_xyz_deg, matrix_3x4}`
 (`Location(position, rotation_xyz_deg)` reproduces them; intrinsic XYZ Euler, degrees),
-world bounding boxes, solid counts and volumes; `expected` totals (every `kind: part` record, the mounted ones
-included) for the assembly test; `designed_modules[]` (the keys of `kind: module, designed: true` records, which carry
-`rel`/`world`, a `solidworks` cross-check block and `source` instead of solids/volume); `mounted[]` (the keys of the
-part records with a `mount` block — the belt joints' motors and boards declared in `lib/mounts.py`, written by
-`tools/reference/mount_placements.py`: `path` / `parent` / `label_in_monolith` null, `rel == world = host world *
-mount.frame_in_host`, `mount.host` a SolidWorks key or the motor key for a board); `skipped[]` (one record per SolidWorks
-node whose product the design dropped, `lib/reference.py SKIPPED_PRODUCTS` - the link caps: `path`, `label`, `reason`,
-leaves / solids / volume and the `rel` / `world` pose, moved there by `tools/reference/mount_placements.py`).
-The capture records stay as extracted when the design changes a link's length: `lib/placements.py SHIFTS` moves
-the records beyond it when they are read (`assemblies/AGENTS.md` "Shifted occurrences").
+world bounding boxes, solid counts and volumes; `expected` totals (every `kind: part` record, the mounted and the
+retired ones included; `tests/test_placements.py` checks them); `designed_modules[]` (the keys of `kind: module,
+designed: true` records, which carry `rel`/`world` and `source` instead of solids/volume, plus a `solidworks`
+cross-check block when a SolidWorks node places the module, or a `mount` block when `lib/mounts.py MODULE_MOUNTS`
+does - those are listed under `mounted[]` too); `mounted[]` (the keys of the records with a `mount` block — what
+`lib/mounts.py MOUNTS` / `MODULE_MOUNTS` declare, written by `tools/reference/mount_placements.py`: `path` / `parent` /
+`label_in_monolith` null, `rel == world = host world * mount.frame_in_host`, `mount.host` the record it is declared
+on - a SolidWorks one (a retired one for a re-seated pulley) or another mounted one: a board's motor, a bolt set's
+pulley, a nut set's screws); `skipped[]` (one record per SolidWorks node whose product the design dropped,
+`lib/reference.py SKIPPED_PRODUCTS` - the link caps and `gripper_clamp_bracket`: `path`, `label`, `reason`, leaves /
+solids / volume and the `rel` / `world` pose, moved there by `tools/reference/mount_placements.py`).
+The capture records stay as extracted when the design moves or turns what lies beyond a link (e.g. its length, a
+module in between): `lib/placements.py SHIFTS` / `TURNS` move the records beyond it when they are read
+(`assemblies/AGENTS.md` "Shifted occurrences", "Turned occurrences").

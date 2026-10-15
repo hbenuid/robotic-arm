@@ -5,7 +5,7 @@ ForearmConfig.idler) it sits on the floor of its channel down from the web's top
 across the forearm's x against the channel's walls - it slides along y with the idler's axle (wrist_idler_screw) and
 cannot turn.
 
-No catalog model (the catalog has single fasteners only, vendor/README.md), no SolidWorks export and NO reference
+No catalog model (none adopted), no SolidWorks export and NO reference
 file: a pattern part with no reference (lib/reference.py NO_REFERENCE) - its envelope IS the geometry (lib/fasteners.py
 hex_nut(): no thread, the bore at the nominal diameter) and tests/forearm/test_wrist_idler.py locks its numbers.
 Frame: axis on Z, the bearing face on z=0, standing in +Z, a corner on +Y (the flats across x).

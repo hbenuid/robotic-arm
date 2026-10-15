@@ -79,7 +79,7 @@ class DiscParams:
 class ShaftParams:
     """Eccentric shaft dimensions - spec section 1.4."""
 
-    bearing_seat_od: float = 17.10     # slight clearance for the 6003 bore
+    bearing_seat_od: float = 17.10     # light press in the 6003's 17 bore
     eccentricity: float = 1.5
     spine_od: float = 5.0              # shaft OD outside the lobe regions
     support_pin_dia: float = 5.0       # ground steel dowel (output-side 625 support)
@@ -153,7 +153,7 @@ class MotorParams:
 
     shaft_dia: float = 5.0
     shaft_length: float = 22.0         # 20 mm from the pilot face + 2 mm pilot
-    shaft_dcut_flat: float = 4.5       # D-cut flat-to-round width
+    shaft_dcut_flat: float = 4.5       # the flat lies shaft_dcut_flat / 2 from the axis: flat-to-round 4.75 (motor.py)
     shaft_dcut_length: float = 18.0    # D-cut from the shaft tip inward
     bolt_pattern_square: float = 31.0  # centre-to-centre
     bolt_dia: float = 3.0              # M3
@@ -326,14 +326,15 @@ def compute_housing_bolt_angles(cfg: DriveConfig) -> list[float]:
 # The port: the CadQuery drive exactly (the designed parts' REFERENCE_BUILD - tests/cycloidal/test_port.py).
 LEGACY_CONFIG = DriveConfig()
 
-# What the parts build - three departures from the port:
+# What the parts build - four departures from the port:
 #  * the housing on 6 bolts, not 8 - 6 pillars at 60 degrees, the first at ARM_DEG: on the centreline of the upper arm,
 #    which rises off the turning shell between the two windows either side of it (ShellParams.arm_windows);
-#  * a smaller gear: the ring-pin circle and everything outside it (the bore, the bolt circle, the od) RING_INSET
-#    further in, so each wall outside the pins keeps the port's thickness (the housing's outline between its pillars
-#    is the bore: 1.9 outside the pin holes) and the drive is 2 * RING_INSET smaller across. The discs follow the
-#    pins (their epitrochoid is the pin circle's); the 6814s, the hub, the shaft and the stack-up do not change. The
-#    limit is the wall between the pins' far ends and the 6814 seat, 6.8 -> 2.8 (tests/cycloidal/test_shell_body.py);
+#  * a smaller gear: the ring-pin circle and everything outside it (the bore, the bolt circle) RING_INSET further in
+#    (the od follows the pillar tips, below), so each wall outside the pins keeps the port's thickness (the housing's
+#    outline between its pillars is the bore: 1.9 outside the pin holes) and the drive is 2 * RING_INSET smaller across
+#    between its pillars. The discs follow the pins (their epitrochoid is the pin circle's); the 6814s, the hub, the
+#    shaft and the stack-up do not change. The limit is the pin rings' wall, 1.9 outside ShellParams.ring_bore_dia
+#    (tests/cycloidal/test_shell_body.py test_pin_holes_in_the_pin_rings);
 #  * trimmed pillar tips: each housing nut (and its pocket) turned a flat outward (bolt_nut_turn_deg), with LUG_WALL of
 #    plastic past the pocket - the od is the bolt circle + the pocket's AF + 2 * LUG_WALL (the port kept 3.3 past a
 #    corner); the edge chamfer 1.0, so the external faces keep 1.5 past the nut pockets and 1.4 past the counterbores.

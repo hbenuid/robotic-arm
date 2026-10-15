@@ -12,7 +12,8 @@ as the wrist-side mount, the latter although `assemblies/gripper.py` places it) 
 the stage it bolts to. The group is only a directory: the part's NAME is its key and `parts.load(name)` & co. are
 the only way in (`cad/AGENTS.md` "Rules for every folder"; `import parts` raises on a duplicate name) — a stdlib-only
 directory scan in `parts/__init__.py`; note `parts.base` is the *group package*, the part is `parts.load("base")`.
-Every part MUST (enforced by `tests/test_parts_convention.py`):
+Every part MUST (the model contract and the build call: `tests/test_parts_convention.py`; the kernel:
+`tests/test_lazy_kernel.py`; the imports: `tests/test_layering.py`):
 - declare ONE model, **`@step def <name>()`** (`from cadgen import step`; NAME = file stem = model
   name; no parameters, no `out=` — the STEP is the sibling file), that **returns** a valid, labelled
   Part/Compound at its **local origin** — the assembly owns placement; label == module name;
@@ -27,25 +28,21 @@ Keep the importable `parts/<group>/<name>.py` naming (tests/assemblies reach the
 its STEP stay siblings (cadgen's default `out`; the viewer pairs them into one entry).
 
 ## Part states
-Custom parts declare `REFERENCE = NAME` (`None` for a *measured* one), `CONVERTED` and `LOCAL_FROM_REF`:
+Custom parts declare `REFERENCE = NAME` (`None` for a *measured* or a printed *no reference* one), `CONVERTED` and
+`LOCAL_FROM_REF` (`IDENTITY` when left out):
 - *wrapper* (`CONVERTED = False`, from `_templates/wrapper.py`): the model returns
   `reference/solidworks/<name>.step` (via `lib.reference.load` → `cadgen.read_step`, a tracked input)
-  in the SolidWorks part-file frame — the day-one state of every custom part (the two links, the base, both couplers, the wrist body and the 90T pulley are parametric: `j2_link` in
-  `lib/forearm/` - a `ForearmConfig` with `LEGACY` = the SolidWorks part and `DEFAULT` = what is built -, `j1_link` in
-  `lib/upper_arm/` - an `UpperArmConfig` -, `base` in `lib/base/` - a `BaseConfig` -, `j3_coupler` in `lib/coupler/` - a `CouplerParams` -,
-  `j1_coupler` in `lib/yaw_coupler/` - a `YawCouplerConfig` -, `wrist_link` in `lib/wrist/` - a `WristConfig` -, `gt2_pulley_90t` in
-  `lib/pulley/` - a `PulleyParams`, the same pattern);
+  in the SolidWorks part-file frame — the day-one state of every custom part (the ones still wrappers:
+  `docs/open_issues.md` "Not converted yet");
 - *parametric* (`CONVERTED = True`, from `_templates/designed.py`): real build123d — see "Converting a part" below.
 - *designed* (`CONVERTED = True`, `REFERENCE = NAME`, registered in `lib/reference.py DESIGNED`):
-  the cycloidal drive's printed parts — the reference is the CadQuery export they were ported
-  from; `tests/cycloidal/test_port.py` matches them to it (not `tests/test_reference_match.py`: its volume / bbox
-  check is weaker) - identical face sets / tessellations (the two
+  the cycloidal drive's ported printed parts (`cycloidal_shell_ring`, designed here, is *no reference*) — the
+  reference is the CadQuery export they were ported from; `tests/cycloidal/test_port.py` matches them to it (not
+  `tests/test_reference_match.py`: its volume / bbox check is weaker) - identical face sets / tessellations (the two
   spline discs: the lobe profile within 1e-6 mm of the reference spline, `helpers.spline_deviation`, and the
   mesh within its chordal error — see `cad/AGENTS.md` "Two machines").
-  A drive part that has left its export (`lib/cycloidal/params.py DEFAULT_CONFIG` vs the port, `LEGACY_CONFIG`: the
-  housing's bolt count - the two housing parts and the housing bolts / nuts -, the gear size, `RING_INSET` - the
-  discs, the ring pins and the housing parts - and the pillar tips, `LUG_WALL` - the housing parts and nuts) declares
-  `REFERENCE_BUILD`, its
+  A drive part that has left its export (`lib/cycloidal/params.py` `DEFAULT_CONFIG` vs the port's `LEGACY_CONFIG` -
+  the departures are listed there and in `docs/cycloidal_drive.md` §5) declares `REFERENCE_BUILD`, its
   `LEGACY_CONFIG` build: `test_port` and `test_cots_envelope_tracks_reference_bbox` compare THAT.
   Their geometry helpers live in `lib/cycloidal/` and each module exposes `build(cfg)` for tests
   (reached like any part: `parts.load(name).build(cfg)` — tests never import `parts.<group>` either).
@@ -53,30 +50,28 @@ Custom parts declare `REFERENCE = NAME` (`None` for a *measured* one), `CONVERTE
   `NATIVE_COTS` - neither a SolidWorks export nor a catalog model, the envelope IS the geometry - keep theirs the same
   way; a NEW part designed here keeps none: *no reference*, below):
   designed in this repo with no external origin, so the reference is the build the author ACCEPTED —
-  `reference/native/<name>.step` + the manifest entry, written by `./cadtool python
-  tools/reference/import_native.py [--only NAME] [--force]` ONCE on one machine (committed, like a vendor file;
-  `--force` = accept a changed design; `import_solidworks.py` keeps the entries). The reference-match test then
-  locks the geometry like every other part's; a native part's own tests hold its design intent.
-  Re-accepting an existing native part's changed design: `tools/reference/import_native.py --only NAME --force`, then
-  Recipe C.
+  `reference/native/<name>.step` + the manifest entry, written by `tools/reference/import_native.py` (how, and
+  re-accepting a changed design: `reference/AGENTS.md` "Regenerating, in this order"; then Recipe C). The
+  reference-match test then locks the geometry like every other part's; a native part's own tests hold its design
+  intent.
 - *no reference* (registered in `lib/reference.py NO_REFERENCE`; printed: `CONVERTED = True`, `REFERENCE = None`;
   purchased: the COTS contract and body, its envelope the geometry, no vendor file): designed in this repo and kept
-  with NO reference file - the direction for every new part designed here, as *measured* is for a new export (the CAD
-  stands on its code, not on reference files). No file under `reference/`, no manifest entry, no `NATIVE` / `COTS`
+  with NO reference file - the direction for every new part designed here, as *measured* is for a new export
+  (`reference/AGENTS.md` Rules). No file under `reference/`, no manifest entry, no `NATIVE` / `COTS`
   row, so neither the import tools nor the reference checks see it; its own test holds its numbers - volume, bbox,
   pieces, measured on the build and written in - and feature probes (`gt2_pulley_120t`:
   `tests/pulley/test_gt2_pulley_120t.py`; the base_yaw pulley bolts: `tests/base/test_yaw_pulley_bolts.py`). A new
   one: its builder, its `NO_REFERENCE` row, its test, then Recipe C. `tests/test_parts_convention.py` checks the state;
   a vendor model for a purchased one makes it an ordinary COTS part (Recipe A / D).
 - *measured* (`CONVERTED = True`, `REFERENCE = None`, registered in `lib/reference.py MEASURED`): converted from a
-  SolidWorks export that is measured once and NOT committed (`gt2_pulley_20_60t`) - the direction for new exports:
-  the CAD stands on its code, not on reference files. No reference file, no manifest entry, so neither the import
-  tools nor `tests/test_reference_match.py` see it; `MEASURED` records the export (its product, file and sha256) and
-  the part's own tests hold the numbers measured on it (arc centres, surfaces, volume, bbox, feature probes: the
-  measured values written into the test, `tests/pulley/test_gt2_pulley_20_60t.py`), its params tagged `[REFERENCE]`.
+  SolidWorks export that is measured once and NOT committed (`gt2_pulley_20_60t`). No reference file, no manifest
+  entry, so neither the import tools nor `tests/test_reference_match.py` see it; `MEASURED` records the export (its
+  product, file and sha256) and the part's own tests hold the numbers measured on it (arc centres, surfaces, volume,
+  bbox, feature probes: the measured values written into the test, `tests/pulley/test_gt2_pulley_20_60t.py`), its
+  params tagged `[REFERENCE]`.
   `tests/test_parts_convention.py` checks the state.
 - *diverged conversion*: a converted CUSTOM part whose DEFAULT build deliberately leaves its SolidWorks
-  reference (the forearm parts, whose elbow end gave way to the roll joint; `gt2_pulley_90t`, its bolt holes opened to
+  reference (e.g. `j2_link`, whose elbow end gave way to the roll joint; `gt2_pulley_90t`, its bolt holes opened to
   `M4_CLEAR`) declares `REFERENCE_BUILD`, a
   zero-arg callable returning the LEGACY configuration that still reproduces the reference —
   `tests/test_reference_match.py` matches THAT build; the default one is locked by the part's own tests.
@@ -89,24 +84,25 @@ Custom parts declare `REFERENCE = NAME` (`None` for a *measured* one), `CONVERTE
    (dimensions: the CAD Viewer's measure tool, or build123d on `cadgen.read_scene(…).resolve("#o1.f7").shape()`);
    `parts/<group>/<name>.py`'s docstring lists units,
    solids, bounding box and where it is used.
-2. Rewrite the model body with `BuildPart`/… code. Put every shared dimension in `lib/params.py`
-   with a provenance tag (`[MEASURE]`, `[DATASHEET]`, `[DESIGN]`, `[REFERENCE]`, `[ESTIMATE]`)
-   and a lock in `tests/test_params_invariants.py`.
+2. Rewrite the model body with `BuildPart`/… code, its numbers in a config in a `lib/` package with `LEGACY` = the
+   SolidWorks part and `DEFAULT` = what is built (e.g. `j2_link`: `ForearmConfig` in `lib/forearm/`; each converted
+   part's package: `lib/AGENTS.md` What is where). A shared dimension goes in `lib/params.py` (its tag and lock:
+   `lib/AGENTS.md` "Shared dimensions (DRY)").
 3. Set `CONVERTED = True`. If you pick a nicer local origin than the SolidWorks one, set
    `LOCAL_FROM_REF` to the transform *reference frame → new local frame* (frame data `((x, y, z), (rx, ry, rz))`;
    `IDENTITY` until then); the assemblies compose `placement * to_location(LOCAL_FROM_REF)⁻¹`, so
    `reference/placements.json` never changes.
    A SolidWorks part file can hold its geometry far from its own origin (the removed link caps did, ~1 m) —
    `placements.json` compensates; such a part wants this.
-4. `./cadtool pytest tests/test_reference_match.py -k <name>` — volume within 0.5 % and bounding
-   box within 0.2 mm of the reference (per-part overrides: `REF_VOL_TOL`, `REF_BBOX_TOL`).
+4. `./cadtool pytest tests/test_reference_match.py -k <name>` — volume and bounding box against the
+   reference, within the test's default tolerances (per-part overrides: `REF_VOL_TOL`, `REF_BBOX_TOL`).
 5. `./cadtool gen parts/<group>/<name>.py` to regenerate the STEP, then
    `./cadtool gen assemblies/arm.py` + `./cadtool snapshot …` to eyeball it in place — and the rest of Recipe C.
 
-A NEW export (Recipe E, `reference/AGENTS.md`) goes straight to a *measured* conversion (Part states): step 1 on the
-raw file (where the user put it), the part written as in steps 2-3 with `REFERENCE = None` and a `lib/reference.py MEASURED`
-row, and in place of step 4 its own tests - the export's numbers written into them, checked against the raw file once
-before they are committed; then step 5.
+A NEW export of a printed part (Recipe E, `reference/AGENTS.md`) goes straight to a *measured* conversion (Part
+states): step 1 on the raw file (where the user put it), the part written as in steps 2-3 with `REFERENCE = None` and a
+`lib/reference.py MEASURED` row, and in place of step 4 its own tests - the export's numbers written into them,
+checked against the raw file once before they are committed; then step 5.
 
 `read_step()` / `import_step()` convert inch-unit files to mm and keep the assembly hierarchy (labels
 mangle ` .()` → `_`; `lib.reference.clean_label` mirrors build123d's `import_step`, which the
@@ -120,33 +116,36 @@ from `DEFAULT_CONFIG`, never retyped) + optional `PURCHASE_NOTE` — a printed p
 (vendor-file frame → SolidWorks frame, as frame data; `IDENTITY` for the SolidWorks re-exports); the model is
 hybrid — `return lib.cots.hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)`, the one body every COTS part
 shares: `cadgen.read_step(VENDOR_STEP)` if present (a tracked input, so a swapped vendor file makes the part
-stale), else `_envelope()` from `lib.params`, both in the SolidWorks frame `placements.json` assumes. `reference/solidworks/<name>.step` keeps the SolidWorks re-export of every COTS part as the
-frame/size reference (for the drive's purchased parts: the CadQuery export of their simplified model
-in `reference/cycloidal/`, `lib/reference.py CYCLOIDAL_COTS`; `path_of()` resolves the origin);
-`test_cots_vendor_matches_reference_frame` (bbox within 1.5 mm; collected only for a vendor file that is not the
-reference itself - with no vendor file the envelope is the geometry) and `test_cots_envelope_tracks_reference_bbox` guard vendor
-swaps. Swap procedure (Recipe D): `vendor/AGENTS.md`; what has been tried and where the vendor files come from:
-`vendor/README.md`.
-A purchased part with no catalog model and no export keeps no reference at all: Part states → *no reference*.
-The kit parts `nema17_40mm` / `mks_servo42d` live in `parts/joints/` (`parts/cycloidal/` is locked to
-`CYCLOIDAL_COTS`); the drive motor's envelope builder is `lib/cycloidal/motor.py nema17_motor()`, which the 40 mm
-envelope reuses with other `MotorParams`.
+stale), else `_envelope()` from `lib.params`, both in the SolidWorks frame `placements.json` assumes. Every
+`lib/reference.py COTS` part keeps a frame/size reference, `reference/<origin>/<name>.step` (`path_of()` resolves the
+origin): the SolidWorks re-export in `reference/solidworks/`, for the drive's purchased parts the CadQuery export of
+their simplified model in `reference/cycloidal/` (`CYCLOIDAL_COTS`), for a `NATIVE_COTS` part its accepted envelope in
+`reference/native/`; `test_cots_vendor_matches_reference_frame` and `test_cots_envelope_tracks_reference_bbox` guard
+vendor swaps (`COTS_FRAME_TOL_MM`; the rule: `vendor/AGENTS.md` Rules). Swap procedure (Recipe D): `vendor/AGENTS.md`;
+what has been tried and where the vendor files come from: `vendor/README.md`.
+A NEW purchased part with no catalog model and no export keeps no reference at all: Part states → *no reference*.
+The kit parts `nema17_40mm` / `mks_servo42d` live in `parts/joints/` (`parts/cycloidal/` holds the drive's parts only:
+`tests/test_parts_convention.py test_cycloidal_group_is_the_drive`); the drive motor's envelope builder is
+`lib/cycloidal/motor.py nema17_motor()`, which the 40 mm envelope reuses with other `MotorParams`.
 
 **Recipe A — add a purchased part** (`parts/<group>/<name>.py`): copy `parts/_templates/cots.py` → declare `COTS`,
 `MASS_G`, `PURCHASE_SPEC` / `PURCHASE_QTY` / `PURCHASE_NOTE`, an `_envelope()` from `lib/params.py` → register in
-`lib/reference.py COTS` (`rel=None` when the vendor file IS the reference) → put `vendor/<name>.step` in place (Recipe D,
-`vendor/AGENTS.md`) → `./cadtool python tools/reference/import_solidworks.py --src <export tree>` (mirrors it into `reference/solidworks/`,
-manifest entry) → `tests/test_parts_convention.py MULTI_BODY` if it is several solids → give it an occurrence (a
-SolidWorks key, a module row, or Recipe B in `assemblies/AGENTS.md`) → Recipe C. With no vendor model and no export
-(a fastener pattern, a plain bearing): register it in `NO_REFERENCE` instead, skip the vendor file and the import, and
-write its numbers into a test of its own (Part states → *no reference*).
+`lib/reference.py COTS` (export path `None` when the vendor file IS the reference) → put `vendor/<name>.step` in place
+and record it (Recipe D, `vendor/AGENTS.md`: `import_solidworks.py`, which needs the user's whole export tree, mirrors
+it into `reference/solidworks/` with a manifest entry - the one kind of new part that still gets a reference file, an
+exception to `reference/AGENTS.md` Rules) → `tests/test_parts_convention.py MULTI_BODY` if it is several solids →
+give it an occurrence (a SolidWorks key, a module row, or Recipe B in `assemblies/AGENTS.md`) → Recipe C. With no
+vendor model and no export (a fastener pattern, a plain bearing): register it in `NO_REFERENCE` instead, skip the
+vendor file and the import, and write its numbers into a test of its own (Part states → *no reference*).
 
 ## Modelled, not placed yet
-A part may be modelled before an assembly places it (a sensor whose mount is not designed yet). It declares
-`UNPLACED = "<why, and what will place it>"` (`parts.unplaced()`); `tests/test_bom.py` then leaves it out of the
-"every part is placed" check, and the print and buy lists never see it (they count occurrences). A purchased one's
-order line stays a `tools/bom.py EXTRAS` row until then (a printed one has none). Placing it is ONE commit: the
-occurrence, `UNPLACED` removed (the test fails while a placed part still declares it) and its `EXTRAS` row removed.
+A part may be modelled before an assembly places it (a sensor whose mount is not designed yet), or kept modelled with
+no occurrence (the port's ring gear body for `test_port`, an idler kit the design dropped). It declares
+`UNPLACED = "<why, and what would place it>"` (`parts.unplaced()`); `tests/test_bom.py` then leaves it out of the
+"every part is placed" check, and the print and buy lists never see it (they count occurrences). A purchased one still
+to be bought keeps its order line as a `tools/bom.py EXTRAS` row (a printed one, or one nobody buys now, has none).
+Placing it is ONE commit: the occurrence, `UNPLACED` removed (the test fails while a placed part still declares it)
+and its `EXTRAS` row, if any, removed.
 Everything else holds as for a placed part: the registry, the reference, `MULTI_BODY`, the part's build in the slow
 lane. `./cadtool gen assemblies/arm.py` does not build it: `./cadtool gen parts/<group>/<name>.py`.
 
@@ -155,10 +154,10 @@ Every part carries the make/buy label once: `COTS = True` in its module means **
 **printed** (`parts.bought(name)`). Nothing else is kept by hand — the folders follow the arm's physical
 stages, not make/buy: never sort parts into make/buy folders or keep a second list by hand. Everything else is
 generated from the label:
-- **Lists** — `./cadtool python tools/bom.py [--module <module>] [--md|--json]` (a module of `assemblies/arm.py MODULES`) (kernel-free) prints
-  what to print (part, quantity) and what to buy (`PURCHASE_SPEC`, pieces = occurrences × `PURCHASE_QTY`, mass, vendor
-  file or envelope), counted from the assembly tables. Purchased items that are **not modelled** are the one
-  hand-kept table, `EXTRAS` in that tool (`assemblies/AGENTS.md`).
+- **Lists** — `./cadtool python tools/bom.py [--module <module>] [--md|--json]` (kernel-free; `<module>` one of
+  `assemblies/arm.py MODULES`) prints what to print (part, quantity) and what to buy (`PURCHASE_SPEC`, pieces =
+  occurrences × `PURCHASE_QTY`, mass, vendor file or envelope), counted from the assembly tables. Purchased items that
+  are **not modelled** are the one hand-kept table, `EXTRAS` in that tool (`assemblies/AGENTS.md`).
 - **STLs** — `./cadtool python tools/export_printables.py [--parts …]` writes `print/<name>.stl` for every printed part
   (git-ignored, mm, part-local frame, with the quantity to print); bought parts are refused.
 - **Printability** — before a printed part's first print, and after its geometry changes: `./cadtool skill dfam-check
@@ -166,5 +165,5 @@ generated from the label:
   45° is FDM's self-supporting angle in the skill's `references/process-limits.md`) and the same with `orientations`
   (the build orientations ranked by support); how to read the JSON is the skill's `SKILL.md`. A finding that holds
   up the print is a row in `docs/open_issues.md`.
-- **Colours** — the grey of purchased parts in `arm.step` and every module's STEP (`gripper.step`,
-  `cycloidal_drive.step`, `forearm_roll_drive.step`; `assemblies/AGENTS.md`).
+- **Colours** — the grey of purchased parts in `arm.step` and every module's STEP (`assemblies/AGENTS.md`, "Printed
+  vs. bought is a colour").

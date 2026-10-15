@@ -6,7 +6,7 @@ head's bearing face on the idler's top face (gt2_idler_20t#2), the shank down th
 slid along the slot to tension the base_yaw belt, then turned from above to clamp the idler there. Length:
 YawIdlerParams.screw_len, its tip 2 pitches past the nut.
 
-No catalog model (the catalog has single fasteners only, vendor/README.md), no SolidWorks export and NO reference
+No catalog model (none adopted), no SolidWorks export and NO reference
 file: a pattern part with no reference (lib/reference.py NO_REFERENCE) - its envelope IS the geometry (lib/fasteners.py
 shcs(): no thread, the head's hex socket) and tests/base/test_yaw_idler.py locks its numbers. Frame: axis on Z, the
 head's bearing face on z=0 (the head in -Z), the shank in +Z.

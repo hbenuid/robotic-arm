@@ -9,7 +9,7 @@ import lib.forearm.params as FOREARM
 import lib.upper_arm.params as UPPER_ARM
 import lib.wrist.params as WRIST
 import lib.yaw_coupler.params as YAW
-from assemblies import arm, cycloidal_drive, forearm_roll_drive, gripper
+from assemblies import arm, cycloidal_drive, forearm_roll_drive, gripper, wrist_roll_drive
 from lib import placements as P
 from lib import reference as R
 from lib.upper_arm.layout import arm_slide
@@ -292,7 +292,8 @@ def test_assembly_tables_claim_every_part_key_exactly_once():
 
 
 def test_duplicate_parts_have_unique_labels():
-    for rows in (arm.OCCURRENCES, gripper.OCCURRENCES, cycloidal_drive.OCCURRENCES, forearm_roll_drive.OCCURRENCES):
+    for rows in (arm.OCCURRENCES, gripper.OCCURRENCES, cycloidal_drive.OCCURRENCES, forearm_roll_drive.OCCURRENCES,
+                 wrist_roll_drive.OCCURRENCES):
         labels = [name if role is None else f"{name}:{role}" for name, role, _ in rows]
         assert len(labels) == len(set(labels)), f"duplicate labels: {labels}"
 

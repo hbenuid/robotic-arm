@@ -1,5 +1,7 @@
 """The local tooling stays healthy: the venv holds the cadgen and the OCP kernel pyproject.toml pins
-(and only ONE OCP distribution), and ./cadtool inspect (tools/step_facts.py) agrees with the kernel."""
+(and only ONE OCP distribution), and ./cadtool inspect (tools/step_facts.py) agrees with the kernel; the retired
+inspect verbs teach the new syntax, `daemon stop` finds the daemon on both platforms, cadgen's telemetry stays off,
+the two .claude/settings.json are the same, no tracked CLAUDE.md hides an AGENTS.md, every tracked name is lowercase."""
 import json
 import pathlib
 import re
@@ -108,7 +110,7 @@ def test_no_claude_md_hides_the_agents_md():
 
 
 def test_every_tracked_name_is_lowercase():
-    """git and the *.step / *.stl rules are case-sensitive, the Mac's filesystem is not: git there runs with
+    """On Linux git and the *.step / *.stl rules are case-sensitive, the Mac's filesystem is not: git there runs with
     core.ignorecase=true, so a case-only rename goes unnoticed on the Mac and arrives on Linux as a second file.
     Every tracked path is lowercase except the README / AGENTS.md docs (root AGENTS.md "Git workflow")."""
     names = tracked_names()

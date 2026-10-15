@@ -264,8 +264,8 @@ class RollDriveParams:
     # the coupler features on the frame's underside (module -X) about the elbow axis (y = elbow_y), where j3_coupler#1 was
     # - measured on the SolidWorks coupler 2026-09-23 in j2_link's frame (host z = module x + axis_z); they turn in
     # j1_link's Ø80 recess / Ø42 bore
-    lip_dia: float = 72.0                 # [DESIGN] a dust lip in j1_link's Ø80 recess (the coupler's Ø78 flange, kept inside the end's outline)
-    lip_x: tuple = (-35.0, -ROLL_FRAME_R)   # [REFERENCE] its foot at host -10, 1.5 inside the recess (its floor at host -14.5), [DESIGN] up to
+    lip_dia: float = 72.0                 # [DESIGN] a dust lip over j1_link's Ø80 recess (the coupler's Ø78 flange, kept inside the end's outline)
+    lip_x: tuple = (-35.0, -ROLL_FRAME_R)   # [REFERENCE] its foot at host -10, 1 over j1_link's flat top (the relief's floor, host -11), [DESIGN] up to
     #                                       the underside (host -5): 5 proud of it, bridging the gap over the upper arm's flat top
     boss_dia: float = 62.0                # [REFERENCE]
     boss_x: tuple = (-39.0, -35.0)        # [REFERENCE] host -14 .. -10
@@ -314,9 +314,10 @@ class RollDriveParams:
     #                                       they overlap r 21.6..24.5; clear of bearing 1 (r 21) and the shaft's flange (r 20)
     stop_post_t: float = 4.85             # [DESIGN] ... back from the tower's rear face: 2.5 of the lug's length beside it
     stop_deg_width: float = 10.0          # [DESIGN] angular width of each at its outer radius - its sides parallel
-    #                                       (roll.py _wedge), so wider in: the post's inner corner meets the lug's side
-    #                                       at +/- 168.3, not 180 - width (tests/test_sweeps.py); FOREARM_ROLL_LIMIT_DEG
-    #                                       stops 2 deg short of it
+    #                                       (lib/geom.py stop_wedge), so wider in: the post's inner corner meets the
+    #                                       lug's side at +/- 168.3, not 180 - width (tests/test_sweeps.py holds it
+    #                                       between the limit and 180 - width); FOREARM_ROLL_LIMIT_DEG stops 2 deg short
+    #                                       of it
     # the 90T ring (integral to the pulley; the 20T is flanged on its hub side only, so the ring carries two flanges)
     ring_teeth: int = 90
     ring_width: float = 7.0               # [DATASHEET] 6 mm belt

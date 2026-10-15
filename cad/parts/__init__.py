@@ -58,7 +58,8 @@ def bought(name: str) -> bool:
 
 def unplaced() -> list[str]:
     """The parts modelled before any assembly places them (the module declares UNPLACED = "<why>"): the print and buy
-    lists skip them, their order line stays a tools/bom.py EXTRAS row (parts/AGENTS.md "Modelled, not placed yet")."""
+    lists skip them; a purchased one still to be bought keeps its order line as a tools/bom.py EXTRAS row
+    (parts/AGENTS.md "Modelled, not placed yet")."""
     return [name for name in MODULES if getattr(load(name), "UNPLACED", None) is not None]
 
 

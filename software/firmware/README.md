@@ -4,8 +4,8 @@ One subfolder per board; part of neither uv project.
 
 ## `stm32/` — archived Nucleo-F446RE test firmware
 From before the Python CLI (`software/control/`): self-contained PlatformIO projects (`platform = ststm32`,
-`board = nucleo_f446re`, `framework = stm32cube`; open a project folder in PlatformIO, serial monitor at 115200 baud).
-The `include/`, `lib/` and `test/` READMEs in each project are PlatformIO's stubs.
+`board = nucleo_f446re`, `framework = stm32cube`; open a project folder in PlatformIO, serial monitor at 115200 baud,
+9600 for `blink_test`). The `include/`, `lib/` and `test/` READMEs in each project are PlatformIO's stubs.
 
 | project | what it does |
 |---|---|

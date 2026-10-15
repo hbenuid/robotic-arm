@@ -5,7 +5,7 @@ front face, pushed in from the frame's open +N face, its bearing face up against
 the frame's y against the channel's walls - it slides along x with the tensioner's axle (roll_idler_screw) and cannot
 turn.
 
-No catalog model (the catalog has single fasteners only, vendor/README.md), no SolidWorks export and NO reference
+No catalog model (none adopted), no SolidWorks export and NO reference
 file: a pattern part with no reference (lib/reference.py NO_REFERENCE) - its envelope IS the geometry (lib/fasteners.py
 hex_nut(): no thread, the bore at the nominal diameter) and tests/forearm/test_roll_idler.py locks its numbers.
 Frame: axis on Z, standing on z=0, a corner on +X (the flats across y).

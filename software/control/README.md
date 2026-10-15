@@ -48,12 +48,11 @@ Edit [`src/config.py`](src/config.py):
 - `JOINTS` — three `(name, can_id, gear_ratio)` tuples. Defaults are placeholders
   (CAN IDs `0x01`/`0x02`/`0x03`, gear ratio `1.0`). Set CAN IDs to match what
   you've programmed into each motor's on-board menu. The CAD's reductions are
-  `cad/lib/params.py` `CYCLOIDAL_RATIO` (21:1, shoulder pitch), `GT2_RATIO` (4.5:1, elbow and wrist-pitch belts)
-  and `FOREARM_ROLL_RATIO` (4.5:1, forearm roll); `gear_ratio` counts output turns per motor turn, so it takes their
-  reciprocal ([`cad/robot/AGENTS.md`](../../cad/robot/AGENTS.md)). Which motor drives which joint is not confirmed
+  in [`cad/robot/AGENTS.md`](../../cad/robot/AGENTS.md) ("The reductions the software must match"); `gear_ratio`
+  counts output turns per motor turn, so it takes their reciprocal. Which CAN id drives which joint is not confirmed
   yet, so the ratios here stay `1.0`.
-- `CAN_CHANNEL` — only needed if auto-detect fails. The launcher overrides this
-  on every run.
+- `CAN_CHANNEL` — the port for running `motor_control.py` directly; `uv run launcher` always passes the port it
+  detects (or your `--channel`), and stops when no serial port is present.
 - `CAN_BITRATE`, `DEFAULT_SPEED`, `DEFAULT_ACC`, `ENCODER_COUNTS_PER_REV` —
   usually leave alone.
 
@@ -84,9 +83,9 @@ uv run launcher --channel COM3                    # Windows
 uv run launcher --bitrate 250000                  # change bitrate
 ```
 
-**Safety**: `Ctrl+C` at any time sends emergency-stop to ALL motors before
-exiting. A safe first command (no motion): `[0] Select motor → [1] Read /
-Status → [4] Read motor status (0xF1)` — returns `Stopped` for a healthy motor.
+**Safety**: `Ctrl+C` at any time sends emergency-stop to every motor in `JOINTS` (`src/config.py`) before
+exiting — a board whose CAN id is not there is not stopped. A safe first command (no motion): `[0] Select motor →
+[1] Read / Status → [4] Read motor status (0xF1)` — returns `Stopped` for a healthy motor.
 
 ## Layout
 

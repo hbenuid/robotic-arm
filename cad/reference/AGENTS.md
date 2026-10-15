@@ -8,26 +8,32 @@ the designed module, the skipped products, the `placements.json` schema — is `
   stand on its own code (parametric builds locked by numeric tests, poses declared in code like `lib/mounts.py`'s)
   with nothing here needed: the SolidWorks and CadQuery exports, `placements.json`, `native/` (`vendor/` is bought-part
   data, not a reference). So: add no new dependency on a file here in a test, a lock or a tool; a new part or a new
-  export gets no reference file (`parts/AGENTS.md` Part states: *no reference*, *measured*); when a task touches a
-  check measured against a reference, say what code or test could replace it; start no migration of the existing
-  references unasked.
-- Every file here is an **immutable input**, committed: its checksum is locked in `manifest.json`
+  export gets no reference file (`parts/AGENTS.md` Part states: *no reference*, *measured*) - except a purchased part
+  with a vendor model, an ordinary COTS part whose vendor file Recipe A (`parts/AGENTS.md`) mirrors here as its frame
+  reference; when a task touches a check measured against a reference, say what code or test could replace it; start
+  no migration of the existing references unasked.
+- Every STEP here is an **immutable input**, committed: its checksum is locked in `manifest.json`
   (whose `file` field names its origin directory; `lib.reference.path_of(name)` resolves it) and
-  `tests/test_reference_match.py` compares every converted part against it. Regenerate with its tool — never edit.
+  `tests/test_reference_match.py` compares every converted `CUSTOM` part and every `NATIVE` one against it (the drive's
+  `DESIGNED` parts: `tests/cycloidal/test_port.py`). Regenerate with its tool — never edit; `manifest.json` and
+  `placements.json` too are written only by their tools.
 - Each import tool owns its own `manifest.json` entries and keeps the others'; all build them with `lib/manifest.py`
-  (`read()` / `write()` / `entry()` — no part imports it, so editing it never makes a part stale). The cycloidal
-  export runs in the OLD repo's CadQuery venv — never ours.
+  (`read()` / `write()` / `entry()` — no part imports it, so editing it never makes a part stale).
 - `lib.reference.step_units()` only tells inch from mm: a centimetre file (the x48 kit export) is reported as mm.
   OCCT converts every unit correctly on import; the manifest's `units` field is the one that would lie.
 
 ## Regenerating, in this order
 - Each of these reads raw exports, so each takes their path (`README.md` Provenance names the files):
-  `./cadtool python tools/reference/split_mks_motor.py --src <x40 kit> --src48 <x48 kit>` (once, on one machine — STEP
-  bytes are per machine), `./cadtool python tools/reference/import_solidworks.py --src <export tree>` (copies +
-  `manifest.json`), then
+  `./cadtool python tools/reference/split_mks_motor.py --src <x40 kit> --src48 <x48 kit>` (once, on one machine: every
+  run writes new bytes - `vendor/AGENTS.md` Rules; `--write kit|drive` writes only the files the change needs),
+  `./cadtool python tools/reference/import_solidworks.py --src <export tree>` (copies + `manifest.json`, rebuilt from
+  that tree: give it the WHOLE export tree, whose path the user has - a source missing there loses its entry, a tree
+  without the full assembly the `monolith` block, and the manifest is written before the tool exits 1; check
+  `git diff reference/manifest.json`), then
   `./cadtool python tools/reference/extract_placements.py --monolith <full assembly> --no-pancake` (`placements.json`, the mounted records of
   `lib/mounts.py` appended; without the flag also `vendor/nema17_pancake.step`, whose bytes would then change),
-  then `import_solidworks.py` once more so the manifest describes the extracted pancake. A changed mount alone:
+  then, only when the flag was left off (the pancake re-extracted), `import_solidworks.py` once more so the manifest
+  records its new vendor bytes. A changed mount alone:
   `./cadtool python tools/reference/mount_placements.py` (merge mode, no monolith needed).
 - Cycloidal drive (manifest `origin: cycloidal_drive@2f1f67d`, kind `designed` / `cots`): in the old
   repo `cd ../cycloidal_drive && uv run python ../robotic-arm/cad/tools/cycloidal/export_cadquery.py`
@@ -40,12 +46,11 @@ the designed module, the skipped products, the `placements.json` schema — is `
   tools keep the entries.
 
 ## Recipe E — a new SolidWorks / vendor export arrives
-Read it where the user put it, by the path they give: never move, rename or copy it elsewhere on the machine (the
-committed copies its tool derives in `reference/` / `vendor/` excepted), and never make a folder for it outside the
-repo (the raw exports are never committed and have no fixed place — every tool that reads one takes its
-path: `--src` / `--src48` / `--monolith`). Record its file name as handed over, size, sha256 and what it is under
-`README.md` Provenance; name it in `lib/reference.py` (`MONOLITH_NAME`, `MKS_EXPORT_NAME`, … or a `CUSTOM` / `COTS`
-row); measure before trusting it (`./cadtool inspect <file> --planes` — units, frame, shaft / pilot / bolt pattern);
+Read it where the user put it, by the path they give (the rule: root `AGENTS.md` "The SolidWorks inputs are in the
+repo; the raw exports are not"; every tool that reads one takes its path: `--src` / `--src48` / `--monolith`). Record
+its file name as handed over, size, sha256 and what it is under `README.md` Provenance; name it in `lib/reference.py`
+(`MONOLITH_NAME`, `MKS_EXPORT_NAME`, …, a `COTS` row for a purchased part, a `MEASURED` row for a printed one);
+measure before trusting it (`./cadtool inspect <file> --planes` — units, frame, shaft / pilot / bolt pattern);
 then Recipe A (`parts/AGENTS.md`) or D (`vendor/AGENTS.md`). What the CAD keeps is the derived, committed copy
 (`reference/`, `vendor/`) — the raw file is the user's, to keep or discard. A printed part's export is not copied here
 at all: a *measured* conversion (`parts/AGENTS.md` Part states, `lib/reference.py MEASURED`) keeps only its numbers, in

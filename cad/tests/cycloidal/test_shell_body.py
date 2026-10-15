@@ -66,7 +66,8 @@ class TestShellDimensions:
         assert h.bolt_circle_dia / 2.0 + (h.bolt_dia + tol.bolt_clearance_add) / 2.0 < h.od / 2.0
 
     def test_pin_holes_dont_breach_the_seats(self):
-        """The ring-pin holes keep >= 2.5 mm to the 6814 seat bore (lib/cycloidal/params.py RING_INSET: 2.8 mm)."""
+        """The ring-pin holes keep >= 2.5 mm to the 6814 seat bore (2.8 mm with RING_INSET; the thinner wall is the pin
+        rings': test_pin_holes_in_the_pin_rings)."""
         g, h = CFG.gear, CFG.housing
         gap = (g.ring_pin_circle_dia / 2.0 - ring_pin_hole_dia(CFG) / 2.0) - h.output_bearing_seat_dia / 2.0
         assert gap >= 2.5, f"Pin hole inner edge to bearing seat wall = {gap:.2f}mm, need >= 2.5mm"

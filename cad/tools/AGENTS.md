@@ -9,11 +9,12 @@ import `lib`, `parts`, `assemblies` and `robot`; only `tests` imports them.
 - A tool is not a model: it may import build123d at module level (the lazy-kernel rule covers models and their
   import closure), and it builds bodies in-process — `parts.build(name)` / `lib.models.raw(model)` — never by calling
   a model (`cad/AGENTS.md` "Never call a model outside a build").
-- `tools/cycloidal/export_cadquery.py` runs in the cycloidal_drive repo's CadQuery venv, never ours, and holds the
-  tree's one `sys.path` line (`tests/test_layering.py SYS_PATH_ALLOWED`).
-- The tools marked *writes* below change committed inputs: run them only as their recipe says — Recipe C
-  (`cad/AGENTS.md`), the regeneration order (`reference/AGENTS.md`), Recipe D (`vendor/AGENTS.md`). The ones that
-  write a STEP or STL (its bytes differ per run and per machine) run on ONE machine per change.
+- `tools/cycloidal/export_cadquery.py` runs in the cycloidal_drive repo's CadQuery venv, never ours, and holds
+  `cad/`'s one `sys.path` line (`tests/test_layering.py SYS_PATH_ALLOWED`).
+- The tools marked *writes* below change committed inputs: run them only as their recipe says — Recipe A
+  (`parts/AGENTS.md`), B (`assemblies/AGENTS.md`), C (`cad/AGENTS.md`), D (`vendor/AGENTS.md`), the regeneration order
+  (`reference/AGENTS.md`). The ones that write a STEP or STL run on ONE machine per change (`cad/AGENTS.md` "Two machines": Written once,
+  on one machine).
 
 ## What is here
 | tool | does | writes |

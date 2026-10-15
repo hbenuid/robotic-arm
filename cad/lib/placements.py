@@ -71,13 +71,14 @@ RETIRED: tuple[str, ...] = ("j3_coupler#1", "gt2_pulley_90t#1", "gt2_pulley_90t#
 
 @dataclass(frozen=True)
 class LinkShift:
-    """A link whose length the design changed: every capture record beyond it moves `along_x` along the link's +X -
-    and `across_y` along its +Y, where the design moved the link's far end across it, and `normal_z` along its +Z,
-    where the design moved it off the link's plane.
+    """A link (or a drive on it) the design changed: every capture record beyond it moves `along_x` along the link's
+    +X, where the design changed the link's length - and `across_y` along its +Y, where the design moved the link's far
+    end across it, and `normal_z` along its +Z, where the design moved it off the link's plane.
 
-    `along_x` / `across_y` / `normal_z` are the link parameters' DEFAULT - LEGACY (the part's geometry and these poses
-    have one source); `axis_w` / `across_w` / `normal_w` are the anchor record's +X / +Y / +Z in W - data, so no file
-    read is needed (tests/test_placements.py checks them against the record); `moves` lists the TOP-LEVEL capture
+    `along_x` / `across_y` / `normal_z` come from the design's parameters - mostly their DEFAULT - LEGACY, or a
+    designed station less its capture value (the comment over each SHIFTS row) - so the part's geometry and these
+    poses have one source; `axis_w` / `across_w` / `normal_w` are the anchor record's +X / +Y / +Z in W - data, so no
+    file read is needed (tests/test_placements.py checks them against the record); `moves` lists the TOP-LEVEL capture
     records beyond the link, the retired hosts included (a module's children follow its world pose; the mounted
     records never: mount_placements.py bakes their hosts' shifts in)."""
 

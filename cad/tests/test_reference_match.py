@@ -6,7 +6,7 @@ frame, after LOCAL_FROM_REF) so a conversion that drifts from the original desig
 matched here: a wrapper IS its reference (its body loads that file), and the designed cycloidal-drive parts are
 matched face for face by tests/cycloidal/test_port.py, stricter than this. Per-part tolerances: REF_VOL_TOL
 (relative) and REF_BBOX_TOL (mm) module attributes. A converted part whose DEFAULT build deliberately
-diverges from its reference (the forearm parts: the SolidWorks elbow end gave way to the roll joint)
+diverges from its reference (e.g. j2_link: the SolidWorks elbow end gave way to the roll joint)
 declares REFERENCE_BUILD, a zero-arg callable returning the LEGACY configuration that reproduces the
 reference - that build is matched here, the default one is locked by the part's own tests. A measured conversion
 (lib/reference.py MEASURED) has no reference: its own tests hold the numbers measured on its export.

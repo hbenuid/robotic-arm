@@ -8,8 +8,9 @@ module's own OCCURRENCES (arm.MODULES) - so a part added to an assembly shows up
 second list to keep. A bought part says what to order itself (PURCHASE_SPEC / PURCHASE_QTY, the pieces
 per occurrence - a whole pattern for a pin or fastener part / optional PURCHASE_NOTE, next
 to its MASS_G). EXTRAS below is the one hand-kept table: purchased items with NO geometry - they are on
-the buy list, not in the model, the totals or the inertials - and the order line of a part modelled but not placed
-yet (UNPLACED, parts/AGENTS.md "Modelled, not placed yet"). No CAD kernel is loaded.
+the buy list, not in the model, the totals or the inertials - and the order line of a purchased part modelled but
+not placed yet that is still to be bought (UNPLACED, parts/AGENTS.md "Modelled, not placed yet"). No CAD kernel is
+loaded.
 """
 from __future__ import annotations
 
@@ -29,9 +30,8 @@ from lib.wrist.layout import clamp_points as wrist_clamp_points
 from lib.yaw_coupler import DEFAULT as _YAW_COUPLER
 
 # (module or None = the arm itself, what to order, pieces, why it is not modelled). Seeded with what
-# docs/cycloidal_drive.md states; the arm's own fasteners (but the 90T pulley bolts, the base motor mount's and the
-# elbow motor's, modelled: parts/joints/{elbow,wrist}_pulley_{screws,nuts}, parts/base/yaw_pulley_{screws,nuts},
-# parts/base/base_motor_mount_{screws,nuts}, parts/joints/elbow_motor_screws) and the electronics are not listed yet.
+# docs/cycloidal_drive.md states; the arm's other fasteners that are not parts (the modelled ones: parts.names()) and
+# the electronics are not listed yet (docs/open_issues.md).
 EXTRAS = [
     ("cycloidal_drive", (f"M{CYCLOIDAL_HUB_BOLT_DIA:g} x {_YAW_COUPLER.fork.hub_screw_len:g} socket head cap screw (ISO 4762) - "
                          "the output hub to the j1_coupler yoke's hub-side leg"), CYCLOIDAL_HUB_BOLT_COUNT,

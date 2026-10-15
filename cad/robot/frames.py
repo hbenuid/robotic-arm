@@ -1,5 +1,5 @@
 """Kinematic decomposition of the arm: rigid links and joint frames, derived from the
-SolidWorks capture (reference/placements.json) with the design's link-length shifts (lib/placements.py SHIFTS)
+SolidWorks capture (reference/placements.json) with the design's shifts (lib/placements.py SHIFTS)
 applied. Single source for robot/links/*.py, tools/robot/derive.py, tools/robot/export_link_meshes.py and
 tests/test_robot.py.
 
@@ -28,7 +28,7 @@ Frames (all in the SolidWorks WORLD frame W, millimetres; W is +Y up, the arm ex
     not a design offset. The capture pose is the design's: the SHIFTS applied and the forearm turned
     half a turn about its roll axis (lib/placements.py TURNS), so at zero the wrist and the gripper
     are rolled 180 deg from the SolidWorks capture (the wrist-pitch motor on the upper arm's side).
-Axis signs (positive-motion direction) and all limits are placeholders [ESTIMATE] until
+Axis signs (positive-motion direction) and the [ESTIMATE] limits (lib/params.py) are placeholders until
 confirmed by viewer sweeps / on hardware.
 """
 from __future__ import annotations
@@ -83,14 +83,15 @@ SHOULDER_TO_ELBOW_INPLANE = (-141.353693, 155.039565, 9.127651)   # [REFERENCE] 
 ELBOW_TO_WRIST_INPLANE = (-142.926, 153.58, 9.229)   # [REFERENCE] forearm_link long direction (the capture's elbow -> wrist_pitch,
 #                                                       perpendicular to N): the roll axis' direction (the forearm moved across it, parallel)
 
-# --- the forearm roll (the 6th joint, assemblies/forearm_roll_drive.py): its axis runs along the forearm through the
-# WRIST CENTRE - the point on the wrist_pitch axis WRIST_CENTRE_ALONG_N back along N from WRIST_PITCH_ORIGIN, where the
-# SolidWorks wrist_roll axis met it. Since the wrist roll drive (assemblies/wrist_roll_drive.py) the wrist_roll axis
-# runs WRIST_ROLL_OFFSET across the pitch axis and WRIST_ROLL_AXIS_H over the wrist plate - a wrist offset: the last
-# three axes are no longer concurrent (an IK must be numeric). The forearm roll's axis passes FOREARM_ROLL_AXIS_Z along N
-# from j2_link's capture origin (42 - 17 = 25, lib/params.py) - ELBOW_ROLL_OFFSET across the elbow axis (the roll motor
-# sits on the elbow axis): an elbow offset, the axes no longer cross; tests/forearm/test_roll_drive.py checks
-# WRIST_CENTRE lies on it and on the pitch axis. The forearm's turn is about this axis: its points stay put.
+# --- the forearm roll (the joint added to the SolidWorks arm's five, assemblies/forearm_roll_drive.py): its axis runs
+# along the forearm through the WRIST CENTRE - the point on the wrist_pitch axis WRIST_CENTRE_ALONG_N back along N from
+# WRIST_PITCH_ORIGIN, where the SolidWorks wrist_roll axis met it. Since the wrist roll drive
+# (assemblies/wrist_roll_drive.py) the wrist_roll axis runs WRIST_ROLL_OFFSET across the pitch axis and
+# WRIST_ROLL_AXIS_H over the wrist plate - a wrist offset: the last three axes are no longer concurrent (an IK must be
+# numeric). The forearm roll's axis passes FOREARM_ROLL_AXIS_Z along N from j2_link's capture origin (42 - 17 = 25,
+# lib/params.py) - ELBOW_ROLL_OFFSET across the elbow axis (the roll motor sits on the elbow axis): an elbow offset, the
+# axes no longer cross; tests/forearm/test_roll_drive.py checks WRIST_CENTRE lies on it and on the pitch axis. The
+# forearm's turn is about this axis: its points stay put.
 WRIST_CENTRE_ALONG_N = -17.0                 # [REFERENCE] see above: along the capture's N (the wrist_pitch axis before the turn)
 _len = math.sqrt(sum(v * v for v in ELBOW_TO_WRIST_INPLANE))
 FOREARM_ROLL_AXIS = tuple(v / _len for v in ELBOW_TO_WRIST_INPLANE)                    # unit, elbow -> wrist
@@ -196,7 +197,8 @@ JOINTS: list[Joint] = [
           notes="the forearm roll drive (assemblies/forearm_roll_drive.py, FOREARM_ROLL_RATIO 4.5): j2_link's wall bolts onto "
                 "the roll pulley's 90T ring; its axis ELBOW_ROLL_OFFSET across the elbow axis (an elbow offset); belt-driven "
                 "by the drive's own nema17_40mm + mks_servo42d on the elbow axis, in the roll frame's pocket "
-                "[a 4th CAN id - software/control/src/config.py has three: unconfirmed]; the printed hard stop 2 deg past "
+                "[a CAN id of its own - software/control/src/config.py names fewer than the arm's boards: unconfirmed]; "
+                "the printed hard stop 2 deg past "
                 "+/- FOREARM_ROLL_LIMIT_DEG"),
     Joint("wrist_pitch", "revolute", "forearm_link", "wrist_pitch_link", WRIST_PITCH_ORIGIN, WRIST_PITCH_AXIS, WRIST_ROLL_AXIS,
           PARAMS.WRIST_PITCH_LIMITS_DEG[0] * DEG, PARAMS.WRIST_PITCH_LIMITS_DEG[1] * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,

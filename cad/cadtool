@@ -11,10 +11,10 @@ usage() {
   cat <<'USAGE'
 cadtool - cadgen 0.7 + this uv project (paths relative to cad/)
   ./cadtool setup                                   per machine: uv sync (+ the OCP kernel check) + the git pre-commit hook (ruff) + git notes fetching
-                                                    + Playwright's headless shell (the snapshot browser)
-  ./cadtool doctor                                  installed cadgen vs the plugin's pin (cadgen doctor imports OCP; a gutted kernel: setup), node,
+                                                    + cadgen's telemetry stored off + Playwright's headless shell (the snapshot browser)
+  ./cadtool doctor                                 installed cadgen vs the plugin's pin (cadgen doctor imports OCP; a gutted kernel: setup), node,
                                                     the headless shell
-  ./cadtool gen <model.py>... [--force] [--verbose] [--json] [--mesh-tolerance X]
+  ./cadtool gen <model.py>... [--force] [--verbose] [--json] [--mesh-tolerance X] [--mesh-angular-tolerance R]
                                                     build: run the model script(s) -> the sibling <name>.step
                                                     (an assembly rebuilds + rewrites its stale child parts too)
   ./cadtool step ...                                alias of gen
@@ -28,7 +28,7 @@ cadtool - cadgen 0.7 + this uv project (paths relative to cad/)
   ./cadtool export <file.step> stl|3mf|glb [out]    one mesh file per call (needs node >= 20 on PATH)
   ./cadtool validate <file.urdf|.srdf|.sdf> [--strict] [--gz-check never]
   ./cadtool viewer [--port N]                       CAD Viewer serving cad/: http://127.0.0.1:3245/?file=<rel path>
-                                                    (12 h auto-stop; ./cadtool cadgen viewer list|stop --port N)
+                                                    (12 h auto-stop; ./cadtool cadgen viewer stop --port N)
   ./cadtool parts "<query>" [--download] [--id <id>] [--filename <name>.step]   step.parts search / download into vendor/
   ./cadtool skill <skill> <tool> [args]             a plugin skill script: skills/<skill>/scripts/<tool>
                                                     (+ the skill's requirements.txt, unlocked, in uv's cache)
@@ -131,7 +131,7 @@ case "$cmd" in
   gen|step)
     files=(); flags=()
     for a in "$@"; do if [[ "$a" == *.py ]]; then files+=("$a"); else flags+=("$a"); fi; done
-    if [[ ${#files[@]} -eq 0 ]]; then echo "usage: cadtool gen <model.py>... [--force --verbose --json --mesh-tolerance X]" >&2; exit 2; fi
+    if [[ ${#files[@]} -eq 0 ]]; then echo "usage: cadtool gen <model.py>... [--force --verbose --json --mesh-tolerance X --mesh-angular-tolerance R]" >&2; exit 2; fi
     # ${flags[@]+…}: bash 3.2 (macOS /bin/bash) treats an empty array as unset under `set -u`
     for f in "${files[@]}"; do uv run --frozen python "$f" ${flags[@]+"${flags[@]}"}; done ;;
   why)
