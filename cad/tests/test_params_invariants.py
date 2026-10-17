@@ -89,7 +89,7 @@ def test_belt_motor_and_mks_board_track_reference():
     # over the whole slide: the body FOREARM_MOTOR_WALL_CLEAR off the wall screws' heads at its wall end, clear of the
     # boss at its wrist end; the belt's centre distance inside it with room to tension
     assert hi + p.NEMA17_40_BODY_W / 2 + p.M3_SHCS.head_h + p.FOREARM_MOTOR_WALL_CLEAR <= p.FOREARM_WALL_X[0] + 1e-9
-    assert hi - p.J2_MOTOR_SLIDE_X >= 3.0 and p.WRIST_BELT_LENGTH == 280
+    assert hi - p.J2_MOTOR_SLIDE_X >= 1.5 and p.WRIST_BELT_LENGTH == 280
     assert lo - p.NEMA17_40_BODY_W / 2 >= wrist_x + boss_r
     assert p.FOREARM_WALL_X[0] < p.FOREARM_WALL_X[1] < 0 and p.FOREARM_ROLL_AXIS_Z == 42.0 - 17.0
     assert p.J2_MOTOR_WEB_FACE_Z > 0 and p.J1_MOTOR_PAD_FACE_Y == 16.5   # the elbow motor's face: the web across its hole

@@ -1,12 +1,13 @@
-"""The DEFAULT forearm - the roll end: the flange wall replaces the elbow disc (a round flange on the roll axis, on
-the foot the web necks down to, braced by two gussets beside the wrist motor), the wrist-pitch motor sits where the
-stock belt puts it, clears the wall's screw heads and has its plug's room beside it, the wrist end is the SolidWorks one
-SHORTENING nearer the elbow, the removed caps' sockets are gone."""
+"""The DEFAULT forearm - the roll end: the flange wall replaces the elbow disc (a round flange on the roll axis on a
+foot as wide as the straight web, cut flush with the web's belt face but for a boss round the bottom screw, braced by
+two gussets beside the wrist motor), the wrist-pitch motor sits where the stock belt puts it, clears the wall's screw
+heads and has its plug's room beside it, the wrist end SHORTENING nearer the elbow - the SolidWorks bearing seat in a
+boss as wide as the web, ending at the seat's top under j3_coupler -, the removed caps' sockets are gone."""
 import math
 from dataclasses import replace
 
 import pytest
-from build123d import Box, Location, Pos
+from build123d import Box, Location
 
 from lib import mounts
 from lib import params as PARAMS
@@ -18,10 +19,8 @@ from lib.forearm import (
     elbow_end_x,
     flange_bolt_points,
     link_socket_points,
-    neck_tangent,
     screw_channel,
     screws_under_the_web,
-    web_half_width,
 )
 from lib.forearm.params import SHORTENING
 from lib.motors import (
@@ -41,8 +40,11 @@ R = DEFAULT.roll_end
 
 def test_default_layout():
     assert DEFAULT.roll and not LEGACY.roll
-    assert DEFAULT.web == replace(LEGACY.web, wrist_x=LEGACY.web.wrist_x + SHORTENING) and SHORTENING > 0.0
-    assert DEFAULT.boss == LEGACY.boss
+    assert DEFAULT.web == replace(LEGACY.web, wrist_x=LEGACY.web.wrist_x + SHORTENING, half_w=R.wall_od / 2.0) and SHORTENING > 0.0
+    # the wrist boss: the SolidWorks seat and lip, as wide as the web, its top the seat's top, no recess
+    b, lb = DEFAULT.boss, LEGACY.boss
+    assert (b.seat_dia, b.seat_z1, b.lip_dia, b.lip_z) == (lb.seat_dia, lb.seat_z1, lb.lip_dia, lb.lip_z)
+    assert b.dia == 2.0 * DEFAULT.web.half_w and b.z1 == b.seat_z1 and b.recess_dia is None and lb.recess_dia is not None
     assert DEFAULT.sockets is None and LEGACY.sockets is not None and link_socket_points(DEFAULT) == ([], [])
     # the slide: set by the belt (no idler: tests/forearm/test_wrist_idler.py), inside the (shortened) slots, the body
     # clear of the wall screws' heads at the slots' wall end (the connector turned sideways:
@@ -78,25 +80,24 @@ def test_the_wall_screws_way_in():
     assert x1 - x0 >= R.screw_len + R.screw.head_h and w.z1 - z_top >= 5.0
 
 
-def test_the_neck_the_round_wall_and_its_gussets():
-    """The wall is a round flange about the roll axis - over the recess with room to spare, and over the roll pulley's
-    ring it bolts onto - standing on a foot as wide as itself, which the web necks down to from the wrist boss (its sides
-    tangent to the boss); the gussets stand beside the wrist motor and its board, inside the neck."""
-    D, w, b = DEFAULT.drive, DEFAULT.web, DEFAULT.boss
-    assert R.neck_half_w == R.wall_od / 2.0 < w.half_w and PARAMS.FOREARM_WALL_OD == R.wall_od
+def test_the_straight_web_the_wall_and_its_gussets():
+    """The web runs straight from the wall to its round wrist end, as wide as the wall's round flange - over the recess
+    with room to spare, and over the roll pulley's ring it bolts onto - and the wall's foot; the wall stops at the web's
+    belt face but for the boss round the bottom screw, whose hole would break out there (the boss no lower than the
+    recess); the gussets stand beside the wrist motor and its board, inside the web."""
+    D, w, s = DEFAULT.drive, DEFAULT.web, DEFAULT.slot
+    assert w.half_w == R.wall_od / 2.0 == DEFAULT.boss.dia / 2.0 and PARAMS.FOREARM_WALL_OD == R.wall_od
     assert R.wall_od / 2.0 >= (R.flange_dia + R.flange_recess_add) / 2.0 + 8.0
     assert R.wall_od >= D.ring_flange_dia
-    # the neck: tangent to the boss, widening all the way from the wall; the motor's footprint on it over the whole slide
-    tx, ty = neck_tangent(DEFAULT)
-    px, py = elbow_end_x(DEFAULT), R.neck_half_w
-    assert math.isclose(math.hypot(tx - w.wrist_x, ty), b.dia / 2.0, abs_tol=1e-9)
-    assert abs((px - tx) * (tx - w.wrist_x) + (py - ty) * ty) < 1e-6                     # the side is the boss' tangent there
-    assert w.wrist_x < tx < DEFAULT.slide_range[0] - NEMA17_40_BODY_W / 2.0 and py < ty <= w.half_w
-    assert math.isclose(web_half_width(px), py) and math.isclose(web_half_width(tx), ty)
-    for x in DEFAULT.slot.side_x:
-        assert web_half_width(x) >= NEMA17_40_BODY_W / 2.0 + 3.0
-    # the gussets: outside the motor's body and board, inside the neck, rooted on the wall; the round outline tops them
-    assert R.rib_y[0] >= max(NEMA17_40_BODY_W, MKS_SERVO42D_W) / 2.0 + 2.0 and R.rib_y[1] <= R.neck_half_w
+    # the motor's footprint on the web over the whole slide: its body and the side slots 3 mm inside the web's sides
+    assert w.half_w >= NEMA17_40_BODY_W / 2.0 + 3.0 and w.half_w >= s.side_y + s.side_w / 2.0 + 3.0
+    # the bottom screw's boss
+    (_, z_low), = screws_under_the_web(DEFAULT)
+    hole_bottom, boss_bottom = z_low - R.bolt_dia / 2.0, z_low - R.screw_boss_dia / 2.0
+    assert hole_bottom < w.z0 and hole_bottom - boss_bottom >= 2.5
+    assert boss_bottom >= R.axis_z - (R.flange_dia + R.flange_recess_add) / 2.0 - 1e-9
+    # the gussets: outside the motor's body and board, inside the web, rooted on the wall; the round outline tops them
+    assert R.rib_y[0] >= max(NEMA17_40_BODY_W, MKS_SERVO42D_W) / 2.0 + 2.0 and R.rib_y[1] <= w.half_w
     assert w.z1 + R.rib_h <= R.axis_z + math.sqrt((R.wall_od / 2.0) ** 2 - R.rib_y[0] ** 2)
 
 
@@ -106,30 +107,36 @@ def link():
 
 
 @pytest.mark.slow
-def test_link_ends_at_the_wall_and_keeps_its_wrist_end(link):
-    from lib.forearm.link import build_link
-
+def test_link_ends_at_the_wall_and_at_its_wrist_boss(link):
+    w, b = DEFAULT.web, DEFAULT.boss
+    (_, z_low), = screws_under_the_web(DEFAULT)
+    boss_bottom = z_low - R.screw_boss_dia / 2.0
     assert link.is_valid and len(link.solids()) == 1
     bb = link.bounding_box()
-    assert math.isclose(bb.max.X, R.wall_x[1], abs_tol=1e-6) and math.isclose(bb.min.Z, R.axis_z - R.wall_od / 2.0, abs_tol=1e-6)
-    assert math.isclose(bb.max.Z, R.axis_z + R.wall_od / 2.0, abs_tol=1e-6)
-    # the wrist end (the boss's outer half, beyond the pivot) is the SolidWorks one SHORTENING nearer the elbow, but
-    # for the sockets
-    probe = Box(45.0, 100.0, 60.0)
-    at_default, at_legacy = Pos(DEFAULT.web.wrist_x - 22.5, 0.0, 15.0), Pos(LEGACY.web.wrist_x - 22.5, 0.0, 15.0)
-    legacy = build_link(replace(LEGACY, sockets=None))
-    assert abs(interference(link, at_default * probe) - interference(legacy, at_legacy * probe)) < 0.5
-    # no locating sockets: the caps they held are gone
-    wrist_socket_x = DEFAULT.web.wrist_x + LEGACY.sockets.wrist[0][0] - LEGACY.web.wrist_x
-    y_side = web_half_width(-120.0)
-    assert is_inside(link, -120, y_side - 1.0, 18) and is_inside(link, -120, y_side - 1.0, 9) and is_inside(link, wrist_socket_x, 20, 9)
-    assert not is_inside(link, -120, y_side + 1.0, 13.5)                                                 # the neck's side
-    # the wall: a round flange about the roll axis on its foot, the belly under the web; the flange recess on its
-    # elbow face, the cable bore and the bolt holes through it
-    xm, x_face, top, foot = (R.wall_x[0] + R.wall_x[1]) / 2.0, R.wall_x[1], R.axis_z + R.wall_od / 2.0, R.neck_half_w
-    w = DEFAULT.web
-    assert is_inside(link, xm, 0, top - 1.0) and not is_inside(link, xm, 0, top + 1.0) and is_inside(link, xm, 0, 2 * R.axis_z - top + 1.0)
+    assert math.isclose(bb.max.X, R.wall_x[1], abs_tol=1e-6) and math.isclose(bb.min.X, w.wrist_x - w.half_w, abs_tol=1e-6)
+    assert math.isclose(bb.min.Z, boss_bottom, abs_tol=1e-6) and math.isclose(bb.max.Z, R.axis_z + R.wall_od / 2.0, abs_tol=1e-6)
+    assert math.isclose(bb.max.Y, w.half_w, abs_tol=1e-6) and math.isclose(bb.min.Y, -w.half_w, abs_tol=1e-6)
+    # the wrist end: round, as wide as the web; the boss's top the seat's top; the seat below and above the lip
+    wx = w.wrist_x
+    for dx, dy in ((-1.0, 0.0), (-math.sqrt(0.5), math.sqrt(0.5)), (0.0, -1.0)):
+        assert is_inside(link, wx + dx * (w.half_w - 0.3), dy * (w.half_w - 0.3), 13.5)
+        assert not is_inside(link, wx + dx * (w.half_w + 0.3), dy * (w.half_w + 0.3), 13.5)
+    assert is_inside(link, wx + 25.0, 0, b.z1 - 0.3) and not is_inside(link, wx + 25.0, 0, b.z1 + 0.3)
+    for z in (w.z0 + 1.0, b.seat_z1 - 1.0):
+        assert not is_inside(link, wx + b.seat_dia / 2.0 - 0.3, 0, z) and is_inside(link, wx + b.seat_dia / 2.0 + 0.3, 0, z)
+    assert is_inside(link, wx + b.lip_dia / 2.0 + 0.3, 0, sum(b.lip_z) / 2.0) and not is_inside(link, wx + b.lip_dia / 2.0 - 0.3, 0, sum(b.lip_z) / 2.0)
+    # ... under j3_coupler#2: its dust lip turns 0.5 over the boss's top
+    assert link.distance_to(in_host("j3_coupler#2")) >= 0.5 - 1e-6
+    # no locating sockets (the caps they held are gone): the web whole on both faces out to its straight sides
+    assert is_inside(link, -120, w.half_w - 1.0, w.z1 - 1.0) and is_inside(link, -120, w.half_w - 1.0, w.z0 + 1.0)
+    assert not is_inside(link, -120, w.half_w + 1.0, 13.5)                                               # the web's side
+    # the wall: a round flange about the roll axis on its foot, cut at the web's belt face but for the bottom screw's
+    # boss; the flange recess on its elbow face, the cable bore and the bolt holes through it
+    xm, x_face, top, foot = (R.wall_x[0] + R.wall_x[1]) / 2.0, R.wall_x[1], R.axis_z + R.wall_od / 2.0, w.half_w
+    assert is_inside(link, xm, 0, top - 1.0) and not is_inside(link, xm, 0, top + 1.0) and not is_inside(link, xm, 0, 2 * R.axis_z - top + 1.0)
     assert is_inside(link, xm, foot - 1.0, w.z0 + 1.0) and not is_inside(link, xm, foot + 1.0, w.z0 + 1.0)
+    assert not is_inside(link, xm, R.screw_boss_dia / 2.0 + 1.0, w.z0 - 0.5) and not is_inside(link, xm, foot - 1.0, w.z0 - 0.5)   # the L
+    assert is_inside(link, xm, 0, boss_bottom + 0.5) and not is_inside(link, xm, 0, boss_bottom - 0.5)                            # the boss
     assert not is_inside(link, xm, 40, 50) and not is_inside(link, xm, foot - 1.0, top - 1.0)             # no corners
     rr, rb = (R.flange_dia + R.flange_recess_add) / 2.0, R.cable_bore / 2.0
     assert not is_inside(link, x_face - 1.0, 0, 25 + rr - 1.0) and is_inside(link, x_face - 3.0, 0, 25 + rr - 1.0)   # the spigot recess, 2 deep
@@ -144,8 +151,8 @@ def test_link_ends_at_the_wall_and_keeps_its_wrist_end(link):
             assert not is_inside(link, R.wall_x[0] - 1.0, y + dy, z + dz)
             assert not is_inside(link, R.wall_x[0] - R.screw.head_h - 1.0, y + dy, z + dz)
     (y_low, z_low), = screws_under_the_web(DEFAULT)
-    x0, x1, half_w, z_top = screw_channel(z_low)
-    xc = (x0 + x1) / 2.0
+    _, x1, half_w, z_top = screw_channel(z_low)
+    xc = (DEFAULT.slot.centre_x[1] + DEFAULT.slot.centre_w / 2.0 + x1) / 2.0     # between the central slot's end and the wall
     assert not is_inside(link, xc, y_low, w.z0 + 0.5) and not is_inside(link, xc, y_low + half_w - 0.3, z_top - 0.3)
     assert is_inside(link, xc, y_low, z_top + 0.3) and is_inside(link, xc, y_low + half_w + 0.3, w.z0 + 0.5)
     # the slots: the central one passes the pilot, both stop before the wall

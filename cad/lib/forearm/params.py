@@ -35,7 +35,8 @@ from lib.motors import MKS_SERVO42D_STACK, MKS_SERVO42D_W, MOTOR_40
 
 @dataclass(frozen=True)
 class WebParams:
-    """The 11 mm web: a stadium between the two pivots (r = half_w at both ends)."""
+    """The 11 mm web: a stadium between the two pivots (r = half_w at both ends); with the roll joint, straight from the
+    wall to its round wrist end."""
 
     z0: float = 8.0            # bottom face (the belt side)
     z1: float = 19.0           # top face (the motor's mounting face - lib/params.py J2_MOTOR_WEB_FACE_Z)
@@ -66,7 +67,7 @@ class ElbowDiscParams:
 @dataclass(frozen=True)
 class WristBossParams:
     """The wrist end: a boss above the web with the wrist_pitch bearing seat (Ø42.2, split by a lip) and an
-    Ø80 recess on top (the wrist 90T pulley / j3_coupler#2 side)."""
+    Ø80 recess on top (the j3_coupler#2 side: the coupler's Ø78 flange dips into it, its dust lip turns in it)."""
 
     dia: float = 90.0
     z1: float = 33.5
@@ -74,7 +75,7 @@ class WristBossParams:
     seat_z1: float = 27.5
     lip_dia: float = 37.65
     lip_z: tuple = (17.0, 19.0)
-    recess_dia: float = 80.0
+    recess_dia: float | None = 80.0   # None: no recess, the top face whole
     recess_z0: float = 27.5
 
 
@@ -114,16 +115,20 @@ class RollEndParams:
     through the bore. The wall stands 48 mm
     along the roll axis from the elbow axis' station (and ForearmConfig.elbow_offset across from it): whatever the
     forearm's roll angle, it clears the upper arm's r 45 round end. It is a
-    round flange about the roll axis on a foot as wide as itself - the web tapers to that width from the wrist boss
-    (the neck) - braced by two gussets on the web's top face, either side of the wrist motor.
+    round flange about the roll axis on a foot as wide as itself and the web (WebParams.half_w), cut flush with the
+    web's belt face - the side profile an L, the web and the wall on its motor side - but for a boss round the bottom
+    screw; braced by two gussets on the web's top face, either side of the wrist motor.
     The roll drive's frame, shaft and pulley: lib/forearm/roll.py."""
 
     axis_z: float = 25.0                  # [REFERENCE] the wrist centre's N-station above the elbow origin (42 − 17)
     wall_x: tuple = (-56.0, -48.0)        # [DESIGN] the wall's wrist face .. elbow face (8 thick): 48 from the elbow axis (>= 45 + 3: the upper arm's round end)
-    wall_od: float = 60.0                 # [DESIGN] the wall's round outline about the roll axis: it covers the pulley's ring (its flanges Ø59.19)
-    neck_half_w: float = 30.0             # [DESIGN] the web's half width at the wall (= wall_od / 2: the wall's foot); the web tapers to it from the wrist boss
+    wall_od: float = 60.0                 # [DESIGN] the wall's round outline about the roll axis: it covers the pulley's ring (its flanges Ø59.19) above the
+    #                                       web's belt face, where the wall stops (no wider: the roll idler's screw head, 42.3 off the roll axis, reaches
+    #                                       into the wall's band along it - a wider wall would meet it as the forearm rolls)
+    screw_boss_dia: float = 9.0           # [DESIGN] the boss round the bottom screw under the web's belt face (its hole's edge 0.2 under that face): its
+    #                                       lower edge on the flange recess's (axis_z - 20), 2.8 of wall under the hole
     rib_y: tuple = (24.0, 30.0)           # [DESIGN] the two gussets on the web's top face against the wall's wrist face: |y| in this band - outside the
-    #                                       wrist motor's body (+/- 21) and board (+/- 21.5), inside the neck
+    #                                       wrist motor's body (+/- 21) and board (+/- 21.5), inside the web
     rib_len: float = 30.0                 # [DESIGN] ... this far along the web from the wall
     rib_h: float = 20.0                   # [DESIGN] ... this high above the web at the wall (the wall's round outline cuts their tops)
     flange_dia: float = 39.7              # [DESIGN] the pulley's spigot on its front face, in the wall's recess
@@ -142,7 +147,8 @@ class RollEndParams:
     cable_bore: float = 24.0              # [DESIGN] round the rotor's Ø18 bore (RollDriveParams.bore)
     plug_clearance: float = 10.0          # [DESIGN] the wrist motor's connector plug needs this much room beyond its connector (turned
     #                                       sideways, lib/mounts.py: clear of the web, the gussets and the wall)
-    motor_wall_clear: float = 4.5         # [DESIGN] the wrist motor's body this far off the wall screws' heads at the slots' wall end
+    motor_wall_clear: float = 1.5         # [DESIGN] the wrist motor's body this far off the wall screws' heads at the slots' wall end (the screws are
+    #                                       reached with the motor off)
     wrist_belt: int = 280                 # [DESIGN] 280-2GT closed belt, 6 mm (a multipack length, lib/belts.py STANDARD_2GT_LENGTHS):
     #                                       sets the motor slide (motor_x) - no idler, the slots tension it
     wrist_belt_z: float = 0.3             # [REFERENCE] the wrist belt's mid-plane: the wrist 90T's tooth band (its re-seated pose, lib/mounts.py
@@ -382,14 +388,20 @@ class ForearmConfig:
 
 LEGACY = ForearmConfig()     # the SolidWorks part, exactly
 
-SHORTENING = 40.0   # [DESIGN] the wrist pivot this much nearer the elbow than the SolidWorks part's: the arm's reach
-#                     is long for its NEMA 17 drives (the shoulder's and the elbow's holding torque)
-_WEB = replace(LEGACY.web, wrist_x=LEGACY.web.wrist_x + SHORTENING)
+SHORTENING = 45.0   # [DESIGN] the wrist pivot this much nearer the elbow than the SolidWorks part's: the arm's reach
+#                     is long for its NEMA 17 drives (the shoulder's and the elbow's holding torque); the wrist-pitch motor,
+#                     at the stock belt's centre distance from the wrist, then sits as near the wall as its slots allow
+_WEB = replace(LEGACY.web, wrist_x=LEGACY.web.wrist_x + SHORTENING,
+               half_w=RollEndParams().wall_od / 2.0)   # [DESIGN] straight from the wall, as wide as it, no taper
+_BOSS = replace(LEGACY.boss, dia=2.0 * _WEB.half_w,       # [DESIGN] as wide as the web: its round wrist end
+                z1=LEGACY.boss.seat_z1,                   # [DESIGN] the bearing seat's top: j3_coupler#2's dust lip turns 0.5 over it,
+                recess_dia=None)                          #          its Ø78 flange 4.5 - no recess for either
 
-# The forearm with the roll joint, SHORTENING shorter: the wall replaces the elbow disc; the wrist-pitch motor sits
-# where the stock belt puts it (lib/belts.py) - near the wall, its connector turned sideways (lib/mounts.py), no idler -,
-# the slots shorten to the slide round it (>= 4 mm before the wall; its wall end the body motor_wall_clear off the wall
-# screws' heads, its other end the same travel back: the belt goes on there, the slots tension it) and the central
+# The forearm with the roll joint, SHORTENING shorter: the wall replaces the elbow disc; the web runs straight from
+# the wall to the wrist, the boss as wide as it; the wrist-pitch motor sits where the stock belt puts it (lib/belts.py)
+# - near the wall, its connector turned sideways (lib/mounts.py), no idler -, the slots shorten to the slide round it
+# (>= 4 mm before the wall; its wall end the body motor_wall_clear off the wall screws' heads, the belt's centre
+# distance 1.5 short of it - the slots tension it -, its other end 6 back: the belt goes on there) and the central
 # one widens to pass the Ø22 pilot boss; the caps are gone, so are the sockets that located them. The roll axis runs
 # elbow_offset above the elbow axis - the roll motor sits on the elbow axis, the drive's centre distance under the
 # ring (the stock belt round its tensioner) - so the forearm and everything beyond it sit that far across (+Y). The forearm is turned half a turn about the
@@ -397,10 +409,10 @@ _WEB = replace(LEGACY.web, wrist_x=LEGACY.web.wrist_x + SHORTENING)
 # other, the wrist and the gripper rolled with it; the wall's 4 bolts at 0 / 90 / 180 / 270 deg take the roll pulley as
 # before.
 DEFAULT = replace(
-    LEGACY, roll=True, web=_WEB,
-    motor_x=_WEB.wrist_x + centre_distance(RollEndParams().wrist_belt, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH),   # -88.03
-    slide_range=(-94.0, -84.5),
-    slot=SlotParams(centre_w=22.3, centre_x=(-100.5, -78.5), side_x=(-109.5, -69.0)),
+    LEGACY, roll=True, web=_WEB, boss=_BOSS,
+    motor_x=_WEB.wrist_x + centre_distance(RollEndParams().wrist_belt, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH),   # -83.03
+    slide_range=(-89.0, -81.5),
+    slot=SlotParams(centre_w=22.3, centre_x=(-95.5, -75.0), side_x=(-104.5, -66.0)),
     sockets=None,
     elbow_offset=RollDriveParams().centre_distance,   # [DESIGN] 74: the roll drive's centre distance (the 280 belt with its idler)
     roll_turn_deg=180.0,                              # [DESIGN] the wrist-pitch motor on the other side of the forearm
