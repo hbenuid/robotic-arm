@@ -15,13 +15,17 @@ cut back plate_relief_depth from plate_relief_dia out, over the motor-end 6814's
 bears on the face inside), and a sleeve back over the motor: sleeve_bore_dia (the motor's and the board's corners),
 sleeve_od, and the hub's grip (OutputHubParams.od) over the last out_width - the 6814 slides on from the sleeve's end
 and presses on there. The sleeve runs through the j1_coupler yoke's motor-side leg (parts/base/j1_motor_leg, a ring round it) to
-the leg's outer face (lib/cycloidal/layout.py sleeve_end: -22).
+the leg's outer face (lib/cycloidal/layout.py sleeve_end: -22), bolted to it: the leg's radial M4s go into nuts pressed
+into lugs on the bore at the motor's flats (sleeve_bolt_deg; none down, where the leg's post stands) - sleeve_lug_len
+at sleeve_lug_r from the sleeve's end, then 45 deg out to the bore, so the plate prints on its inner face without
+support -, each nut's hex pocket from the lug's face (flats across the axis), the screw's hole on out through the wall.
 
 Diverged from the port: build(LEGACY_CONFIG) reproduces the export (REFERENCE_BUILD - tests/cycloidal/test_port.py,
 tests/test_reference_match.py); the model builds DEFAULT_CONFIG (the turning shell's carrier plate).
 """
 import pathlib
 
+from cadgen import build123d as bd
 from cadgen import step
 
 from lib.cycloidal import (
@@ -33,11 +37,12 @@ from lib.cycloidal import (
     motor_bolt_points,
     ring_pin_hole_dia,
     ring_pin_points,
+    sleeve_bolt_z,
     sleeve_end,
 )
 from lib.cycloidal.housing import chamfer_outer_silhouette, reveal_window_cutter
 from lib.datum import IDENTITY
-from lib.geom import cylinder, single_solid, through
+from lib.geom import align_min, cylinder, hex_prism, single_solid, through
 from lib.params import NUDGE
 
 NAME = pathlib.Path(__file__).stem
@@ -63,8 +68,36 @@ def _motor_face(plate, cfg: DriveConfig, t: float):
     return plate
 
 
+def _radial(r: float, r0: float, length: float, z: float):
+    """A cylinder of radius r along +Y from r0, `length` long, its axis at height z."""
+    return bd.Pos(0.0, r0, z) * bd.Rot(-90.0, 0.0, 0.0) * bd.Cylinder(r, length, align=align_min())
+
+
+def _sleeve_lugs(sleeve, cfg: DriveConfig):
+    """The lugs on the sleeve's bore for the yoke leg's radial M4s (ShellParams.sleeve_bolt_deg), each built at +Y and
+    turned there: sleeve_lug_len at sleeve_lug_r from the sleeve's end, then 45 deg out into the wall; the press-fit
+    nut's hex pocket from the lug's face out to the nut's outer face (flats across the axis); the screw's hole from the
+    pocket's floor out through the wall."""
+    sh, h = cfg.shell, cfg.housing
+    back, z = sleeve_end(cfg), sleeve_bolt_z(cfg)
+    wall = sh.sleeve_bore_dia / 2.0 + 0.3                                # a hair into the wall, so the two fuse
+    rise = wall - sh.sleeve_lug_r
+    outline = [(sh.sleeve_lug_r, back), (wall, back), (wall, back + sh.sleeve_lug_len + rise), (sh.sleeve_lug_r, back + sh.sleeve_lug_len)]
+    lug = bd.extrude(bd.Plane.YZ.offset(-sh.sleeve_lug_w / 2.0) * bd.Polygon(*outline, align=None),
+                     amount=sh.sleeve_lug_w, dir=(1.0, 0.0, 0.0))
+    floor = sh.sleeve_nut_r + h.bolt_nut_thickness
+    # a hex prism along +Y, a corner along X (hex_prism's first vertex on +X): its flats across the drive's axis
+    pocket = bd.Pos(0.0, sh.sleeve_lug_r - NUDGE, z) * bd.Rot(-90.0, 0.0, 0.0) * hex_prism(sh.sleeve_nut_af, 0.0, floor - sh.sleeve_lug_r + NUDGE)
+    hole = _radial((h.bolt_dia + cfg.tolerances.bolt_clearance_add) / 2.0, floor - NUDGE, sh.sleeve_od / 2.0 - floor + 1.0, z)
+    for deg in sh.sleeve_bolt_deg:
+        turn = bd.Rot(0.0, 0.0, deg - 90.0)
+        sleeve = sleeve + turn * lug
+        sleeve = sleeve - turn * pocket - turn * hole
+    return sleeve
+
+
 def _carrier(cfg: DriveConfig):
-    """The turning shell's held plate and its sleeve (ShellParams)."""
+    """The turning shell's held plate and its sleeve (ShellParams), the sleeve's lugs for the yoke leg's screws."""
     sh, b, stack = cfg.shell, cfg.bearings, cfg.stack_up
     t = stack.motor_plate_wall + stack.motor_plate_inner_wall      # 9
     plate = _motor_face(cylinder(sh.plate_dia / 2.0, t), cfg, t)
@@ -74,7 +107,7 @@ def _carrier(cfg: DriveConfig):
     sleeve = cylinder(cfg.output_hub.od / 2.0, b.out_width + NUDGE, z0=-b.out_width)                    # the 6814's seat
     sleeve = sleeve + cylinder(sh.sleeve_od / 2.0, -back - b.out_width + NUDGE, z0=back)                # the rest
     sleeve = sleeve - cylinder(sh.sleeve_bore_dia / 2.0, -back + 2 * NUDGE, z0=back - NUDGE)
-    return single_solid(plate + sleeve)
+    return single_solid(plate + _sleeve_lugs(sleeve, cfg))
 
 
 def build(cfg: DriveConfig = DEFAULT_CONFIG):

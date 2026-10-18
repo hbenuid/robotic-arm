@@ -27,7 +27,7 @@ pulley's 4 bolts (M4 clearance, on its bolt circle at the diagonals, the nuts in
 parts/base/yaw_pulley_screws / _nuts) round the pulley's bore; and its yoke is a fork round the drive whose shell
 turns (lib/cycloidal/params.py DEFAULT_CONFIG, ShellParams): two legs past the shell's ends - the held hub bolts to
 one, its disc the hub's own diameter; the other, its own part (parts/base/j1_motor_leg), a solid ring round the motor
-plate's sleeve bolted to the disc -, centred on the base_yaw axis with the drive's discs (ForkParams.face_x), the ring
+plate's sleeve bolted to the disc and to the sleeve -, centred on the base_yaw axis with the drive's discs (ForkParams.face_x), the ring
 lowered under the shell and run flat to flat - no cheek, no middle body, no cradle. The disc is turned with the legs:
 drafted round to its rim (BASE_R, BASE_DRAFT; its flats and ears filled under the legs), its side carried on up each
 leg's outer face.
@@ -155,7 +155,11 @@ class ForkParams:
     drive is in -, its post standing on the disc's top face (DiscParams.top_y) and its foot the disc's rim past the leg's
     outer face, butting the disc there (this part ends at that face, its ring cut back motor_leg_gap off the leg); 2x M4
     x motor_screw_len along the drive's axis at motor_bolt_y, motor_bolt_z either side of it, from counterbores in the
-    foot into M4 nuts in slots from the disc's top face, under the leg's post. The drive sits with the middle of its discs
+    foot into M4 nuts in slots from the disc's top face, under the leg's post. The ring is bolted to the sleeve too - nothing
+    else stops the carrier's motor end turning: M4 x sleeve_screw_len radially through it in its middle, at the drive's
+    ShellParams.sleeve_bolt_deg (up and both sides; the post is under it), heads on the ring's od (no seat: an M4 head
+    rocks 0.14 on its r 45), into nuts pressed into lugs on the sleeve's bore; the holes slotted along the axis
+    (sleeve_slot_len), so the drive settles lengthwise - the hub's leg holds it - before they lock it. The drive sits with the middle of its discs
     on the base_yaw axis, so the two legs mirror each other about it too. Positions along the drive are the drive's z:
     this frame's x = face_x - z."""
 
@@ -177,6 +181,10 @@ class ForkParams:
     motor_nut_wall: float = 1.6      # [DESIGN] ... into M4 nuts in slots from the disc's top face, this far in from that face ...
     motor_screw_len: float = 10.0    # [DESIGN] ... M4 x 10 (ISO 4762): through the foot and the wall, 0.7 past the nut
     hub_screw_len: float = 25.0      # [DESIGN] M4 x 25 (ISO 4762) from the hub leg's counterbores: flush with the hub's captive nuts
+    sleeve_screw_len: float = 20.0   # [DESIGN] the motor leg's radial M4 x 20 (ISO 4762), heads on its ring's od: their ends flush
+    #                                  with the nuts in the sleeve's lugs (lib/cycloidal/params.py ShellParams.sleeve_nut_r) ...
+    sleeve_slot_len: float = 5.0     # [DESIGN] ... through holes M4_CLEAR wide, this long along the axis: the screws float
+    #                                  +/-0.5 there, 1.5 of the ring either side
 
 
 CAPTURE_FACE_X = 31.5   # [REFERENCE] where the SolidWorks capture put the drive's z = 0 in this frame (placements.json

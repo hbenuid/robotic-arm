@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 
 from lib.cycloidal import DEFAULT_CONFIG as DRIVE
-from lib.cycloidal import PILLAR_OVERSHOOT, arm_mount_points, pillar_half_width, shell_ends
+from lib.cycloidal import PILLAR_OVERSHOOT, arm_mount_points, pillar_half_width, shell_ends, sleeve_bolt_z
 from lib.fasteners import M4_NUT, M4_SHCS
 from lib.yaw_coupler.params import DEFAULT, YawCouplerConfig
 
@@ -160,3 +160,13 @@ def fork_motor_bolt_x(cfg: YawCouplerConfig = DEFAULT) -> tuple[float, float, fl
     f, x1 = cfg.fork, fork_motor_leg_x(cfg)[1]
     nut_x1 = x1 - f.motor_nut_wall
     return x1 + f.motor_head_seat, nut_x1, nut_x1 - M4_NUT.h - NUT_SLOT
+
+
+def fork_sleeve_bolt_x(cfg: YawCouplerConfig = DEFAULT) -> float:
+    """x of the motor leg's radial M4s into the sleeve (lib/cycloidal/layout.py sleeve_bolt_z): the ring's middle."""
+    return fork_x(cfg, sleeve_bolt_z(DRIVE))
+
+
+def fork_sleeve_bolt_deg(cfg: YawCouplerConfig = DEFAULT) -> tuple:
+    """Their angles about the drive's axis, from its +X (this frame's +Z) toward its +Y (this frame's +Y)."""
+    return DRIVE.shell.sleeve_bolt_deg

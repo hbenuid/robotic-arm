@@ -285,7 +285,7 @@ FASTENER_MOUNTS: tuple[Mount, ...] = (
           "(nut_depth under pocket_y0), a corner along the coupler's Z"),
 )
 # The yoke's motor leg: j1_coupler's motor-side leg, its own part - a ring round the drive's motor sleeve bolted to the
-# coupler's disc - built in the coupler's frame.
+# coupler's disc and to the sleeve - built in the coupler's frame.
 YOKE_MOUNTS: tuple[Mount, ...] = (
     Mount("j1_motor_leg#1", YOKE_MOTOR_LEG, "j1_coupler#1", "shoulder_link", "base_yaw", ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)),
           "the motor-side leg on j1_coupler's disc, round the drive's motor sleeve; built in the coupler's part frame"),
