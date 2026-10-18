@@ -537,7 +537,7 @@ def test_forearm_clears_the_elbow_while_rolling():
 @pytest.mark.parametrize("roll", [-PARAMS.FOREARM_ROLL_LIMIT_DEG, -90.0, 0.0, 90.0, PARAMS.FOREARM_ROLL_LIMIT_DEG])
 def test_forearm_clears_the_upper_arm_at_the_elbow_limits(elbow, roll):
     """The elbow folded to its limits, the forearm rolled anywhere: j2_link (its round wall 48 along the roll axis from
-    the elbow axis' station and ELBOW_ROLL_OFFSET across it, its necked web; turned with the forearm) stays 2 mm off the
+    the elbow axis' station and ELBOW_ROLL_OFFSET across it, its straight web; turned with the forearm) stays 2 mm off the
     upper arm beside it."""
     link = j2_link_in_drive_frame().rotate(Axis((0.0, 0.0, DEFAULT.roll_end.axis_z), (-1.0, 0.0, 0.0)), roll)
     upper_arm = _upper_arm_at(in_drive_frame("j1_link#1"), elbow)

@@ -10,7 +10,6 @@ from lib.forearm.layout import (
     elbow_end_x,
     flange_bolt_points,
     link_socket_points,
-    neck_tangent,
     screw_channel,
     screws_under_the_web,
     wrist_idler_xy,
@@ -42,11 +41,11 @@ def yz_prism(face, x0: float, x1: float):
 
 
 def wall_outline(cfg: ForearmConfig = DEFAULT):
-    """The flange wall's outline, a face in (y, z): the hull of its round flange about the roll axis and its foot, the
-    necked web's end section."""
+    """The flange wall's outline, a face in (y, z): the hull of its round flange about the roll axis and its foot (the
+    web's end section)."""
     r, w = cfg.roll_end, cfg.web
     flange = bd.Pos(0.0, r.axis_z) * bd.Circle(r.wall_od / 2.0)
-    foot = bd.Pos(0.0, (w.z0 + w.z1) / 2.0) * bd.Rectangle(2.0 * r.neck_half_w, w.thickness)
+    foot = bd.Pos(0.0, (w.z0 + w.z1) / 2.0) * bd.Rectangle(2.0 * w.half_w, w.thickness)
     return bd.make_hull((flange + foot).edges())
 
 
@@ -65,14 +64,13 @@ def roll_wall(cfg: ForearmConfig = DEFAULT):
     return wall
 
 
-def necked_web(cfg: ForearmConfig = DEFAULT):
-    """The web with the roll joint: from the wall's foot (neck_half_w either side) it widens to the wrist boss, its
-    sides tangent to the boss (the round wrist end)."""
-    w, b, n = cfg.web, cfg.boss, cfg.roll_end.neck_half_w
-    (tx, ty), x_end = neck_tangent(cfg), elbow_end_x(cfg)
-    plan = bd.Polygon((tx, ty), (x_end, n), (x_end, -n), (tx, -ty), align=None)
-    web = bd.Pos(0.0, 0.0, w.z0) * bd.extrude(plan, amount=w.thickness, dir=(0.0, 0.0, 1.0))
-    return web + cylinder(b.dia / 2.0, w.thickness, (w.wrist_x, 0.0), z0=w.z0)
+def straight_web(cfg: ForearmConfig = DEFAULT):
+    """The web with the roll joint: straight from the wall's wrist face to the wrist pivot, half_w either side, its
+    wrist end round."""
+    w = cfg.web
+    x_end = elbow_end_x(cfg)
+    web = slab(x_end - w.wrist_x, 2.0 * w.half_w, w.thickness, (x_end + w.wrist_x) / 2.0, w.z0)
+    return web + cylinder(w.half_w, w.thickness, (w.wrist_x, 0.0), z0=w.z0)
 
 
 def wall_gussets(cfg: ForearmConfig = DEFAULT):
@@ -122,9 +120,9 @@ def idler_mount(body, cfg: ForearmConfig = DEFAULT):
 def build_link(cfg: ForearmConfig = DEFAULT):
     w, d, b, s = cfg.web, cfg.disc, cfg.boss, cfg.slot
     if cfg.roll:
-        # the necked web from the flange wall to the wrist pivot (round wrist end); the wall and its gussets; the wrist
+        # the straight web from the flange wall to the wrist pivot (round wrist end); the wall and its gussets; the wrist
         # boss over the web
-        body = necked_web(cfg) + roll_wall(cfg)
+        body = straight_web(cfg) + roll_wall(cfg)
         for rib in wall_gussets(cfg):
             body = body + rib
         # the way in for a wall screw whose head would land in the web: a channel in the web's underside, into the
@@ -143,12 +141,15 @@ def build_link(cfg: ForearmConfig = DEFAULT):
         for angle, xy in zip(disc_bolt_angles(cfg), disc_bolt_points(cfg), strict=True):
             body = body - cylinder(d.bolt_dia / 2.0, d.bolt_z1 - d.z0 + NUDGE, xy, z0=d.z0 - NUDGE)
             body = body - bd.Pos(xy[0], xy[1], d.nut_z0) * hex_prism(d.nut_af, angle, d.z1 - d.nut_z0 + NUDGE)
-    # the wrist bearing seat: the lip's bore all the way, the seat's bore below and above the lip, the recess on top
+    # the wrist bearing seat: the lip's bore all the way, the seat's bore below and above the lip (on through the top
+    # when the boss ends at the seat's top), the recess on top
     wx = (w.wrist_x, 0.0)
-    body = body - cylinder(b.lip_dia / 2.0, b.seat_z1 - w.z0 + NUDGE, wx, z0=w.z0 - NUDGE)
+    top_out = NUDGE if b.z1 <= b.seat_z1 else 0.0
+    body = body - cylinder(b.lip_dia / 2.0, b.seat_z1 - w.z0 + NUDGE + top_out, wx, z0=w.z0 - NUDGE)
     body = body - cylinder(b.seat_dia / 2.0, b.lip_z[0] - w.z0 + NUDGE, wx, z0=w.z0 - NUDGE)
-    body = body - cylinder(b.seat_dia / 2.0, b.seat_z1 - b.lip_z[1], wx, z0=b.lip_z[1])
-    body = body - cylinder(b.recess_dia / 2.0, b.z1 - b.recess_z0 + NUDGE, wx, z0=b.recess_z0)
+    body = body - cylinder(b.seat_dia / 2.0, b.seat_z1 - b.lip_z[1] + top_out, wx, z0=b.lip_z[1])
+    if b.recess_dia is not None:
+        body = body - cylinder(b.recess_dia / 2.0, b.z1 - b.recess_z0 + NUDGE, wx, z0=b.recess_z0)
     # the motor slide: the central slot and the two side slots through the web
     body = body - stadium(s.centre_x[1] - s.centre_x[0], s.centre_w, w.thickness + 2 * NUDGE, sum(s.centre_x) / 2.0, w.z0 - NUDGE)
     for sy in (s.side_y, -s.side_y):
