@@ -137,7 +137,7 @@ FOREARM_ROLL_AXIS_Z = _FOREARM.roll_end.axis_z     # 25 [REFERENCE] the roll axi
 FOREARM_ROLL_TURN_DEG = _FOREARM.roll_turn_deg     # 180 [DESIGN] the forearm + all beyond it turned about the roll axis from the capture
 #                                                    (lib/placements.py TURNS): the wrist-pitch motor on the upper arm's side of it
 FOREARM_WALL_X = _FOREARM.roll_end.wall_x          # (-56, -48) [DESIGN] the flange wall: wrist face .. elbow face (48 from the elbow axis)
-FOREARM_WALL_OD = _FOREARM.roll_end.wall_od        # 60 [DESIGN] the flange wall's round outline about the roll axis (on a foot as wide as the web, cut at its belt face)
+FOREARM_WALL_OD = _FOREARM.roll_end.wall_od        # 60 [DESIGN] the flange wall's round outline about the roll axis (on a foot as wide as the web)
 FOREARM_PLUG_CLEARANCE = _FOREARM.roll_end.plug_clearance   # 10 [DESIGN] the wrist motor's connector plug: its room beyond the connector (sideways)
 FOREARM_MOTOR_WALL_CLEAR = _FOREARM.roll_end.motor_wall_clear   # 1.5 [DESIGN] the wrist motor's body to the wall screws' heads at the slots' wall end
 FOREARM_FLANGE_DIA = _FOREARM.roll_end.flange_dia  # 39.7 [DESIGN] the roll pulley's spigot the forearm wall bolts onto

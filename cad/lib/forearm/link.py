@@ -42,16 +42,11 @@ def yz_prism(face, x0: float, x1: float):
 
 def wall_outline(cfg: ForearmConfig = DEFAULT):
     """The flange wall's outline, a face in (y, z): the hull of its round flange about the roll axis and its foot (the
-    web's end section), cut flush with the web's belt face, a boss round each screw whose hole would break out there."""
+    web's end section)."""
     r, w = cfg.roll_end, cfg.web
     flange = bd.Pos(0.0, r.axis_z) * bd.Circle(r.wall_od / 2.0)
     foot = bd.Pos(0.0, (w.z0 + w.z1) / 2.0) * bd.Rectangle(2.0 * w.half_w, w.thickness)
-    top = r.axis_z + r.wall_od / 2.0
-    above_the_web = bd.Pos(0.0, (w.z0 + top) / 2.0) * bd.Rectangle(2.0 * max(r.wall_od / 2.0, w.half_w), top - w.z0)
-    outline = bd.make_hull((flange + foot).edges()) & above_the_web
-    for y, z in screws_under_the_web(cfg):
-        outline = outline + bd.Pos(y, z) * bd.Circle(r.screw_boss_dia / 2.0)
-    return outline
+    return bd.make_hull((flange + foot).edges())
 
 
 def roll_wall(cfg: ForearmConfig = DEFAULT):

@@ -115,18 +115,16 @@ class RollEndParams:
     through the bore. The wall stands 48 mm
     along the roll axis from the elbow axis' station (and ForearmConfig.elbow_offset across from it): whatever the
     forearm's roll angle, it clears the upper arm's r 45 round end. It is a
-    round flange about the roll axis on a foot as wide as itself and the web (WebParams.half_w), cut flush with the
-    web's belt face - the side profile an L, the web and the wall on its motor side - but for a boss round the bottom
-    screw; braced by two gussets on the web's top face, either side of the wrist motor.
+    round flange about the roll axis on a foot as wide as itself and the web (WebParams.half_w), round all the way
+    down where the pulley's ring bears on it; braced by two gussets on the web's top face, either side of the wrist
+    motor.
     The roll drive's frame, shaft and pulley: lib/forearm/roll.py."""
 
     axis_z: float = 25.0                  # [REFERENCE] the wrist centre's N-station above the elbow origin (42 − 17)
     wall_x: tuple = (-56.0, -48.0)        # [DESIGN] the wall's wrist face .. elbow face (8 thick): 48 from the elbow axis (>= 45 + 3: the upper arm's round end)
-    wall_od: float = 60.0                 # [DESIGN] the wall's round outline about the roll axis: it covers the pulley's ring (its flanges Ø59.19) above the
-    #                                       web's belt face, where the wall stops (no wider: the roll idler's screw head, 42.3 off the roll axis, reaches
-    #                                       into the wall's band along it - a wider wall would meet it as the forearm rolls)
-    screw_boss_dia: float = 9.0           # [DESIGN] the boss round the bottom screw under the web's belt face (its hole's edge 0.2 under that face): its
-    #                                       lower edge on the flange recess's (axis_z - 20), 2.8 of wall under the hole
+    wall_od: float = 60.0                 # [DESIGN] the wall's round outline about the roll axis: it covers the pulley's ring (its flanges Ø59.19) all
+    #                                       round (no wider: the roll idler's screw head, 42.3 off the roll axis, reaches into the wall's band along it -
+    #                                       a wider wall would meet it as the forearm rolls)
     rib_y: tuple = (24.0, 30.0)           # [DESIGN] the two gussets on the web's top face against the wall's wrist face: |y| in this band - outside the
     #                                       wrist motor's body (+/- 21) and board (+/- 21.5), inside the web
     rib_len: float = 30.0                 # [DESIGN] ... this far along the web from the wall
