@@ -73,13 +73,15 @@ Every command, its flags and what it prints: `./cadtool help` (for people: the `
 - **Look at what you built**: show every created / updated STEP (or URDF) in the CAD Viewer — from a Claude session
   with the `cad` MCP server's `cad_show` (absolute path; it answers with a link: share it once, the page reloads on
   every rebuild), from a terminal with `./cadtool viewer`. Snapshot review (`./cadtool snapshot …`) is mandatory
-  after visible geometry changes; a change inside a housing (a bearing seat, a fit) also gets a cut — `--mode section
-  --section XZ:<mm>` (plane `XY` / `XZ` / `YZ`, the offset along its normal) — and `--focus '#<label>'` ghosts all
-  but one occurrence. No `ocp-vscode`.
+  after visible geometry changes; a change inside a housing (a bearing seat, a fit) also gets a cut, the cut faces
+  capped — the XZ plane at Y = `<mm>` seen head on: `--display '{"clip":{"axis":"y","at":<mm>,"invert":true}}'
+  --camera front` (`axis` `x` / `y` / `z`, `at` the plane's coordinate; without `invert` this camera sees the kept
+  half's uncut outside) — and `--focus '#<label>'` ghosts all but one occurrence. No `ocp-vscode`.
 - `./cadtool inspect` is a local tool (`tools/step_facts.py`). Anything it doesn't answer is Python over
-  `cadgen.read_scene(path)` (`.leaves()`, `.resolve("#o1.2.f7").shape()` — world-frame build123d geometry, the refs the
-  viewer shows) + `cadgen.geometry` (`closest_points`, `overlap_volume`, `topology_errors`), kept as a test when it is
-  worth re-running.
+  `cadgen.read_scene(path)` (`.leaves()`, `(face,) = scene.resolve("#o1.2.f7")` then `face.shape()` — world-frame
+  build123d geometry, the refs the viewer shows; `resolve` returns one selection per ref, so a copied multi-select line
+  `#o1.f1,o1.f2` gives two) + `cadgen.geometry` (`closest_points`, `overlap_volume`, `topology_errors`), kept as a test
+  when it is worth re-running.
 - Run pytest only through `./cadtool pytest` (rootdir `cad/`; `software/control/tests/` is the unrelated motor-control
   suite); the suite: `tests/AGENTS.md`.
 - A lint fix in a model's import closure makes the model stale like any source edit — rebuild and hash-gate it
@@ -183,7 +185,7 @@ machines"; CI is the third machine: root `AGENTS.md` "CI").
   <model.py> --help` lists them); anything else (`--totals`, a preview flag) is an argparse error — use
   `./cadtool python -c`.
 - `./cadtool snapshot` fits every view to its model: the `--camera` JSON's `orthographicHalfHeight` is ignored, whatever
-  `--help` says (verified on cadgen 0.7.15 and again on 0.7.21: `bearing_625` and `base` both fill the frame at
+  `--help` says (verified on cadgen 0.7.15 and again on 0.7.23: `bearing_625` and `base` both fill the frame at
   `orthographicHalfHeight` 100, with a preset and without). To render versions at one scale, give each the same
   bounding box — tiny marker cubes at fixed corners, in the scratch build — and crop.
 

@@ -81,7 +81,8 @@ Custom parts declare `REFERENCE = NAME` (`None` for a *measured* or a printed *n
 
 ## Converting a part (wrapper → parametric)
 1. Inspect the reference: `./cadtool inspect reference/solidworks/<name>.step --planes`
-   (dimensions: the CAD Viewer's measure tool, or build123d on `cadgen.read_scene(…).resolve("#o1.f7").shape()`);
+   (dimensions: the CAD Viewer's measure tool, or build123d on `(face,) = cadgen.read_scene(…).resolve("#o1.f7")`,
+   `face.shape()`);
    `parts/<group>/<name>.py`'s docstring lists units,
    solids, bounding box and where it is used.
 2. Rewrite the model body with `BuildPart`/… code, its numbers in a config in a `lib/` package with `LEGACY` = the

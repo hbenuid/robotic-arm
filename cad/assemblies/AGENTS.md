@@ -141,8 +141,8 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
 - When adding source-level joints, declare them as data — `@step(kinematics={"mates": [cadgen.revolute(name,
   parent="#label", child="#label", …)]})` (viewer sliders, posed snapshots; the plugin's
   `skills/cad/references/kinematics.md`) — not as helper frames; keep placements
-  parameter-driven, and validate with `cadgen.geometry.closest_points` / `overlap_volume` on
-  `read_scene(…).resolve(ref).shape()`.
+  parameter-driven, and validate with `cadgen.geometry.closest_points` / `overlap_volume` on the
+  shapes of `read_scene(…).resolve(ref)` (a tuple: `(sel,) = …`, then `sel.shape()`).
 - A new assembly model goes in `tests/test_lazy_kernel.py`'s module list.
 - `.moved()`/`.located()` deep-copy the shape **and its parent chain**; never call them on a child
   of a big imported assembly (copy its `solids()` instead). A shape added to two Compounds is
