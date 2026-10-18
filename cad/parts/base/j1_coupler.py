@@ -12,8 +12,8 @@ shell) and DEFAULT's fork round the drive (ForkParams) on the drive's own axis: 
 ends, centred on the base_yaw axis with the drive's discs, each a disc round the axis on a post down to the disc, the
 disc's drafted side carried up its outer face to under the hub's bolts - the -X one the held hub bolts to, its disc
 the hub's own Ø70.3; the +X one its own part, parts/base/j1_motor_leg (a solid ring round the motor plate's sleeve,
-slid on over the motor), standing on the disc and bolted to it by 2 M4s along the drive's axis into nuts in slots in
-the disc - this part stops at that leg's outer face; the ring under the drive flat to flat. Every number: lib/yaw_coupler/params.py
+slid on over the motor, bolted to the sleeve by 3 radial M4s), standing on the disc and bolted to it by 2 M4s along
+the drive's axis into nuts in slots in the disc - this part stops at that leg's outer face; the ring under the drive flat to flat. Every number: lib/yaw_coupler/params.py
 (YawCouplerConfig; measured on the reference 2026-09-27; LEGACY: the Ø90.05 recess on the base's face, a Ø29.8 stub
 0.2 into the lip, a Ø15 bore, 4x Ø3.3, the -X cheek and the middle body under the housing's Ø116 cradle, a channel and
 two V-grooves round the 8-pillar housing's bottom and +/-45 degree pillars, 3 nut pockets).

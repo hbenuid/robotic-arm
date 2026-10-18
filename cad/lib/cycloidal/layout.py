@@ -147,6 +147,11 @@ def sleeve_end(cfg: DriveConfig = DEFAULT_CONFIG) -> float:
     return shell_ends(cfg)[0] - sh.end_plate_gap - sh.yoke_leg
 
 
+def sleeve_bolt_z(cfg: DriveConfig = DEFAULT_CONFIG) -> float:
+    """z of the sleeve's radial M4s (ShellParams.sleeve_bolt_deg): the middle of the yoke's motor-side leg (-18)."""
+    return sleeve_end(cfg) + cfg.shell.yoke_leg / 2.0
+
+
 def stack_positions(cfg: DriveConfig = DEFAULT_CONFIG) -> dict[str, float]:
     """Z (and eccentric X) positions of every part in the module frame (Z=0 = motor-plate outer face).
 

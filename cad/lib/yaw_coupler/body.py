@@ -29,6 +29,8 @@ from lib.yaw_coupler.layout import (
     fork_motor_bolt_x,
     fork_motor_bolts,
     fork_motor_leg_x,
+    fork_sleeve_bolt_deg,
+    fork_sleeve_bolt_x,
     hole_points,
     middle_outline,
     nut_centres,
@@ -151,10 +153,21 @@ def _fork_cuts(cfg: YawCouplerConfig):
     return cuts
 
 
+def _sleeve_slot(cfg: YawCouplerConfig, deg: float):
+    """A radial hole through the ring for an M4 into the sleeve at deg about the drive's axis (from its +X, this frame's
+    +Z, toward +Y): M4_CLEAR wide, sleeve_slot_len along the axis - built along +Y, then turned about the axis."""
+    f = cfg.fork
+    x, half, r0, r1 = fork_sleeve_bolt_x(cfg), (f.sleeve_slot_len - M4_CLEAR) / 2.0, f.ring_bore_dia / 2.0 - 1.0, f.plate_r + 1.0
+    slot = _ycyl(M4_CLEAR / 2.0, r0, r1, x - half) + _ycyl(M4_CLEAR / 2.0, r0, r1, x + half)
+    slot = slot + _box((x - half, x + half), (r0, r1), (-M4_CLEAR / 2.0, M4_CLEAR / 2.0))
+    return bd.Pos(0.0, f.axis_y, f.axis_z) * bd.Rot(90.0 - deg, 0.0, 0.0) * slot
+
+
 def build_motor_leg(cfg: YawCouplerConfig):
     """DEFAULT's motor leg (parts/base/j1_motor_leg), in the coupler's frame: a solid plate_r ring round the drive's
     axis, bored to the sleeve, on a post standing on the disc's top face, the disc's draft up its outer face; its foot
-    the disc's rim past the leg's outer face, down to the underside; the 2 M4s through the foot from counterbores."""
+    the disc's rim past the leg's outer face, down to the underside; the 2 M4s through the foot from counterbores; the
+    sleeve's radial M4s' slotted holes through the ring."""
     f, d = cfg.fork, cfg.disc
     x0, x1 = fork_motor_leg_x(cfg)
     leg = _xcyl(f.plate_r, x0, x1, f.axis_y, f.axis_z) + _box((x0, x1), (d.top_y, f.axis_y), _post_z(cfg))
@@ -165,6 +178,8 @@ def build_motor_leg(cfg: YawCouplerConfig):
     seat_x = fork_motor_bolt_x(cfg)[0]
     for y, z in fork_motor_bolts(cfg):
         leg = leg - _xcyl(M4_CLEAR / 2.0, x1 - NUDGE, _FAR, y, z) - _xcyl(COUNTERBORE / 2.0, seat_x, _FAR, y, z)
+    for deg in fork_sleeve_bolt_deg(cfg):
+        leg = leg - _sleeve_slot(cfg, deg)
     return single_solid(leg)
 
 

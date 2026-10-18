@@ -13,7 +13,7 @@
  "expected": {
   "leaf_occurrences": 73,
   "solids": 166,
-  "solid_volume": 2120502.135
+  "solid_volume": 2119977.701
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -3098,7 +3098,7 @@
     "note": "the motor-side leg on j1_coupler's disc, round the drive's motor sleeve; built in the coupler's part frame"
    },
    "solids": 1,
-   "solid_volume": 44356.285,
+   "solid_volume": 43831.851,
    "rel": {
     "position": [
      -0.0,

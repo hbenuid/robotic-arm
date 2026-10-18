@@ -270,8 +270,9 @@ class ShellParams:
     end, the hub's flange at the other, each the port's motor plate thick (StackUp.z_motor_plate_inner), its face cut
     back over the 6814's turning outer race - and the stack's clearance to its disc (StackUp.input_clearance). So the
     shell is symmetric about the middle of the discs. The motor plate's sleeve runs back over the motor (its bore clears
-    the motor's and the MKS board's corners) through the yoke's motor-side leg; the hub runs on to the yoke's other
-    leg. Both legs are yoke_leg thick, end_plate_gap off the shell's ends."""
+    the motor's and the MKS board's corners) through the yoke's motor-side leg, bolted to it by radial M4s into nuts
+    pressed into lugs on its bore (sleeve_bolt_deg) - nothing else holds the carrier's motor end from turning; the hub
+    runs on to the yoke's other leg. Both legs are yoke_leg thick, end_plate_gap off the shell's ends."""
 
     plate_dia: float = 90.0            # [DESIGN] the motor plate and the hub's flange inside the shell's pin rings ...
     ring_bore_dia: float = 92.0        # [DESIGN] ... the pin rings' bore round them (1 a side); the ring-pin holes 1.9 outside it
@@ -286,7 +287,16 @@ class ShellParams:
     yoke_leg: float = 8.0              # [DESIGN] the j1_coupler yoke's two legs (lib/yaw_coupler/params.py ForkParams) ...
     end_plate_gap: float = 1.0         # [DESIGN] ... each this far off an end of the shell; the hub's face and the sleeve's
     #                                    end on their outer faces
-    arm_windows: int = 2               # [DESIGN] the body's windows left solid under the upper arm: this many, centred on the
+    sleeve_bolt_deg: tuple = (90.0, 0.0, 180.0)   # [DESIGN] the sleeve's radial M4s from the yoke's motor-side leg
+    #                                    (lib/yaw_coupler/params.py ForkParams.sleeve_screw_len), in its middle
+    #                                    (layout.py sleeve_bolt_z), at these angles from +X: the motor's flats, up and both
+    #                                    sides - none down, where the leg's post stands; each into a nut in a lug on the bore ...
+    sleeve_lug_r: float = 22.5         # [DESIGN] ... the lugs' inner face, 1.35 off the motor's flats (MotorParams.body_width) ...
+    sleeve_lug_w: float = 12.0         # [DESIGN] ... this wide, ...
+    sleeve_lug_len: float = 10.0       # [DESIGN] ... this long from the sleeve's end at that face, then 45 deg out to the bore
+    sleeve_nut_r: float = 25.0         # [DESIGN] each nut's inner face: its pocket from the lug's face out to the nut's outer face
+    sleeve_nut_af: float = 6.85        # [DESIGN] ... a press fit (j3_coupler's, lib/coupler/params.py): it opens toward the motor
+    arm_windows: int = 2              # [DESIGN] the body's windows left solid under the upper arm: this many, centred on the
     #                                    first pillar (HousingParams.bolt_start_deg, on the arm's centreline) - the arm's root;
     #                                    the others open on the discs
 

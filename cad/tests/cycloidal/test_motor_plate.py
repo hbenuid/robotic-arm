@@ -3,7 +3,8 @@
   1. Dimensional checks - feature clearances, bolt patterns (config only)
   2. The built solid - the port's housing half (LEGACY_CONFIG, its REFERENCE_BUILD): topology, bounding box, volume sanity
   3. The turning shell's carrier plate (DEFAULT_CONFIG, ShellParams): its numbers (the port's export does not hold
-     them) and probes - the plate inside the shell ring, the relief over the 6814's outer race, the sleeve over the motor
+     them) and probes - the plate inside the shell ring, the relief over the 6814's outer race, the sleeve over the motor,
+     its lugs for the yoke leg's screws
 """
 import math
 
@@ -11,7 +12,7 @@ import pytest
 
 import parts
 from lib import reference as R
-from lib.cycloidal import LEGACY_CONFIG, motor_bolt_counterbore_depth, ring_pin_hole_dia, sleeve_end
+from lib.cycloidal import LEGACY_CONFIG, motor_bolt_counterbore_depth, ring_pin_hole_dia, sleeve_bolt_z, sleeve_end
 from tests.cycloidal.helpers import CFG
 from tests.helpers import is_inside
 
@@ -143,7 +144,7 @@ class TestCarrier:
     def test_numbers(self, carrier):
         sh, b = CFG.shell, CFG.bearings
         assert len(carrier.solids()) == 1 and carrier.is_valid
-        assert R.solid_volume(carrier) == pytest.approx(72414.182, abs=0.5)
+        assert R.solid_volume(carrier) == pytest.approx(75642.270, abs=0.5)
         bb = carrier.bounding_box()
         assert (bb.min.X, bb.min.Y, bb.min.Z) == pytest.approx((-sh.plate_dia / 2.0, -sh.plate_dia / 2.0, sleeve_end(CFG)), abs=1e-6)
         assert (bb.size.X, bb.size.Y, bb.size.Z) == pytest.approx((sh.plate_dia, sh.plate_dia, PLATE_T - sleeve_end(CFG)), abs=1e-6)
@@ -160,5 +161,36 @@ class TestCarrier:
         assert is_inside(carrier, (seat_r + od_r) / 2.0, 0, -b.out_width / 2.0)              # the seat (70.3) ...
         assert not is_inside(carrier, (seat_r + od_r) / 2.0, 0, -b.out_width - 5.0)          # ... the sleeve (70) behind it
         assert is_inside(carrier, od_r - 0.3, 0, -b.out_width - 5.0)
-        assert not is_inside(carrier, sh.sleeve_bore_dia / 2.0 - 0.3, 0, -20.0) and is_inside(carrier, sh.sleeve_bore_dia / 2.0 + 0.3, 0, -20.0)
+        r = sh.sleeve_bore_dia / 2.0
+        assert not is_inside(carrier, r * 0.7071 - 0.3, r * 0.7071, -20.0) and is_inside(carrier, r * 0.7071 + 0.3, r * 0.7071, -20.0)
         assert not is_inside(carrier, 0, 0, -20.0)                                           # the motor's room
+
+    def test_the_lugs_for_the_yoke_legs_screws(self, carrier):
+        """The lugs on the sleeve's bore at the motor's flats, up and both sides (ShellParams.sleeve_bolt_deg; none down,
+        where the yoke leg's post stands): sleeve_lug_w wide, sleeve_lug_len at sleeve_lug_r from the sleeve's end, then
+        45 deg out to the bore; a press-fit nut's hex pocket from the lug's face out to the nut's outer face, its flats
+        across the axis; the screw's hole on out through the wall - in the yoke leg's middle (sleeve_bolt_z)."""
+        sh, h = CFG.shell, CFG.housing
+        z, back, floor = sleeve_bolt_z(CFG), sleeve_end(CFG), sh.sleeve_nut_r + h.bolt_nut_thickness
+        assert z == pytest.approx(back + sh.yoke_leg / 2.0) and sorted(sh.sleeve_bolt_deg) == [0.0, 90.0, 180.0]
+        assert sh.sleeve_lug_r - CFG.motor.body_width / 2.0 == pytest.approx(1.35)
+
+        def at(deg, rr, side=0.0, dz=0.0):
+            """Inside at rr from the axis at deg (from +X toward +Y), `side` across, dz along the axis from z."""
+            ux, uy = math.cos(math.radians(deg)), math.sin(math.radians(deg))
+            return is_inside(carrier, rr * ux - side * uy, rr * uy + side * ux, z + dz)
+
+        for deg in (*sh.sleeve_bolt_deg, 270.0):
+            lug = deg != 270.0
+            assert at(deg, sh.sleeve_lug_r + 0.3, 5.0) == lug and not at(deg, sh.sleeve_lug_r - 0.3, 5.0)    # the face
+            assert not at(deg, sh.sleeve_lug_r + 1.0, sh.sleeve_lug_w / 2.0 + 0.3)                         # its width
+            if not lug:
+                continue
+            ends = back + sh.sleeve_lug_len - z                                         # its face's end, from z
+            assert at(deg, sh.sleeve_lug_r + 0.3, 5.0, ends - 0.3) and not at(deg, sh.sleeve_lug_r + 0.3, 5.0, ends + 0.6)
+            assert at(deg, sh.sleeve_lug_r + 2.3, 5.0, ends + 1.7) and not at(deg, sh.sleeve_lug_r + 1.7, 5.0, ends + 2.3)   # 45 deg
+            assert not at(deg, sh.sleeve_nut_r + 1.6) and not at(deg, sh.sleeve_lug_r + 0.3)               # the nut's pocket ...
+            assert not at(deg, sh.sleeve_nut_r, 0.0, sh.sleeve_nut_af / 2.0 - 0.2) and at(deg, sh.sleeve_nut_r, 0.0, sh.sleeve_nut_af / 2.0 + 0.2)
+            assert not at(deg, floor - 0.2, 3.0) and at(deg, floor + 0.2, 3.0)                           # ... to its floor
+            assert not at(deg, (floor + sh.sleeve_od / 2.0) / 2.0) and not at(deg, sh.sleeve_od / 2.0 - 0.2)   # the hole
+            assert at(deg, sh.sleeve_od / 2.0 - 0.2, (h.bolt_dia + CFG.tolerances.bolt_clearance_add) / 2.0 + 0.2)

@@ -24,7 +24,7 @@ from assemblies._occurrences import module_rows
 from lib import reference as R
 from lib.forearm import DEFAULT as _FOREARM
 from lib.forearm import clamp_points
-from lib.params import CYCLOIDAL_HUB_BOLT_COUNT, CYCLOIDAL_HUB_BOLT_DIA
+from lib.params import CYCLOIDAL_HUB_BOLT_COUNT, CYCLOIDAL_HUB_BOLT_DIA, CYCLOIDAL_SLEEVE_BOLT_COUNT
 from lib.wrist import DEFAULT as _WRIST
 from lib.wrist.layout import clamp_points as wrist_clamp_points
 from lib.yaw_coupler import DEFAULT as _YAW_COUPLER
@@ -38,6 +38,12 @@ EXTRAS = [
      "heads in the leg's counterbores, through the hub into its captive nuts (lib/yaw_coupler/params.py ForkParams)"),
     ("cycloidal_drive", f"M{CYCLOIDAL_HUB_BOLT_DIA:g} hex nut (ISO 4032) - captive in the output hub's flange",
      CYCLOIDAL_HUB_BOLT_COUNT, "drop them into the flange's inner face before pressing the hub through its 6814"),
+    ("cycloidal_drive", (f"M{CYCLOIDAL_HUB_BOLT_DIA:g} x {_YAW_COUPLER.fork.sleeve_screw_len:g} socket head cap screw (ISO 4762) - "
+                         "the motor plate's sleeve to the j1_coupler yoke's motor leg (j1_motor_leg)"), CYCLOIDAL_SLEEVE_BOLT_COUNT,
+     ("radially through the leg's ring, heads on its od, into the nuts in the sleeve's lugs (lib/yaw_coupler/params.py "
+      "ForkParams); after the foot's 2 M4s, snug - they pull the sleeve across the ring's 0.2 mm")),
+    ("cycloidal_drive", f"M{CYCLOIDAL_HUB_BOLT_DIA:g} hex nut (ISO 4032) - pressed into the motor plate's sleeve's lugs",
+     CYCLOIDAL_SLEEVE_BOLT_COUNT, "pressed into the lugs' pockets from inside the sleeve before the motor goes in"),
     (None, f"M4 x {_YAW_COUPLER.fork.motor_screw_len:g} socket head cap screw (ISO 4762) - j1_motor_leg onto j1_coupler's disc", 2,
      "heads in the leg's foot's counterbores, along the drive's axis into the nuts in the disc (lib/yaw_coupler/params.py ForkParams)"),
     (None, "M4 hex nut (ISO 4032) - in the slots in j1_coupler's disc, under j1_motor_leg's post, for its screws", 2,

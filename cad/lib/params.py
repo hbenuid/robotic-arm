@@ -185,6 +185,7 @@ CYCLOIDAL_HUB_OD = _DRIVE.output_hub.od                           # 70.3 [DESIGN
 CYCLOIDAL_HUB_PROUD = _DRIVE.output_hub.proud_above_housing       # 1 [DESIGN] hub face past the shell's hub end: on the yoke's leg
 CYCLOIDAL_HUB_FACE_Z = CYCLOIDAL_STACK_DEPTH + CYCLOIDAL_HUB_PROUD   # 62 [DESIGN] the hub's face on the yoke's hub-side leg
 CYCLOIDAL_SLEEVE_END_Z = _sleeve_end(_DRIVE)                      # -22 [DESIGN] the motor plate's sleeve's end on the yoke's motor-side leg
+CYCLOIDAL_SLEEVE_BOLT_COUNT = len(_DRIVE.shell.sleeve_bolt_deg)   # 3 [DESIGN] the yoke's motor leg's radial M4s into nuts in the sleeve's lugs
 CYCLOIDAL_HUB_BOLT_CIRCLE = _DRIVE.output_hub.arm_mount_bolt_circle_dia       # 50 [DESIGN] the hub's bolts into the yoke's leg ...
 CYCLOIDAL_HUB_BOLT_COUNT = _DRIVE.output_hub.arm_mount_bolt_count             # ... 4x M4 into captive nuts in the hub
 CYCLOIDAL_HUB_BOLT_ANGLE_OFFSET_DEG = _DRIVE.output_hub.arm_mount_angle_offset_deg # 45 (between the output pins)

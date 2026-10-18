@@ -72,7 +72,7 @@ seat on the mount, the kit's fit; `yaw_pulley_screws` / `yaw_pulley_nuts`, purch
 numbers no reference file holds for them - pieces, volume, bbox - and feature probes), `tests/coupler/` (`j3_coupler`: the
 LEGACY build's feature probes, the stub the roll drive's block repeats), `tests/yaw_coupler/` (`j1_coupler`: the LEGACY
 build's feature probes, the yoke on the port's housing - its bore, od, pillars, bolt circle; DEFAULT's fork on the
-drive's own axis - two legs past the shell's ends, the disc's draft up them, the hub on one, the other its own part round the motor sleeve, the lowered ring - and the motor leg's numbers), `tests/wrist/` (`wrist_link`: the LEGACY build's feature probes, the seat on the
+drive's own axis - two legs past the shell's ends, the disc's draft up them, the hub on one, the other its own part round the motor sleeve and bolted to it, the lowered ring - and the motor leg's numbers), `tests/wrist/` (`wrist_link`: the LEGACY build's feature probes, the seat on the
 coupler's flange, the end face on the NEMA 17 pattern, DEFAULT the wrist roll drive's frame on its plate; the wrist roll
 drive - its axis the wrist offset across the pitch axis, the stack, the stock belt, the rotor's walls, the press fits,
 clean pairs against `wrist_link`, the pancake's way in; `gripper_j3_connector`: LEGACY's two bodies, DEFAULT's bolted
