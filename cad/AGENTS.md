@@ -76,7 +76,8 @@ Every command, its flags and what it prints: `./cadtool help` (for people: the `
   after visible geometry changes; a change inside a housing (a bearing seat, a fit) also gets a cut, the cut faces
   capped — the XZ plane at Y = `<mm>` seen head on: `--display '{"clip":{"axis":"y","at":<mm>,"invert":true}}'
   --camera front` (`axis` `x` / `y` / `z`, `at` the plane's coordinate; without `invert` this camera sees the kept
-  half's uncut outside) — and `--focus '#<label>'` ghosts all but one occurrence. No `ocp-vscode`.
+  half's uncut outside; each cap takes its part's colour, `"partColors":false` gives one fill for all) — and
+  `--focus '#<label>'` ghosts all but one occurrence. No `ocp-vscode`.
 - `./cadtool inspect` is a local tool (`tools/step_facts.py`). Anything it doesn't answer is Python over
   `cadgen.read_scene(path)` (`.leaves()`, `(face,) = scene.resolve("#o1.2.f7")` then `face.shape()` — world-frame
   build123d geometry, the refs the viewer shows; `resolve` returns one selection per ref, so a copied multi-select line
