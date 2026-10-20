@@ -432,7 +432,7 @@ _PLUG_SWEEPS = {
 def test_the_mks_boards_keep_their_plug_room(link):
     """Every MKS board's three plugs keep MKS_PLUG_ROOM straight out from their headers (lib/motors.py) at every pose:
     nothing of the board's own link in the rooms, nor of the links that move relative to it over their joints' ranges
-    (_PLUG_SWEEPS; poses with the arm down in the table skipped). The boards' quarter turns on their motors
+    (_PLUG_SWEEPS; poses with a part they turn down in the table skipped). The boards' quarter turns on their motors
     (lib/mounts.py BOARD_TURNS) and the roll frame's plug slots (lib/forearm/layout.py plug_slots) keep them clear.
     Each link is posed once per angles of the joints that turn it, and a part's optimal bounding box is made only where
     its holder (`_holder`) cannot decide - once per pose of its link."""
@@ -459,8 +459,10 @@ def test_the_mks_boards_keep_their_plug_room(link):
         return boxes[id(shape)]
 
     def down(names, q: dict) -> bool:
-        """_in_table() over the parts of the links `names` at q."""
-        return any(box(*p).min.Y < BASE_BOTTOM_Y for name in names for p in at(name, q)
+        """_in_table() over the parts q turns: those of the links `names` with a joint turned between them and the base.
+        What it leaves where the capture put it is above the table - but the base, standing on it, has a box a float-noise
+        hair under its bottom face, which read as down in it and skipped every pose of a group that holds the base."""
+        return any(box(*p).min.Y < BASE_BOTTOM_Y for name in names if _chain(name, q) for p in at(name, q)
                    if p[2].min.Y < BASE_BOTTOM_Y + _EPS)
 
     for links, poses in _PLUG_SWEEPS[link]:
