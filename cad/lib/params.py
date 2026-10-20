@@ -108,10 +108,11 @@ ELBOW_BELT_LENGTH = _ELBOW_BELT                    # 280-2GT [DESIGN] the elbow 
 #                                                    idler (lib/upper_arm/params.py ElbowIdlerParams)
 from lib.forearm.params import DEFAULT as _FOREARM  # noqa: E402
 
-J2_MOTOR_WEB_FACE_Z = _FOREARM.web.z1              # 19 [REFERENCE] j2_link: the web's +Z face; the motor bolts through its slots
-J2_MOTOR_SLIDE_RANGE = _FOREARM.slide_range        # (-89, -81.5) [DESIGN] motor-axis x range the (shortened) slots allow
-J2_MOTOR_SLIDE_X = _FOREARM.motor_x                # -83.03 [DESIGN]: set by the stock WRIST_BELT_LENGTH (lib/belts.py centre_distance)
-WRIST_BELT_LENGTH = _FOREARM.roll_end.wrist_belt   # 280-2GT [DESIGN] the wrist-pitch belt (90T at the wrist, 20T on the motor), no idler
+J2_MOTOR_WEB_FACE_Z = _FOREARM.web.z1              # 19 [REFERENCE] j2_link: the web's +Z face; the motor bolts through its round holes
+WRIST_MOTOR_CENTRES = _FOREARM.motor_x - _FOREARM.web.wrist_x   # 80 [DESIGN] the wrist-pitch motor's axis from the wrist pivot
+J2_MOTOR_X = _FOREARM.motor_x                      # -85 [DESIGN] that axis in j2_link's frame (lib/forearm/params.py WRIST_MOTOR_CENTRES)
+WRIST_BELT_LENGTH = _FOREARM.roll_end.wrist_belt   # 280-2GT [DESIGN] the wrist-pitch belt (90T at the wrist, 20T on the motor), round its
+#                                                    idler (lib/forearm/params.py IdlerParams)
 J2_BELT_Z = _FOREARM.roll_end.wrist_belt_z         # 0.3 [REFERENCE] the wrist belt's mid-plane in j2_link's frame (the wrist 90T's band)
 # The motors' 20T pulleys (the vendor 20T: its tooth band t20_hub from its hub face) on their shafts, their bands level
 # with the driven pulleys' - each belt's plane (lib/mounts.py MOTOR_PULLEY_MOUNTS, tests/test_mounts.py):
@@ -231,11 +232,9 @@ ELBOW_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS
 WRIST_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _COUPLER.pulley_screw_len)         # 22.1, 4x M4x45
 YAW_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _YAW_COUPLER.hub.pulley_screw_len)   # 20.1, 4x M4x40
 PULLEY_NUTS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * nut_volume(M4_NUT)                                              # 3.0, 4x M4 (each joint)
-# the wrist idler's axle and its nut (parts/joints/wrist_idler_{screw,nut}, UNPLACED; lib/forearm/params.py IdlerParams), likewise
-from lib.forearm.params import IdlerParams as _IdlerParams  # noqa: E402
-
-WRIST_IDLER_SCREW_MASS_G = STEEL_DENSITY * shcs_volume(_IdlerParams().screw, _IdlerParams().screw_len)   # 5.0, M5x20
-WRIST_IDLER_NUT_MASS_G = STEEL_DENSITY * nut_volume(_IdlerParams().nut)                                   # 1.3, M5
+# the wrist belt's tensioner's axle and its nut (parts/joints/wrist_idler_{screw,nut}; lib/forearm/params.py IdlerParams), likewise
+WRIST_IDLER_SCREW_MASS_G = STEEL_DENSITY * shcs_volume(_FOREARM.idler.screw, _FOREARM.idler.screw_len)   # 5.0, M5x20
+WRIST_IDLER_NUT_MASS_G = STEEL_DENSITY * nut_volume(_FOREARM.idler.nut)                                   # 1.3, M5
 # the roll belt's tensioner's axle and its nut (parts/joints/roll_idler_{screw,nut}; lib/forearm/params.py RollIdlerParams)
 ROLL_IDLER_SCREW_MASS_G = STEEL_DENSITY * shcs_volume(_FOREARM.drive.idler.screw, _FOREARM.drive.idler.screw_len)   # 5.8, M5x25
 ROLL_IDLER_NUT_MASS_G = STEEL_DENSITY * nut_volume(_FOREARM.drive.idler.nut)                                       # 1.3, M5
@@ -277,9 +276,10 @@ SHOULDER_PITCH_LIMITS_DEG = (-120.0, 67.0)   # [DESIGN]
 # SHOULDER_PITCH_LIMITS_DEG was set over this range
 ELBOW_PITCH_LIMITS_DEG = (-47.0, 90.0)   # [DESIGN]
 # the GT2 belt at wrist_link: (lower, upper). The wrist roll drive's frame on the wrist plate sets the lower: its tower's
-# rear comes 1.49 mm off the wrist-pitch motor's board at -75 and touches it at -77, at any roll; a finger meets that
+# rear comes 1.56 mm off the wrist-pitch motor's board at -74 (0.44 at -75: the motor sits WRIST_MOTOR_CENTRES from the
+# wrist, nearer than the stock belt's own centre distance, for the wrist belt's idler), at any roll; a finger meets that
 # motor near +129 at roll 0 / 180 (tests/test_sweeps.py; docs/open_issues.md)
-WRIST_PITCH_LIMITS_DEG = (-75.0, 125.0)   # [DESIGN]
+WRIST_PITCH_LIMITS_DEG = (-74.0, 125.0)   # [DESIGN]
 # the forearm roll: 2 deg short of its printed hard stop - the lug on the roll shaft's flange meets the post on the
 # frame's tower at +/- 168.3 (lib/forearm/params.py stop_deg_width; tests/test_sweeps.py holds it between the limit
 # and 180 - stop_deg_width), which keeps the cables from winding

@@ -1,9 +1,8 @@
 """wrist_idler_nut - purchased (COTS) part: the wrist idler's M5 hex nut (ISO 4032), in j2_link's web.
 
-NOT PLACED (UNPLACED below): the wrist belt has no idler. With one (lib/forearm/params.py IdlerParams, a
-ForearmConfig.idler) it sits on the floor of its channel down from the web's top face (IdlerParams.nut_floor), its flats
-across the forearm's x against the channel's walls - it slides along y with the idler's axle (wrist_idler_screw) and
-cannot turn.
+In the arm: one, in j2_link's web (lib/forearm/params.py IdlerParams; lib/mounts.py WRIST_IDLER_MOUNTS): on the floor
+of its channel down from the web's top face (IdlerParams.nut_floor), its flats across the forearm's x against the
+channel's walls - it slides along y with the idler's axle (wrist_idler_screw) and cannot turn.
 
 No catalog model (none adopted), no SolidWorks export and NO reference
 file: a pattern part with no reference (lib/reference.py NO_REFERENCE) - its envelope IS the geometry (lib/fasteners.py
@@ -29,8 +28,7 @@ COTS = True
 MASS_G = WRIST_IDLER_NUT_MASS_G   # [ESTIMATE] the modelled steel (lib/params.py)
 PURCHASE_SPEC = f"M{NUT.d:g} hex nut (ISO 4032)"
 PURCHASE_QTY = 1   # pieces per occurrence
-PURCHASE_NOTE = "in the channel in the forearm web's top, under the wrist motor's edge: drop it in before the motor"
-UNPLACED = "the wrist belt has no idler (its motor at the stock belt's centre distance): a ForearmConfig.idler places it again"
+PURCHASE_NOTE = "in the channel in the forearm web's top, beside the wrist motor: drop it in from the top face"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 

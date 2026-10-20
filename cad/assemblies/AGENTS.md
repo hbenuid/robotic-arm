@@ -58,8 +58,8 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
   under top-level `mounted`, `P.keys(mounted=True)`), checking each part's `lib/mounts.py AXES` axis against its joint
   axis (Recipe B). The extractor appends them on every run (`extract_placements.py --no-pancake` - the flag keeps this
   machine's bytes out of `vendor/nema17_pancake.step`); `mount_placements.py` alone is the merge mode that needs no
-  monolith (change a spin or a frame in `lib/mounts.py`, or a dimension a frame reads, e.g. `J2_MOTOR_SLIDE_X`, which
-  follows the stock `WRIST_BELT_LENGTH` → run it → re-derive the inertials). `assemblies/arm.py OCCURRENCES` / `GROUPS` and
+  monolith (change a spin or a frame in `lib/mounts.py`, or a dimension a frame reads, e.g. `J2_MOTOR_X`, which
+  follows `WRIST_MOTOR_CENTRES` → run it → re-derive the inertials). `assemblies/arm.py OCCURRENCES` / `GROUPS` and
   `robot/frames.py LINKS` list the keys like any other (roles mostly the joint names: below). `tests/test_mounts.py`
   re-checks the geometry: axis on the joint, mounting face on the host's pad, each bearing stack's contacts
   (`test_bearing_stacks`), the pulley bolts' seats (`test_pulley_bolts_clamp_their_joints`) and reach

@@ -1,10 +1,9 @@
 """wrist_idler_screw - purchased (COTS) part: the wrist idler's axle, an M5 socket head cap screw (ISO 4762).
 
-NOT PLACED (UNPLACED below): the wrist belt has no idler. With one (lib/forearm/params.py IdlerParams, a
-ForearmConfig.idler): its head under the idler, its head's bearing face on the idler's bottom face, the shank up through
-the idler, the rib under j2_link's web and the web's slot into the nut held in the web's top (wrist_idler_nut); turned
-from below to clamp the idler where the belt is tight. Length: IdlerParams.screw_len, its tip under the wrist motor's
-face.
+In the arm: one, under j2_link's web (lib/forearm/params.py IdlerParams; lib/mounts.py WRIST_IDLER_MOUNTS): its head's
+bearing face on the idler's bottom face (gt2_idler_20t#3), the shank up through the idler, the rib under the web and the
+web's slot into the nut held in the web's top (wrist_idler_nut); turned from below to clamp the idler where the belt is
+tight. Length: IdlerParams.screw_len, its tip at the nut's top face.
 
 No catalog model (none adopted), no SolidWorks export and NO reference
 file: a pattern part with no reference (lib/reference.py NO_REFERENCE) - its envelope IS the geometry (lib/fasteners.py
@@ -29,7 +28,6 @@ MASS_G = WRIST_IDLER_SCREW_MASS_G   # [ESTIMATE] the modelled steel (lib/params.
 PURCHASE_SPEC = f"M{SCREW.d:g} x {LENGTH:g} socket head cap screw (ISO 4762)"
 PURCHASE_QTY = 1   # pieces per occurrence
 PURCHASE_NOTE = "the wrist idler's axle: up from under the idler through the forearm's web into its nut"
-UNPLACED = "the wrist belt has no idler (its motor at the stock belt's centre distance): a ForearmConfig.idler places it again"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 

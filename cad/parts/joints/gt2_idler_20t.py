@@ -5,17 +5,17 @@ No vendor model (step.parts' 5 mm-bore idlers are one generic model, not this on
 SolidWorks export: a NATIVE COTS part (lib/reference.py NATIVE_COTS) - its envelope IS the geometry, built from the
 seller's drawing, and its reference is that envelope (reference/native/gt2_idler_20t.step,
 tools/reference/import_native.py). Frame: axis on Z, standing on z=0.
-Dimensions: lib/belts.py GT2_IDLER_*. In the arm: x3 - the roll belt's tensioner, in forearm_roll_drive
+Dimensions: lib/belts.py GT2_IDLER_*. In the arm: the roll belt's tensioner, in forearm_roll_drive
 (lib/forearm/params.py RollIdlerParams) - on the riser on the roll frame's front face, on an M5 SHCS down from its top
 (roll_idler_screw) into a nut under the face (roll_idler_nut), slid along N to tension the belt; and the elbow belt's
 (gt2_idler_20t#1, lib/upper_arm/params.py ElbowIdlerParams) - under j1_link's slab below its printed spacer
 (elbow_idler_spacer), on an M5 SHCS up from under it (elbow_idler_screw) into a nut in a slot down from the slab's top
 face (elbow_idler_nut), slid along the link's Z; and the base_yaw belt's (gt2_idler_20t#2, lib/base/params.py
 YawIdlerParams) - on base_motor_mount's plate on its printed spacer (yaw_idler_spacer), on an M5 SHCS down from its top
-(yaw_idler_screw) into a nut between two rails under the plate (yaw_idler_nut), slid across the belt. lib/forearm/params.py
-IdlerParams keeps the wrist mount it had (an M5 SHCS up from under it, wrist_idler_screw, through a rib and slot under
-j2_link's web into a nut in the web's top, wrist_idler_nut), unplaced: the wrist belt's tensioner is still open
-(docs/open_issues.md).
+(yaw_idler_screw) into a nut between two rails under the plate (yaw_idler_nut), slid across the belt; and the wrist
+belt's (gt2_idler_20t#3, lib/forearm/params.py IdlerParams) - under j2_link's web, on an M5 SHCS up from under it
+(wrist_idler_screw) through a rib and a slot into a nut in a channel down from the web's top face (wrist_idler_nut), slid
+across the forearm.
 """
 import pathlib
 

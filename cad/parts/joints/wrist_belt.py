@@ -1,13 +1,14 @@
 """wrist_belt - purchased (COTS) part: the wrist-pitch belt, a closed GT2 (2GT) belt, 6 mm, WRIST_BELT_LENGTH long -
 one of the multipack lengths (lib/belts.py STANDARD_2GT_LENGTHS).
 
-It runs under j2_link's web from the wrist motor's 20T (gt2_pulley_20t#4) to the wrist 90T: the motor sits at the
-stock length's centre distance (J2_MOTOR_SLIDE_X), no idler; sliding the motor along its slots tensions it.
+It runs under j2_link's web from the wrist motor's 20T (gt2_pulley_20t#4) to the wrist 90T, round its tensioner: the
+motor sits WRIST_MOTOR_CENTRES from the wrist, nearer than the stock length's own centre distance, and an idler on the
+belt's back (gt2_idler_20t#3, lib/forearm/params.py IdlerParams) takes up the rest.
 
 No catalog model, no export and NO reference file: a purchased part with no reference (lib/reference.py
 NO_REFERENCE) - its envelope IS the geometry: a smooth band round its loop (lib/pulley/belt.py closed_belt(); no
 teeth), and tests/test_belts.py locks its numbers. Frame (lib/forearm/layout.py wrist_belt_loop()): the motor's 20T on
-the origin, the 90T on +X (an idler between them on the run leaving the 20T when ForearmConfig.idler is set), the
+the origin, the 90T on +X, the idler between them on the run leaving the 20T, the
 band centred on z=0; the arm places it by
 wrist_belt_frame() (lib/mounts.py BELT_MOUNTS).
 """
@@ -28,7 +29,7 @@ COTS = True
 MASS_G = LENGTH * GT2_BELT_MASS_G_PER_M / 1000.0   # [ESTIMATE] lib/belts.py
 PURCHASE_SPEC = f"{LENGTH}-2GT closed GT2 belt, {GT2_BELT_W:g} mm"
 PURCHASE_QTY = 1   # pieces per occurrence
-PURCHASE_NOTE = "the wrist-pitch belt: a GT2 multipack length, under the forearm's web (no idler: the motor's slots tension it)"
+PURCHASE_NOTE = "the wrist-pitch belt: a GT2 multipack length, under the forearm's web, round its idler"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 
