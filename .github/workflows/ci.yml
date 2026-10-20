@@ -3,7 +3,10 @@
 # no hash gate (STEP bytes differ per machine), no snapshots, no commits. Manual only: Actions tab -> CI -> Run
 # workflow, or `gh workflow run ci.yml --ref <branch>` - when to run it: root AGENTS.md "CI".
 # The jobs run side by side, each on a runner of its own (a public repo's ubuntu-24.04: 4 vCPUs, 16 GB): the run takes
-# as long as its slowest job - the slow lane's three parts and the arm build - not their sum.
+# as long as its slowest job - the arm build, then the slow lane's three parts - not their sum. A CAD job starts a
+# Python process per build worker and per pytest worker, so its venv is synced with compiled bytecode (`cadtool`'s
+# PYTHONDONTWRITEBYTECODE keeps each from writing its own), and the jobs that read the committed STEPs compile their
+# trees in one process first (`./cadtool compile`): a cold store otherwise compiles each in a process of its own.
 name: CI
 
 on:
@@ -41,7 +44,7 @@ jobs:
       - name: CAD - sync + OCP kernel check
         working-directory: cad
         run: |
-          uv sync --frozen
+          uv sync --frozen --compile-bytecode
           uv run --frozen python -c "import OCP.gp"
       - name: CAD - lint
         working-directory: cad
@@ -80,8 +83,11 @@ jobs:
       - name: CAD - sync
         working-directory: cad
         run: |
-          uv sync --frozen
+          uv sync --frozen --compile-bytecode
           echo "runner: $(nproc) vCPUs, $(free -g | awk '/^Mem:/ {print $2}') GB"
+      - name: CAD - compile the committed STEPs
+        working-directory: cad
+        run: ./cadtool compile
       - name: CAD - slow tests
         working-directory: cad
         run: ./cadtool pytest -m slow -n 4 -p no:cacheprovider -rs --durations=15 ${{ matrix.args }}
@@ -99,7 +105,10 @@ jobs:
 
       - name: CAD - sync
         working-directory: cad
-        run: uv sync --frozen
+        run: uv sync --frozen --compile-bytecode
+      - name: CAD - compile the committed STEPs
+        working-directory: cad
+        run: ./cadtool compile
       - name: CAD - build the arm
         working-directory: cad
         run: ./cadtool gen assemblies/arm.py
