@@ -5,7 +5,8 @@ roll drive's motor + board first) stay off the base and the shoulder over the el
 limits the wrist body and the gripper stay off the forearm at any roll; at the elbow's limits the forearm, the wrist and
 the gripper stay off the upper arm at any roll and wrist pitch; at any yaw the arm at the shoulder's limits stays off the
 base (its motor mount stands out on one side); the forearm and the wrist roll's limits stop short of their printed hard
-stops; the gripper rolls clear of the wrist roll drive's frame and the forearm.
+stops; the gripper rolls clear of the wrist roll drive's frame and the forearm; every MKS board's plugs keep their room
+in front of their headers over the joints' ranges (an overlap, not a distance: `_plug_overlap`).
 Exact distances (BRepExtrema) at poses on the limits, for every part pair that could come nearer than the limit: a pair
 whose boxes are the limit apart is not measured - the world boxes, each part's own box turned with it (`_oriented`) and,
 for a part turning about one joint through many angles, its box in that joint's frame (`_hulls`); a pose with the arm
@@ -327,3 +328,105 @@ def test_the_forearm_roll_limit_stops_short_of_the_hard_stop():
         (_, at_nominal), = _posed(shaft, ("forearm_roll", sign * nominal))
         vol = interference(at_nominal, block)
         assert vol > 1.0, f"roll {sign * nominal:+.0f}: the lug only {vol:.2f} mm^3 into the post - no stop"
+
+
+def _steps(lo: float, hi: float, step: int) -> list[float]:
+    """Every `step` degrees between the limits, and the limits."""
+    return sorted({lo, hi, *range(math.ceil(lo / step) * step, math.floor(hi) + 1, step)})
+
+
+def _grid(**axes) -> list[dict]:
+    """Every combination of the joints' angles: _grid(elbow_pitch=[...], forearm_roll=[...])."""
+    out = [{}]
+    for name, angles in axes.items():
+        out = [{**q, name: a} for q in out for a in angles]
+    return out
+
+
+def _chain(link: str, q: dict) -> tuple:
+    """The (joint, degrees) turns between `link` and the base, the distal joint first (as _at() turns a link)."""
+    turns, at = [], link
+    while at in _PARENT:
+        if q.get(_PARENT[at].name):
+            turns.append((_PARENT[at].name, q[_PARENT[at].name]))
+        at = _PARENT[at].parent
+    return tuple(turns)
+
+
+def _plug_rooms(link: str) -> list:
+    """(label, room in W) of every MKS board's three plugs on a robot link: each header's outline carried MKS_PLUG_ROOM
+    straight out from its face (lib/motors.py), on the board as its mount turned it."""
+    rooms = []
+    for key in F.LINKS[link]:
+        for part, _role, world in world_rows(key):
+            if part != "mks_servo42d":
+                continue
+            for name, ((x0, y0, z0, x1, y1, z1), (ux, uy)) in PARAMS.MKS_SERVO42D_HEADERS.items():
+                d = PARAMS.MKS_PLUG_ROOM[name]
+                xa, xb = ((x1, x1 + d) if ux > 0 else (x0 - d, x0)) if ux else (x0, x1)
+                ya, yb = ((y1, y1 + d) if uy > 0 else (y0 - d, y0)) if uy else (y0, y1)
+                room = Solid.make_box(xb - xa, yb - ya, z1 - z0).moved(Location((xa, ya, z0)))
+                rooms.append((f"{key}:{part} {name}", room.moved(placement_at(part, world))))
+    return rooms
+
+
+def _plug_overlap(room, part) -> float:
+    """interference(room, part); a hit measured again with the room moved 0.01 mm two ways and the median kept (as
+    _distance(): a boolean that misfires at one exact pose)."""
+    v = interference(room, part)
+    if v < 0.01:
+        return v
+    return sorted([v, *(interference(_moved(room, Location(tuple(0.01 * c for c in j))), part) for j in _JITTER[:2])])[1]
+
+
+_SH, _EL, _WR = PARAMS.SHOULDER_PITCH_LIMITS_DEG, PARAMS.ELBOW_PITCH_LIMITS_DEG, PARAMS.WRIST_PITCH_LIMITS_DEG
+_FR, _YAW = PARAMS.FOREARM_ROLL_LIMIT_DEG, PARAMS.BASE_YAW_LIMIT_DEG
+# Per board link: the links that move relative to it, with the poses of the joints between - group by group.
+_PLUG_SWEEPS = {
+    # the base's rooms stay inside the motor mount and the base, which the arm keeps off (the yaw test above)
+    "base_link": [(("base_link",), [{}])],
+    "shoulder_link": [
+        (("shoulder_link",), [{}]),
+        (("base_link",), _grid(base_yaw=_steps(-_YAW, _YAW, 15))),
+        (("upper_arm_link",), _grid(shoulder_pitch=_steps(*_SH, 10))),
+        (BEYOND_ELBOW, _grid(shoulder_pitch=_steps(*_SH, 30), elbow_pitch=_steps(*_EL, 30), forearm_roll=[-_FR, 0.0, _FR]))],
+    "upper_arm_link": [
+        (("upper_arm_link",), [{}]),
+        (("shoulder_link", "base_link"), _grid(base_yaw=[0.0, 90.0, 180.0], shoulder_pitch=_steps(*_SH, 15))),
+        (("elbow_link",), _grid(elbow_pitch=_steps(*_EL, 5))),
+        (BEYOND_ELBOW[1:], _grid(elbow_pitch=_steps(*_EL, 15), forearm_roll=_steps(-_FR, _FR, 45),
+                                 wrist_pitch=[_WR[0], 0.0, _WR[1]]))],
+    "elbow_link": [
+        (("elbow_link",), [{}]),
+        (("upper_arm_link", "shoulder_link"), _grid(elbow_pitch=_steps(*_EL, 10))),
+        (BEYOND_ELBOW[1:], _grid(forearm_roll=_steps(-_FR, _FR, 30), wrist_pitch=_steps(*_WR, 50)))],
+    "forearm_link": [
+        (("forearm_link",), [{}]),
+        (BEYOND_ELBOW[2:], _grid(wrist_pitch=_steps(*_WR, 5), wrist_roll=[0.0, 90.0, 180.0, 270.0])),
+        (("elbow_link", "upper_arm_link"), _grid(forearm_roll=_steps(-_FR, _FR, 5), elbow_pitch=[_EL[0], 0.0, _EL[1]])),
+        (("shoulder_link", "base_link"), _grid(forearm_roll=_steps(-_FR, _FR, 45), elbow_pitch=_steps(*_EL, 30),
+                                               shoulder_pitch=_steps(*_SH, 30)))],
+}
+
+
+@pytest.mark.parametrize("link", list(_PLUG_SWEEPS))
+def test_the_mks_boards_keep_their_plug_room(link):
+    """Every MKS board's three plugs keep MKS_PLUG_ROOM straight out from their headers (lib/motors.py) at every pose:
+    nothing of the board's own link in the rooms, nor of the links that move relative to it over their joints' ranges
+    (_PLUG_SWEEPS; poses with the arm down in the table skipped). The boards' quarter turns on their motors
+    (lib/mounts.py BOARD_TURNS) and the roll frame's plug slots (lib/forearm/layout.py plug_slots) keep them clear."""
+    rooms = _plug_rooms(link)
+    assert rooms, link
+    boards = {label.split(" ")[0] for label, _room in rooms}   # the boards themselves (their own covers frame the headers)
+    for links, poses in _PLUG_SWEEPS[link]:
+        for q in poses:
+            others = _boxed([p for p in _at(links, q) if p[0] not in boards])
+            turns = _chain(link, q)
+            if q and (_in_table(others) or _in_table(_boxed(_posed(_link_parts(link), *turns)))):
+                continue
+            for rl, room, rbb in _boxed(_posed(rooms, *turns)):
+                for pl, part, pbb in others:
+                    if _box_gap(rbb, pbb) > 0.0:
+                        continue
+                    v = _plug_overlap(room, part)
+                    assert v < 0.01, f"{rl}: {pl} {v:.2f} mm^3 in the plug's room at {q}"

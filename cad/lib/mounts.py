@@ -18,7 +18,8 @@ like any SolidWorks occurrence. The drive's own board is placed by assemblies/cy
 Part frame of the motor: mounting face z=0, body -Z, shaft +Z, D-flat +Y, cable connector on -Y. So a
 mount frame puts +Z on the joint axis (the shaft through the pad toward the driven pulley) and its origin
 on the pad face at the bolt-pattern centre; the spin about the axis (90 deg steps, the pattern is square)
-only sets which way the connector faces [ESTIMATE]. The board's frame is the motor's, shifted to the rear face.
+only sets which way the connector faces [ESTIMATE]. The board's frame is the motor's, shifted to the rear face
+and turned on it a quarter turn at a time (BOARD_TURNS): where its plug headers face.
 
 A MODULE mount (ModuleMount, MODULE_MOUNTS) does the same for a designed module (assemblies/<module>.py,
 lib/reference.py DESIGNED_MODULES) whose pose no SolidWorks node gives - the forearm and wrist roll drives: its frame in
@@ -140,13 +141,21 @@ AXES: dict[str, tuple[tuple[float, float, float], bool]] = {
 }
 
 
-def board_frame(body_length: float) -> tuple:
-    """The board's frame in its motor's: z=0 at the motor's rear face (the board stack in -Z)."""
-    return ((0.0, 0.0, -body_length), (0.0, 0.0, 0.0))
+def board_frame(body_length: float, turn_deg: float = 0.0) -> tuple:
+    """The board's frame in its motor's: z=0 at the motor's rear face (the board stack in -Z), turned turn_deg about the
+    motor axis - the board bolts on through the motor's square screw pattern at any quarter turn."""
+    return ((0.0, 0.0, -body_length), (0.0, 0.0, turn_deg))
 
 
-BOARD_FRAME_48 = board_frame(CYCLOIDAL_MOTOR_BODY_LEN)   # behind a 48 mm motor
-BOARD_FRAME_40 = board_frame(NEMA17_40_BODY_LEN)          # behind a 40 mm motor
+# Each board's quarter turn on its motor: it sets where the plug headers face (lib/motors.py MKS_SERVO42D_HEADERS), each
+# turned so its plugs keep MKS_PLUG_ROOM at every pose (tests/test_sweeps.py test_the_mks_boards_keep_their_plug_room).
+BOARD_TURNS = {
+    "mks_servo42d#1": 0.0,      # [DESIGN] the side plugs toward the mount's side walls, the motor's out into the base
+    "mks_servo42d#2": 90.0,     # [DESIGN] the side plugs across the arm: along it the drive's shell ring and the roll
+                                #          block (at the elbow's lower limit) stand closer than the plugs need
+    "mks_servo42d#3": 270.0,    # [DESIGN] the motor's plug toward the roll belt's tensioner, which the forearm's roll
+                                #          brings past it: a side plug there came short
+}
 
 
 @dataclass(frozen=True)
@@ -179,19 +188,22 @@ MOTOR_MOUNTS: tuple[Mount, ...] = (
           (BASE_MOTOR_PATTERN_CENTRE, (-90.0, 0.0, 270.0)),
           "the 48 mm motor under the motor mount's plate (in the base's part frame), shaft up through it, on its round "
           "holes; motor + board end BASE_MOTOR_TABLE_CLEAR above the base's bottom face; connector toward +X [ESTIMATE]"),
-    Mount("mks_servo42d#1", BOARD, "nema17_48mm#1", "base_link", "base_yaw", BOARD_FRAME_48),
+    Mount("mks_servo42d#1", BOARD, "nema17_48mm#1", "base_link", "base_yaw",
+          board_frame(CYCLOIDAL_MOTOR_BODY_LEN, BOARD_TURNS["mks_servo42d#1"])),
     Mount("nema17_40mm#2", MOTOR_40, "j1_link#1", "upper_arm_link", "elbow_pitch",
           ((_UPPER_ARM.pad.x, J1_MOTOR_PAD_FACE_Y, 0.0), (90.0, 0.0, 0.0)),
           "on the web across j1_link's motor hole (on its 4 holes), ELBOW_MOTOR_CENTRES short of the elbow axis, the body "
           "+N down the hole through the slab, shaft -N through the web; connector toward -Z [ESTIMATE] (toward the elbow "
           "the roll block would pass it 0.2 mm off)"),
-    Mount("mks_servo42d#2", BOARD, "nema17_40mm#2", "upper_arm_link", "elbow_pitch", BOARD_FRAME_40),
+    Mount("mks_servo42d#2", BOARD, "nema17_40mm#2", "upper_arm_link", "elbow_pitch",
+          board_frame(NEMA17_40_BODY_LEN, BOARD_TURNS["mks_servo42d#2"])),
     Mount("nema17_40mm#3", MOTOR_40, "j2_link#1", "forearm_link", "wrist_pitch",
           ((J2_MOTOR_SLIDE_X, 0.0, J2_MOTOR_WEB_FACE_Z), (180.0, 0.0, 180.0)),
           "on j2_link's web (+Z face), shaft -N; slide position J2_MOTOR_SLIDE_X (the stock wrist belt's); connector sideways toward "
           "j2_link's -Y - away from the elbow axis once the forearm is turned -, its plug's room beside the motor (toward the "
           "wall the motor would stop short of the belt's centre distance)"),
-    Mount("mks_servo42d#3", BOARD, "nema17_40mm#3", "forearm_link", "wrist_pitch", BOARD_FRAME_40),
+    Mount("mks_servo42d#3", BOARD, "nema17_40mm#3", "forearm_link", "wrist_pitch",
+          board_frame(NEMA17_40_BODY_LEN, BOARD_TURNS["mks_servo42d#3"])),
 )
 # The belt joints' motor-side pulleys, on their motors' shafts (the vendor 20T: its bore along its +X, its hub face at
 # x 0, hub toward the motor), each its *_20T_HUB_Z out from the motor's face - its tooth band level with the driven

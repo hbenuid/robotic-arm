@@ -44,7 +44,8 @@ thrust stack under `j1_coupler`),
 on the limits - the upper arm over the shoulder's range against the fork and the base, the shoulder's upper limit over
 the elbow's range, the wrist at its limits, the forearm and the gripper at the elbow's limits at any roll and wrist
 pitch, the shoulder's limits at any yaw against the base, the forearm and the wrist roll's limits short of their hard
-stops, the gripper rolling clear of the wrist; poses with the arm down in the table skipped),
+stops, the gripper rolling clear of the wrist, every MKS board's plug room over the joints' ranges; poses with the
+arm down in the table skipped),
 `test_lazy_kernel.py` (a fresh interpreter imports every template, part, assembly and link model without
 loading `build123d` / `OCP`; names the first offender; its assembly list is kept by hand: `assemblies/AGENTS.md`),
 `source_checks.py` (the shared `runs_its_model()` check that a model file ends with its build call),

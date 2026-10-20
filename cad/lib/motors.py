@@ -46,6 +46,16 @@ MKS_SERVO42D_STACK = MKS_SERVO42D_STANDOFF + MKS_SERVO42D_BOARD_STACK   # 14.1 r
 MKS_SERVO42D_W = 43.0           # [REFERENCE] cover square
 MKS_SERVO42D_SCREW_REACH = 19.6 # [REFERENCE] the 4x M3x30 reach this far into the motor's through-holes (+Z of the rear face)
 MKS_SERVO42D_MASS_G = 35.0      # [ESTIMATE] PCB + cover + 4 screws + 4 standoffs; verify on the unit
+# The board's three plug headers (vendor/mks_servo42d.step's three connector bodies), in the board's frame: per header
+# its box (x0, y0, z0, x1, y1, z1) and the way its plug goes in, (x, y) - the two on the board's sides and the motor
+# cable's on -Y, the motor's own connector side. The plugs stay in as the arm moves: each needs MKS_PLUG_ROOM of
+# straight room out from its header's face, its outline wide, at every pose (tests/test_sweeps.py).
+MKS_SERVO42D_HEADERS = {        # [REFERENCE]
+    "side_neg_x": ((-20.5, -8.0, -12.9, -14.5, 5.0, -4.6), (-1, 0)),
+    "side_pos_x": ((14.5, -8.0, -12.9, 20.5, 8.0, -4.6), (1, 0)),
+    "motor": ((-5.75, -20.5, -12.9, 5.75, -14.5, -4.6), (0, -1)),
+}
+MKS_PLUG_ROOM = {"side_neg_x": 10.0, "side_pos_x": 10.0, "motor": 5.0}   # [MEASURE] each plug and its cable's bend
 
 # The drive motor's parameters (lib/cycloidal/params.py MotorParams: 31 mm bolt square, Ø22 x 2 pilot,
 # Ø5 x 22 D-shaft - every kit motor in the arm carries that interface) with the 40 mm body.

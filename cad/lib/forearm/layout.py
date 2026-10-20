@@ -6,6 +6,8 @@ import math
 from lib.belts import GT2_IDLER_WIDTH, GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, idler_on_run, pulley_circle
 from lib.fasteners import M3_PITCH
 from lib.forearm.params import DEFAULT, ForearmConfig
+from lib.motors import MKS_PLUG_ROOM, MKS_SERVO42D_HEADERS
+from lib.units import NUDGE
 
 
 def disc_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
@@ -211,6 +213,28 @@ def motor_pocket(cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float, flo
     d, S = cfg.drive, stack_positions(cfg)
     half = max(d.motor.body_width, d.board_w) / 2.0 + d.pad_slot_len / 2.0 + d.pocket_clear
     return (S["y_motor"] - half, S["y_motor"] + half, S["z_motor_board"] - d.board_stack - d.pocket_rear, S["z_motor_face"])
+
+
+def plug_slots(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float, float, float, float, float]]:
+    """(x0, x1, y0, y1, z0, z1) of the two plug slots off the motor's pocket, one at each of the MKS board's side headers
+    (lib/motors.py MKS_SERVO42D_HEADERS, the board turned motor_spin_deg with the motor): plug_clear round the header's
+    outline, from its face along Y - the tension slide's line - MKS_PLUG_ROOM past it with the motor at the slide's far
+    end and plug_spare more, and from the header up through the open +N face."""
+    d, S = cfg.drive, stack_positions(cfg)
+    a = math.radians(d.motor_spin_deg)
+    c, s = round(math.cos(a)), round(math.sin(a))      # the board's quarter turn about the motor axis
+    slots = []
+    for name in ("side_neg_x", "side_pos_x"):
+        (x0, y0, z0, x1, y1, z1), (ux, uy) = MKS_SERVO42D_HEADERS[name]
+        xs = [S["x_motor"] + c * x - s * y for x in (x0, x1) for y in (y0, y1)]
+        ys = [S["y_motor"] + s * x + c * y for x in (x0, x1) for y in (y0, y1)]
+        out = s * ux + c * uy                            # the plug's way in, turned: along Y (+1 / -1)
+        assert c * ux - s * uy == 0 and abs(out) == 1, "the side plugs face along the tension slide"
+        face = max(ys) if out > 0 else min(ys)
+        reach = face + out * (MKS_PLUG_ROOM[name] + d.pad_slot_len / 2.0 + d.plug_spare)
+        slots.append((min(xs) - d.plug_clear, d.block_x[1] + NUDGE, min(face, reach), max(face, reach),
+                      S["z_motor_board"] + z0 - d.plug_clear, S["z_motor_board"] + z1 + d.plug_clear))
+    return slots
 
 
 def pad_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:

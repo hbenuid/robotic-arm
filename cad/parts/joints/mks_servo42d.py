@@ -10,6 +10,11 @@ lib/mounts.py) and the cycloidal drive's 48 mm motor (assemblies/cycloidal_drive
 Frame: z=0 at the MOTOR's rear face, the standoffs + board in -Z (cover face at z=-14.1), the screws
 reaching to z=+19.6 into the motor's through-holes; the board square is centred on the motor axis
 and its edges are parallel to the motor's (the connector side of the PCB on -Y, like the motor's).
+Its three plug headers - one on each side (+-X), the motor cable's on -Y - are lib/motors.py
+MKS_SERVO42D_HEADERS; their plugs stay in as the arm moves and need MKS_PLUG_ROOM out from each header at
+every pose (tests/test_sweeps.py test_the_mks_boards_keep_their_plug_room). The kit's screws go through the
+motor's square pattern, so a board sits on its motor at any quarter turn: lib/mounts.py BOARD_TURNS for
+the mounted ones, the drives' rows for theirs.
 
 SolidWorks product: 'nema17x40_with_mks' (Servo42D_Assem + standoffs + screws)
 Source export:      mks/nema17x40_with_mks.step (lib.reference.MKS_EXPORT_NAME)
