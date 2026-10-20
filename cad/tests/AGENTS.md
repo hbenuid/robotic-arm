@@ -84,8 +84,9 @@ surfaces, volume, bbox - and feature probes;
 `tests/forearm/` (the forearm: the LEGACY
 build vs the SolidWorks part + feature probes, the roll end, the roll drive - axis through the wrist centre, stack, press fits, clean pairs,
 clearances in the arm with the elbow folded; the roll belt's tensioner (`test_roll_idler`: the stock belt round it, its
-riser, slot and nut channel on the roll frame, its axle's and nut's numbers - no reference) and the unplaced wrist
-idler kit (`test_wrist_idler`: its axle's and nut's numbers, the loop with it); `helpers.in_host()` places any
+riser, slot and nut channel on the roll frame, its axle's and nut's numbers - no reference) and the wrist belt's
+(`test_wrist_idler`: the stock belt round it, the band of belts its slot takes, its stations, its axle's and nut's
+numbers - no reference -, its rib, slot and nut channel on `j2_link`, the kit's fit); `helpers.in_host()` places any
 occurrence in `j2_link`'s frame,
 `helpers.in_drive_frame()` in the roll drive's mount frame - `j2_link`'s before the forearm's turn,
 `lib/placements.py TURNS` - and `j2_link_in_drive_frame()` the turned `j2_link` in it). Geometry tests are

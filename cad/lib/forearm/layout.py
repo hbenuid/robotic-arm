@@ -58,12 +58,13 @@ def screws_under_the_web(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, floa
 
 
 def screw_channel(z: float, cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float, float]:
-    """(x0, x1, half_width, z_top) of the channel for the screw at height z: from the central motor slot's elbow-end
-    arc centre (the channel runs into the slot) to the wall, the head + channel_clear either side, open to the web's
-    underside up to the head's top + channel_clear."""
+    """(x0, x1, half_width, z_top) of the channel for the screw at height z: from the motor's pilot opening - the central
+    slot's elbow-end arc centre, or the round hole's centre - (the channel runs into it) to the wall, the head +
+    channel_clear either side, open to the web's underside up to the head's top + channel_clear."""
     r = cfg.roll_end
     reach = r.screw.head_dia / 2.0 + r.channel_clear
-    return cfg.slot.centre_x[1], elbow_end_x(cfg), reach, z + reach
+    x0 = cfg.slot.centre_x[1] if cfg.slot is not None else cfg.motor_x
+    return x0, elbow_end_x(cfg), reach, z + reach
 
 
 def end_nut_pocket(cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float, float]:
@@ -96,8 +97,8 @@ def clamp_nut_pocket(cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float,
 def wrist_belt_loop(cfg: ForearmConfig = DEFAULT, *, idler: bool = True) -> list[tuple[float, float, float]]:
     """The wrist belt's loop (lib/belts.py) in the belt's own frame: the motor's 20T on the origin, the wrist 90T on +X
     (the belt frame sits on the motor's axis at wrist_belt_z, turned 180 deg about Z from j2_link's: wrist_belt_frame());
-    with cfg.idler, the idler on the run leaving the 20T (local -Y), IdlerParams.along from the motor, pushed in till
-    the loop is RollEndParams.wrist_belt long."""
+    with cfg.idler, the tensioner on the run leaving the 20T (local -Y), IdlerParams.along from the motor, pushed in till
+    the loop is RollEndParams.wrist_belt long (the stock belt is longer than the open loop)."""
     loop = [pulley_circle(0.0, 0.0, GT2_PULLEY_20T_TEETH), pulley_circle(cfg.motor_x - cfg.web.wrist_x, 0.0, GT2_PULLEY_90T_TEETH)]
     if idler and cfg.idler is not None:
         loop.insert(1, idler_on_run(loop, 0, cfg.idler.along, cfg.roll_end.wrist_belt))

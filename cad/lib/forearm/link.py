@@ -103,18 +103,19 @@ def elbow_disc(cfg: ForearmConfig = DEFAULT):
 def idler_mount(body, cfg: ForearmConfig = DEFAULT):
     """`body` with the wrist idler's rib under the web (from the idler's top face up to the web), the M5 slot through
     the rib and the web, and the nut's channel (flats + nut_fit wide across x) from nut_floor up through the top face -
-    each centred on the idler's axis and running +/- travel along y."""
+    each on the idler's axis' line, running along y between IdlerParams.slot_y's ends."""
     w, i = cfg.web, cfg.idler
-    xi, yi = wrist_idler_xy(cfg)
+    xi, _ = wrist_idler_xy(cfg)
+    y0, y1 = i.slot_y
     z_rib = cfg.roll_end.wrist_belt_z + GT2_IDLER_WIDTH / 2.0     # the idler's top face
 
-    def along_y(length: float, width: float, z0: float, height: float):
-        return bd.Pos(xi, yi, z0) * bd.Rot(0.0, 0.0, 90.0) * bd.extrude(bd.SlotCenterToCenter(length, width), amount=height)
+    def along_y(width: float, z0: float, height: float):
+        return bd.Pos(xi, (y0 + y1) / 2.0, z0) * bd.Rot(0.0, 0.0, 90.0) * bd.extrude(bd.SlotCenterToCenter(y1 - y0, width), amount=height)
 
-    body = body + along_y(2.0 * i.travel, i.rib_w, z_rib, w.z0 - z_rib + NUDGE)
-    body = body - along_y(2.0 * i.travel, i.slot_w, z_rib - NUDGE, w.z1 - z_rib + 2.0 * NUDGE)
-    channel = (i.nut.af + i.nut_fit, 2.0 * i.travel + hex_circumdiameter(i.nut.af) + i.nut_fit)
-    return body - slab(channel[0], channel[1], w.z1 - i.nut_floor + NUDGE, xi, i.nut_floor, yi)
+    body = body + along_y(i.rib_w, z_rib, w.z0 - z_rib + NUDGE)
+    body = body - along_y(i.slot_w, z_rib - NUDGE, w.z1 - z_rib + 2.0 * NUDGE)
+    channel = (i.nut.af + i.nut_fit, y1 - y0 + hex_circumdiameter(i.nut.af) + i.nut_fit)
+    return body - slab(channel[0], channel[1], w.z1 - i.nut_floor + NUDGE, xi, i.nut_floor, (y0 + y1) / 2.0)
 
 
 def build_link(cfg: ForearmConfig = DEFAULT):
@@ -150,10 +151,18 @@ def build_link(cfg: ForearmConfig = DEFAULT):
     body = body - cylinder(b.seat_dia / 2.0, b.seat_z1 - b.lip_z[1] + top_out, wx, z0=b.lip_z[1])
     if b.recess_dia is not None:
         body = body - cylinder(b.recess_dia / 2.0, b.z1 - b.recess_z0 + NUDGE, wx, z0=b.recess_z0)
-    # the motor slide: the central slot and the two side slots through the web
-    body = body - stadium(s.centre_x[1] - s.centre_x[0], s.centre_w, w.thickness + 2 * NUDGE, sum(s.centre_x) / 2.0, w.z0 - NUDGE)
-    for sy in (s.side_y, -s.side_y):
-        body = body - bd.Pos(0.0, sy, 0.0) * stadium(s.side_x[1] - s.side_x[0], s.side_w, w.thickness + 2 * NUDGE, sum(s.side_x) / 2.0, w.z0 - NUDGE)
+    # the motor: on a slide - the central slot and the two side slots through the web - or on round holes, the pilot
+    # boss's and the 31 mm square's
+    if s is not None:
+        body = body - stadium(s.centre_x[1] - s.centre_x[0], s.centre_w, w.thickness + 2 * NUDGE, sum(s.centre_x) / 2.0, w.z0 - NUDGE)
+        for sy in (s.side_y, -s.side_y):
+            body = body - bd.Pos(0.0, sy, 0.0) * stadium(s.side_x[1] - s.side_x[0], s.side_w, w.thickness + 2 * NUDGE, sum(s.side_x) / 2.0, w.z0 - NUDGE)
+    if cfg.holes is not None:
+        h, m = cfg.holes, cfg.motor_x
+        body = body - cylinder(h.pilot_dia / 2.0, w.thickness + 2 * NUDGE, (m, 0.0), z0=w.z0 - NUDGE)
+        for sx in (-h.bolt_half, h.bolt_half):
+            for sy in (-h.bolt_half, h.bolt_half):
+                body = body - cylinder(h.bolt_dia / 2.0, w.thickness + 2 * NUDGE, (m + sx, sy), z0=w.z0 - NUDGE)
     # the wrist belt's idler (IdlerParams): the rib under the web its top bears on, the axle's slot through both, the
     # nut's channel down from the top face - all along y over the idler's travel
     if cfg.roll and cfg.idler is not None:

@@ -157,14 +157,14 @@ the shaft rear face down (its nut pockets open to the bed).
    wrist-pitch motor goes on: 4× M3 × 16 from the wall's wrist face through the spigot into the nuts; the bottom one
    goes into the channel under the web from the belt side, its key through the channel or the motor slot. A screw taken
    right out can drop its nut into the bore. The wrist-pitch motor's body stands in front of three of the heads (it
-   sits `motor_wall_clear` off them at its slots' wall end): take it off to reach them later. The stop lug on the
+   sits `motor_wall_clear` or more off them): take it off to reach them later. The stop lug on the
    shaft's flange meets the frame's post just past ±`FOREARM_ROLL_LIMIT_DEG`.
 
 ## 5. Attachment to the arm (`robot/`)
 `elbow_link` = `gt2_pulley_90t#3` (the re-seated elbow 90T) + its screws and nuts + `forearm_roll_drive#1:stator` (the
 elbow's driven side: the frame whose underside is the coupler, both bearings, the motor + board on the elbow axis, the
 20T, the belt and its tensioner); `forearm_link` = `forearm_roll_drive#1:rotor` (the pulley and the shaft) + `j2_link`
-and what it carries (the wrist-pitch motor + board, its 20T and the wrist belt, the wrist's 6806 pair:
+and what it carries (the wrist-pitch motor + board, its 20T, the wrist belt and its tensioner, the wrist's 6806 pair:
 `robot/frames.py LINKS`). `Joint("forearm_roll")` has Z along the forearm and X = N (its child's long direction IS
 the axis); its origin sits `ELBOW_ROLL_OFFSET` across `elbow_link`'s frame (`robot/frames.py FOREARM_ROLL_ORIGIN` from
 `j2_link#1`'s shifted origin, on the turn's axis; `ELBOW_ORIGIN` from the retired `j3_coupler#1`'s). Beyond it the axes
@@ -174,11 +174,12 @@ inertial and the `wrist_pitch` origin, nothing further out. The forearm side of 
 recess, the Ø31 bolt circle (the screws' nuts in the pulley) and the Ø24 cable bore, on the end of the straight web
 (`WebParams.half_w`, as wide as the wall) with two gussets — `j2_link`'s DEFAULT build
 (`lib/forearm/link.py roll_wall`, `wall_outline`, `straight_web`, `wall_gussets`). In `arm.py` the module is kept whole under the `elbow_link` group. The wrist-pitch motor
-sits where the stock wrist belt (`WRIST_BELT_LENGTH`, a multipack length: no idler, its slots tension it) puts it
-(`J2_MOTOR_SLIDE_X`), its slots (`J2_MOTOR_SLIDE_RANGE`) ending with its body `motor_wall_clear` off the wall screws'
-heads; its connector faces sideways - away from the elbow axis, the forearm turned - with `plug_clearance` of room
-beside it (`tests/forearm/test_roll_end.py`). `IdlerParams` keeps an idler under the web for the wrist belt's tensioner
-(its M5 axle and nut modelled, UNPLACED: `tests/forearm/test_wrist_idler.py`; `docs/open_issues.md`).
+sits on round holes `WRIST_MOTOR_CENTRES` from the wrist (`J2_MOTOR_X`, `MotorHoleParams`), nearer than the stock wrist
+belt's (`WRIST_BELT_LENGTH`, a multipack length) own centre distance, its body `motor_wall_clear` or more off the wall
+screws' heads; its connector faces sideways - away from the elbow axis, the forearm turned - with `plug_clearance` of
+room beside it (`tests/forearm/test_roll_end.py`). The belt's tensioner (`IdlerParams`): an idler under the web on the
+run leaving the motor's 20T, on its M5 axle up through a rib and the web's slot into a nut in a channel from the web's
+top face, slid across the forearm between `slot_y`'s ends (`tests/forearm/test_wrist_idler.py`).
 
 ## 6. Not modelled / to confirm
 `docs/open_issues.md`: the home sensor's mount (the modelled `ky003_hall_sensor`'s chip beside the stop

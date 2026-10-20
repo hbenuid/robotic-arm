@@ -227,11 +227,9 @@ def test_elbow_motor_screws_hold_it_down_through_the_web():
     assert tip == pytest.approx(-PARAMS.J1_MOTOR_SCREW_THREAD) and -tip < PARAMS.MOTOR_40.bolt_hole_depth
 
 
-def test_wrist_pitch_slide_position_is_inside_the_slots():
-    lo, hi = PARAMS.J2_MOTOR_SLIDE_RANGE
-    assert lo < PARAMS.J2_MOTOR_SLIDE_X <= hi      # at the wall end: the idler tensions the belt
+def test_the_wrist_pitch_motor_sits_on_its_round_holes():
     m = mounts.BY_KEY["nema17_40mm#3"]
-    assert m.frame[0][0] == PARAMS.J2_MOTOR_SLIDE_X and m.frame[0][2] == PARAMS.J2_MOTOR_WEB_FACE_Z
+    assert m.frame[0][0] == PARAMS.J2_MOTOR_X and m.frame[0][2] == PARAMS.J2_MOTOR_WEB_FACE_Z
 
 
 def test_the_base_takes_the_48mm_motor_and_the_links_the_40mm_one():

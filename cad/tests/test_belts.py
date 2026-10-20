@@ -36,7 +36,7 @@ LOCKS = {
     "yaw_belt": ("base", 1513.449, (-6.742198, -38.573186, -3.0), (167.315413, 77.146373, 6.0)),
     "elbow_belt": ("joints", 1059.849, (-6.742198, -29.02389, -3.0), (113.766087, 58.04778, 6.0)),
     "forearm_roll_belt": ("joints", 1059.849, (-6.742198, -29.02389, -3.0), (109.766087, 58.04778, 6.0)),
-    "wrist_belt": ("joints", 1059.993, (-6.742198, -29.02389, -3.0), (117.737762, 58.04778, 6.0)),
+    "wrist_belt": ("joints", 1059.849, (-6.742198, -29.02389, -3.0), (115.766087, 58.04778, 6.0)),
     "wrist_roll_belt": ("wrist", 598.693, (-6.742198, -13.108395, -3.0), (68.433487, 26.216791, 6.0)),
 }
 # a mounted belt -> its loop's circles' pulleys (key, its band centre in its own frame: the 20T's along +X, a 90T's /
@@ -60,12 +60,11 @@ def test_every_belt_is_a_purchased_stock_length_with_no_reference():
 
 def test_each_loop_is_its_belt_long():
     """Along the pitch line, exactly: a loop round its idler is the belt's length; a two-pulley loop at the textbook
-    centre distance (lib/belts.py closed_belt_length()) runs a little long - 0.04 round a 90T (the wrist's has no idler:
-    a plain pair)."""
+    centre distance (lib/belts.py closed_belt_length()) runs a little long - 0.04 round a 90T."""
     for name in LOCKS:
         mod = parts.load(name)
         assert abs(belt_length(mod.loop()) - mod.LENGTH) <= 0.25, name
-    assert belt_length(parts.load("wrist_belt").loop()) - parts.load("wrist_belt").LENGTH == pytest.approx(0.038, abs=0.002)
+    assert belt_length(parts.load("wrist_belt").loop()) == pytest.approx(parts.load("wrist_belt").LENGTH, abs=1e-6)   # round its idler
     assert belt_length(parts.load("yaw_belt").loop()) == pytest.approx(parts.load("yaw_belt").LENGTH, abs=1e-6)   # round its idler
 
 
