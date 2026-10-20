@@ -10,8 +10,8 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 cadtool - cadgen 0.7 + this uv project (paths relative to cad/)
-  ./cadtool setup                                   per machine: uv sync (+ the OCP kernel check) + the git pre-commit hook (ruff) + git notes fetching
-                                                    + cadgen's telemetry stored off + Playwright's headless shell (the snapshot browser)
+  ./cadtool setup                                   per machine: uv sync, bytecode compiled (+ the OCP kernel check) + the git pre-commit hook (ruff)
+                                                    + git notes fetching + cadgen's telemetry stored off + Playwright's headless shell (the snapshot browser)
   ./cadtool doctor                                 installed cadgen vs the plugin's pin (cadgen doctor imports OCP; a gutted kernel: setup), node,
                                                     the headless shell
   ./cadtool gen <model.py>... [--force] [--verbose] [--json] [--mesh-tolerance X] [--mesh-angular-tolerance R]
@@ -19,6 +19,9 @@ cadtool - cadgen 0.7 + this uv project (paths relative to cad/)
                                                     (an assembly rebuilds + rewrites its stale child parts too)
   ./cadtool step ...                                alias of gen
   ./cadtool why <model.py>                          freshness verdict, clause by clause (cadgen store why)
+  ./cadtool compile [file.step...]                  the committed STEP inputs' trees (reference/, vendor/) into the store, in ONE process:
+                                                    a cold store (a fresh clone, CI) otherwise compiles each on its first read, in a process
+                                                    of its own that loads the CAD kernel again; current trees are skipped
   ./cadtool inspect <file.step> [--planes] [--json] leaf refs, solids, faces, volume, bbox of a saved STEP
                                                     (--planes: + every planar face as normal / offset / area)
   ./cadtool inspect diff <a.step> <b.step> [--tol X] same geometry? (exit 1 if not) - a LOCAL tool, tools/step_facts.py:
@@ -136,6 +139,20 @@ case "$cmd" in
     for f in "${files[@]}"; do uv run --frozen python "$f" ${flags[@]+"${flags[@]}"}; done ;;
   why)
     cg store why "$@" ;;
+  compile)
+    # cadgen.step.compile is the API cadgen keeps for tooling and CI (`cadgen step compile` takes one document a process)
+    exec uv run --frozen python - "$@" <<'PY'
+import sys
+from pathlib import Path
+
+from cadgen import step
+
+docs = [Path(a) for a in sys.argv[1:]] or sorted([*Path("reference").rglob("*.step"), *Path("vendor").glob("*.step")])
+failed = [str(d) for d in docs if not step.compile(d).ok]
+print(f"cadtool: {len(docs) - len(failed)} of {len(docs)} STEP trees current")
+sys.exit(f"cadtool: not compiled: {', '.join(failed)}" if failed else 0)
+PY
+    ;;
   inspect)
     exec uv run --frozen python tools/step_facts.py "$@" ;;
   snapshot)
@@ -201,13 +218,16 @@ case "$cmd" in
     else echo "playwright headless shell: MISSING - run ./cadtool setup   (${loc:-playwright not installed})"; rc=1; fi
     exit $rc ;;
   setup)
-    uv sync
+    # Bytecode compiled into .venv (never into cad/: PYTHONDONTWRITEBYTECODE above), else every process - each build
+    # worker, each pytest worker - compiles build123d, numpy ... anew on import. Not a [tool.uv] setting: uv would then
+    # re-check every file of the venv on every `uv run` (docs/toolchain.md Gotchas).
+    uv sync --compile-bytecode
     # A venv that ever held cadquery-ocp (cadgen 0.5.x's VTK build) loses OCP/ when uv removes it: both
     # distributions own the same files and uv still counts cadquery-ocp-novtk as installed. Probe a
     # submodule: the hollowed-out OCP/ directory still imports, as an empty namespace package.
     if ! uv run --frozen python -c "import OCP.gp" 2>/dev/null; then
       echo "cadtool: the OCP kernel does not import - reinstalling cadquery-ocp-novtk" >&2
-      uv sync --reinstall-package cadquery-ocp-novtk
+      uv sync --compile-bytecode --reinstall-package cadquery-ocp-novtk
     fi
     install_git_hook
     fetch_git_notes
