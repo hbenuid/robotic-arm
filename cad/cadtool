@@ -25,7 +25,7 @@ cadtool - cadgen 0.7 + this uv project (paths relative to cad/)
                                                     cadgen 0.6.5 removed `cadgen step inspect`
   ./cadtool snapshot <file.step|.urdf|.sdf|.stl> <out.png> [--size-profile assembly --view-labels --job job.json]
                                                     the path you name is the file you get (no timestamp); --job = a multi-view packet
-  ./cadtool export <file.step> stl|3mf|glb [out]    one mesh file per call (needs node >= 20 on PATH)
+  ./cadtool export <file.step> stl|3mf|glb [out]    one mesh file per call (node >= 20: PATH's, else Playwright's own)
   ./cadtool validate <file.urdf|.srdf|.sdf> [--strict] [--gz-check never]
   ./cadtool viewer [--port N]                       CAD Viewer serving cad/: http://127.0.0.1:3245/?file=<rel path>
                                                     (12 h auto-stop; ./cadtool cadgen viewer stop --port N)
@@ -189,8 +189,13 @@ case "$cmd" in
     rc=0
     need_plugin
     uv run --frozen cadgen doctor "$CAD_PLUGIN/skills/cad" || rc=$?
+    # Mesh export runs on the node on PATH, else (cadgen 0.7.26+) on the one Playwright ships for its driver.
     if command -v node >/dev/null 2>&1; then echo "node $(node --version)   (mesh export needs >= 20)"
-    else echo "node: NOT on PATH - ./cadtool export needs node >= 20"; rc=1; fi
+    else
+      pw="$(uv run --frozen python -c 'import importlib.util, pathlib; print(pathlib.Path(importlib.util.find_spec("playwright").origin).parent / "driver" / "node")' 2>/dev/null)"
+      if [[ -n "$pw" && -x "$pw" ]]; then echo "node: none on PATH - mesh export uses Playwright's, $("$pw" --version)   ($pw)"
+      else echo "node: NOT on PATH, nor in Playwright - ./cadtool export needs node >= 20"; rc=1; fi
+    fi
     loc="$(uv run --frozen python -m playwright install --dry-run --only-shell chromium 2>/dev/null | awk -F': +' '/Install location/ {print $2; exit}')"
     if [[ -n "$loc" && -d "$loc" ]]; then echo "playwright headless shell: ok   ($loc)"
     else echo "playwright headless shell: MISSING - run ./cadtool setup   (${loc:-playwright not installed})"; rc=1; fi
