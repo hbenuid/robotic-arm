@@ -229,7 +229,8 @@ class RollDriveParams:
     one body round the motor: seen along the elbow axis round about it (end_r, the upper arm's round end) and tangent up
     to the tower round the roll axis, extruded from its underside (block_x[0], the elbow flange's - its underside repeats
     the SolidWorks j3_coupler's lip / boss / journal / stub into j1_link's bore, the elbow 90T bolts straight into it) to
-    its open +N face; the motor in a pocket open on that face, the pocket's front wall its plate (the tension slots), the
+    its open +N face; the motor in a pocket open on that face (a plug slot off each side at its board's side headers),
+    the pocket's front wall its plate (the tension slots), the
     block's one flat front face the plate's - the motor as near the belt as its 20T allows (pulley_seat), so the face is
     too; a round bearing boss on that face round the roll axis, the 6806 pair in it and the tower under it. Rotor: the PULLEY (forearm_roll_pulley: the integral 90T ring over the boss, its hub down through
     bearing 2, the spigot the forearm wall bolts onto - the roll's output) and the SHAFT (forearm_roll_shaft: a collar,
@@ -345,6 +346,10 @@ class RollDriveParams:
     motor_spin_deg: float = 90.0          # [DESIGN] about the motor axis: the connector (the motor frame's -Y) -> module +X
     board_w: float = MKS_SERVO42D_W       # [REFERENCE] 43: the MKS board's cover square (in the pocket with the motor)
     board_stack: float = MKS_SERVO42D_STACK   # [REFERENCE] 14.1: the board behind the motor's rear face
+    # the board's side plugs face the pocket's walls, along the tension slide: a slot off each side at them
+    # (layout.plug_slots), open to the +N face, so the motor + board go in with the cables plugged
+    plug_clear: float = 0.5               # [DESIGN] the slots round each side header's outline
+    plug_spare: float = 1.0               # [DESIGN] past its plug's room (lib/motors.py MKS_PLUG_ROOM), the motor at the slide's far end
     roll_belt: int = 280                  # [DESIGN] 280-2GT closed belt, 6 mm (a stock length, lib/belts.py STANDARD_2GT_LENGTHS): longer than the
     #                                       open loop at centre_distance - the idler takes up the rest
     centre_distance: float = 74.0         # [DESIGN] the ring's axis over the motor's (the elbow axis' depth under the roll axis = the arm's elbow

@@ -20,6 +20,7 @@ from lib.forearm.layout import (
     motor_pocket,
     nut_channel_end,
     pad_bolt_points,
+    plug_slots,
     pulley_bolt_points,
     roll_idler_xy,
     stack_positions,
@@ -81,6 +82,9 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     # slots and the pilot slot, the motor centred on the elbow axis
     y0, y1, z0, z1 = motor_pocket(cfg)
     body = body - box((S["x_cradle"], d.block_x[1] + 1.0), (y0, y1), (z0, z1))
+    # the board's two side plugs: a slot off each side of the pocket at them, out through the open face
+    for x0, x1, sy0, sy1, sz0, sz1 in plug_slots(cfg):
+        body = body - box((x0, x1), (sy0, sy1), (sz0, sz1))
     for x, y in pad_bolt_points(cfg):
         body = body - slot_y(x, y, d.pad_bolt_dia, d.pad_slot_len, S["z_motor_face"], d.pad_t)
     body = body - slot_y(S["x_motor"], S["y_motor"], d.pad_pilot_w, d.pad_slot_len, S["z_motor_face"], d.pad_t)

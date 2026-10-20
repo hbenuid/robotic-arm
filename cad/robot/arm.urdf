@@ -110,9 +110,9 @@
   </link>
   <link name="upper_arm_link">
     <inertial>
-      <origin xyz="0.060926 0.000074 0.033582" rpy="0 0 0" />
+      <origin xyz="0.060964 0.000026 0.033582" rpy="0 0 0" />
       <mass value="1.318719" />
-      <inertia ixx="1.683551e-03" ixy="-3.287569e-06" ixz="7.537448e-04" iyy="6.386840e-03" iyz="-3.459118e-06" izz="6.772251e-03" />
+      <inertia ixx="1.684041e-03" ixy="-1.394608e-06" ixz="7.519974e-04" iyy="6.389485e-03" iyz="-1.297730e-06" izz="6.775386e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -129,9 +129,9 @@
   </link>
   <link name="elbow_link">
     <inertial>
-      <origin xyz="0.004299 -0.015957 0.018784" rpy="0 0 0" />
-      <mass value="0.898322" />
-      <inertia ixx="1.471657e-03" ixy="1.446062e-04" ixz="-1.731483e-05" iyy="7.697024e-04" iyz="6.742773e-05" izz="1.429436e-03" />
+      <origin xyz="0.004506 -0.016091 0.018623" rpy="0 0 0" />
+      <mass value="0.890238" />
+      <inertia ixx="1.459372e-03" ixy="1.418712e-04" ixz="-2.059059e-05" iyy="7.619559e-04" iyz="6.973625e-05" izz="1.416372e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -148,9 +148,9 @@
   </link>
   <link name="forearm_link">
     <inertial>
-      <origin xyz="-0.005892 0.00004 0.094125" rpy="0 0 0" />
+      <origin xyz="-0.005892 -0.00005 0.094012" rpy="0 0 0" />
       <mass value="0.562795" />
-      <inertia ixx="9.153113e-04" ixy="5.220259e-06" ixz="-9.961750e-05" iyy="9.783129e-04" iyz="1.818290e-06" izz="2.748673e-04" />
+      <inertia ixx="9.164659e-04" ixy="3.211444e-06" ixz="-1.021093e-04" iyy="9.789843e-04" iyz="1.275165e-06" izz="2.753505e-04" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />

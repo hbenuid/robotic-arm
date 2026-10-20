@@ -93,7 +93,8 @@ def test_every_motor_has_its_board_and_they_sit_in_the_same_link():
         b = BOARDS[m.key]
         assert (b.link, b.joint) == (m.link, m.joint)
         body = PARAMS.CYCLOIDAL_MOTOR_BODY_LEN if m.part == mounts.MOTOR_48 else PARAMS.NEMA17_40_BODY_LEN
-        assert b.frame == mounts.board_frame(body) == ((0.0, 0.0, -body), (0.0, 0.0, 0.0))
+        turn = mounts.BOARD_TURNS[b.key]   # a quarter turn on the motor's square screw pattern
+        assert turn % 90.0 == 0.0 and b.frame == mounts.board_frame(body, turn) == ((0.0, 0.0, -body), (0.0, 0.0, turn))
         assert m.key in F.LINKS[m.link] and b.key in F.LINKS[m.link], m.link
         host = P.OCCURRENCES[m.host]   # a printed host: a SolidWorks record, or the base's bolt-on motor mount
         assert host["kind"] == "part" and not getattr(parts.load(host["part"]), "COTS", False)
