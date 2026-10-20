@@ -65,9 +65,10 @@ detection).
   the `OCP.gp` probe of `./cadtool setup` does.
 - cadgen makes hard cutovers: a retired interface fails with a teaching error, never an alias (a bad `--display` value
   is refused with the list of presets); what each bump retired or changed is its commit (`git log -- pyproject.toml
-  uv.lock`). A record-schema change makes every model read stale once (`no record`); a change to cadgen's own mesher
-  (the viewer, snapshots, `./cadtool export` — not `robot/meshes/`, which build123d's `export_stl` writes)
-  re-tessellates the store's display meshes once. The store keeps itself under `CADGEN_STORE_MAX` (default 20G) by
+  uv.lock`). A record-schema change makes every model read stale once (`no record`); a document-schema change re-reads
+  each saved STEP once, on its next open (the viewer, a snapshot, `read_scene` — the models stay current); a change to
+  cadgen's own mesher (the viewer, snapshots, `./cadtool export` — not `robot/meshes/`, which build123d's `export_stl`
+  writes) re-tessellates the store's display meshes once. The store keeps itself under `CADGEN_STORE_MAX` (default 20G) by
   evicting derived meshes / surfaces, never records or outputs; a rebuild whose STEP bytes would not change keeps the
   file (`kept STEP: …`); a build whose worker died names why (`worker N was killed by SIGTERM (signal 15)` / `SIGKILL`:
   on the Linux PC, earlyoom). The freshness gate does not hash cadgen's own version, so a bump makes no model stale (a
@@ -84,8 +85,12 @@ detection).
   pinned (a `build_in_progress` that silently read False would inline every child and still build).
 - `./cadtool doctor` never reads `~/.claude/plugins/installed_plugins.json`: `plugin_dir()` pairs the venv's cadgen
   version with the plugin cache directory of the same name, so after `uv sync` to a new cadgen it reports `pin OK`
-  while the plugin may still be INSTALLED at the old version (`claude plugin marketplace update` alone creates the
-  new cache directory while both scopes still record the old version). Update the plugin in BOTH
+  while the plugin may still be INSTALLED at the old version (the new cache directory exists once one scope has
+  updated, the other entries still recording the old version). `claude plugin marketplace update` alone makes no cache
+  directory (Claude Code 2.1.304: it refreshes only the clone `~/.claude/plugins/marketplaces/earthtojake/`), so on a
+  branch that bumps the pin before the plugin update `doctor` warns `no plugin cache for cadgen <ver>` and reports a
+  pin MISMATCH against the old one: `CAD_PLUGIN=~/.claude/plugins/marketplaces/earthtojake ./cadtool doctor` checks
+  the new pin against that clone. Update the plugin in BOTH
   scopes (`claude plugin update text-to-cad@earthtojake`, then `--scope project`), check that file shows the new `version` +
   `installPath` for each, and restart Claude Code (its first start after an update fetches the server's new cadgen;
   on a slow connection start once with `MCP_TIMEOUT=300000 claude`). A session first started in `cad/` records a third
