@@ -1,16 +1,33 @@
-"""base_motor_mount, the base_yaw motor's bolt-on box (lib/base/body.py build_motor_mount, DEFAULT's JointParams +
-MountParams): room round the motor's board for the wiring, the window between the base's posts open into the base, the
-walls V trusses that print plate-down without supports;
-the joint - the two parts meet at split_x without overlapping, flush on the plate's top and the bottom face, 4x M4
-through the mount's ears and the base's posts from heads turned outside into nuts pressed into the posts, the tips past
-the nuts - and the motor's seat on round holes YAW_MOTOR_X out, short of the stock belt's own centre distance (its idler
-takes up the rest - tests/base/test_yaw_idler.py): the motor and its board clear the mount."""
+"""base_motor_mount, the base_yaw motor's bolt-on half of the base (lib/base/body.py build_motor_mount, DEFAULT's
+JointParams + MountParams): the base's D carried on at full width to a round end that mirrors the base's round half, on
+the same foot with its own screw holes, the window between the two parts' posts open into the base, room round the
+motor's board for the wiring; the slits through both parts' walls (SlitParams: one band, upright, round-ended, none at
+the joint's posts); the joint - the two parts meet at split_x without overlapping, flush on the walls, the plate's
+top, the foot and the bottom face, 4x M4 through the mount's posts and the base's from heads inside the mount into
+nuts pressed into the base's posts, the tips past the nuts - and the motor's seat on round holes YAW_MOTOR_X out, short
+of the stock belt's own centre distance (its idler takes up the rest - tests/base/test_yaw_idler.py): the motor and its
+board clear the mount."""
+import itertools
 import math
 
 import pytest
 
-from lib.base import DEFAULT, LEGACY, joint_bolt_points, joint_stations, motor_holes, mount_inner_half, mount_x1
-from lib.base.layout import truss_panels
+from lib.base import (
+    DEFAULT,
+    LEGACY,
+    flare_points,
+    inner_r,
+    joint_bolt_points,
+    joint_stations,
+    motor_holes,
+    mount_end_x,
+    mount_foot_holes,
+    mount_inner_half,
+    mount_x1,
+    outer_r,
+    slit_band,
+    slits,
+)
 from lib.base.params import YAW_BELT, YAW_MOTOR_X
 from lib.belts import (
     GT2_PULLEY_20T_TEETH,
@@ -26,11 +43,16 @@ from lib.motors import MKS_SERVO42D_W, NEMA17_FACE, NEMA17_PILOT_DIA
 from tests import built
 from tests.helpers import interference, is_inside
 
-J, M, S, PL, MT = DEFAULT.joint, DEFAULT.motor, DEFAULT.shell, DEFAULT.plate, DEFAULT.mount
+J, M, S, PL, MT, F, SL = DEFAULT.joint, DEFAULT.motor, DEFAULT.shell, DEFAULT.plate, DEFAULT.mount, DEFAULT.foot, DEFAULT.slits
 ST = joint_stations()
-W_IN = mount_inner_half()             # the mount's inside, and the window between the base's posts (|z|)
-W_OUT = W_IN + MT.wall                # the mount's side walls' outside
-X1 = mount_x1()                       # the mount's end wall's outside
+W_IN = mount_inner_half()             # the window between the two parts' posts (|z|)
+CX = mount_end_x()                    # the mount's end round's centre
+BAND = slit_band()
+
+
+def _on_a_side(x: float, deg: float) -> bool:
+    """A slit on a straight side (between the two round ends), not on a round end."""
+    return abs(abs(deg) - 90.0) < 1e-9 and 1e-6 < x < CX - 1e-6
 
 
 def _belt(x: float, teeth: int = GT2_PULLEY_120T_TEETH) -> float:
@@ -47,63 +69,82 @@ def test_the_motor_sits_short_of_the_stock_belt():
 
 def test_the_seat():
     """The pilot in its window; a web between each hole and the window; the motor's face wholly on the mount's plate,
-    clear of the ears at the joint face."""
+    clear of the posts at the joint face."""
     c, cz = M.centre
     assert M.window_x[0] < c - NEMA17_PILOT_DIA / 2.0 and M.window_x[1] > c + NEMA17_PILOT_DIA / 2.0
     assert M.window_half_z > NEMA17_PILOT_DIA / 2.0
-    assert c - NEMA17_FACE / 2.0 - (J.split_x + MT.ear_t) > 2.0
+    assert c - NEMA17_FACE / 2.0 - (J.split_x + MT.post_t) > 2.0
     for _, z in motor_holes():
         assert abs(z - cz) - M.hole_dia / 2.0 - M.window_half_z >= 2.0   # the web between a hole and the window
 
 
-def test_the_mount_leaves_room_for_the_wiring():
-    """MountParams.room clear of the MKS board's square in Z and to the end wall; narrower than the base, its ears on the
-    base's end face."""
+def test_the_mount_is_the_bases_other_half():
+    """The window between the posts MountParams.room clear of the MKS board's square in Z; the round end room past the
+    board's square at the plate's top and the base's round half mirrored - its radius the walls' at every height -, so
+    the mount's outline is the base's D carried on; its end past the motor's whole face."""
     c, cz = M.centre
     half = MKS_SERVO42D_W / 2.0
     assert W_IN - (abs(cz) + half) == pytest.approx(MT.room)
-    assert X1 - MT.wall - (c + half) == pytest.approx(MT.room)
-    assert W_OUT + MT.ear_w < S.r and W_OUT < S.r - 15.0
+    assert mount_x1() - S.wall - (c + half) == pytest.approx(MT.room)
+    assert CX + outer_r(DEFAULT, PL.y[1]) == pytest.approx(mount_x1())
+    assert J.split_x < CX < c - NEMA17_FACE / 2.0                       # the straight sides run on past the joint
+    assert MT.post_t == J.post_t                                         # the posts mirror the base's
 
 
 def test_joint_layout():
-    """4 bolts on the ears' centrelines, inside the posts; the heads on the ears clear of the mount's walls; heads and
-    nut pockets 2 mm inside the plate's underside and the bottom face; the nut's pocket short of the joint face; each
-    tip 2 pitches past its nut."""
+    """4 bolts bolt_out out of the window's edge, through both parts' posts; each head on the mount's post's face, clear
+    of the window's edge and of the wall at its height (the key's way along -X inside the mount); heads and nut pockets
+    2 mm inside the plate's underside and the bottom face; the nut's pocket short of the joint face; each tip 2 pitches
+    past its nut."""
     pts = joint_bolt_points()
-    z = W_OUT + MT.ear_w / 2.0
+    z = W_IN + J.bolt_out
     assert len(pts) == 4 and {round(abs(pz), 6) for pz, _ in pts} == {round(z, 6)}
     corner = hex_circumdiameter(J.nut_pocket_af) / 2.0     # a corner up: the pocket's half height
-    assert J.screw.head_dia < MT.ear_w and z - J.screw.head_dia / 2.0 - W_OUT >= 2.0           # the key's way past the wall
     assert z - J.nut_pocket_af / 2.0 - W_IN >= 2.0 and z + J.nut_pocket_af / 2.0 < S.r         # the pocket in the post
     half = max(corner, J.screw.head_dia / 2.0)
     for _, y in pts:
+        assert z - J.screw.head_dia / 2.0 - W_IN >= 2.0 and inner_r(DEFAULT, y + half) - (z + J.screw.head_dia / 2.0) >= 10.0
         assert PL.y[0] - y - half >= 2.0 and y - half - S.y0 >= 2.0
         assert min(PL.y[0] - y, y - S.y0) == pytest.approx(J.bolt_inset)
-    assert J.post_t - J.nut.h >= 2.0 and ST["x_nut_face"] < ST["x_split"]
+    assert J.post_t - J.nut.h >= 2.0 and ST["x_nut_face"] < ST["x_split"] and ST["x_head"] == J.split_x + MT.post_t
     assert ST["x_post"] - ST["x_tip"] >= 2.0 * M4_PITCH
 
 
-def test_the_walls_are_trussed():
-    """Three trussed walls (lib/base/layout.py truss_panels()), the side walls in two bays (MountParams.bay) with a
-    strut wide post between: each frame's window the wall's height less a rail at each end, a V of two struts at >= 45
-    deg (self-supporting when printed plate-down) and two side triangles whose table edge - a bridge in print - spans
-    <= 30 mm; the side walls' post at the joint backs the whole ear."""
-    panels = truss_panels()
-    assert [pn["axis"] for pn in panels] == ["z"] * 4 + ["x"] and [pn["span"][0] > 0 for pn in panels[:4]] == [True] * 2 + [False] * 2
-    for a, b in ((panels[0], panels[1]), (panels[2], panels[3])):
-        assert b["window"][0][0] - a["window"][0][1] == pytest.approx(MT.strut)                 # the post between the bays
-        width = a["window"][0][1] - a["window"][0][0]
-        assert b["window"][0][1] - b["window"][0][0] == pytest.approx(width) and width <= MT.bay
-    for pn in panels:
-        (u0, u1), (v0, v1) = pn["window"]
-        assert v1 - v0 == pytest.approx(PL.y[0] - S.y0 - 2.0 * MT.strut)
-        assert [p0 for p0, _ in pn["struts"]] == [(u0, v1), (u1, v1)] and {p1 for _, p1 in pn["struts"]} == {((u0 + u1) / 2.0, v0)}
-        for (a, b), (c, d) in pn["struts"]:
-            angle = math.degrees(math.atan2(abs(d - b), abs(c - a)))
-            bridge = abs(c - a) - (MT.strut / 2.0) / math.sin(math.radians(angle))
-            assert angle >= 45.0 and 0.0 < bridge <= 30.0, (pn["axis"], angle, bridge)
-    assert panels[0]["window"][0][0] == pytest.approx(J.split_x + MT.ear_t)
+def test_the_mount_foot_holes():
+    """The mount's 4 screw holes: the base's round half's, mirrored onto its end round - on hole_r about its centre,
+    each spot-face clear of the wall and inside the flange's rim, neighbours a spot-face apart."""
+    holes = mount_foot_holes()
+    spot = F.spot_dia / 2.0
+    assert len(holes) == 4 and sorted(F.mount_hole_deg) == sorted(180.0 - a for a in F.hole_deg)
+    for x, z in holes:
+        assert math.hypot(x - CX, z) == pytest.approx(F.hole_r) and x - spot > J.split_x
+        assert F.hole_r - spot - outer_r(DEFAULT, S.y0) > 8.0 and F.hole_r + spot < F.r
+    ring = sorted(holes, key=lambda h: h[1])
+    assert min(math.dist(a, b) for a, b in itertools.pairwise(ring)) > 2.0 * F.spot_dia
+
+
+def test_the_slits():
+    """One band, over_flare above the foot's chamfer and under the plate; the base's round half and the mount's round end
+    each a slit at both ends and pitch apart along the wall's mid-surface between; the straight sides at multiples of
+    pitch, none at the joint's posts; both parts symmetric about z = 0, each slit in its own part; the slit narrower
+    than the web between, its round top a w / 2 arch - nothing to bridge."""
+    _, (_, yw) = flare_points()
+    assert BAND == (yw + SL.over_flare, yw + SL.over_flare + SL.h) and BAND[1] < PL.y[0] - 5.0 and SL.over_flare >= 4.0
+    rm = outer_r(DEFAULT, sum(BAND) / 2.0) - S.wall / 2.0
+    base, mount = slits(DEFAULT, "base"), slits(DEFAULT, "mount")
+    for name, pts, cx, ends in (("base", base, 0.0, (90.0, 270.0)), ("mount", mount, CX, (-90.0, 90.0))):
+        rnd = sorted((deg, x, z) for x, z, deg in pts if not _on_a_side(x, deg))
+        assert (rnd[0][0], rnd[-1][0]) == pytest.approx(ends) and len(pts) - len(rnd) == {"base": 8, "mount": 4}[name]
+        for _deg, x, z in rnd:
+            assert math.hypot(x - cx, z) == pytest.approx(rm)
+        step = math.radians(rnd[1][0] - rnd[0][0]) * rm
+        assert step == pytest.approx(SL.pitch, abs=SL.pitch * 0.05) and step - SL.w > SL.w
+        assert sorted((round(x, 6), round(z, 6)) for x, z, _ in pts) == sorted((round(x, 6), round(-z, 6)) for x, z, _ in pts)
+    sides = [x for x, z, deg in base + mount if _on_a_side(x, deg)]
+    assert all(x / SL.pitch == pytest.approx(round(x / SL.pitch)) for x in sides)
+    assert all(abs(x - J.split_x) - SL.w / 2.0 > J.post_t + SL.joint_clear - SL.pitch / 2.0 for x in sides)
+    assert not [x for x in sides if J.split_x - J.post_t - SL.w / 2.0 <= x <= J.split_x + MT.post_t + SL.w / 2.0]
+    assert all(x < J.split_x for x, _, _ in base) and all(x > J.split_x for x, _, _ in mount)
 
 
 @pytest.fixture(scope="module")
@@ -121,44 +162,76 @@ def test_the_parts_meet_at_the_joint(base, mount):
     assert mount.is_valid and len(mount.solids()) == 1
     bb, bm = base.bounding_box(), mount.bounding_box()
     assert bb.max.X == pytest.approx(J.split_x, abs=1e-6) and bm.min.X == pytest.approx(J.split_x, abs=1e-6)
-    assert bm.max.X == pytest.approx(X1, abs=1e-6) and (bm.min.Z, bm.max.Z) == pytest.approx((-W_OUT - MT.ear_w, W_OUT + MT.ear_w), abs=1e-6)
+    assert bm.max.X == pytest.approx(CX + F.r, abs=1e-6) and (bm.min.Z, bm.max.Z) == pytest.approx((-F.r, F.r), abs=1e-6)
     assert bm.min.Y == pytest.approx(BASE_BOTTOM_Y, abs=1e-6) == bb.min.Y
     assert bm.max.Y == pytest.approx(PL.y[1], abs=1e-6)     # the plate's top and the walls' tops: one face, printed down
     assert interference(base, mount) < 1e-3
     x_base, x_mount = J.split_x - 0.5, J.split_x + 0.5
-    for sz in (1, -1):
-        assert is_inside(base, x_base, -70, sz * (W_IN + 0.5)) and not is_inside(base, x_base, -70, sz * (W_IN - 0.5))   # a post
-        assert is_inside(mount, x_mount, -70, sz * (W_OUT + MT.ear_w - 0.5))                                         # an ear
-        assert not is_inside(mount, x_mount, -70, sz * (W_OUT + MT.ear_w + 0.5))
-        for y in (PL.y[0] - MT.strut / 2.0, S.y0 + MT.strut / 2.0):                                    # a side wall's rails
-            assert is_inside(mount, 90, y, sz * (W_IN + 0.5)) and not is_inside(mount, 90, y, sz * (W_OUT + 0.5))
-    assert not is_inside(base, x_base, -70, 0) and not is_inside(base, x_base, -99, 0)   # the window into the base, full height
-    assert not is_inside(mount, 90, -70, 0) and not is_inside(mount, x_mount, -99, 0)    # the mount's inside, open underneath
-    for y in (PL.y[0] - MT.strut / 2.0, S.y0 + MT.strut / 2.0):                                        # the end wall's rails
-        assert is_inside(mount, X1 - MT.wall / 2.0, y, 0)
     for part, x in ((base, x_base), (mount, x_mount)):
+        for sz in (1, -1):
+            assert is_inside(part, x, -70, sz * (W_IN + 0.5)) and not is_inside(part, x, -70, sz * (W_IN - 0.5))   # a post
+            for y in (S.y0 + F.flare_h + 2.0, -70.0, PL.y[0] - 1.0):      # the walls flush: the same leaning planes
+                ro = outer_r(DEFAULT, y)
+                assert is_inside(part, x, y, sz * (ro - 0.3)) and not is_inside(part, x, y, sz * (ro + 0.3)), (y, sz)
+            assert is_inside(part, x, S.y0 + 1.0, sz * (F.r - 0.5)) and not is_inside(part, x, S.y0 + 1.0, sz * (F.r + 0.5))   # the foot
         for z, y in joint_bolt_points():
             assert not is_inside(part, x, y, z + J.bolt_dia / 2.0 - 0.1) and is_inside(part, x, y, z + J.bolt_dia / 2.0 + 0.1)
+    assert not is_inside(base, x_base, -70, 0) and not is_inside(base, x_base, -99, 0)   # the window into the base, full height
+    assert not is_inside(mount, 90, -70, 0) and not is_inside(mount, x_mount, -99, 0)    # the mount's inside, open underneath
+    assert not is_inside(mount, ST["x_head"] + 1.0, -70, W_IN + J.bolt_out)                # the posts' faces open to the heads
     assert is_inside(base, J.split_x - 2.0, -42, 0) and is_inside(mount, J.split_x + 2.0, -42, 0)   # the plate whole: no belt slot
-    assert is_inside(mount, X1 - MT.wall / 2.0, S.y0 + 1.0, 0)          # the end wall's foot: no cable notch
 
 
 @pytest.mark.slow
-def test_the_truss_windows_are_open(mount):
-    """Each wall's three triangles are open; its struts, rails and posts are there."""
-    for pn in truss_panels():
-        (u0, u1), (v0, v1) = pn["window"]
-        um, mid = (u0 + u1) / 2.0, (pn["span"][0] + pn["span"][1]) / 2.0
+def test_the_round_end_mirrors_the_base(mount):
+    """At the end (z = 0, between two slits) and at 45 degrees round it: the wall's outside on the walls' radius about
+    the end's centre, its inside `wall` in, below the plate; the foot's flange to foot.r round it, the chamfer's face
+    on the base's line; the mount's 4 screw holes through the flange, their spot-faces in the chamfer."""
+    for deg in (0.0, 45.0):
+        ux, uz = math.cos(math.radians(deg)), math.sin(math.radians(deg))
+        for y in (S.y0 + F.flare_h + 2.0, -70.0, PL.y[0] - 1.0):
+            ro, ri = outer_r(DEFAULT, y), inner_r(DEFAULT, y)
+            assert is_inside(mount, CX + (ro - 0.3) * ux, y, (ro - 0.3) * uz) and not is_inside(mount, CX + (ro + 0.3) * ux, y, (ro + 0.3) * uz)
+            assert is_inside(mount, CX + (ri + 0.3) * ux, y, (ri + 0.3) * uz) and not is_inside(mount, CX + (ri - 0.3) * ux, y, (ri - 0.3) * uz)
+        yt = S.y0 + F.t
+        assert is_inside(mount, CX + (F.r - 0.5) * ux, yt - 0.5, (F.r - 0.5) * uz)
+        assert not is_inside(mount, CX + (F.r + 0.5) * ux, yt - 0.5, (F.r + 0.5) * uz)
+        (rf, _), (rw, yw) = flare_points()
+        n = math.hypot(yw - yt, rf - rw)
+        nr, ny = (yw - yt) / n, (rf - rw) / n
+        mr, my = (rf + rw) / 2.0, (yt + yw) / 2.0
+        assert is_inside(mount, CX + (mr - 0.3 * nr) * ux, my - 0.3 * ny, (mr - 0.3 * nr) * uz)
+        assert not is_inside(mount, CX + (mr + 0.3 * nr) * ux, my + 0.3 * ny, (mr + 0.3 * nr) * uz)
+    spot, yt = F.spot_dia / 2.0, S.y0 + F.t
+    for x, z in mount_foot_holes():
+        ux, uz = (CX - x) / F.hole_r, -z / F.hole_r                                      # toward the wall
+        assert not is_inside(mount, x, S.y0 + F.t / 2.0, z)                               # the hole
+        assert not is_inside(mount, x + (spot - 0.5) * ux, yt + 1.0, z + (spot - 0.5) * uz)   # the spot-face ...
+        assert is_inside(mount, x + (spot + 0.5) * ux, yt + 1.0, z + (spot + 0.5) * uz)       # ... in the chamfer
+        assert is_inside(mount, x + (spot + 0.5) * ux, yt - 0.5, z + (spot + 0.5) * uz)       # the flange under it
 
-        def at(u, v, pn=pn, mid=mid):
-            return (u, v, mid) if pn["axis"] == "z" else (mid, v, u)
 
-        for u, v in ((um, v1 - (v1 - v0) / 3.0), (u0 + (um - u0) / 3.0, v0 + (v1 - v0) / 3.0),
-                     (u1 - (u1 - um) / 3.0, v0 + (v1 - v0) / 3.0)):
-            assert not is_inside(mount, *at(u, v)), (pn["axis"], pn["span"], u, v)
-        vm, h = (v0 + v1) / 2.0, MT.strut / 2.0
-        for u, v in (((u0 + um) / 2.0, vm), ((u1 + um) / 2.0, vm), (um, v1 + h), (um - 10.0, v0 - h), (u0 - h, vm), (u1 + h, vm)):
-            assert is_inside(mount, *at(u, v)), (pn["axis"], pn["span"], u, v)
+@pytest.mark.slow
+def test_the_slits_are_cut(base, mount):
+    """Every slit open along its length through the wall, the wall whole beside it and above and below it: probed on the
+    wall's mid-surface, which leans out going down (each slit's centre is on it at the band's middle)."""
+    ym, h, w = sum(BAND) / 2.0, SL.h, SL.w
+    open_dy, shut_dy = h / 2.0 - w / 2.0 - 0.3, h / 2.0 + 0.5
+    for part, name in ((base, "base"), (mount, "mount")):
+        for x, z, deg in slits(DEFAULT, name):
+            nx, nz = math.cos(math.radians(deg)), math.sin(math.radians(deg))
+            tx, tz = -nz, nx                                                              # along the wall
+
+            def mid(dy, x=x, z=z, nx=nx, nz=nz):
+                d = outer_r(DEFAULT, ym + dy) - outer_r(DEFAULT, ym)
+                return x + d * nx, ym + dy, z + d * nz
+
+            for dy in (0.0, open_dy, -open_dy):
+                assert not is_inside(part, *mid(dy)), (name, x, z, deg, dy)
+            for dy in (shut_dy, -shut_dy):
+                assert is_inside(part, *mid(dy)), (name, x, z, deg, dy)
+            for s in (1.0, -1.0):
+                assert is_inside(part, x + s * (w / 2.0 + 0.4) * tx, ym, z + s * (w / 2.0 + 0.4) * tz), (name, x, z, deg)
 
 
 @pytest.mark.slow
@@ -189,8 +262,8 @@ def test_the_mount_carries_the_seat(mount):
 
 @pytest.mark.slow
 def test_the_screws_clamp_the_joint():
-    """Every head's bearing face on an ear's outer face, every tip 2 pitches past its nut's outer face, into the base's
-    cavity below the plate; each nut coaxial with its screw."""
+    """Every head's bearing face on a mount's post's inner face, every tip 2 pitches past its nut's outer face, into the
+    base's cavity below the plate; each nut coaxial with its screw."""
     screws = built.placed("base_motor_mount_screws#1")
     nuts = built.placed("base_motor_mount_nuts#1")
     for solid in screws.solids():
@@ -205,8 +278,9 @@ def test_the_screws_clamp_the_joint():
 @pytest.mark.slow
 def test_the_motor_clears_the_mount(mount):
     """The 48 mm motor and its board on their round holes: nothing runs into the mount (the motor's face on the plate's
-    underside, the pilot in the window), the board the wiring room clear of it."""
-    for key, clear in (("nema17_48mm#1", 0.0), ("mks_servo42d#1", MT.room - 0.1)):
+    underside, the pilot in the window), the board the wiring room clear of it; the screws' heads clear of the mount
+    but on their posts."""
+    for key, clear in (("nema17_48mm#1", 0.0), ("mks_servo42d#1", MT.room - 0.1), ("base_motor_mount_screws#1", 0.0)):
         part = built.placed(key)
         assert interference(part, mount) < 1e-3, key
         if clear:

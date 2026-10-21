@@ -65,9 +65,9 @@ on the arm's centreline, the shell's body inside, its windows under the arm soli
 level end to end -, no sockets, the elbow block's floor), `tests/base/` (`base`: the LEGACY build's
 feature probes, the interface values lib/params.py and lib/datum.py take from it; DEFAULT's walls carrying
 j1_coupler's cone on down onto the foot's flange, its screw holes, its volume / box (`test_foot`); `base_motor_mount`:
-the wiring room, the
-joint to the base's posts, the walls' truss bays, the seat on round holes short of the stock belt's centre distance, the
-motor clear of it; `yaw_idler`: the base_yaw belt's tensioner - the stock belt round it, the band of belts its slot
+the base's other half - its walls, round end and foot the base's carried on, flush at the joint, its own screw holes -,
+the wiring room, the joint's posts and bolts, both parts' slits, the seat on round holes short of the stock belt's
+centre distance, the motor clear of it; `yaw_idler`: the base_yaw belt's tensioner - the stock belt round it, the band of belts its slot
 takes, the belt frame's points in the base's, its stations, its axle's, nut's and spacer's numbers (no reference), its
 seat on the mount, the kit's fit; `yaw_pulley_screws` / `yaw_pulley_nuts`, purchased parts with no reference: the
 numbers no reference file holds for them - pieces, volume, bbox - and feature probes; the `j1_coupler` fork's screws and
