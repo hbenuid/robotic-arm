@@ -399,7 +399,7 @@ def _plug_overlap(room, part) -> float:
 
 
 _SH, _EL, _WR = PARAMS.SHOULDER_PITCH_LIMITS_DEG, PARAMS.ELBOW_PITCH_LIMITS_DEG, PARAMS.WRIST_PITCH_LIMITS_DEG
-_FR, _YAW = PARAMS.FOREARM_ROLL_LIMIT_DEG, PARAMS.BASE_YAW_LIMIT_DEG
+_FR, _YAW, _WRL = PARAMS.FOREARM_ROLL_LIMIT_DEG, PARAMS.BASE_YAW_LIMIT_DEG, PARAMS.WRIST_ROLL_LIMIT_DEG
 # Per board link: the links that move relative to it, with the poses of the joints between - group by group.
 _PLUG_SWEEPS = {
     # the base's rooms stay inside the motor mount and the base, which the arm keeps off (the yaw test above)
@@ -425,6 +425,13 @@ _PLUG_SWEEPS = {
         (("elbow_link", "upper_arm_link"), _grid(forearm_roll=_steps(-_FR, _FR, 5), elbow_pitch=[_EL[0], 0.0, _EL[1]])),
         (("shoulder_link", "base_link"), _grid(forearm_roll=_steps(-_FR, _FR, 45), elbow_pitch=_steps(*_EL, 30),
                                                shoulder_pitch=_steps(*_SH, 30)))],
+    # the wrist roll's board, on the pancake behind wrist_link's frame
+    "wrist_pitch_link": [
+        (("wrist_pitch_link",), [{}]),
+        (("wrist_roll_link", "jaw_a_link", "jaw_b_link"), _grid(wrist_roll=_steps(-_WRL, _WRL, 15))),
+        (("forearm_link", "elbow_link"), _grid(wrist_pitch=_steps(*_WR, 5), forearm_roll=[-_FR, 0.0, _FR])),
+        (("upper_arm_link", "shoulder_link", "base_link"), _grid(wrist_pitch=[_WR[0], 0.0, _WR[1]],
+                                                                 forearm_roll=_steps(-_FR, _FR, 45), elbow_pitch=list(_EL)))],
 }
 
 

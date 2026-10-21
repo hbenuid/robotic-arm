@@ -73,9 +73,10 @@ def stack_positions(cfg: WristConfig = DEFAULT) -> dict[str, float]:
     x_free = cfg.plate.thickness - d.axis_h                       # -22: its free face, the pocket's floor
     return {
         "z_pulley": 0.0, "z_shaft": 0.0,
-        "z_rear": min(z_bay - d.tower_wall, z_pocket_rear - d.pocket_wall),   # -16.25: the frame's rear (behind the pocket)
-        "z_tower_rear": z_bay - d.tower_wall,                     # -14.6: the tower's rear, behind the bay (stepped in from
-        #                                                           the pocket's: what the wrist pitch's lower limit first meets)
+        "z_rear": z_bay - d.tower_wall,                           # -14.6: the frame's rear, the tower's behind the bay (what the
+        #                                                           wrist pitch's lower limit first meets); behind the pocket the
+        #                                                           board's window (board_window) - no wall
+        "z_board_back": z_motor_rear - d.board_stack,             # -25.6: the MKS board's back, 11 behind the frame's rear
         "z_bay": z_bay, "z_shaft_end": z_shaft_end, "z_clamp_nut": z_clamp_nut,
         "z_clamp_nut_seat": z_clamp_nut + d.nut.h,                # -0.2: its bearing face, toward the pulley
         "z_stop_lug": z_shaft_end,                                # -3.6 .. +stop_lug_t on the shaft's flange
@@ -100,6 +101,16 @@ def motor_pocket(cfg: WristConfig = DEFAULT) -> tuple[float, float, float, float
     d, S = cfg.roll, stack_positions(cfg)
     half = d.pancake.body_w / 2.0 + d.pad_slot_len / 2.0 + d.pocket_clear
     return (S["y_motor"] - half, S["y_motor"] + half, S["z_pocket_rear"], S["z_motor_face"])
+
+
+def board_window(cfg: WristConfig = DEFAULT) -> tuple[float, float, float, float]:
+    """(y0, y1, z0, z1) of the window through the frame's rear behind the pocket (from the free face out through the open
+    +X face, as the pocket): the MKS board's housing square + the tension travel either way + board_clear; from the
+    frame's rear (z0: the cut runs on through it) to board_clear in front of the pancake's rear face, where the housing
+    starts."""
+    d, S = cfg.roll, stack_positions(cfg)
+    half = d.board_w / 2.0 + d.pad_slot_len / 2.0 + d.board_clear
+    return (S["y_motor"] - half, S["y_motor"] + half, S["z_rear"], S["z_motor_rear"] + d.board_clear)
 
 
 def pad_bolt_points(cfg: WristConfig = DEFAULT) -> list[tuple[float, float]]:
