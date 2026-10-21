@@ -51,6 +51,12 @@ detection).
 ## Gotchas (all verified)
 - `uv sync` prunes anything `uv pip install`-ed; `uv run` doesn't — that's why `cadgen` is a
   pyproject dependency, not a manual install.
+- The venv's packages are compiled to bytecode when they are installed — `./cadtool setup` and CI sync with
+  `--compile-bytecode` — because no process writes its own: `cadtool` sets `PYTHONDONTWRITEBYTECODE=1` (no `__pycache__/`
+  in the tree: `cad/AGENTS.md` Gotchas), so without them every build worker and pytest worker compiles build123d, numpy
+  … anew on import (a cold arm build took half as long again). Not as a `[tool.uv] compile-bytecode` setting: uv then
+  re-checks every file of the venv on every `uv run` (0.3 s a command against 0.03 s, uv 0.13.4). A package a later
+  `uv run` installs (after a pull) stays uncompiled until the next `./cadtool setup`.
 - After `uv sync` changes cadgen / build123d / OCP, `./cadtool daemon stop`: the warm daemon's workers
   keep the old code loaded (its identity token only tracks cadgen's version and its own files' mtimes; cadgen
   has no stop verb of its own — `./cadtool daemon stop` SIGTERMs the daemon, which shuts its pool down, then kills

@@ -28,7 +28,7 @@ claude plugin marketplace add https://github.com/earthtojake/text-to-cad.git
 claude plugin install text-to-cad@earthtojake
 claude plugin install text-to-cad@earthtojake --scope project   # the repo's own scope (docs/toolchain.md)
 cd cad
-./cadtool setup                  # uv sync (build123d/OCP/cadgen into ./.venv; reinstalls the OCP kernel if it does not import)
+./cadtool setup                  # uv sync (build123d/OCP/cadgen into ./.venv, bytecode compiled; reinstalls the OCP kernel if it does not import)
                                  # + the git pre-commit hook (ruff on staged .py files) + git notes fetching
                                  # + cadgen's telemetry stored off
                                  # + Playwright's headless shell (~100 MB, snapshots only)
@@ -50,6 +50,7 @@ the CAD kernel), updating the plugin and what a pull that changes `pyproject.tom
 | `./cadtool python tools/bom.py [--module <module>] [--md\|--json]` | the **print list** and the **buy list**, of the arm or of one module of `assemblies/arm.py MODULES` ([`parts/AGENTS.md`](parts/AGENTS.md) Printed vs. bought) |
 | `./cadtool python tools/export_printables.py [--parts …]` | one STL per **printed** part into `print/` (git-ignored) |
 | `./cadtool why <model.py>` | why the model is current or stale, clause by clause (`cadgen store why`) |
+| `./cadtool compile [file.step…]` | compile the committed STEP inputs' trees (`reference/`, `vendor/`) into the store in one process — on a cold store (a fresh clone, CI) each is otherwise compiled on its first read, in a process of its own; current ones are skipped |
 | `./cadtool export <file.step> stl\|3mf\|glb [out]` | one mesh file per call from a STEP document (Node 20+; `--mesh-tolerance` is *relative*, default 1.5e-3 of the bounding diagonal) |
 | `./cadtool inspect <file.step> [--planes] [--json]` | leaf refs, solids, faces, volume, bbox of a saved STEP (`--planes`: its planar faces) |
 | `./cadtool inspect diff <a.step> <b.step> [--tol X]` | same geometry, leaf by leaf, as a copy kept from before a change? |

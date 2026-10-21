@@ -15,9 +15,10 @@ from __future__ import annotations
 
 import functools
 import math
+from typing import NamedTuple
 
 import pytest
-from build123d import Axis, Compound, Location, Pos, Solid
+from build123d import Axis, Compound, Location, Pos, Solid, Vector
 from OCP.gp import gp_Trsf
 from OCP.TopLoc import TopLoc_Location
 
@@ -370,6 +371,24 @@ def _plug_rooms(link: str) -> list:
     return rooms
 
 
+_EPS = 1e-3   # mm: a holder (`_holder`) this far clear of a room or the table decides for its part's own bounding box
+
+
+class _Corners(NamedTuple):
+    """A box's low and high corners - what _box_gap() reads of a bounding box."""
+    min: Vector
+    max: Vector
+
+
+def _holder(label: str, shape) -> _Corners:
+    """The world box round the part's own box (`_oriented`): a box holding the part, carried with it, so it holds the
+    part's bounding_box() at any pose - and costs no kernel call, where the optimal box of a vendor motor's splines
+    costs a quarter of a second."""
+    c, axes, h = _oriented(label, shape)
+    e = [sum(abs(axes[k][i]) * h[k] for k in range(3)) for i in range(3)]
+    return _Corners(Vector(*(c[i] - e[i] for i in range(3))), Vector(*(c[i] + e[i] for i in range(3))))
+
+
 def _plug_overlap(room, part) -> float:
     """interference(room, part); a hit measured again with the room moved 0.01 mm two ways and the median kept (as
     _distance(): a boolean that misfires at one exact pose)."""
@@ -413,20 +432,47 @@ _PLUG_SWEEPS = {
 def test_the_mks_boards_keep_their_plug_room(link):
     """Every MKS board's three plugs keep MKS_PLUG_ROOM straight out from their headers (lib/motors.py) at every pose:
     nothing of the board's own link in the rooms, nor of the links that move relative to it over their joints' ranges
-    (_PLUG_SWEEPS; poses with the arm down in the table skipped). The boards' quarter turns on their motors
-    (lib/mounts.py BOARD_TURNS) and the roll frame's plug slots (lib/forearm/layout.py plug_slots) keep them clear."""
+    (_PLUG_SWEEPS; poses with a part they turn down in the table skipped). The boards' quarter turns on their motors
+    (lib/mounts.py BOARD_TURNS) and the roll frame's plug slots (lib/forearm/layout.py plug_slots) keep them clear.
+    Each link is posed once per angles of the joints that turn it, and a part's optimal bounding box is made only where
+    its holder (`_holder`) cannot decide - once per pose of its link."""
     rooms = _plug_rooms(link)
     assert rooms, link
     boards = {label.split(" ")[0] for label, _room in rooms}   # the boards themselves (their own covers frame the headers)
+    posed, boxes = {}, {}
+
+    def at(name: str, q: dict) -> list:
+        """(label, shape, holder) of every part of a link at q (as _at() poses it)."""
+        turns = _chain(name, q)
+        if (name, turns) not in posed:
+            posed[name, turns] = [(label, s, _holder(label, s)) for label, s in _posed(_link_parts(name), *turns)]
+        return posed[name, turns]
+
+    def box(label: str, shape, holder: _Corners):
+        """shape.bounding_box(), kept (`posed` keeps the shapes, so their ids stay theirs) - inside its holder to half of
+        _EPS, so a holder _EPS clear of a room or the table leaves the box clear of it too."""
+        if id(shape) not in boxes:
+            bb = boxes[id(shape)] = shape.bounding_box()
+            lo, hi, blo, bhi = (tuple(v) for v in (holder.min, holder.max, bb.min, bb.max))
+            assert all(lo[i] - _EPS / 2 < blo[i] and bhi[i] < hi[i] + _EPS / 2
+                       for i in range(3)), f"{label}: its bounding box sticks out of its holder"
+        return boxes[id(shape)]
+
+    def down(names, q: dict) -> bool:
+        """_in_table() over the parts q turns: those of the links `names` with a joint turned between them and the base.
+        What it leaves where the capture put it is above the table - but the base, standing on it, has a box a float-noise
+        hair under its bottom face, which read as down in it and skipped every pose of a group that holds the base."""
+        return any(box(*p).min.Y < BASE_BOTTOM_Y for name in names if _chain(name, q) for p in at(name, q)
+                   if p[2].min.Y < BASE_BOTTOM_Y + _EPS)
+
     for links, poses in _PLUG_SWEEPS[link]:
         for q in poses:
-            others = _boxed([p for p in _at(links, q) if p[0] not in boards])
-            turns = _chain(link, q)
-            if q and (_in_table(others) or _in_table(_boxed(_posed(_link_parts(link), *turns)))):
+            others = [p for name in links for p in at(name, q) if p[0] not in boards]
+            if q and down({*links, link}, q):
                 continue
-            for rl, room, rbb in _boxed(_posed(rooms, *turns)):
-                for pl, part, pbb in others:
-                    if _box_gap(rbb, pbb) > 0.0:
+            for rl, room, rbb in _boxed(_posed(rooms, *_chain(link, q))):
+                for pl, part, holder in others:
+                    if _box_gap(rbb, holder) > _EPS or _box_gap(rbb, box(pl, part, holder)) > 0.0:
                         continue
                     v = _plug_overlap(room, part)
                     assert v < 0.01, f"{rl}: {pl} {v:.2f} mm^3 in the plug's room at {q}"
