@@ -13,6 +13,7 @@ from lib.geom import box, cylinder, nut_slot, single_solid, slot_y, stop_wedge
 from lib.pulley.teeth import gt2_ring
 from lib.units import NUDGE
 from lib.wrist.layout import (
+    board_window,
     clamp_nut_pocket,
     clamp_points,
     connector_bolt_points_module,
@@ -47,19 +48,20 @@ def build_frame(cfg: WristConfig = DEFAULT):
     """The frame in the module frame: the profile from the frame's rear to its front face (the plate's), the bearing boss
     on that face round R'; the pancake's pocket from the plate's free face out through the open +X face, its front wall
     the plate (the 4 bolt slots and the pilot slot along Y - the belt's tension -, the shaft's slit out to the open
-    face); the tower: bearing 1's seat from the shaft's bay behind it, the lip, bearing 2's seat in the boss; the bay
-    open on +X, the stop post on the tower's rear face in it."""
+    face), behind it the MKS board's window out through the frame's rear; the tower: bearing 1's seat from the shaft's
+    bay behind it, the lip, bearing 2's seat in the boss; the bay open on +X, the stop post on the tower's rear face in
+    it."""
     d, S = cfg.roll, stack_positions(cfg)
     outline = profile(cfg)
     y0, y1, z0, z1 = motor_pocket(cfg)
-    # the profile from the tower's rear to the front face, and behind the pocket on back to the frame's rear (the tower
-    # stays short: its rear is what the wrist pitch's lower limit first meets)
-    body = bd.extrude(bd.Pos(0.0, 0.0, S["z_tower_rear"]) * outline, amount=S["z_front"] - S["z_tower_rear"])
-    behind = bd.extrude(bd.Pos(0.0, 0.0, S["z_rear"]) * outline, amount=S["z_tower_rear"] - S["z_rear"] + NUDGE)
-    body = body + (behind & box((S["x_coupler"] - 1.0, d.frame_r + 1.0), (y0 - d.pocket_wall - 1.0, y1 + d.pocket_wall), (S["z_rear"] - 1.0, S["z_tower_rear"] + 1.0)))
+    # the profile from the frame's rear (the tower's: what the wrist pitch's lower limit first meets) to the front face
+    body = bd.extrude(bd.Pos(0.0, 0.0, S["z_rear"]) * outline, amount=S["z_front"] - S["z_rear"])
     body = body + cylinder(d.bearing_boss_dia / 2.0, S["z_boss"] - S["z_front"] + 1.0, z0=S["z_front"] - 1.0)
-    # the pocket, from the free face out through the open face; the plate in front of it
+    # the pocket, from the free face out through the open face; the plate in front of it; behind it the board's window,
+    # out through the frame's rear (no wall behind the pancake: the board on its rear face stands 11 proud of the frame)
     body = body - box((S["x_free"], d.frame_r + 1.0), (y0, y1), (z0, z1))
+    w0, w1, wz0, wz1 = board_window(cfg)
+    body = body - box((S["x_free"], d.frame_r + 1.0), (w0, w1), (wz0 - 1.0, wz1))
     for x, y in pad_bolt_points(cfg):
         body = body - slot_y(x, y, d.pad_bolt_dia, d.pad_slot_len, S["z_motor_face"], d.pad_t)
     body = body - slot_y(S["x_motor"], S["y_motor"], d.pad_pilot_w, d.pad_slot_len, S["z_motor_face"], d.pad_t)
