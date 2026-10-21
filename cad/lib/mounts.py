@@ -29,10 +29,11 @@ totals are its EXPECTED), listed under both `designed_modules` and `mounted`, wh
 like the drive's SolidWorks-placed record.
 
 Geometry (lib/params.py, kernel-verified 2026-09-21 - tests/test_mounts.py re-checks it):
-  base_yaw     the motor mount's plate -Y face, pattern centre BASE_MOTOR_PATTERN_CENTRE (its round holes); the
-               48 mm body hangs in -Y, shaft +Y through the plate into the plane of the base_yaw 120T's teeth; motor +
-               board end BASE_MOTOR_TABLE_CLEAR above the base's bottom face (lowered under them, lib/base/params.py
-               BOARD_CLEAR)
+  base_yaw     the -Y face of the pad under the motor mount's plate, pattern centre BASE_MOTOR_PATTERN_CENTRE (its
+               round holes); the 48 mm body hangs in -Y, shaft +Y through the plate into the plane of the base_yaw
+               120T's teeth; motor + board end BASE_MOTOR_TABLE_CLEAR above the base's bottom face (lowered under
+               them, lib/base/params.py BOARD_CLEAR); held up by its 4x M3 SHCS (yaw_motor_screws#1,
+               MOTOR_SCREW_MOUNTS), down through the plate from the counterbores in its top (YAW_MOTOR_SCREW_Y)
   elbow_pitch  the web across j1_link's motor hole (its top y = J1_MOTOR_PAD_FACE_Y, the -N side;
                lib/upper_arm/params.py ArmParams), pattern on the pad's axis (PadParams.x: ELBOW_MOTOR_CENTRES short of
                the elbow axis - the shoulder axis is the drive's yoke's); the body +N down the square hole through the
@@ -122,6 +123,7 @@ from lib.params import (
     PULLEY_SEAT_SHIFT,
     YAW_IDLER_NUT_Y,
     YAW_IDLER_Y,
+    YAW_MOTOR_SCREW_Y,
 )
 from lib.upper_arm.layout import elbow_idler_z
 from lib.upper_arm.params import DEFAULT as _UPPER_ARM
@@ -146,7 +148,7 @@ YOKE_MOTOR_LEG = "j1_motor_leg"
 FORK_ON_AXIS = ("fork_hub_screws", "fork_hub_nuts", "fork_sleeve_screws", "fork_sleeve_nuts")
 FORK_OFF_AXIS = ("fork_foot_screws", "fork_foot_nuts")
 FORK_BOLTS = FORK_ON_AXIS + FORK_OFF_AXIS
-MOTOR_SCREWS = ("elbow_motor_screws", "wrist_motor_screws")
+MOTOR_SCREWS = ("elbow_motor_screws", "wrist_motor_screws", "yaw_motor_screws")
 IDLER_KIT = ("gt2_idler_20t", "elbow_idler_spacer", "elbow_idler_screw", "elbow_idler_nut", "yaw_idler_spacer",
              "yaw_idler_screw", "yaw_idler_nut", "wrist_idler_screw", "wrist_idler_nut")
 
@@ -245,7 +247,8 @@ MOTOR_PULLEY_MOUNTS: tuple[Mount, ...] = (
 )
 # The motors' 4x M3 SHCS, the pattern on the web's holes, +Z from the heads' bearing faces on the floors of the pockets
 # in the web's underside up into the motor: the elbow motor's up j1_link's +Y (motor_plate_t under the motor's face, the
-# web across its motor hole), the wrist motor's up j2_link's +Z (the web under the counterbores: MotorHoleParams).
+# web across its motor hole), the wrist motor's up j2_link's +Z (the web under the counterbores: MotorHoleParams); the
+# base_yaw motor's DOWN the base's -Y from the counterbores in the top of the motor mount's plate (MotorParams.holes).
 MOTOR_SCREW_MOUNTS: tuple[Mount, ...] = (
     Mount("elbow_motor_screws#1", "elbow_motor_screws", "j1_link#1", "upper_arm_link", "elbow_pitch",
           ((_UPPER_ARM.pad.x, round(J1_MOTOR_PAD_FACE_Y - _UPPER_ARM.arm.motor_plate_t, 6), 0.0), (-90.0, 0.0, 0.0)),
@@ -255,6 +258,10 @@ MOTOR_SCREW_MOUNTS: tuple[Mount, ...] = (
           ((J2_MOTOR_X, 0.0, round(_FOREARM.web.z0 + _FOREARM.holes.screw.head_h, 6)), (0.0, 0.0, 0.0)),
           "the wrist motor's 4x M3 x J2_MOTOR_SCREW_LEN SHCS (the elbow motor's): heads flush in the counterbores in the "
           "underside of j2_link's web, up through it into the motor's tapped holes"),
+    Mount("yaw_motor_screws#1", "yaw_motor_screws", "base_motor_mount#1", "base_link", "base_yaw",
+          ((BASE_MOTOR_PATTERN_CENTRE[0], YAW_MOTOR_SCREW_Y, BASE_MOTOR_PATTERN_CENTRE[2]), (90.0, 0.0, 0.0)),
+          "the base_yaw motor's 4x M3 x YAW_MOTOR_SCREW_LEN SHCS (the roll motor's): heads flush in the counterbores in "
+          "the top of the motor mount's plate, down through it and its pad into the motor's tapped holes"),
 )
 
 

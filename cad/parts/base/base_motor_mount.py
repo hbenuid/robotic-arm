@@ -7,8 +7,10 @@ round half (its centre lib/base/layout.py mount_end_x(), the end mount_x1() out 
 past the MKS board's square), from the bottom face (it stands on the table) up to the 5 mm plate across their tops; the
 base's foot carried on round it (the flange and the chamfer, 4 screw holes with spot-faces, FootParams.mount_hole_deg);
 the band of slits through the walls the base's walls have too (SlitParams, lib/base/layout.py slits()). The plate
-carries the 48 mm motor's seat on its underside (4 round holes for the motor's M3s, the pilot's window; no rim round
-the motor's face: the holes hold it) and the base_yaw belt's tensioner (lib/base/params.py YawIdlerParams): the idler's
+carries the 48 mm motor's seat on its underside (lib/base/params.py MotorParams.holes / pad_t: a pad round the motor's
+face under the plate, 4 round holes through both for the motor's M3s (parts/base/yaw_motor_screws), their heads flush
+in counterbores in the plate's top, the pilot's round hole; no rim round the motor's face: the screws hold it) and the
+base_yaw belt's tensioner (lib/base/params.py YawIdlerParams): the idler's
 axle's slot through the plate across the belt, and under the plate two rails either side of its nut's slot - the nut
 bears up on the plate's underside between them and slides with the axle (lib/base/body.py _idler_seat). Open
 underneath, and open toward the base: the window between the two parts' posts takes the cables into the base. Two

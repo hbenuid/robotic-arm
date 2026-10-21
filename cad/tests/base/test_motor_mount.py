@@ -19,7 +19,9 @@ from lib.base import (
     inner_r,
     joint_bolt_points,
     joint_stations,
+    motor_face_y,
     motor_holes,
+    motor_screw_y,
     mount_end_x,
     mount_foot_holes,
     mount_inner_half,
@@ -28,7 +30,7 @@ from lib.base import (
     slit_band,
     slits,
 )
-from lib.base.params import YAW_BELT, YAW_MOTOR_X
+from lib.base.params import YAW_BELT, YAW_MOTOR_PAD, YAW_MOTOR_X
 from lib.belts import (
     GT2_PULLEY_20T_TEETH,
     GT2_PULLEY_90T_TEETH,
@@ -38,6 +40,7 @@ from lib.belts import (
 )
 from lib.datum import BASE_BOTTOM_Y
 from lib.fasteners import M4_PITCH
+from lib.forearm import DEFAULT as FOREARM
 from lib.geom import hex_circumdiameter
 from lib.motors import MKS_SERVO42D_W, NEMA17_FACE, NEMA17_PILOT_DIA
 from tests import built
@@ -68,14 +71,19 @@ def test_the_motor_sits_short_of_the_stock_belt():
 
 
 def test_the_seat():
-    """The pilot in its window; a web between each hole and the window; the motor's face wholly on the mount's plate,
-    clear of the posts at the joint face."""
+    """The wrist and roll motors' round seat (MotorParams.holes): the pilot in its round hole (the 20T's hub too, which
+    dips into the plate: test_the_motor_clears_the_mount), a web between each hole's counterbore and it; the pad under
+    the plate the motor's face, the plate and the pad under the heads the roll motor's 4 (the counterbores head_h deep:
+    flush); the motor's face wholly on the pad, clear of the posts at the joint face."""
     c, cz = M.centre
-    assert M.window_x[0] < c - NEMA17_PILOT_DIA / 2.0 and M.window_x[1] > c + NEMA17_PILOT_DIA / 2.0
-    assert M.window_half_z > NEMA17_PILOT_DIA / 2.0
+    h = M.holes
+    assert h == FOREARM.holes == FOREARM.drive.motor_holes and M.hole_dia == h.bolt_dia and M.travel == 0.0
+    assert h.pilot_dia - NEMA17_PILOT_DIA == pytest.approx(0.3) and LEGACY.motor.holes is None and LEGACY.motor.pad_t == 0.0
+    assert M.pad_t == YAW_MOTOR_PAD == 2.0 and motor_face_y() == pytest.approx(PL.y[0] - M.pad_t)
+    assert motor_screw_y() - motor_face_y() == pytest.approx(PL.y[1] - PL.y[0] + M.pad_t - h.screw.head_h) == pytest.approx(4.0)
     assert c - NEMA17_FACE / 2.0 - (J.split_x + MT.post_t) > 2.0
-    for _, z in motor_holes():
-        assert abs(z - cz) - M.hole_dia / 2.0 - M.window_half_z >= 2.0   # the web between a hole and the window
+    for x, z in motor_holes():
+        assert math.hypot(x - c, z - cz) - h.pocket_dia / 2.0 - h.pilot_dia / 2.0 >= 5.0   # the web between them
 
 
 def test_the_mount_is_the_bases_other_half():
@@ -247,17 +255,31 @@ def test_the_base_holds_the_nuts(base):
 
 @pytest.mark.slow
 def test_the_mount_carries_the_seat(mount):
+    """The 4 round holes through the plate and its pad, each counterbored from the plate's top (pocket_dia, the screw's
+    head_h deep); the pilot's round hole through both; the pad under the plate the motor face's square, no rim round
+    it."""
     c, cz = M.centre
-    r = M.hole_dia / 2.0
+    h, face, floor, top = M.holes, motor_face_y(), motor_screw_y(), PL.y[1]
+    r, rc, rp = M.hole_dia / 2.0, h.pocket_dia / 2.0, h.pilot_dia / 2.0
+    under = (face + floor) / 2.0                                                                      # under the heads
     for x, z in motor_holes():
-        assert not is_inside(mount, x, -42, z)                                                        # the hole ...
-        for dx, dz in ((r + 0.2, 0.0), (-r - 0.2, 0.0), (0.0, r + 0.2), (0.0, -r - 0.2)):
-            assert is_inside(mount, x + dx, -42, z + dz)                                              # ... round
-    for dx, dz in ((0.0, M.window_half_z), (M.window_x[1] - c, 0.0), (M.window_x[0] - c, 0.0)):
-        sx, sz = math.copysign(0.1, dx) if dx else 0.0, math.copysign(0.1, dz) if dz else 0.0
-        assert not is_inside(mount, c + dx - sx, -42, cz + dz - sz) and is_inside(mount, c + dx + sx, -42, cz + dz + sz)
-    for x, z in ((c + NEMA17_FACE / 2.0 + 1.3, cz), (c, cz + NEMA17_FACE / 2.0 + 1.3)):
-        assert not is_inside(mount, x, PL.y[0] - 3.0, z)                                              # no rim under the plate
+        assert not is_inside(mount, x, under, z)
+        for dx, dz in ((1.0, 0.0), (-1.0, 0.0), (0.0, 1.0), (0.0, -1.0)):
+            assert is_inside(mount, x + dx * (r + 0.2), under, z + dz * (r + 0.2))                    # the hole: round
+            assert not is_inside(mount, x + dx * (rc - 0.2), top - 0.2, z + dz * (rc - 0.2))          # the counterbore ...
+            assert is_inside(mount, x + dx * (rc + 0.2), top - 0.2, z + dz * (rc + 0.2))
+        assert not is_inside(mount, x + rc - 0.2, floor + 0.2, z) and is_inside(mount, x + rc - 0.2, floor - 0.2, z)   # ... head_h deep
+    for dx, dz in ((1.0, 0.0), (-1.0, 0.0), (0.0, 1.0), (0.0, -1.0)):
+        for y in (face + 0.2, top - 0.2):
+            assert not is_inside(mount, c + dx * (rp - 0.2), y, cz + dz * (rp - 0.2))                 # the pilot's hole ...
+            assert is_inside(mount, c + dx * (rp + 0.2), y, cz + dz * (rp + 0.2))                     # ... round, through
+    half = NEMA17_FACE / 2.0
+    for dx, dz in ((1.0, 0.0), (-1.0, 0.0), (0.0, 1.0), (0.0, -1.0)):
+        assert is_inside(mount, c + dx * (half - 0.2), face + 0.2, cz + dz * (half - 0.2))           # the pad ...
+        assert not is_inside(mount, c + dx * (half + 0.2), face + 0.2, cz + dz * (half + 0.2))       # ... the face's square
+        assert not is_inside(mount, c + dx * (half + 0.2), face - 0.2, cz + dz * (half + 0.2))
+    for x, z in ((c + half + 1.3, cz), (c, cz + half + 1.3)):
+        assert not is_inside(mount, x, face - 3.0, z)                                                 # no rim under it
 
 
 @pytest.mark.slow
@@ -277,10 +299,12 @@ def test_the_screws_clamp_the_joint():
 
 @pytest.mark.slow
 def test_the_motor_clears_the_mount(mount):
-    """The 48 mm motor and its board on their round holes: nothing runs into the mount (the motor's face on the plate's
-    underside, the pilot in the window), the board the wiring room clear of it; the screws' heads clear of the mount
-    but on their posts."""
-    for key, clear in (("nema17_48mm#1", 0.0), ("mks_servo42d#1", MT.room - 0.1), ("base_motor_mount_screws#1", 0.0)):
+    """The 48 mm motor and its board on their round holes: nothing runs into the mount (the motor's face on its pad's
+    underside, the pilot in its round hole), the board the wiring room clear of it; the joint's screws' heads clear of
+    the mount but on their posts; the motor's screws in their holes and counterbores; the 20T's hub, down in the
+    pilot's hole, 3 mm clear of it all round."""
+    for key, clear in (("nema17_48mm#1", 0.0), ("mks_servo42d#1", MT.room - 0.1), ("base_motor_mount_screws#1", 0.0),
+                       ("yaw_motor_screws#1", 0.0), ("gt2_pulley_20t#3", 3.0)):
         part = built.placed(key)
         assert interference(part, mount) < 1e-3, key
         if clear:

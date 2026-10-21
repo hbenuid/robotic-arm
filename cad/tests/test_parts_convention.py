@@ -51,10 +51,11 @@ MULTI_BODY = {
     # the base motor mount's M4 screws + nuts (lib/mounts.py BASE_MOUNTS)
     "base_motor_mount_screws": 4,
     "base_motor_mount_nuts": 4,
-    # the elbow and the wrist motor's M3 screws (lib/mounts.py MOTOR_SCREW_MOUNTS), the roll motor's (its drive's row)
+    # the elbow, wrist and base_yaw motors' M3 screws (lib/mounts.py MOTOR_SCREW_MOUNTS), the roll motor's (its drive's row)
     "elbow_motor_screws": 4,
     "wrist_motor_screws": 4,
     "roll_motor_screws": 4,
+    "yaw_motor_screws": 4,
     # the KY-003 hall module: the board, the chip (body + leads), the header (housing + pins) - one piece to buy
     "ky003_hall_sensor": 3,
 }

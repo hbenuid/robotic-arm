@@ -67,7 +67,9 @@ feature probes, the interface values lib/params.py and lib/datum.py take from it
 j1_coupler's cone on down onto the foot's flange, its screw holes, its volume / box (`test_foot`); `base_motor_mount`:
 the base's other half - its walls, round end and foot the base's carried on, flush at the joint, its own screw holes -,
 the wiring room, the joint's posts and bolts, both parts' slits, the seat on round holes short of the stock belt's
-centre distance, the motor clear of it; `yaw_idler`: the base_yaw belt's tensioner - the stock belt round it, the band of belts its slot
+centre distance - its pad, its pilot's round hole, the counterbores -, the motor clear of it; `yaw_motor_screws`: the
+base_yaw motor's 4x M3 (no reference) - its numbers, the roll motor's screw in the wrist motor's counterbores through
+the plate and its pad, the heads flush in place; `yaw_idler`: the base_yaw belt's tensioner - the stock belt round it, the band of belts its slot
 takes, the belt frame's points in the base's, its stations, its axle's, nut's and spacer's numbers (no reference), its
 seat on the mount, the kit's fit; `yaw_pulley_screws` / `yaw_pulley_nuts`, purchased parts with no reference: the
 numbers no reference file holds for them - pieces, volume, bbox - and feature probes; the `j1_coupler` fork's screws and

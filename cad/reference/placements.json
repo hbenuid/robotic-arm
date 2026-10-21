@@ -11,9 +11,9 @@
  "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. A record with a `mount` block (keys under `mounted`) is a motor mount declared in lib/mounts.py, not a SolidWorks node: parent None, rel == world = host world * mount frame.",
  "root_label": "final_Arm_Assembly_Fully_Movable",
  "expected": {
-  "leaf_occurrences": 83,
-  "solids": 191,
-  "solid_volume": 2325722.255
+  "leaf_occurrences": 84,
+  "solids": 195,
+  "solid_volume": 2329288.888
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -42,6 +42,7 @@
   "gt2_pulley_20t#4",
   "elbow_motor_screws#1",
   "wrist_motor_screws#1",
+  "yaw_motor_screws#1",
   "bearing_6806#1",
   "bearing_6806#2",
   "bearing_6806#3",
@@ -2799,7 +2800,7 @@
     "note": "the base's other half (its plate the motor's seat), bolted to the base's posts at the joint face; built in the base's part frame"
    },
    "solids": 1,
-   "solid_volume": 282427.475,
+   "solid_volume": 285510.96,
    "rel": {
     "position": [
      -0.0,
@@ -3816,7 +3817,7 @@
     "frame_in_host": {
      "position": [
       122.0,
-      -44.9,
+      -46.9,
       0.08362
      ],
      "rotation_xyz_deg": [
@@ -3833,7 +3834,7 @@
    "rel": {
     "position": [
      122.0,
-     -44.9,
+     -46.9,
      0.08362
     ],
     "rotation_xyz_deg": [
@@ -3852,7 +3853,7 @@
       -0.0,
       0.0,
       1.0,
-      -44.9
+      -46.9
      ],
      [
       1.0,
@@ -3865,7 +3866,7 @@
    "world": {
     "position": [
      122.0,
-     -44.9,
+     -46.9,
      0.08362
     ],
     "rotation_xyz_deg": [
@@ -3884,7 +3885,7 @@
       -0.0,
       0.0,
       1.0,
-      -44.9
+      -46.9
      ],
      [
       1.0,
@@ -3896,7 +3897,7 @@
    },
    "world_bbox_min": [
     101.0,
-    -92.9,
+    -94.9,
     -20.916
    ],
    "world_bbox_size": [
@@ -3936,7 +3937,7 @@
    "rel": {
     "position": [
      122.0,
-     -92.9,
+     -94.9,
      0.08362
     ],
     "rotation_xyz_deg": [
@@ -3955,7 +3956,7 @@
       -0.0,
       0.0,
       1.0,
-      -92.9
+      -94.9
      ],
      [
       1.0,
@@ -3968,7 +3969,7 @@
    "world": {
     "position": [
      122.0,
-     -92.9,
+     -94.9,
      0.08362
     ],
     "rotation_xyz_deg": [
@@ -3987,7 +3988,7 @@
       -0.0,
       0.0,
       1.0,
-      -92.9
+      -94.9
      ],
      [
       1.0,
@@ -3999,7 +4000,7 @@
    },
    "world_bbox_min": [
     100.5,
-    -107.0,
+    -109.0,
     -21.416
    ],
    "world_bbox_size": [
@@ -4538,7 +4539,7 @@
      "position": [
       0.0,
       0.0,
-      2.85
+      4.85
      ],
      "rotation_xyz_deg": [
       0.0,
@@ -4933,6 +4934,109 @@
     49.405,
     49.314,
     18.066
+   ]
+  },
+  {
+   "key": "yaw_motor_screws#1",
+   "part": "yaw_motor_screws",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "base_motor_mount#1",
+    "link": "base_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      122.0,
+      -42.9,
+      0.08362
+     ],
+     "rotation_xyz_deg": [
+      90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the base_yaw motor's 4x M3 x YAW_MOTOR_SCREW_LEN SHCS (the roll motor's): heads flush in the counterbores in the top of the motor mount's plate, down through it and its pad into the motor's tapped holes"
+   },
+   "solids": 4,
+   "solid_volume": 483.148,
+   "rel": {
+    "position": [
+     122.0,
+     -42.9,
+     0.08362
+    ],
+    "rotation_xyz_deg": [
+     90.0,
+     0.0,
+     -0.0
+    ],
+    "matrix_3x4": [
+     [
+      1.0,
+      0.0,
+      0.0,
+      122.0
+     ],
+     [
+      0.0,
+      0.0,
+      -1.0,
+      -42.9
+     ],
+     [
+      0.0,
+      1.0,
+      0.0,
+      0.08362
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     122.0,
+     -42.9,
+     0.08362
+    ],
+    "rotation_xyz_deg": [
+     90.0,
+     0.0,
+     -0.0
+    ],
+    "matrix_3x4": [
+     [
+      1.0,
+      0.0,
+      0.0,
+      122.0
+     ],
+     [
+      0.0,
+      0.0,
+      -1.0,
+      -42.9
+     ],
+     [
+      0.0,
+      1.0,
+      0.0,
+      0.08362
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    103.75,
+    -50.9,
+    -18.166
+   ],
+   "world_bbox_size": [
+    36.5,
+    11.0,
+    36.5
    ]
   },
   {

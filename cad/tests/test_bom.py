@@ -11,7 +11,7 @@ def test_every_part_is_counted_once_per_occurrence():
     counts = bom.part_counts()
     leaves = (len(arm.OCCURRENCES) - len(arm.MODULES) + len(gripper.OCCURRENCES) + len(cycloidal_drive.OCCURRENCES)
               + len(forearm_roll_drive.OCCURRENCES) + len(wrist_roll_drive.OCCURRENCES))
-    assert sum(counts.values()) == leaves == 118
+    assert sum(counts.values()) == leaves == 119
     assert set(counts) == set(parts.names()) - set(parts.unplaced()), "a part under parts/ that no assembly places (or the reverse)"
     assert not set(counts) & set(parts.unplaced()), "a placed part still declares UNPLACED - drop it (and its EXTRAS row)"
     assert sum(bom.part_counts("gripper").values()) == len(gripper.OCCURRENCES)
@@ -26,7 +26,7 @@ def test_the_two_lists_partition_the_parts_by_the_cots_flag():
     assert not {r["part"] for r in printed} & {r["part"] for r in bought}
     assert {r["part"] for r in bought} == (set(R.COTS) | {n for n in R.NO_REFERENCE if parts.bought(n)}) - set(parts.unplaced())
     assert (len(printed), sum(r["qty"] for r in printed)) == (32, 39)
-    assert (len(bought), sum(bom.part_counts()[r["part"]] for r in bought)) == (51, 79)
+    assert (len(bought), sum(bom.part_counts()[r["part"]] for r in bought)) == (52, 80)
     assert {r["state"] for r in printed} <= {"wrapper", "parametric", "designed", "native", "measured", "no reference"}
     assert {r["part"] for r in printed if r["state"] == "no reference"} == {n for n in R.NO_REFERENCE if not parts.bought(n)}
     assert {r["part"] for r in printed if r["state"] == "designed"} == set(R.DESIGNED) - set(parts.unplaced())
@@ -118,9 +118,10 @@ def test_the_motors_take_their_m3_screws():
     """The elbow motor is held down on the web across j1_link's motor hole by 4x M3 SHCS (lib/mounts.py
     MOTOR_SCREW_MOUNTS) - the drive motor's screw 2 mm longer (the web flush with the slab's underside) -, the wrist-pitch
     motor on j2_link's web by the same screw, the roll motor on the roll frame's thinner plate by M3 x 8 (the roll
-    drive's row); each an order line of its own: a modelled pattern part on the buy list, no vendor model - no EXTRAS
-    row."""
-    for part, spec in (("elbow_motor_screws", "M3 x 12"), ("wrist_motor_screws", "M3 x 12"), ("roll_motor_screws", "M3 x 8")):
+    drive's row), the base_yaw motor under the motor mount's plate and its pad by M3 x 8 too; each an order line of its
+    own: a modelled pattern part on the buy list, no vendor model - no EXTRAS row."""
+    for part, spec in (("elbow_motor_screws", "M3 x 12"), ("wrist_motor_screws", "M3 x 12"), ("roll_motor_screws", "M3 x 8"),
+                       ("yaw_motor_screws", "M3 x 8")):
         rows = [r for r in bom.buy_rows() if r["part"] == part]
         assert [(r["pieces"], r["geometry"]) for r in rows] == [(4, "envelope")], part
         assert rows[0]["order"].startswith(f"{spec} socket head cap screw (ISO 4762)"), part

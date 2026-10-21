@@ -153,7 +153,7 @@ def test_motor_shaft_is_on_its_joint_axis(m):
 @pytest.mark.parametrize("m", MOTORS, ids=[m.joint for m in MOTORS])
 def test_mounting_face_lies_on_the_host_pad(m):
     """The motor's mounting face (its local z=0 plane) coincides with a planar face of the host at the pattern
-    centre: the base motor mount's plate underside, j1_link's pad, j2_link's web."""
+    centre: the underside of the pad under the base motor mount's plate, j1_link's pad, j2_link's web."""
     world = _world(m.key)
     origin, z = world.position, _dir(world).normalized()
     host = built.placed(m.host)
@@ -191,13 +191,20 @@ def test_motors_and_boards_clear_their_neighbours():
                 continue   # a re-seated pulley is a neighbour of the others
             vol = interference(part, other)
             assert vol <= budget.get((m.key, key), 1.0), f"{m.key} x {key}: {vol:.1f} mm^3"
-    # the mounts do not run into each other either (a bearing and the pulley in it only touch)
+    # the mounts do not run into each other either (a bearing and the pulley in it only touch) - but the base_yaw motor's
+    # screws' thread in the vendor 48 mm motor's tapped holes, modelled at the M3 minor diameter (the screws at the major:
+    # the drive's motor bolts' budget, tests/cycloidal/test_assembly.py), 4 x the thread (MotorParams.holes) long
+    designed = {frozenset(("nema17_48mm#1", "yaw_motor_screws#1")): 37.1}
     placed = [(m.key, built.placed(m.key)) for m in mounts.MOUNTS]
     for i, (ka, a) in enumerate(placed):
         for kb, b in placed[i + 1:]:
             if mounts.BY_KEY[kb].host == ka or mounts.BY_KEY[ka].host == kb:
                 continue   # a board on its motor: the kit's screws run through the motor by design
-            assert interference(a, b) < 1.0, f"{ka} x {kb}"
+            vol, limit = interference(a, b), designed.get(frozenset((ka, kb)))
+            if limit is None:
+                assert vol < 1.0, f"{ka} x {kb}: {vol:.1f} mm^3"
+            else:
+                assert limit * 0.9 <= vol <= limit, f"{ka} x {kb}: {vol:.1f} mm^3 (designed ~{limit})"
 
 
 @pytest.mark.slow
@@ -254,12 +261,14 @@ def test_elbow_motor_20t_runs_in_the_90ts_band():
      PARAMS.J1_MOTOR_SCREW_LEN, PARAMS.J1_MOTOR_SCREW_THREAD),
     ("nema17_40mm#3", "wrist_motor_screws#1", FOREARM.web.thickness - FOREARM.holes.screw.head_h, FOREARM.holes.screw.head_h,
      PARAMS.J2_MOTOR_SCREW_LEN, FOREARM.holes.thread),
+    ("nema17_48mm#1", "yaw_motor_screws#1", PARAMS.YAW_MOTOR_SCREW_Y - PARAMS.BASE_MOTOR_PATTERN_CENTRE[1],
+     BASE.motor.holes.screw.head_h, PARAMS.YAW_MOTOR_SCREW_LEN, BASE.motor.holes.thread),
 ])
 def test_the_motor_screws_hold_it_down_through_the_web(motor_key, screws_key, under_heads, head, length, thread):
-    """The elbow and the wrist motor's 4x M3 SHCS (MOTOR_SCREW_MOUNTS) - the drive motor's: each screw on one of the
-    motor's bolt axes, its head's bearing face on its pocket's floor in the web (the web under the heads out from the
-    motor's face, on its shaft's side), the head's end flush with the web's underside, its tip `thread` into the motor -
-    short of its tapped holes' bottoms."""
+    """The elbow, the wrist and the base_yaw motor's 4x M3 SHCS (MOTOR_SCREW_MOUNTS) - the drive motor's: each screw on
+    one of the motor's bolt axes, its head's bearing face on its pocket's floor in the web (the web - the base_yaw
+    motor's plate and its pad - under the heads out from the motor's face, on its shaft's side), the head's end flush
+    with the web's far face, its tip `thread` into the motor - short of its tapped holes' bottoms."""
     motor, screws = P.location(motor_key, "world"), P.location(screws_key, "world")
     rel = motor.inverse() * screws                       # the screws' frame in the motor's (its face z = 0, its shaft +Z)
     assert tuple((rel * Location((0.0, 0.0, 1.0))).position - rel.position) == pytest.approx((0.0, 0.0, -1.0), abs=1e-9)
