@@ -11,9 +11,9 @@
  "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. A record with a `mount` block (keys under `mounted`) is a motor mount declared in lib/mounts.py, not a SolidWorks node: parent None, rel == world = host world * mount frame.",
  "root_label": "final_Arm_Assembly_Fully_Movable",
  "expected": {
-  "leaf_occurrences": 82,
-  "solids": 187,
-  "solid_volume": 2325126.009
+  "leaf_occurrences": 83,
+  "solids": 191,
+  "solid_volume": 2325722.255
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -41,6 +41,7 @@
   "gt2_pulley_20t#3",
   "gt2_pulley_20t#4",
   "elbow_motor_screws#1",
+  "wrist_motor_screws#1",
   "bearing_6806#1",
   "bearing_6806#2",
   "bearing_6806#3",
@@ -4829,6 +4830,109 @@
     49.387,
     49.296,
     18.065
+   ]
+  },
+  {
+   "key": "wrist_motor_screws#1",
+   "part": "wrist_motor_screws",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j2_link#1",
+    "link": "forearm_link",
+    "joint": "wrist_pitch",
+    "frame_in_host": {
+     "position": [
+      -85.0,
+      0.0,
+      11.0
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the wrist motor's 4x M3 x J2_MOTOR_SCREW_LEN SHCS (the elbow motor's): heads flush in the counterbores in the underside of j2_link's web, up through it into the motor's tapped holes"
+   },
+   "solids": 4,
+   "solid_volume": 596.246,
+   "rel": {
+    "position": [
+     -116.139771,
+     323.148947,
+     43.574104
+    ],
+    "rotation_xyz_deg": [
+     180.0,
+     -3.694455,
+     46.997641
+    ],
+    "matrix_3x4": [
+     [
+      0.680611114,
+      -0.729805829,
+      -0.064435731,
+      -116.139770875
+     ],
+     [
+      -0.731325626,
+      -0.682028466,
+      -0.0,
+      323.148946707
+     ],
+     [
+      -0.043947003,
+      0.047123501,
+      -0.997921859,
+      43.574103866
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -116.139771,
+     323.148947,
+     43.574104
+    ],
+    "rotation_xyz_deg": [
+     180.0,
+     -3.694455,
+     46.997641
+    ],
+    "matrix_3x4": [
+     [
+      0.680611114,
+      -0.729805829,
+      -0.064435731,
+      -116.139770875
+     ],
+     [
+      -0.731325626,
+      -0.682028466,
+      -0.0,
+      323.148946707
+     ],
+     [
+      -0.043947003,
+      0.047123501,
+      -0.997921859,
+      43.574103866
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -140.746,
+    298.492,
+    30.091
+   ],
+   "world_bbox_size": [
+    49.405,
+    49.314,
+    18.066
    ]
   },
   {

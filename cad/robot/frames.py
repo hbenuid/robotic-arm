@@ -135,10 +135,11 @@ LINKS: dict[str, list[str]] = {
     "elbow_link": ["gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", "forearm_roll_drive#1:stator"],
     # the drive's ROTOR - the pulley (its 90T ring, the roll's output, bolts to j2_link's wall) and the shaft clamped to
     # it - IS the forearm's elbow end;
-    # the wrist_pitch motor + board bolt to j2_link's web, its 20T and the wrist belt with them - the belt's tensioner (the
-    # idler, its axle and nut) under the web -, the wrist bearing pair sits in its wrist boss (lib/mounts.py)
+    # the wrist_pitch motor + board bolt to j2_link's web (its 4x M3), its 20T and the wrist belt with them - the belt's
+    # tensioner (the idler, its axle and nut) under the web -, the wrist bearing pair sits in its wrist boss (lib/mounts.py)
     "forearm_link": ["forearm_roll_drive#1:rotor", "j2_link#1", "bearing_6806#5", "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3",
-                     "gt2_pulley_20t#4", "wrist_belt#1", "gt2_idler_20t#3", "wrist_idler_screw#1", "wrist_idler_nut#1"],
+                     "gt2_pulley_20t#4", "wrist_motor_screws#1", "wrist_belt#1", "gt2_idler_20t#3", "wrist_idler_screw#1",
+                     "wrist_idler_nut#1"],
     # likewise the wrist 90T pulley, its M4 screws + nuts and the J3-coupler ride with the wrist-pitch body  [ASSUMPTION];
     # wrist_link IS the wrist roll drive's frame, which carries the drive's STATOR - the pancake (on the pitch axis) and
     # its 20T, both bearings, the belt (assemblies/wrist_roll_drive.py BODIES)

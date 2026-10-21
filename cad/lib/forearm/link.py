@@ -10,6 +10,7 @@ from lib.forearm.layout import (
     elbow_end_x,
     flange_bolt_points,
     link_socket_points,
+    motor_hole_points,
     screw_channel,
     screws_under_the_web,
     wrist_idler_xy,
@@ -152,17 +153,17 @@ def build_link(cfg: ForearmConfig = DEFAULT):
     if b.recess_dia is not None:
         body = body - cylinder(b.recess_dia / 2.0, b.z1 - b.recess_z0 + NUDGE, wx, z0=b.recess_z0)
     # the motor: on a slide - the central slot and the two side slots through the web - or on round holes, the pilot
-    # boss's and the 31 mm square's
+    # boss's and the 31 mm square's, their screws' heads flush in counterbores in the underside
     if s is not None:
         body = body - stadium(s.centre_x[1] - s.centre_x[0], s.centre_w, w.thickness + 2 * NUDGE, sum(s.centre_x) / 2.0, w.z0 - NUDGE)
         for sy in (s.side_y, -s.side_y):
             body = body - bd.Pos(0.0, sy, 0.0) * stadium(s.side_x[1] - s.side_x[0], s.side_w, w.thickness + 2 * NUDGE, sum(s.side_x) / 2.0, w.z0 - NUDGE)
     if cfg.holes is not None:
-        h, m = cfg.holes, cfg.motor_x
-        body = body - cylinder(h.pilot_dia / 2.0, w.thickness + 2 * NUDGE, (m, 0.0), z0=w.z0 - NUDGE)
-        for sx in (-h.bolt_half, h.bolt_half):
-            for sy in (-h.bolt_half, h.bolt_half):
-                body = body - cylinder(h.bolt_dia / 2.0, w.thickness + 2 * NUDGE, (m + sx, sy), z0=w.z0 - NUDGE)
+        h = cfg.holes
+        body = body - cylinder(h.pilot_dia / 2.0, w.thickness + 2 * NUDGE, (cfg.motor_x, 0.0), z0=w.z0 - NUDGE)
+        for xy in motor_hole_points(cfg):
+            body = body - cylinder(h.bolt_dia / 2.0, w.thickness + 2 * NUDGE, xy, z0=w.z0 - NUDGE)
+            body = body - cylinder(h.pocket_dia / 2.0, h.screw.head_h + NUDGE, xy, z0=w.z0 - NUDGE)
     # the wrist belt's idler (IdlerParams): the rib under the web its top bears on, the axle's slot through both, the
     # nut's channel down from the top face - all along y over the idler's travel
     if cfg.roll and cfg.idler is not None:

@@ -111,6 +111,9 @@ from lib.forearm.params import DEFAULT as _FOREARM  # noqa: E402
 J2_MOTOR_WEB_FACE_Z = _FOREARM.web.z1              # 19 [REFERENCE] j2_link: the web's +Z face; the motor bolts through its round holes
 WRIST_MOTOR_CENTRES = _FOREARM.motor_x - _FOREARM.web.wrist_x   # 80 [DESIGN] the wrist-pitch motor's axis from the wrist pivot
 J2_MOTOR_X = _FOREARM.motor_x                      # -85 [DESIGN] that axis in j2_link's frame (lib/forearm/params.py WRIST_MOTOR_CENTRES)
+J2_MOTOR_SCREW_LEN = _FOREARM.web.thickness - _FOREARM.holes.screw.head_h + _FOREARM.holes.thread   # 12 the wrist motor's 4x M3
+#                                                    (parts/joints/wrist_motor_screws) under the head: the web under the heads (their
+#                                                    counterbores head_h deep - MotorHoleParams) and the thread in the motor
 WRIST_BELT_LENGTH = _FOREARM.roll_end.wrist_belt   # 280-2GT [DESIGN] the wrist-pitch belt (90T at the wrist, 20T on the motor), round its
 #                                                    idler (lib/forearm/params.py IdlerParams)
 J2_BELT_Z = _FOREARM.roll_end.wrist_belt_z         # 0.3 [REFERENCE] the wrist belt's mid-plane in j2_link's frame (the wrist 90T's band)
@@ -256,6 +259,10 @@ BASE_MOUNT_NUTS_MASS_G = STEEL_DENSITY * _JOINT_BOLTS * nut_volume(_BASE.joint.n
 from lib.upper_arm.layout import pad_holes as _pad_holes  # noqa: E402
 
 ELBOW_MOTOR_SCREWS_MASS_G = STEEL_DENSITY * len(_pad_holes(_UPPER_ARM)) * shcs_volume(_UPPER_ARM.arm.motor_screw, J1_MOTOR_SCREW_LEN)   # 4.7, 4x M3x12
+# the wrist motor's (parts/joints/wrist_motor_screws), likewise
+from lib.forearm.layout import motor_hole_points as _motor_hole_points  # noqa: E402
+
+WRIST_MOTOR_SCREWS_MASS_G = STEEL_DENSITY * len(_motor_hole_points(_FOREARM)) * shcs_volume(_FOREARM.holes.screw, J2_MOTOR_SCREW_LEN)   # 4.7, 4x M3x12
 
 # The j1_coupler fork's screws and nuts (parts/base/fork_{hub,foot,sleeve}_{screws,nuts}; lib/yaw_coupler/params.py
 # ForkParams): the same estimate - the hub's to the hub leg, the motor leg's foot's to the disc, its ring's to the sleeve

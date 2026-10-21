@@ -29,14 +29,14 @@ def _close(a, b, tol=1e-6):
 
 def test_record_counts_match_expected():
     parts_ = P.keys(kind="part", retired=True)
-    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 82      # 30 SolidWorks + 52 mounted (j3_coupler#1, the two 90Ts, the pancake and its 20T retired, still records)
+    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 83      # 30 SolidWorks + 53 mounted (j3_coupler#1, the two 90Ts, the pancake and its 20T retired, still records)
     assert P.keys(kind="module") == ["cycloidal_drive#1", "gripper#1", "forearm_roll_drive#1", "wrist_roll_drive#1"]
     assert P.keys(kind="module", designed=True) == P.DATA["designed_modules"] == ["cycloidal_drive#1", "forearm_roll_drive#1", "wrist_roll_drive#1"]
-    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 187  # 46 + the base motor mount (1 + 4 + 4) + j1_coupler's motor leg + its fork's screws and nuts (2 x (4 + 2 + 3)) + (7 + 13) + 2 x (2 + 13) + the elbow motor's 20T (3) + its 4 screws + 6 bearings + 3 thrust + 3 pulleys + 6 x 4 pulley bolts + the base_yaw and wrist motors' 20Ts (2 x 3) + 3 belts + the elbow and base_yaw belts' tensioners (2 x 4) + the wrist belt's (3)
+    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 191  # 46 + the base motor mount (1 + 4 + 4) + j1_coupler's motor leg + its fork's screws and nuts (2 x (4 + 2 + 3)) + (7 + 13) + 2 x (2 + 13) + the elbow motor's 20T (3) + the elbow and wrist motors' 2 x 4 screws + 6 bearings + 3 thrust + 3 pulleys + 6 x 4 pulley bolts + the base_yaw and wrist motors' 20Ts (2 x 3) + 3 belts + the elbow and base_yaw belts' tensioners (2 x 4) + the wrist belt's (3)
     assert len(P.keys(kind="part", mounted=False, retired=True)) == 30
     assert P.RETIRED == ("j3_coupler#1", "gt2_pulley_90t#1", "gt2_pulley_90t#2", "nema17_pancake#1", "gt2_pulley_20t#1")
     assert set(P.RETIRED) <= set(P.OCCURRENCES)
-    assert len(P.keys(kind="part")) == 82 - len(P.RETIRED)
+    assert len(P.keys(kind="part")) == 83 - len(P.RETIRED)
 
 
 def test_mounted_records_follow_lib_mounts():
@@ -52,7 +52,7 @@ def test_mounted_records_follow_lib_mounts():
         "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1", "j1_motor_leg#1",
         "fork_hub_screws#1", "fork_hub_nuts#1", "fork_foot_screws#1", "fork_foot_nuts#1", "fork_sleeve_screws#1",
         "fork_sleeve_nuts#1", "nema17_48mm#1", "mks_servo42d#1", "nema17_40mm#2", "mks_servo42d#2", "nema17_40mm#3", "mks_servo42d#3",
-        "gt2_pulley_20t#2", "gt2_pulley_20t#3", "gt2_pulley_20t#4", "elbow_motor_screws#1", *(f"bearing_6806#{n}" for n in range(1, 7)), "washer_as6590#1", "bearing_axk6590#1", "washer_as6590#2",
+        "gt2_pulley_20t#2", "gt2_pulley_20t#3", "gt2_pulley_20t#4", "elbow_motor_screws#1", "wrist_motor_screws#1", *(f"bearing_6806#{n}" for n in range(1, 7)), "washer_as6590#1", "bearing_axk6590#1", "washer_as6590#2",
         "gt2_pulley_90t#3", "gt2_pulley_90t#4", "gt2_pulley_120t#1",
         "elbow_pulley_screws#1", "elbow_pulley_nuts#1", "wrist_pulley_screws#1", "wrist_pulley_nuts#1",
         "yaw_pulley_screws#1", "yaw_pulley_nuts#1", "yaw_belt#1", "elbow_belt#1", "wrist_belt#1",
