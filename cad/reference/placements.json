@@ -11,9 +11,9 @@
  "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. A record with a `mount` block (keys under `mounted`) is a motor mount declared in lib/mounts.py, not a SolidWorks node: parent None, rel == world = host world * mount frame.",
  "root_label": "final_Arm_Assembly_Fully_Movable",
  "expected": {
-  "leaf_occurrences": 76,
-  "solids": 169,
-  "solid_volume": 2320758.692
+  "leaf_occurrences": 82,
+  "solids": 187,
+  "solid_volume": 2325126.009
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -25,6 +25,12 @@
   "base_motor_mount_screws#1",
   "base_motor_mount_nuts#1",
   "j1_motor_leg#1",
+  "fork_hub_screws#1",
+  "fork_hub_nuts#1",
+  "fork_foot_screws#1",
+  "fork_foot_nuts#1",
+  "fork_sleeve_screws#1",
+  "fork_sleeve_nuts#1",
   "nema17_48mm#1",
   "mks_servo42d#1",
   "nema17_40mm#2",
@@ -3175,6 +3181,624 @@
     90.328,
     135.003,
     22.948
+   ]
+  },
+  {
+   "key": "fork_hub_screws#1",
+   "part": "fork_hub_screws",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j1_coupler#1",
+    "link": "shoulder_link",
+    "joint": "shoulder_pitch",
+    "frame_in_host": {
+     "position": [
+      -41.5,
+      90.103183,
+      0.18573
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      90.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the drive's output hub to j1_coupler's hub-side leg: 4x M4 x hub_screw_len, the heads in the leg's counterbores, along the drive's axis through the leg and the hub's arm-mount holes"
+   },
+   "solids": 4,
+   "solid_volume": 1810.035,
+   "rel": {
+    "position": [
+     -2.859427,
+     85.010435,
+     -41.401789
+    ],
+    "rotation_xyz_deg": [
+     -0.0,
+     3.694455,
+     -0.0
+    ],
+    "matrix_3x4": [
+     [
+      0.997921859,
+      0.0,
+      0.064435731,
+      -2.85942687
+     ],
+     [
+      0.0,
+      1.0,
+      0.0,
+      85.010435
+     ],
+     [
+      -0.064435731,
+      0.0,
+      0.997921859,
+      -41.401789498
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -2.859427,
+     85.010435,
+     -41.401789
+    ],
+    "rotation_xyz_deg": [
+     -0.0,
+     3.694455,
+     -0.0
+    ],
+    "matrix_3x4": [
+     [
+      0.997921859,
+      0.0,
+      0.064435731,
+      -2.85942687
+     ],
+     [
+      0.0,
+      1.0,
+      0.0,
+      85.010435
+     ],
+     [
+      -0.064435731,
+      0.0,
+      0.997921859,
+      -41.401789498
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -24.251,
+    63.833,
+    -46.758
+   ],
+   "world_bbox_size": [
+    42.639,
+    42.355,
+    31.572
+   ]
+  },
+  {
+   "key": "fork_hub_nuts#1",
+   "part": "fork_hub_nuts",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "fork_hub_screws#1",
+    "link": "shoulder_link",
+    "joint": "shoulder_pitch",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      0.0,
+      21.8
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the hub screws' nuts captive in the hub's flange, on their pockets' floors (hub_nut_depth), a corner toward its axis"
+   },
+   "solids": 4,
+   "solid_volume": 382.322,
+   "rel": {
+    "position": [
+     -1.454728,
+     85.010435,
+     -19.647093
+    ],
+    "rotation_xyz_deg": [
+     -0.0,
+     3.694455,
+     -0.0
+    ],
+    "matrix_3x4": [
+     [
+      0.997921859,
+      0.0,
+      0.064435731,
+      -1.454727931
+     ],
+     [
+      0.0,
+      1.0,
+      0.0,
+      85.010435
+     ],
+     [
+      -0.064435731,
+      0.0,
+      0.997921859,
+      -19.647092973
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -1.454728,
+     85.010435,
+     -19.647093
+    ],
+    "rotation_xyz_deg": [
+     -0.0,
+     3.694455,
+     -0.0
+    ],
+    "matrix_3x4": [
+     [
+      0.997921859,
+      0.0,
+      0.064435731,
+      -1.454727931
+     ],
+     [
+      0.0,
+      1.0,
+      0.0,
+      85.010435
+     ],
+     [
+      -0.064435731,
+      0.0,
+      0.997921859,
+      -19.647092973
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -22.991,
+    63.429,
+    -21.038
+   ],
+   "world_bbox_size": [
+    43.279,
+    43.163,
+    5.975
+   ]
+  },
+  {
+   "key": "fork_foot_screws#1",
+   "part": "fork_foot_screws",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j1_motor_leg#1",
+    "link": "shoulder_link",
+    "joint": "shoulder_pitch",
+    "frame_in_host": {
+     "position": [
+      50.5,
+      10.0,
+      0.18573
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      -90.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "j1_motor_leg's foot to j1_coupler's disc: 2x M4 x motor_screw_len, the heads in the foot's counterbores, along the drive's axis through the foot and the disc's wall"
+   },
+   "solids": 2,
+   "solid_volume": 528.027,
+   "rel": {
+    "position": [
+     3.06866,
+     4.907252,
+     50.407022
+    ],
+    "rotation_xyz_deg": [
+     -180.0,
+     -3.694455,
+     -180.0
+    ],
+    "matrix_3x4": [
+     [
+      -0.997921859,
+      -0.0,
+      -0.064435731,
+      3.068660397
+     ],
+     [
+      0.0,
+      1.0,
+      -0.0,
+      4.907252
+     ],
+     [
+      0.064435731,
+      0.0,
+      -0.997921859,
+      50.407021525
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     3.06866,
+     4.907252,
+     50.407022
+    ],
+    "rotation_xyz_deg": [
+     -180.0,
+     -3.694455,
+     -180.0
+    ],
+    "matrix_3x4": [
+     [
+      -0.997921859,
+      -0.0,
+      -0.064435731,
+      3.068660397
+     ],
+     [
+      0.0,
+      1.0,
+      -0.0,
+      4.907252
+     ],
+     [
+      0.064435731,
+      0.0,
+      -0.997921859,
+      50.407021525
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -12.399,
+    1.407,
+    39.526
+   ],
+   "world_bbox_size": [
+    31.193,
+    7.0,
+    15.872
+   ]
+  },
+  {
+   "key": "fork_foot_nuts#1",
+   "part": "fork_foot_nuts",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "fork_foot_screws#1",
+    "link": "shoulder_link",
+    "joint": "shoulder_pitch",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      0.0,
+      6.1
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the foot screws' nuts in the disc's slots, against their outer walls (motor_nut_wall), a corner up the slot"
+   },
+   "solids": 2,
+   "solid_volume": 191.161,
+   "rel": {
+    "position": [
+     2.675602,
+     4.907252,
+     44.319698
+    ],
+    "rotation_xyz_deg": [
+     -180.0,
+     -3.694455,
+     -180.0
+    ],
+    "matrix_3x4": [
+     [
+      -0.997921859,
+      0.0,
+      -0.064435731,
+      2.675602437
+     ],
+     [
+      0.0,
+      1.0,
+      0.0,
+      4.907252
+     ],
+     [
+      0.064435731,
+      0.0,
+      -0.997921859,
+      44.319698185
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     2.675602,
+     4.907252,
+     44.319698
+    ],
+    "rotation_xyz_deg": [
+     -180.0,
+     -3.694455,
+     -180.0
+    ],
+    "matrix_3x4": [
+     [
+      -0.997921859,
+      0.0,
+      -0.064435731,
+      2.675602437
+     ],
+     [
+      0.0,
+      1.0,
+      0.0,
+      4.907252
+     ],
+     [
+      0.064435731,
+      0.0,
+      -0.997921859,
+      44.319698185
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -12.998,
+    0.866,
+    40.128
+   ],
+   "world_bbox_size": [
+    31.142,
+    8.083,
+    5.191
+   ]
+  },
+  {
+   "key": "fork_sleeve_screws#1",
+   "part": "fork_sleeve_screws",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j1_motor_leg#1",
+    "link": "shoulder_link",
+    "joint": "shoulder_pitch",
+    "frame_in_host": {
+     "position": [
+      42.0,
+      90.103183,
+      0.18573
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      -90.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "j1_motor_leg's ring to the drive's motor plate's sleeve: 3x M4 x sleeve_screw_len radially at sleeve_bolt_deg, the heads on the ring's od"
+   },
+   "solids": 3,
+   "solid_volume": 1169.031,
+   "rel": {
+    "position": [
+     2.520957,
+     85.010435,
+     41.924686
+    ],
+    "rotation_xyz_deg": [
+     -180.0,
+     -3.694455,
+     -180.0
+    ],
+    "matrix_3x4": [
+     [
+      -0.997921859,
+      -0.0,
+      -0.064435731,
+      2.520956682
+     ],
+     [
+      0.0,
+      1.0,
+      -0.0,
+      85.010435
+     ],
+     [
+      0.064435731,
+      0.0,
+      -0.997921859,
+      41.924685724
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     2.520957,
+     85.010435,
+     41.924686
+    ],
+    "rotation_xyz_deg": [
+     -180.0,
+     -3.694455,
+     -180.0
+    ],
+    "matrix_3x4": [
+     [
+      -0.997921859,
+      -0.0,
+      -0.064435731,
+      2.520956682
+     ],
+     [
+      0.0,
+      1.0,
+      -0.0,
+      85.010435
+     ],
+     [
+      0.064435731,
+      0.0,
+      -0.997921859,
+      41.924685724
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -46.603,
+    81.51,
+    35.275
+   ],
+   "world_bbox_size": [
+    98.247,
+    52.5,
+    13.3
+   ]
+  },
+  {
+   "key": "fork_sleeve_nuts#1",
+   "part": "fork_sleeve_nuts",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "fork_sleeve_screws#1",
+    "link": "shoulder_link",
+    "joint": "shoulder_pitch",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the sleeve screws' nuts pressed into the sleeve's lugs, on their pockets' floors, a corner along the tangent"
+   },
+   "solids": 3,
+   "solid_volume": 286.741,
+   "rel": {
+    "position": [
+     2.520957,
+     85.010435,
+     41.924686
+    ],
+    "rotation_xyz_deg": [
+     -180.0,
+     -3.694455,
+     -180.0
+    ],
+    "matrix_3x4": [
+     [
+      -0.997921859,
+      -0.0,
+      -0.064435731,
+      2.520956682
+     ],
+     [
+      0.0,
+      1.0,
+      -0.0,
+      85.010435
+     ],
+     [
+      0.064435731,
+      0.0,
+      -0.997921859,
+      41.924685724
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     2.520957,
+     85.010435,
+     41.924686
+    ],
+    "rotation_xyz_deg": [
+     -180.0,
+     -3.694455,
+     -180.0
+    ],
+    "matrix_3x4": [
+     [
+      -0.997921859,
+      -0.0,
+      -0.064435731,
+      2.520956682
+     ],
+     [
+      0.0,
+      1.0,
+      -0.0,
+      85.010435
+     ],
+     [
+      0.064435731,
+      0.0,
+      -0.997921859,
+      41.924685724
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -25.846,
+    80.969,
+    36.615
+   ],
+   "world_bbox_size": [
+    56.734,
+    32.241,
+    10.62
    ]
   },
   {

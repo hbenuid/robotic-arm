@@ -70,7 +70,8 @@ the wiring room, the joint's posts and bolts, both parts' slits, the seat on rou
 centre distance, the motor clear of it; `yaw_idler`: the base_yaw belt's tensioner - the stock belt round it, the band of belts its slot
 takes, the belt frame's points in the base's, its stations, its axle's, nut's and spacer's numbers (no reference), its
 seat on the mount, the kit's fit; `yaw_pulley_screws` / `yaw_pulley_nuts`, purchased parts with no reference: the
-numbers no reference file holds for them - pieces, volume, bbox - and feature probes), `tests/coupler/` (`j3_coupler`: the
+numbers no reference file holds for them - pieces, volume, bbox - and feature probes; the `j1_coupler` fork's screws and
+nuts - `fork_{hub,foot,sleeve}_{screws,nuts}`, `test_fork_bolts` - likewise), `tests/coupler/` (`j3_coupler`: the
 LEGACY build's feature probes, the stub the roll drive's block repeats), `tests/yaw_coupler/` (`j1_coupler`: the LEGACY
 build's feature probes, the yoke on the port's housing - its bore, od, pillars, bolt circle; DEFAULT's fork on the
 drive's own axis - two legs past the shell's ends, the disc's draft up them, the hub on one, the other its own part round the motor sleeve and bolted to it, the lowered ring - and the motor leg's numbers), `tests/wrist/` (`wrist_link`: the LEGACY build's feature probes, the seat on the

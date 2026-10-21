@@ -31,7 +31,8 @@ def _inside(shape, x: float, y: float, z: float) -> bool:
 
 def test_they_are_purchased_parts_with_no_reference_in_the_base_group():
     bought = {n for n in R.NO_REFERENCE if parts.bought(n) and parts.GROUPS[n] == "base"}
-    assert set(LOCKS) == bought - {"yaw_belt", "yaw_idler_screw", "yaw_idler_nut"}   # tests/test_belts.py, test_yaw_idler.py
+    fork = {n for n in bought if n.startswith("fork_")}                               # tests/base/test_fork_bolts.py
+    assert set(LOCKS) == bought - {"yaw_belt", "yaw_idler_screw", "yaw_idler_nut"} - fork   # tests/test_belts.py, test_yaw_idler.py
     for name in LOCKS:
         mod = parts.load(name)
         assert parts.GROUPS[name] == "base" and parts.bought(name) and mod.PURCHASE_QTY == len(POINTS) == LOCKS[name][0]

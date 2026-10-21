@@ -117,9 +117,10 @@ LINKS: dict[str, list[str]] = {
     # (motor plate, output hub, output pins), the motor (+ its MKS board) and the gear train - sits in its fork
     # (assemblies/cycloidal_drive.py BODIES); the thrust bearing's upper washer turns with it, under its seat, and so does
     # the base_yaw 120T bolted to its stub's end inside the base (the base_yaw output, the driven side of its belt), with
-    # the M4 screws + nuts that clamp it.
+    # the M4 screws + nuts that clamp it; the fork's screws + nuts hold the drive's hub and sleeve in it.
     "shoulder_link": ["j1_coupler#1", "j1_motor_leg#1", "washer_as6590#2", "gt2_pulley_120t#1", "yaw_pulley_screws#1",
-                      "yaw_pulley_nuts#1", "cycloidal_drive#1:stator"],
+                      "yaw_pulley_nuts#1", "fork_hub_screws#1", "fork_hub_nuts#1", "fork_foot_screws#1", "fork_foot_nuts#1",
+                      "fork_sleeve_screws#1", "fork_sleeve_nuts#1", "cycloidal_drive#1:stator"],
     # the drive's rotor (its turning shell, the ring pins and both 6814s) is bolted to j1_link: the shoulder_pitch output;
     # the elbow_pitch motor + board bolt to the web across j1_link's motor hole (its 4x M3), its 20T and the elbow belt
     # with them - the belt's tensioner (the idler, its spacer, axle and nut) on j1_link's slab -, the elbow bearing pair
