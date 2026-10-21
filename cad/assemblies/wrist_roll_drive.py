@@ -3,8 +3,9 @@
 Stator: the frame is wrist_link itself (its DEFAULT build: the plate with j3_coupler#2's seat and, on the plate's
 underside, one body round the pancake and the tower round the roll axis - lib/wrist/roll.py build_frame), so it is the
 module's host, not a row; the rows: the NEMA 17 pancake ON the wrist-pitch axis in the frame's pocket (open on the far
-face, the pocket's front wall the plate it bolts to, slotted along Y for the belt's tension) and the 20T on its shaft, its
-hub down in the plate's pilot slot; the 6806 pair back to back on the tower's lip; the wrist roll belt (no idler yet:
+face, the pocket's front wall the plate it bolts to, slotted along Y for the belt's tension) with its MKS SERVO42D on
+its rear face, in a window through the frame's rear, and the 20T on its shaft, its hub down in the plate's pilot slot;
+the 6806 pair back to back on the tower's lip; the wrist roll belt (no idler yet:
 docs/open_issues.md). Rotor: the pulley (wrist_roll_pulley, the output: its 40T band beside the pancake's 20T, its hub
 through bearing 2, the face gripper_j3_connector bolts to - 4x M3 into nuts in its rim) and the shaft (wrist_roll_shaft,
 a collar: its hub through bearing 1 to the pulley's, the rotor clamp's nuts and the stop lug in its flange), clamped by
@@ -46,8 +47,10 @@ OCCURRENCES = [
     ("wrist_roll_shaft",      None, _at()),
     ("bearing_6806",          "wrist_roll_2", _at(z=S["z_bearing_2"])),
     ("wrist_roll_pulley",     None, _at()),
-    # the pancake, its 20T and the belt - on the pitch axis (-Y)
+    # the pancake, its board, its 20T and the belt - on the pitch axis (-Y); the board on the pancake's rear face, turned
+    # with it (its motor plug toward the pancake's, at the open face), in the frame's rear window
     ("nema17_pancake",        "wrist_roll", pancake_location(DEFAULT)),
+    ("mks_servo42d",          "wrist_roll", ((S["x_motor"], S["y_motor"], S["z_motor_rear"]), (0.0, 0.0, DEFAULT.roll.motor_spin_deg))),
     ("gt2_pulley_20t",        "wrist_roll", ((S["x_motor"], S["y_motor"], S["z_20t"]), (0.0, -90.0, 0.0))),   # hub face pulley_seat over the pilot, bore axis along +Z
     ("wrist_roll_belt",       "wrist_roll", ((S["x_motor"], S["y_motor"], S["z_ring_mid"]), (0.0, 0.0, 90.0))),   # the 20T to the 40T: its frame's +X along module +Y
 ]
@@ -60,8 +63,8 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("stator") after any geometry change.
 EXPECTED = {
-    "leaves": 7, "solids": 19, "solid_volume": 70790.837,
-    "bodies": {"stator": {"leaves": 5, "solids": 17, "solid_volume": 44991.257},
+    "leaves": 8, "solids": 32, "solid_volume": 84570.171,
+    "bodies": {"stator": {"leaves": 6, "solids": 30, "solid_volume": 58770.592},
                "rotor": {"leaves": 2, "solids": 2, "solid_volume": 25799.58}},
 }
 
