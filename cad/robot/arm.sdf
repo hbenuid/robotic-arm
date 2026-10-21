@@ -33,11 +33,11 @@
     <link name="shoulder_link">
       <pose relative_to="base_yaw">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>-0.000754 0.014281 -0.022022 0 0 0</pose>
-        <mass>1.373741</mass>
+        <pose>-0.000741 0.014089 -0.021707 0 0 0</pose>
+        <mass>1.408024</mass>
         <inertia>
-          <ixx>3.797012e-03</ixx><ixy>5.875498e-05</ixy><ixz>2.287850e-05</ixz>
-          <iyy>2.841720e-03</iyy><iyz>-4.427168e-04</iyz><izz>2.068940e-03</izz>
+          <ixx>3.898356e-03</ixx><ixy>6.098559e-05</ixy><ixz>2.177568e-05</ixz>
+          <iyy>2.908733e-03</iyy><iyz>-4.257543e-04</iyz><izz>2.137678e-03</izz>
         </inertia>
       </inertial>
       <visual name="shoulder_link_visual">

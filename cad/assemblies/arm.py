@@ -101,6 +101,12 @@ OCCURRENCES = [
     ("gt2_pulley_120t",       "base_yaw", "gt2_pulley_120t#1"),    # mounted: the base_yaw 120T on j1_coupler's stub end, in the lower base bearing
     ("yaw_pulley_screws",     "base_yaw", "yaw_pulley_screws#1"),  # mounted: the base_yaw 120T's 4x M4 ...
     ("yaw_pulley_nuts",       "base_yaw", "yaw_pulley_nuts#1"),    # ... into the nuts in j1_coupler's hub
+    ("fork_hub_screws",       "shoulder_pitch", "fork_hub_screws#1"),      # mounted: the drive's hub to the fork's hub leg, 4x M4 ...
+    ("fork_hub_nuts",         "shoulder_pitch", "fork_hub_nuts#1"),        # ... into the nuts captive in the hub
+    ("fork_foot_screws",      "shoulder_pitch", "fork_foot_screws#1"),     # mounted: the motor leg's foot to the disc, 2x M4 ...
+    ("fork_foot_nuts",        "shoulder_pitch", "fork_foot_nuts#1"),       # ... into the nuts in the disc's slots
+    ("fork_sleeve_screws",    "shoulder_pitch", "fork_sleeve_screws#1"),   # mounted: the motor leg's ring to the sleeve, 3x M4 ...
+    ("fork_sleeve_nuts",      "shoulder_pitch", "fork_sleeve_nuts#1"),     # ... into the nuts pressed into its lugs
     ("cycloidal_drive",       None, DRIVE_KEY),            # module: assemblies/cycloidal_drive.py (the shoulder_pitch joint)
     ("j1_link",               None, "j1_link#1"),
     ("bearing_6806",          "elbow_pitch_1", "bearing_6806#3"),  # mounted: j1_link's elbow bore
@@ -156,7 +162,8 @@ GROUPS = [
                                      "nema17_48mm#1", "mks_servo42d#1", "gt2_pulley_20t#3", "yaw_belt#1", "gt2_idler_20t#2",
                                      "yaw_idler_spacer#1", "yaw_idler_screw#1", "yaw_idler_nut#1")),
     ("shoulder_link",    "#4C72B0", ("j1_coupler#1", "j1_motor_leg#1", "washer_as6590#2", "gt2_pulley_120t#1", "yaw_pulley_screws#1",
-                                     "yaw_pulley_nuts#1", DRIVE_KEY)),
+                                     "yaw_pulley_nuts#1", "fork_hub_screws#1", "fork_hub_nuts#1", "fork_foot_screws#1",
+                                     "fork_foot_nuts#1", "fork_sleeve_screws#1", "fork_sleeve_nuts#1", DRIVE_KEY)),
     ("upper_arm_link",   "#CCB974", ("j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2",
                                      "gt2_pulley_20t#2", "elbow_motor_screws#1", "elbow_belt#1", "gt2_idler_20t#1",
                                      "elbow_idler_spacer#1", "elbow_idler_screw#1", "elbow_idler_nut#1")),

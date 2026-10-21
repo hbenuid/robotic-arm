@@ -70,6 +70,12 @@ The PULLEY BOLTS (FASTENER_MOUNTS): each pulley's 4x M4 screws and nuts, purchas
 on its screw set, its bearing face where the host's seat lies along the screws - the elbow block's channel seats
 (RollDriveParams.nut_seat_x), j3_coupler's pocket floors (CouplerParams.nut_depth), j1_coupler's pockets in the floor of
 the pocket over its hub (HubParams.nut_depth under YokeParams.pocket_y0).
+The FORK's screws and nuts (FORK_MOUNTS): what holds the cycloidal drive in j1_coupler's fork, purchased pattern parts
+(parts/base/fork_{hub,foot,sleeve}_{screws,nuts}) whose frames lib/yaw_coupler/layout.py gives in the coupler's frame
+(fork_*_screw_frame): the hub's 4x M4 from the hub leg's counterbores into the nuts captive in the hub's flange and the
+motor leg's ring's 3x M4 radially into the nuts pressed into the sleeve's lugs - both patterns centred on the drive's
+axis, the shoulder_pitch joint's (their +Z along it) - and the motor leg's foot's 2x M4 beside it into the nuts in the
+disc's slots.
 The elbow belt's TENSIONER (IDLER_MOUNTS; lib/upper_arm/params.py ElbowIdlerParams): the idler (parts/joints/
 gt2_idler_20t), its printed spacer, its M5 axle and nut on j1_link, on the stepped slot's line where the stock belt puts
 the idler (lib/upper_arm/layout.py elbow_idler_z), each +Z up j1_link's +Y (N): the idler level with the belt, the spacer
@@ -120,6 +126,13 @@ from lib.params import (
 from lib.upper_arm.layout import elbow_idler_z
 from lib.upper_arm.params import DEFAULT as _UPPER_ARM
 from lib.wrist.layout import module_frame_in_host as wrist_module_frame_in_host
+from lib.yaw_coupler.layout import (
+    fork_foot_nut_z,
+    fork_foot_screw_frame,
+    fork_hub_nut_z,
+    fork_hub_screw_frame,
+    fork_sleeve_screw_frame,
+)
 from lib.yaw_coupler.params import DEFAULT as _YAW_COUPLER
 
 MOTOR_48, MOTOR_40, BOARD = "nema17_48mm", "nema17_40mm", "mks_servo42d"
@@ -130,6 +143,9 @@ PULLEY_BOLTS = ("elbow_pulley_screws", "elbow_pulley_nuts", "wrist_pulley_screws
                 "yaw_pulley_screws", "yaw_pulley_nuts")
 BASE_MOUNT, BASE_MOUNT_SCREWS, BASE_MOUNT_NUTS = "base_motor_mount", "base_motor_mount_screws", "base_motor_mount_nuts"
 YOKE_MOTOR_LEG = "j1_motor_leg"
+FORK_ON_AXIS = ("fork_hub_screws", "fork_hub_nuts", "fork_sleeve_screws", "fork_sleeve_nuts")
+FORK_OFF_AXIS = ("fork_foot_screws", "fork_foot_nuts")
+FORK_BOLTS = FORK_ON_AXIS + FORK_OFF_AXIS
 MOTOR_SCREWS = ("elbow_motor_screws", "wrist_motor_screws")
 IDLER_KIT = ("gt2_idler_20t", "elbow_idler_spacer", "elbow_idler_screw", "elbow_idler_nut", "yaw_idler_spacer",
              "yaw_idler_screw", "yaw_idler_nut", "wrist_idler_screw", "wrist_idler_nut")
@@ -142,6 +158,8 @@ AXES: dict[str, tuple[tuple[float, float, float], bool]] = {
     BEARING: ((0.0, 0.0, 1.0), True), PULLEY: ((0.0, 1.0, 0.0), True), YAW_PULLEY: ((0.0, 1.0, 0.0), True),
     THRUST_CAGE: ((0.0, 0.0, 1.0), True), THRUST_WASHER: ((0.0, 0.0, 1.0), True),
     **{part: ((0.0, 0.0, 1.0), True) for part in PULLEY_BOLTS},
+    **{part: ((0.0, 0.0, 1.0), True) for part in FORK_ON_AXIS},
+    **{part: ((0.0, 0.0, 1.0), False) for part in FORK_OFF_AXIS},
     **{part: ((0.0, 0.0, 1.0), False) for part in IDLER_KIT},
 }
 
@@ -312,6 +330,32 @@ YOKE_MOUNTS: tuple[Mount, ...] = (
     Mount("j1_motor_leg#1", YOKE_MOTOR_LEG, "j1_coupler#1", "shoulder_link", "base_yaw", ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)),
           "the motor-side leg on j1_coupler's disc, round the drive's motor sleeve; built in the coupler's part frame"),
 )
+# The fork's screws and nuts, which hold the drive in it (lib/yaw_coupler/layout.py fork_*_screw_frame: frames in the
+# coupler's part frame, the motor leg's too): the hub's 4x M4 from the hub leg's counterbores along the drive's axis into
+# the nuts captive in its flange; the motor leg's foot's 2x M4 along it into the nuts in the disc's slots; its ring's 3x
+# M4 radially into the nuts pressed into the sleeve's lugs. Each nut set on its screw set, moved along the screws to its
+# seat (the sleeve's: the same frame, the screws radial in it). They serve the joint the drive is: shoulder_pitch.
+FORK_MOUNTS: tuple[Mount, ...] = (
+    Mount("fork_hub_screws#1", "fork_hub_screws", "j1_coupler#1", "shoulder_link", "shoulder_pitch", fork_hub_screw_frame(_YAW_COUPLER),
+          "the drive's output hub to j1_coupler's hub-side leg: 4x M4 x hub_screw_len, the heads in the leg's counterbores, "
+          "along the drive's axis through the leg and the hub's arm-mount holes"),
+    Mount("fork_hub_nuts#1", "fork_hub_nuts", "fork_hub_screws#1", "shoulder_link", "shoulder_pitch",
+          ((0.0, 0.0, fork_hub_nut_z(_YAW_COUPLER)), (0.0, 0.0, 0.0)),
+          "the hub screws' nuts captive in the hub's flange, on their pockets' floors (hub_nut_depth), a corner toward its axis"),
+    Mount("fork_foot_screws#1", "fork_foot_screws", "j1_motor_leg#1", "shoulder_link", "shoulder_pitch", fork_foot_screw_frame(_YAW_COUPLER),
+          "j1_motor_leg's foot to j1_coupler's disc: 2x M4 x motor_screw_len, the heads in the foot's counterbores, along the "
+          "drive's axis through the foot and the disc's wall"),
+    Mount("fork_foot_nuts#1", "fork_foot_nuts", "fork_foot_screws#1", "shoulder_link", "shoulder_pitch",
+          ((0.0, 0.0, fork_foot_nut_z(_YAW_COUPLER)), (0.0, 0.0, 0.0)),
+          "the foot screws' nuts in the disc's slots, against their outer walls (motor_nut_wall), a corner up the slot"),
+    Mount("fork_sleeve_screws#1", "fork_sleeve_screws", "j1_motor_leg#1", "shoulder_link", "shoulder_pitch",
+          fork_sleeve_screw_frame(_YAW_COUPLER),
+          "j1_motor_leg's ring to the drive's motor plate's sleeve: 3x M4 x sleeve_screw_len radially at sleeve_bolt_deg, "
+          "the heads on the ring's od"),
+    Mount("fork_sleeve_nuts#1", "fork_sleeve_nuts", "fork_sleeve_screws#1", "shoulder_link", "shoulder_pitch",
+          ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)),
+          "the sleeve screws' nuts pressed into the sleeve's lugs, on their pockets' floors, a corner along the tangent"),
+)
 # The belts (purchased parts, a smooth band round each loop - lib/belts.py, parts/*/<joint>_belt.py), each in the link
 # that carries its motor (both its pulleys' axes are fixed there): its frame on the motor's axis at the belt's plane,
 # +X toward the driven pulley, +Z along the axes. The forearm roll's is a row of its module
@@ -380,7 +424,7 @@ WRIST_IDLER_MOUNTS: tuple[Mount, ...] = (
           ((_W_IDLER_X, _W_IDLER_Y, _FOREARM.idler.nut_floor), (0.0, 0.0, 0.0)),
           "its nut on the floor of its channel down from the web's top face, its flats across j2_link's x"),
 )
-MOUNTS: tuple[Mount, ...] = (BASE_MOUNTS + YOKE_MOUNTS + MOTOR_MOUNTS + MOTOR_PULLEY_MOUNTS + MOTOR_SCREW_MOUNTS + BEARING_MOUNTS
+MOUNTS: tuple[Mount, ...] = (BASE_MOUNTS + YOKE_MOUNTS + FORK_MOUNTS + MOTOR_MOUNTS + MOTOR_PULLEY_MOUNTS + MOTOR_SCREW_MOUNTS + BEARING_MOUNTS
                              + THRUST_MOUNTS + PULLEY_MOUNTS + FASTENER_MOUNTS + BELT_MOUNTS + IDLER_MOUNTS + YAW_IDLER_MOUNTS
                              + WRIST_IDLER_MOUNTS)
 BY_KEY: dict[str, Mount] = {m.key: m for m in MOUNTS}

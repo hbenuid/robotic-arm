@@ -264,6 +264,18 @@ from lib.forearm.layout import motor_hole_points as _motor_hole_points  # noqa: 
 
 WRIST_MOTOR_SCREWS_MASS_G = STEEL_DENSITY * len(_motor_hole_points(_FOREARM)) * shcs_volume(_FOREARM.holes.screw, J2_MOTOR_SCREW_LEN)   # 4.7, 4x M3x12
 
+# The j1_coupler fork's screws and nuts (parts/base/fork_{hub,foot,sleeve}_{screws,nuts}; lib/yaw_coupler/params.py
+# ForkParams): the same estimate - the hub's to the hub leg, the motor leg's foot's to the disc, its ring's to the sleeve
+from lib.yaw_coupler.layout import fork_motor_bolts as _fork_motor_bolts  # noqa: E402
+
+_FORK, _FORK_FOOT_BOLTS = _YAW_COUPLER.fork, len(_fork_motor_bolts(_YAW_COUPLER))
+FORK_HUB_SCREWS_MASS_G = STEEL_DENSITY * CYCLOIDAL_HUB_BOLT_COUNT * shcs_volume(M4_SHCS, _FORK.hub_screw_len)          # 14.2, 4x M4x25
+FORK_HUB_NUTS_MASS_G = STEEL_DENSITY * CYCLOIDAL_HUB_BOLT_COUNT * nut_volume(M4_NUT)                                   # 3.0, 4x M4
+FORK_FOOT_SCREWS_MASS_G = STEEL_DENSITY * _FORK_FOOT_BOLTS * shcs_volume(M4_SHCS, _FORK.motor_screw_len)               # 4.1, 2x M4x10
+FORK_FOOT_NUTS_MASS_G = STEEL_DENSITY * _FORK_FOOT_BOLTS * nut_volume(M4_NUT)                                          # 1.5, 2x M4
+FORK_SLEEVE_SCREWS_MASS_G = STEEL_DENSITY * CYCLOIDAL_SLEEVE_BOLT_COUNT * shcs_volume(M4_SHCS, _FORK.sleeve_screw_len)   # 9.2, 3x M4x20
+FORK_SLEEVE_NUTS_MASS_G = STEEL_DENSITY * CYCLOIDAL_SLEEVE_BOLT_COUNT * nut_volume(M4_NUT)                             # 2.3, 3x M4
+
 # --- Robot description (robot/frames.py, robot/arm.urdf) --------------------------------------
 # The [ESTIMATE] joint limits and the actuator ratings are PLACEHOLDERS until measured on the hardware (the [DESIGN]
 # limits are set by the sweeps and the hard stops below); the URDF and SDF are checked against these by

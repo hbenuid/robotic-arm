@@ -41,6 +41,13 @@ MULTI_BODY = {
     # ... and of the base_yaw joint
     "yaw_pulley_screws": 4,
     "yaw_pulley_nuts": 4,
+    # the screws + nuts that hold the drive in j1_coupler's fork (lib/mounts.py FORK_MOUNTS)
+    "fork_hub_screws": 4,
+    "fork_hub_nuts": 4,
+    "fork_foot_screws": 2,
+    "fork_foot_nuts": 2,
+    "fork_sleeve_screws": 3,
+    "fork_sleeve_nuts": 3,
     # the base motor mount's M4 screws + nuts (lib/mounts.py BASE_MOUNTS)
     "base_motor_mount_screws": 4,
     "base_motor_mount_nuts": 4,
