@@ -141,8 +141,8 @@ def test_the_slot_runs_across_the_belt():
 def test_the_stations():
     """Along Y: the idler level with the belt, the spacer from the plate's top to its lower face, its land narrower than
     the idler's seat (the bearing's inner ring only); the screw's head on the idler's top, its tip 2 pitches past the nut
-    on the plate's underside, the nut inside its rails; across: the nut's rails inside the mount's walls, past its ears
-    and short of the motor's face."""
+    on the plate's underside, the nut inside its rails; across: the nut's rails inside the window between the joint's
+    posts, past the mount's posts and short of the motor's face."""
     assert PARAMS.YAW_IDLER_Y + GT2_IDLER_WIDTH / 2.0 == pytest.approx(YAW_BELT_Y)
     assert PARAMS.YAW_IDLER_SPACER_H == pytest.approx(yaw_idler_spacer_h()) == pytest.approx(PARAMS.YAW_IDLER_Y - PL.y[1])
     assert PARAMS.YAW_IDLER_SPACER_H > I.land_h and GT2_IDLER_BORE < I.slot_w < I.land_dia < min(GT2_IDLER_SEAT_DIA, I.riser_dia)
@@ -151,7 +151,7 @@ def test_the_stations():
     (_, za), (_, zb) = yaw_idler_slot()
     assert max(abs(za), abs(zb)) + REACH < mount_inner_half() and I.rail_wall >= 2.0
     near, far = I.x - HALF_NUT - I.rail_wall, I.x + HALF_NUT + I.rail_wall
-    assert near - (DEFAULT.joint.split_x + DEFAULT.mount.ear_t) >= 10.0
+    assert near - (DEFAULT.joint.split_x + DEFAULT.mount.post_t) >= 10.0
     assert DEFAULT.motor.centre[0] - NEMA17_FACE / 2.0 - far >= 5.0
 
 

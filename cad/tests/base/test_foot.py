@@ -17,7 +17,7 @@ from tests import built
 from tests.helpers import is_inside
 
 S, C, P, F, J = DEFAULT.shell, DEFAULT.cap, DEFAULT.plate, DEFAULT.foot, DEFAULT.joint
-VOLUME = 413546.1          # mm^3, measured on the build (the SolidWorks base: 286169.1, cut at the joint 235439.1)
+VOLUME = 399435.1          # mm^3, measured on the build, its slits cut (the SolidWorks base: 286169.1, cut at the joint 235439.1)
 
 
 def test_legacy_stands_straight_without_a_foot():
@@ -89,7 +89,7 @@ def test_the_walls_lean_inside_and_out(base):
         assert is_inside(base, -(ri + 0.3), y, 0.0) and not is_inside(base, -(ri - 0.3), y, 0.0), y
     for y in (S.y0 + F.flare_h + 2.0, -70.0):
         ro = outer_r(DEFAULT, y)
-        assert is_inside(base, 10.0, y, ro - 0.3) and not is_inside(base, 10.0, y, ro + 0.3), y
+        assert is_inside(base, 15.0, y, ro - 0.3) and not is_inside(base, 15.0, y, ro + 0.3), y   # between two slits
     assert is_inside(base, -(S.r - 0.3), C.top_y - 0.3, 0.0) and not is_inside(base, -(S.r + 0.3), C.top_y - 0.3, 0.0)
     # the cap a full disc over the open +X side (the leaning _d keeps _d's cylinder): the groove's floor, the top face
     assert is_inside(base, 40.0, C.groove_y0 - 0.5, 0.0) and is_inside(base, 50.0, C.top_y - 0.3, 0.0)
