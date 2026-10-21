@@ -106,59 +106,73 @@ def chamfer_inset(cfg: BaseConfig = DEFAULT) -> float:
 
 
 def mount_inner_half(cfg: BaseConfig = DEFAULT) -> float:
-    """The motor mount's inside half-width (|z| of its side walls' inner faces, about the axis): the MKS board's square
-    about the motor's centre, and MountParams.room clear of it."""
+    """The window between the joint's posts (|z| of the posts' inner faces, about the axis; the cables' way from the
+    motor mount into the base): the MKS board's square about the motor's centre, and MountParams.room clear of it."""
     return MKS_SERVO42D_W / 2.0 + abs(cfg.motor.centre[1]) + cfg.mount.room
 
 
 def mount_x1(cfg: BaseConfig = DEFAULT) -> float:
-    """The outer face of the motor mount's end wall: room past the board's square at the slots' middle, and the wall."""
-    return cfg.motor.centre[0] + MKS_SERVO42D_W / 2.0 + cfg.mount.room + cfg.mount.wall
+    """How far the motor mount's round end reaches along X at the plate's top: room past the board's square at the
+    motor's centre, and the wall."""
+    return cfg.motor.centre[0] + MKS_SERVO42D_W / 2.0 + cfg.mount.room + cfg.shell.wall
 
 
-def truss_panels(cfg: BaseConfig = DEFAULT) -> list[dict]:
-    """The motor mount's three trussed walls (MountParams): per wall the `axis` across it ("z" the two side walls,
-    "x" the end wall) and the `span` of its thickness on that axis, `u` - the part axis along it ("x" / "z") -, the
-    frame's inside `window` ((u0, u1), (v0, v1)), v the part's y (a `strut` wide rail under the plate and on the table,
-    a post at each end from the outer corner - the side walls' at the joint as deep as the ears, which it backs), and
-    the V's two `struts`: centrelines from the window's top corners down to the middle of its bottom edge. A wall wider
-    than MountParams.bay between its end posts splits into equal bays, a `strut` wide post between: each bay a panel of
-    its own, with its V."""
-    s, p, j, m = cfg.shell, cfg.plate, cfg.joint, cfg.mount
-    w_in, x1 = mount_inner_half(cfg), mount_x1(cfg)
-    w_out = w_in + m.wall
-    v = (s.y0 + m.strut, p.y[0] - m.strut)
+def mount_end_x(cfg: BaseConfig = DEFAULT) -> float:
+    """The centre (on the X axis) of the motor mount's round end: the walls' radius at the plate's top short of
+    mount_x1(), so the end round is the base's round half's, mirrored."""
+    return mount_x1(cfg) - outer_r(cfg, cfg.plate.y[1])
 
-    def panel(axis: str, span: tuple, u_axis: str, u: tuple) -> dict:
-        um = (u[0] + u[1]) / 2.0
-        return {"axis": axis, "span": span, "u": u_axis, "window": (u, v),
-                "struts": [((u[0], v[1]), (um, v[0])), ((u[1], v[1]), (um, v[0]))]}
 
-    def bays(u: tuple) -> list[tuple[float, float]]:
-        n = max(1, math.ceil((u[1] - u[0]) / m.bay))
-        w = (u[1] - u[0] - (n - 1) * m.strut) / n
-        return [(u[0] + k * (w + m.strut), u[0] + k * (w + m.strut) + w) for k in range(n)]
+def mount_foot_holes(cfg: BaseConfig = DEFAULT) -> list[tuple[float, float]]:
+    """(x, z) of the motor mount's foot's screw holes: on hole_r about its end's centre at mount_hole_deg."""
+    f, cx = cfg.foot, mount_end_x(cfg)
+    return [(cx + f.hole_r * math.cos(math.radians(a)), f.hole_r * math.sin(math.radians(a))) for a in f.mount_hole_deg]
 
-    side_u = (j.split_x + max(m.ear_t, m.strut), x1 - m.strut)
-    end_u = (-(w_out - m.strut), w_out - m.strut)
-    return ([panel("z", (w_in, w_out), "x", u) for u in bays(side_u)]
-            + [panel("z", (-w_out, -w_in), "x", u) for u in bays(side_u)]
-            + [panel("x", (x1 - m.wall, x1), "z", u) for u in bays(end_u)])
+
+def slit_band(cfg: BaseConfig = DEFAULT) -> tuple[float, float]:
+    """The slits' band along Y (SlitParams): over_flare above the foot's chamfer, h tall."""
+    y0 = flare_points(cfg)[1][1] + cfg.slits.over_flare
+    return (y0, y0 + cfg.slits.h)
+
+
+def slits(cfg: BaseConfig = DEFAULT, part: str = "base") -> list[tuple[float, float, float]]:
+    """The slits of one part ("base" or "mount") as (x, z, deg): each one's centre on the wall's mid-surface at the
+    band's middle and its outward normal's angle (in the XZ plane, from +X toward +Z). The round ends - the base's half
+    round about the axis, the mount's about mount_end_x() - as many at SlitParams.pitch along that mid-surface as fit,
+    from side to side; the straight sides at multiples of pitch from the axis, short of the mount's round by half a
+    pitch, none within joint_clear of the two parts' posts; each side's slit with the part it falls in."""
+    sl, j = cfg.slits, cfg.joint
+    y0, y1 = slit_band(cfg)
+    rm = outer_r(cfg, (y0 + y1) / 2.0) - cfg.shell.wall / 2.0
+    n = round(math.pi * rm / sl.pitch)
+    cx, a0 = (0.0, 90.0) if part == "base" else (mount_end_x(cfg), -90.0)
+    pts = []
+    for k in range(n + 1):
+        a = math.radians(a0 + k * 180.0 / n)
+        pts.append((cx + rm * math.cos(a), rm * math.sin(a), a0 + k * 180.0 / n))
+    gap = (j.split_x - j.post_t - sl.joint_clear, j.split_x + cfg.mount.post_t + sl.joint_clear)
+    k = 1
+    while k * sl.pitch < mount_end_x(cfg) - sl.pitch / 2.0:
+        x = k * sl.pitch
+        if not gap[0] < x < gap[1] and (x < j.split_x) == (part == "base"):
+            pts += [(x, rm, 90.0), (x, -rm, -90.0)]
+        k += 1
+    return pts
 
 
 def joint_bolt_points(cfg: BaseConfig = DEFAULT) -> list[tuple[float, float]]:
-    """(z, y) of the 4 M4 through the mount's ears and the base's posts (JointParams, MountParams): each ear's
-    centreline, bolt_inset under the plate's underside and above the bottom face - also the (x, y) of the screw / nut
+    """(z, y) of the 4 M4 through the mount's posts and the base's (JointParams, MountParams): bolt_out out of the
+    window's edge, bolt_inset under the plate's underside and above the bottom face - also the (x, y) of the screw / nut
     patterns (base_motor_mount_screws), whose +Z the mounts turn down the base's -X."""
-    s, j, m = cfg.shell, cfg.joint, cfg.mount
-    z = mount_inner_half(cfg) + m.wall + m.ear_w / 2.0
+    s, j = cfg.shell, cfg.joint
+    z = mount_inner_half(cfg) + j.bolt_out
     return [(sz * z, y) for sz in (1, -1) for y in (cfg.plate.y[0] - j.bolt_inset, s.y0 + j.bolt_inset)]
 
 
 def joint_stations(cfg: BaseConfig = DEFAULT) -> dict[str, float]:
     """The joint's stations along X: the base posts' back face (the nuts' outer faces flush with it), the joint face,
-    the ears' outer face (under the screws' heads), the nuts' bearing faces and the screws' tips."""
+    the mount posts' inner face (under the screws' heads), the nuts' bearing faces and the screws' tips."""
     j = cfg.joint
-    back, head = j.split_x - j.post_t, j.split_x + cfg.mount.ear_t
+    back, head = j.split_x - j.post_t, j.split_x + cfg.mount.post_t
     return {"x_post": back, "x_split": j.split_x, "x_head": head, "x_nut_face": back + j.nut.h,
             "x_tip": head - j.screw_len}

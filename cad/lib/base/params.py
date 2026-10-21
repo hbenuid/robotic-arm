@@ -14,9 +14,10 @@ thrust bearing (lib/bearings.py THRUST_*) lies in the groove, centred on the rin
 Two configurations: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
 tests/test_reference_match.py); DEFAULT is what the parts build: the bearing bore sized for the 6806-2RS pair, the seat
 ring sized for the thrust bearing's bore, and the +X lobe cut off at a joint face (JointParams): in its place a
-narrower bolt-on motor mount (MountParams, parts/base/base_motor_mount), its motor seat on round holes YAW_MOTOR_X out
-and the belt's tensioner on its plate (YawIdlerParams); the walls j1_coupler's cone carried on down (ShellParams.r /
-draft: BASE_R, BASE_DRAFT) onto a Ø200 foot - a flange, a straight chamfer up the wall, 6 screw holes (FootParams).
+bolt-on motor mount (MountParams, parts/base/base_motor_mount) - the base's D carried on to a round end, its foot round
+it -, its motor seat on round holes YAW_MOTOR_X out and the belt's tensioner on its plate (YawIdlerParams); the walls
+j1_coupler's cone carried on down (ShellParams.r / draft: BASE_R, BASE_DRAFT) onto a Ø200 foot - a flange, a straight
+chamfer up the wall, screw holes (FootParams); a band of slits through both parts' walls (SlitParams).
 
 Every number below was measured on the reference 2026-09-25 (vertex / face census; tests/base/test_base.py
 re-checks the builds against it): [REFERENCE] unless tagged. Units mm, degrees where named *_deg (in the XZ plane,
@@ -118,15 +119,16 @@ class MotorParams:
 class JointParams:
     """[DESIGN] Where the motor mount (base_motor_mount) bolts to the base: the plane x = split_x across the D below the
     plate, the base on -X, the mount on +X. The base ends there in a post inside each side wall, post_t thick (along X),
-    in to the mount's inside (MountParams: the window between the posts, full height, opens the mount into the base),
-    from the bottom face up to the plate's underside; 2 M4 per side along X, through the mount's ear and the post,
-    bolt_inset under the plate's underside and above the bottom face: the heads on the ears' outside, the nuts pressed
-    into hex pockets in the posts (their outer faces flush with the posts' back faces, a corner up), the tips out into
-    the base."""
+    in to the window between the posts (MountParams: full height, it opens the mount into the base), from the bottom
+    face up to the plate's underside; the mount's own posts (MountParams.post_t) face them. 2 M4 per side along X,
+    bolt_out out of the window's edge, bolt_inset under the plate's underside and above the bottom face, through the
+    mount's post and the base's: the heads on the mount's posts' inner faces, the nuts pressed into hex pockets in the
+    base's posts (their outer faces flush with the posts' back faces, a corner up), the tips out into the base."""
 
     split_x: float = 55.0          # just past the tower's round (shell.r): the base keeps a flat full-width end
     post_t: float = 8.0
     bolt_inset: float = 8.0
+    bolt_out: float = 10.0         # the bolts' axis out of the window's edge (z +/- 41.58): the nut's pocket 6.6 clear of it
     bolt_dia: float = M4_CLEAR
     screw: ShcsSize = M4_SHCS
     screw_len: float = 20.0        # the tip 4.0 past the nut's outer face
@@ -136,27 +138,36 @@ class JointParams:
 
 @dataclass(frozen=True)
 class MountParams:
-    """[DESIGN] The motor mount (base_motor_mount): a box round the 48 mm motor + its MKS board, `room` clear of the
-    board's square on every side (in Z; along X to the end wall - the -X side opens into the base
-    through the window between its posts: the cables' way), `wall` thick, from the joint face to its end wall and from
-    the bottom face (it stands on the table) up to the plate's top; the plate (the motor's seat, MotorParams) across its
-    top; open underneath. An ear outside each side wall at the joint end, ear_w wide (in Z) and ear_t thick (along X),
-    full height, carries the side's 2 M4 (JointParams).
-
-    The walls are trusses (lib/base/layout.py truss_panels()): below the plate each keeps a frame `strut` wide - a rail
-    under the plate, a rail on the table, a post at each end (from the outer corner, so the corner posts take in the
-    other wall) - and a V of two `strut` wide struts from the frame's top corners down to the middle of its bottom
-    rail; the three triangles between are open. Printed plate-down, the middle one is self-supporting and the side
-    ones bridge only their table edge. A wall wider than `bay` between its end posts splits into equal bays with a
-    `strut` wide post between, each its own V: a single V that wide would stand under 45 degrees, or bridge over 30 mm.
-    The walls carry little: the belt's pull goes along the plate into the ears, and the motor + board weigh ~0.44 kg."""
+    """[DESIGN] The motor mount (base_motor_mount): the base's other half. Its walls are the base's D carried on at full
+    width - the same leaning planes, shell.wall thick - out to a round end that matches the base's round half (its
+    radius the walls' at each height, its centre lib/base/layout.py mount_end_x(): the end reaches mount_x1() at the
+    plate's top, `room` past the MKS board's square there), from the bottom face up to the plate's top; the plate (the
+    motor's seat, MotorParams) across its top; open underneath; the foot (FootParams) carried on round it. Open toward
+    the base between its two posts at the joint, which mirror the base's (post_t deep along X, from the window -
+    `room` clear of the board's square in Z, lib/base/layout.py mount_inner_half(): the cables' way into the base - out
+    to the wall, from the bottom face up to the plate's underside): the 4 M4 run through both pairs of posts, the heads
+    on the mount's posts' inner faces (turned from underneath, the base off the table), into the M4 nuts pressed into
+    the base's posts (JointParams)."""
 
     room: float = 10.0
-    wall: float = 4.0
-    ear_w: float = 12.0
-    ear_t: float = 8.0
-    strut: float = 6.0
-    bay: float = 60.0              # the widest window one V spans (the side walls since the motor went out: 2 bays)
+    post_t: float = 8.0
+
+
+@dataclass(frozen=True)
+class SlitParams:
+    """[DESIGN] The slits through the base's and the motor mount's walls: one band of upright slits, `w` wide and `h`
+    tall with round ends, cut straight across through the wall (their sides upright, their round tops w / 2 - no bridge
+    and no support, the base printed foot down, the mount plate down). The band's foot `over_flare` above the foot's
+    chamfer, under the plate. Round the whole outline at `pitch` along the wall's mid-surface at the band's middle: the
+    base's round half and the mount's round end as many slits as fit there at `pitch` (one on each end of the half
+    round), the straight sides at multiples of `pitch` from the base_yaw axis - none within joint_clear of the two
+    parts' posts at the joint (lib/base/layout.py slits())."""
+
+    w: float = 3.0
+    h: float = 32.0
+    over_flare: float = 4.0        # the band 28 .. 60 above the table: 7.1 under the plate's underside
+    pitch: float = 10.0
+    joint_clear: float = 2.0
 
 
 @dataclass(frozen=True)
@@ -166,7 +177,9 @@ class FootParams:
     flare - from the flange's top at flare_r up to the wall's outside flare_h above the bottom face. 6 screw holes
     (hole_dia) down through the flange for fixing the base to the table: on the circle hole_r at hole_deg (in the XZ
     plane, from +X toward +Z: the round half's 4) and at x = side_hole_x on the sides (z = +/- hole_r), each with a
-    spot-face of spot_dia from the flange's top up through the chamfer - the screw's head (or its washer) on a flat."""
+    spot-face of spot_dia from the flange's top up through the chamfer - the screw's head (or its washer) on a flat.
+    The motor mount carries the same foot on round its end (the flange's round of r and the chamfer about its end's
+    centre, lib/base/layout.py mount_end_x()), with mount_hole_deg's 4 holes on hole_r about that centre."""
 
     r: float = 100.0               # Ø200: the stretched arm's centre of mass (131 mm out) still past it standing free -
     #                                the holes fix it; it prints on any bed (155 x 200 with the base cut at the joint)
@@ -178,6 +191,8 @@ class FootParams:
     spot_dia: float = 11.0         # an M5 washer's 10 and room
     hole_deg: tuple = (112.5, 157.5, 202.5, 247.5)
     side_hole_x: float = 43.0
+    mount_hole_deg: tuple = (-67.5, -22.5, 22.5, 67.5)   # the motor mount's 4, on hole_r round its end's centre: the
+    #                                                      base's round half's, mirrored
 
 
 @dataclass(frozen=True)
@@ -223,6 +238,7 @@ class BaseConfig:
     mount: MountParams | None = None   # the bolt-on motor mount (with joint)
     foot: FootParams | None = None     # None: the walls stand straight on the table (the SolidWorks base)
     idler: YawIdlerParams | None = None   # the belt's tensioner on the motor mount's plate (with mount)
+    slits: SlitParams | None = None    # the slits through the base's and the mount's walls (with mount)
 
 
 LEGACY = BaseConfig()     # the SolidWorks part, exactly
@@ -232,8 +248,9 @@ LEGACY = BaseConfig()     # the SolidWorks part, exactly
 # Ø37.65 lip, which stops the outer rings only (the SolidWorks Ø31.73 lip ran under the upper bearing's inner ring).
 # The seat ring centres the thrust bearing (the washers' and the cage's bore THRUST_BORE): the SolidWorks Ø65.1 would
 # not go into a Ø65 bore; RING_CLEAR a side.
-# The motor has a bolt-on mount of its own (base_motor_mount, JointParams + MountParams: a box round the motor and its
-# board with room for the wiring, in place of the SolidWorks lobe the base's full width). It sits YAW_MOTOR_X out, short
+# The motor has a bolt-on mount of its own (base_motor_mount, JointParams + MountParams: in place of the SolidWorks lobe,
+# the base's D carried on at full width to a round end that matches the base's, its foot round it - one body with the
+# base -, a band of slits through both parts' walls, SlitParams). It sits YAW_MOTOR_X out, short
 # of the stock YAW_BELT's own centre distance round the base_yaw pulleys - the 120T on the joint
 # (parts/base/gt2_pulley_120t), the 20T on the motor (the SolidWorks centre, 78.97, belonged to a 90T) -, on round holes:
 # the belt's tensioner is an idler on its back on the mount's plate (YawIdlerParams), which takes up what the stock belt
@@ -268,4 +285,5 @@ DEFAULT = replace(LEGACY, shell=replace(LEGACY.shell, y0=_BOTTOM_Y, r=_TOP_R, dr
                   motor=replace(LEGACY.motor, centre=(YAW_MOTOR_X, LEGACY.motor.centre[1]), hole_dia=M3_CLEAR,
                                 window_x=(round(YAW_MOTOR_X - _WINDOW_HALF, 6), round(YAW_MOTOR_X + _WINDOW_HALF, 6)),
                                 window_half_z=_WINDOW_HALF),                                            # [DESIGN]
-                  joint=JointParams(), mount=MountParams(), foot=FootParams(), idler=YawIdlerParams())  # [DESIGN]
+                  joint=JointParams(), mount=MountParams(), foot=FootParams(), idler=YawIdlerParams(),
+                  slits=SlitParams())                                                                  # [DESIGN]

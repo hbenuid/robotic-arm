@@ -1,24 +1,27 @@
-"""base_motor_mount - the base_yaw motor's MOUNT: a box round the motor, bolted to the base's end across the plane
+"""base_motor_mount - the base_yaw motor's MOUNT: the base's other half, bolted to the base's end across the plane
 x = split_x (lib/base/params.py JointParams), so it can be reprinted or swapped without the base.
 
-In place of the SolidWorks base's +X lobe (the base's full width), a box only as wide as the motor's MKS board and
-MountParams.room round it for the wiring (lib/base/layout.py mount_inner_half(), mount_x1()): two side walls and an
-end wall from the bottom face (it stands on the table) up to the 5 mm plate across their tops. The walls are thin
-(wall) and trussed: a frame of rails and posts round a V of two struts, the three triangles between open, so the
-wiring is reachable from the sides and the end too (truss_panels()). The plate carries the 48 mm motor's seat on its
-underside (4 round holes for the motor's M3s, the pilot's window; no rim round the motor's face: the holes hold it)
-and the base_yaw belt's tensioner (lib/base/params.py YawIdlerParams): the idler's axle's slot through the plate
-across the belt, and under the plate two rails either side of its nut's slot - the nut bears up on the plate's
-underside between them and slides with the axle (lib/base/body.py _idler_seat). Open underneath, and open toward the
-base: the window between the base's two posts takes the cables into the base. An ear outside each side wall at the joint face
-(ear_w wide, ear_t thick, full height) with 2 M4 clearance holes along X: 4x M4 SHCS (base_motor_mount_screws), their
-heads on the ears' outer faces - turned from outside, along -X beside the walls - run through the ears and the base's
-posts into the M4 nuts pressed into the posts (base_motor_mount_nuts).
+In place of the SolidWorks base's +X lobe, the base's D carried on at full width (MountParams): the same walls,
+leaning out at the base's draft and shell.wall thick, from the joint face out to a round end that mirrors the base's
+round half (its centre lib/base/layout.py mount_end_x(), the end mount_x1() out at the plate's top, MountParams.room
+past the MKS board's square), from the bottom face (it stands on the table) up to the 5 mm plate across their tops; the
+base's foot carried on round it (the flange and the chamfer, 4 screw holes with spot-faces, FootParams.mount_hole_deg);
+the band of slits through the walls the base's walls have too (SlitParams, lib/base/layout.py slits()). The plate
+carries the 48 mm motor's seat on its underside (4 round holes for the motor's M3s, the pilot's window; no rim round
+the motor's face: the holes hold it) and the base_yaw belt's tensioner (lib/base/params.py YawIdlerParams): the idler's
+axle's slot through the plate across the belt, and under the plate two rails either side of its nut's slot - the nut
+bears up on the plate's underside between them and slides with the axle (lib/base/body.py _idler_seat). Open
+underneath, and open toward the base: the window between the two parts' posts takes the cables into the base. Two
+posts at the joint face (post_t deep, from the window out to the walls, full height below the plate) facing the
+base's, with 2 M4 clearance holes each along X: 4x M4 SHCS (base_motor_mount_screws), their heads on the posts' inner
+faces inside the mount - turned along -X from underneath, the base off the table - run through both pairs of posts
+into the M4 nuts pressed into the base's posts (base_motor_mount_nuts).
 
 NATIVE part (lib/reference.py NATIVE): designed here in build123d (lib/base/body.py build_motor_mount(cfg), every
 number lib/base/params.py), in the base's part frame - lib/mounts.py places it on base#1 at identity; its reference is
 its accepted build, reference/native/base_motor_mount.step (tools/reference/import_native.py). PETG, printed plate
-down (the plate's top and the walls' tops are one face): no supports. In the arm: x1 (base_link).
+down (the plate's top and the walls' tops are one face): the slits upright; the foot's chamfer and rim overhang at the
+top of the print (docs/open_issues.md). In the arm: x1 (base_link).
 """
 import pathlib
 
