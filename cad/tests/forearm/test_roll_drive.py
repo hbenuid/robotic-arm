@@ -142,9 +142,10 @@ def test_stack():
     assert j_r < D.shoulder_dia / 2.0 < D.lip_id / 2.0 - 1.0 and D.lip_id < D.bearing_od - 3.0
     assert D.tower_y - r_seat >= 4.0 and D.block_x[1] - r_seat >= 4.0 and r_seat + 4.0 <= -D.block_x[0]
     # the motor's face where its 20T meets the ring, the 20T's hub pulley_seat over the motor's pilot boss - down in the
-    # plate's pilot slot, under the front face - and the 20T on the shaft to its far end; the plate in front of the motor
-    # the block's front face. The shaft's tip passes the forearm wall's plane: the rolling forearm keeps clear of it
-    # round the roll axis (test_forearm_clears_the_elbow_while_rolling)
+    # plate's pilot hole, under the front face - and the 20T on the shaft to its far end; the plate in front of the motor
+    # the block's front face, pad_t thick: the motor screws' heads flush in it (tests/forearm/test_roll_motor_screws.py).
+    # The shaft's tip passes the forearm wall's plane: the rolling forearm keeps clear of it round the roll axis
+    # (test_forearm_clears_the_elbow_while_rolling)
     assert _eq(S["z_ring_mid"] - S["z_motor_face"], D.t20) and _eq(S["z_front"], S["z_motor_face"] + D.pad_t)
     assert _eq(S["z_20t"], S["z_motor_face"] + D.motor.pilot_height + D.pulley_seat) and S["z_20t"] < S["z_front"]
     assert S["z_20t"] + D.t20_len <= S["z_motor_face"] + D.motor.shaft_length
@@ -183,24 +184,24 @@ def test_stack():
     assert D.stop_post_r[1] > D.bay_r
     # the motor: ON the elbow axis, centred on the roll axis in X, the drive's centre distance (a design value: the stock
     # roll belt is longer than the open loop, its idler takes up the rest - tests/forearm/test_roll_idler.py) the offset;
-    # 2 mm over the pocket's floor; its pocket round it and its board past the tension travel, inside the round end,
-    # under the bay
+    # 2 mm over the pocket's floor; its pocket round it and its board (no slide: the idler tensions the belt), inside the
+    # round end, under the bay
     assert S["x_motor"] == 0.0 and S["y_motor"] == S["y_elbow"] == D.elbow_y and D.motor_spin_deg == 90.0
     assert D.roll_belt in STANDARD_2GT_LENGTHS and closed_belt_length(D.centre_distance, D.ring_teeth, GT2_PULLEY_20T_TEETH) < D.roll_belt
     assert -D.motor.body_width / 2.0 - S["x_cradle"] >= 2.0 and -D.board_w / 2.0 - S["x_cradle"] >= 1.5
     y0, y1, z0, z1 = motor_pocket(DEFAULT)
-    half = max(D.motor.body_width, D.board_w) / 2.0 + D.pad_slot_len / 2.0 + D.pocket_clear
+    half = max(D.motor.body_width, D.board_w) / 2.0 + D.pocket_clear
     assert (y0, y1) == (S["y_motor"] - half, S["y_motor"] + half) and z1 == S["z_motor_face"]
     assert z0 == S["z_motor_board"] - D.board_stack - D.pocket_rear
     assert max(math.hypot(y - S["y_elbow"], z) for y in (y0, y1) for z in (z0, z1)) <= D.end_r - 5.0
     assert -D.bay_r - y1 >= 5.0
     # the motor goes in from the open +N face: the pocket deep enough for it to slide in motor_drop low (its pilot boss
-    # under the plate), its shaft in the slit - wider than the shaft, the tension slots whole either side of it
+    # under the plate), its shaft in the slit - wider than the shaft, the screws' counterbores whole either side of it
     play = (z1 - z0) - (D.motor.body_length + D.board_stack)
     assert D.motor.pilot_height < D.motor_drop <= play - 0.25 + 1e-9
-    assert D.motor.shaft_dia + 1.0 <= D.shaft_slit < D.pad_pilot_w
-    slot_in = min(abs(y - S["y_motor"]) for _x, y in pad_bolt_points(DEFAULT)) - (D.pad_slot_len + D.pad_bolt_dia) / 2.0
-    assert slot_in - D.shaft_slit / 2.0 >= 5.0
+    assert D.motor.shaft_dia + 1.0 <= D.shaft_slit < D.motor_holes.pilot_dia
+    hole_in = min(abs(y - S["y_motor"]) for _x, y in pad_bolt_points(DEFAULT)) - D.motor_holes.pocket_dia / 2.0
+    assert hole_in - D.shaft_slit / 2.0 >= 5.0
     # the elbow 90T's nuts: seated in the boss, the M4 from the pulley's counterbores 2 pitches past its nut, nut and tip
     # 2 mm under the pocket's floor; each hex channel open up into the pocket (the nuts go in from there before the
     # motor), and clear of the pin bore, which ends under the seats
@@ -240,8 +241,8 @@ def test_totals_and_bodies(module):
 def test_module_colors(module):
     """Standalone: the purchased parts BOUGHT_TINT, the printed ones the module's TINT."""
     assert module.label == "forearm_roll_drive"
-    # 2 bearings, motor, board, 20T, belt, the tensioner's idler, screw and nut / frame, shaft, pulley
-    assert module_tints(module, M.TINT) == {True: 9, False: 3}
+    # 2 bearings, motor, board, 20T, the motor's screws, belt, the tensioner's idler, screw and nut / frame, shaft, pulley
+    assert module_tints(module, M.TINT) == {True: 10, False: 3}
 
 
 @pytest.mark.slow
@@ -288,7 +289,7 @@ def test_the_rotor_turns_clear_of_the_frame(module):
 @pytest.mark.slow
 def test_the_motor_slides_in_from_the_open_face(module):
     """The roll motor and its board go in from the frame's open +N face motor_drop low - the pilot boss under the plate,
-    the shaft along the slit - and lift into the pilot slot: clear of the frame from outside it to the seat, in 2 mm
+    the shaft along the slit - and lift into the pilot hole: clear of the frame from outside it to the seat, in 2 mm
     steps, and through the lift."""
     block = _leaf(module, "forearm_roll_block")
     kit = [_leaf(module, label) for label in ("nema17_40mm:forearm_roll", "mks_servo42d:forearm_roll")]
@@ -334,10 +335,10 @@ def test_frame_features(module):
     assert is_inside(block, 10.0, y1 + 1.0, 0.0) and not is_inside(block, 10.0, y1 - 1.0, 0.0)
     assert is_inside(block, 10.0, y0 - 1.0, 0.0) and not is_inside(block, 10.0, y0 + 1.0, 0.0)
     assert is_inside(block, 10.0, ye, z0 - 1.0) and not is_inside(block, 10.0, ye, z0 + 1.0)
-    # the plate, the pocket's front wall: material beside the pilot slot, the slot, the pocket behind, the 20T's room in front
+    # the plate, the pocket's front wall: material beside the pilot hole, the hole, the pocket behind, the 20T's room in front
     assert is_inside(block, 10, ye - 10, S["z_motor_face"] + 1.5) and not is_inside(block, 0, ye, S["z_motor_face"] + 1.5)
     assert not is_inside(block, 10, ye - 10, S["z_motor_face"] - 1.5) and not is_inside(block, 10, ye - 10, S["z_front"] + 1.0)
-    # the shaft's slit: open through the plate from the pilot slot out to the +N face, the plate either side of it
+    # the shaft's slit: open through the plate from the pilot hole out to the +N face, the plate either side of it
     zp = S["z_motor_face"] + D.pad_t / 2.0
     for x in (15.0, D.block_x[1] - 0.5):
         assert not is_inside(block, x, ye, zp) and is_inside(block, x, ye + D.shaft_slit / 2.0 + 1.0, zp)

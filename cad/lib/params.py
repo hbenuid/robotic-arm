@@ -147,6 +147,9 @@ FOREARM_MOTOR_WALL_CLEAR = _FOREARM.roll_end.motor_wall_clear   # 1.5 [DESIGN] t
 FOREARM_FLANGE_DIA = _FOREARM.roll_end.flange_dia  # 39.7 [DESIGN] the roll pulley's spigot the forearm wall bolts onto
 FOREARM_ROLL_BELT_LENGTH = _FOREARM.drive.roll_belt          # 280-2GT [DESIGN] the roll belt (90T ring on the shaft, 20T on the motor, round its idler)
 FOREARM_ROLL_MOTOR_XY = (0.0, _FOREARM.drive.motor_y)        # (0, -74) [DESIGN] the roll motor's axis in the module frame: on the elbow axis, the drive's centre distance under the roll axis
+ROLL_MOTOR_SCREW_LEN = (_FOREARM.drive.pad_t - _FOREARM.drive.motor_holes.screw.head_h
+                        + _FOREARM.drive.motor_holes.thread)   # 8 the roll motor's 4x M3 (parts/joints/roll_motor_screws) under the head: the
+#                                                              plate under the heads (their counterbores head_h deep - RollDriveParams pad_t) and the thread in the motor
 ELBOW_ROLL_OFFSET = _FOREARM.elbow_offset                    # 74 [DESIGN] the roll axis' distance from the elbow axis (along j2_link's +Y): the roll drive's
 #                                                              centre distance (the stock belt round its idler), the roll motor on the elbow axis - the arm's
 #                                                              elbow offset (lib/placements.py SHIFTS)
@@ -263,6 +266,11 @@ ELBOW_MOTOR_SCREWS_MASS_G = STEEL_DENSITY * len(_pad_holes(_UPPER_ARM)) * shcs_v
 from lib.forearm.layout import motor_hole_points as _motor_hole_points  # noqa: E402
 
 WRIST_MOTOR_SCREWS_MASS_G = STEEL_DENSITY * len(_motor_hole_points(_FOREARM)) * shcs_volume(_FOREARM.holes.screw, J2_MOTOR_SCREW_LEN)   # 4.7, 4x M3x12
+# the roll motor's (parts/joints/roll_motor_screws), likewise
+from lib.forearm.layout import pad_bolt_points as _roll_motor_points  # noqa: E402
+
+ROLL_MOTOR_SCREWS_MASS_G = (STEEL_DENSITY * len(_roll_motor_points(_FOREARM))
+                            * shcs_volume(_FOREARM.drive.motor_holes.screw, ROLL_MOTOR_SCREW_LEN))   # 3.8, 4x M3x8
 
 # The j1_coupler fork's screws and nuts (parts/base/fork_{hub,foot,sleeve}_{screws,nuts}; lib/yaw_coupler/params.py
 # ForkParams): the same estimate - the hub's to the hub leg, the motor leg's foot's to the disc, its ring's to the sleeve

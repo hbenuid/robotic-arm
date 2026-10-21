@@ -130,7 +130,7 @@ LINKS: dict[str, list[str]] = {
                        "elbow_idler_screw#1", "elbow_idler_nut#1"],
     # the elbow 90T pulley (the elbow_pitch output, assumed the driven side  [ASSUMPTION]) and the M4 screws + nuts
     # that clamp it carry the forearm roll drive's STATOR - the roll frame, whose web IS the elbow coupler now (j3_coupler#1
-    # is retired, lib/placements.py), both bearings, the roll motor + board (on the elbow axis) and its 20T
+    # is retired, lib/placements.py), both bearings, the roll motor + board (on the elbow axis, its 4x M3) and its 20T
     # (assemblies/forearm_roll_drive.py BODIES)
     "elbow_link": ["gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", "forearm_roll_drive#1:stator"],
     # the drive's ROTOR - the pulley (its 90T ring, the roll's output, bolts to j2_link's wall) and the shaft clamped to

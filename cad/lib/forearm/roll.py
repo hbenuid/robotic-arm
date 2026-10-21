@@ -27,7 +27,7 @@ from lib.forearm.layout import (
 )
 from lib.forearm.link import x_cylinder, yz_prism
 from lib.forearm.params import DEFAULT, ForearmConfig
-from lib.geom import box, cylinder, hex_prism, nut_slot, single_solid, slot_y, stop_wedge
+from lib.geom import box, cylinder, hex_prism, nut_slot, single_solid, stop_wedge
 from lib.pulley.teeth import gt2_ring
 from lib.units import NUDGE
 
@@ -60,7 +60,8 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     """The frame (forearm_roll_block) in the module frame: ONE body round the motor - the profile (round about the elbow
     axis, tangent up to the tower round the roll axis) from the underside (block_x[0], the elbow flange's lip / boss /
     journal / stub under it) to the open +N face; the motor's pocket open on that face, its front wall the plate (the
-    tension slots, the pilot slot, the shaft's slit out to the open face), the plate's face the frame's one front face - on
+    pilot hole, the motor's 4 M3 holes with their heads' counterbores, the shaft's slit out to the open face), the plate's
+    face the frame's one front face - on
     it the roll belt's tensioner's riser, its M5's slot and its nut's channel under the face -; the tower: bearing 1's seat from the
     shaft's bay behind it, the lip, bearing 2's seat in the bearing boss - round on the front face, the ring's flange
     turning over it -, the stop post on the tower's rear face in the bay."""
@@ -78,18 +79,20 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     land0 = S["z_idler"] - i.land_h
     body = body + bd.Pos(ix, iy, S["z_front"] - 1.0) * bd.extrude(bd.SlotCenterToCenter(2.0 * i.travel, i.riser_w), amount=land0 - S["z_front"] + 1.0)
     body = body + bd.Pos(ix, iy, land0 - NUDGE) * bd.extrude(bd.SlotCenterToCenter(2.0 * i.travel, i.land_w), amount=i.land_h + NUDGE)
-    # the motor's pocket, from the floor out through the open face; the plate in front of it: the motor's four tension
-    # slots and the pilot slot, the motor centred on the elbow axis
+    # the motor's pocket, from the floor out through the open face; the plate in front of it: the pilot hole and the
+    # motor's four M3 holes, each screw's head flush in a counterbore in the front face, the motor centred on the elbow axis
     y0, y1, z0, z1 = motor_pocket(cfg)
     body = body - box((S["x_cradle"], d.block_x[1] + 1.0), (y0, y1), (z0, z1))
     # the board's two side plugs: a slot off each side of the pocket at them, out through the open face
     for x0, x1, sy0, sy1, sz0, sz1 in plug_slots(cfg):
         body = body - box((x0, x1), (sy0, sy1), (sz0, sz1))
-    for x, y in pad_bolt_points(cfg):
-        body = body - slot_y(x, y, d.pad_bolt_dia, d.pad_slot_len, S["z_motor_face"], d.pad_t)
-    body = body - slot_y(S["x_motor"], S["y_motor"], d.pad_pilot_w, d.pad_slot_len, S["z_motor_face"], d.pad_t)
-    # the shaft's slit through the plate, from the pilot slot out through the +N face: the motor + board slide in from
-    # that face motor_drop low (the shaft in the slit, the pilot boss under the plate), then lift into the pilot slot
+    h = d.motor_holes
+    body = body - cylinder(h.pilot_dia / 2.0, d.pad_t + 2 * NUDGE, (S["x_motor"], S["y_motor"]), z0=S["z_motor_face"] - NUDGE)
+    for xy in pad_bolt_points(cfg):
+        body = body - cylinder(h.bolt_dia / 2.0, d.pad_t + 2 * NUDGE, xy, z0=S["z_motor_face"] - NUDGE)
+        body = body - cylinder(h.pocket_dia / 2.0, h.screw.head_h + NUDGE, xy, z0=S["z_motor_screws"])
+    # the shaft's slit through the plate, from the pilot hole out through the +N face: the motor + board slide in from
+    # that face motor_drop low (the shaft in the slit, the pilot boss under the plate), then lift into the pilot hole
     slit = (S["y_motor"] - d.shaft_slit / 2.0, S["y_motor"] + d.shaft_slit / 2.0)
     body = body - box((S["x_motor"], d.block_x[1] + 1.0), slit, (S["z_motor_face"] - NUDGE, S["z_front"] + NUDGE))
     # the tower, from the bay to the boss's top: bearing 1's seat, the lip, bearing 2's seat (open through the top)
