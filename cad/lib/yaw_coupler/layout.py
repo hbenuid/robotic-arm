@@ -5,7 +5,14 @@ from __future__ import annotations
 import math
 
 from lib.cycloidal import DEFAULT_CONFIG as DRIVE
-from lib.cycloidal import PILLAR_OVERSHOOT, arm_mount_points, pillar_half_width, shell_ends, sleeve_bolt_z
+from lib.cycloidal import (
+    PILLAR_OVERSHOOT,
+    arm_mount_points,
+    pillar_half_width,
+    shell_ends,
+    sleeve_bolt_z,
+    stack_positions,
+)
 from lib.fasteners import M4_NUT, M4_SHCS
 from lib.yaw_coupler.params import DEFAULT, YawCouplerConfig
 
@@ -170,3 +177,62 @@ def fork_sleeve_bolt_x(cfg: YawCouplerConfig = DEFAULT) -> float:
 def fork_sleeve_bolt_deg(cfg: YawCouplerConfig = DEFAULT) -> tuple:
     """Their angles about the drive's axis, from its +X (this frame's +Z) toward its +Y (this frame's +Y)."""
     return DRIVE.shell.sleeve_bolt_deg
+
+
+# ---- the fork's screws and nuts (parts/base/fork_{hub,foot,sleeve}_{screws,nuts}, lib/mounts.py FORK_MOUNTS) -------------
+# Each screw set's frame in this one: its screws along its +Z from the heads' bearing faces (z 0, the heads in -Z); its
+# nut set's frame is the screw set's moved along +Z to the nuts' bearing faces. The hub's and the foot's +Z run along
+# the drive's axis, their +Y up this frame's +Y; the sleeve's frame sits on the drive's axis, its axes the drive's, the
+# screws radial in its z = 0 plane.
+HUB_SCREWS_TURN = (0.0, 90.0, 0.0)      # +Z along this frame's +X (into the hub: the drive's -Z), +X along its -Z
+FOOT_SCREWS_TURN = (0.0, -90.0, 0.0)    # +Z along this frame's -X (through the foot into the disc), +X along its +Z
+SLEEVE_SCREWS_TURN = (0.0, -90.0, 0.0)  # +Z the drive's +Z (this frame's -X), +X the drive's +X (this frame's +Z)
+
+
+def fork_hub_screw_frame(cfg: YawCouplerConfig = DEFAULT) -> tuple:
+    """The hub's 4 screws' frame: on the drive's axis, in the plane of the floors of the hub leg's counterbores."""
+    f = cfg.fork
+    return ((round(fork_hub_leg_x(cfg)[0] + HEAD_SEAT, 6), f.axis_y, f.axis_z), HUB_SCREWS_TURN)
+
+
+def fork_hub_screw_points() -> list[tuple[float, float]]:
+    """(x, y) of the hub's 4 screws in their frame: the drive's arm-mount pattern, its x turned over (the frame's +X is
+    the drive's -X)."""
+    return [(-x, y) for x, y in arm_mount_points(DRIVE)]
+
+
+def fork_hub_nut_z(cfg: YawCouplerConfig = DEFAULT) -> float:
+    """The hub's captive nuts' bearing faces along the screws: the floors of their pockets, ShellParams.hub_nut_depth in
+    from the hub's flange's inner face."""
+    return round(fork_x(cfg, stack_positions(DRIVE)["z_hub"] + DRIVE.shell.hub_nut_depth) - fork_hub_screw_frame(cfg)[0][0], 6)
+
+
+def fork_foot_screw_frame(cfg: YawCouplerConfig = DEFAULT) -> tuple:
+    """The motor leg's foot's 2 screws' frame: motor_bolt_y high over the drive's axis, in the plane of the floors of the
+    foot's counterbores."""
+    f = cfg.fork
+    return ((round(fork_motor_bolt_x(cfg)[0], 6), f.motor_bolt_y, f.axis_z), FOOT_SCREWS_TURN)
+
+
+def fork_foot_screw_points(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[float, float]]:
+    """(x, y) of the foot's 2 screws in their frame (its +X this frame's +Z): fork_motor_bolts(), off the drive's axis."""
+    f = cfg.fork
+    return [(z - f.axis_z, y - f.motor_bolt_y) for y, z in fork_motor_bolts(cfg)]
+
+
+def fork_foot_nut_z(cfg: YawCouplerConfig = DEFAULT) -> float:
+    """The foot's nuts' bearing faces along the screws: their slots' outer walls, motor_nut_wall in from the leg's outer face."""
+    seat_x, nut_x1, _ = fork_motor_bolt_x(cfg)
+    return round(seat_x - nut_x1, 6)
+
+
+def fork_sleeve_screw_frame(cfg: YawCouplerConfig = DEFAULT) -> tuple:
+    """The sleeve's 3 radial screws' frame (their nuts' too): on the drive's axis, in their plane - the ring's middle."""
+    f = cfg.fork
+    return ((round(fork_sleeve_bolt_x(cfg), 6), f.axis_y, f.axis_z), SLEEVE_SCREWS_TURN)
+
+
+def fork_sleeve_nut_r(cfg: YawCouplerConfig = DEFAULT) -> float:
+    """The sleeve's nuts' bearing faces' radius: the floors of their pockets in the sleeve's lugs (ShellParams.sleeve_nut_r
+    to the nut's outer face)."""
+    return DRIVE.shell.sleeve_nut_r + DRIVE.housing.bolt_nut_thickness

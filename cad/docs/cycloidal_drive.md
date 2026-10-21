@@ -116,8 +116,8 @@ sit well inside the 70 mm inner-race bore.
 | Housing bolts | M4 × 65 SHCS (ISO 4762, `bolt_length`), Ø7 × 4 head; counterbored in the shell ring's end, through the shell end to end into nuts sunk in its body (the port's M4 × 55 ended in the ring gear body) | 6 | `cycloidal_housing_bolts` |
 | Housing nuts | M4 hex, 7.0 AF × 3.2 (pocket 7.2 AF), in the body's pockets from its hub end (`lib/cycloidal/housing.py build_shell_body`) | 6 | `cycloidal_housing_nuts` |
 | Motor bolts | M3 × 10 SHCS, Ø5.3 × 3 head (13 total): 6 through the plate + 4 engagement, head flush in the 3 mm inner-face pocket (`motor_bolt_counterbore_depth`) - the model places them `motor_bolt_recess` deeper (`stack_positions` `z_motor_bolts`, the drive repo's stack-up: heads 1 into the pocket's floor, tips 0.5 past the motor's 4.5 tapped holes; `docs/open_issues.md`) | 4 | `cycloidal_motor_bolts` |
-| Hub bolts + nuts | 4 × M4 × 25 (`lib/yaw_coupler/params.py ForkParams.hub_screw_len`) from the `j1_coupler` fork's hub-side leg into captive M4 nuts in the hub's flange (its arm-mount pattern, `ShellParams.hub_nut_depth`: the screws' ends flush with the nuts) — install the nuts before pressing the hub through its 6814 | 4 + 4 | not modelled — on the buy list through `tools/bom.py EXTRAS` |
-| Sleeve bolts + nuts | 3 × M4 × 20 (`ForkParams.sleeve_screw_len`) radially through the fork's motor leg (`j1_motor_leg`), heads on its ring's od, into M4 nuts pressed into lugs on the motor plate's sleeve (`ShellParams.sleeve_bolt_deg`: the motor's flats, up and both sides; `sleeve_nut_r`: the screws' ends flush with the nuts) — they hold the carrier's motor end from turning; press the nuts in before the motor goes into the sleeve | 3 + 3 | not modelled — on the buy list through `tools/bom.py EXTRAS` |
+| Hub bolts + nuts | 4 × M4 × 25 (`lib/yaw_coupler/params.py ForkParams.hub_screw_len`) from the `j1_coupler` fork's hub-side leg into captive M4 nuts in the hub's flange (its arm-mount pattern, `ShellParams.hub_nut_depth`: the screws' ends flush with the nuts) — install the nuts before pressing the hub through its 6814 | 4 + 4 | the arm's `fork_hub_screws` + `fork_hub_nuts`, mounted on the fork (`lib/mounts.py FORK_MOUNTS`) |
+| Sleeve bolts + nuts | 3 × M4 × 20 (`ForkParams.sleeve_screw_len`) radially through the fork's motor leg (`j1_motor_leg`), heads on its ring's od, into M4 nuts pressed into lugs on the motor plate's sleeve (`ShellParams.sleeve_bolt_deg`: the motor's flats, up and both sides; `sleeve_nut_r`: the screws' ends flush with the nuts) — they hold the carrier's motor end from turning; press the nuts in before the motor goes into the sleeve | 3 + 3 | the arm's `fork_sleeve_screws` + `fork_sleeve_nuts`, mounted on the motor leg (`lib/mounts.py FORK_MOUNTS`) |
 
 The purchased parts are modelled as the drive repo's simplified solids (annuli, cylinders, hex
 prisms): each module's `_envelope()`, which is also its reference STEP; where a vendor file exists the model shows it instead, the reference staying the envelope:
@@ -323,8 +323,9 @@ interpolating** B-spline (`Edge.make_spline(..., periodic=True)` — `lib/AGENTS
 
 Generated, never retyped: `./cadtool python tools/bom.py --module cycloidal_drive` prints what to order
 (each purchased module's `PURCHASE_SPEC` × pieces, from `assemblies/cycloidal_drive.py OCCURRENCES`) and,
-under "not modelled", the items that have no geometry (`tools/bom.py EXTRAS`: the hub's bolts and nuts,
-grease). The shell's body is on the print list as `j1_link` (it is printed with the arm).
+under "not modelled", the items that have no geometry (`tools/bom.py EXTRAS`: the grease). The bolts and nuts that
+hold the drive in the `j1_coupler` fork (the hub's, the sleeve's) are the arm's, on its own list
+(`./cadtool python tools/bom.py`). The shell's body is on the print list as `j1_link` (it is printed with the arm).
 
 Budget (2f1f67d estimate): NEMA 17 48 mm $10–15 (as the MKS SERVO42D closed-loop kit with the board: ~$30–40) · 6003-2RS ×2 $4–8 · 6814-2RS ×2 $16–40 · 625-2RS $1–2 ·
 ring-pin dowels (pack of 25) $8–12 · output-pin dowels $2–4 · motor bolts $1–2 · housing bolts $2–4 · M4 nuts

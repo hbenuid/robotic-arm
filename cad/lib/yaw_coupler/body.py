@@ -183,6 +183,14 @@ def build_motor_leg(cfg: YawCouplerConfig):
     return single_solid(leg)
 
 
+def toward_axis(shape, deg: float, r: float):
+    """`shape`, built at the origin along +Z from z 0, set to point in at the axis from radius r at deg (from +X toward
+    +Y, in the z = 0 plane): its +Z radially in, its +X along the tangent - the sleeve's radial screws and their nuts in
+    their frame on the drive's axis (lib/yaw_coupler/layout.py fork_sleeve_screw_frame)."""
+    ux, uy = math.cos(math.radians(deg)), math.sin(math.radians(deg))
+    return shape.moved(bd.Location(bd.Plane(origin=(r * ux, r * uy, 0.0), x_dir=(-uy, ux, 0.0), z_dir=(-ux, -uy, 0.0))))
+
+
 def _stub(cfg: YawCouplerConfig):
     """The stub from its end up into the recess's ceiling, the round on its end's outer edge."""
     h = cfg.hub
