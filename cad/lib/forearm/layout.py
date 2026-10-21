@@ -161,7 +161,8 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
     geometry at these stations, their rows at 0). From the forearm wall back: the ring's front face on the wall, the
     ring, bearing 2 right under it (the bearing boss's top), the lip, bearing 1 (the tower's rear face), the shaft behind it -
     its rear face at the rotor clamp's tips -, the bay, the tower's rear; the motor's face where its 20T meets the
-    ring, the plate in front of it the block's front face. The elbow axis runs along X at y = y_elbow, under the tower at
+    ring (pulley_seat), the plate in front of it - its face the block's front face, the motor screws' heads flush in it.
+    The elbow axis runs along X at y = y_elbow, under the tower at
     z = 0; the motor sits on it. Every number a row or a test needs comes from here."""
     d, w = cfg.drive, cfg.roll_end
     z_wall = -w.wall_x[1]                                         # 48: the forearm wall's elbow face = the ring's front face
@@ -181,7 +182,7 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
     z_meet = z_lip + d.lip / 2.0                                  # 29.6: the shaft's hub meets the pulley's, in the lip's middle
     z_bay = z_shaft_end - (z_meet - z_bearing_1) - d.bay_clear    # 2.75: the bay's floor - room to slide the shaft in
     z_ring_mid = z_ring + d.ring_width / 2.0                      # 43.3
-    z_motor_face = z_ring_mid - d.t20                             # 29.85: the 20T's teeth level with the ring's, its hub on the pilot boss
+    z_motor_face = z_ring_mid - d.t20                             # 26.85: the 20T's teeth level with the ring's, its hub pulley_seat over the pilot boss
     z_front = z_motor_face + d.pad_t                              # 33.85: the plate's front face = the block's front face
     z_idler = z_ring_mid - GT2_IDLER_WIDTH / 2.0                  # 38.8: the idler's underside (its channel on the belt) = the riser's land
     return {
@@ -206,8 +207,9 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
         "z_spigot_end": z_spigot_end,
         "z_wall_back": z_wall_back,
         "z_motor_face": z_motor_face,
-        "z_motor_board": z_motor_face - d.motor.body_length,      # -9.65: the board's frame (the motor's rear face)
-        "z_20t": z_motor_face + d.motor.pilot_height + d.pulley_seat,   # 32.35: the 20T's hub face, in the plate's pilot slot
+        "z_motor_board": z_motor_face - d.motor.body_length,      # -12.65: the board's frame (the motor's rear face)
+        "z_motor_screws": z_front - d.motor_holes.screw.head_h,   # 30.85: the motor screws' counterbores' floor = their heads' bearing face
+        "z_20t": z_motor_face + d.motor.pilot_height + d.pulley_seat,   # 32.35: the 20T's hub face, in the plate's pilot hole
         "z_idler": z_idler, "z_idler_top": z_idler + GT2_IDLER_WIDTH,   # 47.8: its top, the screw head's bearing face
         "z_idler_roof": z_front - d.idler.roof,                   # 30.85: the nut's channel's roof = the nut's bearing face
         "y_elbow": d.elbow_y,                                     # -74: the elbow axis (along X)
@@ -218,18 +220,18 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
 
 def motor_pocket(cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float, float]:
     """(y0, y1, z0, z1) of the motor's pocket in the frame (from the floor, x_cradle, out through the open +N face): the
-    motor and its board (the wider: the board's cover) + pocket_clear, along Y past the tension travel either way;
-    from pocket_rear behind the board's cover to the plate (the motor's face)."""
+    motor and its board (the wider: the board's cover) + pocket_clear; from pocket_rear behind the board's cover to the
+    plate (the motor's face)."""
     d, S = cfg.drive, stack_positions(cfg)
-    half = max(d.motor.body_width, d.board_w) / 2.0 + d.pad_slot_len / 2.0 + d.pocket_clear
+    half = max(d.motor.body_width, d.board_w) / 2.0 + d.pocket_clear
     return (S["y_motor"] - half, S["y_motor"] + half, S["z_motor_board"] - d.board_stack - d.pocket_rear, S["z_motor_face"])
 
 
 def plug_slots(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float, float, float, float, float]]:
     """(x0, x1, y0, y1, z0, z1) of the two plug slots off the motor's pocket, one at each of the MKS board's side headers
     (lib/motors.py MKS_SERVO42D_HEADERS, the board turned motor_spin_deg with the motor): plug_clear round the header's
-    outline, from its face along Y - the tension slide's line - MKS_PLUG_ROOM past it with the motor at the slide's far
-    end and plug_spare more, and from the header up through the open +N face."""
+    outline, from its face along Y MKS_PLUG_ROOM past it and plug_spare more, and from the header up through the open +N
+    face."""
     d, S = cfg.drive, stack_positions(cfg)
     a = math.radians(d.motor_spin_deg)
     c, s = round(math.cos(a)), round(math.sin(a))      # the board's quarter turn about the motor axis
@@ -239,16 +241,17 @@ def plug_slots(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float, float, 
         xs = [S["x_motor"] + c * x - s * y for x in (x0, x1) for y in (y0, y1)]
         ys = [S["y_motor"] + s * x + c * y for x in (x0, x1) for y in (y0, y1)]
         out = s * ux + c * uy                            # the plug's way in, turned: along Y (+1 / -1)
-        assert c * ux - s * uy == 0 and abs(out) == 1, "the side plugs face along the tension slide"
+        assert c * ux - s * uy == 0 and abs(out) == 1, "the side plugs face along Y"
         face = max(ys) if out > 0 else min(ys)
-        reach = face + out * (MKS_PLUG_ROOM[name] + d.pad_slot_len / 2.0 + d.plug_spare)
+        reach = face + out * (MKS_PLUG_ROOM[name] + d.plug_spare)
         slots.append((min(xs) - d.plug_clear, d.block_x[1] + NUDGE, min(face, reach), max(face, reach),
                       S["z_motor_board"] + z0 - d.plug_clear, S["z_motor_board"] + z1 + d.plug_clear))
     return slots
 
 
 def pad_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
-    """The frame plate's 4 bolt slots (centres) in the module x-y plane (the motor's 31 mm square, axis-aligned)."""
+    """The frame plate's 4 M3 holes in the module x-y plane (the motor's 31 mm square, axis-aligned): the motor screws'
+    (parts/joints/roll_motor_screws), their heads in counterbores in the front face (RollDriveParams.motor_holes)."""
     from lib.cycloidal.layout import motor_bolt_points
     S = stack_positions(cfg)
     return [(S["x_motor"] + x, S["y_motor"] + y) for x, y in motor_bolt_points()]

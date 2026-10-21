@@ -5,8 +5,8 @@ Stator: the frame - ONE printed part (forearm_roll_block) round the roll motor: 
 round end) and tangent up to the tower round the roll axis; its underside is the elbow's output flange (it repeats the
 SolidWorks j3_coupler's lip, boss, journal and stub down into j1_link's bore; the elbow 90T pulley bolts straight into it,
 so j3_coupler#1 is retired, lib/placements.py RETIRED); the 40 mm kit motor + MKS board ON the elbow axis in its pocket
-(open on the +N face, the pocket's front wall the plate with the tension slots) and the 20T on the motor shaft, its hub
-down in the plate's pilot slot; the roll belt's tensioner on the frame's front face (the idler on a riser, its M5 and
+(open on the +N face, the pocket's front wall the plate, its 4x M3 from the front face, heads flush in counterbores:
+roll_motor_screws) and the 20T on the motor shaft, its hub down in the plate's pilot hole; the roll belt's tensioner on the frame's front face (the idler on a riser, its M5 and
 nut: RollIdlerParams); the 6806 pair back to back on the tower's lip. Rotor: the pulley (forearm_roll_pulley,
 the output: the integral 90T ring over the bearing boss on the frame's front face, its hub down through bearing 2, the spigot
 the forearm's wall bolts onto - 4x M3 into nuts in its core; forearm_link) and the shaft (forearm_roll_shaft, a collar:
@@ -16,7 +16,7 @@ axis' station, +Z along the roll axis toward the wrist, +X = host +Z (N), +Y = u
 axis along X at y_elbow (the arm's elbow offset below the roll axis); the arm places it through lib/mounts.py
 MODULE_MOUNTS ("forearm_roll_drive#1" on j2_link#1). Every station comes from lib/forearm stack_positions() - never type
 one here. Gear ratio 90 / 20 = 4.5 (FOREARM_ROLL_RATIO) on the belt (forearm_roll_belt, FOREARM_ROLL_BELT_LENGTH, round the idler); the rotor clamp's and
-the forearm wall's M3 screws + nuts and the motor's M3 are tools/bom.py EXTRAS; the elbow 90T's M4 screws + nuts into the frame are the arm's
+the forearm wall's M3 screws + nuts are tools/bom.py EXTRAS; the elbow 90T's M4 screws + nuts into the frame are the arm's
 (lib/mounts.py FASTENER_MOUNTS).
 """
 from cadgen import step
@@ -52,6 +52,8 @@ OCCURRENCES = [
     ("nema17_40mm",           "forearm_roll", ((S["x_motor"], S["y_motor"], S["z_motor_face"]), (0.0, 0.0, DEFAULT.drive.motor_spin_deg))),    # spun: connector toward +X
     ("mks_servo42d",          "forearm_roll", ((S["x_motor"], S["y_motor"], S["z_motor_board"]), (0.0, 0.0, DEFAULT.drive.motor_spin_deg))),
     ("gt2_pulley_20t",        "forearm_roll", ((S["x_motor"], S["y_motor"], S["z_20t"]), (0.0, -90.0, 0.0))),   # hub face pulley_seat over the pilot boss, bore axis along +Z
+    # the motor's 4x M3 from the plate's front face (turned over: the heads up), flush in its counterbores
+    ("roll_motor_screws",     None, ((S["x_motor"], S["y_motor"], S["z_motor_screws"]), (180.0, 0.0, 0.0))),
     ("forearm_roll_belt",     "forearm_roll", ((S["x_motor"], S["y_motor"], S["z_ring_mid"]), (0.0, 0.0, 90.0))),   # the 20T to the ring: its frame's +X up module +Y
     # the belt's tensioner (RollIdlerParams): the idler on the riser's land, level with the belt; its M5 down from the
     # idler's top (turned over: the head up) into the nut under the frame's face, bearing up on the channel's roof
@@ -67,8 +69,8 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("stator") after any geometry change.
 EXPECTED = {
-    "leaves": 12, "solids": 27, "solid_volume": 486834.169,
-    "bodies": {"stator": {"leaves": 10, "solids": 25, "solid_volume": 448573.521},
+    "leaves": 13, "solids": 31, "solid_volume": 501078.896,
+    "bodies": {"stator": {"leaves": 11, "solids": 29, "solid_volume": 462818.248},
                "rotor": {"leaves": 2, "solids": 2, "solid_volume": 38260.648}},
 }
 
