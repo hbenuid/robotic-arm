@@ -11,7 +11,8 @@ sleeve held in it - nothing else stops the drive's carrier turning at the motor 
 ring's middle (up and both sides: the motor's flats) into nuts pressed into lugs on the sleeve's bore, the holes
 slotted along the axis so the drive settles lengthwise before they lock it (ForkParams.sleeve_screw_len /
 sleeve_slot_len; lib/yaw_coupler/body.py build_motor_leg, in j1_coupler's part frame - lib/mounts.py places it at
-identity on j1_coupler#1). The screws and nuts are on the buy list (tools/bom.py EXTRAS).
+identity on j1_coupler#1). The screws and nuts are purchased parts of their own, mounted on it (fork_foot_screws /
+fork_foot_nuts, fork_sleeve_screws / fork_sleeve_nuts: lib/mounts.py FORK_MOUNTS).
 """
 import pathlib
 

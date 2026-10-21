@@ -11,7 +11,7 @@ def test_every_part_is_counted_once_per_occurrence():
     counts = bom.part_counts()
     leaves = (len(arm.OCCURRENCES) - len(arm.MODULES) + len(gripper.OCCURRENCES) + len(cycloidal_drive.OCCURRENCES)
               + len(forearm_roll_drive.OCCURRENCES) + len(wrist_roll_drive.OCCURRENCES))
-    assert sum(counts.values()) == leaves == 109
+    assert sum(counts.values()) == leaves == 115
     assert set(counts) == set(parts.names()) - set(parts.unplaced()), "a part under parts/ that no assembly places (or the reverse)"
     assert not set(counts) & set(parts.unplaced()), "a placed part still declares UNPLACED - drop it (and its EXTRAS row)"
     assert sum(bom.part_counts("gripper").values()) == len(gripper.OCCURRENCES)
@@ -26,7 +26,7 @@ def test_the_two_lists_partition_the_parts_by_the_cots_flag():
     assert not {r["part"] for r in printed} & {r["part"] for r in bought}
     assert {r["part"] for r in bought} == (set(R.COTS) | {n for n in R.NO_REFERENCE if parts.bought(n)}) - set(parts.unplaced())
     assert (len(printed), sum(r["qty"] for r in printed)) == (32, 39)
-    assert (len(bought), sum(bom.part_counts()[r["part"]] for r in bought)) == (43, 70)
+    assert (len(bought), sum(bom.part_counts()[r["part"]] for r in bought)) == (49, 76)
     assert {r["state"] for r in printed} <= {"wrapper", "parametric", "designed", "native", "measured", "no reference"}
     assert {r["part"] for r in printed if r["state"] == "no reference"} == {n for n in R.NO_REFERENCE if not parts.bought(n)}
     assert {r["part"] for r in printed if r["state"] == "designed"} == set(R.DESIGNED) - set(parts.unplaced())
@@ -124,8 +124,23 @@ def test_the_elbow_motor_takes_its_m3_screws():
     assert not any(spec.startswith("M3") and "elbow motor" in spec for owner, spec, _, _ in bom.EXTRAS if owner is None)
 
 
+def test_the_fork_takes_its_m4_screws_and_nuts():
+    """The drive is held in j1_coupler's fork by M4 SHCS + nuts (lib/mounts.py FORK_MOUNTS): the hub's 4 to the hub leg,
+    the motor leg's foot's 2 to the disc, its ring's 3 to the sleeve - modelled pattern parts of the arm on the buy list,
+    no vendor model - no longer EXTRAS rows (the drive's own list keeps none of them either)."""
+    rows = {r["part"]: r for r in bom.buy_rows() if r["part"].startswith("fork_")}
+    assert {n: (r["pieces"], r["geometry"]) for n, r in rows.items()} == {
+        "fork_hub_screws": (4, "envelope"), "fork_hub_nuts": (4, "envelope"), "fork_foot_screws": (2, "envelope"),
+        "fork_foot_nuts": (2, "envelope"), "fork_sleeve_screws": (3, "envelope"), "fork_sleeve_nuts": (3, "envelope")}
+    for kind, length in (("hub", 25), ("foot", 10), ("sleeve", 20)):
+        assert rows[f"fork_{kind}_screws"]["order"].startswith(f"M4 x {length} socket head cap screw (ISO 4762)")
+        assert rows[f"fork_{kind}_nuts"]["order"].startswith("M4 hex nut (ISO 4032)")
+    assert not any(r["part"].startswith("fork_") for r in bom.buy_rows("cycloidal_drive"))
+    assert not any("M4" in spec for _, spec, _, _ in bom.EXTRAS)
+
+
 def test_extras_are_well_formed_and_scoped_to_a_module():
-    assert bom.EXTRAS, "the hub's and the motor leg's fasteners and the grease are purchased but not modelled - keep them listed"
+    assert bom.EXTRAS, "the grease and the roll drives' fasteners are purchased but not modelled - keep them listed"
     for owner, spec, pieces, why in bom.EXTRAS:
         assert owner is None or owner in arm.MODULES
         assert isinstance(spec, str) and spec.strip() and isinstance(why, str) and why.strip()
