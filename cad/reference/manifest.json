@@ -37,13 +37,13 @@
     72.1,
     200.0
    ],
-   "bytes": 2165198,
+   "bytes": 2184037,
    "file": "native/base_motor_mount.step",
    "kind": "native",
    "origin": "native",
    "product": "base_motor_mount - the base_yaw motor's MOUNT: the base's other half, bolted to the base's end across the plane",
-   "sha256": "3a63118b449f6126c0446004ed4f72649e9d76b9e2aba0382a8d5f35eefcb59d",
-   "solid_volume": 282426.977,
+   "sha256": "49a57326763b2c434e803d4536fd4163df2361230e1e270b2c0b5e11f1e1501f",
+   "solid_volume": 285510.476,
    "solids": 1,
    "source": "lib/base/body.py:build_motor_mount(DEFAULT)",
    "units": "mm"

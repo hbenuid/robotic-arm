@@ -83,10 +83,16 @@ from lib.sensors import (  # noqa: E402, F401
 # (parts/base/base_motor_mount), in the base's part frame - comes from its DEFAULT configuration.
 from lib.base.params import BOARD_CLEAR as _BOARD_CLEAR  # noqa: E402
 from lib.base.params import DEFAULT as _BASE  # noqa: E402
+from lib.base.layout import motor_face_y as _motor_face_y  # noqa: E402
+from lib.base.layout import motor_screw_y as _motor_screw_y  # noqa: E402
 
-BASE_MOTOR_PATTERN_CENTRE = (_BASE.motor.centre[0], _BASE.plate.y[0], _BASE.motor.centre[1])   # (122.0, -44.9, 0.084) [DESIGN] the motor mount: 4x M3 on 31 x 31 through the 5 mm plate (round holes), on its -Y face; x YAW_MOTOR_X, the belt's idler taking up the rest
-BASE_MOTOR_TABLE_CLEAR = _BOARD_CLEAR   # [DESIGN] 5.0 - the 48 mm motor + board (48 + 14.1 under the plate) end this far
+BASE_MOTOR_PATTERN_CENTRE = (_BASE.motor.centre[0], _motor_face_y(_BASE), _BASE.motor.centre[1])   # (122.0, -46.9, 0.084) [DESIGN] the motor mount: 4x M3 on 31 x 31 down through the 5 mm plate and its 2 mm pad (round holes, counterbored from the top), on the pad's -Y face; x YAW_MOTOR_X, the belt's idler taking up the rest
+BASE_MOTOR_TABLE_CLEAR = _BOARD_CLEAR   # [DESIGN] 3.0 - the 48 mm motor + board (48 + 14.1 under the pad) end this far
 #                                          ABOVE the base's bottom face (lib/base/params.py: the face sits under them)
+YAW_MOTOR_SCREW_Y = _motor_screw_y(_BASE)   # -42.9 the base_yaw motor's 4x M3 (parts/base/yaw_motor_screws): the heads' bearing
+#                                             faces, the counterbores' floor head_h under the plate's top (MotorParams.holes)
+YAW_MOTOR_SCREW_LEN = round(YAW_MOTOR_SCREW_Y - BASE_MOTOR_PATTERN_CENTRE[1] + _BASE.motor.holes.thread, 6)   # 8 under the head:
+#                                             the plate and its pad under the heads and the thread in the motor
 BASE_YAW_RATIO = GT2_PULLEY_120T_TEETH / GT2_PULLEY_20T_TEETH   # 6:1 [DESIGN] the base_yaw belt: the 120T (parts/base/gt2_pulley_120t) on the 48 mm motor's 20T
 # j1_link and j2_link are parametric (lib/upper_arm/params.py UpperArmConfig, lib/forearm/params.py ForearmConfig -
 # leaves like lib/cycloidal/params.py): the motors' pad faces and j2_link's slide come from their DEFAULT configurations.
@@ -128,7 +134,7 @@ J1_IDLER_Y = round(J1_BELT_Y - GT2_IDLER_WIDTH / 2.0, 6)                        
 J1_IDLER_SPACER_H = round(J1_SLAB_UNDERSIDE_Y - J1_IDLER_Y - GT2_IDLER_WIDTH, 6)     # 3.2 the spacer, the idler's upper face to the underside
 J1_IDLER_LEDGE_Y = round(J1_SLAB_UNDERSIDE_Y + _UPPER_ARM.idler.floor, 6)            # 12.0 the nut's seat, the floor of its slot
 J2_MOTOR_20T_HUB_Z = round(J2_MOTOR_WEB_FACE_Z - J2_BELT_Z - _FOREARM.drive.t20_hub, 6)        # 7.75 the wrist motor's 20T, from its face
-BASE_MOTOR_20T_HUB_Z = round(YAW_BELT_Y - BASE_MOTOR_PATTERN_CENTRE[1] - _FOREARM.drive.t20_hub, 6)   # 2.85 the base_yaw motor's 20T, from its face
+BASE_MOTOR_20T_HUB_Z = round(YAW_BELT_Y - BASE_MOTOR_PATTERN_CENTRE[1] - _FOREARM.drive.t20_hub, 6)   # 4.85 the base_yaw motor's 20T, from its face
 # The base_yaw belt's tensioner (lib/base/params.py YawIdlerParams): its stations along Y in the base's frame
 from lib.base.layout import yaw_idler_spacer_h as _yaw_idler_spacer_h  # noqa: E402
 from lib.base.layout import yaw_idler_y as _yaw_idler_y  # noqa: E402
@@ -271,6 +277,11 @@ from lib.forearm.layout import pad_bolt_points as _roll_motor_points  # noqa: E4
 
 ROLL_MOTOR_SCREWS_MASS_G = (STEEL_DENSITY * len(_roll_motor_points(_FOREARM))
                             * shcs_volume(_FOREARM.drive.motor_holes.screw, ROLL_MOTOR_SCREW_LEN))   # 3.8, 4x M3x8
+# the base_yaw motor's (parts/base/yaw_motor_screws), likewise
+from lib.base.layout import motor_holes as _base_motor_holes  # noqa: E402
+
+YAW_MOTOR_SCREWS_MASS_G = (STEEL_DENSITY * len(_base_motor_holes(_BASE))
+                           * shcs_volume(_BASE.motor.holes.screw, YAW_MOTOR_SCREW_LEN))   # 3.8, 4x M3x8
 
 # The j1_coupler fork's screws and nuts (parts/base/fork_{hub,foot,sleeve}_{screws,nuts}; lib/yaw_coupler/params.py
 # ForkParams): the same estimate - the hub's to the hub leg, the motor leg's foot's to the disc, its ring's to the sleeve

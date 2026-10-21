@@ -29,7 +29,9 @@ from lib.base.layout import (
     inner_r,
     joint_bolt_points,
     joint_stations,
+    motor_face_y,
     motor_holes,
+    motor_screw_y,
     mount_end_x,
     mount_foot_holes,
     mount_inner_half,
@@ -42,6 +44,7 @@ from lib.base.layout import (
 )
 from lib.base.params import DEFAULT, BaseConfig
 from lib.geom import align_min, cylinder, hex_circumdiameter, hex_prism, single_solid, through
+from lib.motors import NEMA17_FACE
 from lib.units import NUDGE
 
 
@@ -168,12 +171,24 @@ def _cap(cfg: BaseConfig, body):
 
 
 def _motor_seat(cfg: BaseConfig, plate):
-    """`plate` less the motor's window and its 4 holes (slots of +/- travel along X when it has any)."""
+    """`plate` less the motor's window and its 4 holes (slots of +/- travel along X when it has any) - or, with
+    motor.holes (DEFAULT), with the pad under it round the motor's face (pad_t, the NEMA 17 face's square), less the
+    pilot's round hole and the 4 round holes through both, each with its counterbore (pocket_dia, the screw's head_h
+    deep) from the plate's top: the heads flush."""
     p, m = cfg.plate, cfg.motor
-    y, cz = (p.y[0] - NUDGE, p.y[1] + NUDGE), m.centre[1]
-    plate = plate - _block(m.window_x, (cz - m.window_half_z, cz + m.window_half_z), y)
+    y, (cx, cz) = (p.y[0] - NUDGE, p.y[1] + NUDGE), m.centre
+    if m.holes is None:
+        plate = plate - _block(m.window_x, (cz - m.window_half_z, cz + m.window_half_z), y)
+        for x, z in motor_holes(cfg):
+            plate = plate - (_slot(m.hole_dia / 2.0, (x - m.travel, x + m.travel), z, y) if m.travel > 0.0 else _bore(m.hole_dia / 2.0, *y, x, z))
+        return plate
+    h, face, half = m.holes, motor_face_y(cfg), NEMA17_FACE / 2.0
+    if m.pad_t > 0.0:
+        plate = plate + _block((cx - half, cx + half), (cz - half, cz + half), (face, p.y[0] + NUDGE))
+    y = (face - NUDGE, p.y[1] + NUDGE)
+    plate = plate - _bore(h.pilot_dia / 2.0, *y, cx, cz)
     for x, z in motor_holes(cfg):
-        plate = plate - (_slot(m.hole_dia / 2.0, (x - m.travel, x + m.travel), z, y) if m.travel > 0.0 else _bore(m.hole_dia / 2.0, *y, x, z))
+        plate = plate - _bore(m.hole_dia / 2.0, *y, x, z) - _bore(h.pocket_dia / 2.0, motor_screw_y(cfg), y[1], x, z)
     return plate
 
 
@@ -327,7 +342,7 @@ def _mount_foot(cfg: BaseConfig):
 def build_motor_mount(cfg: BaseConfig = DEFAULT):
     """The motor mount (cfg.joint, cfg.mount): the base's D carried on from the joint face to a round end (_mount_d),
     hollow, `shell.wall` thick, open underneath and toward the base, on the foot (_mount_foot) and its screw holes; the
-    plate across its top with the motor's seat (nothing under it: the holes hold the motor) and, with cfg.idler, the
+    plate across its top with the motor's seat (_motor_seat: under it only the pad, the screws hold the motor) and, with cfg.idler, the
     belt's tensioner's seat (_idler_seat); two posts at the joint face, post_t deep, from the window out to the walls,
     and the M4 holes through them; the slits (cfg.slits)."""
     s, p, j, mt = cfg.shell, cfg.plate, cfg.joint, cfg.mount

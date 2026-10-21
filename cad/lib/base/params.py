@@ -29,9 +29,10 @@ from dataclasses import dataclass, replace
 
 from lib.bearings import THRUST_BORE
 from lib.cycloidal.params import DEFAULT_CONFIG as _DRIVE
-from lib.fasteners import M3_CLEAR, M4_CLEAR, M4_NUT, M4_SHCS, M5_CLEAR, M5_NUT, M5_SHCS, NutSize, ShcsSize
+from lib.fasteners import M4_CLEAR, M4_NUT, M4_SHCS, M5_CLEAR, M5_NUT, M5_SHCS, NutSize, ShcsSize
 from lib.forearm.params import LEGACY as _FOREARM
-from lib.motors import MKS_SERVO42D_STACK, NEMA17_PILOT_DIA
+from lib.forearm.params import MotorHoleParams
+from lib.motors import MKS_SERVO42D_STACK
 
 
 @dataclass(frozen=True)
@@ -100,7 +101,12 @@ class MotorParams:
     window for the pilot and the shaft's pulley, the belt slot from the shell's outer round out to slot_x1, and a U
     rim hanging below the plate round the motor's face on three sides (open toward the axis, its ends on the outer
     round: the motor slides along the slot). The belt slot and the rim are the SolidWorks base's only: the motor
-    mount (build_motor_mount) has neither - its holes hold the motor."""
+    mount (build_motor_mount) has neither - its holes hold the motor. With `holes` (DEFAULT) the motor hangs on 4
+    socket head cap screws down through the plate, their heads flush in counterbores in its top - the wrist motor's
+    seat (lib/forearm/params.py MotorHoleParams; parts/base/yaw_motor_screws) -, the pilot (and the 20T's hub, which
+    dips into the plate) in a round hole in place of the window; a pad pad_t thick under the plate round the motor's
+    face (the NEMA 17 face's square) gives the heads' counterbores their plate under them, the motor's face its
+    underside (lib/base/layout.py motor_face_y)."""
 
     centre: tuple = (78.971441, 0.08362)
     hole_dia: float = 3.2
@@ -113,6 +119,8 @@ class MotorParams:
     rim_y0: float = -51.9
     travel: float = 0.0            # [DESIGN] the motor's slide along X, +/- this about the centre: the holes become
     #                                slots, the belt's tension (0: the SolidWorks round holes)
+    holes: MotorHoleParams | None = None   # [DESIGN] the round seat and its screws (None: the SolidWorks window, no screws)
+    pad_t: float = 0.0             # [DESIGN] the pad under the plate round the motor's face (0: the face on the plate)
 
 
 @dataclass(frozen=True)
@@ -254,7 +262,8 @@ LEGACY = BaseConfig()     # the SolidWorks part, exactly
 # of the stock YAW_BELT's own centre distance round the base_yaw pulleys - the 120T on the joint
 # (parts/base/gt2_pulley_120t), the 20T on the motor (the SolidWorks centre, 78.97, belonged to a 90T) -, on round holes:
 # the belt's tensioner is an idler on its back on the mount's plate (YawIdlerParams), which takes up what the stock belt
-# has over the open loop (cad/AGENTS.md "Belts"). The window is the pilot's, WINDOW_CLEAR a side.
+# has over the open loop (cad/AGENTS.md "Belts"). The motor hangs on its 4 screws through the plate and a pad under it
+# (YAW_MOTOR_PAD), the heads flush in counterbores in the plate's top, the pilot in a round hole (MotorParams.holes).
 # The bottom face (the mounting face, lib/datum.py BASE_BOTTOM_Y) sits BOARD_CLEAR under the motor's MKS board: the
 # SolidWorks base's -100.9 left the 48 mm motor + board (48 + 14.1 under the plate) hanging 6.1 below it. The base's
 # walls, its posts and the whole motor mount reach down to it.
@@ -267,23 +276,23 @@ LEGACY = BaseConfig()     # the SolidWorks part, exactly
 BASE_R = 58.0             # [DESIGN] j1_coupler's disc at its rim (Ø116, the SolidWorks Ø106): room under the fork's legs for their root ...
 BASE_DRAFT = 12.0 / 63.0  # [DESIGN] ... its side drafted in at dr/dy (10.8 degrees) going up, the base's walls out going down
 RING_CLEAR = 0.1          # [DESIGN]
-BOARD_CLEAR = 5.0         # [DESIGN] the base_yaw motor's board above the table
+BOARD_CLEAR = 3.0         # [DESIGN] the base_yaw motor's board above the table
 YAW_BELT = 400            # [DESIGN] base_yaw belt, 400-2GT (a multipack length, lib/belts.py STANDARD_2GT_LENGTHS): 20T motor -
 #                           120T joint, round its idler (YawIdlerParams)
 YAW_BELT_Y = -31.1        # [REFERENCE] the base_yaw belt's mid-plane in the base's frame: the 120T's tooth band (its mount under
 #                           j1_coupler, lib/mounts.py) - the motor's 20T level with it (tests/test_mounts.py)
 YAW_MOTOR_X = 122.0       # [DESIGN] the base_yaw motor's axis this far out along X: the open loop (392.4) shorter than the stock
 #                           belt, the idler (YawIdlerParams) taking up the rest inside its slot - it takes 392.4 .. 405.3
-WINDOW_CLEAR = 0.2        # [DESIGN]
-_WINDOW_HALF = NEMA17_PILOT_DIA / 2.0 + WINDOW_CLEAR
-_BOTTOM_Y = round(LEGACY.plate.y[0] - _DRIVE.motor.body_length - MKS_SERVO42D_STACK - BOARD_CLEAR, 6)
+YAW_MOTOR_PAD = 2.0       # [DESIGN] the pad under the mount's plate round the motor's face (MotorParams.pad_t): the plate 7 thick
+#                           there - 4 under the counterbored heads, the roll motor's -, the motor and its board this much lower
+_HOLES = MotorHoleParams()
+_BOTTOM_Y = round(LEGACY.plate.y[0] - YAW_MOTOR_PAD - _DRIVE.motor.body_length - MKS_SERVO42D_STACK - BOARD_CLEAR, 6)
 _TOP_R = round(BASE_R + BASE_DRAFT * (LEGACY.cap.ring_top_y - LEGACY.cap.top_y), 6)   # the cone at the cap's top face
 DEFAULT = replace(LEGACY, shell=replace(LEGACY.shell, y0=_BOTTOM_Y, r=_TOP_R, draft=BASE_DRAFT),      # [DESIGN]
                   bore=replace(LEGACY.bore, upper_dia=_FOREARM.boss.seat_dia, lower_dia=_FOREARM.boss.seat_dia,
                                        lip_dia=_FOREARM.boss.lip_dia),                                    # [DESIGN]
                   cap=replace(LEGACY.cap, groove_r=(THRUST_BORE / 2.0 - RING_CLEAR, LEGACY.cap.groove_r[1])),   # [DESIGN]
-                  motor=replace(LEGACY.motor, centre=(YAW_MOTOR_X, LEGACY.motor.centre[1]), hole_dia=M3_CLEAR,
-                                window_x=(round(YAW_MOTOR_X - _WINDOW_HALF, 6), round(YAW_MOTOR_X + _WINDOW_HALF, 6)),
-                                window_half_z=_WINDOW_HALF),                                            # [DESIGN]
+                  motor=replace(LEGACY.motor, centre=(YAW_MOTOR_X, LEGACY.motor.centre[1]), hole_dia=_HOLES.bolt_dia,
+                                holes=_HOLES, pad_t=YAW_MOTOR_PAD),                                     # [DESIGN]
                   joint=JointParams(), mount=MountParams(), foot=FootParams(), idler=YawIdlerParams(),
                   slits=SlitParams())                                                                  # [DESIGN]

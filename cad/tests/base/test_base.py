@@ -14,7 +14,7 @@ from build123d import Location
 from lib import mounts
 from lib import params as PARAMS
 from lib import placements as P
-from lib.base import DEFAULT, LEGACY, chamfer_inset, motor_holes, side_stub_x
+from lib.base import DEFAULT, LEGACY, chamfer_inset, motor_face_y, motor_holes, side_stub_x
 from lib.base.params import RING_CLEAR
 from lib.bearings import BEARING_6806_OD, BEARING_6806_WIDTH, THRUST_BORE, THRUST_OD
 from lib.datum import BASE_BOTTOM_Y, to_location
@@ -35,20 +35,21 @@ def test_layout():
 
 
 def test_interface_values_come_from_the_base():
-    assert PARAMS.BASE_MOTOR_PATTERN_CENTRE == (DEFAULT.motor.centre[0], DEFAULT.plate.y[0], DEFAULT.motor.centre[1])
+    assert PARAMS.BASE_MOTOR_PATTERN_CENTRE == (DEFAULT.motor.centre[0], motor_face_y(), DEFAULT.motor.centre[1])
+    assert motor_face_y() == pytest.approx(DEFAULT.plate.y[0] - DEFAULT.motor.pad_t) and motor_face_y(LEGACY) == LEGACY.plate.y[0]
     assert BASE_BOTTOM_Y == DEFAULT.shell.y0 < LEGACY.shell.y0 == P.OCCURRENCES["base#1"]["world_bbox_min"][1]
     assert DEFAULT.shell == replace(LEGACY.shell, y0=DEFAULT.shell.y0, r=DEFAULT.shell.r, draft=DEFAULT.shell.draft)   # deeper, on the cone
     assert P.OCCURRENCES["base#1"]["world"]["position"] == [0.0, 0.0, 0.0]   # the part frame IS the capture frame
 
 
 def test_motor_holes_are_the_base_yaw_motors_bolts():
-    """The 48 mm motor (lib/mounts.py nema17_48mm#1: face on the motor mount's plate's underside, in the base's frame)
-    has its 4 bolts on the NEMA 17 square in its own frame (face z = 0): each one is a hole's axis - the slots' middle."""
+    """The 48 mm motor (lib/mounts.py nema17_48mm#1: face on the underside of the pad under the motor mount's plate, in
+    the base's frame) has its 4 bolts on the NEMA 17 square in its own frame (face z = 0): each one is a hole's axis."""
     frame = to_location(mounts.BY_KEY["nema17_48mm#1"].frame)
     half = NEMA17_BOLT_SP / 2.0
     bolts = [(frame * Location((sx * half, sy * half, 0.0))).position for sx in (1, -1) for sy in (1, -1)]
     assert sorted((round(p.X, 6), round(p.Z, 6)) for p in bolts) == sorted((round(x, 6), round(z, 6)) for x, z in motor_holes(DEFAULT))
-    assert all(p.Y == pytest.approx(DEFAULT.plate.y[0]) for p in bolts)
+    assert all(p.Y == pytest.approx(motor_face_y()) for p in bolts)
 
 
 @pytest.fixture(scope="module")

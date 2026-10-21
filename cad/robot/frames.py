@@ -111,8 +111,8 @@ LINKS: dict[str, list[str]] = {
     # base's groove
     "base_link": ["base#1", "bearing_6806#1", "bearing_6806#2", "washer_as6590#1", "bearing_axk6590#1",
                   "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1", "nema17_48mm#1",
-                  "mks_servo42d#1", "gt2_pulley_20t#3", "yaw_belt#1", "gt2_idler_20t#2", "yaw_idler_spacer#1",
-                  "yaw_idler_screw#1", "yaw_idler_nut#1"],
+                  "mks_servo42d#1", "yaw_motor_screws#1", "gt2_pulley_20t#3", "yaw_belt#1", "gt2_idler_20t#2",
+                  "yaw_idler_spacer#1", "yaw_idler_screw#1", "yaw_idler_nut#1"],
     # j1_coupler (the holder) turns on the base, its motor leg bolted on; the cycloidal drive's stator - the held carrier
     # (motor plate, output hub, output pins), the motor (+ its MKS board) and the gear train - sits in its fork
     # (assemblies/cycloidal_drive.py BODIES); the thrust bearing's upper washer turns with it, under its seat, and so does

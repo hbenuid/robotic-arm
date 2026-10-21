@@ -66,6 +66,16 @@ def motor_holes(cfg: BaseConfig = DEFAULT) -> list[tuple[float, float]]:
     return [(cx + sx * h, cz + sz * h) for sx in (-1, 1) for sz in (-1, 1)]
 
 
+def motor_face_y(cfg: BaseConfig = DEFAULT) -> float:
+    """The base_yaw motor's mounting face: the pad's underside, MotorParams.pad_t under the plate's."""
+    return round(cfg.plate.y[0] - cfg.motor.pad_t, 6)
+
+
+def motor_screw_y(cfg: BaseConfig = DEFAULT) -> float:
+    """The motor's screws' heads' bearing face (MotorParams.holes): the counterbores' floor, head_h under the plate's top."""
+    return round(cfg.plate.y[1] - cfg.motor.holes.screw.head_h, 6)
+
+
 def outer_r(cfg: BaseConfig, y: float) -> float:
     """The walls' outer radius (the round half's, the sides' |z|) at height y: r at the cap's top face, `draft` more per
     mm down."""
