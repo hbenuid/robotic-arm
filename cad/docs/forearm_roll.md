@@ -176,7 +176,9 @@ inertial and the `wrist_pitch` origin, nothing further out. The forearm side of 
 recess, the Ø31 bolt circle (the screws' nuts in the pulley) and the Ø24 cable bore, on the end of the straight web
 (`WebParams.half_w`, as wide as the wall) with two gussets — `j2_link`'s DEFAULT build
 (`lib/forearm/link.py roll_wall`, `wall_outline`, `straight_web`, `wall_gussets`). In `arm.py` the module is kept whole under the `elbow_link` group. The wrist-pitch motor
-sits on round holes `WRIST_MOTOR_CENTRES` from the wrist (`J2_MOTOR_X`, `MotorHoleParams`), nearer than the stock wrist
+sits on round holes `WRIST_MOTOR_CENTRES` from the wrist (`J2_MOTOR_X`, `MotorHoleParams`), held by 4x M3 up through
+the web (`wrist_motor_screws`, `J2_MOTOR_SCREW_LEN` - the elbow motor's screws and seat), their heads flush in
+counterbores in its underside - fit them before the belt's idler, whose flange passes under one head -, nearer than the stock wrist
 belt's (`WRIST_BELT_LENGTH`, a multipack length) own centre distance, its body `motor_wall_clear` or more off the wall
 screws' heads; its connector faces sideways - away from the elbow axis, the forearm turned - with `plug_clearance` of
 room beside it (`tests/forearm/test_roll_end.py`). The belt's tensioner (`IdlerParams`): an idler under the web on the

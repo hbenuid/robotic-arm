@@ -51,6 +51,15 @@ def flange_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]
             for i in range(r.bolt_count)]
 
 
+def motor_hole_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
+    """The wrist motor's 4 M3 holes through the web (x, y) - the NEMA 17 square about its axis at motor_x
+    (MotorHoleParams), the screws' (parts/joints/wrist_motor_screws) - or none on the slide (LEGACY)."""
+    if cfg.holes is None:
+        return []
+    h = cfg.holes.bolt_half
+    return [(cfg.motor_x + sx, sy) for sx in (-h, h) for sy in (-h, h)]
+
+
 def screws_under_the_web(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
     """The wall's screws (y, z) whose heads, channel_clear all round, would land in the web behind the wall: each
     gets a channel in the web's underside (screw_channel)."""

@@ -43,7 +43,8 @@ Geometry (lib/params.py, kernel-verified 2026-09-21 - tests/test_mounts.py re-ch
                (lib/forearm/params.py WRIST_MOTOR_CENTRES: nearer the wrist than the stock wrist belt's own centre
                distance, the idler under the web taking up the rest; its connector sideways); body +N, shaft -N through
                the web, the 20T under it (the forearm turned about its roll axis: lib/placements.py TURNS - the motor on
-               the upper arm's side)
+               the upper arm's side); held down by its 4x M3 SHCS (wrist_motor_screws#1, MOTOR_SCREW_MOUNTS), up through
+               the web from its underside, the heads flush in its counterbores - the elbow motor's screws and seat
 
 The BEARINGS (parts/joints/bearing_6806, BEARING_MOUNTS): the 6806-2RS pair each belt joint's housing takes, one
 each side of the lip that splits its bore - in the base (base_yaw), in j1_link's elbow end (elbow_pitch), in
@@ -129,7 +130,7 @@ PULLEY_BOLTS = ("elbow_pulley_screws", "elbow_pulley_nuts", "wrist_pulley_screws
                 "yaw_pulley_screws", "yaw_pulley_nuts")
 BASE_MOUNT, BASE_MOUNT_SCREWS, BASE_MOUNT_NUTS = "base_motor_mount", "base_motor_mount_screws", "base_motor_mount_nuts"
 YOKE_MOTOR_LEG = "j1_motor_leg"
-MOTOR_SCREWS = "elbow_motor_screws"
+MOTOR_SCREWS = ("elbow_motor_screws", "wrist_motor_screws")
 IDLER_KIT = ("gt2_idler_20t", "elbow_idler_spacer", "elbow_idler_screw", "elbow_idler_nut", "yaw_idler_spacer",
              "yaw_idler_screw", "yaw_idler_nut", "wrist_idler_screw", "wrist_idler_nut")
 
@@ -137,7 +138,7 @@ IDLER_KIT = ("gt2_idler_20t", "elbow_idler_spacer", "elbow_idler_screw", "elbow_
 # joint's axis (a motor's shaft runs beside its joint, parallel; a bearing, a pulley or a pulley-bolt pattern sits on it).
 AXES: dict[str, tuple[tuple[float, float, float], bool]] = {
     MOTOR_48: ((0.0, 0.0, 1.0), False), MOTOR_40: ((0.0, 0.0, 1.0), False), MOTOR_PULLEY: ((1.0, 0.0, 0.0), False),
-    MOTOR_SCREWS: ((0.0, 0.0, 1.0), False),
+    **{part: ((0.0, 0.0, 1.0), False) for part in MOTOR_SCREWS},
     BEARING: ((0.0, 0.0, 1.0), True), PULLEY: ((0.0, 1.0, 0.0), True), YAW_PULLEY: ((0.0, 1.0, 0.0), True),
     THRUST_CAGE: ((0.0, 0.0, 1.0), True), THRUST_WASHER: ((0.0, 0.0, 1.0), True),
     **{part: ((0.0, 0.0, 1.0), True) for part in PULLEY_BOLTS},
@@ -224,13 +225,18 @@ MOTOR_PULLEY_MOUNTS: tuple[Mount, ...] = (
           ((0.0, 0.0, J2_MOTOR_20T_HUB_Z), (0.0, -90.0, 0.0)),
           "the wrist motor's 20T on its shaft, its hub up in the web's pilot slot: its tooth band level with the wrist 90T's"),
 )
-# The elbow motor's 4x M3 SHCS: +Z up j1_link's +Y from the heads' bearing faces on the floors of the pockets in the
-# underside of the web across its motor hole (motor_plate_t under the motor's face), the pattern on the web's holes.
+# The motors' 4x M3 SHCS, the pattern on the web's holes, +Z from the heads' bearing faces on the floors of the pockets
+# in the web's underside up into the motor: the elbow motor's up j1_link's +Y (motor_plate_t under the motor's face, the
+# web across its motor hole), the wrist motor's up j2_link's +Z (the web under the counterbores: MotorHoleParams).
 MOTOR_SCREW_MOUNTS: tuple[Mount, ...] = (
-    Mount("elbow_motor_screws#1", MOTOR_SCREWS, "j1_link#1", "upper_arm_link", "elbow_pitch",
+    Mount("elbow_motor_screws#1", "elbow_motor_screws", "j1_link#1", "upper_arm_link", "elbow_pitch",
           ((_UPPER_ARM.pad.x, round(J1_MOTOR_PAD_FACE_Y - _UPPER_ARM.arm.motor_plate_t, 6), 0.0), (-90.0, 0.0, 0.0)),
           "the elbow motor's 4x M3 x J1_MOTOR_SCREW_LEN SHCS (the drive motor's): heads flush in the pockets in the underside "
           "of the web across j1_link's motor hole, up through it into the motor's tapped holes"),
+    Mount("wrist_motor_screws#1", "wrist_motor_screws", "j2_link#1", "forearm_link", "wrist_pitch",
+          ((J2_MOTOR_X, 0.0, round(_FOREARM.web.z0 + _FOREARM.holes.screw.head_h, 6)), (0.0, 0.0, 0.0)),
+          "the wrist motor's 4x M3 x J2_MOTOR_SCREW_LEN SHCS (the elbow motor's): heads flush in the counterbores in the "
+          "underside of j2_link's web, up through it into the motor's tapped holes"),
 )
 
 

@@ -28,7 +28,7 @@ from lib.bearings import (
     PULLEY_SEAT_SHIFT,
 )
 from lib.belts import GT2_PULLEY_90T_FACE_Y
-from lib.cycloidal.params import MotorParams
+from lib.cycloidal.params import MotorParams, PETGTolerances
 from lib.fasteners import M3_CLEAR, M3_NUT, M3_SHCS, M4_CLEAR, M4_NUT, M5_CLEAR, M5_NUT, M5_SHCS, NutSize, ShcsSize
 from lib.motors import MKS_SERVO42D_STACK, MKS_SERVO42D_W, MOTOR_40, NEMA17_BOLT_SP
 
@@ -180,11 +180,19 @@ class IdlerParams:
 @dataclass(frozen=True)
 class MotorHoleParams:
     """[DESIGN] The wrist-pitch motor on round holes through the web (DEFAULT: its idler tensions the belt, so its centre
-    distance is fixed): the pilot boss's hole and the NEMA 17 square's four M3 clearance holes about the motor's axis."""
+    distance is fixed): the pilot boss's hole and the NEMA 17 square's four M3 clearance holes about the motor's axis,
+    held by 4 socket head cap screws up through them from the web's underside (parts/joints/wrist_motor_screws), the
+    heads flush in counterbores - the elbow motor's screws and seat (lib/upper_arm/params.py ArmParams motor_screw,
+    motor_pocket_dia: its web is this one's 11 thick too)."""
 
     pilot_dia: float = 22.3               # the Ø22 pilot boss (SlotParams.centre_w)
     bolt_dia: float = M3_CLEAR            # 3.4
     bolt_half: float = NEMA17_BOLT_SP / 2.0   # 15.5: the 31 mm square
+    screw: ShcsSize = M3_SHCS             # [DATASHEET] ISO 4762 M3, the heads in counterbores head_h deep: flush with the underside
+    pocket_dia: float = MOTOR_40.motor_bolt_head_dia + PETGTolerances().bolt_clearance_add   # 5.7 [DESIGN] the counterbores:
+    #                                       the drive's motor plate's head pockets (the elbow's)
+    thread: float = MOTOR_40.bolt_hole_depth - MOTOR_40.motor_bolt_thread_margin   # 4.0 [DESIGN] the screws this far into the
+    #                                       motor's tapped holes - the drive's rule (lib/params.py J1_MOTOR_SCREW_THREAD)
 
 
 @dataclass(frozen=True)

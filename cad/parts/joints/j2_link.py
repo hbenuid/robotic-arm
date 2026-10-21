@@ -12,7 +12,8 @@ ELBOW_ROLL_OFFSET across the elbow axis (lib/placements.py SHIFTS). LEGACY: the 
 z=0 face bolts to j3_coupler#1 (Ø54.89 bore, 4x M4 into
 captive hex nuts dropped in from the top). Web z 8..19 with the wrist-pitch motor's seat - in LEGACY a slide (a
 central 20 mm slot for the pilot boss, two 3.2 mm side slots for the 31 mm bolt square), in DEFAULT round holes
-(lib/forearm/params.py MotorHoleParams) WRIST_MOTOR_CENTRES from the wrist; lib/mounts.py places nema17_40mm#3 on it -,
+(lib/forearm/params.py MotorHoleParams) WRIST_MOTOR_CENTRES from the wrist, the 31 mm square's counterbored in the
+underside for the motor's 4x M3 (wrist_motor_screws, heads flush); lib/mounts.py places nema17_40mm#3 on it -,
 in DEFAULT the wrist belt's idler mount beside it (a rib under the web, an M5 slot along y through both, the nut's
 channel down from the top face - lib/forearm/params.py IdlerParams) and, in LEGACY only,
 the Ø5.18 x 2 locating sockets of the removed caps (j2_cap_1 / j2_cap_2, gone 2026-09-25). Wrist end: the boss with the

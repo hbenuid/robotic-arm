@@ -209,23 +209,30 @@ def test_elbow_motor_20t_runs_in_the_90ts_band():
     assert DEFAULT_CONFIG.motor.shaft_length - hub.Z > 12.5                           # 13 of the shaft in the 14.45 long bore
 
 
-def test_elbow_motor_screws_hold_it_down_through_the_web():
-    """The elbow motor's 4x M3 SHCS (elbow_motor_screws#1, MOTOR_SCREW_MOUNTS) - the drive motor's: each screw on one of
-    the motor's bolt axes, its head's bearing face on its pocket's floor in the web (motor_plate_t out from the motor's
-    face, on its shaft's side), the head's end flush with the web's underside, its tip J1_MOTOR_SCREW_THREAD into the
-    motor - short of its tapped holes' bottoms."""
-    motor, screws = P.location("nema17_40mm#2", "world"), P.location("elbow_motor_screws#1", "world")
+@pytest.mark.parametrize(("motor_key", "screws_key", "under_heads", "head", "length", "thread"), [
+    ("nema17_40mm#2", "elbow_motor_screws#1", UPPER_ARM.arm.motor_plate_t, UPPER_ARM.arm.motor_screw.head_h,
+     PARAMS.J1_MOTOR_SCREW_LEN, PARAMS.J1_MOTOR_SCREW_THREAD),
+    ("nema17_40mm#3", "wrist_motor_screws#1", FOREARM.web.thickness - FOREARM.holes.screw.head_h, FOREARM.holes.screw.head_h,
+     PARAMS.J2_MOTOR_SCREW_LEN, FOREARM.holes.thread),
+])
+def test_the_motor_screws_hold_it_down_through_the_web(motor_key, screws_key, under_heads, head, length, thread):
+    """The elbow and the wrist motor's 4x M3 SHCS (MOTOR_SCREW_MOUNTS) - the drive motor's: each screw on one of the
+    motor's bolt axes, its head's bearing face on its pocket's floor in the web (the web under the heads out from the
+    motor's face, on its shaft's side), the head's end flush with the web's underside, its tip `thread` into the motor -
+    short of its tapped holes' bottoms."""
+    motor, screws = P.location(motor_key, "world"), P.location(screws_key, "world")
     rel = motor.inverse() * screws                       # the screws' frame in the motor's (its face z = 0, its shaft +Z)
     assert tuple((rel * Location((0.0, 0.0, 1.0))).position - rel.position) == pytest.approx((0.0, 0.0, -1.0), abs=1e-9)
     half = PARAMS.NEMA17_BOLT_SP / 2.0
     bolts = sorted((sx * half, sy * half) for sx in (1, -1) for sy in (1, -1))
-    axes = sorted(((p.X, p.Y) for p in ((rel * Location((x, y, 0.0))).position for x, y in parts.load("elbow_motor_screws").POINTS)),
+    points = parts.load(mounts.BY_KEY[screws_key].part).POINTS
+    axes = sorted(((p.X, p.Y) for p in ((rel * Location((x, y, 0.0))).position for x, y in points)),
                   key=lambda a: (round(a[0], 3), round(a[1], 3)))  # paired by rounded keys: equal Xs differ by float noise
     assert all(a == pytest.approx(b, abs=1e-6) for a, b in zip(axes, bolts, strict=True)), axes
-    assert rel.position.Z == pytest.approx(UPPER_ARM.arm.motor_plate_t)                 # the heads on the pockets' floors ...
-    assert PARAMS.M3_SHCS == UPPER_ARM.arm.motor_screw                                  # ... flush with the web's underside
-    tip = (rel * Location((0.0, 0.0, PARAMS.J1_MOTOR_SCREW_LEN))).position.Z
-    assert tip == pytest.approx(-PARAMS.J1_MOTOR_SCREW_THREAD) and -tip < PARAMS.MOTOR_40.bolt_hole_depth
+    assert rel.position.Z == pytest.approx(under_heads)                                 # the heads on the pockets' floors ...
+    assert head == PARAMS.M3_SHCS.head_h                                                # ... flush with the web's underside
+    tip = (rel * Location((0.0, 0.0, length))).position.Z
+    assert tip == pytest.approx(-thread) and -tip < PARAMS.MOTOR_40.bolt_hole_depth
 
 
 def test_the_wrist_pitch_motor_sits_on_its_round_holes():
