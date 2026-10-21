@@ -207,8 +207,9 @@ JOINTS: list[Joint] = [
     Joint("wrist_roll", "revolute", "wrist_pitch_link", "wrist_roll_link", WRIST_ROLL_ORIGIN, WRIST_ROLL_AXIS, JAW_TRAVEL,
           -PARAMS.WRIST_ROLL_LIMIT_DEG * DEG, PARAMS.WRIST_ROLL_LIMIT_DEG * DEG, PARAMS.WRIST_EFFORT_NM, PARAMS.WRIST_VELOCITY_RAD_S,
           notes="the wrist roll drive (assemblies/wrist_roll_drive.py, WRIST_ROLL_RATIO 2): the gripper's connector bolts to its "
-                "pulley's face; belt-driven by the NEMA17 pancake on the wrist_pitch axis, WRIST_ROLL_OFFSET across (a wrist "
-                "offset); the printed hard stop 2 deg past +/- WRIST_ROLL_LIMIT_DEG; NOT driven by software/control/src/config.py yet"),
+                "pulley's face; belt-driven by the NEMA17 pancake + its mks_servo42d on the wrist_pitch axis, WRIST_ROLL_OFFSET "
+                "across (a wrist offset) [a CAN id of its own - software/control/src/config.py names fewer than the arm's "
+                "boards: unconfirmed]; the printed hard stop 2 deg past +/- WRIST_ROLL_LIMIT_DEG"),
     Joint("jaw_a", "prismatic", "wrist_roll_link", "jaw_a_link", JAW_A_ORIGIN, tuple(-v for v in JAW_TRAVEL), WRIST_ROLL_AXIS,
           -PARAMS.JAW_TRAVEL_MM * 1e-3, PARAMS.JAW_TRAVEL_MM * 1e-3, PARAMS.JAW_EFFORT_N, PARAMS.JAW_VELOCITY_M_S,
           notes="positive = opening (jaw A moves away from jaw B); MG996R crank"),
