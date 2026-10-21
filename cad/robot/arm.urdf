@@ -3,13 +3,13 @@
   arm: 6-axis desktop arm - base yaw, shoulder pitch (21:1 cycloidal drive), elbow pitch (GT2 belt),
   FOREARM ROLL (GT2 belt in the roll frame at the elbow, cad/assemblies/forearm_roll_drive.py), wrist pitch (GT2
   belt) and WRIST ROLL (GT2 belt from the NEMA17 pancake on the wrist_pitch axis, cad/assemblies/wrist_roll_drive.py)
-  - + MG996R parallel gripper. Five joints are driven by
+  - + MG996R parallel gripper. Six joints are driven by
   NEMA 17 + MKS SERVO42D kits: the base_yaw / elbow_pitch / wrist_pitch motors are NEMA 17s on the
   mounts the links carry (cad/lib/mounts.py: the 48 mm nema17_48mm#1 under the base, nema17_40mm#2..3 on
   the links, + mks_servo42d#1..3, in base_link / upper_arm_link / forearm_link), the shoulder_pitch one
   the cycloidal drive's own 48 mm motor + board, the forearm_roll one the roll drive's own 40 mm motor
-  + board (in elbow_link); which CAN id (software/control/src/config.py J1..J3 - three of the five) drives which joint is
-  unconfirmed.
+  + board (in elbow_link), the wrist_roll one the wrist roll drive's pancake + board (in wrist_pitch_link);
+  which CAN id (software/control/src/config.py J1..J3 - three of the six) drives which joint is unconfirmed.
 
   SOURCE OF TRUTH: this file. Every number is derived from the CAD by cad/tools/robot/derive.py
   (cad/robot/frames.py = link partition + joint frames; cad/reference/placements.json = the
@@ -54,7 +54,7 @@
   shoulder_pitch joint (cad/docs/cycloidal_drive.md, cad/assemblies/cycloidal_drive.py BODIES);
   the GT2 90T pulleys + the wrist's J3 coupler are bolted to the driven links (elbow_link at elbow_pitch,
   wrist_pitch_link at wrist_pitch; the base_yaw 120T to j1_coupler's stub end inside the base - shoulder_link); the wrist
-  roll drive's stator (the pancake, its 20T, the belt, its 6806 pair) rides with wrist_link (its frame) in
+  roll drive's stator (the pancake + its board, its 20T, the belt, its 6806 pair) rides with wrist_link (its frame) in
   wrist_pitch_link, its rotor (pulley + shaft) with the gripper in wrist_roll_link; each belt joint's 6806-2RS bearing pair rides with its housing
   (base_link, upper_arm_link, forearm_link; cad/lib/mounts.py), the base_yaw thrust bearing's lower washer and needle
   cage with base_link, its upper washer with j1_coupler (shoulder_link); the MG996R crank linkage is merged into wrist_roll_link;
@@ -66,8 +66,8 @@
   wrist belt puts it (J2_MOTOR_SLIDE_X, WRIST_BELT_LENGTH); FOREARM_ROLL_LIMIT_DEG stops 2 deg short of the
   printed hard stop, WRIST_ROLL_LIMIT_DEG 2 deg short of the wrist roll's. The jaw travel (JAW_TRAVEL_MM) is an
   estimate that does not fit the gripper (cad/docs/open_issues.md).
-  wrist_roll and the jaws are not driven by software/control/src/config.py, and forearm_roll needs a CAN id of
-  its own (config.py names fewer than the arm's boards).
+  The jaws are not driven by software/control/src/config.py, and forearm_roll and wrist_roll need CAN ids of
+  their own (config.py names fewer than the arm's boards).
 -->
 <robot name="arm">
   <link name="base_link">
@@ -167,9 +167,9 @@
   </link>
   <link name="wrist_pitch_link">
     <inertial>
-      <origin xyz="0.001808 -0.01014 0.013469" rpy="0 0 0" />
-      <mass value="0.461415" />
-      <inertia ixx="5.621855e-04" ixy="2.259150e-05" ixz="-1.217701e-05" iyy="3.418316e-04" iyz="6.019000e-05" izz="3.579496e-04" />
+      <origin xyz="0.000654 -0.009606 0.014245" rpy="0 0 0" />
+      <mass value="0.487734" />
+      <inertia ixx="5.770768e-04" ixy="2.785436e-05" ixz="-4.143470e-06" iyy="3.625183e-04" iyz="5.659935e-05" izz="3.765258e-04" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />

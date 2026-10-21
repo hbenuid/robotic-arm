@@ -31,6 +31,7 @@ from dataclasses import dataclass, replace
 from lib.bearings import BEARING_6806_BORE, BEARING_6806_OD, BEARING_6806_SHOULDER_DIA, BEARING_6806_WIDTH
 from lib.belts import GT2_PULLEY_20T_TEETH, centre_distance
 from lib.fasteners import M3_CLEAR, M3_NUT, M3_SHCS, NutSize, ShcsSize
+from lib.motors import MKS_SERVO42D_STACK, MKS_SERVO42D_W
 
 
 @dataclass(frozen=True)
@@ -126,9 +127,10 @@ class WristRollParams:
     belted to the roll axis beside it - centre_distance across in the wrist's swing plane, at the motor's height - so the
     wrist roll axis R' no longer meets the pitch axis (a wrist offset: the wrist is no longer spherical). wrist_link IS
     the frame (the stator): the plate (j3_coupler#2's seat) and on its free face one body round the motor - its pocket
-    open on the +X face, its front wall the plate the pancake bolts to (slotted along Y: the belt's tension) - and the
-    tower round R' (the 6806 pair back to back on a lip, a bearing boss on the front face, the shaft's bay behind bearing
-    1 open on +X - the gripper servo's cable leaves the rotor's bore there - with the hard stop's post). The rotor: the
+    open on the +X face, its front wall the plate the pancake bolts to (slotted along Y: the belt's tension), no wall
+    behind it: a window there takes the pancake's MKS board, on its rear face - and the tower round R' (the 6806 pair
+    back to back on a lip, a bearing boss on the front face, the shaft's bay behind bearing 1 open on +X - the gripper
+    servo's cable leaves the rotor's bore there - with the hard stop's post). The rotor: the
     PULLEY (wrist_roll_pulley: its hub through bearing 2, the 40T band, the face gripper_j3_connector bolts to - the
     roll's output) and the SHAFT (wrist_roll_shaft: its hub through bearing 1, its flange in the bay with the rotor
     clamp's nuts and the stop lug); the clamp's 4x M3 from the pulley's face through both hubs hold them and both inner
@@ -164,6 +166,13 @@ class WristRollParams:
     pocket_clear: float = 0.75          # [DESIGN] round the body in the pocket, along Y past the tension travel
     pocket_rear: float = 1.0            # [DESIGN] behind its rear face (past motor_drop)
     motor_drop: float = 1.25            # [DESIGN] how far back the pancake slides in from the open face: its pilot behind the plate + 0.25
+    # its MKS SERVO42D on its rear face (the board's encoder reads the shaft's rear end), turned with it (motor_spin_deg:
+    # its motor plug toward the pancake's, at the open face; the side plugs along Y), in a window through the frame's
+    # rear - the board's housing square + the tension travel + board_clear, open on +X like the pocket: they go in together
+    board_w: float = MKS_SERVO42D_W     # [REFERENCE] 43: the board's housing square, from the pancake's rear face back
+    board_stack: float = MKS_SERVO42D_STACK   # [REFERENCE] 14.1: the board behind the pancake's rear face
+    board_clear: float = 0.45           # [DESIGN] round the board's housing in the window, along Y past the tension travel: the
+    #                                     window's wall to the shaft's bay keeps 1.5 (pocket_clear's 0.75 would leave 1.23)
     shaft_slit: float = 6.0             # [DESIGN] the Ø5 shaft's slit through the plate, from the pilot slot out through the open face
     pad_t: float = 4.0                  # [DESIGN] the plate (the pocket's front wall) the pancake's 4x M3 bolt through
     pad_slot_len: float = 5.0           # [DESIGN] +/- 2.5 along Y: the belt's tension (no idler)
@@ -174,7 +183,7 @@ class WristRollParams:
     # the frame round the motor and the tower: its outline seen along Z the hull of a circle about R' and the pocket's box,
     # from the plate's free face to the open +X face
     frame_r: float = 30.0               # [DESIGN] the outline's circle about R': the open face (x frame_r) and the tower's far side
-    pocket_wall: float = 2.5            # [DESIGN] round the pocket's far side and behind it
+    pocket_wall: float = 2.5            # [DESIGN] round the pocket's far side (behind it the board's window: no wall)
     bearing_boss_dia: float = 52.0      # [DESIGN] round R' on the front face, bearing 2's seat in it (the forearm roll's)
     bay_r: float = 22.6                 # [DESIGN] the shaft's bay behind bearing 1, open on +X: the stop lug's corners + 1; bearing 1 (r 21)
     #                                     passes through it with the shaft
