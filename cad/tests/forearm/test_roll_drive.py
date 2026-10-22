@@ -1,6 +1,6 @@
 """The forearm roll drive (assemblies/forearm_roll_drive.py): the joint's axis through the wrist centre (on the
 wrist_pitch axis) and
-ELBOW_ROLL_OFFSET across the elbow axis, the module frame, the stack (the frame round the motor - round about the elbow
+ELBOW_ROLL_OFFSET across the elbow axis, the module frame, the stack (the frame round the motor - an octagon about the elbow
 axis, the tower round the roll axis -, the 6806 pair under the pulley's ring, the rotor split between them and clamped,
 the motor on the elbow axis), the parts' fits inside the module, and the module's clearances in the arm (at the capture
 pose, with the elbow folded to its limits and with the forearm rolled through its range)."""
@@ -30,6 +30,7 @@ from lib.forearm import (
     pulley_bolt_points,
     stack_positions,
 )
+from lib.forearm.roll import rear_line
 from robot import frames as F
 from tests import built
 from tests.forearm.helpers import in_drive_frame, j2_link_in_drive_frame
@@ -105,7 +106,7 @@ def test_the_elbow_coupler_is_retired_for_the_block():
 def test_stack():
     w, z_axis = DEFAULT.roll_end, DEFAULT.roll_end.axis_z
     # the frame: its underside (one plane) FACE_GAP clear of the upper arm's flat top (j1_link's slab, level end to end:
-    # tests/upper_arm), round about the elbow axis as j1_link's end is; the coupler features below it about the elbow
+    # tests/upper_arm), an octagon about the elbow axis, its flats on j1_link's round end; the coupler features below it about the elbow
     # axis in j1_link's recess and bore where the SolidWorks coupler's were, an inner-ring shoulder between the journal
     # and the stub, the stub on through the lip to the elbow pulley's face (the Ø12.5 bore open at its end)
     assert z_axis + D.block_x[0] >= UPPER_ARM_FACE_Z + FACE_GAP and S["x_cradle"] - D.web_t == D.block_x[0]
@@ -128,12 +129,12 @@ def test_stack():
     # ring's rear flange, which reaches past its edge (no cup round the flange), the belt's edge clear above it; centred
     # on the frame - the underside's plane, the open +N face and the tower's top all ROLL_FRAME_R off the roll axis, the
     # forearm wall's radius: the frame flush with the round parts that turn about the roll axis - and on the flat of the
-    # front face (the tower's top corner is rounded tower_corner_r); the front face runs through the tower (the pair
-    # straddles it)
+    # front face, 4 inside the three sides (the tower's corners are sharp); the front face runs through the tower (the
+    # pair straddles it)
     r_boss = D.bearing_boss_dia / 2.0
     assert r_boss - (D.bearing_od + D.seat_add) / 2.0 >= 4.0 and r_boss < D.ring_flange_dia / 2.0
     assert S["z_boss"] < S["z_ring_flange_1"] < S["z_ring_mid"] - BELT_W / 2.0
-    assert _eq(-D.block_x[0], D.block_x[1], D.tower_y, w.wall_od / 2.0) and r_boss <= D.tower_y - D.tower_corner_r - 1.0
+    assert _eq(-D.block_x[0], D.block_x[1], D.tower_y, w.wall_od / 2.0) and r_boss <= D.tower_y - 4.0
     assert S["z_bearing_1"] < S["z_front"] < S["z_boss"]
     # the 6806 pair: the lip stops the outer rings and clears the hubs and the shoulders, which bear on the inner rings
     # only; the tower round the seats
@@ -322,10 +323,20 @@ def test_frame_features(module):
     assert not is_inside(block, 0, r_seat + 1.0, S["z_boss"] + 0.5)
     # one flat front face: material just behind it, none in front, beside the boss
     assert is_inside(block, -28.0, -30.0, S["z_front"] - 0.5) and not is_inside(block, -28.0, -30.0, S["z_front"] + 0.5)
-    # the round end about the elbow axis (j1_link's): its rim behind the motor's pocket, nothing past end_r
+    # the octagonal end about the elbow axis: a flat on each axis end_r off it (on j1_link's round end) behind the motor's
+    # pocket, nothing past it; the end's two corners between them, end_r / cos(180 / end_sides) out; nothing behind the
+    # rear line (roll.py rear_line, the elbow motor's board's nearest at the elbow's lower limit: tests below)
     ye = S["y_elbow"]
     assert is_inside(block, 10.0, ye, -(D.end_r - 2.0)) and not is_inside(block, 10.0, ye, -(D.end_r + 1.0))
     assert is_inside(block, 10.0, ye - (D.end_r - 2.0), 0.0) and not is_inside(block, 10.0, ye - (D.end_r + 1.0), 0.0)
+    corner = D.end_r / math.cos(math.pi / D.end_sides)
+    for deg in (180.0 - 180.0 / D.end_sides, 180.0 + 180.0 / D.end_sides):
+        u, v = math.cos(math.radians(deg)), math.sin(math.radians(deg))
+        assert is_inside(block, 10.0, ye + (corner - 1.0) * u, (corner - 1.0) * v)
+        assert not is_inside(block, 10.0, ye + (corner + 0.5) * u, (corner + 0.5) * v)
+    (nu, nv), dist = rear_line(DEFAULT)
+    assert is_inside(block, 10.0, ye + (dist - 1.0) * nu, (dist - 1.0) * nv)
+    assert not is_inside(block, 10.0, ye + (dist + 0.5) * nu, (dist + 0.5) * nv)
     bb = block.bounding_box()
     assert math.isclose(bb.min.Y, ye - D.end_r, abs_tol=0.01) and math.isclose(bb.min.Z, -D.end_r, abs_tol=0.01)
     # the motor's pocket: the floor under it, the space, open through the +N face; its walls round it

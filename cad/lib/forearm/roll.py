@@ -1,5 +1,5 @@
 """build123d builders of the forearm roll drive's printed parts (RollDriveParams, module frame, at their stack
-stations): the frame (stator, forearm_roll_block - one body round the motor: the round elbow end with the elbow's
+stations): the frame (stator, forearm_roll_block - one body round the motor: the octagonal elbow end with the elbow's
 output flange under it, the motor's pocket and plate, the tower with the 6806 pair and the bearing boss on its front face), the
 pulley (rotor, the output - its integral 90T is the GT2 ring of lib/pulley/teeth.py) and the shaft (rotor, a collar
 behind bearing 1)."""
@@ -44,21 +44,36 @@ def _x_hex(across_flats: float, length: float, yz, x0: float, flat_deg: float):
     return bd.Pos(x0, yz[0], yz[1]) * bd.Rot(0.0, 90.0, 0.0) * hex_prism(across_flats, math.radians(flat_deg), length)
 
 
-def profile(cfg: ForearmConfig = DEFAULT):
-    """The frame's outline seen along the elbow axis, as (u, v) = (module y, module z): the round end about the elbow axis
-    (end_r) and the tower round the roll axis (its top tower_y, from its rear to the front face), their hull, cut off
-    at the front face."""
+def rear_line(cfg: ForearmConfig = DEFAULT) -> tuple[tuple[float, float], float]:
+    """The outline's rear line, from the end up to the tower's top, as ((n_u, n_v), distance): the frame keeps to
+    n . (p - elbow axis) <= distance, n its outward normal in (u, v) = (module y, module z). Tangent to the end_r circle
+    about the elbow axis and to a rear_line_r circle in the tower's rear-top corner."""
     d, S = cfg.drive, stack_positions(cfg)
-    end = bd.Pos(S["y_elbow"], 0.0) * bd.Circle(d.end_r)
+    cu, cv = d.tower_y - d.rear_line_r - S["y_elbow"], S["z_tower_rear"] + d.rear_line_r   # that circle, from the elbow axis
+    th = math.atan2(cv, cu) - math.acos((d.end_r - d.rear_line_r) / math.hypot(cu, cv))
+    return (math.cos(th), math.sin(th)), d.end_r
+
+
+def profile(cfg: ForearmConfig = DEFAULT):
+    """The frame's outline seen along the elbow axis, as (u, v) = (module y, module z): an octagon about the elbow axis
+    (end_sides, a flat on each axis end_r off it) and the tower round the roll axis (its top tower_y, from its rear to the
+    front face), their hull, cut off at the front face and behind the rear line (rear_line()) - straight sides, sharp
+    corners."""
+    d, S = cfg.drive, stack_positions(cfg)
+    y_e, n = S["y_elbow"], d.end_sides
+    end = bd.Pos(y_e, 0.0) * bd.RegularPolygon(d.end_r, n, major_radius=False, rotation=180.0 / n)
     z0, z1 = S["z_tower_rear"], S["z_front"]
-    tower = bd.Pos(0.0, (z0 + z1) / 2.0) * bd.RectangleRounded(2.0 * d.tower_y, z1 - z0, d.tower_corner_r)
+    tower = bd.Pos(0.0, (z0 + z1) / 2.0) * bd.Rectangle(2.0 * d.tower_y, z1 - z0)
     hull = bd.make_hull((end + tower).edges())
-    return hull & (bd.Pos(0.0, z1 - FAR) * bd.Rectangle(2.0 * FAR, 2.0 * FAR))
+    (nu, nv), dist = rear_line(cfg)
+    behind = (bd.Pos(y_e + nu * (dist - FAR), nv * (dist - FAR)) * bd.Rot(0.0, 0.0, math.degrees(math.atan2(nv, nu)))
+              * bd.Rectangle(2.0 * FAR, 2.0 * FAR))
+    return hull & (bd.Pos(0.0, z1 - FAR) * bd.Rectangle(2.0 * FAR, 2.0 * FAR)) & behind
 
 
 def build_block(cfg: ForearmConfig = DEFAULT):
-    """The frame (forearm_roll_block) in the module frame: ONE body round the motor - the profile (round about the elbow
-    axis, tangent up to the tower round the roll axis) from the underside (block_x[0], the elbow flange's lip / boss /
+    """The frame (forearm_roll_block) in the module frame: ONE body round the motor - the profile (an octagon about the
+    elbow axis, hulled up to the tower round the roll axis) from the underside (block_x[0], the elbow flange's lip / boss /
     journal / stub under it) to the open +N face; the motor's pocket open on that face, its front wall the plate (the
     pilot hole, the motor's 4 M3 holes with their heads' counterbores, the shaft's slit out to the open face), the plate's
     face the frame's one front face - on
