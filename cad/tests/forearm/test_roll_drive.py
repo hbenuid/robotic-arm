@@ -43,7 +43,7 @@ FACE_GAP = 2.0                   # the least axial gap between a face the elbow 
 #                                  forearm's moment tilts the block on its 6806 pair)
 UPPER_ARM_BORE_R = 21.0          # j1_link's bore the coupler's stub / journal turn in
 UPPER_ARM_END_R = 45.0           # j1_link's round end about the elbow axis
-ELBOW_PULLEY_FACE_Z = -22.0 - PARAMS.PULLEY_SEAT_SHIFT   # host z of the elbow 90T's mating face: the SolidWorks coupler's stub end
+ELBOW_PULLEY_FACE_Z = -22.0 - PARAMS.PULLEY_SEAT_SHIFT   # host z of the elbow 108T's mating face: the SolidWorks coupler's stub end
 #                                                          (-22), both moved on to the re-seated pulley on j1_link's lip
 ELBOW_AXIS_HOST = (0.0, -DEFAULT.elbow_offset)            # the elbow axis (along host Z) in j2_link's frame before the forearm's turn (the
 #                                                           drive's mount frame, tests/forearm/helpers.py): the forearm sits ELBOW_ROLL_OFFSET across it
@@ -98,8 +98,8 @@ def test_the_elbow_coupler_is_retired_for_the_block():
     """j3_coupler#1's record stays in placements.json but nothing claims it; the wrist's j3_coupler#2 is untouched."""
     assert P.RETIRED[0] == "j3_coupler#1" and "j3_coupler#1" in P.OCCURRENCES
     assert "j3_coupler#1" not in P.keys() and "j3_coupler#1" in P.keys(retired=True) and "j3_coupler#2" in P.keys()
-    assert F.LINKS["elbow_link"] == ["gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1",
-                                     "forearm_roll_drive#1:stator"]   # the re-seated elbow 90T + its bolts (lib/mounts.py)
+    assert F.LINKS["elbow_link"] == ["gt2_pulley_108t#1", "elbow_pulley_screws#1", "elbow_pulley_nuts#1",
+                                     "forearm_roll_drive#1:stator"]   # the re-seated elbow 108T + its bolts (lib/mounts.py)
 
 
 def test_stack():
@@ -202,7 +202,7 @@ def test_stack():
     assert D.motor.shaft_dia + 1.0 <= D.shaft_slit < D.motor_holes.pilot_dia
     hole_in = min(abs(y - S["y_motor"]) for _x, y in pad_bolt_points(DEFAULT)) - D.motor_holes.pocket_dia / 2.0
     assert hole_in - D.shaft_slit / 2.0 >= 5.0
-    # the elbow 90T's nuts: seated in the boss, the M4 from the pulley's counterbores 2 pitches past its nut, nut and tip
+    # the elbow 108T's nuts: seated in the boss, the M4 from the pulley's counterbores 2 pitches past its nut, nut and tip
     # 2 mm under the pocket's floor; each hex channel open up into the pocket (the nuts go in from there before the
     # motor), and clear of the pin bore, which ends under the seats
     corner = D.nut_af / math.sqrt(3.0)
@@ -469,7 +469,7 @@ def test_module_clears_its_neighbours_in_the_arm():
         assert vol < 1.0, f"module x {key}: {vol:.1f} mm^3"
     block = _placed_part("forearm_roll_block")
     assert math.isclose(block.bounding_box().min.Z, ELBOW_PULLEY_FACE_Z, abs_tol=1e-6)                   # the stub's end on the pulley
-    assert math.isclose(in_drive_frame("gt2_pulley_90t#3").bounding_box().max.Z, ELBOW_PULLEY_FACE_Z, abs_tol=0.05)
+    assert math.isclose(in_drive_frame("gt2_pulley_108t#1").bounding_box().max.Z, ELBOW_PULLEY_FACE_Z, abs_tol=0.05)
     pulley = _placed_part("forearm_roll_pulley")
     assert math.isclose(pulley.bounding_box().min.X, -S["z_spigot_end"], abs_tol=1e-6)
     for key in ("nema17_40mm#2", "mks_servo42d#2"):
@@ -518,7 +518,7 @@ def test_forearm_clears_the_elbow_while_rolling():
     link = j2_link_in_drive_frame()
     plane, axis_z = link.bounding_box().max.X, DEFAULT.roll_end.axis_z
     assert plane == pytest.approx(DEFAULT.roll_end.wall_x[1], abs=1e-6), f"j2_link reaches x {plane:.2f}, past its wall"
-    others = {key: in_drive_frame(key) for key in ("j1_link#1", "gt2_pulley_90t#3")}
+    others = {key: in_drive_frame(key) for key in ("j1_link#1", "gt2_pulley_108t#1")}
     others |= {label: _placed_part(label) for label in ("forearm_roll_block", "mks_servo42d:forearm_roll", "gt2_pulley_20t:forearm_roll",
                                                         "forearm_roll_belt:forearm_roll", "gt2_idler_20t:forearm_roll", "roll_idler_nut")}
     for key, other in others.items():

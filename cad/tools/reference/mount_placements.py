@@ -1,10 +1,10 @@
-"""Materialise the mounts declared in lib/mounts.py - the belt joints' motors, their bearings, the re-seated 90T
-pulleys, the M4 screws + nuts that clamp them and the pose of a code-driven module - as reference/placements.json records.
+"""Materialise the mounts declared in lib/mounts.py - the belt joints' motors, their bearings, the re-seated elbow
+and wrist pulleys, the M4 screws + nuts that clamp them and the pose of a code-driven module - as reference/placements.json records.
 
     ./cadtool python tools/reference/mount_placements.py [--out reference/placements.json]
 
 The SolidWorks capture never contained the belt joints' motors or bearings; lib/mounts.py declares each one (a
-motor's MKS board too, and the two 90T pulleys it re-seats) as a frame in its host occurrence's frame. This tool
+motor's MKS board too, and the two pulleys it re-seats) as a frame in its host occurrence's frame. This tool
 resolves `world = host world * frame` (the host is a SolidWorks record - a retired one for a re-seated pulley -, its
 world pose moved by lib/placements.py SHIFTS and TURNS, or the motor record for a board, the pulley for its screws, the
 screws for their nuts - declaration order), builds the part

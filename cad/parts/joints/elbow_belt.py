@@ -1,14 +1,14 @@
 """elbow_belt - purchased (COTS) part: the elbow belt, a closed GT2 (2GT) belt, 6 mm, ELBOW_BELT_LENGTH long - one of
 the multipack lengths (lib/belts.py STANDARD_2GT_LENGTHS).
 
-It runs under j1_link's web from the elbow motor's 20T (gt2_pulley_20t#2) to the elbow 90T, round its tensioner: the
+It runs under j1_link's web from the elbow motor's 20T (gt2_pulley_20t#2) to the elbow 108T, round its tensioner: the
 stock length is longer than the open loop at ELBOW_MOTOR_CENTRES, and a GT2 idler on its back (gt2_idler_20t#1, under
 j1_link's slab - lib/upper_arm/params.py ElbowIdlerParams) takes up the rest, slid along the slab's slots.
 
 No catalog model, no export and NO reference file: a purchased part with no reference (lib/reference.py
 NO_REFERENCE) - its envelope IS the geometry: a smooth band round its loop (lib/pulley/belt.py closed_belt(); no
 teeth), and tests/test_belts.py locks its numbers. Frame (lib/upper_arm/layout.py elbow_belt_loop()): the motor's 20T on
-the origin, the 90T on +X, the idler on the +Y run, the band centred on z=0; the arm places it on j1_link
+the origin, the 108T on +X, the idler on the +Y run, the band centred on z=0; the arm places it on j1_link
 (lib/mounts.py BELT_MOUNTS).
 """
 import pathlib

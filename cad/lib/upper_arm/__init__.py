@@ -8,6 +8,7 @@ from lib.upper_arm.layout import (  # noqa: F401
     arm_slide,
     cove_axes,
     elbow_belt_loop,
+    elbow_idler_x,
     elbow_idler_z,
     hub_bolt_points,
     pad_holes,

@@ -3,7 +3,7 @@ module like the cycloidal drive.
 
 Stator: the frame - ONE printed part (forearm_roll_block) round the roll motor: round about the elbow axis (the upper arm's
 round end) and tangent up to the tower round the roll axis; its underside is the elbow's output flange (it repeats the
-SolidWorks j3_coupler's lip, boss, journal and stub down into j1_link's bore; the elbow 90T pulley bolts straight into it,
+SolidWorks j3_coupler's lip, boss, journal and stub down into j1_link's bore; the elbow 108T pulley bolts straight into it,
 so j3_coupler#1 is retired, lib/placements.py RETIRED); the 40 mm kit motor + MKS board ON the elbow axis in its pocket
 (open on the +N face, the pocket's front wall the plate, its 4x M3 from the front face, heads flush in counterbores:
 roll_motor_screws) and the 20T on the motor shaft, its hub down in the plate's pilot hole; the roll belt's tensioner on the frame's front face (the idler on a riser, its M5 and
@@ -16,7 +16,7 @@ axis' station, +Z along the roll axis toward the wrist, +X = host +Z (N), +Y = u
 axis along X at y_elbow (the arm's elbow offset below the roll axis); the arm places it through lib/mounts.py
 MODULE_MOUNTS ("forearm_roll_drive#1" on j2_link#1). Every station comes from lib/forearm stack_positions() - never type
 one here. Gear ratio 90 / 20 = 4.5 (FOREARM_ROLL_RATIO) on the belt (forearm_roll_belt, FOREARM_ROLL_BELT_LENGTH, round the idler); the rotor clamp's and
-the forearm wall's M3 screws + nuts are tools/bom.py EXTRAS; the elbow 90T's M4 screws + nuts into the frame are the arm's
+the forearm wall's M3 screws + nuts are tools/bom.py EXTRAS; the elbow 108T's M4 screws + nuts into the frame are the arm's
 (lib/mounts.py FASTENER_MOUNTS).
 """
 from cadgen import step

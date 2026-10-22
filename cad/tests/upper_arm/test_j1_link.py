@@ -20,7 +20,7 @@ from lib import mounts
 from lib import params as PARAMS
 from lib import placements as P
 from lib import reference as R
-from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, centre_distance
+from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_108T_TEETH, centre_distance
 from lib.cycloidal import arm_zone, housing_bolt_points, shell_ends, stack_positions
 from lib.cycloidal.params import DEFAULT_CONFIG
 from lib.datum import to_location
@@ -63,7 +63,7 @@ def test_layout():
     # (LEGACY's pad face stays in PadParams)
     assert LEGACY.pad.x == 0.0 and DEFAULT.bearing is None and LEGACY.bearing is not None
     assert LEGACY.idler is None and DEFAULT.idler is not None
-    assert ELBOW_MOTOR_CENTRES == 78.0 < centre_distance(ELBOW_BELT, GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH)
+    assert ELBOW_MOTOR_CENTRES == 78.0 < centre_distance(ELBOW_BELT, GT2_PULLEY_20T_TEETH, GT2_PULLEY_108T_TEETH)
     assert DEFAULT.pad.x == pytest.approx(DEFAULT.slab.elbow_x - ELBOW_MOTOR_CENTRES, abs=1e-6)
     assert replace(DEFAULT.pad, x=0.0, holes=LEGACY.pad.holes) == LEGACY.pad
     assert DEFAULT.pad.face_y == -32.5 and PARAMS.J1_MOTOR_PAD_FACE_Y == DEFAULT.arm.y_outer == 16.5
@@ -190,7 +190,7 @@ def test_default(link, legacy):
     the underside; no pad, no sockets, the second stage's seat gone."""
     dx, a = SHORTENING, DEFAULT.arm
     assert link.is_valid and len(link.solids()) == 1
-    assert R.solid_volume(link) == pytest.approx(372731.723, abs=0.5)
+    assert R.solid_volume(link) == pytest.approx(372030.418, abs=0.5)
     bb, hh, (z_0, z_1) = link.bounding_box(), DEFAULT_CONFIG.housing, arm_zone(DEFAULT_CONFIG)
     # across (Z) the body's pillars either side of +/-Z reach furthest: the windows on +/-Z are open; along Y the
     # shell's body, from its hub end to the shell ring's face (arm_zone's start)

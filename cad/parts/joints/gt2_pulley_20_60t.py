@@ -27,7 +27,7 @@ NAME = pathlib.Path(__file__).stem
 REFERENCE = None              # a measured conversion: no reference file (lib/reference.py MEASURED)
 CONVERTED = True
 LOCAL_FROM_REF = IDENTITY     # modelled in the SolidWorks part frame
-UNPLACED = ("the elbow drive runs in one stage - the elbow motor's 20T straight to the 90T, j1_link's second-stage seats gone; "
+UNPLACED = ("the elbow drive runs in one stage - the elbow motor's 20T straight to the 108T, j1_link's second-stage seats gone; "
             "kept for a second stage if the elbow needs its torque (docs/open_issues.md)")
 
 

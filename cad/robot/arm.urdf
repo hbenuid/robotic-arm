@@ -35,7 +35,7 @@
   offset, the last three axes are NOT concurrent (an inverse kinematics must be numeric). It does NOT cross the elbow axis: the
   roll motor sits on the elbow axis and the roll housing ELBOW_ROLL_OFFSET (the drive's centre
   distance: the stock belt round its tensioner) above it, so forearm_roll's origin sits that far across elbow_link's frame (its -Y) - an elbow
-  offset. elbow_link is the elbow's driven side (the 90T pulley carrying the roll drive's stator, the
+  offset. elbow_link is the elbow's driven side (the 108T pulley carrying the roll drive's stator, the
   frame whose web is the elbow coupler), forearm_link the roll drive's rotor (the pulley + the shaft) + the forearm.
 
   UNITS: metres, kilograms, radians. MESHES: meshes/<link>.stl in millimetres (scale 0.001),
@@ -110,9 +110,9 @@
   </link>
   <link name="upper_arm_link">
     <inertial>
-      <origin xyz="0.060964 0.000026 0.033582" rpy="0 0 0" />
-      <mass value="1.318719" />
-      <inertia ixx="1.684041e-03" ixy="-1.394608e-06" ixz="7.519974e-04" iyy="6.389485e-03" iyz="-1.297730e-06" izz="6.775386e-03" />
+      <origin xyz="0.060932 -0.000006 0.033589" rpy="0 0 0" />
+      <mass value="1.317978" />
+      <inertia ixx="1.684781e-03" ixy="1.175714e-06" ixz="7.513569e-04" iyy="6.388052e-03" iyz="-2.876412e-06" izz="6.774821e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -129,9 +129,9 @@
   </link>
   <link name="elbow_link">
     <inertial>
-      <origin xyz="0.004063 -0.015717 0.018835" rpy="0 0 0" />
-      <mass value="0.911507" />
-      <inertia ixx="1.484110e-03" ixy="1.481999e-04" ixz="-1.948857e-05" iyy="7.672604e-04" iyz="6.670557e-05" izz="1.432633e-03" />
+      <origin xyz="0.004021 -0.015556 0.018202" rpy="0 0 0" />
+      <mass value="0.920925" />
+      <inertia ixx="1.527059e-03" ixy="1.487957e-04" ixz="-2.183490e-05" iyy="8.080608e-04" iyz="7.577451e-05" izz="1.444870e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
