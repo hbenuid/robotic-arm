@@ -235,8 +235,8 @@ class RollDriveParams:
     elbow's 6806 pattern: two hubs meeting inside the lip). The roll motor sits ON the elbow axis, the roll axis
     centre_distance above it (= the arm's elbow offset, ForearmConfig.elbow_offset): the stock roll belt round the motor's
     20T and the ring, an idler on its back on the frame's face taking up the rest (RollIdlerParams). The frame is
-    one body round the motor: seen along the elbow axis round about it (end_r, the upper arm's round end) and tangent up
-    to the tower round the roll axis, extruded from its underside (block_x[0], the elbow flange's - its underside repeats
+    one body round the motor: seen along the elbow axis an octagon about it (end_r, its flats on the upper arm's round end)
+    hulled up to the tower round the roll axis, straight-sided, extruded from its underside (block_x[0], the elbow flange's - its underside repeats
     the SolidWorks j3_coupler's lip / boss / journal / stub into j1_link's bore, the elbow 108T bolts straight into it) to
     its open +N face; the motor in a pocket open on that face (a plug slot off each side at its board's side headers),
     the pocket's front wall its plate (round holes: its 4x M3 from the front face, the heads flush in counterbores -
@@ -268,9 +268,14 @@ class RollDriveParams:
     # (the motor below the roll axis, -Y), z along the roll axis
     block_x: tuple = (-ROLL_FRAME_R, ROLL_FRAME_R)   # [DESIGN] host z -5 .. 55: the underside (the web's plane) .. the open +N face,
     #                                       symmetric about the roll axis (the motor's connector, spun to +X, ends 2 inside the open pocket)
-    end_r: float = 45.0                   # [DESIGN] the round end about the elbow axis = j1_link's round end (concentric)
+    end_r: float = 45.0                   # [DESIGN] the octagonal end about the elbow axis: its flats this far off it = j1_link's round end
+    #                                       (tangent to it), its corners end_r / cos(22.5 deg) = 48.7 out (the elbow motor's board sweeps 56.5 out)
+    end_sides: int = 8                    # [DESIGN] the end's polygon: an octagon, a flat on each axis (the front face's plane, the end, the bottom)
     tower_y: float = ROLL_FRAME_R         # [DESIGN] the tower's top over the roll axis, as far as the underside and the +N face: the bay + 4.4
-    tower_corner_r: float = 3.0           # [DESIGN] its two corners in the profile: the bearing boss 1 inside them, on the flat of the front face
+    rear_line_r: float = 3.0              # [DESIGN] the rear line (the outline from the end up to the tower's top): tangent to the end_r
+    #                                       circle and to a circle this radius in the tower's rear-top corner - where the round end's hull ran,
+    #                                       2.3 off the elbow motor's board at the elbow's lower limit (lib/params.py ELBOW_PITCH_LIMITS_DEG);
+    #                                       the octagon's corner behind it cut off, the tower's corners sharp (roll.py rear_line)
     tower_wall: float = 2.0               # [DESIGN] the tower's rear in the profile, behind the bay's floor
     web_t: float = 7.0                    # [DESIGN] the pocket's floor (the cradle's) over the underside: 2 mm under the motor's -N side
     pocket_clear: float = 0.75            # [DESIGN] round the motor + board in the pocket
