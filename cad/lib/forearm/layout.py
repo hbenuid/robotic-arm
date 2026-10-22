@@ -258,7 +258,7 @@ def pad_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
 
 
 def pulley_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
-    """The elbow 90T pulley's 4x M4 into the web's underside, as (y, z) ABOUT THE ELBOW AXIS (add y_elbow for the
+    """The elbow 108T pulley's 4x M4 into the web's underside, as (y, z) ABOUT THE ELBOW AXIS (add y_elbow for the
     module frame): the SolidWorks coupler's pattern (pulley_bolt_r out, on the axes) turned pulley_bolt_deg."""
     d = cfg.drive
     return [(d.pulley_bolt_r * math.cos(a), d.pulley_bolt_r * math.sin(a))

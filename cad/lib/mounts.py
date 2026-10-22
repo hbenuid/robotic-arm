@@ -1,5 +1,5 @@
-"""The motor mounts of the belt joints, their bearings, their driven pulleys (the elbow's and the wrist's 90T re-seated,
-the base_yaw 120T placed) and the bolts that clamp them, and the pose of a code-driven module the SolidWorks capture never
+"""The motor mounts of the belt joints, their bearings, their driven pulleys (the elbow's 108T and the wrist's 90T
+re-seated, the base_yaw 120T placed) and the bolts that clamp them, and the pose of a code-driven module the SolidWorks capture never
 placed - occurrences declared here, not extracted.
 
 The SolidWorks arm cut a NEMA 17 pad into `base` (base_yaw), `j1_link` (elbow_pitch) and `j2_link`
@@ -38,7 +38,7 @@ Geometry (lib/params.py, kernel-verified 2026-09-21 - tests/test_mounts.py re-ch
                lib/upper_arm/params.py ArmParams), pattern on the pad's axis (PadParams.x: ELBOW_MOTOR_CENTRES short of
                the elbow axis - the shoulder axis is the drive's yoke's); the body +N down the square hole through the
                slab, standing out on the forearm's side; shaft -N through the web, its 20T (gt2_pulley_20t#2, under the
-               web, MOTOR_PULLEY_MOUNTS) level with the elbow 90T, on the belt to it (elbow_belt#1, BELT_MOUNTS); held down by its 4x M3 SHCS (elbow_motor_screws#1, MOTOR_SCREW_MOUNTS), up
+               web, MOTOR_PULLEY_MOUNTS) level with the elbow 108T, on the belt to it (elbow_belt#1, BELT_MOUNTS); held down by its 4x M3 SHCS (elbow_motor_screws#1, MOTOR_SCREW_MOUNTS), up
                through the web from its underside, the heads flush in its pockets - the drive motor's screws and seat
   wrist_pitch  j2_link's web (+Z face z = J2_MOTOR_WEB_FACE_Z), motor axis at x = J2_MOTOR_X on round holes
                (lib/forearm/params.py WRIST_MOTOR_CENTRES: nearer the wrist than the stock wrist belt's own centre
@@ -55,10 +55,11 @@ The THRUST BEARING (THRUST_MOUNTS): the base_yaw joint's axial load - j1_coupler
 (parts/base/bearing_axk6590) between two washers (parts/base/washer_as6590) in the base's groove round its seat ring:
 the lower washer on the groove's floor and the cage on it ride with the base, the upper washer under j1_coupler's seat
 (lib/yaw_coupler/params.py DEFAULT) with the coupler.
-The PULLEYS (PULLEY_MOUNTS): the elbow's and the wrist's 90T, whose SolidWorks poses (gt2_pulley_90t#1 / #2,
+The PULLEYS (PULLEY_MOUNTS): the elbow's and the wrist's, whose SolidWorks poses (gt2_pulley_90t#1 / #2,
 retired - lib/placements.py) left no room for the lower bearing, re-declared PULLEY_SEAT_SHIFT further out along
-their own axis (+Y): the host of such a mount is the capture pose it corrects. The wrist's keeps its spin exactly; the
-elbow's turns RollDriveParams.pulley_bolt_deg about its axis with the elbow block's bolt pattern (lib/forearm/params.py:
+their own axis (+Y): the host of such a mount is the capture pose it corrects. The wrist's 90T keeps its spin exactly;
+the elbow's - a 108T in the SolidWorks 90T's place (gt2_pulley_108t#1: the 90T with 108 teeth, lib/pulley/params.py
+ELBOW, its hub and bolts the 90T's) - turns RollDriveParams.pulley_bolt_deg about its axis with the elbow block's bolt pattern (lib/forearm/params.py:
 its nut channels would otherwise stop short of the ring cavity). The base_yaw pulley (gt2_pulley_120t#1, the 90T with
 120 teeth: lib/pulley/params.py YAW) the capture never had: hosted on j1_coupler, upside down under it (its +Y down the axis) - its hub end on the stub's end in the plane of
 the lip's lower face, its journal in the lower base bearing, its ring under that bearing's inner ring - and turned
@@ -125,7 +126,7 @@ from lib.params import (
     YAW_IDLER_Y,
     YAW_MOTOR_SCREW_Y,
 )
-from lib.upper_arm.layout import elbow_idler_z
+from lib.upper_arm.layout import elbow_idler_x, elbow_idler_z
 from lib.upper_arm.params import DEFAULT as _UPPER_ARM
 from lib.wrist.layout import module_frame_in_host as wrist_module_frame_in_host
 from lib.yaw_coupler.layout import (
@@ -139,7 +140,8 @@ from lib.yaw_coupler.params import DEFAULT as _YAW_COUPLER
 
 MOTOR_48, MOTOR_40, BOARD = "nema17_48mm", "nema17_40mm", "mks_servo42d"
 MOTORS = (MOTOR_48, MOTOR_40)
-BEARING, PULLEY, YAW_PULLEY, MOTOR_PULLEY = "bearing_6806", "gt2_pulley_90t", "gt2_pulley_120t", "gt2_pulley_20t"
+BEARING, PULLEY, ELBOW_PULLEY, YAW_PULLEY = "bearing_6806", "gt2_pulley_90t", "gt2_pulley_108t", "gt2_pulley_120t"
+MOTOR_PULLEY = "gt2_pulley_20t"
 THRUST_CAGE, THRUST_WASHER = "bearing_axk6590", "washer_as6590"
 PULLEY_BOLTS = ("elbow_pulley_screws", "elbow_pulley_nuts", "wrist_pulley_screws", "wrist_pulley_nuts",
                 "yaw_pulley_screws", "yaw_pulley_nuts")
@@ -157,7 +159,8 @@ IDLER_KIT = ("gt2_idler_20t", "elbow_idler_spacer", "elbow_idler_screw", "elbow_
 AXES: dict[str, tuple[tuple[float, float, float], bool]] = {
     MOTOR_48: ((0.0, 0.0, 1.0), False), MOTOR_40: ((0.0, 0.0, 1.0), False), MOTOR_PULLEY: ((1.0, 0.0, 0.0), False),
     **{part: ((0.0, 0.0, 1.0), False) for part in MOTOR_SCREWS},
-    BEARING: ((0.0, 0.0, 1.0), True), PULLEY: ((0.0, 1.0, 0.0), True), YAW_PULLEY: ((0.0, 1.0, 0.0), True),
+    BEARING: ((0.0, 0.0, 1.0), True), PULLEY: ((0.0, 1.0, 0.0), True), ELBOW_PULLEY: ((0.0, 1.0, 0.0), True),
+    YAW_PULLEY: ((0.0, 1.0, 0.0), True),
     THRUST_CAGE: ((0.0, 0.0, 1.0), True), THRUST_WASHER: ((0.0, 0.0, 1.0), True),
     **{part: ((0.0, 0.0, 1.0), True) for part in PULLEY_BOLTS},
     **{part: ((0.0, 0.0, 1.0), True) for part in FORK_ON_AXIS},
@@ -237,7 +240,7 @@ MOTOR_PULLEY_MOUNTS: tuple[Mount, ...] = (
     Mount("gt2_pulley_20t#2", MOTOR_PULLEY, "nema17_40mm#2", "upper_arm_link", "elbow_pitch",
           ((0.0, 0.0, J1_MOTOR_20T_HUB_Z), (0.0, -90.0, 0.0)),
           "the elbow motor's 20T on its shaft, hub toward the motor, J1_MOTOR_20T_HUB_Z out from its face (under the "
-          "web): its tooth band level with the elbow 90T's"),
+          "web): its tooth band level with the elbow 108T's"),
     Mount("gt2_pulley_20t#3", MOTOR_PULLEY, "nema17_48mm#1", "base_link", "base_yaw",
           ((0.0, 0.0, BASE_MOTOR_20T_HUB_Z), (0.0, -90.0, 0.0)),
           "the base_yaw motor's 20T on its shaft, its hub in the motor plate's window: its tooth band level with the 120T's"),
@@ -296,9 +299,9 @@ THRUST_MOUNTS: tuple[Mount, ...] = (
           "the upper washer, under j1_coupler's seat (its recess's ceiling) - it turns with the coupler"),
 )
 PULLEY_MOUNTS: tuple[Mount, ...] = (
-    Mount("gt2_pulley_90t#3", PULLEY, "gt2_pulley_90t#1", "elbow_link", "elbow_pitch",
+    Mount("gt2_pulley_108t#1", ELBOW_PULLEY, "gt2_pulley_90t#1", "elbow_link", "elbow_pitch",
           ((0.0, PULLEY_SEAT_SHIFT, 0.0), (0.0, _FOREARM.drive.pulley_bolt_deg, 0.0)),
-          "the elbow 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower elbow bearing; "
+          "the elbow 108T, PULLEY_SEAT_SHIFT out from the SolidWorks 90T's pose (retired): its hub in the lower elbow bearing; "
           "turned pulley_bolt_deg about its axis with the block's bolt pattern (the nut channels clear of the ring cavity)"),
     Mount("gt2_pulley_90t#4", PULLEY, "gt2_pulley_90t#2", "wrist_pitch_link", "wrist_pitch", ((0.0, PULLEY_SEAT_SHIFT, 0.0), (0.0, 0.0, 0.0)),
           "the wrist 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower wrist bearing"),
@@ -313,8 +316,8 @@ PULLEY_MOUNTS: tuple[Mount, ...] = (
 _SCREWS_IN_COUNTERBORES = ((0.0, round(GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_HEAD_SEAT, 6), 0.0), (90.0, 0.0, 0.0))
 _SEAT_TO_END = GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_HEAD_SEAT - GT2_PULLEY_90T_FACE_Y[0]
 FASTENER_MOUNTS: tuple[Mount, ...] = (
-    Mount("elbow_pulley_screws#1", "elbow_pulley_screws", "gt2_pulley_90t#3", "elbow_link", "elbow_pitch", _SCREWS_IN_COUNTERBORES,
-          "the elbow 90T's 4x M4 x pulley_screw_len: heads in its counterbores, down through its hub and the block's stub"),
+    Mount("elbow_pulley_screws#1", "elbow_pulley_screws", "gt2_pulley_108t#1", "elbow_link", "elbow_pitch", _SCREWS_IN_COUNTERBORES,
+          "the elbow 108T's 4x M4 x pulley_screw_len: heads in its counterbores, down through its hub and the block's stub"),
     Mount("elbow_pulley_nuts#1", "elbow_pulley_nuts", "elbow_pulley_screws#1", "elbow_link", "elbow_pitch",
           ((0.0, 0.0, round(_FOREARM.drive.nut_seat_x - (_FOREARM.drive.stub_x[0] - _SEAT_TO_END), 6)), (0.0, 0.0, 0.0)),
           "the elbow screws' nuts on the block's channel seats (nut_seat_x), a flat toward the axis"),
@@ -372,19 +375,19 @@ BELT_MOUNTS: tuple[Mount, ...] = (
           "the base_yaw belt inside the base: the motor's 20T to the 120T under j1_coupler, round its idler"),
     Mount("elbow_belt#1", "elbow_belt", "j1_link#1", "upper_arm_link", "elbow_pitch",
           ((_UPPER_ARM.pad.x, J1_BELT_Y, 0.0), (90.0, 0.0, 0.0)),
-          "the elbow belt under j1_link's web: the elbow motor's 20T to the elbow 90T"),
+          "the elbow belt under j1_link's web: the elbow motor's 20T to the elbow 108T"),
     Mount("wrist_belt#1", "wrist_belt", "j2_link#1", "forearm_link", "wrist_pitch", wrist_belt_frame(_FOREARM),
           "the wrist belt under j2_link's web: the wrist motor's 20T to the wrist 90T"),
 )
 # The elbow belt's tensioner (lib/upper_arm/params.py ElbowIdlerParams), on j1_link at the idler's place for the stock
-# belt - the stepped slot's x, elbow_idler_z() across -, each part's +Z up j1_link's +Y (N): the idler standing on its
+# belt - elbow_idler_x() along, elbow_idler_z() across -, each part's +Z up j1_link's +Y (N): the idler standing on its
 # lower face level with the belt, the spacer's land on its upper face, the screw's head under it, the nut on its slot's
 # floor (lib/params.py J1_IDLER_*).
-_IDLER_X, _IDLER_Z = _UPPER_ARM.slots.stepped_x, round(elbow_idler_z(_UPPER_ARM), 6)
+_IDLER_X, _IDLER_Z = elbow_idler_x(_UPPER_ARM), round(elbow_idler_z(_UPPER_ARM), 6)
 IDLER_MOUNTS: tuple[Mount, ...] = (
     Mount("gt2_idler_20t#1", "gt2_idler_20t", "j1_link#1", "upper_arm_link", "elbow_pitch",
           ((_IDLER_X, J1_IDLER_Y, _IDLER_Z), _UP),
-          "the elbow belt's tensioner under j1_link's slab, level with the belt, on its back on the 90T -> 20T run"),
+          "the elbow belt's tensioner under j1_link's slab, level with the belt, on its back on the 108T -> 20T run"),
     Mount("elbow_idler_spacer#1", "elbow_idler_spacer", "j1_link#1", "upper_arm_link", "elbow_pitch",
           ((_IDLER_X, round(J1_IDLER_Y + GT2_IDLER_WIDTH, 6), _IDLER_Z), _UP),
           "its printed spacer: the land on the idler's inner ring, the riser on the slab's underside"),
@@ -456,7 +459,7 @@ MODULE_MOUNTS: tuple[ModuleMount, ...] = (
     ModuleMount("forearm_roll_drive#1", "forearm_roll_drive", "j2_link#1", "forearm_roll", module_frame_in_host(),
                 "the roll drive on j2_link's roll axis (y 0, z FOREARM_ROLL_AXIS_Z), in its frame before the forearm's turn: module "
                 "+Z = host -X toward the wrist, module +X = host +Z (N), +Y = up in the swing plane (the motor side); the block IS the "
-                "elbow coupler: its stub turns in j1_link's bore and the elbow 90T bolts into it (j3_coupler#1 retired, "
+                "elbow coupler: its stub turns in j1_link's bore and the elbow 108T bolts into it (j3_coupler#1 retired, "
                 "lib/placements.py RETIRED)"),
     ModuleMount("wrist_roll_drive#1", "wrist_roll_drive", "wrist_link#1", "wrist_roll", wrist_module_frame_in_host(),
                 "the wrist roll drive on wrist_link's roll axis R' (WRIST_ROLL_OFFSET along +Y from the pitch axis, "

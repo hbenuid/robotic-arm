@@ -1,6 +1,6 @@
-"""elbow_pulley_nuts - purchased (COTS) part: the elbow 90T's 4 M4 hex nuts (ISO 4032), captive in the elbow block.
+"""elbow_pulley_nuts - purchased (COTS) part: the elbow 108T's 4 M4 hex nuts (ISO 4032), captive in the elbow block.
 
-The elbow 90T's screws run into them, in the block's hex channels (forearm_roll_block).
+The elbow 108T's screws run into them, in the block's hex channels (forearm_roll_block).
 
 In the arm (lib/mounts.py, hosted on elbow_pulley_screws): each nut on its channel's seat (lib/forearm/params.py
 RollDriveParams.nut_seat_x), a flat toward the elbow axis as the channel holds it (lib/forearm/roll.py); the channels

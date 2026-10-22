@@ -36,7 +36,7 @@ from lib.belts import (  # noqa: E402, F401
     GT2_BELT_BACK, GT2_BELT_MASS_G_PER_M, GT2_BELT_THICKNESS, GT2_BELT_W, GT2_BLEND_R, GT2_FLANK_ANGLE, GT2_FLANK_R, GT2_GROOVE_R, GT2_IDLER_BORE, GT2_IDLER_CHANNEL_W,
     GT2_IDLER_FLANGE_DIA, GT2_IDLER_SEAT_DIA, GT2_IDLER_WIDTH, GT2_PITCH, GT2_PLD, GT2_PULLEY_20T_PITCH_DIA,
     GT2_PULLEY_20_60T_TEETH, GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_BOLT_R, GT2_PULLEY_90T_FACE_Y, GT2_PULLEY_90T_HEAD_SEAT, GT2_PULLEY_90T_PITCH_DIA,
-    GT2_PULLEY_90T_TEETH, GT2_PULLEY_120T_TEETH, GT2_RATIO, GT2_TIP_R, GT2_TOOTH_DEPTH, STANDARD_2GT_LENGTHS, flank_offset, pulley_90t_bolt_points,
+    GT2_PULLEY_90T_TEETH, GT2_PULLEY_108T_TEETH, GT2_PULLEY_120T_TEETH, GT2_RATIO, GT2_TIP_R, GT2_TOOTH_DEPTH, STANDARD_2GT_LENGTHS, flank_offset, pulley_90t_bolt_points,
     pulley_od,
 )
 # --- The belt joints' bearings + the base_yaw thrust bearing - lib/bearings.py (a leaf: lib/base/, lib/coupler/, lib/forearm/, lib/yaw_coupler/ import it)
@@ -109,9 +109,10 @@ J1_MOTOR_SCREW_THREAD = 4.0                        # [DESIGN] the elbow motor's 
 J1_MOTOR_SCREW_LEN = _UPPER_ARM.arm.motor_plate_t + J1_MOTOR_SCREW_THREAD   # 12 ... under the head, through the web (ArmParams.motor_plate_t)
 J1_MOTOR_20T_HUB_Z = 7.75                          # [DESIGN] the elbow motor's 20T (lib/mounts.py gt2_pulley_20t#2): its hub face this far out
 #                                                    along the shaft from the motor's face - up in the web's pilot hole -, its tooth band
-#                                                    (RollDriveParams.t20_hub on) level with the elbow 90T's (tests/test_mounts.py)
-ELBOW_BELT_LENGTH = _ELBOW_BELT                    # 280-2GT [DESIGN] the elbow belt (20T on j1_link's motor, 90T at the elbow), round its
+#                                                    (RollDriveParams.t20_hub on) level with the elbow 108T's (tests/test_mounts.py)
+ELBOW_BELT_LENGTH = _ELBOW_BELT                    # 300-2GT [DESIGN] the elbow belt (20T on j1_link's motor, 108T at the elbow), round its
 #                                                    idler (lib/upper_arm/params.py ElbowIdlerParams)
+ELBOW_RATIO = GT2_PULLEY_108T_TEETH / GT2_PULLEY_20T_TEETH   # 5.4:1 [DESIGN] the elbow belt: the 108T (parts/joints/gt2_pulley_108t) on the elbow motor's 20T
 from lib.forearm.params import DEFAULT as _FOREARM  # noqa: E402
 
 J2_MOTOR_WEB_FACE_Z = _FOREARM.web.z1              # 19 [REFERENCE] j2_link: the web's +Z face; the motor bolts through its round holes
@@ -233,7 +234,7 @@ CYCLOIDAL_HOUSING_NUTS_MASS_G = STEEL_DENSITY * _DRIVE.housing.bolt_count * _hex
 CYCLOIDAL_MOTOR_BOLTS_MASS_G = STEEL_DENSITY * 4 * (
     _cyl_vol(_DRIVE.motor.bolt_dia / 2, _DRIVE.motor.motor_bolt_thread_length) + _cyl_vol(_DRIVE.motor.motor_bolt_head_dia / 2, _DRIVE.motor.motor_bolt_head_height))   # 4.3, 4x M3x10
 
-# The pulley bolts of the elbow's and the wrist's 90T and the base_yaw 120T (parts/joints/{elbow,wrist}_pulley_{screws,nuts},
+# The pulley bolts of the elbow's 108T, the wrist's 90T and the base_yaw 120T (parts/joints/{elbow,wrist}_pulley_{screws,nuts},
 # parts/base/yaw_pulley_{screws,nuts}): the same estimate over their modelled geometry (lib/fasteners.py: the socket and
 # the nut's bore taken out)
 from lib.coupler.params import DEFAULT as _COUPLER  # noqa: E402

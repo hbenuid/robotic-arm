@@ -36,8 +36,8 @@ zero = capture, the committed meshes vs a fresh export, inertials, URDF/SRDF/SDF
 telemetry kept off, the two `.claude/settings.json` the same, no tracked `CLAUDE.md` / `CLAUDE.local.md`, every
 tracked name lowercase),
 `test_mounts.py` (the mounted motors: axis on the joint, face on the host's pad / plate, board on the rear face, interference budget,
-the base stack above the base bottom, the 90T planes within the shafts, the elbow motor's 20T level with its 90T; each belt joint's bearing stack between its
-coupler's stub and its 90T; the 90T pulley bolts: seats, reach, the opened holes, the nuts' designed press; the base_yaw
+the base stack above the base bottom, the driven pulleys' planes within the shafts, the elbow motor's 20T level with its 108T; each belt joint's bearing stack between its
+coupler's stub and its driven pulley; the 90T pulley bolts: seats, reach, the opened holes, the nuts' designed press; the base_yaw
 thrust stack under `j1_coupler`),
 `test_layering.py` (the package layering, no `sys.path`, no direct part-module imports — AST scan),
 `test_sweeps.py` (the joint limits keep the arm off itself: exact distances between the robot links' parts at poses
@@ -59,7 +59,7 @@ converted — shared by `test_assembly.py` and `test_robot.py`), `built.py` (abo
 symmetric about the middle of the discs), with no reference, keep their numbers in their own modules),
 `tests/upper_arm/` (`elbow_motor_screws`, a purchased part with no reference: its numbers and feature probes;
 `elbow_idler`: the elbow belt's tensioner - the stock belt round it, the band of belts its slot takes, its stations,
-its axle's, nut's and spacer's numbers (no reference), its slots on `j1_link`, the kit's fit; `j1_link`: the LEGACY build's feature probes, DEFAULT's numbers, the elbow motor's web and its
+its axle's, nut's and spacer's numbers (no reference), its slots on `j1_link`, the kit's fit beside the 108T; `j1_link`: the LEGACY build's feature probes, DEFAULT's numbers, the elbow motor's web and its
 holes, the arm - a flat slab - rising off the drive's turning shell - the drive's frame in the link's, its first pillar
 on the arm's centreline, the shell's body inside, its windows under the arm solid, the others open, the slab's faces
 level end to end -, no sockets, the elbow block's floor), `tests/base/` (`base`: the LEGACY build's
@@ -84,7 +84,8 @@ hub), `tests/pulley/` (`gt2_pulley_90t`: the GT2 groove's tangency
 solve against the export's arcs, the LEGACY build's feature probes and surfaces, DEFAULT's opened holes;
 `gt2_pulley_20_60t`, a measured conversion: its export's numbers written into the test - both bands' arc centres, the
 surfaces, volume, bbox - and feature probes;
-`gt2_pulley_120t`, a part with no reference: its volume and bbox written in, the 90T's hub and holes, 120 grooves; `helpers.py`: probe points about the axis, the surface census),
+`gt2_pulley_108t` / `gt2_pulley_120t`, parts with no reference: their volume and bbox written in, the 90T's hub and
+holes, 108 / 120 grooves; `helpers.py`: probe points about the axis, the surface census),
 `tests/forearm/` (the forearm: the LEGACY
 build vs the SolidWorks part + feature probes, the roll end, the roll drive - axis through the wrist centre, stack, press fits, clean pairs,
 clearances in the arm with the elbow folded; the roll belt's tensioner (`test_roll_idler`: the stock belt round it, its

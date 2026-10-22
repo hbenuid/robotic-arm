@@ -16,7 +16,7 @@ from lib.cycloidal.housing import build_shell_body, housing_bolt_cutters
 from lib.forearm.link import stadium, x_cylinder
 from lib.geom import align_min, cylinder, hex_circumdiameter, single_solid, through
 from lib.units import NUDGE
-from lib.upper_arm.layout import arm_slide, cove_axes, hub_bolt_points, pad_holes, socket_points
+from lib.upper_arm.layout import arm_slide, cove_axes, elbow_idler_x, hub_bolt_points, pad_holes, socket_points
 from lib.upper_arm.params import DEFAULT, UpperArmConfig
 
 _FAR = 400.0   # past the part: the span of a cutter only its radius limits
@@ -47,10 +47,10 @@ def _cut_stepped_slot(body, cfg: UpperArmConfig, top: float):
 
 
 def _cut_idler_slots(body, cfg: UpperArmConfig, top: float):
-    """`body` less the elbow idler's slots (ElbowIdlerParams), on the stepped slot's line in its place, both along Z
-    between slot_z's ends: the axle's (slot_w) through the floor from the underside, and the nut's from the floor up
-    through `top` - its flats + nut_fit across X, its corners + nut_fit past each end."""
-    i, x, y0 = cfg.idler, cfg.slots.stepped_x, cfg.elbow.y0
+    """`body` less the elbow idler's slots (ElbowIdlerParams), at elbow_idler_x() in the stepped slot's place, both
+    along Z between slot_z's ends: the axle's (slot_w) through the floor from the underside, and the nut's from the floor
+    up through `top` - its flats + nut_fit across X, its corners + nut_fit past each end."""
+    i, x, y0 = cfg.idler, elbow_idler_x(cfg), cfg.elbow.y0
     (za, zb), ledge = i.slot_z, y0 + i.floor
     body = body - _slot(x, (zb - za) / 2.0, i.slot_w, y0 - NUDGE, ledge + NUDGE, (za + zb) / 2.0)
     half_x, reach = (i.nut.af + i.nut_fit) / 2.0, hex_circumdiameter(i.nut.af) / 2.0 + i.nut_fit

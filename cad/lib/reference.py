@@ -146,6 +146,7 @@ NATIVE_PARTS: set[str] = set(NATIVE) | set(NATIVE_COTS)
 # reference checks never see them. clean name -> builder label.
 NO_REFERENCE: dict[str, str] = {
     "cycloidal_shell_ring": "parts/cycloidal/cycloidal_shell_ring.py:build(DEFAULT_CONFIG)",
+    "gt2_pulley_108t": "lib/pulley/body.py:build_pulley(ELBOW)",
     "gt2_pulley_120t": "lib/pulley/body.py:build_pulley(YAW)",
     "j1_motor_leg": "lib/yaw_coupler/body.py:build_motor_leg(DEFAULT)",
     "yaw_pulley_screws": "parts/base/yaw_pulley_screws.py:_envelope()",

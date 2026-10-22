@@ -1,6 +1,6 @@
-"""PulleyParams - every dimension of the printed 90T GT2 pulley (gt2_pulley_90t: the driven pulley of the elbow and the
-wrist belts - its hub turns in the joint's lower 6806 and bolts flat onto the stub beyond it), in its part frame; YAW is
-the base_yaw belt's 120T (gt2_pulley_120t), the same pulley with more teeth.
+"""PulleyParams - every dimension of the printed 90T GT2 pulley (gt2_pulley_90t: the driven pulley of the wrist belt -
+its hub turns in the joint's lower 6806 and bolts flat onto the stub beyond it), in its part frame; ELBOW is the elbow
+belt's 108T (gt2_pulley_108t) and YAW the base_yaw belt's 120T (gt2_pulley_120t), the same pulley with more teeth.
 
 Frame (= the SolidWorks part frame of gt2_pulley_90t, which placements.json and lib/mounts.py place): origin on the axis
 at the lower flange's top (where the teeth start), +Y up the axis toward the outer face, the pulley bolts' heads sunk in
@@ -14,7 +14,7 @@ counterbore from the face for its head (DEFAULT).
 
 Two configurations of the 90T: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
 tests/test_reference_match.py); DEFAULT is what the part builds: the bolt holes at M4 clearance, the heads in
-counterbores. YAW is DEFAULT with 120 teeth (below).
+counterbores. ELBOW is DEFAULT with 108 teeth, YAW with 120 (below).
 
 Every number below was measured on the reference 2026-09-27 (face census; tests/pulley/test_gt2_pulley_90t.py re-checks
 the builds against it): [REFERENCE] unless tagged. Units mm. Frozen dataclasses; variants via dataclasses.replace.
@@ -32,6 +32,7 @@ from lib.belts import (
     GT2_PULLEY_90T_FACE_Y,
     GT2_PULLEY_90T_HEAD_SEAT,
     GT2_PULLEY_90T_TEETH,
+    GT2_PULLEY_108T_TEETH,
     GT2_PULLEY_120T_TEETH,
     pulley_od,
 )
@@ -81,12 +82,20 @@ LEGACY = PulleyParams()     # the SolidWorks part, exactly
 DEFAULT = replace(LEGACY, hole_dia=M4_CLEAR, counterbore=(M4_SHCS.head_dia + 0.4, GT2_PULLEY_90T_HEAD_SEAT))   # [DESIGN]
 
 # The base_yaw joint's driven pulley (gt2_pulley_120t): DEFAULT with GT2_PULLEY_120T_TEETH - the base_yaw ratio 6:1 on the
-# motor's 20T, where the elbow's and the wrist's 90T give 4.5:1 - and its rim's inside grown with the teeth, keeping the
+# motor's 20T, where the wrist's 90T gives 4.5:1 - and its rim's inside grown with the teeth, keeping the
 # 90T's wall under them. The hub (journal, ring, step), the web's height, the bore, the bolts and their counterbores are
 # the 90T's: it sits
 # on j1_coupler's stub in the lower base bearing the same way, clamped by the same screws.
 YAW = replace(DEFAULT, teeth=GT2_PULLEY_120T_TEETH,
               rim_dia=round(pulley_od(GT2_PULLEY_120T_TEETH) - (pulley_od(LEGACY.teeth) - LEGACY.rim_dia), 6))   # [DESIGN]
+
+# The elbow joint's driven pulley (gt2_pulley_108t): DEFAULT with GT2_PULLEY_108T_TEETH - the elbow ratio 5.4:1 on the
+# motor's 20T - grown like YAW. The most teeth the elbow belt takes with the elbow motor where it is
+# (lib/upper_arm/params.py ELBOW_MOTOR_CENTRES): on the stock ELBOW_BELT its tensioner keeps every rule of
+# tests/upper_arm/test_elbow_idler.py (110T would leave the belt 3.35 over its open loop). It sits on the elbow block's
+# stub in the lower elbow bearing as the 90T did, clamped by the same screws.
+ELBOW = replace(DEFAULT, teeth=GT2_PULLEY_108T_TEETH,
+                rim_dia=round(pulley_od(GT2_PULLEY_108T_TEETH) - (pulley_od(LEGACY.teeth) - LEGACY.rim_dia), 6))   # [DESIGN]
 
 
 @dataclass(frozen=True)

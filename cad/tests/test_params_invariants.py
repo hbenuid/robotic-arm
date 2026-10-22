@@ -18,6 +18,7 @@ def test_gt2_belt_drive():
     assert (p.GT2_PULLEY_90T_TEETH, p.GT2_PULLEY_20T_TEETH) == (90, 20)
     assert math.isclose(p.GT2_RATIO, 4.5)
     assert p.GT2_PULLEY_120T_TEETH == 120 and math.isclose(p.BASE_YAW_RATIO, 6.0)   # the base_yaw belt: 120T on the 20T
+    assert p.GT2_PULLEY_108T_TEETH == 108 and math.isclose(p.ELBOW_RATIO, 5.4)      # the elbow belt: 108T on the 20T
     assert math.isclose(p.GT2_PULLEY_90T_PITCH_DIA, 90 * 2 / math.pi)
     # the printed 90T pulley's outer diameter must sit just under its pitch diameter + tooth
     assert p.GT2_PULLEY_90T_PITCH_DIA < MANIFEST["gt2_pulley_90t"]["bbox_size"][0] < p.GT2_PULLEY_90T_PITCH_DIA + 3
@@ -151,7 +152,7 @@ def test_cycloidal_interface():
     assert (p.CYCLOIDAL_HUB_BOLT_CIRCLE, p.CYCLOIDAL_HUB_BOLT_COUNT) == (50.0, 4)
     assert (p.CYCLOIDAL_HUB_BOLT_ANGLE_OFFSET_DEG, p.CYCLOIDAL_HUB_BOLT_DIA) == (45.0, 4.0)
     assert (p.CYCLOIDAL_SHELL_BOLT_CIRCLE, p.CYCLOIDAL_SHELL_BOLT_COUNT) == (117.0, 6)
-    assert p.ELBOW_BELT_LENGTH == 280
+    assert p.ELBOW_BELT_LENGTH == 300
 
 
 def test_cycloidal_config_agrees_with_nema17_constants():
