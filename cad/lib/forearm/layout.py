@@ -6,7 +6,7 @@ import math
 from lib.belts import GT2_IDLER_WIDTH, GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, idler_on_run, pulley_circle
 from lib.fasteners import M3_PITCH
 from lib.forearm.params import DEFAULT, ForearmConfig
-from lib.motors import MKS_PLUG_ROOM, MKS_SERVO42D_HEADERS
+from lib.motors import MKS_SERVO42D_HEADERS
 from lib.units import NUDGE
 
 
@@ -159,44 +159,44 @@ def module_frame_in_host(cfg: ForearmConfig = DEFAULT) -> tuple:
 def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
     """Module-frame stations of the roll drive (RollDriveParams; the frame, the shaft and the pulley builders emit their
     geometry at these stations, their rows at 0). From the forearm wall back: the ring's front face on the wall, the
-    ring, bearing 2 right under it (the bearing boss's top), the lip, bearing 1 (the tower's rear face), the shaft behind it -
-    its rear face at the rotor clamp's tips -, the bay, the tower's rear; the motor's face where its 20T meets the
-    ring (pulley_seat), the plate in front of it - its face the block's front face, the motor screws' heads flush in it.
-    The elbow axis runs along X at y = y_elbow, under the tower at
-    z = 0; the motor sits on it. Every number a row or a test needs comes from here."""
+    ring, bearing 2 right under it (the bearing boss's top), the lip (the spacer between the outer rings), bearing 1 - the
+    pulley's neck meets the shaft at its front face -, the shaft behind it - its rear face at the rotor clamp's tips -,
+    the bay bored on through the back past the tower's rear (tower_rear, the outline's); the motor's face where its 20T
+    meets the ring (pulley_seat), the plate in front of it - its face the block's front face, the motor screws' heads
+    flush in it. The elbow axis runs along X at y = y_elbow, under the tower at z = 0; the motor sits on it. Every number
+    a row or a test needs comes from here."""
     d, w = cfg.drive, cfg.roll_end
     z_wall = -w.wall_x[1]                                         # 48: the forearm wall's elbow face = the ring's front face
     z_ring = z_wall - d.ring_flange_t - d.ring_width              # 39.8: the teeth
     z_ring_flange_1 = z_ring - d.ring_flange_t                    # 38.6: the ring's rear flange
     z_boss = z_ring_flange_1 - d.run_gap                          # 37.6: the bearing boss's top = bearing 2's front face
     z_bearing_2 = z_boss - d.bearing_width                        # 30.6
-    z_lip = z_bearing_2 - d.lip                                   # 28.6
-    z_bearing_1 = z_lip - d.bearing_width                         # 21.6: the tower's rear face
+    z_lip = z_bearing_2 - d.lip                                   # 18.6: the spacer's rear = bearing 1's front face
+    z_bearing_1 = z_lip - d.bearing_width                         # 11.6: the seat's rear, into the bay
     z_wall_back = -w.wall_x[0]                                    # 56: the wall's wrist face = its screws' heads
     z_end_tip = z_wall_back - w.screw_len                         # 40: their tips, in the pulley's core
     z_end_nut = z_end_tip + 2 * M3_PITCH                          # 41: each nut's far face, 2 pitches short of the tip
     z_spigot_end = z_wall + w.flange_recess_depth                 # 50: the pulley's front face
     z_clamp_head = z_spigot_end - d.clamp_screw.head_h - d.clamp_head_clear   # 46.8: the clamp's counterbores' floor
-    z_shaft_end = z_clamp_head - d.clamp_screw_len                # 11.8: the clamp's tips = the shaft's rear face
-    z_clamp_nut = z_shaft_end + 2 * M3_PITCH                      # 12.8: each clamp nut's far face
-    z_meet = z_lip + d.lip / 2.0                                  # 29.6: the shaft's hub meets the pulley's, in the lip's middle
-    z_bay = z_shaft_end - (z_meet - z_bearing_1) - d.bay_clear    # 2.75: the bay's floor - room to slide the shaft in
+    z_shaft_end = z_clamp_head - d.clamp_screw_len                # 1.8: the clamp's tips = the shaft's rear face
+    z_clamp_nut = z_shaft_end + 2 * M3_PITCH                      # 2.8: each clamp nut's far face
+    z_meet = z_lip                                                # 18.6: the pulley's neck meets the shaft's journal at bearing 1's front face
     z_ring_mid = z_ring + d.ring_width / 2.0                      # 43.3
     z_motor_face = z_ring_mid - d.t20                             # 26.85: the 20T's teeth level with the ring's, its hub pulley_seat over the pilot boss
     z_front = z_motor_face + d.pad_t                              # 33.85: the plate's front face = the block's front face
     z_idler = z_ring_mid - GT2_IDLER_WIDTH / 2.0                  # 38.8: the idler's underside (its channel on the belt) = the riser's land
     return {
         "z_block": 0.0, "z_shaft": 0.0, "z_pulley": 0.0,
-        "z_tower_rear": z_bay - d.tower_wall,                     # 0.75: the tower's rear in the profile
-        "z_bay": z_bay, "z_shaft_end": z_shaft_end,
+        "z_tower_rear": d.tower_rear,                             # 0.75: the tower's rear in the profile (the rear line's anchor)
+        "z_shaft_end": z_shaft_end,
         "z_clamp_nut": z_clamp_nut,
-        "z_clamp_nut_seat": z_clamp_nut + d.clamp_nut.h,          # 15.2: its bearing face, toward the pulley
+        "z_clamp_nut_seat": z_clamp_nut + d.clamp_nut.h,          # 5.2: its bearing face, toward the pulley
         "z_clamp_head": z_clamp_head,
         "z_end_tip": z_end_tip, "z_end_nut": z_end_nut,
         "z_end_nut_seat": z_end_nut + d.end_nut.h,                # 43.4: each wall nut's bearing face, toward the wall
-        "z_stop_lug": z_shaft_end,                                # 11.8 .. +stop_lug_t on the shaft's flange
-        "z_stop_post": z_bearing_1 - d.stop_post_t,               # 16.8 .. 21.6 on the tower's rear face
-        "z_shoulder_1": z_bearing_1 - d.run_gap,                  # 20.6: the shaft's Ø33 shoulder on bearing 1's inner ring
+        "z_stop_lug": z_shaft_end,                                # 1.8 .. +stop_lug_t on the shaft's flange
+        "z_stop_post": z_bearing_1 - d.stop_post_t,               # 6.8 .. 11.6 on the tower's face behind bearing 1
+        "z_shoulder_1": z_bearing_1 - d.run_gap,                  # 10.6: the shaft's Ø33 shoulder on bearing 1's inner ring
         "z_bearing_1": z_bearing_1, "z_lip": z_lip,
         "z_meet": z_meet,
         "z_bearing_2": z_bearing_2, "z_boss": z_boss,
@@ -215,38 +215,60 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
         "y_elbow": d.elbow_y,                                     # -74: the elbow axis (along X)
         "x_motor": 0.0, "y_motor": d.motor_y,                     # on the elbow axis
         "x_cradle": d.block_x[0] + d.web_t,                       # -23: the pocket's floor
+        "x_side": d.block_x[1] - d.side_t,                        # 23: the side wall's inside, the pocket's other side
     }
 
 
 def motor_pocket(cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float, float]:
-    """(y0, y1, z0, z1) of the motor's pocket in the frame (from the floor, x_cradle, out through the open +N face): the
-    motor and its board (the wider: the board's cover) + pocket_clear; from pocket_rear behind the board's cover to the
-    plate (the motor's face)."""
+    """(y0, y1, z0, z1) of the motor's pocket in the frame (between the floor, x_cradle, and the side wall, x_side): the
+    motor and its board (the wider: the board's cover) + pocket_clear - y0 its edge at the motor; the frame cuts it on
+    down out through the octagon's bottom (the motor slides up into it) -; from pocket_rear behind the board's cover to
+    the plate (the motor's face)."""
     d, S = cfg.drive, stack_positions(cfg)
     half = max(d.motor.body_width, d.board_w) / 2.0 + d.pocket_clear
     return (S["y_motor"] - half, S["y_motor"] + half, S["z_motor_board"] - d.board_stack - d.pocket_rear, S["z_motor_face"])
 
 
-def plug_slots(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float, float, float, float, float]]:
-    """(x0, x1, y0, y1, z0, z1) of the two plug slots off the motor's pocket, one at each of the MKS board's side headers
-    (lib/motors.py MKS_SERVO42D_HEADERS, the board turned motor_spin_deg with the motor): plug_clear round the header's
-    outline, from its face along Y MKS_PLUG_ROOM past it and plug_spare more, and from the header up through the open +N
-    face."""
+def side_headers(cfg: ForearmConfig = DEFAULT) -> dict[str, tuple[tuple[float, ...], int]]:
+    """The MKS board's two side headers in the module frame, the board turned motor_spin_deg with the motor (lib/motors.py
+    MKS_SERVO42D_HEADERS): name -> ((x0, x1, y0, y1, z0, z1), the way its plug goes in along X: +1 / -1)."""
     d, S = cfg.drive, stack_positions(cfg)
     a = math.radians(d.motor_spin_deg)
     c, s = round(math.cos(a)), round(math.sin(a))      # the board's quarter turn about the motor axis
-    slots = []
+    out = {}
     for name in ("side_neg_x", "side_pos_x"):
         (x0, y0, z0, x1, y1, z1), (ux, uy) = MKS_SERVO42D_HEADERS[name]
         xs = [S["x_motor"] + c * x - s * y for x in (x0, x1) for y in (y0, y1)]
         ys = [S["y_motor"] + s * x + c * y for x in (x0, x1) for y in (y0, y1)]
-        out = s * ux + c * uy                            # the plug's way in, turned: along Y (+1 / -1)
-        assert c * ux - s * uy == 0 and abs(out) == 1, "the side plugs face along Y"
-        face = max(ys) if out > 0 else min(ys)
-        reach = face + out * (MKS_PLUG_ROOM[name] + d.plug_spare)
-        slots.append((min(xs) - d.plug_clear, d.block_x[1] + NUDGE, min(face, reach), max(face, reach),
-                      S["z_motor_board"] + z0 - d.plug_clear, S["z_motor_board"] + z1 + d.plug_clear))
-    return slots
+        way = c * ux - s * uy                            # the plug's way in, turned: along X (+1 / -1)
+        assert s * ux + c * uy == 0 and abs(way) == 1, "the side plugs face along X, at the walls"
+        out[name] = ((min(xs), max(xs), min(ys), max(ys), S["z_motor_board"] + z0, S["z_motor_board"] + z1), way)
+    return out
+
+
+def plug_slots(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float, float, float, float, float]]:
+    """(x0, x1, y0, y1, z0, z1) of the two plug grooves, one inside each wall (the side wall, the floor) at the MKS
+    board's side headers (side_headers): from the pocket out to plug_skin inside the frame's face, from the header's top
+    (plug_clear over it) down out through the octagon's bottom, plug_clear round the header's z - and motor_drop more
+    behind it, for the slide: the motor + board slide up with the cables plugged, each cable bent straight down at its
+    plug into its groove."""
+    d, S = cfg.drive, stack_positions(cfg)
+    grooves = []
+    for (_x0, _x1, _y0, y1, z0, z1), way in side_headers(cfg).values():
+        x = (S["x_side"] - NUDGE, d.block_x[1] - d.plug_skin) if way > 0 else (d.block_x[0] + d.plug_skin, S["x_cradle"] + NUDGE)
+        bottom = S["y_elbow"] - d.end_r - 1.0           # past the octagon's bottom flat
+        grooves.append((*x, bottom, y1 + d.plug_clear, z0 - d.plug_clear - d.motor_drop, z1 + d.plug_clear))
+    return grooves
+
+
+def side_plug_room(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
+    """The straight room each side plug has out from its header's face to its groove's skin - less than MKS_PLUG_ROOM
+    straight out: each cable bends straight down at its plug, along its groove."""
+    d = cfg.drive
+    room = {}
+    for name, ((x0, x1, *_), way) in side_headers(cfg).items():
+        room[name] = (d.block_x[1] - d.plug_skin - x1) if way > 0 else (x0 - (d.block_x[0] + d.plug_skin))
+    return room
 
 
 def pad_bolt_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:

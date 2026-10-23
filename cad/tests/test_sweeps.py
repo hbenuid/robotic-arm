@@ -28,6 +28,7 @@ from lib import params as PARAMS
 from lib.cycloidal import DEFAULT_CONFIG as DRIVE
 from lib.datum import BASE_BOTTOM_Y
 from lib.forearm import DEFAULT as FOREARM
+from lib.forearm import side_plug_room
 from lib.wrist import DEFAULT as WRIST
 from lib.yaw_coupler.params import RIM_CLEAR
 from robot import frames as F
@@ -361,14 +362,17 @@ def _chain(link: str, q: dict) -> tuple:
 
 def _plug_rooms(link: str) -> list:
     """(label, room in W) of every MKS board's three plugs on a robot link: each header's outline carried MKS_PLUG_ROOM
-    straight out from its face (lib/motors.py), on the board as its mount turned it."""
+    straight out from its face (lib/motors.py), on the board as its mount turned it - but the forearm roll board's two
+    side plugs, which face its frame's walls: each cable bends straight down at its plug into a groove, so their room is
+    the straight room the grooves leave (lib/forearm/layout.py side_plug_room)."""
+    bent = side_plug_room(FOREARM)
     rooms = []
     for key in F.LINKS[link]:
-        for part, _role, world in world_rows(key):
+        for part, role, world in world_rows(key):
             if part != "mks_servo42d":
                 continue
             for name, ((x0, y0, z0, x1, y1, z1), (ux, uy)) in PARAMS.MKS_SERVO42D_HEADERS.items():
-                d = PARAMS.MKS_PLUG_ROOM[name]
+                d = bent[name] if role == "forearm_roll" and name in bent else PARAMS.MKS_PLUG_ROOM[name]
                 xa, xb = ((x1, x1 + d) if ux > 0 else (x0 - d, x0)) if ux else (x0, x1)
                 ya, yb = ((y1, y1 + d) if uy > 0 else (y0 - d, y0)) if uy else (y0, y1)
                 room = Solid.make_box(xb - xa, yb - ya, z1 - z0).moved(Location((xa, ya, z0)))
@@ -448,7 +452,8 @@ def test_the_mks_boards_keep_their_plug_room(link):
     """Every MKS board's three plugs keep MKS_PLUG_ROOM straight out from their headers (lib/motors.py) at every pose:
     nothing of the board's own link in the rooms, nor of the links that move relative to it over their joints' ranges
     (_PLUG_SWEEPS; poses with a part they turn down in the table skipped). The boards' quarter turns on their motors
-    (lib/mounts.py BOARD_TURNS) and the roll frame's plug slots (lib/forearm/layout.py plug_slots) keep them clear.
+    (lib/mounts.py BOARD_TURNS) and the roll frame's open bottom and plug grooves (lib/forearm/layout.py plug_slots) keep
+    them clear.
     Each link is posed once per angles of the joints that turn it, and a part's optimal bounding box is made only where
     its holder (`_holder`) cannot decide - once per pose of its link."""
     rooms = _plug_rooms(link)

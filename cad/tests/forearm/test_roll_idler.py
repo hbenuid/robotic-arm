@@ -2,8 +2,8 @@
 longer than the open loop at the drive's design centre distance, so an idler (gt2_idler_20t) on its back, on the run
 back from the ring, takes up the rest (lib/forearm/layout.py roll_belt_loop, roll_idler_xy). It stands on a riser on
 the roll frame's front face - the riser's land under the idler's bearing inner ring - on an M5 (roll_idler_screw) down
-through the riser's slot into a nut (roll_idler_nut) in a channel from the frame's open +N face: the slot and the
-channel along module X, +/- travel. The axle and the nut are purchased parts with no reference (lib/reference.py
+through the riser's slot into a nut (roll_idler_nut) in a channel under the face, closed at both ends, the nut in from
+the motor's pocket: the slot and the channel along module X, +/- travel. The axle and the nut are purchased parts with no reference (lib/reference.py
 NO_REFERENCE), so THIS file locks their numbers (pieces, the modelled volume and the bounding box, measured on the
 build and written in). The idler keeps clear of the belt's far run, the ring's flange and the 20T's hub at its place
 and at its slot's deep end; the riser, the slot and the channel are probed on the frame; the kit fits in the module."""
@@ -76,19 +76,21 @@ def test_the_idler_clears_the_far_run_the_ring_and_the_20t(push):
 
 def test_the_riser_the_screw_and_the_nut():
     """The idler level with the belt on the riser's land; the screw's head on the idler's top, the shank through the
-    riser and the roof into the nut, its tip 2 pitches or more past the nut and inside its hole; the nut's bearing face
-    on the channel's roof, the channel 2.5 or more off the motor's pocket, under the front face; the riser 3 mm or more
-    round the slot."""
+    riser and the roof into the nut, its tip 2 pitches or more past the nut and inside its hole, its hole clear of the
+    shaft's bay; the nut's bearing face on the channel's roof, the channel 2.5 or more off the motor's pocket, under the
+    front face, the nut's way in from the pocket starting entry inside its top edge, over the motor's face; the riser 3 mm
+    or more round the slot."""
     assert S["z_idler"] + GT2_IDLER_WIDTH / 2.0 == pytest.approx(S["z_ring_mid"])
     assert S["z_idler"] - I.land_h > S["z_front"] and I.land_w < I.riser_w and I.slot_w < I.land_w
     assert (I.riser_w - I.slot_w) / 2.0 >= 3.0
     tip = S["z_idler_top"] - I.screw_len
     nut_far = S["z_idler_roof"] - I.nut.h
-    assert nut_far - tip >= 2 * PARAMS.M5_PITCH and tip - I.tip_clear > S["z_bay"]
+    ix, iy = roll_idler_xy()
+    assert nut_far - tip >= 2 * PARAMS.M5_PITCH and math.hypot(abs(ix) + I.travel, iy) - I.slot_w / 2.0 >= D.bay_r + 5.0
     assert S["z_idler_roof"] == pytest.approx(S["z_front"] - I.roof) and I.roof >= 3.0
     _y0, y1, _z0, _z1 = motor_pocket(DEFAULT)
-    _ix, iy = roll_idler_xy()
     assert iy - (I.nut.af / 2.0 + I.nut_fit) - y1 >= 2.5
+    assert y1 - I.entry < S["y_motor"] + D.motor.body_width / 2.0 < y1   # the way in starts under the motor's face, which shuts it
     assert iy + I.riser_w / 2.0 < -D.bearing_boss_dia / 2.0 - 5.0      # the riser off the bearing boss
 
 
@@ -127,11 +129,19 @@ def test_the_riser_slot_and_channel_on_the_frame(module):
         for z in (z_land, z_riser, S["z_front"] - 1.0, S["z_idler_top"] - I.screw_len - I.tip_clear + 0.5):
             assert not is_inside(block, x, iy, z), (x, z)
     assert not is_inside(block, ix, iy, S["z_idler"] + 0.5)
-    # the nut's channel: open from the +N face to past the slot's far end, the roof over it
+    # the nut's channel: past the slot's ends both ways, closed beyond them (the side face whole), the roof over it; the
+    # nut's way in from the motor's pocket along +Y into it
     z_nut = S["z_idler_roof"] - I.nut.h / 2.0
-    for x in (ix - I.travel, D.block_x[1] - 0.5):
+    reach = I.travel + I.nut.af / math.sqrt(3.0) + I.nut_fit
+    for x in (ix - I.travel, ix + I.travel):
         assert not is_inside(block, x, iy + I.nut.af / 2.0, z_nut) and is_inside(block, x, iy + I.nut.af / 2.0 + I.nut_fit + 0.5, z_nut)
-    assert is_inside(block, 20.0, iy, S["z_idler_roof"] + I.roof / 2.0)
+    for x in (ix - reach - 0.5, ix + reach + 0.5, D.block_x[1] - 0.5):
+        assert is_inside(block, x, iy, z_nut), x
+    assert is_inside(block, ix + reach - 1.0, iy, S["z_idler_roof"] + I.roof / 2.0)
+    _y0, y1, _z0, _z1 = motor_pocket(DEFAULT)
+    for y in (y1 - I.entry + 0.5, (y1 + iy) / 2.0):
+        assert not is_inside(block, ix, y, z_nut), y
+    assert is_inside(block, ix, y1 - I.entry - 0.5, S["z_motor_face"] + 0.5)
 
 
 @pytest.mark.slow
