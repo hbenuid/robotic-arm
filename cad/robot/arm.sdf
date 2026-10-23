@@ -141,11 +141,11 @@
     <link name="wrist_pitch_link">
       <pose relative_to="wrist_pitch">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.000654 -0.009606 0.014245 0 0 0</pose>
+        <pose>0.000654 0.009587 0.014245 0 0 0</pose>
         <mass>0.487734</mass>
         <inertia>
-          <ixx>5.770768e-04</ixx><ixy>2.785436e-05</ixy><ixz>-4.143470e-06</ixz>
-          <iyy>3.625183e-04</iyy><iyz>5.659935e-05</iyz><izz>3.765258e-04</izz>
+          <ixx>5.773343e-04</ixx><ixy>-2.814436e-05</ixy><ixz>-4.143395e-06</ixz>
+          <iyy>3.625179e-04</iyy><iyz>-5.650043e-05</iyz><izz>3.767836e-04</izz>
         </inertia>
       </inertial>
       <visual name="wrist_pitch_link_visual">
@@ -280,7 +280,7 @@
       <axis>
         <xyz expressed_in="elbow_pitch">0 0 1</xyz>
         <limit>
-          <lower>-0.820305</lower><upper>1.570796</upper>
+          <lower>-0.820305</lower><upper>2.513274</upper>
           <effort>5</effort><velocity>1</velocity>
         </limit>
       </axis>
@@ -304,13 +304,13 @@
       <axis>
         <xyz expressed_in="wrist_pitch">0 0 1</xyz>
         <limit>
-          <lower>-1.291544</lower><upper>2.181662</upper>
+          <lower>-2.617994</lower><upper>0.663225</upper>
           <effort>5</effort><velocity>1</velocity>
         </limit>
       </axis>
     </joint>
     <joint name="wrist_roll" type="revolute">
-      <pose relative_to="wrist_pitch_link">0.026448 -0.048578 0.027003 -1.570799 -0.055534 -1.570796</pose>
+      <pose relative_to="wrist_pitch_link">0.026448 0.048588 0.027002 -1.570799 -0.055534 -1.570796</pose>
       <parent>wrist_pitch_link</parent>
       <child>wrist_roll_link</child>
       <axis>

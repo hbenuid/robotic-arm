@@ -2,8 +2,9 @@
 elbow motor + board, the cycloidal drive's turning shell - stays off the j1_coupler fork that holds the drive and off
 the base; along the shoulder's upper limit - the arm pitched down in front - the parts beyond the elbow (the forearm
 roll drive's motor + board first) stay off the base and the shoulder over the elbow's whole range; at the wrist_pitch
-limits the wrist body and the gripper stay off the forearm at any roll; at the elbow's limits the forearm, the wrist and
-the gripper stay off the upper arm at any roll and wrist pitch; at any yaw the arm at the shoulder's limits stays off the
+limits the wrist body and the gripper stay off the forearm at any roll; at the elbow's limits the forearm and the wrist
+stay off the upper arm at any roll and wrist pitch, the gripper too up to ELBOW_GRIPPER_FREE_DEG (folded further it is
+the planner's); at any yaw the arm at the shoulder's limits stays off the
 base (its motor mount stands out on one side); the forearm and the wrist roll's limits stop short of their printed hard
 stops; the gripper rolls clear of the wrist roll drive's frame and the forearm; every MKS board's plugs keep their room
 in front of their headers over the joints' ranges (an overlap, not a distance: `_plug_overlap`).
@@ -232,20 +233,24 @@ def test_the_wrist_pitch_limits_keep_the_wrist_off_the_forearm():
             assert d >= CLEAR, f"wrist {wrist}, roll {roll}: {ml} {d:.2f} mm from {fl}"
 
 
-def test_the_elbow_limits_keep_the_forearm_and_the_gripper_off_the_upper_arm():
-    """The forearm, the wrist and the gripper, at any forearm roll and wrist pitch, stay 1 mm off the upper arm, the
-    shoulder and the base at the elbow's limits (the roll drive's frame, which turns with the elbow but not the roll:
-    tests/forearm/test_roll_drive.py). Those are turned the other way about the elbow axis instead, so one posed forearm
-    per roll and wrist pitch serves both limits."""
-    beyond = [link for link in BEYOND_ELBOW if link != "elbow_link"]
+def test_the_elbow_limits_keep_the_forearm_and_the_wrist_off_the_upper_arm():
+    """The forearm and the wrist body (wrist_pitch_link: the wrist roll drive's frame round its pancake), at any forearm
+    roll and wrist pitch, stay 1 mm off the upper arm, the shoulder and the base at the elbow's limits (the roll drive's
+    frame, which turns with the elbow but not the roll: tests/forearm/test_roll_drive.py); the gripper too at the lower
+    limit and folded up to ELBOW_GRIPPER_FREE_DEG - folded further, a wrist bent down or the forearm rolled can put it
+    into the upper arm or the shoulder, and the planner keeps it out (docs/open_issues.md). The behind links are turned
+    the other way about the elbow axis instead, so one posed forearm per roll and wrist pitch serves every fold."""
+    lo, hi = PARAMS.ELBOW_PITCH_LIMITS_DEG
     behind = _link_parts("upper_arm_link") + _link_parts("shoulder_link") + _link_parts("base_link")
-    folded = {elbow: _boxed(_posed(behind, ("elbow_pitch", -elbow))) for elbow in PARAMS.ELBOW_PITCH_LIMITS_DEG}
+    folded = {elbow: _boxed(_posed(behind, ("elbow_pitch", -elbow))) for elbow in (lo, PARAMS.ELBOW_GRIPPER_FREE_DEG, hi)}
     roll = PARAMS.FOREARM_ROLL_LIMIT_DEG
     for r in (-roll, -90.0, 0.0, 90.0, roll):
         for w in PARAMS.WRIST_PITCH_LIMITS_DEG:
-            movers = _boxed(_at(beyond, {"forearm_roll": r, "wrist_pitch": w}))
+            q = {"forearm_roll": r, "wrist_pitch": w}
+            arm = _boxed(_at(["forearm_link", "wrist_pitch_link"], q))
+            gripper = _boxed(_at(["wrist_roll_link", "jaw_a_link", "jaw_b_link"], q))
             for elbow, fixed in folded.items():
-                d, ml, fl = _closest(movers, fixed, CLEAR)
+                d, ml, fl = _closest(arm if elbow == hi else arm + gripper, fixed, CLEAR)
                 assert d >= CLEAR, f"elbow {elbow}, roll {r}, wrist {w}: {ml} {d:.2f} mm from {fl}"
 
 
@@ -413,8 +418,11 @@ _PLUG_SWEEPS = {
         (("upper_arm_link",), [{}]),
         (("shoulder_link", "base_link"), _grid(base_yaw=[0.0, 90.0, 180.0], shoulder_pitch=_steps(*_SH, 15))),
         (("elbow_link",), _grid(elbow_pitch=_steps(*_EL, 5))),
-        (BEYOND_ELBOW[1:], _grid(elbow_pitch=_steps(*_EL, 15), forearm_roll=_steps(-_FR, _FR, 45),
-                                 wrist_pitch=[_WR[0], 0.0, _WR[1]]))],
+        (("forearm_link", "wrist_pitch_link"), _grid(elbow_pitch=_steps(*_EL, 15), forearm_roll=_steps(-_FR, _FR, 45),
+                                                     wrist_pitch=[_WR[0], 0.0, _WR[1]])),
+        # the gripper up to ELBOW_GRIPPER_FREE_DEG: folded further, the planner keeps it off the upper arm
+        (BEYOND_ELBOW[3:], _grid(elbow_pitch=_steps(_EL[0], PARAMS.ELBOW_GRIPPER_FREE_DEG, 15),
+                                 forearm_roll=_steps(-_FR, _FR, 45), wrist_pitch=[_WR[0], 0.0, _WR[1]]))],
     "elbow_link": [
         (("elbow_link",), [{}]),
         (("upper_arm_link", "shoulder_link"), _grid(elbow_pitch=_steps(*_EL, 10))),

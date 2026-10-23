@@ -11,8 +11,8 @@ through bearing 2, the face gripper_j3_connector bolts to - 4x M3 into nuts in i
 a collar: its hub through bearing 1 to the pulley's, the rotor clamp's nuts and the stop lug in its flange), clamped by
 4x M3 from the pulley's face; the gripper servo's cable runs through both. MODULE FRAME (lib/wrist/params.py
 WristRollParams): origin on the roll axis R' at the pitch axis' station, +Z along R' toward the gripper, +X away from
-the plate (wrist_link's -Z), +Y from the pancake toward R', the pitch axis along X at y_motor (the arm's wrist offset
-across R'); the arm places it through lib/mounts.py MODULE_MOUNTS ("wrist_roll_drive#1" on wrist_link#1). Every
+the plate (wrist_link's -Z), +Y = wrist_link's +Y (R' on the pancake's `side`), the pitch axis along X at y_motor (the
+arm's wrist offset across R'); the arm places it through lib/mounts.py MODULE_MOUNTS ("wrist_roll_drive#1" on wrist_link#1). Every
 station comes from lib/wrist stack_positions() - never type one here. Gear ratio 40 / 20 = 2 (WRIST_ROLL_RATIO) on the
 belt (wrist_roll_belt, WRIST_ROLL_BELT_LENGTH); the rotor clamp's and the connector's M3 screws + nuts and the
 pancake's M3 are tools/bom.py EXTRAS.
@@ -52,7 +52,7 @@ OCCURRENCES = [
     ("nema17_pancake",        "wrist_roll", pancake_location(DEFAULT)),
     ("mks_servo42d",          "wrist_roll", ((S["x_motor"], S["y_motor"], S["z_motor_rear"]), (0.0, 0.0, DEFAULT.roll.motor_spin_deg))),
     ("gt2_pulley_20t",        "wrist_roll", ((S["x_motor"], S["y_motor"], S["z_20t"]), (0.0, -90.0, 0.0))),   # hub face pulley_seat over the pilot, bore axis along +Z
-    ("wrist_roll_belt",       "wrist_roll", ((S["x_motor"], S["y_motor"], S["z_ring_mid"]), (0.0, 0.0, 90.0))),   # the 20T to the 40T: its frame's +X along module +Y
+    ("wrist_roll_belt",       "wrist_roll", ((S["x_motor"], S["y_motor"], S["z_ring_mid"]), (0.0, 0.0, 90.0 * DEFAULT.roll.side))),   # the 20T to the 40T: its frame's +X toward R'
 ]
 
 # The module's rigid bodies (robot/frames.py LINKS: "wrist_roll_drive#1:stator" in wrist_pitch_link, ":rotor" in
