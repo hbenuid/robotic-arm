@@ -18,6 +18,7 @@ from lib.wrist.layout import (
     clamp_points,
     connector_bolt_points_module,
     face_nut_pocket,
+    frame_y_span,
     module_frame_in_host,
     motor_pocket,
     pad_bolt_points,
@@ -33,14 +34,14 @@ def module_to_host(cfg: WristConfig = DEFAULT) -> bd.Location:
 
 def profile(cfg: WristConfig = DEFAULT):
     """The frame's outline seen along R', as (module x, module y): the hull of a circle about R' (frame_r - the open +X
-    face and the tower's far side) and the pocket's box with its far wall, from the plate's coupler face (x_coupler: the
-    frame runs down through the plate) up."""
+    face and the tower's far side) and the pocket's box with its far wall (frame_y_span: on the motor's side of R'), from
+    the plate's coupler face (x_coupler: the frame runs down through the plate) up."""
     d, S = cfg.roll, stack_positions(cfg)
-    y_far = motor_pocket(cfg)[0] - d.pocket_wall
+    y_far = frame_y_span(cfg)[0 if d.side > 0 else 1]
     tower = bd.Circle(d.frame_r)
-    side = bd.Pos((S["x_coupler"] + d.frame_r) / 2.0, y_far / 2.0) * bd.Rectangle(d.frame_r - S["x_coupler"], -y_far)
+    side = bd.Pos((S["x_coupler"] + d.frame_r) / 2.0, y_far / 2.0) * bd.Rectangle(d.frame_r - S["x_coupler"], abs(y_far))
     hull = bd.make_hull((tower + side).edges())
-    above = bd.Pos(S["x_coupler"], 0.0) * bd.Rectangle(4.0 * d.frame_r, -4.0 * y_far, align=(bd.Align.MIN, bd.Align.CENTER))
+    above = bd.Pos(S["x_coupler"], 0.0) * bd.Rectangle(4.0 * d.frame_r, 4.0 * abs(y_far), align=(bd.Align.MIN, bd.Align.CENTER))
     return hull & above
 
 

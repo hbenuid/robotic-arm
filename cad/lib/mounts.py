@@ -462,9 +462,9 @@ MODULE_MOUNTS: tuple[ModuleMount, ...] = (
                 "elbow coupler: its stub turns in j1_link's bore and the elbow 108T bolts into it (j3_coupler#1 retired, "
                 "lib/placements.py RETIRED)"),
     ModuleMount("wrist_roll_drive#1", "wrist_roll_drive", "wrist_link#1", "wrist_roll", wrist_module_frame_in_host(),
-                "the wrist roll drive on wrist_link's roll axis R' (WRIST_ROLL_OFFSET along +Y from the pitch axis, "
-                "WRIST_ROLL_AXIS_H over the plate's coupler face): module +Z = host +X toward the gripper, module +X = host -Z "
-                "(away from the plate), +Y = host +Y (from the pancake toward R'); wrist_link IS its frame (the stator), the "
+                "the wrist roll drive on wrist_link's roll axis R' (WRIST_ROLL_OFFSET along -Y from the pitch axis - "
+                "WristRollParams.side -, WRIST_ROLL_AXIS_H over the plate's coupler face): module +Z = host +X toward the "
+                "gripper, module +X = host -Z (away from the plate), +Y = host +Y (from R' toward the pancake); wrist_link IS its frame (the stator), the "
                 "pancake and its 20T replace nema17_pancake#1 / gt2_pulley_20t#1 (lib/placements.py RETIRED); beyond the "
                 "forearm's turn, it turns with wrist_link", turned=True),
 )

@@ -57,8 +57,15 @@ def test_module_frame_and_record():
     assert abs(zw.dot(Vector(*F.WRIST_ROLL_AXIS)) - 1.0) < 1e-6
     assert _offset_from_line(tuple(world.position), F.WRIST_ROLL_ORIGIN, F.WRIST_ROLL_AXIS) < 0.01
     # the wrist offset: R' the belt's centre distance from the pitch axis (perpendicular to both) - the pancake on it
-    assert PARAMS.WRIST_ROLL_OFFSET == D.centre_distance == -S["y_motor"] > 40.0
+    assert PARAMS.WRIST_ROLL_OFFSET == D.centre_distance == -D.side * S["y_motor"] > 40.0
     assert _offset_from_line(tuple(world.position), F.WRIST_PITCH_ORIGIN, F.WRIST_PITCH_AXIS) == pytest.approx(D.centre_distance, abs=0.01)
+    # ... on the pitch axis' outer side (D.side): away from where the wrist swings as the elbow folds (elbow_pitch +)
+    elbow = F.JOINT_BY_NAME["elbow_pitch"]
+    swing = Vector(*elbow.axis_w).cross(Vector(*F.WRIST_PITCH_ORIGIN) - Vector(*elbow.origin_w))
+    pitch = Vector(*F.WRIST_PITCH_AXIS)
+    across = world.position - Vector(*F.WRIST_PITCH_ORIGIN)
+    across = across - pitch * across.dot(pitch)
+    assert D.side == -1.0 and across.dot(swing.normalized()) < -30.0
     motor = (world * Location((S["x_motor"], S["y_motor"], 0.0))).position
     assert _offset_from_line(tuple(motor), F.WRIST_PITCH_ORIGIN, F.WRIST_PITCH_AXIS) < 0.01
     # and the SolidWorks roll axis through the wrist centre, parallel: off it across the plate and along its normal
@@ -93,10 +100,11 @@ def test_stack():
     # the bay: room to slide the shaft in, the plate's coupler face 4+ mm under it, bearing 1 through it with the shaft
     assert S["z_bay"] == pytest.approx(S["z_shaft_end"] - (S["z_meet"] - S["z_bearing_1"]) - D.bay_clear)
     assert -D.bay_r - S["x_coupler"] >= 4.0 and D.bay_r > D.bearing_od / 2.0 + 1.0 and D.bay_r >= D.stop_lug_r[1] + 1.0
-    # the pocket: round the body and the tension travel, clear of the tower's seats
-    _, y1, z0, _ = motor_pocket(DEFAULT)
+    # the pocket: round the body and the tension travel, clear of the tower's seats (its edge toward R', on D.side)
+    y0, y1, z0, _ = motor_pocket(DEFAULT)
     assert y1 - S["y_motor"] == p.body_w / 2.0 + D.pad_slot_len / 2.0 + D.pocket_clear
-    assert -y1 >= (D.bearing_od + D.seat_add) / 2.0 + 2.0 and -y1 >= D.bay_r + 1.5
+    near = -D.side * (y1 if D.side > 0 else y0)
+    assert near >= (D.bearing_od + D.seat_add) / 2.0 + 2.0 and near >= D.bay_r + 1.5
     # behind it no wall: the MKS board's window - its housing + the tension travel + board_clear, from in front of the
     # pancake's rear face (where the housing starts) out through the frame's rear - 1.5+ off the shaft's bay too; the
     # board's back behind the frame
@@ -104,7 +112,8 @@ def test_stack():
     assert (D.board_w, D.board_stack) == (PARAMS.MKS_SERVO42D_W, PARAMS.MKS_SERVO42D_STACK) and D.board_w > p.body_w
     half = D.board_w / 2.0 + D.pad_slot_len / 2.0 + D.board_clear
     assert w1 - S["y_motor"] == pytest.approx(half) and S["y_motor"] - w0 == pytest.approx(half)
-    assert -w1 >= D.bay_r + 1.5 and w1 > y1
+    w_near, p_near = (w1, y1) if D.side > 0 else (w0, y0)
+    assert -D.side * w_near >= D.bay_r + 1.5 and -D.side * w_near < -D.side * p_near
     assert wz0 == S["z_rear"] < z0 < S["z_motor_rear"] < wz1 and S["z_board_back"] < S["z_rear"]
 
 

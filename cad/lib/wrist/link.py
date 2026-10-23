@@ -13,7 +13,7 @@ from cadgen import build123d as bd
 
 from lib.geom import align_min, cylinder, hex_prism, single_solid, through
 from lib.units import NUDGE
-from lib.wrist.layout import end_face_holes, motor_pocket, seat_bolt_points, slope_x, stack_positions
+from lib.wrist.layout import end_face_holes, frame_y_span, seat_bolt_points, slope_x, stack_positions
 from lib.wrist.params import DEFAULT, WristConfig
 from lib.wrist.roll import build_frame, module_to_host
 
@@ -109,10 +109,11 @@ def _bay_channels(cfg: WristConfig):
     underside up through the frame into the shaft's bay (the nut drops in from the bay, before the shaft)."""
     s, d, S = cfg.seat, cfg.roll, stack_positions(cfg)
     to_module = module_to_host(cfg).inverse()
+    y0, y1 = frame_y_span(cfg)
     channels = []
     for x, y, a in seat_bolt_points(cfg):
         _, my, mz = (to_module * bd.Location((x, y, 0.0))).position
-        if not (S["z_rear"] <= mz <= S["z_front"] and motor_pocket(cfg)[0] - d.pocket_wall <= my <= d.frame_r):
+        if not (S["z_rear"] <= mz <= S["z_front"] and y0 <= my <= y1):
             continue                                        # on the bare plate: its pocket stays open on the underside
         if not (abs(my) < d.bay_r and S["z_bay"] <= mz <= S["z_bearing_1"]):
             raise ValueError(f"the coupler bolt at ({x:.2f}, {y:.2f}) lies under the frame but not under its bay")

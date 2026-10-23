@@ -33,14 +33,19 @@ pitch axis and the wrist side's centre of mass with it, so the wrist-pitch motor
 quotes the numbers); in exchange the wrist is not spherical - the wrist roll axis misses the pitch axis and the
 forearm roll's - and an inverse kinematics in `software/control` must be numeric (`open_issues.md`).
 
-**Which side.** R′ sits on `wrist_link`'s +Y, away from the pancake's plug side in the capture: on the other side the
-tower would meet the wrist-pitch motor on the forearm at a much smaller pitch angle. Even so the tower sets the
-`wrist_pitch` lower limit now, and a finger the upper (`WRIST_PITCH_LIMITS_DEG`, `tests/test_sweeps.py`).
+**Which side.** R′ sits on `wrist_link`'s −Y (`WristRollParams.side`): the outer side, away from the upper arm when the
+elbow folds (the forearm turned), so the wrist pitch's long range bends the gripper down. The frame is the other side's
+mirror image; the rotor and every bought part are placed, not mirrored. Bending up, the frame's tower soon meets the
+wrist-pitch motor on the forearm; bent far down, the gripper reaches back toward the elbow - the forearm roll's frame
+there, and the upper arm once the elbow folds - so `WRIST_PITCH_LIMITS_DEG` keeps the gripper off those at the elbow's
+zero, and folded further its clearance is the planner's (`ELBOW_GRIPPER_FREE_DEG`, `tests/test_sweeps.py`,
+`open_issues.md`). The first build had R′ on +Y, the inner side: its long range bent the gripper up.
 
 ## 2. Layout (module frame)
 Module frame (`lib/wrist/layout.py module_frame_in_host`, `lib/mounts.py MODULE_MOUNTS` on `wrist_link#1`, turned with
 it): origin on R′ at the pitch axis' station; **+Z along R′ toward the gripper** (wrist_link's +X); **+X away from the
-plate** (the open face, wrist_link's −Z); **+Y from the pancake toward R′**; the pitch axis runs along X at `y_motor`.
+plate** (the open face, wrist_link's −Z); **+Y = wrist_link's +Y** (R′ `side` of the pancake: −Y); the pitch axis runs
+along X at `y_motor`.
 Every station: `stack_positions()`.
 
 | station | what | fixed by |

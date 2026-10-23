@@ -168,9 +168,10 @@ from lib.wrist.params import DEFAULT as _WRIST  # noqa: E402
 
 WRIST_ROLL_BELT_LENGTH = _WRIST.roll.belt           # 158-2GT [DESIGN] the wrist roll belt (the 20T on the pancake, the 40T band on the pulley)
 WRIST_ROLL_RATIO = _WRIST.roll.ring_teeth / GT2_PULLEY_20T_TEETH   # 2:1 [DESIGN] motor turns per output turn
-WRIST_ROLL_OFFSET = _WRIST.roll.centre_distance     # 48.58 [DESIGN] the roll axis' distance from the pitch axis (along wrist_link's +Y): the
-#                                                     stock belt's centre distance, the pancake on the pitch axis at its slots' middle - the arm's
-#                                                     wrist offset (lib/placements.py SHIFTS; the wrist is no longer spherical)
+WRIST_ROLL_OFFSET = _WRIST.roll.centre_distance     # 48.58 [DESIGN] the roll axis' distance from the pitch axis (along wrist_link's -Y, the
+#                                                     outer side: WristRollParams.side): the stock belt's centre distance, the pancake on the
+#                                                     pitch axis at its slots' middle - the arm's wrist offset (lib/placements.py SHIFTS; the
+#                                                     wrist is no longer spherical)
 WRIST_ROLL_AXIS_H = _WRIST.roll.axis_h              # 27 [DESIGN] the roll axis (and the pancake's) over the plate's coupler face: 44 mm off the
 #                                                     SolidWorks roll axis (EndFaceParams.axis_z 22, the other side of the plate)
 
@@ -306,20 +307,29 @@ BASE_YAW_LIMIT_DEG = 175.0        # [ESTIMATE] symmetric +/- range; j1_coupler (
 # inside its 1 mm running gap from 68.6 - tests/test_sweeps.py), the lower is an [ESTIMATE] (the upper arm reaches the
 # fork at -154, the forearm stays off the base and the shoulder to -140 at any elbow)
 SHOULDER_PITCH_LIMITS_DEG = (-120.0, 67.0)   # [DESIGN]
-# the 4.5:1 elbow belt: (lower, upper); the lower - the forearm lifted back - kept where the old roll housing set it:
-# the roll drive's frame (its rear line, from its octagonal end about the elbow axis up to its tower ELBOW_ROLL_OFFSET
-# over it) is 2.3 mm off the elbow
-# motor's board, which stands on the same side of the upper arm, there and comes within 1 mm of it at -49.0 deg
-# (tests/forearm/test_roll_drive.py) - the forearm, the wrist and the gripper stay 1 mm off the upper arm at any roll
-# and wrist pitch there (tests/test_sweeps.py), so the frame sets the room to lift further (docs/open_issues.md); the
-# upper kept at 90 (the gripper, the wrist pitched up, stays 1 mm off j1_coupler there - tests/test_sweeps.py):
-# SHOULDER_PITCH_LIMITS_DEG was set over this range
-ELBOW_PITCH_LIMITS_DEG = (-47.0, 90.0)   # [DESIGN]
-# the GT2 belt at wrist_link: (lower, upper). The wrist roll drive's frame on the wrist plate sets the lower: its tower's
-# rear comes 1.56 mm off the wrist-pitch motor's board at -74 (0.44 at -75: the motor sits WRIST_MOTOR_CENTRES from the
-# wrist, nearer than the stock belt's own centre distance, for the wrist belt's idler), at any roll; a finger meets that
-# motor near +129 at roll 0 / 180 (tests/test_sweeps.py; docs/open_issues.md)
-WRIST_PITCH_LIMITS_DEG = (-74.0, 125.0)   # [DESIGN]
+# the elbow belt (ELBOW_RATIO): (lower, upper). The lower - the forearm lifted back - kept where the old roll housing set
+# it: the roll drive's frame (its rear line, from its octagonal end about the elbow axis up to its tower ELBOW_ROLL_OFFSET
+# over it) is 2.3 mm off the elbow motor's board, which stands on the same side of the upper arm, there and comes within
+# 1 mm of it at -49.0 deg (tests/forearm/test_roll_drive.py) - the forearm, the wrist and the gripper stay 1 mm off the
+# upper arm at any roll and wrist pitch there (tests/test_sweeps.py), so the frame sets the room to lift further
+# (docs/open_issues.md). The upper - the forearm folded - is set by the arm's own parts, not by the gripper (the elbow's
+# range over the other joints'): 2 deg short of where the wrist-pitch motor's board, folded back with the shoulder at its
+# upper limit, puts its side plug's room (MKS_PLUG_ROOM) into the base (clear at 145, 55 mm^3 at 146); the wrist body
+# (wrist_link, round the wrist roll's pancake) stays 1 mm or more off the base and j1_coupler to 150 at any forearm roll
+# and wrist pitch (touching them by 153, the forearm rolled 90); the gripper keeps 1 mm up to ELBOW_GRIPPER_FREE_DEG
+# (tests/test_sweeps.py). SHOULDER_PITCH_LIMITS_DEG was swept over this range
+ELBOW_PITCH_LIMITS_DEG = (-47.0, 144.0)   # [DESIGN]
+# folded past this, the gripper - the wrist bent down, the forearm rolled - can reach the upper arm (j1_link: 1 mm or more
+# off it at 94 at any forearm roll and wrist pitch, the shoulder level; touching it by 97, the wrist at -150, the forearm
+# at 0); within the elbow's range a planner keeps it clear there (docs/open_issues.md)
+ELBOW_GRIPPER_FREE_DEG = 92.0   # [DESIGN]
+# the GT2 belt at wrist_link: (lower, upper) - the gripper's side of the pitch axis (WristRollParams.side: the outer)
+# puts the long range bending the gripper down. The lower: past it the gripper, bent back toward the elbow, reaches the
+# forearm roll's frame (1.78 mm at -160, at roll 0) and, the elbow at 0, the upper arm (touching by -158); 3 mm or more
+# off both at -150 at any forearm and gripper roll. The upper: the wrist roll drive's frame (its tower, beside the
+# pancake) meets the wrist-pitch motor on the forearm - 1.09 mm at +40, 3 mm or more at +38 (tests/test_sweeps.py;
+# docs/open_issues.md)
+WRIST_PITCH_LIMITS_DEG = (-150.0, 38.0)   # [DESIGN]
 # the forearm roll: 2 deg short of its printed hard stop - the lug on the roll shaft's flange meets the post on the
 # frame's tower at +/- 168.3 (lib/forearm/params.py stop_deg_width; tests/test_sweeps.py holds it between the limit
 # and 180 - stop_deg_width), which keeps the cables from winding

@@ -209,7 +209,7 @@ def test_shifts_move_the_capture_records_beyond_each_link():
     d = WRIST.DEFAULT.roll
     assert (wrist.link, wrist.along_x, wrist.across_y, wrist.normal_z) == (
         "wrist_roll_drive", WRIST.DEFAULT.plate.pitch_x + stack_positions(WRIST.DEFAULT)["z_connector"] - P._CONNECTOR_CAPTURE_X,
-        d.centre_distance, WRIST.DEFAULT.plate.thickness - d.axis_h - WRIST.LEGACY.end_face.axis_z)
+        d.side * d.centre_distance, WRIST.DEFAULT.plate.thickness - d.axis_h - WRIST.LEGACY.end_face.axis_z)
     # the upper arm's elbow end also slides across it (its +Y, N) with the arm rising off the drive's shell
     assert (upper_arm.across_y, forearm.across_y) == (arm_slide(UPPER_ARM.DEFAULT) - arm_slide(UPPER_ARM.LEGACY), 0.0)
     assert all(s.normal_z == 0.0 for s in P.SHIFTS if s is not wrist)

@@ -64,7 +64,9 @@
   (cad/lib/params.py CYCLOIDAL_RATIO; software/control/src/config.py still carries gear_ratio 1.0 everywhere). The
   belt motors' masses (280 g) and boards (35 g) are estimates; the wrist_pitch motor sits where the stock
   wrist belt puts it (J2_MOTOR_SLIDE_X, WRIST_BELT_LENGTH); FOREARM_ROLL_LIMIT_DEG stops 2 deg short of the
-  printed hard stop, WRIST_ROLL_LIMIT_DEG 2 deg short of the wrist roll's. The jaw travel (JAW_TRAVEL_MM) is an
+  printed hard stop, WRIST_ROLL_LIMIT_DEG 2 deg short of the wrist roll's. elbow_pitch's upper limit is the arm's
+  own (the forearm's board and the wrist body against the base), not the gripper's: folded past ELBOW_GRIPPER_FREE_DEG, the wrist bent down or
+  the forearm rolled can put the gripper into the upper arm - a planner must check those poses. The jaw travel (JAW_TRAVEL_MM) is an
   estimate that does not fit the gripper (cad/docs/open_issues.md).
   The jaws are not driven by software/control/src/config.py, and forearm_roll and wrist_roll need CAN ids of
   their own (config.py names fewer than the arm's boards).
@@ -167,9 +169,9 @@
   </link>
   <link name="wrist_pitch_link">
     <inertial>
-      <origin xyz="0.000654 -0.009606 0.014245" rpy="0 0 0" />
+      <origin xyz="0.000654 0.009587 0.014245" rpy="0 0 0" />
       <mass value="0.487734" />
-      <inertia ixx="5.770768e-04" ixy="2.785436e-05" ixz="-4.143470e-06" iyy="3.625183e-04" iyz="5.659935e-05" izz="3.765258e-04" />
+      <inertia ixx="5.773343e-04" ixy="-2.814436e-05" ixz="-4.143395e-06" iyy="3.625179e-04" iyz="-5.650043e-05" izz="3.767836e-04" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -261,7 +263,7 @@
     <child link="elbow_link" />
     <origin xyz="0.170004 0 0.039499" rpy="0 0 0.010227" />
     <axis xyz="0 0 1" />
-    <limit lower="-0.820305" upper="1.570796" effort="5" velocity="1" />
+    <limit lower="-0.820305" upper="2.513274" effort="5" velocity="1" />
   </joint>
   <joint name="forearm_roll" type="revolute">
     <parent link="elbow_link" />
@@ -275,12 +277,12 @@
     <child link="wrist_pitch_link" />
     <origin xyz="-0.016997 -0.000007 0.165" rpy="-1.570808 -1.271748 1.570808" />
     <axis xyz="0 0 1" />
-    <limit lower="-1.291544" upper="2.181662" effort="5" velocity="1" />
+    <limit lower="-2.617994" upper="0.663225" effort="5" velocity="1" />
   </joint>
   <joint name="wrist_roll" type="revolute">
     <parent link="wrist_pitch_link" />
     <child link="wrist_roll_link" />
-    <origin xyz="0.026448 -0.048578 0.027003" rpy="-1.570799 -0.055534 -1.570796" />
+    <origin xyz="0.026448 0.048588 0.027002" rpy="-1.570799 -0.055534 -1.570796" />
     <axis xyz="0 0 1" />
     <limit lower="-2.897247" upper="2.897247" effort="1" velocity="2" />
   </joint>

@@ -8441,7 +8441,7 @@
     "frame_in_host": {
      "position": [
       -45.445774,
-      48.58289358178399,
+      -48.58289358178399,
       -22.0
      ],
      "rotation_xyz_deg": [
@@ -8451,13 +8451,13 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the wrist roll drive on wrist_link's roll axis R' (WRIST_ROLL_OFFSET along +Y from the pitch axis, WRIST_ROLL_AXIS_H over the plate's coupler face): module +Z = host +X toward the gripper, module +X = host -Z (away from the plate), +Y = host +Y (from the pancake toward R'); wrist_link IS its frame (the stator), the pancake and its 20T replace nema17_pancake#1 / gt2_pulley_20t#1 (lib/placements.py RETIRED); beyond the forearm's turn, it turns with wrist_link"
+    "note": "the wrist roll drive on wrist_link's roll axis R' (WRIST_ROLL_OFFSET along -Y from the pitch axis - WristRollParams.side -, WRIST_ROLL_AXIS_H over the plate's coupler face): module +Z = host +X toward the gripper, module +X = host -Z (away from the plate), +Y = host +Y (from R' toward the pancake); wrist_link IS its frame (the stator), the pancake and its 20T replace nema17_pancake#1 / gt2_pulley_20t#1 (lib/placements.py RETIRED); beyond the forearm's turn, it turns with wrist_link"
    },
    "rel": {
     "position": [
-     -217.950271,
-     360.458764,
-     -7.972785
+     -130.701597,
+     402.85123,
+     -13.606424
     ],
     "rotation_xyz_deg": [
      -88.210488,
@@ -8469,27 +8469,27 @@
       -0.064435731,
       -0.897936159,
       -0.435383384,
-      -217.950270775
+      -130.701597056
      ],
      [
       -0.0,
       -0.436290056,
       0.899806083,
-      360.458763521
+      402.85123024
      ],
      [
       -0.997921859,
       0.057979663,
       0.028112669,
-      -7.972784665
+      -13.606424245
      ]
     ]
    },
    "world": {
     "position": [
-     -217.950271,
-     360.458764,
-     -7.972785
+     -130.701597,
+     402.85123,
+     -13.606424
     ],
     "rotation_xyz_deg": [
      -88.210488,
@@ -8501,19 +8501,19 @@
       -0.064435731,
       -0.897936159,
       -0.435383384,
-      -217.950270775
+      -130.701597056
      ],
      [
       -0.0,
       -0.436290056,
       0.899806083,
-      360.458763521
+      402.85123024
      ],
      [
       -0.997921859,
       0.057979663,
       0.028112669,
-      -7.972784665
+      -13.606424245
      ]
     ]
    },

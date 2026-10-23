@@ -33,14 +33,14 @@ def slope_x(z: float, cfg: WristConfig = DEFAULT) -> float:
 
 
 # --- the wrist roll drive (WristRollParams; its module frame: origin on R' at the pitch axis' station, +Z along R'
-# toward the gripper, +X away from the plate, +Y from the motor toward R') ---------------------------------------------
+# toward the gripper, +X away from the plate, +Y = wrist_link's +Y - R' `side` of the motor) ---------------------------
 
 def module_frame_in_host(cfg: WristConfig = DEFAULT) -> tuple:
     """The drive's module frame as data in wrist_link's part frame (lib/mounts.py ModuleMount): origin on R' -
-    centre_distance along +Y from the pitch axis, axis_h over the plate's coupler face (part z thickness) -, module
-    +Z = part +X, +X = part -Z, +Y = part +Y."""
+    side x centre_distance along Y from the pitch axis, axis_h over the plate's coupler face (part z thickness) -,
+    module +Z = part +X, +X = part -Z, +Y = part +Y."""
     d = cfg.roll
-    return ((cfg.plate.pitch_x, d.centre_distance, cfg.plate.thickness - d.axis_h), (0.0, 90.0, 0.0))
+    return ((cfg.plate.pitch_x, d.side * d.centre_distance, cfg.plate.thickness - d.axis_h), (0.0, 90.0, 0.0))
 
 
 def stack_positions(cfg: WristConfig = DEFAULT) -> dict[str, float]:
@@ -91,7 +91,7 @@ def stack_positions(cfg: WristConfig = DEFAULT) -> dict[str, float]:
         "z_front": z_motor_face + d.pad_t,                        # 15.5: the plate's front face = the frame's front face
         "z_20t": z_motor_face + p.pilot_height + d.pulley_seat,   # 13.0: the 20T's hub face
         "x_coupler": x_coupler, "x_free": x_free,
-        "x_motor": 0.0, "y_motor": -d.centre_distance,            # the pancake on the pitch axis
+        "x_motor": 0.0, "y_motor": -d.side * d.centre_distance,   # the pancake on the pitch axis
     }
 
 
@@ -101,6 +101,16 @@ def motor_pocket(cfg: WristConfig = DEFAULT) -> tuple[float, float, float, float
     d, S = cfg.roll, stack_positions(cfg)
     half = d.pancake.body_w / 2.0 + d.pad_slot_len / 2.0 + d.pocket_clear
     return (S["y_motor"] - half, S["y_motor"] + half, S["z_pocket_rear"], S["z_motor_face"])
+
+
+def frame_y_span(cfg: WristConfig = DEFAULT) -> tuple[float, float]:
+    """(y0, y1) of the frame's outline across the module (lib/wrist/roll.py profile()): from the pocket's far wall
+    (pocket_wall beyond it, the side away from R') to the circle about R' (frame_r) on the other."""
+    d = cfg.roll
+    y0, y1, _, _ = motor_pocket(cfg)
+    if d.side > 0:
+        return y0 - d.pocket_wall, d.frame_r
+    return -d.frame_r, y1 + d.pocket_wall
 
 
 def board_window(cfg: WristConfig = DEFAULT) -> tuple[float, float, float, float]:
@@ -133,7 +143,7 @@ def pancake_location(cfg: WristConfig = DEFAULT) -> tuple:
 def roll_belt_loop(cfg: WristConfig = DEFAULT) -> list[tuple[float, float, float]]:
     """The wrist roll belt's loop (lib/belts.py) in the belt's own frame: the pancake's 20T on the origin, the pulley's
     40T band on +X, centre_distance on (the stock belt at the motor slots' middle - no idler). The belt's row turns +X
-    onto the module's +Y."""
+    toward R' (the module's +Y times side)."""
     d = cfg.roll
     return [pulley_circle(0.0, 0.0, GT2_PULLEY_20T_TEETH), pulley_circle(d.centre_distance, 0.0, d.ring_teeth)]
 

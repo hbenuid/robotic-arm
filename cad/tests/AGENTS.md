@@ -42,8 +42,8 @@ thrust stack under `j1_coupler`),
 `test_layering.py` (the package layering, no `sys.path`, no direct part-module imports — AST scan),
 `test_sweeps.py` (the joint limits keep the arm off itself: exact distances between the robot links' parts at poses
 on the limits - the upper arm over the shoulder's range against the fork and the base, the shoulder's upper limit over
-the elbow's range, the wrist at its limits, the forearm and the gripper at the elbow's limits at any roll and wrist
-pitch, the shoulder's limits at any yaw against the base, the forearm and the wrist roll's limits short of their hard
+the elbow's range, the wrist at its limits, the forearm and the wrist at the elbow's limits at any roll and wrist
+pitch - the gripper up to `ELBOW_GRIPPER_FREE_DEG` -, the shoulder's limits at any yaw against the base, the forearm and the wrist roll's limits short of their hard
 stops, the gripper rolling clear of the wrist, every MKS board's plug room over the joints' ranges; poses with the
 arm down in the table skipped),
 `test_lazy_kernel.py` (a fresh interpreter imports every template, part, assembly and link model without

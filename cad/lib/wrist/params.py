@@ -137,9 +137,15 @@ class WristRollParams:
     rings as one.
 
     MODULE FRAME: origin on R' at the pitch axis' station; +Z along R' toward the gripper (wrist_link's +X); +X away from
-    the plate (the open face, wrist_link's -Z); +Y from the motor toward R' (wrist_link's +Y); the pitch axis runs along X
-    at y = -centre_distance - the motor sits on it, centred on R' in X. Stations: lib/wrist/layout.py stack_positions()."""
+    the plate (the open face, wrist_link's -Z); +Y = wrist_link's +Y; R' lies `side` x centre_distance along it from the
+    pitch axis, so the pitch axis runs along X at y = -side x centre_distance - the motor sits on it, centred on R' in X.
+    Stations: lib/wrist/layout.py stack_positions()."""
 
+    side: float = -1.0                  # [DESIGN] which side of the pitch axis R' (the gripper) sits on, along wrist_link's Y: -1
+    #                                     the outer side - away from the upper arm when the elbow folds, the forearm turned -,
+    #                                     where the wrist pitch's long range bends the gripper down (+1, the first build, put
+    #                                     it on the inner side); the frame builds as the other side's mirror image, the rotor
+    #                                     and every bought row placed, not mirrored
     belt: int = 158                     # [DESIGN] 158-2GT closed belt, 6 mm (a stock length, lib/belts.py STANDARD_2GT_LENGTHS): its
     #                                     centre distance at the motor slots' middle (no idler: docs/open_issues.md)
     ring_teeth: int = 40                # [DESIGN] the pulley's printed 40T band: 2 : 1 from the pancake's 20T (WRIST_ROLL_RATIO)

@@ -111,11 +111,11 @@ SHIFTS: tuple[LinkShift, ...] = (
     LinkShift("j2_link", "j2_link#1", (0.680611117, -0.731325624, -0.043947003),   # [REFERENCE]
               _FOREARM.web.wrist_x - _FOREARM_LEGACY.web.wrist_x, _BEYOND_WRIST_PITCH),
     # the wrist roll drive: the gripper rolls about R', WristRollParams.centre_distance across from the pitch axis (along
-    # wrist_link's +Y) on the plate's underside (axis_h over its coupler face: along its -Z from the SolidWorks roll
-    # axis at EndFaceParams.axis_z), its connector bolted to the roll pulley's face (along its +X)
+    # wrist_link's Y, on its `side`: -Y) on the plate's underside (axis_h over its coupler face: along its -Z from the
+    # SolidWorks roll axis at EndFaceParams.axis_z), its connector bolted to the roll pulley's face (along its +X)
     LinkShift("wrist_roll_drive", "wrist_link#1", (-0.865418936, 0.497923174, 0.055880029),   # [REFERENCE]
               _WRIST.plate.pitch_x + _wrist_stack(_WRIST)["z_connector"] - _CONNECTOR_CAPTURE_X, _BEYOND_WRIST_ROLL,
-              (0.49688842, 0.867221144, -0.032084044), _WRIST.roll.centre_distance,   # [REFERENCE] its +Y
+              (0.49688842, 0.867221144, -0.032084044), _WRIST.roll.side * _WRIST.roll.centre_distance,   # [REFERENCE] its +Y
               (-0.064435732, 0.0, -0.997921859),   # [REFERENCE] its +Z
               (_WRIST.plate.thickness - _WRIST.roll.axis_h) - _WRIST_LEGACY.end_face.axis_z),
     # the yoke: the drive held with the middle of its discs on the base_yaw axis (lib/yaw_coupler/params.py

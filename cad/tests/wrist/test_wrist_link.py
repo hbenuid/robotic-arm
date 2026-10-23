@@ -107,17 +107,18 @@ def test_legacy_tower(legacy):
 
 def test_default_is_the_roll_frame():
     """DEFAULT differs from LEGACY in exactly the wrist roll drive (its frame on the plate) and the connector's hub; the
-    drive's frame (module) sits on the pitch axis' station, centre_distance across, axis_h over the coupler face."""
+    drive's frame (module) sits on the pitch axis' station, centre_distance across on its side (-Y), axis_h over the
+    coupler face."""
     assert LEGACY.roll is None and DEFAULT.roll is not None and DEFAULT.connector.hub and not LEGACY.connector.hub
     assert DEFAULT == replace(LEGACY, roll=DEFAULT.roll, connector=replace(LEGACY.connector, hub=True))
     d = DEFAULT.roll
-    assert module_frame_in_host(DEFAULT) == ((P.pitch_x, d.centre_distance, P.thickness - d.axis_h), (0.0, 90.0, 0.0))
+    assert module_frame_in_host(DEFAULT) == ((P.pitch_x, -d.centre_distance, P.thickness - d.axis_h), (0.0, 90.0, 0.0))
 
 
 def _part(mx: float, my: float, mz: float) -> tuple[float, float, float]:
     """A point of the drive's module frame in wrist_link's part frame (module +Z = part +X, +X = part -Z, +Y = part +Y)."""
     d = DEFAULT.roll
-    return (P.pitch_x + mz, d.centre_distance + my, (P.thickness - d.axis_h) - mx)
+    return (P.pitch_x + mz, d.side * d.centre_distance + my, (P.thickness - d.axis_h) - mx)
 
 
 @pytest.mark.slow
@@ -130,8 +131,8 @@ def test_the_part_is_the_roll_frame(wrist, legacy):
     assert wrist.volume < legacy.volume
     # the old tower and its end face are gone; the plate's round end on the pitch axis stays
     assert is_inside(legacy, 20.0, 0.0, 22.0) and not is_inside(wrist, 20.0, 0.0, 22.0)
-    c = math.sqrt(0.5)   # between the coupler's bolts (on the axes)
-    assert is_inside(wrist, P.pitch_x + 38.5 * c, -38.5 * c, 2.5) and not is_inside(wrist, P.pitch_x + 39.5 * c, -39.5 * c, 2.5)
+    c = -d.side * math.sqrt(0.5)   # between the coupler's bolts (on the axes), on the side away from the frame
+    assert is_inside(wrist, P.pitch_x + 38.5 * abs(c), 38.5 * c, 2.5) and not is_inside(wrist, P.pitch_x + 39.5 * abs(c), 39.5 * c, 2.5)
     # the pancake's pocket on the pitch axis, its floor the plate's free face; the plate in front of it, the shaft's slit
     ym = ST["y_motor"]
     assert not is_inside(wrist, *_part(0.0, ym, 0.0))
@@ -150,7 +151,7 @@ def test_the_part_is_the_roll_frame(wrist, legacy):
     assert is_inside(wrist, *_part(-21.0, 0.0, zb)) and not is_inside(wrist, *_part(21.0, 0.0, zb))
     assert is_inside(wrist, *_part(-(d.bay_r + 0.3), 0.0, ST["z_bay"] + 1.0))
     # the coupler nut under the tower: its hex channel from the plate's pocket up into the bay
-    covered = [(x, y) for x, y, _ in seat_bolt_points(DEFAULT) if y > 1.0]
+    covered = [(x, y) for x, y, _ in seat_bolt_points(DEFAULT) if d.side * y > 1.0]
     assert len(covered) == 1
     x, y = covered[0]
     assert not is_inside(wrist, x, y, 1.0) and not is_inside(wrist, x, y, -2.0)
