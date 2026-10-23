@@ -95,7 +95,7 @@ def test_each_screw_stands_on_a_hole_of_the_plate():
 def test_the_plate_on_the_frame():
     """Each hole: its counterbore pocket_dia across from the front face down to head_h, the M3 clearance hole on through
     the plate under it, the plate whole round both - no slide along Y; the pilot hole round, the plate whole beyond it
-    along Y."""
+    along X and above it - the shaft's slit runs down from it (tests/forearm/test_roll_drive.py)."""
     block = built.part("forearm_roll_block")
     r, rb, floor = H.pocket_dia / 2.0, H.bolt_dia / 2.0, S["z_motor_screws"]
     z_mid = (S["z_motor_face"] + floor) / 2.0
@@ -109,8 +109,9 @@ def test_the_plate_on_the_frame():
             assert is_inside(block, x, y + dy, z_mid), (x, y, dy)
     rp, xm, ym = H.pilot_dia / 2.0, S["x_motor"], S["y_motor"]
     assert not is_inside(block, xm - rp + 0.2, ym, z_mid) and is_inside(block, xm - rp - 0.2, ym, z_mid)
-    for dy in (rp + 0.2, -(rp + 0.2)):
-        assert is_inside(block, xm, ym + dy, z_mid)
+    for dx in (rp + 0.2, -(rp + 0.2)):
+        assert is_inside(block, xm + dx, ym, z_mid)
+    assert is_inside(block, xm, ym + rp + 0.2, z_mid) and not is_inside(block, xm, ym - rp - 0.2, z_mid)
 
 
 @pytest.mark.slow

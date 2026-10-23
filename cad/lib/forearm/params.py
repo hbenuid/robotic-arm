@@ -203,9 +203,10 @@ class RollIdlerParams:
     stock roll_belt fits the design's centre_distance (lib/belts.py idler_on_run; lib/forearm/layout.py roll_belt_loop,
     roll_idler_xy). It stands on a riser on the frame's front face - the riser's land under the idler's bearing inner
     ring - on an M5 SHCS down from its top (parts/joints/roll_idler_screw) through the idler, the riser's slot and the
-    plate into a nut (parts/joints/roll_idler_nut) held flats-on in a channel from the frame's open +N face, under the
-    face: the slot and the channel run along N (module X, the push), +/- travel to tension the belt, and the nut slides
-    with the screw (turned from above)."""
+    plate into a nut (parts/joints/roll_idler_nut) held flats-on in a channel under the face, closed at both ends: the
+    slot and the channel run along N (module X, the push), +/- travel to tension the belt, and the nut slides with the
+    screw (turned from above). The nut goes in from the motor's pocket before the motor (entry: a recess in the plate's
+    inner face over the pocket's top edge, then along +Y into the channel); the motor's face then shuts the way."""
 
     along: float = 31.7                   # its axis this far from the motor's along the belt's centre line, toward the ring: the
     #                                       nut's channel 5.3 off the motor's pocket, the idler 3.7 off the ring's flange
@@ -220,10 +221,12 @@ class RollIdlerParams:
     nut_fit: float = 0.2                  # [DESIGN] the channel: the nut's flats + this, its height + this
     roof: float = 3.0                     # [DESIGN] the plate over the channel: the nut's bearing face pulled up against it
     tip_clear: float = 1.0                # [DESIGN] the screw's hole on past its tip
+    entry: float = 4.25                   # [DESIGN] the nut's way in: its recess starts this far inside the pocket's top edge - 3 under the
+    #                                       motor's face, which shuts the way once the motor is in - and runs on into the channel
 
 
 ROLL_FRAME_R = 30.0   # [DESIGN] the roll frame's half width round the roll axis: its underside (6.0 over the upper arm's flat top),
-#                       its open +N face and its tower's top - the frame symmetric about the roll axis, the bearing boss centred
+#                       its side (+N) face and its tower's top - the frame symmetric about the roll axis, the bearing boss centred
 #                       on its front face -, the forearm wall's radius (RollEndParams.wall_od / 2): the frame flush with the
 #                       round parts that turn about the roll axis (RollDriveParams block_x, tower_y; tests/forearm/test_roll_drive.py test_stack)
 
@@ -231,20 +234,24 @@ ROLL_FRAME_R = 30.0   # [DESIGN] the roll frame's half width round the roll axis
 @dataclass(frozen=True)
 class RollDriveParams:
     """The forearm roll drive (assemblies/forearm_roll_drive.py; docs/forearm_roll.md): ONE printed FRAME (stator, the
-    forearm_roll_block) that is also the elbow's output flange, round a rotor split in two between its bearings (the
-    elbow's 6806 pattern: two hubs meeting inside the lip). The roll motor sits ON the elbow axis, the roll axis
+    forearm_roll_block) that is also the elbow's output flange, round a rotor split in two at bearing 1 (each bearing
+    pressed on its own piece's journal from its own end). The roll motor sits ON the elbow axis, the roll axis
     centre_distance above it (= the arm's elbow offset, ForearmConfig.elbow_offset): the stock roll belt round the motor's
     20T and the ring, an idler on its back on the frame's face taking up the rest (RollIdlerParams). The frame is
     one body round the motor: seen along the elbow axis an octagon about it (end_r, its flats on the upper arm's round end)
     hulled up to the tower round the roll axis, straight-sided, extruded from its underside (block_x[0], the elbow flange's - its underside repeats
     the SolidWorks j3_coupler's lip / boss / journal / stub into j1_link's bore, the elbow 108T bolts straight into it) to
-    its open +N face; the motor in a pocket open on that face (a plug slot off each side at its board's side headers),
-    the pocket's front wall its plate (round holes: its 4x M3 from the front face, the heads flush in counterbores -
+    its side (+N) face, closed; the motor in a pocket open down through the octagon's bottom (it slides up into it; a
+    groove inside each wall at its board's side headers), the pocket's front wall its plate (round holes: its 4x M3 from
+    the front face, the heads flush in counterbores -
     motor_holes, parts/joints/roll_motor_screws), the block's one flat front face the plate's - the 20T's teeth level
-    with the ring (pulley_seat), the plate pad_t thick behind the face; a round bearing boss on that face round the roll axis, the 6806 pair in it and the tower under it. Rotor: the PULLEY (forearm_roll_pulley: the integral 90T ring over the boss, its hub down through
-    bearing 2, the spigot the forearm wall bolts onto - the roll's output) and the SHAFT (forearm_roll_shaft: a collar,
-    its hub up through bearing 1 to the pulley's, its flange behind bearing 1 with the clamp's nuts and the stop lug);
-    the rotor's own clamp - 4x M3 from the pulley's front face through both hubs into the shaft's nuts - holds the
+    with the ring (pulley_seat), the plate pad_t thick behind the face; a round bearing boss on that face round the roll
+    axis, the 6806 pair in the tower under it (lip apart), the shaft's bay behind them bored on through the frame's back.
+    Rotor: the PULLEY (forearm_roll_pulley: the integral 90T ring over the boss, its hub down through bearing 2 and its
+    neck on to bearing 1's front face, the spigot the forearm wall bolts onto - the roll's output) and the SHAFT
+    (forearm_roll_shaft: a collar that holds bearing 1 - its journal through it, its flange behind it with the clamp's
+    nuts and the stop lug); the rotor's own clamp - 4x M3 from the pulley's front face through both pieces into the
+    shaft's nuts - holds the
     pulley, both inner rings and the shaft as one, the drive whole without the forearm; the forearm wall's 4x M3 into
     nuts in the pulley's core. MODULE FRAME: origin on the roll axis at the elbow axis' station
     (host (0, 0, axis_z)); +Z along the roll axis toward the wrist (host -X); +X = host +Z (N, away from the upper arm);
@@ -252,45 +259,49 @@ class RollDriveParams:
     Stations in that frame: layout.stack_positions(), the ring's set by the forearm wall (RollEndParams.wall_x), the
     rest by the ring. Assembly: docs/forearm_roll.md section 4."""
 
-    # bearings: 2x 6806-2RS back to back on a lip in the tower (lib/bearings.py, the elbow's pair): bearing 2 right under
-    # the ring, bearing 1 behind it; the rotor's two hubs meet in the lip's middle, spacing the inner rings as the lip
-    # spaces the outer ones
+    # bearings: 2x 6806-2RS back to back in the tower, a spacer (lip) between their outer rings (lib/bearings.py, the
+    # elbow's pair): bearing 2 right under the ring, bearing 1 lip behind it; the pulley's hub meets the shaft's at bearing
+    # 1's front face, so the shoulders space the inner rings as the lip spaces the outer ones
     bearing_bore: float = BEARING_6806_BORE    # [DATASHEET] 6806-2RS (61806), 30 x 42 x 7
     bearing_od: float = BEARING_6806_OD
     bearing_width: float = BEARING_6806_WIDTH
     seat_add: float = 0.15                # [DESIGN] PETG press allowance on the seat diameter (cf. the drive's 6814 seat)
     journal_add: float = 0.3              # [DESIGN] the printed journals' interference in the inner rings (cf. the drive's hub)
     shoulder_dia: float = BEARING_6806_SHOULDER_DIA   # [DATASHEET] the rotor's shoulders bear on the inner rings only
-    lip: float = 2.0                      # [DESIGN] between the pair's outer rings (the elbow's)
-    lip_id: float = 37.6                  # [DESIGN] j1_link's elbow lip (37.64): clear of the hubs (Ø30.3) and the shoulders' Ø33
+    lip: float = 12.0                     # [DESIGN] the spacer between the pair's outer rings: 19 between their centres (9 with the elbow's 2 mm
+    #                                       lip) - each bearing takes the forearm's bending moment over twice the span; bearing 1, the shaft
+    #                                       and the stop that much deeper, the stop lug 2.3 inside the rear line (tests/forearm/test_roll_drive.py)
+    lip_id: float = 37.6                  # [DESIGN] j1_link's elbow lip (37.64): clear of the pulley's neck and the shoulders' Ø33
     run_gap: float = 1.0                  # [DESIGN] the ring's rear flange over bearing 2 and the bearing boss's top (the pulley's Ø33 shoulder spans it)
     # the frame: x along N (its underside at -X, 6.0 over the upper arm's flat top, host z -11), y up in the swing plane
     # (the motor below the roll axis, -Y), z along the roll axis
-    block_x: tuple = (-ROLL_FRAME_R, ROLL_FRAME_R)   # [DESIGN] host z -5 .. 55: the underside (the web's plane) .. the open +N face,
-    #                                       symmetric about the roll axis (the motor's connector, spun to +X, ends 2 inside the open pocket)
+    block_x: tuple = (-ROLL_FRAME_R, ROLL_FRAME_R)   # [DESIGN] host z -5 .. 55: the underside (the web's plane) .. the side (+N) face,
+    #                                       symmetric about the roll axis
     end_r: float = 45.0                   # [DESIGN] the octagonal end about the elbow axis: its flats this far off it = j1_link's round end
     #                                       (tangent to it), its corners end_r / cos(22.5 deg) = 48.7 out (the elbow motor's board sweeps 56.5 out)
     end_sides: int = 8                    # [DESIGN] the end's polygon: an octagon, a flat on each axis (the front face's plane, the end, the bottom)
-    tower_y: float = ROLL_FRAME_R         # [DESIGN] the tower's top over the roll axis, as far as the underside and the +N face: the bay + 4.4
+    tower_y: float = ROLL_FRAME_R         # [DESIGN] the tower's top over the roll axis, as far as the underside and the side face: the bay + 4.4
     rear_line_r: float = 3.0              # [DESIGN] the rear line (the outline from the end up to the tower's top): tangent to the end_r
     #                                       circle and to a circle this radius in the tower's rear-top corner - where the round end's hull ran,
     #                                       2.3 off the elbow motor's board at the elbow's lower limit (lib/params.py ELBOW_PITCH_LIMITS_DEG);
     #                                       the octagon's corner behind it cut off, the tower's corners sharp (roll.py rear_line)
-    tower_wall: float = 2.0               # [DESIGN] the tower's rear in the profile, behind the bay's floor
+    tower_rear: float = 0.75              # [DESIGN] the tower's rear in the profile (module z): where it stood behind the shaft's bay before the
+    #                                       bay was bored through the back - it anchors the rear line (rear_line_r), the outline the elbow
+    #                                       motor's board passes 2.3 off at the elbow's lower limit, so it stays
     web_t: float = 7.0                    # [DESIGN] the pocket's floor (the cradle's) over the underside: 2 mm under the motor's -N side
+    side_t: float = 7.0                   # [DESIGN] the side (+N) wall over the pocket, as thick as the floor: the side face closed, the pocket open
+    #                                       through the bottom instead
     pocket_clear: float = 0.75            # [DESIGN] round the motor + board in the pocket
-    pocket_rear: float = 2.5              # [DESIGN] behind the board's cover: the motor + board go in from the +N face motor_drop low (the
-    #                                       pilot boss under the plate), then lift into the plate's pilot hole
-    motor_drop: float = 2.25              # [DESIGN] how low the motor slides in: its pilot boss (pilot_height) under the plate + 0.25
-    shaft_slit: float = 6.0               # [DESIGN] the shaft's slit through the plate, from the pilot hole out through the +N face: the Ø5
-    #                                       shaft passes it as the motor slides in (the screws' holes stay whole either side)
+    pocket_rear: float = 2.5              # [DESIGN] behind the board's cover: the motor + board slide up into the pocket from the bottom
+    #                                       motor_drop back (the pilot boss under the plate), then forward into the plate's pilot hole
+    motor_drop: float = 2.25              # [DESIGN] how far back the motor slides in: its pilot boss (pilot_height) under the plate + 0.25
+    shaft_slit: float = 6.0               # [DESIGN] the shaft's slit through the plate, from the pilot hole down out through the bottom: the
+    #                                       Ø5 shaft passes it as the motor slides up (the screws' holes stay whole either side)
     bearing_boss_dia: float = 52.0        # [DESIGN] the boss on the front face round the roll axis, bearing 2's seat in it (4.9 of wall), its top
     #                                       bearing 2's front face: the ring's rear flange turns run_gap over it, 3.6 past its edge (no cup round
-    #                                       the flange); 4 inside the frame's underside, +N face and tower top, on the flat of the front face
-    bay_r: float = 25.6                   # [DESIGN] the shaft's bay behind bearing 1, open through the +N face: round the stop lug's corners
-    #                                       (r 24.6) + 1 (bearing 1 goes in from it)
-    bay_clear: float = 1.0                # [DESIGN] the bay's floor behind the shaft's rear face by its hub's length through bearing 1 + this: the
-    #                                       shaft, bearing 1 pressed on it, goes in through the +N face behind the tower and slides forward into the seat
+    #                                       the flange); 4 inside the frame's underside, side face and tower top, on the flat of the front face
+    bay_r: float = 25.6                   # [DESIGN] the shaft's bay behind bearing 1, bored on through the frame's back (the rear line): round
+    #                                       the stop lug's corners (r 24.6) + 1; the shaft, bearing 1 pressed on it, goes in along the axis from behind
     # the coupler features on the frame's underside (module -X) about the elbow axis (y = elbow_y), where j3_coupler#1 was
     # - measured on the SolidWorks coupler 2026-09-23 in j2_link's frame (host z = module x + axis_z); they turn in
     # j1_link's Ø80 recess / Ø42 bore
@@ -320,9 +331,11 @@ class RollDriveParams:
     nut_seat_x: float = -36.0             # [DESIGN] in the boss: the screw ends 2 pitches past its nut, under the motor's pocket
     nut_channel_past: float = 1.0         # [DESIGN] each channel runs up from its seat through the floor into the motor's pocket, this far past
     #                                       the floor: the nuts drop in from the pocket before the motor
-    # the rotor: the pulley (the ring on its core, its hub through bearing 2, the spigot) and the shaft (a collar: its hub
-    # through bearing 1, its flange behind it)
+    # the rotor: the pulley (the ring on its core, its hub through bearing 2, its neck on to bearing 1, the spigot) and the
+    # shaft (a collar that holds bearing 1: its journal through it, its flange behind it)
     bore: float = 18.0                    # [DESIGN] the cable bore through both: the clamp's M3 sit between it and the Ø30.3 journals
+    neck_dia: float = 29.9                # [DESIGN] the pulley's hub between the bearings: under the 6806's bore, so bearing 2 slides over it onto
+    #                                       its journal; 1.0 of wall outside each clamp screw (clamp_circle_dia)
     ring_core_dia: float = 44.0           # [DESIGN] the pulley's core under the ring (the ring is an annulus fused on it)
     collar_od: float = 40.0               # [DESIGN] the shaft's flange behind bearing 1's Ø33 shoulder
     end_nut: NutSize = M3_NUT             # [DATASHEET] ISO 4032 M3: the nuts of the forearm wall's 4 screws (RollEndParams.screw), in the pulley's
@@ -330,11 +343,13 @@ class RollDriveParams:
     end_nut_fit: float = 0.2              # [DESIGN] each nut's pocket - a slot from the cable bore out past the nut's corner, a flat either side
     #                                       (af wide) - its height and its reach past the corner; the nut bears on its wall-side face
     # the rotor's own clamp: 4x M3 from the pulley's front face (heads sunk in counterbores, under the wall's recess)
-    # through both hubs into nuts in the shaft's flange - the pulley, both inner rings and the shaft as one
-    clamp_circle_dia: float = 24.5        # [DESIGN] in the hubs, between the Ø18 bore and the Ø30.3 journals (1.55 / 1.2 mm of wall)
+    # through both pieces into nuts in the shaft's flange - the pulley, both inner rings and the shaft as one
+    clamp_circle_dia: float = 24.5        # [DESIGN] in the hubs, between the Ø18 bore and the Ø30.3 journals (1.55 / 1.2 mm of wall; 1.0 by the
+    #                                       pulley's neck)
     clamp_angle_deg: float = 45.0         # [DESIGN] between the wall's screws (RollEndParams.bolt_angle_deg) and their nut pockets
     clamp_screw: ShcsSize = M3_SHCS       # [DATASHEET] ISO 4762 M3 (tools/bom.py EXTRAS)
-    clamp_screw_len: float = 35.0         # [DESIGN] M3 x 35 from its counterbore's floor: the tip at the shaft's rear face (which it sets)
+    clamp_screw_len: float = 45.0         # [DESIGN] M3 x 45 from its counterbore's floor: the tip at the shaft's rear face (which it sets) - 10
+    #                                       longer than with the elbow's 2 mm lip, bearing 1 that much deeper
     clamp_head_clear: float = 0.25        # [DESIGN] the counterbores round the heads (on the radius) and over them
     clamp_nut: NutSize = M3_NUT           # [DATASHEET] ISO 4032 M3, in the shaft's flange: its pocket open to the rear face and the bore, the nut
     #                                       2 pitches short of the tip
@@ -354,19 +369,20 @@ class RollDriveParams:
     ring_flange_dia: float = 59.19        # [REFERENCE] the SolidWorks 90T's flanges
     ring_flange_t: float = 1.2
     # the motor: ON the elbow axis, under the tower, centred on the roll axis in X, body toward the elbow (-Z), shaft
-    # toward the wrist, spun motor_spin_deg about its axis so its cable connector points +X (out of the open face); the
-    # pocket's front wall (the plate, normal to Z, in front of it) carries it on round holes, its 4x M3 from the front face
-    # (the idler tensions the belt: the motor does not slide)
+    # toward the wrist, turned motor_spin_deg about its axis so its cable connector and the board's motor header point down
+    # (-Y) into the open bottom - their short wire in the opening; the pocket's front wall (the plate, normal to Z, in front
+    # of it) carries it on round holes, its 4x M3 from the front face (the idler tensions the belt: the motor does not slide)
     motor: MotorParams = MOTOR_40
     motor_holes: MotorHoleParams = MotorHoleParams()   # [DESIGN] the plate's pilot hole and the 31 mm square's 4 M3 holes, the screws'
     #                                       counterbores in its front face (the wrist-pitch motor's on j2_link's web)
-    motor_spin_deg: float = 90.0          # [DESIGN] about the motor axis: the connector (the motor frame's -Y) -> module +X
+    motor_spin_deg: float = 0.0           # [DESIGN] about the motor axis: the connector (the motor frame's -Y) -> module -Y, down into the opening
     board_w: float = MKS_SERVO42D_W       # [REFERENCE] 43: the MKS board's cover square (in the pocket with the motor)
     board_stack: float = MKS_SERVO42D_STACK   # [REFERENCE] 14.1: the board behind the motor's rear face
-    # the board's side plugs face the pocket's walls, along Y: a slot off each side at them (layout.plug_slots), open to
-    # the +N face, so the motor + board go in with the cables plugged
-    plug_clear: float = 0.5               # [DESIGN] the slots round each side header's outline
-    plug_spare: float = 1.0               # [DESIGN] past its plug's room (lib/motors.py MKS_PLUG_ROOM)
+    # the board's side plugs face the pocket's walls, along X (the side wall, the floor): a groove inside each wall at them
+    # (layout.plug_slots), from the header down out through the open bottom, so the motor + board slide up with the cables
+    # plugged - each cable bent straight down at its plug, in its groove (layout.side_plug_room: the straight room it leaves)
+    plug_clear: float = 0.5               # [DESIGN] the grooves round each side header's outline
+    plug_skin: float = 1.0                # [DESIGN] the wall left outside each groove
     roll_belt: int = 280                  # [DESIGN] 280-2GT closed belt, 6 mm (a stock length, lib/belts.py STANDARD_2GT_LENGTHS): longer than the
     #                                       open loop at centre_distance - the idler takes up the rest
     centre_distance: float = 74.0         # [DESIGN] the ring's axis over the motor's (the elbow axis' depth under the roll axis = the arm's elbow

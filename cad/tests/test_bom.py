@@ -59,7 +59,7 @@ def test_roll_drive_lists_follow_its_rows():
     assert [r["geometry"] for r in bom.buy_rows("forearm_roll_drive") if r["part"] == "bearing_6806"] == ["envelope"]
     # the rotor clamp's and the forearm wall's M3 screws + nuts, no end cap; the motor's screws are modelled (no EXTRAS row)
     extras = [spec for owner, spec, _, _ in bom.EXTRAS if owner == "forearm_roll_drive"]
-    assert sum(spec.startswith("M3 x 35 socket head cap screw") for spec in extras) == 1
+    assert sum(spec.startswith("M3 x 45 socket head cap screw") for spec in extras) == 1   # the rotor clamp, the pair 19 apart
     assert sum(spec.startswith("M3 x 16 socket head cap screw") for spec in extras) == 1
     assert sum(spec.startswith("M3 hex nut") for spec in extras) == 2 and not any("end cap" in spec for spec in extras)
     assert not any("roll motor" in spec for spec in extras)

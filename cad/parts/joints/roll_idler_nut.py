@@ -1,7 +1,8 @@
 """roll_idler_nut - purchased (COTS) part: the roll belt tensioner's M5 hex nut (ISO 4032), in the roll frame.
 
 In the arm: one, in forearm_roll_drive (lib/forearm/params.py RollIdlerParams): in its channel under the roll frame's
-front face, pushed in from the frame's open +N face, its bearing face up against the channel's roof, its flats across
+front face, pushed in from the motor's pocket before the motor (a recess in the plate's inner face leads into the
+channel), its bearing face up against the channel's roof, its flats across
 the frame's y against the channel's walls - it slides along x with the tensioner's axle (roll_idler_screw) and cannot
 turn.
 
@@ -29,7 +30,7 @@ COTS = True
 MASS_G = ROLL_IDLER_NUT_MASS_G   # [ESTIMATE] the modelled steel (lib/params.py)
 PURCHASE_SPEC = f"M{NUT.d:g} hex nut (ISO 4032)"
 PURCHASE_QTY = 1   # pieces per occurrence
-PURCHASE_NOTE = "in the channel under the roll frame's front face: push it in from the frame's open +N face before the idler goes on"
+PURCHASE_NOTE = "in the channel under the roll frame's front face: push it in from the motor's pocket (through the bottom) before the motor goes in"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 
