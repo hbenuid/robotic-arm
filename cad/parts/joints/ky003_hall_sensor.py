@@ -5,7 +5,7 @@ board carries its pull-up, a status LED and the 3-pin header (-, +, S) - S reads
 chip is rated 4.5..24 V: run it at 5 V. NOT PLACED yet (UNPLACED below, parts/AGENTS.md "Modelled, not placed yet"):
 the forearm roll's home sensor, the chip on the frame's tower beside the stop post, in the shaft's bay behind bearing 1
 (forearm_roll_block), and a magnet in the shaft's stop lug (forearm_roll_shaft) - neither is designed yet; the bay is
-open on the frame's +N face, so the board can sit there or the chip go on its leads (docs/open_issues.md).
+bored on through the frame's back, so the board can sit there or the chip go on its leads (docs/open_issues.md).
 
 No catalog model (step.parts has no KY-003 and no A3144, only bare TO-92S packages - vendor/README.md) and no
 SolidWorks export: a NATIVE COTS part (lib/reference.py NATIVE_COTS) - its envelope IS the geometry and its reference
