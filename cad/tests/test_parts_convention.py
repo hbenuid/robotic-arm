@@ -56,6 +56,9 @@ MULTI_BODY = {
     "wrist_motor_screws": 4,
     "roll_motor_screws": 4,
     "yaw_motor_screws": 4,
+    # the forearm roll rotor's clamp: its M3 screws + nuts (its drive's rows)
+    "roll_clamp_screws": 4,
+    "roll_clamp_nuts": 4,
     # the KY-003 hall module: the board, the chip (body + leads), the header (housing + pins) - one piece to buy
     "ky003_hall_sensor": 3,
 }

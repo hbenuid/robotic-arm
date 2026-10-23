@@ -279,6 +279,12 @@ from lib.forearm.layout import pad_bolt_points as _roll_motor_points  # noqa: E4
 
 ROLL_MOTOR_SCREWS_MASS_G = (STEEL_DENSITY * len(_roll_motor_points(_FOREARM))
                             * shcs_volume(_FOREARM.drive.motor_holes.screw, ROLL_MOTOR_SCREW_LEN))   # 3.8, 4x M3x8
+# the roll rotor's clamp (parts/joints/roll_clamp_{screws,nuts}; lib/forearm/params.py RollDriveParams clamp_*), likewise
+from lib.forearm.layout import clamp_points as _roll_clamp_points  # noqa: E402
+
+_ROLL_CLAMP = len(_roll_clamp_points(_FOREARM))
+ROLL_CLAMP_SCREWS_MASS_G = STEEL_DENSITY * _ROLL_CLAMP * shcs_volume(_FOREARM.drive.clamp_screw, _FOREARM.drive.clamp_screw_len)   # 12.0, 4x M3x45
+ROLL_CLAMP_NUTS_MASS_G = STEEL_DENSITY * _ROLL_CLAMP * nut_volume(_FOREARM.drive.clamp_nut)                                    # 1.4, 4x M3
 # the base_yaw motor's (parts/base/yaw_motor_screws), likewise
 from lib.base.layout import motor_holes as _base_motor_holes  # noqa: E402
 

@@ -114,11 +114,11 @@
   <link name="forearm_link">
       <pose relative_to="forearm_roll">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>-0.005708 -0.000049 0.093041 0 0 0</pose>
-        <mass>0.572401</mass>
+        <pose>-0.005577 -0.000048 0.091495 0 0 0</pose>
+        <mass>0.585848</mass>
         <inertia>
-          <ixx>9.688013e-04</ixx><ixy>3.206490e-06</ixy><ixz>-9.845830e-05</ixz>
-          <iyy>1.031759e-03</iyy><iyz>1.301759e-06</iyz><izz>2.787129e-04</izz>
+          <ixx>1.032887e-03</ixx><ixy>3.202921e-06</ixy><ixz>-9.340406e-05</ixz>
+          <iyy>1.096272e-03</iyy><iyz>1.343907e-06</iyz><izz>2.811862e-04</izz>
         </inertia>
       </inertial>
       <visual name="forearm_link_visual">

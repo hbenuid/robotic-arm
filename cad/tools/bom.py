@@ -23,7 +23,6 @@ from assemblies import arm
 from assemblies._occurrences import module_rows
 from lib import reference as R
 from lib.forearm import DEFAULT as _FOREARM
-from lib.forearm import clamp_points
 from lib.wrist import DEFAULT as _WRIST
 from lib.wrist.layout import clamp_points as wrist_clamp_points
 
@@ -32,11 +31,6 @@ from lib.wrist.layout import clamp_points as wrist_clamp_points
 # the electronics are not listed yet (docs/open_issues.md).
 EXTRAS = [
     ("cycloidal_drive", "bearing grease", 1, "the output pins are a greased sliding fit through the discs"),
-    ("forearm_roll_drive", (f"M3 x {_FOREARM.drive.clamp_screw_len:g} socket head cap screw (ISO 4762) - the roll rotor's clamp: the pulley "
-                            "through both 6806s into the shaft"), len(clamp_points(_FOREARM)),
-     "heads in the pulley's front-face counterbores, into the nuts in the shaft's flange; tighten before the forearm wall goes on"),
-    ("forearm_roll_drive", "M3 hex nut (ISO 4032) - in the roll shaft's flange, for the rotor clamp", len(clamp_points(_FOREARM)),
-     "pushed into the pockets from the shaft's rear face (in the frame's bay)"),
     ("forearm_roll_drive", f"M3 x {_FOREARM.roll_end.screw_len:g} socket head cap screw (ISO 4762) - the forearm wall onto the roll pulley's face",
      _FOREARM.roll_end.bolt_count,
      ("heads on the wall's wrist face (the bottom one in the channel under the web), through the wall and the pulley's spigot into "
