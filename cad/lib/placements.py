@@ -3,7 +3,7 @@
 reference/placements.json is written by tools/reference/extract_placements.py. Each occurrence record
 carries `rel` (placement relative to its parent node - what the assemblies compose) and
 `world` (absolute, in the arm frame), each as {position, rotation_xyz_deg, matrix_3x4}.
-Rotation convention: build123d `Location.to_tuple()` - intrinsic XYZ Euler angles in degrees,
+Rotation convention: build123d `Location.orientation` - intrinsic XYZ Euler angles in degrees,
 rebuilt with `Location(position, rotation_xyz_deg)`. Keys: "<part>#<n>" per part occurrence
 and "<module>#<n>" for sub-assembly nodes (e.g. "gripper#1"). A module record with
 `designed: true` ("cycloidal_drive#1") carries only the node's pose: its contents are built by

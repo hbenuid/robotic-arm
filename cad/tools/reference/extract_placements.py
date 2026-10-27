@@ -157,7 +157,7 @@ def main(argv=None) -> int:
             "extracted": datetime.date.today().isoformat(),
             "build123d": build123d.__version__,
         },
-        "rotation_convention": "build123d Location.to_tuple(): intrinsic XYZ Euler angles, degrees; "
+        "rotation_convention": "build123d Location.orientation: intrinsic XYZ Euler angles, degrees; "
                                "rebuild with Location(position, rotation_xyz_deg). matrix_3x4 = rows of the "
                                "gp_Trsf (rotation | translation) for other consumers.",
         "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. "

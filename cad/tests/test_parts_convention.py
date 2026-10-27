@@ -171,7 +171,7 @@ def test_part_builds_valid_labelled_geometry(name):
 def test_part_survives_a_bintools_round_trip(name):
     """cadgen keeps every part as BinTools BREP bytes (format VERSION_4: its document cache, and the wire its STEP
     reader hands a build) and reads them back. OCCT 7.8.1's reader mis-framed those streams for 11 of our parts
-    (the reason this project is on OCP 7.9) - this locks that the kernel in use round-trips every part."""
+    (the reason this project left OCP 7.8) - this locks that the kernel in use round-trips every part."""
     import io
 
     import build123d as bd
