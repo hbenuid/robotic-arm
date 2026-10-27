@@ -38,9 +38,10 @@ as a git note).
   `~/.local/state/cadgen/` on Linux, `~/Library/Application Support/cadgen/` on the Mac), which the processes cadtool
   does not start go by — the environment does not reach them. The stored answer is per machine: `telemetry` →
   `choice: off` in that file is the check. `test_tooling.py` holds both.
-- **build123d 0.11.1 / OCP 7.9.3**: cadgen requires `build123d>=0.11.1,<0.12` and `cadquery-ocp-novtk>=7.9,<8`;
-  `pyproject.toml` pins the exact kernel (`cadquery-ocp-novtk==…`, the STEP bytes are per-kernel) and must never gain
-  `cadquery-ocp`, the VTK build (see Gotchas below). On OCCT 7.8.1 some parts could not be read back from the BinTools
+- **build123d 0.13.0 / OCP 8.0.1 (OCCT 8)**: cadgen 0.8.1 requires `build123d>=0.13.0,<0.14` and
+  `cadquery-ocp-novtk>=8.0,<8.1`; `pyproject.toml` pins the exact kernel (`cadquery-ocp-novtk==…`, the STEP bytes are
+  per-kernel) and must never gain `cadquery-ocp`, the VTK build (see Gotchas below). OCCT 8.0.1's two known defects and
+  what this repo checks for them: Gotchas below. On OCCT 7.8.1 some parts could not be read back from the BinTools
   VERSION_4 bytes cadgen keeps every part as (its document cache, its STEP reader's wire):
   `test_part_survives_a_bintools_round_trip` locks that.
 - Python is pinned to **3.12** (`.python-version`; the OCP wheels are verified on 3.12 — bump only with the full suite
@@ -81,9 +82,25 @@ in a shell profile (it overrides the plugin detection).
   document by the toolchain (build123d, OCP, the system and the architecture) — not by cadgen's release, which it
   records only — so a cadgen bump makes no model rebuild and a plain `gen` afterwards rewrites nothing: to hash-gate a
   bump, build every model on the old pin (a fresh worktree has no STEPs), hash, then `./cadtool stop` and
-  `./cadtool gen --force <every model>` on the new one and `shasum -c`. A bump whose STEP writer changed (0.7 → 0.8)
-  changes the bytes: compare the geometry instead, every leaf in world coordinates (`./cadtool inspect diff`, after
-  checking that `facts()` reads the old files the same way).
+  `./cadtool gen --force <every model>` on the new one and `shasum -c`. A bump whose STEP writer or kernel changed
+  (0.7 → 0.8, OCCT 7.9 → 8) changes the bytes: compare the geometry instead, every leaf in world coordinates
+  (`./cadtool inspect diff`, after checking that `facts()` reads the old files the same way: the old STEPs read by the
+  old venv and by the new one). A new kernel can re-approximate a curve it builds (a chamfer along a spline) with
+  another degree and other poles: the surface stays put, but `volume` - an integral over the representation - moves by
+  float noise above `inspect diff`'s default `--tol` (OCCT 8: `cycloidal_disc_2`, 2.6e-6 relative). Settle such a
+  leaf by sampling its faces' distance to the old ones (`Face.position_at` → `distance_to`), not by the volume alone.
+- **OCCT 8 renamed what this repo reaches in `OCP` directly** (cadgen 0.8.1's
+  `docs/migrations/migrating-to-opencascade-8.md` has the full table): the collections moved to `OCP.collections`,
+  named by their template arguments (`TopTools_ListOfShape` → `List_TopoDS_Shape`, `TopTools_IndexedMapOfShape` →
+  `IndexedMap_TopoDS_Shape_TopTools_ShapeMapHasher`), the downcasts lost their `_s` (`TopoDS.Face_s` → `TopoDS.Face`),
+  `Bnd_Box.Get()` is unbound (`CornerMin()` / `CornerMax()`). build123d 0.12 removed its deprecated API
+  (`Location.to_tuple()` → `tuple(loc)`).
+- **OCCT 8.0.1's two known defects.** `BRepBndLib.AddOptimal` - what build123d's `bounding_box()` uses - can return a
+  box smaller than a B-spline shape (OCCT #1604): on the 0.8.1 bump every leaf's box read by OCCT 8 matched OCCT 7.9's
+  to 1e-6 mm, but a new vendor STEP or a new spline part is unchecked - compare its `bounding_box()` with cadgen's
+  support-plane box (`cadgen.engine.kernel.bounds.optimal_box(shape.wrapped)`, a private name) before a box of it
+  becomes a lock or an envelope. A sweep along a binormal guide curve distorts its profile while still reporting valid
+  (OCCT #1681): `cad/` has no sweep; a model that needs a guided one checks its volume against the profile's.
 - The private names this repo leans on — re-check them on a bump: `cadgen.engine.model._CONTEXT.build` (a build in
   progress on this thread: `lib/models.py building()`), a model's `.function` / `.outputs` (`Output.kind` / `.out`) /
   `__xbf_model__` and `Model.build` (`lib/models.py`, `tests/conftest.py`, `test_parts_convention.py`) — and that

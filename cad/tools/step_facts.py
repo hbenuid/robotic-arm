@@ -59,14 +59,14 @@ def leaves(path: str | pathlib.Path) -> list[tuple[str, str, object]]:
 def _faces(shape) -> list:
     """The part's faces by ordinal (index 0 = `face 1`), as cadgen numbers them."""
     import build123d as bd
+    from OCP.collections import IndexedMap_TopoDS_Shape_TopTools_ShapeMapHasher  # OCCT 8: TopTools_IndexedMapOfShape
     from OCP.TopAbs import TopAbs_FACE
     from OCP.TopExp import TopExp
     from OCP.TopoDS import TopoDS
-    from OCP.TopTools import TopTools_IndexedMapOfShape
 
-    mapped = TopTools_IndexedMapOfShape()
+    mapped = IndexedMap_TopoDS_Shape_TopTools_ShapeMapHasher()
     TopExp.MapShapes_s(shape.wrapped, TopAbs_FACE, mapped)
-    return [bd.Face(TopoDS.Face_s(mapped.FindKey(i))) for i in range(1, mapped.Extent() + 1)]
+    return [bd.Face(TopoDS.Face(mapped.FindKey(i))) for i in range(1, mapped.Extent() + 1)]
 
 
 def facts(path: str | pathlib.Path) -> dict:

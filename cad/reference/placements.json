@@ -7,7 +7,7 @@
   "extracted": "2026-09-21",
   "build123d": "0.11.1"
  },
- "rotation_convention": "build123d Location.to_tuple(): intrinsic XYZ Euler angles, degrees; rebuild with Location(position, rotation_xyz_deg). matrix_3x4 = rows of the gp_Trsf (rotation | translation) for other consumers.",
+ "rotation_convention": "build123d Location.orientation: intrinsic XYZ Euler angles, degrees; rebuild with Location(position, rotation_xyz_deg). matrix_3x4 = rows of the gp_Trsf (rotation | translation) for other consumers.",
  "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. A record with a `mount` block (keys under `mounted`) is a motor mount declared in lib/mounts.py, not a SolidWorks node: parent None, rel == world = host world * mount frame.",
  "root_label": "final_Arm_Assembly_Fully_Movable",
  "expected": {

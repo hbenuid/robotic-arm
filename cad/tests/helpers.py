@@ -37,14 +37,14 @@ def interference(a: Shape, b: Shape) -> float:
     from OCP.Bnd import Bnd_Box
     from OCP.BRepAlgoAPI import BRepAlgoAPI_Common
     from OCP.BRepBndLib import BRepBndLib
-    from OCP.TopTools import TopTools_ListOfShape
+    from OCP.collections import List_TopoDS_Shape  # OCCT 8: TopTools_ListOfShape
 
     box_a, box_b = Bnd_Box(), Bnd_Box()
     BRepBndLib.Add_s(a.wrapped, box_a, False)   # from the geometry: the shapes' meshes stay as they are
     BRepBndLib.Add_s(b.wrapped, box_b, False)
     if box_a.IsOut(box_b):
         return 0.0
-    args, tools = TopTools_ListOfShape(), TopTools_ListOfShape()
+    args, tools = List_TopoDS_Shape(), List_TopoDS_Shape()
     args.Append(a.wrapped)
     tools.Append(b.wrapped)
     op = BRepAlgoAPI_Common()

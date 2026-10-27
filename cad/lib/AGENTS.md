@@ -58,8 +58,9 @@ Changing a shared dimension — touchpoints in order:
 | 3 | Recipe C (`cad/AGENTS.md`) | regenerate, hash-gate, the full suite, the robot, the snapshots |
 
 ## Kernel gotchas (all verified)
-- `Compound.volume` skips nested sub-assemblies (build123d 0.10 and 0.11) — use `lib.reference.solid_volume()`.
-- `is_valid` is a **property**; `Location.to_tuple()` is deprecated (`tuple(loc)` → two Vectors).
+- `Compound.volume` skips nested sub-assemblies (build123d 0.10 to 0.13) — use `lib.reference.solid_volume()`.
+- `is_valid` is a **property**; `Location.to_tuple()` is gone (build123d 0.12): `tuple(loc)` → two Vectors,
+  `loc.position` / `loc.orientation`.
 - `Face.center()` on a cylindrical face is the SURFACE midpoint (a half-cylinder reports axis ± r), not the axis:
   measure axes with `BRepAdaptor_Surface(face.wrapped).Cylinder().Axis()` (`tools/reference/split_mks_motor.py
   cylinders()`) or `Face.axis_of_rotation`, and bolt patterns from those, never from face centres.
