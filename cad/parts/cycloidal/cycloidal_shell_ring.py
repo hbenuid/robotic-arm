@@ -51,7 +51,7 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     return chamfer_outer_silhouette(single_solid(ring), cfg, external_z=z0)
 
 
-@step
+@step(out="cycloidal_shell_ring.step")
 def cycloidal_shell_ring():
     """Return the ring at its LOCAL origin (= its stack position: the motor plate's outer face at z=0, the lip in -Z)."""
     part = build()

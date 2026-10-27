@@ -26,7 +26,7 @@ CONVERTED = True
 LOCAL_FROM_REF = IDENTITY     # modelled in its own frame (on the idler's axle)
 
 
-@step
+@step(out="yaw_idler_spacer.step")
 def yaw_idler_spacer():
     """The spacer at its local origin (the land's face on the axis); the assembly owns placement."""
     part = build_yaw_idler_spacer(DEFAULT)

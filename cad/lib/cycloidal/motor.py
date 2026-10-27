@@ -18,7 +18,7 @@ Kernel lazy: `bd.` names only inside the functions (lib/geom.py convention).
 """
 from __future__ import annotations
 
-from cadgen import build123d as bd
+import build123d as bd
 
 from lib.geom import cylinder, single_solid
 from lib.units import NUDGE

@@ -31,7 +31,7 @@ def build(cfg: ForearmConfig = DEFAULT):
     return build_shaft(cfg)
 
 
-@step
+@step(out="forearm_roll_shaft.step")
 def forearm_roll_shaft():
     """The part in the module frame at its stack station (the module owns placement)."""
     part = build()

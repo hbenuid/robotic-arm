@@ -39,7 +39,7 @@ def _envelope():
     return pattern(hex_nut(M4_NUT, math.atan2(y, x) + math.pi / 6.0, (x, y)) for x, y in pulley_90t_bolt_points())
 
 
-@step
+@step(out="elbow_pulley_nuts.step")
 def elbow_pulley_nuts():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

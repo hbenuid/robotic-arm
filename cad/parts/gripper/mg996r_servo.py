@@ -13,7 +13,7 @@ else the parametric envelope below - both in the SolidWorks frame placements.jso
 """
 import pathlib
 
-from cadgen import build123d as bd
+import build123d as bd
 from cadgen import step
 
 from lib.cots import hybrid
@@ -37,7 +37,7 @@ def _envelope():
     return bd.Box(55.8, 45.2, 20.5, align=(bd.Align.MIN, bd.Align.MIN, bd.Align.MIN)).moved(bd.Location((-28.5, -0.0, -10.25)))
 
 
-@step
+@step(out="mg996r_servo.step")
 def mg996r_servo():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

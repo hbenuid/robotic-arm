@@ -14,7 +14,7 @@ else the parametric envelope below - both in the SolidWorks frame placements.jso
 """
 import pathlib
 
-from cadgen import build123d as bd
+import build123d as bd
 from cadgen import step
 
 from lib.cots import hybrid
@@ -39,7 +39,7 @@ def _envelope():
     return bd.Cylinder(8.0, 14.45, rotation=(0, 90, 0), align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MIN)).moved(bd.Location((0.0, 0.0, 0.0)))
 
 
-@step
+@step(out="gt2_pulley_20t.step")
 def gt2_pulley_20t():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

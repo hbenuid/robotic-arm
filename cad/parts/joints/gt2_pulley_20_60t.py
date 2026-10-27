@@ -31,7 +31,7 @@ UNPLACED = ("the elbow drive runs in one stage - the elbow motor's 20T straight 
             "kept for a second stage if the elbow needs its torque (docs/open_issues.md)")
 
 
-@step
+@step(out="gt2_pulley_20_60t.step")
 def gt2_pulley_20_60t():
     """The pulley at its local origin (the 60T band's bottom on the axis); the assembly owns placement."""
     part = build_compound(COMPOUND)

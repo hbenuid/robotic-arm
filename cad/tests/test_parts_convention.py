@@ -2,8 +2,8 @@
 
 Auto-discovers parts exactly like the assemblies do (parts.names(): every module under a group
 package that does not start with '_') and checks each honours the cadgen `@step` contract: importable
-with no side effects, ONE `@step def <name>()` model named after the file whose STEP is the
-sibling file (no out=), whose body (parts.build(name) - never the model itself, that would start a
+with no side effects, ONE `@step(out="<name>.step") def <name>()` model named after the file whose one output
+is the sibling STEP, whose body (parts.build(name) - never the model itself, that would start a
 build) returns a valid, non-empty, labelled shape, plus the wrapper / designed / native / measured / no-reference / COTS
 metadata this repo adds. New parts are covered the moment they land.
 """
@@ -92,10 +92,10 @@ def test_part_declares_its_contract(name):
     """Fast: metadata only, no geometry."""
     mod = parts.load(name)
     assert not hasattr(mod, "gen_step"), f"parts.{name}: gen_step() is the pre-0.5 convention - decorate `def {name}()` with @step"
-    m = parts.model(name)   # raises unless `@step def <name>()` exists
+    m = parts.model(name)   # raises unless a model `def <name>()` exists
     assert m.__name__ == name
-    assert m.__cadgen_model__.fmt == "step", f"parts.{name}: the model must be a @step model"
-    assert m.__cadgen_model__.out is None, f"parts.{name}: no out= - the STEP is the sibling parts/<group>/{name}.step"
+    assert [(o.kind, o.out) for o in m.outputs] == [("step", f"{name}.step")], (
+        f"parts.{name}: one output, `@step(out=\"{name}.step\")` - the sibling parts/<group>/{name}.step")
     assert runs_its_model(parts.source_of(name), name), (
         f"parts.{name}: the file must end with `if __name__ == \"__main__\": {name}()` - without it `./cadtool gen` builds nothing")
     unplaced = getattr(mod, "UNPLACED", None)
@@ -168,16 +168,23 @@ def test_part_builds_valid_labelled_geometry(name):
 
 @pytest.mark.slow
 @pytest.mark.parametrize("name", PART_NAMES)
-def test_part_survives_cadgen_component_round_trip(name):
-    """cadgen stores every component as BinTools BREP bytes (format VERSION_4) and reads them back
-    to write the STEP and to link children. OCCT 7.8.1's reader mis-framed those streams for 11 of
-    our parts (the reason this project is on OCP 7.9) - this locks that the writer in use round-trips
-    every part."""
-    from cadgen._internal import component_package as cp
+def test_part_survives_a_bintools_round_trip(name):
+    """cadgen keeps every part as BinTools BREP bytes (format VERSION_4: its document cache, and the wire its STEP
+    reader hands a build) and reads them back. OCCT 7.8.1's reader mis-framed those streams for 11 of our parts
+    (the reason this project is on OCP 7.9) - this locks that the kernel in use round-trips every part."""
+    import io
+
+    import build123d as bd
+    from OCP.BinTools import BinTools, BinTools_FormatVersion
+    from OCP.TopoDS import TopoDS_Shape
 
     shape = built.part(name)
-    back = cp._build123d_shape_from_brep_bytes(cp._shape_brep_bytes(shape))
-    assert back.is_valid and len(back.solids()) == len(shape.solids())
+    stream = io.BytesIO()
+    BinTools.Write_s(shape.wrapped, stream, False, False, BinTools_FormatVersion.BinTools_FormatVersion_VERSION_4)
+    topo = TopoDS_Shape()
+    BinTools.Read_s(topo, io.BytesIO(stream.getvalue()))
+    back = bd.Compound(topo)
+    assert not topo.IsNull() and back.is_valid and len(back.solids()) == len(shape.solids())
     assert abs(R.solid_volume(back) - R.solid_volume(shape)) < 1e-6 * max(1.0, R.solid_volume(shape))
 
 

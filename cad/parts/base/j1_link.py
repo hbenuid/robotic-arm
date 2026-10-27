@@ -56,7 +56,7 @@ def REFERENCE_BUILD():
     return build_link(LEGACY)
 
 
-@step
+@step(out="j1_link.step")
 def j1_link():
     """The upper arm at its local origin (the shoulder axis); the assembly owns placement."""
     part = build_link(DEFAULT)

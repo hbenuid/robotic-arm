@@ -6,7 +6,7 @@ from cadgen import step
 from robot._links import build_link
 
 
-@step
+@step(out="base_link.step")
 def base_link():
     return build_link("base_link")
 

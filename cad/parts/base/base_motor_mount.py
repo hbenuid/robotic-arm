@@ -45,7 +45,7 @@ def build(cfg: BaseConfig = DEFAULT):
     return build_motor_mount(cfg)
 
 
-@step
+@step(out="base_motor_mount.step")
 def base_motor_mount():
     """The part in the base's part frame (lib/mounts.py places it on base#1 at identity)."""
     part = build()

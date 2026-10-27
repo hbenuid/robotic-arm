@@ -48,7 +48,7 @@ def _envelope():
     return pattern(shcs(SCREW, LENGTH, xy) for xy in POINTS)
 
 
-@step
+@step(out="roll_clamp_screws.step")
 def roll_clamp_screws():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

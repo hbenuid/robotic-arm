@@ -69,7 +69,7 @@ EXPECTED = {
 }
 
 
-@step
+@step(out="wrist_roll_drive.step")
 def wrist_roll_drive():
     """The drive in its module frame (printed parts TINT, purchased parts BOUGHT_TINT)."""
     return assembly("wrist_roll_drive", located_children(OCCURRENCES, tint=TINT))

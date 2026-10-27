@@ -19,7 +19,7 @@ from __future__ import annotations
 import functools
 import math
 
-from cadgen import build123d as bd
+import build123d as bd
 
 from lib.base.params import DEFAULT as _BASE
 

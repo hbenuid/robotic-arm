@@ -37,7 +37,7 @@ def build(cfg: ForearmConfig = DEFAULT):
     return build_block(cfg)
 
 
-@step
+@step(out="forearm_roll_block.step")
 def forearm_roll_block():
     """The part in the module frame at its stack station (the module owns placement)."""
     part = build()

@@ -30,7 +30,7 @@ def _envelope(cfg: DriveConfig = DEFAULT_CONFIG):
     return cylinder(s.support_pin_dia / 2.0, s.support_pin_length)
 
 
-@step
+@step(out="cycloidal_shaft_support_pin.step")
 def cycloidal_shaft_support_pin():
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)
 

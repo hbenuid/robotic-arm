@@ -22,7 +22,7 @@ CONVERTED = False             # True once gripper_cover() is parametric build123
 LOCAL_FROM_REF = IDENTITY   # reference frame -> this part's local frame (identity = SolidWorks frame)
 
 
-@step
+@step(out="gripper_cover.step")
 def gripper_cover():
     """Return the reference geometry as a labelled Solid/Compound in this part's local frame."""
     shape = reference.load(REFERENCE).moved(to_location(LOCAL_FROM_REF))

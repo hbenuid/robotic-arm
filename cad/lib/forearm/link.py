@@ -1,7 +1,7 @@
 """build123d builder of j2_link (the forearm web) from a ForearmConfig, in j2_link's part frame."""
 from __future__ import annotations
 
-from cadgen import build123d as bd
+import build123d as bd
 
 from lib.belts import GT2_IDLER_WIDTH
 from lib.forearm.layout import (

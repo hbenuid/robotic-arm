@@ -31,7 +31,7 @@ def _envelope():
     return cylinder(BEARING_6806_OD / 2.0, BEARING_6806_WIDTH) - cylinder(BEARING_6806_BORE / 2.0, BEARING_6806_WIDTH)
 
 
-@step
+@step(out="bearing_6806.step")
 def bearing_6806():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

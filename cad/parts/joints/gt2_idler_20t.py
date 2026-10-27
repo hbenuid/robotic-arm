@@ -53,7 +53,7 @@ def _envelope():
     return body - through(GT2_IDLER_BORE / 2.0, GT2_IDLER_WIDTH)
 
 
-@step
+@step(out="gt2_idler_20t.step")
 def gt2_idler_20t():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

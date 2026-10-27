@@ -12,16 +12,16 @@ ModuleMount, their contents are not (located_children / world_rows), and their B
 into rigid bodies ("cycloidal_drive#1:rotor", split_key) for the robot description.
 
 A child is a cadgen MODEL (parts.model(name), assemblies.<module>.<module>) reached through
-lib.models.geometry(): inside a cadgen build that is the linked child (built in parallel, the
-parent's STEP links its tree) - or, for the tinted GROUPS of the arm, an inline copy that still
-pins and rebuilds the child; outside one (tests, tools, previews) it is the model body run
-in-process, so nothing here ever starts a build or writes a file.
+lib.models.geometry(): inside a cadgen build that is the child model's result (it runs as the build's child,
+replayed when unchanged, and writes its own STEP) as a copy the parent owns - the arm re-tints it; outside one
+(tests, tools, previews) it is the model body run in-process, so nothing here ever starts a build or writes a
+file.
 """
 from __future__ import annotations
 
 import importlib
 
-from cadgen import build123d as bd
+import build123d as bd
 
 import parts  # stdlib-only package index; parts.load() imports a part lazily
 from lib import placements as P
@@ -35,20 +35,19 @@ def _local_from_ref(part_name: str) -> bd.Location:
     return to_location(getattr(parts.load(part_name), "LOCAL_FROM_REF", IDENTITY))
 
 
-def _part(part_name: str, *, inline: bool = False):
-    """The part's geometry: linked child in a build (or an inline copy that still pins the child),
-    a fresh in-process build otherwise."""
-    return geometry(parts.model(part_name), inline=inline)
+def _part(part_name: str):
+    """The part's geometry: the child model's result in a build, a fresh in-process build otherwise."""
+    return geometry(parts.model(part_name))
 
 
-def place(part_name: str, key: str, *, inline: bool = False, root: bd.Location | None = None):
+def place(part_name: str, key: str, *, root: bd.Location | None = None):
     """parts.model(part_name) placed at occurrence `key`.
 
     The part is modelled in its LOCAL frame (= LOCAL_FROM_REF * reference frame); the
     extracted placement maps the REFERENCE frame into the parent frame, so compose
     rel * LOCAL_FROM_REF^-1 and MOVE (compose) rather than locate (replace). `root` (parent
     frame -> output frame) re-expresses the occurrence in another frame: root * rel * ..."""
-    return _part(part_name, inline=inline).moved(
+    return _part(part_name).moved(
         (root or bd.Location()) * P.location(key, "rel") * _local_from_ref(part_name).inverse())
 
 
@@ -77,11 +76,13 @@ def occurrence_children(rows, modules: dict | None = None, tint: str | None = No
 
 
 def _tint(shape, color: bd.Color) -> None:
-    """Set `color` on `shape` and every descendant. A leaf is rendered in its own color, so tint the
-    whole subtree - which is why the grouped occurrences are inline copies: a linked child keeps its own
-    (untinted) leaves."""
-    shape.color = color
-    for child in getattr(shape, "children", ()) or ():
+    """Set `color` on every LEAF of `shape` (on `shape` itself when it has no children). Never on an inner node:
+    cadgen 0.8 writes a multi-solid part's colour on its solids, and a colour on an enclosing assembly
+    instance outranks those in the renderers (a bought board drew in its link's tint)."""
+    children = getattr(shape, "children", ()) or ()
+    if not children:
+        shape.color = color
+    for child in children:
         _tint(child, color)
 
 
@@ -98,8 +99,10 @@ def _tint_parts(shape, color: bd.Color) -> None:
     if name in parts.MODULES:
         _tint(shape, bd.Color(BOUGHT_TINT) if parts.bought(name) else color)
         return
-    shape.color = color
-    for child in getattr(shape, "children", ()) or ():
+    children = getattr(shape, "children", ()) or ()
+    if not children:
+        shape.color = color
+    for child in children:
         _tint_parts(child, color)
 
 
@@ -113,15 +116,12 @@ def grouped_children(rows, groups, modules: dict | None = None,
     distinct inside their group); every PURCHASED part, inside the modules too, gets BOUGHT_TINT
     (_tint_parts) - so the assembly shows at a glance what was bought. Tints overwrite
     imported-STEP colors on the per-build copies only — standalone part/module previews are
-    untouched. Because of the tints the members are INLINE copies (geometry(..., inline=True)):
-    inside a cadgen build the child models are still called - pinned, rebuilt in parallel, their
-    git-ignored STEPs rewritten when stale - but the assembly's STEP carries its own recoloured
-    geometry instead of links.
+    untouched: a child's result in a build is a new placement the parent owns, so its tints stay in this
+    assembly's STEP.
 
     `root` (placements' parent frame -> output frame) re-expresses the whole assembly in another
-    frame by composing into every occurrence's placement (root * rel). It has to go there: cadgen's
-    STEP packager reads the children's locations only, so a .moved() on the built root Compound
-    would move the in-process shape but not the written STEP."""
+    frame by composing into every occurrence's placement (root * rel), so the root Compound itself stays at the
+    identity."""
     modules = modules or {}
     module_tints = module_tints or {}
     root = root or bd.Location()
@@ -132,9 +132,9 @@ def grouped_children(rows, groups, modules: dict | None = None,
     shapes = {}
     for name, role, key in rows:
         if name in modules:
-            shape = label_shape(geometry(modules[name], inline=True).moved(root * P.location(key, "rel")), name)
+            shape = label_shape(geometry(modules[name]).moved(root * P.location(key, "rel")), name)
         else:
-            shape = label_shape(place(name, key, inline=True, root=root), name, *_details(role))
+            shape = label_shape(place(name, key, root=root), name, *_details(role))
         shapes[key] = shape
     nodes = []
     for group_label, tint, keys in groups:
@@ -142,7 +142,7 @@ def grouped_children(rows, groups, modules: dict | None = None,
         for key in keys:
             _tint_parts(shapes[key], bd.Color(module_tints.get(key, tint)))
             members.append(shapes[key])
-        nodes.append(assembly(group_label, members, color=bd.Color(tint)))
+        nodes.append(assembly(group_label, members))
     return nodes
 
 

@@ -40,7 +40,7 @@ def _envelope():
     return pattern(hex_nut(M4_NUT, math.radians(CORNER_DEG), xy) for xy in fork_foot_screw_points())
 
 
-@step
+@step(out="fork_foot_nuts.step")
 def fork_foot_nuts():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

@@ -75,7 +75,7 @@ def model(name: str):
 
 
 def build(name: str):
-    """The part's geometry built in-process - the model BODY: no freshness gate, no store, nothing
+    """The part's geometry built in-process - the model BODY: no engine, nothing
     written. What tests and tools want; assemblies call lib.models.geometry(model(name)) instead."""
     from lib.models import raw
 

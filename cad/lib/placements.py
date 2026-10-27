@@ -27,7 +27,7 @@ import math
 import pathlib
 from dataclasses import dataclass
 
-from cadgen import build123d as bd
+import build123d as bd
 
 from lib.forearm.params import DEFAULT as _FOREARM
 from lib.forearm.params import LEGACY as _FOREARM_LEGACY

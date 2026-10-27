@@ -6,7 +6,7 @@ from cadgen import step
 from robot._links import build_link
 
 
-@step
+@step(out="wrist_roll_link.step")
 def wrist_roll_link():
     return build_link("wrist_roll_link")
 

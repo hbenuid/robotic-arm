@@ -6,7 +6,7 @@ pattern and chamfer but disc 2's epitrochoid is phase-rotated by ``cfg.gear.disc
 """
 from __future__ import annotations
 
-from cadgen import build123d as bd
+import build123d as bd
 
 from lib.cycloidal.layout import output_pin_points
 from lib.cycloidal.params import DEFAULT_CONFIG, DriveConfig

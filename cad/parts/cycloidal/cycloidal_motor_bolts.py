@@ -31,7 +31,7 @@ def _envelope(cfg: DriveConfig = DEFAULT_CONFIG):
                    for xy in motor_bolt_points(cfg))
 
 
-@step
+@step(out="cycloidal_motor_bolts.step")
 def cycloidal_motor_bolts():
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)
 

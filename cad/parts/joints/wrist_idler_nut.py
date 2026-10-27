@@ -38,7 +38,7 @@ def _envelope():
     return pattern([hex_nut(NUT, math.radians(CORNER_DEG))])
 
 
-@step
+@step(out="wrist_idler_nut.step")
 def wrist_idler_nut():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

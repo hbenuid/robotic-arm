@@ -38,7 +38,7 @@ def _envelope():
     return pattern([shcs(SCREW, LENGTH)])
 
 
-@step
+@step(out="elbow_idler_screw.step")
 def elbow_idler_screw():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

@@ -29,8 +29,8 @@ mounts.py     # what the SolidWorks capture never placed right, as frames-as-dat
 reference.py  # naming maps (SolidWorks custom/COTS, designed cycloidal parts, native and measured parts, the parts designed here with no reference - NO_REFERENCE -, modules), loaders, path_of(), matches_reference()
 manifest.py   # reference/manifest.json: read() / write() / entry() - shared by the import tools (import_solidworks, import_cadquery, import_native) and the tests
 placements.py # reference/placements.json -> build123d Location; the design's changes to capture records (RETIRED, SHIFTS, TURNS)
-models.py     # model_of() / raw() / geometry(inline=): the @step model of a module, its body, a child for an assembly
-assembly.py   # assembly(name, children): the native labelled Compound node; label_shape / label_text from cadgen
+models.py     # model_of() / raw() / geometry() / building(): the @step model of a module, its body, a child for an assembly
+assembly.py   # assembly(name, children): the native labelled Compound node; label_shape / label_text (`name:detail`)
 cycloidal/    # the cycloidal drive: DriveConfig (params.py), layout.py, profiles.py, housing.py, disc.py, motor.py (THE NEMA 17 pilot + shaft, every kit motor's)
 ```
 

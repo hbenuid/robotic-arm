@@ -31,7 +31,6 @@ cd cad
 ./cadtool setup                  # uv sync (build123d/OCP/cadgen into ./.venv, bytecode compiled; reinstalls the OCP kernel if it does not import)
                                  # + the git pre-commit hook (ruff on staged .py files) + git notes fetching
                                  # + cadgen's telemetry stored off
-                                 # + Playwright's headless shell (~100 MB, snapshots only)
 ./cadtool gen assemblies/arm.py  # build the arm: generated STEPs are git-ignored, each machine builds its own
 ./cadtool pytest                 # everything green?
 ```
@@ -45,32 +44,32 @@ the CAD kernel), updating the plugin and what a pull that changes `pyproject.tom
 
 | Command | What it does |
 |---|---|
-| `./cadtool gen parts/<group>/<name>.py` (alias `step`) | **run the model script**: writes `parts/<group>/<name>.step` beside it (git-ignored), or prints `current …` when nothing changed; `--force` rebuilds |
-| `./cadtool gen assemblies/arm.py` | build `assemblies/arm.step` (git-ignored), rebuilding every stale part first |
+| `./cadtool gen parts/<group>/<name>.py` (alias `step`) | **run the model script**: this venv's cadgen engine builds it and writes `parts/<group>/<name>.step` beside it (git-ignored); `took … nothing ran` when nothing changed, else `rebuilt:` names what did; `--force` runs every kernel call again |
+| `./cadtool gen assemblies/arm.py` | build `assemblies/arm.step` (git-ignored); every part runs with it (replayed when unchanged) and writes its own STEP |
 | `./cadtool python tools/bom.py [--module <module>] [--md\|--json]` | the **print list** and the **buy list**, of the arm or of one module of `assemblies/arm.py MODULES` ([`parts/AGENTS.md`](parts/AGENTS.md) Printed vs. bought) |
 | `./cadtool python tools/export_printables.py [--parts …]` | one STL per **printed** part into `print/` (git-ignored) |
-| `./cadtool why <model.py>` | why the model is current or stale, clause by clause (`cadgen store why`) |
-| `./cadtool compile [file.step…]` | compile the committed STEP inputs' trees (`reference/`, `vendor/`) into the store in one process — on a cold store (a fresh clone, CI) each is otherwise compiled on its first read, in a process of its own; current ones are skipped |
-| `./cadtool export <file.step> stl\|3mf\|glb [out]` | one mesh file per call from a STEP document (Node 20+; `--mesh-tolerance` is *relative*, default 1.5e-3 of the bounding diagonal) |
-| `./cadtool inspect <file.step> [--planes] [--json]` | leaf refs, solids, faces, volume, bbox of a saved STEP (`--planes`: its planar faces) |
+| `./cadtool export <file.step> stl\|3mf\|glb [out]` | one mesh file per call from a STEP document (default: beside it) |
+| `./cadtool inspect <file.step> [--planes] [--json]` | every leaf's ref, solids, faces, volume, bbox of a saved STEP (`--planes`: its planar faces) |
+| `./cadtool cadgen inspect <file.step> "<ref>"` | what one ref (an occurrence path, `…/face 7`) names, and its measures |
 | `./cadtool inspect diff <a.step> <b.step> [--tol X]` | same geometry, leaf by leaf, as a copy kept from before a change? |
-| `./cadtool snapshot assemblies/arm.step snapshots/arm.png --size-profile assembly --view-labels` | a PNG still for review — also `.urdf`/`.sdf`/`.stl` inputs |
-| `./cadtool viewer [--port N]` | the CAD Viewer: `http://127.0.0.1:3245/?file=assemblies/arm.step` |
+| `./cadtool snapshot assemblies/arm.step snapshots/arm.png --size-profile assembly` | a PNG still for review — also `.urdf`/`.sdf`/`.stl` inputs |
+| `./cadtool viewer [file…]` | the CAD Viewer: opens each file's page in this venv's engine (default `assemblies/arm.step`; the link is good for a day) |
+| `./cadtool status` / `./cadtool stop` | this venv's cadgen engine: what it runs and holds / stop it (after a `pyproject.toml` change, when leaving a worktree) |
 | `./cadtool validate robot/arm.urdf --strict` (`.srdf`, `.sdf --gz-check never`) | robot-description validators |
 | `./cadtool parts "<query>" [--download --id <id> --filename <name>.step]` | step.parts search / download into `vendor/` |
 | `./cadtool skill <skill> <tool> [args]` | a plugin skill script (`dfam-check dfam_tool.py`, `dfm mold_tool.py`, …), its `requirements.txt` fetched into uv's cache |
-| `./cadtool cadgen …` / `store …` / `daemon …` | any `cadgen` subcommand; `./cadtool daemon stop` ends the warm build daemon |
-| `./cadtool doctor` | installed cadgen vs the plugin's pin, Node, Playwright's headless shell |
+| `./cadtool cadgen …` | any `cadgen` subcommand |
+| `./cadtool doctor` | installed cadgen vs the plugin's pin, the OCP kernel, this venv's engine |
 | `./cadtool pytest [-m "not slow"] [-n 4]` | test suite (the fast lane skips geometry builds; `-n`: worker processes, a whole test file each) |
 | `./cadtool lint [--fix] [path…]` | `ruff check` over `cad/` |
 | `./cadtool python …` | any python in the venv with `PYTHONPATH=cad/` (`-c "from assemblies.cycloidal_drive import totals; print(totals())"`) |
 | `./cadtool clean [--all]` | delete `__pycache__/`, `.pytest_cache/`, `.ruff_cache/` (and any stray `__cadgen__/`); `--all` also empties `snapshots/` and `print/` and removes the git-ignored `assemblies/*.step`, `robot/links/*.step` |
 
-`cadtool` always `cd`s to `cad/` (cadgen resolves paths from the working directory and the viewer
-serves it) and exports `PYTHONPATH=cad/` so `lib`, `parts`, `assemblies`, `robot` import the same way
-for you, for cadgen's dependency scan and for its warm build daemon. Everything derived — trees,
-tessellations, the freshness records — lives in `~/.cache/cadgen` (`./cadtool store gc` sweeps it;
-deleting it is always safe). `CADGEN_DAEMON=0` runs a build on transient workers instead of the daemon.
+`cadtool` always `cd`s to `cad/` (cadgen resolves paths from the working directory) and exports
+`PYTHONPATH=cad/` so `lib`, `parts`, `assemblies`, `robot` import the same way for you and for the
+engine's workers. Everything derived — each model's document as last built, tessellations — lives in the
+engine and its cache `~/.cache/cadgen/documents` (`./cadtool cadgen delete <id>` removes one; a model's
+next run builds it again).
 
 
 ## Layout
@@ -112,10 +111,10 @@ vs. bought) · [`assemblies/`](assemblies/AGENTS.md) · [`robot/`](robot/AGENTS.
 
 The `text-to-cad@earthtojake` plugin's `/text-to-cad:*` skills drive the run-the-model → inspect → snapshot loop
 this repo is aligned with (plus `dfam-check` for printability, `step-parts`, and the URDF/SRDF/SDF
-skills); they assume the `cadgen` CLI on `PATH` — inside this project that is `./cadtool cadgen …`.
+skills); they run the plugin's own `cadgen` command — inside this project, `./cadtool …` (this venv's).
 The plugin also starts CAD's MCP server (`cad`) with every Claude Code session: asked to show a model, Claude
 answers with a link that opens it in the CAD Viewer (in Claude Desktop, a viewer card in the chat). It shows saved
-files only (STEP, URDF, STL …), runs its own pinned cadgen (not this venv), and sends no telemetry once
+files (STEP, URDF, STL …), runs its own pinned cadgen and engine (not this venv's), and sends no telemetry once
 `./cadtool setup` has stored cadgen's telemetry off ([`docs/toolchain.md`](docs/toolchain.md) Pins); `/mcp` turns the
 server off.
 Agent-facing conventions live in `AGENTS.md` and each folder's own `AGENTS.md`.

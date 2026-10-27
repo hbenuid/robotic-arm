@@ -4,7 +4,7 @@ modelled them, the boss's 20-tooth bore (and its recess into the plate) as the c
 the plate and the hub bolted to the wrist roll pulley's face (lib/wrist/roll.py), the cable bore through both."""
 from __future__ import annotations
 
-from cadgen import build123d as bd
+import build123d as bd
 
 from lib.geom import align_min, single_solid
 from lib.units import NUDGE

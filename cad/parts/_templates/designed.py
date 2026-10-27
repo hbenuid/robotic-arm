@@ -8,9 +8,10 @@ at the part's LOCAL origin - the assembly owns placement. Every part MUST:
   * have no import side effects - the `__main__` call is the BUILD (writes the sibling STEP);
     tests and tools use parts.build(name) (the body in-process, nothing written);
   * import `lib` / `parts` plainly: cadtool, pytest and .env put cad/ on the import path;
-  * keep the CAD kernel LAZY: `from cadgen import build123d as bd` and `bd.<name>` inside function
-    bodies only - no kernel object in a module-level constant or an argument default (cadgen gates an
-    unchanged model in ~0.1 s only while build123d / OCP are unloaded; tests/test_lazy_kernel.py).
+  * keep the CAD kernel LAZY: `import build123d as bd` (cadgen's import hook binds it unloaded) and
+    `bd.<name>` inside function bodies only - no kernel object in a module-level constant or an argument
+    default (a run the engine finds current never loads the kernel in the calling process;
+    tests/test_lazy_kernel.py).
     A frame the module declares is data: lib.datum.IDENTITY or ((x, y, z), (rx, ry, rz)).
 If the part replaces a SolidWorks reference, keep REFERENCE / LOCAL_FROM_REF (see
 _templates/wrapper.py) so tests/test_reference_match.py gates the conversion.
@@ -19,7 +20,7 @@ Generate the STEP:   ./cadtool gen parts/<group>/<name>.py
 """
 import pathlib
 
-from cadgen import build123d as bd
+import build123d as bd
 from cadgen import step
 
 from lib.datum import IDENTITY
@@ -36,7 +37,7 @@ depth = 20.0
 thickness = 3.0
 
 
-@step
+@step(out="designed.step")
 def designed():
     """Return the final Part at LOCAL origin (footprint centred, thickness along +Z)."""
     with bd.BuildPart() as bp:

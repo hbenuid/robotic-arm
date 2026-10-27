@@ -19,7 +19,7 @@ lib/sensors.py ky003_hall_point().
 """
 import pathlib
 
-from cadgen import build123d as bd
+import build123d as bd
 from cadgen import step
 
 from lib.cots import hybrid, pattern
@@ -128,7 +128,7 @@ def _envelope():
     return pattern([_board(), _chip(), _header()])
 
 
-@step
+@step(out="ky003_hall_sensor.step")
 def ky003_hall_sensor():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

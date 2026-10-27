@@ -7,7 +7,7 @@ drive's pins, bolts and nuts.
 """
 from __future__ import annotations
 
-from cadgen import build123d as bd
+import build123d as bd
 from cadgen import read_step
 
 from lib.datum import to_location

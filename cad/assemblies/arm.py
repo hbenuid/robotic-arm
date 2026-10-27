@@ -48,10 +48,10 @@ Z up, X forward, the base's mounting face on z = 0) - arm_from_w(), composed int
 are Z-up with no up-axis option, so a W-frame STEP renders lying on its side; in B arm.step and
 robot/arm.urdf open in the same pose. placements.json, the parts and the modules stay in W.
 
-Run:  ./cadtool gen assemblies/arm.py            -> assemblies/arm.step (git-ignored); every stale
-                                                  child part is rebuilt and its (git-ignored) STEP rewritten
+Run:  ./cadtool gen assemblies/arm.py            -> assemblies/arm.step (git-ignored); every child part runs
+                                                  with it (replayed when unchanged) and writes its (git-ignored) STEP
       ./cadtool inspect assemblies/arm.step      -> leaf refs, solids, faces, volume, bbox
-      ./cadtool viewer                           -> http://127.0.0.1:3245/?file=assemblies/arm.step
+      ./cadtool viewer                           -> the arm's page in this venv's cadgen engine
 """
 
 from cadgen import step
@@ -181,7 +181,7 @@ MODULE_TINTS = {DRIVE_KEY: cycloidal_drive.TINT, ROLL_KEY: forearm_roll_drive.TI
                 GRIPPER_KEY: gripper.TINT}  # the modules keep their own color in their group
 
 
-@step
+@step(out="arm.step")
 def arm():
     """The arm as a labelled Compound: 'arm' -> the GROUPS component nodes -> parts + the
     'gripper' and 'cycloidal_drive' modules, printed parts tinted with their group's color and

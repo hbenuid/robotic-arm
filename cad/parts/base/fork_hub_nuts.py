@@ -39,7 +39,7 @@ def _envelope():
     return pattern(hex_nut(M4_NUT, math.atan2(y, x), (x, y)) for x, y in fork_hub_screw_points())
 
 
-@step
+@step(out="fork_hub_nuts.step")
 def fork_hub_nuts():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

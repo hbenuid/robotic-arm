@@ -20,7 +20,7 @@ from __future__ import annotations
 import math
 from functools import partial
 
-from cadgen import build123d as bd
+import build123d as bd
 
 from lib.base.layout import (
     chamfer_inset,

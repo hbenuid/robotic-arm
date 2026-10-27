@@ -40,7 +40,7 @@ def REFERENCE_BUILD():
     return build(LEGACY_CONFIG)
 
 
-@step
+@step(out="cycloidal_disc_1.step")
 def cycloidal_disc_1():
     """Return the disc at its LOCAL origin."""
     part = build()

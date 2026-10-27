@@ -31,7 +31,7 @@ def _envelope():
     return cylinder(THRUST_OD / 2.0, THRUST_CAGE_WIDTH) - cylinder(THRUST_BORE / 2.0, THRUST_CAGE_WIDTH)
 
 
-@step
+@step(out="bearing_axk6590.step")
 def bearing_axk6590():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

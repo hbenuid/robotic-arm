@@ -82,7 +82,7 @@ EXPECTED = {
 }
 
 
-@step
+@step(out="forearm_roll_drive.step")
 def forearm_roll_drive():
     """The drive in its module frame (printed parts TINT, purchased parts BOUGHT_TINT)."""
     return assembly("forearm_roll_drive", located_children(OCCURRENCES, tint=TINT))

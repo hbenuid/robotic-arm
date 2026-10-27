@@ -41,7 +41,7 @@ def _envelope(cfg: DriveConfig = DEFAULT_CONFIG):
     return nema17_motor(cfg.motor, motor_bolt_points(cfg))
 
 
-@step
+@step(out="nema17_48mm.step")
 def nema17_48mm():
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)
 

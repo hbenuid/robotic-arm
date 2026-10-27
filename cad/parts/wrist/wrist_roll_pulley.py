@@ -25,7 +25,7 @@ def build(cfg: WristConfig = DEFAULT):
     return build_pulley(cfg)
 
 
-@step
+@step(out="wrist_roll_pulley.step")
 def wrist_roll_pulley():
     """The part in the module frame at its stack station (the module owns placement)."""
     part = build()

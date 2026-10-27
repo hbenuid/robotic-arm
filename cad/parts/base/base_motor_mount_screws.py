@@ -41,7 +41,7 @@ def _envelope():
     return pattern(shcs(M4_SHCS, LENGTH, xy) for xy in joint_bolt_points())
 
 
-@step
+@step(out="base_motor_mount_screws.step")
 def base_motor_mount_screws():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

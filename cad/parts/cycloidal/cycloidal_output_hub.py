@@ -83,7 +83,7 @@ def REFERENCE_BUILD():
     return build(LEGACY_CONFIG)
 
 
-@step
+@step(out="cycloidal_output_hub.step")
 def cycloidal_output_hub():
     """Return the hub at its LOCAL origin (inner face at z=0; the assembly lifts it to stack_positions z_hub)."""
     part = build()

@@ -37,7 +37,7 @@ def REFERENCE_BUILD():
     return build_coupler(LEGACY)
 
 
-@step
+@step(out="j3_coupler.step")
 def j3_coupler():
     """The coupler at its local origin (the flange's underside on the joint axis); the assembly owns placement."""
     part = build_coupler(DEFAULT)
