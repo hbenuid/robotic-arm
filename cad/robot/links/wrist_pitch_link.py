@@ -6,7 +6,7 @@ from cadgen import step
 from robot._links import build_link
 
 
-@step
+@step(out="wrist_pitch_link.step")
 def wrist_pitch_link():
     return build_link("wrist_pitch_link")
 

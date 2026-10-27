@@ -25,7 +25,7 @@ tests/test_reference_match.py); the model builds DEFAULT_CONFIG (the turning she
 """
 import pathlib
 
-from cadgen import build123d as bd
+import build123d as bd
 from cadgen import step
 
 from lib.cycloidal import (
@@ -135,7 +135,7 @@ def REFERENCE_BUILD():
     return build(LEGACY_CONFIG)
 
 
-@step
+@step(out="cycloidal_motor_plate.step")
 def cycloidal_motor_plate():
     """Return the plate at its LOCAL origin (= its stack position: outer face at z=0)."""
     part = build()

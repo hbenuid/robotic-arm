@@ -18,7 +18,8 @@ table, the drive ratios) to agree with `software/control/src/config.py`, and one
   `git worktree add .claude/worktrees/<topic> -b <branch> origin/main` (git-ignored), then Claude Code's EnterWorktree
   with that path. The new branch tracks `origin/main`: `git branch --unset-upstream`, and push it with
   `git push -u origin <branch>`. A worktree gets its own `cad/.venv` (`./cadtool setup` in its `cad/`) and has no
-  generated STEPs (Recipe C's "before" hashes: `cad/AGENTS.md`); the git hooks and `~/.cache/cadgen` are shared. In a
+  generated STEPs (Recipe C's "before" hashes: `cad/AGENTS.md`) and its venv runs a cadgen engine of its own
+  (`./cadtool stop` in its `cad/` before the worktree goes); the git hooks and `~/.cache/cadgen` are shared. In a
   worktree Claude Code refuses Bash commands it cannot confirm stay there (loops, heredocs, long `sed` / redirect
   chains on a path that contains `GitHub`): write a script and run it as one plain command, make edits with Edit.
 - **Every branch reaches `main` through a pull request** — several sessions work on branches at once and `main` moves

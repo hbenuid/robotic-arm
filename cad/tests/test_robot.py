@@ -44,7 +44,8 @@ def test_every_physical_link_has_a_runnable_model():
     files = {p.stem: p for p in (ROBOT_DIR / "links").glob("*.py") if p.stem != "__init__"}
     assert sorted(files) == sorted(PHYSICAL_LINKS)
     for link, path in files.items():
-        assert f"@step\ndef {link}():" in path.read_text(encoding="utf-8"), f"{path.name}: expected `@step def {link}()`"
+        assert f'@step(out="{link}.step")\ndef {link}():' in path.read_text(encoding="utf-8"), (
+            f"{path.name}: expected `@step(out=\"{link}.step\") def {link}()`")
         assert runs_its_model(path, link), f"{path.name}: must end with `if __name__ == \"__main__\": {link}()`"
 
 

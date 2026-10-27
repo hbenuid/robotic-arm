@@ -28,7 +28,7 @@ def _envelope(cfg: DriveConfig = DEFAULT_CONFIG):
     return cylinder(b.inp_od / 2.0, b.inp_width) - cylinder(b.inp_bore / 2.0, b.inp_width)
 
 
-@step
+@step(out="bearing_625.step")
 def bearing_625():
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)
 

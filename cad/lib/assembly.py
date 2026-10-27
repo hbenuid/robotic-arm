@@ -1,27 +1,38 @@
-"""Native build123d assembly nodes - what cadgen packages as the STEP component tree.
+"""Native build123d assembly nodes - what cadgen writes as the STEP component tree.
 
 An assembly is a labelled `Compound(children=[...])`: `assembly(name, children)` builds one node
 (the root of a model, or a group / module inside it), `label_shape(shape, name, *details)` labels a
-child and `label_text` gives the compact STEP-friendly label (`gt2_pulley_90t:j3`) - both from cadgen,
-which normalises the tokens. cadgen 0.6.5 deprecated its `AssemblyHelper` wrapper (its `add` /
-`add_module` / `build` were exactly these three lines); joints are `@step(kinematics=...)` data
-(`cadgen.revolute(...)` mates between `#label` refs), not helper frames.
+child and `label_text` gives the compact STEP-friendly label (`gt2_pulley_90t:j3`): each token stripped,
+its whitespace runs and colons turned into `_`, the tokens joined by `:` (cadgen 0.7's `cadgen.assembly`
+rule, which 0.8 dropped: 0.8 reads a plain `shape.label`). The arm declares no joints (`robot/` is the
+mechanism).
 """
 
 from __future__ import annotations
 
-from cadgen import build123d as bd
-from cadgen.assembly import label_shape, label_text
+import build123d as bd
 
 __all__ = ["assembly", "label_shape", "label_text"]
 
 
-def assembly(name: str, children, *details, color=None) -> bd.Compound:
-    """`Compound(label=label_text(name, *details), children=children)`, optionally colored.
+def label_text(name: str, *details: object) -> str:
+    """`name:detail:...` - each token stripped, whitespace and `:` inside it made `_`; an empty token is an error."""
+    tokens = []
+    for field, value in (("name", name), *(("detail", d) for d in details)):
+        token = str(value).strip()
+        if not token:
+            raise ValueError(f"label {field} must be non-empty")
+        tokens.append("_".join(token.replace(":", "_").split()))
+    return ":".join(tokens)
 
-    The children keep their own locations (cadgen's STEP packager reads those, never a location on
-    the node), labels and colors; a compound-level color does not cascade to them."""
-    node = bd.Compound(label=label_text(name, *details), children=list(children))
-    if color is not None:
-        node.color = color
-    return node
+
+def label_shape(shape, name: str, *details: object):
+    """`shape` labelled `label_text(name, *details)`, returned."""
+    shape.label = label_text(name, *details)
+    return shape
+
+
+def assembly(name: str, children, *details) -> bd.Compound:
+    """`Compound(label=label_text(name, *details), children=children)`. No colour on the node: the colours are
+    the leaves' (`assemblies/_occurrences.py _tint`)."""
+    return bd.Compound(label=label_text(name, *details), children=list(children))

@@ -42,7 +42,7 @@ def REFERENCE_BUILD():
     return build_wrist_link(LEGACY)
 
 
-@step
+@step(out="wrist_link.step")
 def wrist_link():
     """The wrist body at its local origin (the plate's underside, the tower's axis); the assembly owns placement."""
     part = build_wrist_link(DEFAULT)

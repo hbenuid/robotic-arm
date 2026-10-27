@@ -40,7 +40,7 @@ def REFERENCE_BUILD():
     return _envelope(LEGACY_CONFIG)
 
 
-@step
+@step(out="cycloidal_housing_bolts.step")
 def cycloidal_housing_bolts():
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)
 

@@ -14,8 +14,8 @@ the only way in (`cad/AGENTS.md` "Rules for every folder"; `import parts` raises
 directory scan in `parts/__init__.py`; note `parts.base` is the *group package*, the part is `parts.load("base")`.
 Every part MUST (the model contract and the build call: `tests/test_parts_convention.py`; the kernel:
 `tests/test_lazy_kernel.py`; the imports: `tests/test_layering.py`):
-- declare ONE model, **`@step def <name>()`** (`from cadgen import step`; NAME = file stem = model
-  name; no parameters, no `out=` — the STEP is the sibling file), that **returns** a valid, labelled
+- declare ONE model, **`@step(out="<name>.step") def <name>()`** (`from cadgen import step`; NAME = file stem =
+  model name; no parameters; its one output the sibling STEP), that **returns** a valid, labelled
   Part/Compound at its **local origin** — the assembly owns placement; label == module name;
 - end with the build call, with no `show()` and no import side effects (`cad/AGENTS.md` "Rules for every folder");
 - import `lib` / `parts` plainly (`cad/AGENTS.md`): cadgen loads `parts/<group>/<name>.py` as the package module
@@ -25,13 +25,13 @@ Every part MUST (the model contract and the build call: `tests/test_parts_conven
 
 Keep the importable `parts/<group>/<name>.py` naming (tests/assemblies reach them through
 `parts.load` / `parts.model`); upstream's `src/` + `STEP/` layout is deliberately not used. A part and
-its STEP stay siblings (cadgen's default `out`; the viewer pairs them into one entry).
+its STEP stay siblings (`out="<name>.step"` is relative to the script).
 
 ## Part states
 Custom parts declare `REFERENCE = NAME` (`None` for a *measured* or a printed *no reference* one), `CONVERTED` and
 `LOCAL_FROM_REF` (`IDENTITY` when left out):
 - *wrapper* (`CONVERTED = False`, from `_templates/wrapper.py`): the model returns
-  `reference/solidworks/<name>.step` (via `lib.reference.load` → `cadgen.read_step`, a tracked input)
+  `reference/solidworks/<name>.step` (via `lib.reference.load` → `cadgen.read_step`, an input of the build)
   in the SolidWorks part-file frame — the day-one state of every custom part (the ones still wrappers:
   `docs/open_issues.md` "Not converted yet");
 - *parametric* (`CONVERTED = True`, from `_templates/designed.py`): real build123d — see "Converting a part" below.
@@ -81,8 +81,8 @@ Custom parts declare `REFERENCE = NAME` (`None` for a *measured* or a printed *n
 
 ## Converting a part (wrapper → parametric)
 1. Inspect the reference: `./cadtool inspect reference/solidworks/<name>.step --planes`
-   (dimensions: the CAD Viewer's measure tool, or build123d on `(face,) = cadgen.read_scene(…).resolve("#o1.f7")`,
-   `face.shape()`);
+   (dimensions: the CAD Viewer's measure tool, `./cadtool cadgen inspect <file.step> "<part>/face 7"`, or build123d
+   on `cadgen.read_step(…)`);
    `parts/<group>/<name>.py`'s docstring lists units,
    solids, bounding box and where it is used.
 2. Rewrite the model body with `BuildPart`/… code, its numbers in a config in a `lib/` package with `LEGACY` = the
@@ -116,8 +116,8 @@ from `DEFAULT_CONFIG`, never retyped) + optional `PURCHASE_NOTE` — a printed p
 `VENDOR_STEP = vendor/<name>.step`, `VENDOR_TO_REF`
 (vendor-file frame → SolidWorks frame, as frame data; `IDENTITY` for the SolidWorks re-exports); the model is
 hybrid — `return lib.cots.hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)`, the one body every COTS part
-shares: `cadgen.read_step(VENDOR_STEP)` if present (a tracked input, so a swapped vendor file makes the part
-stale), else `_envelope()` from `lib.params`, both in the SolidWorks frame `placements.json` assumes. Every
+shares: `cadgen.read_step(VENDOR_STEP)` if present (an input of the build, so a swapped vendor file rebuilds the
+part), else `_envelope()` from `lib.params`, both in the SolidWorks frame `placements.json` assumes. Every
 `lib/reference.py COTS` part keeps a frame/size reference, `reference/<origin>/<name>.step` (`path_of()` resolves the
 origin): the SolidWorks re-export in `reference/solidworks/`, for the drive's purchased parts the CadQuery export of
 their simplified model in `reference/cycloidal/` (`CYCLOIDAL_COTS`), for a `NATIVE_COTS` part its accepted envelope in

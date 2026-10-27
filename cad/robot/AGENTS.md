@@ -39,7 +39,7 @@ robot/
   frame; `robot/links/<link>.step` git-ignored). Meshes: `tools/robot/export_link_meshes.py` (mm STL per
   link via build123d's `export_stl`, `scale 0.001` in the XML); never hand-edit.
   Inertials come from OCP `BRepGProp` (printed parts at `PETG_DENSITY`, COTS at `MASS_G`).
-- Validate (`--strict`) and snapshot after every edit; hand `.urdf` files to the viewer (`?file=robot/arm.urdf`) —
+- Validate (`--strict`) and snapshot after every edit; hand `.urdf` files to the viewer (`./cadtool viewer robot/arm.urdf`) —
   Commands below.
 - What is still an estimate or unconfirmed here - the `[ESTIMATE]` limits (`BASE_YAW_LIMIT_DEG`, the shoulder's lower
   one), efforts / velocities and jaw travel (`lib/params.py`), the axis signs (`robot/frames.py`), the link-membership
@@ -91,14 +91,14 @@ joints' motors are mounted occurrences (`lib/mounts.py`, `assemblies/AGENTS.md`)
 ./cadtool python tools/robot/derive.py --check robot/arm.urdf robot/arm.sdf   # files vs CAD (tests run this)
 ./cadtool python tools/robot/export_link_meshes.py --links <link> ...   # the meshes of the links a change touched (Recipe C step 8)
 ./cadtool validate robot/arm.urdf --strict             # also .srdf / .sdf --gz-check never
-./cadtool snapshot robot/arm.urdf snapshots/arm_urdf.png --joint-values '{"shoulder_pitch": 45}'   # posed stills
-./cadtool viewer                                       # then ?file=robot/arm.urdf: meshes + joint sliders (base_yaw, shoulder_pitch, elbow_pitch, forearm_roll, wrist_pitch, wrist_roll, jaw_a)
+./cadtool snapshot robot/arm.urdf snapshots/arm_urdf.png --pose '{"shoulder_pitch": 45}'   # posed stills
+./cadtool viewer robot/arm.urdf                        # meshes + joint sliders (base_yaw, shoulder_pitch, elbow_pitch, forearm_roll, wrist_pitch, wrist_roll, jaw_a)
 ```
 
 The `shoulder_pitch` slider turns the drive's rotor (the turning shell) with `j1_link` while its stator (the held
 carrier + motor) stays with `j1_coupler`; the `forearm_roll` slider turns the forearm, wrist and gripper about the
 forearm while the roll frame stays with the elbow pulley; the `wrist_roll` slider turns the gripper about the axis
 beside the pancake. The drives on their own:
-`?file=assemblies/cycloidal_drive.step` (see `docs/cycloidal_drive.md`, "Viewing the drive"),
-`?file=assemblies/forearm_roll_drive.step` (`docs/forearm_roll.md`) and `?file=assemblies/wrist_roll_drive.step`
+`./cadtool viewer assemblies/cycloidal_drive.step` (see `docs/cycloidal_drive.md`, "Viewing the drive"),
+`assemblies/forearm_roll_drive.step` (`docs/forearm_roll.md`) and `assemblies/wrist_roll_drive.step`
 (`docs/wrist_roll.md`; its frame is `wrist_link`).

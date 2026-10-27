@@ -41,7 +41,7 @@ def _envelope():
     return pattern(shcs(M4_SHCS, LENGTH, xy) for xy in pulley_90t_bolt_points())
 
 
-@step
+@step(out="wrist_pulley_screws.step")
 def wrist_pulley_screws():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

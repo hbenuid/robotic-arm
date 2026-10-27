@@ -2,7 +2,7 @@
 built in its own frame; assemblies/arm.py places the whole module at "gripper#1".
 
 Run:  ./cadtool gen assemblies/gripper.py       -> assemblies/gripper.step (git-ignored)
-      ./cadtool viewer                          -> http://127.0.0.1:3245/?file=assemblies/gripper.step
+      ./cadtool viewer assemblies/gripper.step  -> its page in this venv's cadgen engine
 """
 
 from cadgen import step
@@ -39,7 +39,7 @@ OCCURRENCES = [
 ]
 
 
-@step
+@step(out="gripper.step")
 def gripper():
     """The gripper module in its own (SolidWorks sub-assembly) frame: printed parts TINT, purchased
     parts BOUGHT_TINT grey."""

@@ -33,7 +33,7 @@ LOCAL_FROM_REF = IDENTITY   # reference frame -> this part's local frame (identi
 # REF_VOL_TOL = 0.005   (relative)     REF_BBOX_TOL = 0.2   (mm)
 
 
-@step
+@step(out="wrapper.step")
 def wrapper():
     """Return the reference geometry as a labelled Solid/Compound in this part's local frame."""
     shape = reference.load(REFERENCE).moved(to_location(LOCAL_FROM_REF))

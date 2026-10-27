@@ -345,20 +345,19 @@ ring-pin dowels (pack of 25) $8–12 · output-pin dowels $2–4 · motor bolts 
 | Printed vs. bought | `./cadtool python tools/bom.py --module cycloidal_drive` (print list, buy list, the purchased items not modelled — `EXTRAS`); in `cycloidal_drive.step` (and in the arm) purchased parts are `_occurrences.BOUGHT_TINT` grey, printed parts `cycloidal_drive.TINT`; `./cadtool python tools/export_printables.py` → `print/<name>.stl` |
 | References | `reference/cycloidal/<name>.step` (CadQuery exports), `reference/manifest.json` entries (`file` field); `tools/cycloidal/export_cadquery.py` + `tools/cycloidal/import_cadquery.py` |
 | Tests | `tests/cycloidal/test_{disc,eccentric_shaft,motor_plate,shell_body,output_hub,shell_ring,housing,purchased,fitment,assembly,port}.py` + `tests/cycloidal/helpers.py` (the drive's config; the geometry helpers are `tests/helpers.py`; geometry marked `slow`) |
-| Viewer / export | `./cadtool gen assemblies/cycloidal_drive.py`, `./cadtool viewer` (`?file=assemblies/cycloidal_drive.step`), `./cadtool export parts/cycloidal/<name>.step stl` |
+| Viewer / export | `./cadtool gen assemblies/cycloidal_drive.py`, `./cadtool viewer assemblies/cycloidal_drive.step`, `./cadtool export parts/cycloidal/<name>.step stl` |
 
 ## Viewing the drive
 
 ```bash
 cd cad
 ./cadtool gen assemblies/cycloidal_drive.py          # assemblies/cycloidal_drive.step (git-ignored) if missing
-./cadtool viewer                                     # then open the printed URL with ?file=assemblies/cycloidal_drive.step
-#   also ?file=assemblies/arm.step (the drive in the arm), ?file=parts/cycloidal/cycloidal_shell_ring.step (any part),
-#   ?file=robot/arm.urdf (the robot with joint sliders - shoulder_pitch turns the drive's rotor with j1_link)
-./cadtool snapshot assemblies/cycloidal_drive.step snapshots/cycloidal_drive.png --size-profile assembly --view-labels
+./cadtool viewer assemblies/cycloidal_drive.step     # its page in this venv's cadgen engine
+#   also assemblies/arm.step (the drive in the arm), parts/cycloidal/cycloidal_shell_ring.step (any part),
+#   robot/arm.urdf (the robot with joint sliders - shoulder_pitch turns the drive's rotor with j1_link)
+./cadtool snapshot assemblies/cycloidal_drive.step snapshots/cycloidal_drive.png --size-profile assembly
 ./cadtool snapshot assemblies/cycloidal_drive.step snapshots/cycloidal_drive_x.png --display xray --camera "30:20"
-#   (no turntable GIF: cadgen's `snapshot --video` renders a model's `@step(animation=…)` clip, and the
-#    drive declares none - motion review is the CAD Viewer)
+#   (no turntable: snapshots draw stills, and the drive declares no motion - motion review is the CAD Viewer)
 ```
 
 ## 11. Port notes (CadQuery → build123d)
@@ -449,7 +448,7 @@ cd cad
   what turns with the shell: the shell ring, ring pins, housing bolts + nuts, both 6814s) rides in `upper_arm_link`
   with `j1_link`, which holds the shell's body.
   `EXPECTED["bodies"]` locks the per-body totals and `TestPoseInTheArm` checks the joint origin sits on the drive
-  axis. The arm STEP's viewer tree keeps the module whole under `shoulder_link` (one inlined, tinted copy -
+  axis. The arm STEP's viewer tree keeps the module whole under `shoulder_link` (one tinted copy -
   `assemblies/AGENTS.md`); the per-link meshes split it. Which MKS motor (`software/control/src/config.py` J1..J3)
   drives which joint is unconfirmed (`docs/open_issues.md`); `config.py` still carries `gear_ratio` 1.0 where this
   joint needs `1 / CYCLOIDAL_RATIO`, the output turning with the motor (the direction: `robot/AGENTS.md`).

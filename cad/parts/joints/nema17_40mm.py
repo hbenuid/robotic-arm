@@ -19,7 +19,7 @@ else the parametric envelope below - both in the part frame lib/mounts.py places
 """
 import pathlib
 
-from cadgen import build123d as bd
+import build123d as bd
 from cadgen import step
 
 from lib.cots import hybrid
@@ -66,7 +66,7 @@ def _envelope():
     return single_solid(motor + stub + connector)
 
 
-@step
+@step(out="nema17_40mm.step")
 def nema17_40mm():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

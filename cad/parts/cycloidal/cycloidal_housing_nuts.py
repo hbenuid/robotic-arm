@@ -12,7 +12,7 @@ builds DEFAULT_CONFIG's.
 import math
 import pathlib
 
-from cadgen import build123d as bd
+import build123d as bd
 from cadgen import step
 
 from lib.cots import hybrid, pattern
@@ -42,7 +42,7 @@ def REFERENCE_BUILD():
     return _envelope(LEGACY_CONFIG)
 
 
-@step
+@step(out="cycloidal_housing_nuts.step")
 def cycloidal_housing_nuts():
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)
 

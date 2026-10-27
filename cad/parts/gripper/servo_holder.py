@@ -22,7 +22,7 @@ CONVERTED = False             # True once servo_holder() is parametric build123d
 LOCAL_FROM_REF = IDENTITY   # reference frame -> this part's local frame (identity = SolidWorks frame)
 
 
-@step
+@step(out="servo_holder.step")
 def servo_holder():
     """Return the reference geometry as a labelled Solid/Compound in this part's local frame."""
     shape = reference.load(REFERENCE).moved(to_location(LOCAL_FROM_REF))

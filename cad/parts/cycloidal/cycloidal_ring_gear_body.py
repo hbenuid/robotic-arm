@@ -17,7 +17,7 @@ test_port.py) and no assembly places it (UNPLACED); build(cfg) takes any port-la
 import math
 import pathlib
 
-from cadgen import build123d as bd
+import build123d as bd
 from cadgen import step
 
 from lib.cycloidal import (
@@ -79,7 +79,7 @@ def REFERENCE_BUILD():
     return build(LEGACY_CONFIG)
 
 
-@step
+@step(out="cycloidal_ring_gear_body.step")
 def cycloidal_ring_gear_body():
     """Return the port's body at its LOCAL origin (input face at z=0; the port's assembly lifted it to z=9)."""
     part = build()

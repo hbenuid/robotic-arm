@@ -15,7 +15,7 @@ else the parametric envelope below - both in the SolidWorks frame placements.jso
 """
 import pathlib
 
-from cadgen import build123d as bd
+import build123d as bd
 from cadgen import step
 
 from lib.cots import hybrid
@@ -40,7 +40,7 @@ def _envelope():
     return bd.Box(PANCAKE_BODY_W, PANCAKE_BODY_D, PANCAKE_BODY_H, align=(bd.Align.MIN, bd.Align.MIN, bd.Align.MIN)).moved(bd.Location((-20.75, -13.591, 12.659)))
 
 
-@step
+@step(out="nema17_pancake.step")
 def nema17_pancake():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

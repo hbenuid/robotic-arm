@@ -46,7 +46,7 @@ def REFERENCE_BUILD():
     return build_yaw_coupler(LEGACY)
 
 
-@step
+@step(out="j1_coupler.step")
 def j1_coupler():
     """The coupler at its local origin (on the base_yaw axis at the seat-ring top); the assembly owns placement."""
     part = build_yaw_coupler(DEFAULT)

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import math
 
-from cadgen import build123d as bd
+import build123d as bd
 
 from lib.belts import GT2_BLEND_R, GT2_FLANK_R, GT2_GROOVE_R, GT2_TIP_R, GT2_TOOTH_DEPTH, flank_offset, pulley_od
 from lib.geom import align_min, cylinder, single_solid

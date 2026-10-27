@@ -27,7 +27,7 @@ def build(cfg: ForearmConfig = DEFAULT):
     return build_pulley(cfg)
 
 
-@step
+@step(out="forearm_roll_pulley.step")
 def forearm_roll_pulley():
     """The part in the module frame at its stack station (the module owns placement)."""
     part = build()

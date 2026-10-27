@@ -41,7 +41,7 @@ def REFERENCE_BUILD():
     return build_pulley(LEGACY)
 
 
-@step
+@step(out="gt2_pulley_90t.step")
 def gt2_pulley_90t():
     """The pulley at its local origin (the lower flange's top on the axis); the assembly owns placement."""
     part = build_pulley(DEFAULT)

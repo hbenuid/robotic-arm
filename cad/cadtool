@@ -1,63 +1,59 @@
 #!/usr/bin/env bash
-# cadtool - the one entry point for cad/: the cadgen 0.7 toolchain (a model is a plain script you
-# RUN; every other verb is the `cadgen` console script) plus the usual dev commands, all inside THIS
-# uv project (Python 3.12 + build123d + cadgen), always from cad/ with PYTHONPATH=cad/ so `lib`,
-# `parts`, `assemblies` and `robot` import the same way for you, for cadgen's closure scan and for
-# its daemon workers. Only `parts`, `skill` and `doctor` need the text-to-cad@earthtojake plugin itself
-# (CAD_PLUGIN=<dir> overrides its auto-detection).
+# cadtool - the one entry point for cad/: the cadgen 0.8 toolchain (a model is a plain script you
+# RUN: this venv's warm cadgen engine builds it and writes the file its @step declares; every other verb is
+# the `cadgen` console script) plus the usual dev commands, all inside THIS uv project (Python 3.12 +
+# build123d + cadgen), always from cad/ with PYTHONPATH=cad/ so `lib`, `parts`, `assemblies` and `robot`
+# import the same way for you and for the engine's workers. Only `parts`, `skill` and `doctor` need the
+# text-to-cad@earthtojake plugin itself (CAD_PLUGIN=<dir> overrides its auto-detection).
 set -euo pipefail
 
 usage() {
   cat <<'USAGE'
-cadtool - cadgen 0.7 + this uv project (paths relative to cad/)
+cadtool - cadgen 0.8 + this uv project (paths relative to cad/)
   ./cadtool setup                                   per machine: uv sync, bytecode compiled (+ the OCP kernel check) + the git pre-commit hook (ruff)
-                                                    + git notes fetching + cadgen's telemetry stored off + Playwright's headless shell (the snapshot browser)
-  ./cadtool doctor                                 installed cadgen vs the plugin's pin (cadgen doctor imports OCP; a gutted kernel: setup), node,
-                                                    the headless shell
-  ./cadtool gen <model.py>... [--force] [--verbose] [--json] [--mesh-tolerance X] [--mesh-angular-tolerance R]
-                                                    build: run the model script(s) -> the sibling <name>.step
-                                                    (an assembly rebuilds + rewrites its stale child parts too)
+                                                    + git notes fetching + cadgen's telemetry stored off
+  ./cadtool doctor                                 the venv's cadgen vs the plugin's pin, the OCP kernel, this venv's engine
+  ./cadtool gen <model.py>... [--force]             build: run the model script(s) -> the sibling <name>.step (an assembly's
+                                                    children write theirs too); a current one says "took ... nothing ran" and
+                                                    keeps its file; --force runs every kernel call again (CADGEN_ENGINE_MEMO=0)
   ./cadtool step ...                                alias of gen
-  ./cadtool why <model.py>                          freshness verdict, clause by clause (cadgen store why)
-  ./cadtool compile [file.step...]                  the committed STEP inputs' trees (reference/, vendor/) into the store, in ONE process:
-                                                    a cold store (a fresh clone, CI) otherwise compiles each on its first read, in a process
-                                                    of its own that loads the CAD kernel again; current trees are skipped
-  ./cadtool inspect <file.step> [--planes] [--json] leaf refs, solids, faces, volume, bbox of a saved STEP
+  ./cadtool inspect <file.step> [--planes] [--json] every leaf's ref, solids, faces, volume, bbox of a saved STEP
                                                     (--planes: + every planar face as normal / offset / area)
-  ./cadtool inspect diff <a.step> <b.step> [--tol X] same geometry? (exit 1 if not) - a LOCAL tool, tools/step_facts.py:
-                                                    cadgen 0.6.5 removed `cadgen step inspect`
-  ./cadtool snapshot <file.step|.urdf|.sdf|.stl> <out.png> [--size-profile assembly --view-labels --job job.json]
-                                                    the path you name is the file you get (no timestamp); --job = a multi-view packet
-  ./cadtool export <file.step> stl|3mf|glb [out]    one mesh file per call (node >= 20: PATH's, else Playwright's own)
+  ./cadtool inspect diff <a.step> <b.step> [--tol X] same geometry? (exit 1 if not) - a LOCAL tool, tools/step_facts.py
+  ./cadtool cadgen inspect <file.step|id> ["<ref>"]  what a document holds, or what one ref names (cadgen's own)
+  ./cadtool snapshot <file.step|.urdf|.sdf|.stl|id> <out.png> [--size-profile assembly --camera iso --display ... --job job.json]
+                                                    the path you name is the file you get
+  ./cadtool export <file.step> stl|3mf|glb [out]    one mesh file per call (default: <file>.<format> beside it)
   ./cadtool validate <file.urdf|.srdf|.sdf> [--strict] [--gz-check never]
-  ./cadtool viewer [--port N]                       CAD Viewer serving cad/: http://127.0.0.1:3245/?file=<rel path>
-                                                    (12 h auto-stop; ./cadtool cadgen viewer stop --port N)
+  ./cadtool viewer [file|id ...]                    this venv's engine opens each on its page, /<id> (default assemblies/arm.step);
+                                                    the link printed is good for a day, the engine serves until ./cadtool stop
+  ./cadtool status                                  this venv's engine: its workers, the documents it holds, its port, its cache
+  ./cadtool stop                                    stop this venv's engine (the next gen / viewer starts a fresh one): after a
+                                                    pyproject.toml / uv.lock change, and when leaving a worktree
   ./cadtool parts "<query>" [--download] [--id <id>] [--filename <name>.step]   step.parts search / download into vendor/
   ./cadtool skill <skill> <tool> [args]             a plugin skill script: skills/<skill>/scripts/<tool>
                                                     (+ the skill's requirements.txt, unlocked, in uv's cache)
-  ./cadtool cadgen|store|daemon ...                 any cadgen subcommand (`./cadtool cadgen --help`)
-  ./cadtool daemon stop                             stop the warm build daemon + its workers (a fresh one starts on the next gen;
-                                                    they reload code only when restarted; ./cadtool cadgen daemon status shows them)
+  ./cadtool cadgen ...                              any cadgen subcommand (`./cadtool cadgen --help`)
   ./cadtool pytest [-m "not slow"] [-n 4]           test suite (-n: worker processes, a whole test file each)
   ./cadtool lint [--fix] [path...]                  ruff check (lint only, no formatter; rules: pyproject.toml [tool.ruff])
   ./cadtool python -m assemblies.arm ...            any python in the venv (PYTHONPATH=cad/)
   ./cadtool clean [--all]                           delete __pycache__/, .pytest_cache/, .ruff_cache/ (and any stray __cadgen__/);
                                                     --all also empties snapshots/ and print/ and deletes
                                                     assemblies/*.step, robot/links/*.step
-Env: CAD_PLUGIN=<plugin dir> overrides detection; CADGEN_DAEMON=0 builds on transient workers (no warm daemon);
-     CADGEN_CACHE_DIR relocates the store (default ~/.cache/cadgen; `./cadtool store gc` sweeps it).
+Retired with cadgen 0.8 (each says what replaced it): why, compile, store, daemon.
+Env: CAD_PLUGIN=<plugin dir> overrides detection. cadgen 0.8's document cache: ~/.cache/cadgen/documents
+     (CADGEN_CACHE_DIR moves it; ./cadtool cadgen delete <id> removes one).
 USAGE
 }
 
 CAD_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$CAD_DIR"   # cadgen resolves targets from cwd; the viewer serves cwd
+cd "$CAD_DIR"   # cadgen resolves targets from cwd
 export PYTHONPATH="$CAD_DIR${PYTHONPATH:+:$PYTHONPATH}"
-# No __pycache__/ written into the tree: cadgen hashes the parts/ group folders parts._scan() lists by
-# their entry names, so a __pycache__/ appearing there (pytest importing a part) reads every model stale.
+# No __pycache__/ written into the tree (pytest importing every part would leave one in each group folder).
 export PYTHONDONTWRITEBYTECODE=1
-# cadgen 0.7.16+ sends usage stats and crash reports by default once a cadgen command has shown its notice; this
-# repo keeps them off. In the environment, no cadtool command shows the notice or sends anything; `setup` also
-# stores the "off" that what cadtool does not start (the plugin's MCP server, the viewer, the daemon) goes by.
+# cadgen sends usage stats and crash reports by default once a cadgen command has shown its notice; this repo keeps
+# them off. In the environment, no cadtool command shows the notice or sends anything; `setup` also stores the "off"
+# that what cadtool does not start (the plugin's MCP server and its engine) goes by.
 export CADGEN_TELEMETRY=0
 
 cadgen_version() { uv run --frozen cadgen --version 2>/dev/null | awk '{print $NF}'; }
@@ -132,27 +128,26 @@ cmd="${1:-help}"
 shift || true
 case "$cmd" in
   gen|step)
-    files=(); flags=()
-    for a in "$@"; do if [[ "$a" == *.py ]]; then files+=("$a"); else flags+=("$a"); fi; done
-    if [[ ${#files[@]} -eq 0 ]]; then echo "usage: cadtool gen <model.py>... [--force --verbose --json --mesh-tolerance X --mesh-angular-tolerance R]" >&2; exit 2; fi
-    # ${flags[@]+…}: bash 3.2 (macOS /bin/bash) treats an empty array as unset under `set -u`
-    for f in "${files[@]}"; do uv run --frozen python "$f" ${flags[@]+"${flags[@]}"}; done ;;
-  why)
-    cg store why "$@" ;;
-  compile)
-    # cadgen.step.compile is the API cadgen keeps for tooling and CI (`cadgen step compile` takes one document a process)
-    exec uv run --frozen python - "$@" <<'PY'
-import sys
-from pathlib import Path
-
-from cadgen import step
-
-docs = [Path(a) for a in sys.argv[1:]] or sorted([*Path("reference").rglob("*.step"), *Path("vendor").glob("*.step")])
-failed = [str(d) for d in docs if not step.compile(d).ok]
-print(f"cadtool: {len(docs) - len(failed)} of {len(docs)} STEP trees current")
-sys.exit(f"cadtool: not compiled: {', '.join(failed)}" if failed else 0)
-PY
-    ;;
+    # A cadgen 0.8 run takes no options: --force is the engine's no-memo switch, any other flag is refused here.
+    files=(); force=0
+    for a in "$@"; do
+      case "$a" in
+        *.py) files+=("$a") ;;
+        --force) force=1 ;;
+        *) echo "cadtool gen: '$a' - a cadgen 0.8 run takes no options (--force: CADGEN_ENGINE_MEMO=0)" >&2; exit 2 ;;
+      esac
+    done
+    if [[ ${#files[@]} -eq 0 ]]; then echo "usage: cadtool gen <model.py>... [--force]" >&2; exit 2; fi
+    if [[ $force -eq 1 ]]; then export CADGEN_ENGINE_MEMO=0; fi
+    for f in "${files[@]}"; do uv run --frozen python "$f"; done ;;
+  why|compile|store|daemon)
+    case "$cmd" in
+      why) said="no staleness check: run the model (./cadtool gen) - 'took ... nothing ran' is current, 'rebuilt: ...' says what changed" ;;
+      compile) said="nothing to compile: the engine reads a STEP as it is" ;;
+      store) said="no store: ./cadtool status (the engine, its documents, its cache), ./cadtool cadgen delete <id>" ;;
+      *) said="one engine per venv: ./cadtool status, ./cadtool stop" ;;
+    esac
+    echo "cadtool $cmd: retired with cadgen 0.8 - $said" >&2; exit 2 ;;
   inspect)
     exec uv run --frozen python tools/step_facts.py "$@" ;;
   snapshot)
@@ -160,7 +155,7 @@ PY
   export)
     doc="${1:?usage: cadtool export <file.step> stl|3mf|glb [out]}"; fmt="${2:?usage: cadtool export <file.step> stl|3mf|glb [out]}"; shift 2
     case "$fmt" in stl|3mf|glb) ;; *) echo "cadtool: export format must be stl|3mf|glb (got '$fmt')" >&2; exit 2 ;; esac
-    cg "$fmt" build "$doc" "$@" ;;
+    cg export "$doc" "${1:-${doc%.*}.$fmt}" ;;
   validate)
     file="${1:-}"
     case "$file" in
@@ -170,52 +165,33 @@ PY
       *) echo "usage: cadtool validate <file.urdf|.srdf|.sdf> [--strict] [--gz-check never] [--json]" >&2; exit 2 ;;
     esac ;;
   viewer)
-    port=3245; prev=""; for a in "$@"; do [[ "$prev" == "--port" ]] && port="$a"; prev="$a"; done
-    # GNU timeout: `timeout` on Linux, `gtimeout` from Homebrew coreutils on macOS (which ships neither)
-    tmo="$(command -v timeout || command -v gtimeout || true)"
-    if [[ -z "$tmo" ]]; then
-      echo "CAD Viewer: http://127.0.0.1:$port/?file=assemblies/arm.step   (NO auto-stop: GNU timeout not on PATH - brew install coreutils; Ctrl+C or ./cadtool cadgen viewer stop --port $port)"
-      exec uv run --frozen cadgen viewer --host 127.0.0.1 "$@"
-    fi
-    echo "CAD Viewer: http://127.0.0.1:$port/?file=assemblies/arm.step   (auto-stops after 12h; Ctrl+C to stop)"
-    exec "$tmo" --foreground 12h uv run --frozen cadgen viewer --host 127.0.0.1 "$@" ;;
+    # This venv's engine (started when none runs; no timer stops it: ./cadtool stop) registers each file / document
+    # id and opens its page, /<id>; the printed link is good for a day.
+    if [[ $# -eq 0 ]]; then set -- assemblies/arm.step; fi
+    cg viewer "$@" ;;
+  status)
+    cg status "$@" ;;
+  stop)
+    cg stop "$@" ;;
   cadgen)
     cg "$@" ;;
-  store)
-    cg store "$@" ;;
-  daemon)
-    if [[ "${1:-}" == "stop" ]]; then   # cadgen has no stop verb: SIGTERM the daemon (it shuts its pool down), then sweep
-      # the daemon + its workers (`… -m cadgen.daemon.worker`). The interpreter's name is per platform: the venv's
-      # `python3` on Linux, `python` on macOS (where python3 is the symlink) - [0-9.]* takes both, and python3.12;
-      # cadgen 0.7.13+ starts every process of its own with `-P` (no cwd on sys.path), older ones without
-      daemon="^$CAD_DIR/.venv/bin/python[0-9.]*( -P)? -m cadgen\.daemon"
-      pids="$(pgrep -f "$daemon" || true)"
-      if [[ -z "$pids" ]]; then echo "cadtool: no cadgen daemon running for this venv"; exit 0; fi
-      pkill -TERM -f "$daemon\$" || true
-      for _ in 1 2 3 4 5 6 7 8 9 10; do pgrep -f "$daemon" >/dev/null || break; sleep 0.5; done
-      pkill -KILL -f "$daemon" 2>/dev/null || true
-      echo "cadtool: cadgen daemon stopped (the next gen starts a fresh one)"; exit 0
-    fi
-    cg daemon "$@" ;;
   parts)
     run_skill step-parts download_step_part.py --out-dir "$CAD_DIR/vendor" "$@" ;;
   skill)
     skill="${1:?usage: cadtool skill <skill> <tool> [args]}"; tool="${2:?usage: cadtool skill <skill> <tool> [args]}"; shift 2
     run_skill "$skill" "$tool" "$@" ;;
   doctor)
+    # Not `cadgen doctor`: run here it would register THIS venv as the machine's cadgen installation of its version (the
+    # record the `cadgen` command and the plugin's skills run by - docs/toolchain.md Gotchas) and start its engine.
     rc=0
     need_plugin
-    uv run --frozen cadgen doctor "$CAD_PLUGIN/skills/cad" || rc=$?
-    # Mesh export runs on the node on PATH, else (cadgen 0.7.26+) on the one Playwright ships for its driver.
-    if command -v node >/dev/null 2>&1; then echo "node $(node --version)   (mesh export needs >= 20)"
-    else
-      pw="$(uv run --frozen python -c 'import importlib.util, pathlib; print(pathlib.Path(importlib.util.find_spec("playwright").origin).parent / "driver" / "node")' 2>/dev/null)"
-      if [[ -n "$pw" && -x "$pw" ]]; then echo "node: none on PATH - mesh export uses Playwright's, $("$pw" --version)   ($pw)"
-      else echo "node: NOT on PATH, nor in Playwright - ./cadtool export needs node >= 20"; rc=1; fi
-    fi
-    loc="$(uv run --frozen python -m playwright install --dry-run --only-shell chromium 2>/dev/null | awk -F': +' '/Install location/ {print $2; exit}')"
-    if [[ -n "$loc" && -d "$loc" ]]; then echo "playwright headless shell: ok   ($loc)"
-    else echo "playwright headless shell: MISSING - run ./cadtool setup   (${loc:-playwright not installed})"; rc=1; fi
+    ver="$(cadgen_version || true)"
+    pin="$(grep -o -m1 'cadgen==[0-9][0-9.]*' "$CAD_PLUGIN/skills/cad/SKILL.md" || true)"; pin="${pin#cadgen==}"
+    if [[ -n "$ver" && "$ver" == "$pin" ]]; then echo "cadgen $ver: the plugin's pin   ($CAD_PLUGIN)"
+    else echo "cadgen ${ver:-?} in the venv, the plugin pins ${pin:-?}   ($CAD_PLUGIN): MISMATCH - docs/toolchain.md Pins"; rc=1; fi
+    if uv run --frozen python -c "import OCP.gp" 2>/dev/null; then echo "kernel: OCP imports"
+    else echo "kernel: OCP.gp does not import - run ./cadtool setup"; rc=1; fi
+    uv run --frozen cadgen status 2>&1 | head -1 || true
     exit $rc ;;
   setup)
     # Bytecode compiled into .venv (never into cad/: PYTHONDONTWRITEBYTECODE above), else every process - each build
@@ -232,10 +208,7 @@ PY
     install_git_hook
     fetch_git_notes
     # The stored choice, per machine (cadgen's state directory); local only while no install id was ever made.
-    uv run --frozen cadgen telemetry off >/dev/null && echo "cadtool: cadgen telemetry off (stored)"
-    # The browser snapshots launch: Playwright's headless shell alone, not the full Chromium (~350 MB more) beside it.
-    # cadgen 0.7.12+ also fetches it on the first snapshot that misses it; setup leaves a machine ready offline.
-    uv run --frozen python -m playwright install --only-shell chromium ;;
+    uv run --frozen cadgen telemetry off >/dev/null && echo "cadtool: cadgen telemetry off (stored)" ;;
   python)
     exec uv run --frozen python "$@" ;;
   pytest)
@@ -244,7 +217,7 @@ PY
     exec uv run --frozen ruff check "$@" ;;
   clean)
     # Regenerable caches only; --all also drops the git-ignored review artifacts. Never touches .venv,
-    # the part STEPs, the committed reference/vendor/mesh files or the cadgen store (`./cadtool store gc` for that).
+    # the part STEPs, the committed reference/vendor/mesh files or cadgen's document cache (`./cadtool cadgen delete`).
     find "$CAD_DIR" -name .venv -prune -o -type d \( -name __cadgen__ -o -name __pycache__ -o -name .pytest_cache -o -name .ruff_cache \) -prune -print -exec rm -rf {} +
     if [[ "${1:-}" == "--all" ]]; then
       [[ -d snapshots ]] && find snapshots -mindepth 1 -prune -exec rm -rf {} +

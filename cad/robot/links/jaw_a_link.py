@@ -6,7 +6,7 @@ from cadgen import step
 from robot._links import build_link
 
 
-@step
+@step(out="jaw_a_link.step")
 def jaw_a_link():
     return build_link("jaw_a_link")
 

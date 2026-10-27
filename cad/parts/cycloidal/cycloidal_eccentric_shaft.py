@@ -11,7 +11,7 @@ it with an identity Location.
 """
 import pathlib
 
-from cadgen import build123d as bd
+import build123d as bd
 from cadgen import step
 
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig
@@ -66,7 +66,7 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     return single_solid(result)
 
 
-@step
+@step(out="cycloidal_eccentric_shaft.step")
 def cycloidal_eccentric_shaft():
     """Return the shaft at its stack position (z 9..35 - see the module docstring)."""
     part = build()

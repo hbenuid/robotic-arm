@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import math
 
-from cadgen import build123d as bd
+import build123d as bd
 
 from lib.belts import GT2_BELT_BACK, GT2_BELT_W, GT2_PLD, belt_runs, belt_wraps
 from lib.geom import single_solid

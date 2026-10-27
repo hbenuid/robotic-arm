@@ -26,7 +26,7 @@ REFERENCE = None
 CONVERTED = True
 
 
-@step
+@step(out="j1_motor_leg.step")
 def j1_motor_leg():
     """The motor leg in j1_coupler's part frame (on the base_yaw axis at the seat-ring top); the assembly owns placement."""
     part = build_motor_leg(DEFAULT)

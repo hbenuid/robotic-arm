@@ -32,7 +32,7 @@ round its pulleys, the band on their tooth tips, their volume / bbox written in)
 `test_robot.py` (link partition, frames, FK at
 zero = capture, the committed meshes vs a fresh export, inertials, URDF/SRDF/SDF consistency + cadgen's validators via
 `./cadtool validate`), `test_tooling.py` (the installed cadgen and OCP kernel are the pinned ones, one complete OCP distribution,
-`./cadtool inspect` agrees with the kernel, the retired inspect verbs, `daemon stop`'s pattern on both platforms,
+`./cadtool inspect` agrees with the kernel, the retired inspect verbs,
 telemetry kept off, the two `.claude/settings.json` the same, no tracked `CLAUDE.md` / `CLAUDE.local.md`, every
 tracked name lowercase),
 `test_mounts.py` (the mounted motors: axis on the joint, face on the host's pad / plate, board on the rear face, interference budget,

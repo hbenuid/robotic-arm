@@ -14,7 +14,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-from cadgen import build123d as bd
+import build123d as bd
 
 from lib.geom import align_min, cylinder, hex_prism, single_solid, through
 from lib.units import NUDGE

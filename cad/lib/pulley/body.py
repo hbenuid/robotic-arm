@@ -9,7 +9,7 @@ the axis, far from its grooves. The compound pulley is its two toothed rings alo
 band's lower flange stands on the lower band's upper flange - away from both bands' grooves."""
 from __future__ import annotations
 
-from cadgen import build123d as bd
+import build123d as bd
 
 from lib.geom import cylinder, single_solid
 from lib.pulley.params import COMPOUND, DEFAULT, CompoundPulleyParams, PulleyParams

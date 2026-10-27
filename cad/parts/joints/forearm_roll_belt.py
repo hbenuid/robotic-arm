@@ -43,7 +43,7 @@ def _envelope():
     return closed_belt(loop())
 
 
-@step
+@step(out="forearm_roll_belt.step")
 def forearm_roll_belt():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

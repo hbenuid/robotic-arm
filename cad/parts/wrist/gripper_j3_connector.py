@@ -35,7 +35,7 @@ def REFERENCE_BUILD():
     return build_connector(LEGACY)
 
 
-@step
+@step(out="gripper_j3_connector.step")
 def gripper_j3_connector():
     """The connector at its local origin (the plate's servo-side face, on its axis); the gripper module owns placement."""
     part = build_connector(DEFAULT)

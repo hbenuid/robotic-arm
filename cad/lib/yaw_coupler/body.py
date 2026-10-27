@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import math
 
-from cadgen import build123d as bd
+import build123d as bd
 
 from lib.fasteners import M4_CLEAR, M4_NUT
 from lib.geom import align_min, hex_prism, single_solid

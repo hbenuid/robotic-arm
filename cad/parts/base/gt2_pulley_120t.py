@@ -28,7 +28,7 @@ CONVERTED = True
 LOCAL_FROM_REF = IDENTITY     # modelled in the 90T's part frame
 
 
-@step
+@step(out="gt2_pulley_120t.step")
 def gt2_pulley_120t():
     """The pulley at its local origin (the lower flange's top on the axis); the assembly owns placement."""
     part = build_pulley(YAW)

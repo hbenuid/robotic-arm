@@ -22,7 +22,7 @@ CONVERTED = False             # True once gripper_finger_left() is parametric bu
 LOCAL_FROM_REF = IDENTITY   # reference frame -> this part's local frame (identity = SolidWorks frame)
 
 
-@step
+@step(out="gripper_finger_left.step")
 def gripper_finger_left():
     """Return the reference geometry as a labelled Solid/Compound in this part's local frame."""
     shape = reference.load(REFERENCE).moved(to_location(LOCAL_FROM_REF))

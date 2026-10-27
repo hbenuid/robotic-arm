@@ -55,7 +55,7 @@ def REFERENCE_BUILD():
     return build_base(LEGACY)
 
 
-@step
+@step(out="base.step")
 def base():
     """The base at its local origin (the base_yaw axis); the assembly owns placement."""
     part = build_base(DEFAULT)

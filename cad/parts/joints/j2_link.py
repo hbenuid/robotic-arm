@@ -50,7 +50,7 @@ def REFERENCE_BUILD():
     return build_link(LEGACY)
 
 
-@step
+@step(out="j2_link.step")
 def j2_link():
     """The forearm web at its local origin (the elbow pivot); the assembly owns placement."""
     part = build_link(DEFAULT)

@@ -26,7 +26,7 @@ else the parametric envelope below - both in the frame above.
 """
 import pathlib
 
-from cadgen import build123d as bd
+import build123d as bd
 from cadgen import step
 
 from lib.cots import hybrid
@@ -61,7 +61,7 @@ def _envelope():
     return single_solid(result)
 
 
-@step
+@step(out="mks_servo42d.step")
 def mks_servo42d():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

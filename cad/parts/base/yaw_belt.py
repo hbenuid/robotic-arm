@@ -44,7 +44,7 @@ def _envelope():
     return closed_belt(loop())
 
 
-@step
+@step(out="yaw_belt.step")
 def yaw_belt():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

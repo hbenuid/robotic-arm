@@ -43,7 +43,7 @@ def _envelope():
     return pattern(toward_axis(shcs(M4_SHCS, LENGTH), deg, YAW_COUPLER.fork.plate_r) for deg in fork_sleeve_bolt_deg())
 
 
-@step
+@step(out="fork_sleeve_screws.step")
 def fork_sleeve_screws():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

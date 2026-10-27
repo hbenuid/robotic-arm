@@ -30,7 +30,7 @@ def _envelope():
     return cylinder(THRUST_OD / 2.0, THRUST_WASHER_WIDTH) - cylinder(THRUST_BORE / 2.0, THRUST_WASHER_WIDTH)
 
 
-@step
+@step(out="washer_as6590.step")
 def washer_as6590():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

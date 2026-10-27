@@ -17,7 +17,7 @@ Generate the STEP:   ./cadtool gen parts/<group>/<name>.py
 """
 import pathlib
 
-from cadgen import build123d as bd
+import build123d as bd
 from cadgen import step
 
 from lib.cots import hybrid
@@ -42,7 +42,7 @@ def _envelope():
     return bd.Box(10, 10, 10, align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MIN))
 
 
-@step
+@step(out="cots.step")
 def cots():
     """Vendor geometry if present, else the envelope - always a labelled shape."""
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import math
 
-from cadgen import build123d as bd
+import build123d as bd
 
 from lib.cycloidal import DEFAULT_CONFIG as DRIVE
 from lib.cycloidal.housing import build_shell_body, housing_bolt_cutters

@@ -30,7 +30,7 @@ def _envelope(cfg: DriveConfig = DEFAULT_CONFIG):
     return pattern(cylinder(d.output_pin_dia / 2.0, d.output_pin_length, xy) for xy in output_pin_points(cfg))
 
 
-@step
+@step(out="cycloidal_output_pins.step")
 def cycloidal_output_pins():
     return hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)
 
