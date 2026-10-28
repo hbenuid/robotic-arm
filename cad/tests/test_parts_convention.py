@@ -59,6 +59,8 @@ MULTI_BODY = {
     # the forearm roll rotor's clamp: its M3 screws + nuts (its drive's rows)
     "roll_clamp_screws": 4,
     "roll_clamp_nuts": 4,
+    # the roll frame's back panel's magnets: a pair at each of its 4 points (its drive's row)
+    "roll_back_magnets": 8,
     # the KY-003 hall module: the board, the chip (body + leads), the header (housing + pins) - one piece to buy
     "ky003_hall_sensor": 3,
 }

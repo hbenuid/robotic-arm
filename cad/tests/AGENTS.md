@@ -97,7 +97,9 @@ the heads flush in place; `test_roll_motor_screws`: the roll motor's 4x M3 (no r
 and counterbore through the roll frame's plate, its round holes and counterbores on the frame, the heads flush in the
 module; `test_roll_clamp`: the roll rotor clamp's 4x M3 + nuts (no reference) - their numbers, on the rotor, the heads
 on the pulley's counterbores' floors, the tips at the shaft's rear face, the nuts on their seats and held from turning
-by the pockets, clear of the drive; `helpers.in_host()` places any
+by the pockets, clear of the drive; `test_roll_back_panel`: the roll frame's back panel and its magnet pairs (no
+reference) - their numbers, the panel flush on the rear line and `run_gap` off the turning shaft, its rim, the frame's
+step, opening and pockets, the magnets on their pockets' bottoms, clear of the drive; `helpers.in_host()` places any
 occurrence in `j2_link`'s frame,
 `helpers.in_drive_frame()` in the roll drive's mount frame - `j2_link`'s before the forearm's turn,
 `lib/placements.py TURNS` - and `j2_link_in_drive_frame()` the turned `j2_link` in it). Geometry tests are

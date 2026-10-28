@@ -285,6 +285,11 @@ from lib.forearm.layout import clamp_points as _roll_clamp_points  # noqa: E402
 _ROLL_CLAMP = len(_roll_clamp_points(_FOREARM))
 ROLL_CLAMP_SCREWS_MASS_G = STEEL_DENSITY * _ROLL_CLAMP * shcs_volume(_FOREARM.drive.clamp_screw, _FOREARM.drive.clamp_screw_len)   # 12.0, 4x M3x45
 ROLL_CLAMP_NUTS_MASS_G = STEEL_DENSITY * _ROLL_CLAMP * nut_volume(_FOREARM.drive.clamp_nut)                                    # 1.4, 4x M3
+# the roll frame's back panel's magnets (parts/joints/roll_back_magnets; lib/forearm/params.py BackPanelParams): plain
+# discs, a pair at each point, x NdFeB's density
+NDFEB_DENSITY = 7.5e-3   # [DATASHEET] g/mm^3 - sintered NdFeB magnets
+_BACK = _FOREARM.drive.back
+ROLL_BACK_MAGNETS_MASS_G = NDFEB_DENSITY * 2 * len(_BACK.magnet_points) * _cyl_vol(_BACK.magnet_dia / 2.0, _BACK.magnet_t)   # 3.4, 8x 6 x 2
 # the base_yaw motor's (parts/base/yaw_motor_screws), likewise
 from lib.base.layout import motor_holes as _base_motor_holes  # noqa: E402
 

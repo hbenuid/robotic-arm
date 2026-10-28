@@ -14,7 +14,9 @@ integral 90T ring over the bearing boss on the frame's front face, its hub down 
 bearing 1, the spigot the forearm's wall bolts onto - 4x M3 into nuts in its core; forearm_link) and the shaft
 (forearm_roll_shaft, a collar that holds bearing 1: its journal through it, the rotor clamp's nuts and the stop lug in
 its flange - in through the frame's back), clamped by 4x M3 from the pulley's front face into nuts in the shaft's flange
-(roll_clamp_screws, roll_clamp_nuts: on the rotor). MODULE FRAME (lib/forearm/params.py RollDriveParams): origin on the roll axis at the elbow
+(roll_clamp_screws, roll_clamp_nuts: on the rotor). The shaft's bay is closed by a removable back panel flush with the
+frame's rear face (forearm_roll_back_panel, in a step across the face, over the bay and the opening grown down below
+it), held by 4 magnet pairs (roll_back_magnets) - both on the stator. MODULE FRAME (lib/forearm/params.py RollDriveParams): origin on the roll axis at the elbow
 axis' station, +Z along the roll axis toward the wrist, +X = host +Z (N), +Y = up in the arm's swing plane, the elbow
 axis along X at y_elbow (the arm's elbow offset below the roll axis); the arm places it through lib/mounts.py
 MODULE_MOUNTS ("forearm_roll_drive#1" on j2_link#1). Every station comes from lib/forearm stack_positions() - never type
@@ -67,6 +69,9 @@ OCCURRENCES = [
     ("gt2_idler_20t",         "forearm_roll", _at(*_IDLER, S["z_idler"])),
     ("roll_idler_screw",      None, ((*_IDLER, S["z_idler_top"]), (180.0, 0.0, 0.0))),
     ("roll_idler_nut",        None, _at(*_IDLER, S["z_idler_roof"] - DEFAULT.drive.idler.nut.h)),
+    # the back panel in the frame's step on the rear face, over the shaft's bay, and its magnet pairs (built at their stations)
+    ("forearm_roll_back_panel", None, _at()),
+    ("roll_back_magnets",     None, _at()),
 ]
 
 # The module's rigid bodies (robot/frames.py LINKS: "forearm_roll_drive#1:stator" in elbow_link, ":rotor" in forearm_link).
@@ -76,8 +81,8 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("stator") after any geometry change.
 EXPECTED = {
-    "leaves": 15, "solids": 39, "solid_volume": 464608.872,
-    "bodies": {"stator": {"leaves": 11, "solids": 29, "solid_volume": 420559.434},
+    "leaves": 17, "solids": 48, "solid_volume": 459633.195,
+    "bodies": {"stator": {"leaves": 13, "solids": 38, "solid_volume": 415583.758},
                "rotor": {"leaves": 4, "solids": 10, "solid_volume": 44049.437}},
 }
 
