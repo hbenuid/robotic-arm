@@ -52,12 +52,14 @@ def wall_outline(cfg: ForearmConfig = DEFAULT):
 
 def roll_wall(cfg: ForearmConfig = DEFAULT):
     """The forearm's elbow end with the roll joint: the flange wall (a round flange about the roll axis on a foot as
-    wide as the web's neck) with the rotor flange's locating recess on its elbow face, the bolt holes and the cable
-    bore on the roll axis."""
+    wide as the web's neck, its elbow-side relief_t cut back to relief_r about the roll axis - the roll tensioner's
+    screw head passes there as the forearm rolls) with the rotor flange's locating recess on its elbow face, the bolt
+    holes and the cable bore on the roll axis."""
     r = cfg.roll_end
     x0, x1 = r.wall_x
     axis = (0.0, r.axis_z)
-    wall = yz_prism(wall_outline(cfg), x0, x1)
+    band = yz_prism(wall_outline(cfg), x1 - r.relief_t, x1) & x_cylinder(r.relief_r, r.relief_t, axis, x1 - r.relief_t)
+    wall = yz_prism(wall_outline(cfg), x0, x1 - r.relief_t) + band
     wall = wall - x_cylinder((r.flange_dia + r.flange_recess_add) / 2.0, r.flange_recess_depth + NUDGE, axis, x1 - r.flange_recess_depth)
     wall = wall - x_cylinder(r.cable_bore / 2.0, x1 - x0 + 2 * NUDGE, axis, x0 - NUDGE)
     for yz in flange_bolt_points(cfg):

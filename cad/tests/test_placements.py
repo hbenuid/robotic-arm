@@ -155,16 +155,17 @@ def _j2_y_in_j1() -> tuple:
 
 
 def _check_links_carry_what_lies_beyond(elbow_x: float, wrist_x: float, end_d: tuple, across: float = 0.0,
-                                        offset: float = 0.0):
+                                        offset: float = 0.0, drop: float = 0.0):
     """j2_link#1 (whose capture origin is on the elbow axis) sits at (elbow_x, 10 + across, 0) in j1_link's frame, plus
     `offset` along its own +Y (the forearm across the elbow axis: the roll drive's elbow offset); j3_coupler#2 (on the
-    wrist_pitch axis) at (wrist_x, 0, 42) in j2_link's; what lies beyond the wrist roll (the gripper on the wrist roll
-    drive's axis) keeps its capture pose in the wrist body's frame but for + end_d. (j2_link#1 before its turn - a turn
-    about its own roll axis: test_the_forearm_turns_about_its_roll_axis.)"""
+    wrist_pitch axis) at (wrist_x, 0, 42 + drop) in j2_link's (the wrist dropped along its axis with the web); what lies
+    beyond the wrist roll (the gripper on the wrist roll drive's axis) keeps its capture pose in the wrist body's frame
+    but for + end_d. (j2_link#1 before its turn - a turn about its own roll axis:
+    test_the_forearm_turns_about_its_roll_axis.)"""
     y2 = _j2_y_in_j1()
     assert _near(_position_in("j1_link#1", "j2_link#1", turned=False),
                  tuple(a + offset * b for a, b in zip((elbow_x, 10.0 + across, 0.0), y2, strict=True)))
-    assert _near(_position_in("j2_link#1", "j3_coupler#2"), (wrist_x, 0.0, 42.0))
+    assert _near(_position_in("j2_link#1", "j3_coupler#2"), (wrist_x, 0.0, 42.0 + drop))
     wrist_raw = P.to_location(P.OCCURRENCES["wrist_link#1"]["world"])
     for key in P.SHIFTS[2].moves:
         raw = tuple((wrist_raw.inverse() * P.to_location(P.OCCURRENCES[key]["world"])).position)
@@ -212,7 +213,9 @@ def test_shifts_move_the_capture_records_beyond_each_link():
         d.side * d.centre_distance, WRIST.DEFAULT.plate.thickness - d.axis_h - WRIST.LEGACY.end_face.axis_z)
     # the upper arm's elbow end also slides across it (its +Y, N) with the arm rising off the drive's shell
     assert (upper_arm.across_y, forearm.across_y) == (arm_slide(UPPER_ARM.DEFAULT) - arm_slide(UPPER_ARM.LEGACY), 0.0)
-    assert all(s.normal_z == 0.0 for s in P.SHIFTS if s is not wrist)
+    # the wrist drops along its axis with the web, toward the belt side (j2_link's -Z)
+    assert forearm.normal_z == FOREARM.DEFAULT.web.z0 - FOREARM.LEGACY.web.z0 == -FOREARM.WEB_DROP < 0.0
+    assert all(s.normal_z == 0.0 for s in P.SHIFTS if s not in (wrist, forearm))
     # the yoke holds the drive with the middle of its discs on the base_yaw axis: the drive, the upper arm and all beyond
     # move along its +X (N) from where the capture had them
     assert set(yoke.moves) == {"cycloidal_drive#1", "j1_link#1"} | set(upper_arm.moves) and yoke.across_y == 0.0
@@ -245,10 +248,11 @@ def test_the_forearm_turns_about_its_roll_axis():
         rel_after = P.location("j2_link#1", "world").inverse() * P.location(key, "world")
         rel_before = before.inverse() * P.location(key, "world", turned=False)
         assert _close(_matrix(rel_after), _matrix(rel_before), tol=1e-6), key
-    # the wrist pitch axis' coupler: (wrist_x, 0, 42) in the turned frame, z mirrored about the roll axis in the other
-    wx = FOREARM.DEFAULT.web.wrist_x
-    assert _near(_position_in("j2_link#1", "j3_coupler#2"), (wx, 0.0, 42.0))
-    assert _near(tuple((before.inverse() * P.location("j3_coupler#2", "world")).position), (wx, 0.0, 2.0 * turn.point[2] - 42.0))
+    # the wrist pitch axis' coupler: (wrist_x, 0, 42 - WEB_DROP) in the turned frame, z mirrored about the roll axis in
+    # the other
+    wx, zc = FOREARM.DEFAULT.web.wrist_x, 42.0 - FOREARM.WEB_DROP
+    assert _near(_position_in("j2_link#1", "j3_coupler#2"), (wx, 0.0, zc))
+    assert _near(tuple((before.inverse() * P.location("j3_coupler#2", "world")).position), (wx, 0.0, 2.0 * turn.point[2] - zc))
     for key in ("j1_link#1", "j3_coupler#1", "gt2_pulley_90t#1", "forearm_roll_drive#1"):
         assert not P.is_turned(key)
         assert _close(_matrix(P.location(key, "world")), _matrix(P.location(key, "world", turned=False)), tol=1e-12), key
@@ -260,7 +264,7 @@ def test_the_forearm_turns_about_its_roll_axis():
 
 def test_the_links_carry_what_lies_beyond_them():
     _check_links_carry_what_lies_beyond(UPPER_ARM.DEFAULT.slab.elbow_x, FOREARM.DEFAULT.web.wrist_x, _wrist_end_d(),
-                                        arm_slide(UPPER_ARM.DEFAULT), FOREARM.DEFAULT.elbow_offset)
+                                        arm_slide(UPPER_ARM.DEFAULT), FOREARM.DEFAULT.elbow_offset, -FOREARM.WEB_DROP)
 
 
 def test_shifted_links_keep_the_records_consistent(monkeypatch):
@@ -269,12 +273,12 @@ def test_shifted_links_keep_the_records_consistent(monkeypatch):
     along = {"j1_link": -40.0, "j2_link": 40.0, "wrist_roll_drive": -20.0, "j1_coupler": P.SHIFTS[3].along_x,   # the yoke's kept
              "forearm_roll_drive": 0.0}
     across = {"j1_link": 25.0, "j2_link": 0.0, "wrist_roll_drive": 15.0, "j1_coupler": 0.0, "forearm_roll_drive": 30.0}
-    normal = {"j1_link": 0.0, "j2_link": 0.0, "wrist_roll_drive": -10.0, "j1_coupler": 0.0, "forearm_roll_drive": 0.0}
+    normal = {"j1_link": 0.0, "j2_link": -5.0, "wrist_roll_drive": -10.0, "j1_coupler": 0.0, "forearm_roll_drive": 0.0}
     before = {key: P.location(key, "world") for key in ("base#1", "j1_link#1", "cycloidal_drive#1")}
     monkeypatch.setattr(P, "SHIFTS", tuple(replace(s, along_x=along[s.link], across_y=across[s.link], normal_z=normal[s.link])
                                            for s in P.SHIFTS))
     _check_links_carry_what_lies_beyond(UPPER_ARM.LEGACY.slab.elbow_x - 40.0, FOREARM.LEGACY.web.wrist_x + 40.0, (-20.0, 15.0, -10.0),
-                                        25.0, 30.0)
+                                        25.0, 30.0, -5.0)
     _check_world_equals_parent_world_times_rel()
     for key, loc in before.items():
         assert _close(_matrix(P.location(key, "world")), _matrix(loc), tol=1e-9), key

@@ -1,5 +1,5 @@
-"""The forearm roll drive (assemblies/forearm_roll_drive.py): the joint's axis through the wrist centre (on the
-wrist_pitch axis) and
+"""The forearm roll drive (assemblies/forearm_roll_drive.py): the joint's axis across the wrist_pitch axis (WEB_DROP from
+the wrist centre) and
 ELBOW_ROLL_OFFSET across the elbow axis, the module frame, the stack (the frame round the motor - an octagon about the elbow
 axis, the tower round the roll axis, the side face closed, the pocket open through the bottom -, the 6806 pair a spacer
 apart under the pulley's ring, the rotor split at bearing 1 and clamped, the motor on the elbow axis, its board's side
@@ -20,6 +20,7 @@ from lib.belts import GT2_PULLEY_20T_TEETH, STANDARD_2GT_LENGTHS, closed_belt_le
 from lib.datum import to_location
 from lib.forearm import (
     DEFAULT,
+    WEB_DROP,
     clamp_nut_pocket,
     clamp_points,
     end_nut_pocket,
@@ -67,14 +68,23 @@ def _offset_from_line(point, origin, axis) -> float:
     return math.sqrt(sum((x - t * y) ** 2 for x, y in zip(d, axis, strict=True)))
 
 
-def test_roll_axis_through_the_wrist_centre_on_the_pitch_axis():
-    """The forearm roll meets the wrist_pitch axis at the wrist centre; the wrist_roll axis no longer does - the wrist roll
-    drive puts it WRIST_ROLL_OFFSET across (tests/wrist/test_roll_drive.py), so the wrist is not spherical."""
-    assert _offset_from_line(F.WRIST_CENTRE, F.FOREARM_ROLL_ORIGIN, F.FOREARM_ROLL_AXIS) < 0.05
+def _line_gap(o1, a1, o2, a2) -> float:
+    """The distance between two lines (point, unit direction): 0 where they cross."""
+    n = (a1[1] * a2[2] - a1[2] * a2[1], a1[2] * a2[0] - a1[0] * a2[2], a1[0] * a2[1] - a1[1] * a2[0])
+    return abs(sum((p - q) * c for p, q, c in zip(o2, o1, n, strict=True))) / math.sqrt(sum(c * c for c in n))
+
+
+def test_roll_axis_crosses_the_pitch_axis_web_drop_from_the_wrist_centre():
+    """The forearm roll crosses the wrist_pitch axis; the wrist dropped along that axis with the web (WEB_DROP, toward the
+    belt side), so it crosses it that far from the wrist centre (the wrist's own station, where the SolidWorks wrist_roll
+    axis met it). The wrist_roll axis meets neither - the wrist roll drive puts it WRIST_ROLL_OFFSET across
+    (tests/wrist/test_roll_drive.py), so the wrist is not spherical."""
+    assert _line_gap(F.FOREARM_ROLL_ORIGIN, F.FOREARM_ROLL_AXIS, F.WRIST_PITCH_ORIGIN, F.WRIST_PITCH_AXIS) < 0.05
+    assert _offset_from_line(F.WRIST_CENTRE, F.FOREARM_ROLL_ORIGIN, F.FOREARM_ROLL_AXIS) == pytest.approx(WEB_DROP, abs=0.05)
     assert _offset_from_line(F.WRIST_CENTRE, F.WRIST_PITCH_ORIGIN, F.WRIST_PITCH_AXIS) < 0.05
     assert _offset_from_line(F.WRIST_CENTRE, F.WRIST_ROLL_ORIGIN, F.WRIST_ROLL_AXIS) > 40.0
     # the forearm turned half a turn about the roll axis (lib/placements.py TURNS): the wrist_pitch axis is the capture's N
-    # turned with it - reversed -, the wrist centre stays on the roll axis
+    # turned with it - reversed -, the roll axis still crossing it
     assert PARAMS.FOREARM_ROLL_TURN_DEG == 180.0 and sum(x * y for x, y in zip(F.WRIST_PITCH_AXIS, F.N, strict=True)) < -1.0 + 1e-9
     assert abs(sum(x * y for x, y in zip(F.FOREARM_ROLL_AXIS, F.N, strict=True))) < 1e-6           # x_hint perpendicular to the axis
     assert abs(math.sqrt(sum(v * v for v in F.FOREARM_ROLL_AXIS)) - 1.0) < 1e-9

@@ -150,9 +150,9 @@
   </link>
   <link name="forearm_link">
     <inertial>
-      <origin xyz="-0.005577 -0.000048 0.091495" rpy="0 0 0" />
-      <mass value="0.585848" />
-      <inertia ixx="1.032887e-03" ixy="3.202921e-06" ixz="-9.340406e-05" iyy="1.096272e-03" iyz="1.343907e-06" izz="2.811862e-04" />
+      <origin xyz="0.005535 -0.000048 0.091293" rpy="0 0 0" />
+      <mass value="0.589157" />
+      <inertia ixx="1.038589e-03" ixy="3.254220e-06" ixz="-1.565772e-04" iyy="1.101338e-03" iyz="1.349498e-06" izz="2.831867e-04" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -275,7 +275,7 @@
   <joint name="wrist_pitch" type="revolute">
     <parent link="forearm_link" />
     <child link="wrist_pitch_link" />
-    <origin xyz="-0.016997 -0.000007 0.165" rpy="-1.570808 -1.271748 1.570808" />
+    <origin xyz="-0.003997 -0.000007 0.165" rpy="-1.570808 -1.271748 1.570808" />
     <axis xyz="0 0 1" />
     <limit lower="-2.617994" upper="0.663225" effort="5" velocity="1" />
   </joint>
