@@ -2,7 +2,9 @@
 stations): the frame (stator, forearm_roll_block - one body round the motor: the octagonal elbow end with the elbow's
 output flange under it, the motor's pocket open through its bottom and the plate, the tower with the 6806 pair and the
 bearing boss on its front face), the pulley (rotor, the output - its integral 90T is the GT2 ring of lib/pulley/teeth.py
-- its hub on through the tower to bearing 1) and the shaft (rotor, a collar that holds bearing 1)."""
+- its hub on through the tower to bearing 1), the shaft (rotor, a collar that holds bearing 1) and the back panel (stator,
+a plate flush with the frame's rear face over the shaft's bay - its step, the opening and the magnets on the rear face:
+back_face / back_point)."""
 from __future__ import annotations
 
 import math
@@ -54,6 +56,64 @@ def rear_line(cfg: ForearmConfig = DEFAULT) -> tuple[tuple[float, float], float]
     return (math.cos(th), math.sin(th)), d.end_r
 
 
+def back_face(cfg: ForearmConfig = DEFAULT) -> tuple[float, tuple[float, float], tuple[float, float]]:
+    """The rear face's frame (the back panel's, BackPanelParams): (z0, n, t) - the roll axis meets the face at module
+    (0, 0, z0), n is its outward normal and t the way up it toward the tower's top, both as (module y, module z). A point
+    on the face is (x, s): module x, and s along t from that point."""
+    (nu, nv), dist = rear_line(cfg)
+    return (dist + nu * stack_positions(cfg)["y_elbow"]) / nv, (nu, nv), (-nv, nu)
+
+
+def back_point(x: float, s: float, depth: float = 0.0, cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float]:
+    """The module point at (x, s) on the rear face (back_face), `depth` in from it."""
+    z0, (nu, nv), (tu, tv) = back_face(cfg)
+    return (x, tu * s - nu * depth, z0 + tv * s - nv * depth)
+
+
+def _back_plane(depth: float, cfg: ForearmConfig = DEFAULT) -> bd.Plane:
+    """The rear face's plane `depth` in from it: local (x, s) as back_face's, +Z into the frame."""
+    _z0, (nu, nv), _t = back_face(cfg)
+    return bd.Plane(origin=back_point(0.0, 0.0, depth, cfg), x_dir=(1.0, 0.0, 0.0), z_dir=(0.0, -nu, -nv))
+
+
+def _on_back(sketch, depth: float, amount: float, cfg: ForearmConfig = DEFAULT):
+    """`sketch` (local x, s) on the rear face's plane `depth` in from it, extruded `amount` further in."""
+    return bd.extrude(_back_plane(depth, cfg) * sketch, amount=amount)
+
+
+def back_opening(cfg: ForearmConfig = DEFAULT, inset: float = 0.0):
+    """The back opening seen square to the rear face (local x, s), `inset` inside it: the bay's bore where it meets the
+    face (an ellipse) and, below the roll axis' point, a rectangle as wide down to opening_bottom, its corners there
+    rounded opening_r."""
+    d, b = cfg.drive, cfg.drive.back
+    _z0, (_nu, nv), _t = back_face(cfg)
+    a, r = d.bay_r - inset, b.opening_r - inset
+    x_r, s_r = d.bay_r - b.opening_r, b.opening_bottom + b.opening_r      # the corners' centres
+    shape = bd.Ellipse(a, d.bay_r / -nv - inset) + bd.Pos(0.0, s_r / 2.0) * bd.Rectangle(2.0 * a, -s_r)
+    shape = shape + bd.Pos(0.0, (s_r + b.opening_bottom + inset) / 2.0) * bd.Rectangle(2.0 * x_r, s_r - b.opening_bottom - inset)
+    return shape + bd.Pos(-x_r, s_r) * bd.Circle(r) + bd.Pos(x_r, s_r) * bd.Circle(r)
+
+
+def _back_top(cfg: ForearmConfig = DEFAULT) -> float:
+    """An s past the tower's top along the rear face (the step and the panel are cut off at the top)."""
+    _z0, _n, (tu, _tv) = back_face(cfg)
+    return (cfg.drive.tower_y + 5.0) / tu
+
+
+def back_magnet(x: float, s: float, depth: float, cfg: ForearmConfig = DEFAULT):
+    """One of the back panel's disc magnets (BackPanelParams magnet_*) on the rear face at (x, s), its outer face `depth`
+    in from it."""
+    b = cfg.drive.back
+    return _on_back(bd.Pos(x, s) * bd.Circle(b.magnet_dia / 2.0), depth, b.magnet_t, cfg)
+
+
+def back_magnet_depths(cfg: ForearmConfig = DEFAULT) -> tuple[float, float]:
+    """The outer faces' depths in from the rear face of each pair's two magnets: the frame's, pressed to the bottom of
+    its pocket in the step's floor, and the panel's, pressed to the bottom of its pocket in the panel's inner face."""
+    b = cfg.drive.back
+    return b.t + b.pocket_depth - b.magnet_t, b.t - b.pocket_depth
+
+
 def profile(cfg: ForearmConfig = DEFAULT):
     """The frame's outline seen along the elbow axis, as (u, v) = (module y, module z): an octagon about the elbow axis
     (end_sides, a flat on each axis end_r off it) and the tower round the roll axis (its top tower_y, from its rear to the
@@ -80,7 +140,8 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     out through the bottom), the plate's face the frame's one front face - on it the roll belt's tensioner's riser, its
     M5's slot and its nut's channel under the face, the nut in from the pocket -; the tower: bearing 1's seat from the
     shaft's bay behind it - bored on through the frame's back -, the lip (the spacer), bearing 2's seat in the bearing
-    boss - round on the front face, the ring's flange turning over it -, the stop post on the tower's face in the bay."""
+    boss - round on the front face, the ring's flange turning over it -, the stop post on the tower's face in the bay;
+    the rear face: the back panel's step across it, the opening grown down below the bay's bore, the magnets' pockets."""
     d, S = cfg.drive, stack_positions(cfg)
     y_e = S["y_elbow"]
     # the material first: the profile across the frame's depth, the elbow flange under it, the bearing boss (from 1 mm
@@ -118,8 +179,15 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     body = body - cylinder(d.lip_id / 2.0, d.lip + 2 * NUDGE, z0=S["z_lip"] - NUDGE)
     body = body - cylinder(r_seat, d.bearing_width + NUDGE, z0=S["z_bearing_2"])
     # the shaft's bay behind bearing 1, bored on through the frame's back (the shaft, bearing 1 on it, goes in along the
-    # axis from behind); the stop post on the tower's face inside it, at -X
+    # axis from behind); the back panel's step across the rear face, full width, from the tower's top down to its bottom
+    # edge, and the opening grown on down below the bay's bore, opening_depth in; the frame's magnets' pockets in the
+    # step's floor; the stop post on the tower's face inside the bay, at -X
     body = body - cylinder(d.bay_r, S["z_bearing_1"] + FAR, z0=-FAR)
+    b, s_top = d.back, _back_top(cfg)
+    body = body - _on_back(bd.Pos(0.0, (b.bottom + s_top) / 2.0) * bd.Rectangle(2.0 * FAR, s_top - b.bottom), -1.0, b.t + 1.0, cfg)
+    body = body - _on_back(back_opening(cfg), -1.0, b.opening_depth + 1.0, cfg)
+    for x, s in b.magnet_points:
+        body = body - _on_back(bd.Pos(x, s) * bd.Circle(b.pocket_dia / 2.0), b.t - NUDGE, b.pocket_depth + NUDGE, cfg)
     body = body + stop_wedge(d.stop_post_r[0], d.stop_post_r[1], S["z_stop_post"], d.stop_post_t, d.stop_deg_width, 180.0)
     # the elbow flange: the pin bore, the elbow pulley's 4x M4 - clearance up through the stub to the nut seat, then each
     # nut's hex channel (a flat toward the elbow axis) on up through the floor into the motor's pocket, where the nut
@@ -192,4 +260,23 @@ def build_shaft(cfg: ForearmConfig = DEFAULT):
     for x, y in clamp_points(cfg):
         body = body - cylinder(w.bolt_dia / 2.0, S["z_meet"] - z0 + 2 * NUDGE, (x, y), z0=z0 - NUDGE)
         body = body - nut_slot(r_in, r_out, d.clamp_nut.af, p0 - NUDGE, p1, math.atan2(y, x))
+    return single_solid(body)
+
+
+def build_back_panel(cfg: ForearmConfig = DEFAULT):
+    """The back panel (forearm_roll_back_panel) in the module frame: a plate in the frame's step on the rear face (its
+    outer face on the rear line), as wide as the frame less side_clear, from gap over the step's bottom edge up to
+    side_clear under the tower's top; relieved where it passes over the turning shaft - run_gap off its rear face and its
+    lug's sweep, inside the bay's bore -; the U rim on its inner face down into the opening's lower part (it locates the
+    panel); a pocket for each magnet in its inner face."""
+    d, b, S = cfg.drive, cfg.drive.back, stack_positions(cfg)
+    s_top, half = _back_top(cfg), d.block_x[1] - b.side_clear
+    body = _on_back(bd.Pos(0.0, (b.bottom + b.gap + s_top) / 2.0) * bd.Rectangle(2.0 * half, s_top - b.bottom - b.gap), 0.0, b.t, cfg)
+    body = body - box((-FAR, FAR), (d.tower_y - b.side_clear, FAR), (-FAR, FAR))
+    body = body - cylinder(d.bay_r, FAR, z0=S["z_shaft_end"] - d.run_gap)
+    rim = back_opening(cfg, b.rim_clear) - back_opening(cfg, b.rim_clear + b.rim_w)
+    rim = rim & bd.Pos(0.0, (b.rim_top + b.opening_bottom - 10.0) / 2.0) * bd.Rectangle(2.0 * FAR, b.rim_top - b.opening_bottom + 10.0)
+    body = body + _on_back(rim, b.t - NUDGE, b.rim_h + NUDGE, cfg)
+    for x, s in b.magnet_points:
+        body = body - _on_back(bd.Pos(x, s) * bd.Circle(b.pocket_dia / 2.0), b.t - b.pocket_depth, b.pocket_depth + NUDGE, cfg)
     return single_solid(body)

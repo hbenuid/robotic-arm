@@ -538,13 +538,13 @@
     149.0,
     83.8
    ],
-   "bytes": 424896,
+   "bytes": 504579,
    "file": "native/forearm_roll_block.step",
    "kind": "native",
    "origin": "native",
    "product": "forearm_roll_block - the forearm roll drive's STATOR - the roll frame (the elbow block), which is also the elbow's output",
-   "sha256": "26f60c38e20148534a861f4375661b289b3b63d40a00694ec4b521f5e05c91dc",
-   "solid_volume": 325363.751,
+   "sha256": "29a404519c60a1f0876f14bdf49758de0d475da3dc10e2b46f3d2fd1f7ee16ec",
+   "solid_volume": 306232.873,
    "solids": 1,
    "source": "lib/forearm/roll.py:build_block(DEFAULT)",
    "units": "mm"
