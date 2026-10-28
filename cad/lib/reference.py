@@ -168,6 +168,8 @@ NO_REFERENCE: dict[str, str] = {
     "roll_idler_nut": "parts/joints/roll_idler_nut.py:_envelope()",
     "roll_clamp_screws": "parts/joints/roll_clamp_screws.py:_envelope()",
     "roll_clamp_nuts": "parts/joints/roll_clamp_nuts.py:_envelope()",
+    "forearm_roll_back_panel": "lib/forearm/roll.py:build_back_panel(DEFAULT)",
+    "roll_back_magnets": "parts/joints/roll_back_magnets.py:_envelope()",
     "elbow_idler_spacer": "lib/upper_arm/link.py:build_idler_spacer(J1_IDLER_SPACER_H, DEFAULT)",
     "elbow_idler_screw": "parts/joints/elbow_idler_screw.py:_envelope()",
     "elbow_idler_nut": "parts/joints/elbow_idler_nut.py:_envelope()",

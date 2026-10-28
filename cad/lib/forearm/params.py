@@ -233,6 +233,41 @@ class RollIdlerParams:
     #                                       motor's face, which shuts the way once the motor is in - and runs on into the channel
 
 
+@dataclass(frozen=True)
+class BackPanelParams:
+    """[DESIGN] The roll frame's removable back panel (parts/joints/forearm_roll_back_panel): a plate flush with the
+    frame's rear face (the rear line, lib/forearm/roll.py rear_line) in a step cut across the face's full width, from the
+    tower's top down to `bottom`, over the shaft's bay - whose opening grows on down below the bay's bore, a pocket
+    opening_depth in from the face: the shaft, its clamp nuts and the stop are reached with the panel off. Flush, so the
+    elbow motor's board passes the rear line as it did before the bay was bored through the back. The panel turns
+    run_gap clear of the shaft's rear face and its lug (a relief where it passes over them), is located by a U rim in the
+    opening's lower part and held by magnet pairs (parts/joints/roll_back_magnets): one disc in a pocket in the step's
+    floor, one in a pocket in the panel's inner face, each pressed to its pocket's bottom.
+    Positions on the rear face are (x, s): module x, and s along the face from the point where the roll axis meets it,
+    up toward the tower's top (lib/forearm/roll.py back_face)."""
+
+    t: float = 2.5                        # the panel's thickness = the step's depth, square to the rear face
+    bottom: float = -56.0                 # the step's bottom edge (s): its floor above the rear line's test probe (s -60) and the
+    #                                       motor's pocket, the bottom magnets' pockets 3.9 above it
+    gap: float = 0.2                      # the panel's bottom edge off the step's
+    side_clear: float = 0.1               # the panel's sides and top inside the frame's side faces and the tower's top
+    opening_bottom: float = -42.0         # the opening grown down from the bay's bore to here (s), as wide as the bore
+    opening_r: float = 6.0                # its bottom corners
+    opening_depth: float = 12.0           # its lower part's depth from the rear face (the bay's bore runs on to bearing 1): 8.8 of the
+    #                                       frame left over the motor's pocket
+    rim_clear: float = 0.3                # the panel's locating rim inside the opening's walls ...
+    rim_w: float = 1.6                    # ... this wide (4 perimeters) ...
+    rim_h: float = 3.0                    # ... this tall from the panel's inner face ...
+    rim_top: float = -5.0                 # ... a U from the opening's bottom up its sides to here (s), clear of the turning shaft
+    magnet_dia: float = 6.0               # [DATASHEET] N52 NdFeB disc magnet, 6 x 2 mm (parts/joints/roll_back_magnets)
+    magnet_t: float = 2.0
+    pocket_dia: float = 6.2               # each magnet's pocket (glued in, pressed to its bottom) ...
+    pocket_depth: float = 2.1             # ... in the step's floor and in the panel's inner face: 0.4 of the panel outside it
+    magnet_points: tuple = ((-23.5, 27.0), (23.5, 27.0), (-18.0, -49.0), (18.0, -49.0))   # (x, s): the top pair beside the bay's
+    #                                       bore (3.7 of wall to it, 3.4 to the side faces, 4.2 to the tower's top), the bottom pair under the
+    #                                       opening (3.9 to it and to the step's bottom edge)
+
+
 ROLL_FRAME_R = 30.0   # [DESIGN] the roll frame's half width round the roll axis: its underside (6.0 over the upper arm's flat top),
 #                       its side (+N) face and its tower's top - the frame symmetric about the roll axis, the bearing boss centred
 #                       on its front face -, the forearm wall's radius (RollEndParams.wall_od / 2): the frame flush with the
@@ -254,7 +289,8 @@ class RollDriveParams:
     the front face, the heads flush in counterbores -
     motor_holes, parts/joints/roll_motor_screws), the block's one flat front face the plate's - the 20T's teeth level
     with the ring (pulley_seat), the plate pad_t thick behind the face; a round bearing boss on that face round the roll
-    axis, the 6806 pair in the tower under it (lip apart), the shaft's bay behind them bored on through the frame's back.
+    axis, the 6806 pair in the tower under it (lip apart), the shaft's bay behind them bored on through the frame's back,
+    closed by a removable back panel flush with the rear face (back: BackPanelParams).
     Rotor: the PULLEY (forearm_roll_pulley: the integral 90T ring over the boss, its hub down through bearing 2 and its
     neck on to bearing 1's front face, the spigot the forearm wall bolts onto - the roll's output) and the SHAFT
     (forearm_roll_shaft: a collar that holds bearing 1 - its journal through it, its flange behind it with the clamp's
@@ -397,6 +433,7 @@ class RollDriveParams:
     #                                       offset, ForearmConfig.elbow_offset): the 280 belt with its idler (nearer than ~73 the idler meets the
     #                                       ring's flange and the belt's far run)
     idler: RollIdlerParams = RollIdlerParams()   # the roll belt's tensioner, on the frame's front face
+    back: BackPanelParams = BackPanelParams()    # the removable back panel over the shaft's bay, on the frame's rear face
     t20_hub: float = 10.95                # [REFERENCE] vendor 20T: its tooth band's centre from its hub face (7.45 + 3.5)
     t20_len: float = 14.45                # [REFERENCE] vendor 20T: hub face .. its far end
     pulley_seat: float = 3.5              # [DESIGN] the 20T's hub face over the motor's pilot boss: the hub 1.5 down in the plate's pilot hole

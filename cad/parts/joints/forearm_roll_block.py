@@ -10,7 +10,8 @@ the PLATE (the pilot hole and the motor's 4 M3 holes, the screws' heads flush in
 shaft's slit down to the bottom), whose face is the frame's one front face; the tower carries the 6806 pair back to back
 on a 12 mm spacer (the lip) - bearing 1's seat open into the shaft's BAY behind it (bored on through the frame's back,
 the stop post on the tower's face), bearing 2's seat in the BEARING BOSS, round on the front face, the pulley's ring
-turning over it.
+turning over it; the rear face stepped for the removable BACK PANEL (forearm_roll_back_panel, flush in the step, held
+by magnets in pockets in the step's floor), the bay's opening grown down below its bore.
 
 NATIVE part (lib/reference.py NATIVE): designed here in build123d (lib/forearm/roll.py build_block(cfg), every number
 lib/forearm/params.py RollDriveParams, in the drive's MODULE frame at its stack station - assemblies/forearm_roll_drive.py

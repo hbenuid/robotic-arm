@@ -274,8 +274,8 @@ def test_module_colors(module):
     """Standalone: the purchased parts BOUGHT_TINT, the printed ones the module's TINT."""
     assert module.label == "forearm_roll_drive"
     # 2 bearings, the rotor clamp's screws and nuts, motor, board, 20T, the motor's screws, belt, the tensioner's idler,
-    # screw and nut / frame, shaft, pulley
-    assert module_tints(module, M.TINT) == {True: 12, False: 3}
+    # screw and nut, the back panel's magnets / frame, shaft, pulley, back panel
+    assert module_tints(module, M.TINT) == {True: 13, False: 4}
 
 
 @pytest.mark.slow
