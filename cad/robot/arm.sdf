@@ -114,11 +114,11 @@
   <link name="forearm_link">
       <pose relative_to="forearm_roll">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>-0.005577 -0.000048 0.091495 0 0 0</pose>
-        <mass>0.585848</mass>
+        <pose>0.005535 -0.000048 0.091293 0 0 0</pose>
+        <mass>0.589157</mass>
         <inertia>
-          <ixx>1.032887e-03</ixx><ixy>3.202921e-06</ixy><ixz>-9.340406e-05</ixz>
-          <iyy>1.096272e-03</iyy><iyz>1.343907e-06</iyz><izz>2.811862e-04</izz>
+          <ixx>1.038589e-03</ixx><ixy>3.254220e-06</ixy><ixz>-1.565772e-04</ixz>
+          <iyy>1.101338e-03</iyy><iyz>1.349498e-06</iyz><izz>2.831867e-04</izz>
         </inertia>
       </inertial>
       <visual name="forearm_link_visual">
@@ -298,7 +298,7 @@
       </axis>
     </joint>
   <joint name="wrist_pitch" type="revolute">
-      <pose relative_to="forearm_link">-0.016997 -0.000007 0.165 -1.570808 -1.271748 1.570808</pose>
+      <pose relative_to="forearm_link">-0.003997 -0.000007 0.165 -1.570808 -1.271748 1.570808</pose>
       <parent>forearm_link</parent>
       <child>wrist_pitch_link</child>
       <axis>
