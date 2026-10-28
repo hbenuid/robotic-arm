@@ -174,6 +174,12 @@ machines"; CI is the third machine: root `AGENTS.md` "CI").
   `exists()` first) — `./cadtool gen <part> --force` once (its next run says `changed`); the assemblies then follow.
   Verified on cadgen 0.8.0: `bearing_625` built with its vendor file set aside kept its envelope after the file came
   back, until forced.
+- Never edit sources a running `gen` reaches: verified on cadgen 0.8.1, `lib/yaw_coupler/` edited while the hash
+  gate's first `gen assemblies/arm.py` ran left the arm's document holding the old geometry under the edited sources'
+  key - the next runs read `nothing ran` (from memory, then from the cache after `./cadtool stop` and `./cadtool cadgen
+  delete <id>`), so the hash gate passed, while each part rebuilt alone was right. `gen assemblies/arm.py --force`
+  cleared it (and rewrote other STEPs' bytes: `inspect diff` read them as the same geometry). Right after it, `./cadtool
+  cadgen inspect` on the arm still gave the old volume - `cadgen.read_step` of the file gave the new one.
 - Don't compare large STEP artifacts with `git diff`; compare source, `inspect` output and snapshots. A STEP edited
   (or deleted) by anything but its model comes back on the model's next run, byte for byte (`wrote …`).
 - A model run takes no options: `./cadtool gen` refuses any flag but its own `--force` (`CADGEN_ENGINE_MEMO=0`: every

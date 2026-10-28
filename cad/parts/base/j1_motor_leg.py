@@ -5,7 +5,8 @@ Designed here, no reference: tests/yaw_coupler/test_j1_coupler.py holds its numb
 round the drive whose shell turns (lib/yaw_coupler/params.py ForkParams): two legs past the shell's ends, the disc's
 drafted side carried up their outer faces. The hub-side leg is j1_coupler's; this is the other - a solid ring (no split,
 no cap) round the motor plate's sleeve (ring_bore_dia), slid on over the motor and its board once the drive is in, on a
-post standing on the disc's top face; its foot the disc's rim past the leg's outer face, butting the disc there, held by
+post as wide standing on the disc's top face (the hub leg's shape: the post kept inside the disc's rim, its feet flaring
+out from the disc's top edge); its foot the disc's rim past the leg's outer face, butting the disc there, held by
 2x M4 along the drive's axis from counterbores in the foot into nuts in slots in the disc, under the post; and the
 sleeve held in it - nothing else stops the drive's carrier turning at the motor end - by 3 radial M4 x 20 through the
 ring's middle (up and both sides: the motor's flats) into nuts pressed into lugs on the sleeve's bore, the holes

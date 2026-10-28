@@ -26,6 +26,7 @@ from lib.yaw_coupler.layout import (
     fork_flare_top,
     fork_hub_bolts,
     fork_hub_leg_x,
+    fork_leg_bound,
     fork_motor_bolt_x,
     fork_motor_bolts,
     fork_motor_leg_x,
@@ -117,19 +118,26 @@ def _cone(cfg: YawCouplerConfig, y0: float, y1: float):
 
 
 def _post_z(cfg: YawCouplerConfig) -> tuple[float, float]:
-    """A leg's post, across: leg_half_z either side of the drive's axis."""
+    """A leg's post, across: as wide as its round top, plate_r either side of the drive's axis."""
     f = cfg.fork
-    return (f.axis_z - f.leg_half_z, f.axis_z + f.leg_half_z)
+    return (f.axis_z - f.plate_r, f.axis_z + f.plate_r)
+
+
+def _leg_room(cfg: YawCouplerConfig, x0: float, x1: float):
+    """Where the leg between x0 and x1 may be: its post inside fork_leg_bound about the part's Y, its round top whole."""
+    f = cfg.fork
+    return _revolved(fork_leg_bound(cfg)) + _xcyl(f.plate_r, x0 - 1.0, x1 + 1.0, f.axis_y, f.axis_z)
 
 
 def _fork(cfg: YawCouplerConfig):
-    """The hub leg - its disc round the drive's axis on a post down to the disc, the disc's draft up its outer face - and
-    the disc drafted round to its rim under both legs (its flats and ears filled): on the motor side to the leg's outer
-    face, the motor leg's foot past it."""
+    """The hub leg - its disc round the drive's axis on a post as wide down to the disc, the disc's draft up its outer
+    face, the post kept inside the disc's rim - and the disc drafted round to its rim under both legs (its flats and
+    ears filled): on the motor side to the leg's outer face, the motor leg's foot past it."""
     f, d = cfg.fork, cfg.disc
     (hx0, hx1), (mx0, mx1) = fork_hub_leg_x(cfg), fork_motor_leg_x(cfg)
-    leg = _xcyl(f.hub_plate_r, hx0, hx1, f.axis_y, f.axis_z) + _box((hx0, hx1), (d.y0, f.axis_y), _post_z(cfg))
+    leg = _xcyl(f.plate_r, hx0, hx1, f.axis_y, f.axis_z) + _box((hx0, hx1), (d.y0, f.axis_y), _post_z(cfg))
     leg = leg + (_cone(cfg, d.y0, fork_flare_top(cfg)) & _box((-_FAR, hx1), (d.y0, _FAR), _post_z(cfg)))
+    leg = leg & _leg_room(cfg, hx0, hx1)
     rim = _box((-_FAR, hx1), (d.y0, d.top_y), (-_FAR, _FAR)) + _box((mx0, mx1), (d.y0, d.top_y), (-_FAR, _FAR))
     return leg + (_cone(cfg, d.y0, d.top_y) & rim)
 
@@ -165,15 +173,16 @@ def _sleeve_slot(cfg: YawCouplerConfig, deg: float):
 
 def build_motor_leg(cfg: YawCouplerConfig):
     """DEFAULT's motor leg (parts/base/j1_motor_leg), in the coupler's frame: a solid plate_r ring round the drive's
-    axis, bored to the sleeve, on a post standing on the disc's top face, the disc's draft up its outer face; its foot
-    the disc's rim past the leg's outer face, down to the underside; the 2 M4s through the foot from counterbores; the
-    sleeve's radial M4s' slotted holes through the ring."""
+    axis, bored to the sleeve, on a post as wide standing on the disc's top face, the disc's draft up its outer face,
+    the post kept inside the disc's rim; its foot the disc's rim past the leg's outer face, down to the underside; the
+    2 M4s through the foot from counterbores; the sleeve's radial M4s' slotted holes through the ring."""
     f, d = cfg.fork, cfg.disc
     x0, x1 = fork_motor_leg_x(cfg)
     leg = _xcyl(f.plate_r, x0, x1, f.axis_y, f.axis_z) + _box((x0, x1), (d.top_y, f.axis_y), _post_z(cfg))
     # the draft up the post and the foot: one cut of the cone (two meeting on the top face leave the solid invalid)
     reach = _box((x0, _FAR), (d.top_y, _FAR), _post_z(cfg)) + _box((x1, _FAR), (d.y0, d.top_y), (-_FAR, _FAR))
     leg = leg + (_cone(cfg, d.y0, fork_flare_top(cfg)) & reach)
+    leg = leg & _leg_room(cfg, x0, x1)
     leg = leg - _xcyl(f.ring_bore_dia / 2.0, x0 - NUDGE, _FAR, f.axis_y, f.axis_z)
     seat_x = fork_motor_bolt_x(cfg)[0]
     for y, z in fork_motor_bolts(cfg):
