@@ -84,13 +84,14 @@ ELBOW_TO_WRIST_INPLANE = (-142.926, 153.58, 9.229)   # [REFERENCE] forearm_link 
 #                                                       perpendicular to N): the roll axis' direction (the forearm moved across it, parallel)
 
 # --- the forearm roll (the joint added to the SolidWorks arm's five, assemblies/forearm_roll_drive.py): its axis runs
-# along the forearm through the WRIST CENTRE - the point on the wrist_pitch axis WRIST_CENTRE_ALONG_N back along N from
-# WRIST_PITCH_ORIGIN, where the SolidWorks wrist_roll axis met it. Since the wrist roll drive
+# along the forearm, across the wrist_pitch axis by the WRIST CENTRE - the point on that axis WRIST_CENTRE_ALONG_N back
+# along N from WRIST_PITCH_ORIGIN, where the SolidWorks wrist_roll axis met it. Since the wrist roll drive
 # (assemblies/wrist_roll_drive.py) the wrist_roll axis runs WRIST_ROLL_OFFSET across the pitch axis and
 # WRIST_ROLL_AXIS_H over the wrist plate - a wrist offset: the last three axes are no longer concurrent (an IK must be
 # numeric). The forearm roll's axis passes FOREARM_ROLL_AXIS_Z along N from j2_link's capture origin (42 - 17 = 25,
 # lib/params.py) - ELBOW_ROLL_OFFSET across the elbow axis (the roll motor sits on the elbow axis): an elbow offset, the
-# axes no longer cross; tests/forearm/test_roll_drive.py checks WRIST_CENTRE lies on it and on the pitch axis. The
+# axes no longer cross. The wrist dropped along its pitch axis with the forearm's web (lib/forearm/params.py WEB_DROP),
+# WRIST_CENTRE with it: the roll axis crosses the pitch axis that far from it (tests/forearm/test_roll_drive.py). The
 # forearm's turn is about this axis: its points stay put.
 WRIST_CENTRE_ALONG_N = -17.0                 # [REFERENCE] see above: along the capture's N (the wrist_pitch axis before the turn)
 _len = math.sqrt(sum(v * v for v in ELBOW_TO_WRIST_INPLANE))

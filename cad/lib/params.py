@@ -115,7 +115,8 @@ ELBOW_BELT_LENGTH = _ELBOW_BELT                    # 300-2GT [DESIGN] the elbow 
 ELBOW_RATIO = GT2_PULLEY_108T_TEETH / GT2_PULLEY_20T_TEETH   # 5.4:1 [DESIGN] the elbow belt: the 108T (parts/joints/gt2_pulley_108t) on the elbow motor's 20T
 from lib.forearm.params import DEFAULT as _FOREARM  # noqa: E402
 
-J2_MOTOR_WEB_FACE_Z = _FOREARM.web.z1              # 19 [REFERENCE] j2_link: the web's +Z face; the motor bolts through its round holes
+J2_MOTOR_WEB_FACE_Z = _FOREARM.web.z1              # 6 [DESIGN] j2_link: the web's +Z face (WEB_DROP under the SolidWorks part's 19); the
+#                                                    motor bolts through its round holes
 WRIST_MOTOR_CENTRES = _FOREARM.motor_x - _FOREARM.web.wrist_x   # 80 [DESIGN] the wrist-pitch motor's axis from the wrist pivot
 J2_MOTOR_X = _FOREARM.motor_x                      # -85 [DESIGN] that axis in j2_link's frame (lib/forearm/params.py WRIST_MOTOR_CENTRES)
 J2_MOTOR_SCREW_LEN = _FOREARM.web.thickness - _FOREARM.holes.screw.head_h + _FOREARM.holes.thread   # 12 the wrist motor's 4x M3
@@ -123,7 +124,8 @@ J2_MOTOR_SCREW_LEN = _FOREARM.web.thickness - _FOREARM.holes.screw.head_h + _FOR
 #                                                    counterbores head_h deep - MotorHoleParams) and the thread in the motor
 WRIST_BELT_LENGTH = _FOREARM.roll_end.wrist_belt   # 280-2GT [DESIGN] the wrist-pitch belt (90T at the wrist, 20T on the motor), round its
 #                                                    idler (lib/forearm/params.py IdlerParams)
-J2_BELT_Z = _FOREARM.roll_end.wrist_belt_z         # 0.3 [REFERENCE] the wrist belt's mid-plane in j2_link's frame (the wrist 90T's band)
+J2_BELT_Z = _FOREARM.roll_end.wrist_belt_z         # -12.7 the wrist belt's mid-plane in j2_link's frame (the wrist 90T's band, dropped
+#                                                    with the web and the wrist: lib/forearm/params.py WEB_DROP)
 # The motors' 20T pulleys (the vendor 20T: its tooth band t20_hub from its hub face) on their shafts, their bands level
 # with the driven pulleys' - each belt's plane (lib/mounts.py MOTOR_PULLEY_MOUNTS, tests/test_mounts.py):
 from lib.base.params import YAW_BELT_Y  # noqa: E402

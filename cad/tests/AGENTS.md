@@ -87,7 +87,7 @@ surfaces, volume, bbox - and feature probes;
 `gt2_pulley_108t` / `gt2_pulley_120t`, parts with no reference: their volume and bbox written in, the 90T's hub and
 holes, 108 / 120 grooves; `helpers.py`: probe points about the axis, the surface census),
 `tests/forearm/` (the forearm: the LEGACY
-build vs the SolidWorks part + feature probes, the roll end, the roll drive - axis through the wrist centre, stack, press fits, clean pairs,
+build vs the SolidWorks part + feature probes, the roll end, the roll drive - its axis across the wrist pitch axis, stack, press fits, clean pairs,
 clearances in the arm with the elbow folded; the roll belt's tensioner (`test_roll_idler`: the stock belt round it, its
 riser, slot and nut channel on the roll frame, its axle's and nut's numbers - no reference) and the wrist belt's
 (`test_wrist_idler`: the stock belt round it, the band of belts its slot takes, its stations, its axle's and nut's

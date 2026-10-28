@@ -107,9 +107,12 @@ SHIFTS: tuple[LinkShift, ...] = (
     LinkShift("j1_link", "j1_link#1", (-0.673104702, 0.73826898, 0.043462315),   # [REFERENCE]
               _UPPER_ARM.slab.elbow_x - _UPPER_ARM_LEGACY.slab.elbow_x, _BEYOND_ELBOW,
               (0.064435732, 0.0, 0.997921859), _arm_slide(_UPPER_ARM) - _arm_slide(_UPPER_ARM_LEGACY)),   # [REFERENCE] its +Y
-    # the forearm: its wrist_pitch axis at web.wrist_x from the elbow axis (along -X)
+    # the forearm: its wrist_pitch axis at web.wrist_x from the elbow axis (along -X); the wrist dropped along the axis
+    # with the web toward its belt side (-Z: lib/forearm/params.py WEB_DROP), on the boss's bearings
     LinkShift("j2_link", "j2_link#1", (0.680611117, -0.731325624, -0.043947003),   # [REFERENCE]
-              _FOREARM.web.wrist_x - _FOREARM_LEGACY.web.wrist_x, _BEYOND_WRIST_PITCH),
+              _FOREARM.web.wrist_x - _FOREARM_LEGACY.web.wrist_x, _BEYOND_WRIST_PITCH,
+              normal_w=(0.064435732, 0.0, 0.997921859),   # [REFERENCE] its +Z
+              normal_z=_FOREARM.web.z0 - _FOREARM_LEGACY.web.z0),
     # the wrist roll drive: the gripper rolls about R', WristRollParams.centre_distance across from the pitch axis (along
     # wrist_link's Y, on its `side`: -Y) on the plate's underside (axis_h over its coupler face: along its -Z from the
     # SolidWorks roll axis at EndFaceParams.axis_z), its connector bolted to the roll pulley's face (along its +X)

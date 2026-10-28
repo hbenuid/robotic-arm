@@ -33,7 +33,7 @@ EXTRAS = [
     ("cycloidal_drive", "bearing grease", 1, "the output pins are a greased sliding fit through the discs"),
     ("forearm_roll_drive", f"M3 x {_FOREARM.roll_end.screw_len:g} socket head cap screw (ISO 4762) - the forearm wall onto the roll pulley's face",
      _FOREARM.roll_end.bolt_count,
-     ("heads on the wall's wrist face (the bottom one in the channel under the web), through the wall and the pulley's spigot into "
+     ("heads on the wall's wrist face (the bottom one just over the web), through the wall and the pulley's spigot into "
       "its nuts; bolt the wall on before the wrist-pitch motor goes on")),
     ("forearm_roll_drive", "M3 hex nut (ISO 4032) - in the roll pulley's core, for the forearm wall's screws", _FOREARM.roll_end.bolt_count,
      "pushed into the pockets from the pulley's cable bore before the wall goes on"),
