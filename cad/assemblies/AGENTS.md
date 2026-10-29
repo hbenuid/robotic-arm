@@ -50,7 +50,7 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
 - **Mounted occurrences** (`lib/mounts.py MOUNTS`): what the SolidWorks capture never had - the belt joints' motors +
   boards and their drive (20Ts, belts, tensioners), the bearings, the base_yaw thrust stack and 120T, the base's motor
   mount, the yoke's motor leg, the fasteners that hold them - and what it had where the lower 6806 has no room: the
-  elbow's 108T and the wrist's 90T (`gt2_pulley_108t#1` / `gt2_pulley_90t#4`), hosted on the retired records they correct,
+  elbow's and the wrist's 90T (`gt2_pulley_90t#3` / `#4`), hosted on the retired records they correct,
   `PULLEY_SEAT_SHIFT` out along the pulley's own axis. They are declared as frames-as-data in the host occurrence's
   frame (`Mount(key, part, host, link, joint, frame)`; a board's host is its motor, a nut set's its screw set) and
   `tools/reference/mount_placements.py` materialises them into `placements.json` as ordinary part records
@@ -87,7 +87,8 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
   `test_assembly.py` compares the SolidWorks world bbox through `arm_from_w()`.
 - Roles label a part with the joint it serves (mostly the joint name: `elbow_pitch_1`, `forearm_roll`), which also keeps
   duplicate labels unique (`test_placements.py test_duplicate_parts_have_unique_labels`): `1` / `2` on the gripper's
-  pairs and the cycloidal and forearm roll drives' bearings, `j3` on the wrist's 90T and `j3_coupler#2`.
+  pairs and the cycloidal and forearm roll drives' bearings, `j2` / `j3` on the elbow's / wrist's 90T and
+  `j3_coupler#2`.
 - A view of the arm with some occurrences hidden needs no model: `./cadtool snapshot assemblies/arm.step out.png
   --display '{"hidden": ["arm/wrist/gripper"]}'` (occurrence-path refs, `./cadtool inspect` lists them; `isolated`
   draws only the ones named). A second model would be the only way to get a STEP (a model takes no parameters).

@@ -184,11 +184,11 @@ class ArmParams:
     drive_z_at_y0: float = 66.5      # [REFERENCE] the drive's z at this frame's y = 0 (placements.json cycloidal_drive#1,
     #                                  j1_link#1: the SolidWorks hub face bolted to the top face, y 1.5, at the port's z 65)
     drive_x_deg: float = -47.584167  # [REFERENCE] the drive's +X in this frame, atan2(z, x), as the capture pose places it
-    width: float = 76.0              # [DESIGN] the slab across, symmetric: 16.4 of it beside the motor's hole, 8.1 past the
+    width: float = 76.0              # [DESIGN] the slab across, symmetric: 16.4 of it beside the motor's hole, 10.8 past the
     #                                  idler's nut slot at its outer end (tests/upper_arm/test_elbow_idler.py) - the plate's 90
     #                                  slimmed for mass
     end_r: float = 36.0              # [DESIGN] its round end about the elbow axis: 14.9 of wall round the lower 6806's seat,
-    #                                  the 108T's flange (r 35.3) under it just inside; the roll frame's octagonal end
+    #                                  the 90T's flange (r 29.6) under it well inside; the roll frame's octagonal end
     #                                  (lib/forearm/params.py RollDriveParams.end_r) overhangs it: it cannot come in as far
     #                                  (its motor's pocket)
     bend_r: float = 20.0             # [DESIGN] where the width turns into the taper onto the end (or flares into it)
@@ -197,7 +197,7 @@ class ArmParams:
 @dataclass(frozen=True)
 class ElbowIdlerParams:
     """[DESIGN] The elbow belt's tensioner (cad/AGENTS.md "Belts"): a smooth GT2 idler (parts/joints/gt2_idler_20t) on
-    the belt's back on its run from the 108T back to the motor's 20T (the +Z strand), `along` from the motor's axis -
+    the belt's back on its run from the 90T back to the motor's 20T (the +Z strand), `along` from the motor's axis -
     beside the stepped slot's line (SlotParams.stepped_x - the SolidWorks slit was for it) -, pushed into the loop until
     the stock ELBOW_BELT fits ELBOW_MOTOR_CENTRES (lib/belts.py idler_on_run; lib/upper_arm/layout.py elbow_belt_loop,
     elbow_idler_x, elbow_idler_z). It hangs
@@ -208,11 +208,11 @@ class ElbowIdlerParams:
     slab's top face, on the floor: both slots run along Z (the push) between slot_z's ends, and the nut slides with the
     screw (turned from below). Its stations along N: lib/params.py J1_IDLER_*."""
 
-    run: int = 1                          # the loop's run it presses (lib/belts.py belt_runs): the 108T back to the 20T, the +Z strand
+    run: int = 1                          # the loop's run it presses (lib/belts.py belt_runs): the 90T back to the 20T, the +Z strand
     along: float = 29.1                   # its axis this far from the motor's along the link: 1.9 nearer the motor than the
-    #                                       stepped slot's line (31.0), so its flange keeps 5.0 off the 108T's pitch circle at the
-    #                                       slots' inner end; the nut's slot 3.4 off the motor's hole (tests/upper_arm/test_elbow_idler.py)
-    slot_z: tuple = (-4.0, 25.1)          # its axis' range along Z, the slots' end centres: in to 3.0 off the far strand's teeth
+    #                                       stepped slot's line (31.0); the nut's slot 3.4 off the motor's hole
+    #                                       (tests/upper_arm/test_elbow_idler.py)
+    slot_z: tuple = (-1.7, 22.4)          # its axis' range along Z, the slots' end centres: in to 3.0 off the far strand's teeth
     #                                       (the longest belt it takes), out past just touching the open loop's strand
     riser_dia: float = 12.0               # the spacer's riser, on the slab's underside (as RollIdlerParams.riser_w) ...
     land_dia: float = 7.0                 # [ESTIMATE] ... its land on the idler's bearing inner ring only (RollIdlerParams.land_w)
@@ -279,10 +279,10 @@ _SHORTENED = shortened(replace(
 # The drive's shell turns (lib/cycloidal/params.py ShellParams) and the arm rises off it, flush with its hub end
 # (ArmParams), the held hub and the motor's sleeve on the j1_coupler yoke at the shell's two ends - so the elbow motor
 # leaves the shoulder axis: its pad moves out along the link to ELBOW_MOTOR_CENTRES from the elbow axis, where the
-# second stage's seat was (gone: a stock belt runs the motor's 20T straight to the elbow's 108T, lib/params.py ELBOW_RATIO).
-ELBOW_BELT = 300   # [DESIGN] a stock 300-2GT closed belt, the elbow motor's 20T to the elbow's 108T, round its idler
-ELBOW_MOTOR_CENTRES = 78.0   # [DESIGN] the elbow motor's axis this far from the elbow's: the open loop (294.2) shorter than the
-#                              stock belt, the idler (ElbowIdlerParams) taking up the rest - it takes 294.2 .. 315.7; the
+# second stage's seat was (gone: a stock belt runs the motor's 20T straight to the elbow's 90T, lib/params.py ELBOW_RATIO).
+ELBOW_BELT = 280   # [DESIGN] a stock 280-2GT closed belt, the elbow motor's 20T to the elbow's 90T, round its idler
+ELBOW_MOTOR_CENTRES = 78.0   # [DESIGN] the elbow motor's axis this far from the elbow's: the open loop (272.4) shorter than the
+#                              stock belt, the idler (ElbowIdlerParams) taking up the rest - it takes 272.4 .. 287.3; the
 #                              motor's board passes the elbow's roll frame closest at the elbow's lower limit (tests/forearm/test_roll_drive.py)
 _ARM = ArmParams(0.0)
 _HUB_END_Y = _ARM.drive_z_at_y0 - _shell_ends(_DRIVE)[1]   # 5.5: the shell's hub end, the face the part prints on

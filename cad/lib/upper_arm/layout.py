@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 
-from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_108T_TEETH, idler_on_run, pulley_circle
+from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, idler_on_run, pulley_circle
 from lib.upper_arm.params import DEFAULT, ELBOW_BELT, UpperArmConfig
 
 
@@ -50,10 +50,10 @@ def arm_slide(cfg: UpperArmConfig = DEFAULT) -> float:
 
 def elbow_belt_loop(cfg: UpperArmConfig = DEFAULT, *, idler: bool = True) -> list[tuple[float, float, float]]:
     """The elbow belt's loop (lib/belts.py) in the belt's own frame: the elbow motor's 20T on the origin (the pad's
-    axis), the elbow 108T on +X (the elbow axis, ELBOW_MOTOR_CENTRES on) and - with cfg.idler - the tensioner on the run
+    axis), the elbow 90T on +X (the elbow axis, ELBOW_MOTOR_CENTRES on) and - with cfg.idler - the tensioner on the run
     ElbowIdlerParams.run, ElbowIdlerParams.along from the origin, pushed in till the loop is ELBOW_BELT long (the stock
     belt is longer than the open loop). The belt's row (lib/mounts.py elbow_belt#1) puts its +Y on j1_link's +Z."""
-    loop = [pulley_circle(0.0, 0.0, GT2_PULLEY_20T_TEETH), pulley_circle(cfg.slab.elbow_x - cfg.pad.x, 0.0, GT2_PULLEY_108T_TEETH)]
+    loop = [pulley_circle(0.0, 0.0, GT2_PULLEY_20T_TEETH), pulley_circle(cfg.slab.elbow_x - cfg.pad.x, 0.0, GT2_PULLEY_90T_TEETH)]
     if idler and cfg.idler is not None:
         loop.insert(cfg.idler.run + 1, idler_on_run(loop, cfg.idler.run, cfg.idler.along, ELBOW_BELT))
     return loop

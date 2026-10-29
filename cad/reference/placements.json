@@ -13,7 +13,7 @@
  "expected": {
   "leaf_occurrences": 84,
   "solids": 195,
-  "solid_volume": 2346110.827
+  "solid_volume": 2338619.907
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -52,7 +52,7 @@
   "washer_as6590#1",
   "bearing_axk6590#1",
   "washer_as6590#2",
-  "gt2_pulley_108t#1",
+  "gt2_pulley_90t#3",
   "gt2_pulley_90t#4",
   "gt2_pulley_120t#1",
   "elbow_pulley_screws#1",
@@ -4445,7 +4445,7 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the elbow motor's 20T on its shaft, hub toward the motor, J1_MOTOR_20T_HUB_Z out from its face (under the web): its tooth band level with the elbow 108T's"
+    "note": "the elbow motor's 20T on its shaft, hub toward the motor, J1_MOTOR_20T_HUB_Z out from its face (under the web): its tooth band level with the elbow 90T's"
    },
    "solids": 3,
    "solid_volume": 1878.627,
@@ -5967,8 +5967,8 @@
    ]
   },
   {
-   "key": "gt2_pulley_108t#1",
-   "part": "gt2_pulley_108t",
+   "key": "gt2_pulley_90t#3",
+   "part": "gt2_pulley_90t",
    "kind": "part",
    "path": null,
    "parent": null,
@@ -5990,10 +5990,10 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the elbow 108T, PULLEY_SEAT_SHIFT out from the SolidWorks 90T's pose (retired): its hub in the lower elbow bearing; turned pulley_bolt_deg about its axis with the block's bolt pattern (the nut channels clear of the ring cavity)"
+    "note": "the elbow 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower elbow bearing; turned pulley_bolt_deg about its axis with the block's bolt pattern (the nut channels clear of the ring cavity)"
    },
    "solids": 1,
-   "solid_volume": 31390.961,
+   "solid_volume": 23975.641,
    "rel": {
     "position": [
      -117.267896,
@@ -6059,14 +6059,14 @@
     ]
    },
    "world_bbox_min": [
-    -153.046,
-    175.193,
-    -44.173
+    -147.329,
+    180.922,
+    -43.804
    ],
    "world_bbox_size": [
-    71.106,
-    70.647,
-    24.598
+    59.67,
+    59.188,
+    24.229
    ]
   },
   {
@@ -6283,7 +6283,7 @@
    "parent": null,
    "label_in_monolith": null,
    "mount": {
-    "host": "gt2_pulley_108t#1",
+    "host": "gt2_pulley_90t#3",
     "link": "elbow_link",
     "joint": "elbow_pitch",
     "frame_in_host": {
@@ -6299,7 +6299,7 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the elbow 108T's 4x M4 x pulley_screw_len: heads in its counterbores, down through its hub and the block's stub"
+    "note": "the elbow 90T's 4x M4 x pulley_screw_len: heads in its counterbores, down through its hub and the block's stub"
    },
    "solids": 4,
    "solid_volume": 2312.69,
@@ -7020,10 +7020,10 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the elbow belt under j1_link's web: the elbow motor's 20T to the elbow 108T"
+    "note": "the elbow belt under j1_link's web: the elbow motor's 20T to the elbow 90T"
    },
    "solids": 1,
-   "solid_volume": 1135.449,
+   "solid_volume": 1059.849,
    "rel": {
     "position": [
      -64.991255,
@@ -7089,14 +7089,14 @@
     ]
    },
    "world_bbox_min": [
-    -152.368,
+    -146.65,
     146.189,
     -44.025
    ],
    "world_bbox_size": [
-    94.298,
-    99.081,
-    12.051
+    88.581,
+    93.351,
+    11.682
    ]
   },
   {
@@ -7217,7 +7217,7 @@
      "position": [
       121.1,
       -6.7,
-      9.857369
+      5.114149
      ],
      "rotation_xyz_deg": [
       -90.0,
@@ -7226,15 +7226,15 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the elbow belt's tensioner under j1_link's slab, level with the belt, on its back on the 108T -> 20T run"
+    "note": "the elbow belt's tensioner under j1_link's slab, level with the belt, on its back on the 90T -> 20T run"
    },
    "solids": 1,
    "solid_volume": 1137.154,
    "rel": {
     "position": [
-     -77.606296,
-     181.063667,
-     -44.291425
+     -81.100791,
+     177.864334,
+     -44.065786
     ],
     "rotation_xyz_deg": [
      0.0,
@@ -7246,27 +7246,27 @@
       -0.673104708,
       -0.736734748,
       0.064435727,
-      -77.606296271
+      -81.100791262
      ],
      [
       0.738268975,
       -0.674506428,
       -2e-09,
-      181.063666597
+      177.864334219
      ],
      [
       0.043462313,
       0.047570897,
       0.997921859,
-      -44.291425135
+      -44.065785904
      ]
     ]
    },
    "world": {
     "position": [
-     -77.606296,
-     181.063667,
-     -44.291425
+     -81.100791,
+     177.864334,
+     -44.065786
     ],
     "rotation_xyz_deg": [
      0.0,
@@ -7278,26 +7278,26 @@
       -0.673104708,
       -0.736734748,
       0.064435727,
-      -77.606296271
+      -81.100791262
      ],
      [
       0.738268975,
       -0.674506428,
       -2e-09,
-      181.063666597
+      177.864334219
      ],
      [
       0.043462313,
       0.047570897,
       0.997921859,
-      -44.291425135
+      -44.065785904
      ]
     ]
    },
    "world_bbox_min": [
-    -86.588,
-    172.064,
-    -44.871
+    -90.082,
+    168.864,
+    -44.646
    ],
    "world_bbox_size": [
     18.543,
@@ -7320,7 +7320,7 @@
      "position": [
       121.1,
       2.3,
-      9.857369
+      5.114149
      ],
      "rotation_xyz_deg": [
       -90.0,
@@ -7335,9 +7335,9 @@
    "solid_volume": 211.272,
    "rel": {
     "position": [
-     -77.026375,
-     181.063667,
-     -35.310128
+     -80.52087,
+     177.864334,
+     -35.084489
     ],
     "rotation_xyz_deg": [
      0.0,
@@ -7349,27 +7349,27 @@
       -0.673104708,
       -0.736734748,
       0.064435727,
-      -77.026374725
+      -80.520869715
      ],
      [
       0.738268975,
       -0.674506428,
       -2e-09,
-      181.063666583
+      177.864334206
      ],
      [
       0.043462313,
       0.047570897,
       0.997921859,
-      -35.310128403
+      -35.084489171
      ]
     ]
    },
    "world": {
     "position": [
-     -77.026375,
-     181.063667,
-     -35.310128
+     -80.52087,
+     177.864334,
+     -35.084489
     ],
     "rotation_xyz_deg": [
      0.0,
@@ -7381,26 +7381,26 @@
       -0.673104708,
       -0.736734748,
       0.064435727,
-      -77.026374725
+      -80.520869715
      ],
      [
       0.738268975,
       -0.674506428,
       -2e-09,
-      181.063666583
+      177.864334206
      ],
      [
       0.043462313,
       0.047570897,
       0.997921859,
-      -35.310128403
+      -35.084489171
      ]
     ]
    },
    "world_bbox_min": [
-    -82.949,
-    175.064,
-    -35.536
+    -86.444,
+    171.864,
+    -35.31
    ],
    "world_bbox_size": [
     12.117,
@@ -7423,7 +7423,7 @@
      "position": [
       121.1,
       -6.7,
-      9.857369
+      5.114149
      ],
      "rotation_xyz_deg": [
       -90.0,
@@ -7438,9 +7438,9 @@
    "solid_volume": 739.958,
    "rel": {
     "position": [
-     -77.606296,
-     181.063667,
-     -44.291425
+     -81.100791,
+     177.864334,
+     -44.065786
     ],
     "rotation_xyz_deg": [
      0.0,
@@ -7452,27 +7452,27 @@
       -0.673104708,
       -0.736734748,
       0.064435727,
-      -77.606296271
+      -81.100791262
      ],
      [
       0.738268975,
       -0.674506428,
       -2e-09,
-      181.063666597
+      177.864334219
      ],
      [
       0.043462313,
       0.047570897,
       0.997921859,
-      -44.291425135
+      -44.065785904
      ]
     ]
    },
    "world": {
     "position": [
-     -77.606296,
-     181.063667,
-     -44.291425
+     -81.100791,
+     177.864334,
+     -44.065786
     ],
     "rotation_xyz_deg": [
      0.0,
@@ -7484,26 +7484,26 @@
       -0.673104708,
       -0.736734748,
       0.064435727,
-      -77.606296271
+      -81.100791262
      ],
      [
       0.738268975,
       -0.674506428,
       -2e-09,
-      181.063666597
+      177.864334219
      ],
      [
       0.043462313,
       0.047570897,
       0.997921859,
-      -44.291425135
+      -44.065785904
      ]
     ]
    },
    "world_bbox_min": [
-    -82.17,
-    176.814,
-    -49.555
+    -85.664,
+    173.614,
+    -49.329
    ],
    "world_bbox_size": [
     8.805,
@@ -7526,7 +7526,7 @@
      "position": [
       121.1,
       12.0,
-      9.857369
+      5.114149
      ],
      "rotation_xyz_deg": [
       -90.0,
@@ -7541,9 +7541,9 @@
    "solid_volume": 168.216,
    "rel": {
     "position": [
-     -76.401348,
-     181.063667,
-     -25.630286
+     -79.895843,
+     177.864334,
+     -25.404647
     ],
     "rotation_xyz_deg": [
      0.0,
@@ -7555,27 +7555,27 @@
       -0.673104708,
       -0.736734748,
       0.064435727,
-      -76.401348169
+      -79.89584316
      ],
      [
       0.738268975,
       -0.674506428,
       -2e-09,
-      181.063666569
+      177.864334191
      ],
      [
       0.043462313,
       0.047570897,
       0.997921859,
-      -25.630286369
+      -25.404647137
      ]
     ]
    },
    "world": {
     "position": [
-     -76.401348,
-     181.063667,
-     -25.630286
+     -79.895843,
+     177.864334,
+     -25.404647
     ],
     "rotation_xyz_deg": [
      0.0,
@@ -7587,26 +7587,26 @@
       -0.673104708,
       -0.736734748,
       0.064435727,
-      -76.401348169
+      -79.89584316
      ],
      [
       0.738268975,
       -0.674506428,
       -2e-09,
-      181.063666569
+      177.864334191
      ],
      [
       0.043462313,
       0.047570897,
       0.997921859,
-      -25.630286369
+      -25.404647137
      ]
     ]
    },
    "world_bbox_min": [
-    -80.795,
-    176.553,
-    -25.914
+    -84.29,
+    173.354,
+    -25.688
    ],
    "world_bbox_size": [
     9.091,
@@ -8359,7 +8359,7 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the roll drive on j2_link's roll axis (y 0, z FOREARM_ROLL_AXIS_Z), in its frame before the forearm's turn: module +Z = host -X toward the wrist, module +X = host +Z (N), +Y = up in the swing plane (the motor side); the block IS the elbow coupler: its stub turns in j1_link's bore and the elbow 108T bolts into it (j3_coupler#1 retired, lib/placements.py RETIRED)"
+    "note": "the roll drive on j2_link's roll axis (y 0, z FOREARM_ROLL_AXIS_Z), in its frame before the forearm's turn: module +Z = host -X toward the wrist, module +X = host +Z (N), +Y = up in the swing plane (the motor side); the block IS the elbow coupler: its stub turns in j1_link's bore and the elbow 90T bolts into it (j3_coupler#1 retired, lib/placements.py RETIRED)"
    },
    "rel": {
     "position": [

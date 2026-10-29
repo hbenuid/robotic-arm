@@ -26,7 +26,6 @@ from lib.belts import (
 from lib.datum import to_location
 from lib.forearm import DEFAULT as FOREARM
 from lib.pulley.params import DEFAULT as PULLEY_90T
-from lib.pulley.params import ELBOW as PULLEY_108T
 from lib.pulley.params import YAW as PULLEY_120T
 from tests import built
 from tests.helpers import is_inside
@@ -35,16 +34,16 @@ T20_HUB = FOREARM.drive.t20_hub     # the vendor 20T's tooth band from its hub f
 # name -> (group, volume mm^3, bbox min, bbox size): the build's own numbers
 LOCKS = {
     "yaw_belt": ("base", 1513.449, (-6.742198, -38.573186, -3.0), (167.315413, 77.146373, 6.0)),
-    "elbow_belt": ("joints", 1135.449, (-6.742198, -34.753468, -3.0), (119.495665, 69.506935, 6.0)),
+    "elbow_belt": ("joints", 1059.849, (-6.742198, -29.02389, -3.0), (113.766087, 58.04778, 6.0)),
     "forearm_roll_belt": ("joints", 1059.849, (-6.742198, -29.02389, -3.0), (109.766087, 58.04778, 6.0)),
     "wrist_belt": ("joints", 1059.849, (-6.742198, -29.02389, -3.0), (115.766087, 58.04778, 6.0)),
     "wrist_roll_belt": ("wrist", 598.693, (-6.742198, -13.108395, -3.0), (68.433487, 26.216791, 6.0)),
 }
 # a mounted belt -> its loop's circles' pulleys (key, its band centre in its own frame: the 20T's along +X, a 90T's /
-# 108T's / 120T's along +Y)
+# 120T's along +Y)
 PULLEYS = {
     "yaw_belt#1": [("gt2_pulley_20t#3", (T20_HUB, 0.0, 0.0)), ("gt2_pulley_120t#1", (0.0, PULLEY_120T.band_y1 / 2.0, 0.0))],
-    "elbow_belt#1": [("gt2_pulley_20t#2", (T20_HUB, 0.0, 0.0)), ("gt2_pulley_108t#1", (0.0, PULLEY_108T.band_y1 / 2.0, 0.0))],
+    "elbow_belt#1": [("gt2_pulley_20t#2", (T20_HUB, 0.0, 0.0)), ("gt2_pulley_90t#3", (0.0, PULLEY_90T.band_y1 / 2.0, 0.0))],
     "wrist_belt#1": [("gt2_pulley_20t#4", (T20_HUB, 0.0, 0.0)), ("gt2_pulley_90t#4", (0.0, PULLEY_90T.band_y1 / 2.0, 0.0))],
 }
 
