@@ -189,7 +189,8 @@ class ArmParams:
     #                                  slimmed for mass
     end_r: float = 36.0              # [DESIGN] its round end about the elbow axis: 14.9 of wall round the lower 6806's seat,
     #                                  the 90T's flange (r 29.6) under it well inside; the roll frame's octagonal end
-    #                                  (lib/forearm/params.py RollDriveParams.end_r) stays the plate's r 45, overhanging it
+    #                                  (lib/forearm/params.py RollDriveParams.end_r) overhangs it: it cannot come in as far
+    #                                  (its motor's pocket)
     bend_r: float = 20.0             # [DESIGN] where the width turns into the taper onto the end (or flares into it)
 
 

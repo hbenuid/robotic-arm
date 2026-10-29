@@ -120,8 +120,8 @@ def test_the_elbow_coupler_is_retired_for_the_block():
 def test_stack():
     w, z_axis = DEFAULT.roll_end, DEFAULT.roll_end.axis_z
     # the frame: its underside (one plane) FACE_GAP clear of the upper arm's flat top (j1_link's slab, level end to end:
-    # tests/upper_arm), an octagon about the elbow axis, its flats at j1_link's old round end (the plate's), the
-    # slimmed arm's narrower end inside them; the coupler features below it about the elbow axis over j1_link's flat
+    # tests/upper_arm), an octagon about the elbow axis, its flats end_r round j1_link's round end (5 mm
+    # outside the motor pocket's top corners), the arm's narrower end inside them; the coupler features below it about the elbow axis over j1_link's flat
     # top and in its bore where the SolidWorks coupler's were - the lip and the boss FACE_GAP or more over that top -,
     # an inner-ring shoulder between the journal and the stub, the stub on through the lip to the elbow pulley's face
     # (the Ø12.5 bore open at its end)
@@ -357,7 +357,7 @@ def test_frame_features(module):
     assert not is_inside(block, 0, r_seat + 1.0, S["z_boss"] + 0.5)
     # one flat front face: material just behind it, none in front, beside the boss
     assert is_inside(block, -28.0, -30.0, S["z_front"] - 0.5) and not is_inside(block, -28.0, -30.0, S["z_front"] + 0.5)
-    # the octagonal end about the elbow axis: a flat on each axis end_r off it (on j1_link's round end) behind the motor's
+    # the octagonal end about the elbow axis: a flat on each axis end_r off it (round j1_link's round end) behind the motor's
     # pocket, nothing past it; the end's two corners between them, end_r / cos(180 / end_sides) out; nothing behind the
     # rear line (roll.py rear_line, the elbow motor's board's nearest at the elbow's lower limit: tests below) - probed in
     # the side wall's skin, beside the pocket's opening through the bottom and outside the plug's groove
@@ -395,8 +395,9 @@ def test_frame_features(module):
     assert is_inside(block, 10, ye - 10, S["z_motor_face"] + 1.5) and not is_inside(block, 0, ye, S["z_motor_face"] + 1.5)
     assert not is_inside(block, 10, ye - 10, S["z_motor_face"] - 1.5) and not is_inside(block, 10, ye - 10, S["z_front"] + 1.0)
     # the shaft's slit: open through the plate from the pilot hole down out through the bottom, the plate either side of it
+    # (lower down the octagon's lower front facet cuts the plate's front back)
     zp = S["z_motor_face"] + D.pad_t / 2.0
-    for y in (ye - 15.0, ye - 30.0):
+    for y in (ye - 15.0, ye - 25.0):
         assert not is_inside(block, 0, y, zp) and is_inside(block, D.shaft_slit / 2.0 + 1.0, y, zp)
         assert is_inside(block, -D.shaft_slit / 2.0 - 1.0, y, zp)
     # the shaft's bay behind bearing 1: bored on through the frame's back (past the tower's rear, the outline's), the

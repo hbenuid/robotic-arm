@@ -321,9 +321,11 @@ class RollDriveParams:
     # (the motor below the roll axis, -Y), z along the roll axis
     block_x: tuple = (-ROLL_FRAME_R, ROLL_FRAME_R)   # [DESIGN] host z -5 .. 55: the underside (the web's plane) .. the side (+N) face,
     #                                       symmetric about the roll axis
-    end_r: float = 45.0                   # [DESIGN] the octagonal end about the elbow axis: its flats this far off it - j1_link's round end
-    #                                       as the plate had it (the slimmed arm's, ArmParams.end_r, is inside it) -, its corners
-    #                                       end_r / cos(22.5 deg) = 48.7 out (the elbow motor's board sweeps 56.5 out)
+    end_r: float = 42.0                   # [DESIGN] the octagonal end about the elbow axis: its flats this far off it - the least is the
+    #                                       motor pocket's top corners (36.75 off it) + 5 of wall, 41.75, and the lip's 5 (41;
+    #                                       tests/forearm/test_roll_drive.py); j1_link's round end (ArmParams.end_r) inside it,
+    #                                       6 proud of it -, its corners end_r / cos(22.5 deg) = 45.5 out (the elbow motor's board
+    #                                       sweeps 56.5 out)
     end_sides: int = 8                    # [DESIGN] the end's polygon: an octagon, a flat on each axis (the front face's plane, the end, the bottom)
     tower_y: float = ROLL_FRAME_R         # [DESIGN] the tower's top over the roll axis, as far as the underside and the side face: the bay + 4.4
     rear_line_r: float = 3.0              # [DESIGN] the rear line (the outline from the end up to the tower's top): tangent to the end_r

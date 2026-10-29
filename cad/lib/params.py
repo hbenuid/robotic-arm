@@ -323,10 +323,10 @@ BASE_YAW_LIMIT_DEG = 175.0        # [ESTIMATE] symmetric +/- range; j1_coupler (
 SHOULDER_PITCH_LIMITS_DEG = (-120.0, 67.0)   # [DESIGN]
 # the elbow belt (ELBOW_RATIO): (lower, upper). The lower - the forearm lifted back - kept where the old roll housing set
 # it: the roll drive's frame (its rear line, from its octagonal end about the elbow axis up to its tower ELBOW_ROLL_OFFSET
-# over it) is 2.3 mm off the elbow motor's board, which stands on the same side of the upper arm, there and comes within
-# 1 mm of it at -49.0 deg (tests/forearm/test_roll_drive.py) - the forearm, the wrist and the gripper stay 1 mm off the
-# upper arm at any roll and wrist pitch there (tests/test_sweeps.py), so the frame sets the room to lift further
-# (docs/open_issues.md). The upper - the forearm folded - is set by the arm's own parts, not by the gripper (the elbow's
+# over it) is 8.4 mm off the elbow motor, which stands on the same side of the upper arm, there and comes within 1 mm of
+# it at -58.0 deg - the forearm, the wrist and the gripper stay 1 mm off the upper arm at any roll and wrist pitch there
+# (tests/test_sweeps.py); how far past it the arm keeps clear is not swept (docs/open_issues.md). The upper - the
+# forearm folded - is set by the arm's own parts, not by the gripper (the elbow's
 # range over the other joints'): 2 deg short of where the wrist-pitch motor's board, folded back with the shoulder at its
 # upper limit, puts its side plug's room (MKS_PLUG_ROOM) into the base (clear at 145, 55 mm^3 at 146); the wrist body
 # (wrist_link, round the wrist roll's pancake) stays 1 mm or more off the base and j1_coupler to 150 at any forearm roll
