@@ -27,8 +27,8 @@ B = D.back
 PANEL, MAGNETS, FRAME = "forearm_roll_back_panel", "roll_back_magnets", "forearm_roll_block"
 # name -> (solids, volume mm^3, bbox min, bbox size): the build's own numbers
 LOCKS = {
-    PANEL: (1, 13702.812, (-29.9, -50.981139, -38.230792), (59.8, 80.881139, 42.878529)),
-    MAGNETS: (8, 452.389, (-26.5, -48.528686, -36.167118), (53.0, 75.154777, 40.572188)),
+    PANEL: (1, 13607.761, (-29.9, -51.693655, -35.47194), (59.8, 81.593655, 40.012516)),
+    MAGNETS: (8, 452.389, (-26.5, -49.126433, -33.513521), (53.0, 76.186489, 38.238522)),
 }
 
 
