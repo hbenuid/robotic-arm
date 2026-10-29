@@ -425,8 +425,9 @@ cd cad
   the SolidWorks yoke's cradle axis (`YokeParams.axis_y`) - with two legs (`ShellParams.yoke_leg`) 1 mm past the
   shell's ends, mirror images about the middle of the discs, which sits on the base_yaw axis (`ForkParams.face_x`;
   the capture had it 7.5 off, toward the motor - the drive and all it carries moved along N,
-  `lib/placements.py SHIFTS`), the yoke's disc drafted round and carried up their outer faces: the hub-side leg takes
-  the hub's face and its 4 bolts on a disc of the hub's own diameter; the motor-side one - its own part,
+  `lib/placements.py SHIFTS`), the yoke's disc drafted round and carried up their outer faces, the two legs alike - a
+  round top on a post as wide, the post kept inside the disc's rim (`ForkParams.plate_r`, `foot_deg`): the hub-side
+  leg takes the hub's face and its 4 bolts; the motor-side one - its own part,
   `j1_motor_leg`, a solid ring slid on over the motor and bolted to the yoke's disc - holds the motor plate's sleeve,
   bolted to it by three radial M4s (§5.5);
   the shell turns between them, over the yoke's lowered ring. The SolidWorks yoke (`LEGACY`,

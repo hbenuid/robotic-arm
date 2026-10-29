@@ -25,9 +25,9 @@ the base's face); its hub takes the base_yaw 120T as j3_coupler's the wrist's 90
 through the lip to its lower face, where the 120T's hub end meets it (gt2_pulley_120t#1, lib/mounts.py), drilled for the
 pulley's 4 bolts (M4 clearance, on its bolt circle at the diagonals, the nuts in hex pockets in the pocket's floor -
 parts/base/yaw_pulley_screws / _nuts) round the pulley's bore; and its yoke is a fork round the drive whose shell
-turns (lib/cycloidal/params.py DEFAULT_CONFIG, ShellParams): two legs past the shell's ends - the held hub bolts to
-one, its disc the hub's own diameter; the other, its own part (parts/base/j1_motor_leg), a solid ring round the motor
-plate's sleeve bolted to the disc and to the sleeve -, centred on the base_yaw axis with the drive's discs (ForkParams.face_x), the ring
+turns (lib/cycloidal/params.py DEFAULT_CONFIG, ShellParams): two legs past the shell's ends, alike - a round top on a
+post as wide, kept inside the disc's rim - the held hub bolts to one; the other, its own part (parts/base/j1_motor_leg),
+a solid ring round the motor plate's sleeve bolted to the disc and to the sleeve -, centred on the base_yaw axis with the drive's discs (ForkParams.face_x), the ring
 lowered under the shell and run flat to flat - no cheek, no middle body, no cradle. The disc is turned with the legs:
 drafted round to its rim (BASE_R, BASE_DRAFT; its flats and ears filled under the legs), its side carried on up each
 leg's outer face.
@@ -144,12 +144,18 @@ class ForkParams:
     """DEFAULT's yoke: a fork round the cycloidal drive whose shell turns (lib/cycloidal/params.py ShellParams), holding
     its two held ends on the drive's own axis with two LEGS, one past each end of the shell - each the drive's
     ShellParams.yoke_leg thick and end_plate_gap off its end, so the two mirror each other about the middle of the
-    discs: a disc round the axis on a post down to the disc (leg_half_z either side). The disc is turned with the legs:
+    discs: the two alike, each a round top of plate_r round the axis on a post as wide (plate_r either side) down to
+    the disc - straight sides, no neck under the top. The posts stay inside the disc's rim about the base_yaw axis
+    (lib/yaw_coupler/layout.py fork_leg_bound): within the disc's drafted side up to its top face, their feet flaring
+    out at foot_deg from the top face's edge to the rim, then up it - the posts' sides curving round with the rim. Only
+    the round tops pass it, at the height of the drive's axis: the motor leg's ring could not stay inside (it would keep
+    0.1 of wall beside its bore at the outer face). The disc is turned with the legs:
     its drafted side (DEFAULT's BASE_R, BASE_DRAFT) carries on up each leg's outer face, within the post, to
     flare_seat_flat under the hub's lowest bolt heads (lib/yaw_coupler/layout.py fork_flare_top), meeting the leg's
     flat face in a curved edge - the legs thick at the root, thinning to yoke_leg at the mounting area. The HUB leg (-X):
-    its disc hub_plate_r, the output hub's own; the hub's 4x M4 x hub_screw_len (its arm-mount pattern) from
-    counterbores in the outer face, their ends flush with the hub's captive nuts (ShellParams.hub_nut_depth). The MOTOR
+    its disc past the output hub's od (the motor leg's size, not the hub's); the hub's 4x M4 x hub_screw_len (its
+    arm-mount pattern) from counterbores in the outer face, their ends flush with the hub's captive nuts
+    (ShellParams.hub_nut_depth). The MOTOR
     leg (+X) is its own part (parts/base/j1_motor_leg, lib/yaw_coupler/body.py build_motor_leg): a solid plate_r ring
     round the motor plate's sleeve (ring_bore_dia) - no split, no cap: it slides on over the motor and its board once the
     drive is in -, its post standing on the disc's top face (DiscParams.top_y) and its foot the disc's rim past the leg's
@@ -168,10 +174,11 @@ class ForkParams:
     face_x: float = 24.0             # [DESIGN] the drive's z = 0 (the motor plate's outer face; its +Z is this frame's -X): the
     #                                  middle of the discs (the drive's z 24) on the base_yaw axis. The capture had it at
     #                                  CAPTURE_FACE_X: lib/placements.py SHIFTS moves the drive and all it carries the difference
-    hub_plate_r: float = 35.15       # [DESIGN] the hub leg's disc: the output hub's od / 2 (lib/cycloidal/params.py
-    #                                  OutputHubParams.od), flush with it - the hub's bolts on Ø50, their counterbores 6.45 inside its edge
-    plate_r: float = 45.0            # [DESIGN] the motor leg's ring round the axis: 9.8 of wall round its bore
-    leg_half_z: float = 25.0         # [DESIGN] each leg's post, either side of the axis
+    plate_r: float = 45.0            # [DESIGN] both legs' round tops round the axis, their posts as wide either side: the motor
+    #                                  leg's ring 9.8 of wall round its bore; the hub leg's disc 9.85 past the hub's od
+    #                                  (lib/cycloidal/params.py OutputHubParams.od), the hub's counterbores 16.3 inside its edge
+    foot_deg: float = 45.0           # [DESIGN] the posts' feet: out from the disc's top edge to its rim at this angle off
+    #                                  vertical (lib/yaw_coupler/layout.py fork_leg_bound) - on the rim 3.8 over the top face
     flare_seat_flat: float = 1.5     # [DESIGN] the disc's draft up the legs stops this far under the hub's lowest bolt heads' seats
     ring_bore_dia: float = 70.4      # [DESIGN] the motor leg's ring round the sleeve: its 70 + 0.2 a side
     motor_leg_gap: float = 0.2       # [DESIGN] the disc's ring cut back this far off the motor leg's inner face

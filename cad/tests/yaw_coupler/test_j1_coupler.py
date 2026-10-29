@@ -6,7 +6,8 @@ and DEFAULT - what the part builds - changes its underside, its hub and the yoke
 rim clear of the base (tests/test_mounts.py checks the stack in place), the stub on to the lip's lower face and drilled
 for the base_yaw pulley, and the fork (ForkParams) round the drive whose shell turns (DEFAULT_CONFIG's ShellParams): two
 legs past the shell's ends, mirrored about the middle of the discs, the disc drafted round to its rim and its side
-carried up their outer faces to under the hub's bolts - the held hub bolts to one, its disc the hub's own diameter; the
+carried up their outer faces to under the hub's bolts, the two legs alike - a round top on a post as wide, the post
+kept inside the disc's rim - the held hub bolts to one; the
 other is its own part, parts/base/j1_motor_leg (no reference: its numbers are here), a solid ring round the motor
 plate's sleeve bolted to the disc and, by radial M4s, to the sleeve -, the ring lowered under the shell (tests/cycloidal/test_assembly.py checks the drive
 in place, tests/test_sweeps.py the arm's swing)."""
@@ -37,6 +38,7 @@ from lib.yaw_coupler.layout import (
     fork_flare_top,
     fork_hub_bolts,
     fork_hub_leg_x,
+    fork_leg_bound,
     fork_motor_bolt_x,
     fork_motor_bolts,
     fork_motor_leg_x,
@@ -95,8 +97,10 @@ def test_default_fork_holds_the_drives_ends():
     two legs ShellParams.yoke_leg thick, end_plate_gap past the shell's two ends - the hub's face (hub_top) on the hub
     leg's inner face, the sleeve's end (sleeve_end) on the motor leg's outer face -, mirror images about the middle of the
     discs, which the shift (lib/placements.py SHIFTS) puts on the base_yaw axis; the hub's 4 bolts on the drive's
-    arm-mount pattern, their ends flush with the hub's captive nuts, the hub leg's disc the hub's own diameter round
-    them; the disc's draft up the legs meeting their outer faces under the hub's bolt heads, the legs' root 20 thick;
+    arm-mount pattern, their ends flush with the hub's captive nuts, the hub leg's disc the motor leg's size round
+    them, past the hub; the legs' posts kept inside the disc's rim, their feet flaring out from its top edge - only the
+    round tops pass it (the motor leg's ring could not); the disc's draft up the legs meeting their outer faces under
+    the hub's bolt heads, the legs' root 20 thick;
     the motor leg round the sleeve (its ring's bore 0.2 a side), its 2 M4s through its foot into nuts under its post, the
     heads sunk in the foot, its 3 radial M4s through its ring into nuts pressed into the sleeve's lugs; the ring lowered under the turning shell's pillars (RING_DROP: 2.68 of clearance)."""
     f, sh, S = DEFAULT.fork, DRIVE.shell, stack_positions(DRIVE)
@@ -114,10 +118,17 @@ def test_default_fork_holds_the_drives_ends():
     assert sorted(fork_hub_bolts(DEFAULT)) == pytest.approx(sorted((f.axis_y + y, f.axis_z + x) for x, y in arm_mount_points(DRIVE)))
     head = S["hub_top"] + sh.yoke_leg - (M4_SHCS.head_h + 0.5)        # the screws' heads' seats, drive z
     assert head - f.hub_screw_len == pytest.approx(S["z_hub"] + sh.hub_nut_depth - DRIVE.housing.bolt_nut_thickness)
-    # the hub leg's disc flush with the hub, its counterbores 6.45 inside the edge
-    assert f.hub_plate_r == pytest.approx(DRIVE.output_hub.od / 2.0)
+    # both legs' round tops plate_r: the hub leg's 9.85 past the hub, its counterbores 16.3 inside the edge
+    assert f.plate_r - DRIVE.output_hub.od / 2.0 == pytest.approx(9.85)
     reach = max(math.hypot(y - f.axis_y, z - f.axis_z) for y, z in fork_hub_bolts(DEFAULT)) + COUNTERBORE / 2.0
-    assert f.hub_plate_r - reach == pytest.approx(6.45, abs=0.01)
+    assert f.plate_r - reach == pytest.approx(16.3, abs=0.01)
+    # the posts' bound: the disc's side up to its top edge, the feet out at foot_deg to the rim 3.8 higher, the rim on
+    # up past the round tops - which pass it: the motor leg's ring inside the rim would keep 0.1 of wall at its outer face
+    d, rim = DEFAULT.disc, disc_r(DEFAULT, DEFAULT.disc.y0)
+    bound = fork_leg_bound(DEFAULT)
+    assert [v for p in bound[2:5] for v in p] == pytest.approx([rim, d.y0, d.top_r, d.top_y, rim, d.top_y + 3.788], abs=1e-3)
+    assert f.foot_deg == 45.0 and bound[5] == pytest.approx((rim, f.axis_y + f.plate_r + 1.0))
+    assert math.hypot(mx1, f.plate_r) > rim and math.sqrt(rim * rim - mx1 * mx1) - f.ring_bore_dia / 2.0 == pytest.approx(0.1, abs=0.01)
     # the disc's draft: BASE_R at the rim, in at BASE_DRAFT to the legs' outer faces at y 63 - their root 20 thick - and
     # up them to flare_seat_flat under the hub's lowest bolt heads
     assert disc_r(DEFAULT, DEFAULT.disc.band_y1) == BASE_R and disc_r(DEFAULT, 63.0) == pytest.approx(mx1)
@@ -134,7 +145,8 @@ def test_default_fork_holds_the_drives_ends():
     assert nut_x1 - M4_NUT.h - (seat_x - f.motor_screw_len) == pytest.approx(0.7)
     corner = (M4_NUT.af + NUT_SLOT) / math.sqrt(3.0)
     for y, z in fork_motor_bolts(DEFAULT):
-        assert mx0 < nut_x0 and abs(z - f.axis_z) + (M4_NUT.af + NUT_SLOT) / 2.0 < f.leg_half_z   # the slot under the post
+        foot = math.sqrt(DEFAULT.disc.top_r ** 2 - mx1 ** 2)                                     # the post's foot, outer face
+        assert mx0 < nut_x0 and abs(z) + (M4_NUT.af + NUT_SLOT) / 2.0 < foot                      # the slot under the post
         assert y - corner > DEFAULT.disc.y0 + 4.0 and y + 2.2 < DEFAULT.disc.top_y                 # ... and in the disc
         x_surface = math.sqrt(disc_r(DEFAULT, y) ** 2 - z * z)
         assert x_surface > seat_x + M4_SHCS.head_h + 0.2                                        # the head sunk under the draft
@@ -287,29 +299,43 @@ def test_default_changes_the_hub_and_the_underside(coupler, legacy):
 @pytest.mark.slow
 def test_default_is_the_fork(coupler, legacy):
     """The fork round the drive whose shell turns (ForkParams), turned with the disc: the disc drafted round to its rim
-    under both legs (its flats and ears filled); the hub leg on -X - its disc the hub's own round the axis on a post down
-    to the disc, the disc's draft carried up its outer face within the post, meeting the face in a curved edge, highest
-    in the middle, under the hub's bolts -; on +X the coupler stops for the motor leg, its own part: at the leg's outer
+    under both legs (its flats and ears filled); the hub leg on -X - its disc round the axis, whole, on a post as wide
+    down to the disc, the post kept inside the disc's rim (its feet out from the top edge at foot_deg), the disc's draft
+    carried up its outer face within the post, meeting the face in a curved edge, highest in the middle, under the hub's
+    bolts -; on +X the coupler stops for the motor leg, its own part: at the leg's outer
     face, up to the disc's top face, its ring cut back off the leg, the leg's 2 M4s and their nuts' slots in the disc;
     the yoke's cheek, middle body, cradle and sockets gone; the ring lowered."""
     f, d = DEFAULT.fork, DEFAULT.disc
     (hx0, hx1), (mx0, mx1) = fork_hub_leg_x(DEFAULT), fork_motor_leg_x(DEFAULT)
     bb = coupler.bounding_box()
     r0 = disc_r(DEFAULT, d.y0)                                       # the disc at the rim, lifted
-    assert (bb.min.X, bb.max.X, bb.max.Y) == pytest.approx((-r0, mx1, f.axis_y + f.hub_plate_r), abs=1e-6)
+    assert (bb.min.X, bb.max.X, bb.max.Y) == pytest.approx((-r0, mx1, f.axis_y + f.plate_r), abs=1e-6)
     assert (bb.min.Z, bb.max.Z) == pytest.approx((-r0, r0), abs=1e-6)
-    # the hub leg: its disc round the axis on a post down to the disc, its inner and outer faces over the draft
+    # the hub leg: its disc round the axis, whole - past the rim at its sides -, on a post as wide down to the disc,
+    # the post's sides on the rim (no neck at the inner face: 87.6 under the Ø90 disc), its inner and outer faces over the draft
     hm = (hx0 + hx1) / 2.0
-    assert is_inside(coupler, hm, 40.0, f.axis_z + f.leg_half_z - 0.3) and not is_inside(coupler, hm, 40.0, f.axis_z + f.leg_half_z + 0.3)
-    assert is_inside(coupler, hm, f.axis_y + f.hub_plate_r - 0.3, f.axis_z) and not is_inside(coupler, hm, f.axis_y + f.hub_plate_r + 0.3, f.axis_z)
-    assert is_inside(coupler, hm, f.axis_y, f.axis_z + f.hub_plate_r - 0.3) and not is_inside(coupler, hm, f.axis_y, f.axis_z + f.hub_plate_r + 0.3)
+    side = math.sqrt(r0 * r0 - hm * hm)
+    for y in (30.0, 40.0, 55.0):
+        assert is_inside(coupler, hm, y, side - 0.3) and not is_inside(coupler, hm, y, side + 0.3)
+        assert is_inside(coupler, hm, y, -side + 0.3) and not is_inside(coupler, hm, y, -side - 0.3)
+    assert 2.0 * math.sqrt(r0 * r0 - hx1 * hx1) == pytest.approx(87.6, abs=0.05)
+    assert is_inside(coupler, hm, f.axis_y + f.plate_r - 0.3, f.axis_z) and not is_inside(coupler, hm, f.axis_y + f.plate_r + 0.3, f.axis_z)
+    assert is_inside(coupler, hm, f.axis_y, f.axis_z + f.plate_r - 0.3) and not is_inside(coupler, hm, f.axis_y, f.axis_z + f.plate_r + 0.3)
+    assert f.axis_z + f.plate_r > side + 4.0                                                   # (past the rim)
     assert is_inside(coupler, hx0 + 0.3, 80.0, 0.0) and not is_inside(coupler, hx0 - 0.3, 80.0, 0.0)
     assert is_inside(coupler, hx1 - 0.3, 80.0, 0.0) and not is_inside(coupler, hx1 + 0.3, 80.0, 0.0)
+    # ... its feet: out from the disc's top edge at foot_deg, on the rim 3.8 higher; nothing past the disc's side below
+    for dy in (0.5, 2.0, 3.0):
+        r = d.top_r + dy * math.tan(math.radians(f.foot_deg))
+        z = math.sqrt(r * r - (hx0 + 0.3) ** 2)
+        assert is_inside(coupler, hx0 + 0.3, d.top_y + dy, z - 0.3) and not is_inside(coupler, hx0 + 0.3, d.top_y + dy, z + 0.3)
+    assert not is_inside(coupler, hx0 + 0.3, 10.0, math.sqrt(disc_r(DEFAULT, 10.0) ** 2 - (hx0 + 0.3) ** 2) + 0.3)
     # the disc's draft up the outer face, within the post; it meets the face higher in the middle than at the sides
     for y in (25.0, 40.0, 55.0):
         face = -disc_r(DEFAULT, y)
         assert is_inside(coupler, face + 0.3, y, 0.0) and not is_inside(coupler, face - 0.3, y, 0.0)
-    assert is_inside(coupler, -46.2, 25.0, f.axis_z + f.leg_half_z - 0.3) and not is_inside(coupler, -46.2, 25.0, f.axis_z + f.leg_half_z + 0.3)
+    flare = math.sqrt(disc_r(DEFAULT, 25.0) ** 2 - 46.2 ** 2)                                    # its own cone, at y 25
+    assert is_inside(coupler, -46.2, 25.0, flare - 0.3) and not is_inside(coupler, -46.2, 25.0, flare + 0.3)
     assert is_inside(coupler, hx0 - 0.3, 61.0, 0.0) and not is_inside(coupler, hx0 - 0.3, 64.0, 0.0)
     assert is_inside(coupler, hx0 - 0.3, 35.0, 20.0) and not is_inside(coupler, hx0 - 0.3, 45.0, 20.0)
     # the disc round to its rim under the leg, past the SolidWorks flat and ears
@@ -349,14 +375,15 @@ def motor_leg():
 @pytest.mark.slow
 def test_motor_leg(motor_leg):
     """The motor leg (parts/base/j1_motor_leg, no reference - its numbers are here): one solid, its box and volume; a
-    whole ring round the sleeve (no split), on a post standing on the disc's top face, the disc's draft carried up its
+    whole ring round the sleeve (no split) - past the disc's rim at its sides -, on a post as wide standing on the disc's
+    top face, kept inside the rim (its feet out from the top edge at foot_deg), the disc's draft carried up its
     outer face within the post; its foot the disc's rim past the leg's outer face, down to the underside, wider than the
     post; its 2 M4s through the foot from counterbores; the sleeve's 3 radial M4s' holes through the ring, slotted along
     the axis, none down through the post."""
     leg, f, d = motor_leg, DEFAULT.fork, DEFAULT.disc
     mx0, mx1 = fork_motor_leg_x(DEFAULT)
     assert leg.label == "j1_motor_leg" and leg.is_valid and len(leg.solids()) == 1
-    assert R.solid_volume(leg) == pytest.approx(43831.851, abs=0.5)
+    assert R.solid_volume(leg) == pytest.approx(53162.870, abs=0.5)
     bb = leg.bounding_box()
     assert (bb.min.X, bb.min.Y, bb.min.Z) == pytest.approx((mx0, d.y0, f.axis_z - f.plate_r), abs=1e-6)
     assert (bb.max.X, bb.max.Y, bb.max.Z) == pytest.approx((disc_r(DEFAULT, d.y0), f.axis_y + f.plate_r, f.axis_z + f.plate_r), abs=1e-6)
@@ -379,12 +406,28 @@ def test_motor_leg(motor_leg):
             assert at(deg, sx, rr) != slotted and at(deg, sx + half - 0.1, rr) != slotted and at(deg, sx - half + 0.1, rr) != slotted
             assert at(deg, sx + half + 0.1, rr) and at(deg, sx - half - 0.1, rr)                          # ... no longer
             assert at(deg, sx, rr, M4_CLEAR / 2.0 + 0.1) and at(deg, sx, rr, -M4_CLEAR / 2.0 - 0.1)      # ... no wider
-    # the post standing on the disc's top face; the draft up its outer face, within the post
+    # the ring whole, past the disc's rim at its sides
+    rim = disc_r(DEFAULT, d.y0)
+    for sz in (-1.0, 1.0):
+        assert is_inside(leg, mx0 + 0.75, f.axis_y, f.axis_z + sz * (f.plate_r - 0.3))
+        assert not is_inside(leg, mx0 + 0.75, f.axis_y, f.axis_z + sz * (f.plate_r + 0.3))
+    assert math.hypot(mx0 + 0.75, f.plate_r - 0.3) > rim + 1.0
+    # the post standing on the disc's top face, as wide as the ring, its sides on the rim, its feet out from the top
+    # edge at foot_deg; the draft up its outer face, within the post
     assert is_inside(leg, mm, d.top_y + 0.3, 0.0) and not is_inside(leg, mm, d.top_y - 0.3, 0.0)
+    side = math.sqrt(rim * rim - mm * mm)
+    for y in (30.0, 40.0, 55.0):
+        assert is_inside(leg, mm, y, side - 0.3) and not is_inside(leg, mm, y, side + 0.3)
+        assert is_inside(leg, mm, y, -side + 0.3) and not is_inside(leg, mm, y, -side - 0.3)
+    for dy in (0.5, 2.0, 3.0):
+        r = d.top_r + dy * math.tan(math.radians(f.foot_deg))
+        z = math.sqrt(r * r - (mx1 - 0.3) ** 2)
+        assert is_inside(leg, mx1 - 0.3, d.top_y + dy, z - 0.3) and not is_inside(leg, mx1 - 0.3, d.top_y + dy, z + 0.3)
     for y in (25.0, 40.0, 50.0):
         face = disc_r(DEFAULT, y)
         assert is_inside(leg, face - 0.3, y, 0.0) and not is_inside(leg, face + 0.3, y, 0.0)
-    assert is_inside(leg, 46.2, 25.0, f.axis_z + f.leg_half_z - 0.3) and not is_inside(leg, 46.2, 25.0, f.axis_z + f.leg_half_z + 0.3)
+    flare = math.sqrt(disc_r(DEFAULT, 25.0) ** 2 - 46.2 ** 2)                                    # its own cone, at y 25
+    assert is_inside(leg, 46.2, 25.0, flare - 0.3) and not is_inside(leg, 46.2, 25.0, flare + 0.3)
     # the foot: the disc's rim past the leg's outer face, down to the underside, wider than the post
     assert is_inside(leg, mx1 + 0.3, d.y0 + 0.3, 0.0) and not is_inside(leg, mx1 - 0.3, d.y0 + 0.3, 0.0)
     assert is_inside(leg, disc_r(DEFAULT, 5.0) - 0.3, 5.0, 0.0) and not is_inside(leg, disc_r(DEFAULT, 5.0) + 0.3, 5.0, 0.0)

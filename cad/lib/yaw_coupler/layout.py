@@ -155,6 +155,16 @@ def fork_flare_top(cfg: YawCouplerConfig = DEFAULT) -> float:
     return min(y for y, _ in fork_hub_bolts(cfg)) - COUNTERBORE / 2.0 - cfg.fork.flare_seat_flat
 
 
+def fork_leg_bound(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[float, float]]:
+    """(r, y) of the half section, about the base_yaw axis, the legs' posts stay inside (lib/yaw_coupler/body.py keeps
+    their round tops whole): from under the disc the disc's drafted side up to its top face's edge, the feet out from
+    there at foot_deg off vertical to the disc's rim (its underside's radius), the rim on up past the round tops."""
+    d, f = cfg.disc, cfg.fork
+    rim, top = disc_r(cfg, d.y0), f.axis_y + f.plate_r + 1.0
+    foot_y = d.top_y + (rim - d.top_r) / math.tan(math.radians(f.foot_deg))
+    return [(0.0, d.y0 - 1.0), (rim, d.y0 - 1.0), (rim, d.y0), (d.top_r, d.top_y), (rim, foot_y), (rim, top), (0.0, top)]
+
+
 def fork_motor_bolts(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[float, float]]:
     """(y, z) of the motor leg's 2 M4s along the drive's axis: motor_bolt_y high, motor_bolt_z either side of it."""
     f = cfg.fork

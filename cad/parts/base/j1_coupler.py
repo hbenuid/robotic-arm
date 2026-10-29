@@ -9,9 +9,10 @@ bearing (DEFAULT: Ø30, on to the lip's lower face, where the base_yaw 120T's hu
 pulley's Ø12.5) and 4 holes on the diagonals up to the pocket over the hub (DEFAULT: the 90T's bolt circle, M4 clearance,
 the nuts flush in hex pockets in the pocket's floor); on the disc a ring (DEFAULT: lowered under the drive's turning
 shell) and DEFAULT's fork round the drive (ForkParams) on the drive's own axis: two legs past the turning shell's two
-ends, centred on the base_yaw axis with the drive's discs, each a disc round the axis on a post down to the disc, the
-disc's drafted side carried up its outer face to under the hub's bolts - the -X one the held hub bolts to, its disc
-the hub's own Ø70.3; the +X one its own part, parts/base/j1_motor_leg (a solid ring round the motor plate's sleeve,
+ends, centred on the base_yaw axis with the drive's discs, alike: each a round top on the axis on a post as wide down
+to the disc (straight sides), the post kept inside the disc's rim - its feet flaring out from the disc's top edge -,
+the disc's drafted side carried up its outer face to under the hub's bolts - the -X one the held hub bolts to, its disc
+the motor leg's size, past the hub; the +X one its own part, parts/base/j1_motor_leg (a solid ring round the motor plate's sleeve,
 slid on over the motor, bolted to the sleeve by 3 radial M4s), standing on the disc and bolted to it by 2 M4s along
 the drive's axis into nuts in slots in the disc - this part stops at that leg's outer face; the ring under the drive flat to flat. Every number: lib/yaw_coupler/params.py
 (YawCouplerConfig; measured on the reference 2026-09-27; LEGACY: the Ø90.05 recess on the base's face, a Ø29.8 stub
