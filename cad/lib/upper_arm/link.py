@@ -16,7 +16,15 @@ from lib.cycloidal.housing import build_shell_body, housing_bolt_cutters
 from lib.forearm.link import stadium, x_cylinder
 from lib.geom import align_min, cylinder, hex_circumdiameter, single_solid, through
 from lib.units import NUDGE
-from lib.upper_arm.layout import arm_slide, cove_axes, elbow_idler_x, hub_bolt_points, pad_holes, socket_points
+from lib.upper_arm.layout import (
+    arm_slide,
+    cove_axes,
+    elbow_idler_x,
+    hub_bolt_points,
+    pad_holes,
+    slab_taper_x,
+    socket_points,
+)
 from lib.upper_arm.params import DEFAULT, UpperArmConfig
 
 _FAR = 400.0   # past the part: the span of a cutter only its radius limits
@@ -58,9 +66,11 @@ def _cut_idler_slots(body, cfg: UpperArmConfig, top: float):
 
 
 def _cut_elbow_stack(body, cfg: UpperArmConfig, top: float):
-    """`body` less the elbow axis's bearing stack: the recess from `top`, the bore, the lip, the seat from below."""
+    """`body` less the elbow axis's bearing stack: the recess from `top` (none where the top face is its floor: DEFAULT's
+    slab), the bore, the lip, the seat from below."""
     e, x = cfg.elbow, cfg.slab.elbow_x
-    body = body - _bore(e.recess_dia / 2.0, e.recess_y, top, x)
+    if e.recess_y + NUDGE < top:
+        body = body - _bore(e.recess_dia / 2.0, e.recess_y, top, x)
     body = body - _bore(e.bore_dia / 2.0, e.lip_y[1], e.recess_y + NUDGE, x)
     body = body - _bore(e.lip_dia / 2.0, e.lip_y[0] - NUDGE, e.lip_y[1] + NUDGE, x)
     return body - _bore(e.seat_dia / 2.0, e.y0 - NUDGE, e.lip_y[0], x)
@@ -126,17 +136,37 @@ def _pad(cfg: UpperArmConfig):
     return pad
 
 
+def _outline(cfg: UpperArmConfig):
+    """The slab's plan (ArmParams width, end_r, bend_r), a face in the working XY plane (part x, -z: symmetric about the
+    link's centreline): `width` across from the shoulder axis, into the round end about the elbow axis - on to
+    slab_taper_x() and straight onto a narrower end (the hull of the two), or flaring into a wider one -, the corner where
+    the two meet rounded to bend_r; an end as wide as the slab gives the plate's stadium."""
+    a, x = cfg.arm, cfg.slab.elbow_x
+    w, r = a.width / 2.0, a.end_r
+    end = bd.Pos(x, 0.0) * bd.Circle(r)
+    if math.isclose(w, r):
+        return (bd.Pos(x / 2.0, 0.0) * bd.SlotCenterToCenter(x, 2.0 * r)).face()
+    if r < w:
+        x_bend = slab_taper_x(cfg)
+        face = bd.make_hull((bd.Pos(x_bend / 2.0, 0.0) * bd.Rectangle(x_bend, 2.0 * w)).edges() + end.edges())
+    else:
+        x_bend = x - math.sqrt(r * r - w * w)
+        face = (bd.Pos(x / 2.0, 0.0) * bd.Rectangle(x, 2.0 * w) + end).face()
+    bends = [v for v in face.vertices() if abs(bd.Vector(v).X - x_bend) < 0.5 and abs(abs(bd.Vector(v).Y) - w) < 0.5]
+    return bd.fillet(bends, a.bend_r).face()
+
+
 def _slab(cfg: UpperArmConfig):
-    """The arm rising off the drive's shell (ArmParams), in the unslid plate's frame: one flat slab of the plate's
-    outline (the stadium from the shoulder axis to the elbow axis) from the elbow half's underside up to the relief's
-    floor, end to end; the stepped slot (with an idler: the idler's slots in its place) and the elbow bearing stack; the
+    """The arm rising off the drive's shell (ArmParams), in the unslid plate's frame: one flat slab of its outline
+    (_outline) from the elbow half's underside up to the relief's floor, end to end; the stepped slot (with an idler:
+    the idler's slots in its place) and the elbow bearing stack; the
     elbow motor's square hole through it about the pad's axis, a web left across the hole, flush with the slab's
     underside, up to the motor's face (y_outer once slid) with the hole for its pilot and its 4 holes (PadParams.holes):
     motor_plate_t of web under the screws' heads, the heads flush in pockets in its underside (ArmParams.motor_screw,
     motor_pocket_dia)."""
-    s, e, a, px = cfg.slab, cfg.elbow, cfg.arm, cfg.pad.x
+    e, a, px = cfg.elbow, cfg.arm, cfg.pad.x
     top = e.relief_y + NUDGE
-    body = stadium(s.elbow_x, 2.0 * s.r, e.relief_y - e.y0, s.elbow_x / 2.0, e.y0)
+    body = bd.Pos(0.0, 0.0, e.y0) * bd.extrude(_outline(cfg), amount=e.relief_y - e.y0)
     body = _cut_stepped_slot(body, cfg, top) if cfg.idler is None else _cut_idler_slots(body, cfg, top)
     body = _cut_elbow_stack(body, cfg, top)
     hh, t, head = a.motor_hole_half, a.motor_plate_t, a.motor_screw.head_h

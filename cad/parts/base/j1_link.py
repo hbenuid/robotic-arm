@@ -13,8 +13,10 @@ end (the elbow-end features move with the axis), leaves out the through slots an
 the underside (j1_cap's dowel seats - the cap was removed 2026-09-25), puts the 4 NEMA 17 holes on a 31 square
 about the pad's axis (the SolidWorks ones are 0.38 off and uneven) and rises straight off the drive's turning shell,
 printed as one with the shell's body round the discs (ArmParams, lib/cycloidal/housing.py build_shell_body): one flat
-slab, solid (a placeholder for its mass), the plate's outline from the elbow half's underside up to the elbow block's
-floor, end to end, out of the two windows of the body it fills (its other four open on the discs), slid along +Y
+slab, solid (a placeholder for its mass), from the elbow half's underside up to the elbow block's floor - the floor
+of a recess deeper than the SolidWorks one, level with the upper 6806's top: no recess left -, end to end, narrower
+than the plate (ArmParams width) and past the elbow idler's slots tapering onto a narrower round end about the elbow
+axis (ArmParams end_r), out of the two windows of the body it fills (its other four open on the discs), slid along +Y
 until its underside is flush with the shell's hub end (lib/upper_arm/layout.py arm_slide); the elbow motor moved out
 to ELBOW_MOTOR_CENTRES from the elbow axis, where the second stage's seat was (gone: the elbow belt runs straight to
 the 90T), and turned over onto the arm's +Y side - down a square hole through the slab onto a web across it, flush

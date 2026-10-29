@@ -31,7 +31,7 @@ from lib.belts import (
 )
 from lib.fasteners import nut_volume, shcs_volume
 from lib.geom import hex_circumdiameter
-from lib.upper_arm import DEFAULT, LEGACY, arm_slide, elbow_belt_loop, elbow_idler_x, elbow_idler_z
+from lib.upper_arm import DEFAULT, LEGACY, arm_slide, elbow_belt_loop, elbow_idler_x, elbow_idler_z, slab_taper_x
 from lib.upper_arm.params import ELBOW_BELT, ELBOW_MOTOR_CENTRES
 from tests import built
 from tests.helpers import interference, is_inside
@@ -106,7 +106,9 @@ def test_the_idler_clears_the_far_strand_and_the_pulleys(z):
 def test_the_stations():
     """Along N: the idler level with the belt, the spacer from its upper face to the slab's underside, its land narrower
     than the idler's seat (the bearing's inner ring only); the screw's head under the idler, its tip 2 pitches past the
-    nut on its slot's floor, the nut under the top face; across: the nut's slot off the motor's hole, inside the slab."""
+    nut on its slot's floor, the nut under the top face; across: the nut's slot off the motor's hole, inside the slab -
+    8 mm of it or more past the slot's outer end (ArmParams.width; 10 before the slab was slimmed), the slab keeping its
+    width over the slots (slab_taper_x)."""
     assert PARAMS.J1_IDLER_Y + GT2_IDLER_WIDTH / 2.0 == pytest.approx(PARAMS.J1_BELT_Y)
     assert PARAMS.J1_SLAB_UNDERSIDE_Y == pytest.approx(DEFAULT.elbow.y0 + arm_slide(DEFAULT))
     assert PARAMS.J1_IDLER_SPACER_H == pytest.approx(PARAMS.J1_SLAB_UNDERSIDE_Y - PARAMS.J1_IDLER_Y - GT2_IDLER_WIDTH)
@@ -115,7 +117,8 @@ def test_the_stations():
     assert tip - nut_top >= 2 * PARAMS.M5_PITCH - 1e-9 and TOP - nut_top >= 0.5 and I.floor >= 3.0
     hole_edge = DEFAULT.pad.x + DEFAULT.arm.motor_hole_half
     assert X - (I.nut.af + I.nut_fit) / 2.0 - hole_edge >= 3.0
-    assert I.slot_z[1] + hex_circumdiameter(I.nut.af) / 2.0 + I.nut_fit < DEFAULT.slab.r - 10.0
+    assert I.slot_z[1] + hex_circumdiameter(I.nut.af) / 2.0 + I.nut_fit < DEFAULT.arm.width / 2.0 - 8.0
+    assert slab_taper_x() >= X + (I.nut.af + I.nut_fit) / 2.0
 
 
 def test_the_kit_is_parts_with_no_reference():

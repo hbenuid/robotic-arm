@@ -68,3 +68,11 @@ def elbow_idler_z(cfg: UpperArmConfig = DEFAULT) -> float:
     """The elbow idler's axis across the link (j1_link's z) with the stock belt: elbow_belt_loop()'s idler, its belt-frame
     y; its x is elbow_idler_x()."""
     return elbow_belt_loop(cfg)[cfg.idler.run + 1][1]
+
+
+def slab_taper_x(cfg: UpperArmConfig = DEFAULT) -> float:
+    """Where the arm's slab (ArmParams) starts tapering onto a round end narrower than it, along the link: the elbow
+    idler's nut slot's far side (its flats + nut_fit across X about elbow_idler_x()) - the slab keeps its width over
+    the idler's slots (125.2)."""
+    i = cfg.idler
+    return round(elbow_idler_x(cfg) + (i.nut.af + i.nut_fit) / 2.0, 6)
