@@ -2,7 +2,7 @@
 flange, ONE body round the roll motor: seen along the elbow axis an octagon about it (its flats r 45 off it, on j1_link's round end)
 hulled up to the TOWER round the roll axis (ELBOW_ROLL_OFFSET above the elbow axis), from its underside (6.0 over
 j1_link's flat top, repeating the SolidWorks j3_coupler's lip, Ø62 boss, Ø40 journal and Ø30 stub about the elbow axis down
-into j1_link's recess and bore - the elbow 108T pulley bolts up through the stub into 4x M4 nuts in hex channels that open
+into j1_link's recess and bore - the elbow 90T pulley bolts up through the stub into 4x M4 nuts in hex channels that open
 up into the motor's pocket; j3_coupler#1 is retired) to its side (+N) face, closed. The 40 mm kit motor sits on the
 elbow axis in the POCKET between the floor and the side wall, open down through the octagon's bottom (the motor slides up
 into it; its board's side plugs in a groove inside each wall, their cables down out through the bottom), its front wall

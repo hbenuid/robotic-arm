@@ -1,8 +1,8 @@
 """The whole arm: every part of the SolidWorks 'final Arm Assembly Fully Movable' placed from
 reference/placements.json - the SolidWorks part occurrences + the mounted ones (lib/mounts.py: the belt joints'
 NEMA 17 motors - 48 mm at the base, 40 mm at the elbow and wrist - and their MKS SERVO42D boards, on the pads the links carry;
-the 6806-2RS bearing pair in each belt joint's bore; the base_yaw thrust bearing in the base's groove; the elbow's 108T and the wrist's 90T re-seated on
-them and the base_yaw 120T under j1_coupler, each clamped by 4x M4 screws + nuts; j1_coupler's motor leg) + the gripper module
+the 6806-2RS bearing pair in each belt joint's bore; the base_yaw thrust bearing in the base's groove; the elbow's and the wrist's 90T re-seated on them
+and the base_yaw 120T under j1_coupler, each clamped by 4x M4 screws + nuts; j1_coupler's motor leg) + the gripper module
 (SolidWorks-driven) + the cycloidal_drive module (code-driven, placed at the SolidWorks node's pose) + the
 forearm_roll_drive and wrist_roll_drive modules (code-driven, placed by lib/mounts.py MODULE_MOUNTS) - the totals are locked in
 tests/test_assembly.py - bucketed into the GROUPS component tree (arm -> base_link/shoulder_link/upper_arm_link/
@@ -20,8 +20,8 @@ rails, the 20T pulleys, the belts) is _occurrences.BOUGHT_TINT grey, inside the 
     |- upper_arm_link    j1_link, bearing_6806:elbow_pitch_1 / _2, nema17_40mm:elbow_pitch, mks_servo42d:elbow_pitch,
     |                    gt2_pulley_20t:elbow_pitch, elbow_motor_screws:elbow_pitch, elbow_belt:elbow_pitch,
     |                    gt2_idler_20t / elbow_idler_spacer / _screw / _nut:elbow_pitch
-    |- elbow_link        gt2_pulley_108t:elbow_pitch, elbow_pulley_screws / _nuts:elbow_pitch, forearm_roll_drive (kept
-    |                    whole - see below; its block IS the elbow coupler)
+    |- elbow_link        gt2_pulley_90t:j2, elbow_pulley_screws / _nuts:elbow_pitch, forearm_roll_drive (kept whole - see
+    |                    below; its block IS the elbow coupler)
     |- forearm_link      j2_link, bearing_6806:wrist_pitch_1 / _2, nema17_40mm:wrist_pitch, mks_servo42d:wrist_pitch,
     |                    gt2_pulley_20t:wrist_pitch, wrist_motor_screws:wrist_pitch, wrist_belt:wrist_pitch,
     |                    gt2_idler_20t / wrist_idler_screw / _nut:wrist_pitch
@@ -30,9 +30,8 @@ rails, the 20T pulleys, the belts) is _occurrences.BOUGHT_TINT grey, inside the 
     |- wrist             gripper
 
 j3_coupler#1 (the elbow's SolidWorks coupler) is RETIRED (lib/placements.py): the roll drive's block carries its
-lip / boss / journal / stub and the elbow 108T bolts straight into it - the record stays in placements.json, no
-table claims it; likewise gt2_pulley_90t#1 / #2, whose re-seated poses are the mounts gt2_pulley_108t#1 (the elbow's,
-more teeth) / gt2_pulley_90t#4, and
+lip / boss / journal / stub and the elbow 90T bolts straight into it - the record stays in placements.json, no
+table claims it; likewise gt2_pulley_90t#1 / #2, whose re-seated poses are the mounts gt2_pulley_90t#3 / #4, and
 nema17_pancake#1 / gt2_pulley_20t#1, which the wrist roll drive carries (the pancake on the wrist-pitch axis). The
 SolidWorks link caps (j1_cap, j2_cap_1, j2_cap_2) were removed 2026-09-25 and gripper_clamp_bracket 2026-10-14: their
 products are lib/reference.py SKIPPED_PRODUCTS, their poses sit in placements.json `skipped`. A drive module is one
@@ -77,8 +76,8 @@ MODULE_KEYS = (DRIVE_KEY, ROLL_KEY, WRIST_ROLL_KEY, GRIPPER_KEY)
 
 # (part or module, role, placements.json key) in SolidWorks document order, each mounted bearing pair, motor + board
 # (lib/mounts.py, role = the joint it serves; a bearing's _1 / _2 = the coupler / pulley side) right after its host,
-# a re-seated pulley where its retired SolidWorks record stood. The wrist's 90T and coupler keep the role j3 (once
-# positional - j2 / j3 - while the elbow's pulley was a second 90T).
+# a re-seated pulley where its retired SolidWorks record stood. The j2/j3 roles of the duplicated pulley (+ the
+# wrist's coupler) are positional (elbow_pitch vs wrist_pitch, in that order).
 OCCURRENCES = [
     ("base",                  None, "base#1"),
     ("bearing_6806",          "base_yaw_1", "bearing_6806#1"),     # mounted: the base's bearing bore
@@ -115,15 +114,15 @@ OCCURRENCES = [
     ("bearing_6806",          "elbow_pitch_2", "bearing_6806#4"),
     ("nema17_40mm",           "elbow_pitch", "nema17_40mm#2"),     # mounted: the web across j1_link's motor hole
     ("mks_servo42d",          "elbow_pitch", "mks_servo42d#2"),
-    ("gt2_pulley_20t",        "elbow_pitch", "gt2_pulley_20t#2"),  # mounted: on the elbow motor's shaft, level with the elbow 108T
+    ("gt2_pulley_20t",        "elbow_pitch", "gt2_pulley_20t#2"),  # mounted: on the elbow motor's shaft, level with the elbow 90T
     ("elbow_motor_screws",    "elbow_pitch", "elbow_motor_screws#1"),   # mounted: the elbow motor's 4x M3, up through the web
-    ("elbow_belt",            "elbow_pitch", "elbow_belt#1"),      # mounted: the elbow belt, the 20T to the elbow 108T round ...
+    ("elbow_belt",            "elbow_pitch", "elbow_belt#1"),      # mounted: the elbow belt, the 20T to the elbow 90T round ...
     ("gt2_idler_20t",         "elbow_pitch", "gt2_idler_20t#1"),   # mounted: ... its tensioner under j1_link's slab, ...
     ("elbow_idler_spacer",    "elbow_pitch", "elbow_idler_spacer#1"),   # ... its spacer, ...
     ("elbow_idler_screw",     "elbow_pitch", "elbow_idler_screw#1"),    # ... its M5 axle up through the slab's floor ...
     ("elbow_idler_nut",       "elbow_pitch", "elbow_idler_nut#1"),      # ... into its nut, in the slot from the top face
-    ("gt2_pulley_108t",       "elbow_pitch", "gt2_pulley_108t#1"),  # mounted: on the lower elbow bearing, in the 90T#1's place (retired)
-    ("elbow_pulley_screws",   "elbow_pitch", "elbow_pulley_screws#1"),   # mounted: the elbow 108T's 4x M4 ...
+    ("gt2_pulley_90t",        "j2", "gt2_pulley_90t#3"),           # mounted: re-seated on the lower elbow bearing (#1 retired)
+    ("elbow_pulley_screws",   "elbow_pitch", "elbow_pulley_screws#1"),   # mounted: the elbow 90T's 4x M4 ...
     ("elbow_pulley_nuts",     "elbow_pitch", "elbow_pulley_nuts#1"),     # ... into the block's captive nuts
     # j3_coupler#1 (the elbow coupler) is retired: the roll drive's block bolts to the elbow pulley in its place
     ("forearm_roll_drive",    None, ROLL_KEY),             # module: assemblies/forearm_roll_drive.py (the forearm_roll joint; lib/mounts.py MODULE_MOUNTS)
@@ -169,7 +168,7 @@ GROUPS = [
     ("upper_arm_link",   "#CCB974", ("j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2",
                                      "gt2_pulley_20t#2", "elbow_motor_screws#1", "elbow_belt#1", "gt2_idler_20t#1",
                                      "elbow_idler_spacer#1", "elbow_idler_screw#1", "elbow_idler_nut#1")),
-    ("elbow_link",       "#DA8BC3", ("gt2_pulley_108t#1", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", ROLL_KEY)),
+    ("elbow_link",       "#DA8BC3", ("gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", ROLL_KEY)),
     ("forearm_link",     "#DD8452", ("j2_link#1", "bearing_6806#5", "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3",
                                      "gt2_pulley_20t#4", "wrist_motor_screws#1", "wrist_belt#1", "gt2_idler_20t#3",
                                      "wrist_idler_screw#1", "wrist_idler_nut#1")),

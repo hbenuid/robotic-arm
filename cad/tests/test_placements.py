@@ -53,7 +53,7 @@ def test_mounted_records_follow_lib_mounts():
         "fork_hub_screws#1", "fork_hub_nuts#1", "fork_foot_screws#1", "fork_foot_nuts#1", "fork_sleeve_screws#1",
         "fork_sleeve_nuts#1", "nema17_48mm#1", "mks_servo42d#1", "nema17_40mm#2", "mks_servo42d#2", "nema17_40mm#3", "mks_servo42d#3",
         "gt2_pulley_20t#2", "gt2_pulley_20t#3", "gt2_pulley_20t#4", "elbow_motor_screws#1", "wrist_motor_screws#1", "yaw_motor_screws#1", *(f"bearing_6806#{n}" for n in range(1, 7)), "washer_as6590#1", "bearing_axk6590#1", "washer_as6590#2",
-        "gt2_pulley_108t#1", "gt2_pulley_90t#4", "gt2_pulley_120t#1",
+        "gt2_pulley_90t#3", "gt2_pulley_90t#4", "gt2_pulley_120t#1",
         "elbow_pulley_screws#1", "elbow_pulley_nuts#1", "wrist_pulley_screws#1", "wrist_pulley_nuts#1",
         "yaw_pulley_screws#1", "yaw_pulley_nuts#1", "yaw_belt#1", "elbow_belt#1", "wrist_belt#1",
         "gt2_idler_20t#1", "elbow_idler_spacer#1", "elbow_idler_screw#1", "elbow_idler_nut#1",

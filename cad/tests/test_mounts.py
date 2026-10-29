@@ -57,14 +57,13 @@ from tests.helpers import interference, is_inside
 
 MOTORS = [m for m in mounts.MOUNTS if m.part in mounts.MOTORS]
 BOARDS = {m.host: m for m in mounts.MOUNTS if m.part == mounts.BOARD}
-ON_AXIS = [m for m in mounts.MOUNTS if m.part in (mounts.BEARING, mounts.THRUST_CAGE, mounts.THRUST_WASHER, mounts.PULLEY, mounts.ELBOW_PULLEY,
-                                                  mounts.YAW_PULLEY,
+ON_AXIS = [m for m in mounts.MOUNTS if m.part in (mounts.BEARING, mounts.THRUST_CAGE, mounts.THRUST_WASHER, mounts.PULLEY, mounts.YAW_PULLEY,
                                                   *mounts.PULLEY_BOLTS)]
 THRUST = ("washer_as6590#1", "bearing_axk6590#1", "washer_as6590#2")   # up the base_yaw axis
 # per belt joint: (upper bearing, lower bearing, the housing, the coupler whose stub runs through them, its driven pulley)
 STACKS = {
     "base_yaw": ("bearing_6806#1", "bearing_6806#2", "base#1", "j1_coupler#1", "gt2_pulley_120t#1"),
-    "elbow_pitch": ("bearing_6806#3", "bearing_6806#4", "j1_link#1", "forearm_roll_block", "gt2_pulley_108t#1"),
+    "elbow_pitch": ("bearing_6806#3", "bearing_6806#4", "j1_link#1", "forearm_roll_block", "gt2_pulley_90t#3"),
     "wrist_pitch": ("bearing_6806#5", "bearing_6806#6", "j2_link#1", "j3_coupler#2", "gt2_pulley_90t#4"),
 }
 NO_SHOULDER = ("base_yaw",)   # the coupler stands on the thrust bearing, not on the upper inner ring
@@ -72,7 +71,7 @@ NO_SHOULDER = ("base_yaw",)   # the coupler stands on the thrust bearing, not on
 # each nut is inside it) - the elbow's nuts wholly in the block's channels, the wrist's 2.8 of 3.2 in j3_coupler's
 # pockets, the base_yaw ones wholly in j1_coupler's
 PULLEY_BOLTS = {
-    "elbow_pitch": ("elbow_pulley_screws#1", "elbow_pulley_nuts#1", "gt2_pulley_108t#1", "forearm_roll_drive#1",
+    "elbow_pitch": ("elbow_pulley_screws#1", "elbow_pulley_nuts#1", "gt2_pulley_90t#3", "forearm_roll_drive#1",
                     FOREARM.drive.nut_af, FOREARM.drive.nut_t),
     "wrist_pitch": ("wrist_pulley_screws#1", "wrist_pulley_nuts#1", "gt2_pulley_90t#4", "j3_coupler#2",
                     COUPLER.nut_af, COUPLER.nut_depth),
@@ -173,7 +172,7 @@ def test_motors_and_boards_clear_their_neighbours():
     motor mount's nuts' in the base's posts (JointParams.nut_pocket_af) and the fork's sleeve nuts' in the sleeve's lugs
     (ShellParams.sleeve_nut_af, test_the_fork_bolts_hold_the_drive). The yoke's motor leg is a neighbour too: the screws
     hosted on it are skipped below."""
-    neighbours = ["base#1", "base_motor_mount#1", "j1_coupler#1", "j1_motor_leg#1", "j1_link#1", "j2_link#1", "gt2_pulley_108t#1",
+    neighbours = ["base#1", "base_motor_mount#1", "j1_coupler#1", "j1_motor_leg#1", "j1_link#1", "j2_link#1", "gt2_pulley_90t#3",
                   "gt2_pulley_90t#4", "gt2_pulley_120t#1", "j3_coupler#2", "wrist_link#1"]
     shapes = {k: built.placed(k) for k in neighbours}
     shapes |= {k: built.placed(k) for k in ("cycloidal_drive#1", "forearm_roll_drive#1")}
@@ -224,7 +223,7 @@ def test_belt_pulley_planes_are_reachable():
     """The elbow, wrist and base motors' shafts (22 mm past the mounting face) reach the plane of the driven pulley each
     drives straight: the pulley's mid-plane lies between the mounting face and the shaft tip along the motor axis (the
     20T's band in the driven pulley's: docs/open_issues.md)."""
-    for m, pulley_key in (("nema17_40mm#2", "gt2_pulley_108t#1"), ("nema17_40mm#3", "gt2_pulley_90t#4"),
+    for m, pulley_key in (("nema17_40mm#2", "gt2_pulley_90t#3"), ("nema17_40mm#3", "gt2_pulley_90t#4"),
                           ("nema17_48mm#1", "gt2_pulley_120t#1")):
         world = _world(m)
         z = _dir(world).normalized()
@@ -235,14 +234,14 @@ def test_belt_pulley_planes_are_reachable():
         assert 0.0 < station < DEFAULT_CONFIG.motor.shaft_length, f"{m}: the pulley's mid-plane is {station:.1f} mm along the shaft"
 
 
-def test_elbow_motor_20t_runs_in_the_108ts_band():
+def test_elbow_motor_20t_runs_in_the_90ts_band():
     """The elbow motor's 20T (gt2_pulley_20t#2, MOTOR_PULLEY_MOUNTS): its bore along the motor's shaft, its tooth band's
-    centre (RollDriveParams.t20_hub from its hub face) level with the elbow 108T's along the elbow axis and the stock
+    centre (RollDriveParams.t20_hub from its hub face) level with the elbow 90T's along the elbow axis and the stock
     belt's centre distance from it across; its hub face up in the pilot hole of the web across j1_link's motor hole, clear of
     the motor's pilot boss, its grub screws (4 from the hub face, the vendor model's) past the web's face where a key
     reaches them; its band end within reach of the shaft's tip (the pulley rides on most of its bore)."""
     motor, t20 = P.location("nema17_40mm#2", "world"), P.location("gt2_pulley_20t#2", "world")
-    t90, axis = P.location("gt2_pulley_108t#1", "world"), Vector(*F.JOINT_BY_NAME["elbow_pitch"].axis_w).normalized()
+    t90, axis = P.location("gt2_pulley_90t#3", "world"), Vector(*F.JOINT_BY_NAME["elbow_pitch"].axis_w).normalized()
     assert abs(abs((t20 * Location((1.0, 0.0, 0.0))).position.sub(t20.position).dot(axis)) - 1.0) < 1e-6
     band20 = (t20 * Location((FOREARM.drive.t20_hub, 0.0, 0.0))).position
     band90 = (t90 * Location((0.0, PULLEY_90T.band_y1 / 2.0, 0.0))).position
@@ -313,7 +312,7 @@ def test_bearings_and_pulleys_sit_on_their_joint_axes():
     assert by_joint == {j: list(s[:2]) for j, s in STACKS.items()}
     for j, (up, _, host, _, _) in STACKS.items():
         assert mounts.BY_KEY[up].host == host and mounts.BY_KEY[up].link == F.JOINT_BY_NAME[j].parent
-    for key, spin in (("gt2_pulley_108t#1", FOREARM.drive.pulley_bolt_deg), ("gt2_pulley_90t#4", 0.0)):
+    for key, spin in (("gt2_pulley_90t#3", FOREARM.drive.pulley_bolt_deg), ("gt2_pulley_90t#4", 0.0)):
         m = mounts.BY_KEY[key]
         assert m.host in P.RETIRED and m.frame == ((0.0, PARAMS.PULLEY_SEAT_SHIFT, 0.0), (0.0, spin, 0.0))
         assert m.link == F.JOINT_BY_NAME[m.joint].child
@@ -325,13 +324,13 @@ def test_bearings_and_pulleys_sit_on_their_joint_axes():
 
 @pytest.mark.slow
 def test_the_elbow_pulley_holes_line_up_with_the_block_bolts():
-    """The elbow 108T turned with the block's bolt pattern: each M4 axis runs through the pulley's hole along its
+    """The elbow 90T turned with the block's bolt pattern: each M4 axis runs through the pulley's hole along its
     whole length and on into the stub's clearance hole, the hub solid 3 mm beside it (a pattern 45 deg off would
     put every axis in solid hub)."""
     D = FOREARM.drive
     module = _world("forearm_roll_drive#1")
     block = _roll_block()
-    pulley = built.placed("gt2_pulley_108t#1")
+    pulley = built.placed("gt2_pulley_90t#3")
 
     def at(x, y, z):
         p = (module * Location((x, y, z))).position

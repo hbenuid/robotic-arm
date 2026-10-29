@@ -283,7 +283,7 @@ class RollDriveParams:
     20T and the ring, an idler on its back on the frame's face taking up the rest (RollIdlerParams). The frame is
     one body round the motor: seen along the elbow axis an octagon about it (end_r, its flats round the upper arm's round end)
     hulled up to the tower round the roll axis, straight-sided, extruded from its underside (block_x[0], the elbow flange's - its underside repeats
-    the SolidWorks j3_coupler's lip / boss / journal / stub into j1_link's bore, the elbow 108T bolts straight into it) to
+    the SolidWorks j3_coupler's lip / boss / journal / stub into j1_link's bore, the elbow 90T bolts straight into it) to
     its side (+N) face, closed; the motor in a pocket open down through the octagon's bottom (it slides up into it; a
     groove inside each wall at its board's side headers), the pocket's front wall its plate (round holes: its 4x M3 from
     the front face, the heads flush in counterbores -
@@ -359,13 +359,13 @@ class RollDriveParams:
     journal_x: tuple = (-40.3, -39.0)     # [REFERENCE] host -15.3 .. -14
     step_dia: float = BEARING_6806_SHOULDER_DIA   # [DESIGN] an inner-ring shoulder on the journal's face, down onto the upper elbow bearing ...
     step_x: tuple = (-41.0, -40.3)        # [DESIGN] ... host -16 .. -15.3: the journal's Ø40 face stopped 0.7 above that bearing (and bore on its outer ring)
-    stub_dia: float = 30.0                # [REFERENCE] in the upper of the elbow's 6806-2RS pair (lib/mounts.py bearing_6806#3; the 108T's hub in #4)
+    stub_dia: float = 30.0                # [REFERENCE] in the upper of the elbow's 6806-2RS pair (lib/mounts.py bearing_6806#3; the 90T's hub in #4)
     stub_x: tuple = (-47.0 - PULLEY_SEAT_SHIFT, -41.0)   # [REFERENCE] host -25 .. -16: the capture coupler's end (-47) on through the lip to the
-    #                                       re-seated elbow 108T, which bolts flat onto it (its 2 mm in the lip space the inner rings)
+    #                                       re-seated elbow 90T, which bolts flat onto it (its 2 mm in the lip space the inner rings)
     pin_bore_dia: float = 12.5            # [REFERENCE] the coupler's through bore
     pin_bore_x: tuple = (-47.0 - PULLEY_SEAT_SHIFT, -37.0)   # [DESIGN] from the stub's end, blind: stops 1 mm under the nut seats
-    pulley_bolt_r: float = 11.0           # [REFERENCE] the elbow 108T's 4x M4 at r 11 (the SolidWorks coupler's pattern) ...
-    pulley_bolt_deg: float = 45.0         # [DESIGN] ... turned off the axes, the elbow 108T with it (lib/mounts.py)
+    pulley_bolt_r: float = 11.0           # [REFERENCE] the elbow 90T's 4x M4 at r 11 (the SolidWorks coupler's pattern) ...
+    pulley_bolt_deg: float = 45.0         # [DESIGN] ... turned off the axes, the elbow 90T with it (lib/mounts.py)
     pulley_bolt_dia: float = M4_CLEAR     # [DESIGN] 4.4, M4 clearance up through the stub, the journal and the boss to the nut seat
     pulley_hub_len: float = GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_FACE_Y[0]   # [REFERENCE] 21.4, the 90T's length through its bolt holes:
     #                                       the screw heads sit in its counterbores (parts/joints/elbow_pulley_screws)

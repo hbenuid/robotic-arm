@@ -1,5 +1,5 @@
 """The elbow belt's tensioner (lib/upper_arm/params.py ElbowIdlerParams; cad/AGENTS.md "Belts"): the stock elbow belt is
-longer than the open loop at ELBOW_MOTOR_CENTRES, so an idler (gt2_idler_20t) on its back, on the run from the 108T back
+longer than the open loop at ELBOW_MOTOR_CENTRES, so an idler (gt2_idler_20t) on its back, on the run from the 90T back
 to the motor's 20T, ElbowIdlerParams.along from the motor (beside the stepped slot's line), takes up the rest (lib/upper_arm/layout.py elbow_belt_loop,
 elbow_idler_z). It hangs under j1_link's slab under a printed spacer (elbow_idler_spacer: the slab's underside is the face
 the part prints on), on an M5 (elbow_idler_screw) up through the idler, the spacer and the slot in the slab's floor into
@@ -7,7 +7,7 @@ a nut (elbow_idler_nut) in a slot down from the slab's top face: both slots alon
 idler takes any belt from the open loop to the longest that leaves it FAR_CLEAR off the far strand - the stock belt in
 the middle. The axle, the nut and the spacer have no reference (lib/reference.py NO_REFERENCE), so THIS file locks
 their numbers (pieces, the modelled volume and the bounding box, measured on the build and written in). The idler keeps
-clear of the far strand, the 108T and the 20T at both ends of its slot; the slots are probed on j1_link; the kit fits."""
+clear of the far strand, the 90T and the 20T at both ends of its slot; the slots are probed on j1_link; the kit fits."""
 import math
 
 import pytest
@@ -59,7 +59,7 @@ def _loop_with_idler_at(z: float) -> list:
 
 
 def _far_gap(z: float) -> float:
-    """The idler's flange to the far strand's teeth (the other run, the 20T to the 108T), the idler at z."""
+    """The idler's flange to the far strand's teeth (the other run, the 20T to the 90T), the idler at z."""
     (ax, ay), (bx, by), _ = belt_runs(_loop_with_idler_at(z))[0]
     t = max(0.0, min(1.0, ((ALONG - ax) * (bx - ax) + (z - ay) * (by - ay)) / ((bx - ax) ** 2 + (by - ay) ** 2)))
     d = math.hypot(ALONG - ax - t * (bx - ax), z - ay - t * (by - ay))
@@ -67,7 +67,7 @@ def _far_gap(z: float) -> float:
 
 
 def test_the_stock_belt_needs_its_idler():
-    """The stock belt is longer than the open loop at the design centre distance; the idler on the 108T -> 20T run,
+    """The stock belt is longer than the open loop at the design centre distance; the idler on the 90T -> 20T run,
     `along` from the motor (1.9 short of the stepped slot's line), pushed in till the loop is the belt's length exactly -
     inside its slot."""
     assert X == pytest.approx(DEFAULT.pad.x + ALONG, abs=1e-9) and SL.stepped_x - X == pytest.approx(1.9, abs=1e-9)
@@ -90,12 +90,12 @@ def test_the_slot_takes_a_band_of_belts():
     assert _far_gap(I.slot_z[0]) >= FAR_CLEAR
     longest = belt_length(_loop_with_idler_at(I.slot_z[0]))
     assert longest - ELBOW_BELT >= STRETCH and ELBOW_BELT - belt_length(elbow_belt_loop(idler=False)) >= STRETCH
-    assert longest == pytest.approx(315.7, abs=0.05)
+    assert longest == pytest.approx(287.3, abs=0.05)
 
 
 @pytest.mark.parametrize("z", [I.slot_z[0], elbow_idler_z(), I.slot_z[1]])
 def test_the_idler_clears_the_far_strand_and_the_pulleys(z):
-    """Anywhere in its slot: FAR_CLEAR off the far strand (more off its place), well off the 20T and the 108T (their
+    """Anywhere in its slot: FAR_CLEAR off the far strand (more off its place), well off the 20T and the 90T (their
     pitch circles; the parts themselves: test_the_kit_fits)."""
     assert _far_gap(z) >= FAR_CLEAR
     flange = GT2_IDLER_FLANGE_DIA / 2.0
@@ -155,14 +155,14 @@ def test_the_slots_on_j1_link():
 @pytest.mark.slow
 def test_the_kit_fits():
     """In j1_link's frame: the idler on the belt, the spacer between the idler and the slab, the nut on its slot's
-    floor - touching, nothing overlapping; the screw clear in its slot; the idler 5 mm or more off the 20T and the 108T
-    at its place, PULLEY_CLEAR_AT_ENDS at both ends of its slot (the inner end, the longest belt it takes, 4.74 off the
-    108T's flange; its nearest, 4.58, half way along at z 0)."""
+    floor - touching, nothing overlapping; the screw clear in its slot; the idler 5 mm or more off the 20T and the 90T
+    at its place (10.57 off the 90T's flange), PULLEY_CLEAR_AT_ENDS at both ends of its slot (the inner end, the longest
+    belt it takes, 10.34 off it; its nearest, 10.31, near z 0)."""
     into = "j1_link#1"
     link, belt = built.part("j1_link"), built.placed("elbow_belt#1", into=into)
     idler, spacer, screw, nut = (built.placed(f"{k}#1", into=into) for k in
                                  ("gt2_idler_20t", "elbow_idler_spacer", "elbow_idler_screw", "elbow_idler_nut"))
-    near = [link, belt, *(built.placed(k, into=into) for k in ("gt2_pulley_20t#2", "gt2_pulley_108t#1", "nema17_40mm#2"))]
+    near = [link, belt, *(built.placed(k, into=into) for k in ("gt2_pulley_20t#2", "gt2_pulley_90t#3", "nema17_40mm#2"))]
     kit = [idler, spacer, screw, nut]
     for part in kit:
         for other in near + kit:
@@ -171,7 +171,7 @@ def test_the_kit_fits():
     assert closest_points(belt, idler).distance < 0.01 and closest_points(spacer, idler).distance < 0.01
     assert closest_points(spacer, link).distance < 0.01 and closest_points(nut, link).distance < 0.01
     assert closest_points(screw, link).distance >= (I.slot_w - I.screw.d) / 2.0 - 0.01
-    pulleys = [built.placed(k, into=into) for k in ("gt2_pulley_20t#2", "gt2_pulley_108t#1")]
+    pulleys = [built.placed(k, into=into) for k in ("gt2_pulley_20t#2", "gt2_pulley_90t#3")]
     assert all(closest_points(idler, p).distance >= 5.0 for p in pulleys)
     for z in (I.slot_z[0], I.slot_z[1]):
         moved = idler.moved(Location((0.0, 0.0, z - elbow_idler_z())))

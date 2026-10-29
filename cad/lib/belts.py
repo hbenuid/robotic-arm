@@ -1,6 +1,6 @@
 """GT2 belt drives - a leaf module (no imports): the tooth pitch, the groove every printed pulley cuts, the pulleys the
-arm uses, the stock belt lengths, the belt's section, the closed-belt arithmetic every belt joint needs (the elbow's
-108T, the wrist belt's 90T, the forearm roll's 90T ring, the base_yaw 120T) and a belt's exact path round its
+arm uses, the stock belt lengths, the belt's section, the closed-belt arithmetic every belt joint needs (the elbow /
+wrist belts on the 90T pulleys, the forearm roll's 90T ring, the base_yaw 120T) and a belt's exact path round its
 pulleys and a back-side idler (belt_runs() / belt_wraps() / belt_length(), idler_on_run()). lib/params.py re-exports the
 constants; lib/pulley/ and lib/forearm/ import from HERE (they must not
 import lib/params.py, which imports them back).
@@ -10,14 +10,13 @@ Tags as in lib/params.py. Units mm.
 import math
 
 GT2_PITCH = 2.0                                     # [DATASHEET] GT2 tooth pitch
-GT2_PULLEY_90T_TEETH = 90                           # [REFERENCE] printed 90T pulley (parts/joints/gt2_pulley_90t), the wrist's
-GT2_PULLEY_108T_TEETH = 108                         # [DESIGN] printed 108T pulley, the elbow joint's (parts/joints/gt2_pulley_108t)
+GT2_PULLEY_90T_TEETH = 90                           # [REFERENCE] printed 90T pulley (parts/joints/gt2_pulley_90t), the elbow's and the wrist's
 GT2_PULLEY_120T_TEETH = 120                         # [DESIGN] printed 120T pulley, the base_yaw joint's (parts/base/gt2_pulley_120t)
 GT2_PULLEY_20T_TEETH = 20                           # [REFERENCE] purchased 20T pulley (parts/wrist/gt2_pulley_20t)
 GT2_PULLEY_20_60T_TEETH = (60, 20)                  # [REFERENCE] printed compound pulley (parts/joints/gt2_pulley_20_60t): its lower band, its upper
 GT2_PULLEY_90T_PITCH_DIA = GT2_PULLEY_90T_TEETH * GT2_PITCH / math.pi   # 57.30 mm pitch diameter
 GT2_PULLEY_20T_PITCH_DIA = GT2_PULLEY_20T_TEETH * GT2_PITCH / math.pi   # 12.73 mm
-GT2_RATIO = GT2_PULLEY_90T_TEETH / GT2_PULLEY_20T_TEETH                 # 4.5:1 [REFERENCE] the wrist belt's 90T on its 20T: motor turns per output turn; config.py's gear_ratio is 1 / this (robot/AGENTS.md)
+GT2_RATIO = GT2_PULLEY_90T_TEETH / GT2_PULLEY_20T_TEETH                 # 4.5:1 [REFERENCE] a 90T on its 20T (the elbow and wrist belts): motor turns per output turn; config.py's gear_ratio is 1 / the joint's (robot/AGENTS.md)
 GT2_PLD = 0.254                                     # [DATASHEET] pitch-line distance: pitch radius - pulley outside radius
 GT2_BELT_W = 6.0                                    # [DATASHEET] the 6 mm belt every joint uses
 GT2_TOOTH_DEPTH = 0.75                              # [DATASHEET] belt tooth height (= the pulley groove depth)

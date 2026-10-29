@@ -1,8 +1,8 @@
-"""elbow_pulley_screws - purchased (COTS) part: the elbow 108T's 4 M4 socket head cap screws (ISO 4762).
+"""elbow_pulley_screws - purchased (COTS) part: the elbow 90T's 4 M4 socket head cap screws (ISO 4762).
 
-They clamp the pulley onto the elbow block's stub (gt2_pulley_108t#1 -> forearm_roll_block).
+They clamp the pulley onto the elbow block's stub (gt2_pulley_90t#3 -> forearm_roll_block).
 
-In the arm (lib/mounts.py, hosted on the elbow 108T): the heads in the counterbores in the pulley's outer face
+In the arm (lib/mounts.py, hosted on the elbow 90T): the heads in the counterbores in the pulley's outer face
 (lib/belts.py GT2_PULLEY_90T_HEAD_SEAT), the shanks down through its M4 clearance holes, the block's stub, journal and boss into the captive nuts in the block's hex channels
 (elbow_pulley_nuts); the tips end two pitches past the nuts, in the channels. Length: lib/forearm/params.py
 RollDriveParams.pulley_screw_len.
@@ -31,7 +31,7 @@ COTS = True
 MASS_G = ELBOW_PULLEY_SCREWS_MASS_G   # [ESTIMATE] the modelled steel (lib/params.py)
 PURCHASE_SPEC = f"M{M4_SHCS.d:g} x {LENGTH:g} socket head cap screw (ISO 4762)"
 PURCHASE_QTY = len(pulley_90t_bolt_points())   # pieces per occurrence (the whole pattern)
-PURCHASE_NOTE = "the elbow 108T onto the elbow block, into the captive nuts in its hex channels (elbow_pulley_nuts)"
+PURCHASE_NOTE = "the elbow 90T onto the elbow block, into the captive nuts in its hex channels (elbow_pulley_nuts)"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 

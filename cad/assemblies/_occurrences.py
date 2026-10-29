@@ -1,9 +1,9 @@
 """Shared helpers for assemblies/*.py: place part occurrences from reference/placements.json.
 
 An OCCURRENCES table row is (part_or_module_name, role_or_None, placement_key), in the
-SolidWorks document order. Roles make duplicate parts' labels unique (`bearing_6806:elbow_pitch_1`): mostly the
-joint name, 1 / 2 on the gripper's pairs and the cycloidal and forearm roll drives' bearings, j3 on the wrist's 90T
-(and j3_coupler#2) - assemblies/AGENTS.md.
+SolidWorks document order. Roles make duplicate parts' labels unique (`gt2_pulley_90t:j2`): mostly the
+joint name, 1 / 2 on the gripper's pairs and the cycloidal and forearm roll drives' bearings, j2 / j3 on the
+elbow's / wrist's 90T (and j3_coupler#2) - assemblies/AGENTS.md.
 Code-driven modules (assemblies/cycloidal_drive.py, forearm_roll_drive.py, wrist_roll_drive.py) use
 (part, role, placement) rows instead - the placement in the MODULE frame, as data: a position `(x, y, z)` for a
 part whose own frame is already aligned with the module's, or a frame `((x, y, z), (rx, ry, rz))` (lib.datum) when it
@@ -52,7 +52,7 @@ def place(part_name: str, key: str, *, root: bd.Location | None = None):
 
 
 def _details(role) -> tuple:
-    """The label details of a row: its role, if it has one (`gt2_pulley_90t:j3`)."""
+    """The label details of a row: its role, if it has one (`gt2_pulley_90t:j2`)."""
     return () if role is None else (role,)
 
 
