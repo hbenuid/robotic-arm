@@ -38,7 +38,7 @@ as a git note).
   `~/.local/state/cadgen/` on Linux, `~/Library/Application Support/cadgen/` on the Mac), which the processes cadtool
   does not start go by — the environment does not reach them. The stored answer is per machine: `telemetry` →
   `choice: off` in that file is the check. `test_tooling.py` holds both.
-- **build123d 0.13.0 / OCP 8.0.1 (OCCT 8)**: cadgen 0.8.1 requires `build123d>=0.13.0,<0.14` and
+- **build123d 0.13.0 / OCP 8.0.1 (OCCT 8)**: cadgen 0.8.2 requires `build123d>=0.13.0,<0.14` and
   `cadquery-ocp-novtk>=8.0,<8.1`; `pyproject.toml` pins the exact kernel (`cadquery-ocp-novtk==…`, the STEP bytes are
   per-kernel) and must never gain `cadquery-ocp`, the VTK build (see Gotchas below). OCCT 8.0.1's two known defects and
   what this repo checks for them: Gotchas below. On OCCT 7.8.1 some parts could not be read back from the BinTools
@@ -82,7 +82,12 @@ in a shell profile (it overrides the plugin detection).
   document by the toolchain (build123d, OCP, the system and the architecture) — not by cadgen's release, which it
   records only — so a cadgen bump makes no model rebuild and a plain `gen` afterwards rewrites nothing: to hash-gate a
   bump, build every model on the old pin (a fresh worktree has no STEPs), hash, then `./cadtool stop` and
-  `./cadtool gen --force <every model>` on the new one and `shasum -c`. A bump whose STEP writer or kernel changed
+  `./cadtool gen --force <every model>` on the new one and `shasum -c`. A `--force` build can name the elements of
+  mirror-image features the other way round (the swapped `~<digest>` names of two edges or vertices, every other
+  record equal: cadgen derives a name from the history the kernel reports, whose order a boolean can change), so it
+  rewrites such a part's bytes on the SAME pin too (verified on 0.8.2: `base`, `j1_coupler`, `gripper_j3_connector`
+  gave a new hash on every one of four runs, `bearing_6806` the same one): settle each file that fails with
+  `./cadtool inspect diff` against its old copy. A bump whose STEP writer or kernel changed
   (0.7 → 0.8, OCCT 7.9 → 8) changes the bytes: compare the geometry instead, every leaf in world coordinates
   (`./cadtool inspect diff`, after checking that `facts()` reads the old files the same way: the old STEPs read by the
   old venv and by the new one). A new kernel can re-approximate a curve it builds (a chamfer along a spline) with
