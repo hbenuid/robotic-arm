@@ -10,10 +10,12 @@ Two configurations: LEGACY reproduces the SolidWorks reference (the part's REFER
 tests/test_reference_match.py), DEFAULT is what the part builds: SHORTENING nearer the shoulder at the elbow (every
 elbow-end feature moves with the axis - lib/placements.py SHIFTS moves what lies beyond), no cap-locating sockets
 (the caps were removed 2026-09-25), no through slots, the NEMA 17 holes on a true square about the pad's axis, the
-elbow's clearance for the elbow block (the top face at the relief's floor, the recess 1.5 mm deeper), and the drive's
-turning shell: the arm, one flat slab from the elbow half's underside to the relief's floor, end to end, rises off the
-shell, printed as one with the shell's body (ArmParams), slid along Y until its underside is flush with the shell's
-hub end (the face the part prints on); the elbow motor moved out along the link to ELBOW_MOTOR_CENTRES from the elbow
+elbow's clearance for the elbow block (the top face down to the relief's floor, on the floor of a recess 1.5 mm deeper
+than the SolidWorks one - level with the upper 6806's top: no recess left), and the drive's turning shell: the arm,
+one flat slab from the elbow half's underside to the relief's floor, end to end, narrower than the plate (ArmParams
+width, end_r), rises off the shell, printed as one with the shell's body (ArmParams), slid along Y until its underside
+is flush with the shell's hub end (the face the part prints on); the elbow motor moved out along the link to
+ELBOW_MOTOR_CENTRES from the elbow
 axis, where the second stage's seat was (gone), and turned over onto the arm's other side, down a square hole through
 the slab onto a web across it, flush with the slab's underside (the pad's tube gone); the elbow belt's tensioner
 (ElbowIdlerParams) on the stepped slot's line, its slots in that slot's place.
@@ -146,9 +148,11 @@ class SocketParams:
 class ArmParams:
     """DEFAULT's shoulder end: PAROL6-like, the arm rises straight off the cycloidal drive's turning shell, printed as one
     with the shell's body (lib/cycloidal/housing.py build_shell_body), not bolted to the shell's end. The arm is one flat
-    slab, solid (a placeholder for its mass: docs/open_issues.md): the plate's outline (the stadium 2 SlabParams.r wide
-    from the shoulder axis to the elbow axis) from the elbow half's underside (ElbowParams.y0) up to the relief's floor
-    (ElbowParams.relief_y), end to end - the elbow block turns over its top face, the forearm roll drive's motor and
+    slab, solid (a placeholder for its mass: docs/open_issues.md): `width` across (Z, about the link's centreline) from
+    the shoulder axis, its round end `end_r` about the elbow axis - narrower than that, the slab keeps its width over the
+    elbow idler's slots and tapers straight onto the end past them (lib/upper_arm/layout.py slab_taper_x), the bend
+    `bend_r`; wider, it flares into the end through `bend_r` fillets -, from the elbow half's underside
+    (ElbowParams.y0) up to the relief's floor (ElbowParams.relief_y), end to end - the elbow block turns over its top face, the forearm roll drive's motor and
     board in it (they turn with the elbow and never roll: their height along Y is fixed) clear it further up - fused
     into the shell's wall from fuse_r out, where the body's two windows under it are solid (lib/cycloidal/params.py
     ShellParams.arm_windows; its other windows open on the discs). The slab's underside is flush with the shell's hub
@@ -180,6 +184,13 @@ class ArmParams:
     drive_z_at_y0: float = 66.5      # [REFERENCE] the drive's z at this frame's y = 0 (placements.json cycloidal_drive#1,
     #                                  j1_link#1: the SolidWorks hub face bolted to the top face, y 1.5, at the port's z 65)
     drive_x_deg: float = -47.584167  # [REFERENCE] the drive's +X in this frame, atan2(z, x), as the capture pose places it
+    width: float = 76.0              # [DESIGN] the slab across, symmetric: 16.4 of it beside the motor's hole, 8.1 past the
+    #                                  idler's nut slot at its outer end (tests/upper_arm/test_elbow_idler.py) - the plate's 90
+    #                                  slimmed for mass
+    end_r: float = 36.0              # [DESIGN] its round end about the elbow axis: 14.9 of wall round the lower 6806's seat,
+    #                                  the 108T's flange (r 35.3) under it just inside; the roll frame's octagonal end
+    #                                  (lib/forearm/params.py RollDriveParams.end_r) stays the plate's r 45, overhanging it
+    bend_r: float = 20.0             # [DESIGN] where the width turns into the taper onto the end (or flares into it)
 
 
 @dataclass(frozen=True)
@@ -257,12 +268,12 @@ _SHORTENED = shortened(replace(
     pad=replace(LEGACY.pad, holes=tuple((sx * NEMA17_BOLT_SP / 2.0, sz * NEMA17_BOLT_SP / 2.0, M3_CLEAR)
                                         for sx, sz in ((1, -1), (1, 1), (-1, 1), (-1, -1)))),   # [DESIGN] M3 clearance (LEGACY's 3.2)
     hub=replace(LEGACY.hub, bolt_angle_deg=-2.584167),   # [REFERENCE] the drive's bolts, 3.36 degrees from the SolidWorks holes
-    # the roll frame (lib/forearm/ RollDriveParams) turns with the elbow over this top face: its flat underside rides
-    # 6.0 above the relief's floor (3.5 over the lip) out to the tower ELBOW_ROLL_OFFSET across the elbow axis, its Ø62
-    # boss 2.0 above the
-    # recess floor (0.5 at the SolidWorks -4.5), which is level with the upper 6806's top: its seat exactly 7.0 deep,
-    # the most the boss can get (tests/forearm/test_roll_drive.py)
-    elbow=replace(LEGACY.elbow, relief_r=60.0, relief_y=-1.0, recess_y=-6.0),   # [DESIGN]
+    # the roll frame (lib/forearm/ RollDriveParams) turns with the elbow over this top face: the top face down to the
+    # recess floor (0.5 under the SolidWorks recess's -4.5), level with the upper 6806's top - its seat exactly 7.0
+    # deep, the slab no deeper than the elbow's bearing stack, no recess left -; the frame's Ø62 boss rides 2.0 above it,
+    # the most the boss can get, its flat underside 11.0 above it out to the tower ELBOW_ROLL_OFFSET across the elbow
+    # axis (tests/forearm/test_roll_drive.py)
+    elbow=replace(LEGACY.elbow, relief_r=60.0, relief_y=-6.0, recess_y=-6.0),   # [DESIGN]
 ), SHORTENING)
 # The drive's shell turns (lib/cycloidal/params.py ShellParams) and the arm rises off it, flush with its hub end
 # (ArmParams), the held hub and the motor's sleeve on the j1_coupler yoke at the shell's two ends - so the elbow motor

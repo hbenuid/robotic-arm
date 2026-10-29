@@ -12,6 +12,7 @@ from lib.upper_arm.layout import (  # noqa: F401
     elbow_idler_z,
     hub_bolt_points,
     pad_holes,
+    slab_taper_x,
     socket_points,
 )
 from lib.upper_arm.params import (  # noqa: F401

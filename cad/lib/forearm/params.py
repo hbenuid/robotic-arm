@@ -115,7 +115,7 @@ class RollEndParams:
     and the spigot into nuts in the pulley's core (the bottom one's head just over the web's top face); the cables pass
     through the bore. The wall stands 48 mm
     along the roll axis from the elbow axis' station (and ForearmConfig.elbow_offset across from it): whatever the
-    forearm's roll angle, it clears the upper arm's r 45 round end. It is a
+    forearm's roll angle, it clears the upper arm's round end (lib/upper_arm/params.py ArmParams.end_r). It is a
     round flange about the roll axis on a foot as wide as itself and the web (WebParams.half_w), the web's underside
     level with its round bottom (DEFAULT: WEB_DROP), whole all round where the pulley's ring bears on it; its elbow-side
     band cut back to relief_r about the roll axis, round the roll tensioner's screw head; braced by two gussets on the
@@ -123,7 +123,7 @@ class RollEndParams:
     The roll drive's frame, shaft and pulley: lib/forearm/roll.py."""
 
     axis_z: float = 25.0                  # [REFERENCE] the wrist centre's N-station above the elbow origin (42 − 17)
-    wall_x: tuple = (-56.0, -48.0)        # [DESIGN] the wall's wrist face .. elbow face (8 thick): 48 from the elbow axis (>= 45 + 3: the upper arm's round end)
+    wall_x: tuple = (-56.0, -48.0)        # [DESIGN] the wall's wrist face .. elbow face (8 thick): 48 from the elbow axis (>= the upper arm's round end + 3)
     wall_od: float = 60.0                 # [DESIGN] the wall's round outline about the roll axis: it covers the pulley's ring (its flanges Ø59.19) all
     #                                       round (no wider: the roll idler's screw head, 42.3 off the roll axis, reaches into the wall's band along it -
     #                                       a wider wall would meet it as the forearm rolls)
@@ -268,7 +268,7 @@ class BackPanelParams:
     #                                       opening (3.9 to it and to the step's bottom edge)
 
 
-ROLL_FRAME_R = 30.0   # [DESIGN] the roll frame's half width round the roll axis: its underside (6.0 over the upper arm's flat top),
+ROLL_FRAME_R = 30.0   # [DESIGN] the roll frame's half width round the roll axis: its underside (11.0 over the upper arm's flat top),
 #                       its side (+N) face and its tower's top - the frame symmetric about the roll axis, the bearing boss centred
 #                       on its front face -, the forearm wall's radius (RollEndParams.wall_od / 2): the frame flush with the
 #                       round parts that turn about the roll axis (RollDriveParams block_x, tower_y; tests/forearm/test_roll_drive.py test_stack)
@@ -281,7 +281,7 @@ class RollDriveParams:
     pressed on its own piece's journal from its own end). The roll motor sits ON the elbow axis, the roll axis
     centre_distance above it (= the arm's elbow offset, ForearmConfig.elbow_offset): the stock roll belt round the motor's
     20T and the ring, an idler on its back on the frame's face taking up the rest (RollIdlerParams). The frame is
-    one body round the motor: seen along the elbow axis an octagon about it (end_r, its flats on the upper arm's round end)
+    one body round the motor: seen along the elbow axis an octagon about it (end_r, its flats round the upper arm's round end)
     hulled up to the tower round the roll axis, straight-sided, extruded from its underside (block_x[0], the elbow flange's - its underside repeats
     the SolidWorks j3_coupler's lip / boss / journal / stub into j1_link's bore, the elbow 108T bolts straight into it) to
     its side (+N) face, closed; the motor in a pocket open down through the octagon's bottom (it slides up into it; a
@@ -317,12 +317,13 @@ class RollDriveParams:
     #                                       and the stop that much deeper, the stop lug 2.3 inside the rear line (tests/forearm/test_roll_drive.py)
     lip_id: float = 37.6                  # [DESIGN] j1_link's elbow lip (37.64): clear of the pulley's neck and the shoulders' Ø33
     run_gap: float = 1.0                  # [DESIGN] the ring's rear flange over bearing 2 and the bearing boss's top (the pulley's Ø33 shoulder spans it)
-    # the frame: x along N (its underside at -X, 6.0 over the upper arm's flat top, host z -11), y up in the swing plane
+    # the frame: x along N (its underside at -X, 11.0 over the upper arm's flat top, host z -16), y up in the swing plane
     # (the motor below the roll axis, -Y), z along the roll axis
     block_x: tuple = (-ROLL_FRAME_R, ROLL_FRAME_R)   # [DESIGN] host z -5 .. 55: the underside (the web's plane) .. the side (+N) face,
     #                                       symmetric about the roll axis
-    end_r: float = 45.0                   # [DESIGN] the octagonal end about the elbow axis: its flats this far off it = j1_link's round end
-    #                                       (tangent to it), its corners end_r / cos(22.5 deg) = 48.7 out (the elbow motor's board sweeps 56.5 out)
+    end_r: float = 45.0                   # [DESIGN] the octagonal end about the elbow axis: its flats this far off it - j1_link's round end
+    #                                       as the plate had it (the slimmed arm's, ArmParams.end_r, is inside it) -, its corners
+    #                                       end_r / cos(22.5 deg) = 48.7 out (the elbow motor's board sweeps 56.5 out)
     end_sides: int = 8                    # [DESIGN] the end's polygon: an octagon, a flat on each axis (the front face's plane, the end, the bottom)
     tower_y: float = ROLL_FRAME_R         # [DESIGN] the tower's top over the roll axis, as far as the underside and the side face: the bay + 4.4
     rear_line_r: float = 3.0              # [DESIGN] the rear line (the outline from the end up to the tower's top): tangent to the end_r
@@ -348,10 +349,10 @@ class RollDriveParams:
     #                                       the stop lug's corners (r 24.6) + 1; the shaft, bearing 1 pressed on it, goes in along the axis from behind
     # the coupler features on the frame's underside (module -X) about the elbow axis (y = elbow_y), where j3_coupler#1 was
     # - measured on the SolidWorks coupler 2026-09-23 in j2_link's frame (host z = module x + axis_z); they turn in
-    # j1_link's Ø80 recess / Ø42 bore
-    lip_dia: float = 72.0                 # [DESIGN] a dust lip over j1_link's Ø80 recess (the coupler's Ø78 flange, kept inside the end's outline)
-    lip_x: tuple = (-35.0, -ROLL_FRAME_R)   # [REFERENCE] its foot at host -10, 1 over j1_link's flat top (the relief's floor, host -11), [DESIGN] up to
-    #                                       the underside (host -5): 5 proud of it, bridging the gap over the upper arm's flat top
+    # j1_link's Ø42 bore, over its flat top (down at the floor of the Ø80 recess it had: lib/upper_arm/params.py)
+    lip_dia: float = 72.0                 # [DESIGN] a dust lip over j1_link's elbow end (the coupler's Ø78 flange, kept inside the end's outline)
+    lip_x: tuple = (-35.0, -ROLL_FRAME_R)   # [REFERENCE] its foot at host -10, 6 over j1_link's flat top (host -16; 1 over it before the
+    #                                       slab was slimmed), [DESIGN] up to the underside (host -5): 5 proud of it, into the gap over the top
     boss_dia: float = 62.0                # [REFERENCE]
     boss_x: tuple = (-39.0, -35.0)        # [REFERENCE] host -14 .. -10
     journal_dia: float = 40.0             # [REFERENCE] in j1_link's Ø42 bore

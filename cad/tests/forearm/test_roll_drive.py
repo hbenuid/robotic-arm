@@ -43,12 +43,12 @@ from tests.helpers import interference, is_inside, module_tints
 
 S = stack_positions(DEFAULT)
 D = DEFAULT.drive
-UPPER_ARM_FACE_Z = -11.0         # host z of j1_link's +N face under the block: its flat top, the relief's floor (1 under the lip's root) ...
-UPPER_ARM_RECESS = (40.0, -16.0)  # j1_link's recess round the elbow axis: radius, floor (host z)
+UPPER_ARM_FACE_Z = -16.0         # host z of j1_link's +N face under the block: its flat top, the relief's floor - down at the
+#                                  floor of the old recess round the elbow axis, level with the upper 6806's top (no recess left)
 FACE_GAP = 2.0                   # the least axial gap between a face the elbow turns and j1_link's (printed PETG; the
 #                                  forearm's moment tilts the block on its 6806 pair)
 UPPER_ARM_BORE_R = 21.0          # j1_link's bore the coupler's stub / journal turn in
-UPPER_ARM_END_R = 45.0           # j1_link's round end about the elbow axis
+UPPER_ARM_END_R = 36.0           # j1_link's round end about the elbow axis (lib/upper_arm/params.py ArmParams.end_r)
 ELBOW_PULLEY_FACE_Z = -22.0 - PARAMS.PULLEY_SEAT_SHIFT   # host z of the elbow 108T's mating face: the SolidWorks coupler's stub end
 #                                                          (-22), both moved on to the re-seated pulley on j1_link's lip
 ELBOW_AXIS_HOST = (0.0, -DEFAULT.elbow_offset)            # the elbow axis (along host Z) in j2_link's frame before the forearm's turn (the
@@ -120,15 +120,16 @@ def test_the_elbow_coupler_is_retired_for_the_block():
 def test_stack():
     w, z_axis = DEFAULT.roll_end, DEFAULT.roll_end.axis_z
     # the frame: its underside (one plane) FACE_GAP clear of the upper arm's flat top (j1_link's slab, level end to end:
-    # tests/upper_arm), an octagon about the elbow axis, its flats on j1_link's round end; the coupler features below it about the elbow
-    # axis in j1_link's recess and bore where the SolidWorks coupler's were, an inner-ring shoulder between the journal
-    # and the stub, the stub on through the lip to the elbow pulley's face (the Ø12.5 bore open at its end)
+    # tests/upper_arm), an octagon about the elbow axis, its flats at j1_link's old round end (the plate's), the
+    # slimmed arm's narrower end inside them; the coupler features below it about the elbow axis over j1_link's flat
+    # top and in its bore where the SolidWorks coupler's were - the lip and the boss FACE_GAP or more over that top -,
+    # an inner-ring shoulder between the journal and the stub, the stub on through the lip to the elbow pulley's face
+    # (the Ø12.5 bore open at its end)
     assert z_axis + D.block_x[0] >= UPPER_ARM_FACE_Z + FACE_GAP and S["x_cradle"] - D.web_t == D.block_x[0]
-    assert D.end_r == UPPER_ARM_END_R and D.lip_dia / 2.0 <= D.end_r - 5.0
-    assert D.lip_dia / 2.0 <= UPPER_ARM_RECESS[0] - 1.0 and D.boss_dia / 2.0 <= UPPER_ARM_RECESS[0] - 2.0
+    assert D.end_r >= UPPER_ARM_END_R and D.lip_dia / 2.0 <= D.end_r - 5.0
     assert D.lip_x[1] == D.block_x[0] and D.boss_x[1] == D.lip_x[0] and D.journal_x[1] == D.boss_x[0]
     assert D.step_x[1] == D.journal_x[0] and D.stub_x[1] == D.step_x[0] and D.stub_dia < D.step_dia < D.journal_dia
-    assert z_axis + D.boss_x[0] >= UPPER_ARM_RECESS[1] + FACE_GAP and D.journal_dia / 2.0 < UPPER_ARM_BORE_R and D.stub_dia / 2.0 < UPPER_ARM_BORE_R
+    assert z_axis + D.boss_x[0] >= UPPER_ARM_FACE_Z + FACE_GAP and D.journal_dia / 2.0 < UPPER_ARM_BORE_R and D.stub_dia / 2.0 < UPPER_ARM_BORE_R
     assert z_axis + D.stub_x[0] == ELBOW_PULLEY_FACE_Z and D.pin_bore_x[0] == D.stub_x[0]
     # the stations, the forearm wall back: the ring's front face on the wall, the ring, bearing 2 RIGHT UNDER it (its
     # front face the bearing boss's top, run_gap under the ring's flange), the lip - the spacer between the outer rings,
@@ -550,7 +551,7 @@ def test_module_clears_the_folded_upper_arm(deg):
     upper_arm = _upper_arm_at(in_drive_frame("j1_link#1"), deg)
     vol = interference(module, upper_arm)
     assert vol < 1.0, f"elbow {deg:+.0f} deg: module x j1_link#1: {vol:.1f} mm^3"
-    journal_edge = math.hypot(UPPER_ARM_BORE_R - D.journal_dia / 2.0, DEFAULT.roll_end.axis_z + D.journal_x[0] - UPPER_ARM_RECESS[1])
+    journal_edge = math.hypot(UPPER_ARM_BORE_R - D.journal_dia / 2.0, DEFAULT.roll_end.axis_z + D.journal_x[0] - UPPER_ARM_FACE_Z)
     block_gap = closest_points(_placed_part("forearm_roll_block"), upper_arm).distance
     assert block_gap == pytest.approx(journal_edge, abs=0.01) and block_gap >= 1.0
 

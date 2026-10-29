@@ -1,9 +1,10 @@
 """j1_link, parametric (lib/upper_arm/): the LEGACY configuration reproduces the SolidWorks part feature by feature
 (the volume / bbox match is tests/test_reference_match.py's; here the features are probed by name so a regression
 names what moved), and DEFAULT - what the part builds - changes exactly these: SHORTENING at the elbow end (every
-elbow-end feature moves with the axis), no through slots, no cap sockets, the elbow block's clearance (the top face at
-the relief's floor, the recess floor deeper), and the cycloidal drive's turning shell: the arm, one flat slab from the
-elbow half's underside to the relief's floor, rises off the shell (ArmParams), printed as one with the shell's body
+elbow-end feature moves with the axis), no through slots, no cap sockets, the elbow block's clearance (the top face down
+to the relief's floor, on the floor of a deeper recess: no recess left), and the cycloidal drive's turning shell: the
+arm, one flat slab from the elbow half's underside to the relief's floor, narrower than the plate (ArmParams width,
+tapering onto a narrower round end, end_r, past the elbow idler's slots), rises off the shell, printed as one with the shell's body
 round the discs - out of the two windows it fills, the others open - slid along Y until its underside is flush with
 the shell's hub end (arm_slide); the elbow motor - the NEMA 17 holes on its pattern - moved out along the link to
 ELBOW_MOTOR_CENTRES from the elbow axis, where the second stage's seat was (gone), and turned over onto the arm's +Y
@@ -190,23 +191,25 @@ def test_default(link, legacy):
     the underside; no pad, no sockets, the second stage's seat gone."""
     dx, a = SHORTENING, DEFAULT.arm
     assert link.is_valid and len(link.solids()) == 1
-    assert R.solid_volume(link) == pytest.approx(372030.418, abs=0.5)
+    assert R.solid_volume(link) == pytest.approx(289599.124, abs=0.5)
     bb, hh, (z_0, z_1) = link.bounding_box(), DEFAULT_CONFIG.housing, arm_zone(DEFAULT_CONFIG)
     # across (Z) the body's pillars either side of +/-Z reach furthest: the windows on +/-Z are open; along Y the
-    # shell's body, from its hub end to the shell ring's face (arm_zone's start)
-    assert (bb.min.X, bb.min.Y, bb.min.Z) == pytest.approx((-hh.od / 2.0, a.drive_z_at_y0 - shell_ends(DEFAULT_CONFIG)[1], -58.0117), abs=1e-4)
-    assert (bb.max.X, bb.max.Y, bb.max.Z) == pytest.approx((legacy.bounding_box().max.X + dx, a.drive_z_at_y0 - z_0, 58.0117), abs=1e-4)
-    # the slab: its faces level from the shell to the elbow's end - beside the motor's hole, clear of the slot and the
-    # recess -, its sides
+    # shell's body, from its hub end to the shell ring's face (arm_zone's start); along X the slab's round end
     s, e = DEFAULT.slab, DEFAULT.elbow
-    lo, hi = e.y0 + SLIDE, e.relief_y + SLIDE          # 5.5, 28.5
+    assert (bb.min.X, bb.min.Y, bb.min.Z) == pytest.approx((-hh.od / 2.0, a.drive_z_at_y0 - shell_ends(DEFAULT_CONFIG)[1], -58.0117), abs=1e-4)
+    assert (bb.max.X, bb.max.Y, bb.max.Z) == pytest.approx((s.elbow_x + a.end_r, a.drive_z_at_y0 - z_0, 58.0117), abs=1e-4)
+    # the slab: its faces level from the shell to the elbow's end - beside the motor's hole, clear of the slots -, its
+    # sides (width), its round end (end_r) past the taper
+    lo, hi = e.y0 + SLIDE, e.relief_y + SLIDE          # 5.5, 23.5
     assert lo == pytest.approx(bb.min.Y, abs=1e-4)     # the underside on the hub end: the face the part prints on
-    for x, z in ((68, 30), (100, 30), (115, 0), (135, 40), (165, 42), (211, 10)):
+    for x, z in ((68, 30), (100, 30), (115, 0), (135, 30), (165, 30), (202, 10)):
         assert is_inside(link, x, lo + 0.3, z) and not is_inside(link, x, lo - 0.3, z), f"underside at x {x}"
         assert is_inside(link, x, hi - 0.3, z) and not is_inside(link, x, hi + 0.3, z), f"top at x {x}"
-    y = (lo + hi) / 2.0
-    assert is_inside(link, 120, y, s.r - 0.3) and not is_inside(link, 120, y, s.r + 0.3)
-    assert is_inside(link, 70, y, -(s.r - 0.3)) and not is_inside(link, 70, y, -(s.r + 0.3))
+    y, w = (lo + hi) / 2.0, a.width / 2.0
+    assert is_inside(link, 120, y, w - 0.3) and not is_inside(link, 120, y, w + 0.3)
+    assert is_inside(link, 70, y, -(w - 0.3)) and not is_inside(link, 70, y, -(w + 0.3))
+    assert is_inside(link, s.elbow_x + a.end_r - 0.3, y, 0) and not is_inside(link, s.elbow_x + a.end_r + 0.3, y, 0)
+    assert not is_inside(link, s.elbow_x + 20.0, y, -(math.sqrt(a.end_r ** 2 - 20.0 ** 2) + 0.3))
     # the body's windows round the discs: the two either side of the arm's pillar solid, the others open (no collar)
     start = math.radians(hh.bolt_start_deg)
     r_win = (hh.bore_dia + hh.od) / 4.0
@@ -231,10 +234,11 @@ def test_default(link, legacy):
     r_floor = (e.recess_dia + e.bore_dia) / 4.0
     assert not is_inside(link, s.elbow_x, e.recess_y + SLIDE + 0.5, r_floor) and is_inside(link, s.elbow_x, e.recess_y + SLIDE - 0.5, r_floor)
     sl = DEFAULT.slots
-    for y in (-5 + SLIDE, sl.counterbore_y + SLIDE - 1.0):
+    for y in (e.relief_y - 1.0 + SLIDE, sl.counterbore_y + SLIDE - 1.0):
         assert is_inside(link, sl.stepped_x, y, -15.0) and is_inside(link, sl.stepped_x + 4.0, y, -15.0)
+    # no sockets (test_layout): where the cap's elbow-half ones were is outside the slimmed slab now
     for x, z in socket_points(LEGACY)[1]:
-        assert is_inside(link, x + dx, -23.0 + SLIDE, z)                              # no sockets
+        assert not is_inside(link, x + dx, -23.0 + SLIDE, z)
     # the elbow motor at the pad's x: its square hole through the slab, the slab beside it; the web across it (the
     # motor's face on its top, the pilot's hole, the NEMA 17 holes, the screws' head pockets in its underside - motor_plate_t
     # under their floors, the heads' height deep, as the drive's motor plate), its underside the slab's; the pad's tube gone
