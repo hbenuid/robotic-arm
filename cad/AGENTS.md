@@ -180,6 +180,11 @@ machines"; CI is the third machine: root `AGENTS.md` "CI").
   delete <id>`), so the hash gate passed, while each part rebuilt alone was right. `gen assemblies/arm.py --force`
   cleared it (and rewrote other STEPs' bytes: `inspect diff` read them as the same geometry). Right after it, `./cadtool
   cadgen inspect` on the arm still gave the old volume - `cadgen.read_step` of the file gave the new one.
+  It is not only an edit during a run: in a fresh worktree whose baseline `gen assemblies/arm.py` had returned (the arm
+  loaded from the shared cache) before `lib/upper_arm/` was edited, the next run of the arm still read `nothing ran`
+  (cold: the cache held its key) and kept the old STEP while `j1_link` alone rebuilt; `--force` cleared it. So after a
+  source edit, the arm's run must name what it rebuilt - `nothing ran` there is a stale arm: force it before the hash
+  gate.
 - Don't compare large STEP artifacts with `git diff`; compare source, `inspect` output and snapshots. A STEP edited
   (or deleted) by anything but its model comes back on the model's next run, byte for byte (`wrote …`).
 - A model run takes no options: `./cadtool gen` refuses any flag but its own `--force` (`CADGEN_ENGINE_MEMO=0`: every
