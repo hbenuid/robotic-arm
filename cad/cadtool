@@ -186,7 +186,7 @@ case "$cmd" in
     rc=0
     need_plugin
     ver="$(cadgen_version || true)"
-    pin="$(grep -o -m1 'cadgen==[0-9][0-9.]*' "$CAD_PLUGIN/skills/cad/SKILL.md" || true)"; pin="${pin#cadgen==}"
+    pin="$(grep -o -m1 'cadgen==[0-9][0-9.]*' "$CAD_PLUGIN/claude.mcp.json" || true)"; pin="${pin#cadgen==}"
     if [[ -n "$ver" && "$ver" == "$pin" ]]; then echo "cadgen $ver: the plugin's pin   ($CAD_PLUGIN)"
     else echo "cadgen ${ver:-?} in the venv, the plugin pins ${pin:-?}   ($CAD_PLUGIN): MISMATCH - docs/toolchain.md Pins"; rc=1; fi
     if uv run --frozen python -c "import OCP.gp" 2>/dev/null; then echo "kernel: OCP imports"
