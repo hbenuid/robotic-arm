@@ -7,7 +7,7 @@ readme = "README.md"
 # wheels are verified on 3.12, and cadgen (the text-to-cad runtime) needs >=3.11.
 requires-python = ">=3.11,<3.14"
 dependencies = [
-    # cadgen 0.8.2 requires build123d>=0.13.0,<0.14 and cadquery-ocp-novtk>=8.0,<8.1 (OCCT 8: it
+    # cadgen 0.8.3 requires build123d>=0.13.0,<0.14 and cadquery-ocp-novtk>=8.0,<8.1 (OCCT 8: it
     # imports OCP 8's collection and downcast names directly). The novtk pin freezes the kernel the
     # STEPs are built with (their bytes are deterministic per kernel, which the hash gate relies on;
     # build123d only asks for a range).
@@ -18,7 +18,7 @@ dependencies = [
     # The text-to-cad runtime (decorators, `cadgen` CLI, viewer, snapshots - playwright is a plain
     # dependency since 0.7.12). Same version as the installed text-to-cad@earthtojake plugin, whose
     # skills/cad/SKILL.md pins it: bump both together (`./cadtool doctor` checks).
-    "cadgen==0.8.2",
+    "cadgen==0.8.3",
     "numpy>=2.4.6",
 ]
 

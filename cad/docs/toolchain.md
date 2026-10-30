@@ -38,7 +38,7 @@ as a git note).
   `~/.local/state/cadgen/` on Linux, `~/Library/Application Support/cadgen/` on the Mac), which the processes cadtool
   does not start go by — the environment does not reach them. The stored answer is per machine: `telemetry` →
   `choice: off` in that file is the check. `test_tooling.py` holds both.
-- **build123d 0.13.0 / OCP 8.0.1 (OCCT 8)**: cadgen 0.8.2 requires `build123d>=0.13.0,<0.14` and
+- **build123d 0.13.0 / OCP 8.0.1 (OCCT 8)**: cadgen 0.8.3 requires `build123d>=0.13.0,<0.14` and
   `cadquery-ocp-novtk>=8.0,<8.1`; `pyproject.toml` pins the exact kernel (`cadquery-ocp-novtk==…`, the STEP bytes are
   per-kernel) and must never gain `cadquery-ocp`, the VTK build (see Gotchas below). OCCT 8.0.1's two known defects and
   what this repo checks for them: Gotchas below. On OCCT 7.8.1 some parts could not be read back from the BinTools
@@ -66,6 +66,10 @@ in a shell profile (it overrides the plugin detection).
   on import. Not as a `[tool.uv] compile-bytecode` setting: uv then re-checks every file of the venv on every `uv run`
   (0.3 s a command against 0.03 s, uv 0.13.4). A package a later `uv run` installs (after a pull) stays uncompiled
   until the next `./cadtool setup`.
+- `uv lock` on a uv older than the one that wrote `uv.lock` downgrades the file, not only the package it was asked to
+  move: uv 0.10.8 took `revision = 5` back to 3 and rewrote `marker`s on packages nothing touched. Reading it is fine
+  (`uv sync`, `./cadtool setup` and `--frozen` leave it alone), so on a machine that is behind, re-lock with a one-off
+  newer uv, `uvx uv@<ver> lock`: a bump's lock diff is cadgen's own entries and nothing else.
 - After `uv sync` changes cadgen / build123d / OCP, `./cadtool stop`: the engine's workers keep the old packages
   loaded. A source edit needs no restart — the next run picks it up and names it (`rebuilt: ../lib/assembly.py:
   label_text changed`).
