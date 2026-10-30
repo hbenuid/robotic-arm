@@ -184,7 +184,9 @@ machines"; CI is the third machine: root `AGENTS.md` "CI").
   loaded from the shared cache) before `lib/upper_arm/` was edited, the next run of the arm still read `nothing ran`
   (cold: the cache held its key) and kept the old STEP while `j1_link` alone rebuilt; `--force` cleared it. So after a
   source edit, the arm's run must name what it rebuilt - `nothing ran` there is a stale arm: force it before the hash
-  gate.
+  gate. Nor does it take a fresh worktree: on cadgen 0.8.3 and 0.8.4 a warm engine's arm read `nothing ran` through an
+  edit of `lib/yaw_coupler/params.py RIM_CLEAR`, a constant its module's `DEFAULT` is computed from, and its children's
+  STEPs stayed as they were, while `gen parts/base/j1_coupler.py` rebuilt the part and named the edit.
 - Don't compare large STEP artifacts with `git diff`; compare source, `inspect` output and snapshots. A STEP edited
   (or deleted) by anything but its model comes back on the model's next run, byte for byte (`wrote …`).
 - A model run takes no options: `./cadtool gen` refuses any flag but its own `--force` (`CADGEN_ENGINE_MEMO=0`: every

@@ -26,7 +26,7 @@ def pinned(package: str) -> str:
 
 
 def test_installed_cadgen_is_the_pinned_one():
-    # The plugin's skills/cad/SKILL.md carries the same pin; ./cadtool doctor checks that side.
+    # The plugin's claude.mcp.json carries the same pin; ./cadtool doctor checks that side.
     assert metadata.version("cadgen") == pinned("cadgen"), "run ./cadtool setup"
 
 

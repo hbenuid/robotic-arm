@@ -9,13 +9,16 @@ as a git note).
 - cadgen and the plugin (what each one is: `cad/AGENTS.md` "Running things"): `pyproject.toml` pins
   `cadgen==<ver>`; the `text-to-cad@earthtojake` plugin (`~/.claude/plugins/cache/earthtojake/text-to-cad/<ver>/`)
   pins the same cadgen version in one launch command, `uvx --no-config --managed-python --python 3.13 --from
-  cadgen==<ver>`, written into the `SKILL.md` of every skill that runs cadgen and into its MCP server `cad`
+  cadgen==<ver>`, written into the `references/setup.md` of every skill that runs cadgen (its `SKILL.md` names the
+  release as `cadgen +<ver>`) and into its MCP server `cad`
   (`claude.mcp.json`: that command + `cadgen mcp`, started by Claude Code with every session, in uv's cache on a
   uv-managed Python 3.13 — never this venv; `cad_show` takes a file's absolute path or a document id and answers with
   the page's link; `/mcp` turns it off). Bump both together; `./cadtool doctor` checks the pin (this venv's cadgen
-  against the `cadgen==<ver>` in the plugin's `skills/cad/SKILL.md`). `claude plugin install` / `update` take the
+  against the `cadgen==<ver>` in the plugin's `claude.mcp.json`). `claude plugin install` / `update` take the
   marketplace's newest release, so update the plugin WITH a bump here, not before: its skills describe the cadgen
-  they pin. The plugin's server asks `api.texttocad.dev` once a day for the latest release (one anonymous request;
+  they pin. Upstream can release again between a bump and its plugin update, and the plugin then lands ahead of the
+  pin: after `claude plugin marketplace update`, the clone's `VERSION` must be this pin - if it moved, bump again first.
+  The plugin's server asks `api.texttocad.dev` once a day for the latest release (one anonymous request;
   `CADGEN_UPDATE_CHECK=0` turns it off) and, while it is behind, shows an Update button in the viewer: here that
   update IS a bump (the pin with the plugin: "After a pull …" below), never the plugin alone. Up to 0.7.6 it was
   `cad@text-to-cad` (plugin `cad`, marketplace `text-to-cad`): a machine that still has that one switches once
@@ -38,7 +41,7 @@ as a git note).
   `~/.local/state/cadgen/` on Linux, `~/Library/Application Support/cadgen/` on the Mac), which the processes cadtool
   does not start go by — the environment does not reach them. The stored answer is per machine: `telemetry` →
   `choice: off` in that file is the check. `test_tooling.py` holds both.
-- **build123d 0.13.0 / OCP 8.0.1 (OCCT 8)**: cadgen 0.8.3 requires `build123d>=0.13.0,<0.14` and
+- **build123d 0.13.0 / OCP 8.0.1 (OCCT 8)**: cadgen 0.8.4 requires `build123d>=0.13.0,<0.14` and
   `cadquery-ocp-novtk>=8.0,<8.1`; `pyproject.toml` pins the exact kernel (`cadquery-ocp-novtk==…`, the STEP bytes are
   per-kernel) and must never gain `cadquery-ocp`, the VTK build (see Gotchas below). OCCT 8.0.1's two known defects and
   what this repo checks for them: Gotchas below. On OCCT 7.8.1 some parts could not be read back from the BinTools
@@ -51,8 +54,9 @@ as a git note).
 `./cadtool stop && ./cadtool setup` (it also (re)installs the ruff git pre-commit hook: a stub `.git/hooks/pre-commit`
 → the committed `.githooks/pre-commit`; makes `git fetch` bring the git notes, and stores cadgen's telemetry off: Pins,
 above — so run it before the plugin update, whose skills run cadgen outside cadtool),
-`claude plugin marketplace update earthtojake && claude plugin update text-to-cad@earthtojake` (each scope —
-`--scope project` too; `~/.claude/plugins/installed_plugins.json` must show the new version for every entry (a
+`claude plugin marketplace update earthtojake` (its clone's `VERSION` must be this pin: Pins, above), then from the repo
+root `claude plugin update text-to-cad@earthtojake --scope user` and `--scope project`
+(`~/.claude/plugins/installed_plugins.json` must show the new version for every entry (a
 session first started in `cad/` adds a third, which no `update` reaches: copy the new version into it by hand),
 `doctor` cannot tell — see Gotchas below; restart Claude Code), then `./cadtool doctor` must be clean. No `CAD_PLUGIN`
 in a shell profile (it overrides the plugin detection).
@@ -119,6 +123,12 @@ in a shell profile (it overrides the plugin detection).
   the machine's installation of its version (`installations/<ver>.json` in cadgen's state directory — the record the
   `cadgen` command, `~/.local/bin/cadgen`, and the plugin's skills run by) and starts that environment's engine; a
   worktree's venv registered there goes with the worktree. The plugin's server registers its own as it starts.
+- Never run `cadgen setup` / `update` / `uninstall` here (`./cadtool cadgen` would pass them straight on), nor the
+  `curl … install.sh | sh` line upstream's README leads with, which is `cadgen setup`: nothing asks, it takes every
+  agent app on the machine to the newest release whatever `pyproject.toml` pins, and registers the installation it runs
+  in as `cadgen doctor` does. Its `--dry-run` changes nothing (on 0.8.4 here it planned removing and re-adding the
+  `earthtojake` marketplace, reinstalling the plugin and copying the skills into `~/.copilot`). The plugin moves only
+  with a bump, by the steps of "After a pull …".
 - `./cadtool doctor` never reads `~/.claude/plugins/installed_plugins.json`: `plugin_dir()` pairs the venv's cadgen
   version with the plugin cache directory of the same name, so after `uv sync` to a new cadgen it reports the pin as
   matching while the plugin may still be INSTALLED at the old version (the new cache directory exists once one scope
@@ -127,7 +137,9 @@ in a shell profile (it overrides the plugin detection).
   on a branch that bumps the pin before the plugin update `doctor` warns `no plugin cache for cadgen <ver>` and reports
   a pin MISMATCH against the old one: `CAD_PLUGIN=~/.claude/plugins/marketplaces/earthtojake ./cadtool doctor` checks
   the new pin against that clone. Update the plugin in BOTH
-  scopes (`claude plugin update text-to-cad@earthtojake`, then `--scope project`), check that file shows the new `version` +
+  scopes, naming each (`claude plugin update text-to-cad@earthtojake --scope user`, then `--scope project`: with no
+  `--scope` it auto-detects one - from the repo root, the project's, leaving the user entry behind), check that file
+  shows the new `version` +
   `installPath` for each, and restart Claude Code (its first start after an update fetches the server's new cadgen;
   on a slow connection start once with `MCP_TIMEOUT=300000 claude`). A session first started in `cad/` records a third
   entry (project scope, `projectPath` = `cad/`) that no `update` reaches: run from `cad/`, `update --scope project`
