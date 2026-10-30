@@ -72,7 +72,7 @@ wheels = [
 
 [[package]]
 name = "cadgen"
-version = "0.8.2"
+version = "0.8.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bd-materials" },
@@ -86,9 +86,9 @@ dependencies = [
     { name = "shapely" },
     { name = "threejs-materials" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a3/94/486357789669140a9f9d7227dde4ebba586f63a178cefece914ae4b43ab6/cadgen-0.8.2.tar.gz", hash = "sha256:198e04ba944866aa1d3bd377492bb42e0e4e9721f7345ba5c455a7507e78f28a", size = 4643479, upload-time = "2026-10-28T18:13:33.394Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3b/7d/61ce81d48d0485ca169fc94a155e8de2b7fb05f8a17a4f828d1a6cd60445/cadgen-0.8.3.tar.gz", hash = "sha256:bf77261ee3ee2c98d13fa0d0e3979228177860b5e9bc421aede1f67dfb253a1e", size = 4642986, upload-time = "2026-10-30T05:11:51.899Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a3/ea/238bef28921b4f3624f07c17b6729457c5202b1b8e1deca4b1a9a95448ce/cadgen-0.8.2-py3-none-any.whl", hash = "sha256:f81111a46b5788e0dbcab3835433a37723ed508f55f5c3ba812e6c3e21e390f2", size = 4721845, upload-time = "2026-10-28T18:13:30.736Z" },
+    { url = "https://files.pythonhosted.org/packages/3d/c1/f6dcb7f87ca8f77f77de60eafbbea11654140ce52ef26078524cee91fb3d/cadgen-0.8.3-py3-none-any.whl", hash = "sha256:24fe9b9fced1a327e4b06c1170ac91618e00a1dcfc306915b7c5b444c047e8fd", size = 4719734, upload-time = "2026-10-30T05:11:49.538Z" },
 ]
 
 [[package]]
@@ -1123,7 +1123,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "build123d", specifier = "==0.13.0" },
-    { name = "cadgen", specifier = "==0.8.2" },
+    { name = "cadgen", specifier = "==0.8.3" },
     { name = "cadquery-ocp-novtk", specifier = "==8.0.1.1.0" },
     { name = "numpy", specifier = ">=2.4.6" },
 ]
