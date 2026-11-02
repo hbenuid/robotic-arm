@@ -3,9 +3,9 @@ name = "robotic-arm-cad"
 version = "0.1.0"
 description = "Parametric build123d CAD for the desktop robotic arm (converted from SolidWorks STEP exports)."
 readme = "README.md"
-# The venv is pinned to 3.12 (.python-version): the system Python is 3.14, the OCP
-# wheels are verified on 3.12, and cadgen (the text-to-cad runtime) needs >=3.11.
-requires-python = ">=3.11,<3.14"
+# The venv is pinned to 3.14 (.python-version), a uv-managed Python on every machine ([tool.uv] below),
+# and build123d and the OCP wheels allow no newer one.
+requires-python = ">=3.14,<3.15"
 dependencies = [
     # cadgen 0.8.4 requires build123d>=0.13.0,<0.14 and cadquery-ocp-novtk>=8.0,<8.1 (OCCT 8: it
     # imports OCP 8's collection and downcast names directly). The novtk pin freezes the kernel the
@@ -28,6 +28,10 @@ dev = [
     "pytest-xdist>=3.8.0",
     "ruff>=0.16.9",
 ]
+
+[tool.uv]
+# The same interpreter build on the PC, the Mac and CI, never the system's (Fedora's /usr/bin/python3.14 otherwise).
+python-preference = "only-managed"
 
 [tool.pytest.ini_options]
 # rootdir is cad/; put it on sys.path so `import parts` / `from lib ...` resolve
