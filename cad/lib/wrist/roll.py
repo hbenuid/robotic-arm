@@ -9,7 +9,7 @@ import math
 import build123d as bd
 
 from lib.datum import to_location
-from lib.geom import box, cylinder, nut_slot, single_solid, slot_y, stop_wedge
+from lib.geom import box, chamfer_outline, cylinder, faceted_end, nut_slot, single_solid, slot_y, stop_wedge
 from lib.pulley.teeth import gt2_ring
 from lib.units import NUDGE
 from lib.wrist.layout import (
@@ -33,12 +33,13 @@ def module_to_host(cfg: WristConfig = DEFAULT) -> bd.Location:
 
 
 def profile(cfg: WristConfig = DEFAULT):
-    """The frame's outline seen along R', as (module x, module y): the hull of a circle about R' (frame_r - the open +X
-    face and the tower's far side) and the pocket's box with its far wall (frame_y_span: on the motor's side of R'), from
-    the plate's coupler face (x_coupler: the frame runs down through the plate) up."""
+    """The frame's outline seen along R', as (module x, module y): the hull of a faceted end about R' (lib/geom.py
+    faceted_end, flats frame_r off it - the open +X face and the tower's far side) and the pocket's box with its far wall
+    (frame_y_span: on the motor's side of R'), from the plate's coupler face (x_coupler: the frame runs down through the
+    plate) up."""
     d, S = cfg.roll, stack_positions(cfg)
     y_far = frame_y_span(cfg)[0 if d.side > 0 else 1]
-    tower = bd.Circle(d.frame_r)
+    tower = faceted_end(d.frame_r)
     side = bd.Pos((S["x_coupler"] + d.frame_r) / 2.0, y_far / 2.0) * bd.Rectangle(d.frame_r - S["x_coupler"], abs(y_far))
     hull = bd.make_hull((tower + side).edges())
     above = bd.Pos(S["x_coupler"], 0.0) * bd.Rectangle(4.0 * d.frame_r, 4.0 * abs(y_far), align=(bd.Align.MIN, bd.Align.CENTER))
@@ -55,8 +56,9 @@ def build_frame(cfg: WristConfig = DEFAULT):
     d, S = cfg.roll, stack_positions(cfg)
     outline = profile(cfg)
     y0, y1, z0, z1 = motor_pocket(cfg)
-    # the profile from the frame's rear (the tower's: what the wrist pitch's lower limit first meets) to the front face
-    body = bd.extrude(bd.Pos(0.0, 0.0, S["z_rear"]) * outline, amount=S["z_front"] - S["z_rear"])
+    # the profile from the frame's rear (the tower's: what the wrist pitch's lower limit first meets) to the front face,
+    # the outline of both chamfered (lib/style.py EDGE_CHAMFER)
+    body = chamfer_outline(bd.extrude(bd.Pos(0.0, 0.0, S["z_rear"]) * outline, amount=S["z_front"] - S["z_rear"]), (0.0, 0.0, 1.0))
     body = body + cylinder(d.bearing_boss_dia / 2.0, S["z_boss"] - S["z_front"] + 1.0, z0=S["z_front"] - 1.0)
     # the pocket, from the free face out through the open face; the plate in front of it; behind it the board's window,
     # out through the frame's rear (no wall behind the pancake: the board on its rear face stands 11 proud of the frame)

@@ -15,7 +15,7 @@ on the roll axis) - the NEMA 17 pattern's M3 and the bracket's M4, drilled throu
 SolidWorks through-all: the z 6.5 pair score the plate's top).
 
 Two configurations: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
-tests/test_reference_match.py); DEFAULT is what the part builds: the plate's round end on the pitch axis with its
+tests/test_reference_match.py); DEFAULT is what the part builds: the plate's faceted end on the pitch axis with its
 seat, and on its underside (the free face, away from the forearm) the wrist roll drive's frame - the pancake ON the
 pitch axis, the roll axis R' beside it (WristRollParams; docs/wrist_roll.md); the tower, its end face and the bracket
 are gone (lib/placements.py SHIFTS moves the gripper onto R').
@@ -41,7 +41,7 @@ class PlateParams:
 
     thickness: float = 5.0
     pitch_x: float = -45.445774        # the wrist_pitch axis (x, 0), j3_coupler#2's
-    pitch_r: float = 39.000699         # the round end on it
+    pitch_r: float = 39.000699         # the round end on it (DEFAULT's faceted end: its flats this far off the axis)
     half_width: float = 39.0
 
 

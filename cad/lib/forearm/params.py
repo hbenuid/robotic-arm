@@ -31,13 +31,14 @@ from lib.belts import GT2_PULLEY_90T_FACE_Y
 from lib.cycloidal.params import MotorParams, PETGTolerances
 from lib.fasteners import M3_CLEAR, M3_NUT, M3_SHCS, M4_CLEAR, M4_NUT, M5_CLEAR, M5_NUT, M5_SHCS, NutSize, ShcsSize
 from lib.motors import MKS_SERVO42D_STACK, MKS_SERVO42D_W, MOTOR_40, NEMA17_BOLT_SP
-from lib.style import SIDES
+from lib.pulley.params import DEFAULT as PULLEY_90T
+from lib.style import COVER_CLEAR, COVER_WALL, SIDES
 
 
 @dataclass(frozen=True)
 class WebParams:
     """The 11 mm web: a stadium between the two pivots (r = half_w at both ends); with the roll joint, straight from the
-    wall to its round wrist end."""
+    wall to its faceted wrist end."""
 
     z0: float = 8.0            # bottom face (the belt side)
     z1: float = 19.0           # top face (the motor's mounting face - lib/params.py J2_MOTOR_WEB_FACE_Z)
@@ -116,8 +117,8 @@ class RollEndParams:
     and the spigot into nuts in the pulley's core (the bottom one's head just over the web's top face); the cables pass
     through the bore. The wall stands 48 mm
     along the roll axis from the elbow axis' station (and ForearmConfig.elbow_offset across from it): whatever the
-    forearm's roll angle, it clears the upper arm's round end (lib/upper_arm/params.py ArmParams.end_r). It is a
-    round flange about the roll axis on a foot as wide as itself and the web (WebParams.half_w), the web's underside
+    forearm's roll angle, it clears the upper arm's faceted end (lib/upper_arm/params.py ArmParams.end_r). It is a
+    faceted flange about the roll axis (flats wall_od / 2 off it) on a foot as wide as the web (WebParams.half_w), the web's underside
     level with its round bottom (DEFAULT: WEB_DROP), whole all round where the pulley's ring bears on it; its elbow-side
     band cut back to relief_r about the roll axis, round the roll tensioner's screw head; braced by two gussets on the
     web's top face, either side of the wrist motor.
@@ -282,7 +283,7 @@ class RollDriveParams:
     pressed on its own piece's journal from its own end). The roll motor sits ON the elbow axis, the roll axis
     centre_distance above it (= the arm's elbow offset, ForearmConfig.elbow_offset): the stock roll belt round the motor's
     20T and the ring, an idler on its back on the frame's face taking up the rest (RollIdlerParams). The frame is
-    one body round the motor: seen along the elbow axis an octagon about it (end_r, its flats round the upper arm's round end)
+    one body round the motor: seen along the elbow axis an octagon about it (end_r, its flats round the upper arm's faceted end)
     hulled up to the tower round the roll axis, straight-sided, extruded from its underside (block_x[0], the elbow flange's - its underside repeats
     the SolidWorks j3_coupler's lip / boss / journal / stub into j1_link's bore, the elbow 90T bolts straight into it) to
     its side (+N) face, closed; the motor in a pocket open down through the octagon's bottom (it slides up into it; a
@@ -495,10 +496,12 @@ _ROLL_END = RollEndParams()
 # the roll axis, the wall's face that hung below the web gone, the wall's bottom screw's head over the web's top face
 # (lib/placements.py SHIFTS drops the wrist and what lies beyond)
 WEB_DROP = LEGACY.web.z0 - (_ROLL_END.axis_z - _ROLL_END.wall_od / 2.0)   # 13
+# [DESIGN] the web as wide as its belt cover's end (docs/design_language.md "Belts are covered"): round the wrist's 90T
+# (lib/pulley DEFAULT flange_dia), turning inside it, COVER_CLEAR and COVER_WALL - 34.1 (the wall's flange 30)
 _WEB = replace(LEGACY.web, wrist_x=LEGACY.web.wrist_x + SHORTENING,
-               half_w=_ROLL_END.wall_od / 2.0,          # [DESIGN] straight from the wall, as wide as it, no taper
+               half_w=round(PULLEY_90T.flange_dia / 2.0 + COVER_CLEAR + COVER_WALL, 6),   # straight from the wall, no taper
                z0=LEGACY.web.z0 - WEB_DROP, z1=LEGACY.web.z1 - WEB_DROP)
-_BOSS = replace(LEGACY.boss, dia=2.0 * _WEB.half_w,       # [DESIGN] as wide as the web: its round wrist end
+_BOSS = replace(LEGACY.boss, dia=2.0 * _WEB.half_w,       # [DESIGN] as wide as the web: its faceted wrist end
                 z1=LEGACY.boss.seat_z1 - WEB_DROP,        # [DESIGN] the bearing seat's top: j3_coupler#2's dust lip turns 0.5 over it,
                 recess_dia=None,                          #          its Ø78 flange 4.5 - no recess for either
                 seat_z1=LEGACY.boss.seat_z1 - WEB_DROP,   # the seat and its lip dropped with the web

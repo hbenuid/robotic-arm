@@ -16,7 +16,17 @@ from lib.forearm.layout import (
     wrist_idler_xy,
 )
 from lib.forearm.params import DEFAULT, ForearmConfig
-from lib.geom import align_min, cylinder, hex_circumdiameter, hex_prism, single_solid, through
+from lib.geom import (
+    align_min,
+    chamfer_outline,
+    cylinder,
+    faceted_end,
+    hex_circumdiameter,
+    hex_prism,
+    single_solid,
+    through,
+)
+from lib.style import EDGE_CHAMFER
 from lib.units import NUDGE
 
 
@@ -42,10 +52,13 @@ def yz_prism(face, x0: float, x1: float):
 
 
 def wall_outline(cfg: ForearmConfig = DEFAULT):
-    """The flange wall's outline, a face in (y, z): the hull of its round flange about the roll axis and its foot (the
-    web's end section)."""
+    """The flange wall's outline, a face in (y, z): the hull of its flange about the roll axis - faceted (lib/geom.py
+    faceted_end: flats wall_od / 2 off it) with the roll joint, round on LEGACY - and its foot (the web's end section)."""
     r, w = cfg.roll_end, cfg.web
-    flange = bd.Pos(0.0, r.axis_z) * bd.Circle(r.wall_od / 2.0)
+    if cfg.roll:
+        flange = faceted_end(r.wall_od / 2.0, (0.0, r.axis_z))
+    else:
+        flange = bd.Pos(0.0, r.axis_z) * bd.Circle(r.wall_od / 2.0)
     foot = bd.Pos(0.0, (w.z0 + w.z1) / 2.0) * bd.Rectangle(2.0 * w.half_w, w.thickness)
     return bd.make_hull((flange + foot).edges())
 
@@ -69,11 +82,21 @@ def roll_wall(cfg: ForearmConfig = DEFAULT):
 
 def straight_web(cfg: ForearmConfig = DEFAULT):
     """The web with the roll joint: straight from the wall's wrist face to the wrist pivot, half_w either side, its
-    wrist end round."""
+    wrist end faceted (lib/geom.py faceted_end: flats half_w off the pivot), the outline of both faces chamfered - run
+    EDGE_CHAMFER on into the wall (short of its relief band), so the chamfer round its end there is buried in it."""
     w = cfg.web
-    x_end = elbow_end_x(cfg)
-    web = slab(x_end - w.wrist_x, 2.0 * w.half_w, w.thickness, (x_end + w.wrist_x) / 2.0, w.z0)
-    return web + cylinder(w.half_w, w.thickness, (w.wrist_x, 0.0), z0=w.z0)
+    x_end = elbow_end_x(cfg) + EDGE_CHAMFER
+    rect = bd.Pos((x_end + w.wrist_x) / 2.0, 0.0) * bd.Rectangle(x_end - w.wrist_x, 2.0 * w.half_w)
+    plan = (rect + faceted_end(w.half_w, (w.wrist_x, 0.0))).face()
+    return chamfer_outline(bd.Pos(0.0, 0.0, w.z0) * bd.extrude(plan, amount=w.thickness), (0.0, 0.0, 1.0))
+
+
+def wrist_boss(cfg: ForearmConfig = DEFAULT):
+    """The wrist boss over the web, as wide as it: faceted about the pivot like the web's end, from the web's
+    underside up to its top (boss.z1), its top's outline chamfered (the web's chamfer takes the underside's)."""
+    w, b = cfg.web, cfg.boss
+    boss = bd.Pos(0.0, 0.0, w.z0) * bd.extrude(faceted_end(b.dia / 2.0, (w.wrist_x, 0.0)), amount=b.z1 - w.z0)
+    return chamfer_outline(boss, (0.0, 0.0, 1.0))
 
 
 def wall_gussets(cfg: ForearmConfig = DEFAULT):
@@ -138,7 +161,7 @@ def build_link(cfg: ForearmConfig = DEFAULT):
         # the web: a stadium from the elbow pivot to the wrist pivot; the elbow disc under it
         body = stadium(abs(w.wrist_x), 2.0 * w.half_w, w.thickness, w.wrist_x / 2.0, w.z0)
         body = body + cylinder(d.dia / 2.0, d.z1 - d.z0, z0=d.z0)
-    body = body + cylinder(b.dia / 2.0, b.z1 - w.z0, (w.wrist_x, 0.0), z0=w.z0)
+    body = body + (wrist_boss(cfg) if cfg.roll else cylinder(b.dia / 2.0, b.z1 - w.z0, (w.wrist_x, 0.0), z0=w.z0))
     if not cfg.roll:
         # the elbow interface (the disc's bore and bolts run through the web too)
         body = body - through(d.bore_dia / 2.0, d.z1 - d.z0, z0=d.z0)

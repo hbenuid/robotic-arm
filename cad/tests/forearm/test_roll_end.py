@@ -1,10 +1,11 @@
-"""The DEFAULT forearm - the roll end: the flange wall replaces the elbow disc (a round flange on the roll axis on a
+"""The DEFAULT forearm - the roll end: the flange wall replaces the elbow disc (a faceted flange on the roll axis on a
 foot as wide as the straight web, whole all round under the roll pulley's ring, its elbow-side band cut back round the
 roll tensioner's screw head, braced by two gussets beside the wrist motor), the web and the boss WEB_DROP toward the belt
-side - the web's underside level with the wall's round bottom, every wall screw's head over the web -, the wrist-pitch
+side - the web's underside level with the wall's bottom flat, every wall screw's head over the web -, the web as wide as
+its belt cover's end round the wrist's 90T (docs/design_language.md), the wrist-pitch
 motor sits on round holes WRIST_MOTOR_CENTRES from the wrist, clears the wall's screw heads and has its plug's room
-beside it, the wrist end SHORTENING nearer the elbow - the SolidWorks bearing seat in a boss as wide as the web, ending
-at the seat's top under j3_coupler -, the removed caps' sockets are gone."""
+beside it, the wrist end SHORTENING nearer the elbow - the SolidWorks bearing seat in a faceted boss as wide as the web,
+ending at the seat's top under j3_coupler -, the removed caps' sockets are gone."""
 import math
 from dataclasses import replace
 
@@ -16,7 +17,7 @@ from lib import params as PARAMS
 from lib.belts import GT2_IDLER_WIDTH, GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, closed_belt_length
 from lib.datum import to_location
 from lib.forearm import DEFAULT, LEGACY, flange_bolt_points, link_socket_points, screws_under_the_web
-from lib.forearm.params import SHORTENING, WEB_DROP, WRIST_MOTOR_CENTRES, RollEndParams
+from lib.forearm.params import PULLEY_90T, SHORTENING, WEB_DROP, WRIST_MOTOR_CENTRES, RollEndParams
 from lib.motors import (
     MKS_SERVO42D_W,
     NEMA17_40_BODY_W,
@@ -25,6 +26,7 @@ from lib.motors import (
     NEMA17_40_CONNECTOR_Z0,
     NEMA17_40_CONNECTOR_Z1,
 )
+from lib.style import COVER_CLEAR, COVER_WALL
 from tests import built
 from tests.forearm.helpers import in_host
 from tests.helpers import interference, is_inside
@@ -35,8 +37,11 @@ R = DEFAULT.roll_end
 def test_default_layout():
     assert DEFAULT.roll and not LEGACY.roll
     lw = LEGACY.web
-    assert DEFAULT.web == replace(lw, wrist_x=lw.wrist_x + SHORTENING, half_w=R.wall_od / 2.0, z0=lw.z0 - WEB_DROP,
+    assert DEFAULT.web == replace(lw, wrist_x=lw.wrist_x + SHORTENING, half_w=DEFAULT.web.half_w, z0=lw.z0 - WEB_DROP,
                                   z1=lw.z1 - WEB_DROP) and SHORTENING > 0.0
+    # as wide as its belt cover's end: the wrist's 90T turning inside it, COVER_CLEAR off it, inside COVER_WALL
+    assert DEFAULT.web.half_w == pytest.approx(PULLEY_90T.flange_dia / 2.0 + COVER_CLEAR + COVER_WALL, abs=1e-6)
+    assert DEFAULT.web.half_w > R.wall_od / 2.0
     # the web dropped toward its belt side until its underside is level with the wall's round bottom, the wrist belt
     # with it
     assert DEFAULT.web.z0 == R.axis_z - R.wall_od / 2.0 and WEB_DROP > 0.0 and DEFAULT.web.thickness == lw.thickness
@@ -83,16 +88,17 @@ def test_the_wall_relief_clears_the_roll_tensioners_screw():
 
 
 def test_the_straight_web_the_wall_and_its_gussets():
-    """The web runs straight from the wall to its round wrist end, as wide as the wall's round flange - over the recess
-    with room to spare, and over the roll pulley's ring it bolts onto, all round - and the wall's foot; the gussets stand
-    beside the wrist motor and its board, inside the web."""
+    """The web runs straight from the wall to its faceted wrist end, wider than the wall's faceted flange (the flange
+    over the recess with room to spare, and over the roll pulley's ring it bolts onto, all round) - the wall's foot as
+    wide as the web -; the gussets stand beside the wrist motor and its board, inside the web."""
     D, w, h = DEFAULT.drive, DEFAULT.web, DEFAULT.holes
-    assert w.half_w == R.wall_od / 2.0 == DEFAULT.boss.dia / 2.0 and PARAMS.FOREARM_WALL_OD == R.wall_od
+    assert w.half_w == DEFAULT.boss.dia / 2.0 > R.wall_od / 2.0 and PARAMS.FOREARM_WALL_OD == R.wall_od
     assert R.wall_od / 2.0 >= (R.flange_dia + R.flange_recess_add) / 2.0 + 8.0
     assert R.wall_od >= D.ring_flange_dia
     # the motor's footprint on the web: its body and its bolt holes 3 mm inside the web's sides
     assert w.half_w >= NEMA17_40_BODY_W / 2.0 + 3.0 and w.half_w >= h.bolt_half + h.bolt_dia / 2.0 + 3.0
-    # the gussets: outside the motor's body and board, inside the web, rooted on the wall; the round outline tops them
+    # the gussets: outside the motor's body and board, inside the web, rooted on the wall; the outline tops them (its
+    # facets outside the flange's circle, which bounds them here)
     assert R.rib_y[0] >= max(NEMA17_40_BODY_W, MKS_SERVO42D_W) / 2.0 + 2.0 and R.rib_y[1] <= w.half_w
     assert w.z1 + R.rib_h <= R.axis_z + math.sqrt((R.wall_od / 2.0) ** 2 - R.rib_y[0] ** 2)
 
@@ -108,12 +114,12 @@ def test_link_ends_at_the_wall_and_at_its_wrist_boss(link):
     assert link.is_valid and len(link.solids()) == 1
     bb = link.bounding_box()
     assert math.isclose(bb.max.X, R.wall_x[1], abs_tol=1e-6) and math.isclose(bb.min.X, w.wrist_x - w.half_w, abs_tol=1e-6)
-    # lowest: the wrist idler's rib (from the idler's top face up to the web), under the wall's round bottom
+    # lowest: the wrist idler's rib (from the idler's top face up to the web), under the wall's bottom flat
     z_rib = R.wrist_belt_z + GT2_IDLER_WIDTH / 2.0
     assert math.isclose(bb.min.Z, z_rib, abs_tol=1e-6) and z_rib < R.axis_z - R.wall_od / 2.0
     assert math.isclose(bb.max.Z, R.axis_z + R.wall_od / 2.0, abs_tol=1e-6)
     assert math.isclose(bb.max.Y, w.half_w, abs_tol=1e-6) and math.isclose(bb.min.Y, -w.half_w, abs_tol=1e-6)
-    # the wrist end: round, as wide as the web; the boss's top the seat's top; the seat below and above the lip
+    # the wrist end: faceted, as wide as the web (its end, diagonal and side flats); the boss's top the seat's top; the seat below and above the lip
     wx, zm = w.wrist_x, (w.z0 + w.z1) / 2.0
     for dx, dy in ((-1.0, 0.0), (-math.sqrt(0.5), math.sqrt(0.5)), (0.0, -1.0)):
         assert is_inside(link, wx + dx * (w.half_w - 0.3), dy * (w.half_w - 0.3), zm)
