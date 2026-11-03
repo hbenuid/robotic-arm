@@ -36,6 +36,7 @@ from lib.forearm import (
     stack_positions,
 )
 from lib.forearm.roll import rear_line
+from lib.style import EDGE_CHAMFER
 from robot import frames as F
 from tests import built
 from tests.forearm.helpers import in_drive_frame, j2_link_in_drive_frame
@@ -360,18 +361,22 @@ def test_frame_features(module):
     # the octagonal end about the elbow axis: a flat on each axis end_r off it (round j1_link's round end) behind the motor's
     # pocket, nothing past it; the end's two corners between them, end_r / cos(180 / end_sides) out; nothing behind the
     # rear line (roll.py rear_line, the elbow motor's board's nearest at the elbow's lower limit: tests below) - probed in
-    # the side wall's skin, beside the pocket's opening through the bottom and outside the plug's groove
-    ye, xw = S["y_elbow"], D.block_x[1] - 0.5
-    assert is_inside(block, xw, ye, -(D.end_r - 2.0)) and not is_inside(block, xw, ye, -(D.end_r + 1.0))
-    assert is_inside(block, xw, ye - (D.end_r - 2.0), 0.0) and not is_inside(block, xw, ye - (D.end_r + 1.0), 0.0)
+    # the side wall's skin, beside the pocket's opening through the bottom and outside the plug's groove, the points inside
+    # at least `inner` in from the outline: past its chamfer (lib/style.py EDGE_CHAMFER)
+    ye, xw, inner = S["y_elbow"], D.block_x[1] - 0.5, EDGE_CHAMFER + 0.5
+    assert is_inside(block, xw, ye, -(D.end_r - inner)) and not is_inside(block, xw, ye, -(D.end_r + 1.0))
+    assert is_inside(block, xw, ye - (D.end_r - inner), 0.0) and not is_inside(block, xw, ye - (D.end_r + 1.0), 0.0)
     corner = D.end_r / math.cos(math.pi / D.end_sides)
     for deg in (180.0 - 180.0 / D.end_sides, 180.0 + 180.0 / D.end_sides):
         u, v = math.cos(math.radians(deg)), math.sin(math.radians(deg))
-        assert is_inside(block, xw, ye + (corner - 1.0) * u, (corner - 1.0) * v)
+        assert is_inside(block, xw, ye + (corner - inner) * u, (corner - inner) * v)
         assert not is_inside(block, xw, ye + (corner + 0.5) * u, (corner + 0.5) * v)
     (nu, nv), dist = rear_line(DEFAULT)
-    assert is_inside(block, xw, ye + (dist - 1.0) * nu, (dist - 1.0) * nv)
+    assert is_inside(block, xw, ye + (dist - inner) * nu, (dist - inner) * nv)
     assert not is_inside(block, xw, ye + (dist + 0.5) * nu, (dist + 0.5) * nv)
+    # the chamfer itself: the side face's outline cut back at 45 deg - none on the flat's edge, material a chamfer in
+    assert not is_inside(block, D.block_x[1] - 0.3, ye - (D.end_r - 0.3), 0.0)
+    assert is_inside(block, D.block_x[1] - 0.3, ye - (D.end_r - EDGE_CHAMFER), 0.0)
     bb = block.bounding_box()
     assert math.isclose(bb.min.Y, ye - D.end_r, abs_tol=0.01) and math.isclose(bb.min.Z, -D.end_r, abs_tol=0.01)
     # the motor's pocket: the floor and the side wall either side of it - the side face closed -, the space, open down

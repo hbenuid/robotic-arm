@@ -14,7 +14,7 @@ import build123d as bd
 from lib.cycloidal import DEFAULT_CONFIG as DRIVE
 from lib.cycloidal.housing import build_shell_body, housing_bolt_cutters
 from lib.forearm.link import stadium, x_cylinder
-from lib.geom import align_min, cylinder, hex_circumdiameter, single_solid, through
+from lib.geom import align_min, chamfer_outline, cylinder, faceted_end, hex_circumdiameter, single_solid, through
 from lib.units import NUDGE
 from lib.upper_arm.layout import (
     arm_slide,
@@ -138,27 +138,27 @@ def _pad(cfg: UpperArmConfig):
 
 def _outline(cfg: UpperArmConfig):
     """The slab's plan (ArmParams width, end_r, bend_r), a face in the working XY plane (part x, -z: symmetric about the
-    link's centreline): `width` across from the shoulder axis, into the round end about the elbow axis - on to
-    slab_taper_x() and straight onto a narrower end (the hull of the two), or flaring into a wider one -, the corner where
-    the two meet rounded to bend_r; an end as wide as the slab gives the plate's stadium."""
+    link's centreline): `width` across from the shoulder axis, into the faceted end about the elbow axis (lib/geom.py
+    faceted_end: flats end_r off it) - on to slab_taper_x() and straight onto a narrower end (the hull of the two, the
+    bend sharp like the facets), or flaring into a wider one through bend_r fillets -; an end as wide as the slab runs
+    straight into it."""
     a, x = cfg.arm, cfg.slab.elbow_x
     w, r = a.width / 2.0, a.end_r
-    end = bd.Pos(x, 0.0) * bd.Circle(r)
+    end = faceted_end(r, (x, 0.0))
     if math.isclose(w, r):
-        return (bd.Pos(x / 2.0, 0.0) * bd.SlotCenterToCenter(x, 2.0 * r)).face()
+        return (bd.Pos(x / 2.0, 0.0) * bd.Rectangle(x, 2.0 * w) + end).face()
     if r < w:
         x_bend = slab_taper_x(cfg)
-        face = bd.make_hull((bd.Pos(x_bend / 2.0, 0.0) * bd.Rectangle(x_bend, 2.0 * w)).edges() + end.edges())
-    else:
-        x_bend = x - math.sqrt(r * r - w * w)
-        face = (bd.Pos(x / 2.0, 0.0) * bd.Rectangle(x, 2.0 * w) + end).face()
-    bends = [v for v in face.vertices() if abs(bd.Vector(v).X - x_bend) < 0.5 and abs(abs(bd.Vector(v).Y) - w) < 0.5]
+        return bd.make_hull((bd.Pos(x_bend / 2.0, 0.0) * bd.Rectangle(x_bend, 2.0 * w)).edges() + end.edges())
+    face = (bd.Pos(x / 2.0, 0.0) * bd.Rectangle(x, 2.0 * w) + end).face()
+    bends = [v for v in face.vertices() if abs(abs(bd.Vector(v).Y) - w) < 0.5 and bd.Vector(v).X > 0.5]
     return bd.fillet(bends, a.bend_r).face()
 
 
 def _slab(cfg: UpperArmConfig):
     """The arm rising off the drive's shell (ArmParams), in the unslid plate's frame: one flat slab of its outline
-    (_outline) from the elbow half's underside up to the relief's floor, end to end; the stepped slot (with an idler:
+    (_outline) from the elbow half's underside up to the relief's floor, end to end, the outline of both faces
+    chamfered (lib/geom.py chamfer_outline); the stepped slot (with an idler:
     the idler's slots in its place) and the elbow bearing stack; the
     elbow motor's square hole through it about the pad's axis, a web left across the hole, flush with the slab's
     underside, up to the motor's face (y_outer once slid) with the hole for its pilot and its 4 holes (PadParams.holes):
@@ -166,7 +166,7 @@ def _slab(cfg: UpperArmConfig):
     motor_pocket_dia)."""
     e, a, px = cfg.elbow, cfg.arm, cfg.pad.x
     top = e.relief_y + NUDGE
-    body = bd.Pos(0.0, 0.0, e.y0) * bd.extrude(_outline(cfg), amount=e.relief_y - e.y0)
+    body = chamfer_outline(bd.Pos(0.0, 0.0, e.y0) * bd.extrude(_outline(cfg), amount=e.relief_y - e.y0), (0.0, 0.0, 1.0))
     body = _cut_stepped_slot(body, cfg, top) if cfg.idler is None else _cut_idler_slots(body, cfg, top)
     body = _cut_elbow_stack(body, cfg, top)
     hh, t, head = a.motor_hole_half, a.motor_plate_t, a.motor_screw.head_h

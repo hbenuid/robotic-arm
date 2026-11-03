@@ -5,6 +5,7 @@ import math
 
 import build123d as bd
 
+from lib import style
 from lib.units import NUDGE  # not lib.params: that module imports lib.cycloidal.params (no import back up)
 
 
@@ -30,6 +31,21 @@ def single_solid(shape: bd.Shape) -> bd.Solid:
     if len(solids) != 1:
         raise ValueError(f"expected exactly one solid, got {len(solids)}")
     return solids[0]
+
+
+def faceted_end(apothem: float, centre=(0.0, 0.0), sides: int = style.SIDES):
+    """The design language's faceted end (lib/style.py SIDES): a regular polygon about `centre` in the XY plane, a flat
+    on each axis `apothem` off it - its corners apothem / cos(180 deg / sides) out."""
+    return bd.Pos(centre[0], centre[1]) * bd.RegularPolygon(apothem, sides, major_radius=False, rotation=180.0 / sides)
+
+
+def chamfer_outline(prism, axis: tuple, length: float = style.EDGE_CHAMFER) -> bd.Solid:
+    """`prism` - one solid, its two end faces the extremes along `axis` - with the outline edges of both end faces
+    chamfered `length` at 45 deg (lib/style.py EDGE_CHAMFER): the design language's edge, cut on a part's main body
+    before its holes and pockets so that they stay sharp."""
+    solid = single_solid(prism)
+    faces = solid.faces().sort_by(bd.Axis((0.0, 0.0, 0.0), axis))
+    return solid.chamfer(length, None, list(faces[0].outer_wire().edges()) + list(faces[-1].outer_wire().edges()))
 
 
 def hex_circumdiameter(across_flats: float) -> float:
