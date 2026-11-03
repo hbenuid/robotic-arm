@@ -151,18 +151,33 @@ def slits(cfg: BaseConfig = DEFAULT, part: str = "base") -> list[tuple[float, fl
     round about the axis, the mount's about mount_end_x() - as many at SlitParams.pitch along that mid-surface as fit,
     from side to side; the straight sides at multiples of pitch from the axis, short of the mount's round by half a
     pitch, none within joint_clear of the two parts' posts; each side's slit with the part it falls in."""
-    sl, j = cfg.slits, cfg.joint
+    sl, j, sides = cfg.slits, cfg.joint, cfg.shell.sides
     y0, y1 = slit_band(cfg)
     rm = outer_r(cfg, (y0 + y1) / 2.0) - cfg.shell.wall / 2.0
-    n = round(math.pi * rm / sl.pitch)
     cx, a0 = (0.0, 90.0) if part == "base" else (mount_end_x(cfg), -90.0)
     pts = []
-    for k in range(n + 1):
-        a = math.radians(a0 + k * 180.0 / n)
-        pts.append((cx + rm * math.cos(a), rm * math.sin(a), a0 + k * 180.0 / n))
+    if sides is None:
+        n = round(math.pi * rm / sl.pitch)
+        for k in range(n + 1):
+            a = math.radians(a0 + k * 180.0 / n)
+            pts.append((cx + rm * math.cos(a), rm * math.sin(a), a0 + k * 180.0 / n))
+        x_lo, x_hi = sl.pitch, mount_end_x(cfg) - sl.pitch / 2.0
+    else:
+        # faceted (ShellParams.sides): each flat of the end between the two sides' planes gets its slits at `pitch`
+        # along it, centred on it and half a pitch clear of its corners, cut along its normal; the sides' planes run on
+        # round onto the ends, the same half pitch short of the corners
+        half = rm * math.tan(math.pi / sides) - sl.pitch / 2.0
+        steps = range(-math.floor(half / sl.pitch), math.floor(half / sl.pitch) + 1)
+        for k in range(1, sides // 2):
+            deg = a0 + k * 360.0 / sides
+            a = math.radians(deg)
+            for m in steps:
+                t = m * sl.pitch
+                pts.append((cx + rm * math.cos(a) - t * math.sin(a), rm * math.sin(a) + t * math.cos(a), deg))
+        x_lo, x_hi = -half, mount_end_x(cfg) + half
     gap = (j.split_x - j.post_t - sl.joint_clear, j.split_x + cfg.mount.post_t + sl.joint_clear)
-    k = 1
-    while k * sl.pitch < mount_end_x(cfg) - sl.pitch / 2.0:
+    k = math.ceil(x_lo / sl.pitch - 1e-9)
+    while k * sl.pitch <= x_hi + 1e-9:
         x = k * sl.pitch
         if not gap[0] < x < gap[1] and (x < j.split_x) == (part == "base"):
             pts += [(x, rm, 90.0), (x, -rm, -90.0)]

@@ -43,7 +43,7 @@ from lib.base.layout import (
     yaw_idler_spacer_h,
 )
 from lib.base.params import DEFAULT, BaseConfig
-from lib.geom import align_min, cylinder, hex_circumdiameter, hex_prism, single_solid, through
+from lib.geom import align_min, cylinder, faceted_end, hex_circumdiameter, hex_prism, single_solid, through
 from lib.motors import NEMA17_FACE
 from lib.units import NUDGE
 
@@ -80,17 +80,34 @@ def _slot(radius: float, x: tuple, z: float, y: tuple):
     return _bore(radius, *y, x[0], z) + _bore(radius, *y, x[1], z) + _block(x, (z - radius, z + radius), y)
 
 
-def _d(r: float, x1: float, y: tuple, x0: float = 0.0):
-    """The D prism from y[0] to y[1]: a round of r about the axis and straight sides z = +/- r from x0 out to x1."""
-    return _bore(r, *y) + _block((x0, x1), (-r, r), y)
+def _round(r: float, y: tuple, x: float = 0.0, sides: int | None = None):
+    """A prism round the vertical through (x, 0) from y[0] to y[1]: a cylinder of r, or with `sides` faceted
+    (lib/geom.py faceted_end: its flats r off the axis, two of them on the sides' planes z = +/- r)."""
+    if sides is None:
+        return _bore(r, *y, x)
+    return bd.Pos(x, 0.0, y[0]) * bd.extrude(faceted_end(r, sides=sides), amount=y[1] - y[0])
 
 
-def _cone(r0: float, r1: float, y: tuple, x: float = 0.0):
-    """A cone round the axis (or round the vertical through (x, 0)) from y[0] (radius r0) to y[1] (radius r1) - _bore's
-    cylinder when they are equal."""
+def _d(r: float, x1: float, y: tuple, x0: float = 0.0, sides: int | None = None):
+    """The D prism from y[0] to y[1]: a round of r about the axis (faceted with `sides`: _round) and straight sides
+    z = +/- r from x0 out to x1."""
+    return _round(r, y, sides=sides) + _block((x0, x1), (-r, r), y)
+
+
+def _cone(r0: float, r1: float, y: tuple, x: float = 0.0, sides: int | None = None):
+    """A cone round the axis (or round the vertical through (x, 0)) from y[0] (radius r0) to y[1] (radius r1) - _round's
+    prism when they are equal; with `sides` a faceted frustum, its flats r0 / r1 off the axis."""
     if r0 == r1:
-        return _bore(r0, *y, x)
-    return bd.Pos(x, 0.0, y[0]) * bd.Cone(r0, r1, y[1] - y[0], align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MIN))
+        return _round(r0, y, x, sides)
+    if sides is None:
+        return bd.Pos(x, 0.0, y[0]) * bd.Cone(r0, r1, y[1] - y[0], align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MIN))
+    return bd.loft([bd.Pos(x, 0.0, y[0]) * faceted_end(r0, sides=sides),
+                    bd.Pos(x, 0.0, y[1]) * faceted_end(r1, sides=sides)], ruled=True)
+
+
+def _corner(r: float, sides: int | None) -> float:
+    """How far a round of r reaches from its axis: r, or its facets' corners."""
+    return r if sides is None else r / math.cos(math.pi / sides)
 
 
 def _wedge(r0: float, r1: float, x: tuple, y: tuple):
@@ -99,28 +116,32 @@ def _wedge(r0: float, r1: float, x: tuple, y: tuple):
     return bd.extrude(bd.Face(bd.Wire.make_polygon(pts, close=True)), amount=x[1] - x[0], dir=(1.0, 0.0, 0.0))
 
 
-def _dd(r_of, x1: float, y: tuple):
-    """_d with the radius r_of(y) at each end: a cone round the axis and the block out to x1 between the leaning
-    planes z = +/- r_of (_d itself when the walls stand straight)."""
+def _dd(r_of, x1: float, y: tuple, sides: int | None = None):
+    """_d with the radius r_of(y) at each end: a cone round the axis (faceted with `sides`) and the block out to x1
+    between the leaning planes z = +/- r_of (_d itself when the walls stand straight)."""
     r0, r1 = r_of(y[0]), r_of(y[1])
-    return _cone(r0, r1, y) + _wedge(r0, r1, (0.0, x1), y)
+    return _cone(r0, r1, y, sides=sides) + _wedge(r0, r1, (0.0, x1), y)
 
 
 def _foot(cfg: BaseConfig):
     """The foot, solid: the flange (_d of foot.r, t thick, its sides out to x1) and the chamfer from its top up to the
-    wall - a cone round the axis, the leaning planes on the sides."""
+    wall - a cone round the axis, the leaning planes on the sides - faceted like the walls (ShellParams.sides)."""
     s, f = cfg.shell, cfg.foot
     (rf, yt), (rw, yw) = flare_points(cfg)
-    return _d(f.r, s.x1, (s.y0, yt)) + _cone(rf, rw, (yt, yw)) + _wedge(rf, rw, (0.0, s.x1), (yt, yw))
+    return (_d(f.r, s.x1, (s.y0, yt), sides=s.sides) + _cone(rf, rw, (yt, yw), sides=s.sides)
+            + _wedge(rf, rw, (0.0, s.x1), (yt, yw)))
 
 
 def _reach(cfg: BaseConfig) -> float:
-    """How far the base reaches from the axis: the walls at the bottom face, or the foot."""
-    return max(outer_r(cfg, cfg.shell.y0), cfg.foot.r if cfg.foot is not None else 0.0)
+    """How far the base reaches from the axis: the walls at the bottom face, or the foot - to their facets' corners."""
+    return _corner(max(outer_r(cfg, cfg.shell.y0), cfg.foot.r if cfg.foot is not None else 0.0), cfg.shell.sides)
 
 
-def _d_section(r: float, x1: float, y: float):
-    """The D outline (the round of r on -X, the sides out to x1) as a face at height y - a loft section."""
+def _d_section(r: float, x1: float, y: float, sides: int | None = None):
+    """The D outline (the round of r on -X - faceted with `sides` -, the sides out to x1) as a face at height y - a loft
+    section."""
+    if sides is not None:
+        return bd.Pos(0.0, 0.0, y) * (faceted_end(r, sides=sides) + bd.Pos(x1 / 2.0, 0.0) * bd.Rectangle(x1, 2.0 * r)).face()
     edges = [bd.ThreePointArc((0.0, r), (-r, 0.0), (0.0, -r)), bd.Line((0.0, -r), (x1, -r)), bd.Line((x1, -r), (x1, r)),
              bd.Line((x1, r), (0.0, r))]
     return bd.Pos(0.0, 0.0, y) * bd.Face(bd.Wire(edges))
@@ -142,15 +163,15 @@ def _walls(cfg: BaseConfig):
     s, c, p = cfg.shell, cfg.cap, cfg.plate
     r_in = partial(inner_r, cfg)
     r0, rp, rt = (outer_r(cfg, y) for y in (s.y0, p.y[1], c.top_y))
-    body = (_cone(r0, rt, (s.y0, c.top_y)) + _wedge(r0, rp, (0.0, s.x1), (s.y0, p.y[1]))
+    body = (_cone(r0, rt, (s.y0, c.top_y), sides=s.sides) + _wedge(r0, rp, (0.0, s.x1), (s.y0, p.y[1]))
             + _wedge(rp, rt, (0.0, side_stub_x(cfg)), (p.y[1], c.top_y)))
     if cfg.foot is not None:
         body = body + _foot(cfg)
-    body = body - _dd(r_in, s.x1 - s.wall, (s.y0 - NUDGE, p.y[1] + NUDGE))
+    body = body - _dd(r_in, s.x1 - s.wall, (s.y0 - NUDGE, p.y[1] + NUDGE), sides=s.sides)
     body = body - _block((s.x1 - s.wall - NUDGE, s.x1 + NUDGE), (-s.notch_half_z, s.notch_half_z), (s.y0 - NUDGE, s.notch_y1))
     inset, ri, far = chamfer_inset(cfg), inner_r(cfg, c.chamfer_y0), r0 + 1.0
-    cavity = _dd(r_in, far, (p.y[1] - NUDGE, c.chamfer_y0)) + bd.loft(
-        [_d_section(ri, far, c.chamfer_y0), _d_section(ri - inset, far, c.underside_y)], ruled=True)
+    cavity = _dd(r_in, far, (p.y[1] - NUDGE, c.chamfer_y0), sides=s.sides) + bd.loft(
+        [_d_section(ri, far, c.chamfer_y0, s.sides), _d_section(ri - inset, far, c.underside_y, s.sides)], ruled=True)
     return body - cavity
 
 
@@ -197,8 +218,8 @@ def _plate(cfg: BaseConfig):
     motor's seat and, on the SolidWorks base, the belt slot (the motor mount has none)."""
     s, p, m = cfg.shell, cfg.plate, cfg.motor
     ri, y = inner_r(cfg, p.y[0]), (p.y[0] - NUDGE, p.y[1] + NUDGE)   # the inside at the plate's underside, its widest
-    plate = _d(ri, s.x1 - s.wall, p.y)
-    plate = plate - _bore(p.opening_r, *y) - _sector(ri + 1.0, p.open_deg, y)
+    plate = _d(ri, s.x1 - s.wall, p.y, sides=s.sides)
+    plate = plate - _bore(p.opening_r, *y) - _sector(_corner(ri, s.sides) + 1.0, p.open_deg, y)
     arc = bd.CenterArc((0.0, 0.0), p.arc_slot_r, -p.arc_slot_half_deg, 2.0 * p.arc_slot_half_deg)
     plate = plate - bd.Pos(0.0, 0.0, y[0]) * bd.extrude(bd.SlotArc(arc, p.arc_slot_w), amount=y[1] - y[0])
     plate = _motor_seat(cfg, plate)
@@ -234,7 +255,7 @@ def _posts(cfg: BaseConfig):
     posts = _block(x, (w_in, ri + NUDGE), y) + _block(x, (-ri - NUDGE, -w_in), y)
     if s.draft == 0.0:
         return posts
-    return posts & _dd(partial(outer_r, cfg), s.x1, (s.y0 - 1.0, p.y[1]))
+    return posts & _dd(partial(outer_r, cfg), s.x1, (s.y0 - 1.0, p.y[1]), sides=s.sides)
 
 
 def _bolt_holes(cfg: BaseConfig, body):
@@ -326,7 +347,8 @@ def _mount_d(cfg: BaseConfig, r_of, y: tuple, x0: float):
     (mount_end_x()) and the end round about it - a wedge and a cone, the radius r_of at each end -, cut at x0."""
     cx, r0, r1 = mount_end_x(cfg), r_of(y[0]), r_of(y[1])
     far = max(r0, r1) + 1.0
-    return (_wedge(r0, r1, (x0, cx), y) + _cone(r0, r1, y, cx)) & _block((x0, cx + far), (-far, far), (y[0] - 1.0, y[1] + 1.0))
+    return ((_wedge(r0, r1, (x0, cx), y) + _cone(r0, r1, y, cx, cfg.shell.sides))
+            & _block((x0, cx + far), (-far, far), (y[0] - 1.0, y[1] + 1.0)))
 
 
 def _mount_foot(cfg: BaseConfig):
@@ -334,9 +356,10 @@ def _mount_foot(cfg: BaseConfig):
     centre, its round about it) and the chamfer from its top up to the wall - the base's foot (_foot), mirrored."""
     s, f, x0, cx = cfg.shell, cfg.foot, cfg.joint.split_x, mount_end_x(cfg)
     (rf, yt), (rw, yw) = flare_points(cfg)
-    foot = (_block((x0, cx), (-f.r, f.r), (s.y0, yt)) + _bore(f.r, s.y0, yt, cx)
-            + _wedge(rf, rw, (x0, cx), (yt, yw)) + _cone(rf, rw, (yt, yw), cx))
-    return foot & _block((x0, cx + f.r + 1.0), (-f.r - 1.0, f.r + 1.0), (s.y0 - 1.0, yw + 1.0))
+    foot = (_block((x0, cx), (-f.r, f.r), (s.y0, yt)) + _round(f.r, (s.y0, yt), cx, s.sides)
+            + _wedge(rf, rw, (x0, cx), (yt, yw)) + _cone(rf, rw, (yt, yw), cx, s.sides))
+    far = _corner(f.r, s.sides) + 1.0
+    return foot & _block((x0, cx + far), (-far, far), (s.y0 - 1.0, yw + 1.0))
 
 
 def build_motor_mount(cfg: BaseConfig = DEFAULT):

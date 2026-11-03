@@ -54,8 +54,9 @@ BAND = slit_band()
 
 
 def _on_a_side(x: float, deg: float) -> bool:
-    """A slit on a straight side (between the two round ends), not on a round end."""
-    return abs(abs(deg) - 90.0) < 1e-9 and 1e-6 < x < CX - 1e-6
+    """A slit on a straight side (its normal across, +/-Z: the sides' planes run on round onto the faceted ends), not
+    on one of the ends' flats."""
+    return abs(abs(deg) - 90.0) < 1e-9
 
 
 def _belt(x: float, teeth: int = GT2_PULLEY_120T_TEETH) -> float:
@@ -132,24 +133,33 @@ def test_the_mount_foot_holes():
 
 
 def test_the_slits():
-    """One band, over_flare above the foot's chamfer and under the plate; the base's round half and the mount's round end
-    each a slit at both ends and pitch apart along the wall's mid-surface between; the straight sides at multiples of
-    pitch, none at the joint's posts; both parts symmetric about z = 0, each slit in its own part; the slit narrower
-    than the web between, its round top a w / 2 arch - nothing to bridge."""
+    """One band, over_flare above the foot's chamfer and under the plate; on the faceted ends (ShellParams.sides) each
+    flat between the sides' planes its slits pitch apart along it, centred on it and half a pitch clear of its corners,
+    cut along its normal; the straight sides at multiples of pitch, run on round onto the ends as far, none at the
+    joint's posts; both parts symmetric about z = 0, each slit in its own part; the slit narrower than the web between,
+    its round top a w / 2 arch - nothing to bridge."""
     _, (_, yw) = flare_points()
     assert BAND == (yw + SL.over_flare, yw + SL.over_flare + SL.h) and BAND[1] < PL.y[0] - 5.0 and SL.over_flare >= 4.0
-    rm = outer_r(DEFAULT, sum(BAND) / 2.0) - S.wall / 2.0
+    rm, n = outer_r(DEFAULT, sum(BAND) / 2.0) - S.wall / 2.0, S.sides
+    half = rm * math.tan(math.pi / n) - SL.pitch / 2.0          # a flat's slits' reach from its middle
+    per_flat = 2 * math.floor(half / SL.pitch) + 1
     base, mount = slits(DEFAULT, "base"), slits(DEFAULT, "mount")
-    for name, pts, cx, ends in (("base", base, 0.0, (90.0, 270.0)), ("mount", mount, CX, (-90.0, 90.0))):
-        rnd = sorted((deg, x, z) for x, z, deg in pts if not _on_a_side(x, deg))
-        assert (rnd[0][0], rnd[-1][0]) == pytest.approx(ends) and len(pts) - len(rnd) == {"base": 8, "mount": 4}[name]
-        for _deg, x, z in rnd:
-            assert math.hypot(x - cx, z) == pytest.approx(rm)
-        step = math.radians(rnd[1][0] - rnd[0][0]) * rm
-        assert step == pytest.approx(SL.pitch, abs=SL.pitch * 0.05) and step - SL.w > SL.w
+    for name, pts, cx, a0 in (("base", base, 0.0, 90.0), ("mount", mount, CX, -90.0)):
+        flats = [a0 + k * 360.0 / n for k in range(1, n // 2)]
+        ends = [(x, z, deg) for x, z, deg in pts if not _on_a_side(x, deg)]
+        assert sorted({deg for _, _, deg in ends}) == pytest.approx(flats) and len(ends) == len(flats) * per_flat, name
+        for deg in flats:
+            nx, nz = math.cos(math.radians(deg)), math.sin(math.radians(deg))
+            on = [(x, z) for x, z, d in ends if d == pytest.approx(deg)]
+            assert all((x - cx) * nx + z * nz == pytest.approx(rm) for x, z in on)     # on the flat's mid-surface
+            along = sorted(-(x - cx) * nz + z * nx for x, z in on)
+            assert along == pytest.approx([-a for a in reversed(along)], abs=1e-9)     # centred on it
+            assert all(b - a == pytest.approx(SL.pitch) for a, b in itertools.pairwise(along)) and along[-1] <= half
+        assert SL.pitch - SL.w > SL.w
         assert sorted((round(x, 6), round(z, 6)) for x, z, _ in pts) == sorted((round(x, 6), round(-z, 6)) for x, z, _ in pts)
     sides = [x for x, z, deg in base + mount if _on_a_side(x, deg)]
     assert all(x / SL.pitch == pytest.approx(round(x / SL.pitch)) for x in sides)
+    assert min(sides) >= -half and max(sides) <= CX + half
     assert all(abs(x - J.split_x) - SL.w / 2.0 > J.post_t + SL.joint_clear - SL.pitch / 2.0 for x in sides)
     assert not [x for x in sides if J.split_x - J.post_t - SL.w / 2.0 <= x <= J.split_x + MT.post_t + SL.w / 2.0]
     assert all(x < J.split_x for x, _, _ in base) and all(x > J.split_x for x, _, _ in mount)
@@ -192,24 +202,29 @@ def test_the_parts_meet_at_the_joint(base, mount):
 
 @pytest.mark.slow
 def test_the_round_end_mirrors_the_base(mount):
-    """At the end (z = 0, between two slits) and at 45 degrees round it: the wall's outside on the walls' radius about
-    the end's centre, its inside `wall` in, below the plate; the foot's flange to foot.r round it, the chamfer's face
-    on the base's line; the mount's 4 screw holes through the flange, their spot-faces in the chamfer."""
+    """On the end's flat (normal +X) and on its diagonal flat (45 degrees round), each half a pitch off its middle
+    (between two slits): the wall's outside on the walls' radius about the end's centre, its inside `wall` in, below the
+    plate; the foot's flange to foot.r round it, the chamfer's face on the base's line; the mount's 4 screw holes through
+    the flange, their spot-faces in the chamfer."""
+    t = SL.pitch / 2.0
     for deg in (0.0, 45.0):
         ux, uz = math.cos(math.radians(deg)), math.sin(math.radians(deg))
+        tx, tz = -uz * t, ux * t                                   # along the flat, half a pitch
+
+        def at(r, y, ux=ux, uz=uz, tx=tx, tz=tz):
+            return CX + r * ux + tx, y, r * uz + tz
         for y in (S.y0 + F.flare_h + 2.0, -70.0, PL.y[0] - 1.0):
             ro, ri = outer_r(DEFAULT, y), inner_r(DEFAULT, y)
-            assert is_inside(mount, CX + (ro - 0.3) * ux, y, (ro - 0.3) * uz) and not is_inside(mount, CX + (ro + 0.3) * ux, y, (ro + 0.3) * uz)
-            assert is_inside(mount, CX + (ri + 0.3) * ux, y, (ri + 0.3) * uz) and not is_inside(mount, CX + (ri - 0.3) * ux, y, (ri - 0.3) * uz)
+            assert is_inside(mount, *at(ro - 0.3, y)) and not is_inside(mount, *at(ro + 0.3, y))
+            assert is_inside(mount, *at(ri + 0.3, y)) and not is_inside(mount, *at(ri - 0.3, y))
         yt = S.y0 + F.t
-        assert is_inside(mount, CX + (F.r - 0.5) * ux, yt - 0.5, (F.r - 0.5) * uz)
-        assert not is_inside(mount, CX + (F.r + 0.5) * ux, yt - 0.5, (F.r + 0.5) * uz)
+        assert is_inside(mount, *at(F.r - 0.5, yt - 0.5)) and not is_inside(mount, *at(F.r + 0.5, yt - 0.5))
         (rf, _), (rw, yw) = flare_points()
         n = math.hypot(yw - yt, rf - rw)
         nr, ny = (yw - yt) / n, (rf - rw) / n
         mr, my = (rf + rw) / 2.0, (yt + yw) / 2.0
-        assert is_inside(mount, CX + (mr - 0.3 * nr) * ux, my - 0.3 * ny, (mr - 0.3 * nr) * uz)
-        assert not is_inside(mount, CX + (mr + 0.3 * nr) * ux, my + 0.3 * ny, (mr + 0.3 * nr) * uz)
+        assert is_inside(mount, *at(mr - 0.3 * nr, my - 0.3 * ny))
+        assert not is_inside(mount, *at(mr + 0.3 * nr, my + 0.3 * ny))
     spot, yt = F.spot_dia / 2.0, S.y0 + F.t
     for x, z in mount_foot_holes():
         ux, uz = (CX - x) / F.hole_r, -z / F.hole_r                                      # toward the wall

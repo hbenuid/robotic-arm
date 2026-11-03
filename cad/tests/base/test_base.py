@@ -20,6 +20,7 @@ from lib.bearings import BEARING_6806_OD, BEARING_6806_WIDTH, THRUST_BORE, THRUS
 from lib.datum import BASE_BOTTOM_Y, to_location
 from lib.forearm import DEFAULT as FOREARM
 from lib.motors import NEMA17_BOLT_SP, NEMA17_FACE
+from lib.style import SIDES
 from tests import built
 from tests.helpers import is_inside
 
@@ -38,7 +39,9 @@ def test_interface_values_come_from_the_base():
     assert PARAMS.BASE_MOTOR_PATTERN_CENTRE == (DEFAULT.motor.centre[0], motor_face_y(), DEFAULT.motor.centre[1])
     assert motor_face_y() == pytest.approx(DEFAULT.plate.y[0] - DEFAULT.motor.pad_t) and motor_face_y(LEGACY) == LEGACY.plate.y[0]
     assert BASE_BOTTOM_Y == DEFAULT.shell.y0 < LEGACY.shell.y0 == P.OCCURRENCES["base#1"]["world_bbox_min"][1]
-    assert DEFAULT.shell == replace(LEGACY.shell, y0=DEFAULT.shell.y0, r=DEFAULT.shell.r, draft=DEFAULT.shell.draft)   # deeper, on the cone
+    # deeper, on the cone, faceted (docs/design_language.md)
+    assert DEFAULT.shell == replace(LEGACY.shell, y0=DEFAULT.shell.y0, r=DEFAULT.shell.r, draft=DEFAULT.shell.draft, sides=SIDES)
+    assert LEGACY.shell.sides is None
     assert P.OCCURRENCES["base#1"]["world"]["position"] == [0.0, 0.0, 0.0]   # the part frame IS the capture frame
 
 
