@@ -34,7 +34,7 @@ from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii
 from robot import frames as F
 from tests import built
 from tests.cycloidal.helpers import CFG
-from tests.helpers import interference, module_tints
+from tests.helpers import interference, part_colours
 
 DRIVE_KEY = "cycloidal_drive#1"
 
@@ -384,9 +384,9 @@ class TestModuleLocks:
 
     @pytest.mark.slow
     def test_module_colors(self, drive):
-        """Standalone: the purchased parts BOUGHT_TINT, the printed ones the module's TINT."""
+        """Standalone: every part in its colour, as in the arm (tests/helpers.py part_colours)."""
         assert drive.label == "cycloidal_drive"
-        assert module_tints(drive, cycloidal_drive.TINT) == {True: 13, False: 6}   # + the MKS board
+        assert part_colours(drive) == {True: 13, False: 6}   # + the MKS board
 
     @pytest.mark.slow
     def test_module_interference_budget(self, drive):

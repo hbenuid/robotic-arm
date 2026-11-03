@@ -17,6 +17,7 @@ from lib.wrist import DEFAULT, WristConfig
 from lib.wrist.roll import build_pulley
 
 NAME = pathlib.Path(__file__).stem
+ACCENT = True                 # the accent colour, lib/style.py: a pulley
 REFERENCE = None
 CONVERTED = True
 

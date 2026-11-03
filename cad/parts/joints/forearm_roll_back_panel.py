@@ -18,6 +18,7 @@ from lib.forearm import DEFAULT, ForearmConfig
 from lib.forearm.roll import build_back_panel
 
 NAME = pathlib.Path(__file__).stem
+ACCENT = True                 # the accent colour, lib/style.py: a cover
 REFERENCE = None
 CONVERTED = True
 

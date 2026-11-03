@@ -25,6 +25,7 @@ import build123d as bd
 
 import parts  # stdlib-only package index; parts.load() imports a part lazily
 from lib import placements as P
+from lib import style
 from lib.assembly import assembly, label_shape
 from lib.datum import IDENTITY, to_location
 from lib.models import geometry
@@ -56,12 +57,12 @@ def _details(role) -> tuple:
     return () if role is None else (role,)
 
 
-def occurrence_children(rows, modules: dict | None = None, tint: str | None = None) -> list:
+def occurrence_children(rows, modules: dict | None = None, tint: bool = False) -> list:
     """Every row of an OCCURRENCES table as a placed, labelled child (for lib.assembly.assembly()).
 
     `modules` maps a module name to its MODEL (a zero-arg cadgen model returning the module
     Compound in its own frame); it is moved to the module's placement key. With `tint` the module
-    is colored like the arm: printed parts `tint`, purchased parts BOUGHT_TINT (_tint_parts)."""
+    is colored like the arm: every part colour() (_tint_parts)."""
     modules = modules or {}
     children = []
     for name, role, key in rows:
@@ -69,9 +70,9 @@ def occurrence_children(rows, modules: dict | None = None, tint: str | None = No
             children.append(label_shape(geometry(modules[name]).moved(P.location(key, "rel")), name))
         else:
             children.append(label_shape(place(name, key), name, *_details(role)))
-    if tint is not None:
+    if tint:
         for child in children:
-            _tint_parts(child, bd.Color(tint))
+            _tint_parts(child)
     return children
 
 
@@ -86,47 +87,41 @@ def _tint(shape, color: bd.Color) -> None:
         _tint(child, color)
 
 
-# The one color of a PURCHASED part (parts.bought(): COTS = True) wherever an assembly tints its
-# leaves - the arm's link GROUPS, the gripper and the drive. No group / module tint may reuse it.
-BOUGHT_TINT = "#9AA0A6"
+def colour(name: str) -> str:
+    """Part `name`'s colour wherever an assembly colours it (lib/style.py): BOUGHT for a purchased part
+    (parts.bought(): COTS = True) - BELT for a belt (parts/*/<joint>_belt.py) -, ACCENT for a printed part that drives,
+    turns or covers (parts.accent(): ACCENT = True), BODY for the rest of the printed structure."""
+    if parts.bought(name):
+        return style.BELT if name.endswith("_belt") else style.BOUGHT
+    return style.ACCENT if parts.accent(name) else style.BODY
 
 
-def _tint_parts(shape, color: bd.Color) -> None:
-    """_tint(), except that every purchased part inside `shape` - a node labelled '<part>[:role]'
-    with parts.bought(part), at any depth (the modules' parts too) - gets BOUGHT_TINT instead: in a
-    tinted assembly, grey always means bought and a link / module color means printed."""
+def _tint_parts(shape) -> None:
+    """Colour every part inside `shape` - a node labelled '<part>[:role]', at any depth (the modules' parts too) - with
+    its colour(), on its leaves (_tint): the same part is the same colour in every assembly."""
     name = (shape.label or "").split(":")[0]
     if name in parts.MODULES:
-        _tint(shape, bd.Color(BOUGHT_TINT) if parts.bought(name) else color)
+        _tint(shape, bd.Color(colour(name)))
         return
-    children = getattr(shape, "children", ()) or ()
-    if not children:
-        shape.color = color
-    for child in children:
-        _tint_parts(child, color)
+    for child in getattr(shape, "children", ()) or ():
+        _tint_parts(child)
 
 
-def grouped_children(rows, groups, modules: dict | None = None,
-                     module_tints: dict | None = None, root: bd.Location | None = None) -> list:
+def grouped_children(rows, groups, modules: dict | None = None, root: bd.Location | None = None) -> list:
     """occurrence_children(), but bucketed into labelled group Compounds (viewer/STEP tree nodes).
 
-    `groups` rows are (group_label, tint, occurrence keys); together the keys must cover the
-    OCCURRENCES rows' keys exactly once. Every PRINTED part in a group is tinted with the group's
-    color, except under a key in `module_tints` which keeps its own (the named modules stay visually
-    distinct inside their group); every PURCHASED part, inside the modules too, gets BOUGHT_TINT
-    (_tint_parts) - so the assembly shows at a glance what was bought. Tints overwrite
-    imported-STEP colors on the per-build copies only — standalone part/module previews are
-    untouched: a child's result in a build is a new placement the parent owns, so its tints stay in this
-    assembly's STEP.
+    `groups` rows are (group_label, occurrence keys); together the keys must cover the OCCURRENCES rows' keys exactly
+    once. Every part, inside the modules too, gets its colour() (_tint_parts). The colours overwrite imported-STEP
+    colors on the per-build copies only — standalone part previews are untouched: a child's result in a build is a new
+    placement the parent owns, so its colours stay in this assembly's STEP.
 
     `root` (placements' parent frame -> output frame) re-expresses the whole assembly in another
     frame by composing into every occurrence's placement (root * rel), so the root Compound itself stays at the
     identity."""
     modules = modules or {}
-    module_tints = module_tints or {}
     root = root or bd.Location()
     row_keys = sorted(key for _, _, key in rows)
-    group_keys = sorted(key for _, _, keys in groups for key in keys)
+    group_keys = sorted(key for _, keys in groups for key in keys)
     if group_keys != row_keys:
         raise ValueError(f"groups must cover the occurrence keys exactly once:\n{group_keys}\n{row_keys}")
     shapes = {}
@@ -137,10 +132,10 @@ def grouped_children(rows, groups, modules: dict | None = None,
             shape = label_shape(place(name, key, root=root), name, *_details(role))
         shapes[key] = shape
     nodes = []
-    for group_label, tint, keys in groups:
+    for group_label, keys in groups:
         members = []
         for key in keys:
-            _tint_parts(shapes[key], bd.Color(module_tints.get(key, tint)))
+            _tint_parts(shapes[key])
             members.append(shapes[key])
         nodes.append(assembly(group_label, members))
     return nodes
@@ -160,14 +155,13 @@ def row_location(placement) -> bd.Location:
     return bd.Location(tuple(placement))
 
 
-def located_children(rows, tint: str | None = None) -> list:
+def located_children(rows, tint: bool = False) -> list:
     """Every (part, role|None, placement) row of a code-driven module table as a placed, labelled child
-    (row_location). With `tint` the module is colored like the arm: printed parts `tint`, purchased
-    parts BOUGHT_TINT."""
+    (row_location). With `tint` the module is colored like the arm: every part colour() (_tint_parts)."""
     children = [label_shape(place_at(name, row_location(pos)), name, *_details(role)) for name, role, pos in rows]
-    if tint is not None:
+    if tint:
         for child in children:
-            _tint_parts(child, bd.Color(tint))
+            _tint_parts(child)
     return children
 
 

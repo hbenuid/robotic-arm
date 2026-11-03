@@ -19,6 +19,7 @@ from lib.forearm import DEFAULT, ForearmConfig
 from lib.forearm.roll import build_pulley
 
 NAME = pathlib.Path(__file__).stem
+ACCENT = True                 # the accent colour, lib/style.py: a pulley
 REFERENCE = None
 CONVERTED = True
 

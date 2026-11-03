@@ -28,9 +28,6 @@ from lib.wrist.layout import pancake_location, stack_positions
 
 S = stack_positions(DEFAULT)
 
-# The module's printed parts' colour (assemblies/arm.py MODULE_TINTS reuses it); purchased parts are BOUGHT_TINT.
-TINT = "#B07AA1"
-
 
 def _at(x: float = 0.0, y: float = 0.0, z: float = 0.0):
     return (x, y, z)
@@ -71,8 +68,8 @@ EXPECTED = {
 
 @step(out="wrist_roll_drive.step")
 def wrist_roll_drive():
-    """The drive in its module frame (printed parts TINT, purchased parts BOUGHT_TINT)."""
-    return assembly("wrist_roll_drive", located_children(OCCURRENCES, tint=TINT))
+    """The drive in its module frame, every part in its colour as in the arm (_occurrences.colour())."""
+    return assembly("wrist_roll_drive", located_children(OCCURRENCES, tint=True))
 
 
 def totals(body: str | None = None, *, shape=None) -> dict:

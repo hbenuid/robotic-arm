@@ -24,6 +24,7 @@ from lib.pulley import COMPOUND
 from lib.pulley.body import build_compound
 
 NAME = pathlib.Path(__file__).stem
+ACCENT = True                 # the accent colour, lib/style.py: a pulley
 REFERENCE = None              # a measured conversion: no reference file (lib/reference.py MEASURED)
 CONVERTED = True
 LOCAL_FROM_REF = IDENTITY     # modelled in the SolidWorks part frame

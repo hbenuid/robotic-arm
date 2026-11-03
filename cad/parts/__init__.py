@@ -56,6 +56,12 @@ def bought(name: str) -> bool:
     return bool(getattr(load(name), "COTS", False))
 
 
+def accent(name: str) -> bool:
+    """True for a printed part in the accent colour (the module declares ACCENT = True: it drives, turns or covers),
+    False for the structure - the colour every assembly gives it (lib/style.py, assemblies/_occurrences.py colour())."""
+    return bool(getattr(load(name), "ACCENT", False))
+
+
 def unplaced() -> list[str]:
     """The parts modelled before any assembly places them (the module declares UNPLACED = "<why>"): the print and buy
     lists skip them; a purchased one still to be bought keeps its order line as a tools/bom.py EXTRAS row
