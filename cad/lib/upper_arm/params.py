@@ -149,10 +149,11 @@ class ArmParams:
     """DEFAULT's shoulder end: PAROL6-like, the arm rises straight off the cycloidal drive's turning shell, printed as one
     with the shell's body (lib/cycloidal/housing.py build_shell_body), not bolted to the shell's end. The arm is one flat
     slab, solid (a placeholder for its mass: docs/open_issues.md): `width` across (Z, about the link's centreline) from
-    the shoulder axis, its round end `end_r` about the elbow axis - narrower than that, the slab keeps its width over the
+    the shoulder axis, its faceted end `end_r` about the elbow axis - narrower than that, the slab keeps its width over the
     elbow idler's slots and tapers straight onto the end past them (lib/upper_arm/layout.py slab_taper_x), the bend
-    `bend_r`; wider, it flares into the end through `bend_r` fillets -, from the elbow half's underside
-    (ElbowParams.y0) up to the relief's floor (ElbowParams.relief_y), end to end - the elbow block turns over its top face, the forearm roll drive's motor and
+    sharp; wider, it flares into the end through `bend_r` fillets -, from the elbow half's underside
+    (ElbowParams.y0) up to the relief's floor (ElbowParams.relief_y), end to end, both faces' outline chamfered
+    (lib/style.py EDGE_CHAMFER) - the elbow block turns over its top face, the forearm roll drive's motor and
     board in it (they turn with the elbow and never roll: their height along Y is fixed) clear it further up - fused
     into the shell's wall from fuse_r out, where the body's two windows under it are solid (lib/cycloidal/params.py
     ShellParams.arm_windows; its other windows open on the discs). The slab's underside is flush with the shell's hub
@@ -187,11 +188,13 @@ class ArmParams:
     width: float = 76.0              # [DESIGN] the slab across, symmetric: 16.4 of it beside the motor's hole, 10.8 past the
     #                                  idler's nut slot at its outer end (tests/upper_arm/test_elbow_idler.py) - the plate's 90
     #                                  slimmed for mass
-    end_r: float = 36.0              # [DESIGN] its round end about the elbow axis: 14.9 of wall round the lower 6806's seat,
-    #                                  the 90T's flange (r 29.6) under it well inside; the roll frame's octagonal end
-    #                                  (lib/forearm/params.py RollDriveParams.end_r) overhangs it: it cannot come in as far
-    #                                  (its motor's pocket)
-    bend_r: float = 20.0             # [DESIGN] where the width turns into the taper onto the end (or flares into it)
+    end_r: float = 36.0              # [DESIGN] its faceted end about the elbow axis (lib/style.py SIDES), its flats this far
+    #                                  off it: 14.9 of wall round the lower 6806's seat, the 90T's flange (r 29.6) under it
+    #                                  well inside; the roll frame's octagonal end (lib/forearm/params.py
+    #                                  RollDriveParams.end_r) overhangs it, corners too: it cannot come in as far (its
+    #                                  motor's pocket)
+    bend_r: float = 20.0             # [DESIGN] the fillets where the width flares into a wider end; onto a narrower one
+    #                                  the taper's bend is sharp, like the facets
 
 
 @dataclass(frozen=True)

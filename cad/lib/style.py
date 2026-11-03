@@ -5,8 +5,15 @@ The colours, one per kind of part, the same in the arm and in every module stand
 the part module declares ACCENT = True, parts.accent()); a purchased part (parts.bought()) is BOUGHT, a belt
 (parts/*/<joint>_belt.py) BELT.
 
+The shapes: a faceted end (lib/geom.py faceted_end()) is a regular polygon of SIDES with a flat on each of the part's
+own axes; a printed part's main faces have their outline chamfered EDGE_CHAMFER at 45 deg (lib/geom.py chamfer_outline()).
+
 A leaf (lib/AGENTS.md): it imports nothing, so every lib/ package may take its values from it.
 """
+
+SIDES = 8              # [DESIGN] the faceted ends: an octagon, a flat on each of the part's own axes (forearm_roll_block's)
+EDGE_CHAMFER = 1.5     # [DESIGN] the 45 deg chamfer on the outline of a printed part's main faces: it reads as an edge
+#                        at arm's length and prints with no support even on the edge on the bed
 
 BODY = "#E6E3DC"       # [DESIGN] off-white: the printed structure
 # [DESIGN] orange: the printed parts that drive, turn or cover. The filament is #E2581C; the viewer and `./cadtool

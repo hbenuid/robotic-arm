@@ -8,14 +8,16 @@ The arm's parts came from three places (the SolidWorks capture, the CadQuery por
 designed here), each with its own look; these rules make them one.
 
 ## The rules
-- **Structure is faceted.** Every link end, leg top and frame is an octagon with a flat on each of the part's own
-  axes - `forearm_roll_block` is the pattern (`RollDriveParams.end_sides`) -, and the base and its motor mount are an
-  octagonal frustum on an octagonal foot.
+- **Structure is faceted.** Every link end, leg top and frame is a regular polygon of `lib/style.py SIDES` (an octagon)
+  with a flat on each of the part's own axes - `lib/geom.py faceted_end()`, `forearm_roll_block` the pattern -, and the
+  base and its motor mount are an octagonal frustum on an octagonal foot. Where a slab tapers onto its end, the bend is
+  sharp like the facets.
 - **What turns stays round.** A part that turns against a neighbour keeps its round: the cycloidal drive, the bearing
   bosses, the pulleys and the base_yaw turntable (the fork's disc, the base's cap) - a facet there would sweep a
   corner past the part beside it.
-- **Edges are chamfered.** One 45° chamfer on the outline of every printed part's main faces and on every cover; holes,
-  bores and seats stay sharp. A 45° chamfer prints with no support, even on an edge facing the bed.
+- **Edges are chamfered.** One 45° chamfer (`lib/style.py EDGE_CHAMFER`) on the outline of every printed part's main
+  faces and on every cover - `lib/geom.py chamfer_outline()`, cut on the main body before its holes and pockets, so
+  holes, bores and seats stay sharp. A 45° chamfer prints with no support, even on an edge facing the bed.
 - **Two tones.** The printed structure is `BODY`; what drives, turns or covers is `ACCENT` (its part module declares
   `ACCENT = True`, `parts.accent()`); a purchased part is `BOUGHT` and a belt `BELT`. `assemblies/_occurrences.py
   colour()` gives each part its colour, the same in the arm and in each module standing alone. Why `ACCENT` is not the
@@ -27,5 +29,6 @@ designed here), each with its own look; these rules make them one.
   wrist's 90T has to turn inside.
 
 ## Where it stands
-The colours are in the model (`lib/style.py`); the shapes, the chamfers and the covers are not yet
-(`docs/open_issues.md` "Not modelled yet").
+In the model: the colours, and the upper arm (`j1_link`: its faceted elbow end, its slab's outline chamfered) and the
+roll frame (`forearm_roll_block`: its outline chamfered). Not yet - `docs/open_issues.md` "Not modelled yet" -: the rest
+of the shapes and chamfers, and the covers.

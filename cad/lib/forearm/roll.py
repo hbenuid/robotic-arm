@@ -29,7 +29,7 @@ from lib.forearm.layout import (
 )
 from lib.forearm.link import x_cylinder, yz_prism
 from lib.forearm.params import DEFAULT, ForearmConfig
-from lib.geom import box, cylinder, hex_prism, nut_slot, single_solid, stop_wedge
+from lib.geom import box, chamfer_outline, cylinder, faceted_end, hex_prism, nut_slot, single_solid, stop_wedge
 from lib.pulley.teeth import gt2_ring
 from lib.units import NUDGE
 
@@ -121,7 +121,7 @@ def profile(cfg: ForearmConfig = DEFAULT):
     corners."""
     d, S = cfg.drive, stack_positions(cfg)
     y_e, n = S["y_elbow"], d.end_sides
-    end = bd.Pos(y_e, 0.0) * bd.RegularPolygon(d.end_r, n, major_radius=False, rotation=180.0 / n)
+    end = faceted_end(d.end_r, (y_e, 0.0), n)
     z0, z1 = S["z_tower_rear"], S["z_front"]
     tower = bd.Pos(0.0, (z0 + z1) / 2.0) * bd.Rectangle(2.0 * d.tower_y, z1 - z0)
     hull = bd.make_hull((end + tower).edges())
@@ -144,9 +144,10 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     the rear face: the back panel's step across it, the opening grown down below the bay's bore, the magnets' pockets."""
     d, S = cfg.drive, stack_positions(cfg)
     y_e = S["y_elbow"]
-    # the material first: the profile across the frame's depth, the elbow flange under it, the bearing boss (from 1 mm
-    # inside the front face: one body) up to bearing 2's front face
-    body = yz_prism(profile(cfg), d.block_x[0], d.block_x[1])
+    # the material first: the profile across the frame's depth, its outline chamfered on both faces (lib/style.py
+    # EDGE_CHAMFER), the elbow flange under it, the bearing boss (from 1 mm inside the front face: one body) up to bearing
+    # 2's front face
+    body = chamfer_outline(yz_prism(profile(cfg), d.block_x[0], d.block_x[1]), (1.0, 0.0, 0.0))
     for dia, a, b in coupler_steps(cfg):
         body = body + x_cylinder(dia / 2.0, b - a, (y_e, 0.0), a)
     body = body + cylinder(d.bearing_boss_dia / 2.0, S["z_boss"] - S["z_front"] + 1.0, z0=S["z_front"] - 1.0)

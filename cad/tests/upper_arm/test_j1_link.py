@@ -4,7 +4,7 @@ names what moved), and DEFAULT - what the part builds - changes exactly these: S
 elbow-end feature moves with the axis), no through slots, no cap sockets, the elbow block's clearance (the top face down
 to the relief's floor, on the floor of a deeper recess: no recess left), and the cycloidal drive's turning shell: the
 arm, one flat slab from the elbow half's underside to the relief's floor, narrower than the plate (ArmParams width,
-tapering onto a narrower round end, end_r, past the elbow idler's slots), rises off the shell, printed as one with the shell's body
+tapering onto a narrower faceted end, end_r, past the elbow idler's slots, its outline chamfered), rises off the shell, printed as one with the shell's body
 round the discs - out of the two windows it fills, the others open - slid along Y until its underside is flush with
 the shell's hub end (arm_slide); the elbow motor - the NEMA 17 holes on its pattern - moved out along the link to
 ELBOW_MOTOR_CENTRES from the elbow axis, where the second stage's seat was (gone), and turned over onto the arm's +Y
@@ -26,6 +26,7 @@ from lib.cycloidal import arm_zone, housing_bolt_points, shell_ends, stack_posit
 from lib.cycloidal.params import DEFAULT_CONFIG
 from lib.datum import to_location
 from lib.motors import NEMA17_BOLT_SP
+from lib.style import EDGE_CHAMFER, SIDES
 from lib.upper_arm import DEFAULT, LEGACY, arm_slide, hub_bolt_points, pad_holes, socket_points
 from lib.upper_arm.link import drive_frame
 from lib.upper_arm.params import ELBOW_BELT, ELBOW_MOTOR_CENTRES, SHORTENING
@@ -191,7 +192,7 @@ def test_default(link, legacy):
     the underside; no pad, no sockets, the second stage's seat gone."""
     dx, a = SHORTENING, DEFAULT.arm
     assert link.is_valid and len(link.solids()) == 1
-    assert R.solid_volume(link) == pytest.approx(290249.374, abs=0.5)
+    assert R.solid_volume(link) == pytest.approx(291974.530, abs=0.5)
     bb, hh, (z_0, z_1) = link.bounding_box(), DEFAULT_CONFIG.housing, arm_zone(DEFAULT_CONFIG)
     # across (Z) the body's pillars either side of +/-Z reach furthest: the windows on +/-Z are open; along Y the
     # shell's body, from its hub end to the shell ring's face (arm_zone's start); along X the slab's round end
@@ -199,7 +200,8 @@ def test_default(link, legacy):
     assert (bb.min.X, bb.min.Y, bb.min.Z) == pytest.approx((-hh.od / 2.0, a.drive_z_at_y0 - shell_ends(DEFAULT_CONFIG)[1], -58.0117), abs=1e-4)
     assert (bb.max.X, bb.max.Y, bb.max.Z) == pytest.approx((s.elbow_x + a.end_r, a.drive_z_at_y0 - z_0, 58.0117), abs=1e-4)
     # the slab: its faces level from the shell to the elbow's end - beside the motor's hole, clear of the slots -, its
-    # sides (width), its round end (end_r) past the taper
+    # sides (width), its faceted end past the taper (lib/style.py SIDES: a flat on each axis end_r off the elbow axis,
+    # the diagonal flats as far, the corners end_r / cos(180 / SIDES) out), the outline chamfered (EDGE_CHAMFER)
     lo, hi = e.y0 + SLIDE, e.relief_y + SLIDE          # 5.5, 23.5
     assert lo == pytest.approx(bb.min.Y, abs=1e-4)     # the underside on the hub end: the face the part prints on
     for x, z in ((68, 30), (100, 30), (115, 0), (135, 30), (165, 30), (202, 10)):
@@ -209,7 +211,14 @@ def test_default(link, legacy):
     assert is_inside(link, 120, y, w - 0.3) and not is_inside(link, 120, y, w + 0.3)
     assert is_inside(link, 70, y, -(w - 0.3)) and not is_inside(link, 70, y, -(w + 0.3))
     assert is_inside(link, s.elbow_x + a.end_r - 0.3, y, 0) and not is_inside(link, s.elbow_x + a.end_r + 0.3, y, 0)
-    assert not is_inside(link, s.elbow_x + 20.0, y, -(math.sqrt(a.end_r ** 2 - 20.0 ** 2) + 0.3))
+    diag, corner = math.radians(360.0 / SIDES), a.end_r / math.cos(math.pi / SIDES)
+    for r, inside in ((a.end_r - 0.3, True), (a.end_r + 0.3, False)):
+        assert is_inside(link, s.elbow_x + r * math.cos(diag), y, -r * math.sin(diag)) == inside, f"diagonal flat at {r}"
+    half = math.radians(180.0 / SIDES)
+    for r, inside in ((corner - 0.5, True), (corner + 0.3, False)):
+        assert is_inside(link, s.elbow_x + r * math.cos(half), y, -r * math.sin(half)) == inside, f"corner at {r}"
+    edge = s.elbow_x + a.end_r - EDGE_CHAMFER / 2.0
+    assert not is_inside(link, edge, hi - EDGE_CHAMFER / 2.0 + 0.2, 0) and is_inside(link, edge, y, 0), "the end's chamfer"
     # the body's windows round the discs: the two either side of the arm's pillar solid, the others open (no collar)
     start = math.radians(hh.bolt_start_deg)
     r_win = (hh.bore_dia + hh.od) / 4.0

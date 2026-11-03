@@ -31,6 +31,7 @@ from lib.belts import GT2_PULLEY_90T_FACE_Y
 from lib.cycloidal.params import MotorParams, PETGTolerances
 from lib.fasteners import M3_CLEAR, M3_NUT, M3_SHCS, M4_CLEAR, M4_NUT, M5_CLEAR, M5_NUT, M5_SHCS, NutSize, ShcsSize
 from lib.motors import MKS_SERVO42D_STACK, MKS_SERVO42D_W, MOTOR_40, NEMA17_BOLT_SP
+from lib.style import SIDES
 
 
 @dataclass(frozen=True)
@@ -326,7 +327,7 @@ class RollDriveParams:
     #                                       tests/forearm/test_roll_drive.py); j1_link's round end (ArmParams.end_r) inside it,
     #                                       6 proud of it -, its corners end_r / cos(22.5 deg) = 45.5 out (the elbow motor's board
     #                                       sweeps 56.5 out)
-    end_sides: int = 8                    # [DESIGN] the end's polygon: an octagon, a flat on each axis (the front face's plane, the end, the bottom)
+    end_sides: int = SIDES                # [DESIGN] the end's polygon (lib/style.py): an octagon, a flat on each axis (the front face's plane, the end, the bottom)
     tower_y: float = ROLL_FRAME_R         # [DESIGN] the tower's top over the roll axis, as far as the underside and the side face: the bay + 4.4
     rear_line_r: float = 3.0              # [DESIGN] the rear line (the outline from the end up to the tower's top): tangent to the end_r
     #                                       circle and to a circle this radius in the tower's rear-top corner - where the round end's hull ran,
