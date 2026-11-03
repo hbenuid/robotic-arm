@@ -50,7 +50,7 @@ robot/arm.urdf open in the same pose. placements.json, the parts and the modules
 Run:  ./cadtool gen assemblies/arm.py            -> assemblies/arm.step (git-ignored); every child part runs
                                                   with it (replayed when unchanged) and writes its (git-ignored) STEP
       ./cadtool inspect assemblies/arm.step      -> leaf refs, solids, faces, volume, bbox
-      ./cadtool viewer                           -> the arm's page in this venv's cadgen engine
+      ./cadtool viewer                           -> the arm's page on the machine's cad server
 """
 
 from cadgen import step

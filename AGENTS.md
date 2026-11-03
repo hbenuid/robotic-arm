@@ -18,8 +18,9 @@ table, the drive ratios) to agree with `software/control/src/config.py`, and one
   `git worktree add .claude/worktrees/<topic> -b <branch> origin/main` (git-ignored), then Claude Code's EnterWorktree
   with that path. The new branch tracks `origin/main`: `git branch --unset-upstream`, and push it with
   `git push -u origin <branch>`. A worktree gets its own `cad/.venv` (`./cadtool setup` in its `cad/`) and has no
-  generated STEPs (Recipe C's "before" hashes: `cad/AGENTS.md`) and its venv runs a cadgen engine of its own
-  (`./cadtool stop` in its `cad/` before the worktree goes); the git hooks and `~/.cache/cadgen` are shared. In a
+  generated STEPs (Recipe C's "before" hashes: `cad/AGENTS.md`); it builds on the machine's one cad server, in workers
+  of its own venv (`./cadtool stop` in its `cad/` before the worktree goes - only `--device` stops the server, for
+  every session); the git hooks and `~/.cache/cad` are shared. In a
   worktree Claude Code refuses Bash commands it cannot confirm stay there (loops, heredocs, long `sed` / redirect
   chains on a path that contains `GitHub`): write a script and run it as one plain command, make edits with Edit.
 - **Every branch reaches `main` through a pull request** — several sessions work on branches at once and `main` moves
@@ -89,9 +90,9 @@ in parallel jobs, lint both projects, import the CLI, run `cad/`'s fast lane, it
 `./cadtool gen` the arm - the run takes as long as its slowest job (`gh run list --workflow ci.yml` shows recent runs;
 the repo is public, so its standard runners cost no Actions minutes, and being manual-only it never runs for
 someone else's fork or pull request). It is the **clean-clone check** neither
-machine can give — no `~/.cache/cadgen`, no raw exports, no generated STEPs — so a test or model that quietly needs
+machine can give — no `~/.cache/cad`, no raw exports, no generated STEPs — so a test or model that quietly needs
 a file outside git fails there first. Everyday pushes do not need it (the pre-commit hook and the local suite cover
-them); run it on the branch, before its pull request is merged, when the branch carries: a cadgen / build123d / OCP
+them); run it on the branch, before its pull request is merged, when the branch carries: a cad / build123d / OCP
 bump, a new SolidWorks or vendor export or vendor STEP, a change to `cad/lib/reference.py` or to how parts read their
 inputs, or any large change - on the branch as it will merge (with `main` merged in if `main` moved), its result
 noted on the pull request (`gh pr comment <n>`). Suggest it then; never trigger it unasked. It checks and never
@@ -107,7 +108,7 @@ out until they are fixed.
   (`software/firmware/README.md`).
 
 ## CAD (`cad/`)
-- `cad/` is a **separate uv project** (Python 3.12, build123d) — the motor-control
+- `cad/` is a **separate uv project** (Python 3.14, build123d) — the motor-control
   project (`software/control/`) never depends on it, and `software/control/launch.bat` never installs it. Never run
   CAD code with the motor-control venv.
 - Work from `cad/` via `./cadtool …` (`./cadtool help` lists the commands). Start at `cad/AGENTS.md` — the map and the

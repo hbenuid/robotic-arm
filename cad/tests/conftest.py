@@ -1,7 +1,7 @@
 """Session guards for the CAD suite.
 
 Tests call model BODIES (lib.models.raw / parts.build), never a model: calling a `@step` model
-outside a cadgen build runs it through the engine - it starts this venv's engine and rewrites the part
+outside a cad build runs it through the machine's server and rewrites the part
 STEP. `Model.build` (what such a call runs) is replaced so an accidental top-level call fails loudly instead.
 
 The shapes tests/built.py caches are shared by every later test: a test that changed one (its label, colour, tree or

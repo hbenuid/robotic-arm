@@ -12,7 +12,7 @@ assemblies/arm.py places the module at placements.json "cycloidal_drive#1" (the 
 axis).
 
 Run:  ./cadtool gen assemblies/cycloidal_drive.py             -> assemblies/cycloidal_drive.step (git-ignored)
-      ./cadtool viewer assemblies/cycloidal_drive.step        -> its page in this venv's cadgen engine
+      ./cadtool viewer assemblies/cycloidal_drive.step        -> its page on the machine's cad server
       ./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals(), totals('rotor'))"
                                                               -> leaves / solids / volume / bbox (the EXPECTED lock, whole or per body)
 """

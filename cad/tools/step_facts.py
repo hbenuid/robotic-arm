@@ -7,9 +7,9 @@ A LOCAL tool over `cadgen.read_step` (the STEP's tree with its instance names, e
 parent's frame) + build123d. It covers the two jobs this repo has: reading a reference / vendor STEP before
 converting or swapping it (every leaf: solids, faces, volume, bbox; `--planes` lists the planar faces to find
 its frame from) and proving that a regenerated STEP is the same geometry (`diff`, exit 1 when it is not). The
-refs printed are cadgen 0.8's (the CAD Viewer's): a leaf's occurrence path from the root, a label its siblings
+refs printed are cad's (the CAD Viewer's): a leaf's occurrence path from the root, a label its siblings
 share numbered (`gripper/gripper_slider:1.2`), then `face N` (the face's ordinal in the part,
-TopExp.MapShapes order) - `./cadtool cadgen inspect <file.step> "<ref>"` says what one names and measures it.
+TopExp.MapShapes order) - `./cadtool cad inspect <file.step> "<ref>"` says what one names and measures it.
 Distances, clearances and overlaps are not here: `cadgen.geometry.closest_points` / `overlap_volume` in a test.
 """
 from __future__ import annotations
@@ -156,7 +156,7 @@ def main(argv: list[str]) -> int:
         print(f"cadtool inspect: `{argv[0]}` went with cadgen 0.6.5's `cadgen step inspect`. Now:\n"
               "  ./cadtool inspect <file.step> [--planes] [--json]\n"
               "  ./cadtool inspect diff <a.step> <b.step> [--tol 1e-6]\n"
-              "One ref: ./cadtool cadgen inspect <file.step> \"<ref>\". "
+              "One ref: ./cadtool cad inspect <file.step> \"<ref>\". "
               "Distances / overlaps: cadgen.geometry.closest_points / overlap_volume in a test.", file=sys.stderr)
         return 2
     if argv and argv[0] == "diff":
