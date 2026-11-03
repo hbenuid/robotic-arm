@@ -6,9 +6,10 @@ and the base_yaw 120T under j1_coupler, each clamped by 4x M4 screws + nuts; j1_
 (SolidWorks-driven) + the cycloidal_drive module (code-driven, placed at the SolidWorks node's pose) + the
 forearm_roll_drive and wrist_roll_drive modules (code-driven, placed by lib/mounts.py MODULE_MOUNTS) - the totals are locked in
 tests/test_assembly.py - bucketed into the GROUPS component tree (arm -> base_link/shoulder_link/upper_arm_link/
-elbow_link/forearm_link/wrist_pitch_link/wrist) so each rigid link toggles as one node in the viewers. Colors: a PRINTED part carries its link's
-(or its module's) tint, every PURCHASED part (COTS = True - motors, boards, servo, bearings, pins, bolts, nuts,
-rails, the 20T pulleys, the belts) is _occurrences.BOUGHT_TINT grey, inside the modules too:
+elbow_link/forearm_link/wrist_pitch_link/wrist) so each rigid link toggles as one node in the viewers. Colors
+(_occurrences.colour(), lib/style.py): a PRINTED part is off-white, or orange where it drives, turns or covers
+(ACCENT = True), every PURCHASED part (COTS = True - motors, boards, servo, bearings, pins, bolts, nuts,
+rails, the 20T pulleys) is grey and the belts a darker grey, inside the modules too:
 
     arm
     |- base_link         base, bearing_6806:base_yaw_1 / _2, washer_as6590:base_yaw_1, bearing_axk6590:base_yaw,
@@ -38,8 +39,7 @@ products are lib/reference.py SKIPPED_PRODUCTS, their poses sit in placements.js
 inlined, tinted copy, so this tree keeps it whole - the cycloidal drive under shoulder_link although its rotor body
 (the turning shell: shell ring, ring pins, housing bolts + nuts, both 6814s) belongs to upper_arm_link, the forearm roll drive under elbow_link although its rotor (the roll pulley +
 shaft) belongs to forearm_link, the wrist roll drive under wrist_pitch_link although its rotor (its pulley + shaft)
-belongs to wrist_roll_link - in robot/frames.py LINKS, the kinematic truth, which the per-link meshes follow (each in
-its own MODULE_TINTS colour).
+belongs to wrist_roll_link - in robot/frames.py LINKS, the kinematic truth, which the per-link meshes follow.
 
 Frame: the placements are in the SolidWorks capture frame W (+Y up), but the arm is EMITTED in
 the base_link frame B (lib/datum.py base_frame(), the frame robot/frames.py gives base_link - REP-103:
@@ -155,37 +155,34 @@ MODULES = {"gripper": gripper.gripper, "cycloidal_drive": cycloidal_drive.cycloi
 # The component tree: the rigid-link partition of robot/frames.py LINKS with the modules kept whole
 # (wrist = wrist_roll_link + jaw_a_link + jaw_b_link; the cycloidal drive under shoulder_link; the forearm roll
 # drive under elbow_link and the wrist roll drive under wrist_pitch_link although LINKS puts their rotors a link on).
-# Rows are (group label, tint, occurrence keys in document order); tests lock the LINKS mirror.
-# The tints color the PRINTED parts; grey is reserved for the purchased ones (BOUGHT_TINT).
+# Rows are (group label, occurrence keys in document order); tests lock the LINKS mirror.
 GROUPS = [
-    ("base_link",        "#937860", ("base#1", "bearing_6806#1", "bearing_6806#2", "washer_as6590#1", "bearing_axk6590#1",
-                                     "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1",
-                                     "nema17_48mm#1", "mks_servo42d#1", "yaw_motor_screws#1", "gt2_pulley_20t#3", "yaw_belt#1",
-                                     "gt2_idler_20t#2", "yaw_idler_spacer#1", "yaw_idler_screw#1", "yaw_idler_nut#1")),
-    ("shoulder_link",    "#4C72B0", ("j1_coupler#1", "j1_motor_leg#1", "washer_as6590#2", "gt2_pulley_120t#1", "yaw_pulley_screws#1",
-                                     "yaw_pulley_nuts#1", "fork_hub_screws#1", "fork_hub_nuts#1", "fork_foot_screws#1",
-                                     "fork_foot_nuts#1", "fork_sleeve_screws#1", "fork_sleeve_nuts#1", DRIVE_KEY)),
-    ("upper_arm_link",   "#CCB974", ("j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2",
-                                     "gt2_pulley_20t#2", "elbow_motor_screws#1", "elbow_belt#1", "gt2_idler_20t#1",
-                                     "elbow_idler_spacer#1", "elbow_idler_screw#1", "elbow_idler_nut#1")),
-    ("elbow_link",       "#DA8BC3", ("gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", ROLL_KEY)),
-    ("forearm_link",     "#DD8452", ("j2_link#1", "bearing_6806#5", "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3",
-                                     "gt2_pulley_20t#4", "wrist_motor_screws#1", "wrist_belt#1", "gt2_idler_20t#3",
-                                     "wrist_idler_screw#1", "wrist_idler_nut#1")),
-    ("wrist_pitch_link", "#55A868", ("gt2_pulley_90t#4", "wrist_pulley_screws#1", "wrist_pulley_nuts#1", "j3_coupler#2", "wrist_link#1",
-                                     WRIST_ROLL_KEY)),
-    ("wrist",            "#8172B3", (GRIPPER_KEY,)),
+    ("base_link",        ("base#1", "bearing_6806#1", "bearing_6806#2", "washer_as6590#1", "bearing_axk6590#1",
+                          "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1",
+                          "nema17_48mm#1", "mks_servo42d#1", "yaw_motor_screws#1", "gt2_pulley_20t#3", "yaw_belt#1",
+                          "gt2_idler_20t#2", "yaw_idler_spacer#1", "yaw_idler_screw#1", "yaw_idler_nut#1")),
+    ("shoulder_link",    ("j1_coupler#1", "j1_motor_leg#1", "washer_as6590#2", "gt2_pulley_120t#1", "yaw_pulley_screws#1",
+                          "yaw_pulley_nuts#1", "fork_hub_screws#1", "fork_hub_nuts#1", "fork_foot_screws#1",
+                          "fork_foot_nuts#1", "fork_sleeve_screws#1", "fork_sleeve_nuts#1", DRIVE_KEY)),
+    ("upper_arm_link",   ("j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2",
+                          "gt2_pulley_20t#2", "elbow_motor_screws#1", "elbow_belt#1", "gt2_idler_20t#1",
+                          "elbow_idler_spacer#1", "elbow_idler_screw#1", "elbow_idler_nut#1")),
+    ("elbow_link",       ("gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", ROLL_KEY)),
+    ("forearm_link",     ("j2_link#1", "bearing_6806#5", "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3",
+                          "gt2_pulley_20t#4", "wrist_motor_screws#1", "wrist_belt#1", "gt2_idler_20t#3",
+                          "wrist_idler_screw#1", "wrist_idler_nut#1")),
+    ("wrist_pitch_link", ("gt2_pulley_90t#4", "wrist_pulley_screws#1", "wrist_pulley_nuts#1", "j3_coupler#2", "wrist_link#1",
+                          WRIST_ROLL_KEY)),
+    ("wrist",            (GRIPPER_KEY,)),
 ]
-MODULE_TINTS = {DRIVE_KEY: cycloidal_drive.TINT, ROLL_KEY: forearm_roll_drive.TINT, WRIST_ROLL_KEY: wrist_roll_drive.TINT,
-                GRIPPER_KEY: gripper.TINT}  # the modules keep their own color in their group
 
 
 @step(out="arm.step")
 def arm():
     """The arm as a labelled Compound: 'arm' -> the GROUPS component nodes -> parts + the
-    'gripper' and 'cycloidal_drive' modules, printed parts tinted with their group's color and
-    purchased parts BOUGHT_TINT grey, in the base_link frame (Z up - arm_from_w())."""
-    return assembly("arm", grouped_children(OCCURRENCES, GROUPS, MODULES, MODULE_TINTS, root=arm_from_w()))
+    'gripper' and 'cycloidal_drive' modules, every part in its colour (_occurrences.colour(): two tones on the printed
+    parts, grey on the purchased ones), in the base_link frame (Z up - arm_from_w())."""
+    return assembly("arm", grouped_children(OCCURRENCES, GROUPS, MODULES, root=arm_from_w()))
 
 
 if __name__ == "__main__":

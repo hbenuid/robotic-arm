@@ -19,6 +19,7 @@ from lib import reference
 from lib.datum import IDENTITY, to_location
 
 NAME = pathlib.Path(__file__).stem
+ACCENT = True                 # the accent colour, lib/style.py: a finger
 REFERENCE = NAME              # reference/<NAME>.step
 CONVERTED = False             # True once gripper_finger_right() is parametric build123d
 LOCAL_FROM_REF = IDENTITY   # reference frame -> this part's local frame (identity = SolidWorks frame)

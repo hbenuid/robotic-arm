@@ -23,9 +23,9 @@ parts vs reference), `test_placements.py` (JSON integrity, tables cover every ke
 module record + the mounted records vs `lib/mounts.py`, the records' `SHIFTS` and the forearm's `TURNS`
 (`lib/placements.py`), the skipped nodes),
 `test_assembly.py` (every assembly file ends with its build call; the arm's leaves / solids / volume / bbox
-vs SolidWorks + the module lock — the numbers are IN that file; the arm's leaf colours -
-purchased = `BOUGHT_TINT`, which no group / module may reuse, printed = the link's / module's tint, in the arm and in
-the standalone gripper; the standalone drives' in their own tests), `test_bom.py` (the print / buy lists
+vs SolidWorks + the module lock — the numbers are IN that file; the arm's leaf colours - every part
+`_occurrences.colour()`, in the arm and in the standalone gripper (the standalone drives' in their own tests), the
+`lib/style.py` palette distinct, `ACCENT` only on printed parts, every `<joint>_belt` bought), `test_bom.py` (the print / buy lists
 partition `parts.names()` by the flag, the occurrence counts, the drive's pieces follow `DEFAULT_CONFIG`, `EXTRAS`
 well-formed), `test_belts.py` (the GT2 belts, purchased with no reference: each a stock length, its loop that long
 round its pulleys, the band on their tooth tips, their volume / bbox written in), `test_params_invariants.py` (locks),
@@ -52,7 +52,7 @@ arm down in the table skipped),
 loading `build123d` / `OCP`; names the first offender; its assembly list is kept by hand: `assemblies/AGENTS.md`),
 `source_checks.py` (the shared `runs_its_model()` check that a model file ends with its build call),
 `helpers.py` (the geometry helpers every geometry test shares: `interference`, `is_inside`, `section_area`, …, and
-`module_tints`, a standalone module's colours),
+`part_colours`, an assembly's leaf colours),
 `totals.py` (what an occurrence contributes to the arm / link totals: its SolidWorks record, or its own build once
 converted — shared by `test_assembly.py` and `test_robot.py`), `built.py` (above),
 `tests/cycloidal/` (the drive: one module per part + housing / purchased / fitment / assembly / port,

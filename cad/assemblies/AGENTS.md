@@ -92,11 +92,13 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
 - A view of the arm with some occurrences hidden needs no model: `./cadtool snapshot assemblies/arm.step out.png
   --display '{"hidden": ["arm/wrist/gripper"]}'` (occurrence-path refs, `./cadtool inspect` lists them; `isolated`
   draws only the ones named). A second model would be the only way to get a STEP (a model takes no parameters).
-- **Printed vs. bought is a colour in every assembly, never a second model.** `gripper.py`, `cycloidal_drive.py`,
-  `forearm_roll_drive.py` and `wrist_roll_drive.py` declare a `TINT` (their printed parts' colour, reused by `arm.py MODULE_TINTS`) and pass it to
-  `occurrence_children(…, tint=)` / `located_children(…, tint=)`; `_tint_parts` gives every purchased part
-  (`parts.bought()`) the one `_occurrences.BOUGHT_TINT` grey instead. Tints go on the LEAVES only (`_tint`), never
-  on a group or module node: cadgen writes a multi-solid part's colour on its solids, and a colour on an enclosing
+- **What a part is shows as its colour in every assembly, never a second model.** `_occurrences.colour(name)` picks one
+  of `lib/style.py`'s colours (`docs/design_language.md`): a purchased part (`parts.bought()`) grey - a belt darker -, a
+  printed one orange where it drives, turns or covers (`parts.accent()`: its module declares `ACCENT = True`) and
+  off-white otherwise - the same part the same colour in the arm and in each module standing alone: `gripper.py`,
+  `cycloidal_drive.py`, `forearm_roll_drive.py` and `wrist_roll_drive.py` pass `tint=True` to
+  `occurrence_children` / `located_children`, `grouped_children` always colours (`_tint_parts`). Colours go on the
+  LEAVES only (`_tint`), never on a group or module node: cadgen writes a multi-solid part's colour on its solids, and a colour on an enclosing
   node outranks those in the renderers (verified by snapshot: the bought MKS boards and the MG996R drew in their
   link's colour while the groups carried one). Separate make/buy models were tried and removed as
   duplicates — one STEP per assembly. A purchased item that is **not modelled** lives only in
@@ -111,11 +113,9 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
   links; the cycloidal drive under `shoulder_link` although `LINKS` puts its rotor body in
   `upper_arm_link`; the forearm roll drive under `elbow_link` although its rotor is in `forearm_link`; the wrist roll
   drive under `wrist_pitch_link` although its rotor is in `wrist_roll_link`) — via
-  `_occurrences.grouped_children()`, which tints each subtree's **printed** parts with its group's color
-  (`MODULE_TINTS` overrides for the modules), every **purchased** part — inside the modules too — with `BOUGHT_TINT`
-  (above; no group / module tint may reuse it, `test_grey_means_bought`), and raises unless the groups cover the keys
-  exactly once — so each component toggles as one node in the viewers. `test_assembly.py` locks the group labels +
-  the LINKS mirror. The tints are per-leaf (`_tint` colours every leaf, no group node: above).
+  `_occurrences.grouped_children()`, which colours every part (above; `test_the_colours_tell_the_kinds_of_part_apart`)
+  and raises unless the groups cover the keys exactly once — so each component toggles as one node in the viewers.
+  `test_assembly.py` locks the group labels + the LINKS mirror.
 - `assemblies/cycloidal_drive.py` is **code-driven**: rows are `(part, role, placement)` (data) from
   `lib/cycloidal stack_positions` (`located_children`) — the placement a position `(x, y, z)` when the part's
   frame is the module's shifted, or a frame `((x, y, z), (rx, ry, rz))` when it needs a rotation

@@ -10,10 +10,6 @@ from cadgen import step
 from assemblies._occurrences import occurrence_children
 from lib.assembly import assembly
 
-# The color of the gripper's PRINTED parts, here and in the arm (arm.py MODULE_TINTS); its purchased
-# parts (servo, horn, rails) are _occurrences.BOUGHT_TINT grey in both.
-TINT = "#64B5CD"
-
 # (part, role, placements.json key) in SolidWorks document order. Duplicate parts carry an
 # ordinal role (finger/rail/end/slider/link pairs): labels gripper_end:1, gripper_end:2, ...
 OCCURRENCES = [
@@ -41,9 +37,9 @@ OCCURRENCES = [
 
 @step(out="gripper.step")
 def gripper():
-    """The gripper module in its own (SolidWorks sub-assembly) frame: printed parts TINT, purchased
-    parts BOUGHT_TINT grey."""
-    return assembly("gripper", occurrence_children(OCCURRENCES, tint=TINT))
+    """The gripper module in its own (SolidWorks sub-assembly) frame, every part in its colour as in the arm
+    (_occurrences.colour(): the fingers orange, the other printed parts off-white, servo, horn and rails grey)."""
+    return assembly("gripper", occurrence_children(OCCURRENCES, tint=True))
 
 
 if __name__ == "__main__":

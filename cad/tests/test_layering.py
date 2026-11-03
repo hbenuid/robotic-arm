@@ -7,7 +7,7 @@ importable on its own, and a part never depends on how it is assembled. Function
 count too (they are still edges). Three finer rules ride along:
   * the lib/ packages (LEAF_PACKAGES) never import lib/params.py: it re-exports interface values from most of them,
     so they take their globals from the leaves (lib/units.py, lib/motors.py, lib/belts.py,
-    lib/bearings.py, lib/fasteners.py, lib/geom.py, lib/sensors.py: LEAF_MODULES) instead - and the leaves never
+    lib/bearings.py, lib/fasteners.py, lib/geom.py, lib/sensors.py, lib/style.py: LEAF_MODULES) instead - and the leaves never
     import lib/params.py either;
   * nothing outside parts/ imports from inside it (`parts.<group>.<name>`, `from parts import ...`): `import parts`,
     then parts.load() / model() / build();
@@ -35,7 +35,7 @@ PART_MODULE_IMPORT_ALLOWED = {"parts"}
 # their globals from the leaves (LEAF_MODULES) and never import lib.params back.
 LEAF_PACKAGES = ("cycloidal", "forearm", "upper_arm", "base", "coupler", "yaw_coupler", "wrist", "pulley")
 # The leaves those packages import: importing lib.params from one would close the cycle.
-LEAF_MODULES = ("units.py", "motors.py", "belts.py", "bearings.py", "fasteners.py", "geom.py", "sensors.py")
+LEAF_MODULES = ("units.py", "motors.py", "belts.py", "bearings.py", "fasteners.py", "geom.py", "sensors.py", "style.py")
 
 SOURCES = sorted(p for pkg in ORDER for p in (CAD_DIR / pkg).rglob("*.py") if "__pycache__" not in p.parts)
 

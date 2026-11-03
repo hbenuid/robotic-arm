@@ -39,7 +39,7 @@ from lib.forearm.roll import rear_line
 from robot import frames as F
 from tests import built
 from tests.forearm.helpers import in_drive_frame, j2_link_in_drive_frame
-from tests.helpers import interference, is_inside, module_tints
+from tests.helpers import interference, is_inside, part_colours
 
 S = stack_positions(DEFAULT)
 D = DEFAULT.drive
@@ -272,11 +272,11 @@ def test_totals_and_bodies(module):
 
 @pytest.mark.slow
 def test_module_colors(module):
-    """Standalone: the purchased parts BOUGHT_TINT, the printed ones the module's TINT."""
+    """Standalone: every part in its colour, as in the arm (tests/helpers.py part_colours)."""
     assert module.label == "forearm_roll_drive"
     # 2 bearings, the rotor clamp's screws and nuts, motor, board, 20T, the motor's screws, belt, the tensioner's idler,
     # screw and nut, the back panel's magnets / frame, shaft, pulley, back panel
-    assert module_tints(module, M.TINT) == {True: 13, False: 4}
+    assert part_colours(module) == {True: 13, False: 4}
 
 
 @pytest.mark.slow

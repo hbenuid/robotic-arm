@@ -1,8 +1,8 @@
 """The arm assembly rebuilt from parts + placements reproduces the SolidWorks totals (the designed modules counted by
 their own locks, which their own tests hold: tests/cycloidal/test_assembly.py, tests/forearm/test_roll_drive.py,
 tests/wrist/test_roll_drive.py) and the
-colors: in every assembly a purchased part is BOUGHT_TINT grey, a printed one its link's / module's tint (the
-standalone drives' in their own tests)."""
+colors: in every assembly each part is its own colour (lib/style.py, _occurrences.colour()), the same in the arm and in
+each module standing alone (the drives' in their own tests)."""
 import importlib
 import pathlib
 
@@ -10,32 +10,15 @@ import pytest
 from build123d import Location, Vector
 
 import parts
-from assemblies import arm, cycloidal_drive, forearm_roll_drive, gripper, wrist_roll_drive
-from assemblies._occurrences import BOUGHT_TINT
+from assemblies import arm, gripper
 from lib import placements as P
 from lib import reference as R
+from lib import style
 from lib.models import raw
 from tests import built
-from tests.helpers import leaves, module_tints, same_color
+from tests.helpers import leaves, part_colours
 from tests.source_checks import runs_its_model
 from tests.totals import part_totals, world_bbox
-
-
-def _check_link_tints(root):
-    """The arm's colors: a purchased part (parts.bought()) is BOUGHT_TINT wherever it sits - inside the
-    gripper and the drive too -, a printed part carries its module's MODULE_TINTS color or else its
-    link group's."""
-    module_tint = {key.split("#")[0]: tint for key, tint in arm.MODULE_TINTS.items()}
-    group_tint = {label: tint for label, tint, _ in arm.GROUPS}
-    seen = {True: 0, False: 0}
-    for group in root.children:
-        for member in group.children:
-            printed = module_tint.get(member.label, group_tint[group.label])
-            for leaf in leaves(member):
-                bought = parts.bought(leaf.label.split(":")[0])
-                assert same_color(leaf, BOUGHT_TINT if bought else printed), f"{group.label}/{leaf.label}: {tuple(leaf.color)}"
-                seen[bought] += 1
-    return seen
 
 
 def _expected_totals():
@@ -78,7 +61,7 @@ def test_gripper_module_builds():
     g = raw(gripper.gripper)
     assert g.label == "gripper"
     assert len(leaves(g)) == len(gripper.OCCURRENCES) == 19
-    assert module_tints(g, gripper.TINT) == {True: 4, False: 15}   # servo, horn, 2 rails
+    assert part_colours(g) == {True: 4, False: 15}   # servo, horn, 2 rails
 
 
 def test_every_assembly_runs_its_model():
@@ -99,9 +82,9 @@ def test_arm_groups_mirror_links():
     from assemblies._occurrences import split_key
     from robot import frames
 
-    group_keys = [key for _, _, keys in arm.GROUPS for key in keys]
+    group_keys = [key for _, keys in arm.GROUPS for key in keys]
     assert sorted(group_keys) == sorted(key for _, _, key in arm.OCCURRENCES)
-    groups = {label: set(keys) for label, _, keys in arm.GROUPS}
+    groups = {label: set(keys) for label, keys in arm.GROUPS}
 
     def whole(link):
         return {split_key(k)[0] for k in frames.LINKS[link]}
@@ -118,14 +101,16 @@ def test_arm_groups_mirror_links():
     ) - {f"{arm.WRIST_ROLL_KEY}:rotor"}
 
 
-def test_grey_means_bought():
-    """BOUGHT_TINT is reserved for the purchased parts: no link group or module may be tinted with it
-    (base_link used to be grey); the two modules are the same color standalone and in the arm."""
-    tints = [tint for _, tint, _ in arm.GROUPS] + list(arm.MODULE_TINTS.values())
-    assert BOUGHT_TINT.lower() not in {t.lower() for t in tints}
-    assert len({t.lower() for t in tints}) == len(tints), "two groups / modules share a tint"
-    assert arm.MODULE_TINTS == {arm.DRIVE_KEY: cycloidal_drive.TINT, arm.ROLL_KEY: forearm_roll_drive.TINT,
-                                arm.WRIST_ROLL_KEY: wrist_roll_drive.TINT, arm.GRIPPER_KEY: gripper.TINT}
+def test_the_colours_tell_the_kinds_of_part_apart():
+    """The four colours of lib/style.py are distinct (grey means bought, darker grey a belt, orange a printed part that
+    drives, turns or covers, off-white the printed structure); only a printed part declares ACCENT, and every part
+    named <joint>_belt is a purchased belt."""
+    palette = [style.BODY, style.ACCENT, style.BOUGHT, style.BELT]
+    assert len({c.lower() for c in palette}) == len(palette)
+    accent = [n for n in parts.names() if parts.accent(n)]
+    assert accent and not [n for n in accent if parts.bought(n)], "a purchased part declares ACCENT"
+    belts = [n for n in parts.names() if n.endswith("_belt")]
+    assert belts and all(parts.bought(n) for n in belts)
 
 
 def test_arm_is_emitted_z_up():
@@ -149,7 +134,7 @@ def test_arm_assembly_matches_reference_totals():
     wrist_pitch_link/wrist)."""
     a = raw(arm.arm)
     assert a.label == "arm"
-    assert [c.label for c in a.children] == [label for label, _, _ in arm.GROUPS]
+    assert [c.label for c in a.children] == [label for label, _ in arm.GROUPS]
     arm_leaves = leaves(a)
     exp_leaves, exp_solids, exp_volume = _expected_totals()
     assert len(arm_leaves) == exp_leaves == 123
@@ -160,4 +145,4 @@ def test_arm_assembly_matches_reference_totals():
     exp_min, exp_size = _expected_bbox()
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_min(a), exp_min, strict=True)), (R.bbox_min(a), exp_min)
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_size(a), exp_size, strict=True)), (R.bbox_size(a), exp_size)
-    assert _check_link_tints(a) == {True: 83, False: 40}   # bought / printed leaves (tools/bom.py counts the same)
+    assert part_colours(a) == {True: 83, False: 40}   # bought / printed leaves (tools/bom.py counts the same)

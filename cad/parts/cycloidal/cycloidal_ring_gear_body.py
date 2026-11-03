@@ -35,6 +35,7 @@ from lib.geom import align_min, cylinder, through
 from lib.params import NUDGE
 
 NAME = pathlib.Path(__file__).stem
+ACCENT = True                 # the accent colour, lib/style.py: a drive part
 REFERENCE = NAME
 CONVERTED = True
 LOCAL_FROM_REF = IDENTITY

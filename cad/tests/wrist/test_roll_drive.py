@@ -29,7 +29,7 @@ from lib.wrist.layout import (
 )
 from robot import frames as F
 from tests import built
-from tests.helpers import interference, module_tints
+from tests.helpers import interference, part_colours
 
 S = stack_positions(DEFAULT)
 D = DEFAULT.roll
@@ -190,9 +190,9 @@ def test_totals_and_bodies(module):
 
 @pytest.mark.slow
 def test_module_colors(module):
-    """Standalone: the purchased parts BOUGHT_TINT, the printed ones the module's TINT."""
+    """Standalone: every part in its colour, as in the arm (tests/helpers.py part_colours)."""
     assert module.label == "wrist_roll_drive"
-    assert module_tints(module, M.TINT) == {True: 6, False: 2}   # 2 bearings, the pancake, its board, its 20T, the belt / shaft, pulley
+    assert part_colours(module) == {True: 6, False: 2}   # 2 bearings, the pancake, its board, its 20T, the belt / shaft, pulley
 
 
 @pytest.mark.slow

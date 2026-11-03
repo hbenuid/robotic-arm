@@ -166,5 +166,6 @@ generated from the label:
   45° is FDM's self-supporting angle in the skill's `references/process-limits.md`) and the same with `orientations`
   (the build orientations ranked by support); how to read the JSON is the skill's `SKILL.md`. A finding that holds
   up the print is a row in `docs/open_issues.md`.
-- **Colours** — the grey of purchased parts in `arm.step` and every module's STEP (`assemblies/AGENTS.md`, "Printed
-  vs. bought is a colour").
+- **Colours** — the grey of purchased parts in `arm.step` and every module's STEP; a printed part is off-white, or orange
+  where it drives, turns or covers: its module then declares `ACCENT = True` (`parts.accent()`;
+  `docs/design_language.md`, `assemblies/AGENTS.md` "What a part is shows as its colour").

@@ -14,7 +14,7 @@ from __future__ import annotations
 from build123d import Box, Color, Compound, Cylinder, GeomType, Pos, PositionMode, Shape, Vertex
 
 import parts
-from assemblies._occurrences import BOUGHT_TINT
+from assemblies._occurrences import colour
 from lib import reference as R
 from lib.geom import align_min
 
@@ -128,12 +128,12 @@ def same_color(shape, tint: str) -> bool:
     return all(abs(x - y) < 1e-6 for x, y in zip(tuple(shape.color), tuple(Color(tint)), strict=True))
 
 
-def module_tints(module, tint: str) -> dict[bool, int]:
-    """A standalone module: purchased parts BOUGHT_TINT, printed parts the module's TINT; returns the
-    bought / printed leaf counts."""
+def part_colours(node) -> dict[bool, int]:
+    """Every leaf of an assembly node (the arm, a module standing alone) in its part's colour (_occurrences.colour():
+    lib/style.py); returns the bought / printed leaf counts."""
     seen = {True: 0, False: 0}
-    for leaf in leaves(module):
-        bought = parts.bought(leaf.label.split(":")[0])
-        assert same_color(leaf, BOUGHT_TINT if bought else tint), f"{module.label}/{leaf.label}: {tuple(leaf.color)}"
-        seen[bought] += 1
+    for leaf in leaves(node):
+        name = leaf.label.split(":")[0]
+        assert same_color(leaf, colour(name)), f"{node.label}/{leaf.label}: {tuple(leaf.color)}, not {colour(name)}"
+        seen[parts.bought(name)] += 1
     return seen
