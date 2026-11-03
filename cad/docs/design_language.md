@@ -12,9 +12,10 @@ designed here), each with its own look; these rules make them one.
   with a flat on each of the part's own axes - `lib/geom.py faceted_end()`, `forearm_roll_block` the pattern -, and the
   base and its motor mount are an octagonal frustum on an octagonal foot. Where a slab tapers onto its end, the bend is
   sharp like the facets.
-- **What turns stays round.** A part that turns against a neighbour keeps its round: the cycloidal drive, the bearing
-  bosses, the pulleys and the base_yaw turntable (the fork's disc, the base's cap) - a facet there would sweep a
-  corner past the part beside it.
+- **What turns stays round.** A part that turns against a neighbour keeps its round: the cycloidal drive, a bearing boss
+  standing proud of a face (the roll frame's, the wrist frame's), the pulleys and the base_yaw turntable (the fork's
+  disc, the base's cap) - a facet there would sweep a corner past the part beside it. A link's end with a bearing seat
+  inside it is structure: faceted round the seat.
 - **Edges are chamfered.** One 45° chamfer (`lib/style.py EDGE_CHAMFER`) on the outline of every printed part's main
   faces and on every cover - `lib/geom.py chamfer_outline()`, cut on the main body before its holes and pockets, so
   holes, bores and seats stay sharp. A 45° chamfer prints with no support, even on an edge facing the bed.
@@ -25,10 +26,13 @@ designed here), each with its own look; these rules make them one.
 - **Belts are covered.** Each belt run (the upper arm's, the forearm's, the base's) gets a cover and the roll frame's open
   face a lid. A cover follows its link's outline, so the covered link reads as one piece, stands clear of the pulleys,
   belt and screw heads inside, and is held by disc magnets like the roll frame's back panel (`forearm_roll_back_panel`):
-  it comes off by hand to reach its belt's tensioner. The forearm's web is as wide as its cover's end, which the
-  wrist's 90T has to turn inside.
+  it comes off by hand to reach its belt's tensioner. Its wall is `lib/style.py COVER_WALL`, `COVER_CLEAR` off what it
+  covers. A link a cover follows is as wide as what turns inside the cover needs: the forearm's web
+  (`lib/forearm/params.py WebParams.half_w`) round the wrist's 90T.
 
 ## Where it stands
-In the model: the colours, and the upper arm (`j1_link`: its faceted elbow end, its slab's outline chamfered) and the
-roll frame (`forearm_roll_block`: its outline chamfered). Not yet - `docs/open_issues.md` "Not modelled yet" -: the rest
-of the shapes and chamfers, and the covers.
+In the model: the colours; the upper arm (`j1_link`: its faceted elbow end, its slab's outline chamfered); the roll
+frame (`forearm_roll_block`: its outline chamfered); the forearm (`j2_link`: its web as wide as its cover's end, its
+wrist end and boss faceted and chamfered, its flange faceted); the wrist (`wrist_link`: its roll frame and its plate's
+end on the pitch axis faceted and chamfered). Not yet - `docs/open_issues.md` "Not modelled yet" -: the fork, the base
+and its motor mount, and the covers.

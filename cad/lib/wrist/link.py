@@ -11,7 +11,7 @@ import math
 
 import build123d as bd
 
-from lib.geom import align_min, cylinder, hex_prism, single_solid, through
+from lib.geom import align_min, chamfer_outline, cylinder, faceted_end, hex_prism, single_solid, through
 from lib.units import NUDGE
 from lib.wrist.layout import end_face_holes, frame_y_span, seat_bolt_points, slope_x, stack_positions
 from lib.wrist.params import DEFAULT, WristConfig
@@ -132,10 +132,11 @@ def build_wrist_link(cfg: WristConfig = DEFAULT):
         for cut in _seat_cuts(cfg) + _end_face_cuts(cfg):
             body = body - cut
         return single_solid(body)
-    # the wrist roll drive's frame on the plate's underside (lib/wrist/roll.py); the plate only its round end on the
-    # pitch axis - j3_coupler#2's seat
+    # the wrist roll drive's frame on the plate's underside (lib/wrist/roll.py); the plate only its end on the pitch axis
+    # - j3_coupler#2's seat -, faceted (lib/geom.py faceted_end: flats pitch_r off the axis), its outline chamfered
     p = cfg.plate
-    body = cylinder(p.pitch_r, p.thickness, (p.pitch_x, 0.0)) + build_frame(cfg).moved(module_to_host(cfg))
+    plate = chamfer_outline(bd.extrude(faceted_end(p.pitch_r, (p.pitch_x, 0.0)), amount=p.thickness), (0.0, 0.0, 1.0))
+    body = plate + build_frame(cfg).moved(module_to_host(cfg))
     for cut in _seat_cuts(cfg) + _bay_channels(cfg):
         body = body - cut
     return single_solid(body)
