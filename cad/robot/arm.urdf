@@ -75,8 +75,8 @@
   <link name="base_link">
     <inertial>
       <origin xyz="-0.062447 -0.000007 0.045993" rpy="0 0 0" />
-      <mass value="1.491095" />
-      <inertia ixx="4.562689e-03" ixy="1.021492e-05" ixz="-8.925526e-04" iyy="9.304234e-03" iyz="1.630966e-06" izz="1.053866e-02" />
+      <mass value="1.49109" />
+      <inertia ixx="4.562676e-03" ixy="1.021265e-05" ixz="-8.925595e-04" iyy="9.304192e-03" iyz="1.631179e-06" izz="1.053860e-02" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -94,8 +94,8 @@
   <link name="shoulder_link">
     <inertial>
       <origin xyz="-0.000684 0.013067 -0.021619" rpy="0 0 0" />
-      <mass value="1.455667" />
-      <inertia ixx="4.073578e-03" ixy="6.489533e-05" ixz="1.963557e-05" iyy="3.021277e-03" iyz="-3.981678e-04" izz="2.303430e-03" />
+      <mass value="1.455672" />
+      <inertia ixx="4.073596e-03" ixy="6.489525e-05" ixz="1.963502e-05" iyy="3.021296e-03" iyz="-3.981600e-04" izz="2.303441e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />

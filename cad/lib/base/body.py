@@ -101,8 +101,10 @@ def _cone(r0: float, r1: float, y: tuple, x: float = 0.0, sides: int | None = No
         return _round(r0, y, x, sides)
     if sides is None:
         return bd.Pos(x, 0.0, y[0]) * bd.Cone(r0, r1, y[1] - y[0], align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MIN))
-    return bd.loft([bd.Pos(x, 0.0, y[0]) * faceted_end(r0, sides=sides),
-                    bd.Pos(x, 0.0, y[1]) * faceted_end(r1, sides=sides)], ruled=True)
+    # a tapered prism, its flats planes (a ruled loft between the two sections makes them B-splines, whose volume the
+    # kernel integrates differently per machine: 2.2 mm3 on the base between the Mac and CI's x86_64 runner)
+    h = y[1] - y[0]
+    return bd.Pos(x, 0.0, y[0]) * bd.extrude(faceted_end(r0, sides=sides), amount=h, taper=math.degrees(math.atan2(r0 - r1, h)))
 
 
 def _corner(r: float, sides: int | None) -> float:
@@ -170,9 +172,11 @@ def _walls(cfg: BaseConfig):
     body = body - _dd(r_in, s.x1 - s.wall, (s.y0 - NUDGE, p.y[1] + NUDGE), sides=s.sides)
     body = body - _block((s.x1 - s.wall - NUDGE, s.x1 + NUDGE), (-s.notch_half_z, s.notch_half_z), (s.y0 - NUDGE, s.notch_y1))
     inset, ri, far = chamfer_inset(cfg), inner_r(cfg, c.chamfer_y0), r0 + 1.0
-    cavity = _dd(r_in, far, (p.y[1] - NUDGE, c.chamfer_y0), sides=s.sides) + bd.loft(
-        [_d_section(ri, far, c.chamfer_y0, s.sides), _d_section(ri - inset, far, c.underside_y, s.sides)], ruled=True)
-    return body - cavity
+    if s.sides is None:
+        chamfer = bd.loft([_d_section(ri, far, c.chamfer_y0), _d_section(ri - inset, far, c.underside_y)], ruled=True)
+    else:   # the 45 degree chamfer as a tapered prism (planes: _cone), its far end in past the walls with the rest
+        chamfer = bd.Pos(0.0, 0.0, c.chamfer_y0) * bd.extrude(_d_section(ri, far, 0.0, s.sides), amount=inset, taper=45.0)
+    return body - (_dd(r_in, far, (p.y[1] - NUDGE, c.chamfer_y0), sides=s.sides) + chamfer)
 
 
 def _cap(cfg: BaseConfig, body):
