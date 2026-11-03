@@ -1,5 +1,5 @@
 {
-  // Use this folder's uv-created venv (Python 3.12, build123d-compatible).
+  // Use this folder's uv-created venv (Python 3.14, build123d-compatible).
   // ${workspaceFolder} resolves to cad/ when opened via robotic-arm.code-workspace.
   "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
   "python.terminal.activateEnvironment": true

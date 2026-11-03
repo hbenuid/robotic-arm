@@ -1,9 +1,9 @@
 """Importing a model file never loads the CAD kernel.
 
-A model run (`./cadtool gen`) hands its build to this venv's warm cadgen engine, which decides whether anything
+A model run (`./cadtool gen`) hands its build to the machine's warm cad server, which decides whether anything
 has to run; the calling process loads the kernel only if the model's import closure does - and then every run,
 even one the engine finds current, pays the kernel's import. So the whole import closure of a model stays
-kernel-free: `import build123d as bd` (cadgen's import hook, `cadgen-lazy-kernel.pth`, binds a module the kernel
+kernel-free: `import build123d as bd` (cad's import hook, `cad-lazy-kernel.pth`, binds a module the kernel
 loads into on its first attribute) and `bd.<name>` inside function bodies only - no `from build123d import ...`,
 no kernel object in a module-level constant, a class body, a decorator or an argument default; frames a module
 declares are data (lib/datum.py). The lazy `build123d` / `OCP` modules sit in sys.modules from the first import:

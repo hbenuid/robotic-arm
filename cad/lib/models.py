@@ -34,7 +34,7 @@ def raw(model):
 
 
 def building() -> bool:
-    """True while a cadgen build runs on this thread (cadgen 0.8 keeps it on the private thread-local
+    """True while a cad build runs on this thread (cad keeps it on the private thread-local
     `cadgen.engine.model._CONTEXT.build`: docs/toolchain.md lists the private names this repo leans on)."""
     from cadgen.engine.model import _CONTEXT
 

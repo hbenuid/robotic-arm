@@ -1,6 +1,7 @@
-"""The local tooling stays healthy: the venv holds the cadgen and the OCP kernel pyproject.toml pins
-(and only ONE OCP distribution), and ./cadtool inspect (tools/step_facts.py) agrees with the kernel; the retired
-inspect verbs teach the new syntax, cadgen's telemetry stays off,
+"""The local tooling stays healthy: the venv holds the cad library and the OCP kernel pyproject.toml pins
+(and only ONE OCP distribution) and no cad-server, and ./cadtool inspect (tools/step_facts.py) agrees with the kernel;
+the retired inspect verbs teach the new syntax, cad's telemetry stays off, no CADGEN_ name and no second pin is left,
+./cadtool refuses what would move the machine off the pin and its stop ends only this venv's workers,
 the two .claude/settings.json are the same, no tracked CLAUDE.md hides an AGENTS.md, every tracked name is lowercase."""
 import json
 import pathlib
@@ -12,7 +13,7 @@ from importlib import metadata
 import pytest
 
 from lib.reference import CAD_DIR, describe, path_of
-from tools import step_facts
+from tools import step_facts, stop_workers
 
 
 def pinned(package: str) -> str:
@@ -25,9 +26,16 @@ def pinned(package: str) -> str:
     raise AssertionError(f"{package} is not pinned with == in pyproject.toml")
 
 
-def test_installed_cadgen_is_the_pinned_one():
-    # The plugin's claude.mcp.json carries the same pin; ./cadtool doctor checks that side.
-    assert metadata.version("cadgen") == pinned("cadgen"), "run ./cadtool setup"
+def test_installed_cad_is_the_pinned_one():
+    # The machine's cad-server and the plugin's claude.mcp.json carry the same pin; ./cadtool doctor checks those.
+    assert metadata.version("cad") == pinned("cad"), "run ./cadtool setup"
+
+
+def test_the_server_stays_out_of_the_venv():
+    """cad-server in a venv lets that venv register as the machine's installation, and a worktree's goes with the
+    worktree (docs/toolchain.md Pins): the server is a uv tool, one per machine."""
+    with pytest.raises(metadata.PackageNotFoundError):
+        metadata.version("cad-server")
 
 
 def test_one_ocp_distribution_and_it_is_complete():
@@ -58,15 +66,63 @@ def test_step_facts_agree_with_the_kernel():
     assert step_facts.diff(path, path) == []
 
 
-def test_cadgen_telemetry_stays_off():
-    """cadgen sends usage stats and crash reports by default once a cadgen command has shown its notice; this repo
-    keeps them off (docs/toolchain.md Pins). In the environment of every cadtool command (and VS Code's, `.env`)
-    nothing shows the notice or sends; `./cadtool setup` stores the "off" the plugin's server and engine go by."""
+def test_cad_telemetry_stays_off():
+    """cad sends usage stats and crash reports by default once a cad command has shown its notice; this repo keeps
+    them off (docs/toolchain.md Pins). In the environment of every cadtool command (and VS Code's, `.env`) nothing shows
+    the notice or sends; `./cadtool server` stores the "off" the server and the plugin go by, before `cad doctor`
+    starts the server. That the choice IS stored is per machine: `./cadtool doctor` reads it and fails without it."""
     source = (CAD_DIR / "cadtool").read_text()
-    assert re.search(r"^export CADGEN_TELEMETRY=0$", source, re.MULTILINE), "cadtool no longer exports it"
-    setup = re.search(r"^  setup\)\n(?P<body>.*?);;$", source, re.MULTILINE | re.DOTALL)
-    assert setup and "cadgen telemetry off" in setup["body"], "./cadtool setup no longer stores the off"
-    assert "CADGEN_TELEMETRY=0" in (CAD_DIR / ".env").read_text().splitlines()
+    assert re.search(r"^export CAD_TELEMETRY=0$", source, re.MULTILINE), "cadtool no longer exports it"
+    install = re.search(r"^install_server\(\) \{(?P<body>.*?)^\}$", source, re.MULTILINE | re.DOTALL)
+    assert install, "cadtool has no install_server()"
+    off, doctor = install["body"].find('"$cad" telemetry off'), install["body"].find('"$cad" doctor')
+    assert -1 < off < doctor, "./cadtool server must store the off before `cad doctor` starts the server"
+    assert re.search(r"^    install_server ;;$", source, re.MULTILINE), "`server` / `setup` no longer run it"
+    assert "CAD_TELEMETRY=0" in (CAD_DIR / ".env").read_text().splitlines()
+
+
+def code_files() -> list[pathlib.Path]:
+    """The tracked files that are run: cadtool, the environment files, the hooks, the workflows and all Python."""
+    root = CAD_DIR.parent
+    names = [n for n in tracked_names() if n.startswith((".github/", ".githooks/", ".claude/hooks/", "cad/.env"))
+             or n == "cad/cadtool" or n == "cad/pyproject.toml" or (n.startswith("cad/") and n.endswith(".py"))]
+    return [root / n for n in names if not n.startswith("cad/reference/")]
+
+
+def test_no_cadgen_environment_name_is_left():
+    """cad reads no CADGEN_ name and says nothing of one, so one left in the code is a switch silently off: unrenamed,
+    `./cadtool gen --force` forces nothing and the environment's telemetry off is gone."""
+    left = [str(path) for path in code_files() if path.name != pathlib.Path(__file__).name
+            and "CADGEN_" in path.read_text()]
+    assert not left, f"cad reads CAD_* names only: {left}"
+
+
+def test_the_pin_has_one_home():
+    """cad/pyproject.toml's `cad[build123d]==` is the toolchain's one pin: cadtool and CI read it, never restate it."""
+    second = re.compile(r"\bcad(?:-server|-mcp)?(?:\[[^\]]*\])?==[0-9]")
+    for path in (CAD_DIR / "cadtool", CAD_DIR.parent / ".github" / "workflows" / "ci.yml"):
+        assert not second.search(path.read_text()), f"{path.name} restates the pin"
+
+
+@pytest.mark.parametrize("verb", ["setup", "update", "uninstall", "doctor", "run"])
+def test_cadtool_refuses_what_moves_the_machine(verb):
+    """`cad setup` / `update` take every agent app to the newest release whatever the pin says, `doctor` can register
+    an installation and `run` builds outside this venv (docs/toolchain.md Gotchas). Refused before anything of cad runs."""
+    proc = subprocess.run(["./cadtool", "cad", verb], cwd=CAD_DIR, capture_output=True, text=True, check=False)
+    assert proc.returncode == 2, proc.stdout + proc.stderr
+    assert f"'cad {verb}' is not run here" in proc.stderr
+
+
+def test_stop_ends_only_this_venvs_idle_workers():
+    """The server is shared: `./cadtool stop` must leave another session's workers, and this venv's busy one, alone."""
+    ours, theirs = "/work/cad/.venv", "/other/cad/.venv"
+    status = {"workers": [{"pid": 1, "python": f"{ours}/bin/python", "alive": True, "busy": False},
+                          {"pid": 2, "python": f"{ours}/bin/python", "alive": True, "busy": True},
+                          {"pid": 3, "python": f"{theirs}/bin/python", "alive": True, "busy": False},
+                          {"pid": 4, "python": f"{ours}/bin/python", "alive": False, "busy": False},
+                          {"pid": 5, "alive": True, "busy": False}]}  # a worker of the server's own environment
+    assert stop_workers.split(status, ours) == ([1], [2])
+    assert stop_workers.split({"workers": None}, ours) == ([], [])
 
 
 def test_claude_settings_are_the_same_in_the_root_and_in_cad():

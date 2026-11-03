@@ -1,11 +1,12 @@
 # CI: a clean clone on fresh Linux runners - lint both uv projects, the CAD test suite, and build the arm from the
-# committed inputs only (no ~/.cache/cadgen, no raw SolidWorks exports, no generated STEPs). It checks and never writes:
+# committed inputs only (no ~/.cache/cad, no raw SolidWorks exports, no generated STEPs). It checks and never writes:
 # no hash gate (STEP bytes differ per machine), no snapshots, no commits. Manual only: Actions tab -> CI -> Run
 # workflow, or `gh workflow run ci.yml --ref <branch>` - when to run it: root AGENTS.md "CI".
 # The jobs run side by side, each on a runner of its own (a public repo's ubuntu-24.04: 4 vCPUs, 16 GB): the run takes
 # as long as its slowest job - the arm build, then the slow lane's three parts - not their sum. A CAD job starts a
-# Python process per cadgen engine worker and per pytest worker, so its venv is synced with compiled bytecode
-# (`cadtool`'s PYTHONDONTWRITEBYTECODE keeps each from writing its own).
+# Python process per cad server worker and per pytest worker, so its venv is synced with compiled bytecode
+# (`cadtool`'s PYTHONDONTWRITEBYTECODE keeps each from writing its own). The jobs that build or validate install the
+# pinned cad-server first (`./cadtool server`), as a machine does; the fast lane needs none.
 name: CI
 
 on:
@@ -81,6 +82,9 @@ jobs:
         run: |
           uv sync --frozen --compile-bytecode
           echo "runner: $(nproc) vCPUs, $(free -g | awk '/^Mem:/ {print $2}') GB"
+      - name: CAD - the pinned server
+        working-directory: cad
+        run: ./cadtool server
       - name: CAD - slow tests
         working-directory: cad
         run: ./cadtool pytest -m slow -n 4 -p no:cacheprovider -rs --durations=15 ${{ matrix.args }}
@@ -99,6 +103,9 @@ jobs:
       - name: CAD - sync
         working-directory: cad
         run: uv sync --frozen --compile-bytecode
+      - name: CAD - the pinned server
+        working-directory: cad
+        run: ./cadtool server
       - name: CAD - build the arm
         working-directory: cad
         run: ./cadtool gen assemblies/arm.py

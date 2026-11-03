@@ -10,7 +10,7 @@ a new test file always lands in one.
 Every test module's docstring says what it checks.
 
 ## Tests (`./cadtool pytest`)
-`tests/conftest.py` sets `CADGEN_DAEMON=0` and blocks top-level model builds (tests call bodies:
+`tests/conftest.py` blocks top-level model builds (tests call bodies:
 `parts.build(name)`, `lib.models.raw(model)`), and fails the test that changed a shape `built.py` shares.
 `built.py` builds each part, module and placed occurrence once per test process (`part`, `legacy`, `model`, `leaf`,
 `placed`) — take geometry there, not from a fresh build (a build per test is most of what a slow test costs).
@@ -30,10 +30,12 @@ partition `parts.names()` by the flag, the occurrence counts, the drive's pieces
 well-formed), `test_belts.py` (the GT2 belts, purchased with no reference: each a stock length, its loop that long
 round its pulleys, the band on their tooth tips, their volume / bbox written in), `test_params_invariants.py` (locks),
 `test_robot.py` (link partition, frames, FK at
-zero = capture, the committed meshes vs a fresh export, inertials, URDF/SRDF/SDF consistency + cadgen's validators via
-`./cadtool validate`), `test_tooling.py` (the installed cadgen and OCP kernel are the pinned ones, one complete OCP distribution,
+zero = capture, the committed meshes vs a fresh export, inertials, URDF/SRDF/SDF consistency + cad's validators via
+`./cadtool validate`, which need the pinned server: `./cadtool server`), `test_tooling.py` (the installed cad and OCP
+kernel are the pinned ones, one complete OCP distribution, no cad-server in the venv,
 `./cadtool inspect` agrees with the kernel, the retired inspect verbs,
-telemetry kept off, the two `.claude/settings.json` the same, no tracked `CLAUDE.md` / `CLAUDE.local.md`, every
+telemetry kept off, no `CADGEN_` name in the code and no second pin, `./cadtool cad` refusing what moves the machine,
+`./cadtool stop` ending only this venv's workers, the two `.claude/settings.json` the same, no tracked `CLAUDE.md` / `CLAUDE.local.md`, every
 tracked name lowercase),
 `test_mounts.py` (the mounted motors: axis on the joint, face on the host's pad / plate, board on the rear face, interference budget,
 the base stack above the base bottom, the driven pulleys' planes within the shafts, the elbow motor's 20T level with its 90T; each belt joint's bearing stack between its

@@ -2,7 +2,7 @@
 built in its own frame; assemblies/arm.py places the whole module at "gripper#1".
 
 Run:  ./cadtool gen assemblies/gripper.py       -> assemblies/gripper.step (git-ignored)
-      ./cadtool viewer assemblies/gripper.step  -> its page in this venv's cadgen engine
+      ./cadtool viewer assemblies/gripper.step  -> its page on the machine's cad server
 """
 
 from cadgen import step

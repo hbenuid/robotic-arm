@@ -352,7 +352,7 @@ ring-pin dowels (pack of 25) $8–12 · output-pin dowels $2–4 · motor bolts 
 ```bash
 cd cad
 ./cadtool gen assemblies/cycloidal_drive.py          # assemblies/cycloidal_drive.step (git-ignored) if missing
-./cadtool viewer assemblies/cycloidal_drive.step     # its page in this venv's cadgen engine
+./cadtool viewer assemblies/cycloidal_drive.step     # its page on the machine's cad server
 #   also assemblies/arm.step (the drive in the arm), parts/cycloidal/cycloidal_shell_ring.step (any part),
 #   robot/arm.urdf (the robot with joint sliders - shoulder_pitch turns the drive's rotor with j1_link)
 ./cadtool snapshot assemblies/cycloidal_drive.step snapshots/cycloidal_drive.png --size-profile assembly

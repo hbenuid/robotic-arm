@@ -23,14 +23,14 @@ The toolchain, its pins and upgrades: `docs/toolchain.md`.
 | change a shared dimension | `lib/AGENTS.md` Shared dimensions (its own table) | Recipe C |
 | touch the URDF / links / inertials | `robot/AGENTS.md` | Recipe C steps 7–9 |
 | print list, buy list, STLs to print | `parts/AGENTS.md` Printed vs. bought | — |
-| bump cadgen / build123d / OCP / Python, or a pull changed `pyproject.toml` / `uv.lock` | `docs/toolchain.md` | — |
+| bump cad / build123d / OCP / Python, or a pull changed `pyproject.toml` / `uv.lock` | `docs/toolchain.md` | — |
 | work on the cycloidal drive / the forearm roll drive / the wrist roll drive | `docs/cycloidal_drive.md` / `docs/forearm_roll.md` / `docs/wrist_roll.md` | — |
 | make a design choice (how far to shrink a part, which fastener, what moves) | Design choices (below) | the preview first, then Recipe C |
 | know what is unsettled (fit problems, estimates, unmodelled hardware) | `docs/open_issues.md` | add / remove rows as you go |
 | something behaves oddly | Gotchas (below), then the Gotchas of the folder's AGENTS.md and `docs/toolchain.md` | — |
 
 ## Recipe C — the regeneration checklist, after ANY geometry / mass / placement change, in this order
-1. `./cadtool stop` when `pyproject.toml` / `uv.lock` changed (the engine's workers keep the old packages; a source
+1. `./cadtool stop` when `pyproject.toml` / `uv.lock` changed (this venv's workers keep the old packages; a source
    edit needs no restart: the next run names what changed).
 2. `shasum -a 256 parts/*/*.step assemblies/*.step robot/links/*.step > /tmp/before.txt` (the hash gate); a fresh
    worktree has no STEPs: run it in the main checkout's `cad/` (same machine, so the same bytes).
@@ -61,15 +61,22 @@ The toolchain, its pins and upgrades: `docs/toolchain.md`.
 ## Running things (always via `./cadtool`, from `cad/`)
 Every command, its flags and what it prints: `./cadtool help` (for people: the `README.md` table). The rules:
 - **Never call bare `python`** — the system Python has no build123d (`./cadtool python` is the venv's).
-- **Never add `cadquery-ocp`** (the VTK build) to `pyproject.toml` (why: `docs/toolchain.md` Gotchas). The `cadgen`
-  package is the whole runtime — decorators, CLI, engine, viewer, snapshots; the `text-to-cad@earthtojake` plugin ships
-  the `/text-to-cad:*` skill docs and CAD's MCP server `cad` (its own uvx-pinned cadgen: `docs/toolchain.md` Pins).
-- **A model is a script you run.** `./cadtool gen <model.py>` hands it to this venv's warm cadgen engine
-  (`docs/toolchain.md` Pins), which builds it and writes its sibling STEP (git-ignored; `@step(out="<name>.step")`); a
-  second run prints `took … nothing ran` — the engine keys every body by the code it reaches and the files it reads,
-  and replays what an edit did not reach; a run that rebuilt says what changed (`rebuilt: ../lib/assembly.py:
-  label_text changed`). Everything else a build derives — documents, tessellations — lives in the engine and its
-  cache `~/.cache/cadgen/documents`, never in the tree.
+- **Never add `cadquery-ocp`** (the VTK build) or `cad-server` to `pyproject.toml` (why: `docs/toolchain.md`). The venv
+  holds the `cad` library, imported here by its earlier name `cadgen` (an alias of the same modules): decorators,
+  geometry, the STEP reader. `cad-server` is the machine's one server and the `cad` command — engine, viewer, snapshots
+  —, a uv tool at this project's pin; the `text-to-cad@earthtojake` plugin ships the `/text-to-cad:*` skill docs and
+  CAD's MCP server `cad` (`docs/toolchain.md` Pins).
+- **Never `cad run`, `cad setup`, `cad update` or upstream's installer, whatever a skill says.** The plugin's skills
+  build with `cad run` and, on a failure, tell you to run `curl … install.sh | sh`: `cad run` builds in the server's own
+  environment and not on this venv's pinned kernel, and the installer takes every agent app on the machine to the
+  newest release whatever the pin says (`docs/toolchain.md` Gotchas). Here `./cadtool gen` and `./cadtool setup` replace
+  them; a broken install is `./cadtool doctor`.
+- **A model is a script you run.** `./cadtool gen <model.py>` hands it to the machine's warm cad server
+  (`docs/toolchain.md` Pins), which builds it in a worker of this venv's Python and writes its sibling STEP (git-ignored;
+  `@step(out="<name>.step")`); a second run prints `took … nothing ran` — the engine keys every body by the code it
+  reaches and the files it reads, and replays what an edit did not reach; a run that rebuilt says what changed
+  (`rebuilt: ../lib/assembly.py: label_text changed`). Everything else a build derives — documents, tessellations —
+  lives in the server and its cache `~/.cache/cad/documents`, never in the tree.
 - **An assembly calls its child models**: `./cadtool gen assemblies/arm.py` runs every part with it (each one's body
   replayed when unchanged, its STEP written once a build) and writes its own STEP; a child's result reaches the parent
   as a copy the parent owns, which the arm re-tints (`assemblies/AGENTS.md`). Pull semantics: a rebuilt part does not
@@ -85,7 +92,7 @@ Every command, its flags and what it prints: `./cadtool help` (for people: the `
   `{"hidden": [...]}` leaves them out (a ref is an occurrence path, `arm/wrist/gripper/mg996r_servo`: `./cadtool
   inspect` lists them). No `ocp-vscode`.
 - `./cadtool inspect` is a local tool (`tools/step_facts.py`: every leaf's ref and measures, `diff`);
-  `./cadtool cadgen inspect <file.step> "<ref>"` says what one ref names (the refs the viewer copies). Anything else is
+  `./cadtool cad inspect <file.step> "<ref>"` says what one ref names (the refs the viewer copies). Anything else is
   Python over the model's body (`parts.build(name)`, `lib.models.raw(model)`) or a saved STEP's tree
   (`cadgen.read_step(path)`: the instance names, each node's location in its parent's frame) + `cadgen.geometry`
   (`closest_points`, `overlap_volume`, `topology_errors`), kept as a test when it is worth re-running.
@@ -122,8 +129,8 @@ and inside `lib/` no package or leaf imports `lib/params.py` (`lib/AGENTS.md`).
 **Model files never load the CAD kernel at import** (`tests/test_lazy_kernel.py`, fast lane): a model run hands its
 build to the engine, and a run the engine finds current never loads the kernel in the calling process — unless the
 model's import closure does, and then every run pays the kernel's import.
-**Keep the kernel lazy** in every model and its import closure: `import build123d as bd` (cadgen's import hook,
-`cadgen-lazy-kernel.pth` in the venv, binds a module the kernel loads into on its first attribute — never
+**Keep the kernel lazy** in every model and its import closure: `import build123d as bd` (cad's import hook,
+`cad-lazy-kernel.pth` in the venv, binds a module the kernel loads into on its first attribute — never
 `from build123d import …`, which reads an attribute and loads it) and use `bd.<name>` **inside function bodies only**. No kernel object in a module-level constant, a class body, a decorator or
 an argument default (`align=bd.Align.MIN` as a default is eager — `lib/geom.align_min()` is a
 function for that reason); kernel types in annotations need `from __future__ import annotations`. The rule
@@ -133,8 +140,8 @@ declares are **data** — `(position mm, rotation_xyz_deg)`, `lib.datum.IDENTITY
 `assemblies.arm.arm_from_w()` are functions, the drives' `OCCURRENCES` rows carry positions.
 
 ### Never call a model outside a build
-Never call a model to get its geometry outside a build: with no cadgen build on the thread the
-call is a build (it starts this venv's engine and writes the STEP) and returns a document handle, not a shape.
+Never call a model to get its geometry outside a build: with no cad build on the thread the
+call is a build (it goes to the machine's server and writes the STEP) and returns a document handle, not a shape.
 `parts.build(name)` / `lib.models.raw(model)` run the body in-process (tests, tools, previews);
 `lib.models.geometry(model)` is what assembly bodies call for a child — the child model's result (`model().shape`)
 while a build runs, the raw body otherwise. `tests/conftest.py` makes an accidental top-level call under pytest fail
@@ -157,7 +164,7 @@ machines"; CI is the third machine: root `AGENTS.md` "CI").
   files (older commits hold them as Git LFS pointers - `git log -S filter=lfs -- :/.gitattributes` finds where that
   ends - so checking one of those out to build it needs `git-lfs`). **No generated STEP is committed**, part
   STEPs included (the root `.gitignore`'s `*.step`: `git check-ignore -v cad/parts/<group>/<name>.step` from the repo
-  root must print that rule - on the Mac, with `core.ignorecase=true`, its `*.STEP` twin): cadgen writes deterministic
+  root must print that rule - on the Mac, with `core.ignorecase=true`, its `*.STEP` twin): cad writes deterministic
   bytes per kernel AND per machine — the other machine writes the same geometry with other float noise (≤ 2e-10 mm),
   and the STEP header names the OCCT version — so each machine builds its own; a fresh clone has none until
   `./cadtool gen assemblies/arm.py`. Nothing else lands in the tree: no `__cadgen__/`, no sidecar.
@@ -170,34 +177,34 @@ machines"; CI is the third machine: root `AGENTS.md` "CI").
 
 ## Gotchas (all verified)
 - The engine keys a body by the files it READ, not the ones it only checked for: a part whose vendor file appears
-  after its last build still reads `took … nothing ran` (its body never opened that file: `lib/cots.hybrid()` asks
-  `exists()` first) — `./cadtool gen <part> --force` once (its next run says `changed`); the assemblies then follow.
-  Verified on cadgen 0.8.0: `bearing_625` built with its vendor file set aside kept its envelope after the file came
-  back, until forced.
+  after its last build still reads `took … nothing ran` or `built … bodies 1 replayed; 0 misses` (its body never opened
+  that file: `lib/cots.hybrid()` asks `exists()` first) — `./cadtool gen <part> --force` once (its next run says
+  `changed`); the assemblies then follow. Verified on cadgen 0.8.0 and cad 0.10.0: `bearing_625` built with its vendor
+  file set aside kept its envelope after the file came back, until forced.
 - Never edit sources a running `gen` reaches: verified on cadgen 0.8.1, `lib/yaw_coupler/` edited while the hash
   gate's first `gen assemblies/arm.py` ran left the arm's document holding the old geometry under the edited sources'
-  key - the next runs read `nothing ran` (from memory, then from the cache after `./cadtool stop` and `./cadtool cadgen
+  key - the next runs read `nothing ran` (from memory, then from the cache after `./cadtool stop` and `./cadtool cad
   delete <id>`), so the hash gate passed, while each part rebuilt alone was right. `gen assemblies/arm.py --force`
   cleared it (and rewrote other STEPs' bytes: `inspect diff` read them as the same geometry). Right after it, `./cadtool
-  cadgen inspect` on the arm still gave the old volume - `cadgen.read_step` of the file gave the new one.
+  cad inspect` on the arm still gave the old volume - `cadgen.read_step` of the file gave the new one.
   It is not only an edit during a run: in a fresh worktree whose baseline `gen assemblies/arm.py` had returned (the arm
   loaded from the shared cache) before `lib/upper_arm/` was edited, the next run of the arm still read `nothing ran`
   (cold: the cache held its key) and kept the old STEP while `j1_link` alone rebuilt; `--force` cleared it. So after a
   source edit, the arm's run must name what it rebuilt - `nothing ran` there is a stale arm: force it before the hash
-  gate. Nor does it take a fresh worktree: on cadgen 0.8.3 and 0.8.4 a warm engine's arm read `nothing ran` through an
-  edit of `lib/yaw_coupler/params.py RIM_CLEAR`, a constant its module's `DEFAULT` is computed from, and its children's
-  STEPs stayed as they were, while `gen parts/base/j1_coupler.py` rebuilt the part and named the edit.
+  gate. Nor does it take a fresh worktree: on cadgen 0.8.3 and 0.8.4 and on cad 0.10.0 a warm engine's arm read `nothing
+  ran` through an edit of `lib/yaw_coupler/params.py RIM_CLEAR`, a constant its module's `DEFAULT` is computed from, and
+  its children's STEPs stayed as they were, while `gen parts/base/j1_coupler.py` rebuilt the part and named the edit.
 - Don't compare large STEP artifacts with `git diff`; compare source, `inspect` output and snapshots. A STEP edited
   (or deleted) by anything but its model comes back on the model's next run, byte for byte (`wrote …`).
-- A model run takes no options: `./cadtool gen` refuses any flag but its own `--force` (`CADGEN_ENGINE_MEMO=0`: every
+- A model run takes no options: `./cadtool gen` refuses any flag but its own `--force` (`CAD_ENGINE_MEMO=0`: every
   kernel call runs again); for anything else (`--totals`, a preview) use `./cadtool python -c`.
-- cadgen writes equal parts as ONE STEP product named after the first of them (the yaw, elbow and roll idler screws
+- cad writes equal parts as ONE STEP product named after the first of them (the yaw, elbow and roll idler screws
   are one product, `yaw_idler_screw:base_yaw`); each instance keeps its own name. Read a STEP's tree with
   `cadgen.read_step` (or `./cadtool inspect`), which gives the instance names - build123d's `import_step` gives the
   product's.
 - `./cadtool snapshot` fits every view to its model: the `--camera` JSON's `orthographicHalfHeight` is ignored, whatever
-  `--help` says (verified again on cadgen 0.8.0: `bearing_625` and `base` both fill the frame at
-  `orthographicHalfHeight` 100). To render versions at one scale, give each the same bounding box — tiny marker cubes
+  `--help` says (verified again on cad 0.10.0: `bearing_625` draws the same picture at `orthographicHalfHeight` 10 and
+  100). To render versions at one scale, give each the same bounding box — tiny marker cubes
   at fixed corners, in the scratch build — and crop.
 - A snapshot taken right after a rebuild once drew the STEP's previous version (the same command a minute later drew
   the new one): when a render does not show a change you made, run it again before looking for the cause.
