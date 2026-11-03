@@ -60,6 +60,10 @@ Changing a shared dimension — touchpoints in order:
 
 ## Kernel gotchas (all verified)
 - `Compound.volume` skips nested sub-assemblies (build123d 0.10 to 0.13) — use `lib.reference.solid_volume()`.
+- A ruled `bd.loft` between two polygon sections makes its side faces B-splines, and their volume integrates
+  differently per machine: the faceted base read 2.2 mm³ apart on the Mac and CI's x86_64 runner, past every 0.5
+  lock. Draw a frustum as the section extruded with a taper (`bd.extrude(face, amount=h, taper=deg)`): every flat a
+  plane, one volume everywhere (`lib/base/body.py _cone`).
 - `is_valid` is a **property**; `Location.to_tuple()` is gone (build123d 0.12): `tuple(loc)` → two Vectors,
   `loc.position` / `loc.orientation`.
 - `Face.center()` on a cylindrical face is the SURFACE midpoint (a half-cylinder reports axis ± r), not the axis:
