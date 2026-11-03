@@ -22,6 +22,7 @@ import `lib`, `parts`, `assemblies` and `robot`; only `tests` imports them.
 | `bom.py` | the print list and the buy list from the make/buy label; `EXTRAS` = purchased items with no geometry, and the order line of a part modelled but not placed yet (`parts/AGENTS.md`) | — (stdout) |
 | `export_printables.py` | one STL per printed part into `print/` (git-ignored) | — |
 | `step_facts.py` | `./cadtool inspect` / `inspect diff` of saved STEPs | — |
+| `stop_workers.py` | `./cadtool stop`: this venv's idle workers on the machine's one server, from `cad status --json` | — |
 | `robot/derive.py` | joint origins, link inertials, URDF / SDF drafts; `--check` compares the checked-in files | — (stdout) |
 | `robot/export_link_meshes.py` | `robot/meshes/<link>.stl` (`tests/test_robot.py` fails on a stale one) | *writes* |
 | `reference/import_solidworks.py` | the SolidWorks exports → `reference/solidworks/`, seeds `vendor/`, `manifest.json` | *writes* |

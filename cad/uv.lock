@@ -65,23 +65,27 @@ wheels = [
 ]
 
 [[package]]
-name = "cadgen"
-version = "0.8.4"
+name = "cad"
+version = "0.10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/34/8b/22d52eee375ae0bd3f444e92c65295607a2eab343fb3bec7db1e4fa85e59/cad-0.10.0.tar.gz", hash = "sha256:a1df4501a62915331028f836cbd60bab0f3caf70a1fbbf4835e6c70346b63caa", size = 750399, upload-time = "2026-11-02T04:49:44.14Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b2/2d/8a6b21fdd42114732d64f93c64819f35b00c078d600799ed2f2a1c7acb50/cad-0.10.0-py3-none-any.whl", hash = "sha256:5cdf88245cb05420f15f3af16d3fea869e286b63943c0388a93d4b8afd5d095b", size = 776663, upload-time = "2026-11-02T04:49:42.407Z" },
+]
+
+[package.optional-dependencies]
+build123d = [
     { name = "bd-materials" },
     { name = "build123d" },
     { name = "cadquery-ocp-novtk" },
     { name = "ezdxf" },
     { name = "matplotlib" },
-    { name = "numpy" },
     { name = "pillow" },
     { name = "shapely" },
     { name = "threejs-materials" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/8e/6e/b1f87c95de18a5de3683d5afb8ed976254f72f0dd3af7134b699c895de1b/cadgen-0.8.4.tar.gz", hash = "sha256:885bb19e983830a0711ba557d4ce9e283d2830f17dec23aba241667b1ff1876f", size = 4677887, upload-time = "2026-10-30T19:37:06.358Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/2d/9a/50318fc5b153b6a7fa311e76c611fd1e25384efef2fa507c6bde5437fb8c/cadgen-0.8.4-py3-none-any.whl", hash = "sha256:ce3e3e424b5a4ffa845b7d933abb3b18eff346badde00027d8dd22537d7a5cc4", size = 4754047, upload-time = "2026-10-30T19:37:04.436Z" },
 ]
 
 [[package]]
@@ -822,7 +826,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "build123d" },
-    { name = "cadgen" },
+    { name = "cad", extra = ["build123d"] },
     { name = "cadquery-ocp-novtk" },
     { name = "numpy" },
 ]
@@ -837,7 +841,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "build123d", specifier = "==0.13.0" },
-    { name = "cadgen", specifier = "==0.8.4" },
+    { name = "cad", extras = ["build123d"], specifier = "==0.10.0" },
     { name = "cadquery-ocp-novtk", specifier = "==8.0.1.1.0" },
     { name = "numpy", specifier = ">=2.4.6" },
 ]

@@ -7,18 +7,19 @@ readme = "README.md"
 # and build123d and the OCP wheels allow no newer one.
 requires-python = ">=3.14,<3.15"
 dependencies = [
-    # cadgen 0.8.4 requires build123d>=0.13.0,<0.14 and cadquery-ocp-novtk>=8.0,<8.1 (OCCT 8: it
-    # imports OCP 8's collection and downcast names directly). The novtk pin freezes the kernel the
+    # cad 0.10's build123d extra requires build123d>=0.13.0,<0.14 and cadquery-ocp-novtk>=8.0,<8.1 (OCCT 8:
+    # it imports OCP 8's collection and downcast names directly). The novtk pin freezes the kernel the
     # STEPs are built with (their bytes are deterministic per kernel, which the hash gate relies on;
     # build123d only asks for a range).
     # Never install cadquery-ocp (the VTK build) alongside: both distributions own the same OCP/
     # files, so removing either one guts the other (`uv sync --reinstall-package cadquery-ocp-novtk`).
     "build123d==0.13.0",
     "cadquery-ocp-novtk==8.0.1.1.0",
-    # The text-to-cad runtime (decorators, `cadgen` CLI, viewer, snapshots - playwright is a plain
-    # dependency since 0.7.12). Same version as the installed text-to-cad@earthtojake plugin, whose
-    # claude.mcp.json pins it: bump both together (`./cadtool doctor` checks).
-    "cadgen==0.8.4",
+    # The text-to-cad library, imported as `cadgen` (its earlier name) here: decorators, geometry, the STEP
+    # reader. This line is the ONE pin of the toolchain: `cadtool` reads it to install the machine's
+    # cad-server, and the text-to-cad@earthtojake plugin's claude.mcp.json pins the same release (`cad-mcp==`):
+    # bump them together (docs/toolchain.md Pins, `./cadtool doctor` checks). Never add cad-server here.
+    "cad[build123d]==0.10.0",
     "numpy>=2.4.6",
 ]
 
