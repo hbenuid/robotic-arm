@@ -17,7 +17,7 @@ from tests import built
 from tests.helpers import is_inside
 
 S, C, P, F, J = DEFAULT.shell, DEFAULT.cap, DEFAULT.plate, DEFAULT.foot, DEFAULT.joint
-VOLUME = 399435.1          # mm^3, measured on the build, its slits cut (the SolidWorks base: 286169.1, cut at the joint 235439.1)
+VOLUME = 413221.2          # mm^3, measured on the build, faceted, its slits cut (the SolidWorks base: 286169.1, cut at the joint 235439.1)
 
 
 def test_legacy_stands_straight_without_a_foot():
@@ -80,13 +80,14 @@ def test_the_build(base):
 
 @pytest.mark.slow
 def test_the_walls_lean_inside_and_out(base):
-    """On the round half (-X, z = 0) and on a side (z +): the wall's outside on the cone, its inside `wall` in, below
-    the plate and above it (under the cap's chamfer); the top face's edge flush under the coupler's rim; the cap a
-    full disc, the walls open over the plate."""
+    """On the faceted end's -X flat (half a pitch off z = 0: between two slits) and on a side (z +): the wall's outside
+    on the frustum, its inside `wall` in, below the plate and above it (under the cap's chamfer); the top face's edge
+    flush under the coupler's rim; the cap a full disc, the walls open over the plate."""
+    zf = DEFAULT.slits.pitch / 2.0
     for y in (S.y0 + F.flare_h + 2.0, -70.0, P.y[0] - 1.0, -30.0):
         ro, ri = outer_r(DEFAULT, y), inner_r(DEFAULT, y)
-        assert is_inside(base, -(ro - 0.3), y, 0.0) and not is_inside(base, -(ro + 0.3), y, 0.0), y
-        assert is_inside(base, -(ri + 0.3), y, 0.0) and not is_inside(base, -(ri - 0.3), y, 0.0), y
+        assert is_inside(base, -(ro - 0.3), y, zf) and not is_inside(base, -(ro + 0.3), y, zf), y
+        assert is_inside(base, -(ri + 0.3), y, zf) and not is_inside(base, -(ri - 0.3), y, zf), y
     for y in (S.y0 + F.flare_h + 2.0, -70.0):
         ro = outer_r(DEFAULT, y)
         assert is_inside(base, 15.0, y, ro - 0.3) and not is_inside(base, 15.0, y, ro + 0.3), y   # between two slits

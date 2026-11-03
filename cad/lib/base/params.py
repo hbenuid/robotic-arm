@@ -33,6 +33,7 @@ from lib.fasteners import M4_CLEAR, M4_NUT, M4_SHCS, M5_CLEAR, M5_NUT, M5_SHCS, 
 from lib.forearm.params import LEGACY as _FOREARM
 from lib.forearm.params import MotorHoleParams
 from lib.motors import MKS_SERVO42D_STACK
+from lib.style import SIDES
 
 
 @dataclass(frozen=True)
@@ -50,6 +51,9 @@ class ShellParams:
     notch_half_z: float = 15.0
     notch_y1: float = -72.996154   # the notch: from the bottom face up to here
     draft: float = 0.0             # dr / dy, outward going down (0: the SolidWorks base's vertical walls)
+    sides: int | None = None       # [DESIGN] faceted (DEFAULT: lib/style.py SIDES): the round half, the motor mount's end
+    #                                and the foot's a regular polygon, its flats r (the foot's: FootParams.r) off the axis,
+    #                                the sides' planes two of them; None: round (the SolidWorks base)
 
 
 @dataclass(frozen=True)
@@ -288,7 +292,7 @@ YAW_MOTOR_PAD = 2.0       # [DESIGN] the pad under the mount's plate round the m
 _HOLES = MotorHoleParams()
 _BOTTOM_Y = round(LEGACY.plate.y[0] - YAW_MOTOR_PAD - _DRIVE.motor.body_length - MKS_SERVO42D_STACK - BOARD_CLEAR, 6)
 _TOP_R = round(BASE_R + BASE_DRAFT * (LEGACY.cap.ring_top_y - LEGACY.cap.top_y), 6)   # the cone at the cap's top face
-DEFAULT = replace(LEGACY, shell=replace(LEGACY.shell, y0=_BOTTOM_Y, r=_TOP_R, draft=BASE_DRAFT),      # [DESIGN]
+DEFAULT = replace(LEGACY, shell=replace(LEGACY.shell, y0=_BOTTOM_Y, r=_TOP_R, draft=BASE_DRAFT, sides=SIDES),   # [DESIGN]
                   bore=replace(LEGACY.bore, upper_dia=_FOREARM.boss.seat_dia, lower_dia=_FOREARM.boss.seat_dia,
                                        lip_dia=_FOREARM.boss.lip_dia),                                    # [DESIGN]
                   cap=replace(LEGACY.cap, groove_r=(THRUST_BORE / 2.0 - RING_CLEAR, LEGACY.cap.groove_r[1])),   # [DESIGN]
