@@ -19,7 +19,7 @@ dependencies = [
     # reader. This line is the ONE pin of the toolchain: `cadtool` reads it to install the machine's
     # cad-server, and the text-to-cad@earthtojake plugin's claude.mcp.json pins the same release (`cad-mcp==`):
     # bump them together (docs/toolchain.md Pins, `./cadtool doctor` checks). Never add cad-server here.
-    "cad[build123d]==0.10.0",
+    "cad[build123d]==0.10.3",
     "numpy>=2.4.6",
 ]
 
