@@ -357,7 +357,22 @@ def test_frame_features(module):
         assert is_inside(block, x * (r_boss - 0.5), y * (r_boss - 0.5), zb) and not is_inside(block, x * (r_boss + 0.5), y * (r_boss + 0.5), zb)
     assert not is_inside(block, 0, r_seat + 1.0, S["z_boss"] + 0.5)
     # one flat front face: material just behind it, none in front, beside the boss
-    assert is_inside(block, -28.0, -30.0, S["z_front"] - 0.5) and not is_inside(block, -28.0, -30.0, S["z_front"] + 0.5)
+    assert is_inside(block, -20.0, -30.0, S["z_front"] - 0.5) and not is_inside(block, -20.0, -30.0, S["z_front"] + 0.5)
+    # its two long edges faceted front_facet at 45 deg end to end (at the tower's foot and on the plate over the motor),
+    # material just inside each facet, none past it; the bearing boss rising out of them - its round where the facet
+    # would have cut, nothing past its radius
+    for sx in (1.0, -1.0):
+        for y in (-30.0, S["y_elbow"]):
+            mid = (sx * (D.block_x[1] - D.front_facet / 2.0), S["z_front"] - D.front_facet / 2.0)
+            assert is_inside(block, mid[0] - sx * 0.35, y, mid[1] - 0.35) and not is_inside(block, mid[0] + sx * 0.35, y, mid[1] + 0.35)
+        assert is_inside(block, sx * (r_boss - 0.5), 0.0, S["z_front"] - 1.0) and not is_inside(block, sx * (r_boss + 0.5), 0.0, S["z_front"] - 1.0)
+    # the tower seen along the roll axis: the forearm flange's octagon (its flats tower_y = wall_od / 2, end_sides) - its top
+    # corners cut to the diagonal flats, material just inside them, none past (probed round the lip, behind the seats)
+    for sx in (1.0, -1.0):
+        u = (sx * math.cos(math.pi / 4.0), math.sin(math.pi / 4.0))
+        for r, inside in ((D.tower_y - 0.5, True), (D.tower_y + 0.5, False)):
+            assert is_inside(block, r * u[0], r * u[1], S["z_lip"] + 1.0) is inside
+    assert is_inside(block, 0.0, D.tower_y - 0.5, S["z_lip"] + 1.0) and is_inside(block, D.block_x[1] - 0.5, 0.0, S["z_lip"] + 1.0)
     # the octagonal end about the elbow axis: a flat on each axis end_r off it (round j1_link's round end) behind the motor's
     # pocket, nothing past it; the end's two corners between them, end_r / cos(180 / end_sides) out; nothing behind the
     # rear line (roll.py rear_line, the elbow motor's board's nearest at the elbow's lower limit: tests below) - probed in

@@ -292,7 +292,7 @@ ROLL_CLAMP_NUTS_MASS_G = STEEL_DENSITY * _ROLL_CLAMP * nut_volume(_FOREARM.drive
 # discs, a pair at each point, x NdFeB's density
 NDFEB_DENSITY = 7.5e-3   # [DATASHEET] g/mm^3 - sintered NdFeB magnets
 _BACK = _FOREARM.drive.back
-ROLL_BACK_MAGNETS_MASS_G = NDFEB_DENSITY * 2 * len(_BACK.magnet_points) * _cyl_vol(_BACK.magnet_dia / 2.0, _BACK.magnet_t)   # 3.4, 8x 6 x 2
+ROLL_BACK_MAGNETS_MASS_G = NDFEB_DENSITY * 2 * len(_BACK.magnet_points) * _cyl_vol(_BACK.magnet_dia / 2.0, _BACK.magnet_t)   # 0.85, 8x 3 x 2
 # the base_yaw motor's (parts/base/yaw_motor_screws), likewise
 from lib.base.layout import motor_holes as _base_motor_holes  # noqa: E402
 

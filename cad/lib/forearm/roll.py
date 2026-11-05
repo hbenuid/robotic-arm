@@ -1,7 +1,8 @@
 """build123d builders of the forearm roll drive's printed parts (RollDriveParams, module frame, at their stack
 stations): the frame (stator, forearm_roll_block - one body round the motor: the octagonal elbow end with the elbow's
 output flange under it, the motor's pocket open through its bottom and the plate, the tower with the 6806 pair and the
-bearing boss on its front face), the pulley (rotor, the output - its integral 90T is the GT2 ring of lib/pulley/teeth.py
+bearing boss on its front face - the tower the forearm flange's octagon seen along the roll axis, the front face's long
+edges faceted), the pulley (rotor, the output - its integral 90T is the GT2 ring of lib/pulley/teeth.py
 - its hub on through the tower to bearing 1), the shaft (rotor, a collar that holds bearing 1) and the back panel (stator,
 a plate flush with the frame's rear face over the shaft's bay - its step, the opening and the magnets on the rear face:
 back_face / back_point)."""
@@ -114,6 +115,33 @@ def back_magnet_depths(cfg: ForearmConfig = DEFAULT) -> tuple[float, float]:
     return b.t + b.pocket_depth - b.magnet_t, b.t - b.pocket_depth
 
 
+def tower_section(cfg: ForearmConfig = DEFAULT, inset: float = 0.0):
+    """The tower seen along the roll axis, as a face in module (x, y): the forearm flange's octagon about the roll axis
+    (lib/geom.py faceted_end, flats tower_y - the side faces and the tower's top - so the flange's facets run straight
+    back through the frame) over the half-plane under the axis, where the profile alone bounds the frame; `inset` in
+    from it all round."""
+    oct_ = faceted_end(cfg.drive.tower_y - inset, (0.0, 0.0), cfg.drive.end_sides)
+    return oct_ + bd.Pos(0.0, -FAR / 2.0) * bd.Rectangle(2.0 * FAR, FAR)
+
+
+def _z_prism(face):
+    """A face in module (x, y) extruded along the roll axis through everything."""
+    return bd.Pos(0.0, 0.0, -FAR) * bd.extrude(face, amount=2.0 * FAR)
+
+
+def front_facets(cfg: ForearmConfig = DEFAULT):
+    """What the front face's two long edges' facets take away (front_facet at 45 deg, along the frame end to end): at
+    each edge a prism along Y of a triangle in (x, z), its long side on the facet."""
+    d, z1 = cfg.drive, stack_positions(cfg)["z_front"]
+    f, e, out = d.front_facet, 1.0, None
+    for x_edge in d.block_x:
+        sx = 1.0 if x_edge > 0 else -1.0
+        tri = bd.Polygon((x_edge - sx * (f + e), z1 + e), (x_edge + sx * e, z1 - f - e), (x_edge + sx * e, z1 + e), align=None)
+        cut = bd.extrude(bd.Plane.XZ * tri, amount=FAR, both=True)
+        out = cut if out is None else out + cut
+    return out
+
+
 def profile(cfg: ForearmConfig = DEFAULT):
     """The frame's outline seen along the elbow axis, as (u, v) = (module y, module z): an octagon about the elbow axis
     (end_sides, a flat on each axis end_r off it) and the tower round the roll axis (its top tower_y, from its rear to the
@@ -134,23 +162,27 @@ def profile(cfg: ForearmConfig = DEFAULT):
 def build_block(cfg: ForearmConfig = DEFAULT):
     """The frame (forearm_roll_block) in the module frame: ONE body round the motor - the profile (an octagon about the
     elbow axis, hulled up to the tower round the roll axis) from the underside (block_x[0], the elbow flange's lip / boss /
-    journal / stub under it) to the side (+N) face, closed; the motor's pocket between the floor and the side wall, open
+    journal / stub under it) to the side (+N) face, closed, the tower cut to the forearm flange's octagon (tower_section)
+    and the front face's two long edges faceted (front_facet); the motor's pocket between the floor and the side wall, open
     down through the octagon's bottom (the motor slides up into it), a groove inside each wall at the board's side plugs;
     its front wall the plate (the pilot hole, the motor's 4 M3 holes with their heads' counterbores, the shaft's slit down
     out through the bottom), the plate's face the frame's one front face - on it the roll belt's tensioner's riser, its
     M5's slot and its nut's channel under the face, the nut in from the pocket -; the tower: bearing 1's seat from the
     shaft's bay behind it - bored on through the frame's back -, the lip (the spacer), bearing 2's seat in the bearing
-    boss - round on the front face, the ring's flange turning over it -, the stop post on the tower's face in the bay;
+    boss - round on the front face, rising out of the facets, the ring's flange turning over it -, the stop post on the tower's face in the bay;
     the rear face: the back panel's step across it, the opening grown down below the bay's bore, the magnets' pockets."""
     d, S = cfg.drive, stack_positions(cfg)
     y_e = S["y_elbow"]
-    # the material first: the profile across the frame's depth, its outline chamfered on both faces (lib/style.py
-    # EDGE_CHAMFER), the elbow flange under it, the bearing boss (from 1 mm inside the front face: one body) up to bearing
-    # 2's front face
-    body = chamfer_outline(yz_prism(profile(cfg), d.block_x[0], d.block_x[1]), (1.0, 0.0, 0.0))
+    # the material first: the profile across the frame's depth, the tower cut to the forearm flange's octagon and the
+    # front face's long edges faceted, the outline chamfered on both side faces (lib/style.py EDGE_CHAMFER), the elbow
+    # flange under it, the bearing boss up to bearing 2's front face - from 1 mm under the facets (one body), so it rises
+    # out of them
+    prism = yz_prism(profile(cfg), d.block_x[0], d.block_x[1]) & _z_prism(tower_section(cfg))
+    body = chamfer_outline(prism - front_facets(cfg), (1.0, 0.0, 0.0))
     for dia, a, b in coupler_steps(cfg):
         body = body + x_cylinder(dia / 2.0, b - a, (y_e, 0.0), a)
-    body = body + cylinder(d.bearing_boss_dia / 2.0, S["z_boss"] - S["z_front"] + 1.0, z0=S["z_front"] - 1.0)
+    boss_z0 = S["z_front"] - d.front_facet - 1.0
+    body = body + cylinder(d.bearing_boss_dia / 2.0, S["z_boss"] - boss_z0, z0=boss_z0)
     # the roll belt's tensioner's riser on the front face (from 1 mm inside it: one body), its land on top under the idler's
     # bearing inner ring; both stadiums along X, the idler's push, +/- travel
     i, (ix, iy) = d.idler, roll_idler_xy(cfg)
@@ -267,13 +299,13 @@ def build_shaft(cfg: ForearmConfig = DEFAULT):
 def build_back_panel(cfg: ForearmConfig = DEFAULT):
     """The back panel (forearm_roll_back_panel) in the module frame: a plate in the frame's step on the rear face (its
     outer face on the rear line), as wide as the frame less side_clear, from gap over the step's bottom edge up to
-    side_clear under the tower's top; relieved where it passes over the turning shaft - run_gap off its rear face and its
+    side_clear inside the tower's octagon (its top and the facets at its top corners: tower_section); relieved where it passes over the turning shaft - run_gap off its rear face and its
     lug's sweep, inside the bay's bore -; the U rim on its inner face down into the opening's lower part (it locates the
     panel); a pocket for each magnet in its inner face."""
     d, b, S = cfg.drive, cfg.drive.back, stack_positions(cfg)
     s_top, half = _back_top(cfg), d.block_x[1] - b.side_clear
     body = _on_back(bd.Pos(0.0, (b.bottom + b.gap + s_top) / 2.0) * bd.Rectangle(2.0 * half, s_top - b.bottom - b.gap), 0.0, b.t, cfg)
-    body = body - box((-FAR, FAR), (d.tower_y - b.side_clear, FAR), (-FAR, FAR))
+    body = body & _z_prism(tower_section(cfg, b.side_clear))
     body = body - cylinder(d.bay_r, FAR, z0=S["z_shaft_end"] - d.run_gap)
     rim = back_opening(cfg, b.rim_clear) - back_opening(cfg, b.rim_clear + b.rim_w)
     rim = rim & bd.Pos(0.0, (b.rim_top + b.opening_bottom - 10.0) / 2.0) * bd.Rectangle(2.0 * FAR, b.rim_top - b.opening_bottom + 10.0)

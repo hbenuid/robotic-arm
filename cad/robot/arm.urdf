@@ -131,9 +131,9 @@
   </link>
   <link name="elbow_link">
     <inertial>
-      <origin xyz="0.005785 -0.01862 0.01932" rpy="0 0 0" />
-      <mass value="0.82758" />
-      <inertia ixx="1.305704e-03" ixy="1.535326e-04" ixz="-2.755986e-05" iyy="7.149032e-04" iyz="8.758359e-05" izz="1.194611e-03" />
+      <origin xyz="0.005436 -0.017073 0.01916" rpy="0 0 0" />
+      <mass value="0.804963" />
+      <inertia ixx="1.187588e-03" ixy="1.403559e-04" ixz="-2.591754e-05" iyy="6.908421e-04" iyz="8.030725e-05" izz="1.082776e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
