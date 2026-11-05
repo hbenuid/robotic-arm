@@ -24,8 +24,13 @@ from lib.wrist.layout import (
     face_nut_pocket,
     module_frame_in_host,
     motor_pocket,
+    pancake_plug_groove,
+    rear_line,
+    rear_z,
     roll_belt_loop,
+    side_wall_x,
     stack_positions,
+    toward_motor,
 )
 from robot import frames as F
 from tests import built
@@ -80,7 +85,8 @@ def test_what_the_drive_replaced():
     assert "brack_for_hand_cmap" in {s["label"] for s in P.DATA["skipped"]}
     assert F.LINKS["wrist_pitch_link"][-1] == "wrist_roll_drive#1:stator" and F.LINKS["wrist_roll_link"][0] == "wrist_roll_drive#1:rotor"
     assert M.BODIES["rotor"] == {"wrist_roll_shaft", "wrist_roll_pulley"}
-    assert M.BODIES["stator"] == {"bearing_6806", "nema17_pancake", "mks_servo42d", "gt2_pulley_20t", "wrist_roll_belt"}
+    assert M.BODIES["stator"] == {"bearing_6806", "nema17_pancake", "mks_servo42d", "gt2_pulley_20t", "wrist_roll_belt",
+                                  "wrist_back_panel", "wrist_back_magnets"}
 
 
 def test_stack():
@@ -97,23 +103,42 @@ def test_stack():
     assert S["z_lip"] == pytest.approx(S["z_bearing_2"] - D.lip) and S["z_bearing_1"] == pytest.approx(S["z_lip"] - D.bearing_width)
     assert S["z_meet"] == pytest.approx(S["z_lip"] + D.lip / 2.0) and S["z_face"] == pytest.approx(S["z_ring_end"] + D.face_t)
     assert S["z_front"] < S["z_boss"]                                   # the bearing boss stands on the plate's face
-    # the bay: room to slide the shaft in, the plate's coupler face 4+ mm under it, bearing 1 through it with the shaft
+    # the bay, bored on through the rear: the plate's coupler face 4+ mm under it, bearing 1 through it with the shaft;
+    # the frame's rear at the tower's far side the station the wrist pitch's +38 deg limit was set against
     assert S["z_bay"] == pytest.approx(S["z_shaft_end"] - (S["z_meet"] - S["z_bearing_1"]) - D.bay_clear)
+    assert S["z_rear"] == pytest.approx(S["z_bay"] - D.tower_wall)
     assert -D.bay_r - S["x_coupler"] >= 4.0 and D.bay_r > D.bearing_od / 2.0 + 1.0 and D.bay_r >= D.stop_lug_r[1] + 1.0
+    # the closed far face: its wall's inside outside the pancake's body and the board's housing, 7+ thick, past the plug's
+    # groove a skin of 3+ (the groove plug_clear round the boss and past the tension travel)
+    p = D.pancake
+    assert side_wall_x(DEFAULT) == D.frame_r - D.side_t
+    assert side_wall_x(DEFAULT) >= p.body_w / 2.0 + D.pocket_clear and side_wall_x(DEFAULT) >= D.board_w / 2.0 + D.board_clear
+    assert D.side_t >= 7.0
+    gx0, gx1, gy0, gy1, gz0, gz1 = pancake_plug_groove(DEFAULT)
+    assert gx0 == side_wall_x(DEFAULT) and D.frame_r - gx1 >= 3.0 and gx1 == pytest.approx(p.body_w / 2.0 + p.plug_d + D.plug_clear)
+    s = toward_motor(DEFAULT)
+    assert s * (S["y_motor"] - gy0) == pytest.approx(p.plug_w / 2.0 + D.pad_slot_len / 2.0 + D.plug_clear)
+    assert gy1 == s * math.inf and gz0 == -math.inf and gz1 == pytest.approx(S["z_motor_rear"] + p.plug_h + D.plug_clear)
+    # the rear: one slanted plane from the tower's far rear corner to rear_low past the panel's edge, flat beyond
+    (ya, za), (yb, zb) = rear_line(DEFAULT)
+    w0, w1, _, _ = board_window(DEFAULT)
+    assert (ya, za) == (-s * D.frame_r, S["z_rear"]) and (yb, zb) == (s * D.rear_bend, D.rear_low)
+    assert s * yb > s * (w0 if s > 0 else w1) and zb < za
+    assert rear_z(ya - s, DEFAULT) == za and rear_z(yb + s * 10.0, DEFAULT) == zb
     # the pocket: round the body and the tension travel, clear of the tower's seats (its edge toward R', on D.side)
     y0, y1, z0, _ = motor_pocket(DEFAULT)
     assert y1 - S["y_motor"] == p.body_w / 2.0 + D.pad_slot_len / 2.0 + D.pocket_clear
     near = -D.side * (y1 if D.side > 0 else y0)
     assert near >= (D.bearing_od + D.seat_add) / 2.0 + 2.0 and near >= D.bay_r + 1.5
     # behind it no wall: the MKS board's window - its housing + the tension travel + board_clear, from in front of the
-    # pancake's rear face (where the housing starts) out through the frame's rear - 1.5+ off the shaft's bay too; the
-    # board's back behind the frame
+    # pancake's rear face (where the housing starts) out through the frame's rear and the bottom - 1.4+ off the shaft's
+    # bay too; the board's back behind the frame
     w0, w1, wz0, wz1 = board_window(DEFAULT)
     assert (D.board_w, D.board_stack) == (PARAMS.MKS_SERVO42D_W, PARAMS.MKS_SERVO42D_STACK) and D.board_w > p.body_w
     half = D.board_w / 2.0 + D.pad_slot_len / 2.0 + D.board_clear
     assert w1 - S["y_motor"] == pytest.approx(half) and S["y_motor"] - w0 == pytest.approx(half)
     w_near, p_near = (w1, y1) if D.side > 0 else (w0, y0)
-    assert -D.side * w_near >= D.bay_r + 1.5 and -D.side * w_near < -D.side * p_near
+    assert -D.side * w_near >= D.bay_r + 1.4 and -D.side * w_near < -D.side * p_near
     assert wz0 == S["z_rear"] < z0 < S["z_motor_rear"] < wz1 and S["z_board_back"] < S["z_rear"]
 
 
@@ -192,7 +217,8 @@ def test_totals_and_bodies(module):
 def test_module_colors(module):
     """Standalone: every part in its colour, as in the arm (tests/helpers.py part_colours)."""
     assert module.label == "wrist_roll_drive"
-    assert part_colours(module) == {True: 6, False: 2}   # 2 bearings, the pancake, its board, its 20T, the belt / shaft, pulley
+    assert part_colours(module) == {True: 7, False: 3}   # 2 bearings, the pancake, its board, its 20T, the belt, the magnets /
+    #                                                      the shaft, the pulley, the back panel
 
 
 @pytest.mark.slow
@@ -239,15 +265,19 @@ def test_the_rotor_turns_clear_of_the_frame(module, frame):
 
 
 @pytest.mark.slow
-def test_the_pancake_and_its_board_slide_in_from_the_open_face(module, frame):
-    """The pancake and its board go in from the frame's open +X face motor_drop back - its pilot behind the plate, its
-    shaft along the slit, the board through the window - and forward into the pilot slot: clear of the frame from
-    outside it to the seat, in 2 mm steps, and forward."""
+def test_the_pancake_and_its_board_slide_in_from_the_bottom(module, frame):
+    """The pancake and its board go in from the frame's bottom - its end beyond the motor, away from R' - toward R',
+    motor_drop back (its pilot behind the plate, its shaft up the slit, its plug along the side wall's groove, the board
+    through the window), and forward into the pilot slot: clear of the frame from outside it to the seat, in 2 mm steps,
+    and forward."""
     kit = [_leaf(module, label) for label in ("nema17_pancake:wrist_roll", "mks_servo42d:wrist_roll")]
-    out = D.frame_r - S["x_free"] + 2.0
+    s = toward_motor(DEFAULT)
+    bb = frame.bounding_box()
+    bottom = bb.max.Y if s > 0 else -bb.min.Y                       # the frame's end beyond the motor (s * y)
+    out = bottom - (s * S["y_motor"] - D.board_w / 2.0) + 2.0      # the kit's edge toward R' past it
     for k in range(int(out // 2.0) + 1):
         for part in kit:
-            vol = interference(part.moved(Location((2.0 * k, 0.0, -D.motor_drop))), frame)
+            vol = interference(part.moved(Location((0.0, s * 2.0 * k, -D.motor_drop))), frame)
             assert vol < 0.5, f"{part.label} {2.0 * k:.0f} mm out, {D.motor_drop} back: {vol:.1f} mm^3 in the frame"
     for k in range(11):
         for part in kit:
@@ -265,7 +295,7 @@ def test_the_pancake_and_its_board_slide_in_from_the_open_face(module, frame):
 @pytest.mark.slow
 def test_the_board_sits_on_the_pancake(module, frame):
     """The MKS board on the pancake's rear face, centred on its axis, turned with it (its motor plug, the board frame's -Y,
-    toward the open +X face, as the pancake's); its back board_stack behind that face, the frame's rear in front of it;
+    toward the side wall, as the pancake's); its back board_stack behind that face, the frame's rear in front of it;
     off the plate's free face."""
     board = _leaf(module, "mks_servo42d:wrist_roll")
     bb = board.bounding_box()
@@ -276,6 +306,6 @@ def test_the_board_sits_on_the_pancake(module, frame):
     (x0, y0, _, x1, y1, _), _ = PARAMS.MKS_SERVO42D_HEADERS["motor"]
     cx, cy = (x0 + x1) / 2.0, (y0 + y1) / 2.0
     want = (S["x_motor"] + cx * math.cos(a) - cy * math.sin(a), S["y_motor"] + cx * math.sin(a) + cy * math.cos(a))
-    assert want[0] > S["x_motor"] + D.board_w / 4.0                    # toward the open face
+    assert want[0] > S["x_motor"] + D.board_w / 4.0                    # toward the side wall
     assert any(math.dist(want, ((b.min.X + b.max.X) / 2.0, (b.min.Y + b.max.Y) / 2.0)) < 1e-6
                for b in (s.bounding_box() for s in board.solids()))

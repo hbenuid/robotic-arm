@@ -6,6 +6,7 @@ import math
 
 from lib.belts import GT2_PULLEY_20T_TEETH, pulley_circle
 from lib.fasteners import M3_PITCH
+from lib.motors import MKS_PLUG_ROOM, MKS_SERVO42D_HEADERS
 from lib.wrist.params import DEFAULT, WristConfig
 
 _AXES_DEG = (0.0, 90.0, 180.0, 270.0)
@@ -96,31 +97,90 @@ def stack_positions(cfg: WristConfig = DEFAULT) -> dict[str, float]:
 
 
 def motor_pocket(cfg: WristConfig = DEFAULT) -> tuple[float, float, float, float]:
-    """(y0, y1, z0, z1) of the pancake's pocket (from the free face out through the open +X face): its body + the
-    tension travel either way + pocket_clear; from behind its rear face (motor_drop + pocket_rear) to its face."""
+    """(y0, y1, z0, z1) of the pancake's body + the tension travel either way + pocket_clear; from behind its rear face
+    (motor_drop + pocket_rear) to its face. The pocket in the frame runs on from its edge toward R' down out through the
+    bottom (the frame's end beyond the motor, away from R': the pancake slides in from there), from the free face to the
+    side wall's inside (side_wall_x)."""
     d, S = cfg.roll, stack_positions(cfg)
     half = d.pancake.body_w / 2.0 + d.pad_slot_len / 2.0 + d.pocket_clear
     return (S["y_motor"] - half, S["y_motor"] + half, S["z_pocket_rear"], S["z_motor_face"])
 
 
-def frame_y_span(cfg: WristConfig = DEFAULT) -> tuple[float, float]:
-    """(y0, y1) of the frame's outline across the module (lib/wrist/roll.py profile()): from the pocket's far wall
-    (pocket_wall beyond it, the side away from R') to the circle about R' (frame_r) on the other."""
-    d = cfg.roll
-    y0, y1, _, _ = motor_pocket(cfg)
-    if d.side > 0:
-        return y0 - d.pocket_wall, d.frame_r
-    return -d.frame_r, y1 + d.pocket_wall
+def toward_motor(cfg: WristConfig = DEFAULT) -> float:
+    """+1 or -1: the module's y direction from R' to the pitch axis (the motor) and on to the frame's bottom."""
+    return -cfg.roll.side
+
+
+def side_wall_x(cfg: WristConfig = DEFAULT) -> float:
+    """The closed far face's wall's inside (module x): the pocket and the board's window stop there."""
+    return cfg.roll.frame_r - cfg.roll.side_t
 
 
 def board_window(cfg: WristConfig = DEFAULT) -> tuple[float, float, float, float]:
-    """(y0, y1, z0, z1) of the window through the frame's rear behind the pocket (from the free face out through the open
-    +X face, as the pocket): the MKS board's housing square + the tension travel either way + board_clear; from the
-    frame's rear (z0: the cut runs on through it) to board_clear in front of the pancake's rear face, where the housing
-    starts."""
+    """(y0, y1, z0, z1) of the MKS board's window behind the pocket: the board's housing square + the tension travel
+    either way + board_clear; from the frame's rear (z0: the cut runs on out through it) to board_clear in front of the
+    pancake's rear face, where the housing starts. Like the pocket it runs on down out through the bottom, from the free
+    face to the side wall."""
     d, S = cfg.roll, stack_positions(cfg)
     half = d.board_w / 2.0 + d.pad_slot_len / 2.0 + d.board_clear
     return (S["y_motor"] - half, S["y_motor"] + half, S["z_rear"], S["z_motor_rear"] + d.board_clear)
+
+
+def rear_line(cfg: WristConfig = DEFAULT) -> tuple[tuple[float, float], tuple[float, float]]:
+    """The frame's slanted rear seen along the pitch axis, as two (y, z) points: from the tower's far rear corner (-s x
+    frame_r, z_rear) down to rear_low at rear_bend toward the motor (s = toward_motor); flat at rear_low beyond. The back
+    panel lies on it."""
+    d, S, s = cfg.roll, stack_positions(cfg), toward_motor(cfg)
+    return (-s * d.frame_r, S["z_rear"]), (s * d.rear_bend, d.rear_low)
+
+
+def rear_plane(cfg: WristConfig = DEFAULT) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
+    """(point, outward normal) of the rear's slanted plane in the module frame (it holds the module's x direction)."""
+    (ya, za), (yb, zb) = rear_line(cfg)
+    dy, dz = yb - ya, zb - za
+    n = math.hypot(dy, dz)
+    ny, nz = dz / n, -dy / n
+    if nz > 0.0:
+        ny, nz = -ny, -nz
+    return (0.0, ya, za), (0.0, ny, nz)
+
+
+def rear_z(y: float, cfg: WristConfig = DEFAULT) -> float:
+    """The frame's rear (least module z) at y, between the tower's far side and the octagon: the slanted plane, then flat."""
+    (ya, za), (yb, zb) = rear_line(cfg)
+    t = (y - ya) / (yb - ya)
+    return za + (zb - za) * min(max(t, 0.0), 1.0)
+
+
+def pancake_plug_groove(cfg: WristConfig = DEFAULT) -> tuple[float, float, float, float, float, float]:
+    """(x0, x1, y0, y1, z0, z1) of the groove inside the side wall for the pancake's plug (its boss plug_d proud of the body
+    toward +X: motor_spin_deg): plug_clear round the boss and along Y past the tension travel, from the plug on down out
+    through the bottom (it slides in with the motor) - y1 the bottom's side, open-ended - and from plug_clear over the
+    boss on down out through the rear (its lead to the board): z0 open-ended."""
+    d, S, s = cfg.roll, stack_positions(cfg), toward_motor(cfg)
+    p = d.pancake
+    x1 = S["x_motor"] + p.body_w / 2.0 + p.plug_d + d.plug_clear
+    near = S["y_motor"] - s * (p.plug_w / 2.0 + d.pad_slot_len / 2.0 + d.plug_clear)
+    z1 = S["z_motor_rear"] + p.plug_h + d.plug_clear
+    return side_wall_x(cfg), x1, near, s * math.inf, -math.inf, z1
+
+
+def board_plug_rooms(cfg: WristConfig = DEFAULT) -> dict[str, tuple[float, float, float, float, float, float]]:
+    """name -> (x0, x1, y0, y1, z0, z1) in the module frame of each of the MKS board's three plugs' rooms (lib/motors.py:
+    each header's outline carried MKS_PLUG_ROOM straight out from its face - tests/test_sweeps.py _plug_rooms), the
+    board on the pancake's rear face turned with it (motor_spin_deg)."""
+    d, S = cfg.roll, stack_positions(cfg)
+    a = math.radians(d.motor_spin_deg)
+    c, sn = round(math.cos(a), 12), round(math.sin(a), 12)
+    rooms = {}
+    for name, ((x0, y0, z0, x1, y1, z1), (ux, uy)) in MKS_SERVO42D_HEADERS.items():
+        r = MKS_PLUG_ROOM[name]
+        xa, xb = ((x1, x1 + r) if ux > 0 else (x0 - r, x0)) if ux else (x0, x1)
+        ya, yb = ((y1, y1 + r) if uy > 0 else (y0 - r, y0)) if uy else (y0, y1)
+        xs = [S["x_motor"] + x * c - y * sn for x in (xa, xb) for y in (ya, yb)]
+        ys = [S["y_motor"] + x * sn + y * c for x in (xa, xb) for y in (ya, yb)]
+        rooms[name] = (min(xs), max(xs), min(ys), max(ys), S["z_motor_rear"] + z0, S["z_motor_rear"] + z1)
+    return rooms
 
 
 def pad_bolt_points(cfg: WristConfig = DEFAULT) -> list[tuple[float, float]]:
