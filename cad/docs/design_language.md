@@ -10,12 +10,16 @@ designed here), each with its own look; these rules make them one.
 ## The rules
 - **Structure is faceted.** Every link end, leg top and frame is a regular polygon of `lib/style.py SIDES` (an octagon)
   with a flat on each of the part's own axes - `lib/geom.py faceted_end()`, `forearm_roll_block` the pattern -, and the
-  base and its motor mount are an octagonal frustum on an octagonal foot. Where a slab tapers onto its end, the bend is
-  sharp like the facets.
+  base and its motor mount are an octagonal frustum on an octagonal foot - carried on up through the fork's disc, which
+  turns on it: the disc is the same octagon on the same cone, and the arm's zero puts its flats on the base's
+  (`lib/datum.py BASE_TURN_DEG`). Where a slab tapers onto its end, the bend is sharp like the facets; where a plate
+  grows out of a faceted body (the fork's legs out of its disc), it does so in planar facets, the body's flat facing it
+  running on up its face (`lib/geom.py hull_solid`).
 - **What turns stays round.** A part that turns against a neighbour keeps its round: the cycloidal drive, a bearing boss
-  standing proud of a face (the roll frame's, the wrist frame's), the pulleys and the base_yaw turntable (the fork's
-  disc, the base's cap) - a facet there would sweep a corner past the part beside it. A link's end with a bearing seat
-  inside it is structure: faceted round the seat.
+  standing proud of a face (the roll frame's, the wrist frame's), the pulleys and the base's cap - a facet there would
+  sweep a corner past the part beside it. The one exception is the fork's disc, the base's octagon carried up: its
+  corners sweep over the base's top face, nothing beside them. A link's end with a bearing seat inside it is structure:
+  faceted round the seat.
 - **Edges are chamfered.** One 45° chamfer (`lib/style.py EDGE_CHAMFER`) on the outline of every printed part's main
   faces and on every cover - `lib/geom.py chamfer_outline()`, cut on the main body before its holes and pockets, so
   holes, bores and seats stay sharp. A 45° chamfer prints with no support, even on an edge facing the bed.
@@ -36,6 +40,7 @@ frame (`forearm_roll_block`: its tower the forearm flange's octagon carried back
 faceted, the bearing boss rising out of them, its outline chamfered); the forearm (`j2_link`: its web as wide as its cover's end, its
 wrist end and boss faceted and chamfered, its flange faceted); the wrist (`wrist_link`: its roll frame and its plate's
 end on the pitch axis faceted and chamfered); the fork (`j1_coupler`, `j1_motor_leg`: their legs' tops faceted and
-chamfered - on the motor leg not on the flats the sleeve's screws seat on, which span its whole thickness); the base and
+chamfered - on the motor leg not on the flats the sleeve's screws seat on, which span its whole thickness -, the legs
+growing out of the disc in planar facets, the disc and the ring on it octagons); the base and
 its motor mount (`ShellParams.sides`: the round half, the mount's end and the foot faceted, the slits laid out flat by
 flat, `lib/base/layout.py slits`). Not yet - `docs/open_issues.md` "Not modelled yet" -: the covers.

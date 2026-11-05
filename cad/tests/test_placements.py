@@ -3,6 +3,7 @@ shifts of its records and the forearm's turn (lib/placements.py SHIFTS, TURNS) (
 import math
 from dataclasses import replace
 
+import pytest
 from build123d import Location
 
 import lib.forearm.params as FOREARM
@@ -232,7 +233,7 @@ def test_the_forearm_turns_about_its_roll_axis():
     about j2_link's roll axis (y 0, z axis_z along its +X), after the shifts. They keep their poses relative to each
     other; the elbow's records and the roll drive (a ModuleMount, placed on its host before the turn) stay; robot/frames.py's
     point and direction helpers agree with the records."""
-    (turn,) = P.TURNS
+    (turn,) = [t for t in P.TURNS if t.link == "j2_link"]
     assert (turn.link, turn.anchor, set(turn.moves)) == ("j2_link", "j2_link#1", set(P.SHIFTS[4].moves))
     assert turn.deg == FOREARM.DEFAULT.roll_turn_deg - FOREARM.LEGACY.roll_turn_deg == 180.0
     assert turn.point == (0.0, 0.0, FOREARM.DEFAULT.roll_end.axis_z) and turn.axis == (1.0, 0.0, 0.0)
@@ -260,6 +261,39 @@ def test_the_forearm_turns_about_its_roll_axis():
     assert _near(P.shifted("j3_coupler#2", tuple(raw["position"])), tuple(o.position), tol=1e-6)
     x = tuple((o * Location((1.0, 0.0, 0.0))).position - o.position)
     assert _near(P.turned("j3_coupler#2", tuple(row[0] for row in raw["matrix_3x4"])), x, tol=1e-6)
+
+
+def test_the_base_meets_the_coupler_flat_to_flat():
+    """lib/placements.py TURNS: base#1 alone (the base_link's mounted records follow it: mount_placements.py) turns
+    lib/datum.py BASE_TURN_DEG about the base_yaw axis, so at zero j1_coupler sits a whole number of facets round from it
+    - its faceted disc's flats on the base's (lib/style.py SIDES both) -; base_link's frame turns with the base, so the base
+    keeps its pose in it, the arm's pitch axes lie along its Y and the arm extends along its X (lib/datum.py BASE_FORWARD)."""
+    from lib import datum
+    from lib.base.params import DEFAULT as BASE
+    from lib.style import SIDES
+
+    (turn,) = [t for t in P.TURNS if t.link == "base"]
+    assert (turn.anchor, turn.moves, turn.point, turn.axis) == ("base#1", ("base#1",), (0.0, 0.0, 0.0), datum.U)
+    m = P.OCCURRENCES["base#1"]["world"]["matrix_3x4"]
+    for col, v in ((0, turn.axis_w), (1, turn.across_w)):
+        assert all(math.isclose(row[col], a, abs_tol=1e-9) for row, a in zip(m, v, strict=True)), col
+    assert BASE.shell.sides == YAW.DEFAULT.disc.sides == SIDES
+    # the capture's coupler yaw, and the turn: what is left of it past a whole number of facets
+    assert tuple(P.OCCURRENCES["j1_coupler#1"]["world"]["rotation_xyz_deg"]) == (0.0, datum.CAPTURE_YAW_DEG, 0.0)
+    assert turn.deg == datum.BASE_TURN_DEG == pytest.approx(3.694455, abs=1e-6)
+    rel = P.location("base#1", "world").inverse() * P.location("j1_coupler#1", "world")
+    rx, yaw, rz = tuple(rel.orientation)
+    assert rx == pytest.approx(0.0, abs=1e-9) and rz == pytest.approx(0.0, abs=1e-9)
+    assert yaw / (360.0 / SIDES) == pytest.approx(round(yaw / (360.0 / SIDES)), abs=1e-6)
+    for key in ("j1_coupler#1", "cycloidal_drive#1", "j1_link#1"):                     # the arm above keeps its pose
+        assert not P.is_turned(key)
+    # base_link's frame turned with the base: the base where it was in B; X_B the base's -X turned, square to N
+    b = datum.base_frame()
+    unturned = datum.frame((0.0, datum.BASE_BOTTOM_Y, 0.0), datum.U, (-1.0, 0.0, 0.0))   # B had the base turned not
+    assert _close(_matrix(b.inverse() * P.location("base#1", "world")), _matrix(unturned.inverse()), tol=1e-9)
+    drive_axis = tuple(row[0] for row in P.OCCURRENCES["j1_coupler#1"]["world"]["matrix_3x4"])   # its +X: the pitch axes
+    assert abs(sum(a * c for a, c in zip(datum.BASE_FORWARD, drive_axis, strict=True))) < 1e-8
+    assert datum.BASE_FORWARD[0] < -0.99 and datum.BASE_FORWARD[1] == 0.0
 
 
 def test_the_links_carry_what_lies_beyond_them():

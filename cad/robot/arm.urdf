@@ -20,8 +20,9 @@
   (the direction the arm extends). Every joint frame has Z on the joint axis and X along the
   child link's long direction at the capture pose. A child link's frame IS its joint frame at
   the SolidWorks capture pose: ALL JOINTS ARE 0 AT THE CAPTURE POSE and every mesh origin is
-  identity. In that pose shoulder_link is yawed +3.694 deg about base_yaw relative to base X (a
-  captured pose, not a design offset); the shoulder_pitch, elbow_pitch and wrist_pitch axes are
+  identity. In that pose the arm stands square to the base: the base is turned to meet j1_coupler
+  flat to flat (cad/lib/datum.py BASE_TURN_DEG, base_link's frame with it), so the pitch axes lie
+  along base Y at zero; the shoulder_pitch, elbow_pitch and wrist_pitch axes are
   parallel (SlabParams.elbow_x and -WebParams.wrist_x apart in the pitch plane, offset along the axis as the
   joint origins below put them: cad/robot/frames.py). The capture pose is the design's: the forearm and
   everything beyond it are turned half a turn about the forearm_roll axis from the SolidWorks capture
@@ -93,9 +94,9 @@
   </link>
   <link name="shoulder_link">
     <inertial>
-      <origin xyz="-0.000684 0.013067 -0.021619" rpy="0 0 0" />
-      <mass value="1.455672" />
-      <inertia ixx="4.073596e-03" ixy="6.489525e-05" ixz="1.963502e-05" iyy="3.021296e-03" iyz="-3.981600e-04" izz="2.303441e-03" />
+      <origin xyz="0.000165 0.012652 -0.022956" rpy="0 0 0" />
+      <mass value="1.504424" />
+      <inertia ixx="4.279918e-03" ixy="-3.210240e-06" ixz="-5.971825e-06" iyy="3.171535e-03" iyz="-4.245610e-04" izz="2.470681e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -254,7 +255,7 @@
   <joint name="shoulder_pitch" type="revolute">
     <parent link="shoulder_link" />
     <child link="upper_arm_link" />
-    <origin xyz="0.002924 -0.0424 0" rpy="-1.570796 -0.830504 0.064484" />
+    <origin xyz="0.000186 -0.0425 0" rpy="-1.570796 -0.830504 0.000003" />
     <axis xyz="0 0 1" />
     <limit lower="-2.094395" upper="1.169371" effort="5" velocity="1" />
   </joint>

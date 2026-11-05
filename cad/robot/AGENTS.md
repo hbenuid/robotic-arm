@@ -27,8 +27,10 @@ robot/
   the base's bottom face at the base_yaw axis, Z up, X forward). Joint frame: Z on the axis, X along the child link
   (`forearm_roll`: X = N, its child lies along the axis); child link frame = joint frame at capture, so **all joints
   are 0 at the capture pose**, mesh origins are identity and the URDF at zero reproduces `assemblies/arm.py` (emitted
-  in the same `base_link` frame — `assemblies/AGENTS.md`). The capture pose is the design's: the SHIFTS applied and
-  the forearm turned half a turn about its roll axis (`lib/placements.py TURNS`), so the directions beyond the roll
+  in the same `base_link` frame — `assemblies/AGENTS.md`). The capture pose is the design's: the SHIFTS applied, the
+  base turned to meet `j1_coupler` flat to flat (`lib/datum.py BASE_TURN_DEG`, `base_link`'s frame with it: the pitch
+  axes parallel to its Y at zero) and the forearm turned half a turn about its roll axis (`lib/placements.py TURNS`),
+  so the directions beyond the roll
   (`WRIST_PITCH_AXIS` = the capture's −N, `WRIST_ROLL_AXIS`, `JAW_TRAVEL`) are turned with it and at zero the gripper
   is rolled `FOREARM_ROLL_TURN_DEG` from the SolidWorks capture. Moving an occurrence between links or changing an axis =
   edit `frames.py` (a moved occurrence also in `assemblies/arm.py GROUPS`, which mirrors `LINKS` - `test_assembly.py`;

@@ -14,6 +14,7 @@ from lib.cycloidal import (
     stack_positions,
 )
 from lib.fasteners import M4_NUT, M4_SHCS
+from lib.style import EDGE_CHAMFER
 from lib.yaw_coupler.params import DEFAULT, YawCouplerConfig
 
 COUNTERBORE = M4_SHCS.head_dia + 0.4    # [DESIGN] the fork's M4 heads' counterbores (the drive's housing bolts' 7.4)
@@ -149,20 +150,40 @@ def fork_hub_bolts(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[float, float]]
     return [(f.axis_y + y, f.axis_z + x) for x, y in arm_mount_points(DRIVE)]
 
 
-def fork_flare_top(cfg: YawCouplerConfig = DEFAULT) -> float:
-    """y where the disc's draft up the legs' outer faces stops: flare_seat_flat under the counterbores of the hub's
-    lowest bolts (the mounting area above it is the leg's flat yoke_leg)."""
-    return min(y for y, _ in fork_hub_bolts(cfg)) - COUNTERBORE / 2.0 - cfg.fork.flare_seat_flat
+def disc_corners(cfg: YawCouplerConfig, y: float) -> list[tuple[float, float, float]]:
+    """(x, y, z) of the faceted disc's corners at height y (DiscParams.sides): its flats disc_r(y) off the base_yaw axis,
+    one facing each of +/-X and +/-Z (lib/geom.py faceted_end, turned onto this frame's XZ plane)."""
+    n = cfg.disc.sides
+    r = disc_r(cfg, y) / math.cos(math.pi / n)
+    return [(r * math.cos(math.pi * (2 * k + 1) / n), y, r * math.sin(math.pi * (2 * k + 1) / n)) for k in range(n)]
 
 
-def fork_leg_bound(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[float, float]]:
-    """(r, y) of the half section, about the base_yaw axis, the legs' posts stay inside (lib/yaw_coupler/body.py keeps
-    their round tops whole): from under the disc the disc's drafted side up to its top face's edge, the feet out from
-    there at foot_deg off vertical to the disc's rim (its underside's radius), the rim on up past the round tops."""
+def fork_post_y(cfg: YawCouplerConfig = DEFAULT) -> float:
+    """y where the legs' posts end and their faceted roots begin: where the disc's draft reaches the legs' outer faces
+    (the two mirror each other) - the disc's flat facing a leg runs on up its outer face to there, in one plane."""
+    d, x_out = cfg.disc, abs(fork_hub_leg_x(cfg)[0])
+    return d.band_y1 + (d.band_r - x_out) * (d.top_y - d.band_y1) / (d.band_r - d.top_r)
+
+
+def fork_root_points(cfg: YawCouplerConfig, x_in: float, x_out: float) -> list[tuple[float, float, float]]:
+    """The corners whose convex hull is the faceted root under the leg between its inner face x_in and outer face x_out
+    (lib/yaw_coupler/body.py): the post's section at fork_post_y - plate_r either side of the drive's axis, its outline
+    chamfered EDGE_CHAMFER at 45 deg -, and the disc's corners outboard of the inner face at its rim (y0) and its top face
+    (top_y), with the points where the disc's edges there cross that face."""
     d, f = cfg.disc, cfg.fork
-    rim, top = disc_r(cfg, d.y0), f.axis_y + f.plate_r + 1.0
-    foot_y = d.top_y + (rim - d.top_r) / math.tan(math.radians(f.foot_deg))
-    return [(0.0, d.y0 - 1.0), (rim, d.y0 - 1.0), (rim, d.y0), (d.top_r, d.top_y), (rim, foot_y), (rim, top), (0.0, top)]
+    s, y = math.copysign(1.0, x_out), fork_post_y(cfg)
+    a, b, h, c = min(x_in, x_out), max(x_in, x_out), f.plate_r, EDGE_CHAMFER
+    post = [(a, -h + c), (a + c, -h), (b - c, -h), (b, -h + c), (b, h - c), (b - c, h), (a + c, h), (a, h - c)]
+    points = [(x, y, f.axis_z + z) for x, z in post]
+    for level in (d.y0, d.top_y):
+        corners = disc_corners(cfg, level)
+        for p, q in zip(corners, corners[1:] + corners[:1], strict=True):
+            if s * p[0] > abs(x_in):
+                points.append(p)
+            if (s * p[0] > abs(x_in)) != (s * q[0] > abs(x_in)):
+                t = (s * abs(x_in) - p[0]) / (q[0] - p[0])
+                points.append((s * abs(x_in), level, p[2] + t * (q[2] - p[2])))
+    return points
 
 
 def fork_motor_bolts(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[float, float]]:

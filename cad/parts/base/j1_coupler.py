@@ -2,16 +2,16 @@
 drive (parametric build123d, lib/yaw_coupler/body.py build_yaw_coupler(cfg), in the SolidWorks part frame -
 origin on the base_yaw axis at the base's seat-ring top, +Y up the axis, the drive's axis along X at y 90).
 
-A drafted disc (flats at x +/-40, ears of a Ø96 disc beyond them, a recess in its underside - DEFAULT: drafted round
-to a Ø116 rim, its flats and ears filled under the legs; the recess Ø90.4, its ceiling the seat on the base_yaw
+A drafted disc (flats at x +/-40, ears of a Ø96 disc beyond them, a recess in its underside - DEFAULT: faceted, the
+base's octagon carried on up, its flats 58 off the axis at the rim, whole round; the recess Ø90.4, its ceiling the seat on the base_yaw
 thrust bearing, the rim 0.5 over the base's top face) on a stub through the upper base
 bearing (DEFAULT: Ø30, on to the lip's lower face, where the base_yaw 120T's hub end meets it), a bore (DEFAULT: the
 pulley's Ø12.5) and 4 holes on the diagonals up to the pocket over the hub (DEFAULT: the 90T's bolt circle, M4 clearance,
 the nuts flush in hex pockets in the pocket's floor); on the disc a ring (DEFAULT: lowered under the drive's turning
-shell) and DEFAULT's fork round the drive (ForkParams) on the drive's own axis: two legs past the turning shell's two
-ends, centred on the base_yaw axis with the drive's discs, alike: each a round top on the axis on a post as wide down
-to the disc (straight sides), the post kept inside the disc's rim - its feet flaring out from the disc's top edge -,
-the disc's drafted side carried up its outer face to under the hub's bolts - the -X one the held hub bolts to, its disc
+shell, faceted like the disc) and DEFAULT's fork round the drive (ForkParams) on the drive's own axis: two legs past the
+turning shell's two ends, centred on the base_yaw axis with the drive's discs, alike: each a round top on the axis on a
+post as wide (straight sides) down to under the hub's bolts, growing out of the disc there in planar facets - the
+disc's flat facing it carried on up its outer face - the -X one the held hub bolts to, its disc
 the motor leg's size, past the hub; the +X one its own part, parts/base/j1_motor_leg (a solid ring round the motor plate's sleeve,
 slid on over the motor, bolted to the sleeve by 3 radial M4s), standing on the disc and bolted to it by 2 M4s along
 the drive's axis into nuts in slots in the disc - this part stops at that leg's outer face; the ring under the drive flat to flat. Every number: lib/yaw_coupler/params.py
