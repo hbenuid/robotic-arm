@@ -5,10 +5,15 @@ of the SolidWorks tower's round end, +Z up through the plate; the pitch axis alo
 DEFAULT (what the part builds): a 5 mm plate, its round end on the pitch axis j3_coupler#2's seat (a Ø29.9 hole clear
 of the wrist 90T's nuts, the flange's 4x M4 at r 35 on the axes into hex nut pockets in the underside), and on its
 underside - the side away from the forearm - the wrist roll drive's frame (lib/wrist/roll.py build_frame,
-WristRollParams; docs/wrist_roll.md): one body round the pancake, centred on the pitch axis in its pocket (open on the
-far face, its front wall the plate it bolts to, slotted for the belt's tension), and the tower round the roll axis
-beside it, WRIST_ROLL_OFFSET across (the 6806 pair on a lip, the bearing boss, the shaft's bay with the hard stop's
-post); the coupler nut the tower covers drops in through a hex channel from the bay. LEGACY (REFERENCE_BUILD) is the
+WristRollParams; docs/wrist_roll.md), laid out as the forearm roll's frame: seen along the pitch axis the plate's
+octagon hulled to the tower round the roll axis, WRIST_ROLL_OFFSET across, from the plate to the closed far face, its
+rear one slanted plane, the front face's long edges faceted - one body round the pancake, centred on the pitch axis in
+its pocket (open down through the bottom - the frame's end beyond the motor, where it slides in - its front wall the
+plate it bolts to, slotted for the belt's tension, a groove inside the side wall for its plug), its MKS board in a
+window open at the rear and the bottom; the tower: the 6806 pair on a lip, the bearing boss rising out of the front
+facets, the shaft's bay with the hard stop's post bored on through the rear under a removable back panel
+(wrist_back_panel, held by wrist_back_magnets); the coupler nut the tower covers drops in through a hex channel from
+the bay. LEGACY (REFERENCE_BUILD) is the
 SolidWorks part: the plate with a round end on each axis, the tower on the other - an R39 wall round an R30 bore, a
 wedge under a slope inside it (its edge with the bore filleted R10), cheeks either side of a 42 mm slot, a 64 x 42
 block out to the end face the dropped gripper_clamp_bracket bolted to. Every number: lib/wrist/params.py (WristConfig;

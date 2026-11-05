@@ -182,6 +182,8 @@ NO_REFERENCE: dict[str, str] = {
     "wrist_roll_pulley": "lib/wrist/roll.py:build_pulley(DEFAULT)",
     "wrist_roll_shaft": "lib/wrist/roll.py:build_shaft(DEFAULT)",
     "wrist_roll_belt": "parts/wrist/wrist_roll_belt.py:_envelope()",
+    "wrist_back_panel": "lib/wrist/roll.py:build_back_panel(DEFAULT)",
+    "wrist_back_magnets": "parts/wrist/wrist_back_magnets.py:_envelope()",
 }
 
 # Measured conversions: printed parts converted from a SolidWorks export that was measured once and is NOT committed -

@@ -11,7 +11,7 @@ import pytest
 from lib.coupler import LEGACY as COUPLER
 from lib.motors import NEMA17_BOLT_SP
 from lib.wrist import DEFAULT, LEGACY, end_face_holes, seat_bolt_points, slope_x
-from lib.wrist.layout import module_frame_in_host, stack_positions
+from lib.wrist.layout import module_frame_in_host, side_wall_x, stack_positions, toward_motor
 from tests import built
 from tests.helpers import is_inside
 
@@ -124,8 +124,9 @@ def _part(mx: float, my: float, mz: float) -> tuple[float, float, float]:
 @pytest.mark.slow
 def test_the_part_is_the_roll_frame(wrist, legacy):
     """The built DEFAULT: the plate's round end with the coupler's seat, the frame on its underside - the pancake's
-    pocket and the plate in front of it, the tower's seats and lip, the bay open on the far face with the stop post, the
-    coupler nut the tower covers reached from the bay."""
+    pocket (open down through the bottom, the far face's wall closed over it, its plug's groove inside the wall) and the
+    plate in front of it, the front face's facets, the tower's seats and lip, the bay bored through the rear with the stop
+    post, the coupler nut the tower covers reached from the bay."""
     d, ST = DEFAULT.roll, stack_positions(DEFAULT)
     assert wrist.is_valid and len(wrist.solids()) == 1
     assert wrist.volume < legacy.volume
@@ -137,7 +138,7 @@ def test_the_part_is_the_roll_frame(wrist, legacy):
     ym = ST["y_motor"]
     assert not is_inside(wrist, *_part(0.0, ym, 0.0))
     assert not is_inside(wrist, *_part(ST["x_free"] + 0.1, ym + 18.0, 0.0)) and is_inside(wrist, *_part(ST["x_free"] - 0.1, ym + 18.0, 0.0))
-    assert is_inside(wrist, *_part(0.0, ym + 18.0, (ST["z_motor_face"] + ST["z_front"]) / 2.0))
+    assert is_inside(wrist, *_part(10.0, ym + 18.0, (ST["z_motor_face"] + ST["z_front"]) / 2.0))   # beside the slit
     assert not is_inside(wrist, *_part(10.0, ym, (ST["z_motor_face"] + ST["z_front"]) / 2.0))
     # the tower round R': bearing 1's seat, the lip, the boss's top
     r_seat = (d.bearing_od + d.seat_add) / 2.0
@@ -145,9 +146,20 @@ def test_the_part_is_the_roll_frame(wrist, legacy):
     assert not is_inside(wrist, *_part(0.0, r_seat - 0.1, z1)) and is_inside(wrist, *_part(0.0, r_seat + 0.1, z1))
     assert not is_inside(wrist, *_part(0.0, d.lip_id / 2.0 - 0.2, ST["z_meet"])) and is_inside(wrist, *_part(0.0, d.lip_id / 2.0 + 0.2, ST["z_meet"]))
     assert is_inside(wrist, *_part(0.0, 24.0, ST["z_boss"] - 0.2)) and not is_inside(wrist, *_part(0.0, 24.0, ST["z_boss"] + 0.2))
-    # the bay behind bearing 1, open on +X; the post at -X inside it, the lug's room at +X
+    # the pocket on down out through the bottom (the pancake slides in from there), the far face's wall closed over it,
+    # the plug's groove inside the wall (a skin outside it), the shaft's slit out through the bottom too
+    s, xw = toward_motor(DEFAULT), side_wall_x(DEFAULT)
+    assert not is_inside(wrist, *_part(0.0, ym + s * 30.0, 0.0)) and not is_inside(wrist, *_part(0.0, ym + s * 30.0, (ST["z_motor_face"] + ST["z_front"]) / 2.0))
+    assert is_inside(wrist, *_part(xw + 1.0, ym, 0.0)) and is_inside(wrist, *_part(d.frame_r - 1.0, ym, 0.0))
+    assert not is_inside(wrist, *_part(xw + 2.0, ym, -7.0)) and is_inside(wrist, *_part(d.frame_r - 1.0, ym, -7.0))
+    # the front face's two long edges faceted front_facet at 45 deg: material just inside the far face's facet, none past it
+    mid = (d.frame_r - d.front_facet / 2.0, ST["z_front"] - d.front_facet / 2.0)
+    assert is_inside(wrist, *_part(mid[0] - 0.35, ym, mid[1] - 0.35)) and not is_inside(wrist, *_part(mid[0] + 0.35, ym, mid[1] + 0.35))
+    # the bay behind bearing 1, bored on through the rear (under the back panel), the far face's wall closed beside it; the
+    # post at -X inside it, the lug's room at +X
     zb = (ST["z_stop_post"] + ST["z_bearing_1"]) / 2.0
-    assert not is_inside(wrist, *_part(d.frame_r - 1.0, 0.0, (ST["z_bay"] + ST["z_bearing_1"]) / 2.0))
+    assert is_inside(wrist, *_part(d.frame_r - 1.0, 0.0, (ST["z_bay"] + ST["z_bearing_1"]) / 2.0))
+    assert not is_inside(wrist, *_part(0.0, 0.0, ST["z_bay"])) and not is_inside(wrist, *_part(0.0, 0.0, ST["z_rear"] - 1.0))
     assert is_inside(wrist, *_part(-21.0, 0.0, zb)) and not is_inside(wrist, *_part(21.0, 0.0, zb))
     assert is_inside(wrist, *_part(-(d.bay_r + 0.3), 0.0, ST["z_bay"] + 1.0))
     # the coupler nut under the tower: its hex channel from the plate's pocket up into the bay
