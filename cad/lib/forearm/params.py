@@ -239,7 +239,7 @@ class RollIdlerParams:
 class BackPanelParams:
     """[DESIGN] The roll frame's removable back panel (parts/joints/forearm_roll_back_panel): a plate flush with the
     frame's rear face (the rear line, lib/forearm/roll.py rear_line) in a step cut across the face's full width, from the
-    tower's top down to `bottom`, over the shaft's bay - whose opening grows on down below the bay's bore, a pocket
+    tower's top - the panel's top corners cut to the tower's octagon - down to `bottom`, over the shaft's bay - whose opening grows on down below the bay's bore, a pocket
     opening_depth in from the face: the shaft, its clamp nuts and the stop are reached with the panel off. Flush, so the
     elbow motor's board passes the rear line as it did before the bay was bored through the back. The panel turns
     run_gap clear of the shaft's rear face and its lug (a relief where it passes over them), is located by a U rim in the
@@ -261,13 +261,14 @@ class BackPanelParams:
     rim_w: float = 1.6                    # ... this wide (4 perimeters) ...
     rim_h: float = 3.0                    # ... this tall from the panel's inner face ...
     rim_top: float = -5.0                 # ... a U from the opening's bottom up its sides to here (s), clear of the turning shaft
-    magnet_dia: float = 6.0               # [DATASHEET] N52 NdFeB disc magnet, 6 x 2 mm (parts/joints/roll_back_magnets)
-    magnet_t: float = 2.0
-    pocket_dia: float = 6.2               # each magnet's pocket (glued in, pressed to its bottom) ...
+    magnet_dia: float = 3.0               # [DATASHEET] N52 NdFeB disc magnet, 3 x 2 mm (parts/joints/roll_back_magnets) - small enough for the
+    magnet_t: float = 2.0                 #             upper pair to fit beside the bay now that the tower's top corners are faceted
+    pocket_dia: float = 3.2               # each magnet's pocket (glued in, pressed to its bottom) ...
     pocket_depth: float = 2.1             # ... in the step's floor and in the panel's inner face: 0.4 of the panel outside it
-    magnet_points: tuple = ((-23.5, 27.0), (23.5, 27.0), (-18.0, -49.0), (18.0, -49.0))   # (x, s): the top pair beside the bay's
-    #                                       bore (3.7 of wall to it, 3.4 to the side faces, 4.2 to the tower's top), the bottom pair under the
-    #                                       opening (3.9 to it and to the step's bottom edge)
+    magnet_points: tuple = ((-26.8, 13.6), (26.8, 13.6), (-18.0, -49.0), (18.0, -49.0))   # (x, s): the upper pair beside the bay's
+    #                                       bore, as high as the tower's octagon leaves room (1.54 of wall to its facets, 1.57 to the bore,
+    #                                       1.6 to the side faces),
+    #                                       the bottom pair under the opening
 
 
 ROLL_FRAME_R = 30.0   # [DESIGN] the roll frame's half width round the roll axis: its underside (11.0 over the upper arm's flat top),
@@ -284,7 +285,8 @@ class RollDriveParams:
     centre_distance above it (= the arm's elbow offset, ForearmConfig.elbow_offset): the stock roll belt round the motor's
     20T and the ring, an idler on its back on the frame's face taking up the rest (RollIdlerParams). The frame is
     one body round the motor: seen along the elbow axis an octagon about it (end_r, its flats round the upper arm's faceted end)
-    hulled up to the tower round the roll axis, straight-sided, extruded from its underside (block_x[0], the elbow flange's - its underside repeats
+    hulled up to the tower round the roll axis - seen along the roll axis the tower is the forearm flange's octagon
+    (tower_y), the front face's long edges faceted (front_facet) -, straight-sided, extruded from its underside (block_x[0], the elbow flange's - its underside repeats
     the SolidWorks j3_coupler's lip / boss / journal / stub into j1_link's bore, the elbow 90T bolts straight into it) to
     its side (+N) face, closed; the motor in a pocket open down through the octagon's bottom (it slides up into it; a
     groove inside each wall at its board's side headers), the pocket's front wall its plate (round holes: its 4x M3 from
@@ -329,7 +331,10 @@ class RollDriveParams:
     #                                       6 proud of it -, its corners end_r / cos(22.5 deg) = 45.5 out (the elbow motor's board
     #                                       sweeps 56.5 out)
     end_sides: int = SIDES                # [DESIGN] the end's polygon (lib/style.py): an octagon, a flat on each axis (the front face's plane, the end, the bottom)
-    tower_y: float = ROLL_FRAME_R         # [DESIGN] the tower's top over the roll axis, as far as the underside and the side face: the bay + 4.4
+    tower_y: float = ROLL_FRAME_R         # [DESIGN] the tower's top over the roll axis, as far as the underside and the side face: the bay + 4.4;
+    #                                       seen along the roll axis the tower is the forearm flange's octagon (end_sides, these flats -
+    #                                       RollEndParams.wall_od / 2), its two top corners cut to its diagonal flats, 4.4 off the bay
+    #                                       like the flats (roll.py tower_section)
     rear_line_r: float = 3.0              # [DESIGN] the rear line (the outline from the end up to the tower's top): tangent to the end_r
     #                                       circle and to a circle this radius in the tower's rear-top corner - where the round end's hull ran,
     #                                       2.3 off the elbow motor's board at the elbow's lower limit (lib/params.py ELBOW_PITCH_LIMITS_DEG);
@@ -348,7 +353,11 @@ class RollDriveParams:
     #                                       Ø5 shaft passes it as the motor slides up (the screws' holes stay whole either side)
     bearing_boss_dia: float = 52.0        # [DESIGN] the boss on the front face round the roll axis, bearing 2's seat in it (4.9 of wall), its top
     #                                       bearing 2's front face: the ring's rear flange turns run_gap over it, 3.6 past its edge (no cup round
-    #                                       the flange); 4 inside the frame's underside, side face and tower top, on the flat of the front face
+    #                                       the flange); 4 inside the frame's underside, side face and the tower's octagon, carried down
+    #                                       through the front facets (front_facet): it rises out of them
+    front_facet: float = 7.0              # [DESIGN] the front face's two long edges (with the underside and the side face) faceted this far at
+    #                                       45 deg, end to end: as far as the plate over the motor's pocket allows - 4.95 of wall at the
+    #                                       pocket's corners, 4.65 at the motor screws' counterbores (roll.py front_facets)
     bay_r: float = 25.6                   # [DESIGN] the shaft's bay behind bearing 1, bored on through the frame's back (the rear line): round
     #                                       the stop lug's corners (r 24.6) + 1; the shaft, bearing 1 pressed on it, goes in along the axis from behind
     # the coupler features on the frame's underside (module -X) about the elbow axis (y = elbow_y), where j3_coupler#1 was

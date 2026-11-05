@@ -292,7 +292,7 @@ ROLL_CLAMP_NUTS_MASS_G = STEEL_DENSITY * _ROLL_CLAMP * nut_volume(_FOREARM.drive
 # discs, a pair at each point, x NdFeB's density
 NDFEB_DENSITY = 7.5e-3   # [DATASHEET] g/mm^3 - sintered NdFeB magnets
 _BACK = _FOREARM.drive.back
-ROLL_BACK_MAGNETS_MASS_G = NDFEB_DENSITY * 2 * len(_BACK.magnet_points) * _cyl_vol(_BACK.magnet_dia / 2.0, _BACK.magnet_t)   # 3.4, 8x 6 x 2
+ROLL_BACK_MAGNETS_MASS_G = NDFEB_DENSITY * 2 * len(_BACK.magnet_points) * _cyl_vol(_BACK.magnet_dia / 2.0, _BACK.magnet_t)   # 0.85, 8x 3 x 2
 # the wrist frame's back panel's magnets (parts/wrist/wrist_back_magnets; lib/wrist/params.py WristBackPanelParams), likewise
 _WBACK = _WRIST.roll.back
 WRIST_BACK_MAGNETS_MASS_G = NDFEB_DENSITY * 2 * len(_WBACK.magnet_points) * _cyl_vol(_WBACK.magnet_dia / 2.0, _WBACK.magnet_t)   # 0.85, 8x 3 x 2

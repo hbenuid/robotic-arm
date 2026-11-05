@@ -56,7 +56,7 @@ def test_roll_drive_lists_follow_its_rows():
                       "gt2_idler_20t": 1, "roll_idler_screw": 1, "roll_idler_nut": 1,   # the belt's tensioner
                       "roll_back_magnets": 8}                                              # the back panel's 4 pairs
     assert parts.load("roll_clamp_screws").PURCHASE_SPEC.startswith("M3 x 45 socket head cap screw")
-    assert parts.load("roll_back_magnets").PURCHASE_SPEC == "6 x 2 mm N52 NdFeB disc magnet"
+    assert parts.load("roll_back_magnets").PURCHASE_SPEC == "3 x 2 mm N52 NdFeB disc magnet"
     states = {r["part"]: r["state"] for r in bom.print_rows("forearm_roll_drive")}
     assert states == {"forearm_roll_block": "native", "forearm_roll_shaft": "native", "forearm_roll_pulley": "no reference",
                       "forearm_roll_back_panel": "no reference"}

@@ -129,13 +129,14 @@ def test_the_riser_slot_and_channel_on_the_frame(module):
         for z in (z_land, z_riser, S["z_front"] - 1.0, S["z_idler_top"] - I.screw_len - I.tip_clear + 0.5):
             assert not is_inside(block, x, iy, z), (x, z)
     assert not is_inside(block, ix, iy, S["z_idler"] + 0.5)
-    # the nut's channel: past the slot's ends both ways, closed beyond them (the side face whole), the roof over it; the
-    # nut's way in from the motor's pocket along +Y into it
+    # the nut's channel: past the slot's ends both ways, closed beyond them (the side wall whole out to the front face's
+    # facet), the roof over it; the nut's way in from the motor's pocket along +Y into it
     z_nut = S["z_idler_roof"] - I.nut.h / 2.0
     reach = I.travel + I.nut.af / math.sqrt(3.0) + I.nut_fit
     for x in (ix - I.travel, ix + I.travel):
         assert not is_inside(block, x, iy + I.nut.af / 2.0, z_nut) and is_inside(block, x, iy + I.nut.af / 2.0 + I.nut_fit + 0.5, z_nut)
-    for x in (ix - reach - 0.5, ix + reach + 0.5, D.block_x[1] - 0.5):
+    x_facet = D.block_x[1] - D.front_facet + (S["z_front"] - z_nut)        # the facet's x at the nut's height
+    for x in (ix - reach - 0.5, ix + reach + 0.5, x_facet - 0.5):
         assert is_inside(block, x, iy, z_nut), x
     assert is_inside(block, ix + reach - 1.0, iy, S["z_idler_roof"] + I.roof / 2.0)
     _y0, y1, _z0, _z1 = motor_pocket(DEFAULT)

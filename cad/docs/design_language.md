@@ -32,10 +32,11 @@ designed here), each with its own look; these rules make them one.
 
 ## Where it stands
 In the model: the colours; the upper arm (`j1_link`: its faceted elbow end, its slab's outline chamfered); the roll
-frame (`forearm_roll_block`: its outline chamfered); the forearm (`j2_link`: its web as wide as its cover's end, its
-wrist end and boss faceted and chamfered, its flange faceted); the wrist (`wrist_link`: its roll frame laid out as the
-roll frame's - the plate's octagon hulled to its tower, the far face closed, a back panel over the bay, its front edges
-faceted, the bearing boss rising out of them - and its plate's end on the pitch axis faceted and chamfered); the fork (`j1_coupler`, `j1_motor_leg`: their legs' tops faceted and
-chamfered - on the motor leg not on the flats the sleeve's screws seat on, which span its whole thickness); the base and
+frame (`forearm_roll_block`: its tower the forearm flange's octagon carried back through it, its front face's long edges
+faceted, the bearing boss rising out of them, its outline chamfered); the forearm (`j2_link`: its web as wide as its
+cover's end, its wrist end and boss faceted and chamfered, its flange faceted); the wrist (`wrist_link`: its roll frame
+laid out as the roll frame's - the plate's octagon hulled to its tower, the far face closed, a back panel over the bay,
+its front edges faceted, the bearing boss rising out of them - and its plate's end on the pitch axis faceted and
+chamfered); the fork (`j1_coupler`, `j1_motor_leg`: their legs' tops faceted and chamfered - on the motor leg not on the flats the sleeve's screws seat on, which span its whole thickness); the base and
 its motor mount (`ShellParams.sides`: the round half, the mount's end and the foot faceted, the slits laid out flat by
 flat, `lib/base/layout.py slits`). Not yet - `docs/open_issues.md` "Not modelled yet" -: the covers.
