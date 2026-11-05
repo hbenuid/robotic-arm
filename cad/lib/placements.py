@@ -29,6 +29,7 @@ from dataclasses import dataclass
 
 import build123d as bd
 
+from lib.datum import BASE_TURN_DEG as _BASE_TURN_DEG
 from lib.forearm.params import DEFAULT as _FOREARM
 from lib.forearm.params import LEGACY as _FOREARM_LEGACY
 from lib.upper_arm.layout import arm_slide as _arm_slide
@@ -155,6 +156,12 @@ class LinkTurn:
 
 
 TURNS: tuple[LinkTurn, ...] = (
+    # the base about the base_yaw axis (U through its origin: base#1 sits at the capture's identity) by lib/datum.py
+    # BASE_TURN_DEG, so its octagon (lib/base/params.py ShellParams.sides) meets j1_coupler's faceted disc flat to flat at
+    # the capture pose - which had the coupler a fraction of a facet off it; the mounted records on the base follow
+    # (mount_placements.py), and base_link's frame turns with it (lib/datum.py BASE_FORWARD): the arm square to it at zero
+    LinkTurn("base", "base#1", (1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0), _BASE_TURN_DEG,   # [REFERENCE] identity
+             ("base#1",)),
     # the forearm half a turn about its roll axis (y 0, z axis_z, along j2_link's +X; lib/forearm/params.py roll_turn_deg):
     # the wrist-pitch motor on the upper arm's side of it, the wrist and the gripper rolled with it; the roll drive (its
     # rotor too) keeps its pose and j2_link's wall bolts onto the pulley turned (its 4 bolts at 0 / 90 / 180 / 270 deg)

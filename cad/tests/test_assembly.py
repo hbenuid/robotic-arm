@@ -35,11 +35,11 @@ def _expected_totals():
 
 
 def _expected_bbox():
-    """Union of the world bounding boxes of every part occurrence in placements.json (the mounted
-    motors + boards included; a converted part's from its build - tests.totals) and of the designed
+    """Union of the world (W) bounding boxes of every part occurrence in placements.json (the mounted
+    motors + boards included; a converted or turned part's from its build - tests.totals) and of the designed
     modules built in-process at their world pose (the SolidWorks node's box predates the drive's MKS
-    board), re-expressed in the frame the arm is emitted in (arm.arm_from_w(): W, +Y up -> base_link,
-    Z up). That map is an axis permutation with signs, so two opposite corners carry the whole box."""
+    board). In W, where the records' boxes are exact: the arm is emitted in base_link's frame (arm.arm_from_w()),
+    turned about +Y_W with the base (lib/datum.py BASE_TURN_DEG), so the test moves the arm back to W to compare."""
     lo = [float("inf")] * 3
     hi = [float("-inf")] * 3
     boxes = [world_bbox(k) for k in P.keys(kind="part")]
@@ -50,9 +50,6 @@ def _expected_bbox():
         for i in range(3):
             lo[i] = min(lo[i], bmin[i])
             hi[i] = max(hi[i], bmin[i] + bsize[i])
-    corners = [tuple((arm.arm_from_w() * Location(tuple(p))).position) for p in (lo, hi)]
-    lo = [min(c[i] for c in corners) for i in range(3)]
-    hi = [max(c[i] for c in corners) for i in range(3)]
     return lo, [h - l for h, l in zip(hi, lo, strict=True)]
 
 
@@ -143,6 +140,7 @@ def test_arm_assembly_matches_reference_totals():
     assert len(a.solids()) == exp_solids == 339
     assert abs(R.solid_volume(a) - exp_volume) <= 0.5
     exp_min, exp_size = _expected_bbox()
-    assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_min(a), exp_min, strict=True)), (R.bbox_min(a), exp_min)
-    assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_size(a), exp_size, strict=True)), (R.bbox_size(a), exp_size)
+    in_w = a.moved(arm.arm_from_w().inverse())                                    # the arm back in W
+    assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_min(in_w), exp_min, strict=True)), (R.bbox_min(in_w), exp_min)
+    assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_size(in_w), exp_size, strict=True)), (R.bbox_size(in_w), exp_size)
     assert part_colours(a) == {True: 84, False: 41}   # bought / printed leaves (tools/bom.py counts the same)

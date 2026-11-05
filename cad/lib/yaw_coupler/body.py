@@ -2,9 +2,10 @@
 part frame.
 
 Built in the part frame directly: the disc, the flare and the hub turn about the part's Y (the base_yaw axis), the
-yoke is prisms along X (the drive's axis) - their outlines in the YZ plane, lib/yaw_coupler/layout.py; DEFAULT's fork
-(ForkParams) is boxes and cylinders along X on the drive's own axis, and the disc's drafted side carried up the legs'
-outer faces, a cone about Y."""
+yoke is prisms along X (the drive's axis) - their outlines in the YZ plane, lib/yaw_coupler/layout.py; DEFAULT's disc is
+faceted (DiscParams.sides: a tapered prism about Y, every flat a plane), its fork (ForkParams) boxes and cylinders along
+X on the drive's own axis, each leg's root the convex hull of its post's section and the disc's corners (planar faces:
+lib/geom.py hull_solid)."""
 from __future__ import annotations
 
 import math
@@ -12,7 +13,7 @@ import math
 import build123d as bd
 
 from lib.fasteners import M4_CLEAR, M4_NUT
-from lib.geom import align_min, faceted_end, hex_prism, single_solid
+from lib.geom import align_min, faceted_end, hex_prism, hull_solid, single_solid
 from lib.style import EDGE_CHAMFER, SIDES
 from lib.units import NUDGE
 from lib.yaw_coupler.layout import (
@@ -24,13 +25,13 @@ from lib.yaw_coupler.layout import (
     disc_profile,
     disc_r,
     flare_r,
-    fork_flare_top,
     fork_hub_bolts,
     fork_hub_leg_x,
-    fork_leg_bound,
     fork_motor_bolt_x,
     fork_motor_bolts,
     fork_motor_leg_x,
+    fork_post_y,
+    fork_root_points,
     fork_sleeve_bolt_deg,
     fork_sleeve_bolt_x,
     hole_points,
@@ -70,13 +71,25 @@ def _revolved(profile: list):
     return bd.revolve(bd.Polygon(*profile, align=None), bd.Axis.Y)
 
 
+def _ycone(r0: float, r1: float, y0: float, y1: float, sides: int):
+    """A faceted frustum about the part's Y from y0 (its flats r0 off the axis) to y1 (r1): a tapered prism, every flat a
+    plane (a ruled loft's B-spline faces integrate per machine: lib/AGENTS.md), a flat facing each of +/-X and +/-Z."""
+    h = y1 - y0
+    face = faceted_end(r0, sides=sides)
+    return bd.Pos(0.0, y0, 0.0) * bd.Rot(-90.0, 0.0, 0.0) * bd.extrude(face, amount=h, taper=math.degrees(math.atan2(r0 - r1, h)))
+
+
 def _disc(cfg: YawCouplerConfig):
-    """The drafted disc between its flats, the ears beyond them, the ring on top."""
+    """The drafted disc between its flats, the ears beyond them, the ring on top - or, faceted (DiscParams.sides), the
+    whole frustum and the ring as many flats."""
     d = cfg.disc
+    ring_x = _box((d.ring_x0, d.flat_x), (-_FAR, _FAR), (-_FAR, _FAR))
+    if d.sides:
+        disc = _ycone(disc_r(cfg, d.y0), d.top_r, d.y0, d.top_y, d.sides)
+        return disc + (_ycone(d.ring_r, d.ring_r, d.top_y - NUDGE, d.ring_y1, d.sides) & ring_x)
     disc = _revolved(disc_profile(cfg)) & _box((-d.flat_x, d.flat_x), (-_FAR, _FAR), (-_FAR, _FAR))
     disc = disc + _ycyl(d.ear_r, d.y0, d.ear_y1)
-    ring = _ycyl(d.ring_r, d.top_y - NUDGE, d.ring_y1) & _box((d.ring_x0, d.flat_x), (-_FAR, _FAR), (-_FAR, _FAR))
-    return disc + ring
+    return disc + (_ycyl(d.ring_r, d.top_y - NUDGE, d.ring_y1) & ring_x)
 
 
 def _yoke(cfg: YawCouplerConfig):
@@ -112,18 +125,6 @@ def _yoke_cuts(cfg: YawCouplerConfig):
     return cuts
 
 
-def _cone(cfg: YawCouplerConfig, y0: float, y1: float):
-    """The disc's drafted side as a solid about the part's Y from y0 to y1 - past the disc's top face, the legs' outer
-    faces."""
-    return _revolved([(0.0, y0), (disc_r(cfg, y0), y0), (disc_r(cfg, y1), y1), (0.0, y1)])
-
-
-def _post_z(cfg: YawCouplerConfig) -> tuple[float, float]:
-    """A leg's post, across: as wide as its faceted top, plate_r either side of the drive's axis."""
-    f = cfg.fork
-    return (f.axis_z - f.plate_r, f.axis_z + f.plate_r)
-
-
 def _top(cfg: YawCouplerConfig):
     """A leg's faceted top about the drive's axis (lib/geom.py faceted_end: its flats plate_r off it), a face in the
     plane x = 0 drawn as (u, v) = (y, z)."""
@@ -132,7 +133,7 @@ def _top(cfg: YawCouplerConfig):
 
 
 def _leg_prism(cfg: YawCouplerConfig, x0: float, x1: float, y_foot: float, seats: tuple = ()):
-    """A leg from x0 to x1 along X: its faceted top on a post as wide (_post_z) down to y_foot, the outline of both its
+    """A leg from x0 to x1 along X: its faceted top on a post as wide (plate_r either side) down to y_foot, the outline of both its
     faces chamfered (lib/style.py EDGE_CHAMFER) - but the post's foot, where it stands on (or runs into) the disc, and
     the flats at `seats` (deg about the drive's axis, fork_sleeve_bolt_deg's: from this frame's +Z toward its +Y), where
     a screw's head seats across the leg's whole thickness: they stay sharp, the joint flush and the seat whole."""
@@ -151,24 +152,19 @@ def _leg_prism(cfg: YawCouplerConfig, x0: float, x1: float, y_foot: float, seats
     return prism.chamfer(EDGE_CHAMFER, None, edges)
 
 
-def _leg_room(cfg: YawCouplerConfig, x0: float, x1: float):
-    """Where the leg between x0 and x1 may be: its post inside fork_leg_bound about the part's Y, its faceted top
-    whole."""
-    top = bd.extrude(bd.Plane.YZ.offset(x0 - 1.0) * _top(cfg), amount=x1 - x0 + 2.0, dir=(1.0, 0.0, 0.0))
-    return _revolved(fork_leg_bound(cfg)) + top
+def _root(cfg: YawCouplerConfig, x_in: float, x_out: float):
+    """The leg's faceted root between its inner face x_in and outer face x_out: the hull of its post's section at
+    fork_post_y and the disc's corners outboard of the inner face (lib/yaw_coupler/layout.py fork_root_points)."""
+    return hull_solid(fork_root_points(cfg, x_in, x_out))
 
 
 def _fork(cfg: YawCouplerConfig):
-    """The hub leg - its faceted top round the drive's axis on a post as wide down to the disc (_leg_prism), the disc's
-    draft up its outer face, the post kept inside the disc's rim - and the disc drafted round to its rim under both
-    legs (its flats and ears filled): on the motor side to the leg's outer face, the motor leg's foot past it."""
+    """The hub leg - its faceted top round the drive's axis on a post as wide down to fork_post_y (_leg_prism), its
+    faceted root under it -, and the motor leg's root under its post and inboard of its outer face, the disc's there."""
     d = cfg.disc
     (hx0, hx1), (mx0, mx1) = fork_hub_leg_x(cfg), fork_motor_leg_x(cfg)
-    leg = _leg_prism(cfg, hx0, hx1, d.y0)
-    leg = leg + (_cone(cfg, d.y0, fork_flare_top(cfg)) & _box((-_FAR, hx1), (d.y0, _FAR), _post_z(cfg)))
-    leg = leg & _leg_room(cfg, hx0, hx1)
-    rim = _box((-_FAR, hx1), (d.y0, d.top_y), (-_FAR, _FAR)) + _box((mx0, mx1), (d.y0, d.top_y), (-_FAR, _FAR))
-    return leg + (_cone(cfg, d.y0, d.top_y) & rim)
+    leg = _leg_prism(cfg, hx0, hx1, fork_post_y(cfg)) + _root(cfg, hx1, hx0)
+    return leg + (_root(cfg, mx0, mx1) & _box((-_FAR, mx1), (-_FAR, d.top_y), (-_FAR, _FAR)))
 
 
 def _fork_cuts(cfg: YawCouplerConfig):
@@ -204,16 +200,14 @@ def _sleeve_slot(cfg: YawCouplerConfig, deg: float):
 def build_motor_leg(cfg: YawCouplerConfig):
     """DEFAULT's motor leg (parts/base/j1_motor_leg), in the coupler's frame: a solid faceted top round the drive's
     axis (_leg_prism: flats plate_r off it, its outline chamfered but on the flats the sleeve's screws seat on), bored
-    to the sleeve, on a post as wide standing on the disc's top face, the disc's draft up its outer face, the post kept
-    inside the disc's rim; its foot the disc's rim past the leg's outer face, down to the underside; the 2 M4s through
-    the foot from counterbores; the sleeve's radial M4s' slotted holes through the top."""
+    to the sleeve, on a post as wide down to fork_post_y, its faceted root under it standing on the disc's top face; its
+    foot the root's part past the leg's outer face, down to the disc's underside; the 2 M4s through the foot from
+    counterbores; the sleeve's radial M4s' slotted holes through the top."""
     f, d = cfg.fork, cfg.disc
     x0, x1 = fork_motor_leg_x(cfg)
-    leg = _leg_prism(cfg, x0, x1, d.top_y, seats=fork_sleeve_bolt_deg(cfg))
-    # the draft up the post and the foot: one cut of the cone (two meeting on the top face leave the solid invalid)
-    reach = _box((x0, _FAR), (d.top_y, _FAR), _post_z(cfg)) + _box((x1, _FAR), (d.y0, d.top_y), (-_FAR, _FAR))
-    leg = leg + (_cone(cfg, d.y0, fork_flare_top(cfg)) & reach)
-    leg = leg & _leg_room(cfg, x0, x1)
+    leg = _leg_prism(cfg, x0, x1, fork_post_y(cfg), seats=fork_sleeve_bolt_deg(cfg))
+    above = _box((-_FAR, _FAR), (d.top_y, _FAR), (-_FAR, _FAR)) + _box((x1, _FAR), (-_FAR, _FAR), (-_FAR, _FAR))
+    leg = leg + (_root(cfg, x0, x1) & above)
     leg = leg - _xcyl(f.ring_bore_dia / 2.0, x0 - NUDGE, _FAR, f.axis_y, f.axis_z)
     seat_x = fork_motor_bolt_x(cfg)[0]
     for y, z in fork_motor_bolts(cfg):

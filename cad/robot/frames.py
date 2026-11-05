@@ -16,18 +16,19 @@ shell, whose body is printed with j1_link) in upper_arm_link (docs/cycloidal_dri
 Frames (all in the SolidWorks WORLD frame W, millimetres; W is +Y up, the arm extends toward
 -X, see reference/README.md):
   * base_link frame B: REP-103 (Z up, X forward) at the base_yaw axis foot on the base's bottom
-    face: origin (0, BASE_BOTTOM_Y, 0), X_B = -X_W, Y_B = +Z_W, Z_B = +Y_W. base_frame(), frame()
-    and the U / BASE_FORWARD vectors are defined in lib/datum.py (assemblies/arm.py needs them too
-    and assemblies/ never imports robot/) and re-exported here.
+    face: origin (0, BASE_BOTTOM_Y, 0), Z_B = +Y_W, X_B = BASE_FORWARD (-X_W turned BASE_TURN_DEG
+    about it with the base). base_frame(), frame() and the U / BASE_FORWARD vectors are defined in
+    lib/datum.py (assemblies/arm.py needs them too and assemblies/ never imports robot/) and
+    re-exported here.
   * Every joint frame has Z along the joint axis and X along the child link's long direction
     at the capture pose (projected perpendicular to Z); Y = Z x X.
   * A child link's frame IS its joint frame at the capture pose, so ALL JOINT VALUES ARE 0 AT
     THE CAPTURE POSE and every link mesh (exported in the link frame) has an identity origin.
-    Note: in that pose shoulder_link is yawed +3.694 deg about base_yaw relative to the base's
-    forward axis (the captured pitch axes are not exactly parallel to Y_B) - this is a POSE,
-    not a design offset. The capture pose is the design's: the SHIFTS applied and the forearm turned
-    half a turn about its roll axis (lib/placements.py TURNS), so at zero the wrist and the gripper
-    are rolled 180 deg from the SolidWorks capture (the wrist-pitch motor on the upper arm's side).
+    The capture pose is the design's: the SHIFTS applied, the base turned about base_yaw to meet
+    j1_coupler flat to flat (the capture had the coupler, and the arm on it, yawed BASE_TURN_DEG off
+    the base: now the pitch axes are parallel to Y_B at zero) and the forearm turned half a turn
+    about its roll axis (lib/placements.py TURNS), so at zero the wrist and the gripper are rolled
+    180 deg from the SolidWorks capture (the wrist-pitch motor on the upper arm's side).
 Axis signs (positive-motion direction) and the [ESTIMATE] limits (lib/params.py) are placeholders until
 confirmed by viewer sweeps / on hardware.
 """

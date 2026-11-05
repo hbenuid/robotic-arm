@@ -48,6 +48,74 @@ def chamfer_outline(prism, axis: tuple, length: float = style.EDGE_CHAMFER) -> b
     return solid.chamfer(length, None, list(faces[0].outer_wire().edges()) + list(faces[-1].outer_wire().edges()))
 
 
+def hull_faces(points, tol: float = 1e-6) -> list[list[tuple[float, float, float]]]:
+    """The faces of the convex hull of a few 3D points (pure math, no kernel): each face the list of its corners, in
+    order counter-clockwise seen from outside. Coplanar points merge into one face and a point inside a face or on an
+    edge is no corner, so neighbouring faces share their edges exactly. O(n^4): for the dozen-odd corners of a faceted
+    transition (lib/yaw_coupler/body.py), not for meshes."""
+    pts = [tuple(float(c) for c in p) for p in points]
+
+    def sub(a, b):
+        return (a[0] - b[0], a[1] - b[1], a[2] - b[2])
+
+    def cross(a, b):
+        return (a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
+
+    def dot(a, b):
+        return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+
+    planes: list[tuple[tuple[float, float, float], float]] = []
+    n_pts = len(pts)
+    for i in range(n_pts):
+        for j in range(i + 1, n_pts):
+            for k in range(j + 1, n_pts):
+                n = cross(sub(pts[j], pts[i]), sub(pts[k], pts[i]))
+                length = math.sqrt(dot(n, n))
+                if length < tol:
+                    continue
+                n = (n[0] / length, n[1] / length, n[2] / length)
+                d = dot(n, pts[i])
+                side = [dot(n, p) - d for p in pts]
+                if max(side) > tol:
+                    if min(side) < -tol:
+                        continue                         # points on both sides: no face
+                    n, d = (-n[0], -n[1], -n[2]), -d     # every point behind -n: the outward normal is -n
+                if not any(dot(n, m) > 1.0 - tol and abs(d - e) < tol for m, e in planes):
+                    planes.append((n, d))
+    faces = []
+    for n, d in planes:
+        on = [p for p in pts if abs(dot(n, p) - d) < tol]
+        # the face's 2D convex hull (monotone chain, collinear points dropped) in a frame (u, v) with u x v = n
+        u = sub(on[1], on[0]) if dot(sub(on[1], on[0]), sub(on[1], on[0])) > tol else sub(on[2], on[0])
+        u_len = math.sqrt(dot(u, u))
+        u = (u[0] / u_len, u[1] / u_len, u[2] / u_len)
+        v = cross(n, u)
+        flat = sorted({(round(dot(p, u), 9), round(dot(p, v), 9)): p for p in on}.items())
+
+        def turn(o, a, b):
+            return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+
+        lower, upper = [], []
+        for chain, items in ((lower, flat), (upper, flat[::-1])):
+            for uv, p in items:
+                while len(chain) >= 2 and turn(chain[-2][0], chain[-1][0], uv) <= tol:
+                    chain.pop()
+                chain.append((uv, p))
+        ring = [p for _, p in lower[:-1] + upper[:-1]]
+        if len(ring) >= 3:
+            faces.append(ring)
+    return faces
+
+
+def hull_solid(points) -> bd.Solid:
+    """The convex hull of a few 3D points as a solid of planar faces (hull_faces)."""
+    faces = [bd.Face(bd.Wire.make_polygon(ring, close=True)) for ring in hull_faces(points)]
+    solid = bd.Solid(bd.Shell(faces))
+    if not solid.is_valid:
+        raise ValueError("the hull's faces did not close into a valid solid")
+    return solid
+
+
 def hex_circumdiameter(across_flats: float) -> float:
     """Across-corners diameter of a hexagon from its across-flats size."""
     return across_flats / math.cos(math.radians(30))

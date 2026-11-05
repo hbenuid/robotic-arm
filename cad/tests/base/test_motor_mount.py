@@ -301,8 +301,8 @@ def test_the_mount_carries_the_seat(mount):
 def test_the_screws_clamp_the_joint():
     """Every head's bearing face on a mount's post's inner face, every tip 2 pitches past its nut's outer face, into the
     base's cavity below the plate; each nut coaxial with its screw."""
-    screws = built.placed("base_motor_mount_screws#1")
-    nuts = built.placed("base_motor_mount_nuts#1")
+    screws = built.placed("base_motor_mount_screws#1", into="base#1")   # in the base's frame (it is turned in W:
+    nuts = built.placed("base_motor_mount_nuts#1", into="base#1")         # lib/placements.py TURNS)
     for solid in screws.solids():
         bb = solid.bounding_box()
         assert bb.max.X == pytest.approx(ST["x_head"] + J.screw.head_h, abs=1e-4)
@@ -320,7 +320,7 @@ def test_the_motor_clears_the_mount(mount):
     pilot's hole, 3 mm clear of it all round."""
     for key, clear in (("nema17_48mm#1", 0.0), ("mks_servo42d#1", MT.room - 0.1), ("base_motor_mount_screws#1", 0.0),
                        ("yaw_motor_screws#1", 0.0), ("gt2_pulley_20t#3", 3.0)):
-        part = built.placed(key)
+        part = built.placed(key, into="base#1")                          # the mount's frame is the base's
         assert interference(part, mount) < 1e-3, key
         if clear:
             assert part.distance_to(mount) >= clear, key

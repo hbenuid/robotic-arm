@@ -38,7 +38,10 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
   lists against `robot/frames.py LINKS`, each anchor axis against its record, and where the links put what lies
   beyond them.
 - **Turned occurrences** (`lib/placements.py TURNS`, after the SHIFTS): a link the design turned about an axis of its
-  own turns every record it lists - the forearm: `j2_link#1` and all beyond it half a turn about its roll axis
+  own turns every record it lists - the base: `base#1` about the base_yaw axis by `lib/datum.py BASE_TURN_DEG`, so its
+  octagon meets `j1_coupler`'s faceted disc flat to flat at zero (the capture had the coupler a fraction of a facet off
+  it; the base's mounted records follow, and `base_link`'s frame turns with it: `lib/datum.py BASE_FORWARD`); the
+  forearm: `j2_link#1` and all beyond it half a turn about its roll axis
   (`ForearmConfig.roll_turn_deg`; the wrist-pitch motor on the upper arm's side, the wrist and the gripper rolled with
   it). `location()` applies it (`turned=False`: the frame before it); `robot/frames.py` turns its points with
   `P.shifted()` and its directions with `P.turned()`; a turned record's bbox in `tests/totals.py` is its placed build's.
@@ -46,7 +49,7 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
   UNTURNED - the roll drive drives the joint the turn is about, so it keeps its pose (its frame, its tests and
   `tests/forearm/helpers.py in_drive_frame()` are in `j2_link`'s frame before the turn) - unless it is `turned`: the
   wrist roll drive, beyond the turned link, turns with `wrist_link#1`. `test_placements.py
-  test_the_forearm_turns_about_its_roll_axis` locks it.
+  test_the_forearm_turns_about_its_roll_axis` locks the forearm's, `test_the_base_meets_the_coupler_flat_to_flat` the base's.
 - **Mounted occurrences** (`lib/mounts.py MOUNTS`): what the SolidWorks capture never had - the belt joints' motors +
   boards and their drive (20Ts, belts, tensioners), the bearings, the base_yaw thrust stack and 120T, the base's motor
   mount, the yoke's motor leg, the fasteners that hold them - and what it had where the lower 6806 has no room: the
