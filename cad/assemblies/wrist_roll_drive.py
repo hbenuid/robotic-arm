@@ -36,7 +36,8 @@ def _at(x: float = 0.0, y: float = 0.0, z: float = 0.0):
 # (part, role | None, placement in the module frame) - a position, or ((x, y, z), (rx, ry, rz)) when the part's own
 # frame is not the module's. The shaft and the pulley are built at their stations (their rows are at 0); the bearings
 # stand on their seats; the pancake's mounting face is the plate's rear face, the pancake on the pitch axis, spun so its
-# plug points +X (the open face).
+# plug points +X (into the groove inside the frame's side wall); the back panel and its magnets are built at their
+# stations on the frame's rear (their rows are at 0).
 OCCURRENCES = [
     # every purchased row carries the joint in its role: the labels stay unique in the arm (the forearm roll drive's
     # pair is bearing_6806:1 / :2)
@@ -45,11 +46,14 @@ OCCURRENCES = [
     ("bearing_6806",          "wrist_roll_2", _at(z=S["z_bearing_2"])),
     ("wrist_roll_pulley",     None, _at()),
     # the pancake, its board, its 20T and the belt - on the pitch axis (-Y); the board on the pancake's rear face, turned
-    # with it (its motor plug toward the pancake's, at the open face), in the frame's rear window
+    # with it (its motor plug toward the pancake's, toward the side wall), in the frame's rear window
     ("nema17_pancake",        "wrist_roll", pancake_location(DEFAULT)),
     ("mks_servo42d",          "wrist_roll", ((S["x_motor"], S["y_motor"], S["z_motor_rear"]), (0.0, 0.0, DEFAULT.roll.motor_spin_deg))),
     ("gt2_pulley_20t",        "wrist_roll", ((S["x_motor"], S["y_motor"], S["z_20t"]), (0.0, -90.0, 0.0))),   # hub face pulley_seat over the pilot, bore axis along +Z
     ("wrist_roll_belt",       "wrist_roll", ((S["x_motor"], S["y_motor"], S["z_ring_mid"]), (0.0, 0.0, 90.0 * DEFAULT.roll.side))),   # the 20T to the 40T: its frame's +X toward R'
+    # the back panel over the shaft's bay, flush in the frame's rear step, and its magnet pairs
+    ("wrist_back_panel",      None, _at()),
+    ("wrist_back_magnets",    None, _at()),
 ]
 
 # The module's rigid bodies (robot/frames.py LINKS: "wrist_roll_drive#1:stator" in wrist_pitch_link, ":rotor" in
@@ -60,8 +64,8 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("stator") after any geometry change.
 EXPECTED = {
-    "leaves": 8, "solids": 32, "solid_volume": 84570.171,
-    "bodies": {"stator": {"leaves": 6, "solids": 30, "solid_volume": 58770.592},
+    "leaves": 10, "solids": 41, "solid_volume": 91717.82,
+    "bodies": {"stator": {"leaves": 8, "solids": 39, "solid_volume": 65918.24},
                "rotor": {"leaves": 2, "solids": 2, "solid_volume": 25799.58}},
 }
 

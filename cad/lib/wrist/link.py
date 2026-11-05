@@ -13,7 +13,15 @@ import build123d as bd
 
 from lib.geom import align_min, chamfer_outline, cylinder, faceted_end, hex_prism, single_solid, through
 from lib.units import NUDGE
-from lib.wrist.layout import end_face_holes, frame_y_span, seat_bolt_points, slope_x, stack_positions
+from lib.wrist.layout import (
+    end_face_holes,
+    motor_pocket,
+    rear_z,
+    seat_bolt_points,
+    slope_x,
+    stack_positions,
+    toward_motor,
+)
 from lib.wrist.params import DEFAULT, WristConfig
 from lib.wrist.roll import build_frame, module_to_host
 
@@ -107,15 +115,18 @@ def _end_face_cuts(cfg: WristConfig):
 def _bay_channels(cfg: WristConfig):
     """The coupler flange's nuts the roll drive's frame covers: each one's hex pocket carried on from the plate's
     underside up through the frame into the shaft's bay (the nut drops in from the bay, before the shaft)."""
-    s, d, S = cfg.seat, cfg.roll, stack_positions(cfg)
+    s, d, S, t = cfg.seat, cfg.roll, stack_positions(cfg), toward_motor(cfg)
     to_module = module_to_host(cfg).inverse()
-    y0, y1 = frame_y_span(cfg)
+    y0, y1, z0, z1 = motor_pocket(cfg)
+    near = y0 if t > 0 else y1
     channels = []
     for x, y, a in seat_bolt_points(cfg):
         _, my, mz = (to_module * bd.Location((x, y, 0.0))).position
-        if not (S["z_rear"] <= mz <= S["z_front"] and y0 <= my <= y1):
-            continue                                        # on the bare plate: its pocket stays open on the underside
-        if not (abs(my) < d.bay_r and S["z_bay"] <= mz <= S["z_bearing_1"]):
+        in_frame = rear_z(my, cfg) <= mz <= S["z_front"] and t * my >= -d.frame_r
+        in_pocket = t * (my - near) >= 0.0 and z0 <= mz <= z1     # it opens on down out through the bottom
+        if not in_frame or in_pocket:
+            continue                                        # on the bare plate, or in the pocket: its pocket stays open
+        if not (abs(my) < d.bay_r and mz <= S["z_bearing_1"]):
             raise ValueError(f"the coupler bolt at ({x:.2f}, {y:.2f}) lies under the frame but not under its bay")
         # part z = (thickness - axis_h) - module x: the bay's floor over the nut, 0.5 into the bay
         z0 = (cfg.plate.thickness - d.axis_h) + math.sqrt(d.bay_r ** 2 - my * my) - 0.5

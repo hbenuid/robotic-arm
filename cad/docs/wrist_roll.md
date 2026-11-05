@@ -16,12 +16,13 @@ tests `tests/wrist/`. Numbers below name the constants; the values live in `lib/
 | pulley (rotor, PETG - the output) | its hub a journal through bearing 2 to the lip's middle, the Ø33 shoulder on bearing 2's inner ring, the 40T band (two flanges) on a core inside its root, the face `gripper_j3_connector` bolts to (4× M3 into nuts in pockets from the face's rim); the rotor clamp's 4× M3 heads sunk in the face | `wrist_roll_pulley` |
 | shaft (rotor, PETG) | its hub through bearing 1 to the pulley's, the Ø33 shoulder, the flange with the clamp's 4 nuts (pockets open to its rear face) and the stop lug; the cable bore through both pieces | `wrist_roll_shaft` |
 | rotor clamp | 4× M3 × `clamp_screw_len` on `clamp_circle_dia` inside the band's core, from the pulley's face through both hubs into the shaft's nuts: the pulley, both inner rings and the shaft one block | `WristRollParams clamp_*` |
-| frame (stator, PETG) | `wrist_link` itself: its plate (j3_coupler#2's seat on the pitch axis) and on the plate's underside - the side away from the forearm - one body: the pancake's **pocket** centred on the pitch axis (its floor the plate, open on the far face; no wall behind it: the board's **window** - its housing square + the tension travel + `board_clear` - runs out through the frame's rear, open on the far face too), its front wall the **motor plate** the pancake bolts to (`pad_t`; slotted along Y: the belt's tension, the shaft's slit out to the open face), the **tower** round R′ beside it (the 6806 seats, the lip, the **bearing boss** on the front face), the shaft's **bay** behind bearing 1 open on the far face (the shaft goes in there, the cable comes out), the stop's **post** in it; the coupler nut the tower covers drops in from the bay through a hex channel | `lib/wrist/roll.py build_frame`, `lib/wrist/link.py` |
+| frame (stator, PETG) | `wrist_link` itself, laid out as the forearm roll's frame (`forearm_roll.md`): its plate (j3_coupler#2's seat on the pitch axis) and on the plate's underside - the side away from the forearm - one body: seen along the pitch axis the plate's **octagon** about it hulled to the **tower** round R′ (`roll.py side_profile`; seen along R′ the tower the octagon about it, `tower_section`), from the plate to the **closed far face** (`side_t`), its rear one slanted plane from the tower's far rear corner down to `rear_low` (`rear_line`, past the back panel's edge), the front face's long edges **faceted** (`front_facet`) - the outline chamfered on both side faces (`docs/design_language.md`); the pancake's **pocket** centred on the pitch axis (its floor the plate) open down through the **bottom** - the frame's end beyond the motor, away from R′: the pancake slides in from there -, a groove inside the side wall for its plug (`pancake_plug_groove`), no wall behind it: the board's **window** - its housing square + the tension travel + `board_clear` - open at the rear and the bottom; its front wall the **motor plate** the pancake bolts to (`pad_t`; slotted along Y: the belt's tension, the shaft's slit on down out through the bottom); the tower: the 6806 seats, the lip, the **bearing boss** rising out of the front facets, the shaft's **bay** behind bearing 1 bored on through the rear (the shaft goes in from behind), the stop's **post** in it, closed by the back panel; the coupler nut the tower covers drops in from the bay through a hex channel | `lib/wrist/roll.py build_frame`, `lib/wrist/link.py` |
+| back panel (stator, PETG) | **removable**, the forearm roll frame's one joint further out: a plate flush in a step (`t` deep) on the frame's slanted rear over the tower, from its far side to `gap` short of the board's window, `side_clear` off the plate's free face; one plane (it prints flat, outer face down); located by a ring **rim** on its inner face inside the bay's bore (`rim_*`), held by 4 magnet pairs (`wrist_back_magnets`, small discs - `magnet_dia` -, `magnet_points`: one in a pocket in the step's floor, one in the panel's inner face); a **notch** at its edge toward the motor lets the gripper servo's cable out of the rotor's bore (`notch_*`, a groove under it across the step's floor into the window), another clears the MKS board's near side plug's room | `wrist_back_panel`, `WristBackPanelParams` |
 | gripper interface | `gripper_j3_connector` (converted): its plate (the servo holder's and the cover's holes) on a hub bolted to the pulley's face - a key reaches every head past the plate's flats, notches in the flange over the plate's holes; the cable bore through it | `ConnectorParams` |
-| clearances held by tests | the bearings' presses on the journals (0.9–1.0 × the nominal `journal_add` press), every other pair in the module and against `wrist_link` < 1 mm³, the rotor `run_gap` off the frame, the pancake's and its board's way in from the open face (`motor_drop` back, the slit, the window) and their slots' travel (the board `board_clear` off the window), the board's screws through the pancake's own (`KIT_OVERLAP`), its plugs' room (`MKS_PLUG_ROOM`) at every pose, the rotor's walls round the clamp and the bore, the gripper 1 mm off the wrist and the forearm while it rolls, the wrist-pitch limits | `tests/wrist/test_roll_drive.py`, `tests/test_sweeps.py` |
+| clearances held by tests | the bearings' presses on the journals (0.9–1.0 × the nominal `journal_add` press), every other pair in the module and against `wrist_link` < 1 mm³, the rotor `run_gap` off the frame, the pancake's and its board's way in from the bottom (`motor_drop` back, the slit, the plug's groove, the window) and their slots' travel (the board `board_clear` off the window), the board's screws through the pancake's own (`KIT_OVERLAP`), its plugs' room (`MKS_PLUG_ROOM`) at every pose, the rotor's walls round the clamp and the bore, the gripper 1 mm off the wrist and the forearm while it rolls, the wrist-pitch limits | `tests/wrist/test_roll_drive.py`, `tests/test_sweeps.py` |
 | link masses (URDF) | `wrist_pitch_link` carries `wrist_link` (the frame) and the stator (the pancake + its board, its 20T, the belt, both bearings), `wrist_roll_link` the rotor + the gripper | `robot/arm.urdf` |
 | purchased per drive | what to order, with quantities: `./cadtool python tools/bom.py --module wrist_roll_drive` (its BUY list, and BUY, NOT MODELLED from `tools/bom.py EXTRAS`) | `tools/bom.py` |
-| printed per drive | the pulley, the shaft; the frame is `wrist_link` | `print/` |
+| printed per drive | the pulley, the shaft, the back panel; the frame is `wrist_link` | `print/` |
 
 ## 1. Why, and where
 The SolidWorks wrist hung the pancake and `gripper_clamp_bracket` on the roll axis past `wrist_link`'s tower, the gripper
@@ -59,29 +60,35 @@ Every station: `stack_positions()`.
 | `z_boss` | bearing 2's front face, the bearing boss's top, `run_gap` under the band's flange | the band |
 | `z_bearing_2`, `z_lip`, `z_bearing_1` | the seats and the lip; the hubs meet at `z_meet` | the bearings |
 | `z_shaft_end` … `z_shoulder_1` | the shaft's flange: the clamp's nuts, the stop lug | the clamp's tips |
-| `z_bay` … `z_bearing_1` | the bay, open on +X, the stop post on the tower's rear face | the shaft's length + `bay_clear` |
+| `z_bay` … `z_bearing_1` | the bay, bored on through the rear under the back panel, the stop post on the tower's rear face | the lug's corners + `run_gap` (`bay_r`) |
+| `z_rear`, `rear_low` | the frame's rear: at the tower's far side, then slanting down to `rear_low` past the back panel's edge (`rear_line`) | the wrist pitch's +38° limit (`tests/test_sweeps.py`) |
 | `x_coupler`, `x_free` | the plate's coupler face, its free face (the pocket's floor) | `axis_h` |
 
 ## 3. Fits and printing
 PETG, the forearm roll's rules: the seats the bearing OD + `seat_add`, the journals `journal_add` interference (print a
-fit gauge first, `cycloidal_drive.md` §6). `wrist_link` prints plate down (its coupler face on the bed: the frame stands
-on it, the pocket and the bay open at the top) - the tower's seats then print as horizontal bores, their tops bridged:
-unchecked (`open_issues.md`, a `dfam-check` before the first print); the pulley face down; the shaft rear face down (its
-nut pockets open to the bed).
+fit gauge first, `cycloidal_drive.md` §6). `wrist_link`'s orientation is open (`open_issues.md`, a `dfam-check` before
+the first print): plate down, the closed far face's wall roofs the pocket and the window (support inside them) and the
+seats print as horizontal bores; front face down, as the forearm roll's frame, the seats print as vertical bores and the
+facets rise at 45°, but the plate's octagon reaches past the front face. The back panel prints outer face down (one
+plane), its rim and magnet pockets up; the pulley face down; the shaft rear face down (its nut pockets open to the bed).
 
 ## 4. Assembly sequence
 1. The coupler nut under the tower into its hex channel from the bay; `j3_coupler#2` onto the plate's seat as before.
-2. Bearing 2 onto the pulley's hub, bearing 1 onto the shaft's. The pulley + bearing 2 into the tower from the front; the
-   shaft + bearing 1 into the bay through the open face, then forward into its seat.
-3. Four M3 nuts into the shaft's flange from its rear face (in the bay); 4× M3 × `clamp_screw_len` from the pulley's
-   face through both hubs into them: the rotor turns, whole.
+2. Bearing 2 onto the pulley's hub, bearing 1 onto the shaft's. The pulley + bearing 2 into the tower from the front; four
+   M3 nuts into the shaft's flange from its rear face, then the shaft + bearing 1 into the tower from behind (the back
+   panel off), through the bay's bore in the frame's rear and along R′ into its seat.
+3. 4× M3 × `clamp_screw_len` from the pulley's face through both hubs into the shaft's nuts: the rotor turns, whole.
 4. The MKS board onto the pancake's rear face - its screws in place of the motor's own rear four (their length on a
    pancake: `open_issues.md`) - and its motor cable into the pancake's connector; the pancake into its pocket from the
-   open face `motor_drop` back - its pilot behind the motor plate, its shaft along the slit, the board through the window
-   behind - then forward into the pilot slot; 4× M3 from the motor plate's front face. The 20T on its shaft, its hub
-   on a `pulley_seat` shim on the pilot; the belt round it and the 40T; slide the pancake along its slots until the belt
-   is tight, tighten.
-5. The gripper servo's cable through the connector's bore, the rotor's bore, out of the bay.
+   bottom (the frame's end beyond the motor) toward R′, `motor_drop` back - its pilot behind the motor plate, its shaft
+   up the slit, its plug along the side wall's groove, the board through the window behind - then forward into the pilot
+   slot; 4× M3 from the motor plate's front face. The 20T on its shaft, its hub on a `pulley_seat` shim on the pilot; the
+   belt round it and the 40T; slide the pancake along its slots until the belt is tight, tighten.
+5. The gripper servo's cable through the connector's bore, the rotor's bore, out of the bay through the back panel's
+   notch and along its groove into the board's window, with the pancake's cables. The back panel: its 4 magnets glued
+   into the pockets in its inner face and 4 into the step's floor (`wrist_back_magnets`; mark the poles first, so each
+   pair attracts), each pressed to its pocket's bottom; then the panel onto the step over the cable, its rim into the
+   bay's bore - the magnets pull it flush.
 6. Four M3 nuts into the pulley face's pockets from its rim; the connector onto the face, 4× M3 × `bolt_len` from
    between its flange and its plate; then the servo holder and the cover onto its plate (their screws through the
    flange's notches).

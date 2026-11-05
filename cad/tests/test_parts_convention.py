@@ -61,6 +61,8 @@ MULTI_BODY = {
     "roll_clamp_nuts": 4,
     # the roll frame's back panel's magnets: a pair at each of its 4 points (its drive's row)
     "roll_back_magnets": 8,
+    # the wrist frame's back panel's magnets, likewise (its drive's row)
+    "wrist_back_magnets": 8,
     # the KY-003 hall module: the board, the chip (body + leads), the header (housing + pins) - one piece to buy
     "ky003_hall_sensor": 3,
 }

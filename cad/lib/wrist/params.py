@@ -113,6 +113,8 @@ class PancakeParams:
     pilot_height: float = 1.0
     bolt_sp: float = 31.0               # = lib/motors.py NEMA17_BOLT_SP
     plug_d: float = 5.5
+    plug_w: float = 16.2                # [REFERENCE] the connector's boss across (along the body's side), measured on the vendor STEP
+    plug_h: float = 8.5                 # [REFERENCE] ... and from the rear plate's face toward the mounting face, 2026-11-04
 
     @property
     def body_length(self) -> float:
@@ -121,23 +123,58 @@ class PancakeParams:
 
 
 @dataclass(frozen=True)
+class WristBackPanelParams:
+    """[DESIGN] The wrist frame's removable back panel (parts/wrist/wrist_back_panel), the forearm roll frame's
+    (lib/forearm/params.py BackPanelParams) one joint further out: a plate flush with the frame's slanted rear over the
+    tower - from the tower's far side to the board's window, stopping at the plate's free face - in a step `t` deep,
+    over the shaft's bay bored through the rear: lift it off and the shaft, its clamp nuts and the stop are open to reach,
+    and the shaft goes in or out along R'. Located by a ring rim on its inner face inside the bay's bore, held by magnet
+    pairs (parts/wrist/wrist_back_magnets): one disc in a pocket in the step's floor, one in a pocket in the panel's inner
+    face, each pressed to its pocket's bottom. A notch at its edge toward the motor lets the gripper servo's cable out of
+    the rotor's bore (it joins the motor's cables there and crosses the wrist joint near its axis); a second over the MKS
+    board's near side plug's room. Positions are module (x, y), on the rear plane (lib/wrist/roll.py rear_plane)."""
+
+    t: float = 2.5                      # the panel's thickness = the step's depth, square to the rear plane
+    side_clear: float = 0.1             # off the plate's free face
+    gap: float = 0.2                    # its edge short of the board's window
+    rim_clear: float = 0.3              # the locating rim inside the bay's bore ...
+    rim_w: float = 1.6                  # ... this wide (4 perimeters) ...
+    rim_h: float = 3.0                  # ... this tall from the panel's inner face (the shaft's flange 10+ in front of it)
+    magnet_dia: float = 3.0             # [DATASHEET] N52 NdFeB disc magnet, 3 x 2 mm (the forearm roll panel's)
+    magnet_t: float = 2.0
+    pocket_dia: float = 3.2             # each magnet's pocket (glued in, pressed to its bottom) ...
+    pocket_depth: float = 2.1           # ... in the step's floor and in the panel's inner face: 0.4 of the panel outside it
+    magnet_points: tuple = ((-22.0, -18.0), (22.0, -18.0), (-20.0, 19.0), (22.0, 19.0))   # (x, y) round the bay's bore (3.4+ of
+    #                                     wall to it and to the coupler face), the -X pair on the motor's side clear of the plate
+    notch_w: float = 6.0                # the gripper servo's cable's notch, from its edge toward the motor ...
+    notch_reach: float = 9.0            # ... this far inside the bay's bore; a groove under it across the step's floor ...
+    notch_groove: float = 2.0           # ... this deep, into the board's window
+
+
+@dataclass(frozen=True)
 class WristRollParams:
     """The wrist roll drive (assemblies/wrist_roll_drive.py; docs/wrist_roll.md), the forearm roll drive's pattern one
     joint further out: the pancake ON the wrist_pitch axis, on the plate's free face (the side away from the forearm),
     belted to the roll axis beside it - centre_distance across in the wrist's swing plane, at the motor's height - so the
     wrist roll axis R' no longer meets the pitch axis (a wrist offset: the wrist is no longer spherical). wrist_link IS
-    the frame (the stator): the plate (j3_coupler#2's seat) and on its free face one body round the motor - its pocket
-    open on the +X face, its front wall the plate the pancake bolts to (slotted along Y: the belt's tension), no wall
-    behind it: a window there takes the pancake's MKS board, on its rear face - and the tower round R' (the 6806 pair
-    back to back on a lip, a bearing boss on the front face, the shaft's bay behind bearing 1 open on +X - the gripper
-    servo's cable leaves the rotor's bore there - with the hard stop's post). The rotor: the
+    the frame (the stator), laid out as the forearm roll's frame (lib/forearm/roll.py build_block): the plate
+    (j3_coupler#2's seat) and on its free face one body - seen along the pitch axis the plate's octagon about it hulled to
+    the tower round R', from the plate to the closed far (+X) face (side_t), its rear one slanted plane (rear_low,
+    rear_bend), the front face's long edges faceted (front_facet). The pancake's pocket opens down through the BOTTOM -
+    the frame's end beyond the motor, away from R' - and the pancake slides in from there, its shaft up a slit along the
+    tension slots; its front wall the plate the pancake bolts to (slotted along Y: the belt's tension), a groove inside
+    the side wall for its plug; no wall behind it: a window there - open at the rear and the bottom - takes the pancake's
+    MKS board, on its rear face. The tower round R': the 6806 pair back to back on a lip, a bearing boss on the front
+    face, the shaft's bay behind bearing 1 bored on through the frame's rear (the shaft goes in from behind), closed by a
+    removable BACK PANEL flush in a step on the rear (back: WristBackPanelParams - its notch lets the gripper servo's
+    cable out of the rotor's bore), the hard stop's post in the bay. The rotor: the
     PULLEY (wrist_roll_pulley: its hub through bearing 2, the 40T band, the face gripper_j3_connector bolts to - the
     roll's output) and the SHAFT (wrist_roll_shaft: its hub through bearing 1, its flange in the bay with the rotor
     clamp's nuts and the stop lug); the clamp's 4x M3 from the pulley's face through both hubs hold them and both inner
     rings as one.
 
     MODULE FRAME: origin on R' at the pitch axis' station; +Z along R' toward the gripper (wrist_link's +X); +X away from
-    the plate (the open face, wrist_link's -Z); +Y = wrist_link's +Y; R' lies `side` x centre_distance along it from the
+    the plate (the far face, wrist_link's -Z); +Y = wrist_link's +Y; R' lies `side` x centre_distance along it from the
     pitch axis, so the pitch axis runs along X at y = -side x centre_distance - the motor sits on it, centred on R' in X.
     Stations: lib/wrist/layout.py stack_positions()."""
 
@@ -166,35 +203,51 @@ class WristRollParams:
     lip: float = 2.0                    # [DESIGN] between the pair's outer rings
     lip_id: float = 37.6                # [DESIGN] clear of the hubs (Ø30.3) and the shoulders' Ø33
     run_gap: float = 1.0                # [DESIGN] the rotor off the frame (the pulley's Ø33 shoulder spans it over bearing 2)
-    # the motor: centred on the pitch axis (its body's middle at module z 0), its plug spun to +X (the open face)
+    # the motor: centred on the pitch axis (its body's middle at module z 0), its plug spun to +X (toward the side wall)
     pancake: PancakeParams = PancakeParams()
-    motor_spin_deg: float = 90.0        # [DESIGN] about its axis: the plug (the vendor frame's -Y) -> module +X
+    motor_spin_deg: float = 90.0        # [DESIGN] about its axis: the plug (the vendor frame's -Y) -> module +X, into a groove inside
+    #                                     the side wall (plug_clear) - turned to the bottom, the board's side plugs would face the plate
     pocket_clear: float = 0.75          # [DESIGN] round the body in the pocket, along Y past the tension travel
     pocket_rear: float = 1.0            # [DESIGN] behind its rear face (past motor_drop)
-    motor_drop: float = 1.25            # [DESIGN] how far back the pancake slides in from the open face: its pilot behind the plate + 0.25
+    motor_drop: float = 1.25            # [DESIGN] how far back the pancake slides in from the bottom: its pilot behind the plate + 0.25
+    plug_clear: float = 0.5             # [DESIGN] the plug's groove round its boss (plug_d proud of the body), past the tension travel
+    #                                     along Y, from the plug down out through the bottom and the rear (its lead to the board)
     # its MKS SERVO42D on its rear face (the board's encoder reads the shaft's rear end), turned with it (motor_spin_deg:
-    # its motor plug toward the pancake's, at the open face; the side plugs along Y), in a window through the frame's
-    # rear - the board's housing square + the tension travel + board_clear, open on +X like the pocket: they go in together
+    # its motor plug toward the pancake's, toward the side wall; the side plugs along Y), in a window through the frame's
+    # rear - the board's housing square + the tension travel + board_clear, open at the rear and the bottom like the pocket:
+    # they go in together
     board_w: float = MKS_SERVO42D_W     # [REFERENCE] 43: the board's housing square, from the pancake's rear face back
     board_stack: float = MKS_SERVO42D_STACK   # [REFERENCE] 14.1: the board behind the pancake's rear face
     board_clear: float = 0.45           # [DESIGN] round the board's housing in the window, along Y past the tension travel: the
-    #                                     window's wall to the shaft's bay keeps 1.5 (pocket_clear's 0.75 would leave 1.23)
-    shaft_slit: float = 6.0             # [DESIGN] the Ø5 shaft's slit through the plate, from the pilot slot out through the open face
+    #                                     window's wall to the shaft's bay keeps 1.43 (pocket_clear's 0.75 would leave 1.13)
+    shaft_slit: float = 6.0             # [DESIGN] the Ø5 shaft's slit through the plate, from the pilot slot down out through the bottom
     pad_t: float = 4.0                  # [DESIGN] the plate (the pocket's front wall) the pancake's 4x M3 bolt through
     pad_slot_len: float = 5.0           # [DESIGN] +/- 2.5 along Y: the belt's tension (no idler)
     pad_bolt_dia: float = 3.4
     pad_pilot_w: float = 22.3           # [DESIGN] the pilot's slot
     pulley_seat: float = 0.5            # [DESIGN] the 20T's hub face over the pilot (the forearm roll's)
     t20_hub: float = 10.95              # [REFERENCE] vendor 20T: its tooth band's centre from its hub face (7.45 + 3.5)
-    # the frame round the motor and the tower: its outline seen along Z the hull of a circle about R' and the pocket's box,
-    # from the plate's free face to the open +X face
-    frame_r: float = 30.0               # [DESIGN] the outline's circle about R': the open face (x frame_r) and the tower's far side
-    pocket_wall: float = 2.5            # [DESIGN] round the pocket's far side (behind it the board's window: no wall)
+    # the frame round the motor and the tower (lib/wrist/roll.py side_profile, tower_section): seen along the pitch axis the
+    # plate's octagon about it hulled to the tower round R', from the plate's coupler face to the closed far (+X) face;
+    # seen along R' the tower the octagon about it, the motor's side bounded by the plate and the far face
+    frame_r: float = 30.0               # [DESIGN] the tower's octagon about R' (lib/style.py SIDES, these flats): the far face (x frame_r),
+    #                                     the tower's far side
+    side_t: float = 7.5                 # [DESIGN] the far face's wall over the pocket and the board's window: its inside 22.5 off R', outside
+    #                                     the pancake's body + pocket_clear (21.5) and the board's housing + board_clear (21.95)
+    front_facet: float = 7.0            # [DESIGN] the front face's two long edges faceted this far at 45 deg (the forearm roll frame's): 4+ of
+    #                                     wall left to the pocket's corner; the bearing boss carried down through them (it rises out of them)
+    rear_low: float = -18.5             # [DESIGN] the frame's rear behind the motor (module z): the plate's octagon cut there - as deep as
+    #                                     the wrist pitch's +38 deg limit allows (2.4 off the forearm's wrist board there, tests/test_sweeps.py)
+    rear_bend: float = 25.0             # [DESIGN] the rear one slanted plane from the tower's far rear corner (z_rear) down to rear_low
+    #                                     this far from R' toward the motor - past the back panel's edge (the panel lies flat), flat beyond
     bearing_boss_dia: float = 52.0      # [DESIGN] round R' on the front face, bearing 2's seat in it (the forearm roll's)
-    bay_r: float = 22.6                 # [DESIGN] the shaft's bay behind bearing 1, open on +X: the stop lug's corners + 1; bearing 1 (r 21)
-    #                                     passes through it with the shaft
-    bay_clear: float = 1.0              # [DESIGN] the bay's floor behind the shaft's rear face by its hub's length + this (it slides in)
-    tower_wall: float = 2.0             # [DESIGN] behind the bay's floor
+    bay_r: float = 22.7                 # [DESIGN] the shaft's bay behind bearing 1, bored on through the frame's rear: the stop lug's corners
+    #                                     (r 21.68: its flat end's) + run_gap all round; bearing 1 (r 21) passes through it with the shaft, in
+    #                                     from behind (the back panel off)
+    bay_clear: float = 1.0              # [DESIGN] with tower_wall, the frame's rear at the tower's far side (z_rear): this + tower_wall
+    tower_wall: float = 2.0             # [DESIGN] behind the shaft's hub length behind its rear face (the station the wrist pitch's +38 deg
+    #                                     limit was set against: tests/test_sweeps.py)
+    back: WristBackPanelParams = WristBackPanelParams()   # the back panel over the bay
     # the rotor
     bore: float = 10.0                  # [DESIGN] the cable bore through both pieces (the gripper servo's 3-pin plug passes): the clamp's
     #                                     M3 between it and the band's core
