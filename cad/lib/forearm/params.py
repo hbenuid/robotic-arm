@@ -18,6 +18,7 @@ Units mm, degrees where named *_deg. Frozen dataclasses; variants via dataclasse
 """
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, replace
 
 from lib.bearings import (
@@ -118,25 +119,27 @@ class RollEndParams:
     through the bore. The wall stands 48 mm
     along the roll axis from the elbow axis' station (and ForearmConfig.elbow_offset across from it): whatever the
     forearm's roll angle, it clears the upper arm's faceted end (lib/upper_arm/params.py ArmParams.end_r). It is a
-    faceted flange about the roll axis (flats wall_od / 2 off it) on a foot as wide as the web (WebParams.half_w), the web's underside
-    level with its round bottom (DEFAULT: WEB_DROP), whole all round where the pulley's ring bears on it; its elbow-side
-    band cut back to relief_r about the roll axis, round the roll tensioner's screw head; braced by two gussets on the
-    web's top face, either side of the wrist motor.
+    faceted flange about the roll axis (flats wall_od / 2 off it) through its whole thickness - the roll frame's tower
+    carried on through the pulley's ring -, the web's underside level with its bottom flat (DEFAULT: WEB_DROP), whole all
+    round where the pulley's ring bears on it, its corners inside the roll tensioner's screw head's path as the forearm
+    rolls. The web, wider than the flange, grows out of it: the flange's two lower diagonal facets carried on along the
+    web as planar facets, running out over facet_len into the web's own edge chamfer (lib/forearm/link.py
+    corner_facets); braced by two gussets on the web's top face, either side of the wrist motor.
     The roll drive's frame, shaft and pulley: lib/forearm/roll.py."""
 
     axis_z: float = 25.0                  # [REFERENCE] the wrist centre's N-station above the elbow origin (42 − 17)
     wall_x: tuple = (-56.0, -48.0)        # [DESIGN] the wall's wrist face .. elbow face (8 thick): 48 from the elbow axis (>= the upper arm's round end + 3)
-    wall_od: float = 60.0                 # [DESIGN] the wall's round outline about the roll axis: it covers the pulley's ring (its flanges Ø59.19) all
-    #                                       round (no wider: the roll idler's screw head, 42.3 off the roll axis, reaches into the wall's band along it -
-    #                                       a wider wall would meet it as the forearm rolls)
-    relief_r: float = 36.0                # [DESIGN] the wall's elbow-side band (relief_t deep) cut to this radius about the roll axis: the roll
-    #                                       tensioner's screw head passes it 38.05 out as the forearm rolls, 2.05 off (the foot's corners, the web's
-    #                                       underside level with the round bottom, would reach 42.4; tests/forearm/test_roll_drive.py)
-    relief_t: float = 5.3                 # [DESIGN] ... from the elbow face: the screw head's 4.8 past it + 0.5; the wrist-side 2.7 keeps the foot
+    wall_od: float = 60.0                 # [DESIGN] the wall's faceted outline about the roll axis, across its flats: it covers the pulley's ring
+    #                                       (its flanges Ø59.19) all round (no wider: the roll idler's screw, 42.3 off the roll axis, has its head
+    #                                       4.8 past the wall's elbow face - a wider wall would meet it as the forearm rolls; the flange's corners
+    #                                       pass 5.58 inside the head's path, tests/forearm/test_roll_drive.py)
+    facet_len: float = 30.0               # [DESIGN] the flange's lower diagonal facets carried on along the web this far from the wall's wrist
+    #                                       face, into the web's edge chamfer there (lib/forearm/link.py corner_facets) - as long as the gussets
     rib_y: tuple = (24.0, 30.0)          # [DESIGN] the two gussets on the web's top face against the wall's wrist face: |y| in this band - outside the
-    #                                       wrist motor's body (+/- 21) and board (+/- 21.5), inside the web
+    #                                       wrist motor's body (+/- 21; its board and plug sit above their tops), inside the web; DEFAULT: from the
+    #                                       corner facets' top edge at the wall out to the flange's side flats (_RIB_Y)
     rib_len: float = 30.0                 # [DESIGN] ... this far along the web from the wall
-    rib_h: float = 20.0                   # [DESIGN] ... this high above the web at the wall (the wall's round outline cuts their tops)
+    rib_h: float = 20.0                   # [DESIGN] ... this high above the web at the wall
     flange_dia: float = 39.7              # [DESIGN] the pulley's spigot on its front face, in the wall's recess
     flange_recess_add: float = 0.3        # [DESIGN] PETG mating clearance on the recess diameter (Ø40.0)
     flange_recess_depth: float = 2.0      # [DESIGN] a locating spigot, not a load path
@@ -513,10 +516,15 @@ _BOSS = replace(LEGACY.boss, dia=2.0 * _WEB.half_w,       # [DESIGN] as wide as 
                 seat_z1=LEGACY.boss.seat_z1 - WEB_DROP,   # the seat and its lip dropped with the web
                 lip_z=(LEGACY.boss.lip_z[0] - WEB_DROP, LEGACY.boss.lip_z[1] - WEB_DROP),
                 recess_z0=LEGACY.boss.recess_z0 - WEB_DROP)
+# [DESIGN] the gussets from the corner facets' top edge at the wall - the flange's lower diagonal facet where it crosses
+# the web's top face, the web's thickness above its bottom flat's corner (the facet one SIDES-th of a turn off level) -
+# out to the flange's side flats: the facet meets their feet with no step, their outer faces carry the flats down
+_RIB_Y = (round(_ROLL_END.wall_od / 2.0 * math.tan(math.pi / SIDES) + _WEB.thickness / math.tan(2.0 * math.pi / SIDES), 6),
+          _ROLL_END.wall_od / 2.0)
 
-# The forearm with the roll joint, SHORTENING shorter: the wall replaces the elbow disc; the web runs straight from
-# the wall to the wrist, the boss as wide as it, both WEB_DROP toward the belt side, the wall's elbow-side band cut back
-# round the roll tensioner's screw head (RollEndParams.relief_r); the wrist-pitch motor sits WRIST_MOTOR_CENTRES from the wrist on round
+# The forearm with the roll joint, SHORTENING shorter: the wall replaces the elbow disc - the plain faceted flange, its
+# lower facets carried on along the web (RollEndParams.facet_len); the web runs straight from the wall to the wrist, the
+# boss as wide as it, both WEB_DROP toward the belt side; the wrist-pitch motor sits WRIST_MOTOR_CENTRES from the wrist on round
 # holes, its connector turned sideways (lib/mounts.py), the stock belt round an idler under the web (IdlerParams); the
 # caps are gone, so are the sockets that located them. The roll axis runs
 # elbow_offset above the elbow axis - the roll motor sits on the elbow axis, the drive's centre distance under the
@@ -529,7 +537,8 @@ DEFAULT = replace(
     motor_x=_WEB.wrist_x + WRIST_MOTOR_CENTRES,   # -85
     slide_range=None, slot=None, holes=MotorHoleParams(), idler=IdlerParams(),
     sockets=None,
-    roll_end=replace(_ROLL_END, wrist_belt_z=_ROLL_END.wrist_belt_z - WEB_DROP),   # the wrist belt dropped with the web
+    roll_end=replace(_ROLL_END, wrist_belt_z=_ROLL_END.wrist_belt_z - WEB_DROP,   # the wrist belt dropped with the web
+                     rib_y=_RIB_Y),
     elbow_offset=RollDriveParams().centre_distance,   # [DESIGN] 74: the roll drive's centre distance (the 280 belt with its idler)
     roll_turn_deg=180.0,                              # [DESIGN] the wrist-pitch motor on the other side of the forearm
 )
