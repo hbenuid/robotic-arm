@@ -1,6 +1,8 @@
 """build123d builder of j2_link (the forearm web) from a ForearmConfig, in j2_link's part frame."""
 from __future__ import annotations
 
+import math
+
 import build123d as bd
 
 from lib.belts import GT2_IDLER_WIDTH
@@ -23,10 +25,11 @@ from lib.geom import (
     faceted_end,
     hex_circumdiameter,
     hex_prism,
+    hull_solid,
     single_solid,
     through,
 )
-from lib.style import EDGE_CHAMFER
+from lib.style import EDGE_CHAMFER, SIDES
 from lib.units import NUDGE
 
 
@@ -52,27 +55,22 @@ def yz_prism(face, x0: float, x1: float):
 
 
 def wall_outline(cfg: ForearmConfig = DEFAULT):
-    """The flange wall's outline, a face in (y, z): the hull of its flange about the roll axis - faceted (lib/geom.py
-    faceted_end: flats wall_od / 2 off it) with the roll joint, round on LEGACY - and its foot (the web's end section)."""
-    r, w = cfg.roll_end, cfg.web
+    """The flange wall's outline, a face in (y, z) about the roll axis: faceted (lib/geom.py faceted_end: flats
+    wall_od / 2 off it) with the roll joint - the roll frame's tower carried on through -, round on LEGACY."""
+    r = cfg.roll_end
     if cfg.roll:
-        flange = faceted_end(r.wall_od / 2.0, (0.0, r.axis_z))
-    else:
-        flange = bd.Pos(0.0, r.axis_z) * bd.Circle(r.wall_od / 2.0)
-    foot = bd.Pos(0.0, (w.z0 + w.z1) / 2.0) * bd.Rectangle(2.0 * w.half_w, w.thickness)
-    return bd.make_hull((flange + foot).edges())
+        return faceted_end(r.wall_od / 2.0, (0.0, r.axis_z))
+    return bd.Pos(0.0, r.axis_z) * bd.Circle(r.wall_od / 2.0)
 
 
 def roll_wall(cfg: ForearmConfig = DEFAULT):
-    """The forearm's elbow end with the roll joint: the flange wall (a round flange about the roll axis on a foot as
-    wide as the web's neck, its elbow-side relief_t cut back to relief_r about the roll axis - the roll tensioner's
-    screw head passes there as the forearm rolls) with the rotor flange's locating recess on its elbow face, the bolt
-    holes and the cable bore on the roll axis."""
+    """The forearm's elbow end with the roll joint: the flange wall (the faceted flange about the roll axis through its
+    whole thickness, its corners inside the roll tensioner's screw head's path as the forearm rolls) with the rotor
+    flange's locating recess on its elbow face, the bolt holes and the cable bore on the roll axis."""
     r = cfg.roll_end
     x0, x1 = r.wall_x
     axis = (0.0, r.axis_z)
-    band = yz_prism(wall_outline(cfg), x1 - r.relief_t, x1) & x_cylinder(r.relief_r, r.relief_t, axis, x1 - r.relief_t)
-    wall = yz_prism(wall_outline(cfg), x0, x1 - r.relief_t) + band
+    wall = yz_prism(wall_outline(cfg), x0, x1)
     wall = wall - x_cylinder((r.flange_dia + r.flange_recess_add) / 2.0, r.flange_recess_depth + NUDGE, axis, x1 - r.flange_recess_depth)
     wall = wall - x_cylinder(r.cable_bore / 2.0, x1 - x0 + 2 * NUDGE, axis, x0 - NUDGE)
     for yz in flange_bolt_points(cfg):
@@ -83,7 +81,8 @@ def roll_wall(cfg: ForearmConfig = DEFAULT):
 def straight_web(cfg: ForearmConfig = DEFAULT):
     """The web with the roll joint: straight from the wall's wrist face to the wrist pivot, half_w either side, its
     wrist end faceted (lib/geom.py faceted_end: flats half_w off the pivot), the outline of both faces chamfered - run
-    EDGE_CHAMFER on into the wall (short of its relief band), so the chamfer round its end there is buried in it."""
+    EDGE_CHAMFER on into the wall, so the chamfer round its end there is buried in it (its corners outside the flange
+    there go with corner_facets)."""
     w = cfg.web
     x_end = elbow_end_x(cfg) + EDGE_CHAMFER
     rect = bd.Pos((x_end + w.wrist_x) / 2.0, 0.0) * bd.Rectangle(x_end - w.wrist_x, 2.0 * w.half_w)
@@ -101,17 +100,42 @@ def wrist_boss(cfg: ForearmConfig = DEFAULT):
 
 def wall_gussets(cfg: ForearmConfig = DEFAULT):
     """The two gussets that brace the wall on the web: a triangle in the x-z plane (rib_h high at the wall's wrist face,
-    down to the web's top face rib_len along it), |y| inside rib_y, its top cut by the wall's round outline."""
+    down to the web's top face rib_len along it), |y| inside rib_y - under the flange's side flats, their feet cut by
+    corner_facets with the web's corners."""
     r, w = cfg.roll_end, cfg.web
     x0 = r.wall_x[0]
-    under_the_outline = yz_prism(wall_outline(cfg), x0 - r.rib_len, x0)
     triangle = bd.Polygon((x0, w.z1), (x0, w.z1 + r.rib_h), (x0 - r.rib_len, w.z1), align=None)
     wedge = bd.extrude(bd.Plane.XZ * triangle, amount=r.rib_y[1], both=True)
     ribs = []
     for side in (1.0, -1.0):
         band = slab(r.rib_len, r.rib_y[1] - r.rib_y[0], r.rib_h, x0 - r.rib_len / 2.0, w.z1, side * sum(r.rib_y) / 2.0)
-        ribs.append(under_the_outline & wedge & band)
+        ribs.append(wedge & band)
     return ribs
+
+
+def corner_facets(cfg: ForearmConfig = DEFAULT) -> list:
+    """What the web grows out of the flange through, one solid per side, to cut from the web and the gussets: under the
+    plane through the flange's lower diagonal facet at the wall's wrist face and the web's bottom edge chamfer (its
+    inner edge, EDGE_CHAMFER in from the side) facet_len along the web - the flange's facet carried on along the web,
+    running out into the web's own chamfer, both at 45 deg on the octagon (lib/style.py SIDES) -; and under the facet
+    itself on into the wall past the web's buried end. A convex hull of the sections at the three stations (the facet's
+    planes fold over at the wall face, the region under them stays convex)."""
+    r, w = cfg.roll_end, cfg.web
+    x0, apo = r.wall_x[0], r.wall_od / 2.0
+    corner_y = apo * math.tan(math.pi / SIDES)               # the flange's bottom flat's corner (its z: w.z0)
+    slope = math.tan(2.0 * math.pi / SIDES)                  # the diagonal facet: z = z0 + (|y| - corner_y) * slope
+    drop = (w.half_w - EDGE_CHAMFER - corner_y) * slope      # at facet_len the plane through the chamfer's inner edge
+    z_lo, y_out = w.z0 - 1.0, w.half_w + 1.0
+    cuts = []
+    for side in (1.0, -1.0):
+        points = []
+        for x, d in ((x0 - r.facet_len, drop), (x0, 0.0), (x0 + EDGE_CHAMFER + 1.0, 0.0)):
+            # the section under the plane z = z0 + (|y| - corner_y) * slope - d, down to z_lo, out to y_out
+            y_lo = corner_y + (z_lo - w.z0 + d) / slope
+            z_out = w.z0 + (y_out - corner_y) * slope - d
+            points += [(x, side * y_lo, z_lo), (x, side * y_out, z_lo), (x, side * y_out, z_out)]
+        cuts.append(hull_solid(points))
+    return cuts
 
 
 def elbow_disc(cfg: ForearmConfig = DEFAULT):
@@ -147,11 +171,14 @@ def idler_mount(body, cfg: ForearmConfig = DEFAULT):
 def build_link(cfg: ForearmConfig = DEFAULT):
     w, d, b, s = cfg.web, cfg.disc, cfg.boss, cfg.slot
     if cfg.roll:
-        # the straight web from the flange wall to the wrist pivot (round wrist end); the wall and its gussets; the wrist
-        # boss over the web
-        body = straight_web(cfg) + roll_wall(cfg)
+        # the straight web from the flange wall to the wrist pivot (faceted wrist end) and the wall's gussets on it, grown
+        # out of the flange through its carried-on lower facets; the wall; the wrist boss over the web
+        body = straight_web(cfg)
         for rib in wall_gussets(cfg):
             body = body + rib
+        for cut in corner_facets(cfg):
+            body = body - cut
+        body = body + roll_wall(cfg)
         # the way in for a wall screw whose head would land in the web: a channel in the web's underside, into the
         # motor slot
         for y, z in screws_under_the_web(cfg):
