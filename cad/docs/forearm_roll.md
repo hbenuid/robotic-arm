@@ -139,7 +139,7 @@ tensioner's riser land stands on the bed, `z_idler` − `z_boss` proud of the be
 the rest of the front face, under the elbow flange standing off the
 underside, inside the pocket under its back wall and under the plug grooves' tops (the bay prints as an open bore, the
 rear face's step, the opening and the magnets' pockets open upward); the octagonal end and the front face's facets rise
-off the bed at 45°, FDM's self-supporting angle - a `dfam-check` pass before the first print,
+off the bed at 45°, FDM's self-supporting angle - a printability check (`parts/AGENTS.md`) before the first print,
 `docs/open_issues.md`),
 the pulley spigot down (the ring's grooves print vertically; a support ring under its front flange, 2 mm over the bed),
 the shaft rear face down (its nut pockets open to the bed), the back panel outer face down (its rim and magnet pockets

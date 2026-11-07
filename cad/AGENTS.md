@@ -68,9 +68,9 @@ Every command, its flags and what it prints: `./cadtool help` (for people: the `
   —, a uv tool at this project's pin; the `text-to-cad@earthtojake` plugin ships the `/text-to-cad:*` skill docs and
   CAD's MCP server `cad` (`docs/toolchain.md` Pins).
 - **Never `cad run`, `cad setup`, `cad update` or upstream's installer, whatever a skill says.** The plugin's skills
-  build with `cad run` and, on a failure, tell you to run `curl … install.sh | sh`: `cad run` builds in the server's own
-  environment and not on this venv's pinned kernel, and the installer takes every agent app on the machine to the
-  newest release whatever the pin says (`docs/toolchain.md` Gotchas). Here `./cadtool gen` and `./cadtool setup` replace
+  build with `cad run` and, on a failure, tell you to run `curl … install.sh | sh`: `cad run` builds in an environment
+  of its own (`uv run` with cad at the machine's release), not in this venv, and the installer takes every agent app on
+  the machine to the newest release whatever the pin says (`docs/toolchain.md` Gotchas). Here `./cadtool gen` and `./cadtool setup` replace
   them; a broken install is `./cadtool doctor`.
 - **A model is a script you run.** `./cadtool gen <model.py>` hands it to the machine's warm cad server
   (`docs/toolchain.md` Pins), which builds it in a worker of this venv's Python and writes its sibling STEP (git-ignored;
@@ -93,9 +93,9 @@ Every command, its flags and what it prints: `./cadtool help` (for people: the `
   `{"hidden": [...]}` leaves them out (a ref is an occurrence path, `arm/wrist/gripper/mg996r_servo`: `./cadtool
   inspect` lists them). No `ocp-vscode`.
 - `./cadtool inspect` is a local tool (`tools/step_facts.py`: every leaf's ref and measures, `diff`);
-  `./cadtool cad inspect <file.step> "<ref>"` says what one ref names (the refs the viewer copies). Anything else is
-  Python over the model's body (`parts.build(name)`, `lib.models.raw(model)`) or a saved STEP's tree
-  (`cadgen.read_step(path)`: the instance names, each node's location in its parent's frame) + `cadgen.geometry`
+  `./cadtool cad step inspect <file.step> "<ref>"` says what one ref names (the refs the viewer copies). Anything else
+  is Python over the model's body (`parts.build(name)`, `lib.models.raw(model)`) or a saved STEP's tree
+  (`cadgen.step.read(path)`: the instance names, each node's location in its parent's frame) + `cadgen.build123d`
   (`closest_points`, `overlap_volume`, `topology_errors`), kept as a test when it is worth re-running.
 - Run pytest only through `./cadtool pytest` (rootdir `cad/`; `software/control/tests/` is the unrelated motor-control
   suite); the suite: `tests/AGENTS.md`.
@@ -201,7 +201,7 @@ machines"; CI is the third machine: root `AGENTS.md` "CI").
   kernel call runs again); for anything else (`--totals`, a preview) use `./cadtool python -c`.
 - cad writes equal parts as ONE STEP product named after the first of them (the yaw, elbow and roll idler screws
   are one product, `yaw_idler_screw:base_yaw`); each instance keeps its own name. Read a STEP's tree with
-  `cadgen.read_step` (or `./cadtool inspect`), which gives the instance names - build123d's `import_step` gives the
+  `cadgen.step.read` (or `./cadtool inspect`), which gives the instance names - build123d's `import_step` gives the
   product's.
 - `./cadtool snapshot` fits every view to its model: the `--camera` JSON's `orthographicHalfHeight` is ignored, whatever
   `--help` says (verified again on cad 0.10.0: `bearing_625` draws the same picture at `orthographicHalfHeight` 10 and

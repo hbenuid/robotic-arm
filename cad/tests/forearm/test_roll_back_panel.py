@@ -10,7 +10,7 @@ whole module over the elbow's range: tests/forearm/test_roll_drive.py."""
 import math
 
 import pytest
-from cadgen.geometry import closest_points
+from cadgen.build123d import closest_points
 
 import parts
 from assemblies import forearm_roll_drive as M

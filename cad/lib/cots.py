@@ -8,7 +8,7 @@ drive's pins, bolts and nuts.
 from __future__ import annotations
 
 import build123d as bd
-from cadgen import read_step
+from cadgen import step
 
 from lib.datum import to_location
 
@@ -16,7 +16,7 @@ from lib.datum import to_location
 def hybrid(name: str, vendor_step, vendor_to_ref, envelope):
     """Vendor geometry if vendor/<name>.step exists (moved by the VENDOR_TO_REF frame data), else the
     envelope - labelled."""
-    part = read_step(vendor_step).moved(to_location(vendor_to_ref)) if vendor_step.exists() else envelope()
+    part = step.read(vendor_step).moved(to_location(vendor_to_ref)) if vendor_step.exists() else envelope()
     part.label = name
     return part
 

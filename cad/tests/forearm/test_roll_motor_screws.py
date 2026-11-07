@@ -7,7 +7,7 @@ counterbores and the thread into the motor. The plate (RollDriveParams pad_t, mo
 idler tensions the belt -, the counterbores in its front face, probed on the frame. In the module: the heads flush with
 the front face, the thread in the motor, the pattern clear of everything else in the drive."""
 import pytest
-from cadgen.geometry import closest_points
+from cadgen.build123d import closest_points
 
 import parts
 from assemblies import forearm_roll_drive as M

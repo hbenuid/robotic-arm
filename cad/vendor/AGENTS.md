@@ -26,10 +26,12 @@ file came from is `README.md`; this file holds the rules.
 ## Recipe D — produce or swap a vendor STEP
 From an export → `./cadtool python tools/reference/split_mks_motor.py --write kit|drive|all --src <x40 kit> --src48
 <x48 kit>` (the motor kits; each path only where `--write` needs it). From
-the catalog:
+the step.parts catalog - a service of its own, searched on https://www.step.parts or its API (cad 0.11 retired the
+plugin's `step-parts` skill, and with it `./cadtool parts`); each item names its `stepUrl` and `sha256`:
 ```bash
-./cadtool parts "GT2 20" --limit 20                         # search (ANDed tokens; facets --tag/--family/--standard)
-./cadtool parts --id <id> --download --filename <name>.step --overwrite   # -> vendor/<name>.step (sha256 verified)
+curl -s 'https://api.step.parts/v1/parts?q=GT2+20&pageSize=20'   # search: .items[] {id, stepUrl, sha256, pageUrl}
+curl -sfL -o vendor/<name>.step '<the item's stepUrl>'
+shasum -a 256 vendor/<name>.step                            # must print the item's sha256, else delete the file
 ./cadtool inspect vendor/<name>.step --planes   # frame of the new model (leaf bbox + planar faces)
 # set VENDOR_TO_REF in parts/<group>/<name>.py so the model lands in the reference frame (reference/<origin>/<name>.step)
 ./cadtool pytest -k <name>                                  # vendor-frame + envelope + convention tests

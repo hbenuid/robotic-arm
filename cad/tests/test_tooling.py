@@ -1,6 +1,7 @@
 """The local tooling stays healthy: the venv holds the cad library and the OCP kernel pyproject.toml pins
 (and only ONE OCP distribution) and no cad-server, and ./cadtool inspect (tools/step_facts.py) agrees with the kernel;
-the retired inspect verbs teach the new syntax, cad's telemetry stays off, no CADGEN_ name and no second pin is left,
+the retired inspect verbs teach the new syntax, cad's telemetry and automatic updates stay off, no CADGEN_ name and no
+second pin is left, the retired cadtool verbs say what replaced them and its snapshot / export name cad's document type,
 ./cadtool refuses what would move the machine off the pin and its stop ends only this venv's workers,
 the two .claude/settings.json are the same, no tracked CLAUDE.md hides an AGENTS.md, every tracked name is lowercase."""
 import json
@@ -79,6 +80,39 @@ def test_cad_telemetry_stays_off():
     assert -1 < off < doctor, "./cadtool server must store the off before `cad doctor` starts the server"
     assert re.search(r"^    install_server ;;$", source, re.MULTILINE), "`server` / `setup` no longer run it"
     assert "CAD_TELEMETRY=0" in (CAD_DIR / ".env").read_text().splitlines()
+
+
+def test_cad_automatic_updates_stay_off():
+    """From cad 0.11 the server installs a release that breaks nothing by itself and moves every agent app's plugin to
+    it, which takes the machine off the pin (docs/toolchain.md Pins). `./cadtool server` stores `cad update auto off`
+    before `cad doctor` starts the server, as it does the telemetry off; `./cadtool doctor` reads it back."""
+    source = (CAD_DIR / "cadtool").read_text()
+    install = re.search(r"^install_server\(\) \{(?P<body>.*?)^\}$", source, re.MULTILINE | re.DOTALL)
+    assert install, "cadtool has no install_server()"
+    off, doctor = install["body"].find('"$cad" update auto off'), install["body"].find('"$cad" doctor')
+    assert -1 < off < doctor, "./cadtool server must store automatic updates off before `cad doctor` starts the server"
+    assert "update auto status" in source, "./cadtool doctor no longer reads the stored choice"
+
+
+@pytest.mark.parametrize("verb", ["parts", "why", "compile", "store", "daemon", "cadgen"])
+def test_retired_cadtool_verbs_say_what_replaced_them(verb):
+    """A retired verb exits 2 and says what replaced it, before anything of cad runs (`parts`: cad 0.11 retired the
+    plugin's step-parts skill; step.parts is reached by hand, vendor/AGENTS.md Recipe D)."""
+    proc = subprocess.run(["./cadtool", verb], cwd=CAD_DIR, capture_output=True, text=True, check=False)
+    assert proc.returncode == 2, proc.stdout + proc.stderr
+    assert f"cadtool {verb}: retired - " in proc.stderr
+
+
+@pytest.mark.parametrize(("source", "kind"), [
+    ("assemblies/arm.step", "step"), ("vendor/x.STP", "step"), ("print/base.stl", "stl"), ("a.glb", "glb"),
+    ("a.3mf", "threemf"), ("a.xbf", "xbf"), ("a.dxf", "dxf"), ("robot/arm.urdf", "urdf"), ("robot/arm.srdf", "srdf"),
+    ("robot/arm.sdf", "sdf"), ("009e0c63-bcc4-5f1c-9e2c-f9146bfc6a87", "model")])
+def test_cadtool_names_cads_document_type(source, kind):
+    """cad 0.11's verbs are `cad <document type> <operation> FILE`: `./cadtool snapshot` / `export` take the type from
+    the file's suffix, and anything else is a document id, `model`'s."""
+    proc = subprocess.run(["bash", "-c", 'source <(sed -n "/^doc_type() {/,/^}/p" cadtool); doc_type "$1"', "_", source],
+                          cwd=CAD_DIR, capture_output=True, text=True, check=True)
+    assert proc.stdout.strip() == kind
 
 
 def code_files() -> list[pathlib.Path]:
