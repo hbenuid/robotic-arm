@@ -30,12 +30,13 @@ def _close(a, b, tol=1e-6):
 
 def test_record_counts_match_expected():
     parts_ = P.keys(kind="part", retired=True)
-    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 65      # 11 SolidWorks + 54 mounted (j3_coupler#1, the two 90Ts, the pancake and its 20T retired, still records)
+    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 65      # 11 SolidWorks + 54 mounted (j3_coupler#1 / #2, the two 90Ts, the pancake and its 20T retired, still records)
     modules = ["cycloidal_drive#1", "forearm_roll_drive#1", "wrist_roll_drive#1", "gripper#1"]
     assert P.keys(kind="module") == P.keys(kind="module", designed=True) == P.DATA["designed_modules"] == modules
     assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 172  # 23 + the base motor mount (1 + 4 + 4) + j1_coupler's motor leg + its fork's screws and nuts (2 x (4 + 2 + 3)) + (7 + 13) + 2 x (2 + 13) + the elbow motor's 20T (3) + the elbow, wrist and base_yaw motors' 3 x 4 screws + 6 bearings + 3 thrust + 3 pulleys + 6 x 4 pulley bolts + the base_yaw and wrist motors' 20Ts (2 x 3) + 3 belts + the elbow and base_yaw belts' tensioners (2 x 4) + the wrist belt's (3)
     assert len(P.keys(kind="part", mounted=False, retired=True)) == 11
-    assert P.RETIRED == ("j3_coupler#1", "gt2_pulley_90t#1", "gt2_pulley_90t#2", "nema17_pancake#1", "gt2_pulley_20t#1")
+    assert P.RETIRED == ("j3_coupler#1", "j3_coupler#2", "gt2_pulley_90t#1", "gt2_pulley_90t#2", "nema17_pancake#1",
+                         "gt2_pulley_20t#1")
     assert set(P.RETIRED) <= set(P.OCCURRENCES)
     assert len(P.keys(kind="part")) == 65 - len(P.RETIRED)
 
@@ -197,7 +198,7 @@ def test_shifts_move_the_capture_records_beyond_each_link():
                                                     "jaw_a_link", "jaw_b_link") | set(P.RETIRED)
     retired_wrist = {"nema17_pancake#1", "gt2_pulley_20t#1"}   # the wrist roll drive carries both now
     assert set(forearm.moves) == _capture_records("wrist_pitch_link", "wrist_roll_link", "jaw_a_link", "jaw_b_link") | {
-        "gt2_pulley_90t#2"} | retired_wrist
+        "gt2_pulley_90t#2", "j3_coupler#2"} | retired_wrist
     assert set(wrist.moves) == _capture_records("wrist_roll_link", "jaw_a_link", "jaw_b_link") | retired_wrist == retired_wrist
     assert all(P.OCCURRENCES[key]["parent"] is None for key in upper_arm.moves)
     assert (upper_arm.along_x, forearm.along_x) == (UPPER_ARM.DEFAULT.slab.elbow_x - UPPER_ARM.LEGACY.slab.elbow_x,

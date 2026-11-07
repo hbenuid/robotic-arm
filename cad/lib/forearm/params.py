@@ -33,7 +33,7 @@ from lib.cycloidal.params import MotorParams, PETGTolerances
 from lib.fasteners import M3_CLEAR, M3_NUT, M3_SHCS, M4_CLEAR, M4_NUT, M5_CLEAR, M5_NUT, M5_SHCS, NutSize, ShcsSize
 from lib.motors import MKS_SERVO42D_STACK, MKS_SERVO42D_W, MOTOR_40, NEMA17_BOLT_SP
 from lib.pulley.params import DEFAULT as PULLEY_90T
-from lib.style import COVER_CLEAR, COVER_WALL, SIDES
+from lib.style import COVER_CLEAR, COVER_WALL, EDGE_CHAMFER, SIDES
 
 
 @dataclass(frozen=True)
@@ -289,8 +289,8 @@ class RollDriveParams:
     20T and the ring, an idler on its back on the frame's face taking up the rest (RollIdlerParams). The frame is
     one body round the motor: seen along the elbow axis an octagon about it (end_r, its flats round the upper arm's faceted end)
     hulled up to the tower round the roll axis - seen along the roll axis the tower is the forearm flange's octagon
-    (tower_y), the front face's long edges faceted (front_facet) -, straight-sided, extruded from its underside (block_x[0], the elbow flange's - its underside repeats
-    the SolidWorks j3_coupler's lip / boss / journal / stub into j1_link's bore, the elbow 90T bolts straight into it) to
+    (tower_y), the front face's long edges faceted (front_facet) -, straight-sided, extruded from its underside (block_x[0], the elbow flange's - under it a post (the
+    SolidWorks j3_coupler's Ø40 journal carried up), the shoulder and the stub into j1_link's bore, the elbow 90T bolts straight into it) to
     its side (+N) face, closed; the motor in a pocket open down through the octagon's bottom (it slides up into it; a
     groove inside each wall at its board's side headers), the pocket's front wall its plate (round holes: its 4x M3 from
     the front face, the heads flush in counterbores -
@@ -363,18 +363,15 @@ class RollDriveParams:
     #                                       pocket's corners, 4.65 at the motor screws' counterbores (roll.py front_facets)
     bay_r: float = 25.6                   # [DESIGN] the shaft's bay behind bearing 1, bored on through the frame's back (the rear line): round
     #                                       the stop lug's corners (r 24.6) + 1; the shaft, bearing 1 pressed on it, goes in along the axis from behind
-    # the coupler features on the frame's underside (module -X) about the elbow axis (y = elbow_y), where j3_coupler#1 was
-    # - measured on the SolidWorks coupler 2026-09-23 in j2_link's frame (host z = module x + axis_z); they turn in
-    # j1_link's Ø42 bore, over its flat top (down at the floor of the Ø80 recess it had: lib/upper_arm/params.py)
-    lip_dia: float = 72.0                 # [DESIGN] a dust lip over j1_link's elbow end (the coupler's Ø78 flange, kept inside the end's outline)
-    lip_x: tuple = (-35.0, -ROLL_FRAME_R)   # [REFERENCE] its foot at host -10, 6 over j1_link's flat top (host -16; 1 over it before the
-    #                                       slab was slimmed), [DESIGN] up to the underside (host -5): 5 proud of it, into the gap over the top
-    boss_dia: float = 62.0                # [REFERENCE]
-    boss_x: tuple = (-39.0, -35.0)        # [REFERENCE] host -14 .. -10
-    journal_dia: float = 40.0             # [REFERENCE] in j1_link's Ø42 bore
-    journal_x: tuple = (-40.3, -39.0)     # [REFERENCE] host -15.3 .. -14
-    step_dia: float = BEARING_6806_SHOULDER_DIA   # [DESIGN] an inner-ring shoulder on the journal's face, down onto the upper elbow bearing ...
-    step_x: tuple = (-41.0, -40.3)        # [DESIGN] ... host -16 .. -15.3: the journal's Ø40 face stopped 0.7 above that bearing (and bore on its outer ring)
+    # the elbow flange on the frame's underside (module -X) about the elbow axis (y = elbow_y), where j3_coupler#1 was
+    # (host z = module x + axis_z): the post, the shoulder, the stub - over j1_link's Ø42 bore, never over its flat top
+    # (the SolidWorks coupler's Ø78 flange and Ø62 boss turned in the Ø80 recess the top had: lib/upper_arm/params.py)
+    post_dia: float = 40.0                # [REFERENCE] the coupler's Ø40 journal, carried up to the underside: one post over j1_link's
+    #                                       Ø42 bore (the elbow 90T's nuts seated in it), clear of the flat top at any elbow angle
+    post_x: tuple = (-40.3, -ROLL_FRAME_R)   # [DESIGN] host -15.3 (0.7 over the upper elbow bearing, its outer ring too) .. the underside (host -5)
+    post_chamfer: float = EDGE_CHAMFER    # [DESIGN] its foot's 45 deg chamfer (lib/style.py): its edge 2.26 off the bore's rim
+    step_dia: float = BEARING_6806_SHOULDER_DIA   # [DESIGN] an inner-ring shoulder on the post's face, down onto the upper elbow bearing ...
+    step_x: tuple = (-41.0, -40.3)        # [DESIGN] ... host -16 .. -15.3
     stub_dia: float = 30.0                # [REFERENCE] in the upper of the elbow's 6806-2RS pair (lib/mounts.py bearing_6806#3; the 90T's hub in #4)
     stub_x: tuple = (-47.0 - PULLEY_SEAT_SHIFT, -41.0)   # [REFERENCE] host -25 .. -16: the capture coupler's end (-47) on through the lip to the
     #                                       re-seated elbow 90T, which bolts flat onto it (its 2 mm in the lip space the inner rings)
@@ -382,14 +379,14 @@ class RollDriveParams:
     pin_bore_x: tuple = (-47.0 - PULLEY_SEAT_SHIFT, -37.0)   # [DESIGN] from the stub's end, blind: stops 1 mm under the nut seats
     pulley_bolt_r: float = 11.0           # [REFERENCE] the elbow 90T's 4x M4 at r 11 (the SolidWorks coupler's pattern) ...
     pulley_bolt_deg: float = 45.0         # [DESIGN] ... turned off the axes, the elbow 90T with it (lib/mounts.py)
-    pulley_bolt_dia: float = M4_CLEAR     # [DESIGN] 4.4, M4 clearance up through the stub, the journal and the boss to the nut seat
+    pulley_bolt_dia: float = M4_CLEAR     # [DESIGN] 4.4, M4 clearance up through the stub and the post to the nut seat
     pulley_hub_len: float = GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_FACE_Y[0]   # [REFERENCE] 21.4, the 90T's length through its bolt holes:
     #                                       the screw heads sit in its counterbores (parts/joints/elbow_pulley_screws)
     pulley_screw_len: float = 35.0        # [DESIGN] M4 x 35 (ISO 4762) from the floors of the pulley's counterbores
     #                                       (GT2_PULLEY_90T_HEAD_SEAT under its outer face)
     nut_af: float = 6.85                  # [DESIGN] the M4 nuts' (ISO 4032, s 7) hex channels - j3_coupler's pocket (lib/coupler/params.py)
     nut_t: float = M4_NUT.h               # [DATASHEET] 3.2, ISO 4032 M4 nut height (parts/joints/elbow_pulley_nuts)
-    nut_seat_x: float = -36.0             # [DESIGN] in the boss: the screw ends 2 pitches past its nut, under the motor's pocket
+    nut_seat_x: float = -36.0             # [DESIGN] in the post: the screw ends 2 pitches past its nut, under the motor's pocket
     nut_channel_past: float = 1.0         # [DESIGN] each channel runs up from its seat through the floor into the motor's pocket, this far past
     #                                       the floor: the nuts drop in from the pocket before the motor
     # the rotor: the pulley (the ring on its core, its hub through bearing 2, its neck on to bearing 1, the spigot) and the
@@ -514,8 +511,8 @@ _WEB = replace(LEGACY.web, wrist_x=LEGACY.web.wrist_x + SHORTENING,
                half_w=round(PULLEY_90T.flange_dia / 2.0 + COVER_CLEAR + COVER_WALL, 6),   # straight from the wall, no taper
                z0=LEGACY.web.z0 - WEB_DROP, z1=LEGACY.web.z1 - WEB_DROP)
 _BOSS = replace(LEGACY.boss, dia=2.0 * _WEB.half_w,       # [DESIGN] as wide as the web: its faceted wrist end
-                z1=LEGACY.boss.seat_z1 - WEB_DROP,        # [DESIGN] the bearing seat's top: j3_coupler#2's dust lip turns 0.5 over it,
-                recess_dia=None,                          #          its Ø78 flange 4.5 - no recess for either
+                z1=LEGACY.boss.seat_z1 - WEB_DROP,        # [DESIGN] the bearing seat's top: wrist_link's flange post reaches 0.8 past
+                recess_dia=None,                          #          it into the seat's bore, its plate 14.5 off it - no recess
                 seat_z1=LEGACY.boss.seat_z1 - WEB_DROP,   # the seat and its lip dropped with the web
                 lip_z=(LEGACY.boss.lip_z[0] - WEB_DROP, LEGACY.boss.lip_z[1] - WEB_DROP),
                 recess_z0=LEGACY.boss.recess_z0 - WEB_DROP)

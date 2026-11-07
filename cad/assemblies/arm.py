@@ -26,13 +26,13 @@ the 20T pulleys) is grey and the belts a darker grey, inside the modules too:
     |- forearm_link      j2_link, bearing_6806:wrist_pitch_1 / _2, nema17_40mm:wrist_pitch, mks_servo42d:wrist_pitch,
     |                    gt2_pulley_20t:wrist_pitch, wrist_motor_screws:wrist_pitch, wrist_belt:wrist_pitch,
     |                    gt2_idler_20t / wrist_idler_screw / _nut:wrist_pitch
-    |- wrist_pitch_link  gt2_pulley_90t:j3, wrist_pulley_screws / _nuts:wrist_pitch, j3_coupler:j3, wrist_link (the wrist
-    |                    roll drive's frame), wrist_roll_drive (kept whole - see below)
+    |- wrist_pitch_link  gt2_pulley_90t:j3, wrist_pulley_screws / _nuts:wrist_pitch, wrist_link (the wrist roll drive's
+    |                    frame, the wrist_pitch output flange on its plate), wrist_roll_drive (kept whole - see below)
     |- wrist             gripper
 
-j3_coupler#1 (the elbow's SolidWorks coupler) is RETIRED (lib/placements.py): the roll drive's block carries its
-lip / boss / journal / stub and the elbow 90T bolts straight into it - the record stays in placements.json, no
-table claims it; likewise gt2_pulley_90t#1 / #2, whose re-seated poses are the mounts gt2_pulley_90t#3 / #4, and
+j3_coupler#1 / #2 (the elbow's and the wrist's SolidWorks coupler) are RETIRED (lib/placements.py): the roll drive's
+block and wrist_link carry its journal (a post) and stub and each 90T bolts straight into them - the records stay in
+placements.json, no table claims them; likewise gt2_pulley_90t#1 / #2, whose re-seated poses are the mounts gt2_pulley_90t#3 / #4, and
 nema17_pancake#1 / gt2_pulley_20t#1, which the wrist roll drive carries (the pancake on the wrist-pitch axis). The
 SolidWorks link caps (j1_cap, j2_cap_1, j2_cap_2) were removed 2026-09-25, gripper_clamp_bracket 2026-10-14 and the
 SolidWorks gripper 2026-11-07 (the rack & pinion gripper in its place): their products are lib/reference.py SKIPPED_PRODUCTS, their poses sit in placements.json `skipped`. A drive module is one
@@ -139,8 +139,8 @@ OCCURRENCES = [
     ("wrist_idler_nut",       "wrist_pitch", "wrist_idler_nut#1"),      # ... into its nut, in the channel from the top face
     ("gt2_pulley_90t",        "j3", "gt2_pulley_90t#4"),           # mounted: re-seated on the lower wrist bearing (#2 retired)
     ("wrist_pulley_screws",   "wrist_pitch", "wrist_pulley_screws#1"),   # mounted: the wrist 90T's 4x M4 ...
-    ("wrist_pulley_nuts",     "wrist_pitch", "wrist_pulley_nuts#1"),     # ... into the nuts in j3_coupler's flange
-    ("j3_coupler",            "j3", "j3_coupler#2"),
+    ("wrist_pulley_nuts",     "wrist_pitch", "wrist_pulley_nuts#1"),     # ... into the nuts in wrist_link's channels
+    # j3_coupler#2 (the wrist coupler) is retired: wrist_link's plate carries the wrist_pitch output flange in its place
     ("wrist_link",            None, "wrist_link#1"),       # the wrist roll drive's frame (its DEFAULT build)
     # nema17_pancake#1 / gt2_pulley_20t#1 are retired and gripper_clamp_bracket skipped: the wrist roll drive carries the
     # pancake (on the pitch axis) and its 20T, the gripper's connector (in the gripper module) bolts to its pulley
@@ -171,7 +171,7 @@ GROUPS = [
     ("forearm_link",     ("j2_link#1", "bearing_6806#5", "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3",
                           "gt2_pulley_20t#4", "wrist_motor_screws#1", "wrist_belt#1", "gt2_idler_20t#3",
                           "wrist_idler_screw#1", "wrist_idler_nut#1")),
-    ("wrist_pitch_link", ("gt2_pulley_90t#4", "wrist_pulley_screws#1", "wrist_pulley_nuts#1", "j3_coupler#2", "wrist_link#1",
+    ("wrist_pitch_link", ("gt2_pulley_90t#4", "wrist_pulley_screws#1", "wrist_pulley_nuts#1", "wrist_link#1",
                           WRIST_ROLL_KEY)),
     ("wrist",            (GRIPPER_KEY,)),
 ]

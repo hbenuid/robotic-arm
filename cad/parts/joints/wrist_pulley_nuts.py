@@ -1,18 +1,18 @@
-"""wrist_pulley_nuts - purchased (COTS) part: the wrist 90T's 4 M4 hex nuts (ISO 4032), in j3_coupler's flange.
+"""wrist_pulley_nuts - purchased (COTS) part: the wrist 90T's 4 M4 hex nuts (ISO 4032), in wrist_link's flange.
 
-The wrist 90T's screws run into them, in the hex pockets of the coupler flange's underside.
+The wrist 90T's screws run into them, in hex channels from the seats in wrist_link's post down through its plate.
 
-In the arm (lib/mounts.py, hosted on wrist_pulley_screws): each nut on its pocket's floor (lib/coupler/params.py
-CouplerParams.nut_depth, the nut standing proud of the flange by the rest of its height into wrist_link's central
-hole), all four with a corner along the coupler's Z as the pockets are cut (lib/coupler/body.py); the pockets are
-nut_af across flats, a press for the nut (docs/open_issues.md). They go in before wrist_link covers the flange.
+In the arm (lib/mounts.py, hosted on wrist_pulley_screws): each nut on its channel's seat (lib/wrist/params.py
+FlangeParams.nut_seat_z - where the retired j3_coupler#2's pocket floors were, lib/coupler/params.py nut_depth), all
+four with a corner along the part's X as the channels are cut (FlangeParams.nut_corner_deg); the channels are nut_af
+across flats, a press for the nut (docs/open_issues.md). They drop in from the pancake's pocket before the pancake.
 
 No catalog model (the catalog has single fasteners only, vendor/README.md) and no SolidWorks export: a NATIVE COTS
 pattern part (lib/reference.py NATIVE_COTS) like the drive's cycloidal_housing_nuts - its envelope IS the geometry
 (lib/fasteners.py hex_nut(): no thread, the bore at the nominal diameter) and its reference is that envelope
 (reference/native/wrist_pulley_nuts.step, tools/reference/import_native.py). Frame: axis on Z, the nuts' bearing faces
 on z=0, standing in +Z; the four on the 90T's hole circle (lib/belts.py pulley_90t_bolt_points()), each with a corner
-along +/-Y (the coupler's Z where the arm mounts them).
+along +/-Y (wrist_link's X where the arm mounts them).
 """
 import math
 import pathlib
@@ -29,7 +29,7 @@ COTS = True
 MASS_G = PULLEY_NUTS_MASS_G   # [ESTIMATE] the modelled steel (lib/params.py)
 PURCHASE_SPEC = f"M{M4_NUT.d:g} hex nut (ISO 4032)"
 PURCHASE_QTY = len(pulley_90t_bolt_points())   # pieces per occurrence (the whole pattern)
-PURCHASE_NOTE = "pressed into the hex pockets in j3_coupler's flange underside, before wrist_link goes on"
+PURCHASE_NOTE = "pressed into the hex channels in wrist_link's flange from the pancake's pocket, before the pancake"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 

@@ -22,7 +22,7 @@ in DEFAULT the wrist belt's idler mount beside it (a rib under the web, an M5 sl
 channel down from the top face - lib/forearm/params.py IdlerParams) and, in LEGACY only,
 the Ø5.18 x 2 locating sockets of the removed caps (j2_cap_1 / j2_cap_2, gone 2026-09-25). Wrist end: the boss with the
 Ø42.2 wrist_pitch bearing seat (lipped) - LEGACY Ø90 with the Ø80 recess j3_coupler's flange dips into, DEFAULT as wide
-as the web (its round end), ending at the seat's top under the coupler's dust lip, no recess. Every number:
+as the web (its round end), ending at the seat's top, wrist_link's flange post reaching into the seat's bore, no recess. Every number:
 lib/forearm/params.py (ForearmConfig; measured on the reference 2026-09-22).
 
 SolidWorks product: 'Joint 2 change 8126'

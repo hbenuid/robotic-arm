@@ -8,8 +8,8 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
 - `reference/placements.json` (from `tools/reference/extract_placements.py`; schema: `reference/README.md`) holds
   every occurrence: `rel` (to its parent node) and `world`, as `Location(position, rotation_xyz_deg)`; keys
   `"<part>#<n>"`, modules `"<module>#<n>"`. Treat it as an immutable input. An occurrence the DESIGN has replaced is
-  **retired** in `lib/placements.py RETIRED` (`j3_coupler#1`: the roll drive's block took over its
-  features, `docs/forearm_roll.md`; `gt2_pulley_90t#1` / `#2`: re-seated `PULLEY_SEAT_SHIFT` out as mounts, below;
+  **retired** in `lib/placements.py RETIRED` (`j3_coupler#1` / `#2`: the roll drive's block and `wrist_link`'s plate took over their
+  features, `docs/forearm_roll.md`, `docs/wrist_roll.md`; `gt2_pulley_90t#1` / `#2`: re-seated `PULLEY_SEAT_SHIFT` out as mounts, below;
   `nema17_pancake#1` / `gt2_pulley_20t#1`: the wrist roll drive carries them, `docs/wrist_roll.md`): its record stays,
   `P.keys()` leaves it out (`retired=True` lists the file), no table / link / total
   claims it (`test_placements.py`, `test_assembly.py`, `test_robot.py` follow `keys()`). A PART the design drops
@@ -93,8 +93,7 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
   `test_assembly.py` compares the SolidWorks world bbox through `arm_from_w()`.
 - Roles label a part with the joint it serves (mostly the joint name: `elbow_pitch_1`, `forearm_roll`), which also keeps
   duplicate labels unique (`test_placements.py test_duplicate_parts_have_unique_labels`): `a` / `b` on the gripper's
-  racks and jaws, `1` / `2` on the cycloidal and forearm roll drives' bearings, `j2` / `j3` on the elbow's / wrist's 90T and
-  `j3_coupler#2`.
+  racks and jaws, `1` / `2` on the cycloidal and forearm roll drives' bearings, `j2` / `j3` on the elbow's / wrist's 90T.
 - A view of the arm with some occurrences hidden needs no model: `./cadtool snapshot assemblies/arm.step out.png
   --display '{"hidden": ["arm/wrist/gripper"]}'` (occurrence-path refs, `./cadtool inspect` lists them; `isolated`
   draws only the ones named). A second model would be the only way to get a STEP (a model takes no parameters).
