@@ -33,7 +33,7 @@ from lib.cycloidal.params import MotorParams, PETGTolerances
 from lib.fasteners import M3_CLEAR, M3_NUT, M3_SHCS, M4_CLEAR, M4_NUT, M5_CLEAR, M5_NUT, M5_SHCS, NutSize, ShcsSize
 from lib.motors import MKS_SERVO42D_STACK, MKS_SERVO42D_W, MOTOR_40, NEMA17_BOLT_SP
 from lib.pulley.params import DEFAULT as PULLEY_90T
-from lib.style import COVER_CLEAR, COVER_WALL, EDGE_CHAMFER, SIDES
+from lib.style import COVER_CLEAR, COVER_WALL, EDGE_CHAMFER, GRILL_PITCH, GRILL_SLOT, SIDES
 
 
 @dataclass(frozen=True)
@@ -247,7 +247,9 @@ class BackPanelParams:
     elbow motor's board passes the rear line as it did before the bay was bored through the back. The panel turns
     run_gap clear of the shaft's rear face and its lug (a relief where it passes over them), is located by a U rim in the
     opening's lower part and held by magnet pairs (parts/joints/roll_back_magnets): one disc in a pocket in the step's
-    floor, one in a pocket in the panel's inner face, each pressed to its pocket's bottom.
+    floor, one in a pocket in the panel's inner face, each pressed to its pocket's bottom. A grill of straight slots up
+    the face (lib/style.py GRILL_SLOT / GRILL_PITCH) is cut through it over the bay and the opening, grill_clear inside
+    the rim, the turning shaft behind it.
     Positions on the rear face are (x, s): module x, and s along the face from the point where the roll axis meets it,
     up toward the tower's top (lib/forearm/roll.py back_face)."""
 
@@ -272,6 +274,11 @@ class BackPanelParams:
     #                                       bore, as high as the tower's octagon leaves room (1.54 of wall to its facets, 1.57 to the bore,
     #                                       1.6 to the side faces),
     #                                       the bottom pair under the opening
+    grill_clear: float = 1.6              # the grill's field (lib/forearm/roll.py back_grill) this far inside the rim's inner edge -
+    #                                       its sides, its bottom, the 45 deg facets across its bottom corners - and as wide over the
+    #                                       bay: the tower's octagon about the roll axis, its flats at the field's half width
+    grill_w: float = GRILL_SLOT           # the grill's slots (lib/style.py), up the face, through ...
+    grill_pitch: float = GRILL_PITCH      # ... at this pitch, one on the roll axis' line
 
 
 ROLL_FRAME_R = 30.0   # [DESIGN] the roll frame's half width round the roll axis: its underside (11.0 over the upper arm's flat top),

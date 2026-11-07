@@ -3,7 +3,9 @@ face (the rear line) in a step cut across the face's full width, from the tower'
 opening grown down below the bay's bore - lift it off and the roll shaft, its clamp nuts and the stop post are open to
 reach. Relieved where it passes over the turning shaft (run_gap off its rear face and its lug), located by a U rim on its
 inner face in the opening's lower part, held by 4 magnet pairs (roll_back_magnets: one disc in a pocket in the frame's
-step, one in a pocket in its inner face). Nothing passes through it: the forearm's cables take another route.
+step, one in a pocket in its inner face). A grill of straight slots up the face is cut through it over the bay and the
+opening, inside the rim - the turning shaft shows behind it (lib/forearm/roll.py back_grill). Nothing passes through
+it: the forearm's cables take another route.
 
 Designed here, no reference: tests/forearm/test_roll_back_panel.py holds its numbers (lib/forearm/roll.py
 build_back_panel(cfg), every number lib/forearm/params.py BackPanelParams, in the drive's MODULE frame at its station -

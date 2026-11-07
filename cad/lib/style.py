@@ -6,7 +6,8 @@ the part module declares ACCENT = True, parts.accent()); a purchased part (parts
 (parts/*/<joint>_belt.py) BELT.
 
 The shapes: a faceted end (lib/geom.py faceted_end()) is a regular polygon of SIDES with a flat on each of the part's
-own axes; a printed part's main faces have their outline chamfered EDGE_CHAMFER at 45 deg (lib/geom.py chamfer_outline()).
+own axes; a printed part's main faces have their outline chamfered EDGE_CHAMFER at 45 deg (lib/geom.py chamfer_outline());
+a back panel carries a grill of GRILL_SLOT slots at GRILL_PITCH.
 
 A leaf (lib/AGENTS.md): it imports nothing, so every lib/ package may take its values from it.
 """
@@ -17,6 +18,9 @@ EDGE_CHAMFER = 1.5     # [DESIGN] the 45 deg chamfer on the outline of a printed
 COVER_WALL = 2.5       # [DESIGN] a belt cover's wall and lid ...
 COVER_CLEAR = 2.0      # [DESIGN] ... standing this far clear of every pulley, belt and screw head inside it - a link a cover
 #                        follows is as wide as what turns inside the cover needs (lib/forearm/params.py WebParams.half_w)
+GRILL_SLOT = 2.0       # [DESIGN] a back panel's grill: straight slots this wide, cut through, running up the panel ...
+GRILL_PITCH = 4.0      # [DESIGN] ... at this pitch, one on the panel's centre line (the ribs between them 2.0: 5 perimeters
+#                        at 0.4), clipped to the panel's field over its shaft's bay (docs/design_language.md)
 
 BODY = "#E6E3DC"       # [DESIGN] off-white: the printed structure
 # [DESIGN] orange: the printed parts that drive, turn or cover. The filament is #E2581C; the viewer and `./cadtool
