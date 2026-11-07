@@ -5,7 +5,7 @@ bearing boss on its front face - the tower the forearm flange's octagon seen alo
 edges faceted), the pulley (rotor, the output - its integral 90T is the GT2 ring of lib/pulley/teeth.py
 - its hub on through the tower to bearing 1), the shaft (rotor, a collar that holds bearing 1) and the back panel (stator,
 a plate flush with the frame's rear face over the shaft's bay - its step, the opening and the magnets on the rear face:
-back_face / back_point)."""
+back_face / back_point; its grill: back_grill)."""
 from __future__ import annotations
 
 import math
@@ -113,6 +113,31 @@ def back_magnet_depths(cfg: ForearmConfig = DEFAULT) -> tuple[float, float]:
     its pocket in the step's floor, and the panel's, pressed to the bottom of its pocket in the panel's inner face."""
     b = cfg.drive.back
     return b.t + b.pocket_depth - b.magnet_t, b.t - b.pocket_depth
+
+
+def back_grill_field(cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float]:
+    """The back panel's grill field on the rear face (BackPanelParams grill_clear): (half, bottom, c) - its half width and
+    its bottom edge (s), grill_clear inside the rim's inner edge, and the legs of the 45 deg facets across its bottom
+    corners (the chords of the rim's rounded corners, grill_clear in). Over the bay the tower's octagon about the roll
+    axis bounds it, its flats at `half` (back_grill)."""
+    d, b = cfg.drive, cfg.drive.back
+    inset = b.rim_clear + b.rim_w + b.grill_clear
+    return d.bay_r - inset, b.opening_bottom + inset, b.opening_r - inset
+
+
+def back_grill(cfg: ForearmConfig = DEFAULT):
+    """What the back panel's grill takes away (BackPanelParams grill_*, lib/style.py GRILL_SLOT / GRILL_PITCH): straight
+    slots up the rear face, one on the roll axis' line, cut through the panel square to the face and clipped to the field
+    (back_grill_field) - over the bay the tower's octagon carried in to the field's half width, so the slots' ends follow
+    the panel's own top corners."""
+    d, b = cfg.drive, cfg.drive.back
+    half, bottom, c = back_grill_field(cfg)
+    top = _back_top(cfg)
+    field = bd.Polygon((-half + c, bottom), (half - c, bottom), (half, bottom + c), (half, top), (-half, top), (-half, bottom + c), align=None)
+    n = int((half - b.grill_w / 2.0) // b.grill_pitch)
+    slots = [bd.Pos(k * b.grill_pitch, (bottom + top) / 2.0) * bd.Rectangle(b.grill_w, top - bottom) for k in range(-n, n + 1)]
+    cut = _on_back(sum(slots[1:], slots[0]) & field, -1.0, b.t + b.rim_h + 2.0, cfg)
+    return cut & _z_prism(tower_section(cfg, d.tower_y - half))
 
 
 def tower_section(cfg: ForearmConfig = DEFAULT, inset: float = 0.0):
@@ -313,7 +338,8 @@ def build_back_panel(cfg: ForearmConfig = DEFAULT):
     outer face on the rear line), as wide as the frame less side_clear, from gap over the step's bottom edge up to
     side_clear inside the tower's octagon (its top and the facets at its top corners: tower_section); relieved where it passes over the turning shaft - run_gap off its rear face and its
     lug's sweep, inside the bay's bore -; the U rim on its inner face down into the opening's lower part (it locates the
-    panel); a pocket for each magnet in its inner face."""
+    panel); a pocket for each magnet in its inner face; the grill's slots through it over the bay and the opening
+    (back_grill)."""
     d, b, S = cfg.drive, cfg.drive.back, stack_positions(cfg)
     s_top, half = _back_top(cfg), d.block_x[1] - b.side_clear
     body = _on_back(bd.Pos(0.0, (b.bottom + b.gap + s_top) / 2.0) * bd.Rectangle(2.0 * half, s_top - b.bottom - b.gap), 0.0, b.t, cfg)
@@ -324,4 +350,4 @@ def build_back_panel(cfg: ForearmConfig = DEFAULT):
     body = body + _on_back(rim, b.t - NUDGE, b.rim_h + NUDGE, cfg)
     for x, s in b.magnet_points:
         body = body - _on_back(bd.Pos(x, s) * bd.Circle(b.pocket_dia / 2.0), b.t - b.pocket_depth, b.pocket_depth + NUDGE, cfg)
-    return single_solid(body)
+    return single_solid(body - back_grill(cfg))

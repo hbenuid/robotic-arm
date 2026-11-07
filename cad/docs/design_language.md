@@ -34,14 +34,20 @@ designed here), each with its own look; these rules make them one.
   it comes off by hand to reach its belt's tensioner. Its wall is `lib/style.py COVER_WALL`, `COVER_CLEAR` off what it
   covers. A link a cover follows is as wide as what turns inside the cover needs: the forearm's web
   (`lib/forearm/params.py WebParams.half_w`) round the wrist's 90T.
+- **Back panels are grilled.** A roll drive's removable back panel carries a grill over its shaft's bay: straight slots
+  `lib/style.py GRILL_SLOT` wide at `GRILL_PITCH`, cut through, one on the roll axis, the same on both panels, so the
+  turning shaft shows behind it. The slots are clipped to a field inside the panel's locating rim and clear of its
+  magnets and notches, its outline faceted - the frame's octagon carried in, 45° facets across its corners - and a
+  plain border of the panel round it. The slots' edges stay sharp like the panel's other holes. It is a look, not a
+  vent: neither panel covers a motor or a driver board.
 
 ## Where it stands
 In the model: the colours; the upper arm (`j1_link`: its faceted elbow end, its slab's outline chamfered); the roll
 frame (`forearm_roll_block`: its tower the forearm flange's octagon carried back through it, its front face's long edges
-faceted, the bearing boss rising out of them, its outline chamfered); the forearm (`j2_link`: its web as wide as its
+faceted, the bearing boss rising out of them, its outline chamfered, its back panel grilled); the forearm (`j2_link`: its web as wide as its
 cover's end, its wrist end and boss faceted and chamfered, its flange faceted and the web growing out of it, the
 flange's lower facets carried on along the web into its chamfer); the wrist (`wrist_link`: its roll frame
-laid out as the roll frame's - the plate's octagon hulled to its tower, the far face closed, a back panel over the bay,
+laid out as the roll frame's - the plate's octagon hulled to its tower, the far face closed, a grilled back panel over the bay,
 its front edges faceted, the bearing boss rising out of them - and its plate's end on the pitch axis faceted and
 chamfered); the fork (`j1_coupler`, `j1_motor_leg`: their legs' tops faceted and chamfered - on the motor leg not on the
 flats the sleeve's screws seat on, which span its whole thickness -, the legs growing out of the disc in planar facets,

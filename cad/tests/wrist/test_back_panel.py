@@ -4,7 +4,8 @@ magnet pairs (wrist_back_magnets) - the forearm roll frame's (tests/forearm/test
 out. Both are designed here with no reference (lib/reference.py NO_REFERENCE) - THIS file locks their numbers (pieces,
 volume, bounding box, measured on the build and written in) and what they are: the panel's outer face on the rear plane,
 one plane (it prints flat), on the step's floor, run_gap off the turning shaft and its lug, located by its rim in the
-bay's bore, its notches open (the gripper servo's cable's, the MKS board's near side plug's room); the frame's step and
+bay's bore, its notches open (the gripper servo's cable's, the MKS board's near side plug's room), its grill's slots open
+onto the bay, grill_clear off the rim and the cable's notch; the frame's step and
 pockets; each magnet pressed to its pocket's bottom, the pair facing across the step's floor - and all of it clear of
 the rest of the drive."""
 import math
@@ -29,7 +30,7 @@ from lib.wrist.layout import (
     stack_positions,
     toward_motor,
 )
-from lib.wrist.roll import back_magnet_depths, back_point
+from lib.wrist.roll import back_grill, back_grill_field, back_magnet, back_magnet_depths, back_point
 from tests import built
 from tests.helpers import interference, is_inside
 
@@ -38,7 +39,7 @@ B = D.back
 PANEL, MAGNETS = "wrist_back_panel", "wrist_back_magnets"
 # name -> (solids, volume mm^3, bbox min, bbox size): the build's own numbers
 LOCKS = {
-    PANEL: (1, 7034.551, (-27.0, -30.0, -18.424332), (57.0, 53.932894, 8.799233)),
+    PANEL: (1, 5858.891, (-27.0, -30.0, -18.424332), (57.0, 53.932894, 8.799233)),
     MAGNETS: (8, 113.097, (-23.5, -19.46795, -17.781645), (47.0, 40.289558, 7.025311)),
 }
 
@@ -174,6 +175,33 @@ def test_the_panels_notches(module):
     for name, (x0, x1, y0, y1, z0, z1) in board_plug_rooms(DEFAULT).items():
         room = Pos((x0 + x1) / 2.0, (y0 + y1) / 2.0, (z0 + z1) / 2.0) * Box(x1 - x0, y1 - y0, z1 - z0)
         assert interference(panel, room) < 1e-6, name
+
+
+@pytest.mark.slow
+def test_the_grill(module, frame):
+    """The grill (lib/style.py GRILL_SLOT / GRILL_PITCH): one hole in the panel's outer face per slot, grill_w wide on R'
+    and every grill_pitch beside it, ribs between them; the field grill_clear off the ring rim (cut along R', as the rim
+    runs) and off the cable's notch, the magnets' pockets further; every slot opens onto the bay (nothing of the frame just
+    behind the panel)."""
+    panel = _leaf(module, PANEL)
+    flats, _edge = back_grill_field(DEFAULT)
+    n = int((flats - B.grill_w / 2.0) // B.grill_pitch)
+    outer = [f for f in panel.faces() if all(abs(_out(v)) < 1e-6 for v in f.vertices())]
+    assert len(outer) == 1 and len(outer[0].inner_wires()) == 2 * n + 1 == 9
+    for k in range(-n, n + 1):
+        x = k * B.grill_pitch
+        assert not is_inside(panel, *back_point(x, 0.0, B.t / 2.0, DEFAULT)), k
+        assert not is_inside(frame, *back_point(x, 0.0, B.t + 0.5, DEFAULT)), k
+        assert not is_inside(panel, *back_point(x + B.grill_w / 2.0 - 0.05, 0.0, B.t / 2.0, DEFAULT)), k
+        assert is_inside(panel, *back_point(x + B.grill_w / 2.0 + 0.05, 0.0, B.t / 2.0, DEFAULT)), k
+    grill = back_grill(DEFAULT)                     # a prism along R' through everything
+    ring = cylinder(D.bay_r - B.rim_clear, 200.0, z0=-100.0) - cylinder(D.bay_r - B.rim_clear - B.rim_w, 200.0, z0=-100.0)
+    assert closest_points(grill, ring).distance == pytest.approx(B.grill_clear, abs=1e-3)
+    s, notch_y = toward_motor(DEFAULT), D.bay_r - B.notch_reach
+    notch = Pos(0.0, s * (notch_y + 20.0), 0.0) * Box(B.notch_w, 40.0, 200.0)
+    assert closest_points(grill, notch).distance == pytest.approx(B.grill_clear, abs=1e-3)
+    for x, y in B.magnet_points:
+        assert closest_points(grill, back_magnet(x, y, back_magnet_depths(DEFAULT)[1], DEFAULT)).distance >= 4.0, (x, y)
 
 
 @pytest.mark.slow

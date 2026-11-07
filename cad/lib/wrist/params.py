@@ -33,7 +33,7 @@ from lib.belts import GT2_PULLEY_20T_TEETH, centre_distance
 from lib.coupler.params import DEFAULT as COUPLER
 from lib.fasteners import M3_CLEAR, M3_NUT, M3_SHCS, M4_CLEAR, NutSize, ShcsSize
 from lib.motors import MKS_SERVO42D_STACK, MKS_SERVO42D_W
-from lib.style import EDGE_CHAMFER
+from lib.style import EDGE_CHAMFER, GRILL_PITCH, GRILL_SLOT
 
 
 @dataclass(frozen=True)
@@ -165,7 +165,9 @@ class WristBackPanelParams:
     pairs (parts/wrist/wrist_back_magnets): one disc in a pocket in the step's floor, one in a pocket in the panel's inner
     face, each pressed to its pocket's bottom. A notch at its edge toward the motor lets the gripper servo's cable out of
     the rotor's bore (it joins the motor's cables there and crosses the wrist joint near its axis); a second over the MKS
-    board's near side plug's room. Positions are module (x, y), on the rear plane (lib/wrist/roll.py rear_plane)."""
+    board's near side plug's room. A grill of straight slots (lib/style.py GRILL_SLOT / GRILL_PITCH) is cut through it
+    over the bay, inside the rim, the turning shaft behind it. Positions are module (x, y), on the rear plane
+    (lib/wrist/roll.py rear_plane)."""
 
     t: float = 2.5                      # the panel's thickness = the step's depth, square to the rear plane
     side_clear: float = 0.1             # off the plate's free face
@@ -182,6 +184,10 @@ class WristBackPanelParams:
     notch_w: float = 6.0                # the gripper servo's cable's notch, from its edge toward the motor ...
     notch_reach: float = 9.0            # ... this far inside the bay's bore; a groove under it across the step's floor ...
     notch_groove: float = 2.0           # ... this deep, into the board's window
+    grill_clear: float = 1.6            # the grill's field (lib/wrist/roll.py back_grill): the octagon about R' with its corners this
+    #                                     far inside the ring rim's inner edge, its edge toward the motor this far short of the cable's notch
+    grill_w: float = GRILL_SLOT         # the grill's slots (lib/style.py), along y (toward the motor), through along R' ...
+    grill_pitch: float = GRILL_PITCH    # ... at this pitch along x, one on R'
 
 
 @dataclass(frozen=True)

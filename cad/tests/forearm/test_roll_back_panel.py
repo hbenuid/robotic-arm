@@ -4,12 +4,13 @@ grown down below the bay's bore, held by 4 magnet pairs (roll_back_magnets). Bot
 (lib/reference.py NO_REFERENCE) - THIS file locks their numbers (pieces, volume, bounding box, measured on the build and
 written in) and what they are: the panel's outer face on the rear line (the elbow motor's board passes it as it passed
 the rear line before the bay was bored through the back), run_gap off the turning shaft and its lug, located by its rim
-in the opening; the frame's step, opening and pockets; each magnet pressed to its pocket's bottom, the pair facing
+in the opening, its grill's slots open onto the bay and grill_clear off the rim; the frame's step, opening and pockets; each magnet pressed to its pocket's bottom, the pair facing
 across the step's floor - and all of it clear of the rest of the drive. The elbow motor and its board against the
 whole module over the elbow's range: tests/forearm/test_roll_drive.py."""
 import math
 
 import pytest
+from build123d import Align, Box, Plane
 from cadgen.build123d import closest_points
 
 import parts
@@ -17,7 +18,15 @@ from assemblies import forearm_roll_drive as M
 from lib import params as PARAMS
 from lib import reference as R
 from lib.forearm import DEFAULT, motor_pocket, stack_positions
-from lib.forearm.roll import back_face, back_magnet_depths, back_point, rear_line
+from lib.forearm.roll import (
+    back_face,
+    back_grill,
+    back_grill_field,
+    back_magnet,
+    back_magnet_depths,
+    back_point,
+    rear_line,
+)
 from lib.geom import cylinder
 from tests import built
 from tests.helpers import interference, is_inside
@@ -27,7 +36,7 @@ B = D.back
 PANEL, MAGNETS, FRAME = "forearm_roll_back_panel", "roll_back_magnets", "forearm_roll_block"
 # name -> (solids, volume mm^3, bbox min, bbox size): the build's own numbers
 LOCKS = {
-    PANEL: (1, 12948.787, (-29.9, -51.693655, -35.47194), (59.8, 81.593655, 40.012516)),
+    PANEL: (1, 9691.783, (-29.9, -51.693655, -35.47194), (59.8, 81.593655, 40.012516)),
     MAGNETS: (8, 113.097, (-28.3, -47.765033, -32.883766), (56.6, 61.301854, 31.353201)),
 }
 
@@ -45,6 +54,13 @@ def _out(point) -> float:
     """How far a module point stands out past the rear line (negative: inside it)."""
     (nu, nv), dist = rear_line(DEFAULT)
     return nu * (point.Y - S["y_elbow"]) + nv * point.Z - dist
+
+
+def _rim(panel):
+    """The panel's locating rim: all of it past its inner face (more than t in from the rear line)."""
+    _z0, (nu, nv), _t = back_face(DEFAULT)
+    plane = Plane(origin=back_point(0.0, 0.0, B.t + 0.01, DEFAULT), x_dir=(1.0, 0.0, 0.0), z_dir=(0.0, -nu, -nv))
+    return panel & plane * Box(400.0, 400.0, 20.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
 
 def test_they_are_designed_here_with_no_reference_on_the_stator():
@@ -153,6 +169,28 @@ def test_the_panel_is_flush_on_the_rear_line_and_clear_of_the_shaft(module):
     assert panel.bounding_box().min.X == pytest.approx(-(D.block_x[1] - B.side_clear)) and panel.bounding_box().max.Y == pytest.approx(D.tower_y - B.side_clear)
     # its top corners cut to the tower's octagon, side_clear inside its diagonal flats
     assert max(abs(v.X) + v.Y for v in panel.vertices()) == pytest.approx((D.tower_y - B.side_clear) * math.sqrt(2.0), abs=1e-6)
+
+
+@pytest.mark.slow
+def test_the_grill(module):
+    """The grill (lib/style.py GRILL_SLOT / GRILL_PITCH): one hole in the panel's outer face per slot, grill_w wide on the
+    roll axis' line and every grill_pitch beside it, ribs between them; the field grill_clear off the rim, the magnets'
+    pockets further; every slot opens onto the bay and the opening (nothing of the frame behind it)."""
+    panel, frame = _leaf(module, PANEL), _leaf(module, FRAME)
+    half, _bottom, _c = back_grill_field(DEFAULT)
+    n = int((half - B.grill_w / 2.0) // B.grill_pitch)
+    outer = [f for f in panel.faces() if all(abs(_out(v)) < 1e-6 for v in f.vertices())]
+    assert len(outer) == 1 and len(outer[0].inner_wires()) == 2 * n + 1 == 11
+    for k in range(-n, n + 1):
+        x = k * B.grill_pitch
+        assert not is_inside(panel, *back_point(x, -20.0, B.t / 2.0, DEFAULT)), k
+        assert not is_inside(panel, *back_point(x + B.grill_w / 2.0 - 0.05, -20.0, B.t / 2.0, DEFAULT)), k
+        assert is_inside(panel, *back_point(x + B.grill_w / 2.0 + 0.05, -20.0, B.t / 2.0, DEFAULT)), k
+    grill = back_grill(DEFAULT)
+    assert closest_points(grill, _rim(panel)).distance == pytest.approx(B.grill_clear, abs=1e-3)
+    for x, s in B.magnet_points:
+        assert closest_points(grill, back_magnet(x, s, back_magnet_depths(DEFAULT)[1], DEFAULT)).distance >= 4.0, (x, s)
+    assert interference(grill, frame) == pytest.approx(0.0, abs=1e-6)
 
 
 @pytest.mark.slow

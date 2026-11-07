@@ -64,8 +64,8 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("stator") after any geometry change.
 EXPECTED = {
-    "leaves": 10, "solids": 41, "solid_volume": 91717.82,
-    "bodies": {"stator": {"leaves": 8, "solids": 39, "solid_volume": 65918.24},
+    "leaves": 10, "solids": 41, "solid_volume": 90542.16,
+    "bodies": {"stator": {"leaves": 8, "solids": 39, "solid_volume": 64742.58},
                "rotor": {"leaves": 2, "solids": 2, "solid_volume": 25799.58}},
 }
 
