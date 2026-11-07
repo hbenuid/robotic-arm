@@ -3,9 +3,9 @@ flange, ONE body round the roll motor: seen along the elbow axis an octagon abou
 hulled up to the TOWER round the roll axis (ELBOW_ROLL_OFFSET above the elbow axis; seen along the roll axis the forearm
 flange's octagon, its top corners faceted, and the front face's long edges faceted 45 deg - front_facet - the bearing
 boss rising out of them), from its underside (11.0 over
-j1_link's flat top, repeating the SolidWorks j3_coupler's lip, Ø62 boss, Ø40 journal and Ø30 stub about the elbow axis down
-into j1_link's recess and bore - the elbow 90T pulley bolts up through the stub into 4x M4 nuts in hex channels that open
-up into the motor's pocket; j3_coupler#1 is retired) to its side (+N) face, closed. The 40 mm kit motor sits on the
+j1_link's flat top; under it the elbow flange about the elbow axis - a Ø40 post, the SolidWorks j3_coupler's journal
+carried up, its foot chamfered, the Ø33 shoulder and the Ø30 stub down into j1_link's bore - the elbow 90T pulley bolts up
+through the stub into 4x M4 nuts in hex channels that open up into the motor's pocket; j3_coupler#1 is retired) to its side (+N) face, closed. The 40 mm kit motor sits on the
 elbow axis in the POCKET between the floor and the side wall, open down through the octagon's bottom (the motor slides up
 into it; its board's side plugs in a groove inside each wall, their cables down out through the bottom), its front wall
 the PLATE (the pilot hole and the motor's 4 M3 holes, the screws' heads flush in counterbores - roll_motor_screws; the

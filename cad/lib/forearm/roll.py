@@ -159,10 +159,23 @@ def profile(cfg: ForearmConfig = DEFAULT):
     return hull & (bd.Pos(0.0, z1 - FAR) * bd.Rectangle(2.0 * FAR, 2.0 * FAR)) & behind
 
 
+def elbow_flange(cfg: ForearmConfig = DEFAULT):
+    """The elbow flange under the frame's underside about the elbow axis (coupler_steps): the post over j1_link's bore,
+    its foot chamfered post_chamfer at 45 deg (the design language's edge), the shoulder on the upper elbow bearing's
+    inner ring, the stub in it."""
+    y_e = stack_positions(cfg)["y_elbow"]
+    (post_dia, p0, p1), *rest = coupler_steps(cfg)
+    post = x_cylinder(post_dia / 2.0, p1 - p0, (y_e, 0.0), p0)
+    body = post.chamfer(cfg.drive.post_chamfer, None, [post.edges().sort_by(bd.Axis.X)[0]])
+    for dia, a, b in rest:
+        body = body + x_cylinder(dia / 2.0, b - a, (y_e, 0.0), a)
+    return body
+
+
 def build_block(cfg: ForearmConfig = DEFAULT):
     """The frame (forearm_roll_block) in the module frame: ONE body round the motor - the profile (an octagon about the
-    elbow axis, hulled up to the tower round the roll axis) from the underside (block_x[0], the elbow flange's lip / boss /
-    journal / stub under it) to the side (+N) face, closed, the tower cut to the forearm flange's octagon (tower_section)
+    elbow axis, hulled up to the tower round the roll axis) from the underside (block_x[0], the elbow flange's post /
+    shoulder / stub under it) to the side (+N) face, closed, the tower cut to the forearm flange's octagon (tower_section)
     and the front face's two long edges faceted (front_facet); the motor's pocket between the floor and the side wall, open
     down through the octagon's bottom (the motor slides up into it), a groove inside each wall at the board's side plugs;
     its front wall the plate (the pilot hole, the motor's 4 M3 holes with their heads' counterbores, the shaft's slit down
@@ -179,8 +192,7 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     # out of them
     prism = yz_prism(profile(cfg), d.block_x[0], d.block_x[1]) & _z_prism(tower_section(cfg))
     body = chamfer_outline(prism - front_facets(cfg), (1.0, 0.0, 0.0))
-    for dia, a, b in coupler_steps(cfg):
-        body = body + x_cylinder(dia / 2.0, b - a, (y_e, 0.0), a)
+    body = body + elbow_flange(cfg)
     boss_z0 = S["z_front"] - d.front_facet - 1.0
     body = body + cylinder(d.bearing_boss_dia / 2.0, S["z_boss"] - boss_z0, z0=boss_z0)
     # the roll belt's tensioner's riser on the front face (from 1 mm inside it: one body), its land on top under the idler's

@@ -48,7 +48,7 @@ UPPER_ARM_FACE_Z = -16.0         # host z of j1_link's +N face under the block: 
 #                                  floor of the old recess round the elbow axis, level with the upper 6806's top (no recess left)
 FACE_GAP = 2.0                   # the least axial gap between a face the elbow turns and j1_link's (printed PETG; the
 #                                  forearm's moment tilts the block on its 6806 pair)
-UPPER_ARM_BORE_R = 21.0          # j1_link's bore the coupler's stub / journal turn in
+UPPER_ARM_BORE_R = 21.0          # j1_link's bore the frame's stub / post turn in
 UPPER_ARM_END_R = 36.0           # j1_link's round end about the elbow axis (lib/upper_arm/params.py ArmParams.end_r)
 ELBOW_PULLEY_FACE_Z = -22.0 - PARAMS.PULLEY_SEAT_SHIFT   # host z of the elbow 90T's mating face: the SolidWorks coupler's stub end
 #                                                          (-22), both moved on to the re-seated pulley on j1_link's lip
@@ -122,15 +122,15 @@ def test_stack():
     w, z_axis = DEFAULT.roll_end, DEFAULT.roll_end.axis_z
     # the frame: its underside (one plane) FACE_GAP clear of the upper arm's flat top (j1_link's slab, level end to end:
     # tests/upper_arm), an octagon about the elbow axis, its flats end_r round j1_link's round end (5 mm
-    # outside the motor pocket's top corners), the arm's narrower end inside them; the coupler features below it about the elbow axis over j1_link's flat
-    # top and in its bore where the SolidWorks coupler's were - the lip and the boss FACE_GAP or more over that top -,
-    # an inner-ring shoulder between the journal and the stub, the stub on through the lip to the elbow pulley's face
-    # (the Ø12.5 bore open at its end)
+    # outside the motor pocket's top corners), the arm's narrower end inside them; the elbow flange below it about the
+    # elbow axis, over j1_link's bore and never over its flat top: the post (the SolidWorks coupler's journal carried up
+    # to the underside) inside the bore's radius, its face above the bearing, an inner-ring shoulder between it and the
+    # stub, the stub on through the lip to the elbow pulley's face (the Ø12.5 bore open at its end)
     assert z_axis + D.block_x[0] >= UPPER_ARM_FACE_Z + FACE_GAP and S["x_cradle"] - D.web_t == D.block_x[0]
-    assert D.end_r >= UPPER_ARM_END_R and D.lip_dia / 2.0 <= D.end_r - 5.0
-    assert D.lip_x[1] == D.block_x[0] and D.boss_x[1] == D.lip_x[0] and D.journal_x[1] == D.boss_x[0]
-    assert D.step_x[1] == D.journal_x[0] and D.stub_x[1] == D.step_x[0] and D.stub_dia < D.step_dia < D.journal_dia
-    assert z_axis + D.boss_x[0] >= UPPER_ARM_FACE_Z + FACE_GAP and D.journal_dia / 2.0 < UPPER_ARM_BORE_R and D.stub_dia / 2.0 < UPPER_ARM_BORE_R
+    assert D.end_r >= UPPER_ARM_END_R
+    assert D.post_x[1] == D.block_x[0] and D.step_x[1] == D.post_x[0] and D.stub_x[1] == D.step_x[0]
+    assert D.stub_dia < D.step_dia < D.post_dia - 2.0 * D.post_chamfer and z_axis + D.post_x[0] > UPPER_ARM_FACE_Z
+    assert D.post_dia / 2.0 < UPPER_ARM_BORE_R and D.stub_dia / 2.0 < UPPER_ARM_BORE_R
     assert z_axis + D.stub_x[0] == ELBOW_PULLEY_FACE_Z and D.pin_bore_x[0] == D.stub_x[0]
     # the stations, the forearm wall back: the ring's front face on the wall, the ring, bearing 2 RIGHT UNDER it (its
     # front face the bearing boss's top, run_gap under the ring's flange), the lip - the spacer between the outer rings,
@@ -236,12 +236,12 @@ def test_stack():
                (gx0 == pytest.approx(D.block_x[0] + D.plug_skin) and gx1 > S["x_cradle"] and hx0 > S["x_cradle"])
         assert gy0 < S["y_elbow"] - D.end_r and gy1 == pytest.approx(hy1 + D.plug_clear)
         assert gz0 == pytest.approx(hz0 - D.plug_clear - D.motor_drop) and gz1 == pytest.approx(hz1 + D.plug_clear)
-    # the elbow 90T's nuts: seated in the boss, the M4 from the pulley's counterbores 2 pitches past its nut, nut and tip
+    # the elbow 90T's nuts: seated in the post, the M4 from the pulley's counterbores 2 pitches past its nut, nut and tip
     # 2 mm under the pocket's floor; each hex channel open up into the pocket (the nuts go in from there before the
     # motor), and clear of the pin bore, which ends under the seats
     corner = D.nut_af / math.sqrt(3.0)
     tip = D.stub_x[0] - D.pulley_hub_len + PARAMS.GT2_PULLEY_90T_HEAD_SEAT + D.pulley_screw_len
-    assert D.boss_x[0] < D.nut_seat_x < D.boss_x[1] and D.pulley_bolt_r + corner <= D.boss_dia / 2.0 - 2.0
+    assert D.post_x[0] + D.post_chamfer < D.nut_seat_x < D.post_x[1] and D.pulley_bolt_r + corner <= D.post_dia / 2.0 - 2.0
     assert tip - (D.nut_seat_x + D.nut_t) >= 2 * 0.7 - 1e-9 and tip <= S["x_cradle"] - 2.0
     assert D.nut_seat_x + D.nut_t <= S["x_cradle"] - 2.0 and D.pin_bore_x[1] == D.nut_seat_x - 1.0
     assert nut_channel_end(DEFAULT) == S["x_cradle"] + D.nut_channel_past
@@ -427,10 +427,11 @@ def test_frame_features(module):
     assert is_inside(block, D.block_x[1] - 0.5, 0, zb) and is_inside(block, 0, D.bay_r + 1.5, S["z_bearing_1"] - 2.0)
     zp, rp = S["z_stop_post"] + 1.0, (D.stop_post_r[0] + D.stop_post_r[1]) / 2.0
     assert is_inside(block, -rp, 0, zp) and not is_inside(block, rp, 0, zp)
-    # the elbow flange about the elbow axis (y_elbow): the lip inside its radius only, the boss, the stub, the pin bore,
-    # the pulley bolts + nut channels up through the floor into the motor's pocket
-    assert is_inside(block, D.lip_x[0] + 1.0, ye, 20.0) and not is_inside(block, D.lip_x[0] + 1.0, ye, D.lip_dia / 2.0 + 2.0)   # (ye, 0) is the pin bore
-    assert is_inside(block, D.boss_x[0] + 1.0, ye, D.boss_dia / 2.0 - 2.0) and not is_inside(block, D.boss_x[0] + 1.0, ye, D.boss_dia / 2.0 + 1.0)
+    # the elbow flange about the elbow axis (y_elbow): the post inside its radius only - nothing wider under the
+    # underside -, its foot chamfered, the stub, the pin bore, the pulley bolts + nut channels up through the floor into
+    # the motor's pocket
+    assert is_inside(block, D.post_x[0] + 2.0, ye, D.post_dia / 2.0 - 1.0) and not is_inside(block, D.post_x[0] + 2.0, ye, D.post_dia / 2.0 + 1.0)   # (ye, 0) is the pin bore
+    assert not is_inside(block, D.block_x[0] - 0.5, ye, D.post_dia / 2.0 + 1.0) and not is_inside(block, D.post_x[0] + 0.5, ye, D.post_dia / 2.0 - 0.5)
     assert is_inside(block, D.stub_x[0] + 2.0, ye, D.stub_dia / 2.0 - 1.0) and not is_inside(block, D.stub_x[0] + 2.0, ye, D.stub_dia / 2.0 + 1.0)
     assert not is_inside(block, D.stub_x[0] + 2.0, ye, 0) and not is_inside(block, D.pin_bore_x[1] - 0.5, ye, 0) and is_inside(block, D.pin_bore_x[1] + 0.5, ye, 0)
     flat, corner = D.nut_af / 2.0, D.nut_af / math.sqrt(3.0)
@@ -564,17 +565,19 @@ def test_module_clears_its_neighbours_in_the_arm():
 @pytest.mark.parametrize("deg", PARAMS.ELBOW_PITCH_LIMITS_DEG)
 def test_module_clears_the_folded_upper_arm(deg):
     """The upper arm (j1_link) swung about the elbow axis (along host z, ELBOW_AXIS_HOST) to the elbow's limits never
-    runs into the frame, its motor or the board - and never comes nearer the frame than designed: its journal's edge to
-    the bore's rim (a radial gap: the bearings set it; the frame's flat underside rides FACE_GAP or more over j1_link's
-    flat top, round its bore, so the two limits stand for the angles between - the capture pose is
+    runs into the frame, its motor or the board - and never comes nearer the frame than designed: the post's chamfered
+    foot to the bore's rim (the bearings set it; the post stands over the bore, the frame's flat underside rides
+    FACE_GAP or more over j1_link's flat top, round its bore, so the two limits stand for the angles between - the capture pose is
     test_module_clears_its_neighbours_in_the_arm's). Widen the sample if the top stops being flat under it."""
     module = _placed_module()
     upper_arm = _upper_arm_at(in_drive_frame("j1_link#1"), deg)
     vol = interference(module, upper_arm)
     assert vol < 1.0, f"elbow {deg:+.0f} deg: module x j1_link#1: {vol:.1f} mm^3"
-    journal_edge = math.hypot(UPPER_ARM_BORE_R - D.journal_dia / 2.0, DEFAULT.roll_end.axis_z + D.journal_x[0] - UPPER_ARM_FACE_Z)
+    # the rim at (r, x) = (UPPER_ARM_BORE_R, its top) off the chamfer's 45 deg line r - x = post_dia / 2 - post_chamfer - post_x[0]
+    rim_x = UPPER_ARM_FACE_Z - DEFAULT.roll_end.axis_z
+    foot_edge = ((UPPER_ARM_BORE_R - rim_x) - (D.post_dia / 2.0 - D.post_chamfer - D.post_x[0])) / math.sqrt(2.0)
     block_gap = closest_points(_placed_part("forearm_roll_block"), upper_arm).distance
-    assert block_gap == pytest.approx(journal_edge, abs=0.01) and block_gap >= 1.0
+    assert block_gap == pytest.approx(foot_edge, abs=0.01) and block_gap >= 2.0
 
 
 def _slab(shape, x0: float, x1: float):

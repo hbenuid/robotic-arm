@@ -2,8 +2,8 @@
 module like the cycloidal drive.
 
 Stator: the frame - ONE printed part (forearm_roll_block) round the roll motor: an octagon about the elbow axis (its flats on the
-upper arm's round end) hulled up to the tower round the roll axis; its underside is the elbow's output flange (it repeats the
-SolidWorks j3_coupler's lip, boss, journal and stub down into j1_link's bore; the elbow 90T pulley bolts straight into it,
+upper arm's round end) hulled up to the tower round the roll axis; its underside is the elbow's output flange (a post - the
+SolidWorks j3_coupler's journal carried up -, the shoulder and the stub down into j1_link's bore; the elbow 90T pulley bolts straight into it,
 so j3_coupler#1 is retired, lib/placements.py RETIRED); the 40 mm kit motor + MKS board ON the elbow axis in its pocket
 (open down through the octagon's bottom - the motor slides up into it, turned so its connector and the board's motor plug
 point down into the opening -, the side face closed, the pocket's front wall the plate, its 4x M3 from the front face,
@@ -78,8 +78,8 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("stator") after any geometry change.
 EXPECTED = {
-    "leaves": 17, "solids": 48, "solid_volume": 422419.858,
-    "bodies": {"stator": {"leaves": 13, "solids": 38, "solid_volume": 378370.420},
+    "leaves": 17, "solids": 48, "solid_volume": 401157.951,
+    "bodies": {"stator": {"leaves": 13, "solids": 38, "solid_volume": 357108.514},
                "rotor": {"leaves": 4, "solids": 10, "solid_volume": 44049.437}},
 }
 

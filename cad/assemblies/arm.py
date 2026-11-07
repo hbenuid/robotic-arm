@@ -31,7 +31,7 @@ rails, the 20T pulleys) is grey and the belts a darker grey, inside the modules 
     |- wrist             gripper
 
 j3_coupler#1 (the elbow's SolidWorks coupler) is RETIRED (lib/placements.py): the roll drive's block carries its
-lip / boss / journal / stub and the elbow 90T bolts straight into it - the record stays in placements.json, no
+journal (a post) and stub and the elbow 90T bolts straight into it - the record stays in placements.json, no
 table claims it; likewise gt2_pulley_90t#1 / #2, whose re-seated poses are the mounts gt2_pulley_90t#3 / #4, and
 nema17_pancake#1 / gt2_pulley_20t#1, which the wrist roll drive carries (the pancake on the wrist-pitch axis). The
 SolidWorks link caps (j1_cap, j2_cap_1, j2_cap_2) were removed 2026-09-25 and gripper_clamp_bracket 2026-10-14: their
