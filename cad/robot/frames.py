@@ -64,7 +64,7 @@ SHOULDER_ORIGIN = P.shifted("j1_link#1", (-2.440595, 85.010435, -34.915297))   #
 _J2_CAPTURE_ORIGIN = (-143.15, 240.05, -15.81)   # [REFERENCE] j2_link#1's (and the retired j3_coupler#1's) capture origin, on the elbow_pitch axis
 ELBOW_ORIGIN = P.shifted("j3_coupler#1", _J2_CAPTURE_ORIGIN)   # the retired j3_coupler#1's origin, on the elbow_pitch axis (the forearm sits
 #                                                        ELBOW_ROLL_OFFSET across from it)
-_WRIST_PITCH_CAPTURE_ORIGIN = (-283.37, 393.63, 35.33)   # [REFERENCE] j3_coupler#2's capture origin (on the wrist_pitch axis)
+_WRIST_PITCH_CAPTURE_ORIGIN = (-283.37, 393.63, 35.33)   # [REFERENCE] the retired j3_coupler#2's capture origin (on the wrist_pitch axis)
 WRIST_PITCH_ORIGIN = P.shifted("j3_coupler#2", _WRIST_PITCH_CAPTURE_ORIGIN)
 # the wrist roll: the SolidWorks 20T's origin on the pancake's shaft axis (the capture's roll axis), moved with the gripper
 # onto the wrist roll drive's axis R' - the gripper's shift (lib/placements.py SHIFTS) carries the capture's roll axis
@@ -145,7 +145,7 @@ LINKS: dict[str, list[str]] = {
     # likewise the wrist 90T pulley, its M4 screws + nuts and the J3-coupler ride with the wrist-pitch body  [ASSUMPTION];
     # wrist_link IS the wrist roll drive's frame, which carries the drive's STATOR - the pancake (on the pitch axis) and
     # its 20T, both bearings, the belt (assemblies/wrist_roll_drive.py BODIES)
-    "wrist_pitch_link": ["wrist_link#1", "gt2_pulley_90t#4", "wrist_pulley_screws#1", "wrist_pulley_nuts#1", "j3_coupler#2",
+    "wrist_pitch_link": ["wrist_link#1", "gt2_pulley_90t#4", "wrist_pulley_screws#1", "wrist_pulley_nuts#1",
                          "wrist_roll_drive#1:stator"],
     # the drive's ROTOR - the pulley (its 40T band, the roll's output, the gripper's connector bolted to its face) and the
     # shaft clamped to it - carries the gripper base; the servo crank linkage is merged in  [ASSUMPTION]

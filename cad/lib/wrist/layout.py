@@ -18,6 +18,12 @@ def seat_bolt_points(cfg: WristConfig = DEFAULT) -> list[tuple[float, float, flo
     return [(px + r * math.cos(math.radians(a)), r * math.sin(math.radians(a)), a) for a in _AXES_DEG]
 
 
+def pulley_bolt_points(cfg: WristConfig = DEFAULT) -> list[tuple[float, float]]:
+    """(x, y) of the wrist 90T's 4 M4 through the flange (FlangeParams): on the axes about the pitch axis at pulley_bolt_r."""
+    px, r = cfg.plate.pitch_x, cfg.flange.pulley_bolt_r
+    return [(px + r * math.cos(math.radians(a)), r * math.sin(math.radians(a))) for a in _AXES_DEG]
+
+
 def end_face_holes(cfg: WristConfig = DEFAULT) -> tuple[list[tuple[float, float]], list[tuple[float, float]]]:
     """((y, z) of the M3 - 2 per row in m3_rows -, (y, z) of the 4 M4) on the end face, about the roll axis."""
     e = cfg.end_face

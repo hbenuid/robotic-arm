@@ -1,8 +1,8 @@
 """wrist_link, parametric (lib/wrist/): the LEGACY configuration reproduces the SolidWorks part feature by feature (the
 volume / bbox match is tests/test_reference_match.py's; here the features are probed by name so a regression names
 what moved), its seat is j3_coupler's flange (lib/coupler/params.py) and its end face the NEMA 17 pattern, and DEFAULT
-- what the part builds - is the plate's round end with that seat and, on its underside, the wrist roll drive's frame
-(the drive itself: tests/wrist/test_roll_drive.py)."""
+- what the part builds - is the plate's round end with the wrist_pitch output flange on it (j3_coupler#2 retired) and,
+on its underside, the wrist roll drive's frame (the drive itself: tests/wrist/test_roll_drive.py)."""
 import math
 from dataclasses import replace
 
@@ -10,7 +10,7 @@ import pytest
 
 from lib.coupler import LEGACY as COUPLER
 from lib.motors import NEMA17_BOLT_SP
-from lib.wrist import DEFAULT, LEGACY, end_face_holes, seat_bolt_points, slope_x
+from lib.wrist import DEFAULT, LEGACY, FlangeParams, end_face_holes, pulley_bolt_points, seat_bolt_points, slope_x
 from lib.wrist.layout import module_frame_in_host, side_wall_x, stack_positions, toward_motor
 from tests import built
 from tests.helpers import is_inside
@@ -106,11 +106,12 @@ def test_legacy_tower(legacy):
 
 
 def test_default_is_the_roll_frame():
-    """DEFAULT differs from LEGACY in exactly the wrist roll drive (its frame on the plate) and the connector's hub; the
+    """DEFAULT differs from LEGACY in exactly the wrist roll drive (its frame on the plate), the wrist_pitch output flange
+    in place of j3_coupler's seat and the connector's hub; the
     drive's frame (module) sits on the pitch axis' station, centre_distance across on its side (-Y), axis_h over the
     coupler face."""
     assert LEGACY.roll is None and DEFAULT.roll is not None and DEFAULT.connector.hub and not LEGACY.connector.hub
-    assert DEFAULT == replace(LEGACY, roll=DEFAULT.roll, connector=replace(LEGACY.connector, hub=True))
+    assert DEFAULT == replace(LEGACY, seat=None, flange=FlangeParams(), roll=DEFAULT.roll, connector=replace(LEGACY.connector, hub=True))
     d = DEFAULT.roll
     assert module_frame_in_host(DEFAULT) == ((P.pitch_x, -d.centre_distance, P.thickness - d.axis_h), (0.0, 90.0, 0.0))
 
@@ -123,10 +124,10 @@ def _part(mx: float, my: float, mz: float) -> tuple[float, float, float]:
 
 @pytest.mark.slow
 def test_the_part_is_the_roll_frame(wrist, legacy):
-    """The built DEFAULT: the plate's round end with the coupler's seat, the frame on its underside - the pancake's
+    """The built DEFAULT: the plate's round end with the wrist_pitch output flange, the frame on its underside - the pancake's
     pocket (open down through the bottom, the far face's wall closed over it, its plug's groove inside the wall) and the
     plate in front of it, the front face's facets, the tower's seats and lip, the bay bored through the rear with the stop
-    post, the coupler nut the tower covers reached from the bay."""
+    post; the flange's post, shoulder and stub, the 90T's nuts in channels open to the pancake's pocket."""
     d, ST = DEFAULT.roll, stack_positions(DEFAULT)
     assert wrist.is_valid and len(wrist.solids()) == 1
     assert wrist.volume < legacy.volume
@@ -162,8 +163,21 @@ def test_the_part_is_the_roll_frame(wrist, legacy):
     assert not is_inside(wrist, *_part(0.0, 0.0, ST["z_bay"])) and not is_inside(wrist, *_part(0.0, 0.0, ST["z_rear"] - 1.0))
     assert is_inside(wrist, *_part(-21.0, 0.0, zb)) and not is_inside(wrist, *_part(21.0, 0.0, zb))
     assert is_inside(wrist, *_part(-(d.bay_r + 0.3), 0.0, ST["z_bay"] + 1.0))
-    # the coupler nut under the tower: its hex channel from the plate's pocket up into the bay
-    covered = [(x, y) for x, y, _ in seat_bolt_points(DEFAULT) if d.side * y > 1.0]
-    assert len(covered) == 1
-    x, y = covered[0]
-    assert not is_inside(wrist, x, y, 1.0) and not is_inside(wrist, x, y, -2.0)
+    # the wrist_pitch output flange on the plate's coupler face (FlangeParams, j3_coupler#2 retired): the post inside its
+    # radius only, its foot chamfered, the shoulder, the stub; the pin bore blind from the stub's end; each 90T nut's hex
+    # channel from its seat down through the plate and open into the pancake's pocket below it (the nut drops in from
+    # there), the M4's clearance on up from the seat
+    f, px = DEFAULT.flange, P.pitch_x
+    assert DEFAULT.seat is None
+    zp, zs, zh = sum(f.post_z) / 2.0, sum(f.stub_z) / 2.0, sum(f.step_z) / 2.0
+    assert is_inside(wrist, px, f.post_dia / 2.0 - 1.0, zp) and not is_inside(wrist, px, f.post_dia / 2.0 + 1.0, zp)
+    assert not is_inside(wrist, px, f.post_dia / 2.0 - 0.5, f.post_z[1] - 0.5)
+    assert is_inside(wrist, px, f.step_dia / 2.0 - 0.3, zh) and not is_inside(wrist, px, f.step_dia / 2.0 + 0.3, zh)
+    assert is_inside(wrist, px, f.stub_dia / 2.0 - 1.0, zs) and not is_inside(wrist, px, f.stub_dia / 2.0 + 0.5, zs)
+    assert not is_inside(wrist, px, 0.0, zs) and is_inside(wrist, px, 0.0, f.nut_seat_z + f.pin_bore_past - 0.5)
+    for x, y in pulley_bolt_points(DEFAULT):
+        flat = math.radians(f.nut_corner_deg + 30.0)                      # toward a flat: 3.0 is inside the hex, outside the M4
+        fx, fy = x + 3.0 * math.cos(flat), y + 3.0 * math.sin(flat)
+        assert not is_inside(wrist, fx, fy, f.nut_seat_z - 0.5) and is_inside(wrist, fx, fy, f.nut_seat_z + 0.5)   # the seat
+        assert not is_inside(wrist, x, y, f.nut_seat_z + 2.0) and not is_inside(wrist, x, y, 2.5)
+        assert not is_inside(wrist, x, y, -f.channel_past - 1.0)

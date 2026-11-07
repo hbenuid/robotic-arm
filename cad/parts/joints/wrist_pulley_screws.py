@@ -1,11 +1,11 @@
 """wrist_pulley_screws - purchased (COTS) part: the wrist 90T's 4 M4 socket head cap screws (ISO 4762).
 
-They clamp the pulley onto j3_coupler's stub (gt2_pulley_90t#4 -> j3_coupler#2).
+They clamp the pulley onto the stub of wrist_link's flange (gt2_pulley_90t#4 -> wrist_link#1; j3_coupler#2 retired).
 
 In the arm (lib/mounts.py, hosted on the wrist 90T): the heads in the counterbores in the pulley's outer face
-(lib/belts.py GT2_PULLEY_90T_HEAD_SEAT), the shanks down through its M4 clearance holes and the coupler's stub into the nuts in the hex pockets of its flange's underside
-(wrist_pulley_nuts); the tips end past the nuts inside wrist_link's central hole. Length: lib/coupler/params.py
-CouplerParams.pulley_screw_len.
+(lib/belts.py GT2_PULLEY_90T_HEAD_SEAT), the shanks down through its M4 clearance holes and the flange's stub and post into the nuts on their channels' seats
+(wrist_pulley_nuts); the tips end past the nuts inside the channels, in wrist_link's plate. Length: lib/coupler/params.py
+CouplerParams.pulley_screw_len (the flange stands where the coupler stood).
 
 No catalog model (the catalog has single fasteners only, vendor/README.md) and no SolidWorks export: a NATIVE COTS
 pattern part (lib/reference.py NATIVE_COTS) like the drive's cycloidal_housing_bolts - its envelope IS the geometry
@@ -31,7 +31,7 @@ COTS = True
 MASS_G = WRIST_PULLEY_SCREWS_MASS_G   # [ESTIMATE] the modelled steel (lib/params.py)
 PURCHASE_SPEC = f"M{M4_SHCS.d:g} x {LENGTH:g} socket head cap screw (ISO 4762)"
 PURCHASE_QTY = len(pulley_90t_bolt_points())   # pieces per occurrence (the whole pattern)
-PURCHASE_NOTE = "the wrist 90T onto j3_coupler, into the nuts in its flange's pockets (wrist_pulley_nuts)"
+PURCHASE_NOTE = "the wrist 90T onto wrist_link's flange, into the nuts in its channels (wrist_pulley_nuts)"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 

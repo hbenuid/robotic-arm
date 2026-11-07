@@ -223,8 +223,11 @@ def test_the_shoulder_limit_keeps_the_forearm_off_the_base_and_the_shoulder():
 
 
 def test_the_wrist_pitch_limits_keep_the_wrist_off_the_forearm():
-    fixed = _link_parts("forearm_link") + _link_parts("elbow_link")
-    on_axis = ("gt2_pulley_90t", "wrist_pulley", "j3_coupler")   # they turn in the forearm's bearings, on the axis
+    # the wrist pair's inner rings turn with the wrist - wrist_link's stub and shoulder sit on them, the 90T's hub in them
+    # (tests/test_mounts.py test_bearing_stacks holds that stack) -, so the pair is not among the fixed parts
+    pair = ("bearing_6806#5:", "bearing_6806#6:")
+    fixed = [p for p in _link_parts("forearm_link") + _link_parts("elbow_link") if not p[0].startswith(pair)]
+    on_axis = ("gt2_pulley_90t", "wrist_pulley")   # they turn in the forearm's bearings, on the axis
     pitching = [p for p in _link_parts("wrist_pitch_link") if not p[0].startswith(on_axis)]
     rolling = [p for link in ("wrist_roll_link", "jaw_a_link", "jaw_b_link") for p in _link_parts(link)]
     for wrist in PARAMS.WRIST_PITCH_LIMITS_DEG:

@@ -12,8 +12,9 @@ SolidWorks product: 'Joint 2 coupler 62226_J3 Coupler'
 Source export:      step/Joint 2 coupler 62226_J3 Coupler.STEP
 Reference: mm units, 1 solid(s), volume 55568.5 mm^3,
            bbox size (78, 22, 78) mm, bbox min (-39, 0, -39) mm.
-In the arm: x1 (j3_coupler#2, the wrist; j3_coupler#1 at the elbow is RETIRED - lib/placements.py: the forearm roll drive's
-block carries its journal (a post) and stub since 2026-09-23).
+In the arm: none - j3_coupler#1 (the elbow) and #2 (the wrist) are RETIRED (lib/placements.py): the forearm roll drive's
+block and wrist_link's plate carry its journal (a post) and stub. The part stays the measured SolidWorks coupler their
+numbers come from (lib/coupler/params.py).
 
 Conversion: build_coupler(LEGACY) reproduces the reference (REFERENCE_BUILD - tests/test_reference_match.py); the
 model builds DEFAULT (tests/coupler/ lock what DEFAULT changes).
@@ -30,6 +31,9 @@ NAME = pathlib.Path(__file__).stem
 REFERENCE = NAME              # reference/solidworks/<NAME>.step
 CONVERTED = True
 LOCAL_FROM_REF = IDENTITY     # modelled in the SolidWorks part frame
+UNPLACED = ("the measured SolidWorks coupler, kept for its numbers: both occurrences are retired - the forearm roll "
+            "drive's block and wrist_link's plate carry its journal (a post) and stub (lib/placements.py RETIRED) - "
+            "nothing will place this one")
 
 
 def REFERENCE_BUILD():

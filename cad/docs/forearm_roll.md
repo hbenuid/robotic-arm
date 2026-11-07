@@ -91,7 +91,7 @@ under the underside about the elbow axis its journal - carried up to the undersi
 and bolt circle; its flange and boss, which turned in the Ø80 recess `j1_link`'s top no longer has, are not repeated.
 The elbow 90T bolts straight into it (through the elbow's 6806 pair, §4), and
 `j3_coupler#1` is **retired** (`lib/placements.py RETIRED`: the record stays, no table claims it; the wrist's
-`j3_coupler#2` is untouched).
+`j3_coupler#2` likewise: `wrist_link`'s plate carries the same flange, `docs/wrist_roll.md`).
 
 | station | what | fixed by |
 |---|---|---|

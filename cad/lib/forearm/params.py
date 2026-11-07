@@ -508,8 +508,8 @@ _WEB = replace(LEGACY.web, wrist_x=LEGACY.web.wrist_x + SHORTENING,
                half_w=round(PULLEY_90T.flange_dia / 2.0 + COVER_CLEAR + COVER_WALL, 6),   # straight from the wall, no taper
                z0=LEGACY.web.z0 - WEB_DROP, z1=LEGACY.web.z1 - WEB_DROP)
 _BOSS = replace(LEGACY.boss, dia=2.0 * _WEB.half_w,       # [DESIGN] as wide as the web: its faceted wrist end
-                z1=LEGACY.boss.seat_z1 - WEB_DROP,        # [DESIGN] the bearing seat's top: j3_coupler#2's dust lip turns 0.5 over it,
-                recess_dia=None,                          #          its Ø78 flange 4.5 - no recess for either
+                z1=LEGACY.boss.seat_z1 - WEB_DROP,        # [DESIGN] the bearing seat's top: wrist_link's flange post reaches 0.8 past
+                recess_dia=None,                          #          it into the seat's bore, its plate 14.5 off it - no recess
                 seat_z1=LEGACY.boss.seat_z1 - WEB_DROP,   # the seat and its lip dropped with the web
                 lip_z=(LEGACY.boss.lip_z[0] - WEB_DROP, LEGACY.boss.lip_z[1] - WEB_DROP),
                 recess_z0=LEGACY.boss.recess_z0 - WEB_DROP)

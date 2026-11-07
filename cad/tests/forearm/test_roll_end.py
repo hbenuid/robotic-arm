@@ -128,8 +128,8 @@ def test_link_ends_at_the_wall_and_at_its_wrist_boss(link):
     for z in (w.z0 + 1.0, b.seat_z1 - 1.0):
         assert not is_inside(link, wx + b.seat_dia / 2.0 - 0.3, 0, z) and is_inside(link, wx + b.seat_dia / 2.0 + 0.3, 0, z)
     assert is_inside(link, wx + b.lip_dia / 2.0 + 0.3, 0, sum(b.lip_z) / 2.0) and not is_inside(link, wx + b.lip_dia / 2.0 - 0.3, 0, sum(b.lip_z) / 2.0)
-    # ... under j3_coupler#2: its dust lip turns 0.5 over the boss's top
-    assert link.distance_to(in_host("j3_coupler#2")) >= 0.5 - 1e-6
+    # ... under wrist_link's flange (j3_coupler#2 retired): its post's chamfered foot in the seat's mouth, 1 or more off the rim
+    assert link.distance_to(in_host("wrist_link#1")) >= 1.0
     # no locating sockets (the caps they held are gone): the web whole on both faces out to its straight sides
     assert is_inside(link, -120, w.half_w - 1.0, w.z1 - 1.0) and is_inside(link, -120, w.half_w - 1.0, w.z0 + 1.0)
     assert not is_inside(link, -120, w.half_w + 1.0, zm)                                                 # the web's side
