@@ -1,13 +1,13 @@
 # assemblies/ — occurrences, placements, modules
 
-Loads when you work in `assemblies/`. `arm.py` (the whole arm), `gripper.py` (the gripper module, placed from
-`placements.json`), `cycloidal_drive.py` / `forearm_roll_drive.py` / `wrist_roll_drive.py` (code-driven modules), `_occurrences.py` (the
+Loads when you work in `assemblies/`. `arm.py` (the whole arm), `cycloidal_drive.py` / `forearm_roll_drive.py` /
+`wrist_roll_drive.py` / `gripper.py` (code-driven modules), `_occurrences.py` (the
 placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every output STEP is git-ignored.
 
 ## Assembly & placements
 - `reference/placements.json` (from `tools/reference/extract_placements.py`; schema: `reference/README.md`) holds
   every occurrence: `rel` (to its parent node) and `world`, as `Location(position, rotation_xyz_deg)`; keys
-  `"<part>#<n>"`, module `"gripper#1"`. Treat it as an immutable input. An occurrence the DESIGN has replaced is
+  `"<part>#<n>"`, modules `"<module>#<n>"`. Treat it as an immutable input. An occurrence the DESIGN has replaced is
   **retired** in `lib/placements.py RETIRED` (`j3_coupler#1`: the roll drive's block took over its
   features, `docs/forearm_roll.md`; `gt2_pulley_90t#1` / `#2`: re-seated `PULLEY_SEAT_SHIFT` out as mounts, below;
   `nema17_pancake#1` / `gt2_pulley_20t#1`: the wrist roll drive carries them, `docs/wrist_roll.md`): its record stays,
@@ -16,7 +16,9 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
   entirely (the link caps `j1_cap` / `j2_cap_1` / `j2_cap_2`, `gripper_clamp_bracket`) cannot be retired - its part module,
   `CUSTOM` row and manifest entry go, and a record must name a known part -: its SolidWorks product goes into
   `lib/reference.py SKIPPED_PRODUCTS` and `tools/reference/mount_placements.py` (the merge mode, no monolith) moves the
-  record to `skipped` as the entry an extraction writes (pose, totals, reason) - `test_skipped_nodes_are_the_dropped_products`.
+  record to `skipped` as the entry an extraction writes (pose, totals, reason) - `test_skipped_nodes_are_the_dropped_products`;
+  a SolidWorks module the design drops goes whole the same way, its part records its leaves (the SolidWorks gripper,
+  2026-11-07: its connector and its MG996R carry on as rows of the module that replaced it).
 - **Shifted occurrences** (`lib/placements.py SHIFTS`): a link whose length the design changes (`j1_link`
   `slab.elbow_x`, `j2_link` `web.wrist_x`) moves every capture record beyond it along its own +X by the parameter's
   DEFAULT − LEGACY - along its +Y by `across_y` where the design moved its far end across it (`j1_link`'s elbow end,
@@ -27,8 +29,9 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
   `CAPTURE_FACE_X`, the middle of the discs onto the base_yaw axis; the forearm roll drive (`forearm_roll_drive`, anchor
   `j2_link#1`) moves `j2_link#1` and all beyond along j2_link's +Y by `ForearmConfig.elbow_offset` (its roll axis across
   the elbow axis, the elbow's own records - the retired `j3_coupler#1` / `gt2_pulley_90t#1` - staying); the wrist roll drive
-  (`wrist_roll_drive`, anchor `wrist_link#1`) moves the gripper onto its roll axis - along wrist_link to the roll pulley's
-  face, across it by the drive's centre distance, off its plate (`normal_z`) to the axis' height — the file stays as
+  (`wrist_roll_drive`, anchor `wrist_link#1`) moves the retired records beyond the roll onto its axis - along wrist_link to
+  the roll pulley's face, across it by the drive's centre distance, off its plate (`normal_z`) to the axis' height (the
+  gripper, a mounted module, is placed on that axis by its `ModuleMount`) — the file stays as
   extracted, `location()` applies the shift
   (`to_location()` / `to_record()` stay raw: the writers and the round-trip test use them). A `LinkShift` lists the
   TOP-LEVEL records beyond its link, the retired hosts included; a module's children follow its world pose (their
@@ -70,7 +73,7 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
   designed press in their pockets (`_press`: the pulley bolts' `nut_af`, the base motor mount's
   `JointParams.nut_pocket_af`); the base motor mount's joint is `tests/base/test_motor_mount.py`. The drive's own board
   is a `cycloidal_drive.py` row (`stack_positions["z_mks_board"]`).
-- `assemblies/arm.py` / `gripper.py`: `OCCURRENCES = [(part, role|None, key), …]` in SolidWorks
+- `assemblies/arm.py`: `OCCURRENCES = [(part, role|None, key), …]` in SolidWorks
   document order; `assemblies/_occurrences.py` places each occurrence as
   `lib.models.geometry(parts.model(part)).moved(rel * LOCAL_FROM_REF⁻¹)` — inside a build the child
   model's result (`model().shape`: the child runs as the build's child, replayed when unchanged, writes its
@@ -89,8 +92,8 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
   `robot/` never reads the arm compound (it goes `placements.json world` → `world_rows`).
   `test_assembly.py` compares the SolidWorks world bbox through `arm_from_w()`.
 - Roles label a part with the joint it serves (mostly the joint name: `elbow_pitch_1`, `forearm_roll`), which also keeps
-  duplicate labels unique (`test_placements.py test_duplicate_parts_have_unique_labels`): `1` / `2` on the gripper's
-  pairs and the cycloidal and forearm roll drives' bearings, `j2` / `j3` on the elbow's / wrist's 90T and
+  duplicate labels unique (`test_placements.py test_duplicate_parts_have_unique_labels`): `a` / `b` on the gripper's
+  racks and jaws, `1` / `2` on the cycloidal and forearm roll drives' bearings, `j2` / `j3` on the elbow's / wrist's 90T and
   `j3_coupler#2`.
 - A view of the arm with some occurrences hidden needs no model: `./cadtool snapshot assemblies/arm.step out.png
   --display '{"hidden": ["arm/wrist/gripper"]}'` (occurrence-path refs, `./cadtool inspect` lists them; `isolated`
@@ -112,8 +115,8 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
   for a new one, `parts/AGENTS.md` Part states → *no reference*) to change that.
 - `arm.py GROUPS` buckets the occurrences into the component tree
   `arm → base_link/shoulder_link/upper_arm_link/elbow_link/forearm_link/wrist_pitch_link/wrist` — the
-  `robot/frames.py LINKS` partition with the modules (`arm.py MODULES`) kept whole (`wrist` = wrist_roll_link + jaw
-  links; the cycloidal drive under `shoulder_link` although `LINKS` puts its rotor body in
+  `robot/frames.py LINKS` partition with the modules (`arm.py MODULES`) kept whole (`wrist` = the gripper module, its bodies over
+  wrist_roll_link and the jaw links; the cycloidal drive under `shoulder_link` although `LINKS` puts its rotor body in
   `upper_arm_link`; the forearm roll drive under `elbow_link` although its rotor is in `forearm_link`; the wrist roll
   drive under `wrist_pitch_link` although its rotor is in `wrist_roll_link`) — via
   `_occurrences.grouped_children()`, which colours every part (above; `test_the_colours_tell_the_kinds_of_part_apart`)
@@ -130,7 +133,9 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
   `mount_placements.py` writes its record (`kind: module, designed: true`, a `mount` block, no totals — listed
   under `designed_modules` AND `mounted`) — `assemblies/forearm_roll_drive.py` is that case (rows from
   `lib/forearm stack_positions`, key `forearm_roll_drive#1`), and `assemblies/wrist_roll_drive.py` (rows from
-  `lib/wrist stack_positions`, key `wrist_roll_drive#1`; its frame is its host, `wrist_link`, not a row). `world_rows(key)` expands a designed-module key into
+  `lib/wrist stack_positions`, key `wrist_roll_drive#1`; its frame is its host, `wrist_link`, not a row), and
+  `assemblies/gripper.py` (rows from `lib/gripper/layout.py rows()`, key `gripper#1`, on `wrist_link#1` at the
+  connector's plate; its `BODIES` name a part twice by role - `gripper_rack:a` - where one body holds one of a pair). `world_rows(key)` expands a designed-module key into
   world-placed parts for links and inertials; `BODIES` names the drive's rigid bodies (`stator` / `rotor`) and a
   `:<body>` key suffix (`"cycloidal_drive#1:rotor"`, `_occurrences.split_key`) selects one. Keep `EXPECTED`
   (whole module + `bodies`) in step with the geometry (`totals()` / `totals(body)`).

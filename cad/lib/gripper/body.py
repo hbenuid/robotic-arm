@@ -1,5 +1,6 @@
-"""build123d builders of the gripper's measured parts (lib/gripper/params.py), each in its export's frame: build_base(),
-build_rack(), build_jaw(), build_pinion(). Algebra mode; every cutter overshoots its faces by NUDGE."""
+"""build123d builders of the gripper's parts (lib/gripper/params.py): the measured ones each in its export's frame -
+build_base(), build_rack(), build_jaw(), build_pinion() - and the cage designed here in the base's frame, build_cage().
+Algebra mode; every cutter overshoots its faces by NUDGE."""
 from __future__ import annotations
 
 import math
@@ -7,7 +8,8 @@ import math
 import build123d as bd
 
 from lib.geom import box, cylinder, single_solid, through
-from lib.gripper.params import DEFAULT, BaseParams, JawParams, PinionParams, RackParams
+from lib.gripper import layout as L
+from lib.gripper.params import DEFAULT, BaseParams, GripperConfig, JawParams, PinionParams, RackParams
 from lib.units import NUDGE
 
 
@@ -157,6 +159,51 @@ def build_jaw(cfg: JawParams = DEFAULT.jaw):
     # the ramp under the foot's end: 0 deep at notch_x[0], notch_depth at the end
     (nx0, nx1), slope = j.notch_x, j.notch_depth / (j.notch_x[1] - j.notch_x[0])
     body -= _xz_prism([(nx0 - 1.0, -slope), (nx1 + 1.0, -slope), (nx1 + 1.0, j.notch_depth + slope)], *j.notch_y)
+    return single_solid(body)
+
+
+# --- gripper_cage (designed here: CageParams) -------------------------------------------------------------------------
+
+def connector_holes(cfg: GripperConfig = DEFAULT) -> list[tuple[float, float]]:
+    """gripper_j3_connector's plate holes in the base frame (x, y): its frame's (x, z) -> the module's (-x, -z) -> B."""
+    from lib.wrist.params import DEFAULT as WRIST
+
+    return [(L.x0(cfg) - z, -x) for x, z, _ in WRIST.connector.holes]
+
+
+def build_cage(cfg: GripperConfig = DEFAULT):
+    """The cage in the base frame: the back plate on the servo's back (the connector's 4 holes with their nut slots,
+    the tab screws' access holes, the cable's slot and its plug's hole on the axis), the side walls, the ears."""
+    b, s, c = cfg.base, cfg.servo, cfg.cage
+    z, x = L.stations(cfg), L.x0(cfg)
+    wall_in = s.half_t + c.wall_gap
+    wall_out = wall_in + c.wall_t
+    case_x = (x - s.spline_x + s.case_x[0], x - s.spline_x + s.case_x[1])
+    body = box(c.back_x, (-wall_out, wall_out), (z["back_in"], z["seat"]))
+    for sgn in (1.0, -1.0):
+        body += box((b.posts_x[0][0], b.posts_x[1][1]), sorted((sgn * wall_in, sgn * wall_out)), (z["tab_back"], z["back_in"] + NUDGE))
+    ears = ((b.posts_x[0][0], case_x[0] - c.ear_inner_gap), (case_x[1] + c.ear_inner_gap, b.posts_x[1][1]))
+    for ex in ears:
+        body += box(ex, (-wall_in - NUDGE, wall_in + NUDGE), (z["tab_back"], z["tab_back"] + c.ear_t))
+    for hx in b.holes_x:   # the tab screws: through the ears, the key's way down through the back plate
+        for sgn in (1.0, -1.0):
+            body -= through(c.screw_hole / 2.0, c.ear_t, (hx, sgn * b.hole_y), z["tab_back"])
+            body -= through(c.access_dia / 2.0, c.back_t, (hx, sgn * b.hole_y), z["back_in"])
+    mid = z["back_in"] + c.back_t / 2.0
+    nut = (mid - c.nut_h / 2.0, mid + c.nut_h / 2.0)
+    for hx, hy in connector_holes(cfg):   # the connector's screws, their nuts slid in from the nearest free edge
+        body -= through(c.screw_hole / 2.0, c.back_t, (hx, hy), z["back_in"])
+        if hx < x:   # the -x pair: out through the -x end (flats along x)
+            body -= bd.Pos(hx, hy, nut[0]) * bd.extrude(bd.RegularPolygon(c.nut_af / math.sqrt(3.0), 6), amount=c.nut_h)
+            body -= box((c.back_x[0] - NUDGE, hx), (hy - c.nut_af / 2.0, hy + c.nut_af / 2.0), nut)
+        else:        # the +x pair: out through the side it is nearer (flats along y)
+            body -= bd.Pos(hx, hy, nut[0]) * bd.extrude(bd.RegularPolygon(c.nut_af / math.sqrt(3.0), 6, rotation=30.0), amount=c.nut_h)
+            edge = wall_out + NUDGE if hy > 0 else -wall_out - NUDGE
+            body -= box((hx - c.nut_af / 2.0, hx + c.nut_af / 2.0), sorted((hy, edge)), nut)
+    # the servo's cable: a slot from over its case's end to the axis, and its plug's hole on the axis
+    body -= bd.Pos((c.cable_x0 + x) / 2.0, 0.0, z["back_in"] - NUDGE) * bd.extrude(
+        bd.SlotCenterToCenter(x - c.cable_x0, c.cable_w), amount=c.back_t + 2 * NUDGE)
+    body -= through(c.bore / 2.0, c.back_t, (x, 0.0), z["back_in"])
     return single_solid(body)
 
 

@@ -11,7 +11,8 @@
   "gripper" = the jaw joint(s) and links; end effector "gripper" hangs off wrist_roll_link (the jaws' parent).
   Group states: radians / metres. "home" = the capture pose (all joints 0, see the URDF ledger: the
   SolidWorks capture with the forearm turned half a turn about its roll axis, the gripper rolled with it);
-  "open"/"closed" use the placeholder jaw travel (cad/lib/params.py JAW_TRAVEL_MM).
+  "open"/"closed" = the jaws' travel, +/- cad/lib/params.py JAW_TRAVEL_MM from zero (the racks centred, the jaws 23 mm
+  apart): 44 and 2 mm apart.
   Disabled collisions: adjacent pairs only; add Never/Default pairs after a viewer sweep.
 -->
 <robot name="arm">
@@ -34,10 +35,10 @@
     <joint name="wrist_roll" value="0" />
   </group_state>
   <group_state name="open" group="gripper">
-    <joint name="jaw_a" value="0.01" />
+    <joint name="jaw_a" value="0.0105" />
   </group_state>
   <group_state name="closed" group="gripper">
-    <joint name="jaw_a" value="-0.01" />
+    <joint name="jaw_a" value="-0.0105" />
   </group_state>
   <end_effector name="gripper" parent_link="wrist_roll_link" group="gripper" parent_group="arm" />
   <passive_joint name="jaw_b" />

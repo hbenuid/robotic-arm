@@ -18,7 +18,7 @@ tests `tests/wrist/`. Numbers below name the constants; the values live in `lib/
 | rotor clamp | 4× M3 × `clamp_screw_len` on `clamp_circle_dia` inside the band's core, from the pulley's face through both hubs into the shaft's nuts: the pulley, both inner rings and the shaft one block | `WristRollParams clamp_*` |
 | frame (stator, PETG) | `wrist_link` itself, laid out as the forearm roll's frame (`forearm_roll.md`): its plate (j3_coupler#2's seat on the pitch axis) and on the plate's underside - the side away from the forearm - one body: seen along the pitch axis the plate's **octagon** about it hulled to the **tower** round R′ (`roll.py side_profile`; seen along R′ the tower the octagon about it, `tower_section`), from the plate to the **closed far face** (`side_t`), its rear one slanted plane from the tower's far rear corner down to `rear_low` (`rear_line`, past the back panel's edge), the front face's long edges **faceted** (`front_facet`) - the outline chamfered on both side faces (`docs/design_language.md`); the pancake's **pocket** centred on the pitch axis (its floor the plate) open down through the **bottom** - the frame's end beyond the motor, away from R′: the pancake slides in from there -, a groove inside the side wall for its plug (`pancake_plug_groove`), no wall behind it: the board's **window** - its housing square + the tension travel + `board_clear` - open at the rear and the bottom; its front wall the **motor plate** the pancake bolts to (`pad_t`; slotted along Y: the belt's tension, the shaft's slit on down out through the bottom); the tower: the 6806 seats, the lip, the **bearing boss** rising out of the front facets, the shaft's **bay** behind bearing 1 bored on through the rear (the shaft goes in from behind), the stop's **post** in it, closed by the back panel; the coupler nut the tower covers drops in from the bay through a hex channel | `lib/wrist/roll.py build_frame`, `lib/wrist/link.py` |
 | back panel (stator, PETG) | **removable**, the forearm roll frame's one joint further out: a plate flush in a step (`t` deep) on the frame's slanted rear over the tower, from its far side to `gap` short of the board's window, `side_clear` off the plate's free face; one plane (it prints flat, outer face down); located by a ring **rim** on its inner face inside the bay's bore (`rim_*`), held by 4 magnet pairs (`wrist_back_magnets`, small discs - `magnet_dia` -, `magnet_points`: one in a pocket in the step's floor, one in the panel's inner face); a **notch** at its edge toward the motor lets the gripper servo's cable out of the rotor's bore (`notch_*`, a groove under it across the step's floor into the window), another clears the MKS board's near side plug's room | `wrist_back_panel`, `WristBackPanelParams` |
-| gripper interface | `gripper_j3_connector` (converted): its plate (the servo holder's and the cover's holes) on a hub bolted to the pulley's face - a key reaches every head past the plate's flats, notches in the flange over the plate's holes; the cable bore through it | `ConnectorParams` |
+| gripper interface | `gripper_j3_connector` (converted): its plate (4 holes the gripper's cage bolts to: `assemblies/gripper.py`) on a hub bolted to the pulley's face - a key reaches every head past the plate's flats, notches in the flange over the plate's holes; the cable bore through it; the gripper module turns with its plate (`lib/wrist/layout.py gripper_frame_in_module`: `connector_turn_deg`) | `ConnectorParams` |
 | clearances held by tests | the bearings' presses on the journals (0.9–1.0 × the nominal `journal_add` press), every other pair in the module and against `wrist_link` < 1 mm³, the rotor `run_gap` off the frame, the pancake's and its board's way in from the bottom (`motor_drop` back, the slit, the plug's groove, the window) and their slots' travel (the board `board_clear` off the window), the board's screws through the pancake's own (`KIT_OVERLAP`), its plugs' room (`MKS_PLUG_ROOM`) at every pose, the rotor's walls round the clamp and the bore, the gripper 1 mm off the wrist and the forearm while it rolls, the wrist-pitch limits | `tests/wrist/test_roll_drive.py`, `tests/test_sweeps.py` |
 | link masses (URDF) | `wrist_pitch_link` carries `wrist_link` (the frame) and the stator (the pancake + its board, its 20T, the belt, both bearings), `wrist_roll_link` the rotor + the gripper | `robot/arm.urdf` |
 | purchased per drive | what to order, with quantities: `./cadtool python tools/bom.py --module wrist_roll_drive` (its BUY list, and BUY, NOT MODELLED from `tools/bom.py EXTRAS`) | `tools/bom.py` |
@@ -90,17 +90,18 @@ plane), its rim and magnet pockets up; the pulley face down; the shaft rear face
    pair attracts), each pressed to its pocket's bottom; then the panel onto the step over the cable, its rim into the
    bay's bore - the magnets pull it flush.
 6. Four M3 nuts into the pulley face's pockets from its rim; the connector onto the face, 4× M3 × `bolt_len` from
-   between its flange and its plate; then the servo holder and the cover onto its plate (their screws through the
-   flange's notches).
+   between its flange and its plate; then the gripper's cage - the servo, the base and the jaws already in it - onto
+   its plate (4x M3 x 8 through the flange's notches into the nuts in the cage's back plate).
 
 ## 5. Attachment to the arm (`robot/`)
 `wrist_pitch_link` = `wrist_link#1` (the frame) + `gt2_pulley_90t#4` and its bolts + `j3_coupler#2` +
-`wrist_roll_drive#1:stator`; `wrist_roll_link` = `wrist_roll_drive#1:rotor` + the gripper (the connector, the servo
-holder, …). `Joint("wrist_roll")` keeps its direction (the capture's roll axis, turned with the forearm); its origin is the
-capture's on that axis carried by the gripper's shift onto R′ (`robot/frames.py WRIST_ROLL_ORIGIN`). `nema17_pancake#1` and
-`gt2_pulley_20t#1` are retired (`lib/placements.py RETIRED`), `gripper_clamp_bracket` dropped (`lib/reference.py
-SKIPPED_PRODUCTS`); the gripper moves by `lib/placements.py SHIFTS`' `wrist_roll_drive` shift (along, across, and off
-`wrist_link`'s plate).
+`wrist_roll_drive#1:stator`; `wrist_roll_link` = `wrist_roll_drive#1:rotor` + the gripper's base body
+(`gripper#1:base`: the connector, the cage, the MG996R, the base, the pinion). `Joint("wrist_roll")` keeps its direction
+(the capture's roll axis, turned with the forearm); its origin is the capture's on that axis carried by the drive's shift
+onto R′ (`robot/frames.py WRIST_ROLL_ORIGIN`, on the retired `gt2_pulley_20t#1`). `nema17_pancake#1` and
+`gt2_pulley_20t#1` are retired (`lib/placements.py RETIRED`), `gripper_clamp_bracket` and the SolidWorks gripper dropped
+(`lib/reference.py SKIPPED_PRODUCTS`); the gripper is a mounted module on `wrist_link#1` at the connector's plate
+(`lib/mounts.py MODULE_MOUNTS` "gripper#1").
 
 ## 6. Not modelled / to confirm
 `open_issues.md`: the belt's tensioner (none yet: the pancake's slots tension it), the frame's flex under the gripper's

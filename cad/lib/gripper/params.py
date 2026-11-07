@@ -1,5 +1,7 @@
-"""GripperConfig - every dimension of the gripper's four measured parts: PapaBravo's "Rack & Pinion Robotic Gripper Jaw"
-(Printables, licensed CC BY 4.0 - attribution required), each in its export's frame.
+"""GripperConfig - every dimension of the gripper (assemblies/gripper.py): its four measured parts, PapaBravo's "Rack &
+Pinion Robotic Gripper Jaw" (Printables, licensed CC BY 4.0 - attribution required), each in its export's frame; the
+MG996R as the vendor model has it (ServoParams), the cage designed here (CageParams) and where the module puts them all
+(LayoutParams; lib/gripper/layout.py).
 
 - BaseParams - gripper_base: the frame the MG996R hangs on - a plate with the jaws' two slots, a long wall each side and
   a rib inside each (the racks run between them), two posts the servo's tabs screw onto (each a block flared out to the
@@ -15,7 +17,8 @@
 
 Every number was measured 2026-11-07 on the STEP exports (lib/reference.py MEASURED: Base.step, Rack.step, Jaw.step,
 'SpurGear-14 teeth.step' in rack-pinion-robotic-gripper-jaw-model_files.zip): [REFERENCE] unless tagged - including the
-export's own few hundredths of asymmetry (the rack's and the jaw's two screw positions). Units mm. Frozen dataclasses;
+export's own few hundredths of asymmetry (the rack's and the jaw's two screw positions); ServoParams on the vendor model;
+CageParams and LayoutParams [DESIGN] where tagged. Units mm. Frozen dataclasses;
 variants via dataclasses.replace. Pure Python: the builders are lib/gripper/body.py.
 """
 from __future__ import annotations
@@ -130,11 +133,62 @@ class PinionParams:
 
 
 @dataclass(frozen=True)
+class ServoParams:
+    """[REFERENCE] the MG996R as the repo's vendor model has it (vendor/mg996r_servo.step, measured 2026-11-07), in
+    its frame: tabs along X, height along Y (the back y 0, the spline's end spline_top), thickness along Z."""
+    spline_x: float = -10.25           # the spline's axis (z 0)
+    spline_top: float = 45.2
+    case_x: tuple[float, float] = (-20.5, 20.5)   # the case's ends - 41.0 long; the datasheet's 40.7 (lib/params.py
+    #                                               MG996R_BODY_L), the base's posts 40.5 apart: a 0.1 press a side
+    tab_face: float = 31.2             # the tabs' spline-side face: it sits on the base's posts' tops
+    tab_t: float = 2.4                 # the tabs' thickness (their back face at tab_face - tab_t)
+    half_t: float = 10.25              # the case's half-thickness (|z|)
+
+
+@dataclass(frozen=True)
+class CageParams:
+    """[DESIGN] gripper_cage - the bracket designed here (no reference): a back plate on the servo's back that bolts onto
+    gripper_j3_connector's plate (4x M3 x 8 from the connector's flange side through its plate's holes, into nuts in
+    slots from the back plate's edges), two side walls along the servo's case, and an ear on each pair of the servo's tabs
+    over the base's posts - the tab screws (M3) clamp ear, tab and post together into the posts' nut traps, put in
+    through the back plate's access holes before the cage goes onto the connector. In the base's frame (BaseParams)."""
+    back_gap: float = 0.2              # the back plate off the servo's back
+    back_t: float = 5.0                # its thickness: the connector screws' nuts sit in its middle
+    back_x: tuple[float, float] = (-22.0, 37.5)   # its extent along the jaws (x): over the posts and the connector's holes
+    wall_gap: float = 0.2              # the side walls off the case's sides ...
+    wall_t: float = 2.0                # ... this thick, from the ears up to the back plate
+    ear_t: float = 3.0                 # each ear on its pair of tabs, over the post, from the post's outer face ...
+    ear_inner_gap: float = 0.375       # ... to this short of the case's end
+    screw_hole: float = 3.4            # the tab screws' and the connector screws' clearance (lib/fasteners.py M3_CLEAR)
+    access_dia: float = 6.5            # the back plate's hole over each tab screw: its head and the key
+    nut_af: float = 5.6                # the connector screws' nut slots: M3 (5.5 across flats) + fit ...
+    nut_h: float = 2.6                 # ... 2.4 thick + fit, centred in back_t
+    cable_w: float = 4.5               # the servo cable's slot in the back plate, from cable_x0 to the axis ...
+    cable_x0: float = -12.0
+    bore: float = 10.0                 # ... and a hole on the axis for its plug: the connector's bore
+
+
+@dataclass(frozen=True)
+class LayoutParams:
+    """Where the module puts its parts, in the base's frame (BaseParams): the servo upside down on the posts' tops (its
+    case between them, so its spline - the pinion's axis - at x0()), the pinion pinion_gap off the plate, each rack on the
+    plate (its posts down through the slot), each jaw under the plate on its rack's posts' tips; the racks centred at
+    zero - the jaws travel_x either way."""
+    pinion_gap: float = 0.25           # [DESIGN] the pinion's bottom off the plate (pushed on the spline that far)
+    travel_x: float = 10.5             # [DESIGN] each jaw's travel from zero: a rack's post's round end stops in its slot's
+    #                                    end at 10.84 opening, 10.86 closing (the jaws' gap 1.28 .. 44.68) - 0.34 short of
+    #                                    that (gap 2.0 .. 44.0; tests/gripper/test_module.py)
+
+
+@dataclass(frozen=True)
 class GripperConfig:
     base: BaseParams = field(default_factory=BaseParams)
     rack: RackParams = field(default_factory=RackParams)
     jaw: JawParams = field(default_factory=JawParams)
     pinion: PinionParams = field(default_factory=PinionParams)
+    servo: ServoParams = field(default_factory=ServoParams)
+    cage: CageParams = field(default_factory=CageParams)
+    layout: LayoutParams = field(default_factory=LayoutParams)
 
 
 DEFAULT = GripperConfig()

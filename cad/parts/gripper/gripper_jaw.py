@@ -10,7 +10,7 @@ bbox (-28, -8, 0) .. (28, 16, 45). The finger's top rounds are a rolling ball he
 blend (1.4 mm^3 in all).
 
 A measured conversion (parts/AGENTS.md Part states): tests/gripper/test_measured_parts.py locks the build to the export's
-numbers. NOT PLACED yet (UNPLACED below).
+numbers. assemblies/gripper.py places it.
 """
 import pathlib
 
@@ -25,7 +25,6 @@ ACCENT = True                 # the accent colour, lib/style.py: it grips
 REFERENCE = None              # a measured conversion: no reference file (lib/reference.py MEASURED)
 CONVERTED = True
 LOCAL_FROM_REF = IDENTITY     # modelled in the export's frame
-UNPLACED = "the rack & pinion gripper's module (assemblies/gripper.py) places it, replacing the SolidWorks gripper"
 
 
 @step(out="gripper_jaw.step")

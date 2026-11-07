@@ -9,7 +9,7 @@ rack-pinion-robotic-gripper-jaw-model_files.zip; lib/reference.py MEASURED): mm,
 bbox (-28, 6.2955, 0) .. (28, 16, 10.3).
 
 A measured conversion (parts/AGENTS.md Part states): tests/gripper/test_measured_parts.py locks the build to the export's
-numbers. NOT PLACED yet (UNPLACED below).
+numbers. assemblies/gripper.py places it.
 """
 import pathlib
 
@@ -24,7 +24,6 @@ ACCENT = True                 # the accent colour, lib/style.py: it drives a jaw
 REFERENCE = None              # a measured conversion: no reference file (lib/reference.py MEASURED)
 CONVERTED = True
 LOCAL_FROM_REF = IDENTITY     # modelled in the export's frame
-UNPLACED = "the rack & pinion gripper's module (assemblies/gripper.py) places it, replacing the SolidWorks gripper"
 
 
 @step(out="gripper_rack.step")

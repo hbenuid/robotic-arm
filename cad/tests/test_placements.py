@@ -30,14 +30,14 @@ def _close(a, b, tol=1e-6):
 
 def test_record_counts_match_expected():
     parts_ = P.keys(kind="part", retired=True)
-    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 84      # 30 SolidWorks + 54 mounted (j3_coupler#1, the two 90Ts, the pancake and its 20T retired, still records)
-    assert P.keys(kind="module") == ["cycloidal_drive#1", "gripper#1", "forearm_roll_drive#1", "wrist_roll_drive#1"]
-    assert P.keys(kind="module", designed=True) == P.DATA["designed_modules"] == ["cycloidal_drive#1", "forearm_roll_drive#1", "wrist_roll_drive#1"]
-    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 195  # 46 + the base motor mount (1 + 4 + 4) + j1_coupler's motor leg + its fork's screws and nuts (2 x (4 + 2 + 3)) + (7 + 13) + 2 x (2 + 13) + the elbow motor's 20T (3) + the elbow, wrist and base_yaw motors' 3 x 4 screws + 6 bearings + 3 thrust + 3 pulleys + 6 x 4 pulley bolts + the base_yaw and wrist motors' 20Ts (2 x 3) + 3 belts + the elbow and base_yaw belts' tensioners (2 x 4) + the wrist belt's (3)
-    assert len(P.keys(kind="part", mounted=False, retired=True)) == 30
+    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 65      # 11 SolidWorks + 54 mounted (j3_coupler#1, the two 90Ts, the pancake and its 20T retired, still records)
+    modules = ["cycloidal_drive#1", "forearm_roll_drive#1", "wrist_roll_drive#1", "gripper#1"]
+    assert P.keys(kind="module") == P.keys(kind="module", designed=True) == P.DATA["designed_modules"] == modules
+    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 172  # 23 + the base motor mount (1 + 4 + 4) + j1_coupler's motor leg + its fork's screws and nuts (2 x (4 + 2 + 3)) + (7 + 13) + 2 x (2 + 13) + the elbow motor's 20T (3) + the elbow, wrist and base_yaw motors' 3 x 4 screws + 6 bearings + 3 thrust + 3 pulleys + 6 x 4 pulley bolts + the base_yaw and wrist motors' 20Ts (2 x 3) + 3 belts + the elbow and base_yaw belts' tensioners (2 x 4) + the wrist belt's (3)
+    assert len(P.keys(kind="part", mounted=False, retired=True)) == 11
     assert P.RETIRED == ("j3_coupler#1", "gt2_pulley_90t#1", "gt2_pulley_90t#2", "nema17_pancake#1", "gt2_pulley_20t#1")
     assert set(P.RETIRED) <= set(P.OCCURRENCES)
-    assert len(P.keys(kind="part")) == 84 - len(P.RETIRED)
+    assert len(P.keys(kind="part")) == 65 - len(P.RETIRED)
 
 
 def test_mounted_records_follow_lib_mounts():
@@ -81,8 +81,8 @@ def test_mounted_module_record_follows_lib_mounts():
     from lib.datum import to_location
     from robot import frames as F
 
-    assert mounts.module_keys() == ["forearm_roll_drive#1", "wrist_roll_drive#1"]
-    assert [mounts.MODULES_BY_KEY[k].turned for k in mounts.module_keys()] == [False, True]
+    assert mounts.module_keys() == ["forearm_roll_drive#1", "wrist_roll_drive#1", "gripper#1"]
+    assert [mounts.MODULES_BY_KEY[k].turned for k in mounts.module_keys()] == [False, True, True]
     for key in mounts.module_keys():
         o, m = P.OCCURRENCES[key], mounts.MODULES_BY_KEY[key]
         assert (o["kind"], o["designed"], o["parent"], o["path"], o["part"], o["source"]) == ("module", True, None, None, m.module, f"assemblies/{m.module}.py")
@@ -198,16 +198,13 @@ def test_shifts_move_the_capture_records_beyond_each_link():
     retired_wrist = {"nema17_pancake#1", "gt2_pulley_20t#1"}   # the wrist roll drive carries both now
     assert set(forearm.moves) == _capture_records("wrist_pitch_link", "wrist_roll_link", "jaw_a_link", "jaw_b_link") | {
         "gt2_pulley_90t#2"} | retired_wrist
-    assert set(wrist.moves) == _capture_records("wrist_roll_link", "jaw_a_link", "jaw_b_link") | retired_wrist == (
-        {"gripper#1"} | retired_wrist)
+    assert set(wrist.moves) == _capture_records("wrist_roll_link", "jaw_a_link", "jaw_b_link") | retired_wrist == retired_wrist
     assert all(P.OCCURRENCES[key]["parent"] is None for key in upper_arm.moves)
     assert (upper_arm.along_x, forearm.along_x) == (UPPER_ARM.DEFAULT.slab.elbow_x - UPPER_ARM.LEGACY.slab.elbow_x,
                                                     FOREARM.DEFAULT.web.wrist_x - FOREARM.LEGACY.web.wrist_x)
-    # the wrist roll drive: the gripper's connector from its capture station (its plate's hub-side face) to the roll
-    # pulley's face plus its hub, across to R' and off the plate - along / across / normal to wrist_link
-    raw = P.to_location(P.OCCURRENCES["wrist_link#1"]["world"]).inverse() * P.to_location(P.OCCURRENCES["gripper_j3_connector#1"]["world"])
-    assert math.isclose(raw.position.X - WRIST.DEFAULT.connector.plate_t, P._CONNECTOR_CAPTURE_X, abs_tol=1e-3)
-    assert math.isclose(raw.position.Y, 0.0, abs_tol=1e-3) and math.isclose(raw.position.Z, WRIST.LEGACY.end_face.axis_z, abs_tol=1e-3)
+    # the wrist roll drive: the SolidWorks gripper's connector from its capture station (its plate's hub-side face,
+    # P._CONNECTOR_CAPTURE_X - measured on its record, which went with that gripper: skipped) to the roll pulley's face
+    # plus its hub, across to R' and off the plate - along / across / normal to wrist_link
     d = WRIST.DEFAULT.roll
     assert (wrist.link, wrist.along_x, wrist.across_y, wrist.normal_z) == (
         "wrist_roll_drive", WRIST.DEFAULT.plate.pitch_x + stack_positions(WRIST.DEFAULT)["z_connector"] - P._CONNECTOR_CAPTURE_X,
@@ -316,18 +313,15 @@ def test_shifted_links_keep_the_records_consistent(monkeypatch):
     _check_world_equals_parent_world_times_rel()
     for key, loc in before.items():
         assert _close(_matrix(P.location(key, "world")), _matrix(loc), tol=1e-9), key
-    for child in (key for key, o in P.OCCURRENCES.items() if o["parent"] == "gripper#1"):
-        assert _close(_matrix(P.location(child, "rel")), P.OCCURRENCES[child]["rel"]["matrix_3x4"], tol=1e-6), child
 
 
 def test_assembly_tables_claim_every_part_key_exactly_once():
-    used = [key for _, _, key in arm.OCCURRENCES if key not in arm.MODULE_KEYS] + [key for _, _, key in gripper.OCCURRENCES]
+    used = [key for _, _, key in arm.OCCURRENCES if key not in arm.MODULE_KEYS]
     assert sorted(used) == sorted(P.keys(kind="part"))
     assert not set(P.RETIRED) & set(used), "a retired occurrence is back in a table"
     assert [key for _, _, key in arm.OCCURRENCES if key in arm.MODULE_KEYS] == ["cycloidal_drive#1", "forearm_roll_drive#1", "wrist_roll_drive#1", "gripper#1"]
-    assert all(P.OCCURRENCES[key]["parent"] == "gripper#1" for _, _, key in gripper.OCCURRENCES)
     assert all(P.OCCURRENCES[key]["parent"] is None for _, _, key in arm.OCCURRENCES)
-    for name, _, key in arm.OCCURRENCES + gripper.OCCURRENCES:
+    for name, _, key in arm.OCCURRENCES:
         assert P.OCCURRENCES[key]["part"] == name, f"{key} is not a {name} occurrence"
 
 
@@ -356,14 +350,16 @@ def test_designed_module_records_the_cycloidal_drive():
 
 
 def test_skipped_nodes_are_the_dropped_products():
-    """A SolidWorks node the design dropped (lib/reference.py SKIPPED_PRODUCTS - the link caps since 2026-09-25) is
-    no occurrence: its pose stays under `skipped` (tools/reference/mount_placements.py's merge mode moved them there,
-    as an extraction would write them)."""
+    """A SolidWorks node the design dropped (lib/reference.py SKIPPED_PRODUCTS - the link caps since 2026-09-25, the
+    SolidWorks gripper since 2026-11-07) is no occurrence: its pose stays under `skipped`
+    (tools/reference/mount_placements.py's merge mode moved them there, as an extraction would write them - the
+    gripper whole, its 19 parts its leaves)."""
     skipped = P.DATA["skipped"]
-    assert [s["label"] for s in skipped] == ["brack_for_hand_cmap", "cap_1_joint_2_8726", "cap_of_joint_2_piece_2_8526",
-                                             "first_joint_cap_8726"]
-    assert [s["path"] for s in skipped] == ["1.11", "1.15", "1.16", "1.17"]
-    assert all(s["reason"] == R.SKIPPED_LABELS[s["label"]] and (s["leaves"], s["solids"]) == (1, 1) for s in skipped)
+    assert [s["label"] for s in skipped] == ["brack_for_hand_cmap", "Gripper_Mechanism_Gripper_Mechanism", "cap_1_joint_2_8726",
+                                             "cap_of_joint_2_piece_2_8526", "first_joint_cap_8726"]
+    assert [s["path"] for s in skipped] == ["1.11", "1.14", "1.15", "1.16", "1.17"]
+    assert [(s["leaves"], s["solids"]) for s in skipped] == [(1, 1), (19, 23), (1, 1), (1, 1), (1, 1)]
+    assert all(s["reason"] == R.SKIPPED_LABELS[s["label"]] for s in skipped)
     assert not {o["label_in_monolith"] for o in P.DATA["occurrences"]} & set(R.SKIPPED_LABELS)
     for s in skipped:
         assert _close(_matrix(P.to_location(s["rel"])), s["rel"]["matrix_3x4"]) and s["rel"] == s["world"]   # top-level nodes

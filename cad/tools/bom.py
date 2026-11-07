@@ -47,11 +47,23 @@ EXTRAS = [
      "pushed into the pockets from the shaft's rear face (in wrist_link's bay)"),
     ("wrist_roll_drive", (f"M3 x {_WRIST.connector.bolt_len:g} socket head cap screw (ISO 4762) - gripper_j3_connector onto the wrist roll "
                           "pulley's face"), len(_WRIST.connector.bolt_deg),
-     "heads between the connector's flange and its plate, a key past the plate's flats; bolt it on before the servo holder and the cover"),
+     "heads between the connector's flange and its plate, a key past the plate's flats; bolt it on before the gripper's cage"),
     ("wrist_roll_drive", "M3 hex nut (ISO 4032) - in the wrist roll pulley's face, for the connector's screws", len(_WRIST.connector.bolt_deg),
      "pushed into the pockets from the face's rim"),
     ("wrist_roll_drive", "M3 x 8 socket head cap screw - the wrist-roll pancake to wrist_link's plate", 4,
      "through the plate's tension slots into the pancake's tapped holes"),
+    # the rack & pinion gripper (PapaBravo's list: 4x M3 x 15, 4x M3 x 10, 8 nuts - the tab screws longer here by the
+    # cage's ears; the pinion's screw is the servo's own horn screw)
+    ("gripper", "M3 x 15 socket head cap screw (ISO 4762) - each rack onto its jaw", 4,
+     "heads sunk in the rack's bar, through its split posts (in the base's slot) and the jaw's arm into the nut in its boss"),
+    ("gripper", "M3 hex nut (ISO 4032) - in the jaws' bosses, for the racks' screws", 4, "pressed into the hex pockets"),
+    ("gripper", "M3 x 12 socket head cap screw (ISO 4762) - the cage's ears and the MG996R's tabs onto the base's posts", 4,
+     "a key down through the cage's back plate (its access holes), into the nuts in the posts; before the cage goes on"),
+    ("gripper", "M3 hex nut (ISO 4032) - in the base's posts, for the tab screws", 4, "slid into the traps from the posts' outer faces"),
+    ("gripper", "M3 x 8 socket head cap screw (ISO 4762) - the cage onto gripper_j3_connector's plate", 4,
+     "from the connector's flange side (through its notches), through the plate into the nuts in the cage's back plate"),
+    ("gripper", "M3 hex nut (ISO 4032) - in the cage's back plate, for its screws onto the connector", 4,
+     "slid into the slots from the back plate's edges"),
 ]
 
 

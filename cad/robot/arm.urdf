@@ -3,7 +3,7 @@
   arm: 6-axis desktop arm - base yaw, shoulder pitch (21:1 cycloidal drive), elbow pitch (GT2 belt),
   FOREARM ROLL (GT2 belt in the roll frame at the elbow, cad/assemblies/forearm_roll_drive.py), wrist pitch (GT2
   belt) and WRIST ROLL (GT2 belt from the NEMA17 pancake on the wrist_pitch axis, cad/assemblies/wrist_roll_drive.py)
-  - + MG996R parallel gripper. Six joints are driven by
+  - + a rack & pinion parallel gripper on an MG996R (cad/assemblies/gripper.py). Six joints are driven by
   NEMA 17 + MKS SERVO42D kits: the base_yaw / elbow_pitch / wrist_pitch motors are NEMA 17s on the
   mounts the links carry (cad/lib/mounts.py: the 48 mm nema17_48mm#1 under the base, nema17_40mm#2..3 on
   the links, + mks_servo42d#1..3, in base_link / upper_arm_link / forearm_link), the shoulder_pitch one
@@ -45,7 +45,7 @@
   1.27 g/cm3, purchased parts at their datasheet/estimated mass (cad/lib/params.py).
 
   PLACEHOLDERS [ESTIMATE] (cad/lib/params.py): the base_yaw limit and the shoulder's lower limit, every
-  effort and velocity value, the jaw travel range; the positive-motion sign of every axis
+  effort and velocity value; the positive-motion sign of every axis
   (cad/robot/frames.py; confirm with viewer sweeps). The other limits are [DESIGN]
   (cad/tests/test_sweeps.py, the printed hard stops).
   ASSUMPTIONS: j1_coupler (the holder) turns on the base and carries the cycloidal drive's
@@ -58,8 +58,9 @@
   roll drive's stator (the pancake + its board, its 20T, the belt, its 6806 pair) rides with wrist_link (its frame) in
   wrist_pitch_link, its rotor (pulley + shaft) with the gripper in wrist_roll_link; each belt joint's 6806-2RS bearing pair rides with its housing
   (base_link, upper_arm_link, forearm_link; cad/lib/mounts.py), the base_yaw thrust bearing's lower washer and needle
-  cage with base_link, its upper washer with j1_coupler (shoulder_link); the MG996R crank linkage is merged into wrist_roll_link;
-  jaw_b mirrors jaw_a (mimic, multiplier -1); positive jaw_a = opening.
+  cage with base_link, its upper washer with j1_coupler (shoulder_link); the gripper's pinion (it turns, driving the racks)
+  is merged into wrist_roll_link; each jaw link is a rack and its jaw; jaw_b mirrors jaw_a (mimic, multiplier -1);
+  positive jaw_a = opening; zero = the racks centred, the jaws 23 mm apart, JAW_TRAVEL_MM [DESIGN] each way.
   UNCONFIRMED: which CAN id (software/control/src/config.py J1..J3) drives which joint - the motors are placed
   (cad/lib/mounts.py) but not mapped; the shoulder_pitch motor is the drive's own NEMA 17 at 21:1
   (cad/lib/params.py CYCLOIDAL_RATIO; software/control/src/config.py still carries gear_ratio 1.0 everywhere). The
@@ -67,8 +68,7 @@
   wrist belt puts it (J2_MOTOR_SLIDE_X, WRIST_BELT_LENGTH); FOREARM_ROLL_LIMIT_DEG stops 2 deg short of the
   printed hard stop, WRIST_ROLL_LIMIT_DEG 2 deg short of the wrist roll's. elbow_pitch's upper limit is the arm's
   own (the forearm's board and the wrist body against the base), not the gripper's: folded past ELBOW_GRIPPER_FREE_DEG, the wrist bent down or
-  the forearm rolled can put the gripper into the upper arm - a planner must check those poses. The jaw travel (JAW_TRAVEL_MM) is an
-  estimate that does not fit the gripper (cad/docs/open_issues.md).
+  the forearm rolled can put the gripper into the upper arm - a planner must check those poses.
   The jaws are not driven by software/control/src/config.py, and forearm_roll and wrist_roll need CAN ids of
   their own (config.py names fewer than the arm's boards).
 -->
@@ -189,9 +189,9 @@
   </link>
   <link name="wrist_roll_link">
     <inertial>
-      <origin xyz="0.000009 -0.0071 0.043588" rpy="0 0 0" />
-      <mass value="0.198512" />
-      <inertia ixx="2.447815e-04" ixy="4.685240e-09" ixz="6.452327e-09" iyy="2.907905e-04" iyz="2.913768e-05" izz="1.235591e-04" />
+      <origin xyz="0.005284 -0.00002 0.030937" rpy="0 0 0" />
+      <mass value="0.134906" />
+      <inertia ixx="1.270035e-04" ixy="-1.750922e-08" ixz="-8.424124e-06" iyy="1.478119e-04" iyz="-1.092190e-07" izz="3.845455e-05" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -208,9 +208,9 @@
   </link>
   <link name="jaw_a_link">
     <inertial>
-      <origin xyz="0.021644 0 -0.001923" rpy="0 0 0" />
-      <mass value="0.058661" />
-      <inertia ixx="7.006318e-06" ixy="2.243133e-13" ixz="3.571123e-06" iyy="6.252591e-05" iyz="-3.357013e-13" izz="6.325509e-05" />
+      <origin xyz="0.016949 -0.005644 0.009049" rpy="0 0 0" />
+      <mass value="0.010942" />
+      <inertia ixx="2.710300e-06" ixy="-6.545706e-07" ixz="-8.155029e-07" iyy="4.370291e-06" iyz="-5.523855e-07" izz="2.622026e-06" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -227,9 +227,9 @@
   </link>
   <link name="jaw_b_link">
     <inertial>
-      <origin xyz="0.021643 0.000001 0.001924" rpy="0 0 0" />
-      <mass value="0.058661" />
-      <inertia ixx="7.006321e-06" ixy="1.955510e-12" ixz="-3.571150e-06" iyy="6.252591e-05" iyz="-7.337480e-14" izz="6.325509e-05" />
+      <origin xyz="0.016949 0.005644 -0.009049" rpy="0 0 0" />
+      <mass value="0.010942" />
+      <inertia ixx="2.710300e-06" ixy="6.545706e-07" ixz="8.155028e-07" iyy="4.370291e-06" iyz="-5.523856e-07" izz="2.622026e-06" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -283,28 +283,28 @@
   <joint name="wrist_roll" type="revolute">
     <parent link="wrist_pitch_link" />
     <child link="wrist_roll_link" />
-    <origin xyz="0.026448 0.048588 0.027002" rpy="-1.570799 -0.055534 -1.570796" />
+    <origin xyz="0.026448 0.048588 0.027002" rpy="-1.570799 -0.055538 -1.570796" />
     <axis xyz="0 0 1" />
     <limit lower="-2.897247" upper="2.897247" effort="1" velocity="2" />
   </joint>
   <joint name="jaw_a" type="prismatic">
     <parent link="wrist_roll_link" />
     <child link="jaw_a_link" />
-    <origin xyz="-0.053464 0 0.05495" rpy="0 -1.570796 0" />
+    <origin xyz="0 0 0.06835" rpy="0 -1.570796 0" />
     <axis xyz="0 0 1" />
-    <limit lower="-0.01" upper="0.01" effort="20" velocity="0.05" />
+    <limit lower="-0.0105" upper="0.0105" effort="20" velocity="0.05" />
   </joint>
   <joint name="jaw_b" type="prismatic">
     <parent link="wrist_roll_link" />
     <child link="jaw_b_link" />
-    <origin xyz="0.053465 -0.000001 0.054951" rpy="0 -1.570796 0" />
+    <origin xyz="0 0 0.06835" rpy="0 -1.570796 0" />
     <axis xyz="0 0 1" />
-    <limit lower="-0.01" upper="0.01" effort="20" velocity="0.05" />
+    <limit lower="-0.0105" upper="0.0105" effort="20" velocity="0.05" />
     <mimic joint="jaw_a" multiplier="-1" offset="0" />
   </joint>
   <joint name="tool0_joint" type="fixed">
     <parent link="wrist_roll_link" />
     <child link="tool0" />
-    <origin xyz="-0.000001 0 0.116951" rpy="0 0 0" />
+    <origin xyz="0 0 0.12365" rpy="0 0 0" />
   </joint>
 </robot>

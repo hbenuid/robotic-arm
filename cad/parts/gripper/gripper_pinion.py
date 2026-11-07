@@ -10,7 +10,7 @@ mm, 1 solid, 833.97 mm^3, bbox (-8.16, -8.0297, 0) .. (8.16, 8.0297, 6.5). Its f
 of module 1.02 thinned to 1.528 on the pitch circle (2-D symmetric difference 0.018 mm^2 against the export's).
 
 A measured conversion (parts/AGENTS.md Part states): tests/gripper/test_measured_parts.py locks the build to the export's
-numbers. NOT PLACED yet (UNPLACED below).
+numbers. assemblies/gripper.py places it.
 """
 import pathlib
 
@@ -25,7 +25,6 @@ ACCENT = True                 # the accent colour, lib/style.py: it drives the r
 REFERENCE = None              # a measured conversion: no reference file (lib/reference.py MEASURED)
 CONVERTED = True
 LOCAL_FROM_REF = IDENTITY     # modelled in the export's frame
-UNPLACED = "the rack & pinion gripper's module (assemblies/gripper.py) places it, replacing the SolidWorks gripper"
 
 
 @step(out="gripper_pinion.step")

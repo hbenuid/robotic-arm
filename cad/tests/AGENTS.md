@@ -85,7 +85,7 @@ drive - its axis the wrist offset across the pitch axis, the stack, the stock be
 clean pairs against `wrist_link`, the pancake's way in from the bottom; `test_back_panel`: the wrist frame's back panel
 and its magnet pairs (no reference) - their numbers, the panel flush and flat on the rear plane, `run_gap` off the
 turning shaft, its rim and notches, the frame's step and pockets, the magnets on their pockets' bottoms, clear of the
-drive; `gripper_j3_connector`: LEGACY's two bodies, DEFAULT's bolted hub), `tests/pulley/` (`gt2_pulley_90t`: the GT2 groove's tangency
+drive; `gripper_j3_connector`: LEGACY's two bodies, DEFAULT's bolted hub), `tests/gripper/` (the gripper's measured parts against their exports' numbers; the module: its layout, its fits, the jaws in mesh over their travel, the cage on the connector), `tests/pulley/` (`gt2_pulley_90t`: the GT2 groove's tangency
 solve against the export's arcs, the LEGACY build's feature probes and surfaces, DEFAULT's opened holes;
 `gt2_pulley_20_60t`, a measured conversion: its export's numbers written into the test - both bands' arc centres, the
 surfaces, volume, bbox - and feature probes;
@@ -113,10 +113,10 @@ occurrence in `j2_link`'s frame,
 ## Where the locks live
 The totals the docs never quote (`cad/AGENTS.md` Docs) live in the locks — `tests/test_assembly.py`,
 `assemblies/cycloidal_drive.py EXPECTED`, `assemblies/forearm_roll_drive.py EXPECTED`, `assemblies/wrist_roll_drive.py
-EXPECTED`, `reference/placements.json
+EXPECTED`, `assemblies/gripper.py EXPECTED`, `reference/placements.json
 expected`, `tests/test_bom.py`, `tests/test_placements.py`, `MULTI_BODY` in `tests/test_parts_convention.py`, the
 interference budgets and press / clean pairs (`tests/test_mounts.py`, `tests/cycloidal/test_assembly.py`,
-`tests/forearm/`, `tests/wrist/`), `tests/test_belts.py` (the belts), the numbers a *no reference*, *measured* or
+`tests/forearm/`, `tests/wrist/`, `tests/gripper/test_module.py BUDGET`), `tests/test_belts.py` (the belts), the numbers a *no reference*, *measured* or
 diverged part keeps in its own test (`parts/AGENTS.md` Part states) and the shared dimensions in
 `tests/test_params_invariants.py`. A geometry change bumps the ones its failures name — measure, never guess (Recipe C
 step 5 in `cad/AGENTS.md` has the `totals()` one-liner).

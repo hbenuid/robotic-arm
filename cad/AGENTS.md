@@ -90,7 +90,7 @@ Every command, its flags and what it prints: `./cadtool help` (for people: the `
   capped — the XZ plane at Y = `<mm>` seen head on: `--display '{"clip":{"axis":"y","at":<mm>,"invert":true}}'
   --camera front` (`axis` `x` / `y` / `z`, `at` the plane's coordinate; without `invert` this camera sees the kept
   half's uncut outside) — and `--display '{"isolated": ["<ref>", …]}'` draws those occurrences alone,
-  `{"hidden": [...]}` leaves them out (a ref is an occurrence path, `arm/wrist/gripper/mg996r_servo`: `./cadtool
+  `{"hidden": [...]}` leaves them out (a ref is an occurrence path, `arm/wrist/gripper/gripper_base`: `./cadtool
   inspect` lists them). No `ocp-vscode`.
 - `./cadtool inspect` is a local tool (`tools/step_facts.py`: every leaf's ref and measures, `diff`);
   `./cadtool cad step inspect <file.step> "<ref>"` says what one ref names (the refs the viewer copies). Anything else

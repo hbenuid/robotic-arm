@@ -104,11 +104,6 @@ def test_belt_motor_and_mks_board_track_reference():
     assert p.FOREARM_ROLL_MOTOR_XY == (0.0, -p.ELBOW_ROLL_OFFSET)                                      # the roll motor on the elbow axis
 
 
-def test_gripper_rail_tracks_reference():
-    size = sorted(MANIFEST["gripper_rail_6mm"]["bbox_size"])
-    assert math.isclose(p.RAIL_DIA, size[0], abs_tol=0.01)
-    assert math.isclose(p.RAIL_LEN, size[2], abs_tol=0.01)
-
 
 def test_mg996r_fits_its_reference_envelope():
     size = sorted(MANIFEST["mg996r_servo"]["bbox_size"])

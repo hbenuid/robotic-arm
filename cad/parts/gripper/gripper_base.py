@@ -9,8 +9,8 @@ rack-pinion-robotic-gripper-jaw-model_files.zip; lib/reference.py MEASURED): mm,
 bbox (-40, -18, 0) .. (40, 18, 22).
 
 A measured conversion (parts/AGENTS.md Part states): the export was measured once and is not committed - no reference
-file, no manifest entry; tests/gripper/test_measured_parts.py locks the build to the export's numbers. NOT PLACED yet
-(UNPLACED below).
+file, no manifest entry; tests/gripper/test_measured_parts.py locks the build to the export's numbers.
+assemblies/gripper.py places it.
 """
 import pathlib
 
@@ -24,7 +24,6 @@ NAME = pathlib.Path(__file__).stem
 REFERENCE = None              # a measured conversion: no reference file (lib/reference.py MEASURED)
 CONVERTED = True
 LOCAL_FROM_REF = IDENTITY     # modelled in the export's frame
-UNPLACED = "the rack & pinion gripper's module (assemblies/gripper.py) places it, replacing the SolidWorks gripper"
 
 
 @step(out="gripper_base.step")
