@@ -2,13 +2,14 @@
 lib/forearm/link.py build_link(cfg), in the SolidWorks part frame - origin on the elbow pivot, the wrist pivot at
 x = WebParams.wrist_x, +Z = N toward the motor-body side).
 
-Elbow end (DEFAULT, the forearm roll): the flange wall at x -56..-48 - a Ø60 round flange on the roll axis (y 0, z 25
-= the capture's wrist centre N-station, whole all round under the roll pulley's ring) standing on a 60 mm foot, the
-web's end, level with its round bottom; its elbow-side band cut back to RollEndParams.relief_r about the roll axis
-(the roll tensioner's screw head passes there as the forearm rolls) - with the roll pulley's Ø40 x 2 spigot recess on
-its elbow face, 4x M3 on Ø31 (the bottom one's head just over the web) and the Ø24 cable bore on the roll axis, braced
-by two gussets on the web either side of the wrist motor; the web runs straight from the wall to the wrist, as wide as
-the wall, no taper. The roll frame
+Elbow end (DEFAULT, the forearm roll): the flange wall at x -56..-48 - a faceted flange on the roll axis (y 0, z 25
+= the capture's wrist centre N-station, flats RollEndParams.wall_od across, whole all round under the roll pulley's
+ring, its corners inside the roll tensioner's screw head's path as the forearm rolls), its bottom flat level with the
+web's underside - with the roll pulley's Ø40 x 2 spigot recess on its elbow face, 4x M3 on Ø31 (the bottom one's head
+just over the web) and the Ø24 cable bore on the roll axis, braced by two gussets on the web either side of the wrist
+motor; the web, wider than the flange, runs straight from the wall to the wrist, no taper, growing out of the flange
+through its two lower diagonal facets carried on along it (RollEndParams.facet_len, into the web's edge chamfer;
+lib/forearm/link.py corner_facets). The roll frame
 (parts/joints/forearm_roll_block) is the elbow coupler now, so no disc and no j3_coupler#1; the forearm sits
 ELBOW_ROLL_OFFSET across the elbow axis (lib/placements.py SHIFTS). LEGACY: the Ø90 disc whose
 z=0 face bolts to j3_coupler#1 (Ø54.89 bore, 4x M4 into

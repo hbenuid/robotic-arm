@@ -1,6 +1,7 @@
-"""The DEFAULT forearm - the roll end: the flange wall replaces the elbow disc (a faceted flange on the roll axis on a
-foot as wide as the straight web, whole all round under the roll pulley's ring, its elbow-side band cut back round the
-roll tensioner's screw head, braced by two gussets beside the wrist motor), the web and the boss WEB_DROP toward the belt
+"""The DEFAULT forearm - the roll end: the flange wall replaces the elbow disc (a faceted flange on the roll axis through
+its whole thickness, whole all round under the roll pulley's ring, its corners inside the roll tensioner's screw head's
+path; the wider web grows out of it through the flange's lower diagonal facets carried on along it into the web's edge
+chamfer; braced by two gussets beside the wrist motor), the web and the boss WEB_DROP toward the belt
 side - the web's underside level with the wall's bottom flat, every wall screw's head over the web -, the web as wide as
 its belt cover's end round the wrist's 90T (docs/design_language.md), the wrist-pitch
 motor sits on round holes WRIST_MOTOR_CENTRES from the wrist, clears the wall's screw heads and has its plug's room
@@ -20,13 +21,14 @@ from lib.forearm import DEFAULT, LEGACY, flange_bolt_points, link_socket_points,
 from lib.forearm.params import PULLEY_90T, SHORTENING, WEB_DROP, WRIST_MOTOR_CENTRES, RollEndParams
 from lib.motors import (
     MKS_SERVO42D_W,
+    NEMA17_40_BODY_LEN,
     NEMA17_40_BODY_W,
     NEMA17_40_CONNECTOR_D,
     NEMA17_40_CONNECTOR_W,
     NEMA17_40_CONNECTOR_Z0,
     NEMA17_40_CONNECTOR_Z1,
 )
-from lib.style import COVER_CLEAR, COVER_WALL
+from lib.style import COVER_CLEAR, COVER_WALL, EDGE_CHAMFER, SIDES
 from tests import built
 from tests.forearm.helpers import in_host
 from tests.helpers import interference, is_inside
@@ -76,15 +78,20 @@ def test_the_wall_screws_way_in():
     assert min(z for _, z in flange_bolt_points(DEFAULT)) - reach - w.z1 == pytest.approx(0.25)
 
 
-def test_the_wall_relief_clears_the_roll_tensioners_screw():
-    """The web's underside level with the wall's round bottom puts the foot's corners further off the roll axis than the
-    roll tensioner's screw head allows (it passes the wall's elbow-side band as the forearm rolls): that band is cut back
-    to relief_r, inside the head's 2 mm (tests/forearm/test_roll_drive.py measures it), outside the roll pulley's ring;
-    the wall's wrist-side part keeps the whole foot."""
+def test_the_web_grows_out_of_the_flange():
+    """The web is wider than the flange, so at the wall its corners lie outside the flange's lower diagonal facets: no
+    foot fills them (its corners would meet the roll tensioner's screw head as the forearm rolls - the flange's own
+    corners stay inside its path: tests/forearm/test_roll_drive.py), the facets carry on along the web instead, over the
+    gussets' length, down to the web's edge chamfer - the octagon's facets at 45 deg like the chamfer, so they run out
+    into it; the gussets' inner faces stand on the facets' top edge at the wall, their outer faces under the side flats."""
     w = DEFAULT.web
-    corner = math.hypot(w.half_w, R.axis_z - w.z0)
-    assert corner > R.relief_r > DEFAULT.drive.ring_flange_dia / 2.0 and R.relief_r >= R.wall_od / 2.0
-    assert 0.0 < R.relief_t < R.wall_x[1] - R.wall_x[0]
+    apo = R.wall_od / 2.0
+    corner_y = apo * math.tan(math.pi / SIDES)                      # the bottom flat's corner
+    assert SIDES == 8 and w.z0 == R.axis_z - apo                    # the facet at 45 deg; the web on the bottom flat
+    assert apo / math.cos(math.pi / SIDES) > DEFAULT.drive.ring_flange_dia / 2.0   # the flange whole under the ring
+    assert w.half_w - EDGE_CHAMFER > corner_y + w.thickness         # the web's corners outside the diagonal at the wall
+    assert R.facet_len == R.rib_len
+    assert R.rib_y == pytest.approx((corner_y + w.thickness, apo), abs=1e-6)
 
 
 def test_the_straight_web_the_wall_and_its_gussets():
@@ -97,10 +104,11 @@ def test_the_straight_web_the_wall_and_its_gussets():
     assert R.wall_od >= D.ring_flange_dia
     # the motor's footprint on the web: its body and its bolt holes 3 mm inside the web's sides
     assert w.half_w >= NEMA17_40_BODY_W / 2.0 + 3.0 and w.half_w >= h.bolt_half + h.bolt_dia / 2.0 + 3.0
-    # the gussets: outside the motor's body and board, inside the web, rooted on the wall; the outline tops them (its
-    # facets outside the flange's circle, which bounds them here)
-    assert R.rib_y[0] >= max(NEMA17_40_BODY_W, MKS_SERVO42D_W) / 2.0 + 2.0 and R.rib_y[1] <= w.half_w
-    assert w.z1 + R.rib_h <= R.axis_z + math.sqrt((R.wall_od / 2.0) ** 2 - R.rib_y[0] ** 2)
+    # the gussets: outside the motor's body, under its plug and its board (on the body's back: wider than the body, above
+    # the gussets' tops), inside the web, rooted on the wall under the flange's side flats
+    assert R.rib_y[0] >= NEMA17_40_BODY_W / 2.0 + 2.0 and R.rib_y[1] <= w.half_w
+    assert R.rib_h < -NEMA17_40_CONNECTOR_Z1 < NEMA17_40_BODY_LEN and MKS_SERVO42D_W > NEMA17_40_BODY_W
+    assert w.z1 + R.rib_h <= R.axis_z + R.wall_od / 2.0 * math.tan(math.pi / SIDES)
 
 
 @pytest.fixture(scope="module")
@@ -133,23 +141,38 @@ def test_link_ends_at_the_wall_and_at_its_wrist_boss(link):
     # no locating sockets (the caps they held are gone): the web whole on both faces out to its straight sides
     assert is_inside(link, -120, w.half_w - 1.0, w.z1 - 1.0) and is_inside(link, -120, w.half_w - 1.0, w.z0 + 1.0)
     assert not is_inside(link, -120, w.half_w + 1.0, zm)                                                 # the web's side
-    # the wall: a round flange about the roll axis on its foot, its bottom level with the web's underside (the roll
-    # pulley's ring bears on it all round, the recess closed); the flange recess on its elbow face, the cable bore and
-    # the bolt holes through it; the foot whole in its wrist-side part (xw), its corners cut back to relief_r in the
-    # elbow-side band (xr)
+    # the wall: the faceted flange about the roll axis through its whole thickness, its bottom flat level with the web's
+    # underside (the roll pulley's ring bears on it all round, the recess closed); the flange recess on its elbow face,
+    # the cable bore and the bolt holes through it; no foot - the flange's corners, the lower ones too, at every station
     xm, x_face, top, foot = (R.wall_x[0] + R.wall_x[1]) / 2.0, R.wall_x[1], R.axis_z + R.wall_od / 2.0, w.half_w
-    xw, xr, bottom = (R.wall_x[0] + R.wall_x[1] - R.relief_t) / 2.0, R.wall_x[1] - R.relief_t / 2.0, 2 * R.axis_z - top
+    bottom, apo = 2 * R.axis_z - top, R.wall_od / 2.0
     assert bottom == w.z0
     assert is_inside(link, xm, 0, top - 1.0) and not is_inside(link, xm, 0, top + 1.0)
     assert is_inside(link, xm, 0, bottom + 1.0) and not is_inside(link, xm, 0, bottom - 1.0)                # the bottom
     assert is_inside(link, x_face - 0.5, 0, R.axis_z - (R.flange_dia + R.flange_recess_add) / 2.0 - 1.0)   # ... under the recess
-    assert is_inside(link, xw, foot - 1.0, w.z0 + 1.0) and not is_inside(link, xw, foot + 1.0, w.z0 + 1.0)
     assert not is_inside(link, xm, 40, 50) and not is_inside(link, xm, foot - 1.0, top - 1.0)             # no corners
-    for a in (-145.0, -135.0, -125.0, 125.0, 135.0, 145.0):   # the relief round the foot's corners, a from straight up
-        s, c = math.sin(math.radians(a)), math.cos(math.radians(a))
-        assert not is_inside(link, xr, (R.relief_r + 0.3) * s, R.axis_z + (R.relief_r + 0.3) * c), a
-        assert is_inside(link, xr, (R.relief_r - 0.3) * s, R.axis_z + (R.relief_r - 0.3) * c), a
-        assert is_inside(link, xw, (R.relief_r + 0.3) * s, R.axis_z + (R.relief_r + 0.3) * c), a     # the whole foot
+    r_corner = apo / math.cos(math.pi / SIDES)
+    for x in (R.wall_x[0] + 0.3, xm, x_face - 0.3):
+        for k in range(SIDES):   # the flange's corners, from the bottom flat's on round
+            a = -math.pi / 2.0 + math.pi / SIDES + 2.0 * math.pi * k / SIDES
+            for r, inside in ((r_corner - 0.5, True), (r_corner + 0.3, False)):
+                assert is_inside(link, x, r * math.cos(a), R.axis_z + r * math.sin(a)) is inside, (x, k, r)
+        assert not is_inside(link, x, foot - 1.0, w.z0 + 1.0)                                              # no foot
+    # the web grows out of it through the lower facets carried on along it: at the wall the flange's own diagonal, half
+    # way along the plane between it and the web's edge chamfer, past facet_len the web's whole section
+    corner_y = apo * math.tan(math.pi / SIDES)
+    drop = foot - EDGE_CHAMFER - corner_y
+    for side in (1.0, -1.0):
+        for t in (0.02, 0.5):
+            x, z = R.wall_x[0] - t * R.facet_len, w.z0 + 2.0
+            y = corner_y + (z - w.z0) + t * drop        # on the facet
+            assert is_inside(link, x, side * (y - 0.4), z) and not is_inside(link, x, side * (y + 0.4), z), (side, t)
+        x = R.wall_x[0] - R.facet_len - 1.0
+        assert is_inside(link, x, side * (foot - 0.3), w.z0 + EDGE_CHAMFER + 0.3)
+        assert is_inside(link, x, side * (foot - EDGE_CHAMFER - 0.3), w.z0 + 0.3)
+        # the gussets' feet cut by the same facet near the wall, standing on it higher up
+        assert not is_inside(link, R.wall_x[0] - 0.5, side * (apo - 0.5), w.z1 + 1.0)
+        assert is_inside(link, R.wall_x[0] - 0.5, side * (apo - 0.5), w.z1 + 8.0)
     rr, rb = (R.flange_dia + R.flange_recess_add) / 2.0, R.cable_bore / 2.0
     assert not is_inside(link, x_face - 1.0, 0, 25 + rr - 1.0) and is_inside(link, x_face - 3.0, 0, 25 + rr - 1.0)   # the spigot recess, 2 deep
     assert not is_inside(link, xm, 0, 25) and not is_inside(link, xm, 0, 25 + rb - 1.0)               # the cable bore
