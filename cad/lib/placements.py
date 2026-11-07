@@ -61,13 +61,16 @@ OCCURRENCES: dict[str, dict] = {o["key"]: o for o in DATA["occurrences"]}
 
 # Occurrences of the capture the DESIGN has replaced: their records stay (the file is an immutable input) but no
 # assembly table, link or total claims them - keys() leaves them out unless asked (retired=True).
-#   j3_coupler#1  the elbow coupler: since 2026-09-23 the forearm roll drive's block carries its lip, boss, journal
+#   j3_coupler#1  the elbow coupler: since 2026-09-23 the forearm roll drive's block carries its journal (a post)
 #                 and stub (lib/forearm/params.py RollDriveParams) and the elbow 90T bolts straight into the block.
+#   j3_coupler#2  the wrist coupler: wrist_link's plate carries the same flange (lib/wrist/params.py FlangeParams) and
+#                 the wrist 90T bolts straight into it.
 #   gt2_pulley_90t#1 / #2  the elbow's and the wrist's 90T: SolidWorks mated each hub flat onto its coupler's stub, where
 #                 the lower 6806 has no room; lib/mounts.py re-seats them as gt2_pulley_90t#3 / #4 (PULLEY_SEAT_SHIFT).
 #   nema17_pancake#1 / gt2_pulley_20t#1  the wrist-roll pancake and its 20T on the SolidWorks roll axis: since 2026-10-14
 #                 the wrist roll drive (assemblies/wrist_roll_drive.py) carries both, the pancake on the wrist-pitch axis.
-RETIRED: tuple[str, ...] = ("j3_coupler#1", "gt2_pulley_90t#1", "gt2_pulley_90t#2", "nema17_pancake#1", "gt2_pulley_20t#1")
+RETIRED: tuple[str, ...] = ("j3_coupler#1", "j3_coupler#2", "gt2_pulley_90t#1", "gt2_pulley_90t#2", "nema17_pancake#1",
+                            "gt2_pulley_20t#1")
 
 
 @dataclass(frozen=True)

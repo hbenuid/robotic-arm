@@ -274,8 +274,8 @@ _SHORTENED = shortened(replace(
     hub=replace(LEGACY.hub, bolt_angle_deg=-2.584167),   # [REFERENCE] the drive's bolts, 3.36 degrees from the SolidWorks holes
     # the roll frame (lib/forearm/ RollDriveParams) turns with the elbow over this top face: the top face down to the
     # recess floor (0.5 under the SolidWorks recess's -4.5), level with the upper 6806's top - its seat exactly 7.0
-    # deep, the slab no deeper than the elbow's bearing stack, no recess left -; the frame's Ø62 boss rides 2.0 above it,
-    # the most the boss can get, its flat underside 11.0 above it out to the tower ELBOW_ROLL_OFFSET across the elbow
+    # deep, the slab no deeper than the elbow's bearing stack, no recess left -; the frame's post stands over the bore and
+    # never over it, its flat underside 11.0 above it out to the tower ELBOW_ROLL_OFFSET across the elbow
     # axis (tests/forearm/test_roll_drive.py)
     elbow=replace(LEGACY.elbow, relief_r=60.0, relief_y=-6.0, recess_y=-6.0),   # [DESIGN]
 ), SHORTENING)

@@ -1,6 +1,6 @@
 """wrist_roll_drive - the belt-driven wrist roll, a code-driven module like the forearm roll drive, one joint further out.
 
-Stator: the frame is wrist_link itself (its DEFAULT build: the plate with j3_coupler#2's seat and, on the plate's
+Stator: the frame is wrist_link itself (its DEFAULT build: the plate with the wrist_pitch output flange and, on the plate's
 underside, one body round the pancake and the tower round the roll axis - lib/wrist/roll.py build_frame), so it is the
 module's host, not a row; the rows: the NEMA 17 pancake ON the wrist-pitch axis in the frame's pocket (open on the far
 face, the pocket's front wall the plate it bolts to, slotted along Y for the belt's tension) with its MKS SERVO42D on

@@ -7,8 +7,9 @@ flange's underside, +Y up the axis toward the stub's end (the 90T's face). Every
 The body: a Ø78 flange (4 counterbored M4 on the axes into the wrist link), a dust-lip ring on its top that turns in
 the link's Ø80 recess, the Ø40 journal just inside the link's bore, the Ø30 stub through the bearings, the Ø12.5 bore
 on the axis; the 90T's 4x M4 on the axes run from hex nut pockets in the flange's underside up through the stub's end.
-The forearm roll drive's elbow block repeats the lip / boss / journal / stub at the elbow (lib/forearm/params.py
-RollDriveParams; j3_coupler#1 is retired).
+Both occurrences are retired: the forearm roll drive's elbow block and wrist_link's plate repeat its journal (carried
+into a post) and stub (lib/forearm/params.py RollDriveParams, lib/wrist/params.py FlangeParams - the wrist's stations are
+DEFAULT's); the part stays the measured SolidWorks coupler those numbers come from.
 
 Two configurations: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
 tests/test_reference_match.py); DEFAULT is what the part builds: an inner-ring shoulder on the stub, the stub long
