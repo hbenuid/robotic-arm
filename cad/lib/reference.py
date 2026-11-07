@@ -193,6 +193,13 @@ NO_REFERENCE: dict[str, str] = {
 MEASURED: dict[str, tuple[str, str, str]] = {
     "gt2_pulley_20_60t": ("GT2 Pulley - 20 - 60 teeth", "GT2 Pulley - 20 - 60 teeth.STEP",
                           "55733855bdc50452499682bef5add391cdd0363c7bed4f4b5c5a44a83dbd0523"),
+    # PapaBravo's "Rack & Pinion Robotic Gripper Jaw" (Printables, CC BY 4.0): Fusion 360 exports, each a member of
+    # rack-pinion-robotic-gripper-jaw-model_files.zip (the member's name differs only for the pinion: 'SpurGear-14 teeth.step')
+    "gripper_base": ("Base", "Base.step", "79647804864c1e2b8a6878b3325086f74b1a7fcb349ea8f98b5c79d20e984bed"),
+    "gripper_rack": ("Rack", "Rack.step", "e16f934aecf412fba874e93d8f65aeaeb822736fdcd61b607be1c7e8979d73a3"),
+    "gripper_jaw": ("Jaw", "Jaw.step", "1034eae0e46b857ee372751fa27b5da8d29c844458b19e7682eac1d52589cafd"),
+    "gripper_pinion": ("Spur Gear (14 teeth) (1)", "Spur Gear (14 teeth) (1).step",
+                       "3a192054d9250bc5e3a5de2f71ebea606df6847b2ed671b821887b1fa5930828"),
 }
 
 # Sub-assemblies whose contents are code-driven (assemblies/<name>.py places its parts from a lib/ stack):
