@@ -3,14 +3,14 @@
     ./cadtool inspect <file.step> [--planes] [--json]
     ./cadtool inspect diff <a.step> <b.step> [--tol 1e-6]
 
-A LOCAL tool over `cadgen.read_step` (the STEP's tree with its instance names, each node's location in its
+A LOCAL tool over `cadgen.step.read` (the STEP's tree with its instance names, each node's location in its
 parent's frame) + build123d. It covers the two jobs this repo has: reading a reference / vendor STEP before
 converting or swapping it (every leaf: solids, faces, volume, bbox; `--planes` lists the planar faces to find
 its frame from) and proving that a regenerated STEP is the same geometry (`diff`, exit 1 when it is not). The
 refs printed are cad's (the CAD Viewer's): a leaf's occurrence path from the root, a label its siblings
 share numbered (`gripper/gripper_slider:1.2`), then `face N` (the face's ordinal in the part,
-TopExp.MapShapes order) - `./cadtool cad inspect <file.step> "<ref>"` says what one names and measures it.
-Distances, clearances and overlaps are not here: `cadgen.geometry.closest_points` / `overlap_volume` in a test.
+TopExp.MapShapes order) - `./cadtool cad step inspect <file.step> "<ref>"` says what one names and measures it.
+Distances, clearances and overlaps are not here: `cadgen.build123d.closest_points` / `overlap_volume` in a test.
 """
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ def _xyz(v) -> list[float]:
 def leaves(path: str | pathlib.Path) -> list[tuple[str, str, object]]:
     """(occurrence path, label, the leaf in world coordinates) for every leaf, in document order."""
     import build123d as bd
-    from cadgen import read_step
+    from cadgen import step
 
     found = []
 
@@ -51,7 +51,7 @@ def leaves(path: str | pathlib.Path) -> list[tuple[str, str, object]]:
             segment = f"{kid.label}.{n}" if counts[kid.label] > 1 else kid.label
             walk(kid, f"{here}/{segment}", world)
 
-    root = read_step(str(path))
+    root = step.read(str(path))
     walk(root, root.label or "", bd.Location())
     return found
 
@@ -156,8 +156,8 @@ def main(argv: list[str]) -> int:
         print(f"cadtool inspect: `{argv[0]}` went with cadgen 0.6.5's `cadgen step inspect`. Now:\n"
               "  ./cadtool inspect <file.step> [--planes] [--json]\n"
               "  ./cadtool inspect diff <a.step> <b.step> [--tol 1e-6]\n"
-              "One ref: ./cadtool cad inspect <file.step> \"<ref>\". "
-              "Distances / overlaps: cadgen.geometry.closest_points / overlap_volume in a test.", file=sys.stderr)
+              "One ref: ./cadtool cad step inspect <file.step> \"<ref>\". "
+              "Distances / overlaps: cadgen.build123d.closest_points / overlap_volume in a test.", file=sys.stderr)
         return 2
     if argv and argv[0] == "diff":
         parser = argparse.ArgumentParser(prog="cadtool inspect diff")

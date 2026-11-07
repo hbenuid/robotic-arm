@@ -51,17 +51,17 @@ the CAD kernel), updating the plugin and what a pull that changes `pyproject.tom
 | `./cadtool python tools/export_printables.py [--parts …]` | one STL per **printed** part into `print/` (git-ignored) |
 | `./cadtool export <file.step> stl\|3mf\|glb [out]` | one mesh file per call from a STEP document (default: beside it) |
 | `./cadtool inspect <file.step> [--planes] [--json]` | every leaf's ref, solids, faces, volume, bbox of a saved STEP (`--planes`: its planar faces) |
-| `./cadtool cad inspect <file.step> "<ref>"` | what one ref (an occurrence path, `…/face 7`) names, and its measures |
+| `./cadtool cad step inspect <file.step> "<ref>"` | what one ref (an occurrence path, `…/face 7`) names, and its measures |
 | `./cadtool inspect diff <a.step> <b.step> [--tol X]` | same geometry, leaf by leaf, as a copy kept from before a change? |
 | `./cadtool snapshot assemblies/arm.step snapshots/arm.png --size-profile assembly` | a PNG still for review — also `.urdf`/`.sdf`/`.stl` inputs |
 | `./cadtool viewer [file…]` | the CAD Viewer: opens each file's page on the machine's server (default `assemblies/arm.step`; the link is good for a day) |
 | `./cadtool status` / `./cadtool stop` | the machine's cad server: what it runs and holds, for every session / end this venv's idle workers (after a `pyproject.toml` change, when leaving a worktree); `stop --device` stops the server for every session |
-| `./cadtool server` | the machine's `cad-server` at this project's pin, telemetry stored off first (`setup` runs it; a linked worktree only checks) |
+| `./cadtool server` | the machine's `cad-server` at this project's pin, telemetry and automatic updates stored off first (`setup` runs it; a linked worktree only checks) |
 | `./cadtool validate robot/arm.urdf --strict` (`.srdf`, `.sdf --gz-check never`) | robot-description validators |
-| `./cadtool parts "<query>" [--download --id <id> --filename <name>.step]` | step.parts search / download into `vendor/` |
-| `./cadtool skill <skill> <tool> [args]` | a plugin skill script (`dfam-check dfam_tool.py`, `dfm mold_tool.py`, …), its `requirements.txt` fetched into uv's cache |
+| `./cadtool cad stl dfm print/<name>.stl --process printing` | printability of a printed part's STL: walls, overhangs, support ([`parts/AGENTS.md`](parts/AGENTS.md) Printed vs. bought) |
+| `./cadtool skill <skill> <tool> [args]` | a plugin skill script (`print3d orca_presets.py`), its `requirements.txt`, if any, fetched into uv's cache |
 | `./cadtool cad …` | any `cad` subcommand but `setup`, `update`, `uninstall`, `doctor`, `run` ([`docs/toolchain.md`](docs/toolchain.md) Gotchas) |
-| `./cadtool doctor` | the venv's, the server's and the plugin's release against the pin, the stored telemetry choice, the OCP kernel; changes nothing |
+| `./cadtool doctor` | the venv's, the server's and the plugin's release against the pin, the stored telemetry and automatic-update choices, the OCP kernel; changes nothing |
 | `./cadtool pytest [-m "not slow"] [-n 4]` | test suite (the fast lane skips geometry builds; `-n`: worker processes, a whole test file each) |
 | `./cadtool lint [--fix] [path…]` | `ruff check` over `cad/` |
 | `./cadtool python …` | any python in the venv with `PYTHONPATH=cad/` (`-c "from assemblies.cycloidal_drive import totals; print(totals())"`) |
@@ -70,7 +70,7 @@ the CAD kernel), updating the plugin and what a pull that changes `pyproject.tom
 `cadtool` always `cd`s to `cad/` (cad resolves paths from the working directory) and exports
 `PYTHONPATH=cad/` so `lib`, `parts`, `assemblies`, `robot` import the same way for you and for the
 server's workers. Everything derived — each model's document as last built, tessellations — lives in the
-server and its cache `~/.cache/cad/documents` (`./cadtool cad delete <id>` removes one; a model's
+server and its cache `~/.cache/cad/documents` (`./cadtool cad delete <id> --yes` removes one; a model's
 next run builds it again).
 
 
@@ -112,11 +112,11 @@ vs. bought) · [`assemblies/`](assemblies/AGENTS.md) · [`robot/`](robot/AGENTS.
 ## AI CAD assistance
 
 The `text-to-cad@earthtojake` plugin's `/text-to-cad:*` skills drive the run-the-model → inspect → snapshot loop
-this repo is aligned with (plus `dfam-check` for printability, `step-parts`, and the URDF/SRDF/SDF
-skills); they run the `cad` command — inside this project, `./cadtool …`, which builds on this venv and never runs
+this repo is aligned with (plus `robot-simulation` for the URDF/SRDF/SDF and `print3d` for slicing; printability is
+`cad stl dfm`); they run the `cad` command — inside this project, `./cadtool …`, which builds on this venv and never runs
 `cad run` or the installer they mention ([`AGENTS.md`](AGENTS.md) Running things).
 The plugin also starts CAD's MCP server (`cad`) with every Claude Code session: asked to show a model, Claude
 answers with a link that opens it in the CAD Viewer (in Claude Desktop, a viewer card in the chat). It shows saved
-files (STEP, URDF, STL …) on the machine's one cad server, and sends no telemetry once `./cadtool setup` has stored
-cad's telemetry off ([`docs/toolchain.md`](docs/toolchain.md) Pins); `/mcp` turns the server off.
+files (STEP, URDF, STL …) on the machine's one cad server, and sends no telemetry and installs no update by itself
+once `./cadtool setup` has stored cad's telemetry and automatic updates off ([`docs/toolchain.md`](docs/toolchain.md) Pins); `/mcp` turns the server off.
 Agent-facing conventions live in `AGENTS.md` and each folder's own `AGENTS.md`.

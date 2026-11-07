@@ -12,7 +12,7 @@ import math
 
 import pytest
 from build123d import Location
-from cadgen.geometry import closest_points
+from cadgen.build123d import closest_points
 
 import parts
 from lib import params as PARAMS

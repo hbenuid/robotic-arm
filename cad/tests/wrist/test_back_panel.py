@@ -11,7 +11,7 @@ import math
 
 import pytest
 from build123d import Box, GeomType, Pos
-from cadgen.geometry import closest_points
+from cadgen.build123d import closest_points
 
 import parts
 from assemblies import wrist_roll_drive as M

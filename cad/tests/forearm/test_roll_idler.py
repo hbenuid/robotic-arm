@@ -10,7 +10,7 @@ and at its slot's deep end; the riser, the slot and the channel are probed on th
 import math
 
 import pytest
-from cadgen.geometry import closest_points
+from cadgen.build123d import closest_points
 
 import parts
 from assemblies import forearm_roll_drive as M

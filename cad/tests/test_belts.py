@@ -132,7 +132,7 @@ def test_the_wrist_roll_belt_runs_on_its_pulleys():
 @pytest.mark.slow
 def test_the_belts_ride_line_to_line():
     """In the arm (built), each belt touches its pulleys and overlaps them by no more than float noise."""
-    from cadgen.geometry import closest_points
+    from cadgen.build123d import closest_points
 
     for key, pulleys in PULLEYS.items():
         belt = built.placed(key)

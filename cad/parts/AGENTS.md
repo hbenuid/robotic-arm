@@ -31,7 +31,7 @@ its STEP stay siblings (`out="<name>.step"` is relative to the script).
 Custom parts declare `REFERENCE = NAME` (`None` for a *measured* or a printed *no reference* one), `CONVERTED` and
 `LOCAL_FROM_REF` (`IDENTITY` when left out):
 - *wrapper* (`CONVERTED = False`, from `_templates/wrapper.py`): the model returns
-  `reference/solidworks/<name>.step` (via `lib.reference.load` → `cadgen.read_step`, an input of the build)
+  `reference/solidworks/<name>.step` (via `lib.reference.load` → `cadgen.step.read`, an input of the build)
   in the SolidWorks part-file frame — the day-one state of every custom part (the ones still wrappers:
   `docs/open_issues.md` "Not converted yet");
 - *parametric* (`CONVERTED = True`, from `_templates/designed.py`): real build123d — see "Converting a part" below.
@@ -81,8 +81,8 @@ Custom parts declare `REFERENCE = NAME` (`None` for a *measured* or a printed *n
 
 ## Converting a part (wrapper → parametric)
 1. Inspect the reference: `./cadtool inspect reference/solidworks/<name>.step --planes`
-   (dimensions: the CAD Viewer's measure tool, `./cadtool cad inspect <file.step> "<part>/face 7"`, or build123d
-   on `cadgen.read_step(…)`);
+   (dimensions: the CAD Viewer's measure tool, `./cadtool cad step inspect <file.step> "<part>/face 7"`, or
+   build123d on `cadgen.step.read(…)`);
    `parts/<group>/<name>.py`'s docstring lists units,
    solids, bounding box and where it is used.
 2. Rewrite the model body with `BuildPart`/… code, its numbers in a config in a `lib/` package with `LEGACY` = the
@@ -105,7 +105,7 @@ states): step 1 on the raw file (where the user put it), the part written as in 
 `lib/reference.py MEASURED` row, and in place of step 4 its own tests - the export's numbers written into them,
 checked against the raw file once before they are committed; then step 5.
 
-`read_step()` / `import_step()` convert inch-unit files to mm and keep the assembly hierarchy (labels
+`step.read()` / `import_step()` convert inch-unit files to mm and keep the assembly hierarchy (labels
 mangle ` .()` → `_`; `lib.reference.clean_label` mirrors build123d's `import_step`, which the
 reference tools keep using).
 
@@ -116,7 +116,7 @@ from `DEFAULT_CONFIG`, never retyped) + optional `PURCHASE_NOTE` — a printed p
 `VENDOR_STEP = vendor/<name>.step`, `VENDOR_TO_REF`
 (vendor-file frame → SolidWorks frame, as frame data; `IDENTITY` for the SolidWorks re-exports); the model is
 hybrid — `return lib.cots.hybrid(NAME, VENDOR_STEP, VENDOR_TO_REF, _envelope)`, the one body every COTS part
-shares: `cadgen.read_step(VENDOR_STEP)` if present (an input of the build, so a swapped vendor file rebuilds the
+shares: `cadgen.step.read(VENDOR_STEP)` if present (an input of the build, so a swapped vendor file rebuilds the
 part), else `_envelope()` from `lib.params`, both in the SolidWorks frame `placements.json` assumes. Every
 `lib/reference.py COTS` part keeps a frame/size reference, `reference/<origin>/<name>.step` (`path_of()` resolves the
 origin): the SolidWorks re-export in `reference/solidworks/`, for the drive's purchased parts the CadQuery export of
@@ -161,11 +161,11 @@ generated from the label:
   are **not modelled** are the one hand-kept table, `EXTRAS` in that tool (`assemblies/AGENTS.md`).
 - **STLs** — `./cadtool python tools/export_printables.py [--parts …]` writes `print/<name>.stl` for every printed part
   (git-ignored, mm, part-local frame, with the quantity to print); bought parts are refused.
-- **Printability** — before a printed part's first print, and after its geometry changes: `./cadtool skill dfam-check
-  dfam_tool.py measure print/<name>.stl --angle-limit 45` (watertight, wall thickness, overhang area, support volume;
-  45° is FDM's self-supporting angle in the skill's `references/process-limits.md`) and the same with `orientations`
-  (the build orientations ranked by support); how to read the JSON is the skill's `SKILL.md`. A finding that holds
-  up the print is a row in `docs/open_issues.md`.
+- **Printability** — before a printed part's first print, and after its geometry changes: `./cadtool cad stl dfm
+  print/<name>.stl --process printing --angle-limit 45` (watertight, wall thickness, overhang area, support volume;
+  45° is FDM's self-supporting angle in the `cad` skill's `references/manufacturing-printing.md`), and with
+  `--candidates` the six axis-aligned build orientations ranked by support; `--json` gives the figures as `measurements`
+  and what they show as `findings`. A finding that holds up the print is a row in `docs/open_issues.md`.
 - **Colours** — the grey of purchased parts in `arm.step` and every module's STEP; a printed part is off-white, or orange
   where it drives, turns or covers: its module then declares `ACCENT = True` (`parts.accent()`;
   `docs/design_language.md`, `assemblies/AGENTS.md` "What a part is shows as its colour").

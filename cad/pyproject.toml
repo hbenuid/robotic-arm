@@ -7,7 +7,7 @@ readme = "README.md"
 # and build123d and the OCP wheels allow no newer one.
 requires-python = ">=3.14,<3.15"
 dependencies = [
-    # cad 0.10's build123d extra requires build123d>=0.13.0,<0.14 and cadquery-ocp-novtk>=8.0,<8.1 (OCCT 8:
+    # cad 0.11's build123d extra requires build123d>=0.13.0,<0.14 and cadquery-ocp-novtk>=8.0,<8.1 (OCCT 8:
     # it imports OCP 8's collection and downcast names directly). The novtk pin freezes the kernel the
     # STEPs are built with (their bytes are deterministic per kernel, which the hash gate relies on;
     # build123d only asks for a range).
@@ -19,7 +19,7 @@ dependencies = [
     # reader. This line is the ONE pin of the toolchain: `cadtool` reads it to install the machine's
     # cad-server, and the text-to-cad@earthtojake plugin's claude.mcp.json pins the same release (`cad-mcp==`):
     # bump them together (docs/toolchain.md Pins, `./cadtool doctor` checks). Never add cad-server here.
-    "cad[build123d]==0.10.4",
+    "cad[build123d]==0.11.0",
     "numpy>=2.4.6",
 ]
 
@@ -48,6 +48,9 @@ markers = [
 filterwarnings = [
     # build123d fires these from a class body at import time; third-party noise.
     "ignore::DeprecationWarning:build123d.objects_curve",
+    # cad's own renames keep the old spelling as an alias that warns once (0.11: read_step -> step.read): an error
+    # here, so a bump moves every renamed name (docs/toolchain.md Gotchas), not the release that drops the alias.
+    "error::cad.CadDeprecationWarning",
 ]
 
 [tool.ruff]

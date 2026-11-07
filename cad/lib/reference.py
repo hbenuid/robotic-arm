@@ -22,7 +22,7 @@ import pathlib
 import unicodedata
 
 import build123d as bd
-from cadgen import read_step
+from cadgen import step
 
 CAD_DIR = pathlib.Path(__file__).resolve().parent.parent
 REF_DIR = CAD_DIR / "reference"              # manifest.json, placements.json + the two origin dirs
@@ -271,14 +271,14 @@ def describe(path: pathlib.Path) -> dict:
 
 
 def load(name: str, *, label: str | None = None) -> bd.Shape:
-    """Fresh read of reference/<origin>/<name>.step in its part-file frame (cadgen.read_step:
+    """Fresh read of reference/<origin>/<name>.step in its part-file frame (cadgen.step.read:
     inside a build the file is an input of the model, so an updated reference rebuilds it).
     A Solid for one-body parts, a flat Compound for multi-body ones."""
     path = path_of(name)
     if not path.exists():
         raise FileNotFoundError(f"missing reference STEP {path} - run tools/reference/import_solidworks.py "
                                 f"(tools/cycloidal/import_cadquery.py for the drive, tools/reference/import_native.py for a native part)")
-    shape = read_step(path)          # cadgen: an input of the model that calls it
+    shape = step.read(path)          # cadgen: an input of the model that calls it
     shape.label = label or name
     return shape
 

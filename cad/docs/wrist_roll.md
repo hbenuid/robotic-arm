@@ -66,7 +66,7 @@ Every station: `stack_positions()`.
 
 ## 3. Fits and printing
 PETG, the forearm roll's rules: the seats the bearing OD + `seat_add`, the journals `journal_add` interference (print a
-fit gauge first, `cycloidal_drive.md` §6). `wrist_link`'s orientation is open (`open_issues.md`, a `dfam-check` before
+fit gauge first, `cycloidal_drive.md` §6). `wrist_link`'s orientation is open (`open_issues.md`, a printability check before
 the first print): plate down, the closed far face's wall roofs the pocket and the window (support inside them) and the
 seats print as horizontal bores; front face down, as the forearm roll's frame, the seats print as vertical bores and the
 facets rise at 45°, but the plate's octagon reaches past the front face. The back panel prints outer face down (one
