@@ -13,8 +13,9 @@ designed here), each with its own look; these rules make them one.
   base and its motor mount are an octagonal frustum on an octagonal foot - carried on up through the fork's disc, which
   turns on it: the disc is the same octagon on the same cone, and the arm's zero puts its flats on the base's
   (`lib/datum.py BASE_TURN_DEG`). Where a slab tapers onto its end, the bend is sharp like the facets; where a plate
-  grows out of a faceted body (the fork's legs out of its disc), it does so in planar facets, the body's flat facing it
-  running on up its face (`lib/geom.py hull_solid`).
+  grows out of a faceted body (the fork's legs out of its disc, the forearm's web out of its flange), it does so in
+  planar facets, the body's flat facing it running on up its face (`lib/geom.py hull_solid`); where the plate is the
+  wider, the body's facets run on along it into its edge chamfer.
 - **What turns stays round.** A part that turns against a neighbour keeps its round: the cycloidal drive, a bearing boss
   standing proud of a face (the roll frame's, the wrist frame's), the pulleys and the base's cap - a facet there would
   sweep a corner past the part beside it. The one exception is the fork's disc, the base's octagon carried up: its
@@ -38,7 +39,8 @@ designed here), each with its own look; these rules make them one.
 In the model: the colours; the upper arm (`j1_link`: its faceted elbow end, its slab's outline chamfered); the roll
 frame (`forearm_roll_block`: its tower the forearm flange's octagon carried back through it, its front face's long edges
 faceted, the bearing boss rising out of them, its outline chamfered); the forearm (`j2_link`: its web as wide as its
-cover's end, its wrist end and boss faceted and chamfered, its flange faceted); the wrist (`wrist_link`: its roll frame
+cover's end, its wrist end and boss faceted and chamfered, its flange faceted and the web growing out of it, the
+flange's lower facets carried on along the web into its chamfer); the wrist (`wrist_link`: its roll frame
 laid out as the roll frame's - the plate's octagon hulled to its tower, the far face closed, a back panel over the bay,
 its front edges faceted, the bearing boss rising out of them - and its plate's end on the pitch axis faceted and
 chamfered); the fork (`j1_coupler`, `j1_motor_leg`: their legs' tops faceted and chamfered - on the motor leg not on the
