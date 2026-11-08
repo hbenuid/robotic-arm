@@ -155,6 +155,15 @@ geometry before the branch is touched: build it from the part builders with the 
 (nothing in the repo) and publish a page with matched before / after renders and a to-scale overlay, close-ups where
 the difference is subtle; the work starts once the user has seen it. Renders at one scale: Gotchas (`snapshot` fits
 every view).
+- **The page comes before the plan is approved**, in plan mode too (the scratch build and the page touch nothing in
+  the repo): a plan whose first step is "build the preview" is not one to ask approval for. A decision that changes
+  after that - another option, a round of feedback, even after "start the branch" - gets its own render before the
+  repo is touched. What moves (a sensor and its magnet, a bracket on a turning link) gets a posable model with joint
+  sliders: `robot/AGENTS.md` "A posable preview".
+- **Change only what was asked.** Every other dimension stays at the branch's value: an option shown beside an earlier
+  round is not carried into the next one. When the asked-for shape clashes with another part, build it anyway, render
+  the clash with its numbers (the overlap, the motion it blocks) and ask how to resolve it - a feature a constraint
+  forces, added without showing the constraint, reads as a design choice the user never made.
 
 ## Two machines (Fedora Linux PC + arm64 Mac)
 Push before leaving a machine, pull on arrival — git is the only sync channel (root `AGENTS.md` "Two development

@@ -8,8 +8,9 @@ as a git note).
 ## Pins
 - **One pin, `"cad[build123d]==<ver>"` in `pyproject.toml`**, for the three things upstream releases together: the
   library in the venv (`cad`, imported here as `cadgen`, its earlier name: an alias of the same modules, so
-  `cadgen.read_step` is `cad.read_step`); the machine's server, `cad-server`, which is the `cad` command and everything
-  that runs (a uv tool: `./cadtool server` installs it from the pin on a uv-managed Python, `uv tool dir --bin` holds the
+  `cadgen.read_step` is `cad.read_step` - from 0.11.1 importing `cadgen` warns `CadDeprecationWarning`, an error under
+  pytest (Gotchas), so a bump past 0.11.0 moves every import, and the docs that name `cadgen`, to `cad`); the
+  machine's server, `cad-server`, which is the `cad` command and everything that runs (a uv tool: `./cadtool server` installs it from the pin on a uv-managed Python, `uv tool dir --bin` holds the
   command); and the `text-to-cad@earthtojake` plugin (`~/.claude/plugins/cache/earthtojake/text-to-cad/<ver>/`), whose
   `claude.mcp.json` pins `cad-mcp==<ver>`: CAD's MCP server `cad`, a shim Claude Code starts through uvx with every
   session, which talks to the running server (`cad_show` takes a file's absolute path or a document id and answers with

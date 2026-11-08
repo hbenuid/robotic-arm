@@ -104,3 +104,18 @@ beside the pancake. The drives on their own:
 `./cadtool viewer assemblies/cycloidal_drive.step` (see `docs/cycloidal_drive.md`, "Viewing the drive"),
 `assemblies/forearm_roll_drive.step` (`docs/forearm_roll.md`) and `assemblies/wrist_roll_drive.step`
 (`docs/wrist_roll.md`; its frame is `wrist_link`).
+
+## A posable preview
+A design preview of something that moves with the arm (`cad/AGENTS.md` Design choices) is a scratch copy of
+`arm.urdf` + `arm.srdf` (nothing in the repo) with the proposed parts added:
+- Open the copy's **`.srdf`** (`cad_show`, `./cadtool viewer`): it gives the joint sliders and the SRDF's named states
+  (`home`, `open`, `closed`); a bare `.urdf` lists no states.
+- The SRDF pairs with its URDF by the robot's name in the same folder: **one URDF named `arm` per folder** - a second
+  one there fails as `ambiguous_paired_urdf`.
+- Each added group goes on **a link of its own, on a fixed joint** to the link it rides on: the user can then hide the
+  arm's links in the viewer and still see the additions. A `<material>`'s `<color rgba>` is drawn, its alpha ignored -
+  nothing is see-through.
+- To show a cut in the arm's own parts (a pocket, a bracket's seat), re-export the touched links' meshes from
+  `robot._links.build_link(link)` with the children cut by their labels - never rebuild the arm STEP's compound tree
+  around the cut parts: a module's leaves are module-local (`cadgen.step.read` gives each node in its parent's
+  frame, so a leaf needs its parents' locations composed), and that rebuild displaced the drive modules and the gripper.

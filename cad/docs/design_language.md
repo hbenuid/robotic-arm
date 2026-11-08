@@ -21,6 +21,12 @@ designed here), each with its own look; these rules make them one.
   sweep a corner past the part beside it. The one exception is the fork's disc, the base's octagon carried up: its
   corners sweep over the base's top face, nothing beside them. A link's end with a bearing seat inside it is structure:
   faceted round the seat.
+- **Joint pieces stay plain; leftovers go.** A small functional piece tucked between a frame and the link it turns on -
+  the elbow's and the wrist's flange posts (`lib/forearm/params.py RollDriveParams` `post_*`, `lib/wrist/params.py
+  FlangeParams`) - is the plainest form that does the job: a round post, its foot chamfered, no skirt, taper or cover;
+  offering a styled one, offer it beside the plain one, which is not assumed to lose. Geometry that carries nothing (a
+  SolidWorks remnant past the body that replaced it) is removed outright, what stays cut flush with that body (the
+  wrist flange's post with the roll frame) - never kept as a smaller version of itself.
 - **Edges are chamfered.** One 45° chamfer (`lib/style.py EDGE_CHAMFER`) on the outline of every printed part's main
   faces and on every cover - `lib/geom.py chamfer_outline()`, cut on the main body before its holes and pockets, so
   holes, bores and seats stay sharp. A 45° chamfer prints with no support, even on an edge facing the bed.
