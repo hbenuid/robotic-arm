@@ -1,7 +1,7 @@
 # reference/ — the immutable reference inputs
 
-Loads when you work in `reference/`. What is here and where each file came from — the provenance, the naming map,
-the designed module, the skipped products, the `placements.json` schema — is `README.md`; this file holds the rules.
+Loads when you work in `reference/`. Where the files came from (the provenance), the SolidWorks assembly's nodes and
+the `placements.json` schema are `README.md` (each file's own facts: `manifest.json`); this file holds the rules.
 
 ## Rules
 - **These references were a bootstrap, on their way out** — the user's direction, not a current task. The CAD is to
@@ -48,8 +48,8 @@ the designed module, the skipped products, the `placements.json` schema — is `
 ## Recipe E — a new SolidWorks / vendor export arrives
 Read it where the user put it, by the path they give (the rule: root `AGENTS.md` "The SolidWorks inputs are in the
 repo; the raw exports are not"; every tool that reads one takes its path: `--src` / `--src48` / `--monolith`). Record
-its file name as handed over, size, sha256 and what it is under `README.md` Provenance; name it in `lib/reference.py`
-(`MONOLITH_NAME`, `MKS_EXPORT_NAME`, …, a `COTS` row for a purchased part, a `MEASURED` row for a printed one);
+its file name as handed over and what it is under `README.md` Provenance; name it in `lib/reference.py`, with its size
+and sha256 (`MONOLITH_NAME`, `MKS_EXPORT_NAME`, …, a `COTS` row for a purchased part, a `MEASURED` row for a printed one);
 measure before trusting it (`./cadtool inspect <file> --planes` — units, frame, shaft / pilot / bolt pattern);
 then Recipe A (`parts/AGENTS.md`) or D (`vendor/AGENTS.md`). What the CAD keeps is the derived, committed copy
 (`reference/`, `vendor/`) — the raw file is the user's, to keep or discard. A printed part's export is not copied here

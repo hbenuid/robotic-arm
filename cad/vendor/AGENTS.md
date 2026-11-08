@@ -1,7 +1,7 @@
 # vendor/ — the purchased-part STEP files
 
-Loads when you work in `vendor/`. Which file is current for each part, what was tried in the catalog and where each
-file came from is `README.md`; this file holds the rules.
+Loads when you work in `vendor/`. What was tried in the step.parts catalog is `README.md` (what each file is and where
+it came from: its part module's docstring); this file holds the rules.
 
 ## Rules
 - A vendor file may be **replaced** by a better model; the part's reference (`reference/<origin>/<name>.step`) may

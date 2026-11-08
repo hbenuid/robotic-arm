@@ -417,28 +417,6 @@
    "source": "src/purchased_parts.py:build_output_pins()",
    "units": "mm"
   },
-  "cycloidal_ring_gear_body": {
-   "bbox_min": [
-    -70.0,
-    -70.0,
-    -0.0
-   ],
-   "bbox_size": [
-    140.0,
-    140.0,
-    51.0
-   ],
-   "bytes": 759577,
-   "file": "cycloidal/cycloidal_ring_gear_body.step",
-   "kind": "designed",
-   "origin": "cycloidal_drive@2f1f67d",
-   "product": "ring gear body (housing, 6814 seat, nut pockets)",
-   "sha256": "78c7b0e2b376367b317255cbc32471cdc7b390255987715fdc4dfaf0174dc923",
-   "solid_volume": 158114.513,
-   "solids": 1,
-   "source": "src/ring_gear_body.py:build_ring_gear_body()",
-   "units": "mm"
-  },
   "cycloidal_ring_pins": {
    "bbox_min": [
     -55.397,
@@ -734,27 +712,6 @@
    "solid_volume": 285470.463,
    "solids": 1,
    "source": "step/Joint 2 change 8126.STEP",
-   "units": "mm"
-  },
-  "j3_coupler": {
-   "bbox_min": [
-    -39.0,
-    0.0,
-    -39.0
-   ],
-   "bbox_size": [
-    78.0,
-    22.0,
-    78.0
-   ],
-   "bytes": 163964,
-   "file": "solidworks/j3_coupler.step",
-   "kind": "custom",
-   "product": "Joint 2 coupler 62226_J3 Coupler",
-   "sha256": "2783762d6ca83ff398a17d14b0b0aa373768d09d6c1f759ede60057b02628859",
-   "solid_volume": 55568.499,
-   "solids": 1,
-   "source": "step/Joint 2 coupler 62226_J3 Coupler.STEP",
    "units": "mm"
   },
   "ky003_hall_sensor": {

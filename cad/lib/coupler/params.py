@@ -1,5 +1,9 @@
-"""CouplerParams - every dimension of the J3 coupler (j3_coupler: the driven side of a belt joint - the 90T pulley bolts
-onto its stub's end, the stub turns in the link's bearing bore), in its part frame.
+"""CouplerParams - every dimension of the SolidWorks J3 coupler (the driven side of a belt joint - the 90T pulley bolted
+onto its stub's end, the stub turning in the link's bearing bore), in its part frame. The part is gone - both its
+occurrences were retired (lib/placements.py RETIRED; its product: lib/reference.py RETIRED_PRODUCTS) - but its numbers
+stay: the forearm roll drive's elbow block and wrist_link's flange repeat its journal (carried into a post) and stub
+(lib/forearm/params.py RollDriveParams, lib/wrist/params.py FlangeParams - the wrist's stations are DEFAULT's), and the
+wrist's mounts, the yaw coupler's nut pockets and tests/test_params_invariants.py read them.
 
 Frame (= the SolidWorks part frame of j3_coupler, which placements.json places): origin on the joint axis at the
 flange's underside, +Y up the axis toward the stub's end (the 90T's face). Every feature is a disc or a bore along Y.
@@ -7,17 +11,12 @@ flange's underside, +Y up the axis toward the stub's end (the 90T's face). Every
 The body: a Ø78 flange (4 counterbored M4 on the axes into the wrist link), a dust-lip ring on its top that turns in
 the link's Ø80 recess, the Ø40 journal just inside the link's bore, the Ø30 stub through the bearings, the Ø12.5 bore
 on the axis; the 90T's 4x M4 on the axes run from hex nut pockets in the flange's underside up through the stub's end.
-Both occurrences are retired: the forearm roll drive's elbow block and wrist_link's plate repeat its journal (carried
-into a post) and stub (lib/forearm/params.py RollDriveParams, lib/wrist/params.py FlangeParams - the wrist's stations are
-DEFAULT's); the part stays the measured SolidWorks coupler those numbers come from.
 
-Two configurations: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
-tests/test_reference_match.py); DEFAULT is what the part builds: an inner-ring shoulder on the stub, the stub long
+Two configurations: LEGACY is the SolidWorks part; DEFAULT adds an inner-ring shoulder on the stub and the stub long
 enough to reach the re-seated pulley.
 
-Every number below was measured on the reference 2026-09-25 (vertex / face census; tests/coupler/test_j3_coupler.py
-re-checks the builds against it): [REFERENCE] unless tagged. Units mm. Frozen dataclasses; variants via
-dataclasses.replace.
+Every number below was measured on the SolidWorks export 2026-09-25 (vertex / face census): [REFERENCE] unless tagged.
+Units mm. Frozen dataclasses; variants via dataclasses.replace.
 """
 from __future__ import annotations
 

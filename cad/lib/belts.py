@@ -13,7 +13,6 @@ GT2_PITCH = 2.0                                     # [DATASHEET] GT2 tooth pitc
 GT2_PULLEY_90T_TEETH = 90                           # [REFERENCE] printed 90T pulley (parts/joints/gt2_pulley_90t), the elbow's and the wrist's
 GT2_PULLEY_120T_TEETH = 120                         # [DESIGN] printed 120T pulley, the base_yaw joint's (parts/base/gt2_pulley_120t)
 GT2_PULLEY_20T_TEETH = 20                           # [REFERENCE] purchased 20T pulley (parts/wrist/gt2_pulley_20t)
-GT2_PULLEY_20_60T_TEETH = (60, 20)                  # [REFERENCE] printed compound pulley (parts/joints/gt2_pulley_20_60t): its lower band, its upper
 GT2_PULLEY_90T_PITCH_DIA = GT2_PULLEY_90T_TEETH * GT2_PITCH / math.pi   # 57.30 mm pitch diameter
 GT2_PULLEY_20T_PITCH_DIA = GT2_PULLEY_20T_TEETH * GT2_PITCH / math.pi   # 12.73 mm
 GT2_RATIO = GT2_PULLEY_90T_TEETH / GT2_PULLEY_20T_TEETH                 # 4.5:1 [REFERENCE] a 90T on its 20T (the elbow and wrist belts): motor turns per output turn; config.py's gear_ratio is 1 / the joint's (robot/AGENTS.md)
@@ -29,8 +28,7 @@ GT2_TOOTH_DEPTH = 0.75                              # [DATASHEET] belt tooth hei
 GT2_GROOVE_R = 0.555                                # [REFERENCE] the groove's bottom (the belt tooth's tip)
 GT2_FLANK_R = 1.0                                   # [REFERENCE] each flank ...
 GT2_FLANK_ANGLE = 72.0                              # [REFERENCE] ... its centre on the land circle this many degrees / teeth
-#                                                     across the centreline - a fifth of the pitch angle: 0.8 deg on the 90T,
-#                                                     1.2 and 3.6 on the 20-60T's bands (their SolidWorks exports agree)
+#                                                     across the centreline - a fifth of the pitch angle: 0.8 deg on the 90T
 GT2_BLEND_R = 0.6385333225                          # [REFERENCE] flank -> bottom (the export's value: the constraint
 #                                                     that set it in the SolidWorks sketch is not in the export)
 GT2_TIP_R = 0.15                                    # [REFERENCE] flank -> land

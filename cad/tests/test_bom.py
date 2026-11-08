@@ -42,9 +42,7 @@ def test_drive_buy_list_matches_the_drive_config():
         "cycloidal_shaft_support_pin": 1, "cycloidal_motor_bolts": 4,
         "cycloidal_housing_bolts": CFG.housing.bolt_count, "cycloidal_housing_nuts": CFG.housing.bolt_count,
     }
-    # the port's ring gear body is modelled, not placed: the turning shell's body is printed with j1_link
-    assert "cycloidal_ring_gear_body" in parts.unplaced()
-    assert {r["part"] for r in bom.print_rows("cycloidal_drive")} == (set(R.DESIGNED) - set(parts.unplaced())) | {"cycloidal_shell_ring"}
+    assert {r["part"] for r in bom.print_rows("cycloidal_drive")} == set(R.DESIGNED) | {"cycloidal_shell_ring"}
     assert [r["part"] for r in bom.buy_rows("cycloidal_drive") if r["geometry"] == "vendor"] == ["bearing_625", "mks_servo42d", "nema17_48mm"]
 
 

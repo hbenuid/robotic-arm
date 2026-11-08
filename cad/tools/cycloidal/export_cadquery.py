@@ -28,7 +28,6 @@ BUILDERS: dict[str, tuple[str, str, dict]] = {
     "cycloidal_disc_2":            ("src.cycloidal_disc",  "build_cycloidal_disc", {"phase_offset_deg": "disc2_phase"}),
     "cycloidal_eccentric_shaft":   ("src.eccentric_shaft", "build_eccentric_shaft", {}),
     "cycloidal_motor_plate":       ("src.motor_plate",     "build_motor_plate", {}),
-    "cycloidal_ring_gear_body":    ("src.ring_gear_body",  "build_ring_gear_body", {}),
     "cycloidal_output_hub":        ("src.output_hub",      "build_output_hub", {}),
     "bearing_6003":                ("src.purchased_parts", "build_bearing_6003", {}),
     "bearing_6814":                ("src.purchased_parts", "build_bearing_6814", {}),
