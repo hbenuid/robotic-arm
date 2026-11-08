@@ -1,101 +1,49 @@
 # reference/ — SolidWorks reference geometry
 
-**Purpose:** the original design, as exported from SolidWorks, renamed to the clean part
-names used everywhere in `cad/` (`solidworks/`) — plus, for the cycloidal drive, the CadQuery
-exports of the `cycloidal_drive` repo the build123d parts were ported from (`cycloidal/`) — and, for the parts
-designed here with no external origin (`lib/reference.py NATIVE` / `NATIVE_COTS`), their **accepted builds**
-(`native/`, written once by `tools/reference/import_native.py`). These files are **immutable inputs** (committed):
-each custom part's wrapper returns them until it is converted, and `tests/test_reference_match.py` compares the
-converted ones and the native parts against them (the drive's ported parts: `tests/cycloidal/test_port.py`). The rules
-for them — never edit, the regeneration order, the manifest, Recipe E for a new export — are [`AGENTS.md`](AGENTS.md);
-this file is the record of what is here.
+**Purpose:** the original design, as exported from SolidWorks, renamed to the clean part names used everywhere in `cad/`
+(`solidworks/`) — plus, for the cycloidal drive, the CadQuery exports of the `cycloidal_drive` repo the build123d parts
+were ported from (`cycloidal/`) — and, for the parts designed here with no external origin (`lib/reference.py NATIVE` /
+`NATIVE_COTS`), their **accepted builds** (`native/`, written once by `tools/reference/import_native.py`). These files
+are **immutable inputs** (committed): `tests/test_reference_match.py` compares the converted parts and the native ones
+against them (the drive's ported parts: `tests/cycloidal/test_port.py`). The rules for them — never edit, the
+regeneration order, the manifest, Recipe E for a new export — are [`AGENTS.md`](AGENTS.md); this file is the record of
+where they came from and of `placements.json`'s schema.
+
+**What is here, per file:** `manifest.json` — each reference's product, source export (or CadQuery builder), units,
+solids, bounding box, bytes and sha256, and its `vendor` block. **Which part maps to which product:** `lib/reference.py`
+(`CUSTOM`, `COTS`, `DESIGNED` / `CYCLOIDAL_COTS`, `NATIVE` / `NATIVE_COTS`; the products dropped from the design and
+why: `SKIPPED_PRODUCTS`; the retired ones whose records stay: `RETIRED_PRODUCTS`). How many of each the arm uses:
+`./cadtool python tools/bom.py`.
 
 ## Provenance
 - Source tree: the SolidWorks 2026 STEP AP214 exports of 2026-08-27, **not in git, not needed on a machine and with
   no fixed place** — the committed copies here are the inputs, the raw tree only for re-running the derivation tools,
   which take its path (`--src` / `--src48` / `--monolith`).
-- Full assembly: `final Arm Assembly Fully Movable.STEP` (13.5 MB, inch units, sha256 `67c39d5dc9ff1d7b…`) —
-  not committed; `placements.json` captures its structure.
-- NEMA 17 x 40 + MKS SERVO42D kit: `mks/nema17x40_with_mks.step` under the source tree (SolidWorks 2026 export of
-  2026-09-21, mm, 15 solids, 521 236 bytes, sha256 `4e51a1591030…`; `lib.reference.MKS_EXPORT_NAME`) — not committed
-  and kept nowhere (re-export from SolidWorks if the split must be redone; the sha256 identifies it). The
-  sibling `mks/nema17x48_with_mks.step` (cm units, 24 solids, 3 345 264 bytes, sha256 `c1958e60a14f…`;
-  `MKS48_EXPORT_NAME`) is the same kit with the 48 mm motor (a 17HS19-2004S1). What `tools/reference/split_mks_motor.py`
-  derives from the two (the 40 mm kit's vendor files, mirrored into `solidworks/`, and `vendor/nema17_48mm.step`):
-  `vendor/README.md` "Where the vendor files come from".
-- Measured, not committed: `GT2 Pulley - 20 - 60 teeth.STEP` (SolidWorks 2026 export of 2026-09-26,
-  mm, 1 solid, 1 974 574 bytes, sha256 `55733855bdc5…`; `lib/reference.py MEASURED`) — the 20-60T compound pulley,
-  converted by measuring it (`parts/AGENTS.md` Part states → *measured*): nothing of it is in this folder, its numbers
-  are in `lib/pulley/params.py` and `tests/pulley/test_gt2_pulley_20_60t.py`.
-- Regenerating these files, in order: [`AGENTS.md`](AGENTS.md).
-
-## Naming map
-Clean name ← SolidWorks product (source file under the source tree); every row lives in
-`solidworks/<name>.step`. Sizes are the bounding box in mm after OCCT's import (inch-unit files
-are converted automatically). How many of each the arm uses is not recorded here: `./cadtool python tools/bom.py`
-counts them from the assembly tables.
-
-| Part | Kind | SolidWorks product | Source export | Units | Solids | Bbox size (mm) |
-|---|---|---|---|---|---|---|
-| `base` | custom | `base of robot arm 62126` | `step/base of robot arm 62126.STEP` | mm | 1 | 168.178 × 95.807 × 106.679 |
-| `j1_coupler` | custom | `Base couple updated 62126 _J1 coupler` | `step/Base couple updated 62126 _J1 coupler.STEP` | mm | 1 | 96 × 63.976 × 106.264 |
-| `j1_link` | custom | `first joint edit 62126` | `step/first joint edit 62126.STEP` | mm | 1 | 300 × 34 × 90 |
-| `j2_link` | custom | `Joint 2 change 8126` | `step/Joint 2 change 8126.STEP` | mm | 1 | 300 × 90 × 33.5 |
-| `j3_coupler` | custom | `Joint 2 coupler 62226_J3 Coupler` | `step/Joint 2 coupler 62226_J3 Coupler.STEP` | mm | 1 | 78 × 22 × 78 |
-| `gt2_pulley_90t` | custom | `GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric` | `step/GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric.STEP` | mm | 1 | 59.188 × 21.4 × 59.188 |
-| `wrist_link` | custom | `final component arm qwrist movement` | `step/final component arm qwrist movement.STEP` | mm | 1 | 124.446 × 78 × 44 |
-| `gripper_j3_connector` | custom | `Gripper to J3 connector 7726_Gripper to J3 connector` | `step/Gripper to J3 connector 7726_Gripper to J3 connector.STEP` | mm | 2 | 23 × 12.5 × 46 |
-| `gt2_pulley_20t` | COTS | `GT2_20T_Конфигурация1` | `step/GT2_20T_Конфигурация1.STEP` | mm | 3 | 14.45 × 16 × 16 |
-| `mg996r_servo` | COTS | `Servo Motor MG996R 3D Model_Servo Motor MG996R 3D Model` | `step/Servo Motor MG996R 3D Model_Servo Motor MG996R 3D Model.STEP` | mm | 4 | 55.8 × 45.2 × 20.5 |
-| `nema17_pancake` | COTS | `nema17_pancake` | `(extracted from the full assembly)` | mm | 11 | 41.5 × 47 × 43 |
-| `nema17_40mm` | COTS | `nema17x40_with_mks` (body + shaft) | `(split from mks/nema17x40_with_mks.step)` | mm | 2 | 42 × 49 × 62.4 |
-| `mks_servo42d` | COTS | `nema17x40_with_mks` (Servo42D_Assem + standoffs + M3x30) | `(split from mks/nema17x40_with_mks.step)` | mm | 13 | 43 × 43 × 33.7 |
-
-Cycloidal drive (`cycloidal/<name>.step`: the named CadQuery builder's export at
-`cycloidal_drive@2f1f67d`; `tools/bom.py --module cycloidal_drive` counts them):
-
-| Part | Kind | CadQuery builder | Units | Solids | Bbox size (mm) |
-|---|---|---|---|---|---|
-| `cycloidal_disc_1` | designed | `src/cycloidal_disc.py:build_cycloidal_disc()` | mm | 1 | 105.885 × 105.885 × 10 |
-| `cycloidal_disc_2` | designed | `src/cycloidal_disc.py:build_cycloidal_disc(phase_offset_deg=disc2_phase)` | mm | 1 | 107 × 107 × 10 |
-| `cycloidal_eccentric_shaft` | designed | `src/eccentric_shaft.py:build_eccentric_shaft()` | mm | 1 | 26.1 × 23.1 × 26 |
-| `cycloidal_motor_plate` | designed | `src/motor_plate.py:build_motor_plate()` | mm | 1 | 140 × 140 × 9 |
-| `cycloidal_ring_gear_body` | designed | `src/ring_gear_body.py:build_ring_gear_body()` | mm | 1 | 140 × 140 × 51 |
-| `cycloidal_output_hub` | designed | `src/output_hub.py:build_output_hub()` | mm | 1 | 70.3 × 70.3 × 28 |
-| `bearing_6003` | COTS | `src/purchased_parts.py:build_bearing_6003()` | mm | 1 | 35 × 35 × 10 |
-| `bearing_6814` | COTS | `src/purchased_parts.py:build_bearing_6814()` | mm | 1 | 90 × 90 × 10 |
-| `bearing_625` | COTS | `src/purchased_parts.py:build_bearing_625()` | mm | 1 | 16 × 16 × 5 |
-| `nema17_48mm` | COTS | `src/purchased_parts.py:build_nema17_motor()` | mm | 1 | 42.3 × 42.3 × 70 |
-| `cycloidal_ring_pins` | COTS | `src/purchased_parts.py:build_ring_pins()` | mm | 21 | 111.397 × 111.698 × 35 |
-| `cycloidal_output_pins` | COTS | `src/purchased_parts.py:build_output_pins()` | mm | 4 | 64 × 64 × 45 |
-| `cycloidal_shaft_support_pin` | COTS | `src/purchased_parts.py:build_shaft_support_pin()` | mm | 1 | 5 × 5 × 20 |
-| `cycloidal_motor_bolts` | COTS | `src/purchased_parts.py:build_motor_bolts()` | mm | 4 | 36.3 × 36.3 × 13 |
-| `cycloidal_housing_bolts` | COTS | `src/purchased_parts.py:build_housing_bolts()` | mm | 8 | 132 × 132 × 59 |
-| `cycloidal_housing_nuts` | COTS | `src/purchased_parts.py:build_housing_nuts()` | mm | 8 | 133.083 × 133.083 × 3.2 |
-
-Notes:
-- The link caps `j1_cap` (`first joint cap 8726`, inch), `j2_cap_1` (`cap 1 joint 2 8726`), `j2_cap_2`
-  (`cap of joint 2 piece 2 8526`), `gripper_clamp_bracket` (`brack for hand cmap`, the pancake's holder on
-  `wrist_link`) and the SolidWorks gripper (`Gripper Mechanism`, whole: its cover, servo holder, crank links, rails,
-  sliders, fingers, ends and the MG996R's horn; the rack & pinion gripper, `assemblies/gripper.py`, took its place and
-  keeps its connector and its MG996R) are dropped from the design: they have no reference STEP or manifest entry, their products are
-  `lib/reference.py SKIPPED_PRODUCTS` and `placements.json` keeps their poses under `skipped`. (The caps were modelled
-  in assembly context, their geometry up to ~1 m from the part origin.)
-- `gt2_pulley_20t`'s product name carries the Cyrillic configuration name `Конфигурация1`
+- Full assembly: `final Arm Assembly Fully Movable.STEP` (inch units; its bytes and sha256: `manifest.json` `monolith`)
+  — not committed; `placements.json` captures its structure.
+- The NEMA 17 + MKS SERVO42D kit exports, `mks/nema17x40_with_mks.step` and `mks/nema17x48_with_mks.step` under the
+  source tree (SolidWorks 2026, 2026-09-21; `lib/reference.py MKS_EXPORT_NAME` / `MKS48_EXPORT_NAME` with their units
+  and sha256) — not committed and kept nowhere (re-export from SolidWorks if the split must be redone; the sha256
+  identifies each). What `tools/reference/split_mks_motor.py` derives from them: its docstring.
+- The cycloidal drive's references: the CadQuery builders' exports at `cycloidal_drive@2f1f67d`
+  (`docs/cycloidal_drive.md` Provenance).
+- Measured exports (`lib/reference.py MEASURED`: product, file name, sha256): nothing of them is in this folder — their
+  numbers are in the parts' params and tests (`parts/AGENTS.md` Part states → *measured*).
+- `gt2_pulley_20t`'s SolidWorks product name carries the Cyrillic configuration name `Конфигурация1`
   ("Configuration1"); it never enters our labels.
-- `gt2_pulley_90t` is a printed parametric pulley (842 faces, ~1 s import); `gripper_j3_connector`
-  has two bodies.
 
-## Designed module: the cycloidal drive
-- `New_cyloidal_assembly` (sic; path 1.3) is recorded in `placements.json` as the **designed module**
-  `cycloidal_drive#1`: its pose (the record's `world`) places
-  `assemblies/cycloidal_drive.py`, whose contents come from code (`lib/cycloidal`), not from the
-  SolidWorks node. The node's own totals / bbox stay in the record's `solidworks` block as a
-  cross-check (`tests/cycloidal/test_assembly.py`); the walker does not descend into it.
-
-## Skipped from the SolidWorks assembly
-- The 6 zero-geometry assembly-skeleton STEPs, the `base/step/` re-exports and the pancake
-  motor's internal parts (flattened into `vendor/nema17_pancake.step`); the products the design dropped: Notes, above.
+## The SolidWorks assembly's nodes
+- **Designed module:** `New_cyloidal_assembly` (sic; path 1.3) is recorded in `placements.json` as the designed module
+  `cycloidal_drive#1`: its pose (the record's `world`) places `assemblies/cycloidal_drive.py`, whose contents come from
+  code (`lib/cycloidal`), not from the SolidWorks node. The node's own totals / bbox stay in the record's `solidworks`
+  block as a cross-check (`tests/cycloidal/test_assembly.py`); the walker does not descend into it.
+- **Skipped:** the zero-geometry assembly-skeleton STEPs, the `base/step/` re-exports and the pancake motor's internal
+  parts (flattened into `vendor/nema17_pancake.step`); the products the design dropped (`lib/reference.py
+  SKIPPED_PRODUCTS`: the link caps, `gripper_clamp_bracket` and the SolidWorks gripper) have no reference STEP or
+  manifest entry, and `placements.json` keeps their poses under `skipped`. (The caps were modelled in assembly context,
+  their geometry up to ~1 m from the part origin.)
+- **Retired:** `j3_coupler#1` / `#2` (`lib/reference.py RETIRED_PRODUCTS`) — the part is gone, its records stay among
+  the occurrences: `lib/placements.py RETIRED`.
 
 ## placements.json
 `occurrences[]`: one record per placed part (`kind: part`) or sub-assembly (`kind: module`)
@@ -111,9 +59,8 @@ does - those are listed under `mounted[]` too); `mounted[]` (the keys of the rec
 `label_in_monolith` null, `rel == world = host world * mount.frame_in_host`, `mount.host` the record it is declared
 on - a SolidWorks one (a retired one for a re-seated pulley) or another mounted one: a board's motor, a bolt set's
 pulley, a nut set's screws); `skipped[]` (one record per SolidWorks node whose product the design dropped,
-`lib/reference.py SKIPPED_PRODUCTS` - the link caps, `gripper_clamp_bracket` and the SolidWorks gripper (a module: its
-parts its leaves): `path`, `label`, `reason`, leaves /
-solids / volume and the `rel` / `world` pose, moved there by `tools/reference/mount_placements.py`).
+`lib/reference.py SKIPPED_PRODUCTS` (a module's parts are its leaves): `path`, `label`, `reason`, leaves / solids /
+volume and the `rel` / `world` pose, moved there by `tools/reference/mount_placements.py`).
 The capture records stay as extracted when the design moves or turns what lies beyond a link (e.g. its length, a
 module in between): `lib/placements.py SHIFTS` / `TURNS` move the records beyond it when they are read
 (`assemblies/AGENTS.md` "Shifted occurrences", "Turned occurrences").

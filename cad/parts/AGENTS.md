@@ -123,7 +123,7 @@ origin): the SolidWorks re-export in `reference/solidworks/`, for the drive's pu
 their simplified model in `reference/cycloidal/` (`CYCLOIDAL_COTS`), for a `NATIVE_COTS` part its accepted envelope in
 `reference/native/`; `test_cots_vendor_matches_reference_frame` and `test_cots_envelope_tracks_reference_bbox` guard
 vendor swaps (`COTS_FRAME_TOL_MM`; the rule: `vendor/AGENTS.md` Rules). Swap procedure (Recipe D): `vendor/AGENTS.md`;
-what has been tried and where the vendor files come from: `vendor/README.md`.
+what has been tried in the catalog: `vendor/README.md`.
 A NEW purchased part with no catalog model and no export keeps no reference at all: Part states → *no reference*.
 The kit parts `nema17_40mm` / `mks_servo42d` live in `parts/joints/` (`parts/cycloidal/` holds the drive's parts only:
 `tests/test_parts_convention.py test_cycloidal_group_is_the_drive`); the drive motor's envelope builder is
