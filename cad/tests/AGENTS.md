@@ -46,6 +46,9 @@ the base stack above the base bottom, the driven pulleys' planes within the shaf
 coupler's stub and its driven pulley; the 90T pulley bolts: seats, reach, the opened holes, the nuts' designed press; the base_yaw
 thrust stack under `j1_coupler`),
 `test_layering.py` (the package layering, no `sys.path`, no direct part-module imports — AST scan),
+`test_gauges.py` (the fit gauges, `lib/gauges`: the list well-formed, every arm value in its sweep, the fasteners'
+clearance holes covered, the packing, imported without the kernel; slow: every coupon one solid on the bed, its round
+features at its labels' sizes, the plates, a plate's 3MF),
 `test_sweeps.py` (the joint limits keep the arm off itself: exact distances between the robot links' parts at poses
 on the limits - the upper arm over the shoulder's range against the fork and the base, the shoulder's upper limit over
 the elbow's range, the wrist at its limits, the forearm and the wrist at the elbow's limits at any roll and wrist

@@ -289,8 +289,9 @@ tight. Never design a hole smaller than its steel part.
 | Mating surfaces | +0.15 | `mating_surface_add` | pilot recess 22.30 |
 | Bolt / head clearance | +0.4 on the Ø | `bolt_clearance_add` | M3 3.4 / 5.7, M4 4.4 |
 
-Print the discs flat at 100 % infill; ≤ 0.16 mm layers for bearing seats; test-print a bearing fit
-gauge first; PETG shrinks 0.3–0.5 % over 129 mm (the housing may need ~129.5 — not compensated).
+Print the discs flat at 100 % infill; ≤ 0.16 mm layers for bearing seats; test-print the fit gauges
+first (`tools/export_gauges.py`: every fit in this table at steps round its value); PETG shrinks 0.3–0.5 % over 129 mm
+(the housing may need ~129.5 — not compensated).
 
 ## 7. Performance estimates
 

@@ -161,6 +161,9 @@ generated from the label:
   are **not modelled** are the one hand-kept table, `EXTRAS` in that tool (`assemblies/AGENTS.md`).
 - **STLs** — `./cadtool python tools/export_printables.py [--parts …]` writes `print/<name>.stl` for every printed part
   (git-ignored, mm, part-local frame, with the quantity to print); bought parts are refused.
+- **Fit gauges** — before the first parts: `./cadtool python tools/export_gauges.py` writes the test prints of every fit
+  where a bought part meets a printed one (`print/gauges/`, one 3MF per plate; `lib/gauges`); the step that fits is the
+  constant's value. A part that adds a fit adds its `Use` to `lib/gauges/fits.py`.
 - **Printability** — before a printed part's first print, and after its geometry changes: `./cadtool cad stl dfm
   print/<name>.stl --process printing --angle-limit 45` (watertight, wall thickness, overhang area, support volume;
   45° is FDM's self-supporting angle in the `cad` skill's `references/manufacturing-printing.md`), and with

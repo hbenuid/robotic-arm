@@ -34,6 +34,7 @@ placements.py # reference/placements.json -> build123d Location; the design's ch
 models.py     # model_of() / raw() / geometry() / building(): the @step model of a module, its body, a child for an assembly
 assembly.py   # assembly(name, children): the native labelled Compound node; label_shape / label_text (`name:detail`)
 cycloidal/    # the cycloidal drive: DriveConfig (params.py), layout.py, profiles.py, housing.py, disc.py, motor.py (THE NEMA 17 pilot + shaft, every kit motor's)
+gauges/       # the fit gauges - test prints of every fit where a bought part meets a printed one: fits.py GAUGES (each fit's sizes read from the constants the parts' builders use - a new fit adds its Use there), coupons.py (sweep(), the coupon builders, build(gauge); the label font in font/, SIL OFL), layout.py pack() (the bed's plates); tools/export_gauges.py writes them
 ```
 
 ## Shared dimensions (DRY)
