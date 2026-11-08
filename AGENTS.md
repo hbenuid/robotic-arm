@@ -33,8 +33,10 @@ table, the drive ratios) to agree with `software/control/src/config.py`, and one
 - The pull request is merged only when the user says so, and always as a **merge commit** — never squash, rebase or
   fast-forward (the repo's GitHub settings allow only merge commits, and its ruleset "main: pull requests only"
   rejects every push to `main` - direct, forced or a deletion - for everyone): `gh pr merge <n> --merge --subject "Merge
-  <branch>: <what it did, one line>"`, then `git pull --ff-only` in the main checkout (on `main`, clean). So `main`
-  reads one entry per branch -
+  <branch>: <what it did, one line>"`, then `git pull --ff-only` in the main checkout (on `main`, clean). GitHub
+  deletes the merged branch itself (the repo's "Automatically delete head branches" setting): what is left is the
+  local side - `git fetch --prune`, `./cadtool stop` in the worktree's `cad/`, `git worktree remove`, `git branch -d`
+  -, never a `git push origin --delete`. So `main` reads one entry per branch -
   `git log --first-parent main`, or a branch graph (VS Code's Source Control Graph, `git log --graph`) that draws
   each branch as a side line into its merge (GitHub Desktop's History is a flat list: it shows no grouping, a merge's
   row there shows the branch's whole change); the older history was fast-forwarded and stays linear. Never commit to
