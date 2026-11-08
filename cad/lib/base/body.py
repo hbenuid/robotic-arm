@@ -26,6 +26,10 @@ from lib.base.layout import (
     chamfer_inset,
     flare_points,
     foot_holes,
+    home_board_points,
+    home_outline,
+    home_reliefs,
+    home_screw_points,
     inner_r,
     joint_bolt_points,
     joint_stations,
@@ -304,7 +308,8 @@ def _slit_cuts(cfg: BaseConfig, body, part: str):
 
 def build_base(cfg: BaseConfig = DEFAULT):
     """The base: the whole SolidWorks part (cfg.joint None), else its -X side up to the joint face, the posts, the M4
-    holes and the nuts' hex pockets (from the posts' back face, nut.h deep); the foot's screw holes (cfg.foot), the
+    holes and the nuts' hex pockets (from the posts' back face, nut.h deep); the home sensor's bracket's M3 holes
+    through the plate and its nuts' hex pockets in the plate's top (cfg.home); the foot's screw holes (cfg.foot), the
     slits (cfg.slits)."""
     body = _cap(cfg, _walls(cfg)) + _plate(cfg)
     if cfg.joint is None:
@@ -315,6 +320,11 @@ def build_base(cfg: BaseConfig = DEFAULT):
         body = _bolt_holes(cfg, body)
         for z, y in joint_bolt_points(cfg):
             body = body - _x_hex(j.nut_pocket_af, (st["x_post"] - NUDGE, st["x_nut_face"]), z, y)
+    if cfg.home is not None:
+        h, (y0, y1) = cfg.home, cfg.plate.y
+        for x, z in home_screw_points(cfg):
+            body = body - _bore(h.screw_hole_dia / 2.0, y0 - NUDGE, y1 + NUDGE, x, z)
+            body = body - bd.Pos(*_pt(x, z), y1 - h.nut.h) * hex_prism(h.nut.af + h.nut_clear, 0.0, h.nut.h + NUDGE)
     return single_solid(bd.Rot(-90.0, 0.0, 0.0) * _slit_cuts(cfg, _foot_holes(cfg, body), "base"))
 
 
@@ -395,3 +405,19 @@ def build_yaw_idler_spacer(cfg: BaseConfig = DEFAULT):
     i, height = cfg.idler, yaw_idler_spacer_h(cfg)
     body = cylinder(i.land_dia / 2.0, i.land_h) + cylinder(i.riser_dia / 2.0, height - i.land_h, z0=i.land_h)
     return single_solid(body - through(i.slot_w / 2.0, height))
+
+
+def build_yaw_home_bracket(cfg: BaseConfig = DEFAULT):
+    """The base_yaw home sensor's printed bracket (YawHomeParams; parts/base/yaw_home_bracket) in its part frame
+    (lib/base/layout.py home_bracket_frame(): this module's working frame, z = 0 on its underside): the plate on its
+    outline, bracket_t thick, the board on its top; the two relief slots down from its top (through it where they reach
+    past its underside); the M3 and the M2 holes through it. Prints on its underside."""
+    h, t = cfg.home, cfg.home.bracket_t
+    body = bd.extrude(bd.Polygon(*[_pt(x, z) for x, z in home_outline(cfg)], align=None), amount=t, dir=(0.0, 0.0, 1.0))
+    for x0, x1, z0, z1, depth in home_reliefs(cfg):
+        body = body - _block((x0, x1), (z0, z1), (max(t - depth, -NUDGE), t + NUDGE))
+    for x, z in home_screw_points(cfg):
+        body = body - through(h.screw_hole_dia / 2.0, t, _pt(x, z))
+    for x, z in home_board_points(cfg):
+        body = body - through(h.board_hole_dia / 2.0, t, _pt(x, z))
+    return single_solid(body)

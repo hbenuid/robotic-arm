@@ -20,6 +20,7 @@ from lib.geom import align_min, cylinder, hex_prism, single_solid, through
 from lib.units import NUDGE
 
 # Close clearance holes for the arm's screws through printed parts.
+M2_CLEAR = 2.4          # [DESIGN] M2 (the KY-003 board's screws through the base_yaw home bracket)
 M3_CLEAR = 3.4          # [DESIGN] M3
 M4_CLEAR = 4.4          # [DESIGN] M4 (the elbow block's and the 90T pulleys' pulley bolts)
 M5_CLEAR = 5.5          # [DESIGN] M5
@@ -57,6 +58,8 @@ class NutSize:
     h: float              # m max
 
 
+M2_SHCS = ShcsSize(2.0, 3.8, 2.0, 1.5, 1.0)   # [DATASHEET] ISO 4762 M2
+M2_NUT = NutSize(2.0, 4.0, 1.6)               # [DATASHEET] ISO 4032 M2
 M4_SHCS = ShcsSize(4.0, 7.0, 4.0, 3.0, 2.0)   # [DATASHEET] ISO 4762 M4
 M4_NUT = NutSize(4.0, 7.0, 3.2)               # [DATASHEET] ISO 4032 M4
 M3_SHCS = ShcsSize(3.0, 5.5, 3.0, 2.5, 1.3)   # [DATASHEET] ISO 4762 M3
@@ -109,3 +112,4 @@ def hex_nut(size: NutSize, angle_rad: float, xy=(0.0, 0.0), z0: float = 0.0):
     its axis."""
     nut = bd.Pos(xy[0], xy[1], z0) * hex_prism(size.af, angle_rad, size.h)
     return single_solid(nut - through(size.d / 2.0, size.h, xy, z0))
+

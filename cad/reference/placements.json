@@ -11,9 +11,9 @@
  "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. A record with a `mount` block (keys under `mounted`) is a motor mount declared in lib/mounts.py, not a SolidWorks node: parent None, rel == world = host world * mount frame.",
  "root_label": "final_Arm_Assembly_Fully_Movable",
  "expected": {
-  "leaf_occurrences": 67,
-  "solids": 177,
-  "solid_volume": 2271378.775
+  "leaf_occurrences": 74,
+  "solids": 190,
+  "solid_volume": 2275355.535
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -78,6 +78,13 @@
   "gt2_idler_20t#3",
   "wrist_idler_screw#1",
   "wrist_idler_nut#1",
+  "ky003_hall_sensor#1",
+  "yaw_home_bracket#1",
+  "yaw_home_screws#1",
+  "yaw_home_nuts#1",
+  "yaw_home_board_screws#1",
+  "yaw_home_board_nuts#1",
+  "yaw_home_magnet#1",
   "forearm_roll_drive#1",
   "wrist_roll_drive#1",
   "gripper#1"
@@ -6863,6 +6870,727 @@
     9.119,
     9.001,
     5.259
+   ]
+  },
+  {
+   "key": "ky003_hall_sensor#1",
+   "part": "ky003_hall_sensor",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "base#1",
+    "link": "base_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      -3.01,
+      -38.4,
+      27.0
+     ],
+     "rotation_xyz_deg": [
+      -90.0,
+      0.0,
+      180.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the base_yaw home sensor under the 120T, branded face up, its chip under the home magnet's path; the board's header toward -X, into the base's open side"
+   },
+   "solids": 3,
+   "solid_volume": 506.869,
+   "rel": {
+    "position": [
+     -1.26398,
+     -38.4,
+     27.137842
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     -176.305545
+    ],
+    "matrix_3x4": [
+     [
+      -0.997921859,
+      0.064435731,
+      0.0,
+      -1.263980054
+     ],
+     [
+      0.0,
+      -0.0,
+      1.0,
+      -38.4
+     ],
+     [
+      0.064435731,
+      0.997921859,
+      0.0,
+      27.137841742
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -1.26398,
+     -38.4,
+     27.137842
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     -176.305545
+    ],
+    "matrix_3x4": [
+     [
+      -0.997921859,
+      0.064435731,
+      0.0,
+      -1.263980054
+     ],
+     [
+      0.0,
+      -0.0,
+      1.0,
+      -38.4
+     ],
+     [
+      0.064435731,
+      0.997921859,
+      0.0,
+      27.137841742
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -25.897,
+    -41.4,
+    19.653
+   ],
+   "world_bbox_size": [
+    29.276,
+    7.14,
+    16.161
+   ]
+  },
+  {
+   "key": "yaw_home_bracket#1",
+   "part": "yaw_home_bracket",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "base#1",
+    "link": "base_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      -41.4,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      -90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "its printed bracket, its root on the motor plate's underside on the +Z side, the board on its top"
+   },
+   "solids": 1,
+   "solid_volume": 2897.381,
+   "rel": {
+    "position": [
+     0.0,
+     -41.4,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     3.694455
+    ],
+    "matrix_3x4": [
+     [
+      0.997921859,
+      -0.064435731,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -41.4
+     ],
+     [
+      -0.064435731,
+      -0.997921859,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     0.0,
+     -41.4,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     3.694455
+    ],
+    "matrix_3x4": [
+     [
+      0.997921859,
+      -0.064435731,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -41.4
+     ],
+     [
+      -0.064435731,
+      -0.997921859,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -21.792,
+    -41.4,
+    17.705
+   ],
+   "world_bbox_size": [
+    45.295,
+    3.0,
+    37.31
+   ]
+  },
+  {
+   "key": "yaw_home_screws#1",
+   "part": "yaw_home_screws",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "base#1",
+    "link": "base_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      -41.4,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      -90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the bracket's 2 M3: the heads under its root, up through it and the plate into the nuts"
+   },
+   "solids": 2,
+   "solid_volume": 269.849,
+   "rel": {
+    "position": [
+     0.0,
+     -41.4,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     3.694455
+    ],
+    "matrix_3x4": [
+     [
+      0.997921859,
+      -0.064435731,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -41.4
+     ],
+     [
+      -0.064435731,
+      -0.997921859,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     0.0,
+     -41.4,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     3.694455
+    ],
+    "matrix_3x4": [
+     [
+      0.997921859,
+      -0.064435731,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -41.4
+     ],
+     [
+      -0.064435731,
+      -0.997921859,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    6.427,
+    -44.4,
+    45.681
+   ],
+   "world_bbox_size": [
+    14.481,
+    13.0,
+    6.08
+   ]
+  },
+  {
+   "key": "yaw_home_nuts#1",
+   "part": "yaw_home_nuts",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "base#1",
+    "link": "base_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      -41.4,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      -90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "their 2 nuts in hex pockets in the motor plate's top, flush with it"
+   },
+   "solids": 2,
+   "solid_volume": 91.818,
+   "rel": {
+    "position": [
+     0.0,
+     -41.4,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     3.694455
+    ],
+    "matrix_3x4": [
+     [
+      0.997921859,
+      -0.064435731,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -41.4
+     ],
+     [
+      -0.064435731,
+      -0.997921859,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     0.0,
+     -41.4,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     3.694455
+    ],
+    "matrix_3x4": [
+     [
+      0.997921859,
+      -0.064435731,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -41.4
+     ],
+     [
+      -0.064435731,
+      -0.997921859,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    6.008,
+    -35.8,
+    45.584
+   ],
+   "world_bbox_size": [
+    15.319,
+    2.4,
+    6.273
+   ]
+  },
+  {
+   "key": "yaw_home_board_screws#1",
+   "part": "yaw_home_board_screws",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "base#1",
+    "link": "base_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      -41.4,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      -90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the board's 2 M2: the heads on its top, down through the pad and the bracket"
+   },
+   "solids": 2,
+   "solid_volume": 91.733,
+   "rel": {
+    "position": [
+     0.0,
+     -41.4,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     3.694455
+    ],
+    "matrix_3x4": [
+     [
+      0.997921859,
+      -0.064435731,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -41.4
+     ],
+     [
+      -0.064435731,
+      -0.997921859,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     0.0,
+     -41.4,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     3.694455
+    ],
+    "matrix_3x4": [
+     [
+      0.997921859,
+      -0.064435731,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -41.4
+     ],
+     [
+      -0.064435731,
+      -0.997921859,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -5.981,
+    -44.8,
+    20.409
+   ],
+   "world_bbox_size": [
+    4.444,
+    10.0,
+    13.779
+   ]
+  },
+  {
+   "key": "yaw_home_board_nuts#1",
+   "part": "yaw_home_board_nuts",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "base#1",
+    "link": "base_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      -41.4,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      -90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "their nuts under the bracket"
+   },
+   "solids": 2,
+   "solid_volume": 34.287,
+   "rel": {
+    "position": [
+     0.0,
+     -41.4,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     3.694455
+    ],
+    "matrix_3x4": [
+     [
+      0.997921859,
+      -0.064435731,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -41.4
+     ],
+     [
+      -0.064435731,
+      -0.997921859,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     0.0,
+     -41.4,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     3.694455
+    ],
+    "matrix_3x4": [
+     [
+      0.997921859,
+      -0.064435731,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -41.4
+     ],
+     [
+      -0.064435731,
+      -0.997921859,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -6.151,
+    -43.0,
+    20.005
+   ],
+   "world_bbox_size": [
+    4.785,
+    1.6,
+    14.588
+   ]
+  },
+  {
+   "key": "yaw_home_magnet#1",
+   "part": "yaw_home_magnet",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "gt2_pulley_120t#1",
+    "link": "shoulder_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      -22.251407,
+      11.2,
+      -15.292968
+     ],
+     "rotation_xyz_deg": [
+      90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the home magnet glued onto the 120T's outer face, south pole out: over the KY-003's chip at BASE_YAW_HOME_DEG"
+   },
+   "solids": 1,
+   "solid_volume": 84.823,
+   "rel": {
+    "position": [
+     3.199502,
+     -32.3,
+     -26.809759
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     -131.305545
+    ],
+    "matrix_3x4": [
+     [
+      -0.660074371,
+      0.751200256,
+      0.0,
+      3.199502005
+     ],
+     [
+      0.0,
+      -0.0,
+      1.0,
+      -32.3
+     ],
+     [
+      0.751200256,
+      0.660074371,
+      0.0,
+      -26.80975887
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     3.199502,
+     -32.3,
+     -26.809759
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     0.0,
+     -131.305545
+    ],
+    "matrix_3x4": [
+     [
+      -0.660074371,
+      0.751200256,
+      0.0,
+      3.199502005
+     ],
+     [
+      0.0,
+      -0.0,
+      1.0,
+      -32.3
+     ],
+     [
+      0.751200256,
+      0.660074371,
+      0.0,
+      -26.80975887
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    0.2,
+    -32.3,
+    -29.81
+   ],
+   "world_bbox_size": [
+    6.0,
+    3.0,
+    6.0
    ]
   },
   {

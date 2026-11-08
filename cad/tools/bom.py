@@ -38,8 +38,8 @@ EXTRAS = [
     ("forearm_roll_drive", "M3 hex nut (ISO 4032) - in the roll pulley's core, for the forearm wall's screws", _FOREARM.roll_end.bolt_count,
      "pushed into the pockets from the pulley's cable bore before the wall goes on"),
     ("forearm_roll_drive", "home sensor: KY-003 hall module (A3144, 5 V) on the frame's tower beside the stop post + a magnet in the shaft's stop lug", 1,
-     ("modelled, not placed yet (parts/joints/ky003_hall_sensor, UNPLACED); the magnet is not modelled; wired to the MKS "
-      "board's limit input (docs/open_issues.md); the hard stop itself is the printed lug + post")),
+     ("not placed here yet (parts/joints/ky003_hall_sensor - base_yaw's is, ky003_hall_sensor#1); its magnet is not "
+      "modelled; wired to the MKS board's limit input (docs/open_issues.md); the hard stop itself is the printed lug + post")),
     ("wrist_roll_drive", (f"M3 x {_WRIST.roll.clamp_screw_len:g} socket head cap screw (ISO 4762) - the wrist roll rotor's clamp: the "
                           "pulley through both 6806s into the shaft"), len(wrist_clamp_points(_WRIST)),
      "heads in the pulley face's counterbores, into the nuts in the shaft's flange; tighten before the gripper's connector goes on"),

@@ -27,8 +27,8 @@ PETG_DENSITY = 1.27e-3  # [DESIGN] g/mm^3 - printed-part mass estimates
 
 # --- Fasteners - lib/fasteners.py (a leaf: the sizes, the clearance holes, the plain screw / nut builders) ----
 from lib.fasteners import (  # noqa: E402, F401
-    M3_CLEAR, M3_CSK, M3_NUT, M3_PITCH, M3_SHCS, M4_CLEAR, M4_NUT, M4_PITCH, M4_SHCS, M5_CLEAR, M5_NUT, M5_PITCH, M5_SHCS, csk_volume, nut_volume,
-    shcs_volume,
+    M2_CLEAR, M2_NUT, M2_SHCS, M3_CLEAR, M3_CSK, M3_NUT, M3_PITCH, M3_SHCS, M4_CLEAR, M4_NUT, M4_PITCH, M4_SHCS, M5_CLEAR,
+    M5_NUT, M5_PITCH, M5_SHCS, csk_volume, nut_volume, shcs_volume,
 )
 
 # --- Belt drive (GT2) - lib/belts.py (a leaf: lib/forearm/ imports it directly) ------------------
@@ -71,7 +71,8 @@ from lib.sensors import (  # noqa: E402, F401
     A3144_BODY_H, A3144_BODY_T, A3144_BODY_W, A3144_HALL_DEPTH, A3144_LEAD_PITCH, A3144_LEAD_T, A3144_LEAD_W,
     KY003_BOARD_L, KY003_BOARD_T, KY003_BOARD_W, KY003_HEADER_H, KY003_HOLE_DIA, KY003_HOLE_INSET, KY003_LEAD_BEND_X,
     KY003_LEAD_OUT, KY003_LEAD_TAIL, KY003_MASS_G, KY003_PIN_OUT, KY003_PIN_PITCH, KY003_PIN_TAIL, KY003_PIN_W,
-    KY003_PINS, ky003_hall_point,
+    KY003_PINS, A3144_OPERATE_MT, HOME_MAGNET_DIA, HOME_MAGNET_T, NDFEB_N52_BR_T, disc_magnet_bz,
+    ky003_hall_point, switch_half_width,
 )
 
 # The mounts (host-part frames, mm): where the pads sit in the SolidWorks links. base_yaw takes the 48 mm motor
@@ -302,6 +303,15 @@ ROLL_BACK_MAGNETS_MASS_G = NDFEB_DENSITY * 2 * len(_BACK.magnet_points) * _cyl_v
 # the wrist frame's back panel's magnets (parts/wrist/wrist_back_magnets; lib/wrist/params.py WristBackPanelParams), likewise
 _WBACK = _WRIST.roll.back
 WRIST_BACK_MAGNETS_MASS_G = NDFEB_DENSITY * 2 * len(_WBACK.magnet_points) * _cyl_vol(_WBACK.magnet_dia / 2.0, _WBACK.magnet_t)   # 0.85, 8x 3 x 2
+# the base_yaw home magnet (parts/base/yaw_home_magnet; lib/sensors.py HOME_MAGNET_*): one plain disc, likewise
+YAW_HOME_MAGNET_MASS_G = NDFEB_DENSITY * _cyl_vol(HOME_MAGNET_DIA / 2.0, HOME_MAGNET_T)   # 0.64, Ø6 x 3
+# the base_yaw home sensor's bracket's fasteners (parts/base/yaw_home_{screws,nuts,board_screws,board_nuts};
+# lib/base/params.py YawHomeParams), steel as above
+_HOME = _BASE.home
+YAW_HOME_SCREWS_MASS_G = STEEL_DENSITY * len(_HOME.screw_points) * shcs_volume(_HOME.screw, _HOME.screw_len)              # 2.1, 2x M3x10
+YAW_HOME_NUTS_MASS_G = STEEL_DENSITY * len(_HOME.screw_points) * nut_volume(_HOME.nut)                                    # 0.7, 2x M3
+YAW_HOME_BOARD_SCREWS_MASS_G = STEEL_DENSITY * 2 * shcs_volume(_HOME.board_screw, _HOME.board_screw_len)                  # 0.7, 2x M2x8
+YAW_HOME_BOARD_NUTS_MASS_G = STEEL_DENSITY * 2 * nut_volume(_HOME.board_nut)                                              # 0.3, 2x M2
 # the base_yaw motor's (parts/base/yaw_motor_screws), likewise
 from lib.base.layout import motor_holes as _base_motor_holes  # noqa: E402
 
@@ -325,6 +335,13 @@ FORK_SLEEVE_NUTS_MASS_G = STEEL_DENSITY * CYCLOIDAL_SLEEVE_BOLT_COUNT * nut_volu
 # limits are set by the sweeps and the hard stops below); the URDF and SDF are checked against these by
 # tools/robot/derive.py --check.
 BASE_YAW_LIMIT_DEG = 175.0        # [ESTIMATE] symmetric +/- range; j1_coupler (carrying the drive's stator) turns on the base
+# base_yaw's home: the angle where the magnet in the 120T's outer face (lib/pulley/params.py YAW_MAGNET_DEG) stands over
+# the KY-003's chip under it (lib/base/params.py YawHomeParams) - the middle of the switch's zone, its edge toward + is
+# where homing (turning toward -) stops; the zone runs on past the - end and stops short of the + end, 10 deg on round
+# the circle (tests/base/test_yaw_home.py). The software homes on that edge (robot/AGENTS.md).
+from lib.yaw_coupler.layout import yaw_magnet_deg as _yaw_magnet_deg  # noqa: E402
+
+BASE_YAW_HOME_DEG = round(_yaw_magnet_deg(_YAW_COUPLER) - _BASE.home.chip_deg, 6)   # -169.5
 # the 21:1 cycloidal drive (CYCLOIDAL_RATIO) between j1_coupler and j1_link: (lower, upper); the upper - the arm pitched
 # down in front - stops 2.5 deg before the upper arm, rising off the drive's middle, reaches j1_coupler's disc (69.5 deg;
 # inside its 1 mm running gap from 68.6 - tests/test_sweeps.py), the lower is an [ESTIMATE] (the upper arm reaches the

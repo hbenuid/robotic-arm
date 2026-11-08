@@ -2,10 +2,12 @@
 
 The joints' endstop / home sensor: the A3144 switches when a magnet's SOUTH pole comes up to its branded face; the
 board carries its pull-up, a status LED and the 3-pin header (-, +, S) - S reads low while the magnet is there. The
-chip is rated 4.5..24 V: run it at 5 V. NOT PLACED yet (UNPLACED below, parts/AGENTS.md "Modelled, not placed yet"):
-the forearm roll's home sensor, the chip on the frame's tower beside the stop post, in the shaft's bay behind bearing 1
-(forearm_roll_block), and a magnet in the shaft's stop lug (forearm_roll_shaft) - neither is designed yet; the bay is
-bored on through the frame's back, so the board can sit there or the chip go on its leads (docs/open_issues.md).
+chip is rated 4.5..24 V: run it at 5 V. Each joint's is designed on its own (docs/open_issues.md, the home sensors).
+
+In the arm: x1 so far - base_yaw's (ky003_hall_sensor#1, a mount on base#1 - lib/mounts.py YAW_HOME_MOUNTS): on its
+bracket under the base's motor plate (yaw_home_bracket), its chip under the 120T's home magnet (yaw_home_magnet). The
+forearm roll's - beside the stop post on the frame's tower, a magnet in the shaft's stop lug - is not designed yet; its
+order line is tools/bom.py EXTRAS.
 
 No catalog model (step.parts has no KY-003 and no A3144, only bare TO-92S packages - vendor/README.md) and no
 SolidWorks export: a NATIVE COTS part (lib/reference.py NATIVE_COTS) - its envelope IS the geometry and its reference
@@ -55,8 +57,6 @@ MASS_G = KY003_MASS_G   # [ESTIMATE] see lib/sensors.py
 PURCHASE_SPEC = "KY-003 hall-effect sensor module (A3144 / 3144E unipolar hall switch, 3-pin 2.54 header), 5 V"
 PURCHASE_QTY = 1    # pieces per occurrence
 PURCHASE_NOTE = "sold in packs of 10; the chip is rated 4.5-24 V (not the listings' 3.3 V) - power it at 5 V"
-UNPLACED = ("the forearm roll's home sensor: its seat beside the frame's stop post and the magnet in the shaft's stop lug are not "
-            "designed yet (docs/open_issues.md) - tools/bom.py EXTRAS carries the order line")
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 

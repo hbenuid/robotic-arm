@@ -32,7 +32,8 @@ def _inside(shape, x: float, y: float, z: float) -> bool:
 def test_they_are_purchased_parts_with_no_reference_in_the_base_group():
     bought = {n for n in R.NO_REFERENCE if parts.bought(n) and parts.GROUPS[n] == "base"}
     fork = {n for n in bought if n.startswith("fork_")}                               # tests/base/test_fork_bolts.py
-    assert set(LOCKS) == bought - {"yaw_belt", "yaw_idler_screw", "yaw_idler_nut", "yaw_motor_screws"} - fork   # tests/test_belts.py,
+    home = {n for n in bought if n.startswith("yaw_home_")}                          # tests/base/test_yaw_home.py
+    assert set(LOCKS) == bought - {"yaw_belt", "yaw_idler_screw", "yaw_idler_nut", "yaw_motor_screws"} - fork - home   # tests/test_belts.py,
     #                                                                     test_yaw_idler.py, test_yaw_motor_screws.py
     for name in LOCKS:
         mod = parts.load(name)
