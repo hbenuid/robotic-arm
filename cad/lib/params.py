@@ -35,7 +35,7 @@ from lib.fasteners import (  # noqa: E402, F401
 from lib.belts import (  # noqa: E402, F401
     GT2_BELT_BACK, GT2_BELT_MASS_G_PER_M, GT2_BELT_THICKNESS, GT2_BELT_W, GT2_BLEND_R, GT2_FLANK_ANGLE, GT2_FLANK_R, GT2_GROOVE_R, GT2_IDLER_BORE, GT2_IDLER_CHANNEL_W,
     GT2_IDLER_FLANGE_DIA, GT2_IDLER_SEAT_DIA, GT2_IDLER_WIDTH, GT2_PITCH, GT2_PLD, GT2_PULLEY_20T_PITCH_DIA,
-    GT2_PULLEY_20_60T_TEETH, GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_BOLT_R, GT2_PULLEY_90T_FACE_Y, GT2_PULLEY_90T_HEAD_SEAT, GT2_PULLEY_90T_PITCH_DIA,
+    GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_BOLT_R, GT2_PULLEY_90T_FACE_Y, GT2_PULLEY_90T_HEAD_SEAT, GT2_PULLEY_90T_PITCH_DIA,
     GT2_PULLEY_90T_TEETH, GT2_PULLEY_120T_TEETH, GT2_RATIO, GT2_TIP_R, GT2_TOOTH_DEPTH, STANDARD_2GT_LENGTHS, flank_offset, pulley_90t_bolt_points,
     pulley_od,
 )
@@ -140,9 +140,9 @@ BASE_MOTOR_20T_HUB_Z = round(YAW_BELT_Y - BASE_MOTOR_PATTERN_CENTRE[1] - _FOREAR
 from lib.base.layout import yaw_idler_spacer_h as _yaw_idler_spacer_h  # noqa: E402
 from lib.base.layout import yaw_idler_y as _yaw_idler_y  # noqa: E402
 
-YAW_IDLER_Y = round(_yaw_idler_y(_BASE), 6)                   # -35.6 the idler's lower face (level with the belt): the spacer's land
+YAW_IDLER_Y = round(_yaw_idler_y(_BASE), 6)                   # -29.1 the idler's lower face (level with the belt): the spacer's land
 YAW_IDLER_SPACER_H = round(_yaw_idler_spacer_h(_BASE), 6)     # 4.3 the spacer, the mount's plate's top to the idler's lower face
-YAW_IDLER_NUT_Y = _BASE.plate.y[0]                            # -44.9 the nut's seat: the plate's underside, between the rails
+YAW_IDLER_NUT_Y = _BASE.plate.y[0]                            # -38.4 the nut's seat: the plate's underside, between the rails
 # The forearm roll (lib/forearm/params.py RollEndParams; the rotor's wall on j2_link, the elbow block + shaft in M3):
 FOREARM_ROLL_AXIS_Z = _FOREARM.roll_end.axis_z     # 25 [REFERENCE] the roll axis' N-station in j2_link's frame = the wrist centre's (42 - 17)
 FOREARM_ROLL_TURN_DEG = _FOREARM.roll_turn_deg     # 180 [DESIGN] the forearm + all beyond it turned about the roll axis from the capture
@@ -244,7 +244,7 @@ from lib.yaw_coupler.params import DEFAULT as _YAW_COUPLER  # noqa: E402
 _PULLEY_BOLTS = len(pulley_90t_bolt_points())
 ELBOW_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _FOREARM.drive.pulley_screw_len)   # 16.2, 4x M4x30
 WRIST_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _WRIST.flange.pulley_screw_len)    # 16.2, 4x M4x30
-YAW_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _YAW_COUPLER.hub.pulley_screw_len)   # 20.1, 4x M4x40
+YAW_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _YAW_COUPLER.hub.pulley_screw_len)   # 16.2, 4x M4x30
 PULLEY_NUTS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * nut_volume(M4_NUT)                                              # 3.0, 4x M4 (each joint)
 # the wrist belt's tensioner's axle and its nut (parts/joints/wrist_idler_{screw,nut}; lib/forearm/params.py IdlerParams), likewise
 WRIST_IDLER_SCREW_MASS_G = STEEL_DENSITY * shcs_volume(_FOREARM.idler.screw, _FOREARM.idler.screw_len)   # 5.0, M5x20

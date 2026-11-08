@@ -229,6 +229,25 @@ def test_cycloidal_dead_params_gone():
         assert not hasattr(group, name), name
 
 
+def test_the_roll_block_repeats_the_retired_coupler():
+    """The forearm roll drive's block took the elbow coupler's place (lib/coupler/params.py, the part retired): it
+    repeats the coupler's stub, its journal (carried up: the post) and the 90T's bolt circle at the elbow, and DEFAULT's
+    inner-ring shoulder and longer stub - DEFAULT adds exactly those two things to the SolidWorks part."""
+    from dataclasses import replace
+
+    from lib.coupler import DEFAULT as COUPLER
+    from lib.coupler import LEGACY
+    from lib.forearm import DEFAULT as FOREARM
+
+    d = FOREARM.drive
+    assert (d.stub_dia, d.post_dia, d.pulley_bolt_r) == (LEGACY.stub_dia, LEGACY.journal_dia, LEGACY.pulley_bolt_r)
+    assert LEGACY.step is None and COUPLER.step[0] == d.step_dia
+    assert math.isclose(d.step_x[1] - d.step_x[0], COUPLER.step[1] - COUPLER.journal_y1, abs_tol=1e-9)
+    assert math.isclose(d.stub_x[1] - d.stub_x[0], COUPLER.stub_y1 - COUPLER.step[1], abs_tol=1e-9)
+    assert replace(COUPLER, step=None, stub_y1=LEGACY.stub_y1) == LEGACY
+    assert COUPLER.stub_y1 == LEGACY.stub_y1 + p.PULLEY_SEAT_SHIFT
+
+
 def test_the_6806_pair_fits_every_belt_joint_bore():
     """lib/bearings.py against the three bores it goes in (base_yaw, elbow_pitch, wrist_pitch) and the stubs in it:
     every seat takes the OD and is at least a bearing deep each side of the lip, every lip clears the inner rings,
@@ -248,7 +267,7 @@ def test_the_6806_pair_fits_every_belt_joint_bore():
              (b.seat_dia, b.lip_z[1], b.seat_z1), (b.seat_dia, w.z0, b.lip_z[0]),               # j2_link
              (c.upper_dia, c.lip_y[1], BASE.cap.ring_top_y), (c.lower_dia, BASE.cap.boss_y0, c.lip_y[0])]   # base
     for dia, lo, hi in seats:
-        assert dia >= od and hi - lo >= width, (dia, lo, hi)
+        assert dia >= od and hi - lo >= width - 1e-9, (dia, lo, hi)   # the base's lower seat exactly a bearing deep
     for lip in (e.lip_dia, b.lip_dia, c.lip_dia):
         assert shoulder + 2.0 < lip < od
 

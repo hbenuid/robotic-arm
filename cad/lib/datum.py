@@ -34,8 +34,8 @@ _FACET_DEG = 360.0 / _BASE.shell.sides if _BASE.shell.sides else 0.0
 BASE_TURN_DEG = round(CAPTURE_YAW_DEG - round(CAPTURE_YAW_DEG / _FACET_DEG) * _FACET_DEG, 6) if _FACET_DEG else 0.0
 BASE_FORWARD = (-math.cos(math.radians(BASE_TURN_DEG)), 0.0, math.sin(math.radians(BASE_TURN_DEG)))   # the base's -X_W, turned with it:
 #                                                                                                       the arm extends along it at zero
-BASE_BOTTOM_Y = _BASE.shell.y0               # -112.0 [DESIGN] the base's bottom face (mounting face; base#1 sits at identity): the
-#                                              SolidWorks -100.9 lowered under the base_yaw motor's board (lib/base/params.py BOARD_CLEAR)
+BASE_BOTTOM_Y = _BASE.shell.y0               # -105.5 [DESIGN] the base's bottom face (mounting face; base#1 sits at identity): BOARD_CLEAR
+#                                              under the base_yaw motor's board, the plate and the motor up with the belt (lib/base/params.py)
 
 IDENTITY = ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0))   # a frame as data: (position mm, rotation_xyz_deg)
 

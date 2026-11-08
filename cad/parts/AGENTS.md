@@ -32,8 +32,8 @@ Custom parts declare `REFERENCE = NAME` (`None` for a *measured* or a printed *n
 `LOCAL_FROM_REF` (`IDENTITY` when left out):
 - *wrapper* (`CONVERTED = False`, from `_templates/wrapper.py`): the model returns
   `reference/solidworks/<name>.step` (via `lib.reference.load` → `cadgen.step.read`, an input of the build)
-  in the SolidWorks part-file frame — the day-one state of every custom part (the ones still wrappers:
-  `docs/open_issues.md` "Not converted yet");
+  in the SolidWorks part-file frame — the day-one state of every custom part (none is left: `tools/bom.py`'s
+  print list gives each part's state);
 - *parametric* (`CONVERTED = True`, from `_templates/designed.py`): real build123d — see "Converting a part" below.
 - *designed* (`CONVERTED = True`, `REFERENCE = NAME`, registered in `lib/reference.py DESIGNED`):
   the cycloidal drive's ported printed parts (`cycloidal_shell_ring`, designed here, is *no reference*) — the
@@ -63,12 +63,12 @@ Custom parts declare `REFERENCE = NAME` (`None` for a *measured* or a printed *n
   `tests/pulley/test_gt2_pulley_120t.py`; the base_yaw pulley bolts: `tests/base/test_yaw_pulley_bolts.py`). A new
   one: its builder, its `NO_REFERENCE` row, its test, then Recipe C. `tests/test_parts_convention.py` checks the state;
   a vendor model for a purchased one makes it an ordinary COTS part (Recipe A / D).
-- *measured* (`CONVERTED = True`, `REFERENCE = None`, registered in `lib/reference.py MEASURED`): converted from a
-  SolidWorks export that is measured once and NOT committed (`gt2_pulley_20_60t`). No reference file, no manifest
-  entry, so neither the import tools nor `tests/test_reference_match.py` see it; `MEASURED` records the export (its
-  product, file and sha256) and the part's own tests hold the numbers measured on it (arc centres, surfaces, volume,
-  bbox, feature probes: the measured values written into the test, `tests/pulley/test_gt2_pulley_20_60t.py`), its
-  params tagged `[REFERENCE]`.
+- *measured* (`CONVERTED = True`, `REFERENCE = None`, registered in `lib/reference.py MEASURED`): converted from an
+  export that is measured once and NOT committed (the gripper's `gripper_base`, `gripper_rack`, `gripper_jaw`,
+  `gripper_pinion`). No reference file, no manifest entry, so neither the import tools nor
+  `tests/test_reference_match.py` see it; `MEASURED` records the export (its product, file and sha256) and the part's
+  own tests hold the numbers measured on it (volume, bbox, feature probes: the measured values written into the test,
+  `tests/gripper/test_measured_parts.py`), its params tagged `[REFERENCE]`.
   `tests/test_parts_convention.py` checks the state.
 - *diverged conversion*: a converted CUSTOM part whose DEFAULT build deliberately leaves its SolidWorks
   reference (e.g. `j2_link`, whose elbow end gave way to the roll joint; `gt2_pulley_90t`, its bolt holes opened to
@@ -123,7 +123,7 @@ origin): the SolidWorks re-export in `reference/solidworks/`, for the drive's pu
 their simplified model in `reference/cycloidal/` (`CYCLOIDAL_COTS`), for a `NATIVE_COTS` part its accepted envelope in
 `reference/native/`; `test_cots_vendor_matches_reference_frame` and `test_cots_envelope_tracks_reference_bbox` guard
 vendor swaps (`COTS_FRAME_TOL_MM`; the rule: `vendor/AGENTS.md` Rules). Swap procedure (Recipe D): `vendor/AGENTS.md`;
-what has been tried and where the vendor files come from: `vendor/README.md`.
+what has been tried in the catalog: `vendor/README.md`.
 A NEW purchased part with no catalog model and no export keeps no reference at all: Part states → *no reference*.
 The kit parts `nema17_40mm` / `mks_servo42d` live in `parts/joints/` (`parts/cycloidal/` holds the drive's parts only:
 `tests/test_parts_convention.py test_cycloidal_group_is_the_drive`); the drive motor's envelope builder is

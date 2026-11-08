@@ -1,28 +1,25 @@
 # Cycloidal drive — 21:1 shoulder-pitch actuator, its shell turning
 
-**Purpose:** the specification of the drive (carried over from the `cycloidal_drive` repo, corrected
-where the code disagreed with it), where it lives in `cad/`, what changed in the build123d port, the turning
-shell it builds now (§5.5), and how it is attached to the arm.
+**Purpose:** the specification of the drive (ported from the `cycloidal_drive` repo), the turning shell it builds now
+(§5.5), and how it is attached to the arm (§10).
 
 ## Provenance
-- Designed in CadQuery in [`hbenuid/cycloidal_drive`](https://github.com/hbenuid/cycloidal_drive);
-  imported at `2f1f67d` (117 commits) by a subtree merge into `cad/cycloidal_import/` (`6739509`),
-  ported to build123d (`f670d20` printed parts, `7c4b9aa` purchased parts, `8b89e20` assembly,
-  robot description in the following commit) and the import directory removed once the port was
-  complete — `git log` keeps every original commit. The old repo is untouched.
-- **Reference geometry** = the CadQuery builders' own STEP exports at that revision, produced by
-  `tools/cycloidal/export_cadquery.py` (run inside the old repo's venv) and copied by
-  `tools/cycloidal/import_cadquery.py` into `reference/cycloidal/<name>.step` (manifest kind `designed` for
-  the printed parts, `cots` for the purchased ones - `lib/reference.py DESIGNED` / `CYCLOIDAL_COTS` -,
-  `origin: cycloidal_drive@2f1f67d`). `tests/cycloidal/test_port.py` proves the port reproduces them: identical
-  face sets; identical tessellations and the exact analytic volume for every part but the two spline discs, which
-  match the reference's lobe spline instead (§11).
+- Designed in CadQuery in [`hbenuid/cycloidal_drive`](https://github.com/hbenuid/cycloidal_drive) and ported to
+  build123d at `2f1f67d` (`lib/reference.py CYCLOIDAL_REV`; `git log` keeps the port's commits).
+- **Reference geometry** = the CadQuery builders' own STEP exports at that revision, in `reference/cycloidal/<name>.step`
+  (manifest kind `designed` for the printed parts, `cots` for the purchased ones - `lib/reference.py DESIGNED` /
+  `CYCLOIDAL_COTS` -, `origin: cycloidal_drive@2f1f67d`; regenerating them: `reference/AGENTS.md`).
+  `tests/cycloidal/test_port.py` proves the port reproduces them in `LEGACY_CONFIG`: identical face sets; identical
+  tessellations and the exact analytic volume for every part but the two spline discs, which match the reference's
+  lobe spline instead (`spline_deviation`). A part `DEFAULT_CONFIG` has moved away from its export (the bolt count,
+  §5.2; the gear size and the pillar tips, §5.4; the turning shell, §5.5) declares `REFERENCE_BUILD`, its
+  `LEGACY_CONFIG` build, and the test compares that.
 
 ## Overview
 
 | Parameter | Value |
 |---|---|
-| Application | The arm's `shoulder_pitch` joint (~355 mm reach to the wrist centre, stretched out: `robot/frames.py` joint origins) — the `j1_coupler` fork holds its hub and motor, `j1_link` rises off its turning shell, printed with the shell's body (§12) |
+| Application | The arm's `shoulder_pitch` joint (~355 mm reach to the wrist centre, stretched out: `robot/frames.py` joint origins) — the `j1_coupler` fork holds its hub and motor, `j1_link` rises off its turning shell, printed with the shell's body (§10) |
 | Type | Two-disc cycloidal drive, discs 180° apart; the carrier held, the housing shell the output (§5.5) |
 | Gear ratio | 21:1 (21 ring pins, 20 lobes; the shell turns the same way as the motor) — `lib/params.py CYCLOIDAL_RATIO` (`DriveConfig.ratio`; the port's 20:1 held the ring) |
 | Motor | NEMA 17, 48 mm body, 22 mm × Ø5 D-shaft (`parts/cycloidal/nema17_48mm.py`; the shown geometry is `vendor/nema17_48mm.step`, the real body from the user's kit export, its own boss + shaft cut off for this motor's pilot + shaft, `lib/cycloidal/motor.py`) + its MKS SERVO42D board kit on the rear face (`parts/joints/mks_servo42d.py`, `z_mks_board` = −48) |
@@ -125,6 +122,9 @@ prisms): each module's `_envelope()`, which is also its reference STEP; where a 
 `vendor/nema17_48mm.step`, the kit export's body (Overview); see `vendor/README.md` for each, and for why the 6003
 and 6814 catalog models were not adopted.
 
+What to order: `./cadtool python tools/bom.py --module cycloidal_drive` (the bolts and nuts that hold the drive in the
+`j1_coupler` fork are on the arm's list; the shell's body is printed as `j1_link`).
+
 ## 4. Axial stack-up (`cfg.stack_up`; z = 0 at the motor-plate outer face, +Z inward)
 
 | Layer | Thickness | Running total |
@@ -169,32 +169,26 @@ housing bolts at −12.5, nuts at 53.3; shaft, motor, motor plate and shell ring
    M4 holes with Ø7.4 × 4.5 counterbores in the end face (z −13). The motor plate itself
    (`parts/cycloidal/cycloidal_motor_plate.py`) is held: §5.5.
 2. **The body** (`lib/cycloidal/housing.py build_shell_body`, z 9..61), **printed as one with `j1_link`** (the upper
-   arm rises off it, §12): the Ø108 bore round the discs (9..39), a pin ring round the hub's flange (39..48) with the
+   arm rises off it, §10): the Ø108 bore round the discs (9..39), a pin ring round the hub's flange (39..48) with the
    ring pins' blind holes from its face on the bore, the hub-end 6814's seat (48..58), the lip (58..61); the M4
    through-holes, each backed by a full-height bolt pillar, and the housing nuts' **captive hex pockets** (7.2 AF)
    from the hub end down to the nuts' seats, turned `bolt_nut_turn_deg` (a flat outward, §5.4).
-
-The port's two parts were its **motor plate** (z 0..9, the housing half) and its **ring gear body**
-(`parts/cycloidal/cycloidal_ring_gear_body.py`, local z 0..51 at stack 9..60: 21 blind ring-pin holes Ø4.20 × 31.5
-with 1 mm entry funnels, `ring_pin_entry_chamfer_*`, the stepped bore Ø116 / the Ø90.15 two-bearing seat / the lip,
-the nut pockets in its output face); both are `LEGACY_CONFIG` builds now (`REFERENCE_BUILD`, `tests/cycloidal/test_port.py`),
-the ring gear body modelled but not placed (`UNPLACED`).
 
 **Shared outer profile** — both parts carry the same pillar / window silhouette around the bolt
 circle (pillars `pillar_inner_w` 18 at the bore, `pillar_outer_w` 10 at the OD, one per bolt -
 `lib/cycloidal/layout.py pillar_corners`) from end to end; the shell ring seats on the body's pillar faces, no
 continuous rim. One shared cutter (`lib/cycloidal/housing.py reveal_window_cutter`) is subtracted from every housing
 base solid. The turning shell's body keeps `ShellParams.arm_windows` (2) of its windows solid - the two either side of
-its first pillar, where the upper arm rises off it (`arm_root`, §12); the other four open on the discs and the ring
+its first pillar, where the upper arm rises off it (`arm_root`, §10); the other four open on the discs and the ring
 pins; the shell ring's six are recesses in its wall, its pin ring closed inside them.
 
 **Bolt count** (`bolt_count`) — a departure from the port (the others: the gear size and the pillar tips, §5.4, and
 the turning shell, §5.5): `DEFAULT_CONFIG` builds 6 bolts where the port (`LEGACY_CONFIG`) had 8, at 60°, the first
 at `bolt_start_deg` = `ARM_DEG` (47.584167°, the port's 0°): on the centreline of the upper arm, which rises off the
-turning shell between the two windows either side of it (§12; `tests/upper_arm/test_j1_link.py` checks the angle
+turning shell between the two windows either side of it (§10; `tests/upper_arm/test_j1_link.py` checks the angle
 against `j1_link`'s frame). The bolt circle sits 8.5 mm outside the
-ring pins', so any start clears them. The port's two housing parts and the housing bolts / nuts declare
-`REFERENCE_BUILD` (their `LEGACY_CONFIG` build), which `tests/cycloidal/test_port.py` (the parts) and
+ring pins', so any start clears them. The port's motor plate and the housing bolts / nuts declare
+`REFERENCE_BUILD` (their `LEGACY_CONFIG` build), which `tests/cycloidal/test_port.py` (the plate) and
 `test_cots_envelope_tracks_reference_bbox` (the bolts / nuts) compare with the CadQuery exports.
 
 **Outer-edge chamfer** (`edge_chamfer` 1.0; the port's 1.5, `chamfer_outer_silhouette`): the pillars' outer vertical
@@ -225,8 +219,8 @@ bore left 0.9 there, and the 1.5 edge chamfer broke into the holes). The discs f
 the pin circle's, §8: K1 = e·N / R goes 0.58 → 0.63, no undercut); the 6814s, the hub, the shaft, the output pins,
 the stack-up and every fastener do not change. **The limit** is the pin rings' wall: the pins stand
 `ring_pin_engagement` into it, their holes 1.9 outside `ring_bore_dia` (`test_pin_holes_in_the_pin_rings`), as
-between the pillars; the 6814 seats lie past their ends — test-print a pin ring (§6). The discs, the ring pins and the port's housing
-parts declare `REFERENCE_BUILD` for it (§5.2, §11).
+between the pillars; the 6814 seats lie past their ends — test-print a pin ring (§6). The discs, the ring pins and the port's motor
+plate declare `REFERENCE_BUILD` for it (Provenance).
 
 **Pillar tips** (`LUG_WALL`): each housing nut and its pocket are turned a flat outward (`bolt_nut_turn_deg` 30), and
 `LUG_WALL` of plastic stands past the pocket, so the od is the bolt circle + the pocket's AF + 2 × `LUG_WALL` (the port
@@ -238,12 +232,12 @@ nut 3.1 of wall is left. The bolt circle stays at the pins' distance.
 
 `DEFAULT_CONFIG` turns the drive inside out: the **carrier** - the output hub and its pins, which stop the discs
 turning - and the **motor** are held, the `j1_coupler` fork gripping the hub at one end and the motor plate's sleeve
-at the other (`lib/yaw_coupler/params.py ForkParams`, §12); the **housing shell** - the shell ring, the body round the
+at the other (`lib/yaw_coupler/params.py ForkParams`, §10); the **housing shell** - the shell ring, the body round the
 discs and the ring pins - is the output, so the ratio is the ring pins' 21 (`DriveConfig.ratio`), the shell turning
 the same way as the motor. **Why:** the port carried the whole arm on two 6814s stacked in one seat, centres 10 apart,
 so their play and the PETG's give tipped the arm; the turning shell runs on one 6814 at each end of the gear stack,
 centres **58** apart (`test_the_6814s_are_58_apart`). **The upper arm rises off the shell** (PAROL6-like):
-`j1_link` is printed as one with the shell's body, its arm's underside flush with the shell's hub end (§12) - one flat
+`j1_link` is printed as one with the shell's body, its arm's underside flush with the shell's hub end (§10) - one flat
 face, the one the part prints on; nothing bolts the arm to the shell's end.
 
 - **The two ends mirror each other** about the middle of the discs (`tests/cycloidal/test_shell_body.py`): from the
@@ -317,105 +311,24 @@ R = 50 (ring-pin circle radius, gear.ring_pin_circle_radius; the port's 54), r =
 N = 21 (pins), e = 1.5;  lobes = N − 1 = 20
 ```
 2000 points per revolution (`profile.num_points`, `endpoint=False`) through a **periodic
-interpolating** B-spline (`Edge.make_spline(..., periodic=True)` — `lib/AGENTS.md` "Kernel gotchas (all verified)").
+interpolating** B-spline (`Edge.make_spline(..., periodic=True)` — `lib/AGENTS.md` "Kernel gotchas (all verified)",
+which also gives the disc's build order and the OCCT volume caveat: the discs' URDF masses carry its ~0.3 % error).
 
-## 9. Shopping list
+## 9. Designed interference budget
 
-Generated, never retyped: `./cadtool python tools/bom.py --module cycloidal_drive` prints what to order
-(each purchased module's `PURCHASE_SPEC` × pieces, from `assemblies/cycloidal_drive.py OCCURRENCES`) and,
-under "not modelled", the items that have no geometry (`tools/bom.py EXTRAS`: the grease). The bolts and nuts that
-hold the drive in the `j1_coupler` fork (the hub's, the sleeve's) are the arm's, on its own list
-(`./cadtool python tools/bom.py`). The shell's body is on the print list as `j1_link` (it is printed with the arm).
+`test_module_interference_budget` (mm³) holds the designed overlaps: the 6814 inner-race press fits on
+the hub and on the motor plate's sleeve, 330.6 each; housing bolts through the solid nuts 241.3; motor-bolt heads
+in the plate 51.9 (the modelled `motor_bolt_recess`, §3 - not a fit) and shanks in the vendor motor's tapped holes
+(modelled at the M3 minor diameter) 46.4; 6003 / lobe press fits 26.8 × 2; the MKS kit's four M3x30 in the same
+holes from the rear 159.4. Everything else is < 1 mm³; the whole module vs the arm - the base, `j1_link` (with the
+shell's body), the `j1_coupler` fork and its motor leg (`j1_motor_leg`) - contact at most (≤ 1,
+`TestPoseInTheArm`).
 
-Budget (2f1f67d estimate): NEMA 17 48 mm $10–15 (as the MKS SERVO42D closed-loop kit with the board: ~$30–40) · 6003-2RS ×2 $4–8 · 6814-2RS ×2 $16–40 · 625-2RS $1–2 ·
-ring-pin dowels (pack of 25) $8–12 · output-pin dowels $2–4 · motor bolts $1–2 · housing bolts $2–4 · M4 nuts
-(housing + hub) $2 · support dowel $0.5–1 · hub bolts $1–2 — **~$48–92**.
-
-## 10. Where things live in `cad/`
-
-| What | Where |
-|---|---|
-| Dimensions | `lib/cycloidal/params.py` (`DriveConfig`, `DEFAULT_CONFIG`); interface values re-exported as `lib/params.py CYCLOIDAL_*` (+ `STEEL_DENSITY`, bearing / motor / fastener masses) with locks in `tests/test_params_invariants.py` |
-| Derived numbers | `lib/cycloidal/layout.py` — hole patterns, `hex_circumdiameter`, `ring_pin_engagement`, `motor_bolt_counterbore_depth`, `hub_flange`, `hub_height`, `shell_ends`, `arm_zone`, `sleeve_end`, `stack_positions` |
-| Profile maths | `lib/cycloidal/profiles.py` (numpy) |
-| Shared builders | `lib/cycloidal/housing.py` (reveal-window cutter, outer-silhouette chamfer, nut pockets, the turning shell's body `build_shell_body` - `lib/upper_arm/link.py` prints it with `j1_link`), `lib/cycloidal/disc.py` (`build_disc`); the arm-wide `lib/geom.py` (cylinders with `NUDGE` overshoot, `single_solid`, hex prisms) |
-| Printed parts (designed, `CONVERTED = True`) | `parts/cycloidal/`: `cycloidal_disc_1.py`, `cycloidal_disc_2.py`, `cycloidal_eccentric_shaft.py`, `cycloidal_motor_plate.py`, `cycloidal_output_hub.py` — each exposes `build(cfg)` for tests and its `@step` model; the port's `cycloidal_ring_gear_body.py` (`UNPLACED`, for `test_port`); and the turning shell's `cycloidal_shell_ring.py`, designed here with no reference (`lib/reference.py NO_REFERENCE`) |
-| Purchased parts (COTS) | `parts/cycloidal/`: `bearing_6003.py`, `bearing_6814.py`, `bearing_625.py`, `nema17_48mm.py` (+ the board kit `parts/joints/mks_servo42d.py`, shared with the belt joints' motors), `cycloidal_ring_pins.py` (`num_ring_pins`), `cycloidal_output_pins.py` (`output_pin_count`), `cycloidal_shaft_support_pin.py`, `cycloidal_motor_bolts.py`, `cycloidal_housing_bolts.py` (`bolt_count`), `cycloidal_housing_nuts.py` (`bolt_count`) — shared body `lib/cots.py` (every COTS part's); the multi-body ones are registered in `MULTI_BODY`; each says what to order (`PURCHASE_SPEC` / `PURCHASE_QTY`, built from `DEFAULT_CONFIG`) |
-| Assembly | `assemblies/cycloidal_drive.py` — one row `(part, role, position)` per occurrence (a pin or fastener pattern is one row) from `stack_positions` (the MKS board at `z_mks_board`); `EXPECTED` locks the leaves / solids / volume, whole and per body (`EXPECTED["bodies"]`); `./cadtool python -c "from assemblies.cycloidal_drive import totals; print(totals())"` |
-| Printed vs. bought | `./cadtool python tools/bom.py --module cycloidal_drive` (print list, buy list, the purchased items not modelled — `EXTRAS`); in `cycloidal_drive.step` (and in the arm) purchased parts are grey, printed parts orange (`_occurrences.colour()`, `docs/design_language.md`); `./cadtool python tools/export_printables.py` → `print/<name>.stl` |
-| References | `reference/cycloidal/<name>.step` (CadQuery exports), `reference/manifest.json` entries (`file` field); `tools/cycloidal/export_cadquery.py` + `tools/cycloidal/import_cadquery.py` |
-| Tests | `tests/cycloidal/test_{disc,eccentric_shaft,motor_plate,shell_body,output_hub,shell_ring,housing,purchased,fitment,assembly,port}.py` + `tests/cycloidal/helpers.py` (the drive's config; the geometry helpers are `tests/helpers.py`; geometry marked `slow`) |
-| Viewer / export | `./cadtool gen assemblies/cycloidal_drive.py`, `./cadtool viewer assemblies/cycloidal_drive.step`, `./cadtool export parts/cycloidal/<name>.step stl` |
-
-## Viewing the drive
-
-```bash
-cd cad
-./cadtool gen assemblies/cycloidal_drive.py          # assemblies/cycloidal_drive.step (git-ignored) if missing
-./cadtool viewer assemblies/cycloidal_drive.step     # its page on the machine's cad server
-#   also assemblies/arm.step (the drive in the arm), parts/cycloidal/cycloidal_shell_ring.step (any part),
-#   robot/arm.urdf (the robot with joint sliders - shoulder_pitch turns the drive's rotor with j1_link)
-./cadtool snapshot assemblies/cycloidal_drive.step snapshots/cycloidal_drive.png --size-profile assembly
-./cadtool snapshot assemblies/cycloidal_drive.step snapshots/cycloidal_drive_x.png --display xray --camera "30:20"
-#   (no turntable: snapshots draw stills, and the drive declares no motion - motion review is the CAD Viewer)
-```
-
-## 11. Port notes (CadQuery → build123d)
-
-| CadQuery | build123d (here) |
-|---|---|
-| `cq.Workplane(...).circle().extrude()`, `.cut()`, `.union()` | algebra mode: `lib.geom.cylinder/through`, `-`, `+` |
-| `.faces(">Z").edges().chamfer(d)` | `solid.chamfer(d, None, face.edges())` on the planar face picked by centre Z |
-| `cq.Edge.makeSpline(pts, periodic=True)` → face → `extrudeLinear` | `Edge.make_spline(pts, periodic=True)` → `Face(Wire([edge]))` → `Solid.extrude` (same `GeomAPI_Interpolate`) |
-| `.workplane().center(x, y)` (cumulative!) | explicit `Pos(x, y, z) *` |
-| `.polygon(6, d).transformed(rotate=...)` | `RegularPolygon(r, 6, rotation=deg)` (vertex 0 on +X, like CadQuery) |
-| 21 per-hole ruled lofts (funnels) | `Cone(r_entry, r_hole, depth)` |
-| D-bore: cut a round bore, union a 0.25 mm key sliver back | round bore minus a half-space beyond the flat (identical geometry, no sliver) |
-| `chamfer_outer_silhouette(result, cfg, external_face="<Z")` | `chamfer_outer_silhouette(solid, cfg, external_z=0.0)` — end face by height, edges by `GeomType.LINE` + radius |
-| `.val().Volume()`, `.val().isInside()`, `.section(height=z).Area()`, `intersect().Volume()` | `lib.reference.solid_volume`, `Solid.is_inside`, thin-slab `section_area`, `interference` (`tests/helpers.py`) |
-| `copy.deepcopy` + `object.__setattr__` on a frozen dataclass | `dataclasses.replace` |
-
-- **Magic numbers promoted to tagged fields:** `housing.motor_plate_shaft_bore` 15, `lip_radial` 2,
-  `ring_pin_entry_chamfer_depth/_add` 1/1, `pillar_inner_w/outer_w` 18/10, `bolt_nut_af` 7;
-  `shaft.bridge_flange_add` 6; `motor.pilot_height` 2, `motor_bolt_thread_margin` 0.5,
-  `motor_bolt_recess` 1; `tolerances.bolt_clearance_add` 0.4. Module constants: `PILLAR_OVERSHOOT`
-  (`lib/cycloidal/layout.py`, with the pillar's outline `pillar_corners` / `pillar_half_width`, which
-  `lib/yaw_coupler/layout.py socket_outline` shares - an option no yoke builds), `CUTTER_OVERSHOOT`,
-  `BARREL_EDGE_MARGIN` (`lib/cycloidal/housing.py`).
-- **Dropped (unused) fields:** `ProfileParams.spline_tolerance`, `PETGTolerances.bearing_inner_shaft_sub`
-  / `sliding_clearance_add`, `HousingParams.wall_thickness` / `motor_plate_wall`,
-  `BearingParams.ecc_qty` / `inp_qty`. `DriveConfig` itself is frozen now.
-- **Geometry is identical** to the CadQuery builders in `LEGACY_CONFIG` (`DEFAULT_CONFIG` departs in the housing's
-  bolt count, §5.2, the gear size and the pillar tips, §5.4, and the turning shell, §5.5 - the motor plate and the
-  output hub, its carrier, declare `REFERENCE_BUILD` for it; `tests/cycloidal/test_port.py` builds a part's
-  `REFERENCE_BUILD` if it has one: same face sets, the same tessellations and analytic volume for the analytic parts;
-  the two discs by their lobe spline, `spline_deviation`, their mesh held to its chordal error). The disc's build
-  order: `lib/AGENTS.md` "Kernel gotchas (all verified)".
-- **OCCT volume caveat** (`lib/AGENTS.md`, the same section): the discs' masses in the URDF carry its ~0.3 % error.
-- **Layout source:** the drive repo's `export.py` assembly had the ring pins at z 4.5 and the output
-  pins at z 13; its `assembly.py` (and every test) uses 5.5 and 11. The port uses `stack_positions`
-  (= `assembly.py`). The SolidWorks sub-assembly was imported from `export.py`'s STEP, so its pins are
-  1–2 mm off the port's; it holds the port's 8-pillar housing (Ø108 pin circle, both 6814s in one seat) and is kept
-  in `placements.json` as a cross-check of the pose and the envelope (`TestPoseInTheArm`).
-- **Designed interference budget** (`test_module_interference_budget`, mm³): the 6814 inner-race press fits on
-  the hub and on the motor plate's sleeve, 330.6 each; housing bolts through the solid nuts 241.3; motor-bolt heads
-  in the plate 51.9 (the modelled `motor_bolt_recess`, §3 - not a fit) and shanks in the vendor motor's tapped holes
-  (modelled at the M3 minor diameter) 46.4; 6003 / lobe press fits 26.8 × 2; the MKS kit's four M3x30 in the same
-  holes from the rear 159.4. Everything else is < 1 mm³; the whole module vs the arm - the base, `j1_link` (with the
-  shell's body), the `j1_coupler` fork and its motor leg (`j1_motor_leg`) - contact at most (≤ 1,
-  `TestPoseInTheArm`).
-- **Corrections to the drive repo's spec:** its §10 said "both discs are identical — the 180° offset is
-  applied in the assembly": wrong (disc 2 carries the −9° phase, §1.2); §3.3's "7.6 mm disc holes"
-  → 7.4; stale 67 / 134 / 120 mm comments (the port's OD is 140) and other rotted numbers in comments.
-- **Two venvs:** `tools/cycloidal/export_cadquery.py` runs in the old repo's CadQuery venv (`tools/AGENTS.md`; its
-  command: `reference/AGENTS.md` "Regenerating, in this order"); everything else via `./cadtool`. The name maps of
-  the exporter and `lib/reference.py` are kept equal by `test_exporter_name_map_matches_registry`.
-
-## 12. Attachment to the arm
+## 10. Attachment to the arm
 
 - `placements.json` record **`cycloidal_drive#1`** (`kind: module, designed: true`) = the SolidWorks
-  node `New_cyloidal_assembly` (sic) at path 1.3, its pose, parent = the arm root (`reference/README.md` "Designed
-  module: the cycloidal drive"). Its `solidworks` block keeps the node's leaves / solids / volume / world bbox as a
+  node `New_cyloidal_assembly` (sic) at path 1.3, its pose, parent = the arm root (`reference/README.md` "The
+  SolidWorks assembly's nodes"). Its `solidworks` block keeps the node's leaves / solids / volume / world bbox as a
   cross-check; `assemblies/arm.py` locates `assemblies/cycloidal_drive.py` there (its `OCCURRENCES` row, `DRIVE_KEY`;
   moved by `lib/placements.py SHIFTS`, below).
 - **Frame:** module Z = motor axis, z = 0 the motor-plate outer face, motor body in −Z, the shell z −13..61, the
@@ -455,7 +368,15 @@ cd cad
   drives which joint is unconfirmed (`docs/open_issues.md`); `config.py` still carries `gear_ratio` 1.0 where this
   joint needs `1 / CYCLOIDAL_RATIO`, the output turning with the motor (the direction: `robot/AGENTS.md`).
 
-## 13. Change policy (carried over)
+## Viewing the drive
 
-Every change to the drive updates its tests (`tests/cycloidal/`, the stack-up in `test_assembly.py`) and this
-document; a geometry change then runs Recipe C (`cad/AGENTS.md`), the drive's `EXPECTED` included.
+```bash
+cd cad
+./cadtool gen assemblies/cycloidal_drive.py          # assemblies/cycloidal_drive.step (git-ignored) if missing
+./cadtool viewer assemblies/cycloidal_drive.step     # its page on the machine's cad server
+#   also assemblies/arm.step (the drive in the arm), parts/cycloidal/cycloidal_shell_ring.step (any part),
+#   robot/arm.urdf (the robot with joint sliders - shoulder_pitch turns the drive's rotor with j1_link)
+./cadtool snapshot assemblies/cycloidal_drive.step snapshots/cycloidal_drive.png --size-profile assembly
+./cadtool snapshot assemblies/cycloidal_drive.step snapshots/cycloidal_drive_x.png --display xray --camera "30:20"
+#   (no turntable: snapshots draw stills, and the drive declares no motion - motion review is the CAD Viewer)
+```

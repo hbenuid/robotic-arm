@@ -31,7 +31,7 @@ export is authored in centimetres and sits ~(673, 881, 1302) mm off the origin; 
 re-frames from the measured axis and mounting face. build123d's STEP writer stamps the time into the header,
 so every run writes new bytes: the files are written ONCE (here) and committed as inputs - `--write
 kit|drive` leaves the others alone. The raw exports are not in the repo (lib.reference.MKS_EXPORT_NAME /
-MKS48_EXPORT_NAME name them); reference/README.md records their sha256.
+MKS48_EXPORT_NAME name them, with their sha256).
 """
 from __future__ import annotations
 

@@ -189,21 +189,14 @@ machines"; CI is the third machine: root `AGENTS.md` "CI").
 - The engine keys a body by the files it READ, not the ones it only checked for: a part whose vendor file appears
   after its last build still reads `took … nothing ran` or `built … bodies 1 replayed; 0 misses` (its body never opened
   that file: `lib/cots.hybrid()` asks `exists()` first) — `./cadtool gen <part> --force` once (its next run says
-  `changed`); the assemblies then follow. Verified on cadgen 0.8.0 and cad 0.10.0: `bearing_625` built with its vendor
-  file set aside kept its envelope after the file came back, until forced.
-- Never edit sources a running `gen` reaches: verified on cadgen 0.8.1, `lib/yaw_coupler/` edited while the hash
-  gate's first `gen assemblies/arm.py` ran left the arm's document holding the old geometry under the edited sources'
-  key - the next runs read `nothing ran` (from memory, then from the cache after `./cadtool stop` and `./cadtool cad
-  delete <id>`), so the hash gate passed, while each part rebuilt alone was right. `gen assemblies/arm.py --force`
-  cleared it (and rewrote other STEPs' bytes: `inspect diff` read them as the same geometry). Right after it, `./cadtool
-  cad inspect` on the arm still gave the old volume - `cadgen.read_step` of the file gave the new one.
-  It is not only an edit during a run: in a fresh worktree whose baseline `gen assemblies/arm.py` had returned (the arm
-  loaded from the shared cache) before `lib/upper_arm/` was edited, the next run of the arm still read `nothing ran`
-  (cold: the cache held its key) and kept the old STEP while `j1_link` alone rebuilt; `--force` cleared it. So after a
-  source edit, the arm's run must name what it rebuilt - `nothing ran` there is a stale arm: force it before the hash
-  gate. Nor does it take a fresh worktree: on cadgen 0.8.3 and 0.8.4 and on cad 0.10.0 a warm engine's arm read `nothing
-  ran` through an edit of `lib/yaw_coupler/params.py RIM_CLEAR`, a constant its module's `DEFAULT` is computed from, and
-  its children's STEPs stayed as they were, while `gen parts/base/j1_coupler.py` rebuilt the part and named the edit.
+  `changed`); the assemblies then follow.
+- The arm can go stale: after a source edit, the arm's next run must name what it rebuilt - `nothing ran` there is a
+  stale arm (the engine kept its document under the edited sources' key, in memory or in the shared cache) while each
+  part rebuilt alone is right, so the hash gate would pass on old geometry. Seen with a source edited while `gen` ran
+  (so never edit sources a running `gen` reaches), with a fresh worktree whose baseline arm came from the cache, and
+  with a warm engine through an edit of a constant a module's `DEFAULT` is computed from. `gen assemblies/arm.py
+  --force` clears it, before the hash gate (it can rewrite other STEPs' bytes: settle them with `inspect diff`); right
+  after it, `./cadtool cad inspect` can still give the old volume - read the file (`cadgen.step.read`).
 - Don't compare large STEP artifacts with `git diff`; compare source, `inspect` output and snapshots. A STEP edited
   (or deleted) by anything but its model comes back on the model's next run, byte for byte (`wrote …`).
 - A model run takes no options: `./cadtool gen` refuses any flag but its own `--force` (`CAD_ENGINE_MEMO=0`: every
@@ -213,8 +206,7 @@ machines"; CI is the third machine: root `AGENTS.md` "CI").
   `cadgen.step.read` (or `./cadtool inspect`), which gives the instance names - build123d's `import_step` gives the
   product's.
 - `./cadtool snapshot` fits every view to its model: the `--camera` JSON's `orthographicHalfHeight` is ignored, whatever
-  `--help` says (verified again on cad 0.10.0: `bearing_625` draws the same picture at `orthographicHalfHeight` 10 and
-  100). To render versions at one scale, give each the same bounding box — tiny marker cubes
+  `--help` says. To render versions at one scale, give each the same bounding box — tiny marker cubes
   at fixed corners, in the scratch build — and crop.
 - A snapshot taken right after a rebuild once drew the STEP's previous version (the same command a minute later drew
   the new one): when a render does not show a change you made, run it again before looking for the cause.

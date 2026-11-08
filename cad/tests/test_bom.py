@@ -42,9 +42,7 @@ def test_drive_buy_list_matches_the_drive_config():
         "cycloidal_shaft_support_pin": 1, "cycloidal_motor_bolts": 4,
         "cycloidal_housing_bolts": CFG.housing.bolt_count, "cycloidal_housing_nuts": CFG.housing.bolt_count,
     }
-    # the port's ring gear body is modelled, not placed: the turning shell's body is printed with j1_link
-    assert "cycloidal_ring_gear_body" in parts.unplaced()
-    assert {r["part"] for r in bom.print_rows("cycloidal_drive")} == (set(R.DESIGNED) - set(parts.unplaced())) | {"cycloidal_shell_ring"}
+    assert {r["part"] for r in bom.print_rows("cycloidal_drive")} == set(R.DESIGNED) | {"cycloidal_shell_ring"}
     assert [r["part"] for r in bom.buy_rows("cycloidal_drive") if r["geometry"] == "vendor"] == ["bearing_625", "mks_servo42d", "nema17_48mm"]
 
 
@@ -103,7 +101,7 @@ def test_the_driven_pulleys_take_their_m4_screws_and_nuts():
     assert all((r["pieces"], r["geometry"]) == (4, "envelope") for r in rows.values())
     assert rows["elbow_pulley_screws"]["order"].startswith("M4 x 30 socket head cap screw")   # the two flanges one design
     assert rows["wrist_pulley_screws"]["order"].startswith("M4 x 30 socket head cap screw")
-    assert rows["yaw_pulley_screws"]["order"].startswith("M4 x 40 socket head cap screw")
+    assert rows["yaw_pulley_screws"]["order"].startswith("M4 x 30 socket head cap screw")
     assert all(rows[n]["order"] == "M4 hex nut (ISO 4032)" for n in ("elbow_pulley_nuts", "wrist_pulley_nuts", "yaw_pulley_nuts"))
     driven = {r["part"]: r["qty"] for r in bom.print_rows() if r["part"] in ("gt2_pulley_90t", "gt2_pulley_120t")}
     assert driven == {"gt2_pulley_90t": 2, "gt2_pulley_120t": 1} and sum(driven.values()) == len(rows) // 2   # a pulley per bolted joint

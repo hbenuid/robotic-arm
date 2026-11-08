@@ -27,12 +27,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
-from lib.bearings import THRUST_BORE
+from lib.bearings import BEARING_6806_WIDTH, THRUST_BORE
 from lib.cycloidal.params import DEFAULT_CONFIG as _DRIVE
 from lib.fasteners import M4_CLEAR, M4_NUT, M4_SHCS, M5_CLEAR, M5_NUT, M5_SHCS, NutSize, ShcsSize
 from lib.forearm.params import LEGACY as _FOREARM
 from lib.forearm.params import MotorHoleParams
 from lib.motors import MKS_SERVO42D_STACK
+from lib.pulley.params import YAW
 from lib.style import SIDES
 
 
@@ -197,7 +198,7 @@ class FootParams:
     #                                the holes fix it; it prints on any bed (155 x 200 with the base cut at the joint)
     t: float = 6.0
     flare_r: float = 95.5          # the chamfer's foot on the flange: 4.5 of flat rim outside it
-    flare_h: float = 24.0          # ... its top on the wall: ~39.7 degrees from the table
+    flare_h: float = 24.0          # ... its top on the wall: ~38.1 degrees from the table
     hole_dia: float = M5_CLEAR     # M5 (or a 5 mm wood screw)
     hole_r: float = 92.5
     spot_dia: float = 11.0         # an M5 washer's 10 and room
@@ -283,19 +284,32 @@ RING_CLEAR = 0.1          # [DESIGN]
 BOARD_CLEAR = 3.0         # [DESIGN] the base_yaw motor's board above the table
 YAW_BELT = 400            # [DESIGN] base_yaw belt, 400-2GT (a multipack length, lib/belts.py STANDARD_2GT_LENGTHS): 20T motor -
 #                           120T joint, round its idler (YawIdlerParams)
-YAW_BELT_Y = -31.1        # [REFERENCE] the base_yaw belt's mid-plane in the base's frame: the 120T's tooth band (its mount under
-#                           j1_coupler, lib/mounts.py) - the motor's 20T level with it (tests/test_mounts.py)
+_SW_BELT_Y = -31.1        # [REFERENCE] the SolidWorks base_yaw belt's mid-plane in the base's frame (its pulley's hub the 90T's)
+YAW_BELT_Y = round(LEGACY.bore.lip_y[0] - (YAW.band_y1 / 2.0 - YAW.end_y), 6)   # -24.6 [DESIGN] the base_yaw belt's mid-plane in
+#                           the base's frame: the 120T's tooth band - its hub end on j1_coupler's stub at the bore's lip (its mount
+#                           under j1_coupler, lib/mounts.py), its plain hub gone (lib/pulley/params.py YAW_HUB_CUT) -, the motor's
+#                           20T level with it (tests/test_mounts.py)
 YAW_MOTOR_X = 122.0       # [DESIGN] the base_yaw motor's axis this far out along X: the open loop (392.4) shorter than the stock
 #                           belt, the idler (YawIdlerParams) taking up the rest inside its slot - it takes 392.4 .. 405.3
 YAW_MOTOR_PAD = 2.0       # [DESIGN] the pad under the mount's plate round the motor's face (MotorParams.pad_t): the plate 7 thick
 #                           there - 4 under the counterbored heads, the roll motor's -, the motor and its board this much lower
 _HOLES = MotorHoleParams()
-_BOTTOM_Y = round(LEGACY.plate.y[0] - YAW_MOTOR_PAD - _DRIVE.motor.body_length - MKS_SERVO42D_STACK - BOARD_CLEAR, 6)
+# The motor plate as far under the belt as the SolidWorks one (the 20T's hub in its window, the idler on its spacer), so
+# the plate, the motor, its board and the bottom face come up with the belt: everything under the cap is that much
+# shorter than the SolidWorks base, the cap and all it carries that much lower on the table.
+_PLATE = replace(LEGACY.plate, y=tuple(round(y + YAW_BELT_Y - _SW_BELT_Y, 6) for y in LEGACY.plate.y))   # [DESIGN]
+_BOTTOM_Y = round(_PLATE.y[0] - YAW_MOTOR_PAD - _DRIVE.motor.body_length - MKS_SERVO42D_STACK - BOARD_CLEAR, 6)
 _TOP_R = round(BASE_R + BASE_DRAFT * (LEGACY.cap.ring_top_y - LEGACY.cap.top_y), 6)   # the cone at the cap's top face
+# The bearing boss ends flush with the lower 6806's lower face: the SolidWorks boss ran 1 on past it, a seat nothing
+# needs (the lip locates the bearing), and stood 0.5 over the 120T's web - its underside prints as a supported overhang
+# (the base prints foot down). Flush, the web turns 1.5 under the boss and the bearing's outer ring alike (the ring's).
+_BOSS_Y0 = round(LEGACY.bore.lip_y[0] - BEARING_6806_WIDTH, 6)   # -21.4 [DESIGN]
 DEFAULT = replace(LEGACY, shell=replace(LEGACY.shell, y0=_BOTTOM_Y, r=_TOP_R, draft=BASE_DRAFT, sides=SIDES),   # [DESIGN]
+                  plate=_PLATE,                                                                          # [DESIGN]
                   bore=replace(LEGACY.bore, upper_dia=_FOREARM.boss.seat_dia, lower_dia=_FOREARM.boss.seat_dia,
                                        lip_dia=_FOREARM.boss.lip_dia),                                    # [DESIGN]
-                  cap=replace(LEGACY.cap, groove_r=(THRUST_BORE / 2.0 - RING_CLEAR, LEGACY.cap.groove_r[1])),   # [DESIGN]
+                  cap=replace(LEGACY.cap, groove_r=(THRUST_BORE / 2.0 - RING_CLEAR, LEGACY.cap.groove_r[1]),
+                              boss_y0=_BOSS_Y0),                                                           # [DESIGN]
                   motor=replace(LEGACY.motor, centre=(YAW_MOTOR_X, LEGACY.motor.centre[1]), hole_dia=_HOLES.bolt_dia,
                                 holes=_HOLES, pad_t=YAW_MOTOR_PAD),                                     # [DESIGN]
                   joint=JointParams(), mount=MountParams(), foot=FootParams(), idler=YawIdlerParams(),

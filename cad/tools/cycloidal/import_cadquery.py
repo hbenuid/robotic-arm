@@ -28,7 +28,6 @@ PRODUCTS = {
     "cycloidal_disc_2": "cycloidal disc 2 (20 lobes, -9 deg phase)",
     "cycloidal_eccentric_shaft": "eccentric shaft (two 17.1 mm lobes, D-bore input)",
     "cycloidal_motor_plate": "motor plate (NEMA 17 side housing half)",
-    "cycloidal_ring_gear_body": "ring gear body (housing, 6814 seat, nut pockets)",
     "cycloidal_output_hub": "output hub (arm mount, 4x M4 on 50 mm)",
     "bearing_6003": "6003-2RS deep-groove ball bearing 17x35x10",
     "bearing_6814": "6814-2RS deep-groove ball bearing 70x90x10",

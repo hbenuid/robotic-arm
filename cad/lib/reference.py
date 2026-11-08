@@ -45,12 +45,19 @@ CUSTOM: dict[str, tuple[str, str]] = {
     "j1_coupler":            ("Base couple updated 62126 _J1 coupler",   "step/Base couple updated 62126 _J1 coupler.STEP"),
     "j1_link":               ("first joint edit 62126",                  "step/first joint edit 62126.STEP"),
     "j2_link":               ("Joint 2 change 8126",                     "step/Joint 2 change 8126.STEP"),
-    "j3_coupler":            ("Joint 2 coupler 62226_J3 Coupler",        "step/Joint 2 coupler 62226_J3 Coupler.STEP"),
     "gt2_pulley_90t":        ("GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric",
                               "step/GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric.STEP"),
     "wrist_link":            ("final component arm qwrist movement",     "step/final component arm qwrist movement.STEP"),
     "gripper_j3_connector":  ("Gripper to J3 connector 7726_Gripper to J3 connector",
                               "step/Gripper to J3 connector 7726_Gripper to J3 connector.STEP"),
+}
+
+# SolidWorks products whose part is gone but whose records stay in placements.json (lib/placements.py RETIRED: robot/
+# frames.py takes the elbow's and the wrist's pitch origins from them, lib/mounts.py hosts on them): no part module, no
+# reference file, no manifest entry - the name only keeps tools/reference/extract_placements.py naming the records.
+# clean name -> SolidWorks product name.
+RETIRED_PRODUCTS: dict[str, str] = {
+    "j3_coupler": "Joint 2 coupler 62226_J3 Coupler",   # the elbow's and the wrist's coupler (#1 / #2)
 }
 
 # Purchased (COTS) parts: clean name -> (product name, export path, or None when extracted
@@ -77,7 +84,6 @@ DESIGNED: dict[str, str] = {
     "cycloidal_disc_2":          "src/cycloidal_disc.py:build_cycloidal_disc(phase_offset_deg=disc2_phase)",
     "cycloidal_eccentric_shaft": "src/eccentric_shaft.py:build_eccentric_shaft()",
     "cycloidal_motor_plate":     "src/motor_plate.py:build_motor_plate()",
-    "cycloidal_ring_gear_body":  "src/ring_gear_body.py:build_ring_gear_body()",
     "cycloidal_output_hub":      "src/output_hub.py:build_output_hub()",
 }
 
@@ -179,8 +185,6 @@ NO_REFERENCE: dict[str, str] = {
 # part's own tests lock its build to the export's numbers. clean name -> (SolidWorks product, the export's file name as
 # SolidWorks wrote it (its STEP header's FILE_NAME), the export's sha256 - what was measured).
 MEASURED: dict[str, tuple[str, str, str]] = {
-    "gt2_pulley_20_60t": ("GT2 Pulley - 20 - 60 teeth", "GT2 Pulley - 20 - 60 teeth.STEP",
-                          "55733855bdc50452499682bef5add391cdd0363c7bed4f4b5c5a44a83dbd0523"),
     # PapaBravo's "Rack & Pinion Robotic Gripper Jaw" (Printables, CC BY 4.0): Fusion 360 exports, each a member of
     # rack-pinion-robotic-gripper-jaw-model_files.zip (the member's name differs only for the pinion: 'SpurGear-14 teeth.step')
     "gripper_base": ("Base", "Base.step", "79647804864c1e2b8a6878b3325086f74b1a7fcb349ea8f98b5c79d20e984bed"),
@@ -217,7 +221,7 @@ SKIPPED_PRODUCTS: dict[str, str] = {
 
 PRODUCT_TO_PART: dict[str, str] = {
     prod: name for name, (prod, _) in {**CUSTOM, **COTS}.items() if name not in CYCLOIDAL_PARTS | NATIVE_PARTS
-}
+} | {prod: name for name, prod in RETIRED_PRODUCTS.items()}
 
 
 def clean_label(product_name: str) -> str:

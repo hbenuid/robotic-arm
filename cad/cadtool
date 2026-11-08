@@ -120,7 +120,6 @@ need_plugin() {
     echo "cadtool: text-to-cad@earthtojake plugin not found under ~/.claude/plugins/cache/earthtojake" >&2
     echo "  install:  claude plugin marketplace add https://github.com/earthtojake/text-to-cad.git" >&2
     echo "            claude plugin install text-to-cad@earthtojake" >&2
-    echo "  (a machine with the old cad@text-to-cad switches once: docs/toolchain.md Gotchas)" >&2
     exit 1
   fi
 }

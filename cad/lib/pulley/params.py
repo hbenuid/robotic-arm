@@ -14,20 +14,16 @@ counterbore from the face for its head (DEFAULT).
 
 Two configurations of the 90T: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
 tests/test_reference_match.py); DEFAULT is what the part builds: the bolt holes at M4 clearance, the heads in
-counterbores. YAW is DEFAULT with 120 teeth (below).
+counterbores. YAW is DEFAULT with 120 teeth and no plain hub between its ring and its web (below).
 
 Every number below was measured on the reference 2026-09-27 (face census; tests/pulley/test_gt2_pulley_90t.py re-checks
 the builds against it): [REFERENCE] unless tagged. Units mm. Frozen dataclasses; variants via dataclasses.replace.
-
-CompoundPulleyParams - the printed 20-60T compound pulley (gt2_pulley_20_60t), its own frame and provenance on the class.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
 from lib.belts import (
-    GT2_BLEND_R,
-    GT2_PULLEY_20_60T_TEETH,
     GT2_PULLEY_90T_BOLT_R,
     GT2_PULLEY_90T_FACE_Y,
     GT2_PULLEY_90T_HEAD_SEAT,
@@ -50,7 +46,7 @@ class PulleyParams:
     chamfer: float = 0.3               # 45 deg, on each flange's outer edge on the teeth's side
     rim_dia: float = 53.0              # the rim's inside (both flanges and the tooth band): the web inside it ...
     web_y0: float = 1.8                # ... from here up to the face, open underneath
-    step: tuple = (35.0, 0.8)          # (dia, y0): a step under the web, from y0 up
+    step: tuple | None = (35.0, 0.8)   # (dia, y0): a step under the web, from y0 up (None: the hub runs on up to the web)
     hub_dia: float = 30.0              # the hub, from its end up to the step (its journal: below the ring)
     ring: tuple = (34.7592031398, -6.2, -4.7)   # (dia, y0, y1): a ring round the hub, under the lower 6806's inner ring
     bore_dia: float = 12.5
@@ -82,48 +78,17 @@ DEFAULT = replace(LEGACY, hole_dia=M4_CLEAR, counterbore=(M4_SHCS.head_dia + 0.4
 
 # The base_yaw joint's driven pulley (gt2_pulley_120t): DEFAULT with GT2_PULLEY_120T_TEETH - the base_yaw ratio 6:1 on the
 # motor's 20T, where the elbow's and the wrist's 90T give 4.5:1 - and its rim's inside grown with the teeth, keeping the
-# 90T's wall under them. The hub (journal, ring, step), the web's height, the bore, the bolts and their counterbores are
-# the 90T's: it sits
-# on j1_coupler's stub in the lower base bearing the same way, clamped by the same screws.
+# 90T's wall under them. The journal, the ring, the web's height, the bore, the bolts and their counterbores are the
+# 90T's: it sits on j1_coupler's stub in the lower base bearing the same way, clamped by the same screws. Its plain hub
+# between the ring and the web (the 90T's Ø30 and its step) is gone - YAW_HUB_CUT: the ring stands straight on the web,
+# the journal and the ring that much nearer the outer face. That plain hub only held the belt plane down: without it the
+# web's top comes up to the ring's height under the lower bearing - 1.5 under it and under the base's bearing boss, which
+# ends flush with it (lib/base/params.py _BOSS_Y0; the rim's inside is wider than the boss, so the rim rises beside it) -,
+# and the belt, the motor plate and the base's bottom face come YAW_HUB_CUT nearer the cap with it (lib/base/params.py
+# YAW_BELT_Y).
+YAW_HUB_CUT = round(LEGACY.web_y0 - LEGACY.ring[2], 6)   # 6.5 [DESIGN]
 YAW = replace(DEFAULT, teeth=GT2_PULLEY_120T_TEETH,
-              rim_dia=round(pulley_od(GT2_PULLEY_120T_TEETH) - (pulley_od(LEGACY.teeth) - LEGACY.rim_dia), 6))   # [DESIGN]
-
-
-@dataclass(frozen=True)
-class CompoundPulleyParams:
-    """The printed 20-60T compound pulley (gt2_pulley_20_60t): two toothed bands on one bore, each between two
-    flanges, the upper band's lower flange standing on the lower band's upper flange - solid, no hub, no web.
-
-    Frame (= its SolidWorks part frame): origin on the axis at the lower band's bottom (its lower flange's top), +Y up the
-    axis toward the upper band. Measured 2026-09-29 on the SolidWorks export ("GT2 Pulley - 20 - 60 teeth", sha256
-    55733855bdc5..., not committed - lib/reference.py MEASURED; tests/pulley/test_gt2_pulley_20_60t.py holds the numbers):
-    [REFERENCE] unless tagged. Per band: index 0 the lower band, 1 the upper."""
-    teeth: tuple = GT2_PULLEY_20_60T_TEETH
-    band_w: float = 7.0                # each tooth band along Y (the belt + 1, as the 90T's)
-    flange_t: float = 1.2              # each flange along Y ...
-    flange_h: float = 1.2              # ... standing this far out from its band's land (radially)
-    chamfer: float = 0.3               # 45 deg, on each flange's outer edge on the teeth's side
-    blend_r: tuple = (GT2_BLEND_R, 0.6160365848)   # the groove's blend (lib/pulley/teeth.py): the 60T's is the 90T's,
-    #                                                the 20T's the export's own value (the constraint behind it is not in it)
-    bore_dia: float = 8.0              # through, end to end
-
-    def band_y0(self, i: int) -> float:
-        """Where band i's teeth start (its lower flange's top): the lower band at the origin, the upper one on the
-        lower band's upper flange plus its own lower flange."""
-        return i * (self.band_w + 2.0 * self.flange_t)
-
-    def flange_dia(self, i: int) -> float:
-        return pulley_od(self.teeth[i]) + 2.0 * self.flange_h
-
-    @property
-    def end_y(self) -> float:
-        """The lower band's lower flange's underside."""
-        return -self.flange_t
-
-    @property
-    def top_y(self) -> float:
-        """The upper band's upper flange's top."""
-        return self.band_y0(len(self.teeth) - 1) + self.band_w + self.flange_t
-
-
-COMPOUND = CompoundPulleyParams()   # the SolidWorks part, exactly - and what the part builds
+              rim_dia=round(pulley_od(GT2_PULLEY_120T_TEETH) - (pulley_od(LEGACY.teeth) - LEGACY.rim_dia), 6),
+              end_y=round(LEGACY.end_y + YAW_HUB_CUT, 6),
+              ring=(LEGACY.ring[0], round(LEGACY.ring[1] + YAW_HUB_CUT, 6), round(LEGACY.ring[2] + YAW_HUB_CUT, 6)),
+              step=None)   # [DESIGN]
