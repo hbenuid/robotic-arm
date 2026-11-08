@@ -6,6 +6,18 @@ import math
 from lib.base.params import DEFAULT, YAW_BELT, YAW_BELT_Y, BaseConfig
 from lib.belts import GT2_IDLER_WIDTH, GT2_PULLEY_20T_TEETH, GT2_PULLEY_120T_TEETH, idler_on_run, pulley_circle
 from lib.motors import MKS_SERVO42D_W, NEMA17_BOLT_SP
+from lib.sensors import (
+    A3144_LEAD_T,
+    KY003_BOARD_L,
+    KY003_BOARD_W,
+    KY003_HEADER_H,
+    KY003_HOLE_INSET,
+    KY003_LEAD_BEND_X,
+    KY003_LEAD_TAIL,
+    KY003_PIN_PITCH,
+    KY003_PIN_TAIL,
+    ky003_hall_point,
+)
 
 
 def yaw_belt_loop(cfg: BaseConfig = DEFAULT, *, idler: bool = True) -> list[tuple[float, float, float]]:
@@ -201,3 +213,82 @@ def joint_stations(cfg: BaseConfig = DEFAULT) -> dict[str, float]:
     back, head = j.split_x - j.post_t, j.split_x + cfg.mount.post_t
     return {"x_post": back, "x_split": j.split_x, "x_head": head, "x_nut_face": back + j.nut.h,
             "x_tip": head - j.screw_len}
+
+
+# --- The base_yaw home sensor (YawHomeParams): the KY-003 under the 120T on its bracket under the plate ---------------
+# The module's frame (lib/sensors.py: the board's underside on z = 0, its sensor end at x = 0, the chip toward -X, the
+# header toward +X, the branded face +Z) in the base's: its +Z up the base's +Y, its +X (the header) along the base's
+# -X, its +Y along the base's +Z - (x, y, z) -> (-x, z, y).
+KY003_TURN = (-90.0, 0.0, 180.0)
+
+
+def home_chip_xz(cfg: BaseConfig = DEFAULT) -> tuple[float, float]:
+    """The KY-003's chip's centre (x, z): chip_r off the axis at chip_deg."""
+    h = cfg.home
+    a = math.radians(h.chip_deg)
+    return (round(h.chip_r * math.cos(a), 9) + 0.0, round(h.chip_r * math.sin(a), 9) + 0.0)
+
+
+def home_board_y(cfg: BaseConfig = DEFAULT) -> float:
+    """The KY-003's board's underside: on the bracket's seat pad, the bracket's top on the plate's underside."""
+    return round(cfg.plate.y[0] + cfg.home.pad_h, 6)
+
+
+def home_sensor_frame(cfg: BaseConfig = DEFAULT) -> tuple:
+    """The KY-003's part frame in the base's: its chip's centre (ky003_hall_point()'s x, y) over home_chip_xz()."""
+    cx, cz = home_chip_xz(cfg)
+    hx, hy, _ = ky003_hall_point()
+    return ((round(cx + hx, 6), home_board_y(cfg), round(cz - hy, 6)), KY003_TURN)
+
+
+def home_to_base(cfg: BaseConfig, x: float, y: float) -> tuple[float, float]:
+    """A point (x, y) of the KY-003's board plane (its part frame) as the base's (x, z)."""
+    (ox, _, oz), _ = home_sensor_frame(cfg)
+    return (round(ox - x, 6), round(oz + y, 6))
+
+
+def home_bracket_frame(cfg: BaseConfig = DEFAULT) -> tuple:
+    """The bracket's part frame in the base's (its fasteners' too): z = 0 on its underside, bracket_t under the plate's,
+    +Z up the base's +Y, the base's (x, z) at its (x, -y) - lib/base/body.py's working frame."""
+    return ((0.0, round(cfg.plate.y[0] - cfg.home.bracket_t, 6), 0.0), (-90.0, 0.0, 0.0))
+
+
+def home_outline(cfg: BaseConfig = DEFAULT) -> list[tuple[float, float]]:
+    """(x, z) of the bracket's outline in the base's frame."""
+    cx, cz = home_chip_xz(cfg)
+    return [(round(cx + x, 6), round(cz + z, 6)) for x, z in cfg.home.outline]
+
+
+def home_screw_points(cfg: BaseConfig = DEFAULT) -> list[tuple[float, float]]:
+    """(x, z) of the bracket's 2 M3s and their inserts in the plate's underside."""
+    cx, cz = home_chip_xz(cfg)
+    return [(round(cx + x, 6), round(cz + z, 6)) for x, z in cfg.home.screw_points]
+
+
+def home_board_points(cfg: BaseConfig = DEFAULT) -> list[tuple[float, float]]:
+    """(x, z) of the board's 2 M2s: its own holes (KY003_HOLE_INSET in from its sensor end and its long edges)."""
+    y = KY003_BOARD_W / 2.0 - KY003_HOLE_INSET
+    return [home_to_base(cfg, KY003_HOLE_INSET, s * y) for s in (1.0, -1.0)]
+
+
+def _board_box(cfg: BaseConfig, x: tuple, y: tuple) -> tuple[float, float, float, float]:
+    """A box of the board plane, x / y ranges in the KY-003's frame, as the base's (x0, x1, z0, z1)."""
+    xs, zs = zip(*(home_to_base(cfg, a, b) for a in x for b in y), strict=True)
+    return (min(xs), max(xs), min(zs), max(zs))
+
+
+def home_pad_box(cfg: BaseConfig = DEFAULT) -> tuple[float, float, float, float]:
+    """The seat pad, (x0, x1, z0, z1) in the base's frame: the board's footprint and pad_margin round it."""
+    m = cfg.home.pad_margin
+    return _board_box(cfg, (-m, KY003_BOARD_L + m), (-KY003_BOARD_W / 2.0 - m, KY003_BOARD_W / 2.0 + m))
+
+
+def home_reliefs(cfg: BaseConfig = DEFAULT) -> list[tuple[float, float, float, float, float]]:
+    """The pad's 2 slots, (x0, x1, z0, z1, depth under the board): across the header's pins' tails (one pitch behind its
+    housing) and the chip's leads' tails (where they turn down), relief_w wide, relief_past deeper than each."""
+    h = cfg.home
+    pin_x = KY003_BOARD_L - KY003_HEADER_H / 2.0 - KY003_PIN_PITCH
+    lead_x = KY003_LEAD_BEND_X + A3144_LEAD_T / 2.0
+    rows = ((pin_x, h.header_relief_len, KY003_PIN_TAIL), (lead_x, h.lead_relief_len, KY003_LEAD_TAIL))
+    return [(*_board_box(cfg, (x - h.relief_w / 2.0, x + h.relief_w / 2.0), (-ln / 2.0, ln / 2.0)), tail + h.relief_past)
+            for x, ln, tail in rows]

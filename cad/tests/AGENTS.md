@@ -79,7 +79,7 @@ centre distance - its pad, its pilot's round hole, the counterbores -, the motor
 base_yaw motor's 4x M3 (no reference) - its numbers, the roll motor's screw in the wrist motor's counterbores through
 the plate and its pad, the heads flush in place; `yaw_idler`: the base_yaw belt's tensioner - the stock belt round it, the band of belts its slot
 takes, the belt frame's points in the base's, its stations, its axle's, nut's and spacer's numbers (no reference), its
-seat on the mount, the kit's fit; `yaw_pulley_screws` / `yaw_pulley_nuts`, purchased parts with no reference: the
+seat on the mount, the kit's fit; `yaw_home`: the base_yaw home sensor - the home angle, the switch's zone between the travel's ends for every A3144 operate point, the layout under the plate, its bracket's, magnet's and fasteners' numbers (no reference), the 120T's pocket, the seat and the holes, the fit, the magnet over the chip at home; `yaw_pulley_screws` / `yaw_pulley_nuts`, purchased parts with no reference: the
 numbers no reference file holds for them - pieces, volume, bbox - and feature probes; the `j1_coupler` fork's screws and
 nuts - `fork_{hub,foot,sleeve}_{screws,nuts}`, `test_fork_bolts` - likewise), `tests/yaw_coupler/` (`j1_coupler`: the LEGACY
 build's feature probes, the yoke on the port's housing - its bore, od, pillars, bolt circle; DEFAULT's fork on the

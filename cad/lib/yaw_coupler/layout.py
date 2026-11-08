@@ -13,7 +13,9 @@ from lib.cycloidal import (
     sleeve_bolt_z,
     stack_positions,
 )
+from lib.datum import BASE_TURN_DEG, CAPTURE_YAW_DEG, rotation
 from lib.fasteners import M4_NUT, M4_SHCS
+from lib.pulley.params import YAW, PulleyParams
 from lib.style import EDGE_CHAMFER
 from lib.yaw_coupler.params import DEFAULT, YawCouplerConfig
 
@@ -267,3 +269,26 @@ def fork_sleeve_nut_r(cfg: YawCouplerConfig = DEFAULT) -> float:
     """The sleeve's nuts' bearing faces' radius: the floors of their pockets in the sleeve's lugs (ShellParams.sleeve_nut_r
     to the nut's outer face)."""
     return DRIVE.shell.sleeve_nut_r + DRIVE.housing.bolt_nut_thickness
+
+
+# The base_yaw 120T (gt2_pulley_120t#1, lib/mounts.py) under the coupler: upside down (its +Y down the axis), its hub
+# end on the stub's end, turned HubParams.hole_deg about the axis onto the stub's diagonal holes.
+YAW_PULLEY_TURN = 180.0                  # about this frame's X: the pulley's +Y down the axis
+
+
+def yaw_pulley_frame(cfg: YawCouplerConfig = DEFAULT, pulley: PulleyParams = YAW) -> tuple:
+    """The 120T's frame in this one: on the axis, its origin (the lower flange's top) the pulley's end_y from the stub's
+    end, its hub end there."""
+    return ((0.0, round(cfg.hub.stub_y0 + pulley.end_y, 6), 0.0), (YAW_PULLEY_TURN, cfg.hub.hole_deg, 0.0))
+
+
+def yaw_magnet_deg(cfg: YawCouplerConfig = DEFAULT, pulley: PulleyParams = YAW) -> float:
+    """Where the 120T's magnet (PulleyParams.magnet) stands about the base_yaw axis at zero, the pulley in its place: its
+    angle in the BASE's part frame (in its XZ plane from +X toward +Z, in (-180, 180]). This frame is the capture's,
+    turned CAPTURE_YAW_DEG about the axis, the base's BASE_TURN_DEG (lib/datum.py): an angle here is that much more there."""
+    r, deg = pulley.magnet[:2]
+    p = (r * math.cos(math.radians(deg)), 0.0, r * math.sin(math.radians(deg)))
+    m = rotation(yaw_pulley_frame(cfg, pulley)[1])
+    x, z = (sum(m[i][k] * p[k] for k in range(3)) for i in (0, 2))
+    a = math.degrees(math.atan2(z, x)) + BASE_TURN_DEG - CAPTURE_YAW_DEG
+    return round(a - 360.0 * math.ceil((a - 180.0) / 360.0), 9) + 0.0

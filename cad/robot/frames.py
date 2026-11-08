@@ -134,18 +134,20 @@ LINKS: dict[str, list[str]] = {
     # its spacer, axle and nut) on the mount's plate (lib/mounts.py) - they turn nothing themselves (the belt's path is
     # fixed here, both its pulleys' axes are); the base_yaw bearing pair sits
     # in the base's bore (a bearing rides with its housing), the thrust bearing's lower washer and its cage in the
-    # base's groove
+    # base's groove; the base_yaw home sensor (the KY-003 on its bracket under the motor plate)
     "base_link": ["base#1", "bearing_6806#1", "bearing_6806#2", "washer_as6590#1", "bearing_axk6590#1",
                   "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1", "nema17_48mm#1",
                   "mks_servo42d#1", "yaw_motor_screws#1", "gt2_pulley_20t#3", "yaw_belt#1", "gt2_idler_20t#2",
-                  "yaw_idler_spacer#1", "yaw_idler_screw#1", "yaw_idler_nut#1"],
+                  "yaw_idler_spacer#1", "yaw_idler_screw#1", "yaw_idler_nut#1", "ky003_hall_sensor#1", "yaw_home_bracket#1",
+                  "yaw_home_screws#1", "yaw_home_inserts#1", "yaw_home_board_screws#1", "yaw_home_board_nuts#1"],
     # j1_coupler (the holder) turns on the base, its motor leg bolted on; the cycloidal drive's stator - the held carrier
     # (motor plate, output hub, output pins), the motor (+ its MKS board) and the gear train - sits in its fork
     # (assemblies/cycloidal_drive.py BODIES); the thrust bearing's upper washer turns with it, under its seat, and so does
     # the base_yaw 120T bolted to its stub's end inside the base (the base_yaw output, the driven side of its belt), with
-    # the M4 screws + nuts that clamp it; the fork's screws + nuts hold the drive's hub and sleeve in it.
+    # the M4 screws + nuts that clamp it, and the home magnet in its outer face; the fork's screws + nuts hold the drive's
+    # hub and sleeve in it.
     "shoulder_link": ["j1_coupler#1", "j1_motor_leg#1", "washer_as6590#2", "gt2_pulley_120t#1", "yaw_pulley_screws#1",
-                      "yaw_pulley_nuts#1", "fork_hub_screws#1", "fork_hub_nuts#1", "fork_foot_screws#1", "fork_foot_nuts#1",
+                      "yaw_pulley_nuts#1", "yaw_home_magnet#1", "fork_hub_screws#1", "fork_hub_nuts#1", "fork_foot_screws#1", "fork_foot_nuts#1",
                       "fork_sleeve_screws#1", "fork_sleeve_nuts#1", "cycloidal_drive#1:stator"],
     # the drive's rotor (its turning shell, the ring pins and both 6814s) is bolted to j1_link: the shoulder_pitch output;
     # the elbow_pitch motor's gearbox bolts to the web across j1_link's motor hole (its 4x M4), the motor + board on it (its

@@ -112,7 +112,7 @@ def test_default_plate_rises_with_the_belt():
 def test_default_bore_takes_the_6806_pair():
     b = DEFAULT.bore
     assert replace(DEFAULT, shell=LEGACY.shell, bore=LEGACY.bore, cap=LEGACY.cap, motor=LEGACY.motor, plate=LEGACY.plate,
-                   joint=None, mount=None, foot=None, idler=None, slits=None) == LEGACY
+                   joint=None, mount=None, foot=None, idler=None, slits=None, home=None) == LEGACY
     assert (b.upper_dia, b.lower_dia, b.lip_dia) == (FOREARM.boss.seat_dia, FOREARM.boss.seat_dia, FOREARM.boss.lip_dia)
     assert b.upper_dia > BEARING_6806_OD and LEGACY.bore.lower_dia - BEARING_6806_OD > 1.0   # the SolidWorks lower seat: 1.4 over
     c = DEFAULT.cap

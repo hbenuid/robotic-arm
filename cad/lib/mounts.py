@@ -90,6 +90,11 @@ mount, where the stock belt puts the idler on the belt's open run (lib/base/layo
 its lower face level with the belt, each other part's +Z down the base's -Y - the spacer's land under the idler, its
 riser on the mount's plate, the screw's head on the idler, the nut on the plate's underside between its rails
 (lib/params.py YAW_IDLER_*). The forearm roll's tensioner is a row of its module (assemblies/forearm_roll_drive.py).
+The base_yaw HOME SENSOR (YAW_HOME_MOUNTS; lib/base/params.py YawHomeParams): the KY-003 (ky003_hall_sensor) on its
+printed bracket under the base's motor plate, its chip under the 120T's outer face, the bracket's M3s, their inserts
+in the plate and the board's M2s and nuts - all in the base's part frame, the bracket and its fasteners in the
+bracket's (lib/base/layout.py home_bracket_frame()) - and the home magnet in its pocket in the 120T's face, hosted on
+the 120T (so in shoulder_link), over the chip at BASE_YAW_HOME_DEG (lib/params.py).
 The wrist belt's (WRIST_IDLER_MOUNTS; lib/forearm/params.py IdlerParams): the idler under j2_link's web where the
 stock belt puts it on the run leaving the motor's 20T (lib/forearm/layout.py wrist_idler_xy), standing on its lower face
 level with the belt, its M5 axle's head under it, the nut on its channel's floor down from the web's top face (each +Z
@@ -97,9 +102,10 @@ up j2_link's +Z).
 """
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
-from lib.base.layout import joint_stations, yaw_belt_frame, yaw_idler_xz
+from lib.base.layout import home_bracket_frame, home_sensor_frame, joint_stations, yaw_belt_frame, yaw_idler_xz
 from lib.base.params import DEFAULT as _BASE
 from lib.bearings import THRUST_WASHER_WIDTH
 from lib.forearm import module_frame_in_host, wrist_belt_frame, wrist_idler_xy
@@ -141,6 +147,7 @@ from lib.yaw_coupler.layout import (
     fork_hub_nut_z,
     fork_hub_screw_frame,
     fork_sleeve_screw_frame,
+    yaw_pulley_frame,
 )
 from lib.yaw_coupler.params import DEFAULT as _YAW_COUPLER
 
@@ -324,8 +331,7 @@ PULLEY_MOUNTS: tuple[Mount, ...] = (
           ((0.0, PULLEY_SEAT_SHIFT, 0.0), (0.0, _WRIST.flange.pulley_bolt_deg, 0.0)),
           "the wrist 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower wrist bearing; "
           "turned pulley_bolt_deg about its axis with wrist_link's bolt pattern (the front nut clear of the post's flat)"),
-    Mount("gt2_pulley_120t#1", YAW_PULLEY, "j1_coupler#1", "shoulder_link", "base_yaw",
-          ((0.0, round(_YAW_COUPLER.hub.stub_y0 + _YAW_PULLEY.end_y, 6), 0.0), (180.0, _YAW_COUPLER.hub.hole_deg, 0.0)),
+    Mount("gt2_pulley_120t#1", YAW_PULLEY, "j1_coupler#1", "shoulder_link", "base_yaw", yaw_pulley_frame(_YAW_COUPLER),
           "the base_yaw 120T under j1_coupler, hub up: its hub end on the stub's end, its journal in the lower base bearing, "
           "its ring under that bearing's inner ring (it holds the coupler down on the thrust bearing); turned hole_deg "
           "about its axis onto the stub's diagonal holes"),
@@ -455,9 +461,36 @@ WRIST_IDLER_MOUNTS: tuple[Mount, ...] = (
           ((_W_IDLER_X, _W_IDLER_Y, _FOREARM.idler.nut_floor), (0.0, 0.0, 0.0)),
           "its nut on the floor of its channel down from the web's top face, its flats across j2_link's x"),
 )
+# The base_yaw home sensor (lib/base/params.py YawHomeParams), in the base's part frame: the KY-003 on its bracket under
+# the motor plate (home_sensor_frame(): its chip's centre under the home magnet's path), the bracket and its fasteners
+# in the bracket's frame (home_bracket_frame(): z = 0 on its underside, +Z up the base's +Y); the magnet in the 120T's
+# outer face, in the pulley's own frame - on its pocket's axis (lib/pulley/params.py YAW magnet), its south pole's face
+# flush with the outer face (face_y), the disc in -Y (into the web) - so it turns with shoulder_link.
+_HOME_FRAME = home_bracket_frame(_BASE)
+_MAGNET_R, _MAGNET_DEG = _YAW_PULLEY.magnet[:2]
+_MAGNET_XZ = (round(_MAGNET_R * math.cos(math.radians(_MAGNET_DEG)), 6), round(_MAGNET_R * math.sin(math.radians(_MAGNET_DEG)), 6))
+YAW_HOME_MOUNTS: tuple[Mount, ...] = (
+    Mount("ky003_hall_sensor#1", "ky003_hall_sensor", "base#1", "base_link", "base_yaw", home_sensor_frame(_BASE),
+          "the base_yaw home sensor under the 120T, branded face up, its chip under the home magnet's path; the board's "
+          "header toward -X, into the base's open side"),
+    Mount("yaw_home_bracket#1", "yaw_home_bracket", "base#1", "base_link", "base_yaw", _HOME_FRAME,
+          "its printed bracket, its root on the motor plate's underside on the +Z side, the board on its seat pad"),
+    Mount("yaw_home_screws#1", "yaw_home_screws", "base#1", "base_link", "base_yaw", _HOME_FRAME,
+          "the bracket's 2 M3: the heads under its root, up into the inserts"),
+    Mount("yaw_home_inserts#1", "yaw_home_inserts", "base#1", "base_link", "base_yaw", _HOME_FRAME,
+          "their 2 heat-set inserts in the motor plate's underside, flush with it"),
+    Mount("yaw_home_board_screws#1", "yaw_home_board_screws", "base#1", "base_link", "base_yaw", _HOME_FRAME,
+          "the board's 2 M2: the heads on its top, down through the pad and the bracket"),
+    Mount("yaw_home_board_nuts#1", "yaw_home_board_nuts", "base#1", "base_link", "base_yaw", _HOME_FRAME,
+          "their nuts under the bracket"),
+    Mount("yaw_home_magnet#1", "yaw_home_magnet", "gt2_pulley_120t#1", "shoulder_link", "base_yaw",
+          ((_MAGNET_XZ[0], _YAW_PULLEY.face_y, _MAGNET_XZ[1]), (90.0, 0.0, 0.0)),
+          "the home magnet in its pocket in the 120T's outer face, south pole out, flush: over the KY-003's chip at "
+          "BASE_YAW_HOME_DEG"),
+)
 MOUNTS: tuple[Mount, ...] = (BASE_MOUNTS + YOKE_MOUNTS + FORK_MOUNTS + MOTOR_MOUNTS + MOTOR_PULLEY_MOUNTS + MOTOR_SCREW_MOUNTS + BEARING_MOUNTS
                              + THRUST_MOUNTS + PULLEY_MOUNTS + FASTENER_MOUNTS + BELT_MOUNTS + IDLER_MOUNTS + YAW_IDLER_MOUNTS
-                             + WRIST_IDLER_MOUNTS)
+                             + WRIST_IDLER_MOUNTS + YAW_HOME_MOUNTS)
 BY_KEY: dict[str, Mount] = {m.key: m for m in MOUNTS}
 
 

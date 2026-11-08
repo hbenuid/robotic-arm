@@ -17,7 +17,8 @@ ring sized for the thrust bearing's bore, and the +X lobe cut off at a joint fac
 bolt-on motor mount (MountParams, parts/base/base_motor_mount) - the base's D carried on to a round end, its foot round
 it -, its motor seat on round holes YAW_MOTOR_X out and the belt's tensioner on its plate (YawIdlerParams); the walls
 j1_coupler's cone carried on down (ShellParams.r / draft: BASE_R, BASE_DRAFT) onto a Ø200 foot - a flange, a straight
-chamfer up the wall, screw holes (FootParams); a band of slits through both parts' walls (SlitParams).
+chamfer up the wall, screw holes (FootParams); a band of slits through both parts' walls (SlitParams); the base_yaw
+home sensor's bracket hung under the motor plate on 2 M3 into inserts in blind holes in the plate (YawHomeParams).
 
 Every number below was measured on the reference 2026-09-25 (vertex / face census; tests/base/test_base.py
 re-checks the builds against it): [REFERENCE] unless tagged. Units mm, degrees where named *_deg (in the XZ plane,
@@ -29,11 +30,27 @@ from dataclasses import dataclass, replace
 
 from lib.bearings import BEARING_6806_WIDTH, THRUST_BORE
 from lib.cycloidal.params import DEFAULT_CONFIG as _DRIVE
-from lib.fasteners import M4_CLEAR, M4_NUT, M4_SHCS, M5_CLEAR, M5_NUT, M5_SHCS, NutSize, ShcsSize
+from lib.fasteners import (
+    M2_CLEAR,
+    M2_NUT,
+    M2_SHCS,
+    M3_CLEAR,
+    M3_INSERT,
+    M3_SHCS,
+    M4_CLEAR,
+    M4_NUT,
+    M4_SHCS,
+    M5_CLEAR,
+    M5_NUT,
+    M5_SHCS,
+    InsertSize,
+    NutSize,
+    ShcsSize,
+)
 from lib.forearm.params import LEGACY as _FOREARM
 from lib.forearm.params import MotorHoleParams
 from lib.motors import MKS_SERVO42D_STACK
-from lib.pulley.params import YAW
+from lib.pulley.params import YAW, YAW_MAGNET_R
 from lib.style import SIDES
 
 
@@ -241,6 +258,46 @@ class YawIdlerParams:
 
 
 @dataclass(frozen=True)
+class YawHomeParams:
+    """[DESIGN] The base_yaw home sensor (docs/open_issues.md, the home sensors): a KY-003 hall module
+    (parts/joints/ky003_hall_sensor, lib/sensors.py) under the base_yaw 120T, its chip's centre chip_r off the axis at
+    chip_deg (in the XZ plane from +X toward +Z), its branded face up; the magnet in the 120T's outer face (lib/pulley/
+    params.py YAW, on the same radius) passes over it, and stands over it at BASE_YAW_HOME_DEG (lib/params.py). The board's
+    long axis runs along -X from the chip, its header and plug into the base's open -X side (the plate's opening runs out
+    to the wall from +Z round -X: PlateParams.open_deg), under the belt.
+    The module lies on a printed bracket (parts/base/yaw_home_bracket) hung under the motor plate: a plain plate
+    bracket_t thick, its top on the plate's underside, its outline (x, z) from the chip's centre in the base's axes - a
+    root under the plate on the +Z side, past the opening's edge and clear of the plate's arc slot, carried in under the
+    120T to the board; 2 M3 SHCS (screw_len) up through it at screw_points (from the chip too) into heat-set inserts
+    (insert) in blind holes in the plate's underside. A seat pad pad_h high on it under the board (its footprint,
+    pad_margin round it), so the chip stands that much nearer the magnet; slots relief_w wide in the pad under the
+    header's pins (header_relief_len long) and under the chip's leads (lead_relief_len), each relief_past deeper than
+    the tails reach. The board by its two holes on 2 M2 SHCS (board_screw_len) down through it, the pad and the bracket
+    into M2 nuts under it."""
+
+    chip_r: float = YAW_MAGNET_R          # the magnet's radius on the 120T
+    chip_deg: float = 90.0                # on +Z: the bracket's root under the plate on that side, the board toward -X
+    bracket_t: float = 3.0
+    outline: tuple = ((-23.0, -9.0), (4.0, -9.0), (20.0, 13.0), (20.0, 28.0), (-2.0, 28.0), (-2.0, 9.0), (-23.0, 9.0))
+    pad_h: float = 3.0                    # the chip's face 2.98 under the 120T's (3.48 to the hall element: 107 mT)
+    pad_margin: float = 1.0               # the pad round the board's footprint
+    relief_w: float = 2.0                 # the slots across the pins' / the leads' row ...
+    header_relief_len: float = 9.0        # ... along the header's 3 pins ...
+    lead_relief_len: float = 5.0          # ... along the chip's 3 leads ...
+    relief_past: float = 0.5              # ... and this deeper than their tails
+    screw_points: tuple = ((6.0, 22.5), (15.0, 22.5))   # the M3s, (x, z) from the chip's centre: under the plate, 49.9 and
+    #                                                     51.7 off the axis at 83 and 73 deg (the arc slot ends at 46)
+    screw: ShcsSize = M3_SHCS
+    screw_len: float = 6.0                # through the bracket and 3.0 into the insert
+    screw_hole_dia: float = M3_CLEAR
+    insert: InsertSize = M3_INSERT        # in its hole insert.length deep: 1.0 of the 5 mm plate over it
+    board_screw: ShcsSize = M2_SHCS
+    board_screw_len: float = 10.0         # through the board, the pad and the bracket, 0.8 past the nut
+    board_nut: NutSize = M2_NUT
+    board_hole_dia: float = M2_CLEAR
+
+
+@dataclass(frozen=True)
 class BaseConfig:
     shell: ShellParams = ShellParams()
     cap: CapParams = CapParams()
@@ -252,6 +309,7 @@ class BaseConfig:
     foot: FootParams | None = None     # None: the walls stand straight on the table (the SolidWorks base)
     idler: YawIdlerParams | None = None   # the belt's tensioner on the motor mount's plate (with mount)
     slits: SlitParams | None = None    # the slits through the base's and the mount's walls (with mount)
+    home: YawHomeParams | None = None  # the base_yaw home sensor's bracket under the plate, its inserts' holes in it
 
 
 LEGACY = BaseConfig()     # the SolidWorks part, exactly
@@ -313,4 +371,4 @@ DEFAULT = replace(LEGACY, shell=replace(LEGACY.shell, y0=_BOTTOM_Y, r=_TOP_R, dr
                   motor=replace(LEGACY.motor, centre=(YAW_MOTOR_X, LEGACY.motor.centre[1]), hole_dia=_HOLES.bolt_dia,
                                 holes=_HOLES, pad_t=YAW_MOTOR_PAD),                                     # [DESIGN]
                   joint=JointParams(), mount=MountParams(), foot=FootParams(), idler=YawIdlerParams(),
-                  slits=SlitParams())                                                                  # [DESIGN]
+                  slits=SlitParams(), home=YawHomeParams())                                            # [DESIGN]
