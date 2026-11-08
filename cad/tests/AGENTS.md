@@ -3,7 +3,10 @@
 Loads when you work in `tests/`. Run it only through `./cadtool pytest` (`cad/AGENTS.md`); `-m "not slow"` is the fast
 lane. `-n <workers>` (pytest-xdist) spreads the suite over processes, a whole file per worker (`pyproject.toml` sets
 `--dist=loadfile`: a file's fixtures and `built.py` shapes are built once) — `-n 4` on a dev machine and in CI's slow
-lane (each worker holds its own shapes, ~1.5 GB at most; not `-n auto`, which starts one per core). CI runs the slow
+lane (each worker holds its own shapes, ~1.5 GB at most; not `-n auto`, which starts one per core). A worker the
+system's out-of-memory killer takes does not fail the run, it hangs it (several sessions building at once can
+exhaust the RAM: pytest runs outside the cad server's memory cap): when a run overruns, look for the kill in the
+system log and re-run without `-n`. CI runs the slow
 lane as three jobs (`.github/workflows/ci.yml`): `test_sweeps.py`, a few long sweeps, a test per worker
 (`--dist=worksteal`); the other files of `tests/` itself; its subfolders - each part leaving out the others' files, so
 a new test file always lands in one.
