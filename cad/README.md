@@ -6,13 +6,11 @@ on an MG996R),
 converted part-by-part from the original SolidWorks design. This folder is a **separate uv project** (Python 3.14) —
 the motor-control software (`software/control/`) never depends on it.
 
-**Status:** the printed parts are real build123d, bar the few still an *import wrapper* around their SolidWorks
-export (`reference/solidworks/<name>.step`; [`docs/open_issues.md`](docs/open_issues.md) "Not converted yet");
-purchased parts use a vendor STEP where there is one, else their parametric envelope; and `assemblies/arm.py` places
-them from `reference/placements.json` (the SolidWorks capture plus the mounts `lib/mounts.py` declares), the drive
-modules placing their own parts from code — so the whole arm assembles, renders and is tested. Converting a part means
-replacing its wrapper body with real build123d code (see [`parts/AGENTS.md`](parts/AGENTS.md) "Converting a part").
-The **cycloidal shoulder drive is fully parametric build123d** (`lib/cycloidal/`, `assemblies/cycloidal_drive.py`),
+**Status:** every printed part is real build123d (none is an *import wrapper* around its SolidWorks export any
+more; `tools/bom.py`'s print list gives each part's state); purchased parts use a vendor STEP where there is one, else
+their parametric envelope; and `assemblies/arm.py` places them from `reference/placements.json` (the SolidWorks capture
+plus the mounts `lib/mounts.py` declares), the drive modules placing their own parts from code — so the whole arm
+assembles, renders and is tested. The **cycloidal shoulder drive is fully parametric build123d** (`lib/cycloidal/`, `assemblies/cycloidal_drive.py`),
 ported from the `cycloidal_drive` repo and verified against its CadQuery exports; its shell is the output, the
 `j1_coupler` yoke holding its hub and motor — see [`docs/cycloidal_drive.md`](docs/cycloidal_drive.md) §5.5. The
 forearm roll and wrist roll drives are code-driven modules too ([`docs/forearm_roll.md`](docs/forearm_roll.md),

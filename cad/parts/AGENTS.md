@@ -32,8 +32,8 @@ Custom parts declare `REFERENCE = NAME` (`None` for a *measured* or a printed *n
 `LOCAL_FROM_REF` (`IDENTITY` when left out):
 - *wrapper* (`CONVERTED = False`, from `_templates/wrapper.py`): the model returns
   `reference/solidworks/<name>.step` (via `lib.reference.load` → `cadgen.step.read`, an input of the build)
-  in the SolidWorks part-file frame — the day-one state of every custom part (the ones still wrappers:
-  `docs/open_issues.md` "Not converted yet");
+  in the SolidWorks part-file frame — the day-one state of every custom part (none is left: `tools/bom.py`'s
+  print list gives each part's state);
 - *parametric* (`CONVERTED = True`, from `_templates/designed.py`): real build123d — see "Converting a part" below.
 - *designed* (`CONVERTED = True`, `REFERENCE = NAME`, registered in `lib/reference.py DESIGNED`):
   the cycloidal drive's ported printed parts (`cycloidal_shell_ring`, designed here, is *no reference*) — the
