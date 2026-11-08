@@ -48,6 +48,7 @@ the CAD kernel), updating the plugin and what a pull that changes `pyproject.tom
 | `./cadtool gen assemblies/arm.py` | build `assemblies/arm.step` (git-ignored); every part runs with it (replayed when unchanged) and writes its own STEP |
 | `./cadtool python tools/bom.py [--module <module>] [--md\|--json]` | the **print list** and the **buy list**, of the arm or of one module of `assemblies/arm.py MODULES` ([`parts/AGENTS.md`](parts/AGENTS.md) Printed vs. bought) |
 | `./cadtool python tools/export_printables.py [--parts …]` | one STL per **printed** part into `print/` (git-ignored) |
+| `./cadtool python tools/export_gauges.py [--only …] [--list]` | the **fit gauges** - test prints of every bearing, pin, screw, nut and servo fit at steps round the arm's sizes - one 3MF per bed plate into `print/gauges/` |
 | `./cadtool export <file.step> stl\|3mf\|glb [out]` | one mesh file per call from a STEP document (default: beside it) |
 | `./cadtool inspect <file.step> [--planes] [--json]` | every leaf's ref, solids, faces, volume, bbox of a saved STEP (`--planes`: its planar faces) |
 | `./cadtool cad step inspect <file.step> "<ref>"` | what one ref (an occurrence path, `…/face 7`) names, and its measures |
@@ -89,7 +90,7 @@ cad/
 ├── tools/        # import / extract / BOM / print export / inspect scripts (./cadtool python tools/…)
 ├── tests/        # pytest (the fast lane, the geometry tests, the per-subsystem suites)
 ├── docs/         # the drives' specs, the open-issues list, the toolchain notes
-├── print/        # git-ignored: one STL per printed part (tools/export_printables.py)
+├── print/        # git-ignored: one STL per printed part (tools/export_printables.py), the fit gauges in gauges/
 └── snapshots/    # git-ignored: snapshot PNGs
 ```
 Every folder with rules has its own guide — written for agents, readable by anyone:

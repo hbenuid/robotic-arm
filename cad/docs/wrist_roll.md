@@ -65,8 +65,8 @@ Every station: `stack_positions()`.
 | `x_coupler`, `x_free` | the plate's coupler face, its free face (the pocket's floor) | `axis_h` |
 
 ## 3. Fits and printing
-PETG, the forearm roll's rules: the seats the bearing OD + `seat_add`, the journals `journal_add` interference (print a
-fit gauge first, `cycloidal_drive.md` §6). `wrist_link`'s orientation is open (`open_issues.md`, a printability check before
+PETG, the forearm roll's rules: the seats the bearing OD + `seat_add`, the journals `journal_add` interference (print
+the fit gauges first, `tools/export_gauges.py`). `wrist_link`'s orientation is open (`open_issues.md`, a printability check before
 the first print): plate down, the closed far face's wall roofs the pocket and the window (support inside them) and the
 seats print as horizontal bores; front face down, as the forearm roll's frame, the seats print as vertical bores and the
 facets rise at 45° (the flange's post flush with that face). The back panel prints outer face down (one

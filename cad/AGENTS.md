@@ -23,6 +23,7 @@ The toolchain, its pins and upgrades: `docs/toolchain.md`.
 | change a shared dimension | `lib/AGENTS.md` Shared dimensions (its own table) | Recipe C |
 | touch the URDF / links / inertials | `robot/AGENTS.md` | Recipe C steps 7–9 |
 | print list, buy list, STLs to print | `parts/AGENTS.md` Printed vs. bought | — |
+| test-print the fits (bearings, pins, screws, nuts, the servo) before the parts, or add a fit | `lib/AGENTS.md` (`gauges/`), `tools/AGENTS.md` (`export_gauges.py`) | a new fit: its `Use` in `lib/gauges/fits.py` |
 | bump cad / build123d / OCP / Python, or a pull changed `pyproject.toml` / `uv.lock` | `docs/toolchain.md` | — |
 | work on the cycloidal drive / the forearm roll drive / the wrist roll drive | `docs/cycloidal_drive.md` / `docs/forearm_roll.md` / `docs/wrist_roll.md` | — |
 | change how the arm looks (shapes, edges, colours, covers) | `docs/design_language.md` (its values: `lib/style.py`) | the preview first (Design choices, below), then Recipe C |
