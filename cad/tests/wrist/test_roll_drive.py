@@ -73,9 +73,10 @@ def test_module_frame_and_record():
     assert D.side == -1.0 and across.dot(swing.normalized()) < -30.0
     motor = (world * Location((S["x_motor"], S["y_motor"], 0.0))).position
     assert _offset_from_line(tuple(motor), F.WRIST_PITCH_ORIGIN, F.WRIST_PITCH_AXIS) < 0.01
-    # and the SolidWorks roll axis through the wrist centre, parallel: off it across the plate and along its normal
+    # and the SolidWorks roll axis through the wrist centre, parallel: off it across the plate and along its normal - less
+    # the wrist flange's inset, which moved the wrist that far along the pitch axis toward the forearm
     assert _offset_from_line(F.WRIST_CENTRE, F.WRIST_ROLL_ORIGIN, F.WRIST_ROLL_AXIS) == pytest.approx(
-        math.hypot(D.centre_distance, DEFAULT.end_face.axis_z - (DEFAULT.plate.thickness - D.axis_h)), abs=0.05)
+        math.hypot(D.centre_distance, DEFAULT.end_face.axis_z - (DEFAULT.plate.thickness - D.axis_h) - DEFAULT.pitch_inset), abs=0.05)
 
 
 def test_what_the_drive_replaced():

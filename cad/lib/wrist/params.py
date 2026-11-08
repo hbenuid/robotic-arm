@@ -35,7 +35,7 @@ from lib.belts import GT2_PULLEY_20T_TEETH, centre_distance
 from lib.coupler.params import DEFAULT as COUPLER
 from lib.fasteners import M3_CLEAR, M3_NUT, M3_SHCS, M4_CLEAR, NutSize, ShcsSize
 from lib.motors import MKS_SERVO42D_STACK, MKS_SERVO42D_W
-from lib.style import EDGE_CHAMFER, GRILL_PITCH, GRILL_SLOT
+from lib.style import GRILL_PITCH, GRILL_SLOT
 
 
 @dataclass(frozen=True)
@@ -64,6 +64,13 @@ class SeatParams:
 
 
 _T = PlateParams.thickness   # the plate's coupler face, where FlangeParams' stations start
+# [DESIGN] wrist_link and everything it carries (the wrist roll drive, the gripper) this far along its +Z (toward the
+# forearm) from the capture, on the wrist pitch axis (WristConfig.pitch_inset, lib/placements.py SHIFTS): its coupler face
+# FACE_GAP (2) off j2_link's wrist boss (trimmed flush with the upper wrist bearing: lib/forearm/params.py BOSS_TRIM) - the
+# capture's 14.5, the SolidWorks coupler's flange and lip ring between them, + the trim's 1.5 - so the flange's post is
+# that much shorter; with the elbow's (lib/forearm/params.py ELBOW_INSET) the gripper's roll axis in the plane of the
+# base_yaw axis at home. The 6806 stack in the boss, the wrist 90T and its screws stay with the forearm.
+PITCH_INSET = 14.0
 
 
 @dataclass(frozen=True)
@@ -77,17 +84,24 @@ class FlangeParams:
     alone, cut flat where it passes the frame's front face and rear (lib/wrist/link.py _flange: nothing past the frame's
     outline seen along the pitch axis), its front flat carried on down into the front facet's foot; the 90T's bolt
     pattern turned pulley_bolt_deg off the axes, so the front nut keeps its wall to that flat. The stations are the
-    retired coupler's (lib/coupler/params.py DEFAULT) on the coupler face: the 6806 stack, the 90T and its screws and
-    nuts stay."""
+    retired coupler's (lib/coupler/params.py DEFAULT) on the coupler face, less PITCH_INSET (the wrist that much nearer
+    the forearm): the 6806 stack, the 90T and its screws stay; the post is 1.3 long, the stub 9 - the elbow flange's
+    design (lib/forearm/params.py RollDriveParams post_x / stub_x), its nuts seated the same, level with the bearing's top."""
 
     post_dia: float = COUPLER.journal_dia                              # [REFERENCE] Ø40 over j2_link's Ø42.2 seat
-    post_z: tuple = (_T, _T + COUPLER.journal_y1)                      # the coupler face .. 0.7 under the upper wrist bearing (the
+    post_z: tuple = (_T, _T + COUPLER.journal_y1 - PITCH_INSET)        # the coupler face .. 0.7 over the upper wrist bearing (the
     #                                                                    post itself from the free face, lib/wrist/link.py _flange)
-    post_chamfer: float = EDGE_CHAMFER                                 # its foot's 45 deg chamfer (lib/style.py)
+    post_chamfer: float = 1.0                                          # [DESIGN] its foot's 45 deg chamfer: EDGE_CHAMFER (lib/style.py)
+    #                                                                    would leave the 1.3 post no straight band
     step_dia: float = COUPLER.step[0]                                  # the inner-ring shoulder ...
-    step_z: tuple = (_T + COUPLER.journal_y1, _T + COUPLER.step[1])    # ... down onto the upper wrist bearing's top face
+    step_z: tuple = (_T + COUPLER.journal_y1 - PITCH_INSET, _T + COUPLER.step[1] - PITCH_INSET)   # ... down onto the upper wrist
+    #                                                                    bearing's top face
     stub_dia: float = COUPLER.stub_dia                                 # through the upper wrist bearing and j2_link's lip ...
-    stub_z: tuple = (_T + COUPLER.step[1], _T + COUPLER.stub_y1)       # ... to the 90T's face (the lip's lower face)
+    stub_z: tuple = (_T + COUPLER.step[1] - PITCH_INSET, _T + COUPLER.stub_y1 - PITCH_INSET)   # ... to the 90T's face (the lip's
+    #                                                                    lower face): 9 long
+    pulley_screw_len: float = 30.0                                     # [DESIGN] the 90T's 4 M4 x 30 (ISO 4762, parts/joints/
+    #                                                                    wrist_pulley_screws) from the floors of its counterbores - the
+    #                                                                    elbow's length (RollDriveParams.pulley_screw_len)
     pin_bore_dia: float = COUPLER.bore_dia                             # [REFERENCE] blind from the stub's end ...
     pin_bore_past: float = 1.0                                         # ... stopping this far short of the nuts' seats
     pulley_bolt_r: float = COUPLER.pulley_bolt_r                       # [REFERENCE] the 90T's 4 M4 at r 11 ...
@@ -100,7 +114,9 @@ class FlangeParams:
     nut_corner_deg: float = 0.0                                        # ... a corner this far off the pattern's turn (pulley_bolt_deg
     #                                                                    off +X): the coupler's pockets, as parts/joints/wrist_pulley_nuts
     #                                                                    models the nuts, turned with the 90T
-    nut_seat_z: float = _T + COUPLER.nut_depth                         # the nuts' faces toward the 90T: each channel from here down
+    nut_seat_z: float = _T + COUPLER.step[1] - PITCH_INSET             # [DESIGN] the nuts' faces toward the 90T, level with the upper
+    #                                                                    wrist bearing's top (the elbow's: RollDriveParams.nut_seat_x) - the
+    #                                                                    screws' tips 2 pitches past: each channel from here down
     channel_past: float = 1.0                                          # ... through the plate, this far into the pancake's pocket
 
 
@@ -382,6 +398,7 @@ class WristConfig:
     end_face: EndFaceParams = EndFaceParams()
     roll: WristRollParams | None = None          # DEFAULT: the wrist roll drive's frame - the plate only its wall, no tower
     connector: ConnectorParams = ConnectorParams()
+    pitch_inset: float = 0.0                     # the part and all it carries this far along its +Z from the capture (PITCH_INSET)
 
 
 LEGACY = WristConfig()     # the SolidWorks part, exactly
@@ -391,4 +408,4 @@ LEGACY = WristConfig()     # the SolidWorks part, exactly
 # and its seat gone) - the old tower, its end face and gripper_clamp_bracket gone; the gripper's connector bolted to the
 # roll pulley's face.
 DEFAULT = replace(LEGACY, seat=None, flange=FlangeParams(), roll=WristRollParams(),
-                  connector=replace(LEGACY.connector, hub=True))   # [DESIGN]
+                  connector=replace(LEGACY.connector, hub=True), pitch_inset=PITCH_INSET)   # [DESIGN]

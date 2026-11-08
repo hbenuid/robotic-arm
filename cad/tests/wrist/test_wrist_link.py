@@ -15,12 +15,15 @@ from lib.geom import hex_prism
 from lib.motors import NEMA17_BOLT_SP
 from lib.wrist import DEFAULT, LEGACY, FlangeParams, end_face_holes, pulley_bolt_points, seat_bolt_points, slope_x
 from lib.wrist.layout import module_frame_in_host, side_wall_x, stack_positions, toward_motor
+from lib.wrist.params import PITCH_INSET
 from lib.wrist.roll import FAR, build_frame, module_to_host, side_profile
 from tests import built
 from tests.helpers import is_inside
 
 P, S, T, E = LEGACY.plate, LEGACY.seat, LEGACY.tower, LEGACY.end_face
 NUT_WALL = 3.0   # [DESIGN] the least wall round each 90T nut's channel (3.9 measured, to the post's front flat)
+SHOULDER_WALL = 1.3   # [DESIGN] ... and in the Ø33 shoulder the nut's top 0.7 stands in: the hex grown 1.3 reaches 1.5 out at its
+#                       corners, the corner's radial wall 1.55 (docs/open_issues.md)
 
 
 def test_the_seat_is_the_couplers_flange():
@@ -112,11 +115,13 @@ def test_legacy_tower(legacy):
 
 def test_default_is_the_roll_frame():
     """DEFAULT differs from LEGACY in exactly the wrist roll drive (its frame on the plate), the wrist_pitch output flange
-    in place of j3_coupler's seat and the connector's hub; the
+    in place of j3_coupler's seat, the connector's hub and the part's inset toward the forearm (PITCH_INSET); the
     drive's frame (module) sits on the pitch axis' station, centre_distance across on its side (-Y), axis_h over the
     coupler face."""
     assert LEGACY.roll is None and DEFAULT.roll is not None and DEFAULT.connector.hub and not LEGACY.connector.hub
-    assert DEFAULT == replace(LEGACY, seat=None, flange=FlangeParams(), roll=DEFAULT.roll, connector=replace(LEGACY.connector, hub=True))
+    assert DEFAULT == replace(LEGACY, seat=None, flange=FlangeParams(), roll=DEFAULT.roll, connector=replace(LEGACY.connector, hub=True),
+                              pitch_inset=PITCH_INSET)
+    assert (LEGACY.pitch_inset, PITCH_INSET) == (0.0, 14.0)
     d = DEFAULT.roll
     assert module_frame_in_host(DEFAULT) == ((P.pitch_x, -d.centre_distance, P.thickness - d.axis_h), (0.0, 90.0, 0.0))
 
@@ -181,7 +186,8 @@ def test_the_part_is_the_roll_frame(wrist, legacy):
     assert DEFAULT.seat is None
     zp, zs, zh = sum(f.post_z) / 2.0, sum(f.stub_z) / 2.0, sum(f.step_z) / 2.0
     assert is_inside(wrist, px, f.post_dia / 2.0 - 1.0, zp) and not is_inside(wrist, px, f.post_dia / 2.0 + 1.0, zp)
-    assert not is_inside(wrist, px, f.post_dia / 2.0 - 0.5, f.post_z[1] - 0.5)
+    assert not is_inside(wrist, px, f.post_dia / 2.0 - f.post_chamfer / 2.0 + 0.2, f.post_z[1] - f.post_chamfer / 4.0)   # the chamfer
+    assert f.post_z[1] - f.post_z[0] == pytest.approx(1.3) and f.post_chamfer == 1.0   # the 2 mm gap's post (PITCH_INSET)
     for x0, s in ((ST["z_front"], 1.0), (d.rear_low, -1.0)):
         assert is_inside(wrist, px + x0 - 0.3 * s, 0.0, zp) and not is_inside(wrist, px + x0 + 0.3 * s, 0.0, zp), x0
     assert is_inside(wrist, px + ST["z_front"] - 0.3, 0.0, -1.0) and not is_inside(wrist, px + ST["z_front"] - 0.3, 18.0, -1.0)
@@ -200,8 +206,9 @@ def test_the_part_is_the_roll_frame(wrist, legacy):
 def test_the_flange_stands_inside_the_frame(wrist):
     """No plate past the roll frame: below j2_link (the post's top) everything the flange adds to the frame lies inside
     the frame's outline seen along the pitch axis (side_profile) - the post's flats on the frame's front face and rear -,
-    and every 90T nut's channel keeps at least NUT_WALL of wall round it under its seat (the pattern turned
-    pulley_bolt_deg: on the axes the front nut came 0.55 off the post's front flat)."""
+    and every 90T nut's channel keeps at least NUT_WALL of wall round it in the post and the frame (the pattern turned
+    pulley_bolt_deg: on the axes the front nut came 0.55 off the post's front flat) - its seat level with the bearing's
+    top, as the elbow's, so the nut's top 0.7 stands in the Ø33 shoulder, SHOULDER_WALL round it there."""
     f, px = DEFAULT.flange, P.pitch_x
     host = module_to_host(DEFAULT)
     frame = build_frame(DEFAULT).moved(host)
@@ -210,9 +217,11 @@ def test_the_flange_stands_inside_the_frame(wrist):
     below = Pos(0.0, 0.0, -FAR) * Box(4 * FAR, 4 * FAR, FAR + f.post_z[1], align=(Align.CENTER, Align.CENTER, Align.MIN))
     assert ((wrist - frame) & below).volume > 1000.0                  # the post, carried down past the coupler face
     assert (((wrist - frame) & below) - outline).volume < 1e-3
-    z0, z1 = 1.0, f.nut_seat_z - 0.5                                  # over the pancake's pocket, under the nuts' seats
+    z0, z1 = 1.0, f.post_z[1]                                         # over the pancake's pocket, up to the shoulder
+    assert f.step_z == (f.post_z[1], f.nut_seat_z)
     corner = math.radians(f.pulley_bolt_deg + f.nut_corner_deg)
     for x, y in pulley_bolt_points(DEFAULT):
-        nut = Pos(x, y, z0) * hex_prism(f.nut_af, corner, z1 - z0)
-        ring = Pos(x, y, z0) * hex_prism(f.nut_af + 2.0 * NUT_WALL, corner, z1 - z0) - nut
-        assert (ring - wrist).volume < 1e-3, (round(x - px, 2), round(y, 2))
+        for (za, zb), wall in (((z0, z1), NUT_WALL), ((z1, f.nut_seat_z - 0.05), SHOULDER_WALL)):
+            nut = Pos(x, y, za) * hex_prism(f.nut_af, corner, zb - za)
+            ring = Pos(x, y, za) * hex_prism(f.nut_af + 2.0 * wall, corner, zb - za) - nut
+            assert (ring - wrist).volume < 1e-3, (round(x - px, 2), round(y, 2), wall)

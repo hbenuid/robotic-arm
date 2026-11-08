@@ -70,7 +70,7 @@ The PULLEY BOLTS (FASTENER_MOUNTS): each pulley's 4x M4 screws and nuts, purchas
 +Z on it). A screw set is hosted on its pulley, its heads' bearing face on the floors of the pulley's counterbores
 (GT2_PULLEY_90T_HEAD_SEAT under its outer face, GT2_PULLEY_90T_FACE_Y) and its shanks into the hub; a nut set is hosted
 on its screw set, its bearing face where the host's seat lies along the screws - the elbow block's channel seats
-(RollDriveParams.nut_seat_x), j3_coupler's pocket floors (CouplerParams.nut_depth), j1_coupler's pockets in the floor of
+(RollDriveParams.nut_seat_x), wrist_link's (FlangeParams.nut_seat_z) - both level with their bearing's top -, j1_coupler's pockets in the floor of
 the pocket over its hub (HubParams.nut_depth under YokeParams.pocket_y0).
 The FORK's screws and nuts (FORK_MOUNTS): what holds the cycloidal drive in j1_coupler's fork, purchased pattern parts
 (parts/base/fork_{hub,foot,sleeve}_{screws,nuts}) whose frames lib/yaw_coupler/layout.py gives in the coupler's frame
@@ -99,7 +99,6 @@ from dataclasses import dataclass
 from lib.base.layout import joint_stations, yaw_belt_frame, yaw_idler_xz
 from lib.base.params import DEFAULT as _BASE
 from lib.bearings import THRUST_WASHER_WIDTH
-from lib.coupler.params import DEFAULT as _COUPLER
 from lib.forearm import module_frame_in_host, wrist_belt_frame, wrist_idler_xy
 from lib.forearm.params import DEFAULT as _FOREARM
 from lib.params import (
@@ -324,11 +323,11 @@ FASTENER_MOUNTS: tuple[Mount, ...] = (
           ((0.0, 0.0, round(_FOREARM.drive.nut_seat_x - (_FOREARM.drive.stub_x[0] - _SEAT_TO_END), 6)), (0.0, 0.0, 0.0)),
           "the elbow screws' nuts on the block's channel seats (nut_seat_x), a flat toward the axis"),
     Mount("wrist_pulley_screws#1", "wrist_pulley_screws", "gt2_pulley_90t#4", "wrist_pitch_link", "wrist_pitch", _SCREWS_IN_COUNTERBORES,
-          "the wrist 90T's 4x M4 x pulley_screw_len: heads in its counterbores, down through its hub and j3_coupler's stub"),
+          "the wrist 90T's 4x M4 x pulley_screw_len: heads in its counterbores, down through its hub and wrist_link's stub"),
     Mount("wrist_pulley_nuts#1", "wrist_pulley_nuts", "wrist_pulley_screws#1", "wrist_pitch_link", "wrist_pitch",
-          ((0.0, 0.0, round(_COUPLER.stub_y1 + _SEAT_TO_END - _COUPLER.nut_depth, 6)), (0.0, 0.0, 0.0)),
-          "the wrist screws' nuts on wrist_link's channel seats (the retired j3_coupler's pocket floors, nut_depth), turned "
-          "with the 90T"),
+          ((0.0, 0.0, round(_WRIST.flange.stub_z[1] - _WRIST.flange.nut_seat_z + _SEAT_TO_END, 6)), (0.0, 0.0, 0.0)),
+          "the wrist screws' nuts on wrist_link's channel seats (nut_seat_z, level with the upper wrist bearing's top, as the "
+          "elbow's), turned with the 90T"),
     Mount("yaw_pulley_screws#1", "yaw_pulley_screws", "gt2_pulley_120t#1", "shoulder_link", "base_yaw", _SCREWS_IN_COUNTERBORES,
           "the base_yaw 120T's 4x M4 x pulley_screw_len: heads in its counterbores (under it), up through its hub and j1_coupler's stub"),
     Mount("yaw_pulley_nuts#1", "yaw_pulley_nuts", "yaw_pulley_screws#1", "shoulder_link", "base_yaw",
