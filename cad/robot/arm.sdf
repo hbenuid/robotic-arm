@@ -168,11 +168,11 @@
     <link name="wrist_roll_link">
       <pose relative_to="wrist_roll">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.000009 -0.0071 0.043588 0 0 0</pose>
-        <mass>0.198512</mass>
+        <pose>0.005284 -0.00002 0.030937 0 0 0</pose>
+        <mass>0.134906</mass>
         <inertia>
-          <ixx>2.447815e-04</ixx><ixy>4.685240e-09</ixy><ixz>6.452327e-09</ixz>
-          <iyy>2.907905e-04</iyy><iyz>2.913768e-05</iyz><izz>1.235591e-04</izz>
+          <ixx>1.270035e-04</ixx><ixy>-1.750922e-08</ixy><ixz>-8.424124e-06</ixz>
+          <iyy>1.478119e-04</iyy><iyz>-1.092190e-07</iyz><izz>3.845455e-05</izz>
         </inertia>
       </inertial>
       <visual name="wrist_roll_link_visual">
@@ -195,11 +195,11 @@
     <link name="jaw_a_link">
       <pose relative_to="jaw_a">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.021644 0 -0.001923 0 0 0</pose>
-        <mass>0.058661</mass>
+        <pose>0.016949 -0.005644 0.009049 0 0 0</pose>
+        <mass>0.010942</mass>
         <inertia>
-          <ixx>7.006318e-06</ixx><ixy>2.243133e-13</ixy><ixz>3.571123e-06</ixz>
-          <iyy>6.252591e-05</iyy><iyz>-3.357013e-13</iyz><izz>6.325509e-05</izz>
+          <ixx>2.710300e-06</ixx><ixy>-6.545706e-07</ixy><ixz>-8.155029e-07</ixz>
+          <iyy>4.370291e-06</iyy><iyz>-5.523855e-07</iyz><izz>2.622026e-06</izz>
         </inertia>
       </inertial>
       <visual name="jaw_a_link_visual">
@@ -222,11 +222,11 @@
     <link name="jaw_b_link">
       <pose relative_to="jaw_b">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.021643 0.000001 0.001924 0 0 0</pose>
-        <mass>0.058661</mass>
+        <pose>0.016949 0.005644 -0.009049 0 0 0</pose>
+        <mass>0.010942</mass>
         <inertia>
-          <ixx>7.006321e-06</ixx><ixy>1.955510e-12</ixy><ixz>-3.571150e-06</ixz>
-          <iyy>6.252591e-05</iyy><iyz>-7.337480e-14</iyz><izz>6.325509e-05</izz>
+          <ixx>2.710300e-06</ixx><ixy>6.545706e-07</ixy><ixz>8.155028e-07</ixz>
+          <iyy>4.370291e-06</iyy><iyz>-5.523856e-07</iyz><izz>2.622026e-06</izz>
         </inertia>
       </inertial>
       <visual name="jaw_b_link_visual">
@@ -310,7 +310,7 @@
       </axis>
     </joint>
     <joint name="wrist_roll" type="revolute">
-      <pose relative_to="wrist_pitch_link">0.026448 0.048588 0.027002 -1.570799 -0.055534 -1.570796</pose>
+      <pose relative_to="wrist_pitch_link">0.026448 0.048588 0.027002 -1.570799 -0.055538 -1.570796</pose>
       <parent>wrist_pitch_link</parent>
       <child>wrist_roll_link</child>
       <axis>
@@ -322,25 +322,25 @@
       </axis>
     </joint>
     <joint name="jaw_a" type="prismatic">
-      <pose relative_to="wrist_roll_link">-0.053464 0 0.05495 0 -1.570796 0</pose>
+      <pose relative_to="wrist_roll_link">0 0 0.06835 0 -1.570796 0</pose>
       <parent>wrist_roll_link</parent>
       <child>jaw_a_link</child>
       <axis>
         <xyz expressed_in="jaw_a">0 0 1</xyz>
         <limit>
-          <lower>-0.01</lower><upper>0.01</upper>
+          <lower>-0.0105</lower><upper>0.0105</upper>
           <effort>20</effort><velocity>0.05</velocity>
         </limit>
       </axis>
     </joint>
     <joint name="jaw_b" type="prismatic">
-      <pose relative_to="wrist_roll_link">0.053465 -0.000001 0.054951 0 -1.570796 0</pose>
+      <pose relative_to="wrist_roll_link">0 0 0.06835 0 -1.570796 0</pose>
       <parent>wrist_roll_link</parent>
       <child>jaw_b_link</child>
       <axis>
         <xyz expressed_in="jaw_b">0 0 1</xyz>
         <limit>
-          <lower>-0.01</lower><upper>0.01</upper>
+          <lower>-0.0105</lower><upper>0.0105</upper>
           <effort>20</effort><velocity>0.05</velocity>
         </limit>
         <mimic joint="jaw_a">
@@ -350,7 +350,7 @@
       </axis>
     </joint>
     <joint name="tool0_joint" type="fixed">
-      <pose relative_to="wrist_roll_link">-0.000001 0 0.116951 0 0 0</pose>
+      <pose relative_to="wrist_roll_link">0 0 0.12365 0 0 0</pose>
       <parent>wrist_roll_link</parent>
       <child>tool0</child>
     </joint>

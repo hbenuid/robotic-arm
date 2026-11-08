@@ -175,9 +175,14 @@ def test_the_rotor_walls():
 
 
 def test_the_connector_turns_with_the_gripper():
-    """connector_turn_deg: the gripper's connector's plate x axis in the module's x-y plane, as the placements put it."""
+    """connector_turn_deg: the gripper's connector's plate x axis in the module's x-y plane, where the gripper module
+    (placed by its record, assemblies/gripper.py's row) puts it - the SolidWorks gripper's turn."""
+    from assemblies import gripper
+    from assemblies._occurrences import row_location
+
     host = P.location("wrist_link#1", "world")
-    conn = host.inverse() * P.location("gripper_j3_connector#1", "world")
+    (row,) = [placement for part, _, placement in gripper.OCCURRENCES if part == "gripper_j3_connector"]
+    conn = host.inverse() * P.location("gripper#1", "world") * row_location(row)
     m = to_location(module_frame_in_host(DEFAULT)).inverse() * conn
     x = (m * Location((1.0, 0.0, 0.0))).position - m.position
     y = (m * Location((0.0, 1.0, 0.0))).position - m.position

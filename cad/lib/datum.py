@@ -40,6 +40,33 @@ BASE_BOTTOM_Y = _BASE.shell.y0               # -112.0 [DESIGN] the base's bottom
 IDENTITY = ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0))   # a frame as data: (position mm, rotation_xyz_deg)
 
 
+def rotation(angles_deg) -> tuple:
+    """The rotation matrix (rows) of a frame's rotation_xyz_deg - to_location()'s convention, Rx(a) Ry(b) Rz(c)."""
+    a, b, c = (math.radians(v) for v in angles_deg)
+    ca, sa, cb, sb, cc, sc = math.cos(a), math.sin(a), math.cos(b), math.sin(b), math.cos(c), math.sin(c)
+    return ((cb * cc, -cb * sc, sb),
+            (ca * sc + sa * sb * cc, ca * cc - sa * sb * sc, -sa * cb),
+            (sa * sc - ca * sb * cc, sa * cc + ca * sb * sc, ca * cb))
+
+
+def angles(m) -> tuple:
+    """The rotation_xyz_deg of a rotation matrix (rows): rotation()'s inverse (b in -90 .. 90; at b = +/-90, c = 0)."""
+    b = math.asin(max(-1.0, min(1.0, m[0][2])))
+    if abs(math.cos(b)) > 1e-9:
+        a, c = math.atan2(-m[1][2], m[2][2]), math.atan2(-m[0][1], m[0][0])
+    else:
+        a, c = math.atan2(m[2][1], m[1][1]), 0.0
+    return tuple(round(math.degrees(v), 9) + 0.0 for v in (a, b, c))
+
+
+def compose(outer, inner) -> tuple:
+    """`inner` (a frame as data in `outer`'s frame) as a frame in `outer`'s parent: to_location(outer) * to_location(inner)."""
+    r1, r2 = rotation(outer[1]), rotation(inner[1])
+    r = tuple(tuple(sum(r1[i][k] * r2[k][j] for k in range(3)) for j in range(3)) for i in range(3))
+    p = tuple(outer[0][i] + sum(r1[i][k] * inner[0][k] for k in range(3)) for i in range(3))
+    return tuple(round(v, 9) + 0.0 for v in p), angles(r)
+
+
 def to_location(frame_data=IDENTITY) -> bd.Location:
     """The Location of a frame given as data. IDENTITY gives a bare `Location()` - not a zero
     translation + rotation, which OCCT carries as a real (if trivial) transform."""

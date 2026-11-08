@@ -128,6 +128,7 @@ from lib.params import (
 )
 from lib.upper_arm.layout import elbow_idler_x, elbow_idler_z
 from lib.upper_arm.params import DEFAULT as _UPPER_ARM
+from lib.wrist.layout import gripper_frame_in_host
 from lib.wrist.layout import module_frame_in_host as wrist_module_frame_in_host
 from lib.wrist.params import DEFAULT as _WRIST
 from lib.yaw_coupler.layout import (
@@ -469,6 +470,12 @@ MODULE_MOUNTS: tuple[ModuleMount, ...] = (
                 "gripper, module +X = host -Z (away from the plate), +Y = host +Y (from R' toward the pancake); wrist_link IS its frame (the stator), the "
                 "pancake and its 20T replace nema17_pancake#1 / gt2_pulley_20t#1 (lib/placements.py RETIRED); beyond the "
                 "forearm's turn, it turns with wrist_link", turned=True),
+    ModuleMount("gripper#1", "gripper", "wrist_link#1", "wrist_roll", gripper_frame_in_host(),
+                "the rack & pinion gripper on the wrist roll's axis R' at gripper_j3_connector's plate (the connector "
+                "bolted to the roll pulley's face): module +Z along R' toward the fingertips, +Y the jaws' travel - the "
+                "connector's plate's long axis, connector_turn_deg - 180 about R' from the drive's +Y; it replaces the "
+                "SolidWorks gripper (lib/reference.py SKIPPED_PRODUCTS); beyond the forearm's turn, it turns with "
+                "wrist_link", turned=True),
 )
 MODULES_BY_KEY: dict[str, ModuleMount] = {m.key: m for m in MODULE_MOUNTS}
 

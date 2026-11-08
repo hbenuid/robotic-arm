@@ -1,7 +1,8 @@
 # robotic-arm — CAD (build123d)
 
 Parametric CAD-as-code for the desktop arm (base yaw, cycloidal shoulder pitch (`CYCLOIDAL_RATIO`), elbow pitch,
-forearm roll, wrist pitch, wrist roll — every joint but the shoulder belt-driven — and an MG996R parallel gripper),
+forearm roll, wrist pitch, wrist roll — every joint but the shoulder belt-driven — and a rack & pinion parallel gripper
+on an MG996R),
 converted part-by-part from the original SolidWorks design. This folder is a **separate uv project** (Python 3.14) —
 the motor-control software (`software/control/`) never depends on it.
 
@@ -108,6 +109,12 @@ vs. bought) · [`assemblies/`](assemblies/AGENTS.md) · [`robot/`](robot/AGENTS.
 ./cadtool pytest -m "not slow"   # fast lane: metadata, params, placements JSON, tooling (the pinned cad + one complete OCP kernel)
 ./cadtool pytest tests/cycloidal # the cycloidal drive's tests only (one folder per subsystem: tests/AGENTS.md)
 ```
+
+## Credits
+The gripper's base, racks, jaws and pinion (`parts/gripper/gripper_base.py`, `gripper_rack.py`, `gripper_jaw.py`,
+`gripper_pinion.py`, `lib/gripper/`) are modelled on "Rack & Pinion Robotic Gripper Jaw" by PapaBravo (Printables,
+https://www.printables.com - licensed CC BY 4.0, https://creativecommons.org/licenses/by/4.0/), measured from its STEP
+files; the cage that holds it on the wrist is designed here.
 
 ## AI CAD assistance
 

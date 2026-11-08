@@ -171,7 +171,7 @@ def module_rows(module_name: str) -> list:
 
 
 def module_bodies(module_name: str) -> dict:
-    """The {body: frozenset(part names)} partition of a code-driven module's rows into rigid
+    """The {body: frozenset(part names, or part:role)} partition of a code-driven module's rows into rigid
     bodies (assemblies/<module>.py BODIES)."""
     return dict(importlib.import_module(f"assemblies.{module_name}").BODIES)
 
@@ -204,7 +204,8 @@ def world_rows(key: str) -> list:
         bodies = module_bodies(o["part"])
         if body not in bodies:
             raise ValueError(f"{key}: unknown body {body!r} (have {sorted(bodies)})")
-        rows = [r for r in rows if r[0] in bodies[body]]
+        # a member is a part, or a part:role where the module has the part twice (the gripper's racks and jaws)
+        rows = [r for r in rows if r[0] in bodies[body] or f"{r[0]}:{r[1]}" in bodies[body]]
     world = P.location(occ, "world")
     return [(part, role, world * row_location(pos)) for part, role, pos in rows]
 

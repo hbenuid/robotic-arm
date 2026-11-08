@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 
 from lib.belts import GT2_PULLEY_20T_TEETH, pulley_circle
+from lib.datum import compose
 from lib.fasteners import M3_PITCH
 from lib.motors import MKS_PLUG_ROOM, MKS_SERVO42D_HEADERS
 from lib.wrist.params import DEFAULT, WristConfig
@@ -231,6 +232,18 @@ def clamp_nut_pocket(cfg: WristConfig = DEFAULT) -> tuple[float, float, float, f
     d, S = cfg.roll, stack_positions(cfg)
     r_out = d.clamp_circle_dia / 2.0 + d.nut.af / math.sqrt(3.0) + d.nut_fit
     return d.bore / 2.0 - 1.0, r_out, S["z_shaft_end"], S["z_clamp_nut_seat"]
+
+
+def gripper_frame_in_module(cfg: WristConfig = DEFAULT) -> tuple:
+    """The gripper module's frame (assemblies/gripper.py, lib/gripper/layout.py) as data in this drive's module frame: on
+    R' at gripper_j3_connector's plate's gripper face (z_connector + its plate), turned with the connector's plate - the
+    gripper's +Y (the jaws' travel) the plate's -z, at connector_turn_deg - 180 about R'."""
+    return ((0.0, 0.0, stack_positions(cfg)["z_connector"] + cfg.connector.plate_t), (0.0, 0.0, cfg.roll.connector_turn_deg - 180.0))
+
+
+def gripper_frame_in_host(cfg: WristConfig = DEFAULT) -> tuple:
+    """The gripper module's frame as data in wrist_link's part frame (lib/mounts.py ModuleMount "gripper#1")."""
+    return compose(module_frame_in_host(cfg), gripper_frame_in_module(cfg))
 
 
 def connector_bolt_points(cfg: WristConfig = DEFAULT) -> list[tuple[float, float]]:

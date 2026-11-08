@@ -2,14 +2,14 @@
 reference/placements.json - the SolidWorks part occurrences + the mounted ones (lib/mounts.py: the belt joints'
 NEMA 17 motors - 48 mm at the base, 40 mm at the elbow and wrist - and their MKS SERVO42D boards, on the pads the links carry;
 the 6806-2RS bearing pair in each belt joint's bore; the base_yaw thrust bearing in the base's groove; the elbow's and the wrist's 90T re-seated on them
-and the base_yaw 120T under j1_coupler, each clamped by 4x M4 screws + nuts; j1_coupler's motor leg) + the gripper module
-(SolidWorks-driven) + the cycloidal_drive module (code-driven, placed at the SolidWorks node's pose) + the
-forearm_roll_drive and wrist_roll_drive modules (code-driven, placed by lib/mounts.py MODULE_MOUNTS) - the totals are locked in
+and the base_yaw 120T under j1_coupler, each clamped by 4x M4 screws + nuts; j1_coupler's motor leg) + the cycloidal_drive
+module (code-driven, placed at the SolidWorks node's pose) + the forearm_roll_drive, wrist_roll_drive and gripper
+modules (code-driven, placed by lib/mounts.py MODULE_MOUNTS) - the totals are locked in
 tests/test_assembly.py - bucketed into the GROUPS component tree (arm -> base_link/shoulder_link/upper_arm_link/
 elbow_link/forearm_link/wrist_pitch_link/wrist) so each rigid link toggles as one node in the viewers. Colors
 (_occurrences.colour(), lib/style.py): a PRINTED part is off-white, or orange where it drives, turns or covers
 (ACCENT = True), every PURCHASED part (COTS = True - motors, boards, servo, bearings, pins, bolts, nuts,
-rails, the 20T pulleys) is grey and the belts a darker grey, inside the modules too:
+the 20T pulleys) is grey and the belts a darker grey, inside the modules too:
 
     arm
     |- base_link         base, bearing_6806:base_yaw_1 / _2, washer_as6590:base_yaw_1, bearing_axk6590:base_yaw,
@@ -34,8 +34,8 @@ j3_coupler#1 / #2 (the elbow's and the wrist's SolidWorks coupler) are RETIRED (
 block and wrist_link carry its journal (a post) and stub and each 90T bolts straight into them - the records stay in
 placements.json, no table claims them; likewise gt2_pulley_90t#1 / #2, whose re-seated poses are the mounts gt2_pulley_90t#3 / #4, and
 nema17_pancake#1 / gt2_pulley_20t#1, which the wrist roll drive carries (the pancake on the wrist-pitch axis). The
-SolidWorks link caps (j1_cap, j2_cap_1, j2_cap_2) were removed 2026-09-25 and gripper_clamp_bracket 2026-10-14: their
-products are lib/reference.py SKIPPED_PRODUCTS, their poses sit in placements.json `skipped`. A drive module is one
+SolidWorks link caps (j1_cap, j2_cap_1, j2_cap_2) were removed 2026-09-25, gripper_clamp_bracket 2026-10-14 and the
+SolidWorks gripper 2026-11-07 (the rack & pinion gripper in its place): their products are lib/reference.py SKIPPED_PRODUCTS, their poses sit in placements.json `skipped`. A drive module is one
 inlined, tinted copy, so this tree keeps it whole - the cycloidal drive under shoulder_link although its rotor body
 (the turning shell: shell ring, ring pins, housing bolts + nuts, both 6814s) belongs to upper_arm_link, the forearm roll drive under elbow_link although its rotor (the roll pulley +
 shaft) belongs to forearm_link, the wrist roll drive under wrist_pitch_link although its rotor (its pulley + shaft)
@@ -143,9 +143,9 @@ OCCURRENCES = [
     # j3_coupler#2 (the wrist coupler) is retired: wrist_link's plate carries the wrist_pitch output flange in its place
     ("wrist_link",            None, "wrist_link#1"),       # the wrist roll drive's frame (its DEFAULT build)
     # nema17_pancake#1 / gt2_pulley_20t#1 are retired and gripper_clamp_bracket skipped: the wrist roll drive carries the
-    # pancake (on the pitch axis) and its 20T, the gripper's connector bolts to its pulley
+    # pancake (on the pitch axis) and its 20T, the gripper's connector (in the gripper module) bolts to its pulley
     ("wrist_roll_drive",      None, WRIST_ROLL_KEY),       # module: assemblies/wrist_roll_drive.py (the wrist_roll joint; lib/mounts.py MODULE_MOUNTS)
-    ("gripper",               None, GRIPPER_KEY),          # module: assemblies/gripper.py
+    ("gripper",               None, GRIPPER_KEY),          # module: assemblies/gripper.py (on wrist_link#1 at the connector's plate; lib/mounts.py MODULE_MOUNTS)
 ]
 
 MODULES = {"gripper": gripper.gripper, "cycloidal_drive": cycloidal_drive.cycloidal_drive,
@@ -180,7 +180,7 @@ GROUPS = [
 @step(out="arm.step")
 def arm():
     """The arm as a labelled Compound: 'arm' -> the GROUPS component nodes -> parts + the
-    'gripper' and 'cycloidal_drive' modules, every part in its colour (_occurrences.colour(): two tones on the printed
+    modules, every part in its colour (_occurrences.colour(): two tones on the printed
     parts, grey on the purchased ones), in the base_link frame (Z up - arm_from_w())."""
     return assembly("arm", grouped_children(OCCURRENCES, GROUPS, MODULES, root=arm_from_w()))
 
