@@ -25,9 +25,7 @@ as a git note).
   The server asks `api.texttocad.dev` for the latest release (one anonymous request; `CAD_UPDATE_CHECK=0` in the server's
   environment turns it off) and, while it is behind, shows an Update button in the viewer: here that update IS a bump
   (the pin with the plugin: "After a pull …" below), and the button is never pressed (Gotchas). Nor does the server
-  update itself: automatic updates stay off (below). Up to 0.7.6 the plugin
-  was `cad@text-to-cad` (plugin `cad`, marketplace `text-to-cad`): a machine that still has that one switches once
-  (Gotchas below).
+  update itself: automatic updates stay off (below).
 - **One cad server per computer.** Every venv, worktree and session, and the plugin, use one server — the engine, warm
   workers, the documents they made, the CAD Viewer's page —, started by the first client that finds none (no timer stops
   it) from the machine's current installation, which `cad doctor` registers (`./cadtool server` runs it). A model run
@@ -57,9 +55,8 @@ as a git note).
   `~/Library/Application Support/cad/` on the Mac) BEFORE `cad doctor` starts the server, which goes by the stored choice
   alone — the environment does not reach it. The stored answer is per machine: `telemetry` → `choice: off` in that file
   is the check, and `./cadtool doctor` reads it with the environment's switch taken off (with the switch on, `cad
-  telemetry status` says off whatever is stored). `test_tooling.py` holds the order. Two ways this fails silently, both
-  met on 0.10: a renamed switch does nothing and says nothing (0.10 reads no `CADGEN_` name), and a new state folder
-  starts with no answer (the old off moves into it only with `cad doctor` or `cad setup`).
+  telemetry status` says off whatever is stored). `test_tooling.py` holds the order. Two ways this fails silently on a
+  bump: a renamed switch does nothing and says nothing, and a new state folder starts with no answer (the old off moves into it only with `cad doctor` or `cad setup`).
 - **cad's automatic updates stay off.** From 0.11 the server reads the version feed once an hour and, by default,
   installs a release that breaks nothing (a patch release below 1.0) by itself, moves every agent app's plugin to it
   and switches once nothing has run for a minute: the machine would leave the pin under every session. `./cadtool
@@ -70,9 +67,8 @@ as a git note).
 - **build123d 0.13.0 / OCP 8.0.1 (OCCT 8)**: cad 0.11's `build123d` extra requires `build123d>=0.13.0,<0.14` and
   `cadquery-ocp-novtk>=8.0,<8.1`; `pyproject.toml` pins the exact kernel (`cadquery-ocp-novtk==…`, the STEP bytes are
   per-kernel) and must never gain `cadquery-ocp`, the VTK build (see Gotchas below). OCCT 8.0.1's two known defects and
-  what this repo checks for them: Gotchas below. On OCCT 7.8.1 some parts could not be read back from the BinTools
-  VERSION_4 bytes cad keeps every part as (its document cache, its STEP reader's wire):
-  `test_part_survives_a_bintools_round_trip` locks that.
+  what this repo checks for them: Gotchas below. Every part must read back from the BinTools VERSION_4 bytes cad
+  keeps it as (its document cache, its STEP reader's wire): `test_part_survives_a_bintools_round_trip`.
 - Python is pinned to **3.14** (`.python-version`, a uv-managed interpreter on every machine: `[tool.uv]
   python-preference`). cad requires it, and build123d and the OCP wheels allow nothing newer; bump only with the full
   suite green.
@@ -109,7 +105,7 @@ cache, whose key omits Python. The proof the geometry did not move: the hash gat
   (0.3 s a command against 0.03 s, uv 0.13.4). A package a later `uv run` installs (after a pull) stays uncompiled
   until the next `./cadtool setup`.
 - `uv lock` on a uv older than the one that wrote `uv.lock` downgrades the file, not only the package it was asked to
-  move: uv 0.10.8 took `revision = 5` back to 3 and rewrote `marker`s on packages nothing touched. Reading it is fine
+  move (its `revision`, and `marker`s on packages nothing touched). Reading it is fine
   (`uv sync`, `./cadtool setup` and `--frozen` leave it alone), so on a machine that is behind, re-lock with a one-off
   newer uv, `uvx uv@<ver> lock`: a bump's lock diff is cad's own entries and nothing else (a change of Python also
   drops the forks and wheels of the Pythons it leaves).
@@ -117,7 +113,7 @@ cache, whose key omits Python. The proof the geometry did not move: the hash gat
   release reuses it (a new cad release starts a new worker, the old one left idle). A source edit needs no restart — the
   next run picks it up and names it (`rebuilt: ../lib/assembly.py: label_text changed`).
 - `cadquery-ocp` (VTK) and `cadquery-ocp-novtk` own the same `OCP/` files (the kernel `.so`
-  included). When uv removes one (as when cadgen 0.6 dropped `cadquery-ocp`) it deletes them and
+  included). When uv removes one it deletes them and
   still counts the other as installed: `uv sync` reports success and `import OCP.gp` fails (a bare `import OCP`
   can still succeed: the leftover `OCP/` directory is an empty namespace package). Repair with
   `uv sync --reinstall-package cadquery-ocp-novtk` (`./cadtool setup` does it when `OCP.gp` does not import, and
@@ -137,25 +133,23 @@ cache, whose key omits Python. The proof the geometry did not move: the hash gat
   pin as a control, then `./cadtool stop` and `./cadtool gen --force <every model>` on the new one and compare, always
   against the copy. A `--force` build can name the elements of mirror-image features the other way round (the swapped
   `~<digest>` names of two edges or vertices, every other record equal: cad derives a name from the history the kernel
-  reports, whose order a boolean can change), so it rewrites such a part's bytes on the SAME pin too (verified on 0.8.2:
-  `base`, `j1_coupler`, `gripper_j3_connector` gave a new hash on every one of four runs, `bearing_6806` the same one),
-  and a new Python moves those digests on many more files (3.12 → 3.14: no number moved in any of them): settle each
-  file that fails with `./cadtool inspect diff` against its old copy. A bump whose STEP writer or kernel changed
-  (0.7 → 0.8, OCCT 7.9 → 8) changes the bytes: compare the geometry instead, every leaf in world coordinates
+  reports, whose order a boolean can change), so it rewrites such a part's bytes on the SAME pin too, and a new
+  Python moves those digests on many more files: settle each file that fails with `./cadtool inspect diff` against its
+  old copy. A bump whose STEP writer or kernel changed changes the bytes: compare the geometry instead, every leaf in world coordinates
   (`./cadtool inspect diff`, after checking that `facts()` reads the old files the same way: the old STEPs read by the
   old venv and by the new one). A new kernel can re-approximate a curve it builds (a chamfer along a spline) with
   another degree and other poles: the surface stays put, but `volume` - an integral over the representation - moves by
-  float noise above `inspect diff`'s default `--tol` (OCCT 8: `cycloidal_disc_2`, 2.6e-6 relative). Settle such a
+  float noise above `inspect diff`'s default `--tol`. Settle such a
   leaf by sampling its faces' distance to the old ones (`Face.position_at` → `distance_to`), not by the volume alone.
-- **OCCT 8 renamed what this repo reaches in `OCP` directly** (cadgen 0.8.1's
+- **OCCT 8's names in `OCP`**, for code written against an older example (upstream's
   `docs/migrations/migrating-to-opencascade-8.md` has the full table): the collections moved to `OCP.collections`,
   named by their template arguments (`TopTools_ListOfShape` → `List_TopoDS_Shape`, `TopTools_IndexedMapOfShape` →
   `IndexedMap_TopoDS_Shape_TopTools_ShapeMapHasher`), the downcasts lost their `_s` (`TopoDS.Face_s` → `TopoDS.Face`),
   `Bnd_Box.Get()` is unbound (`CornerMin()` / `CornerMax()`). build123d 0.12 removed its deprecated API
   (`Location.to_tuple()` → `tuple(loc)`).
 - **OCCT 8.0.1's two known defects.** `BRepBndLib.AddOptimal` - what build123d's `bounding_box()` uses - can return a
-  box smaller than a B-spline shape (OCCT #1604): on the 0.8.1 bump every leaf's box read by OCCT 8 matched OCCT 7.9's
-  to 1e-6 mm, but a new vendor STEP or a new spline part is unchecked - compare its `bounding_box()` with cad's
+  box smaller than a B-spline shape (OCCT #1604): the repo's boxes were checked against OCCT 7.9's when OCCT 8 came in,
+  but a vendor STEP or spline part added since is unchecked - compare its `bounding_box()` with cad's
   support-plane box (`cadgen.engine.kernel.bounds.optimal_box(shape.wrapped)`, a private name) before a box of it
   becomes a lock or an envelope. A sweep along a binormal guide curve distorts its profile while still reporting valid
   (OCCT #1681): `cad/` has no sweep; a model that needs a guided one checks its volume against the profile's.
@@ -178,8 +172,7 @@ cache, whose key omits Python. The proof the geometry did not move: the hash gat
   environment of its own (0.11: `uv run` with cad at the machine's release) instead of this venv: inside this project `./cadtool` overrides both (`cad/AGENTS.md`
   Running things). `./cadtool cad` refuses all of these. The plugin moves only with a bump, by the steps of "After a pull
   …". `text-to-cad@earthtojake` from GitHub stays upstream's documented manual install.
-- `claude plugin marketplace update` alone makes no plugin cache directory (Claude Code 2.1.304: it refreshes only the
-  clone `~/.claude/plugins/marketplaces/earthtojake/`), so on a branch that bumps the pin before the plugin update
+- `claude plugin marketplace update` alone makes no plugin cache directory (it refreshes only the clone `~/.claude/plugins/marketplaces/earthtojake/`), so on a branch that bumps the pin before the plugin update
   `./cadtool doctor` warns `no plugin cache for cad <ver>` and reports a MISMATCH against the old one:
   `CAD_PLUGIN=~/.claude/plugins/marketplaces/earthtojake ./cadtool doctor` checks the new pin against that clone, the
   installed entries staying a MISMATCH until the update. Update the plugin in BOTH
@@ -203,14 +196,3 @@ cache, whose key omits Python. The proof the geometry did not move: the hash gat
   not move. Once no 0.8 worktree is left: `"$(uv tool dir --bin)/cad" doctor --prune` (it lists what it removes and
   asks; it takes `~/.local/bin/cadgen`), delete `~/.cache/cadgen` and the backup. Keep `~/.local/state/cadgen/settings.json`: its stored off covers an old
   checkout run later.
-- The plugin's rename (0.7.7: `cad@text-to-cad` → `text-to-cad@earthtojake`) needs a one-time switch per machine, not
-  an `update`: Claude Code keys a marketplace by its git URL, so `claude plugin marketplace add` of the same URL on a
-  machine that registered it as `text-to-cad` answers "already on disk — declared in user settings" and adds nothing.
-  Drop `text-to-cad` from `extraKnownMarketplaces` and `cad@text-to-cad` from `enabledPlugins` in
-  `~/.claude/settings.json`, `claude plugin marketplace remove text-to-cad` (its installs go with it), then
-  `claude plugin marketplace add https://github.com/earthtojake/text-to-cad.git` and
-  `claude plugin install text-to-cad@earthtojake` in each scope (`--scope project` from the repo root and from `cad/`),
-  and restart Claude Code. Do it after the pull that brings the rename: a checkout older than it still enables
-  `cad@text-to-cad`. Seen on the Mac: `marketplace add` declares `earthtojake` in `~/.claude/settings.json` by itself,
-  and each `install --scope project` rewrites the repo's two `.claude/settings.json` with the same content in another
-  key order — `git checkout` them.
