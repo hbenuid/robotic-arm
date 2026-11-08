@@ -148,12 +148,12 @@ LINKS: dict[str, list[str]] = {
                       "yaw_pulley_nuts#1", "fork_hub_screws#1", "fork_hub_nuts#1", "fork_foot_screws#1", "fork_foot_nuts#1",
                       "fork_sleeve_screws#1", "fork_sleeve_nuts#1", "cycloidal_drive#1:stator"],
     # the drive's rotor (its turning shell, the ring pins and both 6814s) is bolted to j1_link: the shoulder_pitch output;
-    # the elbow_pitch motor + board bolt to the web across j1_link's motor hole (its 4x M3), its 20T and the elbow belt
-    # with them - the belt's tensioner (the idler, its spacer, axle and nut) on j1_link's slab -, the elbow bearing pair
-    # sits in its elbow bore (lib/mounts.py)
-    "upper_arm_link": ["cycloidal_drive#1:rotor", "j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2",
-                       "gt2_pulley_20t#2", "elbow_motor_screws#1", "elbow_belt#1", "gt2_idler_20t#1", "elbow_idler_spacer#1",
-                       "elbow_idler_screw#1", "elbow_idler_nut#1"],
+    # the elbow_pitch motor's gearbox bolts to the web across j1_link's motor hole (its 4x M4), the motor + board on it (its
+    # 4x M3), its 20T and the elbow belt with them - the belt's tensioner (the idler, its spacer, axle and nut) on
+    # j1_link's slab -, the elbow bearing pair sits in its elbow bore (lib/mounts.py)
+    "upper_arm_link": ["cycloidal_drive#1:rotor", "j1_link#1", "bearing_6806#3", "bearing_6806#4", "eg17_g5_gearbox#1",
+                       "elbow_gearbox_screws#1", "nema17_40mm#2", "mks_servo42d#2", "elbow_motor_screws#1", "gt2_pulley_20t_8mm#1",
+                       "elbow_belt#1", "gt2_idler_20t#1", "elbow_idler_spacer#1", "elbow_idler_screw#1", "elbow_idler_nut#1"],
     # the elbow 90T pulley (the elbow_pitch output, assumed the driven side  [ASSUMPTION]) and the M4 screws + nuts
     # that clamp it carry the forearm roll drive's STATOR - the roll frame, whose web IS the elbow coupler now (j3_coupler#1
     # is retired, lib/placements.py), both bearings, the roll motor + board (on the elbow axis, its 4x M3) and its 20T
@@ -214,8 +214,9 @@ JOINTS: list[Joint] = [
     Joint("elbow_pitch", "revolute", "upper_arm_link", "elbow_link", ELBOW_ORIGIN, N, ELBOW_TO_WRIST_INPLANE,
           PARAMS.ELBOW_PITCH_LIMITS_DEG[0] * DEG, PARAMS.ELBOW_PITCH_LIMITS_DEG[1] * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
           notes="GT2 90T pulley + the roll drive's frame (its stator) at the elbow, turning in the bearing_6806#3 / #4 pair; "
-                "belt-driven (ELBOW_RATIO, one stage) by nema17_40mm#2 + mks_servo42d#2 on the web across j1_link's motor hole, on the "
-                "arm's +N side (lib/mounts.py) [which CAN id: unconfirmed]"),
+                "belt-driven (ELBOW_RATIO, two stages: the 5:1 gearbox, then the belt) by nema17_40mm#2 + mks_servo42d#2 on "
+                "eg17_g5_gearbox#1, the gearbox on the web across j1_link's motor hole, on the arm's +N side (lib/mounts.py) "
+                "[which CAN id: unconfirmed]"),
     # the roll: Z along the forearm (its child link's long direction IS the axis), so X = N, the pitch-axis direction
     Joint("forearm_roll", "revolute", "elbow_link", "forearm_link", FOREARM_ROLL_ORIGIN, FOREARM_ROLL_AXIS, N,
           -PARAMS.FOREARM_ROLL_LIMIT_DEG * DEG, PARAMS.FOREARM_ROLL_LIMIT_DEG * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,

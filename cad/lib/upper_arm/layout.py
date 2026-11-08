@@ -26,7 +26,8 @@ def cove_axes(cfg: UpperArmConfig = DEFAULT) -> tuple[tuple[float, float], tuple
 
 
 def pad_holes(cfg: UpperArmConfig = DEFAULT) -> list[tuple[float, float, float]]:
-    """The NEMA 17 holes through the pad's floor, (x, z, diameter)."""
+    """The 4 holes of the motor's seat about the pad's axis, (x, z, diameter): LEGACY's pad floor's NEMA 17 square,
+    DEFAULT's web's - the elbow gearbox's M4 (lib/upper_arm/params.py)."""
     return list(cfg.pad.holes)
 
 
@@ -39,17 +40,17 @@ def socket_points(cfg: UpperArmConfig = DEFAULT) -> tuple[list, list]:
 
 def arm_slide(cfg: UpperArmConfig = DEFAULT) -> float:
     """How far along +Y the plate - DEFAULT's slab, its elbow half's depth end to end - slides with the arm rising off
-    the drive's shell (ArmParams): its underside (ElbowParams.y0) onto the underside of the web under the elbow motor's
-    face (y_outer, less motor_plate_t and the screws' heads) - the shell's hub end, the face the part prints on; 0
+    the drive's shell (ArmParams): its underside (ElbowParams.y0) onto the underside of the web under the elbow
+    gearbox's face (y_outer, less web_t and the screws' heads) - the shell's hub end, the face the part prints on; 0
     without an arm (29.5)."""
     if cfg.arm is None:
         return 0.0
     a = cfg.arm
-    return a.y_outer - a.motor_plate_t - a.motor_screw.head_h - cfg.elbow.y0
+    return a.y_outer - a.web_t - a.seat_screw.head_h - cfg.elbow.y0
 
 
 def elbow_belt_loop(cfg: UpperArmConfig = DEFAULT, *, idler: bool = True) -> list[tuple[float, float, float]]:
-    """The elbow belt's loop (lib/belts.py) in the belt's own frame: the elbow motor's 20T on the origin (the pad's
+    """The elbow belt's loop (lib/belts.py) in the belt's own frame: the elbow's 20T (on its gearbox) on the origin (the pad's
     axis), the elbow 90T on +X (the elbow axis, ELBOW_MOTOR_CENTRES on) and - with cfg.idler - the tensioner on the run
     ElbowIdlerParams.run, ElbowIdlerParams.along from the origin, pushed in till the loop is ELBOW_BELT long (the stock
     belt is longer than the open loop). The belt's row (lib/mounts.py elbow_belt#1) puts its +Y on j1_link's +Z."""

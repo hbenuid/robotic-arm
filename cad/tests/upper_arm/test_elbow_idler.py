@@ -162,7 +162,7 @@ def test_the_kit_fits():
     link, belt = built.part("j1_link"), built.placed("elbow_belt#1", into=into)
     idler, spacer, screw, nut = (built.placed(f"{k}#1", into=into) for k in
                                  ("gt2_idler_20t", "elbow_idler_spacer", "elbow_idler_screw", "elbow_idler_nut"))
-    near = [link, belt, *(built.placed(k, into=into) for k in ("gt2_pulley_20t#2", "gt2_pulley_90t#3", "nema17_40mm#2"))]
+    near = [link, belt, *(built.placed(k, into=into) for k in ("gt2_pulley_20t_8mm#1", "gt2_pulley_90t#3", "nema17_40mm#2", "eg17_g5_gearbox#1"))]
     kit = [idler, spacer, screw, nut]
     for part in kit:
         for other in near + kit:
@@ -171,7 +171,7 @@ def test_the_kit_fits():
     assert closest_points(belt, idler).distance < 0.01 and closest_points(spacer, idler).distance < 0.01
     assert closest_points(spacer, link).distance < 0.01 and closest_points(nut, link).distance < 0.01
     assert closest_points(screw, link).distance >= (I.slot_w - I.screw.d) / 2.0 - 0.01
-    pulleys = [built.placed(k, into=into) for k in ("gt2_pulley_20t#2", "gt2_pulley_90t#3")]
+    pulleys = [built.placed(k, into=into) for k in ("gt2_pulley_20t_8mm#1", "gt2_pulley_90t#3")]
     assert all(closest_points(idler, p).distance >= 5.0 for p in pulleys)
     for z in (I.slot_z[0], I.slot_z[1]):
         moved = idler.moved(Location((0.0, 0.0, z - elbow_idler_z())))

@@ -1,24 +1,22 @@
-"""elbow_motor_screws, the elbow motor's 4x M3 SHCS - the drive motor's screw (cycloidal_motor_bolts), 2 mm longer: a purchased part
-with no reference (lib/reference.py NO_REFERENCE), which keeps no reference file - THIS file locks its numbers (the
-pieces, the modelled volume and the bounding box, measured on the build and written in) and what it is: every screw on
-one of the web's holes (j1_link's pad_holes, about the pad's axis) with its head's bearing face on z=0, as long under
-the head as the web under the heads and the thread into the motor.
-The pattern in place - the heads in the web's pockets, the thread in the motor - is tests/test_mounts.py."""
+"""elbow_motor_screws, the elbow motor's 4x M3 SHCS - the 4 that ship with its gearbox, through the gearbox's input plate
+into the motor: a purchased part with no reference (lib/reference.py NO_REFERENCE), which keeps no reference file - THIS
+file locks its numbers (the pieces, the modelled volume and the bounding box, measured on the build and written in) and
+what it is: every screw on the NEMA 17 square with its head's bearing face on z=0, as long under the head as the plate
+and the thread into the motor. The pattern in place - the heads in the gearbox's corner channels, the thread in the
+motor - is tests/test_mounts.py."""
 import pytest
 
 import parts
 from lib import params as PARAMS
 from lib import reference as R
-from lib.cycloidal import DEFAULT_CONFIG as DRIVE
-from lib.upper_arm import DEFAULT as UPPER_ARM
-from lib.upper_arm import pad_holes
 from tests import built
 from tests.helpers import is_inside
 
 NAME = "elbow_motor_screws"
-SCREW = UPPER_ARM.arm.motor_screw
+SCREW = PARAMS.M3_SHCS
+G = PARAMS.EG17_G5
 # (solids, volume mm^3, bbox min, bbox size): the build's own numbers
-LOCK = (4, 596.246, (-18.25, -18.25, -3.0), (36.5, 36.5, 15.0))
+LOCK = (4, 483.148, (-18.25, -18.25, -3.0), (36.5, 36.5, 11.0))
 
 
 def _inside(shape, x: float, y: float, z: float) -> bool:
@@ -27,26 +25,25 @@ def _inside(shape, x: float, y: float, z: float) -> bool:
 
 def test_it_is_a_purchased_part_with_no_reference_in_the_joints_group():
     mod = parts.load(NAME)
-    assert parts.GROUPS[NAME] == "joints" and parts.bought(NAME) and mod.PURCHASE_QTY == len(pad_holes(UPPER_ARM)) == LOCK[0]
+    assert parts.GROUPS[NAME] == "joints" and parts.bought(NAME) and mod.PURCHASE_QTY == LOCK[0]
     assert R.NO_REFERENCE[NAME] == f"parts/joints/{NAME}.py:_envelope()"
 
 
-def test_it_is_the_drive_motors_screw_2_mm_longer_in_the_drive_motors_seat():
-    """The drive motor's screw (cycloidal_motor_bolts), the same thread in the motor (the hole's depth less the drive's
-    margin) and the same head pockets, 2 mm longer: the web under the heads is the 8 left between the motor's face and
-    the pockets, the web flush with the slab's underside (the face j1_link prints on)."""
-    mod, m = parts.load(NAME), DRIVE.motor
-    assert mod.PURCHASE_SPEC == "M3 x 12 socket head cap screw (ISO 4762)"
-    assert parts.load("cycloidal_motor_bolts").PURCHASE_SPEC == "M3 x 10 socket head cap screw (ISO 4762)"
-    assert mod.SCREW == SCREW == PARAMS.M3_SHCS and SCREW.d == m.bolt_dia and SCREW.head_h == m.motor_bolt_head_height
-    assert mod.LENGTH == PARAMS.J1_MOTOR_SCREW_LEN == m.motor_bolt_thread_length + 2.0 == 12.0
-    assert PARAMS.J1_MOTOR_SCREW_THREAD == m.bolt_hole_depth - m.motor_bolt_thread_margin == PARAMS.MOTOR_40.bolt_hole_depth - 0.5
-    assert UPPER_ARM.arm.motor_plate_t == PARAMS.J1_MOTOR_SCREW_LEN - PARAMS.J1_MOTOR_SCREW_THREAD == 8.0
-    assert UPPER_ARM.arm.motor_pocket_dia == m.motor_bolt_head_dia + DRIVE.tolerances.bolt_clearance_add > SCREW.head_dia
+def test_an_m3_x_8_through_the_gearboxs_plate_into_the_motor():
+    """The gearbox's input plate (EG17_G5.plate_t) under the heads, the rest in the motor's tapped holes - short of their
+    bottoms, the stock length under the drive's rule (J1_MOTOR_SCREW_THREAD) through that plate; the pattern the NEMA 17
+    square, the plate's holes, their heads clear of the corner channels' walls."""
+    mod = parts.load(NAME)
+    assert mod.PURCHASE_SPEC == "M3 x 8 socket head cap screw (ISO 4762)" and mod.SCREW == SCREW
+    assert mod.LENGTH == PARAMS.J1_MOTOR_SCREW_LEN == 8.0 < G.plate_t + PARAMS.J1_MOTOR_SCREW_THREAD
+    thread = mod.LENGTH - G.plate_t                                                    # 3.3
+    assert 3.0 < thread < PARAMS.MOTOR_40.bolt_hole_depth
+    half = G.plate_sp / 2.0
+    assert half == PARAMS.NEMA17_BOLT_SP / 2.0 and G.plate_hole > SCREW.d
+    assert sorted(mod.POINTS) == sorted((sx * half, sy * half) for sx in (1, -1) for sy in (1, -1))
+    assert half - SCREW.head_dia / 2.0 > G.channel                                     # the heads in the channels
     steel = PARAMS.STEEL_DENSITY * LOCK[0]
-    assert mod.MASS_G == PARAMS.ELBOW_MOTOR_SCREWS_MASS_G == pytest.approx(steel * PARAMS.shcs_volume(SCREW, 12.0))
-    # the pattern is the web's holes, j1_link's (x, z) about the pad's axis as the part's (x, -y)
-    assert sorted(mod.POINTS) == sorted((x, -z) for x, z, _ in pad_holes(UPPER_ARM))
+    assert mod.MASS_G == PARAMS.ELBOW_MOTOR_SCREWS_MASS_G == pytest.approx(steel * PARAMS.shcs_volume(SCREW, 8.0))
 
 
 @pytest.mark.slow
@@ -56,11 +53,11 @@ def test_the_build_matches_its_numbers():
     assert len(shape.solids()) == solids
     assert R.solid_volume(shape) == pytest.approx(volume, abs=0.01)
     assert R.bbox_min(shape) == pytest.approx(lo, abs=1e-3) and R.bbox_size(shape) == pytest.approx(size, abs=1e-3)
-    assert R.solid_volume(shape) == pytest.approx(solids * PARAMS.shcs_volume(SCREW, 12.0), rel=1e-6)
+    assert R.solid_volume(shape) == pytest.approx(solids * PARAMS.shcs_volume(SCREW, 8.0), rel=1e-6)
 
 
 @pytest.mark.slow
-def test_each_screw_stands_on_a_hole_of_the_web():
+def test_each_screw_stands_on_the_square():
     """Head in -Z under the bearing face z=0 (its socket open at the top), the shank in +Z to the length."""
     screws, length = built.part(NAME), PARAMS.J1_MOTOR_SCREW_LEN
     for x, y in parts.load(NAME).POINTS:

@@ -161,22 +161,23 @@ def _slab(cfg: UpperArmConfig):
     chamfered (lib/geom.py chamfer_outline); the stepped slot (with an idler:
     the idler's slots in its place) and the elbow bearing stack; the
     elbow motor's square hole through it about the pad's axis, a web left across the hole, flush with the slab's
-    underside, up to the motor's face (y_outer once slid) with the hole for its pilot and its 4 holes (PadParams.holes):
-    motor_plate_t of web under the screws' heads, the heads flush in pockets in its underside (ArmParams.motor_screw,
-    motor_pocket_dia)."""
+    underside, up to the gearbox's output face (y_outer once slid) - the seat of the motor's gearbox: its bore round the
+    shaft and the 20T, the counterbore for the gearbox's boss in its top and its 4 holes (PadParams.holes): web_t of
+    web under the screws' heads, the heads flush in pockets in its underside (ArmParams.seat_screw, seat_pocket_dia)."""
     e, a, px = cfg.elbow, cfg.arm, cfg.pad.x
     top = e.relief_y + NUDGE
     body = chamfer_outline(bd.Pos(0.0, 0.0, e.y0) * bd.extrude(_outline(cfg), amount=e.relief_y - e.y0), (0.0, 0.0, 1.0))
     body = _cut_stepped_slot(body, cfg, top) if cfg.idler is None else _cut_idler_slots(body, cfg, top)
     body = _cut_elbow_stack(body, cfg, top)
-    hh, t, head = a.motor_hole_half, a.motor_plate_t, a.motor_screw.head_h
+    hh, t, head = a.motor_hole_half, a.web_t, a.seat_screw.head_h
     face = e.y0 + t + head
     body = body - _block((px - hh, px + hh), (-hh, hh), (e.y0 - 1.0, top + 1.0))
     web = _block((px - hh, px + hh), (-hh, hh), (face - t - head, face))
-    web = web - _bore(a.motor_pilot_dia / 2.0, face - t - head - 1.0, face + 1.0, px)
+    web = web - _bore(a.seat_bore_dia / 2.0, face - t - head - 1.0, face + 1.0, px)
+    web = web - _bore(a.seat_boss_dia / 2.0, face - a.seat_boss_depth, face + 1.0, px)
     for x, z, dia in pad_holes(cfg):
         web = web - _bore(dia / 2.0, face - t - head - 1.0, face + 1.0, px + x, z)
-        web = web - _bore(a.motor_pocket_dia / 2.0, face - t - head - 1.0, face - t, px + x, z)
+        web = web - _bore(a.seat_pocket_dia / 2.0, face - t - head - 1.0, face - t, px + x, z)
     return body + web
 
 

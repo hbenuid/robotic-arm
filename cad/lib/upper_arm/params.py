@@ -30,8 +30,8 @@ from dataclasses import dataclass, replace
 
 from lib.cycloidal import DEFAULT_CONFIG as _DRIVE
 from lib.cycloidal import shell_ends as _shell_ends
-from lib.fasteners import M3_CLEAR, M3_SHCS, M5_CLEAR, M5_NUT, M5_SHCS, NutSize, ShcsSize
-from lib.motors import NEMA17_BOLT_SP
+from lib.fasteners import M3_CLEAR, M4_CLEAR, M4_SHCS, M5_CLEAR, M5_NUT, M5_SHCS, NutSize, ShcsSize
+from lib.motors import EG17_G5, NEMA17_BOLT_SP
 
 
 @dataclass(frozen=True)
@@ -161,27 +161,32 @@ class ArmParams:
     arm) - the plate as built slides along +Y until its underside is there (lib/upper_arm/layout.py arm_slide), the slab
     with it; what lies beyond the elbow moves with it (lib/placements.py SHIFTS), the elbow's belt stays under the arm,
     past the shell's hub end, level with j1_coupler's hub leg. The
-    elbow motor stands on the arm's motor side (+Y, with the forearm), on the pad's axis (PadParams.x): its body down a
-    square hole through the slab (motor_hole_half), its face on the web left across the hole (its top at y_outer), held
-    by 4 socket head cap screws up through it: motor_plate_t of web under their heads, the heads flush in pockets in its
-    underside (motor_screw, motor_pocket_dia), its shaft (-Y) through the web to its 20T in the belt's plane; the pad's
-    tube is LEGACY's only. The drive's frame in this one: its axis this frame's Y, its +Z this frame's -Y, its z
+    elbow motor stands on the arm's motor side (+Y, with the forearm), on the pad's axis (PadParams.x), on its gearbox
+    (parts/joints/eg17_g5_gearbox): the gearbox down a square hole through the slab (motor_hole_half), its output face
+    on the web left across the hole (its top at y_outer), its boss in a counterbore in the web's top (seat_boss_dia,
+    seat_boss_depth), held by 4 socket head cap screws up through the web into its face (PadParams.holes): web_t of web
+    under their heads, the heads flush in pockets in its underside (seat_screw, seat_pocket_dia), its shaft (-Y) down
+    the web's bore (seat_bore_dia) to its 20T in the belt's plane; the pad's tube is LEGACY's only. The drive's frame in this one: its axis this frame's Y, its +Z this frame's -Y, its z
     drive_z_at_y0 at y = 0, its +X at drive_x_deg (atan2(z, x))."""
 
-    y_outer: float                   # [DESIGN] the elbow motor's face: the web (motor_plate_t + the heads' head_h) above the
+    y_outer: float                   # [DESIGN] the elbow gearbox's output face: the web (web_t + the heads' head_h) above the
     #                                  shell's hub end (lib/cycloidal/layout.py shell_ends, through drive_z_at_y0), where
     #                                  the slab's underside and the web's are - the face the part prints on
     fuse_r: float = 61.0             # [DESIGN] the arm from here out: in the shell's wall (its bore 54 .. od 64.6), past
     #                                  the housing bolts' holes (60.7; their nut pockets are cut again through the arm)
-    motor_plate_t: float = 8.0       # [DESIGN] the web across the elbow motor's hole, under its face, its 4 holes PadParams.holes,
-    #                                  to the screws' heads: the M3 x 12 (lib/params.py J1_MOTOR_SCREW_LEN) less the thread in
-    #                                  the motor ...
-    motor_screw: ShcsSize = M3_SHCS  # [DATASHEET] ... the motor's 4x M3 SHCS, their heads flush in pockets in the web's
-    #                                  underside, head_h deep - the web motor_plate_t + head_h thick, flush with the slab ...
-    motor_pocket_dia: float = _DRIVE.motor.motor_bolt_head_dia + _DRIVE.tolerances.bolt_clearance_add   # [DESIGN] ... the
-    #                                  drive's motor plate's head pockets (5.7)
-    motor_pilot_dia: float = 22.5    # [DESIGN] ... the hole for the motor's Ø22 pilot boss, the shaft and its 20T through it
-    motor_hole_half: float = 21.6    # [DESIGN] the square hole through the slab round the motor's 42.3 body
+    web_t: float = 7.0               # [DESIGN] the web across the motor's hole, under the gearbox's face, its 4 holes
+    #                                  PadParams.holes, to the screws' heads: the M4 x 12 (lib/params.py J1_GEARBOX_SCREW_LEN)
+    #                                  less the thread in the gearbox ...
+    seat_screw: ShcsSize = M4_SHCS   # [DATASHEET] ... the gearbox's 4x M4 SHCS, their heads flush in pockets in the web's
+    #                                  underside, head_h deep - the web web_t + head_h thick, flush with the slab ...
+    seat_pocket_dia: float = M4_SHCS.head_dia + _DRIVE.tolerances.bolt_clearance_add   # [DESIGN] ... the pockets: the
+    #                                  head and the drive's bolt clearance (7.4)
+    seat_bore_dia: float = 19.0      # [DESIGN] the bore through the web round the gearbox's shaft and its 20T (Ø16): 1.5
+    #                                  round the pulley, 4.3 of web to each head's pocket ...
+    seat_boss_dia: float = 25.5      # [DESIGN] ... widened at the top for the gearbox's Ø25 boss ...
+    seat_boss_depth: float = 2.5     # [DESIGN] ... deeper than the boss (2)
+    motor_hole_half: float = 21.6    # [DESIGN] the square hole through the slab round the gearbox (Ø42 / 42 square) and the
+    #                                  motor's 42.3 body
     drive_z_at_y0: float = 66.5      # [REFERENCE] the drive's z at this frame's y = 0 (placements.json cycloidal_drive#1,
     #                                  j1_link#1: the SolidWorks hub face bolted to the top face, y 1.5, at the port's z 65)
     drive_x_deg: float = -47.584167  # [REFERENCE] the drive's +X in this frame, atan2(z, x), as the capture pose places it
@@ -283,13 +288,18 @@ _SHORTENED = shortened(replace(
 # (ArmParams), the held hub and the motor's sleeve on the j1_coupler yoke at the shell's two ends - so the elbow motor
 # leaves the shoulder axis: its pad moves out along the link to ELBOW_MOTOR_CENTRES from the elbow axis, where the
 # second stage's seat was (gone: a stock belt runs the motor's 20T straight to the elbow's 90T, lib/params.py ELBOW_RATIO).
-ELBOW_BELT = 280   # [DESIGN] a stock 280-2GT closed belt, the elbow motor's 20T to the elbow's 90T, round its idler
+ELBOW_BELT = 280   # [DESIGN] a stock 280-2GT closed belt, the elbow 20T to the elbow's 90T, round its idler
 ELBOW_MOTOR_CENTRES = 78.0   # [DESIGN] the elbow motor's axis this far from the elbow's: the open loop (272.4) shorter than the
 #                              stock belt, the idler (ElbowIdlerParams) taking up the rest - it takes 272.4 .. 287.3; the
-#                              motor's board passes the elbow's roll frame closest at the elbow's lower limit (tests/forearm/test_roll_drive.py)
+#                              gearbox passes the elbow's roll frame closest at the elbow's lower limit (tests/forearm/test_roll_drive.py)
+# The elbow motor stands on a 5:1 planetary (lib/motors.py EG17_G5, lib/params.py ELBOW_RATIO): the web's 4 holes are
+# the gearbox's output face's (its M4 on bolt_pcd, on the pad's X and Z), not the motor's NEMA 17 square.
 _ARM = ArmParams(0.0)
 _HUB_END_Y = _ARM.drive_z_at_y0 - _shell_ends(_DRIVE)[1]   # 5.5: the shell's hub end, the face the part prints on
+_SEAT_R = EG17_G5.bolt_pcd / 2.0
 DEFAULT = replace(_SHORTENED, bearing=None,
-                  arm=replace(_ARM, y_outer=_HUB_END_Y + _ARM.motor_plate_t + _ARM.motor_screw.head_h),   # 16.5
-                  pad=replace(_SHORTENED.pad, x=round(_SHORTENED.slab.elbow_x - ELBOW_MOTOR_CENTRES, 6)),   # 92.0
+                  arm=replace(_ARM, y_outer=_HUB_END_Y + _ARM.web_t + _ARM.seat_screw.head_h),   # 16.5
+                  pad=replace(_SHORTENED.pad, x=round(_SHORTENED.slab.elbow_x - ELBOW_MOTOR_CENTRES, 6),   # 92.0
+                              holes=tuple((x, z, M4_CLEAR) for x, z in ((_SEAT_R, 0.0), (0.0, _SEAT_R), (-_SEAT_R, 0.0),
+                                                                        (0.0, -_SEAT_R)))),   # [DESIGN] M4 clearance
                   idler=ElbowIdlerParams())

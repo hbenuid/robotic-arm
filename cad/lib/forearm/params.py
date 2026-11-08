@@ -194,17 +194,17 @@ class IdlerParams:
 class MotorHoleParams:
     """[DESIGN] A motor on round holes through a printed plate (its belt's idler tensions the belt, so its centre distance
     is fixed): the pilot boss's hole and the NEMA 17 square's four M3 clearance holes about the motor's axis, held by 4
-    socket head cap screws through them from the plate's far face, the heads flush in counterbores - the elbow motor's
-    screws and seat (lib/upper_arm/params.py ArmParams motor_screw, motor_pocket_dia). The wrist-pitch motor's through
-    j2_link's web (ForearmConfig.holes, parts/joints/wrist_motor_screws: the web 11 thick, the elbow's), the roll motor's
-    through the roll frame's plate (RollDriveParams.motor_holes, parts/joints/roll_motor_screws: pad_t)."""
+    socket head cap screws through them from the plate's far face, the heads flush in counterbores - the drive motor's
+    head pockets and thread (lib/cycloidal/params.py MotorParams). The wrist-pitch motor's through j2_link's web
+    (ForearmConfig.holes, parts/joints/wrist_motor_screws: the web 11 thick), the roll motor's through the roll frame's
+    plate (RollDriveParams.motor_holes, parts/joints/roll_motor_screws: pad_t)."""
 
     pilot_dia: float = 22.3               # the Ø22 pilot boss (SlotParams.centre_w)
     bolt_dia: float = M3_CLEAR            # 3.4
     bolt_half: float = NEMA17_BOLT_SP / 2.0   # 15.5: the 31 mm square
     screw: ShcsSize = M3_SHCS             # [DATASHEET] ISO 4762 M3, the heads in counterbores head_h deep: flush with the underside
     pocket_dia: float = MOTOR_40.motor_bolt_head_dia + PETGTolerances().bolt_clearance_add   # 5.7 [DESIGN] the counterbores:
-    #                                       the drive's motor plate's head pockets (the elbow's)
+    #                                       the drive's motor plate's head pockets
     thread: float = MOTOR_40.bolt_hole_depth - MOTOR_40.motor_bolt_thread_margin   # 4.0 [DESIGN] the screws this far into the
     #                                       motor's tapped holes - the drive's rule (lib/params.py J1_MOTOR_SCREW_THREAD)
 
@@ -244,7 +244,7 @@ class BackPanelParams:
     frame's rear face (the rear line, lib/forearm/roll.py rear_line) in a step cut across the face's full width, from the
     tower's top - the panel's top corners cut to the tower's octagon - down to `bottom`, over the shaft's bay - whose opening grows on down below the bay's bore, a pocket
     opening_depth in from the face: the shaft, its clamp nuts and the stop are reached with the panel off. Flush, so the
-    elbow motor's board passes the rear line as it did before the bay was bored through the back. The panel turns
+    elbow motor's stack (its gearbox nearest) passes the rear line as it would the frame's face. The panel turns
     run_gap clear of the shaft's rear face and its lug (a relief where it passes over them), is located by a U rim in the
     opening's lower part and held by magnet pairs (parts/joints/roll_back_magnets): one disc in a pocket in the step's
     floor, one in a pocket in the panel's inner face, each pressed to its pocket's bottom. A grill of straight slots up
@@ -347,11 +347,12 @@ class RollDriveParams:
     #                                       like the flats (roll.py tower_section)
     rear_line_r: float = 3.0              # [DESIGN] the rear line (the outline from the end up to the tower's top): tangent to the end_r
     #                                       circle and to a circle this radius in the tower's rear-top corner - where the round end's hull ran,
-    #                                       2.3 off the elbow motor's board at the elbow's lower limit (lib/params.py ELBOW_PITCH_LIMITS_DEG);
-    #                                       the octagon's corner behind it cut off, the tower's corners sharp (roll.py rear_line)
+    #                                       the outline the elbow motor's stack passes nearest at the elbow's lower limit (lib/params.py
+    #                                       ELBOW_PITCH_LIMITS_DEG; tests/forearm/test_roll_drive.py); the octagon's corner behind it cut
+    #                                       off, the tower's corners sharp (roll.py rear_line)
     tower_rear: float = 0.75              # [DESIGN] the tower's rear in the profile (module z): where it stood behind the shaft's bay before the
     #                                       bay was bored through the back - it anchors the rear line (rear_line_r), the outline the elbow
-    #                                       motor's board passes 2.3 off at the elbow's lower limit, so it stays
+    #                                       motor's stack passes nearest at the elbow's lower limit, so it stays
     web_t: float = 7.0                    # [DESIGN] the pocket's floor (the cradle's) over the underside: 2 mm under the motor's -N side
     side_t: float = 7.0                   # [DESIGN] the side (+N) wall over the pocket, as thick as the floor: the side face closed, the pocket open
     #                                       through the bottom instead
