@@ -1,8 +1,8 @@
 """gt2_pulley_120t, the base_yaw joint's driven pulley (lib/pulley/params.py YAW): a part with no reference file
 (lib/reference.py NO_REFERENCE), so THIS file locks its numbers - the volume and the bounding box, measured on the build
 and written in - and what it is: the 90T's DEFAULT with 120 teeth, its rim grown with them and the 90T's wall kept under
-them, every other feature - the hub, the web's height, the bore, the bolt holes and their counterbores - the 90T's,
-probed by name."""
+them, its plain hub between the ring and the web gone (YAW_HUB_CUT: the ring straight on the web), every other feature -
+the journal, the ring, the web's height, the bore, the bolt holes and their counterbores - the 90T's, probed by name."""
 import math
 from dataclasses import replace
 
@@ -12,18 +12,22 @@ from lib import belts
 from lib import params as PARAMS
 from lib import reference as R
 from lib.pulley import DEFAULT, YAW
+from lib.pulley.params import YAW_HUB_CUT
 from tests import built
 from tests.helpers import is_inside
 from tests.pulley.helpers import at
 
-VOLUME = 37067.892                                   # mm^3, the build's
-BBOX_MIN = (-39.143186, -13.2, -39.143186)
-BBOX_SIZE = (78.286373, 21.4, 78.286373)
+VOLUME = 33411.067                                   # mm^3, the build's
+BBOX_MIN = (-39.143186, -6.7, -39.143186)
+BBOX_SIZE = (78.286373, 14.9, 78.286373)
 
 
 def test_params():
     assert YAW.teeth == belts.GT2_PULLEY_120T_TEETH == 120
-    assert YAW == replace(DEFAULT, teeth=YAW.teeth, rim_dia=YAW.rim_dia)          # nothing else differs from the 90T's
+    cut = YAW_HUB_CUT                                                               # the plain hub: ring top to the web
+    assert cut == DEFAULT.web_y0 - DEFAULT.ring[2] == pytest.approx(6.5) and YAW.ring[2] == YAW.web_y0 and YAW.step is None
+    assert YAW == replace(DEFAULT, teeth=YAW.teeth, rim_dia=YAW.rim_dia, end_y=round(DEFAULT.end_y + cut, 6), step=None,
+                          ring=(DEFAULT.ring[0], round(DEFAULT.ring[1] + cut, 6), round(DEFAULT.ring[2] + cut, 6)))   # nothing else differs from the 90T's
     assert belts.pulley_od(YAW.teeth) - YAW.rim_dia == pytest.approx(belts.pulley_od(DEFAULT.teeth) - DEFAULT.rim_dia, abs=1e-6)
     assert YAW.flange_dia == pytest.approx(78.286, abs=1e-3) and YAW.flange_dia == pytest.approx(BBOX_SIZE[0], abs=1e-6)
     assert R.NO_REFERENCE["gt2_pulley_120t"] == "lib/pulley/body.py:build_pulley(YAW)"
@@ -44,12 +48,13 @@ def test_the_build_matches_its_numbers(pulley):
 
 @pytest.mark.slow
 def test_the_hub_web_and_holes_are_the_90ts(pulley):
-    """The same probes as the 90T's (tests/pulley/test_gt2_pulley_90t.py), off the axes where the bolts are."""
+    """The 90T's probes (tests/pulley/test_gt2_pulley_90t.py) YAW_HUB_CUT nearer the face, off the axes where the bolts
+    are: the journal and the ring the 90T's, the ring straight on the web (no plain hub, no step)."""
     p = pulley
-    assert is_inside(p, *at(14.8, -10.0)) and not is_inside(p, *at(15.2, -10.0))            # the journal
-    assert is_inside(p, *at(17.2, -5.5)) and not is_inside(p, *at(17.2, -6.4))              # the ring ...
-    assert not is_inside(p, *at(17.2, -4.5)) and not is_inside(p, *at(17.5, -5.5))          # ... Ø34.76, 1.5 high
-    assert is_inside(p, *at(17.3, 1.3)) and not is_inside(p, *at(17.7, 1.3))                # the step
+    assert is_inside(p, *at(14.8, -3.5)) and not is_inside(p, *at(15.2, -3.5))              # the journal
+    assert is_inside(p, *at(17.2, 1.0)) and not is_inside(p, *at(17.2, 0.1))                # the ring ...
+    assert not is_inside(p, *at(17.5, 1.0)) and is_inside(p, *at(17.2, 2.0))                # ... Ø34.76, 1.5 high, on the web
+    assert not is_inside(p, *at(17.45, 1.3))                                                # no step (the 90T's Ø35)
     assert not is_inside(p, *at(30.0, 1.6)) and is_inside(p, *at(30.0, 2.0))                # open under the web, farther out
     assert not is_inside(p, *at(6.0, 0.0)) and is_inside(p, *at(6.5, 0.0))                  # the bore
     for x, z in YAW.bolt_points():

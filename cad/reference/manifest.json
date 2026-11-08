@@ -29,21 +29,21 @@
   "base_motor_mount": {
    "bbox_min": [
     55.0,
-    -112.0,
+    -105.5,
     -100.0
    ],
    "bbox_size": [
-    138.87,
+    140.108,
     72.1,
     200.0
    ],
-   "bytes": 801812,
+   "bytes": 800363,
    "file": "native/base_motor_mount.step",
    "kind": "native",
    "origin": "native",
    "product": "base_motor_mount - the base_yaw motor's MOUNT: the base's other half, bolted to the base's end across the plane",
-   "sha256": "a3fd5c9a05e4cda644ac2f9cf8854feddfcc2ad1c145474c816c72d94410f90c",
-   "solid_volume": 294288.646,
+   "sha256": "3f105ab0673946257617901ed6d369c47bdaca3286d4c2b09930d4ab230943b8",
+   "solid_volume": 298236.35,
    "solids": 1,
    "source": "lib/base/body.py:build_motor_mount(DEFAULT)",
    "units": "mm"
@@ -51,7 +51,7 @@
   "base_motor_mount_nuts": {
    "bbox_min": [
     -45.084,
-    -108.041,
+    -101.541,
     0.0
    ],
    "bbox_size": [
@@ -64,7 +64,7 @@
    "kind": "cots",
    "origin": "native",
    "product": "base_motor_mount_nuts - purchased (COTS) part: the base motor mount's 4 M4 hex nuts (ISO 4032), in the base.",
-   "sha256": "dd3ff51633088cdf48f1df1e4b000069bc520f875921c87409fed56782f7c9d9",
+   "sha256": "08f016e8fbd8baf8aea4666b9bb9512e83829ded92fccbbc0604bc10d95adcbd",
    "solid_volume": 382.322,
    "solids": 4,
    "source": "parts/base/base_motor_mount_nuts.py:_envelope()",
@@ -73,7 +73,7 @@
   "base_motor_mount_screws": {
    "bbox_min": [
     -45.084,
-    -107.5,
+    -101.0,
     -4.0
    ],
    "bbox_size": [
@@ -81,12 +81,12 @@
     58.1,
     24.0
    ],
-   "bytes": 129285,
+   "bytes": 129113,
    "file": "native/base_motor_mount_screws.step",
    "kind": "cots",
    "origin": "native",
    "product": "base_motor_mount_screws - purchased (COTS) part: the base motor mount's 4 M4 socket head cap screws (ISO 4762).",
-   "sha256": "f3a98d91ff54ee3ac8f8734af8d67b0987c4b5ca3e28313435d7ef2b829df45b",
+   "sha256": "1806536a36405f537fd2a8f5d7b19138e34c9bcda8d22081687801be7b7461eb",
    "solid_volume": 1558.708,
    "solids": 4,
    "source": "parts/base/base_motor_mount_screws.py:_envelope()",

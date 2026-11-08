@@ -35,6 +35,8 @@ from lib.fasteners import hex_area
 from lib.forearm import DEFAULT as FOREARM
 from lib.forearm import pulley_bolt_points
 from lib.pulley import DEFAULT as PULLEY_90T
+from lib.pulley import YAW as PULLEY_120T
+from lib.pulley.params import YAW_HUB_CUT
 from lib.upper_arm import DEFAULT as UPPER_ARM
 from lib.upper_arm.params import ELBOW_MOTOR_CENTRES
 from lib.wrist import DEFAULT as WRIST
@@ -319,7 +321,7 @@ def test_bearings_and_pulleys_sit_on_their_joint_axes():
         assert m.link == F.JOINT_BY_NAME[m.joint].child
     m, hub = mounts.BY_KEY["gt2_pulley_120t#1"], YAW_COUPLER.hub
     assert m.host == "j1_coupler#1" and m.link == F.JOINT_BY_NAME[m.joint].child == "shoulder_link"
-    assert m.frame == ((0.0, round(hub.stub_y0 + PARAMS.GT2_PULLEY_90T_FACE_Y[0], 6), 0.0), (180.0, hub.hole_deg, 0.0))
+    assert m.frame == ((0.0, round(hub.stub_y0 + PULLEY_120T.end_y, 6), 0.0), (180.0, hub.hole_deg, 0.0))
     assert _dir(_world(m.key), (0.0, 1.0, 0.0)).dot(Vector(*F.JOINT_BY_NAME[m.joint].axis_w)) < -0.999   # hub up, outer face down
 
 
@@ -363,7 +365,9 @@ def test_the_pulley_bolts_reach_their_nuts():
     assert math.isclose(mounts.BY_KEY["wrist_pulley_nuts#1"].frame[0][2], C.stub_y1 + (y1 - seat - y0) - C.nut_depth)
     F = WRIST.flange   # wrist_link's flange stands where the retired coupler stood: its stub's end and nut seats the coupler's
     assert (F.stub_z[1] - F.nut_seat_z, F.stub_z[1] - F.post_z[0]) == pytest.approx((C.stub_y1 - C.nut_depth, C.stub_y1))
-    assert math.isclose(mounts.BY_KEY["yaw_pulley_nuts#1"].frame[0][2], (y1 - seat - y0) + K.pocket_y0 - H.nut_depth - H.stub_y0, abs_tol=1e-6)
+    yaw_seat_to_end = PULLEY_120T.face_y - seat - PULLEY_120T.end_y   # the 120T's: its plain hub gone (YAW_HUB_CUT)
+    assert yaw_seat_to_end == pytest.approx(y1 - seat - y0 - YAW_HUB_CUT)
+    assert math.isclose(mounts.BY_KEY["yaw_pulley_nuts#1"].frame[0][2], yaw_seat_to_end + K.pocket_y0 - H.nut_depth - H.stub_y0, abs_tol=1e-6)
     assert PULLEY_90T.counterbore == (PARAMS.M4_SHCS.head_dia + 0.4, seat) and seat >= PARAMS.M4_SHCS.head_h + 0.5   # the heads under the face
     assert D.pulley_hub_len == y1 - y0 and D.nut_t == H.nut_depth == PARAMS.M4_NUT.h
     assert D.pulley_bolt_r == C.pulley_bolt_r == F.pulley_bolt_r == H.hole_r == PARAMS.GT2_PULLEY_90T_BOLT_R
@@ -390,8 +394,9 @@ def test_pulley_bolts_clamp_their_joints(joint):
     assert planar(pulley, ws.position, -1), joint          # the counterbores' floors, facing the heads
     assert planar(pulley, ws.position - z * PARAMS.GT2_PULLEY_90T_HEAD_SEAT, -1), joint   # the outer face, over them
     assert planar(host, wn.position, 1), joint             # the seat, facing the nuts
-    seat, (y0, y1) = PARAMS.GT2_PULLEY_90T_HEAD_SEAT, PARAMS.GT2_PULLEY_90T_FACE_Y
-    hub = y1 - seat - y0                                   # the floors to the hub's end
+    seat = PARAMS.GT2_PULLEY_90T_HEAD_SEAT
+    cfg = PULLEY_120T if joint == "base_yaw" else PULLEY_90T
+    hub = cfg.face_y - seat - cfg.end_y                    # the floors to the hub's end (the 120T's YAW_HUB_CUT shorter)
     r_hole, r_bore = PARAMS.M4_CLEAR / 2.0, PULLEY_90T.counterbore[0] / 2.0
     for x, y in PARAMS.pulley_90t_bolt_points():
         ux, uy = x / math.hypot(x, y), y / math.hypot(x, y)

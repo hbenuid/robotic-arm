@@ -267,7 +267,7 @@ def test_the_6806_pair_fits_every_belt_joint_bore():
              (b.seat_dia, b.lip_z[1], b.seat_z1), (b.seat_dia, w.z0, b.lip_z[0]),               # j2_link
              (c.upper_dia, c.lip_y[1], BASE.cap.ring_top_y), (c.lower_dia, BASE.cap.boss_y0, c.lip_y[0])]   # base
     for dia, lo, hi in seats:
-        assert dia >= od and hi - lo >= width, (dia, lo, hi)
+        assert dia >= od and hi - lo >= width - 1e-9, (dia, lo, hi)   # the base's lower seat exactly a bearing deep
     for lip in (e.lip_dia, b.lip_dia, c.lip_dia):
         assert shoulder + 2.0 < lip < od
 
