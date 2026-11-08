@@ -89,7 +89,7 @@ and its magnet pairs (no reference) - their numbers, the panel flush and flat on
 turning shaft, its rim and notches, the frame's step and pockets, the magnets on their pockets' bottoms, clear of the
 drive; `gripper_j3_connector`: LEGACY's two bodies, DEFAULT's bolted hub), `tests/gripper/` (the gripper's measured parts against their exports' numbers; the module: its layout, its fits, the jaws in mesh over their travel, the cage on the connector), `tests/pulley/` (`gt2_pulley_90t`: the GT2 groove's tangency
 solve against the export's arcs, the LEGACY build's feature probes and surfaces, DEFAULT's opened holes;
-`gt2_pulley_120t`, a part with no reference: its volume and bbox written in, the 90T's hub and holes, 120
+`gt2_pulley_120t`, a part with no reference: its volume and bbox written in, the 90T's journal, ring and holes - its plain hub gone -, 120
 grooves; `helpers.py`: probe points about the axis, the surface census),
 `tests/forearm/` (the forearm: the LEGACY
 build vs the SolidWorks part + feature probes, the roll end, the roll drive - its axis across the wrist pitch axis, stack, press fits, clean pairs,

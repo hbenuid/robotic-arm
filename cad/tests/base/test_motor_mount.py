@@ -197,7 +197,8 @@ def test_the_parts_meet_at_the_joint(base, mount):
     assert not is_inside(base, x_base, -70, 0) and not is_inside(base, x_base, -99, 0)   # the window into the base, full height
     assert not is_inside(mount, 90, -70, 0) and not is_inside(mount, x_mount, -99, 0)    # the mount's inside, open underneath
     assert not is_inside(mount, ST["x_head"] + 1.0, -70, W_IN + J.bolt_out)                # the posts' faces open to the heads
-    assert is_inside(base, J.split_x - 2.0, -42, 0) and is_inside(mount, J.split_x + 2.0, -42, 0)   # the plate whole: no belt slot
+    y_plate = (PL.y[0] + PL.y[1]) / 2.0
+    assert is_inside(base, J.split_x - 2.0, y_plate, 0) and is_inside(mount, J.split_x + 2.0, y_plate, 0)   # the plate whole: no belt slot
 
 
 @pytest.mark.slow

@@ -15,11 +15,12 @@ from lib import mounts
 from lib import params as PARAMS
 from lib import placements as P
 from lib.base import DEFAULT, LEGACY, chamfer_inset, motor_face_y, motor_holes, side_stub_x
-from lib.base.params import RING_CLEAR
+from lib.base.params import _SW_BELT_Y, RING_CLEAR, YAW_BELT_Y
 from lib.bearings import BEARING_6806_OD, BEARING_6806_WIDTH, THRUST_BORE, THRUST_OD
 from lib.datum import BASE_BOTTOM_Y, to_location
 from lib.forearm import DEFAULT as FOREARM
 from lib.motors import NEMA17_BOLT_SP, NEMA17_FACE
+from lib.pulley.params import YAW_HUB_CUT
 from lib.style import SIDES
 from tests import built
 from tests.helpers import is_inside
@@ -97,10 +98,21 @@ def test_legacy_features(legacy):
     assert is_inside(leg, 0, -5.7, 50)
 
 
+def test_default_plate_rises_with_the_belt():
+    """The 120T lost its plain hub (lib/pulley/params.py YAW_HUB_CUT): the belt rose that much toward the cap, and the
+    plate with it - the SolidWorks plate's height under the belt, its shape the SolidWorks one -, so the bottom face too."""
+    rise = YAW_BELT_Y - _SW_BELT_Y
+    assert rise == pytest.approx(YAW_HUB_CUT) == pytest.approx(6.5)
+    assert replace(DEFAULT.plate, y=LEGACY.plate.y) == LEGACY.plate
+    assert DEFAULT.plate.y == pytest.approx(tuple(y + rise for y in LEGACY.plate.y))
+    assert YAW_BELT_Y - DEFAULT.plate.y[1] == pytest.approx(_SW_BELT_Y - LEGACY.plate.y[1]) == pytest.approx(8.8)
+    assert BASE_BOTTOM_Y == pytest.approx(-105.5)
+
+
 def test_default_bore_takes_the_6806_pair():
     b = DEFAULT.bore
-    assert replace(DEFAULT, shell=LEGACY.shell, bore=LEGACY.bore, cap=LEGACY.cap, motor=LEGACY.motor, joint=None, mount=None,
-                   foot=None, idler=None, slits=None) == LEGACY
+    assert replace(DEFAULT, shell=LEGACY.shell, bore=LEGACY.bore, cap=LEGACY.cap, motor=LEGACY.motor, plate=LEGACY.plate,
+                   joint=None, mount=None, foot=None, idler=None, slits=None) == LEGACY
     assert (b.upper_dia, b.lower_dia, b.lip_dia) == (FOREARM.boss.seat_dia, FOREARM.boss.seat_dia, FOREARM.boss.lip_dia)
     assert b.upper_dia > BEARING_6806_OD and LEGACY.bore.lower_dia - BEARING_6806_OD > 1.0   # the SolidWorks lower seat: 1.4 over
     c = DEFAULT.cap
@@ -128,5 +140,6 @@ def test_default_changes_the_bore_and_the_ring_and_ends_at_the_joint(base, legac
     assert is_inside(base, 0, -13.8, 19) and not is_inside(base, 0, -10, 21.05)
     assert not is_inside(base, 0, -7, 32.45) and is_inside(legacy, 0, -7, 32.45)     # the ring Ø65.1 -> Ø64.8
     assert is_inside(base, 0, -7, 32.3)
-    assert is_inside(base, 52, -42, 30) and is_inside(legacy, 52, -42, 30)             # the plate's neck as before
-    assert is_inside(base, 54, -42, 0) and not is_inside(legacy, 54, -42, 0)          # its belt slot is the mount's
+    y_plate, y_legacy = (sum(c.plate.y) / 2.0 for c in (DEFAULT, LEGACY))           # the plate YAW_HUB_CUT higher
+    assert is_inside(base, 52, y_plate, 30) and is_inside(legacy, 52, y_legacy, 30)    # the plate's neck as before
+    assert is_inside(base, 54, y_plate, 0) and not is_inside(legacy, 54, y_legacy, 0)  # its belt slot is the mount's

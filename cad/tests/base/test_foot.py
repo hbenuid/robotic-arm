@@ -17,7 +17,7 @@ from tests import built
 from tests.helpers import is_inside
 
 S, C, P, F, J = DEFAULT.shell, DEFAULT.cap, DEFAULT.plate, DEFAULT.foot, DEFAULT.joint
-VOLUME = 413221.2          # mm^3, measured on the build, faceted, its slits cut (the SolidWorks base: 286169.1, cut at the joint 235439.1)
+VOLUME = 407786.0          # mm^3, measured on the build, faceted, its slits cut (the SolidWorks base: 286169.1, cut at the joint 235439.1)
 
 
 def test_legacy_stands_straight_without_a_foot():
@@ -38,13 +38,14 @@ def test_the_walls_are_the_couplers_cone_carried_down():
 
 
 def test_the_foot_and_its_chamfer():
-    """The flange Ø200, a flat rim outside the chamfer; the chamfer from the flange's top to the wall, ~40 degrees, its
-    top under the plate (the posts and the motor mount above it)."""
+    """The flange Ø200, a flat rim outside the chamfer; the chamfer from the flange's top to the wall, ~38 degrees (the
+    walls' draft reaches the table less far out under the shorter base), its top under the plate (the posts and the
+    motor mount above it)."""
     (rf, yt), (rw, yw) = flare_points()
     assert F.r == 100.0 and yt == S.y0 + F.t
     assert F.r - rf == pytest.approx(4.5) and rf > outer_r(DEFAULT, yt) + 15.0
     assert rw == pytest.approx(outer_r(DEFAULT, yw)) and yw == S.y0 + F.flare_h < P.y[0] - 10.0
-    assert math.degrees(math.atan2(yw - yt, rf - rw)) == pytest.approx(39.66, abs=0.01)
+    assert math.degrees(math.atan2(yw - yt, rf - rw)) == pytest.approx(38.11, abs=0.01)
 
 
 def test_the_screw_holes():

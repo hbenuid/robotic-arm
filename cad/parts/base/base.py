@@ -13,8 +13,10 @@ square, the pilot window, the belt slot toward the axis, a U rim round the motor
 nema17_48mm#1 on it). A cable notch through the +X end at the bottom. Every number: lib/base/params.py (BaseConfig;
 measured on the reference 2026-09-25).
 
-What DEFAULT builds reaches lower: its bottom face (the mounting face, lib/datum.py BASE_BOTTOM_Y) sits BOARD_CLEAR
-under the base_yaw motor's board, which hung 6.1 below the SolidWorks one. It ends at the joint face x = split_x
+What DEFAULT builds: its motor plate, and everything under it, sits nearer the cap - the base_yaw belt rose with the
+120T's plain hub gone (lib/base/params.py YAW_BELT_Y) and the plate keeps the SolidWorks height under the belt; its
+bottom face (the mounting face, lib/datum.py BASE_BOTTOM_Y) sits BOARD_CLEAR under the base_yaw motor's board, which
+hung 6.1 below the SolidWorks one. It ends at the joint face x = split_x
 (JointParams), just past the round, in two posts inside the side walls, from the bottom face up to the plate's neck:
 the lobe beyond it is gone, the motor sits in base_motor_mount - the base's D carried on to a round end, its foot round
 it - bolted to the posts by 4x M4 through its own posts into the M4 nuts pressed into the base's (hex pockets from the
