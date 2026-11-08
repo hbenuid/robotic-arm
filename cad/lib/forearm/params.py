@@ -281,10 +281,15 @@ class BackPanelParams:
     grill_pitch: float = GRILL_PITCH      # ... at this pitch, one on the roll axis' line
 
 
-ROLL_FRAME_R = 30.0   # [DESIGN] the roll frame's half width round the roll axis: its underside (11.0 over the upper arm's flat top),
+ROLL_FRAME_R = 30.0   # [DESIGN] the roll frame's half width round the roll axis: its underside (6.0 over the upper arm's flat top),
 #                       its side (+N) face and its tower's top - the frame symmetric about the roll axis, the bearing boss centred
 #                       on its front face -, the forearm wall's radius (RollEndParams.wall_od / 2): the frame flush with the
 #                       round parts that turn about the roll axis (RollDriveParams block_x, tower_y; tests/forearm/test_roll_drive.py test_stack)
+ELBOW_INSET = 5.0     # [DESIGN] the roll frame and everything beyond the elbow this far along -N (toward the upper arm) from the
+#                       capture (ForearmConfig.elbow_inset, lib/placements.py SHIFTS): the frame's underside 6.0 over j1_link's flat
+#                       top (the capture's 11.0, the SolidWorks coupler's flange and boss between them), the elbow flange's post
+#                       that much shorter - with the wrist's (lib/wrist/params.py PITCH_INSET) the gripper's roll axis in the
+#                       plane of the base_yaw axis at home
 
 
 @dataclass(frozen=True)
@@ -331,7 +336,7 @@ class RollDriveParams:
     #                                       and the stop that much deeper, the stop lug 2.3 inside the rear line (tests/forearm/test_roll_drive.py)
     lip_id: float = 37.6                  # [DESIGN] j1_link's elbow lip (37.64): clear of the pulley's neck and the shoulders' Ø33
     run_gap: float = 1.0                  # [DESIGN] the ring's rear flange over bearing 2 and the bearing boss's top (the pulley's Ø33 shoulder spans it)
-    # the frame: x along N (its underside at -X, 11.0 over the upper arm's flat top, host z -16), y up in the swing plane
+    # the frame: x along N (its underside at -X, 6.0 over the upper arm's flat top, host z -11), y up in the swing plane
     # (the motor below the roll axis, -Y), z along the roll axis
     block_x: tuple = (-ROLL_FRAME_R, ROLL_FRAME_R)   # [DESIGN] host z -5 .. 55: the underside (the web's plane) .. the side (+N) face,
     #                                       symmetric about the roll axis
@@ -376,25 +381,29 @@ class RollDriveParams:
     # (the SolidWorks coupler's Ø78 flange and Ø62 boss turned in the Ø80 recess the top had: lib/upper_arm/params.py)
     post_dia: float = 40.0                # [REFERENCE] the coupler's Ø40 journal, carried up to the underside: one post over j1_link's
     #                                       Ø42 bore (the elbow 90T's nuts seated in it), clear of the flat top at any elbow angle
-    post_x: tuple = (-40.3, -ROLL_FRAME_R)   # [DESIGN] host -15.3 (0.7 over the upper elbow bearing, its outer ring too) .. the underside (host -5)
+    post_x: tuple = (-40.3 + ELBOW_INSET, -ROLL_FRAME_R)   # [DESIGN] host -10.3 (0.7 over the upper elbow bearing, its outer ring too) ..
+    #                                       the underside (host -5): 5.3 long, the frame ELBOW_INSET nearer j1_link than the capture
     post_chamfer: float = EDGE_CHAMFER    # [DESIGN] its foot's 45 deg chamfer (lib/style.py): its edge 2.26 off the bore's rim
     step_dia: float = BEARING_6806_SHOULDER_DIA   # [DESIGN] an inner-ring shoulder on the post's face, down onto the upper elbow bearing ...
-    step_x: tuple = (-41.0, -40.3)        # [DESIGN] ... host -16 .. -15.3
+    step_x: tuple = (-41.0 + ELBOW_INSET, -40.3 + ELBOW_INSET)   # [DESIGN] ... host -11 .. -10.3
     stub_dia: float = 30.0                # [REFERENCE] in the upper of the elbow's 6806-2RS pair (lib/mounts.py bearing_6806#3; the 90T's hub in #4)
-    stub_x: tuple = (-47.0 - PULLEY_SEAT_SHIFT, -41.0)   # [REFERENCE] host -25 .. -16: the capture coupler's end (-47) on through the lip to the
-    #                                       re-seated elbow 90T, which bolts flat onto it (its 2 mm in the lip space the inner rings)
+    stub_x: tuple = (-47.0 - PULLEY_SEAT_SHIFT + ELBOW_INSET, -41.0 + ELBOW_INSET)   # [REFERENCE] host -20 .. -11: the capture coupler's
+    #                                       end (-47) on through the lip to the re-seated elbow 90T, which bolts flat onto it (its 2 mm in the lip
+    #                                       space the inner rings) - 9 long, as the wrist's (lib/wrist/params.py FlangeParams)
     pin_bore_dia: float = 12.5            # [REFERENCE] the coupler's through bore
-    pin_bore_x: tuple = (-47.0 - PULLEY_SEAT_SHIFT, -37.0)   # [DESIGN] from the stub's end, blind: stops 1 mm under the nut seats
+    pin_bore_x: tuple = (-47.0 - PULLEY_SEAT_SHIFT + ELBOW_INSET, -37.0)   # [DESIGN] from the stub's end, blind: stops 1 mm under the nut seats
     pulley_bolt_r: float = 11.0           # [REFERENCE] the elbow 90T's 4x M4 at r 11 (the SolidWorks coupler's pattern) ...
     pulley_bolt_deg: float = 45.0         # [DESIGN] ... turned off the axes, the elbow 90T with it (lib/mounts.py)
     pulley_bolt_dia: float = M4_CLEAR     # [DESIGN] 4.4, M4 clearance up through the stub and the post to the nut seat
     pulley_hub_len: float = GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_FACE_Y[0]   # [REFERENCE] 21.4, the 90T's length through its bolt holes:
     #                                       the screw heads sit in its counterbores (parts/joints/elbow_pulley_screws)
-    pulley_screw_len: float = 35.0        # [DESIGN] M4 x 35 (ISO 4762) from the floors of the pulley's counterbores
-    #                                       (GT2_PULLEY_90T_HEAD_SEAT under its outer face)
+    pulley_screw_len: float = 30.0        # [DESIGN] M4 x 30 (ISO 4762) from the floors of the pulley's counterbores
+    #                                       (GT2_PULLEY_90T_HEAD_SEAT under its outer face) - the wrist's too (FlangeParams.pulley_screw_len)
     nut_af: float = 6.85                  # [DESIGN] the M4 nuts' (ISO 4032, s 7) hex channels - j3_coupler's pocket (lib/coupler/params.py)
     nut_t: float = M4_NUT.h               # [DATASHEET] 3.2, ISO 4032 M4 nut height (parts/joints/elbow_pulley_nuts)
-    nut_seat_x: float = -36.0             # [DESIGN] in the post: the screw ends 2 pitches past its nut, under the motor's pocket
+    nut_seat_x: float = -41.0 + ELBOW_INSET   # [DESIGN] level with the upper elbow bearing's top (the stub's end: the nut's lower 0.7 in the
+    #                                       shoulder, the rest in the post): the screw ends 2 pitches past its nut, under the motor's pocket - the
+    #                                       wrist's nuts seat the same (FlangeParams.nut_seat_z)
     nut_channel_past: float = 1.0         # [DESIGN] each channel runs up from its seat through the floor into the motor's pocket, this far past
     #                                       the floor: the nuts drop in from the pocket before the motor
     # the rotor: the pulley (the ring on its core, its hub through bearing 2, its neck on to bearing 1, the spigot) and the
@@ -496,6 +505,8 @@ class ForearmConfig:
     idler: IdlerParams | None = None       # the wrist belt's idler under the web (None: no idler, its rib, slot and nut channel)
     elbow_offset: float = 0.0             # the roll axis' distance from the elbow axis along +Y (j2_link's, the module's): 0 = they cross
     #                                        (lib/placements.py SHIFTS moves the forearm and all beyond it across by DEFAULT - LEGACY)
+    elbow_inset: float = 0.0               # the roll drive, the forearm and all beyond it this far along -N (j2_link's -Z) from the capture,
+    #                                        toward the upper arm (lib/placements.py SHIFTS; ELBOW_INSET)
     roll_turn_deg: float = 0.0             # the forearm and everything beyond it turned this far about the roll axis (j2_link's +X) from the
     #                                        capture (lib/placements.py TURNS); the roll drive keeps its pose
 
@@ -518,10 +529,13 @@ WEB_DROP = LEGACY.web.z0 - (_ROLL_END.axis_z - _ROLL_END.wall_od / 2.0)   # 13
 _WEB = replace(LEGACY.web, wrist_x=LEGACY.web.wrist_x + SHORTENING,
                half_w=round(PULLEY_90T.flange_dia / 2.0 + COVER_CLEAR + COVER_WALL, 6),   # straight from the wall, no taper
                z0=LEGACY.web.z0 - WEB_DROP, z1=LEGACY.web.z1 - WEB_DROP)
+# [DESIGN] the wrist boss's face cut down to the upper wrist bearing's face, flush with it as the elbow bearing is with
+# j1_link's flat top: the SolidWorks seat was 1.5 deeper than the bearing (lib/wrist/params.py PITCH_INSET)
+BOSS_TRIM = (LEGACY.boss.seat_z1 - LEGACY.boss.lip_z[1]) - BEARING_6806_WIDTH   # 1.5
 _BOSS = replace(LEGACY.boss, dia=2.0 * _WEB.half_w,       # [DESIGN] as wide as the web: its faceted wrist end
-                z1=LEGACY.boss.seat_z1 - WEB_DROP,        # [DESIGN] the bearing seat's top: wrist_link's flange post reaches 0.8 past
-                recess_dia=None,                          #          it into the seat's bore, its plate 14.5 off it - no recess
-                seat_z1=LEGACY.boss.seat_z1 - WEB_DROP,   # the seat and its lip dropped with the web
+                z1=LEGACY.boss.seat_z1 - WEB_DROP - BOSS_TRIM,   # [DESIGN] the bearing seat's top, flush with the bearing: wrist_link's
+                recess_dia=None,                          #          coupler face FACE_GAP (2) off it, its post on the bearing - no recess
+                seat_z1=LEGACY.boss.seat_z1 - WEB_DROP - BOSS_TRIM,   # the seat and its lip dropped with the web
                 lip_z=(LEGACY.boss.lip_z[0] - WEB_DROP, LEGACY.boss.lip_z[1] - WEB_DROP),
                 recess_z0=LEGACY.boss.recess_z0 - WEB_DROP)
 # [DESIGN] the gussets from the corner facets' top edge at the wall - the flange's lower diagonal facet where it crosses
@@ -548,5 +562,6 @@ DEFAULT = replace(
     roll_end=replace(_ROLL_END, wrist_belt_z=_ROLL_END.wrist_belt_z - WEB_DROP,   # the wrist belt dropped with the web
                      rib_y=_RIB_Y),
     elbow_offset=RollDriveParams().centre_distance,   # [DESIGN] 74: the roll drive's centre distance (the 280 belt with its idler)
+    elbow_inset=ELBOW_INSET,                          # [DESIGN] 5: the roll frame 6.0 over j1_link's flat top
     roll_turn_deg=180.0,                              # [DESIGN] the wrist-pitch motor on the other side of the forearm
 )

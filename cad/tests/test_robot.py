@@ -15,6 +15,7 @@ from assemblies._occurrences import placement_at
 from lib import params as PARAMS
 from lib import placements as P
 from lib import reference as R
+from lib.forearm import ELBOW_INSET
 from robot import frames as F
 from tests import built
 from tests.source_checks import runs_its_model
@@ -120,10 +121,11 @@ def test_joint_origins_sit_on_their_shifted_records():
     j2 = tuple(P.location("j2_link#1", "world", turned=False).position)
     roll = tuple(o + PARAMS.FOREARM_ROLL_AXIS_Z * n for o, n in zip(j2, F.N, strict=True))
     assert math.dist(F.FOREARM_ROLL_ORIGIN, roll) < 0.01
-    # the elbow offset: the roll origin ELBOW_ROLL_OFFSET across the elbow axis, FOREARM_ROLL_AXIS_Z along it
+    # the elbow offset: the roll origin ELBOW_ROLL_OFFSET across the elbow axis, FOREARM_ROLL_AXIS_Z along it from the
+    # capture's elbow origin less the elbow inset (the forearm that much nearer the upper arm)
     d = [b - a for a, b in zip(F.ELBOW_ORIGIN, F.FOREARM_ROLL_ORIGIN, strict=True)]
     along = sum(x * n for x, n in zip(d, F.N, strict=True))
-    assert math.isclose(along, PARAMS.FOREARM_ROLL_AXIS_Z, abs_tol=0.01)
+    assert math.isclose(along, PARAMS.FOREARM_ROLL_AXIS_Z - ELBOW_INSET, abs_tol=0.01)
     assert math.isclose(math.sqrt(sum(x * x for x in d) - along ** 2), PARAMS.ELBOW_ROLL_OFFSET, abs_tol=0.05)
 
 

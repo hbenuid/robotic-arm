@@ -12,6 +12,6 @@ from lib.forearm.layout import (  # noqa: F401
     wrist_idler_xy,
 )
 from lib.forearm.params import (  # noqa: F401
-    DEFAULT, LEGACY, WEB_DROP, WRIST_MOTOR_CENTRES, BackPanelParams, ElbowDiscParams, ForearmConfig, IdlerParams,
+    BOSS_TRIM, DEFAULT, ELBOW_INSET, LEGACY, WEB_DROP, WRIST_MOTOR_CENTRES, BackPanelParams, ElbowDiscParams, ForearmConfig, IdlerParams,
     MotorHoleParams, RollDriveParams, RollEndParams, RollIdlerParams, SlotParams, SocketParams, WebParams, WristBossParams,
 )

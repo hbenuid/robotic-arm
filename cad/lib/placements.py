@@ -132,11 +132,20 @@ SHIFTS: tuple[LinkShift, ...] = (
               _YAW_COUPLER.fork.face_x - _CAPTURE_FACE_X, ("cycloidal_drive#1", "j1_link#1") + _BEYOND_ELBOW),
     # the forearm roll: its axis runs ForearmConfig.elbow_offset above the elbow axis (the roll motor sits on the elbow
     # axis, the drive's centre distance under the ring - lib/forearm/params.py RollDriveParams), so the forearm and
-    # everything beyond it sit that far across, along j2_link's +Y; the elbow's own records (the retired j3_coupler#1
-    # and gt2_pulley_90t#1, which the elbow 90T and its bolts are hosted on) stay
+    # everything beyond it sit that far across, along j2_link's +Y - and ForearmConfig.elbow_inset along its -Z (N), toward
+    # the upper arm: the roll frame's underside nearer j1_link's flat top (ELBOW_INSET); the elbow's own records (the
+    # retired j3_coupler#1 and gt2_pulley_90t#1, which the elbow 90T and its bolts are hosted on) stay
     LinkShift("forearm_roll_drive", "j2_link#1", (0.680611117, -0.731325624, -0.043947003),   # [REFERENCE]
               0.0, ("j2_link#1",) + _BEYOND_WRIST_PITCH,
-              (0.729805826, 0.682028468, -0.047123502), _FOREARM.elbow_offset - _FOREARM_LEGACY.elbow_offset),   # [REFERENCE] its +Y
+              (0.729805826, 0.682028468, -0.047123502), _FOREARM.elbow_offset - _FOREARM_LEGACY.elbow_offset,   # [REFERENCE] its +Y
+              (0.064435732, 0.0, 0.997921859), -(_FOREARM.elbow_inset - _FOREARM_LEGACY.elbow_inset)),   # [REFERENCE] its +Z
+    # the wrist flange: wrist_link and all it carries WristConfig.pitch_inset along its +Z, the pitch axis, toward the
+    # forearm (lib/wrist/params.py PITCH_INSET): its coupler face nearer j2_link's boss; the wrist pitch's own records (the
+    # retired j3_coupler#2, the wrist_pitch origin, and gt2_pulley_90t#2, which the wrist 90T and its bolts are hosted on) stay
+    LinkShift("wrist_flange", "wrist_link#1", (-0.865418936, 0.497923174, 0.055880029),   # [REFERENCE]
+              0.0, ("wrist_link#1",) + _BEYOND_WRIST_ROLL,
+              normal_w=(-0.064435732, 0.0, -0.997921859),   # [REFERENCE] its +Z
+              normal_z=_WRIST.pitch_inset - _WRIST_LEGACY.pitch_inset),
 )
 
 

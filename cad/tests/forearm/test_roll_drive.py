@@ -20,6 +20,7 @@ from lib.belts import GT2_PULLEY_20T_TEETH, STANDARD_2GT_LENGTHS, closed_belt_le
 from lib.datum import to_location
 from lib.forearm import (
     DEFAULT,
+    ELBOW_INSET,
     WEB_DROP,
     clamp_nut_pocket,
     clamp_points,
@@ -44,14 +45,16 @@ from tests.helpers import interference, is_inside, part_colours
 
 S = stack_positions(DEFAULT)
 D = DEFAULT.drive
-UPPER_ARM_FACE_Z = -16.0         # host z of j1_link's +N face under the block: its flat top, the relief's floor - down at the
-#                                  floor of the old recess round the elbow axis, level with the upper 6806's top (no recess left)
+UPPER_ARM_FACE_Z = -16.0 + ELBOW_INSET   # host z of j1_link's +N face under the block: its flat top, the relief's floor - down
+#                                  at the floor of the old recess round the elbow axis, level with the upper 6806's top (no recess
+#                                  left); the capture's -16, the forearm ELBOW_INSET nearer it
 FACE_GAP = 2.0                   # the least axial gap between a face the elbow turns and j1_link's (printed PETG; the
 #                                  forearm's moment tilts the block on its 6806 pair)
 UPPER_ARM_BORE_R = 21.0          # j1_link's bore the frame's stub / post turn in
 UPPER_ARM_END_R = 36.0           # j1_link's round end about the elbow axis (lib/upper_arm/params.py ArmParams.end_r)
-ELBOW_PULLEY_FACE_Z = -22.0 - PARAMS.PULLEY_SEAT_SHIFT   # host z of the elbow 90T's mating face: the SolidWorks coupler's stub end
-#                                                          (-22), both moved on to the re-seated pulley on j1_link's lip
+ELBOW_PULLEY_FACE_Z = -22.0 - PARAMS.PULLEY_SEAT_SHIFT + ELBOW_INSET   # host z of the elbow 90T's mating face: the SolidWorks
+#                                                          coupler's stub end (-22), both moved on to the re-seated pulley on j1_link's
+#                                                          lip, the forearm ELBOW_INSET nearer it
 ELBOW_AXIS_HOST = (0.0, -DEFAULT.elbow_offset)            # the elbow axis (along host Z) in j2_link's frame before the forearm's turn (the
 #                                                           drive's mount frame, tests/forearm/helpers.py): the forearm sits ELBOW_ROLL_OFFSET across it
 RUN_GAP = 1.0                    # the least gap between the turning rotor and the frame (the ring over the bearing boss, the shaft in the bay)
@@ -128,6 +131,7 @@ def test_stack():
     # to the underside) inside the bore's radius, its face above the bearing, an inner-ring shoulder between it and the
     # stub, the stub on through the lip to the elbow pulley's face (the Ø12.5 bore open at its end)
     assert z_axis + D.block_x[0] >= UPPER_ARM_FACE_Z + FACE_GAP and S["x_cradle"] - D.web_t == D.block_x[0]
+    assert _eq(z_axis + D.block_x[0] - UPPER_ARM_FACE_Z, 6.0)   # the underside's gap: the capture's 11.0 less ELBOW_INSET
     assert D.end_r >= UPPER_ARM_END_R
     assert D.post_x[1] == D.block_x[0] and D.step_x[1] == D.post_x[0] and D.stub_x[1] == D.step_x[0]
     assert D.stub_dia < D.step_dia < D.post_dia - 2.0 * D.post_chamfer and z_axis + D.post_x[0] > UPPER_ARM_FACE_Z
@@ -237,12 +241,15 @@ def test_stack():
                (gx0 == pytest.approx(D.block_x[0] + D.plug_skin) and gx1 > S["x_cradle"] and hx0 > S["x_cradle"])
         assert gy0 < S["y_elbow"] - D.end_r and gy1 == pytest.approx(hy1 + D.plug_clear)
         assert gz0 == pytest.approx(hz0 - D.plug_clear - D.motor_drop) and gz1 == pytest.approx(hz1 + D.plug_clear)
-    # the elbow 90T's nuts: seated in the post, the M4 from the pulley's counterbores 2 pitches past its nut, nut and tip
-    # 2 mm under the pocket's floor; each hex channel open up into the pocket (the nuts go in from there before the
-    # motor), and clear of the pin bore, which ends under the seats
+    # the elbow 90T's nuts: seated level with the upper bearing's top (the stub's end, as the wrist's: lib/wrist/params.py
+    # FlangeParams.nut_seat_z) - the nut's lower 0.7 in the shoulder, 1.5 of it round the corners, the rest in the post -,
+    # the M4 from the pulley's counterbores 2 pitches past its nut, nut and tip 2 mm under the pocket's floor; each hex
+    # channel open up into the pocket (the nuts go in from there before the motor), and clear of the pin bore, which ends
+    # under the seats
     corner = D.nut_af / math.sqrt(3.0)
     tip = D.stub_x[0] - D.pulley_hub_len + PARAMS.GT2_PULLEY_90T_HEAD_SEAT + D.pulley_screw_len
-    assert D.post_x[0] + D.post_chamfer < D.nut_seat_x < D.post_x[1] and D.pulley_bolt_r + corner <= D.post_dia / 2.0 - 2.0
+    assert D.nut_seat_x == D.stub_x[1] == D.step_x[0] and D.nut_seat_x + D.nut_t < D.post_x[1]
+    assert D.pulley_bolt_r + corner <= D.post_dia / 2.0 - 2.0 and D.step_dia / 2.0 - (D.pulley_bolt_r + corner) >= 1.5
     assert tip - (D.nut_seat_x + D.nut_t) >= 2 * 0.7 - 1e-9 and tip <= S["x_cradle"] - 2.0
     assert D.nut_seat_x + D.nut_t <= S["x_cradle"] - 2.0 and D.pin_bore_x[1] == D.nut_seat_x - 1.0
     assert nut_channel_end(DEFAULT) == S["x_cradle"] + D.nut_channel_past

@@ -3,9 +3,9 @@
 They clamp the pulley onto the elbow block's stub (gt2_pulley_90t#3 -> forearm_roll_block).
 
 In the arm (lib/mounts.py, hosted on the elbow 90T): the heads in the counterbores in the pulley's outer face
-(lib/belts.py GT2_PULLEY_90T_HEAD_SEAT), the shanks down through its M4 clearance holes, the block's stub, journal and boss into the captive nuts in the block's hex channels
+(lib/belts.py GT2_PULLEY_90T_HEAD_SEAT), the shanks down through its M4 clearance holes, the block's stub and post into the captive nuts in the block's hex channels
 (elbow_pulley_nuts); the tips end two pitches past the nuts, in the channels. Length: lib/forearm/params.py
-RollDriveParams.pulley_screw_len.
+RollDriveParams.pulley_screw_len - the wrist's (wrist_pulley_screws), the two flanges one design.
 
 No catalog model (the catalog has single fasteners only, vendor/README.md) and no SolidWorks export: a NATIVE COTS
 pattern part (lib/reference.py NATIVE_COTS) like the drive's cycloidal_housing_bolts - its envelope IS the geometry

@@ -158,18 +158,21 @@ def _j2_y_in_j1() -> tuple:
 
 
 def _check_links_carry_what_lies_beyond(elbow_x: float, wrist_x: float, end_d: tuple, across: float = 0.0,
-                                        offset: float = 0.0, drop: float = 0.0):
-    """j2_link#1 (whose capture origin is on the elbow axis) sits at (elbow_x, 10 + across, 0) in j1_link's frame, plus
-    `offset` along its own +Y (the forearm across the elbow axis: the roll drive's elbow offset); j3_coupler#2 (on the
-    wrist_pitch axis) at (wrist_x, 0, 42 + drop) in j2_link's (the wrist dropped along its axis with the web); what lies
-    beyond the wrist roll (the gripper on the wrist roll drive's axis) keeps its capture pose in the wrist body's frame
-    but for + end_d. (j2_link#1 before its turn - a turn about its own roll axis:
-    test_the_forearm_turns_about_its_roll_axis.)"""
+                                        offset: float = 0.0, drop: float = 0.0, inset: float = 0.0, pitch: float = 0.0):
+    """j2_link#1 (whose capture origin is on the elbow axis) sits at (elbow_x, 10 + across - inset, 0) in j1_link's
+    frame (its -Y is N toward the upper arm, j2_link's -Z: the roll drive's elbow inset), plus `offset` along its own +Y
+    (the forearm across the elbow axis: the roll drive's elbow offset); j3_coupler#2 (on the wrist_pitch axis) at
+    (wrist_x, 0, 42 + drop) in j2_link's (the wrist dropped along its axis with the web); wrist_link#1 `pitch` along its
+    own +Z from its capture pose over j3_coupler#2 (the wrist flange's inset toward the forearm); what lies beyond the
+    wrist roll (the gripper on the wrist roll drive's axis) keeps its capture pose in the wrist body's frame but for +
+    end_d. (j2_link#1 before its turn - a turn about its own roll axis: test_the_forearm_turns_about_its_roll_axis.)"""
     y2 = _j2_y_in_j1()
     assert _near(_position_in("j1_link#1", "j2_link#1", turned=False),
-                 tuple(a + offset * b for a, b in zip((elbow_x, 10.0 + across, 0.0), y2, strict=True)))
+                 tuple(a + offset * b for a, b in zip((elbow_x, 10.0 + across - inset, 0.0), y2, strict=True)))
     assert _near(_position_in("j2_link#1", "j3_coupler#2"), (wrist_x, 0.0, 42.0 + drop))
     wrist_raw = P.to_location(P.OCCURRENCES["wrist_link#1"]["world"])
+    coupler = tuple((wrist_raw.inverse() * P.to_location(P.OCCURRENCES["j3_coupler#2"]["world"])).position)
+    assert _near(_position_in("wrist_link#1", "j3_coupler#2"), (coupler[0], coupler[1], coupler[2] - pitch))
     for key in P.SHIFTS[2].moves:
         raw = tuple((wrist_raw.inverse() * P.to_location(P.OCCURRENCES[key]["world"])).position)
         assert _near(_position_in("wrist_link#1", key), tuple(r + d for r, d in zip(raw, end_d, strict=True))), key
@@ -192,9 +195,9 @@ def test_shift_axes_are_their_anchors_x_y_and_z():
 
 
 def test_shifts_move_the_capture_records_beyond_each_link():
-    upper_arm, forearm, wrist, yoke, roll = P.SHIFTS
-    assert (upper_arm.anchor, forearm.anchor, wrist.anchor, yoke.anchor, roll.anchor) == (
-        "j1_link#1", "j2_link#1", "wrist_link#1", "j1_coupler#1", "j2_link#1")
+    upper_arm, forearm, wrist, yoke, roll, flange = P.SHIFTS
+    assert (upper_arm.anchor, forearm.anchor, wrist.anchor, yoke.anchor, roll.anchor, flange.anchor) == (
+        "j1_link#1", "j2_link#1", "wrist_link#1", "j1_coupler#1", "j2_link#1", "wrist_link#1")
     assert set(upper_arm.moves) == _capture_records("elbow_link", "forearm_link", "wrist_pitch_link", "wrist_roll_link",
                                                     "jaw_a_link", "jaw_b_link") | set(P.RETIRED)
     retired_wrist = {"nema17_pancake#1", "gt2_pulley_20t#1"}   # the wrist roll drive carries both now
@@ -215,7 +218,7 @@ def test_shifts_move_the_capture_records_beyond_each_link():
     assert (upper_arm.across_y, forearm.across_y) == (arm_slide(UPPER_ARM.DEFAULT) - arm_slide(UPPER_ARM.LEGACY), 0.0)
     # the wrist drops along its axis with the web, toward the belt side (j2_link's -Z)
     assert forearm.normal_z == FOREARM.DEFAULT.web.z0 - FOREARM.LEGACY.web.z0 == -FOREARM.WEB_DROP < 0.0
-    assert all(s.normal_z == 0.0 for s in P.SHIFTS if s not in (wrist, forearm))
+    assert all(s.normal_z == 0.0 for s in P.SHIFTS if s not in (wrist, forearm, roll, flange))
     # the yoke holds the drive with the middle of its discs on the base_yaw axis: the drive, the upper arm and all beyond
     # move along its +X (N) from where the capture had them
     assert set(yoke.moves) == {"cycloidal_drive#1", "j1_link#1"} | set(upper_arm.moves) and yoke.across_y == 0.0
@@ -225,6 +228,14 @@ def test_shifts_move_the_capture_records_beyond_each_link():
     assert set(roll.moves) == set(forearm.moves) | {"j2_link#1"} and roll.along_x == 0.0
     assert not {"j3_coupler#1", "gt2_pulley_90t#1"} & set(roll.moves)
     assert roll.across_y == FOREARM.DEFAULT.elbow_offset - FOREARM.LEGACY.elbow_offset == FOREARM.DEFAULT.drive.centre_distance
+    # ... and its elbow inset: they move along j2_link's -Z (N), toward the upper arm - the roll frame nearer j1_link's top
+    assert roll.normal_w == forearm.normal_w and roll.normal_z == -(FOREARM.DEFAULT.elbow_inset - FOREARM.LEGACY.elbow_inset)
+    assert roll.normal_z == -FOREARM.ELBOW_INSET < 0.0
+    # the wrist flange: wrist_link and what lies beyond the wrist roll along wrist_link's +Z, toward the forearm; the
+    # wrist pitch's own records (j3_coupler#2, the retired 90T the wrist 90T is hosted on) stay
+    assert set(flange.moves) == {"wrist_link#1"} | retired_wrist and (flange.along_x, flange.across_y) == (0.0, 0.0)
+    assert not {"j3_coupler#2", "gt2_pulley_90t#2"} & set(flange.moves) and flange.normal_w == wrist.normal_w
+    assert flange.normal_z == WRIST.DEFAULT.pitch_inset - WRIST.LEGACY.pitch_inset == WRIST.PITCH_INSET > 0.0
 
 
 def test_the_forearm_turns_about_its_roll_axis():
@@ -297,21 +308,24 @@ def test_the_base_meets_the_coupler_flat_to_flat():
 
 def test_the_links_carry_what_lies_beyond_them():
     _check_links_carry_what_lies_beyond(UPPER_ARM.DEFAULT.slab.elbow_x, FOREARM.DEFAULT.web.wrist_x, _wrist_end_d(),
-                                        arm_slide(UPPER_ARM.DEFAULT), FOREARM.DEFAULT.elbow_offset, -FOREARM.WEB_DROP)
+                                        arm_slide(UPPER_ARM.DEFAULT), FOREARM.DEFAULT.elbow_offset, -FOREARM.WEB_DROP,
+                                        FOREARM.DEFAULT.elbow_inset, WRIST.DEFAULT.pitch_inset)
 
 
 def test_shifted_links_keep_the_records_consistent(monkeypatch):
     """Shorter links (any lengths), a slid elbow end and a wrist roll axis moved off the plate: each moves what lies
     beyond it, a module's children follow it, the rest stays."""
     along = {"j1_link": -40.0, "j2_link": 40.0, "wrist_roll_drive": -20.0, "j1_coupler": P.SHIFTS[3].along_x,   # the yoke's kept
-             "forearm_roll_drive": 0.0}
-    across = {"j1_link": 25.0, "j2_link": 0.0, "wrist_roll_drive": 15.0, "j1_coupler": 0.0, "forearm_roll_drive": 30.0}
-    normal = {"j1_link": 0.0, "j2_link": -5.0, "wrist_roll_drive": -10.0, "j1_coupler": 0.0, "forearm_roll_drive": 0.0}
+             "forearm_roll_drive": 0.0, "wrist_flange": 0.0}
+    across = {"j1_link": 25.0, "j2_link": 0.0, "wrist_roll_drive": 15.0, "j1_coupler": 0.0, "forearm_roll_drive": 30.0,
+              "wrist_flange": 0.0}
+    normal = {"j1_link": 0.0, "j2_link": -5.0, "wrist_roll_drive": -10.0, "j1_coupler": 0.0, "forearm_roll_drive": -3.0,
+              "wrist_flange": 7.0}
     before = {key: P.location(key, "world") for key in ("base#1", "j1_link#1", "cycloidal_drive#1")}
     monkeypatch.setattr(P, "SHIFTS", tuple(replace(s, along_x=along[s.link], across_y=across[s.link], normal_z=normal[s.link])
                                            for s in P.SHIFTS))
     _check_links_carry_what_lies_beyond(UPPER_ARM.LEGACY.slab.elbow_x - 40.0, FOREARM.LEGACY.web.wrist_x + 40.0, (-20.0, 15.0, -10.0),
-                                        25.0, 30.0, -5.0)
+                                        25.0, 30.0, -5.0, 3.0, 7.0)
     _check_world_equals_parent_world_times_rel()
     for key, loc in before.items():
         assert _close(_matrix(P.location(key, "world")), _matrix(loc), tol=1e-9), key

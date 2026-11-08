@@ -492,37 +492,37 @@
    "bbox_size": [
     29.0,
     29.0,
-    39.0
+    34.0
    ],
    "bytes": 128681,
    "file": "native/elbow_pulley_screws.step",
    "kind": "cots",
    "origin": "native",
    "product": "elbow_pulley_screws - purchased (COTS) part: the elbow 90T's 4 M4 socket head cap screws (ISO 4762).",
-   "sha256": "f03589b4e9dabefc235ed2d3ec217e52026ef793ef8033370367249680920e89",
-   "solid_volume": 2312.69,
+   "sha256": "d524f0eead35224c7b54f2be19ec6e9a418cae55a52a5291ab8671500d62fc8d",
+   "solid_volume": 2061.363,
    "solids": 4,
    "source": "parts/joints/elbow_pulley_screws.py:_envelope()",
    "units": "mm"
   },
   "forearm_roll_block": {
    "bbox_min": [
-    -50.0,
+    -45.0,
     -116.0,
     -42.0
    ],
    "bbox_size": [
-    80.0,
+    75.0,
     146.0,
     80.8
    ],
-   "bytes": 570425,
+   "bytes": 570409,
    "file": "native/forearm_roll_block.step",
    "kind": "native",
    "origin": "native",
    "product": "forearm_roll_block - the forearm roll drive's STATOR - the roll frame (the elbow block), which is also the elbow's output",
-   "sha256": "44068ee7a1c774d7d71a70b6472967a5d82fd85fe4c300849f103f10d2a77c59",
-   "solid_volume": 248850.946,
+   "sha256": "9608b1a8c2d0415da635c061ef09740a041e8968b0c2e88232fae9dfd906b124",
+   "solid_volume": 243485.459,
    "solids": 1,
    "source": "lib/forearm/roll.py:build_block(DEFAULT)",
    "units": "mm"
@@ -985,7 +985,7 @@
    "file": "native/wrist_pulley_nuts.step",
    "kind": "cots",
    "origin": "native",
-   "product": "wrist_pulley_nuts - purchased (COTS) part: the wrist 90T's 4 M4 hex nuts (ISO 4032), in j3_coupler's flange.",
+   "product": "wrist_pulley_nuts - purchased (COTS) part: the wrist 90T's 4 M4 hex nuts (ISO 4032), in wrist_link's flange.",
    "sha256": "c419ed6148beb188402892984afd79e562effcb67c70ae6ba385d1f1dcb2e933",
    "solid_volume": 382.322,
    "solids": 4,
@@ -1001,15 +1001,15 @@
    "bbox_size": [
     29.0,
     29.0,
-    49.0
+    34.0
    ],
    "bytes": 128681,
    "file": "native/wrist_pulley_screws.step",
    "kind": "cots",
    "origin": "native",
    "product": "wrist_pulley_screws - purchased (COTS) part: the wrist 90T's 4 M4 socket head cap screws (ISO 4762).",
-   "sha256": "53a4de2d347068c65f493ca98523dac302085296c222a0885c8fb1dfda458927",
-   "solid_volume": 2815.345,
+   "sha256": "8fcb2af30883e4e78286a4253ab6844ba2439ea58130cda160f61a8255bbe084",
+   "solid_volume": 2061.363,
    "solids": 4,
    "source": "parts/joints/wrist_pulley_screws.py:_envelope()",
    "units": "mm"

@@ -4,8 +4,8 @@ They clamp the pulley onto the stub of wrist_link's flange (gt2_pulley_90t#4 -> 
 
 In the arm (lib/mounts.py, hosted on the wrist 90T): the heads in the counterbores in the pulley's outer face
 (lib/belts.py GT2_PULLEY_90T_HEAD_SEAT), the shanks down through its M4 clearance holes and the flange's stub and post into the nuts on their channels' seats
-(wrist_pulley_nuts); the tips end past the nuts inside the channels, in wrist_link's plate. Length: lib/coupler/params.py
-CouplerParams.pulley_screw_len (the flange stands where the coupler stood).
+(wrist_pulley_nuts); the tips end two pitches past the nuts inside the channels, in wrist_link's plate. Length:
+lib/wrist/params.py FlangeParams.pulley_screw_len - the elbow's (elbow_pulley_screws), the two flanges one design.
 
 No catalog model (the catalog has single fasteners only, vendor/README.md) and no SolidWorks export: a NATIVE COTS
 pattern part (lib/reference.py NATIVE_COTS) like the drive's cycloidal_housing_bolts - its envelope IS the geometry
@@ -19,12 +19,12 @@ import pathlib
 from cadgen import step
 
 from lib.cots import hybrid, pattern
-from lib.coupler import DEFAULT as COUPLER
 from lib.datum import IDENTITY
 from lib.fasteners import shcs
 from lib.params import M4_SHCS, WRIST_PULLEY_SCREWS_MASS_G, pulley_90t_bolt_points
+from lib.wrist import DEFAULT as WRIST
 
-LENGTH = COUPLER.pulley_screw_len
+LENGTH = WRIST.flange.pulley_screw_len
 
 NAME = pathlib.Path(__file__).stem
 COTS = True

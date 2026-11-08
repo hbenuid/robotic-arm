@@ -18,7 +18,7 @@ from lib import params as PARAMS
 from lib.belts import GT2_IDLER_WIDTH, GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, closed_belt_length
 from lib.datum import to_location
 from lib.forearm import DEFAULT, LEGACY, flange_bolt_points, link_socket_points, screws_under_the_web
-from lib.forearm.params import PULLEY_90T, SHORTENING, WEB_DROP, WRIST_MOTOR_CENTRES, RollEndParams
+from lib.forearm.params import BOSS_TRIM, PULLEY_90T, SHORTENING, WEB_DROP, WRIST_MOTOR_CENTRES, RollEndParams
 from lib.motors import (
     MKS_SERVO42D_W,
     NEMA17_40_BODY_LEN,
@@ -48,10 +48,12 @@ def test_default_layout():
     # with it
     assert DEFAULT.web.z0 == R.axis_z - R.wall_od / 2.0 and WEB_DROP > 0.0 and DEFAULT.web.thickness == lw.thickness
     assert R.wrist_belt_z == RollEndParams().wrist_belt_z - WEB_DROP == PARAMS.J2_BELT_Z
-    # the wrist boss: the SolidWorks seat and lip dropped with the web, as wide as it, its top the seat's top, no recess
+    # the wrist boss: the SolidWorks seat and lip dropped with the web, as wide as it, its top the seat's top - trimmed
+    # BOSS_TRIM, flush with the upper wrist bearing (its 7 on the lip) -, no recess
     b, lb = DEFAULT.boss, LEGACY.boss
     assert (b.seat_dia, b.lip_dia) == (lb.seat_dia, lb.lip_dia)
-    assert (b.seat_z1, b.lip_z) == (lb.seat_z1 - WEB_DROP, (lb.lip_z[0] - WEB_DROP, lb.lip_z[1] - WEB_DROP))
+    assert (b.seat_z1, b.lip_z) == (lb.seat_z1 - WEB_DROP - BOSS_TRIM, (lb.lip_z[0] - WEB_DROP, lb.lip_z[1] - WEB_DROP))
+    assert b.seat_z1 - b.lip_z[1] == PARAMS.BEARING_6806_WIDTH and BOSS_TRIM == 1.5
     assert b.dia == 2.0 * DEFAULT.web.half_w and b.z1 == b.seat_z1 and b.recess_dia is None and lb.recess_dia is not None
     assert DEFAULT.sockets is None and LEGACY.sockets is not None and link_socket_points(DEFAULT) == ([], [])
     # the motor on round holes WRIST_MOTOR_CENTRES from the wrist, nearer than the stock belt's own centre distance (its
@@ -136,8 +138,9 @@ def test_link_ends_at_the_wall_and_at_its_wrist_boss(link):
     for z in (w.z0 + 1.0, b.seat_z1 - 1.0):
         assert not is_inside(link, wx + b.seat_dia / 2.0 - 0.3, 0, z) and is_inside(link, wx + b.seat_dia / 2.0 + 0.3, 0, z)
     assert is_inside(link, wx + b.lip_dia / 2.0 + 0.3, 0, sum(b.lip_z) / 2.0) and not is_inside(link, wx + b.lip_dia / 2.0 - 0.3, 0, sum(b.lip_z) / 2.0)
-    # ... under wrist_link's flange (j3_coupler#2 retired): its post's chamfered foot in the seat's mouth, 1 or more off the rim
-    assert link.distance_to(in_host("wrist_link#1")) >= 1.0
+    # ... under wrist_link's flange (j3_coupler#2 retired): its coupler face FACE_GAP (2) over the boss's face, the post's
+    # chamfered foot over the seat's mouth, 1.9 or more off the rim
+    assert link.distance_to(in_host("wrist_link#1")) >= 1.9
     # no locating sockets (the caps they held are gone): the web whole on both faces out to its straight sides
     assert is_inside(link, -120, w.half_w - 1.0, w.z1 - 1.0) and is_inside(link, -120, w.half_w - 1.0, w.z0 + 1.0)
     assert not is_inside(link, -120, w.half_w + 1.0, zm)                                                 # the web's side
