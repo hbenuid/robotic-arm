@@ -170,9 +170,9 @@
   </link>
   <link name="wrist_pitch_link">
     <inertial>
-      <origin xyz="0.000423 0.0112 0.017765" rpy="0 0 0" />
-      <mass value="0.470497" />
-      <inertia ixx="5.913445e-04" ixy="-2.231311e-05" ixz="4.468848e-07" iyy="3.528675e-04" iyz="-5.405252e-05" izz="3.643027e-04" />
+      <origin xyz="0.00031 0.011639 0.018407" rpy="0 0 0" />
+      <mass value="0.452681" />
+      <inertia ixx="5.786317e-04" ixy="-2.294218e-05" ixz="-5.695916e-07" iyy="3.363041e-04" iyz="-5.068142e-05" izz="3.453062e-04" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />

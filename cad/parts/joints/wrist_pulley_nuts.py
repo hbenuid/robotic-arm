@@ -4,7 +4,7 @@ The wrist 90T's screws run into them, in hex channels from the seats in wrist_li
 
 In the arm (lib/mounts.py, hosted on wrist_pulley_screws): each nut on its channel's seat (lib/wrist/params.py
 FlangeParams.nut_seat_z - where the retired j3_coupler#2's pocket floors were, lib/coupler/params.py nut_depth), all
-four with a corner along the part's X as the channels are cut (FlangeParams.nut_corner_deg); the channels are nut_af
+four turned with the 90T (FlangeParams.pulley_bolt_deg) as the channels are cut (+ nut_corner_deg); the channels are nut_af
 across flats, a press for the nut (docs/open_issues.md). They drop in from the pancake's pocket before the pancake.
 
 No catalog model (the catalog has single fasteners only, vendor/README.md) and no SolidWorks export: a NATIVE COTS
@@ -12,7 +12,7 @@ pattern part (lib/reference.py NATIVE_COTS) like the drive's cycloidal_housing_n
 (lib/fasteners.py hex_nut(): no thread, the bore at the nominal diameter) and its reference is that envelope
 (reference/native/wrist_pulley_nuts.step, tools/reference/import_native.py). Frame: axis on Z, the nuts' bearing faces
 on z=0, standing in +Z; the four on the 90T's hole circle (lib/belts.py pulley_90t_bolt_points()), each with a corner
-along +/-Y (wrist_link's X where the arm mounts them).
+along +/-Y (wrist_link's X turned FlangeParams.pulley_bolt_deg, with the pattern, where the arm mounts them).
 """
 import math
 import pathlib

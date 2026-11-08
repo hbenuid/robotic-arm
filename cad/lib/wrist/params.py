@@ -15,10 +15,12 @@ on the roll axis) - the NEMA 17 pattern's M3 and the bracket's M4, drilled throu
 SolidWorks through-all: the z 6.5 pair score the plate's top).
 
 Two configurations: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
-tests/test_reference_match.py); DEFAULT is what the part builds: the plate's faceted end on the pitch axis with the
-wrist_pitch output flange on it (FlangeParams: the post, the shoulder, the stub - the elbow's pattern), and on its underside (the free face, away from the forearm) the wrist roll drive's frame - the pancake ON the
-pitch axis, the roll axis R' beside it (WristRollParams; docs/wrist_roll.md); the tower, its end face and the bracket
-are gone (lib/placements.py SHIFTS moves the gripper onto R').
+tests/test_reference_match.py); DEFAULT is what the part builds: the wrist roll drive's frame - the pancake ON the
+pitch axis, the roll axis R' beside it (WristRollParams; docs/wrist_roll.md) - its wall on the forearm's side the plate
+(only where the frame runs: no plate stands past it), the wrist_pitch output flange on that wall's coupler face
+(FlangeParams: the post, the shoulder, the stub - the elbow's pattern), the rest of the frame on its underside (the free
+face, away from the forearm); the tower, its end face and the bracket are gone (lib/placements.py SHIFTS moves the
+gripper onto R').
 
 Every number below was measured on the reference 2026-09-27 (face / vertex census; tests/wrist/test_wrist_link.py
 re-checks the builds against it): [REFERENCE] unless tagged. SolidWorks' float noise (<= 6e-4) is rounded off the end
@@ -43,7 +45,8 @@ class PlateParams:
 
     thickness: float = 5.0
     pitch_x: float = -45.445774        # the wrist_pitch axis (x, 0), j3_coupler#2's
-    pitch_r: float = 39.000699         # the round end on it (DEFAULT's faceted end: its flats this far off the axis)
+    pitch_r: float = 39.000699         # the round end on it (DEFAULT: the roll frame's octagonal end about it, its flats this far
+    #                                    off the axis - lib/wrist/roll.py side_profile)
     half_width: float = 39.0
 
 
@@ -66,15 +69,20 @@ _T = PlateParams.thickness   # the plate's coupler face, where FlangeParams' sta
 @dataclass(frozen=True)
 class FlangeParams:
     """[DESIGN] The wrist_pitch output flange (DEFAULT; j3_coupler#2 retired, as the elbow's j3_coupler#1 is - the
-    forearm roll's frame carries the elbow's: lib/forearm/params.py RollDriveParams post_*) on the plate's coupler face
-    about the pitch axis, part z along it: the post (the coupler's journal carried down to the plate), its foot
+    forearm roll's frame carries the elbow's: lib/forearm/params.py RollDriveParams post_*) on the roll frame's coupler
+    face about the pitch axis, part z along it: the post (the coupler's journal carried down to the frame), its foot
     chamfered, the shoulder on the upper wrist bearing's inner ring, the stub on through j2_link's lip to the wrist 90T,
-    which bolts onto its end - its 4 M4 into nuts in hex channels from the nuts' seats down through the plate into the
-    pancake's pocket (the nuts drop in from there, before the pancake). The stations are the retired coupler's
-    (lib/coupler/params.py DEFAULT) on the plate's coupler face: the 6806 stack, the 90T and its screws and nuts stay."""
+    which bolts onto its end - its 4 M4 into nuts in hex channels from the nuts' seats down through the frame into the
+    pancake's pocket (the nuts drop in from there, before the pancake). No plate round it: the post stands on the frame
+    alone, cut flat where it passes the frame's front face and rear (lib/wrist/link.py _flange: nothing past the frame's
+    outline seen along the pitch axis), its front flat carried on down into the front facet's foot; the 90T's bolt
+    pattern turned pulley_bolt_deg off the axes, so the front nut keeps its wall to that flat. The stations are the
+    retired coupler's (lib/coupler/params.py DEFAULT) on the coupler face: the 6806 stack, the 90T and its screws and
+    nuts stay."""
 
     post_dia: float = COUPLER.journal_dia                              # [REFERENCE] Ø40 over j2_link's Ø42.2 seat
-    post_z: tuple = (_T, _T + COUPLER.journal_y1)                      # the coupler face .. 0.7 under the upper wrist bearing
+    post_z: tuple = (_T, _T + COUPLER.journal_y1)                      # the coupler face .. 0.7 under the upper wrist bearing (the
+    #                                                                    post itself from the free face, lib/wrist/link.py _flange)
     post_chamfer: float = EDGE_CHAMFER                                 # its foot's 45 deg chamfer (lib/style.py)
     step_dia: float = COUPLER.step[0]                                  # the inner-ring shoulder ...
     step_z: tuple = (_T + COUPLER.journal_y1, _T + COUPLER.step[1])    # ... down onto the upper wrist bearing's top face
@@ -82,11 +90,16 @@ class FlangeParams:
     stub_z: tuple = (_T + COUPLER.step[1], _T + COUPLER.stub_y1)       # ... to the 90T's face (the lip's lower face)
     pin_bore_dia: float = COUPLER.bore_dia                             # [REFERENCE] blind from the stub's end ...
     pin_bore_past: float = 1.0                                         # ... stopping this far short of the nuts' seats
-    pulley_bolt_r: float = COUPLER.pulley_bolt_r                       # [REFERENCE] the 90T's 4 M4, on the axes
+    pulley_bolt_r: float = COUPLER.pulley_bolt_r                       # [REFERENCE] the 90T's 4 M4 at r 11 ...
+    pulley_bolt_deg: float = 45.0                                      # [DESIGN] ... turned off the axes, the wrist 90T, its screws
+    #                                                                    and nuts with it (lib/mounts.py; the elbow's RollDriveParams
+    #                                                                    pulley_bolt_deg): on the axes the front nut's corner came 0.55
+    #                                                                    off the post's front flat, turned it keeps 3.9
     pulley_bolt_dia: float = M4_CLEAR                                  # 4.4, as the elbow's (the coupler's 4.1 was the SolidWorks pattern)
     nut_af: float = COUPLER.nut_af                                     # the channels: a press for the M4 nut (s 7) ...
-    nut_corner_deg: float = 0.0                                        # ... a corner this far off +X: along X (the coupler's
-    #                                                                    pockets, as parts/joints/wrist_pulley_nuts models the nuts)
+    nut_corner_deg: float = 0.0                                        # ... a corner this far off the pattern's turn (pulley_bolt_deg
+    #                                                                    off +X): the coupler's pockets, as parts/joints/wrist_pulley_nuts
+    #                                                                    models the nuts, turned with the 90T
     nut_seat_z: float = _T + COUPLER.nut_depth                         # the nuts' faces toward the 90T: each channel from here down
     channel_past: float = 1.0                                          # ... through the plate, this far into the pancake's pocket
 
@@ -196,9 +209,10 @@ class WristRollParams:
     joint further out: the pancake ON the wrist_pitch axis, on the plate's free face (the side away from the forearm),
     belted to the roll axis beside it - centre_distance across in the wrist's swing plane, at the motor's height - so the
     wrist roll axis R' no longer meets the pitch axis (a wrist offset: the wrist is no longer spherical). wrist_link IS
-    the frame (the stator), laid out as the forearm roll's frame (lib/forearm/roll.py build_block): the plate
-    (the wrist_pitch output flange on it: FlangeParams) and on its free face one body - seen along the pitch axis the plate's octagon about it hulled to
-    the tower round R', from the plate to the closed far (+X) face (side_t), its rear one slanted plane (rear_low,
+    the frame (the stator), laid out as the forearm roll's frame (lib/forearm/roll.py build_block): one body - seen along
+    the pitch axis an octagon about it (pitch_r) hulled to the tower round R', its wall on the forearm's side the plate
+    (the wrist_pitch output flange on it: FlangeParams; no plate past the frame), from the plate's coupler face to the
+    closed far (+X) face (side_t), its rear one slanted plane (rear_low,
     rear_bend), the front face's long edges faceted (front_facet). The pancake's pocket opens down through the BOTTOM -
     the frame's end beyond the motor, away from R' - and the pancake slides in from there, its shaft up a slit along the
     tension slots; its front wall the plate the pancake bolts to (slotted along Y: the belt's tension), a groove inside
@@ -366,14 +380,15 @@ class WristConfig:
     flange: FlangeParams | None = None           # DEFAULT: the wrist_pitch output flange on the plate
     tower: TowerParams = TowerParams()
     end_face: EndFaceParams = EndFaceParams()
-    roll: WristRollParams | None = None          # DEFAULT: the wrist roll drive's frame on the plate, no tower
+    roll: WristRollParams | None = None          # DEFAULT: the wrist roll drive's frame - the plate only its wall, no tower
     connector: ConnectorParams = ConnectorParams()
 
 
 LEGACY = WristConfig()     # the SolidWorks part, exactly
 
-# What the part builds: the plate with the wrist_pitch output flange on it (j3_coupler#2 and its seat gone) and, on its
-# free face, the wrist roll drive's frame round the pancake and the tower round R' (WristRollParams) - the old tower, its
-# end face and gripper_clamp_bracket gone; the gripper's connector bolted to the roll pulley's face.
+# What the part builds: the wrist roll drive's frame round the pancake and the tower round R' (WristRollParams) - the
+# plate only its wall on the forearm's side, nothing past it -, the wrist_pitch output flange on that wall (j3_coupler#2
+# and its seat gone) - the old tower, its end face and gripper_clamp_bracket gone; the gripper's connector bolted to the
+# roll pulley's face.
 DEFAULT = replace(LEGACY, seat=None, flange=FlangeParams(), roll=WristRollParams(),
                   connector=replace(LEGACY.connector, hub=True))   # [DESIGN]

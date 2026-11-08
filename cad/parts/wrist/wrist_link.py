@@ -2,12 +2,14 @@
 lib/wrist/link.py build_wrist_link(cfg), in the SolidWorks part frame - origin on the plate's underside at the centre
 of the SolidWorks tower's round end, +Z up through the plate; the pitch axis along Z at x -45.446).
 
-DEFAULT (what the part builds): a 5 mm plate, its round end on the pitch axis carrying the wrist_pitch output flange
-(lib/wrist/params.py FlangeParams, the elbow's pattern - j3_coupler#2 retired: a Ø40 post, its foot chamfered, the Ø33
-shoulder and the Ø30 stub into j2_link's 6806 pair; the wrist 90T bolts up into 4x M4 nuts in hex channels that open
-through the plate into the pancake's pocket), and on its underside - the side away from the forearm - the wrist roll drive's frame (lib/wrist/roll.py build_frame,
-WristRollParams; docs/wrist_roll.md), laid out as the forearm roll's frame: seen along the pitch axis the plate's
-octagon hulled to the tower round the roll axis, WRIST_ROLL_OFFSET across, from the plate to the closed far face, its
+DEFAULT (what the part builds): the wrist roll drive's frame (lib/wrist/roll.py build_frame, WristRollParams;
+docs/wrist_roll.md), its 5 mm wall on the forearm's side the plate - nothing of it past the frame - carrying the
+wrist_pitch output flange on the pitch axis (lib/wrist/params.py FlangeParams, the elbow's pattern - j3_coupler#2
+retired: a Ø40 post, its foot chamfered, cut flat at the frame's front face and rear, the Ø33 shoulder and the Ø30 stub
+into j2_link's 6806 pair; the wrist 90T, turned pulley_bolt_deg, bolts up into 4x M4 nuts in hex channels that open
+through the plate into the pancake's pocket); on the plate's underside - the side away from the forearm - the rest of
+the frame, laid out as the forearm roll's frame: seen along the pitch axis an octagon about it
+hulled to the tower round the roll axis, WRIST_ROLL_OFFSET across, from the plate to the closed far face, its
 rear one slanted plane, the front face's long edges faceted - one body round the pancake, centred on the pitch axis in
 its pocket (open down through the bottom - the frame's end beyond the motor, where it slides in - its front wall the
 plate it bolts to, slotted for the belt's tension, a groove inside the side wall for its plug), its MKS board in a

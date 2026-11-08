@@ -298,8 +298,8 @@ def test_the_base_takes_the_48mm_motor_and_the_links_the_40mm_one():
 def test_bearings_and_pulleys_sit_on_their_joint_axes():
     """Each bearing's +Z and each pulley's +Y (lib/mounts.py AXES) runs along its joint's axis, its origin on the
     axis; a pair per belt joint, riding with its housing's link; the elbow's and the wrist's pulley PULLEY_SEAT_SHIFT out
-    from its retired SolidWorks pose, along its own axis - the wrist's spin kept, the elbow's turned with its block's
-    bolt pattern -, the base_yaw 120T on j1_coupler, hub up, its hub end at the stub's end, turned onto the stub's
+    from its retired SolidWorks pose, along its own axis - each turned with its host's bolt pattern (the elbow block's,
+    wrist_link's flange) -, the base_yaw 120T on j1_coupler, hub up, its hub end at the stub's end, turned onto the stub's
     diagonal holes; each pulley-bolt pattern centred on its joint's axis too."""
     for m in ON_AXIS:
         joint, (local, on_axis) = F.JOINT_BY_NAME[m.joint], mounts.AXES[m.part]
@@ -313,7 +313,7 @@ def test_bearings_and_pulleys_sit_on_their_joint_axes():
     assert by_joint == {j: list(s[:2]) for j, s in STACKS.items()}
     for j, (up, _, host, _, _) in STACKS.items():
         assert mounts.BY_KEY[up].host == host and mounts.BY_KEY[up].link == F.JOINT_BY_NAME[j].parent
-    for key, spin in (("gt2_pulley_90t#3", FOREARM.drive.pulley_bolt_deg), ("gt2_pulley_90t#4", 0.0)):
+    for key, spin in (("gt2_pulley_90t#3", FOREARM.drive.pulley_bolt_deg), ("gt2_pulley_90t#4", WRIST.flange.pulley_bolt_deg)):
         m = mounts.BY_KEY[key]
         assert m.host in P.RETIRED and m.frame == ((0.0, PARAMS.PULLEY_SEAT_SHIFT, 0.0), (0.0, spin, 0.0))
         assert m.link == F.JOINT_BY_NAME[m.joint].child
