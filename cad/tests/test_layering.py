@@ -31,9 +31,10 @@ SYS_PATH_ALLOWED = {"tools/cycloidal/export_cadquery.py"}
 # included - goes through parts.load() / parts.model() / parts.build() / parts.names().
 PART_MODULE_IMPORT_ALLOWED = {"parts"}
 
-# lib/ packages lib/params.py re-exports from (and pulley, a parts' package like them): they take
-# their globals from the leaves (LEAF_MODULES) and never import lib.params back.
-LEAF_PACKAGES = ("cycloidal", "forearm", "upper_arm", "base", "coupler", "yaw_coupler", "wrist", "pulley", "gripper")
+# lib/ packages lib/params.py re-exports from (and pulley, a parts' package like them; gauges, which reads theirs):
+# they take their globals from the leaves (LEAF_MODULES) and never import lib.params back.
+LEAF_PACKAGES = ("cycloidal", "forearm", "upper_arm", "base", "coupler", "yaw_coupler", "wrist", "pulley", "gripper",
+                 "gauges")
 # The leaves those packages import: importing lib.params from one would close the cycle.
 LEAF_MODULES = ("units.py", "motors.py", "belts.py", "bearings.py", "fasteners.py", "geom.py", "sensors.py", "style.py")
 

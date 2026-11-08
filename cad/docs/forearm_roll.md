@@ -135,7 +135,8 @@ check both on the print).
 
 ## 3. Fits and printing
 PETG, the drive's rules (`cycloidal_drive.md` §6): the seats are the bearing OD + `seat_add` 0.15 (a printed hole
-comes out undersize — print a fit gauge first), the journals `journal_add` 0.3 interference. Tests
+comes out undersize — print the fit gauges first, `tools/export_gauges.py`), the journals `journal_add` 0.3
+interference. Tests
 (`tests/forearm/test_roll_drive.py`) hold the journal press fit at 0.9–1.0 × 99 mm³ per bearing, 0 in the seats,
 every other pair in the module below 1 mm³, the rotor `run_gap` off the frame, the two hubs face to face in the lip,
 and the frame's stub end ON the elbow pulley's face (`tests/test_mounts.py test_bearing_stacks` holds the elbow's 6806
