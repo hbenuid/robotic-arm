@@ -62,7 +62,7 @@ forearm_roll → forearm_link → wrist_pitch → wrist_pitch_link → wrist_rol
 last three are NOT concurrent (`forearm_roll`'s axis runs along the forearm through `WRIST_CENTRE` on the `wrist_pitch`
 axis, `docs/forearm_roll.md`; `wrist_roll`'s runs `WRIST_ROLL_OFFSET` across it, `docs/wrist_roll.md`) - an inverse
 kinematics must be numeric. The drives ARE joints: each one's stator stays in the parent link, its rotor moves with the child (`BODIES` in
-`assemblies/cycloidal_drive.py` / `forearm_roll_drive.py` / `wrist_roll_drive.py`; the URDF ledger, `docs/cycloidal_drive.md` §12). The belt
+`assemblies/cycloidal_drive.py` / `forearm_roll_drive.py` / `wrist_roll_drive.py`; the URDF ledger, `docs/cycloidal_drive.md` §10). The belt
 joints' motors are mounted occurrences (`lib/mounts.py`, `assemblies/AGENTS.md`); the drives' motors are module rows.
 
 | joint | type | parent → child | actuator | notes |
