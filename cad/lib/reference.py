@@ -49,26 +49,15 @@ CUSTOM: dict[str, tuple[str, str]] = {
     "gt2_pulley_90t":        ("GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric",
                               "step/GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric.STEP"),
     "wrist_link":            ("final component arm qwrist movement",     "step/final component arm qwrist movement.STEP"),
-    "gripper_cover":         ("Gripper Cover_Gripper Cover",             "step/Gripper Cover_Gripper Cover.STEP"),
-    "gripper_end":           ("Gripper End_Gripper End",                 "step/Gripper End_Gripper End.STEP"),
-    "gripper_finger_left":   ("Gripper Hand Left_Gripper Hand Left",     "step/Gripper Hand Left_Gripper Hand Left.STEP"),
-    "gripper_finger_right":  ("Gripper Hand Right_Gripper Hand Left",    "step/Gripper Hand Right_Gripper Hand Left.STEP"),  # mirror of Left; stale config name
-    "gripper_link_1":        ("Gripper link 1_Gripper link 1",           "step/Gripper link 1_Gripper link 1.STEP"),
-    "gripper_link_2":        ("Gripper link 2_Gripper link 2",           "step/Gripper link 2_Gripper link 2.STEP"),
-    "gripper_slider":        ("Gripper Mechanism Slider_Gripper Mechanism Slider",
-                              "step/Gripper Mechanism Slider_Gripper Mechanism Slider.STEP"),
     "gripper_j3_connector":  ("Gripper to J3 connector 7726_Gripper to J3 connector",
                               "step/Gripper to J3 connector 7726_Gripper to J3 connector.STEP"),
-    "servo_holder":          ("Servo Holder_Servo Holder",               "step/Servo Holder_Servo Holder.STEP"),
 }
 
 # Purchased (COTS) parts: clean name -> (product name, export path, or None when extracted
 # from the full assembly). Each gets parts/<group>/<name>.py (COTS = True) + vendor/<name>.step.
 COTS: dict[str, tuple[str, str | None]] = {
     "gt2_pulley_20t":   ("GT2_20T_Конфигурация1",                                    "step/GT2_20T_Конфигурация1.STEP"),
-    "gripper_rail_6mm": ("Gripper rail 6mm_Gripper rail 6mm",                        "step/Gripper rail 6mm_Gripper rail 6mm.STEP"),
     "mg996r_servo":     ("Servo Motor MG996R 3D Model_Servo Motor MG996R 3D Model",  "step/Servo Motor MG996R 3D Model_Servo Motor MG996R 3D Model.STEP"),
-    "mg996r_horn":      ("Servo MG996R Horn_Servo MG996R Horn",                      "step/Servo MG996R Horn_Servo MG996R Horn.STEP"),
     "nema17_pancake":   ("nema17_pancake", None),   # 7-part sub-assembly, flattened by tools/reference/extract_placements.py
     # The NEMA 17 x 40 + MKS SERVO42D kit export (MKS_EXPORT_NAME), split by tools/reference/split_mks_motor.py:
     "nema17_40mm":      ("nema17x40_with_mks: motor body + D-shaft (shaft trimmed to the drive motor's 22 mm)", None),
@@ -76,9 +65,7 @@ COTS: dict[str, tuple[str, str | None]] = {
 }
 
 # Sub-assemblies kept as modules under assemblies/: clean name -> product name.
-MODULES: dict[str, str] = {
-    "gripper": "Gripper Mechanism_Gripper Mechanism",
-}
+MODULES: dict[str, str] = {}   # none since 2026-11-07: the SolidWorks gripper went (SKIPPED_PRODUCTS)
 
 # Designed (parametric build123d) parts ported from the cycloidal_drive repo. Their reference
 # is NOT a SolidWorks export but the CadQuery builder's own STEP export at CYCLOIDAL_REV
@@ -146,6 +133,7 @@ NATIVE_PARTS: set[str] = set(NATIVE) | set(NATIVE_COTS)
 # reference checks never see them. clean name -> builder label.
 NO_REFERENCE: dict[str, str] = {
     "cycloidal_shell_ring": "parts/cycloidal/cycloidal_shell_ring.py:build(DEFAULT_CONFIG)",
+    "gripper_cage": "lib/gripper/body.py:build_cage(DEFAULT)",
     "gt2_pulley_120t": "lib/pulley/body.py:build_pulley(YAW)",
     "j1_motor_leg": "lib/yaw_coupler/body.py:build_motor_leg(DEFAULT)",
     "yaw_pulley_screws": "parts/base/yaw_pulley_screws.py:_envelope()",
@@ -193,6 +181,13 @@ NO_REFERENCE: dict[str, str] = {
 MEASURED: dict[str, tuple[str, str, str]] = {
     "gt2_pulley_20_60t": ("GT2 Pulley - 20 - 60 teeth", "GT2 Pulley - 20 - 60 teeth.STEP",
                           "55733855bdc50452499682bef5add391cdd0363c7bed4f4b5c5a44a83dbd0523"),
+    # PapaBravo's "Rack & Pinion Robotic Gripper Jaw" (Printables, CC BY 4.0): Fusion 360 exports, each a member of
+    # rack-pinion-robotic-gripper-jaw-model_files.zip (the member's name differs only for the pinion: 'SpurGear-14 teeth.step')
+    "gripper_base": ("Base", "Base.step", "79647804864c1e2b8a6878b3325086f74b1a7fcb349ea8f98b5c79d20e984bed"),
+    "gripper_rack": ("Rack", "Rack.step", "e16f934aecf412fba874e93d8f65aeaeb822736fdcd61b607be1c7e8979d73a3"),
+    "gripper_jaw": ("Jaw", "Jaw.step", "1034eae0e46b857ee372751fa27b5da8d29c844458b19e7682eac1d52589cafd"),
+    "gripper_pinion": ("Spur Gear (14 teeth) (1)", "Spur Gear (14 teeth) (1).step",
+                       "3a192054d9250bc5e3a5de2f71ebea606df6847b2ed671b821887b1fa5930828"),
 }
 
 # Sub-assemblies whose contents are code-driven (assemblies/<name>.py places its parts from a lib/ stack):
@@ -202,6 +197,7 @@ DESIGNED_MODULES: dict[str, str] = {
     "cycloidal_drive": "New cyloidal assembly",   # sic - the SolidWorks node is misspelled
     "forearm_roll_drive": "forearm roll drive (no SolidWorks node: lib/mounts.py MODULE_MOUNTS places it on j2_link#1)",
     "wrist_roll_drive": "wrist roll drive (no SolidWorks node: lib/mounts.py MODULE_MOUNTS places it on wrist_link#1)",
+    "gripper": "rack & pinion gripper (no SolidWorks node: lib/mounts.py MODULE_MOUNTS places it on wrist_link#1)",
 }
 
 # Full-assembly nodes deliberately not modelled here (whole subtree skipped; a top-level one lands in placements.json
@@ -214,6 +210,9 @@ SKIPPED_PRODUCTS: dict[str, str] = {
     "first joint cap 8726":     "j1_cap, the tray under j1_link - the link caps were removed 2026-09-25",
     "brack for hand cmap":      "gripper_clamp_bracket, the pancake's holder on wrist_link's end face - dropped 2026-10-14: "
                                 "the pancake sits on the wrist-pitch axis in the wrist roll drive's frame",
+    "Gripper Mechanism_Gripper Mechanism": "the SolidWorks gripper (an MG996R crank linkage on two 6 mm rails) - replaced "
+                                "2026-11-07 by the rack & pinion gripper (assemblies/gripper.py): its connector and its "
+                                "MG996R carry on in it",
 }
 
 PRODUCT_TO_PART: dict[str, str] = {

@@ -8,7 +8,7 @@ parent's frame) + build123d. It covers the two jobs this repo has: reading a ref
 converting or swapping it (every leaf: solids, faces, volume, bbox; `--planes` lists the planar faces to find
 its frame from) and proving that a regenerated STEP is the same geometry (`diff`, exit 1 when it is not). The
 refs printed are cad's (the CAD Viewer's): a leaf's occurrence path from the root, a label its siblings
-share numbered (`gripper/gripper_slider:1.2`), then `face N` (the face's ordinal in the part,
+share numbered (`gripper/gripper_rack:a.2`), then `face N` (the face's ordinal in the part,
 TopExp.MapShapes order) - `./cadtool cad step inspect <file.step> "<ref>"` says what one names and measures it.
 Distances, clearances and overlaps are not here: `cadgen.build123d.closest_points` / `overlap_volume` in a test.
 """

@@ -56,14 +56,14 @@ def test_retired_inspect_verbs_teach_the_new_syntax(capsys):
 
 @pytest.mark.slow
 def test_step_facts_agree_with_the_kernel():
-    path = path_of("gripper_link_1")
+    path = path_of("j3_coupler")
     report, expected = step_facts.facts(path), describe(path)
     totals = report["totals"]
     assert totals["solids"] == expected["solids"]
     assert totals["volume"] == pytest.approx(expected["solid_volume"], abs=1e-3)
     assert totals["bbox_min"] == pytest.approx(expected["bbox_min"], abs=1e-3)
     assert totals["bbox_size"] == pytest.approx(expected["bbox_size"], abs=1e-3)
-    assert [p["ref"] for p in step_facts.planes(path)], "a printed link has planar faces"
+    assert [p["ref"] for p in step_facts.planes(path)], "a printed coupler has planar faces"
     assert step_facts.diff(path, path) == []
 
 

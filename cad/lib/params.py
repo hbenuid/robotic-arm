@@ -47,9 +47,6 @@ from lib.bearings import (  # noqa: E402, F401
 )
 
 # --- Gripper hardware ---------------------------------------------------------
-RAIL_DIA = 6.0          # [REFERENCE] round linear rail (parts/gripper/gripper_rail_6mm), used x2
-RAIL_LEN = 125.0        # [REFERENCE] reference geometry length
-
 # MG996R standard servo (parts/gripper/mg996r_servo). [DATASHEET] TowerPro MG996R; verify on the unit in hand.
 MG996R_BODY_L = 40.7            # [DATASHEET] body length (along the mounting tabs)
 MG996R_BODY_W = 19.7            # [DATASHEET] body width
@@ -168,6 +165,7 @@ FOREARM_ROLL_BLOCK_X = _FOREARM.drive.block_x       # (-30, 30) [DESIGN] the rol
 # The wrist roll (lib/wrist/params.py WristRollParams; assemblies/wrist_roll_drive.py, docs/wrist_roll.md): the pancake ON
 # the wrist-pitch axis, on wrist_link's plate, belted to the roll axis beside it - the forearm roll's pattern
 from lib.wrist.params import DEFAULT as _WRIST  # noqa: E402
+from lib.gripper.params import DEFAULT as _GRIPPER  # noqa: E402
 
 WRIST_ROLL_BELT_LENGTH = _WRIST.roll.belt           # 158-2GT [DESIGN] the wrist roll belt (the 20T on the pancake, the 40T band on the pulley)
 WRIST_ROLL_RATIO = _WRIST.roll.ring_teeth / GT2_PULLEY_20T_TEETH   # 2:1 [DESIGN] motor turns per output turn
@@ -341,9 +339,9 @@ ELBOW_PITCH_LIMITS_DEG = (-47.0, 144.0)   # [DESIGN]
 # at 0); within the elbow's range a planner keeps it clear there (docs/open_issues.md)
 ELBOW_GRIPPER_FREE_DEG = 92.0   # [DESIGN]
 # the GT2 belt at wrist_link: (lower, upper) - the gripper's side of the pitch axis (WristRollParams.side: the outer)
-# puts the long range bending the gripper down. The lower: past it the gripper, bent back toward the elbow, reaches the
-# forearm roll's frame (1.78 mm at -160, at roll 0) and, the elbow at 0, the upper arm (touching by -158); 3 mm or more
-# off both at -150 at any forearm and gripper roll. The upper: the wrist roll drive's frame (its tower, beside the
+# puts the long range bending the gripper down. The lower: not the gripper's any more - the rack & pinion gripper keeps
+# 24.2 mm off the forearm and over 50 off the upper arm (the elbow at 0) here, 15.0 / 16.4 at -170 (the forearm roll at
+# 0, at any gripper roll); nothing is swept past it. The upper: the wrist roll drive's frame (its tower, beside the
 # pancake) meets the wrist-pitch motor on the forearm - 1.09 mm at +40, 3 mm or more at +38 (tests/test_sweeps.py;
 # docs/open_issues.md)
 WRIST_PITCH_LIMITS_DEG = (-150.0, 38.0)   # [DESIGN]
@@ -355,11 +353,12 @@ FOREARM_ROLL_LIMIT_DEG = 166.0    # [DESIGN]
 # wrist_link's bay at +/- 168.66 (lib/wrist/params.py stop_deg_width; tests/test_sweeps.py holds it between the limit
 # and 180 - stop_deg_width), which keeps the gripper servo's cable through the rotor from winding
 WRIST_ROLL_LIMIT_DEG = 166.0      # [DESIGN] the pancake through 2 : 1 (not CAN-driven yet)
-JAW_TRAVEL_MM = 10.0            # [ESTIMATE] symmetric +/- jaw travel about the capture pose - which is open already: it
-#                                 does not fit the gripper (docs/open_issues.md)
+JAW_TRAVEL_MM = _GRIPPER.layout.travel_x   # [DESIGN] 10.5: each jaw's +/- travel from zero (the racks centred, the jaws
+#                                 23 apart) - the racks' posts stop at the slots' ends at 10.84 opening, 10.86 closing
+#                                 (lib/gripper/params.py LayoutParams)
 ARM_JOINT_EFFORT_NM = 5.0       # [ESTIMATE] MKS SERVO42D through the reductions
 ARM_JOINT_VELOCITY_RAD_S = 1.0  # [ESTIMATE]
 WRIST_EFFORT_NM = 1.0           # [ESTIMATE] the wrist roll: the pancake through WRIST_ROLL_RATIO
 WRIST_VELOCITY_RAD_S = 2.0      # [ESTIMATE]
-JAW_EFFORT_N = 20.0             # [ESTIMATE] MG996R through the crank linkage
+JAW_EFFORT_N = 20.0             # [ESTIMATE] MG996R through the pinion (its stall torque would give some 60 N a jaw)
 JAW_VELOCITY_M_S = 0.05         # [ESTIMATE]

@@ -122,7 +122,7 @@ The rotor, the forearm wall back (`stack_positions`):
 | `z_shaft_end` 1.75 … 10.6 | the shaft's Ø40 flange: the rotor clamp's 4 nuts 2.75…5.15 (pockets open to its rear face and the bore, `clamp_nut_pocket`), the **stop lug** at +X (`stop_lug_r`, `stop_lug_t` from the rear face; where it meets the post: §0 range) | the clamp's tips (`clamp_screw_len` from `z_clamp_head`) |
 
 Ratio 90 / 20 = 4.5 (`FOREARM_ROLL_RATIO`) → ≈ 1.1–1.8 N·m at the roll from the 40 mm kit motor, against a worst-case
-static load of ≈ 0.7 N·m (forearm horizontal and rolled to hold the wrist's longest lever level: ≈ 0.78 kg wrist +
+static load of ≈ 0.5 N·m (forearm horizontal and rolled to hold the wrist's longest lever level: ≈ 0.67 kg wrist +
 gripper - `wrist_pitch_link`, `wrist_roll_link` and the jaws in `robot/arm.urdf` - + 0.2 kg payload at `tool0`). The
 shoulder (`cycloidal_drive.md` §7) carries the drive too (its masses: `elbow_link`'s and `forearm_link`'s `<inertial>`
 blocks in `robot/arm.urdf`). The elbow's torque path is the elbow 90T → 4× M4 into captive nuts → the frame → the

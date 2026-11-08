@@ -44,19 +44,9 @@ counts them from the assembly tables.
 | `j3_coupler` | custom | `Joint 2 coupler 62226_J3 Coupler` | `step/Joint 2 coupler 62226_J3 Coupler.STEP` | mm | 1 | 78 × 22 × 78 |
 | `gt2_pulley_90t` | custom | `GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric` | `step/GT2 Pulley - 90 teeth - J1 - 62226_GT2 Pulley - Parametric.STEP` | mm | 1 | 59.188 × 21.4 × 59.188 |
 | `wrist_link` | custom | `final component arm qwrist movement` | `step/final component arm qwrist movement.STEP` | mm | 1 | 124.446 × 78 × 44 |
-| `gripper_cover` | custom | `Gripper Cover_Gripper Cover` | `step/Gripper Cover_Gripper Cover.STEP` | mm | 1 | 44 × 10.5 × 70 |
-| `gripper_end` | custom | `Gripper End_Gripper End` | `step/Gripper End_Gripper End.STEP` | mm | 1 | 27.123 × 30 × 25.123 |
-| `gripper_finger_left` | custom | `Gripper Hand Left_Gripper Hand Left` | `step/Gripper Hand Left_Gripper Hand Left.STEP` | mm | 1 | 26 × 4 × 105 |
-| `gripper_finger_right` | custom | `Gripper Hand Right_Gripper Hand Left` | `step/Gripper Hand Right_Gripper Hand Left.STEP` | mm | 1 | 26 × 4 × 105 |
-| `gripper_link_1` | custom | `Gripper link 1_Gripper link 1` | `step/Gripper link 1_Gripper link 1.STEP` | mm | 1 | 34.2 × 3.5 × 7.2 |
-| `gripper_link_2` | custom | `Gripper link 2_Gripper link 2` | `step/Gripper link 2_Gripper link 2.STEP` | mm | 1 | 34.2 × 5 × 7.2 |
-| `gripper_slider` | custom | `Gripper Mechanism Slider_Gripper Mechanism Slider` | `step/Gripper Mechanism Slider_Gripper Mechanism Slider.STEP` | mm | 1 | 18 × 26 × 60 |
 | `gripper_j3_connector` | custom | `Gripper to J3 connector 7726_Gripper to J3 connector` | `step/Gripper to J3 connector 7726_Gripper to J3 connector.STEP` | mm | 2 | 23 × 12.5 × 46 |
-| `servo_holder` | custom | `Servo Holder_Servo Holder` | `step/Servo Holder_Servo Holder.STEP` | mm | 1 | 44 × 15 × 72.5 |
 | `gt2_pulley_20t` | COTS | `GT2_20T_Конфигурация1` | `step/GT2_20T_Конфигурация1.STEP` | mm | 3 | 14.45 × 16 × 16 |
-| `gripper_rail_6mm` | COTS | `Gripper rail 6mm_Gripper rail 6mm` | `step/Gripper rail 6mm_Gripper rail 6mm.STEP` | mm | 1 | 6 × 125 × 6 |
 | `mg996r_servo` | COTS | `Servo Motor MG996R 3D Model_Servo Motor MG996R 3D Model` | `step/Servo Motor MG996R 3D Model_Servo Motor MG996R 3D Model.STEP` | mm | 4 | 55.8 × 45.2 × 20.5 |
-| `mg996r_horn` | COTS | `Servo MG996R Horn_Servo MG996R Horn` | `step/Servo MG996R Horn_Servo MG996R Horn.STEP` | mm | 1 | 32 × 2.5 × 12 |
 | `nema17_pancake` | COTS | `nema17_pancake` | `(extracted from the full assembly)` | mm | 11 | 41.5 × 47 × 43 |
 | `nema17_40mm` | COTS | `nema17x40_with_mks` (body + shaft) | `(split from mks/nema17x40_with_mks.step)` | mm | 2 | 42 × 49 × 62.4 |
 | `mks_servo42d` | COTS | `nema17x40_with_mks` (Servo42D_Assem + standoffs + M3x30) | `(split from mks/nema17x40_with_mks.step)` | mm | 13 | 43 × 43 × 33.7 |
@@ -84,11 +74,11 @@ Cycloidal drive (`cycloidal/<name>.step`: the named CadQuery builder's export at
 | `cycloidal_housing_nuts` | COTS | `src/purchased_parts.py:build_housing_nuts()` | mm | 8 | 133.083 × 133.083 × 3.2 |
 
 Notes:
-- `gripper_finger_right` is the mirror configuration of `gripper_finger_left`; its SolidWorks
-  export is still named `…_Gripper Hand Left` (stale configuration name, geometry is correct).
 - The link caps `j1_cap` (`first joint cap 8726`, inch), `j2_cap_1` (`cap 1 joint 2 8726`), `j2_cap_2`
-  (`cap of joint 2 piece 2 8526`) and `gripper_clamp_bracket` (`brack for hand cmap`, the pancake's holder on
-  `wrist_link`) are dropped from the design: they have no reference STEP or manifest entry, their products are
+  (`cap of joint 2 piece 2 8526`), `gripper_clamp_bracket` (`brack for hand cmap`, the pancake's holder on
+  `wrist_link`) and the SolidWorks gripper (`Gripper Mechanism`, whole: its cover, servo holder, crank links, rails,
+  sliders, fingers, ends and the MG996R's horn; the rack & pinion gripper, `assemblies/gripper.py`, took its place and
+  keeps its connector and its MG996R) are dropped from the design: they have no reference STEP or manifest entry, their products are
   `lib/reference.py SKIPPED_PRODUCTS` and `placements.json` keeps their poses under `skipped`. (The caps were modelled
   in assembly context, their geometry up to ~1 m from the part origin.)
 - `gt2_pulley_20t`'s product name carries the Cyrillic configuration name `Конфигурация1`
@@ -121,7 +111,8 @@ does - those are listed under `mounted[]` too); `mounted[]` (the keys of the rec
 `label_in_monolith` null, `rel == world = host world * mount.frame_in_host`, `mount.host` the record it is declared
 on - a SolidWorks one (a retired one for a re-seated pulley) or another mounted one: a board's motor, a bolt set's
 pulley, a nut set's screws); `skipped[]` (one record per SolidWorks node whose product the design dropped,
-`lib/reference.py SKIPPED_PRODUCTS` - the link caps and `gripper_clamp_bracket`: `path`, `label`, `reason`, leaves /
+`lib/reference.py SKIPPED_PRODUCTS` - the link caps, `gripper_clamp_bracket` and the SolidWorks gripper (a module: its
+parts its leaves): `path`, `label`, `reason`, leaves /
 solids / volume and the `rel` / `world` pose, moved there by `tools/reference/mount_placements.py`).
 The capture records stay as extracted when the design moves or turns what lies beyond a link (e.g. its length, a
 module in between): `lib/placements.py SHIFTS` / `TURNS` move the records beyond it when they are read

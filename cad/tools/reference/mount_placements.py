@@ -121,16 +121,27 @@ def mounted_records(records: list[dict]) -> list[dict]:
     return out
 
 
-def skipped_entry(o: dict) -> dict:
-    """A part record whose product is in lib/reference.py SKIPPED_PRODUCTS, as the `skipped` entry
-    tools/reference/extract_placements.py writes for that node (a part record is one leaf)."""
-    if o["kind"] != "part":
-        raise SystemExit(f"{o['key']}: only a part record can move to `skipped` here - re-run extract_placements.py")
+def skipped_entry(o: dict, leaves: int = 1) -> dict:
+    """A record whose product is in lib/reference.py SKIPPED_PRODUCTS, as the `skipped` entry
+    tools/reference/extract_placements.py writes for that node: a part record is one leaf; a SolidWorks module record
+    (the gripper#1 sub-assembly) is its `leaves` part records - its own solids / volume / bbox are theirs already."""
+    if o["kind"] == "module" and o.get("designed"):
+        raise SystemExit(f"{o['key']}: a designed module is not a SolidWorks node - nothing to skip")
     return {
         "path": o["path"], "label": o["label_in_monolith"], "reason": R.SKIPPED_LABELS[o["label_in_monolith"]],
-        "leaves": 1, "solids": o["solids"], "solid_volume": o["solid_volume"], "rel": o["rel"], "world": o["world"],
+        "leaves": leaves, "solids": o["solids"], "solid_volume": o["solid_volume"], "rel": o["rel"], "world": o["world"],
         "world_bbox_min": o["world_bbox_min"], "world_bbox_size": o["world_bbox_size"],
     }
+
+
+def _under(o: dict, keys: set[str], by_key: dict[str, dict]) -> bool:
+    """Whether a record lies inside one of the module records `keys` (its parent chain reaches one)."""
+    parent = o.get("parent")
+    while parent is not None:
+        if parent in keys:
+            return True
+        parent = by_key[parent].get("parent")
+    return False
 
 
 def expected_totals(records: list[dict]) -> dict:
@@ -173,8 +184,12 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
     data = json.loads(args.out.read_text(encoding="utf-8"))
     solidworks = [o for o in data["occurrences"] if "mount" not in o]
-    kept = [o for o in solidworks if o["label_in_monolith"] not in R.SKIPPED_LABELS]
-    dropped = [skipped_entry(o) for o in solidworks if o["label_in_monolith"] in R.SKIPPED_LABELS]
+    by_key = {o["key"]: o for o in solidworks}
+    skip = {o["key"] for o in solidworks if o["label_in_monolith"] in R.SKIPPED_LABELS}
+    # a skipped module goes whole: its part records with it, counted as its leaves
+    kept = [o for o in solidworks if o["key"] not in skip and not _under(o, skip, by_key)]
+    dropped = [skipped_entry(by_key[k], sum(1 for c in solidworks if c["kind"] == "part" and _under(c, {k}, by_key)) or 1)
+               for k in sorted(skip)]
     known = [{**s, "reason": R.SKIPPED_LABELS.get(s["label"], s["reason"])} for s in data["skipped"]]   # reasons as lib/reference.py words them
     data["skipped"] = sorted(known + dropped, key=lambda s: tuple(int(i) for i in s["path"].split(".")))
     mounted = mounted_records(kept)

@@ -97,9 +97,10 @@ class LinkShift:
     normal_z: float = 0.0
 
 
-_BEYOND_WRIST_ROLL = ("nema17_pancake#1", "gt2_pulley_20t#1", "gripper#1")
-# The gripper's connector, its plate's hub-side face (y plate_t) along wrist_link#1's +X in the capture: the station the
-# wrist roll drive's LinkShift moves the gripper from (tests/test_placements.py checks it against the records)
+_BEYOND_WRIST_ROLL = ("nema17_pancake#1", "gt2_pulley_20t#1")   # the gripper (gripper#1) is a mounted module now
+# The SolidWorks gripper's connector, its plate's hub-side face (y plate_t) along wrist_link#1's +X in the capture: the
+# station the wrist roll drive's LinkShift moved that gripper from - and still moves the retired records beyond the wrist
+# roll from (gt2_pulley_20t#1: robot/frames.py's wrist roll origin)
 _CONNECTOR_CAPTURE_X = 79.65   # [REFERENCE] the connector's origin (its plate's servo-side face) at 84.15, less the 4.5 plate
 _BEYOND_WRIST_PITCH = ("gt2_pulley_90t#2", "j3_coupler#2", "wrist_link#1") + _BEYOND_WRIST_ROLL
 _BEYOND_ELBOW = ("j2_link#1", "j3_coupler#1", "gt2_pulley_90t#1") + _BEYOND_WRIST_PITCH

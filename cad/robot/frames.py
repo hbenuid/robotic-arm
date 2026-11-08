@@ -47,14 +47,16 @@ from lib.datum import (  # noqa: F401  (the datum frames live below assemblies/)
     U,
     base_frame,
     frame,
+    rotation,
 )
+from lib.gripper.layout import jaw_origin, tool0
+from lib.wrist.layout import gripper_frame_in_host
 
 ROBOT_NAME = "arm"
 
 # --- unit vectors of the capture pose (W frame); U (world up) and BASE_FORWARD are lib/datum.py's ---
 N = (0.064439, 0.0, 0.997922)                # the three pitch axes (parallel): 90T pulley / J3-coupler bore direction; the cycloidal drive's +Z is -N
 F = (-0.865419, 0.497923, 0.055880)          # wrist-roll axis: NEMA17 pancake shaft / 20T pulley bore (toward the tool)
-PJ = (0.499699, 0.865884, 0.023354)          # jaw travel: the two Ø6 gripper rails (slider#1 -> slider#2)
 
 BASE_YAW_ORIGIN = (0.0, 85.010435, 0.0)      # [REFERENCE] on the base_yaw axis at the cycloidal drive's axis height (its node's Y)
 # The origins beyond a link move with it: the capture point [REFERENCE] + the SHIFTS of the record it sits on, then its
@@ -66,18 +68,40 @@ ELBOW_ORIGIN = P.shifted("j3_coupler#1", _J2_CAPTURE_ORIGIN)   # the retired j3_
 #                                                        ELBOW_ROLL_OFFSET across from it)
 _WRIST_PITCH_CAPTURE_ORIGIN = (-283.37, 393.63, 35.33)   # [REFERENCE] the retired j3_coupler#2's capture origin (on the wrist_pitch axis)
 WRIST_PITCH_ORIGIN = P.shifted("j3_coupler#2", _WRIST_PITCH_CAPTURE_ORIGIN)
-# the wrist roll: the SolidWorks 20T's origin on the pancake's shaft axis (the capture's roll axis), moved with the gripper
-# onto the wrist roll drive's axis R' - the gripper's shift (lib/placements.py SHIFTS) carries the capture's roll axis
-# onto R', WRIST_ROLL_OFFSET across the pitch axis and WRIST_ROLL_AXIS_H over the plate (a wrist offset)
-WRIST_ROLL_ORIGIN = P.shifted("gripper#1", (-379.355, 448.22, 24.495))   # [REFERENCE] gt2_pulley_20t#1's capture origin
-JAW_A_ORIGIN = P.shifted("gripper#1", (-453.626, 429.287, 26.317))   # gripper_slider#1 world bbox centre
-JAW_B_ORIGIN = P.shifted("gripper#1", (-400.194, 521.876, 28.815))   # gripper_slider#2 world bbox centre
-TOOL0_ORIGIN = P.shifted("gripper#1", (-480.567, 506.452, 31.03))    # midpoint between the two finger ends
-# ... and so do the directions beyond the forearm roll: the wrist_pitch axis (the capture's N turned: -N), the wrist roll
-# axis and the jaw travel
+# the wrist roll: the SolidWorks 20T's origin on the pancake's shaft axis (the capture's roll axis), moved with the
+# retired record onto the wrist roll drive's axis R' - the drive's shift (lib/placements.py SHIFTS) carries the capture's
+# roll axis onto R', WRIST_ROLL_OFFSET across the pitch axis and WRIST_ROLL_AXIS_H over the plate (a wrist offset)
+WRIST_ROLL_ORIGIN = P.shifted("gt2_pulley_20t#1", (-379.355, 448.22, 24.495))   # [REFERENCE] gt2_pulley_20t#1's capture origin
+# ... and so do the directions beyond the forearm roll: the wrist_pitch axis (the capture's N turned: -N), the wrist roll axis
 WRIST_PITCH_AXIS = P.turned("j3_coupler#2", N)
-WRIST_ROLL_AXIS = P.turned("gripper#1", F)
-JAW_TRAVEL = P.turned("gripper#1", PJ)
+WRIST_ROLL_AXIS = P.turned("gt2_pulley_20t#1", F)
+
+
+# The gripper (assemblies/gripper.py, mounted on wrist_link#1 - lib/mounts.py "gripper#1"): its module frame in
+# wrist_link's part frame, carried into W by wrist_link#1's capture pose and its SHIFTS / TURNS - the pose
+# tools/reference/mount_placements.py gives the module's record, here without reading it (that tool checks the module's
+# axis against these joints before the record exists).
+_WRIST_LINK = P.OCCURRENCES["wrist_link#1"]["world"]["matrix_3x4"]
+_GRIPPER_POS, _GRIPPER_ROT = gripper_frame_in_host()
+
+
+def _gripper_point(p_m):
+    """A point of the gripper's module frame in W (the capture pose, the design's shifts and turns)."""
+    r = rotation(_GRIPPER_ROT)
+    q = [_GRIPPER_POS[i] + sum(r[i][k] * p_m[k] for k in range(3)) for i in range(3)]
+    return P.shifted("wrist_link#1", tuple(sum(_WRIST_LINK[i][k] * q[k] for k in range(3)) + _WRIST_LINK[i][3] for i in range(3)))
+
+
+def _gripper_dir(v_m):
+    """A direction of the gripper's module frame in W."""
+    r = rotation(_GRIPPER_ROT)
+    q = [sum(r[i][k] * v_m[k] for k in range(3)) for i in range(3)]
+    return P.turned("wrist_link#1", tuple(sum(_WRIST_LINK[i][k] * q[k] for k in range(3)) for i in range(3)))
+
+
+JAW_TRAVEL = _gripper_dir((0.0, 1.0, 0.0))                 # jaw a -> jaw b: the module's +Y (jaw a opens along -JAW_TRAVEL)
+JAW_A_ORIGIN = JAW_B_ORIGIN = _gripper_point(jaw_origin())   # both on R', level with the racks' bars (lib/gripper/layout.py)
+TOOL0_ORIGIN = _gripper_point(tool0())                      # the fingertips' midpoint, on R'
 # The link directions (only their direction is used - lib/datum.py frame() projects them; the SHIFTS are parallel):
 SHOULDER_TO_ELBOW_INPLANE = (-141.353693, 155.039565, 9.127651)   # [REFERENCE] upper_arm_link long direction: the capture's
 #                                                                   ELBOW_ORIGIN - SHOULDER_ORIGIN minus its 10.0 mm component along N
@@ -148,14 +172,11 @@ LINKS: dict[str, list[str]] = {
     "wrist_pitch_link": ["wrist_link#1", "gt2_pulley_90t#4", "wrist_pulley_screws#1", "wrist_pulley_nuts#1",
                          "wrist_roll_drive#1:stator"],
     # the drive's ROTOR - the pulley (its 40T band, the roll's output, the gripper's connector bolted to its face) and the
-    # shaft clamped to it - carries the gripper base; the servo crank linkage is merged in  [ASSUMPTION]
-    "wrist_roll_link": [
-        "wrist_roll_drive#1:rotor", "gripper_j3_connector#1", "servo_holder#1", "mg996r_servo#1", "mg996r_horn#1",
-        "gripper_cover#1", "gripper_rail_6mm#1", "gripper_rail_6mm#2",
-        "gripper_link_1#1", "gripper_link_2#1", "gripper_link_1#2", "gripper_link_2#2",
-    ],
-    "jaw_a_link": ["gripper_slider#1", "gripper_finger_left#1", "gripper_finger_left#2", "gripper_end#1"],
-    "jaw_b_link": ["gripper_slider#2", "gripper_finger_right#1", "gripper_finger_right#2", "gripper_end#2"],
+    # shaft clamped to it - carries the gripper's base body: the connector, the cage, the MG996R, the base, the pinion
+    # (it turns, driving the jaws: merged in  [ASSUMPTION]) - assemblies/gripper.py BODIES
+    "wrist_roll_link": ["wrist_roll_drive#1:rotor", "gripper#1:base"],
+    "jaw_a_link": ["gripper#1:jaw_a"],   # rack a and jaw a
+    "jaw_b_link": ["gripper#1:jaw_b"],   # rack b and jaw b
     "tool0": [],   # frame-only link at the fingertip midpoint
 }
 
@@ -216,7 +237,7 @@ JOINTS: list[Joint] = [
                 "boards: unconfirmed]; the printed hard stop 2 deg past +/- WRIST_ROLL_LIMIT_DEG"),
     Joint("jaw_a", "prismatic", "wrist_roll_link", "jaw_a_link", JAW_A_ORIGIN, tuple(-v for v in JAW_TRAVEL), WRIST_ROLL_AXIS,
           -PARAMS.JAW_TRAVEL_MM * 1e-3, PARAMS.JAW_TRAVEL_MM * 1e-3, PARAMS.JAW_EFFORT_N, PARAMS.JAW_VELOCITY_M_S,
-          notes="positive = opening (jaw A moves away from jaw B); MG996R crank"),
+          notes="positive = opening (jaw A moves away from jaw B); the MG996R's pinion drives both racks"),
     Joint("jaw_b", "prismatic", "wrist_roll_link", "jaw_b_link", JAW_B_ORIGIN, tuple(-v for v in JAW_TRAVEL), WRIST_ROLL_AXIS,
           -PARAMS.JAW_TRAVEL_MM * 1e-3, PARAMS.JAW_TRAVEL_MM * 1e-3, PARAMS.JAW_EFFORT_N, PARAMS.JAW_VELOCITY_M_S,
           mimic=("jaw_a", -1.0, 0.0), notes="mirrors jaw_a"),
