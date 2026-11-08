@@ -63,12 +63,12 @@ Custom parts declare `REFERENCE = NAME` (`None` for a *measured* or a printed *n
   `tests/pulley/test_gt2_pulley_120t.py`; the base_yaw pulley bolts: `tests/base/test_yaw_pulley_bolts.py`). A new
   one: its builder, its `NO_REFERENCE` row, its test, then Recipe C. `tests/test_parts_convention.py` checks the state;
   a vendor model for a purchased one makes it an ordinary COTS part (Recipe A / D).
-- *measured* (`CONVERTED = True`, `REFERENCE = None`, registered in `lib/reference.py MEASURED`): converted from a
-  SolidWorks export that is measured once and NOT committed (`gt2_pulley_20_60t`). No reference file, no manifest
-  entry, so neither the import tools nor `tests/test_reference_match.py` see it; `MEASURED` records the export (its
-  product, file and sha256) and the part's own tests hold the numbers measured on it (arc centres, surfaces, volume,
-  bbox, feature probes: the measured values written into the test, `tests/pulley/test_gt2_pulley_20_60t.py`), its
-  params tagged `[REFERENCE]`.
+- *measured* (`CONVERTED = True`, `REFERENCE = None`, registered in `lib/reference.py MEASURED`): converted from an
+  export that is measured once and NOT committed (the gripper's `gripper_base`, `gripper_rack`, `gripper_jaw`,
+  `gripper_pinion`). No reference file, no manifest entry, so neither the import tools nor
+  `tests/test_reference_match.py` see it; `MEASURED` records the export (its product, file and sha256) and the part's
+  own tests hold the numbers measured on it (volume, bbox, feature probes: the measured values written into the test,
+  `tests/gripper/test_measured_parts.py`), its params tagged `[REFERENCE]`.
   `tests/test_parts_convention.py` checks the state.
 - *diverged conversion*: a converted CUSTOM part whose DEFAULT build deliberately leaves its SolidWorks
   reference (e.g. `j2_link`, whose elbow end gave way to the roll joint; `gt2_pulley_90t`, its bolt holes opened to

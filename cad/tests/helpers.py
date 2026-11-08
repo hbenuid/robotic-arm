@@ -1,4 +1,4 @@
-"""Geometry helpers shared by the geometry tests (tests/cycloidal/, tests/forearm/, tests/upper_arm/, tests/base/, tests/coupler/,
+"""Geometry helpers shared by the geometry tests (tests/cycloidal/, tests/forearm/, tests/upper_arm/, tests/base/,
 tests/test_mounts.py), and the standalone modules' colour check (tests/test_assembly.py, the drives' own tests). The
 drive's own config helpers stay in tests/cycloidal/helpers.py.
 

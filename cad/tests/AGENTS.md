@@ -79,8 +79,7 @@ the plate and its pad, the heads flush in place; `yaw_idler`: the base_yaw belt'
 takes, the belt frame's points in the base's, its stations, its axle's, nut's and spacer's numbers (no reference), its
 seat on the mount, the kit's fit; `yaw_pulley_screws` / `yaw_pulley_nuts`, purchased parts with no reference: the
 numbers no reference file holds for them - pieces, volume, bbox - and feature probes; the `j1_coupler` fork's screws and
-nuts - `fork_{hub,foot,sleeve}_{screws,nuts}`, `test_fork_bolts` - likewise), `tests/coupler/` (`j3_coupler`: the
-LEGACY build's feature probes, the stub the roll drive's block repeats), `tests/yaw_coupler/` (`j1_coupler`: the LEGACY
+nuts - `fork_{hub,foot,sleeve}_{screws,nuts}`, `test_fork_bolts` - likewise), `tests/yaw_coupler/` (`j1_coupler`: the LEGACY
 build's feature probes, the yoke on the port's housing - its bore, od, pillars, bolt circle; DEFAULT's fork on the
 drive's own axis - two legs past the shell's ends, the disc's draft up them, the hub on one, the other its own part round the motor sleeve and bolted to it, the lowered ring - and the motor leg's numbers), `tests/wrist/` (`wrist_link`: the LEGACY build's feature probes, the seat on the
 coupler's flange, the end face on the NEMA 17 pattern, DEFAULT the wrist roll drive's frame on its plate and the wrist_pitch flange (the post) on it; the wrist roll
@@ -90,8 +89,6 @@ and its magnet pairs (no reference) - their numbers, the panel flush and flat on
 turning shaft, its rim and notches, the frame's step and pockets, the magnets on their pockets' bottoms, clear of the
 drive; `gripper_j3_connector`: LEGACY's two bodies, DEFAULT's bolted hub), `tests/gripper/` (the gripper's measured parts against their exports' numbers; the module: its layout, its fits, the jaws in mesh over their travel, the cage on the connector), `tests/pulley/` (`gt2_pulley_90t`: the GT2 groove's tangency
 solve against the export's arcs, the LEGACY build's feature probes and surfaces, DEFAULT's opened holes;
-`gt2_pulley_20_60t`, a measured conversion: its export's numbers written into the test - both bands' arc centres, the
-surfaces, volume, bbox - and feature probes;
 `gt2_pulley_120t`, a part with no reference: its volume and bbox written in, the 90T's hub and holes, 120
 grooves; `helpers.py`: probe points about the axis, the surface census),
 `tests/forearm/` (the forearm: the LEGACY

@@ -103,7 +103,7 @@ def test_keys_unique_and_parts_known():
     assert len(keys) == len(set(keys))
     for o in P.DATA["occurrences"]:
         assert o["part"] in (set(R.CUSTOM) | set(R.COTS) | set(R.NO_REFERENCE) | set(R.NATIVE) | set(R.MEASURED) | set(R.MODULES)
-                             | set(R.DESIGNED_MODULES)), o["key"]
+                             | set(R.DESIGNED_MODULES) | set(R.RETIRED_PRODUCTS)), o["key"]
         assert o["key"] == f"{o['part']}#{o['key'].rsplit('#', 1)[1]}"
         if o["parent"] is not None:
             assert o["parent"] in P.OCCURRENCES and P.OCCURRENCES[o["parent"]]["kind"] == "module"
