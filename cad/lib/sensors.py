@@ -50,10 +50,8 @@ KY003_MASS_G = 2.0              # [ESTIMATE] PCB + chip + header; weigh one
 A3144_OPERATE_MT = (7.0, 35.0)  # [DATASHEET] the A3144's operate point - the field at its branded face that switches it
 #                                 on - across parts at 25 C (70 .. 350 G); it releases a little lower
 NDFEB_N52_BR_T = 1.43           # [DATASHEET] N52 remanence (1.42 .. 1.47 T)
-HOME_MAGNET_DIA = 6.0           # [DESIGN] the base_yaw home magnet: a Ø6 x 3 N52 disc glued into a pocket in the 120T's
-HOME_MAGNET_T = 3.0             # [DESIGN] outer face (lib/pulley/params.py YAW; parts/base/yaw_home_magnet)
-MAGNET_POCKET_CLEAR = 0.1       # [DESIGN] a magnet's pocket: this much over its diameter each side and past its thickness
-#                                 (the glue), its face flush with the face the pocket opens in
+HOME_MAGNET_DIA = 6.0           # [DESIGN] the base_yaw home magnet: a Ø6 x 3 N52 disc glued onto the 120T's outer face
+HOME_MAGNET_T = 3.0             # [DESIGN] (lib/pulley/params.py YAW_MAGNET_*; parts/base/yaw_home_magnet)
 
 
 def disc_magnet_bz(dia: float, t: float, rho: float, gap: float, br: float = NDFEB_N52_BR_T, n: int = 48) -> float:

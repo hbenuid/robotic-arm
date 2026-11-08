@@ -3,11 +3,8 @@
 Every feature runs along the part's Y (the axis), so the body is built in a working frame whose +Z is the part's +Y -
 part (x, y, z) = working (x, -z, y) - and turned into the part frame once at the end (Rot(-90, 0, 0)). The web and the
 toothed rim (lib/pulley/teeth.py, an annulus round the web) come first, then the step, the hub and its ring, then the
-bore, the bolt holes and their counterbores, the magnet's pocket (cfg.magnet) - every boolean after the rim stays inside
-it, clear of its grooves."""
+bore, the bolt holes and their counterbores - every boolean after the rim stays near the axis, far from its grooves."""
 from __future__ import annotations
-
-import math
 
 import build123d as bd
 
@@ -41,8 +38,4 @@ def build_pulley(cfg: PulleyParams = DEFAULT):
         body = body - _disc(cfg.hole_dia / 2.0, cfg.end_y - NUDGE, cfg.face_y + NUDGE, x, z)
         if cb_depth > 0.0:
             body = body - _disc(cb_dia / 2.0, cfg.face_y - cb_depth, cfg.face_y + NUDGE, x, z)
-    if cfg.magnet is not None:
-        r, deg, dia, depth = cfg.magnet
-        x, z = r * math.cos(math.radians(deg)), r * math.sin(math.radians(deg))
-        body = body - _disc(dia / 2.0, cfg.face_y - depth, cfg.face_y + NUDGE, x, z)
     return single_solid(bd.Rot(-90.0, 0.0, 0.0) * body)

@@ -75,9 +75,9 @@
 <robot name="arm">
   <link name="base_link">
     <inertial>
-      <origin xyz="-0.062851 0.000236 0.044244" rpy="0 0 0" />
-      <mass value="1.497204" />
-      <inertia ixx="4.382651e-03" ixy="-1.258496e-05" ixz="-7.509116e-04" iyy="9.159119e-03" iyz="-6.603065e-06" izz="1.055949e-02" />
+      <origin xyz="-0.062906 0.000225 0.044225" rpy="0 0 0" />
+      <mass value="1.496235" />
+      <inertia ixx="4.381811e-03" ixy="-1.088318e-05" ixz="-7.485110e-04" iyy="9.151671e-03" iyz="-6.126688e-06" izz="1.055284e-02" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -94,9 +94,9 @@
   </link>
   <link name="shoulder_link">
     <inertial>
-      <origin xyz="0.000164 0.012711 -0.022332" rpy="0 0 0" />
-      <mass value="1.496351" />
-      <inertia ixx="4.173112e-03" ixy="-3.295512e-06" ixz="-6.047376e-06" iyy="3.065327e-03" iyz="-4.139279e-04" izz="2.468965e-03" />
+      <origin xyz="0.000164 0.012708 -0.02234" rpy="0 0 0" />
+      <mass value="1.49647" />
+      <inertia ixx="4.174619e-03" ixy="-3.319236e-06" ixz="-6.111725e-06" iyy="3.066653e-03" iyz="-4.144248e-04" izz="2.469152e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />

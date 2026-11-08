@@ -17,7 +17,7 @@ from tests import built
 from tests.helpers import is_inside
 from tests.pulley.helpers import at
 
-VOLUME = 33317.476                                   # mm^3, the build's (the home magnet's pocket in it: tests/base/test_yaw_home.py)
+VOLUME = 33411.067                                   # mm^3, the build's
 BBOX_MIN = (-39.143186, -6.7, -39.143186)
 BBOX_SIZE = (78.286373, 14.9, 78.286373)
 
@@ -27,8 +27,7 @@ def test_params():
     cut = YAW_HUB_CUT                                                               # the plain hub: ring top to the web
     assert cut == DEFAULT.web_y0 - DEFAULT.ring[2] == pytest.approx(6.5) and YAW.ring[2] == YAW.web_y0 and YAW.step is None
     assert YAW == replace(DEFAULT, teeth=YAW.teeth, rim_dia=YAW.rim_dia, end_y=round(DEFAULT.end_y + cut, 6), step=None,
-                          ring=(DEFAULT.ring[0], round(DEFAULT.ring[1] + cut, 6), round(DEFAULT.ring[2] + cut, 6)),
-                          magnet=YAW.magnet)   # nothing else differs from the 90T's but the home magnet's pocket (tests/base/test_yaw_home.py)
+                          ring=(DEFAULT.ring[0], round(DEFAULT.ring[1] + cut, 6), round(DEFAULT.ring[2] + cut, 6)))   # nothing else differs from the 90T's
     assert belts.pulley_od(YAW.teeth) - YAW.rim_dia == pytest.approx(belts.pulley_od(DEFAULT.teeth) - DEFAULT.rim_dia, abs=1e-6)
     assert YAW.flange_dia == pytest.approx(78.286, abs=1e-3) and YAW.flange_dia == pytest.approx(BBOX_SIZE[0], abs=1e-6)
     assert R.NO_REFERENCE["gt2_pulley_120t"] == "lib/pulley/body.py:build_pulley(YAW)"

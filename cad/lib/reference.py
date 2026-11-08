@@ -175,7 +175,7 @@ NO_REFERENCE: dict[str, str] = {
     "yaw_home_bracket": "lib/base/body.py:build_yaw_home_bracket(DEFAULT)",
     "yaw_home_magnet": "parts/base/yaw_home_magnet.py:_envelope()",
     "yaw_home_screws": "parts/base/yaw_home_screws.py:_envelope()",
-    "yaw_home_inserts": "parts/base/yaw_home_inserts.py:_envelope()",
+    "yaw_home_nuts": "parts/base/yaw_home_nuts.py:_envelope()",
     "yaw_home_board_screws": "parts/base/yaw_home_board_screws.py:_envelope()",
     "yaw_home_board_nuts": "parts/base/yaw_home_board_nuts.py:_envelope()",
     "yaw_belt": "parts/base/yaw_belt.py:_envelope()",

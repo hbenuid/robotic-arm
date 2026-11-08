@@ -1,8 +1,8 @@
 """yaw_home_screws - purchased (COTS) part: the base_yaw home bracket's 2 M3 socket head cap screws (ISO 4762).
 
 In the arm: one pattern (yaw_home_screws#1, a mount on base#1 in the bracket's frame - lib/mounts.py YAW_HOME_MOUNTS):
-the heads under the bracket's root (yaw_home_bracket), the shanks up through it into the heat-set inserts in the motor
-plate's underside (yaw_home_inserts). Turned from under the base. Length: YawHomeParams.screw_len.
+the heads under the bracket's root (yaw_home_bracket), the shanks up through it and the motor plate into the nuts in the
+plate's top (yaw_home_nuts). Turned from under the base. Length: YawHomeParams.screw_len.
 
 No catalog model (none adopted), no SolidWorks export and NO reference file: a pattern part with no reference
 (lib/reference.py NO_REFERENCE) - its envelope IS the geometry (lib/fasteners.py shcs(): no thread, the head's hex
@@ -27,7 +27,7 @@ COTS = True
 MASS_G = YAW_HOME_SCREWS_MASS_G   # [ESTIMATE] the modelled steel (lib/params.py)
 PURCHASE_SPEC = f"M{HOME.screw.d:g} x {HOME.screw_len:g} socket head cap screw (ISO 4762)"
 PURCHASE_QTY = len(POINTS)   # pieces per occurrence
-PURCHASE_NOTE = "the base_yaw home bracket up into its 2 inserts in the base's motor plate, from under the base"
+PURCHASE_NOTE = "the base_yaw home bracket up through the base's motor plate into its 2 nuts, turned from under the base"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 

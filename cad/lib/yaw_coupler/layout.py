@@ -15,7 +15,7 @@ from lib.cycloidal import (
 )
 from lib.datum import BASE_TURN_DEG, CAPTURE_YAW_DEG, rotation
 from lib.fasteners import M4_NUT, M4_SHCS
-from lib.pulley.params import YAW, PulleyParams
+from lib.pulley.params import YAW, YAW_MAGNET_DEG, PulleyParams
 from lib.style import EDGE_CHAMFER
 from lib.yaw_coupler.params import DEFAULT, YawCouplerConfig
 
@@ -282,13 +282,13 @@ def yaw_pulley_frame(cfg: YawCouplerConfig = DEFAULT, pulley: PulleyParams = YAW
     return ((0.0, round(cfg.hub.stub_y0 + pulley.end_y, 6), 0.0), (YAW_PULLEY_TURN, cfg.hub.hole_deg, 0.0))
 
 
-def yaw_magnet_deg(cfg: YawCouplerConfig = DEFAULT, pulley: PulleyParams = YAW) -> float:
-    """Where the 120T's magnet (PulleyParams.magnet) stands about the base_yaw axis at zero, the pulley in its place: its
-    angle in the BASE's part frame (in its XZ plane from +X toward +Z, in (-180, 180]). This frame is the capture's,
-    turned CAPTURE_YAW_DEG about the axis, the base's BASE_TURN_DEG (lib/datum.py): an angle here is that much more there."""
-    r, deg = pulley.magnet[:2]
-    p = (r * math.cos(math.radians(deg)), 0.0, r * math.sin(math.radians(deg)))
-    m = rotation(yaw_pulley_frame(cfg, pulley)[1])
+def yaw_magnet_deg(cfg: YawCouplerConfig = DEFAULT, deg: float = YAW_MAGNET_DEG) -> float:
+    """Where the home magnet on the 120T (at `deg` in the pulley's own frame: lib/pulley/params.py YAW_MAGNET_DEG) stands
+    about the base_yaw axis at zero, the pulley in its place: its angle in the BASE's part frame (in its XZ plane from +X
+    toward +Z, in (-180, 180]). This frame is the capture's, turned CAPTURE_YAW_DEG about the axis, the base's
+    BASE_TURN_DEG (lib/datum.py): an angle here is that much more there."""
+    p = (math.cos(math.radians(deg)), 0.0, math.sin(math.radians(deg)))
+    m = rotation(yaw_pulley_frame(cfg)[1])
     x, z = (sum(m[i][k] * p[k] for k in range(3)) for i in (0, 2))
     a = math.degrees(math.atan2(z, x)) + BASE_TURN_DEG - CAPTURE_YAW_DEG
     return round(a - 360.0 * math.ceil((a - 180.0) / 360.0), 9) + 0.0

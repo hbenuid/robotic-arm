@@ -17,7 +17,7 @@ nuts, the 20T pulleys) is grey and the belts a darker grey, inside the modules t
     |                    base_motor_mount, base_motor_mount_screws / _nuts:base_yaw, nema17_48mm:base_yaw,
     |                    mks_servo42d:base_yaw, yaw_motor_screws:base_yaw, gt2_pulley_20t:base_yaw, yaw_belt:base_yaw,
     |                    gt2_idler_20t / yaw_idler_spacer / _screw / _nut:base_yaw,
-    |                    ky003_hall_sensor / yaw_home_bracket / _screws / _inserts / _board_screws / _board_nuts:base_yaw
+    |                    ky003_hall_sensor / yaw_home_bracket / _screws / _nuts / _board_screws / _board_nuts:base_yaw
     |- shoulder_link     j1_coupler, j1_motor_leg, washer_as6590:base_yaw_2, gt2_pulley_120t:base_yaw,
     |                    yaw_pulley_screws / _nuts:base_yaw, yaw_home_magnet:base_yaw, cycloidal_drive (kept whole - see below)
     |- upper_arm_link    j1_link, bearing_6806:elbow_pitch_1 / _2, eg17_g5_gearbox:elbow_pitch,
@@ -102,7 +102,7 @@ OCCURRENCES = [
     ("ky003_hall_sensor",     "base_yaw", "ky003_hall_sensor#1"),  # mounted: the base_yaw home sensor under the 120T, ...
     ("yaw_home_bracket",      "base_yaw", "yaw_home_bracket#1"),   # ... on its bracket under the motor plate, ...
     ("yaw_home_screws",       "base_yaw", "yaw_home_screws#1"),    # ... its 2 M3 up ...
-    ("yaw_home_inserts",      "base_yaw", "yaw_home_inserts#1"),   # ... into the inserts in the plate, ...
+    ("yaw_home_nuts",         "base_yaw", "yaw_home_nuts#1"),      # ... into their nuts in the plate's top, ...
     ("yaw_home_board_screws", "base_yaw", "yaw_home_board_screws#1"),   # ... the board's 2 M2 ...
     ("yaw_home_board_nuts",   "base_yaw", "yaw_home_board_nuts#1"),     # ... into the nuts under the bracket
     ("j1_coupler",            None, "j1_coupler#1"),
@@ -173,7 +173,7 @@ GROUPS = [
                           "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1",
                           "nema17_48mm#1", "mks_servo42d#1", "yaw_motor_screws#1", "gt2_pulley_20t#3", "yaw_belt#1",
                           "gt2_idler_20t#2", "yaw_idler_spacer#1", "yaw_idler_screw#1", "yaw_idler_nut#1",
-                          "ky003_hall_sensor#1", "yaw_home_bracket#1", "yaw_home_screws#1", "yaw_home_inserts#1",
+                          "ky003_hall_sensor#1", "yaw_home_bracket#1", "yaw_home_screws#1", "yaw_home_nuts#1",
                           "yaw_home_board_screws#1", "yaw_home_board_nuts#1")),
     ("shoulder_link",    ("j1_coupler#1", "j1_motor_leg#1", "washer_as6590#2", "gt2_pulley_120t#1", "yaw_pulley_screws#1",
                           "yaw_pulley_nuts#1", "yaw_home_magnet#1", "fork_hub_screws#1", "fork_hub_nuts#1", "fork_foot_screws#1",

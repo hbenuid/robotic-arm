@@ -27,8 +27,8 @@ PETG_DENSITY = 1.27e-3  # [DESIGN] g/mm^3 - printed-part mass estimates
 
 # --- Fasteners - lib/fasteners.py (a leaf: the sizes, the clearance holes, the plain screw / nut builders) ----
 from lib.fasteners import (  # noqa: E402, F401
-    M2_CLEAR, M2_NUT, M2_SHCS, M3_CLEAR, M3_CSK, M3_INSERT, M3_NUT, M3_PITCH, M3_SHCS, M4_CLEAR, M4_NUT, M4_PITCH, M4_SHCS, M5_CLEAR,
-    M5_NUT, M5_PITCH, M5_SHCS, csk_volume, insert_volume, nut_volume, shcs_volume,
+    M2_CLEAR, M2_NUT, M2_SHCS, M3_CLEAR, M3_CSK, M3_NUT, M3_PITCH, M3_SHCS, M4_CLEAR, M4_NUT, M4_PITCH, M4_SHCS, M5_CLEAR,
+    M5_NUT, M5_PITCH, M5_SHCS, csk_volume, nut_volume, shcs_volume,
 )
 
 # --- Belt drive (GT2) - lib/belts.py (a leaf: lib/forearm/ imports it directly) ------------------
@@ -71,7 +71,7 @@ from lib.sensors import (  # noqa: E402, F401
     A3144_BODY_H, A3144_BODY_T, A3144_BODY_W, A3144_HALL_DEPTH, A3144_LEAD_PITCH, A3144_LEAD_T, A3144_LEAD_W,
     KY003_BOARD_L, KY003_BOARD_T, KY003_BOARD_W, KY003_HEADER_H, KY003_HOLE_DIA, KY003_HOLE_INSET, KY003_LEAD_BEND_X,
     KY003_LEAD_OUT, KY003_LEAD_TAIL, KY003_MASS_G, KY003_PIN_OUT, KY003_PIN_PITCH, KY003_PIN_TAIL, KY003_PIN_W,
-    KY003_PINS, A3144_OPERATE_MT, HOME_MAGNET_DIA, HOME_MAGNET_T, MAGNET_POCKET_CLEAR, NDFEB_N52_BR_T, disc_magnet_bz,
+    KY003_PINS, A3144_OPERATE_MT, HOME_MAGNET_DIA, HOME_MAGNET_T, NDFEB_N52_BR_T, disc_magnet_bz,
     ky003_hall_point, switch_half_width,
 )
 
@@ -305,13 +305,12 @@ _WBACK = _WRIST.roll.back
 WRIST_BACK_MAGNETS_MASS_G = NDFEB_DENSITY * 2 * len(_WBACK.magnet_points) * _cyl_vol(_WBACK.magnet_dia / 2.0, _WBACK.magnet_t)   # 0.85, 8x 3 x 2
 # the base_yaw home magnet (parts/base/yaw_home_magnet; lib/sensors.py HOME_MAGNET_*): one plain disc, likewise
 YAW_HOME_MAGNET_MASS_G = NDFEB_DENSITY * _cyl_vol(HOME_MAGNET_DIA / 2.0, HOME_MAGNET_T)   # 0.64, Ø6 x 3
-# the base_yaw home sensor's bracket's fasteners (parts/base/yaw_home_{screws,inserts,board_screws,board_nuts};
-# lib/base/params.py YawHomeParams): steel as above, the inserts brass
-BRASS_DENSITY = 8.5e-3   # [DATASHEET] g/mm^3 - the heat-set inserts
+# the base_yaw home sensor's bracket's fasteners (parts/base/yaw_home_{screws,nuts,board_screws,board_nuts};
+# lib/base/params.py YawHomeParams), steel as above
 _HOME = _BASE.home
-YAW_HOME_SCREWS_MASS_G = STEEL_DENSITY * len(_HOME.screw_points) * shcs_volume(_HOME.screw, _HOME.screw_len)              # 1.7, 2x M3x6
-YAW_HOME_INSERTS_MASS_G = BRASS_DENSITY * len(_HOME.screw_points) * insert_volume(_HOME.insert)                           # 0.6, 2x M3
-YAW_HOME_BOARD_SCREWS_MASS_G = STEEL_DENSITY * 2 * shcs_volume(_HOME.board_screw, _HOME.board_screw_len)                  # 0.8, 2x M2x10
+YAW_HOME_SCREWS_MASS_G = STEEL_DENSITY * len(_HOME.screw_points) * shcs_volume(_HOME.screw, _HOME.screw_len)              # 2.1, 2x M3x10
+YAW_HOME_NUTS_MASS_G = STEEL_DENSITY * len(_HOME.screw_points) * nut_volume(_HOME.nut)                                    # 0.7, 2x M3
+YAW_HOME_BOARD_SCREWS_MASS_G = STEEL_DENSITY * 2 * shcs_volume(_HOME.board_screw, _HOME.board_screw_len)                  # 0.7, 2x M2x8
 YAW_HOME_BOARD_NUTS_MASS_G = STEEL_DENSITY * 2 * nut_volume(_HOME.board_nut)                                              # 0.3, 2x M2
 # the base_yaw motor's (parts/base/yaw_motor_screws), likewise
 from lib.base.layout import motor_holes as _base_motor_holes  # noqa: E402

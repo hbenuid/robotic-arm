@@ -62,7 +62,7 @@ def test_mounted_records_follow_lib_mounts():
         "gt2_idler_20t#1", "elbow_idler_spacer#1", "elbow_idler_screw#1", "elbow_idler_nut#1",
         "gt2_idler_20t#2", "yaw_idler_spacer#1", "yaw_idler_screw#1", "yaw_idler_nut#1",
         "gt2_idler_20t#3", "wrist_idler_screw#1", "wrist_idler_nut#1",
-        "ky003_hall_sensor#1", "yaw_home_bracket#1", "yaw_home_screws#1", "yaw_home_inserts#1", "yaw_home_board_screws#1",
+        "ky003_hall_sensor#1", "yaw_home_bracket#1", "yaw_home_screws#1", "yaw_home_nuts#1", "yaw_home_board_screws#1",
         "yaw_home_board_nuts#1", "yaw_home_magnet#1"]
     assert P.keys(mounted=True) == P.DATA["mounted"] == mounts.keys() + mounts.module_keys()
     for key in keys:

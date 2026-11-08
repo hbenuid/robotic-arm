@@ -32,7 +32,6 @@ from lib.belts import (
     pulley_od,
 )
 from lib.fasteners import M4_CLEAR, M4_SHCS
-from lib.sensors import HOME_MAGNET_DIA, HOME_MAGNET_T, MAGNET_POCKET_CLEAR
 
 _AXES = ((1.0, 0.0), (0.0, 1.0), (-1.0, 0.0), (0.0, -1.0))
 
@@ -54,8 +53,6 @@ class PulleyParams:
     bolt_r: float = GT2_PULLEY_90T_BOLT_R   # the 4 bolts, on the axes ...
     hole_dia: float = 3.9              # ... in holes under an M4's shank (the export's) ...
     counterbore: tuple = (0.0, 0.0)    # ... (dia, depth): a counterbore from the outer face round each, for its head (none)
-    magnet: tuple | None = None        # [DESIGN] (r, deg, dia, depth): a blind pocket from the outer face for a disc magnet,
-    #                                    its axis r off the pulley's and deg in the XZ plane from +X toward +Z (none)
 
     @property
     def band_y1(self) -> float:
@@ -90,18 +87,18 @@ DEFAULT = replace(LEGACY, hole_dia=M4_CLEAR, counterbore=(M4_SHCS.head_dia + 0.4
 # and the belt, the motor plate and the base's bottom face come YAW_HUB_CUT nearer the cap with it (lib/base/params.py
 # YAW_BELT_Y).
 YAW_HUB_CUT = round(LEGACY.web_y0 - LEGACY.ring[2], 6)   # 6.5 [DESIGN]
-# The base_yaw home magnet (lib/sensors.py HOME_MAGNET_*, parts/base/yaw_home_magnet) in a pocket in the 120T's outer
-# face - which faces down, the pulley hanging under j1_coupler -, its south pole flush with the face, over the KY-003
-# hung under the base's motor plate (lib/base/params.py YawHomeParams: its chip on this radius) at one base_yaw angle,
-# BASE_YAW_HOME_DEG (lib/params.py, which this angle sets: the pulley turned onto the coupler's holes, lib/mounts.py).
-# YAW_MAGNET_R: on the web, the pocket 12.2 off the nearest bolt's counterbore and 5.95 in from the rim's inside. The
-# angle centres the switch's zone in the 10 deg between the travel's ends (tests/base/test_yaw_home.py).
+# The base_yaw home magnet's spot (parts/base/yaw_home_magnet, lib/sensors.py HOME_MAGNET_*): glued onto the 120T's outer
+# face - which faces down, the pulley hanging under j1_coupler -, south pole out, its axis YAW_MAGNET_R off the pulley's
+# and at YAW_MAGNET_DEG in the pulley's own XZ plane (from +X toward +Z); nothing is cut for it. On that radius it passes
+# over the KY-003 hung under the base's motor plate (lib/base/params.py YawHomeParams: its chip on it) and stands over it
+# at one base_yaw angle, BASE_YAW_HOME_DEG (lib/params.py, which this angle sets: the pulley turned onto the coupler's
+# holes, lib/yaw_coupler/layout.py yaw_magnet_deg). The radius keeps the magnet on the web, 12.3 off the nearest bolt's
+# counterbore and 6.05 in from the rim's inside; the angle centres the switch's zone in the 10 deg between the travel's
+# ends (tests/base/test_yaw_home.py).
 YAW_MAGNET_R = 27.0         # [DESIGN]
-YAW_MAGNET_DEG = -145.5     # [DESIGN] in the pulley's own frame: base_yaw -169.5 (lib/params.py BASE_YAW_HOME_DEG)
+YAW_MAGNET_DEG = -145.5     # [DESIGN] in the pulley's own frame: base_yaw -169.5
 YAW = replace(DEFAULT, teeth=GT2_PULLEY_120T_TEETH,
               rim_dia=round(pulley_od(GT2_PULLEY_120T_TEETH) - (pulley_od(LEGACY.teeth) - LEGACY.rim_dia), 6),
               end_y=round(LEGACY.end_y + YAW_HUB_CUT, 6),
               ring=(LEGACY.ring[0], round(LEGACY.ring[1] + YAW_HUB_CUT, 6), round(LEGACY.ring[2] + YAW_HUB_CUT, 6)),
-              step=None,
-              magnet=(YAW_MAGNET_R, YAW_MAGNET_DEG, HOME_MAGNET_DIA + 2.0 * MAGNET_POCKET_CLEAR,
-                      HOME_MAGNET_T + MAGNET_POCKET_CLEAR))   # [DESIGN]
+              step=None)   # [DESIGN]

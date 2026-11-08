@@ -67,9 +67,9 @@ MULTI_BODY = {
     "wrist_back_magnets": 8,
     # the KY-003 hall module: the board, the chip (body + leads), the header (housing + pins) - one piece to buy
     "ky003_hall_sensor": 3,
-    # the base_yaw home sensor's bracket's fasteners (lib/mounts.py YAW_HOME_MOUNTS): its M3s and their inserts, the board's M2s
+    # the base_yaw home sensor's bracket's fasteners (lib/mounts.py YAW_HOME_MOUNTS): its M3s and their nuts, the board's M2s
     "yaw_home_screws": 2,
-    "yaw_home_inserts": 2,
+    "yaw_home_nuts": 2,
     "yaw_home_board_screws": 2,
     "yaw_home_board_nuts": 2,
 }

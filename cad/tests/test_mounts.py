@@ -200,8 +200,7 @@ def test_motors_and_boards_clear_their_neighbours():
     (the Ø22 pilot boss used to stand in j2_link's Ø20 central slot - the parametric forearm's slot is 22.3 wide) but
     the pulley nuts' designed press in their nut_af pockets (_press, test_pulley_bolts_clamp_their_joints), the base
     motor mount's nuts' in the base's posts (JointParams.nut_pocket_af) and the fork's sleeve nuts' in the sleeve's lugs
-    (ShellParams.sleeve_nut_af, test_the_fork_bolts_hold_the_drive), and the base_yaw home bracket's heat-set inserts' knurl
-    in the base's plate (YawHomeParams.insert, tests/base/test_yaw_home.py). The yoke's motor leg is a neighbour too: the screws
+    (ShellParams.sleeve_nut_af, test_the_fork_bolts_hold_the_drive). The yoke's motor leg is a neighbour too: the screws
     hosted on it are skipped below."""
     neighbours = ["base#1", "base_motor_mount#1", "j1_coupler#1", "j1_motor_leg#1", "j1_link#1", "j2_link#1", "gt2_pulley_90t#3",
                   "gt2_pulley_90t#4", "gt2_pulley_120t#1", "wrist_link#1"]
@@ -212,9 +211,6 @@ def test_motors_and_boards_clear_their_neighbours():
     budget[("base_motor_mount_nuts#1", "base#1")] = _press(joint.nut_pocket_af, joint.nut.h) + 0.5
     budget[("fork_sleeve_nuts#1", "cycloidal_drive#1")] = (
         _press(DEFAULT_CONFIG.shell.sleeve_nut_af, PARAMS.M4_NUT.h, PARAMS.CYCLOIDAL_SLEEVE_BOLT_COUNT) + 0.5)
-    home, ins = BASE.home, BASE.home.insert                    # the inserts' knurl melted into the plate's holes
-    budget[("yaw_home_inserts#1", "base#1")] = (
-        len(home.screw_points) * math.pi * ((ins.od / 2.0) ** 2 - (ins.hole_dia / 2.0) ** 2) * ins.length + 0.5)
     # line-to-line fits (the elbow's upper 6806 seat Ø42.0, the Ø30 stubs and hubs) leave float noise in the boolean
     # that differs per machine (0.05 mm^3 on x86_64 Linux, 0 on arm64 macOS) - the suite's 1 mm^3 'no overlap' budget;
     # a real misfit is far above it (0.1 mm across a bearing's face is ~68 mm^3)

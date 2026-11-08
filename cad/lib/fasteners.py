@@ -58,19 +58,8 @@ class NutSize:
     h: float              # m max
 
 
-@dataclass(frozen=True)
-class InsertSize:
-    """A knurled brass heat-set insert, pressed hot into a blind hole in a printed part: modelled as a plain sleeve."""
-    d: float              # thread diameter: the modelled bore
-    od: float             # over the knurl
-    length: float
-    hole_dia: float       # the printed hole it is pressed into (its depth: length, or more)
-
-
 M2_SHCS = ShcsSize(2.0, 3.8, 2.0, 1.5, 1.0)   # [DATASHEET] ISO 4762 M2
 M2_NUT = NutSize(2.0, 4.0, 1.6)               # [DATASHEET] ISO 4032 M2
-M3_INSERT = InsertSize(3.0, 4.6, 4.0, 4.0)    # [ESTIMATE] M3 x 4 short heat-set insert, Ø4.6 knurl, in a Ø4.0 hole (the
-#                                               listings' "M3 x 4 x 4.6"; calipers on the ones bought)
 M4_SHCS = ShcsSize(4.0, 7.0, 4.0, 3.0, 2.0)   # [DATASHEET] ISO 4762 M4
 M4_NUT = NutSize(4.0, 7.0, 3.2)               # [DATASHEET] ISO 4032 M4
 M3_SHCS = ShcsSize(3.0, 5.5, 3.0, 2.5, 1.3)   # [DATASHEET] ISO 4762 M3
@@ -102,11 +91,6 @@ def nut_volume(size: NutSize) -> float:
     return (hex_area(size.af) - math.pi * (size.d / 2.0) ** 2) * size.h
 
 
-def insert_volume(size: InsertSize) -> float:
-    """The modelled insert's volume: the sleeve less its bore."""
-    return math.pi * ((size.od / 2.0) ** 2 - (size.d / 2.0) ** 2) * size.length
-
-
 def shcs(size: ShcsSize, length: float, xy=(0.0, 0.0)):
     """One screw: the head's bearing face on z=0, the head in -Z (its socket open at the top, z = -head_h), the shank in
     +Z to z = length."""
@@ -129,7 +113,3 @@ def hex_nut(size: NutSize, angle_rad: float, xy=(0.0, 0.0), z0: float = 0.0):
     nut = bd.Pos(xy[0], xy[1], z0) * hex_prism(size.af, angle_rad, size.h)
     return single_solid(nut - through(size.d / 2.0, size.h, xy, z0))
 
-
-def heat_set_insert(size: InsertSize, xy=(0.0, 0.0), z0: float = 0.0):
-    """One insert from z0 (its open end, where the screw goes in) up to z0 + length, the bore on its axis."""
-    return single_solid(cylinder(size.od / 2.0, size.length, xy, z0) - through(size.d / 2.0, size.length, xy, z0))

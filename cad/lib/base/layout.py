@@ -230,8 +230,8 @@ def home_chip_xz(cfg: BaseConfig = DEFAULT) -> tuple[float, float]:
 
 
 def home_board_y(cfg: BaseConfig = DEFAULT) -> float:
-    """The KY-003's board's underside: on the bracket's seat pad, the bracket's top on the plate's underside."""
-    return round(cfg.plate.y[0] + cfg.home.pad_h, 6)
+    """The KY-003's board's underside: on the bracket's top, which lies on the plate's underside."""
+    return cfg.plate.y[0]
 
 
 def home_sensor_frame(cfg: BaseConfig = DEFAULT) -> tuple:
@@ -260,7 +260,7 @@ def home_outline(cfg: BaseConfig = DEFAULT) -> list[tuple[float, float]]:
 
 
 def home_screw_points(cfg: BaseConfig = DEFAULT) -> list[tuple[float, float]]:
-    """(x, z) of the bracket's 2 M3s and their inserts in the plate's underside."""
+    """(x, z) of the bracket's 2 M3s, through it and the plate into their nuts in the plate's top."""
     cx, cz = home_chip_xz(cfg)
     return [(round(cx + x, 6), round(cz + z, 6)) for x, z in cfg.home.screw_points]
 
@@ -277,15 +277,14 @@ def _board_box(cfg: BaseConfig, x: tuple, y: tuple) -> tuple[float, float, float
     return (min(xs), max(xs), min(zs), max(zs))
 
 
-def home_pad_box(cfg: BaseConfig = DEFAULT) -> tuple[float, float, float, float]:
-    """The seat pad, (x0, x1, z0, z1) in the base's frame: the board's footprint and pad_margin round it."""
-    m = cfg.home.pad_margin
-    return _board_box(cfg, (-m, KY003_BOARD_L + m), (-KY003_BOARD_W / 2.0 - m, KY003_BOARD_W / 2.0 + m))
+def home_board_box(cfg: BaseConfig = DEFAULT) -> tuple[float, float, float, float]:
+    """The board's footprint, (x0, x1, z0, z1) in the base's frame."""
+    return _board_box(cfg, (0.0, KY003_BOARD_L), (-KY003_BOARD_W / 2.0, KY003_BOARD_W / 2.0))
 
 
 def home_reliefs(cfg: BaseConfig = DEFAULT) -> list[tuple[float, float, float, float, float]]:
-    """The pad's 2 slots, (x0, x1, z0, z1, depth under the board): across the header's pins' tails (one pitch behind its
-    housing) and the chip's leads' tails (where they turn down), relief_w wide, relief_past deeper than each."""
+    """The bracket's 2 slots, (x0, x1, z0, z1, depth under the board): across the header's pins' tails (one pitch behind
+    its housing) and the chip's leads' tails (where they turn down), relief_w wide, relief_past deeper than each."""
     h = cfg.home
     pin_x = KY003_BOARD_L - KY003_HEADER_H / 2.0 - KY003_PIN_PITCH
     lead_x = KY003_LEAD_BEND_X + A3144_LEAD_T / 2.0
