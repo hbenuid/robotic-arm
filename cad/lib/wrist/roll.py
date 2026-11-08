@@ -1,7 +1,8 @@
 """build123d builders of the wrist roll drive's printed geometry (WristRollParams, module frame, at their stack
-stations): the frame wrist_link carries on its plate's free face (the stator - laid out as the forearm roll's frame: one
-body round the pancake and the tower round R', the pancake in from the bottom, the far face closed, the shaft's bay
-bored through the rear under a removable back panel; lib/wrist/link.py puts it on the plate), the back panel, the pulley
+stations): the frame wrist_link is (the stator - laid out as the forearm roll's frame: one body round the pancake and
+the tower round R', its wall on the forearm's side the plate, the pancake in from the bottom, the far face closed, the
+shaft's bay bored through the rear under a removable back panel; lib/wrist/link.py adds the wrist_pitch flange on the
+plate's coupler face), the back panel, the pulley
 (rotor, the output - its 40T band the GT2 ring of lib/pulley/teeth.py, its face the connector bolts to) and the shaft
 (rotor, a collar behind bearing 1 with the stop lug)."""
 from __future__ import annotations
@@ -67,7 +68,7 @@ def _bottom(y_from: float, cfg: WristConfig = DEFAULT) -> tuple[float, float]:
 
 
 def side_profile(cfg: WristConfig = DEFAULT):
-    """The frame seen along the pitch axis, a face in module (y, z): the plate's octagon about the pitch axis (lib/geom.py
+    """The frame seen along the pitch axis, a face in module (y, z): an octagon about the pitch axis (lib/geom.py
     faceted_end, flats pitch_r - the forearm roll frame's octagonal end about its motor's axis) cut at rear_low, hulled to
     the tower round R' (frame_r either side, z_rear to the front face) - cut at the front face and on the rear's slanted
     plane (rear_line) - straight sides, sharp corners."""
@@ -93,7 +94,8 @@ def tower_section(cfg: WristConfig = DEFAULT):
 
 def front_facets(cfg: WristConfig = DEFAULT):
     """What the front face's two long edges' facets take away (front_facet at 45 deg, along the frame end to end): at the
-    far face and at the plate's coupler face - the plate itself fills that one back where it runs."""
+    far face and at the plate's coupler face - the wrist_pitch flange's post fills that one back under it
+    (lib/wrist/link.py _flange)."""
     d, S = cfg.roll, stack_positions(cfg)
     f = d.front_facet
     return (_half_space((d.frame_r, 0.0, S["z_front"] - f), (1.0, 0.0, 1.0))

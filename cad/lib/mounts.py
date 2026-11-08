@@ -57,9 +57,10 @@ the lower washer on the groove's floor and the cage on it ride with the base, th
 (lib/yaw_coupler/params.py DEFAULT) with the coupler.
 The PULLEYS (PULLEY_MOUNTS): the elbow's and the wrist's 90T, whose SolidWorks poses (gt2_pulley_90t#1 / #2,
 retired - lib/placements.py) left no room for the lower bearing, re-declared PULLEY_SEAT_SHIFT further out along
-their own axis (+Y): the host of such a mount is the capture pose it corrects. The wrist's keeps its spin exactly; the
-elbow's turns RollDriveParams.pulley_bolt_deg about its axis with the elbow block's bolt pattern (lib/forearm/params.py:
-its nut channels would otherwise stop short of the ring cavity). The base_yaw pulley (gt2_pulley_120t#1, the 90T with
+their own axis (+Y): the host of such a mount is the capture pose it corrects. Each turns about its axis with its host's
+bolt pattern: the elbow's RollDriveParams.pulley_bolt_deg (lib/forearm/params.py: its nut channels would otherwise stop
+short of the ring cavity), the wrist's FlangeParams.pulley_bolt_deg (lib/wrist/params.py: its front nut would otherwise
+stand 0.55 mm inside the post's front flat). The base_yaw pulley (gt2_pulley_120t#1, the 90T with
 120 teeth: lib/pulley/params.py YAW) the capture never had: hosted on j1_coupler, upside down under it (its +Y down the axis) - its hub end on the stub's end in the plane of
 the lip's lower face, its journal in the lower base bearing, its ring under that bearing's inner ring - and turned
 HubParams.hole_deg about the axis onto the stub's diagonal holes (lib/yaw_coupler/params.py). Bolted there it holds the
@@ -128,6 +129,7 @@ from lib.params import (
 from lib.upper_arm.layout import elbow_idler_x, elbow_idler_z
 from lib.upper_arm.params import DEFAULT as _UPPER_ARM
 from lib.wrist.layout import module_frame_in_host as wrist_module_frame_in_host
+from lib.wrist.params import DEFAULT as _WRIST
 from lib.yaw_coupler.layout import (
     fork_foot_nut_z,
     fork_foot_screw_frame,
@@ -300,8 +302,10 @@ PULLEY_MOUNTS: tuple[Mount, ...] = (
           ((0.0, PULLEY_SEAT_SHIFT, 0.0), (0.0, _FOREARM.drive.pulley_bolt_deg, 0.0)),
           "the elbow 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower elbow bearing; "
           "turned pulley_bolt_deg about its axis with the block's bolt pattern (the nut channels clear of the ring cavity)"),
-    Mount("gt2_pulley_90t#4", PULLEY, "gt2_pulley_90t#2", "wrist_pitch_link", "wrist_pitch", ((0.0, PULLEY_SEAT_SHIFT, 0.0), (0.0, 0.0, 0.0)),
-          "the wrist 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower wrist bearing"),
+    Mount("gt2_pulley_90t#4", PULLEY, "gt2_pulley_90t#2", "wrist_pitch_link", "wrist_pitch",
+          ((0.0, PULLEY_SEAT_SHIFT, 0.0), (0.0, _WRIST.flange.pulley_bolt_deg, 0.0)),
+          "the wrist 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower wrist bearing; "
+          "turned pulley_bolt_deg about its axis with wrist_link's bolt pattern (the front nut clear of the post's flat)"),
     Mount("gt2_pulley_120t#1", YAW_PULLEY, "j1_coupler#1", "shoulder_link", "base_yaw",
           ((0.0, round(_YAW_COUPLER.hub.stub_y0 + GT2_PULLEY_90T_FACE_Y[0], 6), 0.0), (180.0, _YAW_COUPLER.hub.hole_deg, 0.0)),
           "the base_yaw 120T under j1_coupler, hub up: its hub end on the stub's end, its journal in the lower base bearing, "
@@ -322,7 +326,8 @@ FASTENER_MOUNTS: tuple[Mount, ...] = (
           "the wrist 90T's 4x M4 x pulley_screw_len: heads in its counterbores, down through its hub and j3_coupler's stub"),
     Mount("wrist_pulley_nuts#1", "wrist_pulley_nuts", "wrist_pulley_screws#1", "wrist_pitch_link", "wrist_pitch",
           ((0.0, 0.0, round(_COUPLER.stub_y1 + _SEAT_TO_END - _COUPLER.nut_depth, 6)), (0.0, 0.0, 0.0)),
-          "the wrist screws' nuts on j3_coupler's pocket floors (nut_depth), a corner along the coupler's Z"),
+          "the wrist screws' nuts on wrist_link's channel seats (the retired j3_coupler's pocket floors, nut_depth), turned "
+          "with the 90T"),
     Mount("yaw_pulley_screws#1", "yaw_pulley_screws", "gt2_pulley_120t#1", "shoulder_link", "base_yaw", _SCREWS_IN_COUNTERBORES,
           "the base_yaw 120T's 4x M4 x pulley_screw_len: heads in its counterbores (under it), up through its hub and j1_coupler's stub"),
     Mount("yaw_pulley_nuts#1", "yaw_pulley_nuts", "yaw_pulley_screws#1", "shoulder_link", "base_yaw",
