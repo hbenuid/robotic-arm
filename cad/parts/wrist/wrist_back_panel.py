@@ -3,7 +3,8 @@ flush with wrist_link's slanted rear over the tower, in a step, over the shaft's
 and the wrist roll shaft, its clamp nuts and the stop post are open to reach, and the shaft goes in or out along the
 roll axis. Located by a ring rim on its inner face inside the bay's bore, held by 4 magnet pairs (wrist_back_magnets:
 one disc in a pocket in the frame's step, one in a pocket in its inner face); a notch at its edge toward the motor lets
-the gripper servo's cable out of the rotor's bore, another clears the MKS board's near side plug.
+the gripper servo's cable out of the rotor's bore, another clears the MKS board's near side plug. A grill of straight
+slots is cut through it over the bay, inside the rim - the turning shaft shows behind it (lib/wrist/roll.py back_grill).
 
 Designed here, no reference: tests/wrist/test_back_panel.py holds its numbers (lib/wrist/roll.py build_back_panel(cfg),
 every number lib/wrist/params.py WristBackPanelParams, in the drive's MODULE frame at its station -

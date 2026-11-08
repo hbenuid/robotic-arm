@@ -13,7 +13,7 @@ import build123d as bd
 from lib.datum import to_location
 from lib.geom import box, cylinder, faceted_end, nut_slot, single_solid, slot_y, stop_wedge
 from lib.pulley.teeth import gt2_ring
-from lib.style import EDGE_CHAMFER
+from lib.style import EDGE_CHAMFER, SIDES
 from lib.units import NUDGE
 from lib.wrist.layout import (
     board_plug_rooms,
@@ -173,6 +173,27 @@ def _notches(cfg: WristConfig):
     return cut
 
 
+def back_grill_field(cfg: WristConfig = DEFAULT) -> tuple[float, float]:
+    """The back panel's grill field (WristBackPanelParams grill_clear), in module (x, y): (flats, edge) - an octagon about
+    R' with its corners grill_clear inside the ring rim's inner edge, and its edge toward the motor (y) grill_clear short
+    of the cable's notch."""
+    d, b, s = cfg.roll, cfg.roll.back, toward_motor(cfg)
+    corner = d.bay_r - b.rim_clear - b.rim_w - b.grill_clear
+    return corner * math.cos(math.pi / SIDES), s * (d.bay_r - b.notch_reach - b.grill_clear)
+
+
+def back_grill(cfg: WristConfig = DEFAULT):
+    """What the back panel's grill takes away (WristBackPanelParams grill_*, lib/style.py GRILL_SLOT / GRILL_PITCH):
+    straight slots along y, one on R', clipped to the field (back_grill_field) and cut through along R' - as the panel's
+    notches are, so the field keeps grill_clear off the ring rim at every depth."""
+    b, s = cfg.roll.back, toward_motor(cfg)
+    flats, edge = back_grill_field(cfg)
+    field = faceted_end(flats) & bd.Pos(0.0, edge - s * FAR / 2.0) * bd.Rectangle(4 * FAR, FAR)
+    n = int((flats - b.grill_w / 2.0) // b.grill_pitch)
+    slots = [bd.Pos(k * b.grill_pitch, 0.0) * bd.Rectangle(b.grill_w, 4 * flats) for k in range(-n, n + 1)]
+    return _z_prism(sum(slots[1:], slots[0]) & field)
+
+
 def build_frame(cfg: WristConfig = DEFAULT):
     """The frame in the module frame: the envelope (seen along the pitch axis the plate's octagon hulled to the tower round
     R', from the plate's coupler face to the closed far face, the front facets off, both side faces' outline chamfered),
@@ -226,7 +247,8 @@ def build_back_panel(cfg: WristConfig = DEFAULT):
     """The back panel (wrist_back_panel) in the module frame: the step's plate - back.t in from the rear plane over the
     tower, from its far side to gap short of the board's window, side_clear off the plate's free face, its outline the
     frame's (chamfered with it) -, its locating rim (a ring inside the bay's bore, rim_h in from its inner face), the
-    magnets' pockets in its inner face, its notches over the bay (the cable's, the board's near plug's)."""
+    magnets' pockets in its inner face, its notches over the bay (the cable's, the board's near plug's), the grill's slots
+    through it over the bay (back_grill)."""
     d, b, s = cfg.roll, cfg.roll.back, toward_motor(cfg)
     w0, w1, _, _ = board_window(cfg)
     w_near = w0 if s > 0 else w1
@@ -236,7 +258,7 @@ def build_back_panel(cfg: WristConfig = DEFAULT):
     body = body + (ring & _rear_slab(cfg, b.t - NUDGE, b.t + b.rim_h))
     for x, y in b.magnet_points:
         body = body - _on_rear(x, y, b.pocket_dia / 2.0, b.t - b.pocket_depth, b.pocket_depth + NUDGE, cfg)
-    return single_solid(body - _notches(cfg))
+    return single_solid(body - _notches(cfg) - back_grill(cfg))
 
 
 def build_pulley(cfg: WristConfig = DEFAULT):
