@@ -53,6 +53,8 @@ MULTI_BODY = {
     "base_motor_mount_nuts": 4,
     # the elbow, wrist and base_yaw motors' M3 screws (lib/mounts.py MOTOR_SCREW_MOUNTS), the roll motor's (its drive's row)
     "elbow_motor_screws": 4,
+    "elbow_gearbox_screws": 4,
+    "gt2_pulley_20t_8mm": 3,
     "wrist_motor_screws": 4,
     "roll_motor_screws": 4,
     "yaw_motor_screws": 4,

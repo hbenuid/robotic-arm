@@ -1,8 +1,9 @@
 """The belt joints' mounts (lib/mounts.py, materialised into reference/placements.json by
 tools/reference/mount_placements.py): each NEMA 17 sits on the pad its printed host carries (a SolidWorks link, or
-the base's bolt-on motor mount, itself bolted to the base by 4x M4 into nuts pressed into the base) with its shaft
-parallel to the joint axis, its MKS board on its rear face, the elbow motor held down by its 4x M3 up through the web
-across j1_link's motor hole, flush in its pockets; each joint's 6806 pair stands on the lip of its bore
+the base's bolt-on motor mount, itself bolted to the base by 4x M4 into nuts pressed into the base) - the elbow's on its
+5:1 gearbox, the gearbox on the web across j1_link's motor hole, held down by its 4x M4 up through the web, flush in its
+pockets, the motor on the gearbox by its 4x M3 - with its shaft parallel to the joint axis, its MKS board on its rear
+face; each joint's 6806 pair stands on the lip of its bore
 with the coupler's shoulder on the upper inner ring and the 90T's ring under the lower one; each 90T clamped
 by its 4x M4 screws + nuts; j1_coupler stands on the base_yaw thrust bearing in the base's groove, held down by its
 120T; and nothing runs into the neighbours but the nuts' designed press in their pockets."""
@@ -136,6 +137,10 @@ def test_every_motor_has_its_board_and_they_sit_in_the_same_link():
         turn = mounts.BOARD_TURNS[b.key]   # a quarter turn on the motor's square screw pattern
         assert turn % 90.0 == 0.0 and b.frame == mounts.board_frame(body, turn) == ((0.0, 0.0, -body), (0.0, 0.0, turn))
         assert m.key in F.LINKS[m.link] and b.key in F.LINKS[m.link], m.link
+        if m.host == "eg17_g5_gearbox#1":   # the elbow motor on its gearbox, the gearbox on j1_link's web
+            gearbox = mounts.BY_KEY[m.host]
+            assert gearbox.part == mounts.GEARBOX and gearbox.host == "j1_link#1" and (gearbox.link, gearbox.joint) == (m.link, m.joint)
+            continue
         host = P.OCCURRENCES[m.host]   # a printed host: a SolidWorks record, or the base's bolt-on motor mount
         assert host["kind"] == "part" and not getattr(parts.load(host["part"]), "COTS", False)
         assert "mount" not in host or mounts.BY_KEY[m.host].host == "base#1"
@@ -157,7 +162,8 @@ def test_motor_shaft_is_on_its_joint_axis(m):
 @pytest.mark.parametrize("m", MOTORS, ids=[m.joint for m in MOTORS])
 def test_mounting_face_lies_on_the_host_pad(m):
     """The motor's mounting face (its local z=0 plane) coincides with a planar face of the host at the pattern
-    centre: the underside of the pad under the base motor mount's plate, j1_link's pad, j2_link's web."""
+    centre: the underside of the pad under the base motor mount's plate, the elbow gearbox's input face, j2_link's
+    web."""
     world = _world(m.key)
     origin, z = world.position, _dir(world).normalized()
     host = built.placed(m.host)
@@ -166,6 +172,26 @@ def test_mounting_face_lies_on_the_host_pad(m):
     assert faces, f"{m.key}: no planar face of {m.host} through the mounting plane"
     # ... and the shaft points away from the host's material: the pad face's outward normal is -Z of the motor
     assert any(f.normal_at().dot(z) < -0.99 for f in faces), f"{m.key}: the shaft points into {m.host}"
+
+
+@pytest.mark.slow
+def test_the_elbow_gearbox_sits_on_the_web():
+    """The elbow motor's gearbox (eg17_g5_gearbox#1): its output face (z=0) on the top of the web across j1_link's motor
+    hole, at the pad's axis, its shaft (+Z) down the web's bore - on the elbow's axis' parallel, ELBOW_MOTOR_CENTRES off;
+    the motor's frame its own moved EG17_G5.length down its body (the motor's face on its input face)."""
+    m, g = mounts.BY_KEY["eg17_g5_gearbox#1"], PARAMS.EG17_G5
+    assert (m.host, m.link, m.joint) == ("j1_link#1", "upper_arm_link", "elbow_pitch")
+    assert m.frame == ((UPPER_ARM.pad.x, PARAMS.J1_MOTOR_PAD_FACE_Y, 0.0), (90.0, 0.0, 0.0))
+    assert mounts.BY_KEY["nema17_40mm#2"].frame == ((0.0, 0.0, -g.length), (0.0, 0.0, 0.0))
+    world = _world(m.key)
+    origin, z = world.position, _dir(world).normalized()
+    joint = F.JOINT_BY_NAME["elbow_pitch"]
+    assert abs(abs(z.dot(Vector(*joint.axis_w))) - 1.0) < 1e-6
+    d = origin - Vector(*joint.origin_w)
+    assert (d - Vector(*joint.axis_w) * d.dot(Vector(*joint.axis_w))).length == pytest.approx(ELBOW_MOTOR_CENTRES, abs=0.01)
+    assert _on_plane(built.placed("j1_link#1"), origin, z, -1), "the web's top face is not under the gearbox's face"
+    assert _on_plane(built.placed(m.key), origin, z, 1)
+    assert UPPER_ARM.arm.seat_boss_depth > g.boss_t and UPPER_ARM.arm.seat_boss_dia > g.boss_dia
 
 
 @pytest.mark.slow
@@ -224,27 +250,29 @@ def test_base_motor_stack_clears_the_table():
 
 @pytest.mark.slow
 def test_belt_pulley_planes_are_reachable():
-    """The elbow, wrist and base motors' shafts (22 mm past the mounting face) reach the plane of the driven pulley each
-    drives straight: the pulley's mid-plane lies between the mounting face and the shaft tip along the motor axis (the
-    20T's band in the driven pulley's: docs/open_issues.md)."""
-    for m, pulley_key in (("nema17_40mm#2", "gt2_pulley_90t#3"), ("nema17_40mm#3", "gt2_pulley_90t#4"),
-                          ("nema17_48mm#1", "gt2_pulley_120t#1")):
+    """The wrist and base motors' shafts (22 mm past the mounting face) and the elbow gearbox's (EG17_G5.shaft_end past
+    its output face) reach the plane of the driven pulley each drives straight: the pulley's mid-plane lies between the
+    face and the shaft tip along the shaft's axis (the 20T's band in the driven pulley's: docs/open_issues.md)."""
+    motor_shaft = DEFAULT_CONFIG.motor.shaft_length
+    for m, pulley_key, shaft in (("eg17_g5_gearbox#1", "gt2_pulley_90t#3", PARAMS.EG17_G5.shaft_end),
+                                 ("nema17_40mm#3", "gt2_pulley_90t#4", motor_shaft), ("nema17_48mm#1", "gt2_pulley_120t#1", motor_shaft)):
         world = _world(m)
         z = _dir(world).normalized()
         pulley = built.placed(pulley_key)
         bb = pulley.bounding_box()
         centre = Vector((bb.min.X + bb.max.X) / 2, (bb.min.Y + bb.max.Y) / 2, (bb.min.Z + bb.max.Z) / 2)
         station = (centre - world.position).dot(z)
-        assert 0.0 < station < DEFAULT_CONFIG.motor.shaft_length, f"{m}: the pulley's mid-plane is {station:.1f} mm along the shaft"
+        assert 0.0 < station < shaft, f"{m}: the pulley's mid-plane is {station:.1f} mm along the shaft"
 
 
-def test_elbow_motor_20t_runs_in_the_90ts_band():
-    """The elbow motor's 20T (gt2_pulley_20t#2, MOTOR_PULLEY_MOUNTS): its bore along the motor's shaft, its tooth band's
-    centre (RollDriveParams.t20_hub from its hub face) level with the elbow 90T's along the elbow axis and the stock
-    belt's centre distance from it across; its hub face up in the pilot hole of the web across j1_link's motor hole, clear of
-    the motor's pilot boss, its grub screws (4 from the hub face, the vendor model's) past the web's face where a key
-    reaches them; its band end within reach of the shaft's tip (the pulley rides on most of its bore)."""
-    motor, t20 = P.location("nema17_40mm#2", "world"), P.location("gt2_pulley_20t#2", "world")
+def test_elbow_20t_runs_in_the_90ts_band():
+    """The elbow's 20T (gt2_pulley_20t_8mm#1, MOTOR_PULLEY_MOUNTS), on the gearbox's Ø8 shaft: its bore along the shaft,
+    its tooth band's centre (RollDriveParams.t20_hub from its hub face) level with the elbow 90T's along the elbow axis
+    and the stock belt's centre distance from it across; its hub face up in the bore of the web across j1_link's motor
+    hole, clear of the gearbox's boss and shoulder, its set screws (4 from the hub face, the vendor model's) past the
+    web's face where a key reaches them, one of them (the pulley's +Z) over the shaft's keyway (the gearbox's +X); the
+    shaft's end within its bore (the pulley rides on most of it)."""
+    gearbox, t20 = P.location("eg17_g5_gearbox#1", "world"), P.location("gt2_pulley_20t_8mm#1", "world")
     t90, axis = P.location("gt2_pulley_90t#3", "world"), Vector(*F.JOINT_BY_NAME["elbow_pitch"].axis_w).normalized()
     assert abs(abs((t20 * Location((1.0, 0.0, 0.0))).position.sub(t20.position).dot(axis)) - 1.0) < 1e-6
     band20 = (t20 * Location((FOREARM.drive.t20_hub, 0.0, 0.0))).position
@@ -252,27 +280,33 @@ def test_elbow_motor_20t_runs_in_the_90ts_band():
     along = (band20 - band90).dot(axis)
     assert abs(along) < 0.01, f"the 20T's band {along:+.3f} mm off the 90T's"
     assert math.sqrt((band20 - band90).length ** 2 - along ** 2) == pytest.approx(ELBOW_MOTOR_CENTRES, abs=0.01)
-    hub = (motor.inverse() * t20).position
+    rel, g = gearbox.inverse() * t20, PARAMS.EG17_G5
+    hub = rel.position
     assert (hub.X, hub.Y) == pytest.approx((0.0, 0.0), abs=1e-6) and hub.Z == pytest.approx(PARAMS.J1_MOTOR_20T_HUB_Z)
-    web = UPPER_ARM.arm.motor_plate_t + UPPER_ARM.arm.motor_screw.head_h            # 11, flush with the slab's underside
-    assert DEFAULT_CONFIG.motor.pilot_height < hub.Z < web                          # up in the web's pilot hole
-    assert hub.Z + 4.0 - web > 0.5                                                   # the grub screws' axis past the web's face
-    assert DEFAULT_CONFIG.motor.shaft_length - hub.Z > 12.5                           # 13 of the shaft in the 14.45 long bore
+    web = UPPER_ARM.arm.web_t + UPPER_ARM.arm.seat_screw.head_h                    # 11, flush with the slab's underside
+    assert g.boss_t + g.shoulder_t < hub.Z < web                                    # up in the web's bore
+    assert hub.Z + 4.0 - web > 0.5                                                   # the set screws' axis past the web's face
+    assert g.shaft_end - hub.Z > 12.5                                                # 13.75 of the shaft in the 14.45 long bore
+    screw = (rel * Location((0.0, 0.0, 1.0))).position - hub                         # the pulley's +Z set screw ...
+    assert tuple(screw) == pytest.approx((1.0, 0.0, 0.0), abs=1e-6)                  # ... toward the keyway (+X)
+    key_z = (g.shaft_end - g.key_from_end - g.key_l, g.shaft_end - g.key_from_end)
+    assert key_z[0] < hub.Z + 4.0 < key_z[1]                                         # ... along its length
 
 
 @pytest.mark.parametrize(("motor_key", "screws_key", "under_heads", "head", "length", "thread"), [
-    ("nema17_40mm#2", "elbow_motor_screws#1", UPPER_ARM.arm.motor_plate_t, UPPER_ARM.arm.motor_screw.head_h,
-     PARAMS.J1_MOTOR_SCREW_LEN, PARAMS.J1_MOTOR_SCREW_THREAD),
+    ("nema17_40mm#2", "elbow_motor_screws#1", PARAMS.EG17_G5.plate_t, PARAMS.M3_SHCS.head_h,
+     PARAMS.J1_MOTOR_SCREW_LEN, PARAMS.J1_MOTOR_SCREW_LEN - PARAMS.EG17_G5.plate_t),
     ("nema17_40mm#3", "wrist_motor_screws#1", FOREARM.web.thickness - FOREARM.holes.screw.head_h, FOREARM.holes.screw.head_h,
      PARAMS.J2_MOTOR_SCREW_LEN, FOREARM.holes.thread),
     ("nema17_48mm#1", "yaw_motor_screws#1", PARAMS.YAW_MOTOR_SCREW_Y - PARAMS.BASE_MOTOR_PATTERN_CENTRE[1],
      BASE.motor.holes.screw.head_h, PARAMS.YAW_MOTOR_SCREW_LEN, BASE.motor.holes.thread),
 ])
 def test_the_motor_screws_hold_it_down_through_the_web(motor_key, screws_key, under_heads, head, length, thread):
-    """The elbow, the wrist and the base_yaw motor's 4x M3 SHCS (MOTOR_SCREW_MOUNTS) - the drive motor's: each screw on
-    one of the motor's bolt axes, its head's bearing face on its pocket's floor in the web (the web - the base_yaw
-    motor's plate and its pad - under the heads out from the motor's face, on its shaft's side), the head's end flush
-    with the web's far face, its tip `thread` into the motor - short of its tapped holes' bottoms."""
+    """The elbow, the wrist and the base_yaw motor's 4x M3 SHCS (MOTOR_SCREW_MOUNTS): each screw on one of the motor's
+    bolt axes, its head's bearing face on its pocket's floor in the web (the web - the base_yaw motor's plate and its
+    pad; the elbow's gearbox's input plate - under the heads out from the motor's face, on its shaft's side), the
+    head's end flush with the web's far face (the elbow's on the plate's face, in the gearbox's corner channel), its tip
+    `thread` into the motor - short of its tapped holes' bottoms."""
     motor, screws = P.location(motor_key, "world"), P.location(screws_key, "world")
     rel = motor.inverse() * screws                       # the screws' frame in the motor's (its face z = 0, its shaft +Z)
     assert tuple((rel * Location((0.0, 0.0, 1.0))).position - rel.position) == pytest.approx((0.0, 0.0, -1.0), abs=1e-9)
@@ -286,6 +320,24 @@ def test_the_motor_screws_hold_it_down_through_the_web(motor_key, screws_key, un
     assert head == PARAMS.M3_SHCS.head_h                                                # ... flush with the web's underside
     tip = (rel * Location((0.0, 0.0, length))).position.Z
     assert tip == pytest.approx(-thread) and -tip < PARAMS.MOTOR_40.bolt_hole_depth
+
+
+def test_the_gearbox_screws_hold_it_down_through_the_web():
+    """The elbow gearbox's 4x M4 SHCS (MOTOR_SCREW_MOUNTS): each screw on one of the gearbox's M4 axes (on its bolt
+    circle, on its X and Y axes), its head's bearing face on its pocket's floor in the web (web_t under the heads out
+    from the gearbox's face), the head's end flush with the web's underside, its tip J1_GEARBOX_SCREW_THREAD into the
+    gearbox - short of its holes' bottoms."""
+    gearbox, screws, g = _world("eg17_g5_gearbox#1"), _world("elbow_gearbox_screws#1"), PARAMS.EG17_G5
+    rel = gearbox.inverse() * screws
+    assert tuple((rel * Location((0.0, 0.0, 1.0))).position - rel.position) == pytest.approx((0.0, 0.0, -1.0), abs=1e-9)
+    r = g.bolt_pcd / 2.0
+    axes = sorted((round(p.X, 6), round(p.Y, 6)) for p in ((rel * Location((x, y, 0.0))).position
+                                                           for x, y in parts.load("elbow_gearbox_screws").POINTS))
+    assert axes == sorted(((r, 0.0), (-r, 0.0), (0.0, r), (0.0, -r)))
+    a = UPPER_ARM.arm
+    assert rel.position.Z == pytest.approx(a.web_t) and a.web_t + a.seat_screw.head_h == pytest.approx(PARAMS.J1_MOTOR_PAD_FACE_Y - 5.5)
+    tip = (rel * Location((0.0, 0.0, PARAMS.J1_GEARBOX_SCREW_LEN))).position.Z
+    assert tip == pytest.approx(-PARAMS.J1_GEARBOX_SCREW_THREAD) and -tip < g.bolt_depth
 
 
 def test_the_wrist_pitch_motor_sits_on_its_round_holes():

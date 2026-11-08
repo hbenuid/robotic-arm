@@ -6,8 +6,8 @@ SolidWorks product: 'GT2_20T_Конфигурация1'
 Source export:      step/GT2_20T_Конфигурация1.STEP
 Reference: mm units, 3 solid(s), volume 1878.6 mm^3,
            bbox size (14.45, 16, 16) mm, bbox min (0, -8, -8) mm.
-In the arm: x3 (gt2_pulley_20t#1 on the wrist-roll pancake; gt2_pulley_20t#2 on the elbow motor, lib/mounts.py;
-one more inside forearm_roll_drive#1 on the roll motor).
+On every motor's Ø5 shaft in the arm (lib/mounts.py, the roll and wrist roll drives); the elbow's, on its gearbox's Ø8
+shaft, is this pulley bored out (parts/joints/gt2_pulley_20t_8mm).
 
 COTS convention (parts/_templates/cots.py): gt2_pulley_20t() returns the vendor STEP when present,
 else the parametric envelope below - both in the SolidWorks frame placements.json assumes.

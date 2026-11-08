@@ -1,5 +1,5 @@
-"""roll_motor_screws, the forearm roll motor's 4x M3 SHCS - the elbow and the wrist-pitch motors' screw head and
-counterbore (lib/forearm/params.py MotorHoleParams) through the roll frame's thinner plate: a purchased part with no
+"""roll_motor_screws, the forearm roll motor's 4x M3 SHCS - the wrist-pitch motor's screw head and counterbore
+(lib/forearm/params.py MotorHoleParams) through the roll frame's thinner plate: a purchased part with no
 reference (lib/reference.py NO_REFERENCE), which keeps no reference file - THIS file locks its numbers (the pieces, the
 modelled volume and the bounding box, measured on the build and written in) and what it is: every screw on one of the
 plate's holes about the motor's axis with its head's bearing face on z=0, as long under the head as the plate under the
@@ -14,7 +14,6 @@ from assemblies import forearm_roll_drive as M
 from lib import params as PARAMS
 from lib import reference as R
 from lib.forearm import DEFAULT, pad_bolt_points, stack_positions
-from lib.upper_arm import DEFAULT as UPPER_ARM
 from tests import built
 from tests.helpers import interference, is_inside
 
@@ -40,13 +39,13 @@ def test_it_is_a_purchased_part_with_no_reference_in_the_roll_drive():
     assert NAME in M.BODIES["stator"]
 
 
-def test_the_elbow_motors_head_and_counterbore_in_a_thinner_plate():
-    """The wrist-pitch motor's MotorHoleParams - the elbow motor's screw, counterbore and thread -, through the plate:
-    pad_t thick, 4 under the heads, the counterbores head_h deep - so M3 x 8 (the elbow's and the wrist's are M3 x 12
-    through 8 of web). The pattern is the plate's holes about the motor's axis - the 31 mm square."""
-    mod, a = parts.load(NAME), UPPER_ARM.arm
-    assert H == DEFAULT.holes and mod.SCREW == SCREW == a.motor_screw == PARAMS.M3_SHCS
-    assert H.pocket_dia == a.motor_pocket_dia > SCREW.head_dia and H.thread == PARAMS.J1_MOTOR_SCREW_THREAD
+def test_the_wrist_motors_head_and_counterbore_in_a_thinner_plate():
+    """The wrist-pitch motor's MotorHoleParams - the drive motor's screw, head pocket and thread -, through the plate:
+    pad_t thick, 4 under the heads, the counterbores head_h deep - so M3 x 8 (the wrist's are M3 x 12 through 8 of
+    web). The pattern is the plate's holes about the motor's axis - the 31 mm square."""
+    mod = parts.load(NAME)
+    assert H == DEFAULT.holes and mod.SCREW == SCREW == parts.load("wrist_motor_screws").SCREW == PARAMS.M3_SHCS
+    assert H.pocket_dia > SCREW.head_dia and H.thread == PARAMS.J1_MOTOR_SCREW_THREAD
     assert D.pad_t - SCREW.head_h == 4.0
     assert mod.LENGTH == PARAMS.ROLL_MOTOR_SCREW_LEN == D.pad_t - SCREW.head_h + H.thread == 8.0
     assert mod.PURCHASE_SPEC == "M3 x 8 socket head cap screw (ISO 4762)"

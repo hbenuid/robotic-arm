@@ -1,7 +1,8 @@
 """elbow_belt - purchased (COTS) part: the elbow belt, a closed GT2 (2GT) belt, 6 mm, ELBOW_BELT_LENGTH long - one of
 the multipack lengths (lib/belts.py STANDARD_2GT_LENGTHS).
 
-It runs under j1_link's web from the elbow motor's 20T (gt2_pulley_20t#2) to the elbow 90T, round its tensioner: the
+It runs under j1_link's web from the 20T on the elbow gearbox's shaft (gt2_pulley_20t_8mm#1) to the elbow 90T, round its
+tensioner: the
 stock length is longer than the open loop at ELBOW_MOTOR_CENTRES, and a GT2 idler on its back (gt2_idler_20t#1, under
 j1_link's slab - lib/upper_arm/params.py ElbowIdlerParams) takes up the rest, slid along the slab's slots.
 

@@ -1,7 +1,7 @@
 """wrist_motor_screws - purchased (COTS) part: the wrist-pitch motor's 4 M3 socket head cap screws (ISO 4762).
 
-They hold the wrist-pitch motor (nema17_40mm#3) down on j2_link's web - the elbow motor's screws (elbow_motor_screws)
-in the elbow motor's seat: the same 11 mm web, the same counterbores, the same thread in the motor.
+They hold the wrist-pitch motor (nema17_40mm#3) down on j2_link's web - the drive motor's screw (cycloidal_motor_bolts),
+2 mm longer, in a seat like the drive's motor plate's: an 11 mm web, the drive's head pockets, its thread in the motor.
 
 In the arm (lib/mounts.py, hosted on j2_link#1): the heads flush in the counterbores in the web's underside (the belt
 side; lib/forearm/params.py MotorHoleParams.screw, pocket_dia), the shanks up through the web's M3 clearance holes into

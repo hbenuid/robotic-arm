@@ -551,7 +551,7 @@ def test_module_clears_its_neighbours_in_the_arm():
     turned forearm and the upper arm - the stub through its lip -; the frame's stub end on the elbow pulley's face
     (contact, no overlap), the pulley's spigot in j2_link's recess.
     (The mounted motors, boards, bearings and pulleys against the whole module: tests/test_mounts.py
-    test_motors_and_boards_clear_their_neighbours.) The upper arm's own motor and board - on its +N side like the
+    test_motors_and_boards_clear_their_neighbours.) The upper arm's own motor, its gearbox and its board - on its +N side like the
     module's, ELBOW_MOTOR_CENTRES from the elbow axis - turned about it over the elbow's range stay 1 mm off the whole
     module (lib/params.py ELBOW_PITCH_LIMITS_DEG: the lower limit keeps room to spare)."""
     module = _placed_module()
@@ -563,7 +563,7 @@ def test_module_clears_its_neighbours_in_the_arm():
     assert math.isclose(in_drive_frame("gt2_pulley_90t#3").bounding_box().max.Z, ELBOW_PULLEY_FACE_Z, abs_tol=0.05)
     pulley = _placed_part("forearm_roll_pulley")
     assert math.isclose(pulley.bounding_box().min.X, -S["z_spigot_end"], abs_tol=1e-6)
-    for key in ("nema17_40mm#2", "mks_servo42d#2"):
+    for key in ("eg17_g5_gearbox#1", "nema17_40mm#2", "mks_servo42d#2"):
         for elbow in _elbow_range(5):
             gap = _upper_arm_at(in_drive_frame(key), elbow).distance_to(module)
             assert gap > 1.0, f"{key} at elbow {elbow:+.0f} deg: {gap:.1f} mm from the module"
