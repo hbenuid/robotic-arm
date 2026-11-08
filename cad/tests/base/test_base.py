@@ -116,13 +116,16 @@ def test_default_bore_takes_the_6806_pair():
     assert (b.upper_dia, b.lower_dia, b.lip_dia) == (FOREARM.boss.seat_dia, FOREARM.boss.seat_dia, FOREARM.boss.lip_dia)
     assert b.upper_dia > BEARING_6806_OD and LEGACY.bore.lower_dia - BEARING_6806_OD > 1.0   # the SolidWorks lower seat: 1.4 over
     c = DEFAULT.cap
-    assert c.ring_top_y - b.lip_y[1] > BEARING_6806_WIDTH and b.lip_y[0] - c.boss_y0 > BEARING_6806_WIDTH   # a bearing fits each side
+    assert c.ring_top_y - b.lip_y[1] > BEARING_6806_WIDTH                     # a bearing fits each side - the lower seat
+    assert b.lip_y[0] - c.boss_y0 == pytest.approx(BEARING_6806_WIDTH)        # exactly one deep: the boss flush with the bearing
 
 
 def test_default_ring_centres_the_thrust_bearing():
-    """The seat ring inside the thrust bearing's bore (the SolidWorks Ø65.1 was over it), the groove round the stack."""
+    """The seat ring inside the thrust bearing's bore (the SolidWorks Ø65.1 was over it), the groove round the stack;
+    the boss under the cap ends flush with the lower 6806 (the SolidWorks one ran 1 on, over the 120T's web)."""
     ring, groove = DEFAULT.cap.groove_r
-    assert DEFAULT.cap == replace(LEGACY.cap, groove_r=(ring, LEGACY.cap.groove_r[1]))
+    assert DEFAULT.cap == replace(LEGACY.cap, groove_r=(ring, LEGACY.cap.groove_r[1]), boss_y0=DEFAULT.cap.boss_y0)
+    assert DEFAULT.cap.boss_y0 == pytest.approx(DEFAULT.bore.lip_y[0] - BEARING_6806_WIDTH) == pytest.approx(LEGACY.cap.boss_y0 + 1.0)
     assert THRUST_BORE / 2.0 - ring == pytest.approx(RING_CLEAR) and LEGACY.cap.groove_r[0] > THRUST_BORE / 2.0
     assert groove > THRUST_OD / 2.0
 

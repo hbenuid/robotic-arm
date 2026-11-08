@@ -82,9 +82,10 @@ DEFAULT = replace(LEGACY, hole_dia=M4_CLEAR, counterbore=(M4_SHCS.head_dia + 0.4
 # 90T's: it sits on j1_coupler's stub in the lower base bearing the same way, clamped by the same screws. Its plain hub
 # between the ring and the web (the 90T's Ø30 and its step) is gone - YAW_HUB_CUT: the ring stands straight on the web,
 # the journal and the ring that much nearer the outer face. That plain hub only held the belt plane down: without it the
-# web's top comes up to 0.5 under the base's bearing boss (lib/base/params.py CapParams; the rim's inside is wider than
-# the boss, so the rim rises beside it), and the belt, the motor plate and the base's bottom face come YAW_HUB_CUT nearer
-# the cap with it (lib/base/params.py YAW_BELT_Y).
+# web's top comes up to the ring's height under the lower bearing - 1.5 under it and under the base's bearing boss, which
+# ends flush with it (lib/base/params.py _BOSS_Y0; the rim's inside is wider than the boss, so the rim rises beside it) -,
+# and the belt, the motor plate and the base's bottom face come YAW_HUB_CUT nearer the cap with it (lib/base/params.py
+# YAW_BELT_Y).
 YAW_HUB_CUT = round(LEGACY.web_y0 - LEGACY.ring[2], 6)   # 6.5 [DESIGN]
 YAW = replace(DEFAULT, teeth=GT2_PULLEY_120T_TEETH,
               rim_dia=round(pulley_od(GT2_PULLEY_120T_TEETH) - (pulley_od(LEGACY.teeth) - LEGACY.rim_dia), 6),
