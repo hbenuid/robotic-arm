@@ -43,7 +43,7 @@ LOCKS = {
 # 120T's along +Y)
 PULLEYS = {
     "yaw_belt#1": [("gt2_pulley_20t#3", (T20_HUB, 0.0, 0.0)), ("gt2_pulley_120t#1", (0.0, PULLEY_120T.band_y1 / 2.0, 0.0))],
-    "elbow_belt#1": [("gt2_pulley_20t#2", (T20_HUB, 0.0, 0.0)), ("gt2_pulley_90t#3", (0.0, PULLEY_90T.band_y1 / 2.0, 0.0))],
+    "elbow_belt#1": [("gt2_pulley_20t_8mm#1", (T20_HUB, 0.0, 0.0)), ("gt2_pulley_90t#3", (0.0, PULLEY_90T.band_y1 / 2.0, 0.0))],
     "wrist_belt#1": [("gt2_pulley_20t#4", (T20_HUB, 0.0, 0.0)), ("gt2_pulley_90t#4", (0.0, PULLEY_90T.band_y1 / 2.0, 0.0))],
 }
 

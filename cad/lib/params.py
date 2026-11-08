@@ -59,7 +59,7 @@ MG996R_MASS_G = 55.0            # [DATASHEET]
 # --- Motors - lib/motors.py (a leaf: the NEMA 17 interface, the pancake, the 40 mm kit motor + its MKS
 # SERVO42D board; lib/forearm/ imports it directly) -----------------------------------------------------
 from lib.motors import (  # noqa: E402, F401
-    MKS_PLUG_ROOM, MKS_SERVO42D_BOARD_STACK, MKS_SERVO42D_HEADERS, MKS_SERVO42D_MASS_G, MKS_SERVO42D_SCREW_REACH,
+    EG17_G5, EG17_G5_MASS_G, GearboxParams, MKS_PLUG_ROOM, MKS_SERVO42D_BOARD_STACK, MKS_SERVO42D_HEADERS, MKS_SERVO42D_MASS_G, MKS_SERVO42D_SCREW_REACH,
     MKS_SERVO42D_STACK, MKS_SERVO42D_STANDOFF, MKS_SERVO42D_W, MOTOR_40, NEMA17_40_BODY_LEN, NEMA17_40_BODY_W, NEMA17_40_CONNECTOR_D, NEMA17_40_CONNECTOR_W,
     NEMA17_40_CONNECTOR_Z0, NEMA17_40_CONNECTOR_Z1, NEMA17_40_MASS_G, NEMA17_40_REAR_STUB_DIA, NEMA17_40_REAR_STUB_LEN,
     NEMA17_BOLT_SP, NEMA17_FACE, NEMA17_PILOT_DIA, NEMA17_SHAFT_DIA, PANCAKE_BODY_D, PANCAKE_BODY_H, PANCAKE_BODY_W,
@@ -99,18 +99,25 @@ from lib.upper_arm.params import ELBOW_BELT as _ELBOW_BELT  # noqa: E402
 
 J1_ARM_SLIDE = _arm_slide(_UPPER_ARM)              # 29.5 [DESIGN] j1_link: the plate - its elbow end, the arm's slab - slid along +Y (N), its
 #                                                    underside onto the shell's hub end (ArmParams)
-J1_MOTOR_PAD_FACE_Y = _UPPER_ARM.arm.y_outer       # 16.5 [DESIGN] j1_link: the elbow motor's face, on the web across its hole through the slab (the
-#                                                    -N side; ArmParams), the motor on +N down the hole, its shaft -N; the holes about the pad's axis
-J1_MOTOR_SCREW_THREAD = 4.0                        # [DESIGN] the elbow motor's 4x M3 (parts/joints/elbow_motor_screws) this far into its
-#                                                    tapped holes - the drive's motor bolts' (bolt_hole_depth - motor_bolt_thread_margin) ...
-J1_MOTOR_SCREW_LEN = _UPPER_ARM.arm.motor_plate_t + J1_MOTOR_SCREW_THREAD   # 12 ... under the head, through the web (ArmParams.motor_plate_t)
-J1_MOTOR_20T_HUB_Z = 7.75                          # [DESIGN] the elbow motor's 20T (lib/mounts.py gt2_pulley_20t#2): its hub face this far out
-#                                                    along the shaft from the motor's face - up in the web's pilot hole -, its tooth band
+J1_MOTOR_PAD_FACE_Y = _UPPER_ARM.arm.y_outer       # 16.5 [DESIGN] j1_link: the elbow gearbox's output face, on the web across the motor's hole
+#                                                    through the slab (the -N side; ArmParams), the gearbox and the motor on it on +N down the
+#                                                    hole, the gearbox's shaft -N; the web's holes about the pad's axis
+J1_GEARBOX_SCREW_THREAD = 5.0                      # [DESIGN] the gearbox's 4x M4 (parts/joints/elbow_gearbox_screws) this far into its tapped
+#                                                    holes (EG17_G5.bolt_depth deep) ...
+J1_GEARBOX_SCREW_LEN = _UPPER_ARM.arm.web_t + J1_GEARBOX_SCREW_THREAD   # 12 ... under the head, through the web (ArmParams.web_t)
+J1_MOTOR_SCREW_THREAD = 4.0                        # [DESIGN] how far the drive's rule puts a motor's M3 into its tapped holes
+#                                                    (bolt_hole_depth - motor_bolt_thread_margin); the wrist and roll motors' screws keep it
+J1_MOTOR_SCREW_LEN = 8.0                           # [DESIGN] the elbow motor's 4x M3 (parts/joints/elbow_motor_screws) under the head: from
+#                                                    the gearbox's input plate (EG17_G5.plate_t) into the motor's tapped holes, 3.3 of
+#                                                    thread in them - the stock length under the drive's rule's 8.7
+J1_MOTOR_20T_HUB_Z = 7.75                          # [DESIGN] the elbow's 20T (lib/mounts.py gt2_pulley_20t_8mm#1): its hub face this far out
+#                                                    along the gearbox's shaft from its output face - in the web's bore -, its tooth band
 #                                                    (RollDriveParams.t20_hub on) level with the elbow 90T's (tests/test_mounts.py)
 ELBOW_BELT_LENGTH = _ELBOW_BELT                    # 280-2GT [DESIGN] the elbow belt (20T on j1_link's motor, 90T at the elbow), round its
 #                                                    idler (lib/upper_arm/params.py ElbowIdlerParams)
-ELBOW_RATIO = GT2_PULLEY_90T_TEETH / GT2_PULLEY_20T_TEETH   # 4.5:1 [DESIGN] the elbow belt: the 90T (parts/joints/gt2_pulley_90t) on the elbow motor's 20T
-#                                                    - the belt alone: the 5:1 planetary gearbox on the elbow motor is not modelled yet (docs/open_issues.md)
+ELBOW_RATIO = EG17_G5.ratio * GT2_PULLEY_90T_TEETH / GT2_PULLEY_20T_TEETH   # 22.5:1 [DESIGN] two stages: the gearbox on the elbow motor
+#                                                    (parts/joints/eg17_g5_gearbox, 5:1), then the elbow belt - the 90T (parts/joints/
+#                                                    gt2_pulley_90t) on the 20T on the gearbox's shaft (4.5:1)
 from lib.forearm.params import DEFAULT as _FOREARM  # noqa: E402
 
 J2_MOTOR_WEB_FACE_Z = _FOREARM.web.z1              # 6 [DESIGN] j2_link: the web's +Z face (WEB_DROP under the SolidWorks part's 19); the
@@ -267,10 +274,12 @@ _JOINT_BOLTS = len(_joint_bolt_points(_BASE))
 BASE_MOUNT_SCREWS_MASS_G = STEEL_DENSITY * _JOINT_BOLTS * shcs_volume(_BASE.joint.screw, _BASE.joint.screw_len)   # 12.2, 4x M4x20
 BASE_MOUNT_NUTS_MASS_G = STEEL_DENSITY * _JOINT_BOLTS * nut_volume(_BASE.joint.nut)                              # 3.0, 4x M4
 
-# The elbow motor's screws (parts/joints/elbow_motor_screws): the same estimate
+# The elbow gearbox's screws (parts/joints/elbow_gearbox_screws) and the elbow motor's (parts/joints/elbow_motor_screws,
+# the 4 M3 on the NEMA 17 square through the gearbox's input plate): the same estimate
 from lib.upper_arm.layout import pad_holes as _pad_holes  # noqa: E402
 
-ELBOW_MOTOR_SCREWS_MASS_G = STEEL_DENSITY * len(_pad_holes(_UPPER_ARM)) * shcs_volume(_UPPER_ARM.arm.motor_screw, J1_MOTOR_SCREW_LEN)   # 4.7, 4x M3x12
+ELBOW_GEARBOX_SCREWS_MASS_G = STEEL_DENSITY * len(_pad_holes(_UPPER_ARM)) * shcs_volume(_UPPER_ARM.arm.seat_screw, J1_GEARBOX_SCREW_LEN)   # 4x M4x12
+ELBOW_MOTOR_SCREWS_MASS_G = STEEL_DENSITY * 4 * shcs_volume(M3_SHCS, J1_MOTOR_SCREW_LEN)   # 4x M3x8
 # the wrist motor's (parts/joints/wrist_motor_screws), likewise
 from lib.forearm.layout import motor_hole_points as _motor_hole_points  # noqa: E402
 

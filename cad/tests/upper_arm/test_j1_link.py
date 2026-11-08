@@ -25,7 +25,8 @@ from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, centre_distanc
 from lib.cycloidal import arm_zone, housing_bolt_points, shell_ends, stack_positions
 from lib.cycloidal.params import DEFAULT_CONFIG
 from lib.datum import to_location
-from lib.motors import NEMA17_BOLT_SP
+from lib.fasteners import M4_CLEAR
+from lib.motors import EG17_G5
 from lib.style import EDGE_CHAMFER, SIDES
 from lib.upper_arm import DEFAULT, LEGACY, arm_slide, hub_bolt_points, pad_holes, socket_points
 from lib.upper_arm.link import drive_frame
@@ -86,7 +87,7 @@ def test_the_arm_rises_off_the_drives_shell():
         assert tuple((capture * Location(v)).position) == pytest.approx(tuple((mine * Location(v)).position), abs=1e-6)
     hub_end = a.drive_z_at_y0 - shell_ends(DEFAULT_CONFIG)[1]
     assert DEFAULT.elbow.y0 + SLIDE == pytest.approx(hub_end) and hub_end == 5.5        # the slab's underside on the hub end
-    assert a.y_outer == hub_end + a.motor_plate_t + a.motor_screw.head_h == 16.5         # the web flush with it, the motor on top
+    assert a.y_outer == hub_end + a.web_t + a.seat_screw.head_h == 16.5                  # the web flush with it, the gearbox on top
     assert SLIDE == pytest.approx(29.5) and a.drive_z_at_y0 - arm_zone(DEFAULT_CONFIG)[0] == 57.5
     assert h.od / 2.0 > a.fuse_r > (h.bolt_circle_dia + h.bolt_dia + DEFAULT_CONFIG.tolerances.bolt_clearance_add) / 2.0
     assert a.fuse_r > h.bore_dia / 2.0
@@ -97,21 +98,21 @@ def test_the_arm_rises_off_the_drives_shell():
     assert DEFAULT_CONFIG.shell.arm_windows == 2 and 360.0 / h.bolt_count * DEFAULT_CONFIG.shell.arm_windows / 2.0 == 60.0
 
 
-def test_default_motor_holes_are_the_motors_pattern():
-    """The elbow motor (lib/mounts.py nema17_40mm#2: face on the web, shaft -N on the pad's axis, the body +N) has
-    its 4 bolts on the NEMA 17 square in its own frame (face z = 0): each one is a DEFAULT hole's axis (the holes about
-    the pad's x), on the top of the web across the slab's motor hole."""
-    m = mounts.BY_KEY["nema17_40mm#2"]
+def test_default_web_holes_are_the_gearboxs_pattern():
+    """The elbow motor's gearbox (lib/mounts.py eg17_g5_gearbox#1: output face on the web, shaft -N on the pad's axis,
+    the body +N) has its 4 M4 on its bolt circle, on its X and Y axes, in its own frame (face z = 0): each one is a
+    DEFAULT hole's axis (the holes about the pad's x), on the top of the web across the slab's motor hole - M4
+    clearance holes, no longer the motor's NEMA 17 square."""
+    m = mounts.BY_KEY["eg17_g5_gearbox#1"]
     frame = to_location(m.frame)
-    half = NEMA17_BOLT_SP / 2.0
-    bolts = sorted((round(p.X, 6), round(p.Z, 6)) for p in (
-        (frame * Location((sx * half, sy * half, 0.0))).position for sx in (1, -1) for sy in (1, -1)))
+    r = EG17_G5.bolt_pcd / 2.0
+    pcd = ((r, 0.0), (0.0, r), (-r, 0.0), (0.0, -r))
+    bolts = sorted((round(p.X, 6), round(p.Z, 6)) for p in ((frame * Location((x, y, 0.0))).position for x, y in pcd))
     holes = sorted((round(DEFAULT.pad.x + x, 6), round(z, 6)) for x, z, _ in pad_holes(DEFAULT))
-    assert bolts == holes
-    assert all((frame * Location((sx * half, sy * half, 0.0))).position.Y == pytest.approx(DEFAULT.arm.y_outer)
-               for sx in (1, -1) for sy in (1, -1))
+    assert bolts == holes and all(dia == M4_CLEAR for _, _, dia in pad_holes(DEFAULT))
+    assert all((frame * Location((x, y, 0.0))).position.Y == pytest.approx(DEFAULT.arm.y_outer) for x, y in pcd)
     shaft = (frame * Location((0.0, 0.0, 1.0))).position - frame.position
-    assert tuple(shaft) == pytest.approx((0.0, -1.0, 0.0), abs=1e-9)                # shaft -N, through the plate
+    assert tuple(shaft) == pytest.approx((0.0, -1.0, 0.0), abs=1e-9)                # shaft -N, through the web
     # LEGACY's holes were 0.38 off the axis and uneven - the reason DEFAULT moves them
     cx = sum(x for x, _, _ in pad_holes(LEGACY)) / 4.0
     cz = sum(z for _, z, _ in pad_holes(LEGACY)) / 4.0
@@ -192,7 +193,7 @@ def test_default(link, legacy):
     the underside; no pad, no sockets, the second stage's seat gone."""
     dx, a = SHORTENING, DEFAULT.arm
     assert link.is_valid and len(link.solids()) == 1
-    assert R.solid_volume(link) == pytest.approx(291974.530, abs=0.5)
+    assert R.solid_volume(link) == pytest.approx(292144.321, abs=0.5)
     bb, hh, (z_0, z_1) = link.bounding_box(), DEFAULT_CONFIG.housing, arm_zone(DEFAULT_CONFIG)
     # across (Z) the body's pillars either side of +/-Z reach furthest: the windows on +/-Z are open; along Y the
     # shell's body, from its hub end to the shell ring's face (arm_zone's start); along X the slab's round end
@@ -249,10 +250,10 @@ def test_default(link, legacy):
     for x, z in socket_points(LEGACY)[1]:
         assert not is_inside(link, x + dx, -23.0 + SLIDE, z)
     # the elbow motor at the pad's x: its square hole through the slab, the slab beside it; the web across it (the
-    # motor's face on its top, the pilot's hole, the NEMA 17 holes, the screws' head pockets in its underside - motor_plate_t
-    # under their floors, the heads' height deep, as the drive's motor plate), its underside the slab's; the pad's tube gone
-    px, hole, t, yh = DEFAULT.pad.x, a.motor_hole_half, a.motor_plate_t, (a.y_outer + hi) / 2.0
-    head, r_pocket = a.motor_screw.head_h, a.motor_pocket_dia / 2.0
+    # gearbox's face on its top, its bore and the boss's counterbore, the M4 holes, the screws' head pockets in its
+    # underside - web_t under their floors, the heads' height deep), its underside the slab's; the pad's tube gone
+    px, hole, t, yh = DEFAULT.pad.x, a.motor_hole_half, a.web_t, (a.y_outer + hi) / 2.0
+    head, r_pocket = a.seat_screw.head_h, a.seat_pocket_dia / 2.0
     under, floor = a.y_outer - t - head, a.y_outer - t
     assert not is_inside(link, px, yh, 0) and not is_inside(link, px + hole - 0.3, yh, hole - 0.3)
     assert is_inside(link, px, yh, hole + 0.3) and is_inside(link, px - hole - 0.3, yh, 0)
@@ -260,7 +261,13 @@ def test_default(link, legacy):
     assert under == pytest.approx(lo)                                                 # the web flush with the slab
     assert is_inside(link, px + 20, a.y_outer - 0.1, 20) and not is_inside(link, px + 20, a.y_outer + 0.1, 20)
     assert is_inside(link, px + 20, under + 0.1, 20) and not is_inside(link, px + 20, under - 0.1, 20)
-    assert not is_inside(link, px, a.y_outer - 1.0, 0) and not is_inside(link, px + a.motor_pilot_dia / 2.0 - 0.3, a.y_outer - 1.0, 0)
+    # the bore round the shaft and the 20T, through; the boss's counterbore over it, seat_boss_depth deep (the boss 2)
+    r_bore, r_boss, seat = a.seat_bore_dia / 2.0, a.seat_boss_dia / 2.0, a.y_outer - a.seat_boss_depth
+    assert not is_inside(link, px, a.y_outer - 1.0, 0) and not is_inside(link, px + r_bore - 0.3, under + 0.5, 0)
+    assert is_inside(link, px + r_bore + 0.3, under + 0.5, 0) and is_inside(link, px + r_bore + 0.3, seat - 0.3, 0)
+    assert not is_inside(link, px + r_boss - 0.3, seat + 0.3, 0) and is_inside(link, px + r_boss + 0.3, seat + 0.3, 0)
+    assert r_boss > EG17_G5.boss_dia / 2.0 and a.seat_boss_depth > EG17_G5.boss_t
+    assert r_bore > 8.0 and (EG17_G5.bolt_pcd / 2.0 - r_pocket) - r_bore > 4.0       # round the 20T (Ø16); 4.3 to each pocket
     for x, z, dia in pad_holes(DEFAULT):
         assert not is_inside(link, px + x, a.y_outer - 1.0, z)
         assert not is_inside(link, px + x + r_pocket - 0.2, under + 1.0, z) and is_inside(link, px + x + r_pocket + 0.2, under + 1.0, z)

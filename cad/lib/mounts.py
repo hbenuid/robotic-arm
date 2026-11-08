@@ -34,18 +34,21 @@ Geometry (lib/params.py, kernel-verified 2026-09-21 - tests/test_mounts.py re-ch
                120T's teeth; motor + board end BASE_MOTOR_TABLE_CLEAR above the base's bottom face (lowered under
                them, lib/base/params.py BOARD_CLEAR); held up by its 4x M3 SHCS (yaw_motor_screws#1,
                MOTOR_SCREW_MOUNTS), down through the plate from the counterbores in its top (YAW_MOTOR_SCREW_Y)
-  elbow_pitch  the web across j1_link's motor hole (its top y = J1_MOTOR_PAD_FACE_Y, the -N side;
-               lib/upper_arm/params.py ArmParams), pattern on the pad's axis (PadParams.x: ELBOW_MOTOR_CENTRES short of
-               the elbow axis - the shoulder axis is the drive's yoke's); the body +N down the square hole through the
-               slab, standing out on the forearm's side; shaft -N through the web, its 20T (gt2_pulley_20t#2, under the
-               web, MOTOR_PULLEY_MOUNTS) level with the elbow 90T, on the belt to it (elbow_belt#1, BELT_MOUNTS); held down by its 4x M3 SHCS (elbow_motor_screws#1, MOTOR_SCREW_MOUNTS), up
-               through the web from its underside, the heads flush in its pockets - the drive motor's screws and seat
+  elbow_pitch  the motor on its 5:1 planetary (eg17_g5_gearbox#1, parts/joints/eg17_g5_gearbox: the motor's frame,
+               its output face where the motor's would be), the gearbox on the web across j1_link's motor hole (its top
+               y = J1_MOTOR_PAD_FACE_Y, the -N side; lib/upper_arm/params.py ArmParams), pattern on the pad's axis
+               (PadParams.x: ELBOW_MOTOR_CENTRES short of the elbow axis - the shoulder axis is the drive's yoke's); the
+               gearbox +N up the square hole through the slab and the motor on its input end beyond it, standing out on
+               the forearm's side; the gearbox's shaft -N down the web's bore, its 20T (gt2_pulley_20t_8mm#1, Ø8 bore,
+               MOTOR_PULLEY_MOUNTS) level with the elbow 90T, on the belt to it (elbow_belt#1, BELT_MOUNTS); the gearbox
+               held down by its 4x M4 SHCS (elbow_gearbox_screws#1, MOTOR_SCREW_MOUNTS), up through the web from its
+               underside, the heads flush in its pockets; the motor on the gearbox by its 4x M3 (elbow_motor_screws#1)
   wrist_pitch  j2_link's web (+Z face z = J2_MOTOR_WEB_FACE_Z), motor axis at x = J2_MOTOR_X on round holes
                (lib/forearm/params.py WRIST_MOTOR_CENTRES: nearer the wrist than the stock wrist belt's own centre
                distance, the idler under the web taking up the rest; its connector sideways); body +N, shaft -N through
                the web, the 20T under it (the forearm turned about its roll axis: lib/placements.py TURNS - the motor on
                the upper arm's side); held down by its 4x M3 SHCS (wrist_motor_screws#1, MOTOR_SCREW_MOUNTS), up through
-               the web from its underside, the heads flush in its counterbores - the elbow motor's screws and seat
+               the web from its underside, the heads flush in its counterbores
 
 The BEARINGS (parts/joints/bearing_6806, BEARING_MOUNTS): the 6806-2RS pair each belt joint's housing takes, one
 each side of the lip that splits its bore - in the base (base_yaw), in j1_link's elbow end (elbow_pitch), in
@@ -107,6 +110,7 @@ from lib.params import (
     BASE_MOTOR_PATTERN_CENTRE,
     BEARING_6806_WIDTH,
     CYCLOIDAL_MOTOR_BODY_LEN,
+    EG17_G5,
     GT2_IDLER_WIDTH,
     GT2_PULLEY_90T_FACE_Y,
     GT2_PULLEY_90T_HEAD_SEAT,
@@ -142,7 +146,9 @@ from lib.yaw_coupler.params import DEFAULT as _YAW_COUPLER
 
 MOTOR_48, MOTOR_40, BOARD = "nema17_48mm", "nema17_40mm", "mks_servo42d"
 MOTORS = (MOTOR_48, MOTOR_40)
+GEARBOX = "eg17_g5_gearbox"
 BEARING, PULLEY, YAW_PULLEY, MOTOR_PULLEY = "bearing_6806", "gt2_pulley_90t", "gt2_pulley_120t", "gt2_pulley_20t"
+GEARBOX_PULLEY = "gt2_pulley_20t_8mm"
 THRUST_CAGE, THRUST_WASHER = "bearing_axk6590", "washer_as6590"
 PULLEY_BOLTS = ("elbow_pulley_screws", "elbow_pulley_nuts", "wrist_pulley_screws", "wrist_pulley_nuts",
                 "yaw_pulley_screws", "yaw_pulley_nuts")
@@ -151,7 +157,7 @@ YOKE_MOTOR_LEG = "j1_motor_leg"
 FORK_ON_AXIS = ("fork_hub_screws", "fork_hub_nuts", "fork_sleeve_screws", "fork_sleeve_nuts")
 FORK_OFF_AXIS = ("fork_foot_screws", "fork_foot_nuts")
 FORK_BOLTS = FORK_ON_AXIS + FORK_OFF_AXIS
-MOTOR_SCREWS = ("elbow_motor_screws", "wrist_motor_screws", "yaw_motor_screws")
+MOTOR_SCREWS = ("elbow_gearbox_screws", "elbow_motor_screws", "wrist_motor_screws", "yaw_motor_screws")
 IDLER_KIT = ("gt2_idler_20t", "elbow_idler_spacer", "elbow_idler_screw", "elbow_idler_nut", "yaw_idler_spacer",
              "yaw_idler_screw", "yaw_idler_nut", "wrist_idler_screw", "wrist_idler_nut")
 
@@ -159,6 +165,7 @@ IDLER_KIT = ("gt2_idler_20t", "elbow_idler_spacer", "elbow_idler_screw", "elbow_
 # joint's axis (a motor's shaft runs beside its joint, parallel; a bearing, a pulley or a pulley-bolt pattern sits on it).
 AXES: dict[str, tuple[tuple[float, float, float], bool]] = {
     MOTOR_48: ((0.0, 0.0, 1.0), False), MOTOR_40: ((0.0, 0.0, 1.0), False), MOTOR_PULLEY: ((1.0, 0.0, 0.0), False),
+    GEARBOX: ((0.0, 0.0, 1.0), False), GEARBOX_PULLEY: ((1.0, 0.0, 0.0), False),
     **{part: ((0.0, 0.0, 1.0), False) for part in MOTOR_SCREWS},
     BEARING: ((0.0, 0.0, 1.0), True), PULLEY: ((0.0, 1.0, 0.0), True), YAW_PULLEY: ((0.0, 1.0, 0.0), True),
     THRUST_CAGE: ((0.0, 0.0, 1.0), True), THRUST_WASHER: ((0.0, 0.0, 1.0), True),
@@ -218,11 +225,15 @@ MOTOR_MOUNTS: tuple[Mount, ...] = (
           "holes; motor + board end BASE_MOTOR_TABLE_CLEAR above the base's bottom face; connector toward +X [ESTIMATE]"),
     Mount("mks_servo42d#1", BOARD, "nema17_48mm#1", "base_link", "base_yaw",
           board_frame(CYCLOIDAL_MOTOR_BODY_LEN, BOARD_TURNS["mks_servo42d#1"])),
-    Mount("nema17_40mm#2", MOTOR_40, "j1_link#1", "upper_arm_link", "elbow_pitch",
+    Mount("eg17_g5_gearbox#1", GEARBOX, "j1_link#1", "upper_arm_link", "elbow_pitch",
           ((_UPPER_ARM.pad.x, J1_MOTOR_PAD_FACE_Y, 0.0), (90.0, 0.0, 0.0)),
-          "on the web across j1_link's motor hole (on its 4 holes), ELBOW_MOTOR_CENTRES short of the elbow axis, the body "
-          "+N down the hole through the slab, shaft -N through the web; connector toward -Z [ESTIMATE] (toward the elbow "
-          "the roll block would pass it 0.2 mm off)"),
+          "the elbow motor's 5:1 planetary on the web across j1_link's motor hole (on its 4 holes, its boss in the web's "
+          "counterbore), ELBOW_MOTOR_CENTRES short of the elbow axis, the body +N up the hole through the slab, its shaft "
+          "-N down the web's bore; the clamp's access holes along the link"),
+    Mount("nema17_40mm#2", MOTOR_40, "eg17_g5_gearbox#1", "upper_arm_link", "elbow_pitch",
+          ((0.0, 0.0, -EG17_G5.length), (0.0, 0.0, 0.0)),
+          "on the gearbox's input end (its pilot in the bore, its shaft in the clamp), the body +N; connector toward -Z "
+          "[ESTIMATE] (as on the web before the gearbox: toward the elbow the roll block passed it 0.2 mm off)"),
     Mount("mks_servo42d#2", BOARD, "nema17_40mm#2", "upper_arm_link", "elbow_pitch",
           board_frame(NEMA17_40_BODY_LEN, BOARD_TURNS["mks_servo42d#2"])),
     Mount("nema17_40mm#3", MOTOR_40, "j2_link#1", "forearm_link", "wrist_pitch",
@@ -237,10 +248,11 @@ MOTOR_MOUNTS: tuple[Mount, ...] = (
 # x 0, hub toward the motor), each its *_20T_HUB_Z out from the motor's face - its tooth band level with the driven
 # pulley's (lib/params.py: each belt's plane).
 MOTOR_PULLEY_MOUNTS: tuple[Mount, ...] = (
-    Mount("gt2_pulley_20t#2", MOTOR_PULLEY, "nema17_40mm#2", "upper_arm_link", "elbow_pitch",
-          ((0.0, 0.0, J1_MOTOR_20T_HUB_Z), (0.0, -90.0, 0.0)),
-          "the elbow motor's 20T on its shaft, hub toward the motor, J1_MOTOR_20T_HUB_Z out from its face (under the "
-          "web): its tooth band level with the elbow 90T's"),
+    Mount("gt2_pulley_20t_8mm#1", GEARBOX_PULLEY, "eg17_g5_gearbox#1", "upper_arm_link", "elbow_pitch",
+          ((0.0, 0.0, J1_MOTOR_20T_HUB_Z), (0.0, 90.0, 180.0)),
+          "the elbow's 20T on the gearbox's Ø8 shaft, hub toward the gearbox, J1_MOTOR_20T_HUB_Z out from its face (in "
+          "and under the web): its tooth band level with the elbow 90T's; turned so one set screw (the pulley's +Z) "
+          "points into the shaft's keyway (the gearbox's +X)"),
     Mount("gt2_pulley_20t#3", MOTOR_PULLEY, "nema17_48mm#1", "base_link", "base_yaw",
           ((0.0, 0.0, BASE_MOTOR_20T_HUB_Z), (0.0, -90.0, 0.0)),
           "the base_yaw motor's 20T on its shaft, its hub in the motor plate's window: its tooth band level with the 120T's"),
@@ -248,18 +260,23 @@ MOTOR_PULLEY_MOUNTS: tuple[Mount, ...] = (
           ((0.0, 0.0, J2_MOTOR_20T_HUB_Z), (0.0, -90.0, 0.0)),
           "the wrist motor's 20T on its shaft, its hub up in the web's pilot slot: its tooth band level with the wrist 90T's"),
 )
-# The motors' 4x M3 SHCS, the pattern on the web's holes, +Z from the heads' bearing faces on the floors of the pockets
-# in the web's underside up into the motor: the elbow motor's up j1_link's +Y (motor_plate_t under the motor's face, the
-# web across its motor hole), the wrist motor's up j2_link's +Z (the web under the counterbores: MotorHoleParams); the
-# base_yaw motor's DOWN the base's -Y from the counterbores in the top of the motor mount's plate (MotorParams.holes).
+# The motors' 4x M3 SHCS (and the elbow gearbox's 4x M4), the pattern on the web's holes, +Z from the heads' bearing
+# faces on the floors of the pockets in the web's underside up into the motor: the elbow gearbox's up j1_link's +Y (web_t
+# under the gearbox's face, the web across the motor's hole), the wrist motor's up j2_link's +Z (the web under the
+# counterbores: MotorHoleParams); the base_yaw motor's DOWN the base's -Y from the counterbores in the top of the motor
+# mount's plate (MotorParams.holes); the elbow motor's from the front of the gearbox's input plate down its -Z.
 MOTOR_SCREW_MOUNTS: tuple[Mount, ...] = (
-    Mount("elbow_motor_screws#1", "elbow_motor_screws", "j1_link#1", "upper_arm_link", "elbow_pitch",
-          ((_UPPER_ARM.pad.x, round(J1_MOTOR_PAD_FACE_Y - _UPPER_ARM.arm.motor_plate_t, 6), 0.0), (-90.0, 0.0, 0.0)),
-          "the elbow motor's 4x M3 x J1_MOTOR_SCREW_LEN SHCS (the drive motor's): heads flush in the pockets in the underside "
-          "of the web across j1_link's motor hole, up through it into the motor's tapped holes"),
+    Mount("elbow_gearbox_screws#1", "elbow_gearbox_screws", "j1_link#1", "upper_arm_link", "elbow_pitch",
+          ((_UPPER_ARM.pad.x, round(J1_MOTOR_PAD_FACE_Y - _UPPER_ARM.arm.web_t, 6), 0.0), (-90.0, 0.0, 0.0)),
+          "the elbow gearbox's 4x M4 x J1_GEARBOX_SCREW_LEN SHCS: heads flush in the pockets in the underside of the web "
+          "across j1_link's motor hole, up through it into the gearbox's tapped holes"),
+    Mount("elbow_motor_screws#1", "elbow_motor_screws", "eg17_g5_gearbox#1", "upper_arm_link", "elbow_pitch",
+          ((0.0, 0.0, round(EG17_G5.plate_t - EG17_G5.length, 6)), (180.0, 0.0, 0.0)),
+          "the elbow motor's 4x M3 x J1_MOTOR_SCREW_LEN SHCS (they ship with the gearbox): heads on the input plate's front "
+          "face in the gearbox's corner channels, through the plate into the motor's tapped holes"),
     Mount("wrist_motor_screws#1", "wrist_motor_screws", "j2_link#1", "forearm_link", "wrist_pitch",
           ((J2_MOTOR_X, 0.0, round(_FOREARM.web.z0 + _FOREARM.holes.screw.head_h, 6)), (0.0, 0.0, 0.0)),
-          "the wrist motor's 4x M3 x J2_MOTOR_SCREW_LEN SHCS (the elbow motor's): heads flush in the counterbores in the "
+          "the wrist motor's 4x M3 x J2_MOTOR_SCREW_LEN SHCS: heads flush in the counterbores in the "
           "underside of j2_link's web, up through it into the motor's tapped holes"),
     Mount("yaw_motor_screws#1", "yaw_motor_screws", "base_motor_mount#1", "base_link", "base_yaw",
           ((BASE_MOTOR_PATTERN_CENTRE[0], YAW_MOTOR_SCREW_Y, BASE_MOTOR_PATTERN_CENTRE[2]), (90.0, 0.0, 0.0)),
@@ -378,7 +395,7 @@ BELT_MOUNTS: tuple[Mount, ...] = (
           "the base_yaw belt inside the base: the motor's 20T to the 120T under j1_coupler, round its idler"),
     Mount("elbow_belt#1", "elbow_belt", "j1_link#1", "upper_arm_link", "elbow_pitch",
           ((_UPPER_ARM.pad.x, J1_BELT_Y, 0.0), (90.0, 0.0, 0.0)),
-          "the elbow belt under j1_link's web: the elbow motor's 20T to the elbow 90T"),
+          "the elbow belt under j1_link's web: the 20T on the elbow gearbox's shaft to the elbow 90T"),
     Mount("wrist_belt#1", "wrist_belt", "j2_link#1", "forearm_link", "wrist_pitch", wrist_belt_frame(_FOREARM),
           "the wrist belt under j2_link's web: the wrist motor's 20T to the wrist 90T"),
 )

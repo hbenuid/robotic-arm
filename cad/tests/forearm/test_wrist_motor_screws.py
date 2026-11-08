@@ -1,5 +1,5 @@
-"""wrist_motor_screws, the wrist-pitch motor's 4x M3 SHCS - the elbow motor's screws (elbow_motor_screws) in the elbow
-motor's seat: a purchased part with no reference (lib/reference.py NO_REFERENCE), which keeps no reference file - THIS
+"""wrist_motor_screws, the wrist-pitch motor's 4x M3 SHCS - the drive motor's screw (cycloidal_motor_bolts) 2 mm longer,
+in a seat like the drive's motor plate's: a purchased part with no reference (lib/reference.py NO_REFERENCE), which keeps no reference file - THIS
 file locks its numbers (the pieces, the modelled volume and the bounding box, measured on the build and written in) and
 what it is: every screw on one of j2_link's motor holes (about the motor's axis) with its head's bearing face on z=0,
 as long under the head as the web under the counterbores and the thread into the motor. In place: the heads flush in
@@ -10,8 +10,8 @@ import pytest
 import parts
 from lib import params as PARAMS
 from lib import reference as R
+from lib.cycloidal import DEFAULT_CONFIG as DRIVE
 from lib.forearm import DEFAULT, LEGACY, motor_hole_points
-from lib.upper_arm import DEFAULT as UPPER_ARM
 from tests import built
 from tests.forearm.helpers import in_host
 from tests.helpers import interference, is_inside
@@ -33,16 +33,18 @@ def test_it_is_a_purchased_part_with_no_reference_in_the_joints_group():
     assert R.NO_REFERENCE[NAME] == f"parts/joints/{NAME}.py:_envelope()" and NAME not in parts.unplaced()
 
 
-def test_it_is_the_elbow_motors_screw_in_the_elbow_motors_seat():
-    """The same screw, counterbore and thread as the elbow motor's (lib/upper_arm/params.py ArmParams): j2_link's web is as
-    thick as the elbow's web under its motor, so the heads sit flush in counterbores head_h deep with the elbow's 8 of
-    web under them, and the M3 x 12 reaches the drive's thread into the motor."""
-    mod, a = parts.load(NAME), UPPER_ARM.arm
-    assert mod.PURCHASE_SPEC == parts.load("elbow_motor_screws").PURCHASE_SPEC == "M3 x 12 socket head cap screw (ISO 4762)"
-    assert mod.SCREW == SCREW == a.motor_screw == PARAMS.M3_SHCS and H.pocket_dia == a.motor_pocket_dia > SCREW.head_dia
-    assert H.thread == PARAMS.J1_MOTOR_SCREW_THREAD == PARAMS.MOTOR_40.bolt_hole_depth - 0.5
-    assert W.thickness == a.motor_plate_t + SCREW.head_h and W.thickness - SCREW.head_h == a.motor_plate_t == 8.0
-    assert mod.LENGTH == PARAMS.J2_MOTOR_SCREW_LEN == PARAMS.J1_MOTOR_SCREW_LEN == 12.0
+def test_it_is_the_drive_motors_screw_2_mm_longer_in_the_drive_motors_seat():
+    """The drive motor's screw (cycloidal_motor_bolts), its head pockets and its thread in the motor (the hole's depth less
+    the drive's margin), 2 mm longer: j2_link's web is 11 thick, so the heads sit flush in counterbores head_h deep with
+    8 of web under them, and the M3 x 12 reaches the drive's thread into the motor."""
+    mod, m = parts.load(NAME), DRIVE.motor
+    assert mod.PURCHASE_SPEC == "M3 x 12 socket head cap screw (ISO 4762)"
+    assert parts.load("cycloidal_motor_bolts").PURCHASE_SPEC == "M3 x 10 socket head cap screw (ISO 4762)"
+    assert mod.SCREW == SCREW == PARAMS.M3_SHCS and SCREW.d == m.bolt_dia and SCREW.head_h == m.motor_bolt_head_height
+    assert H.pocket_dia == m.motor_bolt_head_dia + DRIVE.tolerances.bolt_clearance_add > SCREW.head_dia
+    assert H.thread == PARAMS.J1_MOTOR_SCREW_THREAD == m.bolt_hole_depth - m.motor_bolt_thread_margin == PARAMS.MOTOR_40.bolt_hole_depth - 0.5
+    assert W.thickness == 8.0 + SCREW.head_h
+    assert mod.LENGTH == PARAMS.J2_MOTOR_SCREW_LEN == W.thickness - SCREW.head_h + H.thread == m.motor_bolt_thread_length + 2.0 == 12.0
     steel = PARAMS.STEEL_DENSITY * LOCK[0]
     assert mod.MASS_G == PARAMS.WRIST_MOTOR_SCREWS_MASS_G == pytest.approx(steel * PARAMS.shcs_volume(SCREW, 12.0))
     # the pattern is the web's holes about the motor's axis - the 31 mm square; none on LEGACY's slide

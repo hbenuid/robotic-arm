@@ -63,9 +63,11 @@ converted — shared by `test_assembly.py` and `test_robot.py`), `built.py` (abo
 `from tests.cycloidal.helpers import CFG, …` for the drive's config, the
 `stack` fixture is `tests/cycloidal/conftest.py`; the shell ring and the shell's body (`test_shell_body.py`: the stack
 symmetric about the middle of the discs), with no reference, keep their numbers in their own modules),
-`tests/upper_arm/` (`elbow_motor_screws`, a purchased part with no reference: its numbers and feature probes;
+`tests/upper_arm/` (`elbow_motor_screws`, `elbow_gearbox_screws`, `eg17_g5_gearbox`, `gt2_pulley_20t_8mm` - the elbow
+motor's gearbox, its screws and its 20T, purchased parts with no reference: their numbers and feature probes, the
+gearbox's against its datasheet drawing;
 `elbow_idler`: the elbow belt's tensioner - the stock belt round it, the band of belts its slot takes, its stations,
-its axle's, nut's and spacer's numbers (no reference), its slots on `j1_link`, the kit's fit beside the 90T; `j1_link`: the LEGACY build's feature probes, DEFAULT's numbers, the elbow motor's web and its
+its axle's, nut's and spacer's numbers (no reference), its slots on `j1_link`, the kit's fit beside the 90T; `j1_link`: the LEGACY build's feature probes, DEFAULT's numbers, the web under the elbow motor's gearbox (its seat) and its
 holes, the arm - a flat slab - rising off the drive's turning shell - the drive's frame in the link's, its first pillar
 on the arm's centreline, the shell's body inside, its windows under the arm solid, the others open, the slab's faces
 level end to end -, no sockets, the elbow block's floor), `tests/base/` (`base`: the LEGACY build's

@@ -1,6 +1,7 @@
 """The whole arm: every part of the SolidWorks 'final Arm Assembly Fully Movable' placed from
 reference/placements.json - the SolidWorks part occurrences + the mounted ones (lib/mounts.py: the belt joints'
-NEMA 17 motors - 48 mm at the base, 40 mm at the elbow and wrist - and their MKS SERVO42D boards, on the pads the links carry;
+NEMA 17 motors - 48 mm at the base, 40 mm at the elbow and wrist - and their MKS SERVO42D boards, on the pads the links carry,
+the elbow's on its 5:1 planetary gearbox;
 the 6806-2RS bearing pair in each belt joint's bore; the base_yaw thrust bearing in the base's groove; the elbow's and the wrist's 90T re-seated on them
 and the base_yaw 120T under j1_coupler, each clamped by 4x M4 screws + nuts; j1_coupler's motor leg) + the cycloidal_drive
 module (code-driven, placed at the SolidWorks node's pose) + the forearm_roll_drive, wrist_roll_drive and gripper
@@ -8,8 +9,8 @@ modules (code-driven, placed by lib/mounts.py MODULE_MOUNTS) - the totals are lo
 tests/test_assembly.py - bucketed into the GROUPS component tree (arm -> base_link/shoulder_link/upper_arm_link/
 elbow_link/forearm_link/wrist_pitch_link/wrist) so each rigid link toggles as one node in the viewers. Colors
 (_occurrences.colour(), lib/style.py): a PRINTED part is off-white, or orange where it drives, turns or covers
-(ACCENT = True), every PURCHASED part (COTS = True - motors, boards, servo, bearings, pins, bolts, nuts,
-the 20T pulleys) is grey and the belts a darker grey, inside the modules too:
+(ACCENT = True), every PURCHASED part (COTS = True - motors, the elbow's gearbox, boards, servo, bearings, pins, bolts,
+nuts, the 20T pulleys) is grey and the belts a darker grey, inside the modules too:
 
     arm
     |- base_link         base, bearing_6806:base_yaw_1 / _2, washer_as6590:base_yaw_1, bearing_axk6590:base_yaw,
@@ -18,8 +19,9 @@ the 20T pulleys) is grey and the belts a darker grey, inside the modules too:
     |                    gt2_idler_20t / yaw_idler_spacer / _screw / _nut:base_yaw
     |- shoulder_link     j1_coupler, j1_motor_leg, washer_as6590:base_yaw_2, gt2_pulley_120t:base_yaw,
     |                    yaw_pulley_screws / _nuts:base_yaw, cycloidal_drive (kept whole - see below)
-    |- upper_arm_link    j1_link, bearing_6806:elbow_pitch_1 / _2, nema17_40mm:elbow_pitch, mks_servo42d:elbow_pitch,
-    |                    gt2_pulley_20t:elbow_pitch, elbow_motor_screws:elbow_pitch, elbow_belt:elbow_pitch,
+    |- upper_arm_link    j1_link, bearing_6806:elbow_pitch_1 / _2, eg17_g5_gearbox:elbow_pitch,
+    |                    elbow_gearbox_screws:elbow_pitch, nema17_40mm:elbow_pitch, mks_servo42d:elbow_pitch,
+    |                    elbow_motor_screws:elbow_pitch, gt2_pulley_20t_8mm:elbow_pitch, elbow_belt:elbow_pitch,
     |                    gt2_idler_20t / elbow_idler_spacer / _screw / _nut:elbow_pitch
     |- elbow_link        gt2_pulley_90t:j2, elbow_pulley_screws / _nuts:elbow_pitch, forearm_roll_drive (kept whole - see
     |                    below; its block IS the elbow coupler)
@@ -112,10 +114,12 @@ OCCURRENCES = [
     ("j1_link",               None, "j1_link#1"),
     ("bearing_6806",          "elbow_pitch_1", "bearing_6806#3"),  # mounted: j1_link's elbow bore
     ("bearing_6806",          "elbow_pitch_2", "bearing_6806#4"),
-    ("nema17_40mm",           "elbow_pitch", "nema17_40mm#2"),     # mounted: the web across j1_link's motor hole
+    ("eg17_g5_gearbox",       "elbow_pitch", "eg17_g5_gearbox#1"),      # mounted: the elbow motor's gearbox on the web across j1_link's motor hole ...
+    ("elbow_gearbox_screws",  "elbow_pitch", "elbow_gearbox_screws#1"), # ... its 4x M4, up through the web
+    ("nema17_40mm",           "elbow_pitch", "nema17_40mm#2"),     # mounted: on the gearbox's input end ...
     ("mks_servo42d",          "elbow_pitch", "mks_servo42d#2"),
-    ("gt2_pulley_20t",        "elbow_pitch", "gt2_pulley_20t#2"),  # mounted: on the elbow motor's shaft, level with the elbow 90T
-    ("elbow_motor_screws",    "elbow_pitch", "elbow_motor_screws#1"),   # mounted: the elbow motor's 4x M3, up through the web
+    ("elbow_motor_screws",    "elbow_pitch", "elbow_motor_screws#1"),   # ... its 4x M3, through the gearbox's input plate
+    ("gt2_pulley_20t_8mm",    "elbow_pitch", "gt2_pulley_20t_8mm#1"),   # mounted: on the gearbox's shaft, level with the elbow 90T
     ("elbow_belt",            "elbow_pitch", "elbow_belt#1"),      # mounted: the elbow belt, the 20T to the elbow 90T round ...
     ("gt2_idler_20t",         "elbow_pitch", "gt2_idler_20t#1"),   # mounted: ... its tensioner under j1_link's slab, ...
     ("elbow_idler_spacer",    "elbow_pitch", "elbow_idler_spacer#1"),   # ... its spacer, ...
@@ -164,9 +168,9 @@ GROUPS = [
     ("shoulder_link",    ("j1_coupler#1", "j1_motor_leg#1", "washer_as6590#2", "gt2_pulley_120t#1", "yaw_pulley_screws#1",
                           "yaw_pulley_nuts#1", "fork_hub_screws#1", "fork_hub_nuts#1", "fork_foot_screws#1",
                           "fork_foot_nuts#1", "fork_sleeve_screws#1", "fork_sleeve_nuts#1", DRIVE_KEY)),
-    ("upper_arm_link",   ("j1_link#1", "bearing_6806#3", "bearing_6806#4", "nema17_40mm#2", "mks_servo42d#2",
-                          "gt2_pulley_20t#2", "elbow_motor_screws#1", "elbow_belt#1", "gt2_idler_20t#1",
-                          "elbow_idler_spacer#1", "elbow_idler_screw#1", "elbow_idler_nut#1")),
+    ("upper_arm_link",   ("j1_link#1", "bearing_6806#3", "bearing_6806#4", "eg17_g5_gearbox#1", "elbow_gearbox_screws#1",
+                          "nema17_40mm#2", "mks_servo42d#2", "elbow_motor_screws#1", "gt2_pulley_20t_8mm#1", "elbow_belt#1",
+                          "gt2_idler_20t#1", "elbow_idler_spacer#1", "elbow_idler_screw#1", "elbow_idler_nut#1")),
     ("elbow_link",       ("gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", ROLL_KEY)),
     ("forearm_link",     ("j2_link#1", "bearing_6806#5", "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3",
                           "gt2_pulley_20t#4", "wrist_motor_screws#1", "wrist_belt#1", "gt2_idler_20t#3",

@@ -11,9 +11,9 @@
  "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. A record with a `mount` block (keys under `mounted`) is a motor mount declared in lib/mounts.py, not a SolidWorks node: parent None, rel == world = host world * mount frame.",
  "root_label": "final_Arm_Assembly_Fully_Movable",
  "expected": {
-  "leaf_occurrences": 65,
-  "solids": 172,
-  "solid_volume": 2195237.389
+  "leaf_occurrences": 67,
+  "solids": 177,
+  "solid_volume": 2272595.859
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -34,13 +34,15 @@
   "fork_sleeve_nuts#1",
   "nema17_48mm#1",
   "mks_servo42d#1",
+  "eg17_g5_gearbox#1",
   "nema17_40mm#2",
   "mks_servo42d#2",
   "nema17_40mm#3",
   "mks_servo42d#3",
-  "gt2_pulley_20t#2",
+  "gt2_pulley_20t_8mm#1",
   "gt2_pulley_20t#3",
   "gt2_pulley_20t#4",
+  "elbow_gearbox_screws#1",
   "elbow_motor_screws#1",
   "wrist_motor_screws#1",
   "yaw_motor_screws#1",
@@ -2332,8 +2334,8 @@
    ]
   },
   {
-   "key": "nema17_40mm#2",
-   "part": "nema17_40mm",
+   "key": "eg17_g5_gearbox#1",
+   "part": "eg17_g5_gearbox",
    "kind": "part",
    "path": null,
    "parent": null,
@@ -2355,10 +2357,10 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "on the web across j1_link's motor hole (on its 4 holes), ELBOW_MOTOR_CENTRES short of the elbow axis, the body +N down the hole through the slab, shaft -N through the web; connector toward -Z [ESTIMATE] (toward the elbow the roll block would pass it 0.2 mm off)"
+    "note": "the elbow motor's 5:1 planetary on the web across j1_link's motor hole (on its 4 holes, its boss in the web's counterbore), ELBOW_MOTOR_CENTRES short of the elbow axis, the body +N up the hole through the slab, its shaft -N down the web's bore; the clamp's access holes along the link"
    },
-   "solids": 2,
-   "solid_volume": 66449.22,
+   "solids": 1,
+   "solid_volume": 76741.06,
    "rel": {
     "position": [
      -63.786307,
@@ -2424,9 +2426,112 @@
     ]
    },
    "world_bbox_min": [
-    -90.027,
+    -87.395,
+    125.961,
+    -43.649
+   ],
+   "world_bbox_size": [
+    54.131,
+    53.941,
+    79.335
+   ]
+  },
+  {
+   "key": "nema17_40mm#2",
+   "part": "nema17_40mm",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "eg17_g5_gearbox#1",
+    "link": "upper_arm_link",
+    "joint": "elbow_pitch",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      0.0,
+      -56.0
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "on the gearbox's input end (its pilot in the bore, its shaft in the clamp), the body +N; connector toward -Z [ESTIMATE] (as on the web before the gearbox: toward the elbow the roll block passed it 0.2 mm off)"
+   },
+   "solids": 2,
+   "solid_volume": 66449.22,
+   "rel": {
+    "position": [
+     -60.177906,
+     152.931181,
+     33.948157
+    ],
+    "rotation_xyz_deg": [
+     -180.0,
+     -3.694455,
+     -132.415833
+    ],
+    "matrix_3x4": [
+     [
+      -0.673104708,
+      0.736734748,
+      -0.064435727,
+      -60.177905918
+     ],
+     [
+      0.738268975,
+      0.674506428,
+      2e-09,
+      152.931180562
+     ],
+     [
+      0.043462313,
+      -0.047570897,
+      -0.997921859,
+      33.948156681
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -60.177906,
+     152.931181,
+     33.948157
+    ],
+    "rotation_xyz_deg": [
+     -180.0,
+     -3.694455,
+     -132.415833
+    ],
+    "matrix_3x4": [
+     [
+      -0.673104708,
+      0.736734748,
+      -0.064435727,
+      -60.177905918
+     ],
+     [
+      0.738268975,
+      0.674506428,
+      2e-09,
+      152.931180562
+     ],
+     [
+      0.043462313,
+      -0.047570897,
+      -0.997921859,
+      33.948156681
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -86.419,
     126.635,
-    -44.051
+    11.833
    ],
    "world_bbox_size": [
     55.027,
@@ -2464,9 +2569,9 @@
    "solid_volume": 13779.335,
    "rel": {
     "position": [
-     -61.241095,
+     -57.632695,
      152.931181,
-     17.482446
+     73.36607
     ],
     "rotation_xyz_deg": [
      -180.0,
@@ -2478,27 +2583,27 @@
       0.736734748,
       0.673104708,
       -0.064435727,
-      -61.241095419
+      -57.632694687
      ],
      [
       0.674506428,
       -0.738268975,
       2e-09,
-      152.931180587
+      152.931180502
      ],
      [
       -0.047570897,
       -0.043462313,
       -0.997921859,
-      17.482446005
+      73.366070119
      ]
     ]
    },
    "world": {
     "position": [
-     -61.241095,
+     -57.632695,
      152.931181,
-     17.482446
+     73.36607
     ],
     "rotation_xyz_deg": [
      -180.0,
@@ -2510,26 +2615,26 @@
       0.736734748,
       0.673104708,
       -0.064435727,
-      -61.241095419
+      -57.632694687
      ],
      [
       0.674506428,
       -0.738268975,
       2e-09,
-      152.931180587
+      152.931180502
      ],
      [
       -0.047570897,
       -0.043462313,
       -0.997921859,
-      17.482446005
+      73.366070119
      ]
     ]
    },
    "world_bbox_min": [
-    -88.86,
+    -85.252,
     125.255,
-    -3.584
+    52.299
    ],
    "world_bbox_size": [
     55.908,
@@ -2744,14 +2849,14 @@
    ]
   },
   {
-   "key": "gt2_pulley_20t#2",
-   "part": "gt2_pulley_20t",
+   "key": "gt2_pulley_20t_8mm#1",
+   "part": "gt2_pulley_20t_8mm",
    "kind": "part",
    "path": null,
    "parent": null,
    "label_in_monolith": null,
    "mount": {
-    "host": "nema17_40mm#2",
+    "host": "eg17_g5_gearbox#1",
     "link": "upper_arm_link",
     "joint": "elbow_pitch",
     "frame_in_host": {
@@ -2762,15 +2867,15 @@
      ],
      "rotation_xyz_deg": [
       0.0,
-      -90.0,
-      0.0
+      90.0,
+      180.0
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the elbow motor's 20T on its shaft, hub toward the motor, J1_MOTOR_20T_HUB_Z out from its face (under the web): its tooth band level with the elbow 90T's"
+    "note": "the elbow's 20T on the gearbox's Ø8 shaft, hub toward the gearbox, J1_MOTOR_20T_HUB_Z out from its face (in and under the web): its tooth band level with the elbow 90T's; turned so one set screw (the pulley's +Z) points into the shaft's keyway (the gearbox's +X)"
    },
    "solids": 3,
-   "solid_volume": 1878.627,
+   "solid_volume": 1452.551,
    "rel": {
     "position": [
      -64.285684,
@@ -2778,27 +2883,27 @@
      -29.669362
     ],
     "rotation_xyz_deg": [
-     93.369146,
-     42.307142,
-     -94.99844
+     -86.630854,
+     -42.307142,
+     94.99844
     ],
     "matrix_3x4": [
      [
       -0.064435727,
-      0.736734748,
-      0.673104708,
+      -0.736734748,
+      -0.673104708,
       -64.285683537
      ],
      [
       2e-09,
-      0.674506428,
-      -0.738268975,
+      -0.674506428,
+      0.738268975,
       152.931180659
      ],
      [
       -0.997921859,
-      -0.047570897,
-      -0.043462313,
+      0.047570897,
+      0.043462313,
       -29.669361842
      ]
     ]
@@ -2810,27 +2915,27 @@
      -29.669362
     ],
     "rotation_xyz_deg": [
-     93.369146,
-     42.307142,
-     -94.99844
+     -86.630854,
+     -42.307142,
+     94.99844
     ],
     "matrix_3x4": [
      [
       -0.064435727,
-      0.736734748,
-      0.673104708,
+      -0.736734748,
+      -0.673104708,
       -64.285683537
      ],
      [
       2e-09,
-      0.674506428,
-      -0.738268975,
+      -0.674506428,
+      0.738268975,
       152.931180659
      ],
      [
       -0.997921859,
-      -0.047570897,
-      -0.043462313,
+      0.047570897,
+      0.043462313,
       -29.669361842
      ]
     ]
@@ -3053,8 +3158,8 @@
    ]
   },
   {
-   "key": "elbow_motor_screws#1",
-   "part": "elbow_motor_screws",
+   "key": "elbow_gearbox_screws#1",
+   "part": "elbow_gearbox_screws",
    "kind": "part",
    "path": null,
    "parent": null,
@@ -3066,7 +3171,7 @@
     "frame_in_host": {
      "position": [
       92.0,
-      8.5,
+      9.5,
       0.0
      ],
      "rotation_xyz_deg": [
@@ -3076,15 +3181,15 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the elbow motor's 4x M3 x J1_MOTOR_SCREW_LEN SHCS (the drive motor's): heads flush in the pockets in the underside of the web across j1_link's motor hole, up through it into the motor's tapped holes"
+    "note": "the elbow gearbox's 4x M4 x J1_GEARBOX_SCREW_LEN SHCS: heads flush in the pockets in the underside of the web across j1_link's motor hole, up through it into the gearbox's tapped holes"
    },
    "solids": 4,
-   "solid_volume": 596.246,
+   "solid_volume": 1156.584,
    "rel": {
     "position": [
-     -64.301792,
+     -64.237357,
      152.931181,
-     -29.918842
+     -28.92092
     ],
     "rotation_xyz_deg": [
      0.0,
@@ -3096,27 +3201,27 @@
       -0.673104708,
       -0.736734748,
       0.064435727,
-      -64.301792469
+      -64.237356742
      ],
      [
       0.738268975,
       -0.674506428,
       -2e-09,
-      152.93118066
+      152.931180658
      ],
      [
       0.043462313,
       0.047570897,
       0.997921859,
-      -29.918842307
+      -28.920920448
      ]
     ]
    },
    "world": {
     "position": [
-     -64.301792,
+     -64.237357,
      152.931181,
-     -29.918842
+     -28.92092
     ],
     "rotation_xyz_deg": [
      0.0,
@@ -3128,31 +3233,134 @@
       -0.673104708,
       -0.736734748,
       0.064435727,
-      -64.301792469
+      -64.237356742
      ],
      [
       0.738268975,
       -0.674506428,
       -2e-09,
-      152.93118066
+      152.931180658
      ],
      [
       0.043462313,
       0.047570897,
       0.997921859,
-      -29.918842307
+      -28.920920448
      ]
     ]
    },
    "world_bbox_min": [
-    -89.092,
+    -80.881,
+    136.511,
+    -33.971
+   ],
+   "world_bbox_size": [
+    33.029,
+    32.839,
+    17.986
+   ]
+  },
+  {
+   "key": "elbow_motor_screws#1",
+   "part": "elbow_motor_screws",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "eg17_g5_gearbox#1",
+    "link": "upper_arm_link",
+    "joint": "elbow_pitch",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      0.0,
+      -51.3
+     ],
+     "rotation_xyz_deg": [
+      180.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the elbow motor's 4x M3 x J1_MOTOR_SCREW_LEN SHCS (they ship with the gearbox): heads on the input plate's front face in the gearbox's corner channels, through the plate into the motor's tapped holes"
+   },
+   "solids": 4,
+   "solid_volume": 483.148,
+   "rel": {
+    "position": [
+     -60.480754,
+     152.931181,
+     29.257924
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     132.415833
+    ],
+    "matrix_3x4": [
+     [
+      -0.673104708,
+      -0.736734748,
+      0.064435727,
+      -60.480753837
+     ],
+     [
+      0.738268975,
+      -0.674506428,
+      -2e-09,
+      152.931180569
+     ],
+     [
+      0.043462313,
+      0.047570897,
+      0.997921859,
+      29.257923943
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -60.480754,
+     152.931181,
+     29.257924
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     132.415833
+    ],
+    "matrix_3x4": [
+     [
+      -0.673104708,
+      -0.736734748,
+      0.064435727,
+      -60.480753837
+     ],
+     [
+      0.738268975,
+      -0.674506428,
+      -2e-09,
+      152.931180569
+     ],
+     [
+      0.043462313,
+      0.047570897,
+      0.997921859,
+      29.257923943
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -85.271,
     128.283,
-    -34.501
+    24.676
    ],
    "world_bbox_size": [
     49.387,
     49.296,
-    18.065
+    14.073
    ]
   },
   {
@@ -3179,7 +3387,7 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the wrist motor's 4x M3 x J2_MOTOR_SCREW_LEN SHCS (the elbow motor's): heads flush in the counterbores in the underside of j2_link's web, up through it into the motor's tapped holes"
+    "note": "the wrist motor's 4x M3 x J2_MOTOR_SCREW_LEN SHCS: heads flush in the counterbores in the underside of j2_link's web, up through it into the motor's tapped holes"
    },
    "solids": 4,
    "solid_volume": 596.246,
@@ -5342,7 +5550,7 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the elbow belt under j1_link's web: the elbow motor's 20T to the elbow 90T"
+    "note": "the elbow belt under j1_link's web: the 20T on the elbow gearbox's shaft to the elbow 90T"
    },
    "solids": 1,
    "solid_volume": 1059.849,
