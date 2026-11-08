@@ -130,6 +130,7 @@ from lib.params import (
     YAW_IDLER_Y,
     YAW_MOTOR_SCREW_Y,
 )
+from lib.pulley.params import YAW as _YAW_PULLEY
 from lib.upper_arm.layout import elbow_idler_x, elbow_idler_z
 from lib.upper_arm.params import DEFAULT as _UPPER_ARM
 from lib.wrist.layout import gripper_frame_in_host
@@ -325,7 +326,7 @@ PULLEY_MOUNTS: tuple[Mount, ...] = (
           "the wrist 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower wrist bearing; "
           "turned pulley_bolt_deg about its axis with wrist_link's bolt pattern (the front nut clear of the post's flat)"),
     Mount("gt2_pulley_120t#1", YAW_PULLEY, "j1_coupler#1", "shoulder_link", "base_yaw",
-          ((0.0, round(_YAW_COUPLER.hub.stub_y0 + GT2_PULLEY_90T_FACE_Y[0], 6), 0.0), (180.0, _YAW_COUPLER.hub.hole_deg, 0.0)),
+          ((0.0, round(_YAW_COUPLER.hub.stub_y0 + _YAW_PULLEY.end_y, 6), 0.0), (180.0, _YAW_COUPLER.hub.hole_deg, 0.0)),
           "the base_yaw 120T under j1_coupler, hub up: its hub end on the stub's end, its journal in the lower base bearing, "
           "its ring under that bearing's inner ring (it holds the coupler down on the thrust bearing); turned hole_deg "
           "about its axis onto the stub's diagonal holes"),
@@ -334,6 +335,7 @@ PULLEY_MOUNTS: tuple[Mount, ...] = (
 # X / Z axes. A nut set's frame runs from those floors: the hub's end lies _SEAT_TO_END down the screws.
 _SCREWS_IN_COUNTERBORES = ((0.0, round(GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_HEAD_SEAT, 6), 0.0), (90.0, 0.0, 0.0))
 _SEAT_TO_END = GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_HEAD_SEAT - GT2_PULLEY_90T_FACE_Y[0]
+_YAW_SEAT_TO_END = _YAW_PULLEY.face_y - GT2_PULLEY_90T_HEAD_SEAT - _YAW_PULLEY.end_y   # the 120T's: its plain hub gone
 FASTENER_MOUNTS: tuple[Mount, ...] = (
     Mount("elbow_pulley_screws#1", "elbow_pulley_screws", "gt2_pulley_90t#3", "elbow_link", "elbow_pitch", _SCREWS_IN_COUNTERBORES,
           "the elbow 90T's 4x M4 x pulley_screw_len: heads in its counterbores, down through its hub and the block's stub"),
@@ -349,7 +351,7 @@ FASTENER_MOUNTS: tuple[Mount, ...] = (
     Mount("yaw_pulley_screws#1", "yaw_pulley_screws", "gt2_pulley_120t#1", "shoulder_link", "base_yaw", _SCREWS_IN_COUNTERBORES,
           "the base_yaw 120T's 4x M4 x pulley_screw_len: heads in its counterbores (under it), up through its hub and j1_coupler's stub"),
     Mount("yaw_pulley_nuts#1", "yaw_pulley_nuts", "yaw_pulley_screws#1", "shoulder_link", "base_yaw",
-          ((0.0, 0.0, round(_SEAT_TO_END + _YAW_COUPLER.yoke.pocket_y0 - _YAW_COUPLER.hub.nut_depth - _YAW_COUPLER.hub.stub_y0, 6)),
+          ((0.0, 0.0, round(_YAW_SEAT_TO_END + _YAW_COUPLER.yoke.pocket_y0 - _YAW_COUPLER.hub.nut_depth - _YAW_COUPLER.hub.stub_y0, 6)),
            (0.0, 0.0, 0.0)),
           "the base_yaw screws' nuts in j1_coupler's hex pockets, flush with the floor of the pocket over its hub "
           "(nut_depth under pocket_y0), a corner along the coupler's Z"),

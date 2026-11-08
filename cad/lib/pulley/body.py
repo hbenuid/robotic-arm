@@ -22,13 +22,15 @@ def _disc(radius: float, y0: float, y1: float, x: float = 0.0, z: float = 0.0):
 
 
 def build_pulley(cfg: PulleyParams = DEFAULT):
-    step_dia, step_y0 = cfg.step
     ring_dia, ring_y0, ring_y1 = cfg.ring
+    hub_y1 = cfg.web_y0 if cfg.step is None else cfg.step[1]   # the hub's top: the step's foot, or the web (no step)
     # the web and the rim first: fused onto a web that already carries the step, their outer faces stay 3 faces
     body = _disc((cfg.rim_dia + _FUSE) / 2.0, cfg.web_y0, cfg.face_y)
     body = body + gt2_ring(cfg.teeth, cfg.band_y1, cfg.flange_dia, cfg.flange_t, inner_dia=cfg.rim_dia, chamfer=cfg.chamfer)
-    body = body + _disc(step_dia / 2.0, step_y0, cfg.web_y0 + NUDGE)
-    body = body + _disc(cfg.hub_dia / 2.0, cfg.end_y, step_y0 + NUDGE)
+    if cfg.step is not None:
+        step_dia, step_y0 = cfg.step
+        body = body + _disc(step_dia / 2.0, step_y0, cfg.web_y0 + NUDGE)
+    body = body + _disc(cfg.hub_dia / 2.0, cfg.end_y, hub_y1 + NUDGE)
     body = body + _disc(ring_dia / 2.0, ring_y0, ring_y1)
     body = body - _disc(cfg.bore_dia / 2.0, cfg.end_y - NUDGE, cfg.face_y + NUDGE)
     cb_dia, cb_depth = cfg.counterbore
