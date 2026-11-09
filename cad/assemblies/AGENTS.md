@@ -100,7 +100,7 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
 - **What a part is shows as its colour in every assembly, never a second model.** `_occurrences.colour(name)` picks one
   of `lib/style.py`'s colours (`docs/design_language.md`): a purchased part (`parts.bought()`) grey - a belt darker -, a
   printed one orange where it drives, turns or covers (`parts.accent()`: its module declares `ACCENT = True`) and
-  off-white otherwise - the same part the same colour in the arm and in each module standing alone: `gripper.py`,
+  ivory otherwise - the same part the same colour in the arm and in each module standing alone: `gripper.py`,
   `cycloidal_drive.py`, `forearm_roll_drive.py` and `wrist_roll_drive.py` pass `tint=True` to
   `occurrence_children` / `located_children`, `grouped_children` always colours (`_tint_parts`). Colours go on the
   LEAVES only (`_tint`), never on a group or module node: cadgen writes a multi-solid part's colour on its solids, and a colour on an enclosing

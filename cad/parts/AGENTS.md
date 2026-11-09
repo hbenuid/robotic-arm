@@ -169,6 +169,6 @@ generated from the label:
   45° is FDM's self-supporting angle in the `cad` skill's `references/manufacturing-printing.md`), and with
   `--candidates` the six axis-aligned build orientations ranked by support; `--json` gives the figures as `measurements`
   and what they show as `findings`. A finding that holds up the print is a row in `docs/open_issues.md`.
-- **Colours** — the grey of purchased parts in `arm.step` and every module's STEP; a printed part is off-white, or orange
+- **Colours** — the grey of purchased parts in `arm.step` and every module's STEP; a printed part is ivory, or orange
   where it drives, turns or covers: its module then declares `ACCENT = True` (`parts.accent()`;
   `docs/design_language.md`, `assemblies/AGENTS.md` "What a part is shows as its colour").
