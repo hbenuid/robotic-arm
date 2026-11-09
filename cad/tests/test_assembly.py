@@ -99,7 +99,7 @@ def test_arm_groups_mirror_links():
 
 def test_the_colours_tell_the_kinds_of_part_apart():
     """The four colours of lib/style.py are distinct (grey means bought, darker grey a belt, orange a printed part that
-    drives, turns or covers, white the printed structure), the two printed ones filaments the arm can be bought in
+    drives, turns or covers, ivory the printed structure), the two printed ones filaments the arm can be bought in
     (style.FILAMENTS, stored as the hex the viewer draws as the filament: style.viewer_hex); only a printed part
     declares ACCENT, and every part named <joint>_belt is a purchased belt."""
     palette = [style.BODY, style.ACCENT, style.BOUGHT, style.BELT]

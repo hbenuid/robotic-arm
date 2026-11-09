@@ -22,22 +22,31 @@ GRILL_SLOT = 2.0       # [DESIGN] a back panel's grill: straight slots this wide
 GRILL_PITCH = 4.0      # [DESIGN] ... at this pitch, one on the panel's centre line (the ribs between them 2.0: 5 perimeters
 #                        at 0.4), clipped to the panel's field over its shaft's bay (docs/design_language.md)
 
-# [MEASURE] the filaments a printed part can be bought in, each its swatch's hex in the shop's colour picker (screen
-# colours sampled off the swatches, not a measured filament). A printed part's colour is one of them, stored as its
-# viewer_hex() so the viewer draws it as the filament
+# [MEASURE] the PETG colours a printed part can be bought in, each its swatch's hex in the shop's colour picker (screen
+# colours sampled off the swatches, not a measured filament; the shop names only its white, the other names are read
+# off the swatches). A printed part's colour is one of them, stored as its viewer_hex() so the viewer draws it as the
+# filament
 FILAMENTS = {
+    "white": "#EFF0F1",
+    "peach": "#F3DFD5",
+    "olive": "#5A6D3D",
+    "ivory": "#EEE7D4",
     "black": "#000000",
-    "white": "#FFFFFF",
-    "red": "#EA140E",
-    "blue": "#2240AF",
-    "green": "#00B35F",
-    "yellow": "#FBEC07",
-    "grey": "#8F949B",
-    "orange": "#FD7C18",
-    "brown": "#9E6A4B",
-    "pale_grey": "#F3F3F3",
-    "beige": "#F4E0B8",
-    "dark_grey": "#7E7E7E",
+    "red": "#CD001A",
+    "teal": "#00ADAD",
+    "yellow": "#FEDD00",
+    "grey": "#75787B",
+    "brown": "#362111",
+    "blue": "#1729AB",
+    "green": "#1DAA27",
+    "gold": "#F1C400",
+    "magenta": "#D9027D",
+    "sky_blue": "#00A3E0",
+    "salmon": "#FF9A8D",
+    "khaki": "#C2B29A",
+    "purple": "#685BC7",
+    "pink": "#F9C5C2",
+    "orange": "#FF6A14",
 }
 
 
@@ -52,7 +61,7 @@ def viewer_hex(filament: str) -> str:
     return "#" + "".join(f"{v:02X}" for v in out)
 
 
-BODY = viewer_hex(FILAMENTS["white"])      # [DESIGN] the printed structure
+BODY = viewer_hex(FILAMENTS["ivory"])      # [DESIGN] the printed structure
 ACCENT = viewer_hex(FILAMENTS["orange"])   # [DESIGN] the printed parts that drive, turn or cover
 BOUGHT = "#9AA0A6"     # [DESIGN] grey: every purchased part
 BELT = "#717276"       # [DESIGN] the belts, darker than the other purchased parts
