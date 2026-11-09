@@ -109,9 +109,10 @@ def test_retired_cadtool_verbs_say_what_replaced_them(verb):
     ("robot/arm.sdf", "sdf"), ("009e0c63-bcc4-5f1c-9e2c-f9146bfc6a87", "model")])
 def test_cadtool_names_cads_document_type(source, kind):
     """cad 0.11's verbs are `cad <document type> <operation> FILE`: `./cadtool snapshot` / `export` take the type from
-    the file's suffix, and anything else is a document id, `model`'s."""
-    proc = subprocess.run(["bash", "-c", 'source <(sed -n "/^doc_type() {/,/^}/p" cadtool); doc_type "$1"', "_", source],
-                          cwd=CAD_DIR, capture_output=True, text=True, check=True)
+    the file's suffix, and anything else is a document id, `model`'s. The function is loaded with `eval`: macOS's bash
+    3.2 sources nothing from a process substitution (`source <(…)`), so the test would fail there alone."""
+    load = 'f=$(sed -n "/^doc_type() {/,/^}/p" cadtool); eval "$f"; doc_type "$1"'
+    proc = subprocess.run(["bash", "-c", load, "_", source], cwd=CAD_DIR, capture_output=True, text=True, check=True)
     assert proc.stdout.strip() == kind
 
 
