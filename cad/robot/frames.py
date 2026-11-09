@@ -171,8 +171,8 @@ LINKS: dict[str, list[str]] = {
     # likewise the wrist 90T pulley, its M4 screws + nuts and the J3-coupler ride with the wrist-pitch body  [ASSUMPTION];
     # wrist_link IS the wrist roll drive's frame, which carries the drive's STATOR - the pancake (on the pitch axis) and
     # its 20T, both bearings, the belt (assemblies/wrist_roll_drive.py BODIES)
-    "wrist_pitch_link": ["wrist_link#1", "gt2_pulley_90t#4", "wrist_pulley_screws#1", "wrist_pulley_nuts#1",
-                         "wrist_roll_drive#1:stator"],
+    "wrist_pitch_link": ["wrist_link#1", "wrist_flange#1", "gt2_pulley_90t#4", "wrist_pulley_screws#1",
+                         "wrist_pulley_nuts#1", "wrist_roll_drive#1:stator"],
     # the drive's ROTOR - the pulley (its 40T band, the roll's output, the gripper's connector bolted to its face) and the
     # shaft clamped to it - carries the gripper's base body: the connector, the cage, the MG996R, the base, the pinion
     # (it turns, driving the jaws: merged in  [ASSUMPTION]) - assemblies/gripper.py BODIES

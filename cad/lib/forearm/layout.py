@@ -295,7 +295,7 @@ def nut_channel_end(cfg: ForearmConfig = DEFAULT) -> float:
 
 def coupler_steps(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float, float]]:
     """The elbow flange under the frame's underside as (diameter, x0, x1) cylinders about the elbow axis, the face
-    downward: the post over j1_link's bore (its foot chamfered post_chamfer: roll.py elbow_flange), the shoulder on the
+    downward: the post over j1_link's bore (its foot chamfered post_chamfer: roll.py build_elbow_flange), the shoulder on the
     upper elbow bearing's inner ring, the stub in it."""
     d = cfg.drive
     return [(d.post_dia, *d.post_x), (d.step_dia, *d.step_x), (d.stub_dia, *d.stub_x)]

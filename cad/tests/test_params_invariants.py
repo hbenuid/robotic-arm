@@ -230,9 +230,9 @@ def test_cycloidal_dead_params_gone():
         assert not hasattr(group, name), name
 
 
-def test_the_roll_block_repeats_the_retired_coupler():
-    """The forearm roll drive's block took the elbow coupler's place (lib/coupler/params.py, the part retired): it
-    repeats the coupler's stub, its journal (carried up: the post) and the 90T's bolt circle at the elbow, and DEFAULT's
+def test_the_elbow_flange_repeats_the_retired_coupler():
+    """The forearm roll drive's elbow flange (its own part on the block) took the elbow coupler's place
+    (lib/coupler/params.py, the part retired): it repeats the coupler's stub, its journal (carried up: the post) and the 90T's bolt circle at the elbow, and DEFAULT's
     inner-ring shoulder and longer stub - DEFAULT adds exactly those two things to the SolidWorks part."""
     from dataclasses import replace
 

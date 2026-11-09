@@ -5,14 +5,16 @@ a prism along Y (its outline in the XZ plane), the end face's holes run along X.
 the bore is made on a tall core - the slope and the bore carried far above and below the tower - and the core trimmed
 to the tower after: on the tower itself the edge ends where the slope touches the bore at the top (a point), which a
 fillet cannot run through. DEFAULT is the wrist roll drive's frame (lib/wrist/roll.py, built in its module frame and
-moved here) with the wrist_pitch output flange on its coupler face - no plate past the frame."""
+moved here) with the foot and the key the wrist_pitch output flange stands on - the flange its own part,
+build_wrist_flange - no plate past the frame."""
 from __future__ import annotations
 
 import math
 
 import build123d as bd
 
-from lib.geom import align_min, cylinder, hex_prism, single_solid, through
+from lib.geom import align_min, cylinder, faceted_end, hex_prism, single_solid, through
+from lib.style import SIDES
 from lib.units import NUDGE
 from lib.wrist.layout import end_face_holes, pulley_bolt_points, seat_bolt_points, slope_x, stack_positions
 from lib.wrist.params import DEFAULT, WristConfig
@@ -105,37 +107,62 @@ def _end_face_cuts(cfg: WristConfig):
             + [_xcyl(e.m4_dia / 2.0, x0, x1, y, z) for y, z in m4])
 
 
-def _flange(cfg: WristConfig):
-    """The wrist_pitch output flange about the pitch axis (FlangeParams), standing on the roll frame alone (no plate round
-    it): the post - round, its foot chamfered, from the plate's free face (the frame's own wall there: one body) up, cut
-    flat where it passes the frame's front face and its rear (nothing past the frame's outline seen along the pitch axis),
-    its front flat carried on down past the free face into the front facet's foot so that it runs on down into the
-    frame's front face -, the shoulder, the stub."""
-    f, p, d, S = cfg.flange, cfg.plate, cfg.roll, stack_positions(cfg)
+def _post_bounds(cfg: WristConfig):
+    """What bounds the post and the frame's foot under it: the frame's front face and its rear (nothing past the frame's
+    outline seen along the pitch axis) and, under the free face, only the front facet's wedge (the pancake's pocket and
+    the board's window lie there)."""
+    p, d, S = cfg.plate, cfg.roll, stack_positions(cfg)
+    flats = _box((p.pitch_x + d.rear_low, p.pitch_x + S["z_front"]), (-_FAR, _FAR), (-_FAR, _FAR))
+    over = front_facets(cfg).moved(module_to_host(cfg)) + _box((-_FAR, _FAR), (-_FAR, _FAR), (0.0, _FAR))
+    return flats & over
+
+
+def _foot(cfg: WristConfig):
+    """The frame's foot under the flange's post: the post's front flat carried on down past the free face into the front
+    facet's foot, so that it runs on down into the frame's front face - an octagon about the pitch axis with its corners on
+    the post's diameter (lib/style.py SIDES, a flat on each axis), not an arc: wrist_link keeps nothing round about the
+    pitch axis - and the key on the coupler face (key_*)."""
+    f, p, d = cfg.flange, cfg.plate, cfg.roll
     axis = (p.pitch_x, 0.0)
     drop = d.front_facet - p.thickness   # the coupler face's front facet runs on this far under the free face
-    post = cylinder(f.post_dia / 2.0, f.post_z[1] + drop, axis, -drop)
-    post = post.chamfer(f.post_chamfer, None, [post.edges().sort_by(bd.Axis.Z)[-1]])
-    flats = _box((p.pitch_x + d.rear_low, p.pitch_x + S["z_front"]), (-_FAR, _FAR), (-_FAR, _FAR))
-    # under the free face only the front facet's wedge (the pancake's pocket and the board's window lie there)
-    over = front_facets(cfg).moved(module_to_host(cfg)) + _box((-_FAR, _FAR), (-_FAR, _FAR), (0.0, _FAR))
-    body = post & flats & over
-    body = body + cylinder(f.step_dia / 2.0, f.step_z[1] - f.step_z[0], axis, f.step_z[0])
-    return body + cylinder(f.stub_dia / 2.0, f.stub_z[1] - f.stub_z[0], axis, f.stub_z[0])
+    octo = faceted_end(f.post_dia / 2.0 * math.cos(math.pi / SIDES), axis, SIDES)
+    foot = bd.Pos(0.0, 0.0, -drop) * bd.extrude(octo, amount=f.post_z[0] + drop)
+    key = bd.Pos(0.0, 0.0, f.post_z[0] - NUDGE) * bd.extrude(faceted_end(f.key_af / 2.0, axis, SIDES), amount=f.key_h + NUDGE)
+    return (foot & _post_bounds(cfg)) + key
 
 
-def _flange_cuts(cfg: WristConfig):
-    """The flange's pin bore (blind from the stub's end, pin_bore_past short of the nuts' seats), the 90T's 4 M4 from
-    the stub's end down to the seats, each nut's hex channel - turned with the pattern - from its seat on down through
-    the plate, channel_past into the pancake's pocket (the nut drops in from there, before the pancake)."""
-    f, top = cfg.flange, cfg.flange.stub_z[1]
-    z_pin = f.nut_seat_z + f.pin_bore_past
+def _frame_cuts(cfg: WristConfig):
+    """The 90T's 4 M4 in the frame: clearance from each nut's seat up through the key's top, each nut's hex channel -
+    turned with the pattern - from its seat on down through the plate, channel_past into the pancake's pocket (the nut
+    drops in from there, before the pancake)."""
+    f = cfg.flange
+    top = f.post_z[0] + f.key_h
     corner = math.radians(f.pulley_bolt_deg + f.nut_corner_deg)
-    cuts = [cylinder(f.pin_bore_dia / 2.0, top - z_pin + NUDGE, (cfg.plate.pitch_x, 0.0), z_pin)]
+    cuts = []
     for x, y in pulley_bolt_points(cfg):
         cuts.append(cylinder(f.pulley_bolt_dia / 2.0, top - f.nut_seat_z + 2.0 * NUDGE, (x, y), f.nut_seat_z - NUDGE))
         cuts.append(bd.Pos(x, y, -f.channel_past) * hex_prism(f.nut_af, corner, f.nut_seat_z + f.channel_past))
     return cuts
+
+
+def build_wrist_flange(cfg: WristConfig = DEFAULT):
+    """The wrist_pitch output flange (wrist_flange) in wrist_link's part frame - its own part on the coupler face about
+    the pitch axis (FlangeParams): the post - round, cut flat where it passes the frame's front face and its rear, its
+    foot (toward the bearing) chamfered -, the shoulder, the stub; the pin bore blind from the stub's end, the 90T's 4 M4
+    clearance through it, the recess in its foot over the frame's key (key_fit a side)."""
+    f, p = cfg.flange, cfg.plate
+    axis = (p.pitch_x, 0.0)
+    post = cylinder(f.post_dia / 2.0, f.post_z[1] - f.post_z[0], axis, f.post_z[0])
+    post = post.chamfer(f.post_chamfer, None, [post.edges().sort_by(bd.Axis.Z)[-1]])
+    body = (post & _post_bounds(cfg)) + cylinder(f.step_dia / 2.0, f.step_z[1] - f.step_z[0], axis, f.step_z[0])
+    body = body + cylinder(f.stub_dia / 2.0, f.stub_z[1] - f.stub_z[0], axis, f.stub_z[0])
+    top = f.stub_z[1]
+    body = body - cylinder(f.pin_bore_dia / 2.0, top - f.pin_bore_z1 + NUDGE, axis, f.pin_bore_z1)
+    for x, y in pulley_bolt_points(cfg):
+        body = body - cylinder(f.pulley_bolt_dia / 2.0, top - f.post_z[0] + 2.0 * NUDGE, (x, y), f.post_z[0] - NUDGE)
+    recess = faceted_end(f.key_af / 2.0 + f.key_fit, axis, SIDES)
+    body = body - bd.Pos(0.0, 0.0, f.post_z[0] - NUDGE) * bd.extrude(recess, amount=f.key_h + NUDGE)
+    return single_solid(body)
 
 
 def build_wrist_link(cfg: WristConfig = DEFAULT):
@@ -147,9 +174,9 @@ def build_wrist_link(cfg: WristConfig = DEFAULT):
         for cut in _seat_cuts(cfg) + _end_face_cuts(cfg):
             body = body - cut
         return single_solid(body)
-    # the wrist roll drive's frame (lib/wrist/roll.py) - its wall on the forearm's side all the plate there is - and the
-    # wrist_pitch output flange on that wall's coupler face
-    body = build_frame(cfg).moved(module_to_host(cfg)) + _flange(cfg)
-    for cut in _flange_cuts(cfg):
+    # the wrist roll drive's frame (lib/wrist/roll.py) - its wall on the forearm's side all the plate there is - with the
+    # foot and the key the wrist_pitch output flange (its own part: build_wrist_flange) stands on, the 90T's nuts in it
+    body = build_frame(cfg).moved(module_to_host(cfg)) + _foot(cfg)
+    for cut in _frame_cuts(cfg):
         body = body - cut
     return single_solid(body)

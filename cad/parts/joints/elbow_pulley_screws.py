@@ -1,11 +1,12 @@
 """elbow_pulley_screws - purchased (COTS) part: the elbow 90T's 4 M4 socket head cap screws (ISO 4762).
 
-They clamp the pulley onto the elbow block's stub (gt2_pulley_90t#3 -> forearm_roll_block).
+They clamp the pulley, the elbow flange and the elbow block together (gt2_pulley_90t#3 -> elbow_flange -> forearm_roll_block).
 
 In the arm (lib/mounts.py, hosted on the elbow 90T): the heads in the counterbores in the pulley's outer face
-(lib/belts.py GT2_PULLEY_90T_HEAD_SEAT), the shanks down through its M4 clearance holes, the block's stub and post into the captive nuts in the block's hex channels
-(elbow_pulley_nuts); the tips end two pitches past the nuts, in the channels. Length: lib/forearm/params.py
-RollDriveParams.pulley_screw_len - the wrist's (wrist_pulley_screws), the two flanges one design.
+(lib/belts.py GT2_PULLEY_90T_HEAD_SEAT), the shanks down through its M4 clearance holes, the elbow flange and the
+block's spigot into the captive nuts in the block's hex channels (elbow_pulley_nuts); the tips end two pitches past the
+nuts, in the channels. Length: lib/forearm/params.py RollDriveParams.pulley_screw_len - 5 longer than the wrist's
+(wrist_pulley_screws), whose flange is one with wrist_link.
 
 No catalog model (the catalog has single fasteners only, vendor/README.md) and no SolidWorks export: a NATIVE COTS
 pattern part (lib/reference.py NATIVE_COTS) like the drive's cycloidal_housing_bolts - its envelope IS the geometry
@@ -31,7 +32,7 @@ COTS = True
 MASS_G = ELBOW_PULLEY_SCREWS_MASS_G   # [ESTIMATE] the modelled steel (lib/params.py)
 PURCHASE_SPEC = f"M{M4_SHCS.d:g} x {LENGTH:g} socket head cap screw (ISO 4762)"
 PURCHASE_QTY = len(pulley_90t_bolt_points())   # pieces per occurrence (the whole pattern)
-PURCHASE_NOTE = "the elbow 90T onto the elbow block, into the captive nuts in its hex channels (elbow_pulley_nuts)"
+PURCHASE_NOTE = "the elbow 90T through the elbow flange into the elbow block's captive nuts (elbow_pulley_nuts)"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 

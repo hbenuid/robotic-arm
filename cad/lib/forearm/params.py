@@ -295,14 +295,15 @@ ELBOW_INSET = 5.0     # [DESIGN] the roll frame and everything beyond the elbow 
 @dataclass(frozen=True)
 class RollDriveParams:
     """The forearm roll drive (assemblies/forearm_roll_drive.py; docs/forearm_roll.md): ONE printed FRAME (stator, the
-    forearm_roll_block) that is also the elbow's output flange, round a rotor split in two at bearing 1 (each bearing
+    forearm_roll_block) that the elbow's output flange bolts to (its own part, elbow_flange), round a rotor split in two at bearing 1 (each bearing
     pressed on its own piece's journal from its own end). The roll motor sits ON the elbow axis, the roll axis
     centre_distance above it (= the arm's elbow offset, ForearmConfig.elbow_offset): the stock roll belt round the motor's
     20T and the ring, an idler on its back on the frame's face taking up the rest (RollIdlerParams). The frame is
     one body round the motor: seen along the elbow axis an octagon about it (end_r, its flats round the upper arm's faceted end)
     hulled up to the tower round the roll axis - seen along the roll axis the tower is the forearm flange's octagon
-    (tower_y), the front face's long edges faceted (front_facet) -, straight-sided, extruded from its underside (block_x[0], the elbow flange's - under it a post (the
-    SolidWorks j3_coupler's Ø40 journal carried up), the shoulder and the stub into j1_link's bore, the elbow 90T bolts straight into it) to
+    (tower_y), the front face's long edges faceted (front_facet) -, straight-sided, extruded from its underside (block_x[0]: under it the
+    spigot that keys the elbow flange - a post (the SolidWorks j3_coupler's Ø40 journal carried up), the shoulder and the
+    stub into j1_link's bore; the elbow 90T's screws run through it into nuts in the frame) to
     its side (+N) face, closed; the motor in a pocket open down through the octagon's bottom (it slides up into it; a
     groove inside each wall at its board's side headers), the pocket's front wall its plate (round holes: its 4x M3 from
     the front face, the heads flush in counterbores -
@@ -376,11 +377,14 @@ class RollDriveParams:
     #                                       pocket's corners, 4.65 at the motor screws' counterbores (roll.py front_facets)
     bay_r: float = 25.6                   # [DESIGN] the shaft's bay behind bearing 1, bored on through the frame's back (the rear line): round
     #                                       the stop lug's corners (r 24.6) + 1; the shaft, bearing 1 pressed on it, goes in along the axis from behind
-    # the elbow flange on the frame's underside (module -X) about the elbow axis (y = elbow_y), where j3_coupler#1 was
+    # the elbow flange under the frame's underside (module -X) about the elbow axis (y = elbow_y), where j3_coupler#1 was
     # (host z = module x + axis_z): the post, the shoulder, the stub - over j1_link's Ø42 bore, never over its flat top
-    # (the SolidWorks coupler's Ø78 flange and Ø62 boss turned in the Ø80 recess the top had: lib/upper_arm/params.py)
+    # (the SolidWorks coupler's Ø78 flange and Ø62 boss turned in the Ø80 recess the top had: lib/upper_arm/params.py).
+    # Its own printed part (elbow_flange, printed on the stub's end: its round faces print as circles, where on the frame -
+    # printed front face down for its 6806 seats - they lay on their side), keyed by the frame's spigot in its top's
+    # recess and clamped to the frame by the elbow 90T's screws
     post_dia: float = 40.0                # [REFERENCE] the coupler's Ø40 journal, carried up to the underside: one post over j1_link's
-    #                                       Ø42 bore (the elbow 90T's nuts seated in it), clear of the flat top at any elbow angle
+    #                                       Ø42 bore, clear of the flat top at any elbow angle
     post_x: tuple = (-40.3 + ELBOW_INSET, -ROLL_FRAME_R)   # [DESIGN] host -10.3 (0.7 over the upper elbow bearing, its outer ring too) ..
     #                                       the underside (host -5): 5.3 long, the frame ELBOW_INSET nearer j1_link than the capture
     post_chamfer: float = EDGE_CHAMFER    # [DESIGN] its foot's 45 deg chamfer (lib/style.py): its edge 2.26 off the bore's rim
@@ -391,19 +395,24 @@ class RollDriveParams:
     #                                       end (-47) on through the lip to the re-seated elbow 90T, which bolts flat onto it (its 2 mm in the lip
     #                                       space the inner rings) - 9 long, as the wrist's (lib/wrist/params.py FlangeParams)
     pin_bore_dia: float = 12.5            # [REFERENCE] the coupler's through bore
-    pin_bore_x: tuple = (-47.0 - PULLEY_SEAT_SHIFT + ELBOW_INSET, -37.0)   # [DESIGN] from the stub's end, blind: stops 1 mm under the nut seats
+    pin_bore_x: tuple = (-47.0 - PULLEY_SEAT_SHIFT + ELBOW_INSET, -37.0)   # [DESIGN] from the stub's end, blind (5 under the recess's floor)
+    spigot_af: float = 32.0               # [DESIGN] the frame's key under its underside: an octagon about the elbow axis (end_sides, a flat on
+    #                                       each axis), this across flats - 4 inside the post, its corners 2.1; the nuts' outer flats 1.6 inside it
+    spigot_h: float = 2.0                 # [DESIGN] ... standing this far under the underside, in the flange's recess (spigot_h deep)
+    spigot_fit: float = 0.15              # [DESIGN] the recess over the spigot, a side (printed to printed: a slip, it centres the flange)
     pulley_bolt_r: float = 11.0           # [REFERENCE] the elbow 90T's 4x M4 at r 11 (the SolidWorks coupler's pattern) ...
     pulley_bolt_deg: float = 45.0         # [DESIGN] ... turned off the axes, the elbow 90T with it (lib/mounts.py)
-    pulley_bolt_dia: float = M4_CLEAR     # [DESIGN] 4.4, M4 clearance up through the stub and the post to the nut seat
+    pulley_bolt_dia: float = M4_CLEAR     # [DESIGN] 4.4, M4 clearance up through the flange and the spigot to the nut seat
     pulley_hub_len: float = GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_FACE_Y[0]   # [REFERENCE] 21.4, the 90T's length through its bolt holes:
     #                                       the screw heads sit in its counterbores (parts/joints/elbow_pulley_screws)
-    pulley_screw_len: float = 30.0        # [DESIGN] M4 x 30 (ISO 4762) from the floors of the pulley's counterbores
-    #                                       (GT2_PULLEY_90T_HEAD_SEAT under its outer face) - the wrist's too (FlangeParams.pulley_screw_len)
+    pulley_screw_len: float = 35.0        # [DESIGN] M4 x 35 (ISO 4762) from the floors of the pulley's counterbores
+    #                                       (GT2_PULLEY_90T_HEAD_SEAT under its outer face), through the flange into the frame: 5 longer than the
+    #                                       wrist's (FlangeParams.pulley_screw_len), whose flange is one with its frame
     nut_af: float = 6.85                  # [DESIGN] the M4 nuts' (ISO 4032, s 7) hex channels - j3_coupler's pocket (lib/coupler/params.py)
     nut_t: float = M4_NUT.h               # [DATASHEET] 3.2, ISO 4032 M4 nut height (parts/joints/elbow_pulley_nuts)
-    nut_seat_x: float = -41.0 + ELBOW_INSET   # [DESIGN] level with the upper elbow bearing's top (the stub's end: the nut's lower 0.7 in the
-    #                                       shoulder, the rest in the post): the screw ends 2 pitches past its nut, under the motor's pocket - the
-    #                                       wrist's nuts seat the same (FlangeParams.nut_seat_z)
+    nut_seat_x: float = -ROLL_FRAME_R - 2.0 + 1.0   # [DESIGN] in the frame's spigot, 1 of it between each nut and the flange (spigot_h
+    #                                       under the underside): the 90T, the flange and the frame one clamp; the screw ends 2 pitches past its
+    #                                       nut, 3.4 under the motor's pocket
     nut_channel_past: float = 1.0         # [DESIGN] each channel runs up from its seat through the floor into the motor's pocket, this far past
     #                                       the floor: the nuts drop in from the pocket before the motor
     # the rotor: the pulley (the ring on its core, its hub through bearing 2, its neck on to bearing 1, the spigot) and the

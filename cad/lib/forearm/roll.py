@@ -1,8 +1,9 @@
 """build123d builders of the forearm roll drive's printed parts (RollDriveParams, module frame, at their stack
-stations): the frame (stator, forearm_roll_block - one body round the motor: the octagonal elbow end with the elbow's
-output flange under it, the motor's pocket open through its bottom and the plate, the tower with the 6806 pair and the
-bearing boss on its front face - the tower the forearm flange's octagon seen along the roll axis, the front face's long
-edges faceted), the pulley (rotor, the output - its integral 90T is the GT2 ring of lib/pulley/teeth.py
+stations): the frame (stator, forearm_roll_block - one body round the motor: the octagonal elbow end with the spigot
+under it that keys the elbow flange, the motor's pocket open through its bottom and the plate, the tower with the 6806
+pair and the bearing boss on its front face - the tower the forearm flange's octagon seen along the roll axis, the front
+face's long edges faceted), the elbow flange (stator, elbow_flange - the elbow's output flange, its own part under the
+frame's underside), the pulley (rotor, the output - its integral 90T is the GT2 ring of lib/pulley/teeth.py
 - its hub on through the tower to bearing 1), the shaft (rotor, a collar that holds bearing 1) and the back panel (stator,
 a plate flush with the frame's rear face over the shaft's bay - its step, the opening and the magnets on the rear face:
 back_face / back_point; its grill: back_grill)."""
@@ -184,23 +185,35 @@ def profile(cfg: ForearmConfig = DEFAULT):
     return hull & (bd.Pos(0.0, z1 - FAR) * bd.Rectangle(2.0 * FAR, 2.0 * FAR)) & behind
 
 
-def elbow_flange(cfg: ForearmConfig = DEFAULT):
-    """The elbow flange under the frame's underside about the elbow axis (coupler_steps): the post over j1_link's bore,
-    its foot chamfered post_chamfer at 45 deg (the design language's edge), the shoulder on the upper elbow bearing's
-    inner ring, the stub in it."""
-    y_e = stack_positions(cfg)["y_elbow"]
+def spigot_face(cfg: ForearmConfig = DEFAULT, add: float = 0.0):
+    """The frame's key seen along the elbow axis, as a face in (u, v) = (module y, module z): an octagon about the elbow
+    axis (end_sides, a flat on each axis), spigot_af across flats - `add` out from it all round (the flange's recess)."""
+    d = cfg.drive
+    return faceted_end(d.spigot_af / 2.0 + add, (stack_positions(cfg)["y_elbow"], 0.0), d.end_sides)
+
+
+def build_elbow_flange(cfg: ForearmConfig = DEFAULT):
+    """The elbow flange (elbow_flange) in the module frame - its own part under the frame's underside about the elbow
+    axis (coupler_steps): the post over j1_link's bore, its foot chamfered post_chamfer at 45 deg (the design language's
+    edge), the shoulder on the upper elbow bearing's inner ring, the stub in it; the pin bore (blind from the stub's end),
+    the elbow 90T's 4x M4 clearance through it, the recess in its top over the frame's spigot (spigot_fit a side)."""
+    d, y_e = cfg.drive, stack_positions(cfg)["y_elbow"]
     (post_dia, p0, p1), *rest = coupler_steps(cfg)
     post = x_cylinder(post_dia / 2.0, p1 - p0, (y_e, 0.0), p0)
-    body = post.chamfer(cfg.drive.post_chamfer, None, [post.edges().sort_by(bd.Axis.X)[0]])
+    body = post.chamfer(d.post_chamfer, None, [post.edges().sort_by(bd.Axis.X)[0]])
     for dia, a, b in rest:
         body = body + x_cylinder(dia / 2.0, b - a, (y_e, 0.0), a)
-    return body
+    body = body - x_cylinder(d.pin_bore_dia / 2.0, d.pin_bore_x[1] - d.pin_bore_x[0] + NUDGE, (y_e, 0.0), d.pin_bore_x[0] - NUDGE)
+    for y, z in pulley_bolt_points(cfg):
+        body = body - x_cylinder(d.pulley_bolt_dia / 2.0, p1 - d.stub_x[0] + 2 * NUDGE, (y_e + y, z), d.stub_x[0] - NUDGE)
+    body = body - yz_prism(spigot_face(cfg, d.spigot_fit), p1 - d.spigot_h, p1 + NUDGE)
+    return single_solid(body)
 
 
 def build_block(cfg: ForearmConfig = DEFAULT):
     """The frame (forearm_roll_block) in the module frame: ONE body round the motor - the profile (an octagon about the
-    elbow axis, hulled up to the tower round the roll axis) from the underside (block_x[0], the elbow flange's post /
-    shoulder / stub under it) to the side (+N) face, closed, the tower cut to the forearm flange's octagon (tower_section)
+    elbow axis, hulled up to the tower round the roll axis) from the underside (block_x[0], the spigot under it that keys
+    the elbow flange - its own part, build_elbow_flange) to the side (+N) face, closed, the tower cut to the forearm flange's octagon (tower_section)
     and the front face's two long edges faceted (front_facet); the motor's pocket between the floor and the side wall, open
     down through the octagon's bottom (the motor slides up into it), a groove inside each wall at the board's side plugs;
     its front wall the plate (the pilot hole, the motor's 4 M3 holes with their heads' counterbores, the shaft's slit down
@@ -208,16 +221,17 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     M5's slot and its nut's channel under the face, the nut in from the pocket -; the tower: bearing 1's seat from the
     shaft's bay behind it - bored on through the frame's back -, the lip (the spacer), bearing 2's seat in the bearing
     boss - round on the front face, rising out of the facets, the ring's flange turning over it -, the stop post on the tower's face in the bay;
-    the rear face: the back panel's step across it, the opening grown down below the bay's bore, the magnets' pockets."""
+    the rear face: the back panel's step across it, the opening grown down below the bay's bore, the magnets' pockets;
+    the elbow 90T's 4x M4 up through the spigot into nuts in hex channels, open into the pocket."""
     d, S = cfg.drive, stack_positions(cfg)
     y_e = S["y_elbow"]
     # the material first: the profile across the frame's depth, the tower cut to the forearm flange's octagon and the
-    # front face's long edges faceted, the outline chamfered on both side faces (lib/style.py EDGE_CHAMFER), the elbow
-    # flange under it, the bearing boss up to bearing 2's front face - from 1 mm under the facets (one body), so it rises
+    # front face's long edges faceted, the outline chamfered on both side faces (lib/style.py EDGE_CHAMFER), the spigot
+    # under it (from 1 mm inside: one body), the bearing boss up to bearing 2's front face - from 1 mm under the facets (one body), so it rises
     # out of them
     prism = yz_prism(profile(cfg), d.block_x[0], d.block_x[1]) & _z_prism(tower_section(cfg))
     body = chamfer_outline(prism - front_facets(cfg), (1.0, 0.0, 0.0))
-    body = body + elbow_flange(cfg)
+    body = body + yz_prism(spigot_face(cfg), d.block_x[0] - d.spigot_h, d.block_x[0] + 1.0)
     boss_z0 = S["z_front"] - d.front_facet - 1.0
     body = body + cylinder(d.bearing_boss_dia / 2.0, S["z_boss"] - boss_z0, z0=boss_z0)
     # the roll belt's tensioner's riser on the front face (from 1 mm inside it: one body), its land on top under the idler's
@@ -259,13 +273,12 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     for x, s in b.magnet_points:
         body = body - _on_back(bd.Pos(x, s) * bd.Circle(b.pocket_dia / 2.0), b.t - NUDGE, b.pocket_depth + NUDGE, cfg)
     body = body + stop_wedge(d.stop_post_r[0], d.stop_post_r[1], S["z_stop_post"], d.stop_post_t, d.stop_deg_width, 180.0)
-    # the elbow flange: the pin bore, the elbow pulley's 4x M4 - clearance up through the stub to the nut seat, then each
-    # nut's hex channel (a flat toward the elbow axis) on up through the floor into the motor's pocket, where the nut
-    # drops in before the motor
-    body = body - x_cylinder(d.pin_bore_dia / 2.0, d.pin_bore_x[1] - d.pin_bore_x[0] + NUDGE, (y_e, 0.0), d.pin_bore_x[0] - NUDGE)
-    x_end = nut_channel_end(cfg)
+    # the elbow pulley's 4x M4 through the elbow flange into the frame: clearance up through the spigot to the nut seat,
+    # then each nut's hex channel (a flat toward the elbow axis) on up through the floor into the motor's pocket, where the
+    # nut drops in before the motor
+    x_end, x_key = nut_channel_end(cfg), d.block_x[0] - d.spigot_h
     for y, z in pulley_bolt_points(cfg):
-        body = body - x_cylinder(d.pulley_bolt_dia / 2.0, d.nut_seat_x - d.stub_x[0] + 2 * NUDGE, (y_e + y, z), d.stub_x[0] - NUDGE)
+        body = body - x_cylinder(d.pulley_bolt_dia / 2.0, d.nut_seat_x - x_key + 2 * NUDGE, (y_e + y, z), x_key - NUDGE)
         body = body - _x_hex(d.nut_af, x_end - d.nut_seat_x, (y_e + y, z), d.nut_seat_x, math.degrees(math.atan2(z, y)))
     # the tensioner's M5: its slot through the land, the riser and the plate, on down past the screw's tip; the nut's
     # channel under the face along X, past the slot's ends both ways (the nut flats-on, sliding with it), and its way in:

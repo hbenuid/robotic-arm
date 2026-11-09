@@ -1,11 +1,11 @@
-"""forearm_roll_block - the forearm roll drive's STATOR - the roll frame (the elbow block), which is also the elbow's output
-flange, ONE body round the roll motor: seen along the elbow axis an octagon about it (its flats r 42 off it, round j1_link's round end)
-hulled up to the TOWER round the roll axis (ELBOW_ROLL_OFFSET above the elbow axis; seen along the roll axis the forearm
-flange's octagon, its top corners faceted, and the front face's long edges faceted 45 deg - front_facet - the bearing
-boss rising out of them), from its underside (6.0 over
-j1_link's flat top: ELBOW_INSET; under it the elbow flange about the elbow axis - a Ø40 post, the SolidWorks j3_coupler's journal
-carried up, its foot chamfered, the Ø33 shoulder and the Ø30 stub down into j1_link's bore - the elbow 90T pulley bolts up
-through the stub into 4x M4 nuts in hex channels that open up into the motor's pocket; j3_coupler#1 is retired) to its side (+N) face, closed. The 40 mm kit motor sits on the
+"""forearm_roll_block - the forearm roll drive's STATOR - the roll frame (the elbow block), which the elbow's output
+flange (elbow_flange, its own part) bolts to, ONE body round the roll motor: seen along the elbow axis an octagon about
+it (its flats r 42 off it, round j1_link's round end) hulled up to the TOWER round the roll axis (ELBOW_ROLL_OFFSET above
+the elbow axis; seen along the roll axis the forearm flange's octagon, its top corners faceted, and the front face's long
+edges faceted 45 deg - front_facet - the bearing boss rising out of them), from its underside (6.0 over j1_link's flat
+top: ELBOW_INSET; under it the SPIGOT - an octagon about the elbow axis, spigot_af across flats, spigot_h tall - in the
+elbow flange's recess: the elbow 90T bolts up through the flange and the spigot into 4x M4 nuts in hex channels that
+open up into the motor's pocket; j3_coupler#1 is retired) to its side (+N) face, closed. The 40 mm kit motor sits on the
 elbow axis in the POCKET between the floor and the side wall, open down through the octagon's bottom (the motor slides up
 into it; its board's side plugs in a groove inside each wall, their cables down out through the bottom), its front wall
 the PLATE (the pilot hole and the motor's 4 M3 holes, the screws' heads flush in counterbores - roll_motor_screws; the
@@ -18,7 +18,8 @@ by magnets in pockets in the step's floor), the bay's opening grown down below i
 NATIVE part (lib/reference.py NATIVE): designed here in build123d (lib/forearm/roll.py build_block(cfg), every number
 lib/forearm/params.py RollDriveParams, in the drive's MODULE frame at its stack station - assemblies/forearm_roll_drive.py
 places it at 0); its reference is its accepted build, reference/native/forearm_roll_block.step (tools/reference/import_native.py).
-PETG. In the arm: x1, inside forearm_roll_drive#1 - elbow_link (the stator rides with the elbow pulley; it IS the elbow coupler).
+PETG. In the arm: x1, inside forearm_roll_drive#1 - elbow_link (the stator rides with the elbow pulley, clamped to it
+through the elbow flange).
 """
 import pathlib
 

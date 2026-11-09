@@ -3,7 +3,7 @@
 The elbow 90T's screws run into them, in the block's hex channels (forearm_roll_block).
 
 In the arm (lib/mounts.py, hosted on elbow_pulley_screws): each nut on its channel's seat (lib/forearm/params.py
-RollDriveParams.nut_seat_x), a flat toward the elbow axis as the channel holds it (lib/forearm/roll.py); the channels
+RollDriveParams.nut_seat_x, in the block's spigot), a flat toward the elbow axis as the channel holds it (lib/forearm/roll.py); the channels
 are nut_af across flats, a press for the nut (docs/open_issues.md). Each drops in from the block's motor pocket before
 the motor goes in (docs/forearm_roll.md §4).
 

@@ -1,9 +1,10 @@
-"""wrist_pulley_nuts - purchased (COTS) part: the wrist 90T's 4 M4 hex nuts (ISO 4032), in wrist_link's flange.
+"""wrist_pulley_nuts - purchased (COTS) part: the wrist 90T's 4 M4 hex nuts (ISO 4032), in wrist_link's plate.
 
-The wrist 90T's screws run into them, in hex channels from the seats in wrist_link's post down through its plate.
+The wrist 90T's screws run into them through the wrist flange, in hex channels from the seats in wrist_link's plate down
+through it.
 
 In the arm (lib/mounts.py, hosted on wrist_pulley_screws): each nut on its channel's seat (lib/wrist/params.py
-FlangeParams.nut_seat_z - where the retired j3_coupler#2's pocket floors were, lib/coupler/params.py nut_depth), all
+FlangeParams.nut_seat_z - 1 mm under the plate's coupler face, past the wrist flange), all
 four turned with the 90T (FlangeParams.pulley_bolt_deg) as the channels are cut (+ nut_corner_deg); the channels are nut_af
 across flats, a press for the nut (docs/open_issues.md). They drop in from the pancake's pocket before the pancake.
 
