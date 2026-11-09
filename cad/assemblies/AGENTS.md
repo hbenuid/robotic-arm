@@ -80,7 +80,7 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
   own STEP and hands back a new placement the parent owns), otherwise a fresh in-process copy — and
   `.moved()`s the modules the same way (`MODULES` maps a module name to its **model**; never `.locate()` in
   place). The arm re-tints the leaves of those copies (below).
-- **The arm is emitted Z up.** `placements.json` is Y up, but cadgen's viewer and snapshot renderer
+- **The arm is emitted Z up.** `placements.json` is Y up, but cad's viewer and snapshot renderer
   hardcode +Z as up and have no up-axis option (no `@step` argument, URL parameter or flag), so a
   capture-frame `arm.step` renders lying on its side. `arm.py arm_from_w()` =
   `lib/datum.py base_frame()⁻¹` (capture frame → `base_link` frame: Z up, X forward, the base's
@@ -103,7 +103,7 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
   ivory otherwise - the same part the same colour in the arm and in each module standing alone: `gripper.py`,
   `cycloidal_drive.py`, `forearm_roll_drive.py` and `wrist_roll_drive.py` pass `tint=True` to
   `occurrence_children` / `located_children`, `grouped_children` always colours (`_tint_parts`). Colours go on the
-  LEAVES only (`_tint`), never on a group or module node: cadgen writes a multi-solid part's colour on its solids, and a colour on an enclosing
+  LEAVES only (`_tint`), never on a group or module node: cad writes a multi-solid part's colour on its solids, and a colour on an enclosing
   node outranks those in the renderers (verified by snapshot: the bought MKS boards and the MG996R drew in their
   link's colour while the groups carried one). Separate make/buy models were tried and removed as
   duplicates — one STEP per assembly. A purchased item that is **not modelled** lives only in
@@ -143,9 +143,9 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
   `grouped_children`, `located_children`) RETURN the placed children, each labelled with `lib.assembly`'s
   `label_shape` (`gt2_pulley_90t:j3`: `label_text`'s compact form).
 - When adding source-level joints, they are build123d joints in the model body (a `bd.RevoluteJoint` on the
-  parent's part, a `bd.RigidJoint` of the same label on the child's) and `cadgen.ap242` mechanism states (viewer
+  parent's part, a `bd.RigidJoint` of the same label on the child's) and `cad.build123d` mechanism states (viewer
   sliders, posed snapshots; the plugin's `skills/cad/references/kinematics.md`) — not helper frames; keep
-  placements parameter-driven, and validate with `cadgen.geometry.closest_points` / `overlap_volume` on the
+  placements parameter-driven, and validate with `cad.build123d.closest_points` / `overlap_volume` on the
   bodies' shapes (`parts.build`, `lib.models.raw`).
 - A new assembly model goes in `tests/test_lazy_kernel.py`'s module list.
 - `.moved()`/`.located()` deep-copy the shape **and its parent chain**; never call them on a child

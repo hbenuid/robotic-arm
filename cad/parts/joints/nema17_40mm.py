@@ -20,7 +20,7 @@ else the parametric envelope below - both in the part frame lib/mounts.py places
 import pathlib
 
 import build123d as bd
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid
 from lib.cycloidal import motor_bolt_points

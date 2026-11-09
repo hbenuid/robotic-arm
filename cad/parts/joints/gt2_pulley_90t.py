@@ -23,7 +23,7 @@ heads (tests/pulley/ lock what DEFAULT changes, tests/test_mounts.py the holes i
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.datum import IDENTITY
 from lib.pulley import DEFAULT, LEGACY

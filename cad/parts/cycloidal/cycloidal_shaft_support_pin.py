@@ -8,7 +8,7 @@ re-oriented by VENDOR_TO_REF into the same frame.
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig

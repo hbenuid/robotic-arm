@@ -8,7 +8,7 @@ import math
 
 import pytest
 from build123d import Location, Vector
-from cadgen.build123d import closest_points
+from cad.build123d import closest_points
 
 from assemblies import wrist_roll_drive as M
 from lib import params as PARAMS

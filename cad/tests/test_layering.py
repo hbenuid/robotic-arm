@@ -84,5 +84,5 @@ def test_imports_respect_the_layering(path):
 
 
 def test_there_is_no_cad_package_root():
-    """cad/__init__.py would make the repo root the package root (cadgen walks the __init__.py chain)."""
+    """cad/__init__.py would make the repo root the package root (cad walks the __init__.py chain)."""
     assert not (CAD_DIR / "__init__.py").exists()

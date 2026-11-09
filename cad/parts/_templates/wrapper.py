@@ -5,7 +5,7 @@ This is the day-one state of every custom part. The part's LOCAL frame is the So
 part-file frame (identity LOCAL_FROM_REF): reference/placements.json places it in the arm
 assuming exactly that frame, so the whole arm assembles before anything is converted.
 
-The file declares ONE cadgen model: `@step def <name>()` (rename `wrapper` to the part NAME when
+The file declares ONE cad model: `@step def <name>()` (rename `wrapper` to the part NAME when
 you copy the template - NAME = file stem = model name); `./cadtool gen parts/<group>/<name>.py`
 runs it and writes the sibling <name>.step. Tests call parts.build(name), never the model.
 
@@ -20,7 +20,7 @@ To CONVERT the part:
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib import reference
 from lib.datum import IDENTITY, to_location

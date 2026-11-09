@@ -40,7 +40,7 @@ the model builds DEFAULT (tests/upper_arm/ lock what DEFAULT changes).
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.datum import IDENTITY
 from lib.upper_arm import DEFAULT, LEGACY

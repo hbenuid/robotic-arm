@@ -15,7 +15,7 @@ out, the shank pointing in at the axis (lib/yaw_coupler/body.py toward_axis).
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid, pattern
 from lib.datum import IDENTITY

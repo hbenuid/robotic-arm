@@ -64,10 +64,10 @@ The toolchain, its pins and upgrades: `docs/toolchain.md`.
 Every command, its flags and what it prints: `./cadtool help` (for people: the `README.md` table). The rules:
 - **Never call bare `python`** — the system Python has no build123d (`./cadtool python` is the venv's).
 - **Never add `cadquery-ocp`** (the VTK build) or `cad-server` to `pyproject.toml` (why: `docs/toolchain.md`). The venv
-  holds the `cad` library, imported here by its earlier name `cadgen` (an alias of the same modules): decorators,
-  geometry, the STEP reader. `cad-server` is the machine's one server and the `cad` command — engine, viewer, snapshots
-  —, a uv tool at this project's pin; the `text-to-cad@earthtojake` plugin ships the `/text-to-cad:*` skill docs and
-  CAD's MCP server `cad` (`docs/toolchain.md` Pins).
+  holds the `cad` library (`from cad import step`; never `cadgen`, its deprecated earlier name: `docs/toolchain.md`
+  Pins): decorators, geometry, the STEP reader. `cad-server` is the machine's one server and the `cad` command —
+  engine, viewer, snapshots —, a uv tool at this project's pin; the `text-to-cad@earthtojake` plugin ships the
+  `/text-to-cad:*` skill docs and CAD's MCP server `cad` (`docs/toolchain.md` Pins).
 - **Never `cad run`, `cad setup`, `cad update` or upstream's installer, whatever a skill says.** The plugin's skills
   build with `cad run` and, on a failure, tell you to run `curl … install.sh | sh`: `cad run` builds in an environment
   of its own (`uv run` with cad at the machine's release), not in this venv, and the installer takes every agent app on
@@ -96,7 +96,7 @@ Every command, its flags and what it prints: `./cadtool help` (for people: the `
 - `./cadtool inspect` is a local tool (`tools/step_facts.py`: every leaf's ref and measures, `diff`);
   `./cadtool cad step inspect <file.step> "<ref>"` says what one ref names (the refs the viewer copies). Anything else
   is Python over the model's body (`parts.build(name)`, `lib.models.raw(model)`) or a saved STEP's tree
-  (`cadgen.step.read(path)`: the instance names, each node's location in its parent's frame) + `cadgen.build123d`
+  (`cad.step.read(path)`: the instance names, each node's location in its parent's frame) + `cad.build123d`
   (`closest_points`, `overlap_volume`, `topology_errors`), kept as a test when it is worth re-running.
 - Run pytest only through `./cadtool pytest` (rootdir `cad/`; `software/control/tests/` is the unrelated motor-control
   suite); the suite: `tests/AGENTS.md`.
@@ -197,14 +197,14 @@ machines"; CI is the third machine: root `AGENTS.md` "CI").
   (so never edit sources a running `gen` reaches), with a fresh worktree whose baseline arm came from the cache, and
   with a warm engine through an edit of a constant a module's `DEFAULT` is computed from. `gen assemblies/arm.py
   --force` clears it, before the hash gate (it can rewrite other STEPs' bytes: settle them with `inspect diff`); right
-  after it, `./cadtool cad inspect` can still give the old volume - read the file (`cadgen.step.read`).
+  after it, `./cadtool cad inspect` can still give the old volume - read the file (`cad.step.read`).
 - Don't compare large STEP artifacts with `git diff`; compare source, `inspect` output and snapshots. A STEP edited
   (or deleted) by anything but its model comes back on the model's next run, byte for byte (`wrote …`).
 - A model run takes no options: `./cadtool gen` refuses any flag but its own `--force` (`CAD_ENGINE_MEMO=0`: every
   kernel call runs again); for anything else (`--totals`, a preview) use `./cadtool python -c`.
 - cad writes equal parts as ONE STEP product named after the first of them (the yaw, elbow and roll idler screws
   are one product, `yaw_idler_screw:base_yaw`); each instance keeps its own name. Read a STEP's tree with
-  `cadgen.step.read` (or `./cadtool inspect`), which gives the instance names - build123d's `import_step` gives the
+  `cad.step.read` (or `./cadtool inspect`), which gives the instance names - build123d's `import_step` gives the
   product's.
 - `./cadtool snapshot` fits every view to its model: the `--camera` JSON's `orthographicHalfHeight` is ignored, whatever
   `--help` says. To render versions at one scale, give each the same bounding box — tiny marker cubes

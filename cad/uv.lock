@@ -66,14 +66,14 @@ wheels = [
 
 [[package]]
 name = "cad"
-version = "0.11.0"
+version = "0.11.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/21/68/ca459598d308244539d7688939af425ccbc921f29568031bded84be5965b/cad-0.11.0.tar.gz", hash = "sha256:b2faf4ddd8d1daa579423598ebc101e9014fd9ea42d3ac3e6f8cae6d7c25b8f2", size = 981723, upload-time = "2026-11-07T17:32:58.378Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/47/6a/f0893a8e42d1dce5d64419a79ad064767e541c017098222033489516df91/cad-0.11.4.tar.gz", hash = "sha256:1b9b39ee68356f03162d7e6af8596a31ab0c38f352393e6bcc03c2391b590044", size = 1177303, upload-time = "2026-11-09T19:43:52.343Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/20/df/a335873547bedcee7f38e9a048bca4e545d10c0efb8c0ff3d3f019287d38/cad-0.11.0-py3-none-any.whl", hash = "sha256:57bf2742c465553803df5771d52b137d9b0e88ed8f5bb6829fbe3fce79b75396", size = 1020166, upload-time = "2026-11-07T17:32:56.399Z" },
+    { url = "https://files.pythonhosted.org/packages/c6/57/e400dde8e255c410a982d3a6b5847fc34c4bfbcca5312b237ab3c7098bf7/cad-0.11.4-py3-none-any.whl", hash = "sha256:a07915a6ae81f9dc77e7560d2ebe6a08c3a3959ad8a0131ca0100723370e79f6", size = 1219846, upload-time = "2026-11-09T19:43:50.719Z" },
 ]
 
 [package.optional-dependencies]
@@ -84,6 +84,7 @@ build123d = [
     { name = "ezdxf" },
     { name = "matplotlib" },
     { name = "pillow" },
+    { name = "scipy" },
     { name = "shapely" },
     { name = "threejs-materials" },
 ]
@@ -841,7 +842,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "build123d", specifier = "==0.13.0" },
-    { name = "cad", extras = ["build123d"], specifier = "==0.11.0" },
+    { name = "cad", extras = ["build123d"], specifier = "==0.11.4" },
     { name = "cadquery-ocp-novtk", specifier = "==8.0.1.1.0" },
     { name = "numpy", specifier = ">=2.4.6" },
 ]

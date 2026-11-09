@@ -3,7 +3,7 @@
 The source of truth is the vendor STEP / datasheet, not this Python:
   * declare COTS = True and MASS_G = <datasheet grams>;
   * the model (`@step def <name>()`; rename `cots` to the part NAME when you copy the template)
-    is HYBRID (lib.cots.hybrid, the body every COTS part shares): it returns vendor/<name>.step (cadgen.step.read - a tracked input, so a swapped
+    is HYBRID (lib.cots.hybrid, the body every COTS part shares): it returns vendor/<name>.step (cad.step.read - a tracked input, so a swapped
     vendor file makes the part stale) when that file exists, else a parametric ENVELOPE from
     lib.params - dropping a real STEP into cad/vendor/ (e.g. from step.parts: vendor/AGENTS.md Recipe D) upgrades the
     part to exact geometry with no code change;
@@ -18,7 +18,7 @@ Generate the STEP:   ./cadtool gen parts/<group>/<name>.py
 import pathlib
 
 import build123d as bd
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid
 from lib.datum import IDENTITY

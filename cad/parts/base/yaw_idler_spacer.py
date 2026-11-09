@@ -14,7 +14,7 @@ numbers - tests/base/test_yaw_idler.py.
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.base import DEFAULT
 from lib.base.body import build_yaw_idler_spacer

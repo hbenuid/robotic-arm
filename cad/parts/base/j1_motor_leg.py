@@ -18,7 +18,7 @@ fork_foot_nuts, fork_sleeve_screws / fork_sleeve_nuts: lib/mounts.py FORK_MOUNTS
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.yaw_coupler import DEFAULT
 from lib.yaw_coupler.body import build_motor_leg

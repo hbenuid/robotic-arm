@@ -13,7 +13,7 @@ side. docs/open_issues.md: a design not yet printed.
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.datum import IDENTITY
 from lib.gripper import DEFAULT

@@ -17,7 +17,7 @@ station comes from lib/wrist stack_positions() - never type one here. Gear ratio
 belt (wrist_roll_belt, WRIST_ROLL_BELT_LENGTH); the rotor clamp's and the connector's M3 screws + nuts and the
 pancake's M3 are tools/bom.py EXTRAS.
 """
-from cadgen import step
+from cad import step
 
 from assemblies._occurrences import located_children
 from lib import reference as R

@@ -12,7 +12,7 @@ it with an identity Location.
 import pathlib
 
 import build123d as bd
-from cadgen import step
+from cad import step
 
 from lib.cycloidal import DEFAULT_CONFIG, DriveConfig
 from lib.datum import IDENTITY

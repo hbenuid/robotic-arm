@@ -14,7 +14,7 @@ forearm_roll_drive#1 - elbow_link (the stator).
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.forearm import DEFAULT, ForearmConfig
 from lib.forearm.roll import build_back_panel

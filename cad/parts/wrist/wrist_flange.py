@@ -16,7 +16,7 @@ places it on wrist_link#1 as it stands). PETG. In the arm: x1 (wrist_flange#1), 
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.wrist import DEFAULT, WristConfig
 from lib.wrist.link import build_wrist_flange

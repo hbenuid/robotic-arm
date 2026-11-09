@@ -300,7 +300,7 @@ def test_urdf_and_sdf_match_the_frames_and_cad(inertials_from_shared_parts):
 @pytest.mark.slow
 @pytest.mark.parametrize("target", ["robot/arm.urdf", "robot/arm.srdf", "robot/arm.sdf"])
 def test_plugin_validators_pass(target):
-    """cadgen's urdf/srdf/sdf validators (strict) accept the checked-in files."""
+    """cad's urdf/srdf/sdf validators (strict) accept the checked-in files."""
     args = ["./cadtool", "validate", target] + (["--strict"] if not target.endswith(".sdf") else ["--gz-check", "never"])
     proc = subprocess.run(args, cwd=CAD_DIR, capture_output=True, text=True, check=False)
     assert proc.returncode == 0, proc.stdout[-2000:] + proc.stderr[-2000:]

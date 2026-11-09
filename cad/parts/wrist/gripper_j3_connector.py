@@ -18,7 +18,7 @@ In the arm: x1 (gripper_j3_connector#1, in the gripper module - wrist_roll_link)
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.datum import IDENTITY
 from lib.wrist import DEFAULT, LEGACY

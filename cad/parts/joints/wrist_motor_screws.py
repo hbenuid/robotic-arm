@@ -18,7 +18,7 @@ axis (lib/forearm/layout.py motor_hole_points() less motor_x - the mount puts th
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid, pattern
 from lib.datum import IDENTITY

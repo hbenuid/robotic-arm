@@ -13,7 +13,7 @@ wrist_pitch_link (the stator).
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.wrist import DEFAULT, WristConfig
 from lib.wrist.roll import build_back_panel

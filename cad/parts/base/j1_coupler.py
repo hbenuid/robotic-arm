@@ -30,7 +30,7 @@ model builds DEFAULT (tests/yaw_coupler/).
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.datum import IDENTITY
 from lib.yaw_coupler import DEFAULT, LEGACY

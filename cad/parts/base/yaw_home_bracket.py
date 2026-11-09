@@ -16,7 +16,7 @@ numbers - tests/base/test_yaw_home.py.
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.base import DEFAULT
 from lib.base.body import build_yaw_home_bracket

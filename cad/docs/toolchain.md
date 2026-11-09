@@ -7,9 +7,9 @@ as a git note).
 
 ## Pins
 - **One pin, `"cad[build123d]==<ver>"` in `pyproject.toml`**, for the three things upstream releases together: the
-  library in the venv (`cad`, imported here as `cadgen`, its earlier name: an alias of the same modules, so
-  `cadgen.read_step` is `cad.read_step` - from 0.11.1 importing `cadgen` warns `CadDeprecationWarning`, an error under
-  pytest (Gotchas), so a bump past 0.11.0 moves every import, and the docs that name `cadgen`, to `cad`); the
+  library in the venv (`cad`; its earlier name `cadgen` is a deprecated alias of the same modules, which warns
+  `CadDeprecationWarning` on import from 0.11.1 - an error under pytest (Gotchas) -, so nothing here imports it:
+  `test_tooling.py` checks); the
   machine's server, `cad-server`, which is the `cad` command and everything that runs (a uv tool: `./cadtool server` installs it from the pin on a uv-managed Python, `uv tool dir --bin` holds the
   command); and the `text-to-cad@earthtojake` plugin (`~/.claude/plugins/cache/earthtojake/text-to-cad/<ver>/`), whose
   `claude.mcp.json` pins `cad-mcp==<ver>`: CAD's MCP server `cad`, a shim Claude Code starts through uvx with every
@@ -122,7 +122,8 @@ cache, whose key omits Python. The proof the geometry did not move: the hash gat
   argument (0.11: `cad snapshot` is `cad <type> snapshot`, the type the file's), a retired decorator argument a
   `TypeError` — read the error as the spec (each move: upstream `docs/migrations/`) — and a retired environment
   variable says nothing at all. The library's renames keep the old spelling one release at least, as an alias that
-  warns once with `CadDeprecationWarning` (0.11: `read_step` → `step.read`, `cadgen.geometry` → `cadgen.build123d`):
+  warns once with `CadDeprecationWarning` (0.11: `read_step` → `step.read`, `cad.geometry` → `cad.build123d`;
+  0.11.1: `cadgen` → `cad`):
   pytest turns that warning into an error (`pyproject.toml` `filterwarnings`), so a renamed name is moved by its bump,
   not when the alias goes. What each bump retired or
   changed is its commit (`git log -- pyproject.toml uv.lock`). The engine keys a body by its code and the files it reads,
@@ -150,14 +151,14 @@ cache, whose key omits Python. The proof the geometry did not move: the hash gat
 - **OCCT 8.0.1's two known defects.** `BRepBndLib.AddOptimal` - what build123d's `bounding_box()` uses - can return a
   box smaller than a B-spline shape (OCCT #1604): the repo's boxes were checked against OCCT 7.9's when OCCT 8 came in,
   but a vendor STEP or spline part added since is unchecked - compare its `bounding_box()` with cad's
-  support-plane box (`cadgen.engine.kernel.bounds.optimal_box(shape.wrapped)`, a private name) before a box of it
+  support-plane box (`cad.engine.kernel.bounds.optimal_box(shape.wrapped)`, a private name) before a box of it
   becomes a lock or an envelope. A sweep along a binormal guide curve distorts its profile while still reporting valid
   (OCCT #1681): `cad/` has no sweep; a model that needs a guided one checks its volume against the profile's.
 - build123d's `Mesher.write()` (lib3mf) leaves the process in the C locale, so every later `open()` / `read_text()`
   without an encoding in that process reads ASCII and fails on the first non-ASCII byte. Code that writes a mesh
   in-process restores the locale round the write (`tools/export_gauges.py write_plate()`; `tests/test_gauges.py`
   checks it).
-- The private names this repo leans on — re-check them on a bump: `cadgen.engine.model._CONTEXT.build` (a build in
+- The private names this repo leans on — re-check them on a bump: `cad.engine.model._CONTEXT.build` (a build in
   progress on this thread: `lib/models.py building()`), a model's `.function` / `.outputs` (`Output.kind` / `.out`) /
   `__xbf_model__` and `Model.build` (`lib/models.py`, `tests/conftest.py`, `test_parts_convention.py`) — and that
   `./cadtool gen assemblies/arm.py` still lists every part as `…, a child` (a `building()` that silently read False

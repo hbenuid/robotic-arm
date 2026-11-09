@@ -37,7 +37,7 @@ zero = capture, the committed meshes vs a fresh export, inertials, URDF/SRDF/SDF
 `./cadtool validate`, which need the pinned server: `./cadtool server`), `test_tooling.py` (the installed cad and OCP
 kernel are the pinned ones, one complete OCP distribution, no cad-server in the venv,
 `./cadtool inspect` agrees with the kernel, the retired inspect verbs,
-telemetry and automatic updates kept off, no `CADGEN_` name in the code and no second pin, `./cadtool cad` refusing what
+telemetry and automatic updates kept off, no `cadgen` import, no `CADGEN_` name in the code and no second pin, `./cadtool cad` refusing what
 moves the machine and its retired verbs saying what replaced them,
 `./cadtool stop` ending only this venv's workers, the two `.claude/settings.json` the same, no tracked `CLAUDE.md` / `CLAUDE.local.md`, every
 tracked name lowercase),
@@ -134,7 +134,7 @@ step 5 in `cad/AGENTS.md` has the `totals()` one-liner).
   A line-to-line fit (coincident cylinders: a bearing in a seat of its own diameter) is the kernel's fragile case: one
   such pass on x86_64 Linux returned the whole bearing as common (arm64 macOS: 0), so the Common's fuzzy value
   `COINCIDENT_MM` makes faces that near one face.
-- `distance_to` (BRepExtrema, and `cadgen.build123d.closest_points`, the same query - on the shapes' faces too) now and
+- `distance_to` (BRepExtrema, and `cad.build123d.closest_points`, the same query - on the shapes' faces too) now and
   then returns 0 at one exact pose of two solids that neither touch nor overlap: the roll shaft against the roll frame
   read 0.000 at -140 and -145 deg (1.004 either side, no overlap), the frame against `j1_link` at elbow +92 (1.217
   either side). A zero is a false contact until a second look agrees - `tests/test_sweeps.py _distance` measures it

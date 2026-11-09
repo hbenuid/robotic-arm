@@ -11,7 +11,7 @@ along R' toward the fingertips, +Y along the jaws' travel; at zero the racks are
 placement comes from lib/gripper/layout.py rows() - never type one here. The tab screws, the racks' screws, their nuts
 and the cage's screws onto the connector are tools/bom.py EXTRAS.
 """
-from cadgen import step
+from cad import step
 
 from assemblies._occurrences import located_children
 from lib import reference as R

@@ -13,7 +13,7 @@ head's bearing face on z=0 (the head in -Z), the shank in +Z.
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.base import YawIdlerParams
 from lib.cots import hybrid, pattern

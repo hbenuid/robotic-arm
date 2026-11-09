@@ -11,8 +11,8 @@ needs a rotation (row_location). Their placement key is a SolidWorks node or a l
 ModuleMount, their contents are not (located_children / world_rows), and their BODIES split the rows
 into rigid bodies ("cycloidal_drive#1:rotor", split_key) for the robot description.
 
-A child is a cadgen MODEL (parts.model(name), assemblies.<module>.<module>) reached through
-lib.models.geometry(): inside a cadgen build that is the child model's result (it runs as the build's child,
+A child is a cad MODEL (parts.model(name), assemblies.<module>.<module>) reached through
+lib.models.geometry(): inside a cad build that is the child model's result (it runs as the build's child,
 replayed when unchanged, and writes its own STEP) as a copy the parent owns - the arm re-tints it; outside one
 (tests, tools, previews) it is the model body run in-process, so nothing here ever starts a build or writes a
 file.
@@ -60,7 +60,7 @@ def _details(role) -> tuple:
 def occurrence_children(rows, modules: dict | None = None, tint: bool = False) -> list:
     """Every row of an OCCURRENCES table as a placed, labelled child (for lib.assembly.assembly()).
 
-    `modules` maps a module name to its MODEL (a zero-arg cadgen model returning the module
+    `modules` maps a module name to its MODEL (a zero-arg cad model returning the module
     Compound in its own frame); it is moved to the module's placement key. With `tint` the module
     is colored like the arm: every part colour() (_tint_parts)."""
     modules = modules or {}
@@ -78,7 +78,7 @@ def occurrence_children(rows, modules: dict | None = None, tint: bool = False) -
 
 def _tint(shape, color: bd.Color) -> None:
     """Set `color` on every LEAF of `shape` (on `shape` itself when it has no children). Never on an inner node:
-    cadgen 0.8 writes a multi-solid part's colour on its solids, and a colour on an enclosing assembly
+    cad writes a multi-solid part's colour on its solids, and a colour on an enclosing assembly
     instance outranks those in the renderers (a bought board drew in its link's tint)."""
     children = getattr(shape, "children", ()) or ()
     if not children:

@@ -3,14 +3,14 @@
     ./cadtool inspect <file.step> [--planes] [--json]
     ./cadtool inspect diff <a.step> <b.step> [--tol 1e-6]
 
-A LOCAL tool over `cadgen.step.read` (the STEP's tree with its instance names, each node's location in its
+A LOCAL tool over `cad.step.read` (the STEP's tree with its instance names, each node's location in its
 parent's frame) + build123d. It covers the two jobs this repo has: reading a reference / vendor STEP before
 converting or swapping it (every leaf: solids, faces, volume, bbox; `--planes` lists the planar faces to find
 its frame from) and proving that a regenerated STEP is the same geometry (`diff`, exit 1 when it is not). The
 refs printed are cad's (the CAD Viewer's): a leaf's occurrence path from the root, a label its siblings
 share numbered (`gripper/gripper_rack:a.2`), then `face N` (the face's ordinal in the part,
 TopExp.MapShapes order) - `./cadtool cad step inspect <file.step> "<ref>"` says what one names and measures it.
-Distances, clearances and overlaps are not here: `cadgen.build123d.closest_points` / `overlap_volume` in a test.
+Distances, clearances and overlaps are not here: `cad.build123d.closest_points` / `overlap_volume` in a test.
 """
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ def _xyz(v) -> list[float]:
 def leaves(path: str | pathlib.Path) -> list[tuple[str, str, object]]:
     """(occurrence path, label, the leaf in world coordinates) for every leaf, in document order."""
     import build123d as bd
-    from cadgen import step
+    from cad import step
 
     found = []
 
@@ -57,7 +57,7 @@ def leaves(path: str | pathlib.Path) -> list[tuple[str, str, object]]:
 
 
 def _faces(shape) -> list:
-    """The part's faces by ordinal (index 0 = `face 1`), as cadgen numbers them."""
+    """The part's faces by ordinal (index 0 = `face 1`), as cad numbers them."""
     import build123d as bd
     from OCP.collections import IndexedMap_TopoDS_Shape_TopTools_ShapeMapHasher  # OCCT 8: TopTools_IndexedMapOfShape
     from OCP.TopAbs import TopAbs_FACE
@@ -157,7 +157,7 @@ def main(argv: list[str]) -> int:
               "  ./cadtool inspect <file.step> [--planes] [--json]\n"
               "  ./cadtool inspect diff <a.step> <b.step> [--tol 1e-6]\n"
               "One ref: ./cadtool cad step inspect <file.step> \"<ref>\". "
-              "Distances / overlaps: cadgen.build123d.closest_points / overlap_volume in a test.", file=sys.stderr)
+              "Distances / overlaps: cad.build123d.closest_points / overlap_volume in a test.", file=sys.stderr)
         return 2
     if argv and argv[0] == "diff":
         parser = argparse.ArgumentParser(prog="cadtool inspect diff")

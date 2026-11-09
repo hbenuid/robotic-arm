@@ -11,7 +11,7 @@ builds DEFAULT_CONFIG's (lib/cycloidal/params.py RING_INSET).
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid, pattern
 from lib.cycloidal import DEFAULT_CONFIG, LEGACY_CONFIG, DriveConfig, ring_pin_points

@@ -22,7 +22,7 @@ lib/sensors.py ky003_hall_point().
 import pathlib
 
 import build123d as bd
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid, pattern
 from lib.datum import IDENTITY

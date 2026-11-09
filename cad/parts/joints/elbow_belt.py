@@ -14,7 +14,7 @@ the origin, the 90T on +X, the idler on the +Y run, the band centred on z=0; the
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid
 from lib.datum import IDENTITY

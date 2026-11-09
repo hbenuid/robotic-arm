@@ -26,7 +26,7 @@ tests/test_reference_match.py); the model builds DEFAULT_CONFIG (the turning she
 import pathlib
 
 import build123d as bd
-from cadgen import step
+from cad import step
 
 from lib.cycloidal import (
     DEFAULT_CONFIG,

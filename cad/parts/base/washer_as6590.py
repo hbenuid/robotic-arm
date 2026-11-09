@@ -8,7 +8,7 @@ Frame: axis on Z, standing on z=0. Dimensions: lib/bearings.py. In the arm: x2.
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.bearings import THRUST_BORE, THRUST_OD, THRUST_WASHER_MASS_G, THRUST_WASHER_WIDTH
 from lib.cots import hybrid

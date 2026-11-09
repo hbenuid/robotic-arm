@@ -14,7 +14,7 @@ face on x = 0, the tooth band toward +X, the set screws in the hub along +Y and 
 import pathlib
 
 import build123d as bd
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid, pattern
 from lib.datum import IDENTITY

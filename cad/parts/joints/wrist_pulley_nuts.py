@@ -18,7 +18,7 @@ along +/-Y (wrist_link's X turned FlangeParams.pulley_bolt_deg, with the pattern
 import math
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid, pattern
 from lib.datum import IDENTITY

@@ -1,6 +1,6 @@
 """TEMPLATE - a DESIGNED (parametric) part. Copy to parts/<group>/<name>.py and edit.
 
-cadgen convention: ONE module-level `@step def <name>()` (rename `designed` to the part NAME
+cad convention: ONE module-level `@step def <name>()` (rename `designed` to the part NAME
 when you copy the template - NAME = file stem = model name) that RETURNS the final Part/Compound
 at the part's LOCAL origin - the assembly owns placement. Every part MUST:
   * return a valid, labelled solid/compound from the model (label == NAME);
@@ -8,7 +8,7 @@ at the part's LOCAL origin - the assembly owns placement. Every part MUST:
   * have no import side effects - the `__main__` call is the BUILD (writes the sibling STEP);
     tests and tools use parts.build(name) (the body in-process, nothing written);
   * import `lib` / `parts` plainly: cadtool, pytest and .env put cad/ on the import path;
-  * keep the CAD kernel LAZY: `import build123d as bd` (cadgen's import hook binds it unloaded) and
+  * keep the CAD kernel LAZY: `import build123d as bd` (cad's import hook binds it unloaded) and
     `bd.<name>` inside function bodies only - no kernel object in a module-level constant or an argument
     default (a run the engine finds current never loads the kernel in the calling process;
     tests/test_lazy_kernel.py).
@@ -21,7 +21,7 @@ Generate the STEP:   ./cadtool gen parts/<group>/<name>.py
 import pathlib
 
 import build123d as bd
-from cadgen import step
+from cad import step
 
 from lib.datum import IDENTITY
 from lib.params import NUDGE  # noqa: F401
