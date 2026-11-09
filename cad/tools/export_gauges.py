@@ -14,6 +14,7 @@ regenerable, and the plates of an earlier export are deleted first.
 from __future__ import annotations
 
 import argparse
+import locale
 import pathlib
 
 import build123d as bd
@@ -48,7 +49,13 @@ def write_plate(items, path: pathlib.Path, tolerance: float, angular: float) -> 
         shape = bd.Pos(x, y, 0.0) * coupon.shape
         shape.label = coupon.key
         mesher.add_shape(shape, linear_deflection=tolerance, angular_deflection=angular, part_number=coupon.key)
-    mesher.write(str(path))
+    # lib3mf's write leaves the process in the C locale - an ASCII default encoding for every later open() /
+    # read_text() without one (the test suite's, after a plate is written in-process): put the caller's back
+    saved = locale.setlocale(locale.LC_ALL)
+    try:
+        mesher.write(str(path))
+    finally:
+        locale.setlocale(locale.LC_ALL, saved)
 
 
 def list_gauges() -> None:
