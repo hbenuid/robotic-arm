@@ -7,6 +7,7 @@ other, the holes on the frame's nut channels."""
 import math
 
 import pytest
+from build123d import GeomType
 
 from assemblies import forearm_roll_drive as M
 from lib import reference as R
@@ -83,6 +84,17 @@ def test_post_shoulder_stub_and_bores(flange):
         assert not is_inside(f, xr, YE + dy * (flat - 0.1), dz * (flat - 0.1))
         assert is_inside(f, xr, YE + dy * (flat + 0.2), dz * (flat + 0.2))
     assert is_inside(f, D.block_x[0] - D.spigot_h - 0.5, YE, D.spigot_af / 2.0 - 1.0)            # the recess's floor
+
+
+@pytest.mark.slow
+def test_the_frame_keeps_nothing_round_about_the_elbow_axis():
+    """One print direction per part: the roll frame prints its 6806 seats upright (front face down), so of everything
+    round about the elbow axis (module X) it keeps only the 90T's M4 clearance holes; the flange carries the rest."""
+    radii = set()
+    for face in built.part("forearm_roll_block").faces():
+        if face.geom_type in (GeomType.CYLINDER, GeomType.CONE) and abs(abs(face.axis_of_rotation.direction.X) - 1.0) < 1e-6:
+            radii.add(round(face.radius, 3) if face.geom_type == GeomType.CYLINDER else -1.0)
+    assert radii == {round(D.pulley_bolt_dia / 2.0, 3)}
 
 
 @pytest.mark.slow

@@ -251,7 +251,7 @@ from lib.yaw_coupler.params import DEFAULT as _YAW_COUPLER  # noqa: E402
 
 _PULLEY_BOLTS = len(pulley_90t_bolt_points())
 ELBOW_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _FOREARM.drive.pulley_screw_len)   # 18.2, 4x M4x35
-WRIST_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _WRIST.flange.pulley_screw_len)    # 16.2, 4x M4x30
+WRIST_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _WRIST.flange.pulley_screw_len)    # 17.4, 4x M4x33
 YAW_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _YAW_COUPLER.hub.pulley_screw_len)   # 16.2, 4x M4x30
 PULLEY_NUTS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * nut_volume(M4_NUT)                                              # 3.0, 4x M4 (each joint)
 # the wrist belt's tensioner's axle and its nut (parts/joints/wrist_idler_{screw,nut}; lib/forearm/params.py IdlerParams), likewise

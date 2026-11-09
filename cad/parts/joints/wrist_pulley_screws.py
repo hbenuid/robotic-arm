@@ -1,11 +1,13 @@
 """wrist_pulley_screws - purchased (COTS) part: the wrist 90T's 4 M4 socket head cap screws (ISO 4762).
 
-They clamp the pulley onto the stub of wrist_link's flange (gt2_pulley_90t#4 -> wrist_link#1; j3_coupler#2 retired).
+They clamp the pulley, the wrist flange and wrist_link together (gt2_pulley_90t#4 -> wrist_flange#1 -> wrist_link#1;
+j3_coupler#2 retired).
 
 In the arm (lib/mounts.py, hosted on the wrist 90T): the heads in the counterbores in the pulley's outer face
-(lib/belts.py GT2_PULLEY_90T_HEAD_SEAT), the shanks down through its M4 clearance holes and the flange's stub and post into the nuts on their channels' seats
-(wrist_pulley_nuts); the tips end two pitches past the nuts inside the channels, in wrist_link's plate. Length:
-lib/wrist/params.py FlangeParams.pulley_screw_len - 5 under the elbow's (elbow_pulley_screws: through its own flange).
+(lib/belts.py GT2_PULLEY_90T_HEAD_SEAT), the shanks down through its M4 clearance holes and the wrist flange into the
+nuts on their channels' seats in wrist_link's plate (wrist_pulley_nuts); the tips end two pitches past the nuts inside
+the channels, 0.65 over the pancake. Length: lib/wrist/params.py FlangeParams.pulley_screw_len (33) - not an ISO 4762
+length: bought as M4 x pulley_screw_bought (35) and cut to it.
 
 No catalog model (the catalog has single fasteners only, vendor/README.md) and no SolidWorks export: a NATIVE COTS
 pattern part (lib/reference.py NATIVE_COTS) like the drive's cycloidal_housing_bolts - its envelope IS the geometry
@@ -29,9 +31,9 @@ LENGTH = WRIST.flange.pulley_screw_len
 NAME = pathlib.Path(__file__).stem
 COTS = True
 MASS_G = WRIST_PULLEY_SCREWS_MASS_G   # [ESTIMATE] the modelled steel (lib/params.py)
-PURCHASE_SPEC = f"M{M4_SHCS.d:g} x {LENGTH:g} socket head cap screw (ISO 4762)"
+PURCHASE_SPEC = f"M{M4_SHCS.d:g} x {WRIST.flange.pulley_screw_bought:g} socket head cap screw (ISO 4762), cut to {LENGTH:g} mm"
 PURCHASE_QTY = len(pulley_90t_bolt_points())   # pieces per occurrence (the whole pattern)
-PURCHASE_NOTE = "the wrist 90T onto wrist_link's flange, into the nuts in its channels (wrist_pulley_nuts)"
+PURCHASE_NOTE = "the wrist 90T through the wrist flange into the nuts in wrist_link's plate (wrist_pulley_nuts)"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 

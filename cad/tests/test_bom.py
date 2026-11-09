@@ -11,7 +11,7 @@ def test_every_part_is_counted_once_per_occurrence():
     counts = bom.part_counts()
     leaves = (len(arm.OCCURRENCES) - len(arm.MODULES) + len(gripper.OCCURRENCES) + len(cycloidal_drive.OCCURRENCES)
               + len(forearm_roll_drive.OCCURRENCES) + len(wrist_roll_drive.OCCURRENCES))
-    assert sum(counts.values()) == leaves == 124
+    assert sum(counts.values()) == leaves == 125
     assert set(counts) == set(parts.names()) - set(parts.unplaced()), "a part under parts/ that no assembly places (or the reverse)"
     assert not set(counts) & set(parts.unplaced()), "a placed part still declares UNPLACED - drop it (and its EXTRAS row)"
     assert sum(bom.part_counts("gripper").values()) == len(gripper.OCCURRENCES)
@@ -25,7 +25,7 @@ def test_the_two_lists_partition_the_parts_by_the_cots_flag():
     assert {r["part"] for r in printed} | {r["part"] for r in bought} == set(parts.names()) - set(parts.unplaced())
     assert not {r["part"] for r in printed} & {r["part"] for r in bought}
     assert {r["part"] for r in bought} == (set(R.COTS) | {n for n in R.NO_REFERENCE if parts.bought(n)}) - set(parts.unplaced())
-    assert (len(printed), sum(r["qty"] for r in printed)) == (32, 35)
+    assert (len(printed), sum(r["qty"] for r in printed)) == (33, 36)
     assert (len(bought), sum(bom.part_counts()[r["part"]] for r in bought)) == (63, 89)
     assert {r["state"] for r in printed} <= {"wrapper", "parametric", "designed", "native", "measured", "no reference"}
     assert {r["part"] for r in printed if r["state"] == "no reference"} == {n for n in R.NO_REFERENCE if not parts.bought(n)}
@@ -100,7 +100,7 @@ def test_the_driven_pulleys_take_their_m4_screws_and_nuts():
                          "yaw_pulley_screws", "yaw_pulley_nuts"}
     assert all((r["pieces"], r["geometry"]) == (4, "envelope") for r in rows.values())
     assert rows["elbow_pulley_screws"]["order"].startswith("M4 x 35 socket head cap screw")   # on through the elbow flange
-    assert rows["wrist_pulley_screws"]["order"].startswith("M4 x 30 socket head cap screw")
+    assert rows["wrist_pulley_screws"]["order"] == "M4 x 35 socket head cap screw (ISO 4762), cut to 33 mm"   # through its flange
     assert rows["yaw_pulley_screws"]["order"].startswith("M4 x 30 socket head cap screw")
     assert all(rows[n]["order"] == "M4 hex nut (ISO 4032)" for n in ("elbow_pulley_nuts", "wrist_pulley_nuts", "yaw_pulley_nuts"))
     driven = {r["part"]: r["qty"] for r in bom.print_rows() if r["part"] in ("gt2_pulley_90t", "gt2_pulley_120t")}

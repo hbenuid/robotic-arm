@@ -2,8 +2,9 @@
 volume / bbox match is tests/test_reference_match.py's; here the features are probed by name so a regression names
 what moved), its seat is j3_coupler's flange (lib/coupler/params.py) and its end face the NEMA 17 pattern, and DEFAULT
 - what the part builds - is the wrist roll drive's frame (the drive itself: tests/wrist/test_roll_drive.py), the plate
-only its wall on the forearm's side, with the wrist_pitch output flange on it (j3_coupler#2 retired): its post cut flush
-with the frame, nothing past the frame's outline."""
+only its wall on the forearm's side, the wrist_pitch output flange (j3_coupler#2 retired) its own part on it
+(tests/wrist/test_wrist_flange.py): on wrist_link its foot and key, nothing past the frame's outline, nothing round
+about the pitch axis but the M4 holes."""
 import math
 from dataclasses import replace
 
@@ -22,8 +23,6 @@ from tests.helpers import is_inside
 
 P, S, T, E = LEGACY.plate, LEGACY.seat, LEGACY.tower, LEGACY.end_face
 NUT_WALL = 3.0   # [DESIGN] the least wall round each 90T nut's channel (3.9 measured, to the post's front flat)
-SHOULDER_WALL = 1.3   # [DESIGN] ... and in the Ø33 shoulder the nut's top 0.7 stands in: the hex grown 1.3 reaches 1.5 out at its
-#                       corners, the corner's radial wall 1.55 (docs/open_issues.md)
 
 
 def test_the_seat_is_the_couplers_flange():
@@ -137,8 +136,8 @@ def test_the_part_is_the_roll_frame(wrist, legacy):
     """The built DEFAULT: the roll frame, its wall on the forearm's side the plate (no plate past the frame) with the
     wrist_pitch output flange - the pancake's pocket (open down through the bottom, the far face's wall closed over it,
     its plug's groove inside the wall) and the motor plate in front of it, the front face's facets, the tower's seats and
-    lip, the bay bored through the rear with the stop post; the flange's post (flush with the frame's front face and rear),
-    shoulder and stub, the 90T's nuts in channels open to the pancake's pocket."""
+    lip, the bay bored through the rear with the stop post; the key and the foot the flange (its own part) stands on, the
+    90T's nuts in channels in the plate open to the pancake's pocket."""
     d, ST = DEFAULT.roll, stack_positions(DEFAULT)
     assert wrist.is_valid and len(wrist.solids()) == 1
     assert wrist.volume < legacy.volume
@@ -176,52 +175,47 @@ def test_the_part_is_the_roll_frame(wrist, legacy):
     assert not is_inside(wrist, *_part(0.0, 0.0, ST["z_bay"])) and not is_inside(wrist, *_part(0.0, 0.0, ST["z_rear"] - 1.0))
     assert is_inside(wrist, *_part(-21.0, 0.0, zb)) and not is_inside(wrist, *_part(21.0, 0.0, zb))
     assert is_inside(wrist, *_part(-(d.bay_r + 0.3), 0.0, ST["z_bay"] + 1.0))
-    # the wrist_pitch output flange on the plate's coupler face (FlangeParams, j3_coupler#2 retired): the post inside its
-    # radius only, cut flat at the frame's front face and its rear, its front flat carried on down past the free face into
-    # the front facet's foot (beside the post the facet stays), its foot chamfered, the shoulder, the stub; the pin bore
-    # blind from the stub's end; each 90T nut's hex channel - the pattern turned pulley_bolt_deg - from its seat down
-    # through the plate and open into the pancake's pocket below it (the nut drops in from there), the M4's clearance on
-    # up from the seat
+    # the wrist_pitch output flange is its own part (FlangeParams, j3_coupler#2 retired; tests/wrist/test_wrist_flange.py):
+    # on the coupler face only the key - an octagon, key_af across flats, a flat on each axis - nothing of the post, the
+    # shoulder or the stub; under the face the foot, the post's front flat carried on down past the free face into the
+    # front facet's foot (beside it the facet stays); each 90T nut's hex channel - the pattern turned pulley_bolt_deg -
+    # from its seat in the plate down, open into the pancake's pocket below it (the nut drops in from there), 1 of the
+    # plate over it, the M4's clearance on up through the key
     f, px = DEFAULT.flange, P.pitch_x
     assert DEFAULT.seat is None
-    zp, zs, zh = sum(f.post_z) / 2.0, sum(f.stub_z) / 2.0, sum(f.step_z) / 2.0
-    assert is_inside(wrist, px, f.post_dia / 2.0 - 1.0, zp) and not is_inside(wrist, px, f.post_dia / 2.0 + 1.0, zp)
-    assert not is_inside(wrist, px, f.post_dia / 2.0 - f.post_chamfer / 2.0 + 0.2, f.post_z[1] - f.post_chamfer / 4.0)   # the chamfer
-    assert f.post_z[1] - f.post_z[0] == pytest.approx(1.3) and f.post_chamfer == 1.0   # the 2 mm gap's post (PITCH_INSET)
-    for x0, s in ((ST["z_front"], 1.0), (d.rear_low, -1.0)):
-        assert is_inside(wrist, px + x0 - 0.3 * s, 0.0, zp) and not is_inside(wrist, px + x0 + 0.3 * s, 0.0, zp), x0
+    zk = f.post_z[0] + f.key_h / 2.0
+    for dx, dy in ((1.0, 0.0), (0.0, 1.0), (-1.0, 0.0), (0.0, -1.0)):
+        assert is_inside(wrist, px + dx * (f.key_af / 2.0 - 0.3), dy * (f.key_af / 2.0 - 0.3), zk)
+        assert not is_inside(wrist, px + dx * (f.key_af / 2.0 + 0.3), dy * (f.key_af / 2.0 + 0.3), zk)
+    assert wrist.bounding_box().max.Z == pytest.approx(f.post_z[0] + f.key_h, abs=1e-6)   # nothing over the key
+    assert not is_inside(wrist, px, f.post_dia / 2.0 - 1.0, sum(f.post_z) / 2.0) and not is_inside(wrist, px, 0.0, sum(f.stub_z) / 2.0)
     assert is_inside(wrist, px + ST["z_front"] - 0.3, 0.0, -1.0) and not is_inside(wrist, px + ST["z_front"] - 0.3, 18.0, -1.0)
-    assert is_inside(wrist, px, f.step_dia / 2.0 - 0.3, zh) and not is_inside(wrist, px, f.step_dia / 2.0 + 0.3, zh)
-    assert is_inside(wrist, px, f.stub_dia / 2.0 - 1.0, zs) and not is_inside(wrist, px, f.stub_dia / 2.0 + 0.5, zs)
-    assert not is_inside(wrist, px, 0.0, zs) and is_inside(wrist, px, 0.0, f.nut_seat_z + f.pin_bore_past - 0.5)
+    assert f.nut_seat_z == f.post_z[0] - 1.0
     for x, y in pulley_bolt_points(DEFAULT):
         flat = math.radians(f.pulley_bolt_deg + f.nut_corner_deg + 30.0)  # toward a flat: 3.0 is inside the hex, outside the M4
         fx, fy = x + 3.0 * math.cos(flat), y + 3.0 * math.sin(flat)
         assert not is_inside(wrist, fx, fy, f.nut_seat_z - 0.5) and is_inside(wrist, fx, fy, f.nut_seat_z + 0.5)   # the seat
-        assert not is_inside(wrist, x, y, f.nut_seat_z + 2.0) and not is_inside(wrist, x, y, 2.5)
+        assert not is_inside(wrist, x, y, f.nut_seat_z + 0.5) and not is_inside(wrist, x, y, zk) and not is_inside(wrist, x, y, 2.5)
         assert not is_inside(wrist, x, y, -f.channel_past - 1.0)
 
 
 @pytest.mark.slow
-def test_the_flange_stands_inside_the_frame(wrist):
-    """No plate past the roll frame: below j2_link (the post's top) everything the flange adds to the frame lies inside
-    the frame's outline seen along the pitch axis (side_profile) - the post's flats on the frame's front face and rear -,
-    and every 90T nut's channel keeps at least NUT_WALL of wall round it in the post and the frame (the pattern turned
-    pulley_bolt_deg: on the axes the front nut came 0.55 off the post's front flat) - its seat level with the bearing's
-    top, as the elbow's, so the nut's top 0.7 stands in the Ø33 shoulder, SHOULDER_WALL round it there."""
+def test_the_foot_stands_inside_the_frame(wrist):
+    """No plate past the roll frame: everything the foot and the key add to the frame lies inside the frame's outline seen
+    along the pitch axis (side_profile) - the foot's flats on the frame's front face and rear -, and every 90T nut's
+    channel keeps at least NUT_WALL of wall round it in the plate (the pattern turned pulley_bolt_deg: on the axes the
+    front nut came 0.55 off the post's front flat)."""
     f, px = DEFAULT.flange, P.pitch_x
     host = module_to_host(DEFAULT)
     frame = build_frame(DEFAULT).moved(host)
     side = Plane(origin=(-FAR, 0.0, 0.0), x_dir=(0.0, 1.0, 0.0), z_dir=(1.0, 0.0, 0.0))   # module (y, z) -> along module X
     outline = extrude(side * side_profile(DEFAULT), amount=2.0 * FAR).moved(host)
     below = Pos(0.0, 0.0, -FAR) * Box(4 * FAR, 4 * FAR, FAR + f.post_z[1], align=(Align.CENTER, Align.CENTER, Align.MIN))
-    assert ((wrist - frame) & below).volume > 1000.0                  # the post, carried down past the coupler face
+    assert ((wrist - frame) & below).volume > 100.0                   # the key and the foot past the frame's own faces
     assert (((wrist - frame) & below) - outline).volume < 1e-3
-    z0, z1 = 1.0, f.post_z[1]                                         # over the pancake's pocket, up to the shoulder
-    assert f.step_z == (f.post_z[1], f.nut_seat_z)
+    z0, z1 = 1.0, f.nut_seat_z                                        # over the pancake's pocket, up to the seat
     corner = math.radians(f.pulley_bolt_deg + f.nut_corner_deg)
     for x, y in pulley_bolt_points(DEFAULT):
-        for (za, zb), wall in (((z0, z1), NUT_WALL), ((z1, f.nut_seat_z - 0.05), SHOULDER_WALL)):
-            nut = Pos(x, y, za) * hex_prism(f.nut_af, corner, zb - za)
-            ring = Pos(x, y, za) * hex_prism(f.nut_af + 2.0 * wall, corner, zb - za) - nut
-            assert (ring - wrist).volume < 1e-3, (round(x - px, 2), round(y, 2), wall)
+        nut = Pos(x, y, z0) * hex_prism(f.nut_af, corner, z1 - z0)
+        ring = Pos(x, y, z0) * hex_prism(f.nut_af + 2.0 * NUT_WALL, corner, z1 - z0) - nut
+        assert (ring - wrist).volume < 1e-3, (round(x - px, 2), round(y, 2))

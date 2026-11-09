@@ -4,10 +4,11 @@ of the SolidWorks tower's round end, +Z up through the plate; the pitch axis alo
 
 DEFAULT (what the part builds): the wrist roll drive's frame (lib/wrist/roll.py build_frame, WristRollParams;
 docs/wrist_roll.md), its 5 mm wall on the forearm's side the plate - nothing of it past the frame - carrying the
-wrist_pitch output flange on the pitch axis (lib/wrist/params.py FlangeParams, the elbow's pattern - j3_coupler#2
-retired: a Ø40 post, its foot chamfered, cut flat at the frame's front face and rear, the Ø33 shoulder and the Ø30 stub
-into j2_link's 6806 pair; the wrist 90T, turned pulley_bolt_deg, bolts up into 4x M4 nuts in hex channels that open
-through the plate into the pancake's pocket); on the plate's underside - the side away from the forearm - the rest of
+wrist_pitch output flange on the pitch axis, its own part (wrist_flange; lib/wrist/params.py FlangeParams, the elbow's
+pattern - j3_coupler#2 retired): on the plate's coupler face a small octagonal key in the flange's recess, under it the
+foot that carries the flange's front flat down into the front facet's foot (an octagon, no arc: nothing round about the
+pitch axis stays here but the M4 holes); the wrist 90T, turned pulley_bolt_deg, bolts through the flange into 4x M4
+nuts in the plate, in hex channels open into the pancake's pocket; on the plate's underside - the side away from the forearm - the rest of
 the frame, laid out as the forearm roll's frame: seen along the pitch axis an octagon about it
 hulled to the tower round the roll axis, WRIST_ROLL_OFFSET across, from the plate to the closed far face, its
 rear one slanted plane, the front face's long edges faceted - one body round the pancake, centred on the pitch axis in

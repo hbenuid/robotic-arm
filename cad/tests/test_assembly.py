@@ -133,13 +133,13 @@ def test_arm_assembly_matches_reference_totals():
     assert [c.label for c in a.children] == [label for label, _ in arm.GROUPS]
     arm_leaves = leaves(a)
     exp_leaves, exp_solids, exp_volume = _expected_totals()
-    assert len(arm_leaves) == exp_leaves == 124
+    assert len(arm_leaves) == exp_leaves == 125
     labels = [leaf.label for leaf in arm_leaves]
     assert len(set(labels)) == len(labels), f"duplicate leaf labels: {labels}"
-    assert len(a.solids()) == exp_solids == 347
+    assert len(a.solids()) == exp_solids == 348
     assert abs(R.solid_volume(a) - exp_volume) <= 0.5
     exp_min, exp_size = _expected_bbox()
     in_w = a.moved(arm.arm_from_w().inverse())                                    # the arm back in W
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_min(in_w), exp_min, strict=True)), (R.bbox_min(in_w), exp_min)
     assert all(abs(x - y) <= 0.05 for x, y in zip(R.bbox_size(in_w), exp_size, strict=True)), (R.bbox_size(in_w), exp_size)
-    assert part_colours(a) == {True: 89, False: 35}   # bought / printed leaves (tools/bom.py counts the same)
+    assert part_colours(a) == {True: 89, False: 36}   # bought / printed leaves (tools/bom.py counts the same)

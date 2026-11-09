@@ -53,7 +53,7 @@
   yoke - together shoulder_link; the drive's rotor (the turning shell: shell ring, ring pins,
   housing bolts + nuts, both 6814s) is bolted to j1_link - together upper_arm_link - so the drive IS the
   shoulder_pitch joint (cad/docs/cycloidal_drive.md, cad/assemblies/cycloidal_drive.py BODIES);
-  the GT2 90T pulleys + the wrist's J3 coupler are bolted to the driven links (elbow_link at elbow_pitch,
+  the GT2 90T pulleys + their flanges (elbow_flange, wrist_flange) are bolted to the driven links (elbow_link at elbow_pitch,
   wrist_pitch_link at wrist_pitch; the base_yaw 120T to j1_coupler's stub end inside the base - shoulder_link); the wrist
   roll drive's stator (the pancake + its board, its 20T, the belt, its 6806 pair) rides with wrist_link (its frame) in
   wrist_pitch_link, its rotor (pulley + shaft) with the gripper in wrist_roll_link; each belt joint's 6806-2RS bearing pair rides with its housing
@@ -170,9 +170,9 @@
   </link>
   <link name="wrist_pitch_link">
     <inertial>
-      <origin xyz="0.00037 0.01227 0.007533" rpy="0 0 0" />
-      <mass value="0.429383" />
-      <inertia ixx="4.847149e-04" ixy="-2.262542e-05" ixz="4.224880e-07" iyy="2.461553e-04" iyz="-3.421707e-05" izz="3.375461e-04" />
+      <origin xyz="0.000365 0.012229 0.007492" rpy="0 0 0" />
+      <mass value="0.430823" />
+      <inertia ixx="4.851362e-04" ixy="-2.265165e-05" ixz="3.857639e-07" iyy="2.463625e-04" iyz="-3.443267e-05" izz="3.379135e-04" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />

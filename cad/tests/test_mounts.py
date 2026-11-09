@@ -69,7 +69,7 @@ THRUST = ("washer_as6590#1", "bearing_axk6590#1", "washer_as6590#2")   # up the 
 STACKS = {
     "base_yaw": ("bearing_6806#1", "bearing_6806#2", "base#1", "j1_coupler#1", "gt2_pulley_120t#1"),
     "elbow_pitch": ("bearing_6806#3", "bearing_6806#4", "j1_link#1", "elbow_flange", "gt2_pulley_90t#3"),
-    "wrist_pitch": ("bearing_6806#5", "bearing_6806#6", "j2_link#1", "wrist_link#1", "gt2_pulley_90t#4"),
+    "wrist_pitch": ("bearing_6806#5", "bearing_6806#6", "j2_link#1", "wrist_flange#1", "gt2_pulley_90t#4"),
 }
 NO_SHOULDER = ("base_yaw",)   # the coupler stands on the thrust bearing, not on the upper inner ring
 # per bolted pulley: (its screw set, its nut set, the pulley, what the nuts sit in, the nut_af of that pocket, how much of
@@ -413,15 +413,17 @@ def test_the_pulley_bolts_reach_their_nuts():
         assert screws.host == PULLEY_BOLTS[joint][2] and nuts.host == screws.key, joint
         assert screws.frame == ((0.0, round(y1 - seat, 6), 0.0), (90.0, 0.0, 0.0)), joint      # +Z into the hub
         assert length - (nuts.frame[0][2] + PARAMS.M4_NUT.h) >= 2 * PARAMS.M4_PITCH - 1e-9, joint
-        assert parts.load(screws.part).PURCHASE_SPEC.startswith(f"M4 x {length:g} "), joint
+        bought = F.pulley_screw_bought if joint == "wrist_pitch" else length   # the wrist's: M4 x 35 cut to 33
+        assert parts.load(screws.part).PURCHASE_SPEC.startswith(f"M4 x {bought:g} "), joint
     assert math.isclose(mounts.BY_KEY["elbow_pulley_nuts#1"].frame[0][2], D.nut_seat_x - (D.stub_x[0] - (y1 - seat - y0)))
     assert math.isclose(mounts.BY_KEY["wrist_pulley_nuts#1"].frame[0][2], F.stub_z[1] - F.nut_seat_z + (y1 - seat - y0))
-    # the two flanges' stubs alike, 9 from the 90T's face to the bearing's top - wrist_link's stands where the retired
-    # coupler stood, PITCH_INSET nearer the forearm -; its nuts seated there, the elbow's in the roll frame's spigot past
-    # its own flange, on screws 5 longer
+    # the two flanges' stubs alike, 9 from the 90T's face to the bearing's top - the wrist's stands where the retired
+    # coupler stood, PITCH_INSET nearer the forearm -; each flange its own part, its 90T's screws on through it into the
+    # frame's nuts: the elbow's in the roll frame's spigot, the wrist's in wrist_link's plate - both 1 of the frame under
+    # the nut -, the wrist's 2 shorter (the pancake under the plate), both bought as M4 x 35
     assert F.stub_z[1] - F.stub_z[0] == D.stub_x[1] - D.stub_x[0] == 9.0
-    assert F.nut_seat_z == F.stub_z[0] and D.nut_seat_x == D.block_x[0] - D.spigot_h + 1.0
-    assert D.pulley_screw_len == F.pulley_screw_len + 5.0
+    assert F.nut_seat_z == F.post_z[0] - 1.0 and D.nut_seat_x == D.block_x[0] - D.spigot_h + 1.0
+    assert D.pulley_screw_len == F.pulley_screw_len + 2.0 == F.pulley_screw_bought
     assert F.stub_z[1] - F.post_z[0] == pytest.approx(C.stub_y1 - PITCH_INSET)
     yaw_seat_to_end = PULLEY_120T.face_y - seat - PULLEY_120T.end_y   # the 120T's: its plain hub gone (YAW_HUB_CUT)
     assert yaw_seat_to_end == pytest.approx(y1 - seat - y0 - YAW_HUB_CUT)
