@@ -25,7 +25,7 @@ one here. Gear ratio 90 / 20 = 4.5 (FOREARM_ROLL_RATIO) on the belt (forearm_rol
 wall's M3 screws + nuts are tools/bom.py EXTRAS; the elbow 90T's M4 screws + nuts into the frame are the arm's
 (lib/mounts.py FASTENER_MOUNTS).
 """
-from cadgen import step
+from cad import step
 
 from assemblies._occurrences import located_children
 from lib import reference as R

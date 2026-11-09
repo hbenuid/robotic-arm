@@ -9,7 +9,7 @@ Dimensions: lib/bearings.py. In the arm: x6.
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.bearings import BEARING_6806_BORE, BEARING_6806_MASS_G, BEARING_6806_OD, BEARING_6806_WIDTH
 from lib.cots import hybrid

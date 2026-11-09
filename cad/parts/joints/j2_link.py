@@ -36,7 +36,7 @@ the model builds DEFAULT (tests/forearm/ lock what DEFAULT adds).
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.datum import IDENTITY
 from lib.forearm import DEFAULT, LEGACY

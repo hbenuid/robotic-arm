@@ -13,7 +13,7 @@ counterbores in the end face (z=-13), which is chamfered like the port's plate; 
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.cycloidal import (
     DEFAULT_CONFIG,

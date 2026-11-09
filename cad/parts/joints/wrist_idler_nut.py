@@ -12,7 +12,7 @@ Frame: axis on Z, the bearing face on z=0, standing in +Z, a corner on +Y (the f
 import math
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid, pattern
 from lib.datum import IDENTITY

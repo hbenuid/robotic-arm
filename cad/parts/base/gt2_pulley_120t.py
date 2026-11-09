@@ -17,7 +17,7 @@ numbers - tests/pulley/test_gt2_pulley_120t.py.
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.datum import IDENTITY
 from lib.pulley import YAW

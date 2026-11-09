@@ -17,7 +17,7 @@ axis, +Z down the base's -Y).
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.base import DEFAULT as BASE
 from lib.base import motor_holes

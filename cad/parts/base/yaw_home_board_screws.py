@@ -14,7 +14,7 @@ bearing face on the board's top (z = bracket_t + KY003_BOARD_T), the shanks in -
 import pathlib
 
 import build123d as bd
-from cadgen import step
+from cad import step
 
 from lib.base import DEFAULT, home_board_points
 from lib.cots import hybrid, pattern

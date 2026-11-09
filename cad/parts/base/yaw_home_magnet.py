@@ -14,7 +14,7 @@ axis on Z, its south pole's face on z = 0, the disc in +Z (toward the face it is
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid, pattern
 from lib.datum import IDENTITY

@@ -124,5 +124,5 @@ A design preview of something that moves with the arm (`cad/AGENTS.md` Design ch
   nothing is see-through.
 - To show a cut in the arm's own parts (a pocket, a bracket's seat), re-export the touched links' meshes from
   `robot._links.build_link(link)` with the children cut by their labels - never rebuild the arm STEP's compound tree
-  around the cut parts: a module's leaves are module-local (`cadgen.step.read` gives each node in its parent's
+  around the cut parts: a module's leaves are module-local (`cad.step.read` gives each node in its parent's
   frame, so a leaf needs its parents' locations composed), and that rebuild displaced the drive modules and the gripper.

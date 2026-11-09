@@ -12,7 +12,7 @@ origin, the 40T on +X, the band centred on z=0; a row of assemblies/wrist_roll_d
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid
 from lib.datum import IDENTITY

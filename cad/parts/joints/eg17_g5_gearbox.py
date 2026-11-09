@@ -23,7 +23,7 @@ axes, the keyway on +X, the access holes +Y in the +X face and -Y in the -X face
 import pathlib
 
 import build123d as bd
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid
 from lib.datum import IDENTITY

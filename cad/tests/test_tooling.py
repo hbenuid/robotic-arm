@@ -1,7 +1,7 @@
 """The local tooling stays healthy: the venv holds the cad library and the OCP kernel pyproject.toml pins
 (and only ONE OCP distribution) and no cad-server, and ./cadtool inspect (tools/step_facts.py) agrees with the kernel;
-the retired inspect verbs teach the new syntax, cad's telemetry and automatic updates stay off, no CADGEN_ name and no
-second pin is left, the retired cadtool verbs say what replaced them and its snapshot / export name cad's document type,
+the retired inspect verbs teach the new syntax, cad's telemetry and automatic updates stay off, no `cadgen` import, no
+CADGEN_ name and no second pin is left, the retired cadtool verbs say what replaced them and its snapshot / export name cad's document type,
 ./cadtool refuses what would move the machine off the pin and its stop ends only this venv's workers,
 the two .claude/settings.json are the same, no tracked CLAUDE.md hides an AGENTS.md, every tracked name is lowercase."""
 import json
@@ -122,6 +122,15 @@ def code_files() -> list[pathlib.Path]:
     names = [n for n in tracked_names() if n.startswith((".github/", ".githooks/", ".claude/hooks/", "cad/.env"))
              or n == "cad/cadtool" or n == "cad/pyproject.toml" or (n.startswith("cad/") and n.endswith(".py"))]
     return [root / n for n in names if not n.startswith("cad/reference/")]
+
+
+def test_no_cadgen_import_is_left():
+    """From cad 0.11.1 `cadgen` is the library's deprecated alias: importing it warns CadDeprecationWarning, an error
+    under pytest (pyproject.toml filterwarnings) and a line in every build a model's worker runs - so the code imports
+    `cad` (docs/toolchain.md Pins)."""
+    imports = re.compile(r"^\s*(?:from|import)\s+cadgen\b", re.MULTILINE)
+    left = [str(path) for path in code_files() if path.suffix == ".py" and imports.search(path.read_text())]
+    assert not left, f"import cad, not cadgen: {left}"
 
 
 def test_no_cadgen_environment_name_is_left():

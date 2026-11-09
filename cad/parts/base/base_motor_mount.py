@@ -27,7 +27,7 @@ top of the print (docs/open_issues.md). In the arm: x1 (base_link).
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.base import DEFAULT, BaseConfig
 from lib.base.body import build_motor_mount

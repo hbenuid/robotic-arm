@@ -18,7 +18,7 @@ arm mounts them, the pattern turned with the pulley onto the stub's diagonal hol
 import math
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid, pattern
 from lib.datum import IDENTITY

@@ -15,11 +15,11 @@ dependencies = [
     # files, so removing either one guts the other (`uv sync --reinstall-package cadquery-ocp-novtk`).
     "build123d==0.13.0",
     "cadquery-ocp-novtk==8.0.1.1.0",
-    # The text-to-cad library, imported as `cadgen` (its earlier name) here: decorators, geometry, the STEP
-    # reader. This line is the ONE pin of the toolchain: `cadtool` reads it to install the machine's
-    # cad-server, and the text-to-cad@earthtojake plugin's claude.mcp.json pins the same release (`cad-mcp==`):
-    # bump them together (docs/toolchain.md Pins, `./cadtool doctor` checks). Never add cad-server here.
-    "cad[build123d]==0.11.0",
+    # The text-to-cad library, imported as `cad` (never `cadgen`, its deprecated earlier name): decorators,
+    # geometry, the STEP reader. This line is the ONE pin of the toolchain: `cadtool` reads it to install the
+    # machine's cad-server, and the text-to-cad@earthtojake plugin's claude.mcp.json pins the same release
+    # (`cad-mcp==`): bump them together (docs/toolchain.md Pins, `./cadtool doctor` checks). Never add cad-server here.
+    "cad[build123d]==0.11.4",
     "numpy>=2.4.6",
 ]
 

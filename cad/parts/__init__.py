@@ -1,7 +1,7 @@
 """parts - one module per part, grouped by subsystem: parts/<group>/<name>.py + <name>.step
 (groups: base, joints, wrist, gripper, cycloidal). parts/_templates/ holds the three templates (not
 discovered); every purchased part builds through lib/cots.py hybrid().
-Every part module declares ONE cadgen model, `@step def <name>()` (NAME = stem = model name);
+Every part module declares ONE cad model, `@step def <name>()` (NAME = stem = model name);
 running the file builds it, model(name) hands the function to assemblies, build(name) runs its body.
 
 A part's NAME is its module stem and must be unique across groups: it keys reference/manifest.json,
@@ -74,7 +74,7 @@ def source_of(name: str) -> pathlib.Path:
 
 
 def model(name: str):
-    """The part's cadgen model: the `@step` function named after its file (parts.load(name).<name>)."""
+    """The part's cad model: the `@step` function named after its file (parts.load(name).<name>)."""
     from lib.models import model_of
 
     return model_of(load(name), name)

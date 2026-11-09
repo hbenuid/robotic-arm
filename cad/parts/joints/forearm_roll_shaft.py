@@ -13,7 +13,7 @@ PETG. In the arm: x1, inside forearm_roll_drive#1 - forearm_link (with the pulle
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.datum import IDENTITY
 from lib.forearm import DEFAULT, ForearmConfig

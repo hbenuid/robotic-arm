@@ -15,7 +15,7 @@ fork_foot_screw_points(), a corner along +Y (CORNER_DEG).
 import math
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid, pattern
 from lib.datum import IDENTITY

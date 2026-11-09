@@ -116,7 +116,7 @@ def test_the_colours_tell_the_kinds_of_part_apart():
 
 def test_arm_is_emitted_z_up():
     """The arm leaves the SolidWorks capture frame W (+Y up) for the base_link frame of
-    robot/frames.py (REP-103) - cadgen's viewer and snapshots are Z-up, a W-frame arm.step lies on
+    robot/frames.py (REP-103) - cad's viewer and snapshots are Z-up, a W-frame arm.step lies on
     its side: world up -> +Z, the arm's forward -> +X, the base's mounting face centre -> origin."""
     from robot import frames
 

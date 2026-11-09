@@ -11,7 +11,7 @@ import math
 
 import pytest
 from build123d import Align, Box, Plane
-from cadgen.build123d import closest_points
+from cad.build123d import closest_points
 
 import parts
 from assemblies import forearm_roll_drive as M

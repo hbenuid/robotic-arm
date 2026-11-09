@@ -17,7 +17,7 @@ Frame: the module's (the row carries the far faces' station only): axes on Z on 
 import math
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid, pattern
 from lib.datum import IDENTITY

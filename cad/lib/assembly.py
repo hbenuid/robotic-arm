@@ -1,4 +1,4 @@
-"""Native build123d assembly nodes - what cadgen writes as the STEP component tree.
+"""Native build123d assembly nodes - what cad writes as the STEP component tree.
 
 An assembly is a labelled `Compound(children=[...])`: `assembly(name, children)` builds one node
 (the root of a model, or a group / module inside it), `label_shape(shape, name, *details)` labels a

@@ -13,7 +13,7 @@ the origin, the ring on +X, the idler on the run back, the band centred on z=0; 
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid
 from lib.datum import IDENTITY

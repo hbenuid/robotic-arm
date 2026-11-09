@@ -8,7 +8,7 @@ drive's pins, bolts and nuts.
 from __future__ import annotations
 
 import build123d as bd
-from cadgen import step
+from cad import step
 
 from lib.datum import to_location
 

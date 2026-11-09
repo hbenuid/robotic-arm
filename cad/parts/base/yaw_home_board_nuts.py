@@ -12,7 +12,7 @@ home_bracket_frame()), the nuts under z = 0, a corner on +Y.
 import math
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.base import DEFAULT, home_board_points
 from lib.cots import hybrid, pattern

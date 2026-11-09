@@ -13,7 +13,7 @@ Frame: axis on Z, standing on z=0, a corner on +Y (the flats across x).
 import math
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.base import YawIdlerParams
 from lib.cots import hybrid, pattern

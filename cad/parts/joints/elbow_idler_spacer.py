@@ -14,7 +14,7 @@ numbers - tests/upper_arm/test_elbow_idler.py.
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.datum import IDENTITY
 from lib.params import J1_IDLER_SPACER_H

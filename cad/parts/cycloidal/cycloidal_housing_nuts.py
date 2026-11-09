@@ -13,7 +13,7 @@ import math
 import pathlib
 
 import build123d as bd
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid, pattern
 from lib.cycloidal import DEFAULT_CONFIG, LEGACY_CONFIG, DriveConfig, compute_housing_bolt_angles, housing_bolt_points

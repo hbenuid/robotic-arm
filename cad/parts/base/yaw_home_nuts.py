@@ -14,7 +14,7 @@ corner on +X (the pockets').
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.base import DEFAULT, home_screw_points
 from lib.cots import hybrid, pattern

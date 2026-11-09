@@ -13,7 +13,7 @@ forearm_roll_drive#1 - forearm_link.
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.forearm import DEFAULT, ForearmConfig
 from lib.forearm.roll import build_pulley

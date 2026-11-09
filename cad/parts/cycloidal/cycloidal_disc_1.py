@@ -9,7 +9,7 @@ the model builds DEFAULT_CONFIG's smaller pin circle (lib/cycloidal/params.py RI
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.cycloidal import DEFAULT_CONFIG, LEGACY_CONFIG, DriveConfig
 from lib.cycloidal.disc import build_disc

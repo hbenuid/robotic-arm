@@ -13,7 +13,7 @@ yaw_belt_frame() (lib/mounts.py BELT_MOUNTS).
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.base import yaw_belt_loop
 from lib.base.params import YAW_BELT

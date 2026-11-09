@@ -14,7 +14,7 @@ lib/yaw_coupler/layout.py fork_foot_screw_points() - motor_bolt_z either side of
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid, pattern
 from lib.datum import IDENTITY

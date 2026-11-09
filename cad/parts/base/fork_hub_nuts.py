@@ -16,7 +16,7 @@ lib/yaw_coupler/layout.py fork_hub_screw_points() with a corner along its radius
 import math
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid, pattern
 from lib.datum import IDENTITY

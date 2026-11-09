@@ -1,7 +1,7 @@
 """The `@step` model convention, enforced automatically for every parts/<group>/<name>.py.
 
 Auto-discovers parts exactly like the assemblies do (parts.names(): every module under a group
-package that does not start with '_') and checks each honours the cadgen `@step` contract: importable
+package that does not start with '_') and checks each honours the cad `@step` contract: importable
 with no side effects, ONE `@step(out="<name>.step") def <name>()` model named after the file whose one output
 is the sibling STEP, whose body (parts.build(name) - never the model itself, that would start a
 build) returns a valid, non-empty, labelled shape, plus the wrapper / designed / native / measured / no-reference / COTS
@@ -180,7 +180,7 @@ def test_part_builds_valid_labelled_geometry(name):
 @pytest.mark.slow
 @pytest.mark.parametrize("name", PART_NAMES)
 def test_part_survives_a_bintools_round_trip(name):
-    """cadgen keeps every part as BinTools BREP bytes (format VERSION_4: its document cache, and the wire its STEP
+    """cad keeps every part as BinTools BREP bytes (format VERSION_4: its document cache, and the wire its STEP
     reader hands a build) and reads them back. OCCT 7.8.1's reader mis-framed those streams for 11 of our parts
     (the reason this project left OCP 7.8) - this locks that the kernel in use round-trips every part."""
     import io

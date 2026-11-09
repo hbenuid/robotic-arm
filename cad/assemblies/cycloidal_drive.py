@@ -19,7 +19,7 @@ Run:  ./cadtool gen assemblies/cycloidal_drive.py             -> assemblies/cycl
 
 from __future__ import annotations
 
-from cadgen import step
+from cad import step
 
 from assemblies._occurrences import located_children
 from lib.assembly import assembly

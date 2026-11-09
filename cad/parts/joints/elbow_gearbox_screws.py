@@ -17,7 +17,7 @@ j1_link's +Y).
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid, pattern
 from lib.datum import IDENTITY

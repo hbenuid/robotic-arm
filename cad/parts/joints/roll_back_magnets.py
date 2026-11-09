@@ -13,7 +13,7 @@ NO_REFERENCE) - its envelope IS the geometry (plain discs) and tests/forearm/tes
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid, pattern
 from lib.datum import IDENTITY

@@ -15,7 +15,7 @@ bearing faces on z=0, the heads in -Z and the shanks in +Z; the four at lib/base
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.base import DEFAULT as BASE
 from lib.base import joint_bolt_points

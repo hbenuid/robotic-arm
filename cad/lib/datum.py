@@ -10,7 +10,7 @@ Both the kinematic decomposition (robot/frames.py: every link / joint frame is b
 and the arm assembly (assemblies/arm.py emits the arm in B, arm_from_w() = base_frame()^-1) need these,
 so they live below both - assemblies/ never imports robot/.
 
-Nothing here touches the CAD kernel at import (a model file must stay kernel-free until cadgen has
+Nothing here touches the CAD kernel at import (a model file must stay kernel-free until cad has
 gated it - tests/test_lazy_kernel.py): a frame a module DECLARES is data, `(position mm,
 rotation_xyz_deg)` like a placements.json record (IDENTITY, a part's LOCAL_FROM_REF / VENDOR_TO_REF),
 turned into a Location by to_location() inside a body; base_frame() is computed on first use.

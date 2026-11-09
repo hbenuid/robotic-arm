@@ -40,7 +40,7 @@ model builds DEFAULT (tests/base/ lock what DEFAULT changes).
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.base import DEFAULT, LEGACY
 from lib.base.body import build_base

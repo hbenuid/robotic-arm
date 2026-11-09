@@ -14,7 +14,7 @@ Frame: axis on Z, standing on z=0, a corner on +X (the flats across y).
 import math
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid, pattern
 from lib.datum import IDENTITY

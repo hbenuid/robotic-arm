@@ -48,7 +48,7 @@ belongs to wrist_roll_link - in robot/frames.py LINKS, the kinematic truth, whic
 
 Frame: the placements are in the SolidWorks capture frame W (+Y up), but the arm is EMITTED in
 the base_link frame B (lib/datum.py base_frame(), the frame robot/frames.py gives base_link - REP-103:
-Z up, X forward, the base's mounting face on z = 0) - arm_from_w(), composed into every occurrence's placement. cadgen's viewer and snapshots
+Z up, X forward, the base's mounting face on z = 0) - arm_from_w(), composed into every occurrence's placement. cad's viewer and snapshots
 are Z-up with no up-axis option, so a W-frame STEP renders lying on its side; in B arm.step and
 robot/arm.urdf open in the same pose. placements.json, the parts and the modules stay in W.
 
@@ -58,7 +58,7 @@ Run:  ./cadtool gen assemblies/arm.py            -> assemblies/arm.step (git-ign
       ./cadtool viewer                           -> the arm's page on the machine's cad server
 """
 
-from cadgen import step
+from cad import step
 
 from assemblies import cycloidal_drive, forearm_roll_drive, gripper, wrist_roll_drive
 from assemblies._occurrences import grouped_children

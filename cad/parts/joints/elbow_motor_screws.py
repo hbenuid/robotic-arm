@@ -16,7 +16,7 @@ on Z, the heads' bearing face on z=0 (the heads in -Z), the shanks in +Z; the fo
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.cots import hybrid, pattern
 from lib.datum import IDENTITY

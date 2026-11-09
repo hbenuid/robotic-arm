@@ -1,10 +1,10 @@
-"""cadgen model access - the one place that knows what a model function is.
+"""cad model access - the one place that knows what a model function is.
 
 Every parts/<group>/<name>.py, assemblies/<name>.py and robot/links/<link>.py declares ONE
-`@step(out="<name>.step")` model (cadgen.step) named after its file stem; running the file builds it
+`@step(out="<name>.step")` model (cad.step) named after its file stem; running the file builds it
 (writes the sibling STEP). Nothing in this module builds: `raw()` runs the decorated body in-process -
 tests, tools, previews: no engine, nothing written - and `geometry()` is what an assembly body calls for a
-child: the child model's result while a cadgen build is running on this thread, the raw body otherwise.
+child: the child model's result while a cad build is running on this thread, the raw body otherwise.
 """
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from types import ModuleType
 
 
 def is_model(obj) -> bool:
-    """True for a cadgen model: a function under @step / @model / @stl ... (cadgen.engine.model.Model, which
+    """True for a cad model: a function under @step / @model / @stl ... (cad.engine.model.Model, which
     marks itself `__xbf_model__` and keeps the body as `.function`)."""
     return getattr(obj, "__xbf_model__", False) is True and callable(getattr(obj, "function", None))
 
@@ -35,8 +35,8 @@ def raw(model):
 
 def building() -> bool:
     """True while a cad build runs on this thread (cad keeps it on the private thread-local
-    `cadgen.engine.model._CONTEXT.build`: docs/toolchain.md lists the private names this repo leans on)."""
-    from cadgen.engine.model import _CONTEXT
+    `cad.engine.model._CONTEXT.build`: docs/toolchain.md lists the private names this repo leans on)."""
+    from cad.engine.model import _CONTEXT
 
     return getattr(_CONTEXT, "build", None) is not None
 
@@ -44,7 +44,7 @@ def building() -> bool:
 def geometry(model):
     """A child for a composing body.
 
-    While a cadgen build runs on this thread the child model is CALLED: it runs as the build's child (replayed
+    While a cad build runs on this thread the child model is CALLED: it runs as the build's child (replayed
     when its code and inputs are unchanged) and writes its own declared file - the part's git-ignored STEP - and
     its result comes back as a new placement the parent owns (re-colouring its leaves touches no other
     placement). Outside a build (tests, tools, previews) it is raw(): nothing starts a build."""

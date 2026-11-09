@@ -3,7 +3,7 @@
 The geometry tests measure the same shapes over and over - a part in every file that places it, a module in every
 clearance it takes part in. These return each one built once per process (functools.cache; a pytest-xdist worker is
 a process of its own), so a cached shape is SHARED by every test that asks for it, and read-only:
-- measure it: tests/helpers.py interference / is_inside, cadgen.build123d closest_points, distance_to, volume
+- measure it: tests/helpers.py interference / is_inside, cad.build123d closest_points, distance_to, volume
   (lib.reference.solid_volume), bounding_box(), faces() / edges(), is_valid, BRepGProp;
 - move a copy: .moved() and .rotate() return new shapes;
 - never set its label / color / children / parent, .move() / .locate() it, mesh it (tessellate, export_stl: the mesh

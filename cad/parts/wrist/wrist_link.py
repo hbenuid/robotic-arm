@@ -33,7 +33,7 @@ model builds DEFAULT (tests/wrist/ lock the features).
 """
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.datum import IDENTITY
 from lib.wrist import DEFAULT, LEGACY

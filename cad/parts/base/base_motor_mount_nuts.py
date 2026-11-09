@@ -16,7 +16,7 @@ corner along +/-Y.
 import math
 import pathlib
 
-from cadgen import step
+from cad import step
 
 from lib.base import joint_bolt_points
 from lib.cots import hybrid, pattern

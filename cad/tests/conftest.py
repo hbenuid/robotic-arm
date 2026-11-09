@@ -22,7 +22,7 @@ def _shared_shapes_stay_as_built():
 
 @pytest.fixture(autouse=True, scope="session")
 def _no_top_level_builds():
-    from cadgen.engine.model import Model
+    from cad.engine.model import Model
 
     def refuse(self, **_):
         raise RuntimeError(
