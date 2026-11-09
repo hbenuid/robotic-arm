@@ -2,9 +2,10 @@
 module like the cycloidal drive.
 
 Stator: the frame - ONE printed part (forearm_roll_block) round the roll motor: an octagon about the elbow axis (its flats on the
-upper arm's round end) hulled up to the tower round the roll axis; its underside is the elbow's output flange (a post - the
-SolidWorks j3_coupler's journal carried up -, the shoulder and the stub down into j1_link's bore; the elbow 90T pulley bolts straight into it,
-so j3_coupler#1 is retired, lib/placements.py RETIRED); the 40 mm kit motor + MKS board ON the elbow axis in its pocket
+upper arm's round end) hulled up to the tower round the roll axis; under its underside the elbow's output flange, its own
+part (elbow_flange: a post - the SolidWorks j3_coupler's journal carried up -, the shoulder and the stub down into
+j1_link's bore) on the frame's spigot; the elbow 90T pulley bolts up through it into the frame, so j3_coupler#1 is
+retired (lib/placements.py RETIRED); the 40 mm kit motor + MKS board ON the elbow axis in its pocket
 (open down through the octagon's bottom - the motor slides up into it, turned so its connector and the board's motor plug
 point down into the opening -, the side face closed, the pocket's front wall the plate, its 4x M3 from the front face,
 heads flush in counterbores: roll_motor_screws) and the 20T on the motor shaft, its hub down in the plate's pilot hole;
@@ -41,11 +42,12 @@ def _at(x: float = 0.0, y: float = 0.0, z: float = 0.0):
 
 
 # (part, role | None, placement in the module frame) - a position, or ((x, y, z), (rx, ry, rz)) when the part's own
-# frame is not the module's (the 20T's vendor axis is +X). The frame, the shaft and the pulley are built at their
+# frame is not the module's (the 20T's vendor axis is +X). The frame, the elbow flange, the shaft and the pulley are built at their
 # stations (their rows are at 0); the bearings stand on their seats; the motor's mounting face is the plate's rear face,
 # the motor on the elbow axis (centred on the roll axis in X), turned so its connector points down (-Y) into the opening.
 OCCURRENCES = [
     ("forearm_roll_block",    None, _at()),
+    ("elbow_flange",          None, _at()),
     ("bearing_6806",          "1",  _at(z=S["z_bearing_1"])),
     ("forearm_roll_shaft",    None, _at()),
     ("bearing_6806",          "2",  _at(z=S["z_bearing_2"])),
@@ -78,8 +80,8 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("stator") after any geometry change.
 EXPECTED = {
-    "leaves": 17, "solids": 48, "solid_volume": 392535.46,
-    "bodies": {"stator": {"leaves": 13, "solids": 38, "solid_volume": 348486.023},
+    "leaves": 18, "solids": 49, "solid_volume": 393012.115,
+    "bodies": {"stator": {"leaves": 14, "solids": 39, "solid_volume": 348962.678},
                "rotor": {"leaves": 4, "solids": 10, "solid_volume": 44049.437}},
 }
 

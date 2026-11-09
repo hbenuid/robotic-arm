@@ -87,11 +87,11 @@
     <link name="elbow_link">
       <pose relative_to="elbow_pitch">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.005798 -0.017609 0.015827 0 0 0</pose>
-        <mass>0.765037</mass>
+        <pose>0.005779 -0.017549 0.01576 0 0 0</pose>
+        <mass>0.767615</mass>
         <inertia>
-          <ixx>1.094439e-03</ixx><ixy>1.404187e-04</ixy><ixz>-1.886820e-05</ixz>
-          <iyy>6.161059e-04</iyy><iyz>5.625902e-05</iyz><izz>1.035208e-03</izz>
+          <ixx>1.096296e-03</ixx><ixy>1.406812e-04</ixy><ixz>-1.916673e-05</ixz>
+          <iyy>6.172525e-04</iyy><iyz>5.716516e-05</iyz><izz>1.036407e-03</izz>
         </inertia>
       </inertial>
       <visual name="elbow_link_visual">

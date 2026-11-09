@@ -13,7 +13,7 @@
  "expected": {
   "leaf_occurrences": 74,
   "solids": 190,
-  "solid_volume": 2275355.535
+  "solid_volume": 2275606.862
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -4836,10 +4836,10 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the elbow 90T's 4x M4 x pulley_screw_len: heads in its counterbores, down through its hub and the block's stub"
+    "note": "the elbow 90T's 4x M4 x pulley_screw_len: heads in its counterbores, down through its hub, the elbow flange and the block's spigot"
    },
    "solids": 4,
-   "solid_volume": 2061.363,
+   "solid_volume": 2312.69,
    "rel": {
     "position": [
      -117.47409,
@@ -4910,9 +4910,9 @@
     -41.833
    ],
    "world_bbox_size": [
-    29.62,
+    29.943,
     28.987,
-    35.7
+    40.69
    ]
   },
   {
@@ -4930,7 +4930,7 @@
      "position": [
       0.0,
       0.0,
-      25.4
+      30.4
      ],
      "rotation_xyz_deg": [
       0.0,
@@ -4939,15 +4939,15 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the elbow screws' nuts on the block's channel seats (nut_seat_x), a flat toward the axis"
+    "note": "the elbow screws' nuts on the block's channel seats in its spigot (nut_seat_x), a flat toward the axis"
    },
    "solids": 4,
    "solid_volume": 382.322,
    "rel": {
     "position": [
-     -115.837423,
+     -115.515244,
      210.516162,
-     -11.559954
+     -6.570345
     ],
     "rotation_xyz_deg": [
      -0.0,
@@ -4959,27 +4959,27 @@
       -0.997315384,
       -0.034785919,
       0.064435734,
-      -115.837422715
+      -115.515244042
      ],
      [
       0.034858359,
       -0.999392263,
       2e-09,
-      210.516161835
+      210.516161844
      ],
      [
       0.064396574,
       0.002246126,
       0.997921859,
-      -11.559954014
+      -6.570344721
      ]
     ]
    },
    "world": {
     "position": [
-     -115.837423,
+     -115.515244,
      210.516162,
-     -11.559954
+     -6.570345
     ],
     "rotation_xyz_deg": [
      -0.0,
@@ -4991,26 +4991,26 @@
       -0.997315384,
       -0.034785919,
       0.064435734,
-      -115.837422715
+      -115.515244042
      ],
      [
       0.034858359,
       -0.999392263,
       2e-09,
-      210.516161835
+      210.516161844
      ],
      [
       0.064396574,
       0.002246126,
       0.997921859,
-      -11.559954014
+      -6.570344721
      ]
     ]
    },
    "world_bbox_min": [
-    -130.369,
+    -130.047,
     195.955,
-    -12.498
+    -7.509
    ],
    "world_bbox_size": [
     29.269,
@@ -5145,7 +5145,7 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the wrist screws' nuts on wrist_link's channel seats (nut_seat_z, level with the upper wrist bearing's top, as the elbow's), turned with the 90T"
+    "note": "the wrist screws' nuts on wrist_link's channel seats (nut_seat_z, level with the upper wrist bearing's top), turned with the 90T"
    },
    "solids": 4,
    "solid_volume": 382.322,

@@ -68,7 +68,7 @@ THRUST = ("washer_as6590#1", "bearing_axk6590#1", "washer_as6590#2")   # up the 
 # per belt joint: (upper bearing, lower bearing, the housing, the coupler whose stub runs through them, its driven pulley)
 STACKS = {
     "base_yaw": ("bearing_6806#1", "bearing_6806#2", "base#1", "j1_coupler#1", "gt2_pulley_120t#1"),
-    "elbow_pitch": ("bearing_6806#3", "bearing_6806#4", "j1_link#1", "forearm_roll_block", "gt2_pulley_90t#3"),
+    "elbow_pitch": ("bearing_6806#3", "bearing_6806#4", "j1_link#1", "elbow_flange", "gt2_pulley_90t#3"),
     "wrist_pitch": ("bearing_6806#5", "bearing_6806#6", "j2_link#1", "wrist_link#1", "gt2_pulley_90t#4"),
 }
 NO_SHOULDER = ("base_yaw",)   # the coupler stands on the thrust bearing, not on the upper inner ring
@@ -119,9 +119,9 @@ def _world(key: str) -> Location:
 
 
 @functools.cache
-def _roll_block():
-    """The roll drive's block at its world pose (tests/built.py: shared, read-only)."""
-    return built.leaf(forearm_roll_drive.forearm_roll_drive, "forearm_roll_block").moved(_world("forearm_roll_drive#1"))
+def _roll_part(name: str = "forearm_roll_block"):
+    """A part of the roll drive - its block, its elbow flange - at its world pose (tests/built.py: shared, read-only)."""
+    return built.leaf(forearm_roll_drive.forearm_roll_drive, name).moved(_world("forearm_roll_drive#1"))
 
 
 def _dir(loc: Location, local=(0.0, 0.0, 1.0)) -> Vector:
@@ -381,11 +381,11 @@ def test_bearings_and_pulleys_sit_on_their_joint_axes():
 @pytest.mark.slow
 def test_the_elbow_pulley_holes_line_up_with_the_block_bolts():
     """The elbow 90T turned with the block's bolt pattern: each M4 axis runs through the pulley's hole along its
-    whole length and on into the stub's clearance hole, the hub solid 3 mm beside it (a pattern 45 deg off would
-    put every axis in solid hub)."""
+    whole length and on into the elbow flange's clearance hole and the block's in its spigot, the hub solid 3 mm beside
+    it (a pattern 45 deg off would put every axis in solid hub)."""
     D = FOREARM.drive
     module = _world("forearm_roll_drive#1")
-    block = _roll_block()
+    block, flange = _roll_part(), _roll_part("elbow_flange")
     pulley = built.placed("gt2_pulley_90t#3")
 
     def at(x, y, z):
@@ -396,7 +396,7 @@ def test_the_elbow_pulley_holes_line_up_with_the_block_bolts():
     for y, z in pulley_bolt_points(FOREARM):
         for x in (face - 1.0, face - D.pulley_hub_len / 2.0, face - D.pulley_hub_len + 1.0):
             assert not is_inside(pulley, *at(x, ye + y, z)), (y, z, x)
-        assert not is_inside(block, *at(face + 1.0, ye + y, z)), (y, z)
+        assert not is_inside(flange, *at(face + 1.0, ye + y, z)) and not is_inside(block, *at(D.nut_seat_x - 0.5, ye + y, z)), (y, z)
         r = D.pulley_bolt_r
         assert is_inside(pulley, *at(face - 1.0, ye + y + 3.0 * z / r, z - 3.0 * y / r)), (y, z)
 
@@ -416,10 +416,12 @@ def test_the_pulley_bolts_reach_their_nuts():
         assert parts.load(screws.part).PURCHASE_SPEC.startswith(f"M4 x {length:g} "), joint
     assert math.isclose(mounts.BY_KEY["elbow_pulley_nuts#1"].frame[0][2], D.nut_seat_x - (D.stub_x[0] - (y1 - seat - y0)))
     assert math.isclose(mounts.BY_KEY["wrist_pulley_nuts#1"].frame[0][2], F.stub_z[1] - F.nut_seat_z + (y1 - seat - y0))
-    # the two flanges one design: the stub 9 from the 90T's face to the bearing's top, the nuts seated there, the same
-    # screws - wrist_link's stands where the retired coupler stood, PITCH_INSET nearer the forearm
+    # the two flanges' stubs alike, 9 from the 90T's face to the bearing's top - wrist_link's stands where the retired
+    # coupler stood, PITCH_INSET nearer the forearm -; its nuts seated there, the elbow's in the roll frame's spigot past
+    # its own flange, on screws 5 longer
     assert F.stub_z[1] - F.stub_z[0] == D.stub_x[1] - D.stub_x[0] == 9.0
-    assert (F.nut_seat_z, D.nut_seat_x) == (F.stub_z[0], D.stub_x[1]) and F.pulley_screw_len == D.pulley_screw_len
+    assert F.nut_seat_z == F.stub_z[0] and D.nut_seat_x == D.block_x[0] - D.spigot_h + 1.0
+    assert D.pulley_screw_len == F.pulley_screw_len + 5.0
     assert F.stub_z[1] - F.post_z[0] == pytest.approx(C.stub_y1 - PITCH_INSET)
     yaw_seat_to_end = PULLEY_120T.face_y - seat - PULLEY_120T.end_y   # the 120T's: its plain hub gone (YAW_HUB_CUT)
     assert yaw_seat_to_end == pytest.approx(y1 - seat - y0 - YAW_HUB_CUT)
@@ -441,7 +443,7 @@ def test_pulley_bolts_clamp_their_joints(joint):
     ws, wn = _world(screws_key), _world(nuts_key)
     z = _dir(ws).normalized()
     pulley = built.placed(pulley_key)
-    host = _roll_block() if host_key == "forearm_roll_drive#1" else built.placed(host_key)
+    host = _roll_part() if host_key == "forearm_roll_drive#1" else built.placed(host_key)
 
     def planar(shape, origin: Vector, sign: int) -> bool:
         return any(round(f.normal_at().dot(z)) == sign and abs((f.center() - origin).dot(z)) < 1e-3
@@ -598,7 +600,7 @@ def test_bearing_stacks(joint):
         assert faces, (joint, sign)
         lip_r = min(lip_r, min(r0 for _, r0, _ in faces))
     assert lip_r > inner_r + 1.0, (joint, lip_r)                                # the lip clears the inner rings
-    coupler = _roll_block() if coupler_key == "forearm_roll_block" else built.placed(coupler_key)
+    coupler = _roll_part(coupler_key) if coupler_key == "elbow_flange" else built.placed(coupler_key)
     pulley = built.placed(pulley_key)
     shoulder = [f for f in _faces_on(coupler, (wu * width).position, z) if f[0] == -1]
     if joint in NO_SHOULDER:
