@@ -153,6 +153,10 @@ cache, whose key omits Python. The proof the geometry did not move: the hash gat
   support-plane box (`cadgen.engine.kernel.bounds.optimal_box(shape.wrapped)`, a private name) before a box of it
   becomes a lock or an envelope. A sweep along a binormal guide curve distorts its profile while still reporting valid
   (OCCT #1681): `cad/` has no sweep; a model that needs a guided one checks its volume against the profile's.
+- build123d's `Mesher.write()` (lib3mf) leaves the process in the C locale, so every later `open()` / `read_text()`
+  without an encoding in that process reads ASCII and fails on the first non-ASCII byte. Code that writes a mesh
+  in-process restores the locale round the write (`tools/export_gauges.py write_plate()`; `tests/test_gauges.py`
+  checks it).
 - The private names this repo leans on — re-check them on a bump: `cadgen.engine.model._CONTEXT.build` (a build in
   progress on this thread: `lib/models.py building()`), a model's `.function` / `.outputs` (`Output.kind` / `.out`) /
   `__xbf_model__` and `Model.build` (`lib/models.py`, `tests/conftest.py`, `test_parts_convention.py`) — and that

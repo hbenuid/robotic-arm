@@ -8,7 +8,7 @@ module (code-driven, placed at the SolidWorks node's pose) + the forearm_roll_dr
 modules (code-driven, placed by lib/mounts.py MODULE_MOUNTS) - the totals are locked in
 tests/test_assembly.py - bucketed into the GROUPS component tree (arm -> base_link/shoulder_link/upper_arm_link/
 elbow_link/forearm_link/wrist_pitch_link/wrist) so each rigid link toggles as one node in the viewers. Colors
-(_occurrences.colour(), lib/style.py): a PRINTED part is off-white, or orange where it drives, turns or covers
+(_occurrences.colour(), lib/style.py): a PRINTED part is ivory, or orange where it drives, turns or covers
 (ACCENT = True), every PURCHASED part (COTS = True - motors, the elbow's gearbox, boards, servo, bearings, pins, bolts,
 nuts, the 20T pulleys) is grey and the belts a darker grey, inside the modules too:
 

@@ -4,9 +4,10 @@ Fast: every gauge well-formed (a known builder and options it takes, every arm v
 the clearance holes and press nut pocket lib/fasteners.py and the parts size have gauges, the titles in the label
 font's characters, the packing on synthetic pieces, lib/gauges imported without the kernel. Slow: every coupon one valid
 solid on the bed inside the margins, its round features at the sizes its labels print, the plates (every coupon once,
-none overlapping, the nested ones inside their ring's opening), a plate's 3MF (millimetres, one named object a coupon)."""
+none overlapping, the nested ones inside their ring's opening), a plate's 3MF (millimetres, one named object a coupon, the process's locale kept)."""
 import inspect
 import itertools
+import locale
 import math
 import re
 import subprocess
@@ -163,7 +164,11 @@ def test_a_plate_3mf(built, tmp_path):
     from tools import export_gauges
     _, plates = built
     path = tmp_path / "plate.3mf"
+    before = locale.setlocale(locale.LC_ALL)
     export_gauges.write_plate(plates[0], path, 0.05, 0.3)
+    # lib3mf's write switches the process to the C locale: write_plate puts it back, or every later read without an
+    # encoding in this process is ASCII (test_tooling's of the code files failed so after this test)
+    assert locale.setlocale(locale.LC_ALL) == before
     with zipfile.ZipFile(path) as z:
         model = z.read("3D/3dmodel.model").decode()
     assert 'unit="millimeter"' in model

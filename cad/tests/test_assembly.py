@@ -99,10 +99,15 @@ def test_arm_groups_mirror_links():
 
 def test_the_colours_tell_the_kinds_of_part_apart():
     """The four colours of lib/style.py are distinct (grey means bought, darker grey a belt, orange a printed part that
-    drives, turns or covers, off-white the printed structure); only a printed part declares ACCENT, and every part
-    named <joint>_belt is a purchased belt."""
+    drives, turns or covers, ivory the printed structure), the two printed ones filaments the arm can be bought in
+    (style.FILAMENTS, stored as the hex the viewer draws as the filament: style.viewer_hex); only a printed part
+    declares ACCENT, and every part named <joint>_belt is a purchased belt."""
     palette = [style.BODY, style.ACCENT, style.BOUGHT, style.BELT]
     assert len({c.lower() for c in palette}) == len(palette)
+    drawn = {style.viewer_hex(h) for h in style.FILAMENTS.values()}
+    assert {style.BODY, style.ACCENT} <= drawn, "a printed part's colour is not a filament's viewer_hex()"
+    # the correction the arm's earlier orange was hand-computed with (#E2581C drawn from #F29F5D); white is unchanged
+    assert style.viewer_hex("#E2581C") == "#F29F5D" and style.viewer_hex("#FFFFFF") == "#FFFFFF"
     accent = [n for n in parts.names() if parts.accent(n)]
     assert accent and not [n for n in accent if parts.bought(n)], "a purchased part declares ACCENT"
     belts = [n for n in parts.names() if n.endswith("_belt")]
