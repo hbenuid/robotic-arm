@@ -19,6 +19,7 @@ from lib.yaw_coupler.params import (  # noqa: F401
     LEGACY,
     DiscParams,
     ForkParams,
+    HomeTrayParams,
     HubParams,
     YawCouplerConfig,
     YokeParams,

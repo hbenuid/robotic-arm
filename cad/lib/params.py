@@ -312,6 +312,12 @@ YAW_HOME_SCREWS_MASS_G = STEEL_DENSITY * len(_HOME.screw_points) * shcs_volume(_
 YAW_HOME_NUTS_MASS_G = STEEL_DENSITY * len(_HOME.screw_points) * nut_volume(_HOME.nut)                                    # 0.7, 2x M3
 YAW_HOME_BOARD_SCREWS_MASS_G = STEEL_DENSITY * 2 * shcs_volume(_HOME.board_screw, _HOME.board_screw_len)                  # 0.7, 2x M2x8
 YAW_HOME_BOARD_NUTS_MASS_G = STEEL_DENSITY * 2 * nut_volume(_HOME.board_nut)                                              # 0.3, 2x M2
+# the shoulder_pitch home sensor's (lib/yaw_coupler/params.py HomeTrayParams): its magnet glued on a pillar of the drive's
+# shell (parts/base/shoulder_home_magnet, the same disc) and the board's M2s and nuts on the tray, likewise
+_SHOME = _YAW_COUPLER.home
+SHOULDER_HOME_MAGNET_MASS_G = NDFEB_DENSITY * _cyl_vol(HOME_MAGNET_DIA / 2.0, HOME_MAGNET_T)                               # 0.64, Ø6 x 3
+SHOULDER_HOME_BOARD_SCREWS_MASS_G = STEEL_DENSITY * 2 * shcs_volume(_SHOME.board_screw, _SHOME.board_screw_len)            # 0.5, 2x M2x6
+SHOULDER_HOME_BOARD_NUTS_MASS_G = STEEL_DENSITY * 2 * nut_volume(_SHOME.board_nut)                                         # 0.3, 2x M2
 # the base_yaw motor's (parts/base/yaw_motor_screws), likewise
 from lib.base.layout import motor_holes as _base_motor_holes  # noqa: E402
 
@@ -347,6 +353,11 @@ BASE_YAW_HOME_DEG = round(_yaw_magnet_deg(_YAW_COUPLER) - _BASE.home.chip_deg, 6
 # inside its 1 mm running gap from 68.6 - tests/test_sweeps.py), the lower is an [ESTIMATE] (the upper arm reaches the
 # fork at -154, the forearm stays off the base and the shoulder to -140 at any elbow)
 SHOULDER_PITCH_LIMITS_DEG = (-120.0, 67.0)   # [DESIGN]
+# shoulder_pitch's home: where the magnet glued on the drive's shell pillar (lib/yaw_coupler/params.py HomeTrayParams)
+# stands over the KY-003's chip on its tray in the coupler's pocket - the middle of the switch's zone, which runs on past
+# the lower end (the edge toward + is where homing, turning toward -, stops: tests/base/test_shoulder_home.py). The
+# software homes on that edge (robot/AGENTS.md).
+SHOULDER_PITCH_HOME_DEG = _YAW_COUPLER.home.home_deg   # -118
 # the elbow belt (ELBOW_RATIO): (lower, upper). The lower - the forearm lifted back - kept where the old roll housing set
 # it: the roll drive's frame (its rear line, from its octagonal end about the elbow axis up to its tower ELBOW_ROLL_OFFSET
 # over it) is 8.4 mm off the elbow motor, which stands on the same side of the upper arm, there and comes within 1 mm of

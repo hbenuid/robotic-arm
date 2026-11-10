@@ -19,11 +19,13 @@ nuts, the 20T pulleys) is grey and the belts a darker grey, inside the modules t
     |                    gt2_idler_20t / yaw_idler_spacer / _screw / _nut:base_yaw,
     |                    ky003_hall_sensor / yaw_home_bracket / _screws / _nuts / _board_screws / _board_nuts:base_yaw
     |- shoulder_link     j1_coupler, j1_motor_leg, washer_as6590:base_yaw_2, gt2_pulley_120t:base_yaw,
-    |                    yaw_pulley_screws / _nuts:base_yaw, yaw_home_magnet:base_yaw, cycloidal_drive (kept whole - see below)
+    |                    yaw_pulley_screws / _nuts:base_yaw, yaw_home_magnet:base_yaw,
+    |                    ky003_hall_sensor / shoulder_home_tray / _board_screws / _board_nuts:shoulder_pitch,
+    |                    cycloidal_drive (kept whole - see below)
     |- upper_arm_link    j1_link, bearing_6806:elbow_pitch_1 / _2, eg17_g5_gearbox:elbow_pitch,
     |                    elbow_gearbox_screws:elbow_pitch, nema17_40mm:elbow_pitch, mks_servo42d:elbow_pitch,
     |                    elbow_motor_screws:elbow_pitch, gt2_pulley_20t_8mm:elbow_pitch, elbow_belt:elbow_pitch,
-    |                    gt2_idler_20t / elbow_idler_spacer / _screw / _nut:elbow_pitch
+    |                    gt2_idler_20t / elbow_idler_spacer / _screw / _nut:elbow_pitch, shoulder_home_magnet:shoulder_pitch
     |- elbow_link        gt2_pulley_90t:j2, elbow_pulley_screws / _nuts:elbow_pitch, forearm_roll_drive (kept whole - see
     |                    below; its elbow flange is the elbow coupler's place)
     |- forearm_link      j2_link, bearing_6806:wrist_pitch_1 / _2, nema17_40mm:wrist_pitch, mks_servo42d:wrist_pitch,
@@ -120,6 +122,10 @@ OCCURRENCES = [
     ("fork_foot_nuts",        "shoulder_pitch", "fork_foot_nuts#1"),       # ... into the nuts in the disc's slots
     ("fork_sleeve_screws",    "shoulder_pitch", "fork_sleeve_screws#1"),   # mounted: the motor leg's ring to the sleeve, 3x M4 ...
     ("fork_sleeve_nuts",      "shoulder_pitch", "fork_sleeve_nuts#1"),     # ... into the nuts pressed into its lugs
+    ("ky003_hall_sensor",     "shoulder_pitch", "ky003_hall_sensor#2"),    # mounted: the shoulder_pitch home sensor, ...
+    ("shoulder_home_tray",    "shoulder_pitch", "shoulder_home_tray#1"),   # ... on its tray in the coupler's pocket, ...
+    ("shoulder_home_board_screws", "shoulder_pitch", "shoulder_home_board_screws#1"),   # ... the board's 2 M2 ...
+    ("shoulder_home_board_nuts",   "shoulder_pitch", "shoulder_home_board_nuts#1"),     # ... into their nuts on it
     ("cycloidal_drive",       None, DRIVE_KEY),            # module: assemblies/cycloidal_drive.py (the shoulder_pitch joint)
     ("j1_link",               None, "j1_link#1"),
     ("bearing_6806",          "elbow_pitch_1", "bearing_6806#3"),  # mounted: j1_link's elbow bore
@@ -135,6 +141,7 @@ OCCURRENCES = [
     ("elbow_idler_spacer",    "elbow_pitch", "elbow_idler_spacer#1"),   # ... its spacer, ...
     ("elbow_idler_screw",     "elbow_pitch", "elbow_idler_screw#1"),    # ... its M5 axle up through the slab's floor ...
     ("elbow_idler_nut",       "elbow_pitch", "elbow_idler_nut#1"),      # ... into its nut, in the slot from the top face
+    ("shoulder_home_magnet",  "shoulder_pitch", "shoulder_home_magnet#1"),  # mounted: the home magnet glued on the drive shell's pillar
     ("gt2_pulley_90t",        "j2", "gt2_pulley_90t#3"),           # mounted: re-seated on the lower elbow bearing (#1 retired)
     ("elbow_pulley_screws",   "elbow_pitch", "elbow_pulley_screws#1"),   # mounted: the elbow 90T's 4x M4 ...
     ("elbow_pulley_nuts",     "elbow_pitch", "elbow_pulley_nuts#1"),     # ... into the block's captive nuts
@@ -180,10 +187,12 @@ GROUPS = [
                           "yaw_home_board_screws#1", "yaw_home_board_nuts#1")),
     ("shoulder_link",    ("j1_coupler#1", "j1_motor_leg#1", "washer_as6590#2", "gt2_pulley_120t#1", "yaw_pulley_screws#1",
                           "yaw_pulley_nuts#1", "yaw_home_magnet#1", "fork_hub_screws#1", "fork_hub_nuts#1", "fork_foot_screws#1",
-                          "fork_foot_nuts#1", "fork_sleeve_screws#1", "fork_sleeve_nuts#1", DRIVE_KEY)),
+                          "fork_foot_nuts#1", "fork_sleeve_screws#1", "fork_sleeve_nuts#1", "ky003_hall_sensor#2",
+                          "shoulder_home_tray#1", "shoulder_home_board_screws#1", "shoulder_home_board_nuts#1", DRIVE_KEY)),
     ("upper_arm_link",   ("j1_link#1", "bearing_6806#3", "bearing_6806#4", "eg17_g5_gearbox#1", "elbow_gearbox_screws#1",
                           "nema17_40mm#2", "mks_servo42d#2", "elbow_motor_screws#1", "gt2_pulley_20t_8mm#1", "elbow_belt#1",
-                          "gt2_idler_20t#1", "elbow_idler_spacer#1", "elbow_idler_screw#1", "elbow_idler_nut#1")),
+                          "gt2_idler_20t#1", "elbow_idler_spacer#1", "elbow_idler_screw#1", "elbow_idler_nut#1",
+                          "shoulder_home_magnet#1")),
     ("elbow_link",       ("gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", ROLL_KEY)),
     ("forearm_link",     ("j2_link#1", "bearing_6806#5", "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3",
                           "gt2_pulley_20t#4", "wrist_motor_screws#1", "wrist_belt#1", "gt2_idler_20t#3",

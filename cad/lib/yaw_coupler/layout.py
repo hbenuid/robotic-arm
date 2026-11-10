@@ -13,10 +13,25 @@ from lib.cycloidal import (
     sleeve_bolt_z,
     stack_positions,
 )
-from lib.datum import BASE_TURN_DEG, CAPTURE_YAW_DEG, rotation
+from lib.datum import BASE_TURN_DEG, CAPTURE_YAW_DEG, angles, compose, rotation
 from lib.fasteners import M4_NUT, M4_SHCS
 from lib.pulley.params import YAW, YAW_MAGNET_DEG, PulleyParams
+from lib.sensors import (
+    A3144_HALL_DEPTH,
+    A3144_LEAD_T,
+    HOME_MAGNET_T,
+    KY003_BOARD_L,
+    KY003_BOARD_W,
+    KY003_HEADER_H,
+    KY003_HOLE_INSET,
+    KY003_LEAD_BEND_X,
+    KY003_LEAD_TAIL,
+    KY003_PIN_PITCH,
+    KY003_PIN_TAIL,
+    ky003_hall_point,
+)
 from lib.style import EDGE_CHAMFER
+from lib.upper_arm.params import DEFAULT as _UPPER_ARM
 from lib.yaw_coupler.params import DEFAULT, YawCouplerConfig
 
 COUNTERBORE = M4_SHCS.head_dia + 0.4    # [DESIGN] the fork's M4 heads' counterbores (the drive's housing bolts' 7.4)
@@ -292,3 +307,126 @@ def yaw_magnet_deg(cfg: YawCouplerConfig = DEFAULT, deg: float = YAW_MAGNET_DEG)
     x, z = (sum(m[i][k] * p[k] for k in range(3)) for i in (0, 2))
     a = math.degrees(math.atan2(z, x)) + BASE_TURN_DEG - CAPTURE_YAW_DEG
     return round(a - 360.0 * math.ceil((a - 180.0) / 360.0), 9) + 0.0
+
+
+# ---- the shoulder_pitch home sensor (HomeTrayParams, DEFAULT) -------------------------------------------------------------
+# The drive's frame at shoulder_pitch zero lies along this one [REFERENCE] (the capture pose: tests/base/test_shoulder_home.py
+# checks it through placements.json): its +X this frame's +Z, its +Y this frame's +Y, its +Z this frame's -X; the shell
+# turns with the joint, so a point of it at angle theta in the drive's frame (from its +X toward +Y) stands at
+# 90 - theta + q from this frame's +Y toward +Z. Angles round the drive's axis below: that one, `alpha`.
+
+
+def _frame(origin, x_dir, z_dir) -> tuple:
+    """A frame as data from its origin and its X and Z directions (unit, perpendicular)."""
+    y_dir = (z_dir[1] * x_dir[2] - z_dir[2] * x_dir[1], z_dir[2] * x_dir[0] - z_dir[0] * x_dir[2],
+             z_dir[0] * x_dir[1] - z_dir[1] * x_dir[0])
+    m = tuple((x_dir[i], y_dir[i], z_dir[i]) for i in range(3))
+    return tuple(round(v, 9) + 0.0 for v in origin), angles(m)
+
+
+def _apply(frame_data: tuple, p) -> tuple[float, float, float]:
+    """A point of a frame (as data) in its parent's coordinates."""
+    m = rotation(frame_data[1])
+    return tuple(frame_data[0][i] + sum(m[i][k] * p[k] for k in range(3)) for i in range(3))
+
+
+def home_pillar_deg(cfg: YawCouplerConfig = DEFAULT) -> float:
+    """The magnet's pillar in the drive's frame: bolt `pillar` from bolt_start_deg (from its +X toward +Y)."""
+    h = DRIVE.housing
+    return h.bolt_start_deg + cfg.home.pillar * 360.0 / h.bolt_count
+
+
+def home_alpha(cfg: YawCouplerConfig = DEFAULT) -> float:
+    """Where the magnet stands round the drive's axis at home_deg - and the chip: from this frame's +Y toward +Z, in
+    [0, 360)."""
+    return round((90.0 - home_pillar_deg(cfg) + cfg.home.home_deg) % 360.0, 9) + 0.0
+
+
+def home_hall_r(cfg: YawCouplerConfig = DEFAULT) -> float:
+    """The A3144's hall element off the drive's axis: past the pillar's face (od / 2), the magnet, `air` and the
+    element's depth under the chip's branded face."""
+    return DRIVE.housing.od / 2.0 + HOME_MAGNET_T + cfg.home.air + A3144_HALL_DEPTH
+
+
+def home_hall_point(cfg: YawCouplerConfig = DEFAULT) -> tuple[float, float, float]:
+    """The hall element in this frame: on the line from the drive's axis through the magnet at home, at the magnet's z."""
+    f, a, r = cfg.fork, math.radians(home_alpha(cfg)), home_hall_r(cfg)
+    return (fork_x(cfg, cfg.home.magnet_z), f.axis_y + r * math.cos(a), f.axis_z + r * math.sin(a))
+
+
+def home_sensor_frame(cfg: YawCouplerConfig = DEFAULT) -> tuple:
+    """The KY-003's part frame in this one: its branded face (+Z) toward the drive's axis, its board (+X) along the turn
+    toward the back (-Z) and down, its hall element (ky003_hall_point()) on home_hall_point()."""
+    a = math.radians(home_alpha(cfg))
+    z_dir = (0.0, -math.cos(a), -math.sin(a))
+    x_dir = (0.0, -math.sin(a), math.cos(a))
+    hall, hp = home_hall_point(cfg), ky003_hall_point()
+    origin = tuple(hall[i] - hp[0] * x_dir[i] - hp[2] * z_dir[i] for i in range(3))
+    return _frame(origin, x_dir, z_dir)
+
+
+def home_to_coupler(cfg: YawCouplerConfig, p) -> tuple[float, float, float]:
+    """A point of the KY-003's frame in this one."""
+    return _apply(home_sensor_frame(cfg), p)
+
+
+def home_tray_frame(cfg: YawCouplerConfig = DEFAULT) -> tuple:
+    """The tray's part frame in this one: z = 0 on the pocket's floor (its underside), +Z up this frame's +Y, this frame's
+    (x, z) at its (x, -y) - it prints on its underside."""
+    return ((0.0, cfg.yoke.pocket_y0, 0.0), (-90.0, 0.0, 0.0))
+
+
+def home_tray_box(cfg: YawCouplerConfig = DEFAULT) -> tuple[float, float, float, float]:
+    """The tray's footprint in this frame, (x0, x1, z0, z1): the pocket's less wall_clear a side."""
+    hx, hz = cfg.yoke.pocket_half
+    c = cfg.home.wall_clear
+    return (-hx + c, hx - c, -hz + c, hz - c)
+
+
+def home_board_points(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[float, float]]:
+    """(x, y) of the board's 2 M2s in the KY-003's frame: its own holes, KY003_HOLE_INSET in from its sensor end and its
+    long edges."""
+    y = KY003_BOARD_W / 2.0 - KY003_HOLE_INSET
+    return [(KY003_HOLE_INSET, s * y) for s in (1.0, -1.0)]
+
+
+def home_plate_box(cfg: YawCouplerConfig = DEFAULT) -> tuple:
+    """The board's plate in the KY-003's frame: ((x0, x1), (y0, y1), (z0, z1)) - under the board, plate_t thick."""
+    h = cfg.home
+    return (h.plate_x, (-h.plate_w / 2.0, h.plate_w / 2.0), (-h.plate_t, 0.0))
+
+
+def home_block_points(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[float, float, float]]:
+    """The 8 points in this frame whose convex hull is the block: the plate's outer face over hull_x, its full width, and
+    the tray's top over block_z, as wide."""
+    h = cfg.home
+    w = h.plate_w / 2.0
+    top = cfg.yoke.pocket_y0 + h.tray_t
+    face = [home_to_coupler(cfg, (x, y, -h.plate_t)) for x in h.hull_x for y in (-w, w)]
+    floor = [(x, top, z) for z in h.block_z for x in (-w, w)]
+    return face + floor
+
+
+def home_reliefs(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[tuple, tuple, float]]:
+    """The plate's 2 slots in the KY-003's frame, ((x0, x1), (y0, y1), depth under the board): across the header's pins'
+    tails (one pitch behind its housing) and the chip's leads' tails (where they turn down), relief_w wide, relief_past
+    deeper than each - through the plate where that is past its thickness."""
+    h = cfg.home
+    pin_x = KY003_BOARD_L - KY003_HEADER_H / 2.0 - KY003_PIN_PITCH
+    lead_x = KY003_LEAD_BEND_X + A3144_LEAD_T / 2.0
+    rows = ((pin_x, h.header_relief_len, KY003_PIN_TAIL), (lead_x, h.lead_relief_len, KY003_LEAD_TAIL))
+    return [((x - h.relief_w / 2.0, x + h.relief_w / 2.0), (-ln / 2.0, ln / 2.0), tail + h.relief_past) for x, ln, tail in rows]
+
+
+def home_magnet_frame(cfg: YawCouplerConfig = DEFAULT) -> tuple:
+    """The magnet's part frame (parts/base/shoulder_home_magnet: its south pole's face on z = 0, the disc in +Z) in
+    j1_link's: glued on the pillar's outer face at the drive's z magnet_z, its pole face out (od / 2 + its thickness off
+    the drive's axis), its +Z in at the axis - through lib/upper_arm/params.py ArmParams' drive frame (lib/upper_arm/link.py
+    drive_frame(): the drive's z drive_z_at_y0 at y = 0, its +X at drive_x_deg, its +Z that frame's -Y)."""
+    t = math.radians(home_pillar_deg(cfg))
+    r = DRIVE.housing.od / 2.0 + HOME_MAGNET_T
+    in_drive = _frame((r * math.cos(t), r * math.sin(t), cfg.home.magnet_z), (0.0, 0.0, 1.0), (-math.cos(t), -math.sin(t), 0.0))
+    arm = _UPPER_ARM.arm
+    d = math.radians(arm.drive_x_deg)
+    drive = _frame((0.0, arm.drive_z_at_y0, 0.0), (math.cos(d), 0.0, math.sin(d)), (0.0, -1.0, 0.0))
+    return compose(drive, in_drive)

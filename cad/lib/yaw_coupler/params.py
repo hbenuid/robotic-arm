@@ -48,7 +48,7 @@ from lib.base.params import DEFAULT as _BASE
 from lib.bearings import BEARING_6806_BORE, THRUST_OD, THRUST_STACK
 from lib.belts import GT2_PULLEY_90T_BOLT_R
 from lib.coupler.params import DEFAULT as _J3_COUPLER
-from lib.fasteners import M4_CLEAR, M4_NUT
+from lib.fasteners import M2_CLEAR, M2_NUT, M2_SHCS, M4_CLEAR, M4_NUT, NutSize, ShcsSize
 
 
 @dataclass(frozen=True)
@@ -198,6 +198,54 @@ class ForkParams:
     #                                  +/-0.5 there, 1.5 of the ring either side
 
 
+@dataclass(frozen=True)
+class HomeTrayParams:
+    """[DESIGN] The shoulder_pitch home sensor (docs/open_issues.md, the home sensors): a KY-003 hall module
+    (parts/joints/ky003_hall_sensor, lib/sensors.py) on a printed tray dropped into the pocket over the hub
+    (YokeParams.pocket_*: under the drive's turning shell, in its middle), and a Ø6 x 3 N52 magnet glued onto the outer
+    face of one of the shell's pillars (lib/cycloidal/params.py HousingParams: its bolt `pillar` from bolt_start_deg; its
+    face od / 2 off the drive's axis), at the drive's z `magnet_z` - its south pole out. In the pocket's band along the
+    axis the pillars pass 17.5 mm or more over the pocket's floor, so the glued magnet sweeps through the bottom of the
+    turn (the coupler's ring outside that band is only 2.68 under them: RING_DROP). The magnet stands over the chip at
+    shoulder_pitch `home_deg` (lib/params.py SHOULDER_PITCH_HOME_DEG): the chip sits on the line from the drive's axis
+    through the magnet there, `air` off its pole's face, its branded face toward the axis; the board runs from it along
+    the turn, toward the back (-Z) and down, its header and plug at the pocket's back end, the cable out over the
+    pocket's back wall. The tray: a plate filling the pocket's floor (`wall_clear` off each wall, so the walls place it -
+    home is set by the print, not by glue), `tray_t` thick over the tips of the 120T's 4 M4s that stand 2.8 out of the
+    floor (holes `tip_clear` round them: HubParams' holes), a finger slot at its back end to lift it out; on it a block
+    the convex hull of the board's plate (`plate_*`, under the board on the KY-003's frame, `plate_t` thick) and the
+    tray's top between `block_z` - clear of the M4s' tips. Held by its fit - the coupler only turns about the vertical
+    base_yaw axis, so the tray never tips out (a dab of glue against rattling); the user's choice over screws (the home
+    sensors' rule asks for M3 into nuts, or inserts where no nut reaches: none reaches the pocket's floor). The board by
+    its two holes on 2 M2 (board_screw_len) through it and the plate, heads in the block, nuts on its component side."""
+
+    home_deg: float = -118.0              # where the magnet stands over the chip: its zone (+/-3.5 .. 4.4 deg at r 66) runs 1.5
+    #                                       past the -120 end or more, more than the +/-1.2 the glued magnet can sit off its mark
+    pillar: int = 2                       # the shell pillar the magnet is glued on (167.6 deg in the drive's frame): at home it
+    #                                       stands 15.6 deg short of straight down, toward the front - over the pocket
+    magnet_z: float = 24.0                # the drive's z at the magnet's middle: the middle of the discs, over the pocket's middle
+    air: float = 1.5                      # the chip's branded face .. the magnet's pole face, at home
+    tray_t: float = 3.0                   # over the M4s' tips (2.8 out of the floor)
+    wall_clear: float = 0.4               # the tray off each of the pocket's walls: the walls place it
+    tip_clear: float = 1.0                # its holes this far round the M4s' tips (Ø4)
+    slot: tuple = (8.0, 8.0)              # the finger slot through the tray at its back end: (along z, across x)
+    block_z: tuple = (13.7, 29.7)         # the block's footprint on the tray (z): forward of the M4s' tips (z 9.8), short of
+    #                                       the tray's front edge
+    plate_x: tuple = (-2.0, 19.5)         # the board's plate along the KY-003's x: past the chip's end and the header's ...
+    plate_w: float = 18.0                 # ... this wide (the board 15) ...
+    plate_t: float = 3.0                  # ... this thick under the board
+    hull_x: tuple = (-2.0, 9.0)           # the plate's span (its x) the block rises under: the far end hangs free over the tips
+    relief_w: float = 2.0                 # the plate's slots across the pins' / the leads' row ...
+    header_relief_len: float = 9.0        # ... along the header's 3 pins ...
+    lead_relief_len: float = 5.0          # ... along the chip's 3 leads ...
+    relief_past: float = 0.5              # ... this deeper than their tails
+    board_screw: ShcsSize = M2_SHCS
+    board_screw_len: float = 6.0          # through the plate and the board, 1.4 into the nut
+    board_nut: NutSize = M2_NUT
+    board_hole_dia: float = M2_CLEAR
+    head_recess: float = 0.4              # the M2s' heads' recess in the block: this far round them
+
+
 CAPTURE_FACE_X = 31.5   # [REFERENCE] where the SolidWorks capture put the drive's z = 0 in this frame (placements.json
 #                         cycloidal_drive#1): the middle of its discs 7.5 off the base_yaw axis, toward the motor
 
@@ -208,6 +256,7 @@ class YawCouplerConfig:
     disc: DiscParams = DiscParams()
     yoke: YokeParams = YokeParams()
     fork: ForkParams | None = None   # DEFAULT: the fork round the turning-shell drive (the yoke's cheek, cradle and sockets go)
+    home: HomeTrayParams | None = None   # DEFAULT: the shoulder_pitch home sensor's tray in the pocket over the hub
 
 
 LEGACY = YawCouplerConfig()     # the SolidWorks part, exactly
@@ -245,4 +294,6 @@ DEFAULT = replace(LEGACY,
                   # the drive's shell turns (lib/cycloidal/params.py DEFAULT_CONFIG, ShellParams): the yoke holds its ends as
                   # a fork (ForkParams) - the cheek, the middle body, the cradle and the sockets round the 6-pillar
                   # housing's pillars go; YokeParams keeps the pocket over the hub
-                  fork=ForkParams())
+                  fork=ForkParams(),
+                  # the shoulder_pitch home sensor on its tray in that pocket, its magnet glued on a pillar of the shell
+                  home=HomeTrayParams())

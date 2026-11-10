@@ -96,6 +96,11 @@ printed bracket under the base's motor plate, its chip under the 120T's outer fa
 in the plate's top and the board's M2s and nuts - all in the base's part frame, the bracket and its fasteners in the
 bracket's (lib/base/layout.py home_bracket_frame()) - and the home magnet glued onto the 120T's face, hosted on
 the 120T (so in shoulder_link), over the chip at BASE_YAW_HOME_DEG (lib/params.py).
+The shoulder_pitch HOME SENSOR (SHOULDER_HOME_MOUNTS; lib/yaw_coupler/params.py HomeTrayParams): the KY-003 on its
+printed tray in j1_coupler's pocket over the hub, under the drive's turning shell, the board's M2s and nuts - in the
+coupler's part frame, the tray in its own (lib/yaw_coupler/layout.py home_tray_frame()), the fasteners in the KY-003's -
+and the home magnet glued on a pillar of the shell, hosted on j1_link (so in upper_arm_link), over the chip at
+SHOULDER_PITCH_HOME_DEG (lib/params.py).
 The wrist belt's (WRIST_IDLER_MOUNTS; lib/forearm/params.py IdlerParams): the idler under j2_link's web where the
 stock belt puts it on the run leaving the motor's 20T (lib/forearm/layout.py wrist_idler_xy), standing on its lower face
 level with the belt, its M5 axle's head under it, the nut on its channel's floor down from the web's top face (each +Z
@@ -150,8 +155,11 @@ from lib.yaw_coupler.layout import (
     fork_hub_nut_z,
     fork_hub_screw_frame,
     fork_sleeve_screw_frame,
+    home_magnet_frame,
+    home_tray_frame,
     yaw_pulley_frame,
 )
+from lib.yaw_coupler.layout import home_sensor_frame as shoulder_home_sensor_frame
 from lib.yaw_coupler.params import DEFAULT as _YAW_COUPLER
 
 MOTOR_48, MOTOR_40, BOARD = "nema17_48mm", "nema17_40mm", "mks_servo42d"
@@ -496,9 +504,29 @@ YAW_HOME_MOUNTS: tuple[Mount, ...] = (
           ((_MAGNET_XZ[0], round(_YAW_PULLEY.face_y + HOME_MAGNET_T, 6), _MAGNET_XZ[1]), (90.0, 0.0, 0.0)),
           "the home magnet glued onto the 120T's outer face, south pole out: over the KY-003's chip at BASE_YAW_HOME_DEG"),
 )
+# The shoulder_pitch home sensor (lib/yaw_coupler/params.py HomeTrayParams), in j1_coupler's part frame: the KY-003 on
+# its tray in the pocket over the hub (home_sensor_frame(): its branded face toward the drive's axis, its hall element on
+# the line through the magnet at SHOULDER_PITCH_HOME_DEG), the tray in its own frame (home_tray_frame(): z = 0 on the
+# pocket's floor), the board's M2s and nuts in the KY-003's; the magnet glued on a pillar of the drive's turning shell, in
+# j1_link's part frame (home_magnet_frame(), through ArmParams' drive frame) - so it turns with upper_arm_link.
+_SHOME_SENSOR = shoulder_home_sensor_frame(_YAW_COUPLER)
+SHOULDER_HOME_MOUNTS: tuple[Mount, ...] = (
+    Mount("ky003_hall_sensor#2", "ky003_hall_sensor", "j1_coupler#1", "shoulder_link", "shoulder_pitch", _SHOME_SENSOR,
+          "the shoulder_pitch home sensor in the coupler's pocket under the drive's shell, branded face toward the drive's "
+          "axis, its chip under the home magnet's path; the board along the turn toward the back, the header there"),
+    Mount("shoulder_home_tray#1", "shoulder_home_tray", "j1_coupler#1", "shoulder_link", "shoulder_pitch",
+          home_tray_frame(_YAW_COUPLER), "its printed tray on the pocket's floor, placed by the pocket's walls, the board on its block"),
+    Mount("shoulder_home_board_screws#1", "shoulder_home_board_screws", "j1_coupler#1", "shoulder_link", "shoulder_pitch",
+          _SHOME_SENSOR, "the board's 2 M2: the heads under the tray's plate, in the block, up through the plate and the board"),
+    Mount("shoulder_home_board_nuts#1", "shoulder_home_board_nuts", "j1_coupler#1", "shoulder_link", "shoulder_pitch",
+          _SHOME_SENSOR, "their nuts on the board's component side"),
+    Mount("shoulder_home_magnet#1", "shoulder_home_magnet", "j1_link#1", "upper_arm_link", "shoulder_pitch",
+          home_magnet_frame(_YAW_COUPLER),
+          "the home magnet glued onto the drive shell's pillar, south pole out: over the KY-003's chip at SHOULDER_PITCH_HOME_DEG"),
+)
 MOUNTS: tuple[Mount, ...] = (BASE_MOUNTS + YOKE_MOUNTS + FORK_MOUNTS + MOTOR_MOUNTS + MOTOR_PULLEY_MOUNTS + MOTOR_SCREW_MOUNTS + BEARING_MOUNTS
                              + THRUST_MOUNTS + PULLEY_MOUNTS + FLANGE_MOUNTS + FASTENER_MOUNTS + BELT_MOUNTS + IDLER_MOUNTS + YAW_IDLER_MOUNTS
-                             + WRIST_IDLER_MOUNTS + YAW_HOME_MOUNTS)
+                             + WRIST_IDLER_MOUNTS + YAW_HOME_MOUNTS + SHOULDER_HOME_MOUNTS)
 BY_KEY: dict[str, Mount] = {m.key: m for m in MOUNTS}
 
 

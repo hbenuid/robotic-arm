@@ -12,7 +12,8 @@ import math
 
 import build123d as bd
 
-from lib.fasteners import M4_CLEAR, M4_NUT
+from lib.datum import to_location
+from lib.fasteners import M4_CLEAR, M4_NUT, M4_SHCS
 from lib.geom import align_min, faceted_end, hex_prism, hull_solid, single_solid
 from lib.style import EDGE_CHAMFER, SIDES
 from lib.units import NUDGE
@@ -35,6 +36,13 @@ from lib.yaw_coupler.layout import (
     fork_sleeve_bolt_deg,
     fork_sleeve_bolt_x,
     hole_points,
+    home_block_points,
+    home_board_points,
+    home_plate_box,
+    home_reliefs,
+    home_sensor_frame,
+    home_tray_box,
+    home_tray_frame,
     middle_outline,
     nut_centres,
     socket_outline,
@@ -252,3 +260,33 @@ def build_yaw_coupler(cfg: YawCouplerConfig = DEFAULT):
             body = body - bd.Pos(x, k.pocket_y0 - h.nut_depth, z) * bd.Rot(-90.0, 0.0, 0.0) * hex_prism(
                 h.nut_af, math.pi / 2.0, h.nut_depth + NUDGE)
     return single_solid(body)
+
+
+def build_home_tray(cfg: YawCouplerConfig = DEFAULT):
+    """The shoulder_pitch home sensor's printed tray (HomeTrayParams; parts/base/shoulder_home_tray) in its part frame
+    (lib/yaw_coupler/layout.py home_tray_frame(): z = 0 on the pocket's floor): the plate filling the pocket's floor,
+    tray_t thick, holed round the 120T's 4 M4 tips, the finger slot at its back end; the block on it - the convex hull of
+    the board's plate and the tray's top over block_z - and the plate under the KY-003; the plate's two relief slots,
+    the board's 2 M2 holes through it and their heads' recesses back through the block. Built in the coupler's frame,
+    then moved into its own. Prints on its underside."""
+    h, k = cfg.home, cfg.yoke
+    x0, x1, z0, z1 = home_tray_box(cfg)
+    y0, y1 = k.pocket_y0, k.pocket_y0 + h.tray_t
+    body = _box((x0, x1), (y0, y1), (z0, z1))
+    for x, z in hole_points(cfg):
+        body = body - _ycyl(M4_SHCS.d / 2.0 + h.tip_clear, y0 - NUDGE, y1 + NUDGE, x, z)
+    sl, sw = h.slot
+    body = body - _box((-sw / 2.0, sw / 2.0), (y0 - NUDGE, y1 + NUDGE), (z0 - NUDGE, z0 + sl))
+    body = body + hull_solid(home_block_points(cfg))
+    sensor = to_location(home_sensor_frame(cfg))
+    px, py, pz = home_plate_box(cfg)
+    body = body + sensor * _box(px, py, pz)
+    for rx, ry, depth in home_reliefs(cfg):
+        body = body - sensor * _box(rx, ry, (-depth, NUDGE))
+    for x, y in home_board_points(cfg):
+        body = body - sensor * bd.Pos(x, y, pz[0] - NUDGE) * bd.Cylinder(h.board_hole_dia / 2.0, h.plate_t + 2.0 * NUDGE,
+                                                                           align=align_min())
+        recess = h.board_screw.head_dia / 2.0 + h.head_recess
+        body = body - sensor * bd.Pos(x, y, pz[0] + NUDGE) * bd.Cylinder(recess, _FAR, align=(bd.Align.CENTER, bd.Align.CENTER,
+                                                                                               bd.Align.MAX))
+    return single_solid(to_location(home_tray_frame(cfg)).inverse() * body)

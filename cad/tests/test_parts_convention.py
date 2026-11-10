@@ -72,6 +72,9 @@ MULTI_BODY = {
     "yaw_home_nuts": 2,
     "yaw_home_board_screws": 2,
     "yaw_home_board_nuts": 2,
+    # the shoulder_pitch home sensor's board's M2s and their nuts (lib/mounts.py SHOULDER_HOME_MOUNTS)
+    "shoulder_home_board_screws": 2,
+    "shoulder_home_board_nuts": 2,
 }
 
 

@@ -59,8 +59,11 @@ robot/
   KY-003 under the 120T, its magnet in the 120T's face: `lib/base/params.py YawHomeParams`) reads the magnet over its
   chip there, in the middle of the switch's zone, which runs on past the travel's - end. Homing turns base_yaw toward
   - until the switch turns on (if it is on already, out toward + first): that edge is the home; the 120T's 6:1 puts a
-  motor turn at 60° of the joint, so the motor's own encoder can take it from there to an exact angle. The other joints
-  have no home sensor yet (`docs/open_issues.md`).
+  motor turn at 60° of the joint, so the motor's own encoder can take it from there to an exact angle.
+  `SHOULDER_PITCH_HOME_DEG` - shoulder_pitch's (a KY-003 on a tray in j1_coupler's pocket under the drive's turning
+  shell, its magnet glued on a pillar of the shell: `lib/yaw_coupler/params.py HomeTrayParams`), likewise: the zone runs
+  on past the lower end, homing turns toward − until the switch turns on; the drive's 21:1 puts a motor turn at 17° of the
+  joint. The other joints have no home sensor yet (`docs/open_issues.md`).
 
 ## Joints and links
 `base_link → base_yaw → shoulder_link → shoulder_pitch → upper_arm_link → elbow_pitch → elbow_link →
