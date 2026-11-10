@@ -261,7 +261,7 @@ def test_default_stands_on_the_thrust_bearing():
     h, c = DEFAULT.hub, BASE.cap
     assert replace(DEFAULT, hub=LEGACY.hub, disc=replace(DEFAULT.disc, y0=LEGACY.disc.y0, ring_y1=LEGACY.disc.ring_y1,
                                                          ring_x0=LEGACY.disc.ring_x0, band_r=LEGACY.disc.band_r,
-                                                         top_r=LEGACY.disc.top_r, sides=None), fork=None) == LEGACY
+                                                         top_r=LEGACY.disc.top_r, sides=None), fork=None, home=None) == LEGACY
     assert DEFAULT.disc.ring_x0 == -DEFAULT.disc.flat_x
     assert h.recess_y1 == pytest.approx(c.groove_y0 - c.ring_top_y + THRUST_STACK)
     assert h.recess_dia > THRUST_OD and h.recess_dia / 2.0 > c.groove_r[1]          # the rim wholly over the top face

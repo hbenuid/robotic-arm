@@ -11,9 +11,9 @@
  "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. A record with a `mount` block (keys under `mounted`) is a motor mount declared in lib/mounts.py, not a SolidWorks node: parent None, rel == world = host world * mount frame.",
  "root_label": "final_Arm_Assembly_Fully_Movable",
  "expected": {
-  "leaf_occurrences": 75,
-  "solids": 191,
-  "solid_volume": 2282344.086
+  "leaf_occurrences": 80,
+  "solids": 200,
+  "solid_volume": 2290109.539
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -86,6 +86,11 @@
   "yaw_home_board_screws#1",
   "yaw_home_board_nuts#1",
   "yaw_home_magnet#1",
+  "ky003_hall_sensor#2",
+  "shoulder_home_tray#1",
+  "shoulder_home_board_screws#1",
+  "shoulder_home_board_nuts#1",
+  "shoulder_home_magnet#1",
   "forearm_roll_drive#1",
   "wrist_roll_drive#1",
   "gripper#1"
@@ -7695,6 +7700,521 @@
     6.0,
     3.0,
     6.0
+   ]
+  },
+  {
+   "key": "ky003_hall_sensor#2",
+   "part": "ky003_hall_sensor",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j1_coupler#1",
+    "link": "shoulder_link",
+    "joint": "shoulder_pitch",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      19.729570722,
+      16.688553847
+     ],
+     "rotation_xyz_deg": [
+      -105.584167,
+      0.0,
+      90.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the shoulder_pitch home sensor in the coupler's pocket under the drive's shell, branded face toward the drive's axis, its chip under the home magnet's path; the board along the turn toward the back, the header there"
+   },
+   "solids": 3,
+   "solid_volume": 506.869,
+   "rel": {
+    "position": [
+     -16.653873,
+     14.636823,
+     1.075339
+    ],
+    "rotation_xyz_deg": [
+     -91.029585,
+     15.550961,
+     3.835045
+    ],
+    "matrix_3x4": [
+     [
+      0.961235101,
+      -0.064435731,
+      0.268095352,
+      -16.653872678
+     ],
+     [
+      -0.268653652,
+      0.0,
+      0.963236843,
+      14.636822722
+     ],
+     [
+      -0.06206687,
+      -0.997921859,
+      -0.017310894,
+      1.075339169
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -16.653873,
+     14.636823,
+     1.075339
+    ],
+    "rotation_xyz_deg": [
+     -91.029585,
+     15.550961,
+     3.835045
+    ],
+    "matrix_3x4": [
+     [
+      0.961235101,
+      -0.064435731,
+      0.268095352,
+      -16.653872678
+     ],
+     [
+      -0.268653652,
+      0.0,
+      0.963236843,
+      14.636822722
+     ],
+     [
+      -0.06206687,
+      -0.997921859,
+      -0.017310894,
+      1.075339169
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -20.701,
+    7.715,
+    -7.585
+   ],
+   "world_bbox_size": [
+    28.637,
+    11.142,
+    16.145
+   ]
+  },
+  {
+   "key": "shoulder_home_tray#1",
+   "part": "shoulder_home_tray",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j1_coupler#1",
+    "link": "shoulder_link",
+    "joint": "shoulder_pitch",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      8.0,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      -90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "its printed tray on the pocket's floor, placed by the pocket's walls, the board on its block"
+   },
+   "solids": 1,
+   "solid_volume": 7060.307,
+   "rel": {
+    "position": [
+     0.0,
+     2.907252,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     -0.0,
+     -86.305545
+    ],
+    "matrix_3x4": [
+     [
+      0.064435731,
+      0.997921859,
+      -0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      2.907252
+     ],
+     [
+      0.997921859,
+      -0.064435731,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     0.0,
+     2.907252,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     -90.0,
+     -0.0,
+     -86.305545
+    ],
+    "matrix_3x4": [
+     [
+      0.064435731,
+      0.997921859,
+      -0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      2.907252
+     ],
+     [
+      0.997921859,
+      -0.064435731,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -31.49,
+    2.907,
+    -16.741
+   ],
+   "world_bbox_size": [
+    62.98,
+    12.267,
+    33.482
+   ]
+  },
+  {
+   "key": "shoulder_home_board_screws#1",
+   "part": "shoulder_home_board_screws",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j1_coupler#1",
+    "link": "shoulder_link",
+    "joint": "shoulder_pitch",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      19.729570722,
+      16.688553847
+     ],
+     "rotation_xyz_deg": [
+      -105.584167,
+      0.0,
+      90.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the board's 2 M2: the heads under the tray's plate, in the block, up through the plate and the board"
+   },
+   "solids": 2,
+   "solid_volume": 79.167,
+   "rel": {
+    "position": [
+     -16.653873,
+     14.636823,
+     1.075339
+    ],
+    "rotation_xyz_deg": [
+     -91.029585,
+     15.550961,
+     3.835045
+    ],
+    "matrix_3x4": [
+     [
+      0.961235101,
+      -0.064435731,
+      0.268095352,
+      -16.653872678
+     ],
+     [
+      -0.268653652,
+      0.0,
+      0.963236843,
+      14.636822722
+     ],
+     [
+      -0.06206687,
+      -0.997921859,
+      -0.017310894,
+      1.075339169
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -16.653873,
+     14.636823,
+     1.075339
+    ],
+    "rotation_xyz_deg": [
+     -91.029585,
+     15.550961,
+     3.835045
+    ],
+    "matrix_3x4": [
+     [
+      0.961235101,
+      -0.064435731,
+      0.268095352,
+      -16.653872678
+     ],
+     [
+      -0.268653652,
+      0.0,
+      0.963236843,
+      14.636822722
+     ],
+     [
+      -0.06206687,
+      -0.997921859,
+      -0.017310894,
+      1.075339169
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -17.744,
+    8.639,
+    -5.917
+   ],
+   "world_bbox_size": [
+    5.583,
+    8.485,
+    13.813
+   ]
+  },
+  {
+   "key": "shoulder_home_board_nuts#1",
+   "part": "shoulder_home_board_nuts",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j1_coupler#1",
+    "link": "shoulder_link",
+    "joint": "shoulder_pitch",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      19.729570722,
+      16.688553847
+     ],
+     "rotation_xyz_deg": [
+      -105.584167,
+      0.0,
+      90.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "their nuts on the board's component side"
+   },
+   "solids": 2,
+   "solid_volume": 34.287,
+   "rel": {
+    "position": [
+     -16.653873,
+     14.636823,
+     1.075339
+    ],
+    "rotation_xyz_deg": [
+     -91.029585,
+     15.550961,
+     3.835045
+    ],
+    "matrix_3x4": [
+     [
+      0.961235101,
+      -0.064435731,
+      0.268095352,
+      -16.653872678
+     ],
+     [
+      -0.268653652,
+      0.0,
+      0.963236843,
+      14.636822722
+     ],
+     [
+      -0.06206687,
+      -0.997921859,
+      -0.017310894,
+      1.075339169
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -16.653873,
+     14.636823,
+     1.075339
+    ],
+    "rotation_xyz_deg": [
+     -91.029585,
+     15.550961,
+     3.835045
+    ],
+    "matrix_3x4": [
+     [
+      0.961235101,
+      -0.064435731,
+      0.268095352,
+      -16.653872678
+     ],
+     [
+      -0.268653652,
+      0.0,
+      0.963236843,
+      14.636822722
+     ],
+     [
+      -0.06206687,
+      -0.997921859,
+      -0.017310894,
+      1.075339169
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -16.141,
+    14.969,
+    -6.429
+   ],
+   "world_bbox_size": [
+    5.067,
+    2.616,
+    14.616
+   ]
+  },
+  {
+   "key": "shoulder_home_magnet#1",
+   "part": "shoulder_home_magnet",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j1_link#1",
+    "link": "upper_arm_link",
+    "joint": "shoulder_pitch",
+    "frame_in_host": {
+     "position": [
+      -33.8,
+      42.5,
+      58.543317296
+     ],
+     "rotation_xyz_deg": [
+      180.0,
+      30.0,
+      90.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the home magnet glued onto the drive shell's pillar, south pole out: over the KY-003's chip at SHOULDER_PITCH_HOME_DEG"
+   },
+   "solids": 1,
+   "solid_volume": 84.823,
+   "rel": {
+    "position": [
+     65.696491,
+     99.544787,
+     -4.242016
+    ],
+    "rotation_xyz_deg": [
+     73.686048,
+     -77.054439,
+     -106.715953
+    ],
+    "matrix_3x4": [
+     [
+      -0.064435727,
+      0.214558403,
+      -0.974583362,
+      65.696490671
+     ],
+     [
+      2e-09,
+      -0.976612901,
+      -0.215005214,
+      99.544787405
+     ],
+     [
+      -0.997921859,
+      -0.013854019,
+      0.062928762,
+      -4.242016257
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     65.696491,
+     99.544787,
+     -4.242016
+    ],
+    "rotation_xyz_deg": [
+     73.686048,
+     -77.054439,
+     -106.715953
+    ],
+    "matrix_3x4": [
+     [
+      -0.064435727,
+      0.214558403,
+      -0.974583362,
+      65.696490671
+     ],
+     [
+      2e-09,
+      -0.976612901,
+      -0.215005214,
+      99.544787405
+     ],
+     [
+      -0.997921859,
+      -0.013854019,
+      0.062928762,
+      -4.242016257
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    62.101,
+    95.97,
+    -7.236
+   ],
+   "world_bbox_size": [
+    4.268,
+    6.505,
+    6.177
    ]
   },
   {
