@@ -25,9 +25,10 @@ nuts, the 20T pulleys) is grey and the belts a darker grey, inside the modules t
     |- upper_arm_link    j1_link, bearing_6806:elbow_pitch_1 / _2, eg17_g5_gearbox:elbow_pitch,
     |                    elbow_gearbox_screws:elbow_pitch, nema17_40mm:elbow_pitch, mks_servo42d:elbow_pitch,
     |                    elbow_motor_screws:elbow_pitch, gt2_pulley_20t_8mm:elbow_pitch, elbow_belt:elbow_pitch,
-    |                    gt2_idler_20t / elbow_idler_spacer / _screw / _nut:elbow_pitch, shoulder_home_magnet:shoulder_pitch
-    |- elbow_link        gt2_pulley_90t:j2, elbow_pulley_screws / _nuts:elbow_pitch, forearm_roll_drive (kept whole - see
-    |                    below; its elbow flange is the elbow coupler's place)
+    |                    gt2_idler_20t / elbow_idler_spacer / _screw / _nut:elbow_pitch, shoulder_home_magnet:shoulder_pitch,
+    |                    ky003_hall_sensor / elbow_home_clip / _board_screws / _board_nuts:elbow_pitch
+    |- elbow_link        gt2_pulley_90t:j2, elbow_pulley_screws / _nuts:elbow_pitch, elbow_home_magnet:elbow_pitch,
+    |                    forearm_roll_drive (kept whole - see below; its elbow flange is the elbow coupler's place)
     |- forearm_link      j2_link, bearing_6806:wrist_pitch_1 / _2, nema17_40mm:wrist_pitch, mks_servo42d:wrist_pitch,
     |                    gt2_pulley_20t:wrist_pitch, wrist_motor_screws:wrist_pitch, wrist_belt:wrist_pitch,
     |                    gt2_idler_20t / wrist_idler_screw / _nut:wrist_pitch
@@ -142,9 +143,14 @@ OCCURRENCES = [
     ("elbow_idler_screw",     "elbow_pitch", "elbow_idler_screw#1"),    # ... its M5 axle up through the slab's floor ...
     ("elbow_idler_nut",       "elbow_pitch", "elbow_idler_nut#1"),      # ... into its nut, in the slot from the top face
     ("shoulder_home_magnet",  "shoulder_pitch", "shoulder_home_magnet#1"),  # mounted: the home magnet glued on the drive shell's pillar
+    ("ky003_hall_sensor",     "elbow_pitch", "ky003_hall_sensor#3"),   # mounted: the elbow_pitch home sensor, ...
+    ("elbow_home_clip",       "elbow_pitch", "elbow_home_clip#1"),     # ... on its clip over the slab's end, ...
+    ("elbow_home_board_screws", "elbow_pitch", "elbow_home_board_screws#1"),   # ... the board's 2 M2 ...
+    ("elbow_home_board_nuts",   "elbow_pitch", "elbow_home_board_nuts#1"),     # ... into their nuts on it
     ("gt2_pulley_90t",        "j2", "gt2_pulley_90t#3"),           # mounted: re-seated on the lower elbow bearing (#1 retired)
     ("elbow_pulley_screws",   "elbow_pitch", "elbow_pulley_screws#1"),   # mounted: the elbow 90T's 4x M4 ...
     ("elbow_pulley_nuts",     "elbow_pitch", "elbow_pulley_nuts#1"),     # ... into the block's captive nuts
+    ("elbow_home_magnet",     "elbow_pitch", "elbow_home_magnet#1"),     # mounted: the home magnet glued on the 90T's outer face
     # j3_coupler#1 (the elbow coupler) is retired: the roll drive's block bolts to the elbow pulley in its place
     ("forearm_roll_drive",    None, ROLL_KEY),             # module: assemblies/forearm_roll_drive.py (the forearm_roll joint; lib/mounts.py MODULE_MOUNTS)
     ("j2_link",               None, "j2_link#1"),
@@ -192,8 +198,9 @@ GROUPS = [
     ("upper_arm_link",   ("j1_link#1", "bearing_6806#3", "bearing_6806#4", "eg17_g5_gearbox#1", "elbow_gearbox_screws#1",
                           "nema17_40mm#2", "mks_servo42d#2", "elbow_motor_screws#1", "gt2_pulley_20t_8mm#1", "elbow_belt#1",
                           "gt2_idler_20t#1", "elbow_idler_spacer#1", "elbow_idler_screw#1", "elbow_idler_nut#1",
-                          "shoulder_home_magnet#1")),
-    ("elbow_link",       ("gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", ROLL_KEY)),
+                          "shoulder_home_magnet#1", "ky003_hall_sensor#3", "elbow_home_clip#1", "elbow_home_board_screws#1",
+                          "elbow_home_board_nuts#1")),
+    ("elbow_link",       ("gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", "elbow_home_magnet#1", ROLL_KEY)),
     ("forearm_link",     ("j2_link#1", "bearing_6806#5", "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3",
                           "gt2_pulley_20t#4", "wrist_motor_screws#1", "wrist_belt#1", "gt2_idler_20t#3",
                           "wrist_idler_screw#1", "wrist_idler_nut#1")),

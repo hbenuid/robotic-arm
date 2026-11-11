@@ -4,11 +4,13 @@ The joints' endstop / home sensor: the A3144 switches when a magnet's SOUTH pole
 board carries its pull-up, a status LED and the 3-pin header (-, +, S) - S reads low while the magnet is there. The
 chip is rated 4.5..24 V: run it at 5 V. Each joint's is designed on its own (docs/open_issues.md, the home sensors).
 
-In the arm: x2 so far - base_yaw's (ky003_hall_sensor#1, a mount on base#1 - lib/mounts.py YAW_HOME_MOUNTS): on its
-bracket under the base's motor plate (yaw_home_bracket), its chip under the 120T's home magnet (yaw_home_magnet); and
+In the arm: x3 so far - base_yaw's (ky003_hall_sensor#1, a mount on base#1 - lib/mounts.py YAW_HOME_MOUNTS): on its
+bracket under the base's motor plate (yaw_home_bracket), its chip under the 120T's home magnet (yaw_home_magnet);
 shoulder_pitch's (ky003_hall_sensor#2, a mount on j1_coupler#1 - SHOULDER_HOME_MOUNTS): on its tray in the coupler's
 pocket under the drive's turning shell (shoulder_home_tray), its chip under the magnet glued on a pillar of the shell
-(shoulder_home_magnet). The forearm roll's - beside the stop post on the frame's tower, a magnet in the shaft's stop lug
+(shoulder_home_magnet); and elbow_pitch's (ky003_hall_sensor#3, a mount on j1_link#1 - ELBOW_HOME_MOUNTS): on its clip
+over the upper arm's slab end (elbow_home_clip), its chip under the magnet glued on the elbow 90T's outer face
+(elbow_home_magnet). The forearm roll's - beside the stop post on the frame's tower, a magnet in the shaft's stop lug
 - is not designed yet; its order line is tools/bom.py EXTRAS.
 
 No catalog model (step.parts has no KY-003 and no A3144, only bare TO-92S packages - vendor/README.md) and no

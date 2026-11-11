@@ -11,9 +11,9 @@
  "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. A record with a `mount` block (keys under `mounted`) is a motor mount declared in lib/mounts.py, not a SolidWorks node: parent None, rel == world = host world * mount frame.",
  "root_label": "final_Arm_Assembly_Fully_Movable",
  "expected": {
-  "leaf_occurrences": 80,
-  "solids": 200,
-  "solid_volume": 2290109.539
+  "leaf_occurrences": 85,
+  "solids": 209,
+  "solid_volume": 2294876.743
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -91,6 +91,11 @@
   "shoulder_home_board_screws#1",
   "shoulder_home_board_nuts#1",
   "shoulder_home_magnet#1",
+  "ky003_hall_sensor#3",
+  "elbow_home_clip#1",
+  "elbow_home_board_screws#1",
+  "elbow_home_board_nuts#1",
+  "elbow_home_magnet#1",
   "forearm_roll_drive#1",
   "wrist_roll_drive#1",
   "gripper#1"
@@ -8215,6 +8220,521 @@
     4.268,
     6.505,
     6.177
+   ]
+  },
+  {
+   "key": "ky003_hall_sensor#3",
+   "part": "ky003_hall_sensor",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j1_link#1",
+    "link": "upper_arm_link",
+    "joint": "elbow_pitch",
+    "frame_in_host": {
+     "position": [
+      192.0,
+      -13.52,
+      -5.99
+     ],
+     "rotation_xyz_deg": [
+      -90.0,
+      0.0,
+      -90.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the elbow_pitch home sensor under the 90T's outer face, its branded face up at it, its chip under the home magnet's path; the board along the link's +z, the header there"
+   },
+   "solids": 3,
+   "solid_volume": 506.869,
+   "rel": {
+    "position": [
+     -137.444179,
+     222.717785,
+     -47.261901
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     42.415833
+    ],
+    "matrix_3x4": [
+     [
+      0.736734748,
+      -0.673104708,
+      0.064435727,
+      -137.444179153
+     ],
+     [
+      0.674506428,
+      0.738268975,
+      -2e-09,
+      222.717784661
+     ],
+     [
+      -0.047570897,
+      0.043462313,
+      0.997921859,
+      -47.261900631
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -137.444179,
+     222.717785,
+     -47.261901
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     42.415833
+    ],
+    "matrix_3x4": [
+     [
+      0.736734748,
+      -0.673104708,
+      0.064435727,
+      -137.444179153
+     ],
+     [
+      0.674506428,
+      0.738268975,
+      -2e-09,
+      222.717784661
+     ],
+     [
+      -0.047570897,
+      0.043462313,
+      0.997921859,
+      -47.261900631
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -142.492,
+    217.181,
+    -51.094
+   ],
+   "world_bbox_size": [
+    25.229,
+    24.174,
+    7.37
+   ]
+  },
+  {
+   "key": "elbow_home_clip#1",
+   "part": "elbow_home_clip",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j1_link#1",
+    "link": "upper_arm_link",
+    "joint": "elbow_pitch",
+    "frame_in_host": {
+     "position": [
+      206.0,
+      5.5,
+      -7.99
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "its printed clip over the slab's end flat, outside the belt: the board on its plate under the pulley's face"
+   },
+   "solids": 1,
+   "solid_volume": 4090.332,
+   "rel": {
+    "position": [
+     -147.115547,
+     231.704537,
+     -27.577813
+    ],
+    "rotation_xyz_deg": [
+     -94.034218,
+     47.454004,
+     -174.531788
+    ],
+    "matrix_3x4": [
+     [
+      -0.673104708,
+      0.064435727,
+      0.736734748,
+      -147.11554703
+     ],
+     [
+      0.738268975,
+      -2e-09,
+      0.674506428,
+      231.704537423
+     ],
+     [
+      0.043462313,
+      0.997921859,
+      -0.047570897,
+      -27.577812687
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -147.115547,
+     231.704537,
+     -27.577813
+    ],
+    "rotation_xyz_deg": [
+     -94.034218,
+     47.454004,
+     -174.531788
+    ],
+    "matrix_3x4": [
+     [
+      -0.673104708,
+      0.064435727,
+      0.736734748,
+      -147.11554703
+     ],
+     [
+      0.738268975,
+      -2e-09,
+      0.674506428,
+      231.704537423
+     ],
+     [
+      0.043462313,
+      0.997921859,
+      -0.047570897,
+      -27.577812687
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -150.688,
+    214.724,
+    -51.574
+   ],
+   "world_bbox_size": [
+    33.668,
+    30.135,
+    45.092
+   ]
+  },
+  {
+   "key": "elbow_home_board_screws#1",
+   "part": "elbow_home_board_screws",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j1_link#1",
+    "link": "upper_arm_link",
+    "joint": "elbow_pitch",
+    "frame_in_host": {
+     "position": [
+      192.0,
+      -13.52,
+      -5.99
+     ],
+     "rotation_xyz_deg": [
+      -90.0,
+      0.0,
+      -90.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the board's 2 M2: the heads under the clip's plate, up through the plate and the board"
+   },
+   "solids": 2,
+   "solid_volume": 79.167,
+   "rel": {
+    "position": [
+     -137.444179,
+     222.717785,
+     -47.261901
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     42.415833
+    ],
+    "matrix_3x4": [
+     [
+      0.736734748,
+      -0.673104708,
+      0.064435727,
+      -137.444179153
+     ],
+     [
+      0.674506428,
+      0.738268975,
+      -2e-09,
+      222.717784661
+     ],
+     [
+      -0.047570897,
+      0.043462313,
+      0.997921859,
+      -47.261900631
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -137.444179,
+     222.717785,
+     -47.261901
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     42.415833
+    ],
+    "matrix_3x4": [
+     [
+      0.736734748,
+      -0.673104708,
+      0.064435727,
+      -137.444179153
+     ],
+     [
+      0.674506428,
+      0.738268975,
+      -2e-09,
+      222.717784661
+     ],
+     [
+      -0.047570897,
+      0.043462313,
+      0.997921859,
+      -47.261900631
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -141.186,
+    218.813,
+    -52.71
+   ],
+   "world_bbox_size": [
+    10.652,
+    11.183,
+    8.605
+   ]
+  },
+  {
+   "key": "elbow_home_board_nuts#1",
+   "part": "elbow_home_board_nuts",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j1_link#1",
+    "link": "upper_arm_link",
+    "joint": "elbow_pitch",
+    "frame_in_host": {
+     "position": [
+      192.0,
+      -13.52,
+      -5.99
+     ],
+     "rotation_xyz_deg": [
+      -90.0,
+      0.0,
+      -90.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "their nuts on the board's component side"
+   },
+   "solids": 2,
+   "solid_volume": 34.287,
+   "rel": {
+    "position": [
+     -137.444179,
+     222.717785,
+     -47.261901
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     42.415833
+    ],
+    "matrix_3x4": [
+     [
+      0.736734748,
+      -0.673104708,
+      0.064435727,
+      -137.444179153
+     ],
+     [
+      0.674506428,
+      0.738268975,
+      -2e-09,
+      222.717784661
+     ],
+     [
+      -0.047570897,
+      0.043462313,
+      0.997921859,
+      -47.261900631
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -137.444179,
+     222.717785,
+     -47.261901
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     3.694455,
+     42.415833
+    ],
+    "matrix_3x4": [
+     [
+      0.736734748,
+      -0.673104708,
+      0.064435727,
+      -137.444179153
+     ],
+     [
+      0.674506428,
+      0.738268975,
+      -2e-09,
+      222.717784661
+     ],
+     [
+      -0.047570897,
+      0.043462313,
+      0.997921859,
+      -47.261900631
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -141.115,
+    218.511,
+    -46.147
+   ],
+   "world_bbox_size": [
+    11.336,
+    11.786,
+    2.322
+   ]
+  },
+  {
+   "key": "elbow_home_magnet#1",
+   "part": "elbow_home_magnet",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "gt2_pulley_90t#3",
+    "link": "elbow_link",
+    "joint": "elbow_pitch",
+    "frame_in_host": {
+     "position": [
+      22.649229133,
+      10.2,
+      7.211963649
+     ],
+     "rotation_xyz_deg": [
+      90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the home magnet glued onto the elbow 90T's outer face, south pole out: over the KY-003's chip at ELBOW_PITCH_HOME_DEG"
+   },
+   "solids": 1,
+   "solid_volume": 56.549,
+   "rel": {
+    "position": [
+     -140.76444,
+     204.098096,
+     -42.41789
+    ],
+    "rotation_xyz_deg": [
+     -0.0,
+     3.694455,
+     178.002358
+    ],
+    "matrix_3x4": [
+     [
+      -0.997315384,
+      -0.034785919,
+      0.064435734,
+      -140.76443995
+     ],
+     [
+      0.034858359,
+      -0.999392263,
+      2e-09,
+      204.098096071
+     ],
+     [
+      0.064396574,
+      0.002246126,
+      0.997921859,
+      -42.417890491
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -140.76444,
+     204.098096,
+     -42.41789
+    ],
+    "rotation_xyz_deg": [
+     -0.0,
+     3.694455,
+     178.002358
+    ],
+    "matrix_3x4": [
+     [
+      -0.997315384,
+      -0.034785919,
+      0.064435734,
+      -140.76443995
+     ],
+     [
+      0.034858359,
+      -0.999392263,
+      2e-09,
+      204.098096071
+     ],
+     [
+      0.064396574,
+      0.002246126,
+      0.997921859,
+      -42.417890491
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -143.758,
+    201.098,
+    -42.611
+   ],
+   "world_bbox_size": [
+    6.116,
+    6.0,
+    2.382
    ]
   },
   {

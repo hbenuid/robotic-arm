@@ -154,16 +154,19 @@ LINKS: dict[str, list[str]] = {
     # the elbow_pitch motor's gearbox bolts to the web across j1_link's motor hole (its 4x M4), the motor + board on it (its
     # 4x M3), its 20T and the elbow belt with them - the belt's tensioner (the idler, its spacer, axle and nut) on
     # j1_link's slab -, the elbow bearing pair sits in its elbow bore (lib/mounts.py); the shoulder_pitch home magnet is
-    # glued on a pillar of the drive's shell (j1_link's)
+    # glued on a pillar of the drive's shell (j1_link's); the elbow_pitch home sensor (the KY-003 on its clip over the
+    # slab's end)
     "upper_arm_link": ["cycloidal_drive#1:rotor", "j1_link#1", "bearing_6806#3", "bearing_6806#4", "eg17_g5_gearbox#1",
                        "elbow_gearbox_screws#1", "nema17_40mm#2", "mks_servo42d#2", "elbow_motor_screws#1", "gt2_pulley_20t_8mm#1",
                        "elbow_belt#1", "gt2_idler_20t#1", "elbow_idler_spacer#1", "elbow_idler_screw#1", "elbow_idler_nut#1",
-                       "shoulder_home_magnet#1"],
+                       "shoulder_home_magnet#1", "ky003_hall_sensor#3", "elbow_home_clip#1", "elbow_home_board_screws#1",
+                       "elbow_home_board_nuts#1"],
     # the elbow 90T pulley (the elbow_pitch output, assumed the driven side  [ASSUMPTION]) and the M4 screws + nuts
     # that clamp it carry the forearm roll drive's STATOR - the roll frame, whose web IS the elbow coupler now (j3_coupler#1
     # is retired, lib/placements.py), both bearings, the roll motor + board (on the elbow axis, its 4x M3) and its 20T
-    # (assemblies/forearm_roll_drive.py BODIES)
-    "elbow_link": ["gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", "forearm_roll_drive#1:stator"],
+    # (assemblies/forearm_roll_drive.py BODIES); the elbow_pitch home magnet is glued on the 90T's outer face
+    "elbow_link": ["gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", "elbow_home_magnet#1",
+                   "forearm_roll_drive#1:stator"],
     # the drive's ROTOR - the pulley (its 90T ring, the roll's output, bolts to j2_link's wall) and the shaft clamped to
     # it - IS the forearm's elbow end;
     # the wrist_pitch motor + board bolt to j2_link's web (its 4x M3), its 20T and the wrist belt with them - the belt's

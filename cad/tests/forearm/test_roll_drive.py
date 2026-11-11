@@ -119,7 +119,8 @@ def test_the_elbow_coupler_is_retired_for_the_block():
     assert P.RETIRED[:2] == ("j3_coupler#1", "j3_coupler#2") and {"j3_coupler#1", "j3_coupler#2"} <= set(P.OCCURRENCES)
     assert not {"j3_coupler#1", "j3_coupler#2"} & set(P.keys()) and {"j3_coupler#1", "j3_coupler#2"} <= set(P.keys(retired=True))
     assert F.LINKS["elbow_link"] == ["gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1",
-                                     "forearm_roll_drive#1:stator"]   # the re-seated elbow 90T + its bolts (lib/mounts.py)
+                                     "elbow_home_magnet#1", "forearm_roll_drive#1:stator"]   # the re-seated elbow 90T + its
+    #                                                  bolts (lib/mounts.py), the elbow_pitch home magnet glued on its face
 
 
 def test_stack():
