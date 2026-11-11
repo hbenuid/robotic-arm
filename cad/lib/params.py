@@ -324,6 +324,12 @@ _EHOME = _UPPER_ARM.home
 ELBOW_HOME_MAGNET_MASS_G = NDFEB_DENSITY * _cyl_vol(_EHOME.magnet_dia / 2.0, _EHOME.magnet_t)                               # 0.42, Ø6 x 2
 ELBOW_HOME_BOARD_SCREWS_MASS_G = STEEL_DENSITY * 2 * shcs_volume(_EHOME.board_screw, _EHOME.board_screw_len)               # 0.5, 2x M2x6
 ELBOW_HOME_BOARD_NUTS_MASS_G = STEEL_DENSITY * 2 * nut_volume(_EHOME.board_nut)                                            # 0.3, 2x M2
+# the wrist_pitch home sensor's (lib/forearm/params.py WristHomeParams): its magnet glued on the wrist 90T's outer face
+# (parts/joints/wrist_home_magnet, the elbow's disc) and the board's M2s and nuts on the clip, likewise
+_WHOME = _FOREARM.home
+WRIST_HOME_MAGNET_MASS_G = NDFEB_DENSITY * _cyl_vol(_WHOME.magnet_dia / 2.0, _WHOME.magnet_t)                               # 0.42, Ø6 x 2
+WRIST_HOME_BOARD_SCREWS_MASS_G = STEEL_DENSITY * 2 * shcs_volume(_WHOME.board_screw, _WHOME.board_screw_len)               # 0.5, 2x M2x6
+WRIST_HOME_BOARD_NUTS_MASS_G = STEEL_DENSITY * 2 * nut_volume(_WHOME.board_nut)                                            # 0.3, 2x M2
 # the base_yaw motor's (parts/base/yaw_motor_screws), likewise
 from lib.base.layout import motor_holes as _base_motor_holes  # noqa: E402
 
@@ -393,6 +399,11 @@ ELBOW_GRIPPER_FREE_DEG = 92.0   # [DESIGN]
 # pancake) meets the wrist-pitch motor on the forearm - 1.09 mm at +40, 3 mm or more at +38 (tests/test_sweeps.py;
 # docs/open_issues.md)
 WRIST_PITCH_LIMITS_DEG = (-150.0, 38.0)   # [DESIGN]
+# wrist_pitch's home: where the magnet glued on the wrist 90T's outer face (lib/forearm/params.py WristHomeParams) stands
+# over the KY-003's chip on its clip over the forearm's wrist end - the middle of the switch's zone, which runs on past
+# the lower end (the edge toward + is where homing, turning toward -, stops: tests/forearm/test_wrist_home.py); the upper
+# end leaves the wrist frame only 2.41 mm from the wrist motor's board. The software homes on that edge (robot/AGENTS.md).
+WRIST_PITCH_HOME_DEG = _FOREARM.home.home_deg   # -144
 # the forearm roll: 2 deg short of its printed hard stop - the lug on the roll shaft's flange meets the post on the
 # frame's tower at +/- 168.3 (lib/forearm/params.py stop_deg_width; tests/test_sweeps.py holds it between the limit
 # and 180 - stop_deg_width), which keeps the cables from winding

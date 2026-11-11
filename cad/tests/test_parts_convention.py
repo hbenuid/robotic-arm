@@ -78,6 +78,9 @@ MULTI_BODY = {
     # the elbow_pitch home sensor's board's M2s and their nuts (lib/mounts.py ELBOW_HOME_MOUNTS)
     "elbow_home_board_screws": 2,
     "elbow_home_board_nuts": 2,
+    # the wrist_pitch home sensor's board's M2s and their nuts (lib/mounts.py WRIST_HOME_MOUNTS)
+    "wrist_home_board_screws": 2,
+    "wrist_home_board_nuts": 2,
 }
 
 

@@ -11,9 +11,9 @@
  "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. A record with a `mount` block (keys under `mounted`) is a motor mount declared in lib/mounts.py, not a SolidWorks node: parent None, rel == world = host world * mount frame.",
  "root_label": "final_Arm_Assembly_Fully_Movable",
  "expected": {
-  "leaf_occurrences": 85,
-  "solids": 209,
-  "solid_volume": 2294876.743
+  "leaf_occurrences": 90,
+  "solids": 218,
+  "solid_volume": 2302506.451
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -96,6 +96,11 @@
   "elbow_home_board_screws#1",
   "elbow_home_board_nuts#1",
   "elbow_home_magnet#1",
+  "ky003_hall_sensor#4",
+  "wrist_home_clip#1",
+  "wrist_home_board_screws#1",
+  "wrist_home_board_nuts#1",
+  "wrist_home_magnet#1",
   "forearm_roll_drive#1",
   "wrist_roll_drive#1",
   "gripper#1"
@@ -8730,6 +8735,521 @@
     -143.758,
     201.098,
     -42.611
+   ],
+   "world_bbox_size": [
+    6.116,
+    6.0,
+    2.382
+   ]
+  },
+  {
+   "key": "ky003_hall_sensor#4",
+   "part": "ky003_hall_sensor",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j2_link#1",
+    "link": "forearm_link",
+    "joint": "wrist_pitch",
+    "frame_in_host": {
+     "position": [
+      -187.0,
+      -5.99,
+      -24.02
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      90.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the wrist_pitch home sensor under the wrist 90T's outer face, its branded face up at it, its chip under the home magnet's path; the board along j2_link's +y, the header there"
+   },
+   "solids": 3,
+   "solid_volume": 506.869,
+   "rel": {
+    "position": [
+     -179.256207,
+     401.829511,
+     77.732043
+    ],
+    "rotation_xyz_deg": [
+     180.0,
+     -3.694455,
+     136.997641
+    ],
+    "matrix_3x4": [
+     [
+      -0.729805829,
+      -0.680611114,
+      -0.064435731,
+      -179.256206983
+     ],
+     [
+      -0.682028466,
+      0.731325626,
+      -0.0,
+      401.829511119
+     ],
+     [
+      0.047123501,
+      0.043947003,
+      -0.997921859,
+      77.732042582
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -179.256207,
+     401.829511,
+     77.732043
+    ],
+    "rotation_xyz_deg": [
+     180.0,
+     -3.694455,
+     136.997641
+    ],
+    "matrix_3x4": [
+     [
+      -0.729805829,
+      -0.680611114,
+      -0.064435731,
+      -179.256206983
+     ],
+     [
+      -0.682028466,
+      0.731325626,
+      -0.0,
+      401.829511119
+     ],
+     [
+      0.047123501,
+      0.043947003,
+      -0.997921859,
+      77.732042582
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -199.289,
+    383.028,
+    74.185
+   ],
+   "world_bbox_size": [
+    25.137,
+    24.286,
+    7.374
+   ]
+  },
+  {
+   "key": "wrist_home_clip#1",
+   "part": "wrist_home_clip",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j2_link#1",
+    "link": "forearm_link",
+    "joint": "wrist_pitch",
+    "frame_in_host": {
+     "position": [
+      -202.29389,
+      0.0,
+      -5.0
+     ],
+     "rotation_xyz_deg": [
+      90.0,
+      90.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "its printed clip round the wrist boss's faceted end, outside the belt: the board on its plate under the pulley's face"
+   },
+   "solids": 1,
+   "solid_volume": 6952.836,
+   "rel": {
+    "position": [
+     -195.262503,
+     408.928974,
+     59.705959
+    ],
+    "rotation_xyz_deg": [
+     93.438897,
+     42.891416,
+     174.954347
+    ],
+    "matrix_3x4": [
+     [
+      -0.729805829,
+      -0.064435731,
+      0.680611114,
+      -195.262503019
+     ],
+     [
+      -0.682028466,
+      -0.0,
+      -0.731325626,
+      408.928974293
+     ],
+     [
+      0.047123501,
+      -0.997921859,
+      -0.043947003,
+      59.705959225
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -195.262503,
+     408.928974,
+     59.705959
+    ],
+    "rotation_xyz_deg": [
+     93.438897,
+     42.891416,
+     174.954347
+    ],
+    "matrix_3x4": [
+     [
+      -0.729805829,
+      -0.064435731,
+      0.680611114,
+      -195.262503019
+     ],
+     [
+      -0.682028466,
+      -0.0,
+      -0.731325626,
+      408.928974293
+     ],
+     [
+      0.047123501,
+      -0.997921859,
+      -0.043947003,
+      59.705959225
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -208.429,
+    376.778,
+    39.922
+   ],
+   "world_bbox_size": [
+    46.205,
+    42.687,
+    42.135
+   ]
+  },
+  {
+   "key": "wrist_home_board_screws#1",
+   "part": "wrist_home_board_screws",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j2_link#1",
+    "link": "forearm_link",
+    "joint": "wrist_pitch",
+    "frame_in_host": {
+     "position": [
+      -187.0,
+      -5.99,
+      -24.02
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      90.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the board's 2 M2: the heads under the clip's plate, up through the plate and the board"
+   },
+   "solids": 2,
+   "solid_volume": 79.167,
+   "rel": {
+    "position": [
+     -179.256207,
+     401.829511,
+     77.732043
+    ],
+    "rotation_xyz_deg": [
+     180.0,
+     -3.694455,
+     136.997641
+    ],
+    "matrix_3x4": [
+     [
+      -0.729805829,
+      -0.680611114,
+      -0.064435731,
+      -179.256206983
+     ],
+     [
+      -0.682028466,
+      0.731325626,
+      -0.0,
+      401.829511119
+     ],
+     [
+      0.047123501,
+      0.043947003,
+      -0.997921859,
+      77.732042582
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -179.256207,
+     401.829511,
+     77.732043
+    ],
+    "rotation_xyz_deg": [
+     180.0,
+     -3.694455,
+     136.997641
+    ],
+    "matrix_3x4": [
+     [
+      -0.729805829,
+      -0.680611114,
+      -0.064435731,
+      -179.256206983
+     ],
+     [
+      -0.682028466,
+      0.731325626,
+      -0.0,
+      401.829511119
+     ],
+     [
+      0.047123501,
+      0.043947003,
+      -0.997921859,
+      77.732042582
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -186.187,
+    394.568,
+    74.572
+   ],
+   "world_bbox_size": [
+    10.727,
+    11.113,
+    8.61
+   ]
+  },
+  {
+   "key": "wrist_home_board_nuts#1",
+   "part": "wrist_home_board_nuts",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j2_link#1",
+    "link": "forearm_link",
+    "joint": "wrist_pitch",
+    "frame_in_host": {
+     "position": [
+      -187.0,
+      -5.99,
+      -24.02
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      90.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "their nuts on the board's component side"
+   },
+   "solids": 2,
+   "solid_volume": 34.287,
+   "rel": {
+    "position": [
+     -179.256207,
+     401.829511,
+     77.732043
+    ],
+    "rotation_xyz_deg": [
+     180.0,
+     -3.694455,
+     136.997641
+    ],
+    "matrix_3x4": [
+     [
+      -0.729805829,
+      -0.680611114,
+      -0.064435731,
+      -179.256206983
+     ],
+     [
+      -0.682028466,
+      0.731325626,
+      -0.0,
+      401.829511119
+     ],
+     [
+      0.047123501,
+      0.043947003,
+      -0.997921859,
+      77.732042582
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -179.256207,
+     401.829511,
+     77.732043
+    ],
+    "rotation_xyz_deg": [
+     180.0,
+     -3.694455,
+     136.997641
+    ],
+    "matrix_3x4": [
+     [
+      -0.729805829,
+      -0.680611114,
+      -0.064435731,
+      -179.256206983
+     ],
+     [
+      -0.682028466,
+      0.731325626,
+      -0.0,
+      401.829511119
+     ],
+     [
+      0.047123501,
+      0.043947003,
+      -0.997921859,
+      77.732042582
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -186.935,
+    394.259,
+    74.292
+   ],
+   "world_bbox_size": [
+    11.4,
+    11.73,
+    2.326
+   ]
+  },
+  {
+   "key": "wrist_home_magnet#1",
+   "part": "wrist_home_magnet",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "gt2_pulley_90t#4",
+    "link": "wrist_pitch_link",
+    "joint": "wrist_pitch",
+    "frame_in_host": {
+     "position": [
+      -5.796326047,
+      10.2,
+      23.052171359
+     ],
+     "rotation_xyz_deg": [
+      90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the home magnet glued onto the wrist 90T's outer face, south pole out: over the KY-003's chip at WRIST_PITCH_HOME_DEG"
+   },
+   "solids": 1,
+   "solid_volume": 56.549,
+   "rel": {
+    "position": [
+     -149.114251,
+     368.623372,
+     71.156157
+    ],
+    "rotation_xyz_deg": [
+     -180.0,
+     -3.694455,
+     -70.867411
+    ],
+    "matrix_3x4": [
+     [
+      0.327074206,
+      0.94279929,
+      -0.064435727,
+      -149.114250946
+     ],
+     [
+      0.94476264,
+      -0.327755327,
+      3e-09,
+      368.623371573
+     ],
+     [
+      -0.02111915,
+      -0.060876468,
+      -0.997921859,
+      71.156157281
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -149.114251,
+     368.623372,
+     71.156157
+    ],
+    "rotation_xyz_deg": [
+     -180.0,
+     -3.694455,
+     -70.867411
+    ],
+    "matrix_3x4": [
+     [
+      0.327074206,
+      0.94279929,
+      -0.064435727,
+      -149.114250946
+     ],
+     [
+      0.94476264,
+      -0.327755327,
+      3e-09,
+      368.623371573
+     ],
+     [
+      -0.02111915,
+      -0.060876468,
+      -0.997921859,
+      71.156157281
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -152.237,
+    365.623,
+    68.967
    ],
    "world_bbox_size": [
     6.116,

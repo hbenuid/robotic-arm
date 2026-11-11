@@ -5,8 +5,21 @@ import math
 
 from lib.belts import GT2_IDLER_WIDTH, GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, idler_on_run, pulley_circle
 from lib.fasteners import M3_PITCH
-from lib.forearm.params import DEFAULT, ForearmConfig
+from lib.forearm.params import DEFAULT, PULLEY_90T, ForearmConfig
 from lib.motors import MKS_SERVO42D_HEADERS
+from lib.sensors import (
+    A3144_HALL_DEPTH,
+    A3144_LEAD_T,
+    KY003_BOARD_L,
+    KY003_BOARD_W,
+    KY003_HEADER_H,
+    KY003_HOLE_INSET,
+    KY003_LEAD_BEND_X,
+    KY003_LEAD_TAIL,
+    KY003_PIN_PITCH,
+    KY003_PIN_TAIL,
+    ky003_hall_point,
+)
 from lib.units import NUDGE
 
 
@@ -305,3 +318,123 @@ def flange_bolt_points_module(cfg: ForearmConfig = DEFAULT) -> list[tuple[float,
     """The wall's bolts in the module x-y plane (they run through the pulley and the shaft): the wall's (y, z) pattern
     seen from the module (module x = host z - axis_z, module y = host y)."""
     return [(z - cfg.roll_end.axis_z, y) for y, z in flange_bolt_points(cfg)]
+
+
+# --- the wrist_pitch home sensor (WristHomeParams), in j2_link's part frame unless named --------------------------------
+def _frame(origin, x_dir, z_dir) -> tuple:
+    """A frame as data from its origin and its X and Z directions (unit, perpendicular). lib.datum is imported here, not
+    at the top: it imports lib.base.params, which imports this package's params (a cycle at import)."""
+    from lib.datum import angles
+
+    y_dir = (z_dir[1] * x_dir[2] - z_dir[2] * x_dir[1], z_dir[2] * x_dir[0] - z_dir[0] * x_dir[2],
+             z_dir[0] * x_dir[1] - z_dir[1] * x_dir[0])
+    m = tuple((x_dir[i], y_dir[i], z_dir[i]) for i in range(3))
+    return tuple(round(v, 9) + 0.0 for v in origin), angles(m)
+
+
+def _apply(frame_data: tuple, p) -> tuple[float, float, float]:
+    """A point of a frame (as data) in its parent's coordinates."""
+    from lib.datum import rotation
+
+    m = rotation(frame_data[1])
+    return tuple(frame_data[0][i] + sum(m[i][k] * p[k] for k in range(3)) for i in range(3))
+
+
+def home_end_x(cfg: ForearmConfig = DEFAULT) -> float:
+    """The wrist boss's end flat along x (its faceted end's flat on -x, half its width past the wrist pivot): the face the
+    clip's cap and spine run down (-199.094)."""
+    return cfg.web.wrist_x - cfg.boss.dia / 2.0
+
+
+def home_boss_z(cfg: ForearmConfig = DEFAULT) -> tuple[float, float]:
+    """(underside, top) of the wrist boss along N: the faces the jaw bears on and the cap stops under (-5.0, 13.0)."""
+    return cfg.web.z0, cfg.boss.z1
+
+
+def home_chip_r(cfg: ForearmConfig = DEFAULT) -> float:
+    """The hall element's - and the magnet's - distance from the wrist axis (23.77)."""
+    return math.hypot(cfg.home.chip_x, cfg.home.chip_y)
+
+
+def home_chip_deg(cfg: ForearmConfig = DEFAULT) -> float:
+    """The hall element round the wrist axis: atan2(y, x) about the wrist pivot (-157.75)."""
+    return math.degrees(math.atan2(cfg.home.chip_y, cfg.home.chip_x))
+
+
+def home_pulley_z(cfg: ForearmConfig = DEFAULT) -> float:
+    """The wrist 90T's own origin (its lower flange's top) along N: the belt's plane (roll_end.wrist_belt_z) plus half its
+    tooth band - its +Y runs down N (-9.2)."""
+    return cfg.roll_end.wrist_belt_z + PULLEY_90T.band_y1 / 2.0
+
+
+def home_magnet_face_z(cfg: ForearmConfig = DEFAULT) -> float:
+    """The magnet's pole face along N: on the 90T's outer face (its own face_y down N from home_pulley_z()), magnet_t
+    out (-19.4)."""
+    return home_pulley_z(cfg) - (PULLEY_90T.face_y + cfg.home.magnet_t)
+
+
+def home_hall_point(cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float]:
+    """The hall element: chip_x / chip_y off the wrist pivot, `air` and its depth under the magnet's pole face."""
+    h = cfg.home
+    return (cfg.web.wrist_x + h.chip_x, h.chip_y, home_magnet_face_z(cfg) - h.air - A3144_HALL_DEPTH)
+
+
+def home_sensor_frame(cfg: ForearmConfig = DEFAULT) -> tuple:
+    """The KY-003's part frame in this one: its branded face (+Z) up N at the 90T's face, its board (+X) along +y, its
+    hall element (ky003_hall_point()) on home_hall_point()."""
+    x_dir, z_dir = (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)
+    hall, hp = home_hall_point(cfg), ky003_hall_point()
+    origin = tuple(hall[i] - hp[0] * x_dir[i] - hp[2] * z_dir[i] for i in range(3))
+    return _frame(origin, x_dir, z_dir)
+
+
+def home_to_link(cfg: ForearmConfig, p) -> tuple[float, float, float]:
+    """A point of the KY-003's frame in this one."""
+    return _apply(home_sensor_frame(cfg), p)
+
+
+def home_board_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
+    """(x, y) of the board's 2 M2s in the KY-003's frame: its own holes, KY003_HOLE_INSET in from its sensor end and its
+    long edges."""
+    y = KY003_BOARD_W / 2.0 - KY003_HOLE_INSET
+    return [(KY003_HOLE_INSET, s * y) for s in (1.0, -1.0)]
+
+
+def home_plate_box(cfg: ForearmConfig = DEFAULT) -> tuple:
+    """The board's plate in the KY-003's frame: ((x0, x1), (y0, y1), (z0, z1)) - under the board, plate_t thick."""
+    h = cfg.home
+    return (h.plate_x, (-h.plate_w / 2.0, h.plate_w / 2.0), (-h.plate_t, 0.0))
+
+
+def home_reliefs(cfg: ForearmConfig = DEFAULT) -> list[tuple[tuple, tuple, float]]:
+    """The plate's 2 slots in the KY-003's frame, ((x0, x1), (y0, y1), depth under the board): across the header's pins'
+    tails (one pitch behind its housing) and the chip's leads' tails (where they turn down), relief_w wide, relief_past
+    deeper than each - through the plate where that is past its thickness."""
+    h = cfg.home
+    pin_x = KY003_BOARD_L - KY003_HEADER_H / 2.0 - KY003_PIN_PITCH
+    lead_x = KY003_LEAD_BEND_X + A3144_LEAD_T / 2.0
+    rows = ((pin_x, h.header_relief_len, KY003_PIN_TAIL), (lead_x, h.lead_relief_len, KY003_LEAD_TAIL))
+    return [((x - h.relief_w / 2.0, x + h.relief_w / 2.0), (-ln / 2.0, ln / 2.0), tail + h.relief_past) for x, ln, tail in rows]
+
+
+def home_clip_frame(cfg: ForearmConfig = DEFAULT) -> tuple:
+    """The clip's part frame in this one: on its outer face over the end flat (gap and wall past it) at the boss's
+    underside, its +Z along +x (up as it prints, on that face), its +X along +y, its +Y up N."""
+    h = cfg.home
+    return _frame((home_end_x(cfg) - h.gap - h.wall, 0.0, home_boss_z(cfg)[0]), (0.0, 1.0, 0.0), (1.0, 0.0, 0.0))
+
+
+def home_magnet_deg(cfg: ForearmConfig = DEFAULT) -> float:
+    """The magnet round the wrist axis in the 90T's own frame (atan2(z, x) there): over the chip at home_deg - in this
+    frame the joint turns a point by +q about +Z (atan2(y, x) + q), the 90T's own angles run on from pulley_x_deg the same
+    way round (104.11)."""
+    return home_chip_deg(cfg) - cfg.home.home_deg - cfg.home.pulley_x_deg
+
+
+def home_magnet_frame(cfg: ForearmConfig = DEFAULT) -> tuple:
+    """The magnet's part frame (parts/joints/wrist_home_magnet: its south pole's face on z = 0, the disc in +Z) in the
+    wrist 90T's own (its outer face at face_y, +Y outward): glued on that face, home_chip_r() off the axis at
+    home_magnet_deg(), its +Z in at the face."""
+    a, r = math.radians(home_magnet_deg(cfg)), home_chip_r(cfg)
+    return ((round(r * math.cos(a), 9) + 0.0, PULLEY_90T.face_y + cfg.home.magnet_t, round(r * math.sin(a), 9) + 0.0),
+            (90.0, 0.0, 0.0))

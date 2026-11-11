@@ -105,6 +105,11 @@ The elbow_pitch HOME SENSOR (ELBOW_HOME_MOUNTS; lib/upper_arm/params.py ElbowHom
 over the upper arm's slab end, under the elbow 90T's outer face, the board's M2s and nuts - in j1_link's part frame, the
 clip in its own (lib/upper_arm/layout.py home_clip_frame()), the fasteners in the KY-003's - and the home magnet glued on
 the 90T's outer face, hosted on the 90T (so in elbow_link), over the chip at ELBOW_PITCH_HOME_DEG (lib/params.py).
+The wrist_pitch HOME SENSOR (WRIST_HOME_MOUNTS; lib/forearm/params.py WristHomeParams): the elbow's on the forearm's wrist
+end - the KY-003 on its printed clip round the wrist boss's faceted end, under the wrist 90T's outer face, the board's M2s
+and nuts - in j2_link's part frame, the clip in its own (lib/forearm/layout.py home_clip_frame()), the fasteners in the
+KY-003's - and the home magnet glued on the 90T's outer face, hosted on the 90T (so in wrist_pitch_link), over the chip at
+WRIST_PITCH_HOME_DEG (lib/params.py).
 The wrist belt's (WRIST_IDLER_MOUNTS; lib/forearm/params.py IdlerParams): the idler under j2_link's web where the
 stock belt puts it on the run leaving the motor's 20T (lib/forearm/layout.py wrist_idler_xy), standing on its lower face
 level with the belt, its M5 axle's head under it, the nut on its channel's floor down from the web's top face (each +Z
@@ -119,6 +124,9 @@ from lib.base.layout import home_bracket_frame, home_sensor_frame, joint_station
 from lib.base.params import DEFAULT as _BASE
 from lib.bearings import THRUST_WASHER_WIDTH
 from lib.forearm import module_frame_in_host, wrist_belt_frame, wrist_idler_xy
+from lib.forearm.layout import home_clip_frame as wrist_home_clip_frame
+from lib.forearm.layout import home_magnet_frame as wrist_home_magnet_frame
+from lib.forearm.layout import home_sensor_frame as wrist_home_sensor_frame
 from lib.forearm.params import DEFAULT as _FOREARM
 from lib.params import (
     BASE_MOTOR_20T_HUB_Z,
@@ -551,9 +559,28 @@ ELBOW_HOME_MOUNTS: tuple[Mount, ...] = (
           elbow_home_magnet_frame(_UPPER_ARM),
           "the home magnet glued onto the elbow 90T's outer face, south pole out: over the KY-003's chip at ELBOW_PITCH_HOME_DEG"),
 )
+# The wrist_pitch home sensor (lib/forearm/params.py WristHomeParams), in j2_link's part frame: the KY-003 under the
+# wrist 90T's outer face, chip up at it (wrist_home_sensor_frame()), on its printed clip over the wrist boss's faceted end
+# (wrist_home_clip_frame()), the board's M2s and nuts in the KY-003's; the magnet glued on the 90T's outer face, in the
+# 90T's own frame (wrist_home_magnet_frame()) - so it turns with wrist_pitch_link, over the chip at WRIST_PITCH_HOME_DEG.
+_WHOME_SENSOR = wrist_home_sensor_frame(_FOREARM)
+WRIST_HOME_MOUNTS: tuple[Mount, ...] = (
+    Mount("ky003_hall_sensor#4", "ky003_hall_sensor", "j2_link#1", "forearm_link", "wrist_pitch", _WHOME_SENSOR,
+          "the wrist_pitch home sensor under the wrist 90T's outer face, its branded face up at it, its chip under the home "
+          "magnet's path; the board along j2_link's +y, the header there"),
+    Mount("wrist_home_clip#1", "wrist_home_clip", "j2_link#1", "forearm_link", "wrist_pitch", wrist_home_clip_frame(_FOREARM),
+          "its printed clip round the wrist boss's faceted end, outside the belt: the board on its plate under the pulley's face"),
+    Mount("wrist_home_board_screws#1", "wrist_home_board_screws", "j2_link#1", "forearm_link", "wrist_pitch", _WHOME_SENSOR,
+          "the board's 2 M2: the heads under the clip's plate, up through the plate and the board"),
+    Mount("wrist_home_board_nuts#1", "wrist_home_board_nuts", "j2_link#1", "forearm_link", "wrist_pitch", _WHOME_SENSOR,
+          "their nuts on the board's component side"),
+    Mount("wrist_home_magnet#1", "wrist_home_magnet", "gt2_pulley_90t#4", "wrist_pitch_link", "wrist_pitch",
+          wrist_home_magnet_frame(_FOREARM),
+          "the home magnet glued onto the wrist 90T's outer face, south pole out: over the KY-003's chip at WRIST_PITCH_HOME_DEG"),
+)
 MOUNTS: tuple[Mount, ...] = (BASE_MOUNTS + YOKE_MOUNTS + FORK_MOUNTS + MOTOR_MOUNTS + MOTOR_PULLEY_MOUNTS + MOTOR_SCREW_MOUNTS + BEARING_MOUNTS
                              + THRUST_MOUNTS + PULLEY_MOUNTS + FLANGE_MOUNTS + FASTENER_MOUNTS + BELT_MOUNTS + IDLER_MOUNTS + YAW_IDLER_MOUNTS
-                             + WRIST_IDLER_MOUNTS + YAW_HOME_MOUNTS + SHOULDER_HOME_MOUNTS + ELBOW_HOME_MOUNTS)
+                             + WRIST_IDLER_MOUNTS + YAW_HOME_MOUNTS + SHOULDER_HOME_MOUNTS + ELBOW_HOME_MOUNTS + WRIST_HOME_MOUNTS)
 BY_KEY: dict[str, Mount] = {m.key: m for m in MOUNTS}
 
 

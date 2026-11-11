@@ -30,9 +30,24 @@ from lib.bearings import (
 )
 from lib.belts import GT2_PULLEY_90T_FACE_Y
 from lib.cycloidal.params import MotorParams, PETGTolerances
-from lib.fasteners import M3_CLEAR, M3_NUT, M3_SHCS, M4_CLEAR, M4_NUT, M5_CLEAR, M5_NUT, M5_SHCS, NutSize, ShcsSize
+from lib.fasteners import (
+    M2_CLEAR,
+    M2_NUT,
+    M2_SHCS,
+    M3_CLEAR,
+    M3_NUT,
+    M3_SHCS,
+    M4_CLEAR,
+    M4_NUT,
+    M5_CLEAR,
+    M5_NUT,
+    M5_SHCS,
+    NutSize,
+    ShcsSize,
+)
 from lib.motors import MKS_SERVO42D_STACK, MKS_SERVO42D_W, MOTOR_40, NEMA17_BOLT_SP
 from lib.pulley.params import DEFAULT as PULLEY_90T
+from lib.sensors import HOME_MAGNET_DIA
 from lib.style import COVER_CLEAR, COVER_WALL, EDGE_CHAMFER, GRILL_PITCH, GRILL_SLOT, SIDES
 
 
@@ -499,6 +514,56 @@ class RollDriveParams:
 
 
 @dataclass(frozen=True)
+class WristHomeParams:
+    """[DESIGN] The wrist_pitch home sensor (docs/open_issues.md, the home sensors): the elbow's (lib/upper_arm/params.py
+    ElbowHomeParams) on the forearm's wrist end - a KY-003 hall module (parts/joints/ky003_hall_sensor, lib/sensors.py) on a
+    printed clip over the wrist boss's end (parts/joints/wrist_home_clip), facing the wrist 90T's outer face, and a
+    Ø magnet_dia x magnet_t N52 disc glued on that face (its south pole out, `chip_x` / `chip_y` off the wrist pivot), which
+    stands over the chip at wrist_pitch `home_deg` (lib/params.py WRIST_PITCH_HOME_DEG). Nothing on the arm changes. The
+    wrist frame (wrist_link) turns FACE_GAP over the boss's top and sweeps right round it, so the clip has no top arm (the
+    elbow's has): a cap round the boss's faceted end - its end flat and the two facets beside it, `gap` off them (they place
+    it in plan), stopping top_clear under the top face -, a jaw under the boss short of the 90T's rim, the spine down the
+    end flat outside the belt; below the pulley's face the spine turns in as a web to the board's plate, the KY-003 on it
+    chip up, `air` under the magnet's pole face at home, its board along j2_link's +y (the forearm's side), its header and
+    plug that way. Held by glue alone, the user's choice (the home sensors' rule asks for M3 into nuts or inserts). The board
+    by its two holes on 2 M2 up through the plate (heads under it) into nuts on its component side - teardrop holes: the
+    clip prints on its end-flat face, the holes across the print axis (the elbow's, the user's choice). The frames: in
+    j2_link's part frame (the wrist pivot at web.wrist_x, the axis along +Z), through the wrist 90T's own for the magnet
+    (its origin the belt's plane plus half its tooth band along the axis, pulley_x_deg: the capture's)."""
+
+    home_deg: float = -144.0              # where the magnet stands over the chip: its zone (+/-9.1 .. 11.3 deg at r 23.8) runs 3.1
+    #                                       past the -150 end or more, more than the +/-2.4 the glued magnet can sit off its mark
+    chip_x: float = -22.0                 # the hall element this far along x from the wrist pivot (toward the end flat) ...
+    chip_y: float = -9.0                  # ... and across it: r 23.77 - under the 90T's outer face, clear of its 4 counterbored M4s
+    air: float = 1.5                      # the magnet's pole face .. the chip's branded face, at home
+    magnet_dia: float = HOME_MAGNET_DIA   # [DESIGN] a Ø6 x 2 N52 disc: the elbow's
+    magnet_t: float = 2.0
+    pulley_x_deg: float = -117.865052     # [REFERENCE] the wrist 90T's own +X in j2_link's frame, atan2(y, x) about the wrist axis:
+    #                                       its pulley_bolt_deg (lib/wrist/params.py) and the capture's; its +Y is j2_link's -Z,
+    #                                       its +Z at this + 90 (placements.json gt2_pulley_90t#4, j2_link#1;
+    #                                       tests/forearm/test_wrist_home.py)
+    gap: float = 0.2                      # the cap and the jaw off the boss's faces (the glue's)
+    wall: float = 3.0                     # the cap round the end and the spine outside the end flat ...
+    jaw_t: float = 2.8                    # ... the jaw under the boss
+    jaw_r: float = 32.0                   # the jaw from here out: 2.4 off the 90T's rim (r 29.6)
+    top_clear: float = 0.3                # the cap stops this far under the boss's top face (wrist_link turns FACE_GAP over it)
+    cap_x: float = 22.0                   # the cap round the end from this far along -x from the wrist pivot: the end flat and part
+    #                                       of each facet beside it
+    spine_w: float = 16.0                 # the spine across (y), about the end flat's middle
+    plate_x: tuple = (-2.0, 19.5)         # the board's plate along the KY-003's x: past the chip's end and the header's ...
+    plate_w: float = 18.0                 # ... this wide (the board 15) ...
+    plate_t: float = 3.0                  # ... this thick under the board
+    relief_w: float = 2.0                 # the plate's slots across the pins' / the leads' row ...
+    header_relief_len: float = 9.0        # ... along the header's 3 pins ...
+    lead_relief_len: float = 5.0          # ... along the chip's 3 leads ...
+    relief_past: float = 0.5              # ... this deeper than their tails
+    board_screw: ShcsSize = M2_SHCS
+    board_screw_len: float = 6.0          # through the plate and the board, 1.4 into the nut
+    board_nut: NutSize = M2_NUT
+    board_hole_dia: float = M2_CLEAR      # the teardrop's round: its peak toward +x (up as it prints, on its end-flat face)
+
+
+@dataclass(frozen=True)
 class ForearmConfig:
     roll: bool = False                     # end the forearm at the roll flange wall instead of the elbow disc
     motor_x: float = -118.0                # the wrist-pitch motor's axis [ESTIMATE] (lib/params.py J2_MOTOR_X)
@@ -518,6 +583,7 @@ class ForearmConfig:
     #                                        toward the upper arm (lib/placements.py SHIFTS; ELBOW_INSET)
     roll_turn_deg: float = 0.0             # the forearm and everything beyond it turned this far about the roll axis (j2_link's +X) from the
     #                                        capture (lib/placements.py TURNS); the roll drive keeps its pose
+    home: WristHomeParams | None = None    # DEFAULT: the wrist_pitch home sensor's clip over the wrist boss's end
 
 
 LEGACY = ForearmConfig()     # the SolidWorks part, exactly
@@ -573,4 +639,5 @@ DEFAULT = replace(
     elbow_offset=RollDriveParams().centre_distance,   # [DESIGN] 74: the roll drive's centre distance (the 280 belt with its idler)
     elbow_inset=ELBOW_INSET,                          # [DESIGN] 5: the roll frame 6.0 over j1_link's flat top
     roll_turn_deg=180.0,                              # [DESIGN] the wrist-pitch motor on the other side of the forearm
+    home=WristHomeParams(),
 )
