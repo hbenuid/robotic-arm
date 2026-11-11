@@ -11,17 +11,20 @@ as a git note).
   `CadDeprecationWarning` on import from 0.11.1 - an error under pytest (Gotchas) -, so nothing here imports it:
   `test_tooling.py` checks); the
   machine's server, `cad-server`, which is the `cad` command and everything that runs (a uv tool: `./cadtool server` installs it from the pin on a uv-managed Python, `uv tool dir --bin` holds the
-  command); and the `text-to-cad@earthtojake` plugin (`~/.claude/plugins/cache/earthtojake/text-to-cad/<ver>/`), whose
-  `claude.mcp.json` pins `cad-mcp==<ver>`: CAD's MCP server `cad`, a shim Claude Code starts through uvx with every
-  session, which talks to the running server (`cad_show` takes a file's absolute path or a document id and answers with
-  the page's link; `cad_inspect` / `cad_export` / `cad_snapshot` run asynchronously; `/mcp` turns it off). Bump them
-  together; `./cadtool doctor` reads each against the pin. `cadtool` restates the pin nowhere, and `cad-server` is never
+  command); and the `text-to-cad@earthtojake` plugin (`~/.claude/plugins/cache/earthtojake/text-to-cad/<ver>/`): its
+  skills, and a `claude.mcp.json` that pins `cad-mcp==<ver>`, CAD's MCP server `cad` (a shim that talks to the running
+  server) for the apps that start it. Claude Code is not one: the plugin's manifest (`.claude-plugin/plugin.json`)
+  names no server - upstream's answer to Claude Desktop refusing every tool call of an MCP server Claude Code starts
+  (earthtojake/text-to-cad#814), and a `cad-mcp` Claude Code does start lists no tools without `CAD_MCP_CARDS=1` - so a
+  session here has no `cad_*` tools and shows a model with `./cadtool viewer <file>` (`cad/AGENTS.md` Running things).
+  Bump them together; `./cadtool doctor` reads each against the pin. `cadtool` restates the pin nowhere, and `cad-server` is never
   a dependency here (`test_tooling.py` holds both). `claude plugin install` / `update` take the marketplace's newest
   release, so update the plugin WITH a bump here, not before: its skills describe the release they came with. Upstream
   can release again between a bump and its plugin update, and the plugin then lands ahead of the pin: after `claude
   plugin marketplace update`, the clone's `VERSION` must be this pin - if it moved, bump again first.
-  **The server comes before the plugin, always:** the shim never moves a live installation, but on a machine with none
-  it installs `cad-server` at its own release through uvx and makes that the machine's, with no telemetry off stored.
+  **The server comes before the plugin, always:** the skills teach their release's `cad` verbs, and nothing but
+  `./cadtool server` installs `cad-server` here, telemetry and automatic updates stored off first (a skill that finds no
+  `cad` leads to upstream's installer: Gotchas).
   The server asks `api.texttocad.dev` for the latest release (one anonymous request; `CAD_UPDATE_CHECK=0` in the server's
   environment turns it off) and, while it is behind, shows an Update button in the viewer: here that update IS a bump
   (the pin with the plugin: "After a pull …" below), and the button is never pressed (Gotchas). Nor does the server
@@ -183,8 +186,7 @@ cache, whose key omits Python. The proof the geometry did not move: the hash gat
   installed entries staying a MISMATCH until the update. Update the plugin in BOTH
   scopes, naming each (`claude plugin update text-to-cad@earthtojake --scope user`, then `--scope project`: with no
   `--scope` it auto-detects one - from the repo root, the project's, leaving the user entry behind), and restart Claude
-  Code (its first start after an update fetches the new `cad-mcp`; on a slow connection start once with
-  `MCP_TIMEOUT=300000 claude`). A session first started in `cad/` records a third
+  Code (a session loads the skills it starts with). A session first started in `cad/` records a third
   entry (project scope, `projectPath` = `cad/`) that no `update` reaches: run from `cad/`, `update --scope project`
   answers for the repo root's entry ("already at the latest version") while `install` there still reports the old one.
   Copy the root entry's `version`, `installPath`, `gitCommitSha` and `lastUpdated` into it by hand (back the file up
