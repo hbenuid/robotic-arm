@@ -2,8 +2,8 @@
 
 The colours, one per kind of part, the same in the arm and in every module standing alone
 (assemblies/_occurrences.py colour()): a printed part is BODY (the structure) or ACCENT (what drives, turns or covers -
-the part module declares ACCENT = True, parts.accent()), each one of FILAMENTS (what it can be printed in); a purchased
-part (parts.bought()) is BOUGHT, a belt (parts/*/<joint>_belt.py) BELT.
+the part module declares ACCENT = True, parts.accent()), each one of FILAMENTS (the colours of SUNLU PETG 2.0, the
+filament the arm is printed in); a purchased part (parts.bought()) is BOUGHT, a belt (parts/*/<joint>_belt.py) BELT.
 
 The shapes: a faceted end (lib/geom.py faceted_end()) is a regular polygon of SIDES with a flat on each of the part's
 own axes; a printed part's main faces have their outline chamfered EDGE_CHAMFER at 45 deg (lib/geom.py chamfer_outline());
@@ -22,31 +22,31 @@ GRILL_SLOT = 2.0       # [DESIGN] a back panel's grill: straight slots this wide
 GRILL_PITCH = 4.0      # [DESIGN] ... at this pitch, one on the panel's centre line (the ribs between them 2.0: 5 perimeters
 #                        at 0.4), clipped to the panel's field over its shaft's bay (docs/design_language.md)
 
-# [MEASURE] the PETG colours a printed part can be bought in, each its swatch's hex in the shop's colour picker (screen
-# colours sampled off the swatches, not a measured filament; the shop names only its white, the other names are read
-# off the swatches). A printed part's colour is one of them, stored as its viewer_hex() so the viewer draws it as the
-# filament
+# [DATASHEET] the filament the arm is printed in: SUNLU PETG 2.0, its 20 colours - each keyed by its official name (in
+# snake_case) with its official hex, from the colour code table on SUNLU's PETG 2.0 page (sunlu.com/products/351), in
+# that table's order. A hex is SUNLU's screen colour for the filament, not a measured one. A printed part's colour is
+# one of them, stored as its viewer_hex() so the viewer draws it as the filament
 FILAMENTS = {
     "white": "#EFF0F1",
-    "peach": "#F3DFD5",
-    "olive": "#5A6D3D",
-    "ivory": "#EEE7D4",
+    "beige": "#F3DFD5",
+    "olive_green": "#5A6D3D",
+    "bone_white": "#EEE7D4",
     "black": "#000000",
     "red": "#CD001A",
-    "teal": "#00ADAD",
+    "aqua_blue": "#00ADAD",
     "yellow": "#FEDD00",
     "grey": "#75787B",
-    "brown": "#362111",
-    "blue": "#1729AB",
+    "coffee_brown": "#362111",
+    "klein_blue": "#1729AB",
     "green": "#1DAA27",
-    "gold": "#F1C400",
+    "vivid_yellow": "#F1C400",
     "magenta": "#D9027D",
-    "sky_blue": "#00A3E0",
-    "salmon": "#FF9A8D",
-    "khaki": "#C2B29A",
-    "purple": "#685BC7",
-    "pink": "#F9C5C2",
-    "orange": "#FF6A14",
+    "cyan": "#00A3E0",
+    "peach_pink": "#FF9A8D",
+    "oak": "#C2B29A",
+    "lavender_purple": "#685BC7",
+    "blush_pink": "#F9C5C2",
+    "sunny_orange": "#FF6A14",
 }
 
 
@@ -61,7 +61,7 @@ def viewer_hex(filament: str) -> str:
     return "#" + "".join(f"{v:02X}" for v in out)
 
 
-BODY = viewer_hex(FILAMENTS["ivory"])      # [DESIGN] the printed structure
-ACCENT = viewer_hex(FILAMENTS["orange"])   # [DESIGN] the printed parts that drive, turn or cover
+BODY = viewer_hex(FILAMENTS["bone_white"])      # [DESIGN] the printed structure
+ACCENT = viewer_hex(FILAMENTS["sunny_orange"])  # [DESIGN] the printed parts that drive, turn or cover
 BOUGHT = "#9AA0A6"     # [DESIGN] grey: every purchased part
 BELT = "#717276"       # [DESIGN] the belts, darker than the other purchased parts

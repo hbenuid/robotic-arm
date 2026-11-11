@@ -33,7 +33,8 @@ designed here), each with its own look; these rules make them one.
 - **Two tones.** The printed structure is `BODY`; what drives, turns or covers is `ACCENT` (its part module declares
   `ACCENT = True`, `parts.accent()`); a purchased part is `BOUGHT` and a belt `BELT`. `assemblies/_occurrences.py
   colour()` gives each part its colour, the same in the arm and in each module standing alone. `BODY` and `ACCENT` are
-  filaments the arm can be printed in (`lib/style.py FILAMENTS`), each stored as its `viewer_hex()` - the hex the
+  colours of the filament the arm is printed in, SUNLU PETG 2.0 (`lib/style.py FILAMENTS`: its official names and
+  hexes), each stored as its `viewer_hex()` - the hex the
   viewer and the snapshots draw as the filament, since they draw a STEP colour darker.
 - **Belts are covered.** Each belt run (the upper arm's, the forearm's, the base's) gets a cover and the roll frame's open
   face a lid. A cover follows its link's outline, so the covered link reads as one piece, stands clear of the pulleys,
