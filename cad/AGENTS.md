@@ -67,7 +67,8 @@ Every command, its flags and what it prints: `./cadtool help` (for people: the `
   holds the `cad` library (`from cad import step`; never `cadgen`, its deprecated earlier name: `docs/toolchain.md`
   Pins): decorators, geometry, the STEP reader. `cad-server` is the machine's one server and the `cad` command —
   engine, viewer, snapshots —, a uv tool at this project's pin; the `text-to-cad@earthtojake` plugin ships the
-  `/text-to-cad:*` skill docs and CAD's MCP server `cad` (`docs/toolchain.md` Pins).
+  `/text-to-cad:*` skill docs alone - Claude Code starts no MCP server for it, so no `cad_*` tools (`docs/toolchain.md`
+  Pins).
 - **Never `cad run`, `cad setup`, `cad update` or upstream's installer, whatever a skill says.** The plugin's skills
   build with `cad run` and, on a failure, tell you to run `curl … install.sh | sh`: `cad run` builds in an environment
   of its own (`uv run` with cad at the machine's release), not in this venv, and the installer takes every agent app on
@@ -83,9 +84,9 @@ Every command, its flags and what it prints: `./cadtool help` (for people: the `
   replayed when unchanged, its STEP written once a build) and writes its own STEP; a child's result reaches the parent
   as a copy the parent owns, which the arm re-tints (`assemblies/AGENTS.md`). Pull semantics: a rebuilt part does not
   update the arm until the arm is rebuilt.
-- **Look at what you built**: show every created / updated STEP (or URDF) in the CAD Viewer — from a Claude session
-  with the `cad` MCP server's `cad_show` (an absolute path; it answers with a link: share it once, the page follows
-  the file), from a terminal with `./cadtool viewer <file>` (its link is good for a day). Snapshot review
+- **Look at what you built**: show every created / updated STEP (or URDF) in the CAD Viewer with
+  `./cadtool viewer <file>`, from a Claude session as from a terminal: it answers with a link, good for a day - share
+  it once, the page follows the file. Snapshot review
   (`./cadtool snapshot …`) is mandatory
   after visible geometry changes; a change inside a housing (a bearing seat, a fit) also gets a cut, the cut faces
   capped — the XZ plane at Y = `<mm>` seen head on: `--display '{"clip":{"axis":"y","at":<mm>,"invert":true}}'

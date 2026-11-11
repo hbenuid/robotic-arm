@@ -121,8 +121,8 @@ The `text-to-cad@earthtojake` plugin's `/text-to-cad:*` skills drive the run-the
 this repo is aligned with (plus `robot-simulation` for the URDF/SRDF/SDF and `print3d` for slicing; printability is
 `cad stl dfm`); they run the `cad` command — inside this project, `./cadtool …`, which builds on this venv and never runs
 `cad run` or the installer they mention ([`AGENTS.md`](AGENTS.md) Running things).
-The plugin also starts CAD's MCP server (`cad`) with every Claude Code session: asked to show a model, Claude
-answers with a link that opens it in the CAD Viewer (in Claude Desktop, a viewer card in the chat). It shows saved
-files (STEP, URDF, STL …) on the machine's one cad server, and sends no telemetry and installs no update by itself
-once `./cadtool setup` has stored cad's telemetry and automatic updates off ([`docs/toolchain.md`](docs/toolchain.md) Pins); `/mcp` turns the server off.
+The plugin gives Claude Code the skills alone, no MCP server: asked to show a model, Claude runs
+`./cadtool viewer <file>` and answers with a link that opens it in the CAD Viewer. The viewer shows saved files
+(STEP, URDF, STL …) on the machine's one cad server, which sends no telemetry and installs no update by itself once
+`./cadtool setup` has stored cad's telemetry and automatic updates off ([`docs/toolchain.md`](docs/toolchain.md) Pins).
 Agent-facing conventions live in `AGENTS.md` and each folder's own `AGENTS.md`.

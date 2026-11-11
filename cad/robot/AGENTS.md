@@ -124,7 +124,7 @@ beside the pancake. The drives on their own:
 ## A posable preview
 A design preview of something that moves with the arm (`cad/AGENTS.md` Design choices) is a scratch copy of
 `arm.urdf` + `arm.srdf` (nothing in the repo) with the proposed parts added:
-- Open the copy's **`.srdf`** (`cad_show`, `./cadtool viewer`): it gives the joint sliders and the SRDF's named states
+- Open the copy's **`.srdf`** (`./cadtool viewer`): it gives the joint sliders and the SRDF's named states
   (`home`, `open`, `closed`); a bare `.urdf` lists no states.
 - The SRDF pairs with its URDF by the robot's name in the same folder: **one URDF named `arm` per folder** - a second
   one there fails as `ambiguous_paired_urdf`.
