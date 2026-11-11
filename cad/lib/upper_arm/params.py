@@ -30,8 +30,21 @@ from dataclasses import dataclass, replace
 
 from lib.cycloidal import DEFAULT_CONFIG as _DRIVE
 from lib.cycloidal import shell_ends as _shell_ends
-from lib.fasteners import M3_CLEAR, M4_CLEAR, M4_SHCS, M5_CLEAR, M5_NUT, M5_SHCS, NutSize, ShcsSize
+from lib.fasteners import (
+    M2_CLEAR,
+    M2_NUT,
+    M2_SHCS,
+    M3_CLEAR,
+    M4_CLEAR,
+    M4_SHCS,
+    M5_CLEAR,
+    M5_NUT,
+    M5_SHCS,
+    NutSize,
+    ShcsSize,
+)
 from lib.motors import EG17_G5, NEMA17_BOLT_SP
+from lib.sensors import HOME_MAGNET_DIA
 
 
 @dataclass(frozen=True)
@@ -234,6 +247,56 @@ class ElbowIdlerParams:
 
 
 @dataclass(frozen=True)
+class ElbowHomeParams:
+    """[DESIGN] The elbow_pitch home sensor (docs/open_issues.md, the home sensors): a KY-003 hall module
+    (parts/joints/ky003_hall_sensor, lib/sensors.py) on a printed clip over the slab's end flat (parts/joints/
+    elbow_home_clip), facing the elbow 90T's outer face, and a Ø magnet_dia x magnet_t N52 disc glued on that face (its
+    south pole out, `chip_x` / `chip_z` off the elbow axis), which stands over the chip at elbow_pitch `home_deg`
+    (lib/params.py ELBOW_PITCH_HOME_DEG). Nothing on the arm changes: the clip is a C over the end flat (elbow_x + end_r
+    along the link) - its top arm on the slab's top face (under the roll frame, which turns over it), its jaw under the
+    underside short of the 90T's rim, its spine down the end flat outside the belt - held by its fit and a dab of glue,
+    the user's choice over screws (the home sensors' rule asks for M3 into nuts or inserts); below the pulley's face the
+    spine turns in as a web to the board's plate, the KY-003 on it chip up, `air` under the magnet's pole face at home,
+    its board along the link's +Z, its header and plug that way. The board by its two holes on 2 M2 up through the plate
+    (heads under it) into nuts on its component side - teardrop holes: the clip prints on its side (its -Z face on the
+    bed, the C's profile flat), so the holes lie across the print axis (the user's choice). The frames: in j1_link's
+    part frame (x along the link, y = N, z across), through the elbow 90T's own frame for the magnet (pulley_y,
+    pulley_x_deg: the capture's)."""
+
+    home_deg: float = -41.0               # where the magnet stands over the chip: its zone (+/-9.1 .. 11.3 deg at r 23.8) runs 3.1
+    #                                       past the -47 end or more, more than the +/-2.4 the glued magnet can sit off its mark
+    chip_x: float = 22.0                  # the hall element this far along the link from the elbow axis (past it, toward the end) ...
+    chip_z: float = -9.0                  # ... and across it: r 23.77, 22.2 deg round from the end flat toward -z - under the
+    #                                       90T's outer face (r 29.6), clear of its 4 counterbored M4s (r 11.3)
+    air: float = 1.5                      # the magnet's pole face .. the chip's branded face, at home
+    magnet_dia: float = HOME_MAGNET_DIA   # [DESIGN] a Ø6 x 2 N52 disc: 1 thinner than base_yaw's and the shoulder's, ...
+    magnet_t: float = 2.0                 # ... so the plate sits higher under the face (the user's choice)
+    pulley_y: float = 1.3                 # [REFERENCE] the elbow 90T's own origin (its lower flange's top) along j1_link's Y: the
+    #                                       belt's plane (lib/params.py J1_BELT_Y) less half its tooth band - placements.json
+    #                                       gt2_pulley_90t#3, j1_link#1 (tests/upper_arm/test_elbow_home.py)
+    pulley_x_deg: float = -45.586517      # [REFERENCE] the 90T's own +X in j1_link's frame, atan2(z, x) about the elbow axis: its
+    #                                       pulley_bolt_deg (lib/forearm/params.py) and the capture's 0.59 deg of elbow; its +Y
+    #                                       is j1_link's -Y, its +Z at this - 90 (the same records)
+    gap: float = 0.2                      # the clip off each slab face it bears on (the glue's)
+    spine_t: float = 3.0                  # the spine, outside the end flat ...
+    arm_t: float = 2.8                    # ... the top arm and the jaw: the top arm 3.0 under the roll frame's underside
+    width: float = 16.0                   # across the link (z), from the plate's near end - the face it prints on
+    top_x: float = 26.0                   # the top arm from this far along the link from the elbow axis, over the slab's top
+    jaw_x: float = 32.0                   # the jaw from here, under the slab: 2.4 off the 90T's rim (r 29.6)
+    plate_x: tuple = (-2.0, 19.5)         # the board's plate along the KY-003's x: past the chip's end and the header's ...
+    plate_w: float = 18.0                 # ... this wide (the board 15) ...
+    plate_t: float = 3.0                  # ... this thick under the board
+    relief_w: float = 2.0                 # the plate's slots across the pins' / the leads' row ...
+    header_relief_len: float = 9.0        # ... along the header's 3 pins ...
+    lead_relief_len: float = 5.0          # ... along the chip's 3 leads ...
+    relief_past: float = 0.5              # ... this deeper than their tails
+    board_screw: ShcsSize = M2_SHCS
+    board_screw_len: float = 6.0          # through the plate and the board, 1.4 into the nut
+    board_nut: NutSize = M2_NUT
+    board_hole_dia: float = M2_CLEAR      # the teardrop's round: its peak toward the link's +z (up as it prints)
+
+
+@dataclass(frozen=True)
 class UpperArmConfig:
     slab: SlabParams = SlabParams()
     elbow: ElbowParams = ElbowParams()
@@ -244,6 +307,7 @@ class UpperArmConfig:
     sockets: SocketParams | None = SocketParams()
     arm: ArmParams | None = None                      # DEFAULT: the arm rising off the drive's turning shell, not bolted to its hub
     idler: ElbowIdlerParams | None = None             # DEFAULT: the elbow belt's tensioner, its slots in the stepped slot's place
+    home: ElbowHomeParams | None = None               # DEFAULT: the elbow_pitch home sensor's clip over the slab's end
 
 
 LEGACY = UpperArmConfig()     # the SolidWorks part, exactly
@@ -302,4 +366,4 @@ DEFAULT = replace(_SHORTENED, bearing=None,
                   pad=replace(_SHORTENED.pad, x=round(_SHORTENED.slab.elbow_x - ELBOW_MOTOR_CENTRES, 6),   # 92.0
                               holes=tuple((x, z, M4_CLEAR) for x, z in ((_SEAT_R, 0.0), (0.0, _SEAT_R), (-_SEAT_R, 0.0),
                                                                         (0.0, -_SEAT_R)))),   # [DESIGN] M4 clearance
-                  idler=ElbowIdlerParams())
+                  idler=ElbowIdlerParams(), home=ElbowHomeParams())

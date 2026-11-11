@@ -63,7 +63,10 @@ robot/
   `SHOULDER_PITCH_HOME_DEG` - shoulder_pitch's (a KY-003 on a tray in j1_coupler's pocket under the drive's turning
   shell, its magnet glued on a pillar of the shell: `lib/yaw_coupler/params.py HomeTrayParams`), likewise: the zone runs
   on past the lower end, homing turns toward − until the switch turns on; the drive's 21:1 puts a motor turn at 17° of the
-  joint. The other joints have no home sensor yet (`docs/open_issues.md`).
+  joint. `ELBOW_PITCH_HOME_DEG` - elbow_pitch's (a KY-003 on a clip over the upper arm's slab end, under the elbow 90T's
+  outer face, its magnet glued on that face: `lib/upper_arm/params.py ElbowHomeParams`), likewise: the zone runs on past
+  the lower end (the forearm lifted back), homing turns toward − until the switch turns on; `ELBOW_RATIO`'s 22.5:1 puts a
+  motor turn at 16° of the joint. The other joints have no home sensor yet (`docs/open_issues.md`).
 
 ## Joints and links
 `base_link → base_yaw → shoulder_link → shoulder_pitch → upper_arm_link → elbow_pitch → elbow_link →

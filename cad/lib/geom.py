@@ -25,6 +25,15 @@ def through(radius: float, height: float, xy=(0.0, 0.0), z0: float = 0.0):
     return cylinder(radius, height + 2 * NUDGE, xy, z0 - NUDGE)
 
 
+def teardrop(radius: float, height: float, xy=(0.0, 0.0), z0: float = 0.0):
+    """A hole cutter for a hole printed on its side: through() round `radius` about xy along Z, plus a 45 deg peak toward
+    its +Y - the side that is up as the part prints - so nothing over the hole overhangs past 45 deg."""
+    k = radius / math.sqrt(2.0)
+    x, y = xy
+    peak = bd.Polygon((x, y), (x + k, y + k), (x, y + radius * math.sqrt(2.0)), (x - k, y + k), align=None)
+    return through(radius, height, xy, z0) + bd.Pos(0.0, 0.0, z0 - NUDGE) * bd.extrude(peak, amount=height + 2 * NUDGE)
+
+
 def single_solid(shape: bd.Shape) -> bd.Solid:
     """The one Solid of an algebra-mode result (raises if a cutter leaked or the body split)."""
     solids = shape.solids()

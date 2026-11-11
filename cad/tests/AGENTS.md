@@ -69,6 +69,11 @@ symmetric about the middle of the discs), with no reference, keep their numbers 
 `tests/upper_arm/` (`elbow_motor_screws`, `elbow_gearbox_screws`, `eg17_g5_gearbox`, `gt2_pulley_20t_8mm` - the elbow
 motor's gearbox, its screws and its 20T, purchased parts with no reference: their numbers and feature probes, the
 gearbox's against its datasheet drawing;
+`elbow_home`: the elbow_pitch home sensor - the home angle, the frames through the elbow 90T's (the capture's, from
+placements.json), the switch's zone past the lower end for every A3144 operate point and the glued magnet's error, the
+layout under the 90T's face, its clip's, magnet's and fasteners' numbers (no reference), the clip's teardrop holes and
+slots, its fit over the slab's end, the magnet on the 90T's face, over the chip at home and clear of the sensor and the
+clip over the travel, the elbow's turning parts clear of them;
 `elbow_idler`: the elbow belt's tensioner - the stock belt round it, the band of belts its slot takes, its stations,
 its axle's, nut's and spacer's numbers (no reference), its slots on `j1_link`, the kit's fit beside the 90T; `j1_link`: the LEGACY build's feature probes, DEFAULT's numbers, the web under the elbow motor's gearbox (its seat) and its
 holes, the arm - a flat slab - rising off the drive's turning shell - the drive's frame in the link's, its first pillar

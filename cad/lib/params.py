@@ -318,6 +318,12 @@ _SHOME = _YAW_COUPLER.home
 SHOULDER_HOME_MAGNET_MASS_G = NDFEB_DENSITY * _cyl_vol(HOME_MAGNET_DIA / 2.0, HOME_MAGNET_T)                               # 0.64, Ø6 x 3
 SHOULDER_HOME_BOARD_SCREWS_MASS_G = STEEL_DENSITY * 2 * shcs_volume(_SHOME.board_screw, _SHOME.board_screw_len)            # 0.5, 2x M2x6
 SHOULDER_HOME_BOARD_NUTS_MASS_G = STEEL_DENSITY * 2 * nut_volume(_SHOME.board_nut)                                         # 0.3, 2x M2
+# the elbow_pitch home sensor's (lib/upper_arm/params.py ElbowHomeParams): its magnet glued on the elbow 90T's outer face
+# (parts/joints/elbow_home_magnet, a thinner disc) and the board's M2s and nuts on the clip, likewise
+_EHOME = _UPPER_ARM.home
+ELBOW_HOME_MAGNET_MASS_G = NDFEB_DENSITY * _cyl_vol(_EHOME.magnet_dia / 2.0, _EHOME.magnet_t)                               # 0.42, Ø6 x 2
+ELBOW_HOME_BOARD_SCREWS_MASS_G = STEEL_DENSITY * 2 * shcs_volume(_EHOME.board_screw, _EHOME.board_screw_len)               # 0.5, 2x M2x6
+ELBOW_HOME_BOARD_NUTS_MASS_G = STEEL_DENSITY * 2 * nut_volume(_EHOME.board_nut)                                            # 0.3, 2x M2
 # the base_yaw motor's (parts/base/yaw_motor_screws), likewise
 from lib.base.layout import motor_holes as _base_motor_holes  # noqa: E402
 
@@ -361,7 +367,8 @@ SHOULDER_PITCH_HOME_DEG = _YAW_COUPLER.home.home_deg   # -118
 # the elbow belt (ELBOW_RATIO): (lower, upper). The lower - the forearm lifted back - kept where the old roll housing set
 # it: the roll drive's frame (its rear line, from its octagonal end about the elbow axis up to its tower ELBOW_ROLL_OFFSET
 # over it) is 8.4 mm off the elbow motor, which stands on the same side of the upper arm, there and comes within 1 mm of
-# it at -58.0 deg - the forearm, the wrist and the gripper stay 1 mm off the upper arm at any roll and wrist pitch there
+# it at -58.0 deg - its back panel nearer: 4.75 off the motor's gearbox there, 1 mm at -52.5 (docs/open_issues.md, the
+# elbow's limits) - the forearm, the wrist and the gripper stay 1 mm off the upper arm at any roll and wrist pitch there
 # (tests/test_sweeps.py); how far past it the arm keeps clear is not swept (docs/open_issues.md). The upper - the
 # forearm folded - is set by the arm's own parts, not by the gripper (the elbow's
 # range over the other joints'): 2 deg short of where the wrist-pitch motor's board, folded back with the shoulder at its
@@ -370,6 +377,11 @@ SHOULDER_PITCH_HOME_DEG = _YAW_COUPLER.home.home_deg   # -118
 # and wrist pitch (touching them by 153, the forearm rolled 90); the gripper keeps 1 mm up to ELBOW_GRIPPER_FREE_DEG
 # (tests/test_sweeps.py). SHOULDER_PITCH_LIMITS_DEG was swept over this range
 ELBOW_PITCH_LIMITS_DEG = (-47.0, 144.0)   # [DESIGN]
+# elbow_pitch's home: where the magnet glued on the elbow 90T's outer face (lib/upper_arm/params.py ElbowHomeParams)
+# stands over the KY-003's chip on its clip over the slab's end - the middle of the switch's zone, which runs on past the
+# lower end (the edge toward + is where homing, turning toward -, stops: tests/upper_arm/test_elbow_home.py). The
+# software homes on that edge (robot/AGENTS.md).
+ELBOW_PITCH_HOME_DEG = _UPPER_ARM.home.home_deg   # -41
 # folded past this, the gripper - the wrist bent down, the forearm rolled - can reach the upper arm (j1_link: 1 mm or more
 # off it at 94 at any forearm roll and wrist pitch, the shoulder level; touching it by 97, the wrist at -150, the forearm
 # at 0); within the elbow's range a planner keeps it clear there (docs/open_issues.md)
