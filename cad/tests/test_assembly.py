@@ -98,10 +98,11 @@ def test_arm_groups_mirror_links():
 
 
 def test_the_colours_tell_the_kinds_of_part_apart():
-    """The four colours of lib/style.py are distinct (grey means bought, darker grey a belt, orange a printed part that
-    drives, turns or covers, ivory the printed structure), the two printed ones filaments the arm can be bought in
-    (style.FILAMENTS, stored as the hex the viewer draws as the filament: style.viewer_hex); only a printed part
-    declares ACCENT, and every part named <joint>_belt is a purchased belt."""
+    """The four colours of lib/style.py are distinct (grey means bought, darker grey a belt, Sunny Orange a printed
+    part that drives, turns or covers, Bone White the printed structure), the two printed ones colours of the filament
+    the arm is printed in (style.FILAMENTS, SUNLU PETG 2.0's official hexes, stored as the hex the viewer draws as the
+    filament: style.viewer_hex); only a printed part declares ACCENT, and every part named <joint>_belt is a purchased
+    belt."""
     palette = [style.BODY, style.ACCENT, style.BOUGHT, style.BELT]
     assert len({c.lower() for c in palette}) == len(palette)
     drawn = {style.viewer_hex(h) for h in style.FILAMENTS.values()}
