@@ -93,7 +93,8 @@ Every command, its flags and what it prints: `./cadtool help` (for people: the `
   --camera front` (`axis` `x` / `y` / `z`, `at` the plane's coordinate; without `invert` this camera sees the kept
   half's uncut outside) — and `--display '{"isolated": ["<ref>", …]}'` draws those occurrences alone,
   `{"hidden": [...]}` leaves them out (a ref is an occurrence path, `arm/wrist/gripper/gripper_base`: `./cadtool
-  inspect` lists them). No `ocp-vscode`.
+  inspect` lists them; one with `*`, `?` or `[` is a glob over every occurrence's name and its path below the root -
+  `*screw*`, `wrist/gripper/*`, never `arm/…` - and a glob that matches nothing is refused). No `ocp-vscode`.
 - `./cadtool inspect` is a local tool (`tools/step_facts.py`: every leaf's ref and measures, `diff`);
   `./cadtool cad step inspect <file.step> "<ref>"` says what one ref names (the refs the viewer copies). Anything else
   is Python over the model's body (`parts.build(name)`, `lib.models.raw(model)`) or a saved STEP's tree
@@ -208,8 +209,10 @@ machines"; CI is the third machine: root `AGENTS.md` "CI").
   `cad.step.read` (or `./cadtool inspect`), which gives the instance names - build123d's `import_step` gives the
   product's.
 - `./cadtool snapshot` fits every view to its model: the `--camera` JSON's `orthographicHalfHeight` is ignored, whatever
-  `--help` says. To render versions at one scale, give each the same bounding box — tiny marker cubes
-  at fixed corners, in the scratch build — and crop.
+  `--help` says. To render versions at one scale, draw one with `--json`, take the camera it settled on from its report
+  (`settledCamera`) and draw each version as a job with that `camera` and `"output": {"tightFrame": false}` - drawn
+  exactly, with no fit: `./cadtool snapshot <file> --job job.json` (the job's `outputs` name its pictures, so no
+  `<out.png>`).
 - A snapshot taken right after a rebuild once drew the STEP's previous version (the same command a minute later drew
   the new one): when a render does not show a change you made, run it again before looking for the cause.
 
