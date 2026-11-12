@@ -27,9 +27,10 @@ cadtool - cad + this uv project (paths relative to cad/)
   ./cadtool inspect diff <a.step> <b.step> [--tol X] same geometry? (exit 1 if not) - a LOCAL tool, tools/step_facts.py
   ./cadtool cad step inspect <file.step> ["<ref>"]  what a document holds, or what one ref names (the server's own;
                                                     a document id: cad model inspect <id>)
-  ./cadtool snapshot <file.step|.urdf|.sdf|.stl|id> <out.png> [--size-profile assembly --camera iso --display ... --job job.json]
-                                                    the path you name is the file you get; cad's document type from
-                                                    the file's suffix (cad step snapshot, cad urdf snapshot ...)
+  ./cadtool snapshot <file.step|.urdf|.sdf|.stl|id> <out.png> [--size-profile assembly --camera iso --display ...]
+  ./cadtool snapshot <file|id> --job job.json       the path you name is the file you get (a job: the paths its outputs
+                                                    name); cad's document type from the file's suffix (cad step snapshot,
+                                                    cad urdf snapshot ...)
   ./cadtool export <file.step> stl|3mf|glb [out]    one mesh file per call (default: <file>.<format> beside it)
   ./cadtool validate <file.urdf|.srdf|.sdf> [--strict] [--gz-check never]
   ./cadtool viewer [file|id ...]                    the server opens each on its page, /<id> (default assemblies/arm.step);
