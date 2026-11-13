@@ -144,11 +144,11 @@ class TestCarrier:
     def test_numbers(self, carrier):
         sh, b = CFG.shell, CFG.bearings
         assert len(carrier.solids()) == 1 and carrier.is_valid
-        assert R.solid_volume(carrier) == pytest.approx(75642.270, abs=0.5)
+        assert R.solid_volume(carrier) == pytest.approx(78959.792, abs=0.5)
         bb = carrier.bounding_box()
         assert (bb.min.X, bb.min.Y, bb.min.Z) == pytest.approx((-sh.plate_dia / 2.0, -sh.plate_dia / 2.0, sleeve_end(CFG)), abs=1e-6)
         assert (bb.size.X, bb.size.Y, bb.size.Z) == pytest.approx((sh.plate_dia, sh.plate_dia, PLATE_T - sleeve_end(CFG)), abs=1e-6)
-        assert sleeve_end(CFG) == -22.0 and b.out_width < -sleeve_end(CFG)
+        assert sleeve_end(CFG) == -26.0 and b.out_width < -sleeve_end(CFG)
 
     def test_relief_seat_and_sleeve(self, carrier):
         """The face cut back over the outer race, the inner race's face inside it; the seat at the hub's grip over the

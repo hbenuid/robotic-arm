@@ -146,7 +146,7 @@ def test_cycloidal_interface():
     assert p.CYCLOIDAL_ARM_ZONE_Z == (9.0, 39.0)    # the plates' inner faces: the middle of the discs (24) between
     assert p.CYCLOIDAL_MOTOR_BODY_LEN == 48.0
     assert p.CYCLOIDAL_HUB_OD == 70.3
-    assert p.CYCLOIDAL_HUB_PROUD == 1.0 and p.CYCLOIDAL_HUB_FACE_Z == 62.0 and p.CYCLOIDAL_SLEEVE_END_Z == -22.0
+    assert p.CYCLOIDAL_HUB_PROUD == 1.0 and p.CYCLOIDAL_HUB_FACE_Z == 62.0 and p.CYCLOIDAL_SLEEVE_END_Z == -26.0
     assert p.CYCLOIDAL_SLEEVE_BOLT_COUNT == 3
     assert (p.CYCLOIDAL_HUB_BOLT_CIRCLE, p.CYCLOIDAL_HUB_BOLT_COUNT) == (50.0, 4)
     assert (p.CYCLOIDAL_HUB_BOLT_ANGLE_OFFSET_DEG, p.CYCLOIDAL_HUB_BOLT_DIA) == (45.0, 4.0)

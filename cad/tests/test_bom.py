@@ -162,7 +162,7 @@ def test_the_fork_takes_its_m4_screws_and_nuts():
     assert {n: (r["pieces"], r["geometry"]) for n, r in rows.items()} == {
         "fork_hub_screws": (4, "envelope"), "fork_hub_nuts": (4, "envelope"), "fork_foot_screws": (2, "envelope"),
         "fork_foot_nuts": (2, "envelope"), "fork_sleeve_screws": (3, "envelope"), "fork_sleeve_nuts": (3, "envelope")}
-    for kind, length in (("hub", 25), ("foot", 10), ("sleeve", 20)):
+    for kind, length in (("hub", 30), ("foot", 8), ("sleeve", 16)):
         assert rows[f"fork_{kind}_screws"]["order"].startswith(f"M4 x {length} socket head cap screw (ISO 4762)")
         assert rows[f"fork_{kind}_nuts"]["order"].startswith("M4 hex nut (ISO 4032)")
     assert not any(r["part"].startswith("fork_") for r in bom.buy_rows("cycloidal_drive"))

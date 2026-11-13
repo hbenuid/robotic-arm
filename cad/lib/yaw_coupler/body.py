@@ -35,6 +35,7 @@ from lib.yaw_coupler.layout import (
     fork_root_points,
     fork_sleeve_bolt_deg,
     fork_sleeve_bolt_x,
+    fork_sleeve_seat_r,
     hole_points,
     home_block_points,
     home_board_points,
@@ -140,23 +141,16 @@ def _top(cfg: YawCouplerConfig):
     return faceted_end(f.plate_r, (f.axis_y, f.axis_z))
 
 
-def _leg_prism(cfg: YawCouplerConfig, x0: float, x1: float, y_foot: float, seats: tuple = ()):
+def _leg_prism(cfg: YawCouplerConfig, x0: float, x1: float, y_foot: float):
     """A leg from x0 to x1 along X: its faceted top on a post as wide (plate_r either side) down to y_foot, the outline of both its
-    faces chamfered (lib/style.py EDGE_CHAMFER) - but the post's foot, where it stands on (or runs into) the disc, and
-    the flats at `seats` (deg about the drive's axis, fork_sleeve_bolt_deg's: from this frame's +Z toward its +Y), where
-    a screw's head seats across the leg's whole thickness: they stay sharp, the joint flush and the seat whole."""
+    faces chamfered (lib/style.py EDGE_CHAMFER) - but the post's foot, where it stands on (or runs into) the disc: it
+    stays sharp, the joint flush."""
     f = cfg.fork
     post = bd.Pos((y_foot + f.axis_y) / 2.0, f.axis_z) * bd.Rectangle(f.axis_y - y_foot, 2.0 * f.plate_r)
     face = bd.Plane.YZ.offset(x0) * (_top(cfg) + post).face()
     prism = single_solid(bd.extrude(face, amount=x1 - x0, dir=(1.0, 0.0, 0.0)))
-    normals = [(math.sin(math.radians(a)), math.cos(math.radians(a))) for a in seats]
-
-    def sharp(edge) -> bool:
-        c = edge.center()
-        return abs(c.Y - y_foot) < 1e-6 or any(
-            abs((c.Y - f.axis_y) * ny + (c.Z - f.axis_z) * nz - f.plate_r) < 1e-6 for ny, nz in normals)
     ends = prism.faces().sort_by(bd.Axis.X)
-    edges = [e for end in (ends[0], ends[-1]) for e in end.outer_wire().edges() if not sharp(e)]
+    edges = [e for end in (ends[0], ends[-1]) for e in end.outer_wire().edges() if abs(e.center().Y - y_foot) >= 1e-6]
     return prism.chamfer(EDGE_CHAMFER, None, edges)
 
 
@@ -178,7 +172,8 @@ def _fork(cfg: YawCouplerConfig):
 def _fork_cuts(cfg: YawCouplerConfig):
     """The pocket over the hub; the hub's bolts through the hub leg, counterbored from outside; the motor side cut back
     for the motor leg (the ring motor_leg_gap off it, the disc at its outer face, where the foot butts on); the motor
-    leg's 2 M4s and their nuts' slots, from the disc's top face down past the screws, flats across z."""
+    leg's 2 M4s (their holes 0.5 past the screws' tips) and their nuts' slots, from the disc's top face down past the
+    screws, flats across z."""
     f, d, k = cfg.fork, cfg.disc, cfg.yoke
     (hx0, hx1), (mx0, mx1), (px, pz) = fork_hub_leg_x(cfg), fork_motor_leg_x(cfg), k.pocket_half
     cuts = [_box((-px, px), (k.pocket_y0, f.axis_y), (-pz, pz)),
@@ -186,10 +181,10 @@ def _fork_cuts(cfg: YawCouplerConfig):
             _box((mx1, _FAR), (-_FAR, _FAR), (-_FAR, _FAR))]
     for y, z in fork_hub_bolts(cfg):
         cuts += [_xcyl(M4_CLEAR / 2.0, hx0 - NUDGE, hx1 + NUDGE, y, z), _xcyl(COUNTERBORE / 2.0, hx0 - NUDGE, hx0 + HEAD_SEAT, y, z)]
-    _, nut_x1, nut_x0 = fork_motor_bolt_x(cfg)
+    seat_x, nut_x1, nut_x0 = fork_motor_bolt_x(cfg)
     half_af, corner = (M4_NUT.af + NUT_SLOT) / 2.0, (M4_NUT.af + NUT_SLOT) / math.sqrt(3.0)
     for y, z in fork_motor_bolts(cfg):
-        cuts += [_xcyl(M4_CLEAR / 2.0, nut_x0 - 1.0, mx1 + NUDGE, y, z),
+        cuts += [_xcyl(M4_CLEAR / 2.0, seat_x - f.motor_screw_len - 0.5, mx1 + NUDGE, y, z),
                  _box((nut_x0, nut_x1), (y - corner, d.top_y + NUDGE), (z - half_af, z + half_af))]
     return cuts
 
@@ -205,15 +200,24 @@ def _sleeve_slot(cfg: YawCouplerConfig, deg: float):
     return bd.Pos(0.0, f.axis_y, f.axis_z) * bd.Rot(90.0 - deg, 0.0, 0.0) * slot
 
 
+def _sleeve_counterbore(cfg: YawCouplerConfig, deg: float):
+    """The round counterbore over that hole (sleeve_counterbore_dia), from its floor (fork_sleeve_seat_r: the head's
+    seat) out through the ring's flat at deg - built along +Y, then turned about the axis like the hole."""
+    f = cfg.fork
+    corner = f.plate_r / math.cos(math.pi / SIDES)
+    bore = _ycyl(f.sleeve_counterbore_dia / 2.0, fork_sleeve_seat_r(cfg), corner + 1.0, fork_sleeve_bolt_x(cfg))
+    return bd.Pos(0.0, f.axis_y, f.axis_z) * bd.Rot(90.0 - deg, 0.0, 0.0) * bore
+
+
 def build_motor_leg(cfg: YawCouplerConfig):
     """DEFAULT's motor leg (parts/base/j1_motor_leg), in the coupler's frame: a solid faceted top round the drive's
-    axis (_leg_prism: flats plate_r off it, its outline chamfered but on the flats the sleeve's screws seat on), bored
-    to the sleeve, on a post as wide down to fork_post_y, its faceted root under it standing on the disc's top face; its
-    foot the root's part past the leg's outer face, down to the disc's underside; the 2 M4s through the foot from
-    counterbores; the sleeve's radial M4s' slotted holes through the top."""
+    axis (_leg_prism: flats plate_r off it, its outline chamfered), bored to the sleeve, on a post as wide down to
+    fork_post_y, its faceted root under it standing on the disc's top face; its foot the root's part past the leg's
+    outer face, down to the disc's underside; the 2 M4s through the foot from counterbores; the sleeve's radial M4s'
+    slotted holes through the top, from round counterbores in its flats (the heads flush)."""
     f, d = cfg.fork, cfg.disc
     x0, x1 = fork_motor_leg_x(cfg)
-    leg = _leg_prism(cfg, x0, x1, fork_post_y(cfg), seats=fork_sleeve_bolt_deg(cfg))
+    leg = _leg_prism(cfg, x0, x1, fork_post_y(cfg))
     above = _box((-_FAR, _FAR), (d.top_y, _FAR), (-_FAR, _FAR)) + _box((x1, _FAR), (-_FAR, _FAR), (-_FAR, _FAR))
     leg = leg + (_root(cfg, x0, x1) & above)
     leg = leg - _xcyl(f.ring_bore_dia / 2.0, x0 - NUDGE, _FAR, f.axis_y, f.axis_z)
@@ -221,7 +225,7 @@ def build_motor_leg(cfg: YawCouplerConfig):
     for y, z in fork_motor_bolts(cfg):
         leg = leg - _xcyl(M4_CLEAR / 2.0, x1 - NUDGE, _FAR, y, z) - _xcyl(COUNTERBORE / 2.0, seat_x, _FAR, y, z)
     for deg in fork_sleeve_bolt_deg(cfg):
-        leg = leg - _sleeve_slot(cfg, deg)
+        leg = leg - _sleeve_slot(cfg, deg) - _sleeve_counterbore(cfg, deg)
     return single_solid(leg)
 
 

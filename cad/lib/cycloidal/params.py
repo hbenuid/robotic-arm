@@ -283,8 +283,12 @@ class ShellParams:
     #                                    ... and presses on over the last out_width, at the hub's grip (OutputHubParams.od)
     end_lip: float = 3.0               # [DESIGN] the shell's lip past each 6814 (the port's output wall, StackUp.output_wall)
     hub_nut_depth: float = 4.7         # [DESIGN] the hub's 4 captive nuts' pockets from its flange's inner face: the yoke's
-    #                                    M4 x 25 (lib/yaw_coupler/params.py ForkParams.hub_screw_len) end flush with the nuts
-    yoke_leg: float = 8.0              # [DESIGN] the j1_coupler yoke's two legs (lib/yaw_coupler/params.py ForkParams) ...
+    #                                    M4 x 30 (lib/yaw_coupler/params.py ForkParams.hub_screw_len) end 1.0 past the nuts,
+    #                                    0.5 inside the pockets
+    yoke_leg: float = 12.0             # [DESIGN] the j1_coupler yoke's two legs (lib/yaw_coupler/params.py ForkParams), alike:
+    #                                    the motor leg's ring round its radial M4s' round counterbores
+    #                                    (ForkParams.sleeve_counterbore_dia), 2.0 of it either side - room for the outline's
+    #                                    EDGE_CHAMFER on the seat flats and 0.5 of flat beside it ...
     end_plate_gap: float = 1.0         # [DESIGN] ... each this far off an end of the shell; the hub's face and the sleeve's
     #                                    end on their outer faces
     sleeve_bolt_deg: tuple = (90.0, 0.0, 180.0)   # [DESIGN] the sleeve's radial M4s from the yoke's motor-side leg

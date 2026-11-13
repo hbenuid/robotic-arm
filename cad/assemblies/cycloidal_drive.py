@@ -7,7 +7,7 @@ off it - lib/upper_arm/link.py, placed by assemblies/arm.py), which this module'
 
 Frame: the drive repo's frame - Z is the motor axis, z=0 the motor plate's OUTER face (NEMA 17 mounting face), the
 motor body in -Z (its board to z=-62.1), the shell z -13..61 (the shell ring -13..9, the body 9..61), the middle of
-the discs at z=24, the hub's face at z=62 and the sleeve's end at z=-22 on the j1_coupler yoke's two legs.
+the discs at z=24, the hub's face at z=62 and the sleeve's end at z=-26 on the j1_coupler yoke's two legs.
 assemblies/arm.py places the module at placements.json "cycloidal_drive#1" (the SolidWorks node's pose: horizontal
 axis).
 
@@ -74,9 +74,9 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 # totals(body) after a geometry change): the drive's own leaves and solids + the 7-solid vendor motor + 16 fasteners +
 # the 13-solid board kit, and the same per rigid body.
 EXPECTED = {
-    "leaves": 19, "solids": 73, "solid_volume": 554384.471,
+    "leaves": 19, "solids": 73, "solid_volume": 557701.769,
     "bodies": {
-        "stator": {"leaves": 13, "solids": 37, "solid_volume": 411183.220},
+        "stator": {"leaves": 13, "solids": 37, "solid_volume": 414500.518},
         "rotor": {"leaves": 6, "solids": 36, "solid_volume": 143201.251},
     },
 }
