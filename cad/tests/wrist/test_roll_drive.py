@@ -2,12 +2,12 @@
 (a wrist offset) and parallel to the SolidWorks roll axis, the module frame on wrist_link (its frame), the stack (the
 pancake centred on the pitch axis, its 20T's band the 40T's, the 6806 pair under the band, the rotor split between them
 and clamped), the belt a stock length, the parts' fits inside the module and against wrist_link, the pancake's way in,
-the rotor's walls, and what the drive replaced (the pancake's and its 20T's records retired, the bracket dropped).
+the plate's slots on its tapped holes and its pilot, the rotor's walls, and what the drive replaced (the pancake's and its 20T's records retired, the bracket dropped).
 The joint limits it sets: tests/test_sweeps.py."""
 import math
 
 import pytest
-from build123d import Location, Vector
+from build123d import GeomType, Location, Vector
 from cad.build123d import closest_points
 
 from assemblies import wrist_roll_drive as M
@@ -24,6 +24,7 @@ from lib.wrist.layout import (
     face_nut_pocket,
     module_frame_in_host,
     motor_pocket,
+    pad_bolt_points,
     pancake_plug_groove,
     rear_line,
     rear_z,
@@ -315,3 +316,49 @@ def test_the_board_sits_on_the_pancake(module, frame):
     assert want[0] > S["x_motor"] + D.board_w / 4.0                    # toward the side wall
     assert any(math.dist(want, ((b.min.X + b.max.X) / 2.0, (b.min.Y + b.max.Y) / 2.0)) < 1e-6
                for b in (s.bounding_box() for s in board.solids()))
+
+
+def _z_cylinders(shape) -> list[tuple[float, float, float, float, float]]:
+    """(x, y, radius, z0, z1) of each cylindrical face of `shape` along Z: its axis' x-y (Face.axis_of_rotation, never
+    a face centre: lib/AGENTS.md), its radius, its z extent."""
+    out = []
+    for f in shape.faces().filter_by(GeomType.CYLINDER):
+        axis, bb = f.axis_of_rotation, f.bounding_box()
+        if abs(abs(axis.direction.Z) - 1.0) < 1e-6:
+            out.append((axis.position.X, axis.position.Y, f.radius, bb.min.Z, bb.max.Z))
+    return out
+
+
+@pytest.mark.slow
+def test_the_plate_slots_on_the_pancakes_holes(module, frame):
+    """The plate's 4 bolt slots on the pancake's 4 tapped M3 and its pilot slot on its Ø22 pilot, each measured on its
+    part: the vendor model's tapped holes (bores under M3_CLEAR off the pilot, up to the mounting face) on pad_bolt_points
+    and nowhere else, the pilot on the motor's axis; each slot through the plate (pad_t from the pancake's face) centred
+    on them - its end arcs pad_slot_len / 2 either way along Y, the belt's tension travel - an M3's clearance
+    (M3_CLEAR) wide, the pilot's wider than the pilot."""
+    p, motor, face, half = D.pancake, (S["x_motor"], S["y_motor"]), S["z_motor_face"], D.pad_slot_len / 2.0
+    points = pad_bolt_points(DEFAULT)
+    cyls = _z_cylinders(_leaf(module, "nema17_pancake:wrist_roll"))
+    holes = [c for c in cyls if 1.0 < c[2] < PARAMS.M3_CLEAR / 2.0 and c[4] > face - 0.5
+             and math.dist(c[:2], motor) > p.pilot_dia / 2.0]
+    for xy in points:
+        assert any(math.dist(c[:2], xy) < 1e-3 for c in holes), f"no tapped hole of the pancake at {xy}"
+    assert all(min(math.dist(c[:2], xy) for xy in points) < 1e-3 for c in holes), "a tapped hole off the slots"
+    pilot = [c for c in cyls if math.dist(c[:2], motor) < 1e-3 and math.isclose(c[2], p.pilot_dia / 2.0, abs_tol=1e-3)
+             and c[4] > face]
+    assert pilot, "no Ø22 pilot on the motor's axis in front of its mounting face"
+    plate = [c for c in _z_cylinders(frame)
+             if math.isclose(c[3], face, abs_tol=1e-3) and math.isclose(c[4], face + D.pad_t, abs_tol=1e-3)]
+
+    def width(xy) -> float:
+        """The slot centred on xy: its two end arcs, half either way along Y through the plate - its width."""
+        radii = []
+        for dy in (-half, half):
+            ends = [c[2] for c in plate if math.dist(c[:2], (xy[0], xy[1] + dy)) < 1e-3]
+            assert ends, f"no slot end through the plate at ({xy[0]:.2f}, {xy[1] + dy:.2f})"
+            radii += ends
+        return 2.0 * min(radii)
+
+    widths = [round(width(xy), 3) for xy in points]
+    assert min(widths) >= PARAMS.M3_CLEAR - 1e-6, f"the bolt slots {widths} wide, under M3_CLEAR ({PARAMS.M3_CLEAR})"
+    assert width(motor) > p.pilot_dia, f"the pilot slot {width(motor):.3f} wide, the pilot Ø{p.pilot_dia}"
