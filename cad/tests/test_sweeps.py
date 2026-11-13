@@ -33,13 +33,12 @@ from lib.wrist import DEFAULT as WRIST
 from lib.yaw_coupler.params import RIM_CLEAR
 from robot import frames as F
 from tests import built
-from tests.helpers import interference
+from tests.helpers import JITTER, distance, interference
 
 pytestmark = pytest.mark.slow
 CLEAR = 1.0   # mm: what a part keeps off another link's parts
 BEYOND_ELBOW = ("elbow_link", "forearm_link", "wrist_pitch_link", "wrist_roll_link", "jaw_a_link", "jaw_b_link")
 _PARENT = {j.child: j for j in F.JOINTS}
-_JITTER = ((1.0, 0.7, 1.3), (-1.1, 0.9, -0.6), (0.4, -1.2, 0.8))   # x 0.01 mm: _distance()
 
 
 @functools.cache
@@ -96,17 +95,6 @@ def _box_gap(a, b) -> float:
 def _boxed(parts) -> list:
     """(label, shape, its bounding box) of every part - a pose measured against many boxed once."""
     return [p if len(p) == 3 else (*p, p[1].bounding_box()) for p in parts]
-
-
-def _distance(a, b) -> float:
-    """a.distance_to(b), its false zeros caught: BRepExtrema now and then reads 0 at one exact pose of two solids that
-    neither touch nor overlap (its inside-the-solid check misfires - forearm_roll -140 / -145 and elbow_pitch +92, 1.0 /
-    1.2 mm either side). A zero is measured again with the pose moved 0.01 mm three ways and the median kept: a false
-    zero belongs to one pose, a real touch stays within the jitter."""
-    d = a.distance_to(b)
-    if d >= 0.05:
-        return d
-    return sorted(a.moved(Location(tuple(0.01 * v for v in j))).distance_to(b) for j in _JITTER)[1]
 
 
 def _hulls(parts, joint: str) -> list:
@@ -180,7 +168,7 @@ def _closest(movers, fixed, limit: float, hulls=None) -> tuple:
             if d < limit and hulls is not None:
                 d = hulls[i][1].distance_to(fs)
             if d < limit:
-                d = _distance(ms, fs)
+                d = distance(ms, fs)
             if d < best[0]:
                 best = (d, ml, fl)
     return best
@@ -302,7 +290,7 @@ def test_the_wrist_roll_limit_stops_short_of_the_hard_stop():
     limit, nominal = PARAMS.WRIST_ROLL_LIMIT_DEG, 180.0 - WRIST.roll.stop_deg_width
     for sign in (1.0, -1.0):
         (_, at_limit), = _posed(shaft, ("wrist_roll", sign * limit))
-        gap = _distance(at_limit, frame)
+        gap = distance(at_limit, frame)
         assert gap >= 0.5, f"roll {sign * limit:+.0f}: the shaft {gap:.2f} mm from the frame"
         (_, at_nominal), = _posed(shaft, ("wrist_roll", sign * nominal))
         vol = interference(at_nominal, frame)
@@ -333,7 +321,7 @@ def test_the_forearm_roll_limit_stops_short_of_the_hard_stop():
     limit, nominal = PARAMS.FOREARM_ROLL_LIMIT_DEG, 180.0 - FOREARM.drive.stop_deg_width
     for sign in (1.0, -1.0):
         (_, at_limit), = _posed(shaft, ("forearm_roll", sign * limit))
-        gap = _distance(at_limit, block)
+        gap = distance(at_limit, block)
         assert gap >= 0.5, f"roll {sign * limit:+.0f}: the shaft {gap:.2f} mm from the frame"
         (_, at_nominal), = _posed(shaft, ("forearm_roll", sign * nominal))
         vol = interference(at_nominal, block)
@@ -403,11 +391,11 @@ def _holder(label: str, shape) -> _Corners:
 
 def _plug_overlap(room, part) -> float:
     """interference(room, part); a hit measured again with the room moved 0.01 mm two ways and the median kept (as
-    _distance(): a boolean that misfires at one exact pose)."""
+    distance(): a boolean that misfires at one exact pose)."""
     v = interference(room, part)
     if v < 0.01:
         return v
-    return sorted([v, *(interference(_moved(room, Location(tuple(0.01 * c for c in j))), part) for j in _JITTER[:2])])[1]
+    return sorted([v, *(interference(_moved(room, Location(tuple(0.01 * c for c in j))), part) for j in JITTER[:2])])[1]
 
 
 _SH, _EL, _WR = PARAMS.SHOULDER_PITCH_LIMITS_DEG, PARAMS.ELBOW_PITCH_LIMITS_DEG, PARAMS.WRIST_PITCH_LIMITS_DEG

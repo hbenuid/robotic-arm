@@ -148,5 +148,7 @@ step 5 in `cad/AGENTS.md` has the `totals()` one-liner).
 - `distance_to` (BRepExtrema, and `cad.build123d.closest_points`, the same query - on the shapes' faces too) now and
   then returns 0 at one exact pose of two solids that neither touch nor overlap: the roll shaft against the roll frame
   read 0.000 at -140 and -145 deg (1.004 either side, no overlap), the frame against `j1_link` at elbow +92 (1.217
-  either side). A zero is a false contact until a second look agrees - `tests/test_sweeps.py _distance` measures it
-  again with the pose moved 0.01 mm three ways and keeps the median; an overlap (`helpers.interference`) is real.
+  either side), the wrist 90T against the wrist home clip at wrist_pitch +10 (2.4 either side, arm64 macOS). A zero is
+  a false contact until a second look agrees - `helpers.distance` measures it again with the pose moved 0.01 mm three
+  ways (`helpers.JITTER`) and keeps the median (the sweeps and the wrist home sensor's clearances measure with it); an
+  overlap (`helpers.interference`) is real.
