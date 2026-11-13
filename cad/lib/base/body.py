@@ -222,14 +222,16 @@ def _motor_seat(cfg: BaseConfig, plate):
 
 
 def _plate(cfg: BaseConfig):
-    """The motor plate across the D: the central opening (out to the wall on the -X side), the curved slot, the
-    motor's seat and, on the SolidWorks base, the belt slot (the motor mount has none)."""
+    """The motor plate across the D: the central opening (out to the wall on the -X side), the curved slot (with
+    plate.arc_slot: the SolidWorks base's), the motor's seat and, on the SolidWorks base, the belt slot (the motor mount
+    has none)."""
     s, p, m = cfg.shell, cfg.plate, cfg.motor
     ri, y = inner_r(cfg, p.y[0]), (p.y[0] - NUDGE, p.y[1] + NUDGE)   # the inside at the plate's underside, its widest
     plate = _d(ri, s.x1 - s.wall, p.y, sides=s.sides)
     plate = plate - _bore(p.opening_r, *y) - _sector(_corner(ri, s.sides) + 1.0, p.open_deg, y)
-    arc = bd.CenterArc((0.0, 0.0), p.arc_slot_r, -p.arc_slot_half_deg, 2.0 * p.arc_slot_half_deg)
-    plate = plate - bd.Pos(0.0, 0.0, y[0]) * bd.extrude(bd.SlotArc(arc, p.arc_slot_w), amount=y[1] - y[0])
+    if p.arc_slot:
+        arc = bd.CenterArc((0.0, 0.0), p.arc_slot_r, -p.arc_slot_half_deg, 2.0 * p.arc_slot_half_deg)
+        plate = plate - bd.Pos(0.0, 0.0, y[0]) * bd.extrude(bd.SlotArc(arc, p.arc_slot_w), amount=y[1] - y[0])
     plate = _motor_seat(cfg, plate)
     if cfg.joint is None:
         cz = m.centre[1]

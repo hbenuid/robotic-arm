@@ -3,9 +3,10 @@ volume / bbox match is tests/test_reference_match.py's; here the features are pr
 what moved), the interface values lib/params.py and lib/datum.py take from it are the ones the rest of the arm
 uses (the base_yaw motor's seat, the bottom face), and DEFAULT - what the part builds - changes the bearing bore (the
 6806-2RS pair's seats and lip, the wrist's) and the seat ring (inside the thrust bearing's bore), lowers the bottom
-face under the base_yaw motor's board, cuts the motor lobe off at the joint face (base_motor_mount, its seat
+face under the base_yaw motor's board, fills the plate's curved slot, cuts the motor lobe off at the joint face (base_motor_mount, its seat
 slotted where the stock belt puts the motor: tests/base/test_motor_mount.py), and leans the walls out along
 j1_coupler's cone onto the flared foot (tests/base/test_foot.py)."""
+import math
 from dataclasses import replace
 
 import pytest
@@ -100,10 +101,12 @@ def test_legacy_features(legacy):
 
 def test_default_plate_rises_with_the_belt():
     """The 120T lost its plain hub (lib/pulley/params.py YAW_HUB_CUT): the belt rose that much toward the cap, and the
-    plate with it - the SolidWorks plate's height under the belt, its shape the SolidWorks one -, so the bottom face too."""
+    plate with it - the SolidWorks plate's height under the belt, its shape the SolidWorks one less the curved slot -,
+    so the bottom face too."""
     rise = YAW_BELT_Y - _SW_BELT_Y
     assert rise == pytest.approx(YAW_HUB_CUT) == pytest.approx(6.5)
-    assert replace(DEFAULT.plate, y=LEGACY.plate.y) == LEGACY.plate
+    assert replace(DEFAULT.plate, y=LEGACY.plate.y, arc_slot=True) == LEGACY.plate
+    assert LEGACY.plate.arc_slot and not DEFAULT.plate.arc_slot
     assert DEFAULT.plate.y == pytest.approx(tuple(y + rise for y in LEGACY.plate.y))
     assert YAW_BELT_Y - DEFAULT.plate.y[1] == pytest.approx(_SW_BELT_Y - LEGACY.plate.y[1]) == pytest.approx(8.8)
     assert BASE_BOTTOM_Y == pytest.approx(-105.5)
@@ -146,3 +149,6 @@ def test_default_changes_the_bore_and_the_ring_and_ends_at_the_joint(base, legac
     y_plate, y_legacy = (sum(c.plate.y) / 2.0 for c in (DEFAULT, LEGACY))           # the plate YAW_HUB_CUT higher
     assert is_inside(base, 52, y_plate, 30) and is_inside(legacy, 52, y_legacy, 30)    # the plate's neck as before
     assert is_inside(base, 54, y_plate, 0) and not is_inside(legacy, 54, y_legacy, 0)  # its belt slot is the mount's
+    for deg in (0.0, 40.0, -40.0):                                                     # the curved slot filled
+        x, z = (LEGACY.plate.arc_slot_r * f(math.radians(deg)) for f in (math.cos, math.sin))
+        assert is_inside(base, x, y_plate, z) and not is_inside(legacy, x, y_legacy, z)
