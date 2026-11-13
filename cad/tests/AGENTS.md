@@ -30,7 +30,7 @@ vs SolidWorks + the module lock — the numbers are IN that file; the arm's leaf
 `_occurrences.colour()`, in the arm and in the standalone gripper (the standalone drives' in their own tests), the
 `lib/style.py` palette distinct, `ACCENT` only on printed parts, every `<joint>_belt` bought), `test_bom.py` (the print / buy lists
 partition `parts.names()` by the flag, the occurrence counts, the drive's pieces follow `DEFAULT_CONFIG`, `EXTRAS`
-well-formed), `test_belts.py` (the GT2 belts, purchased with no reference: each a stock length, its loop that long
+well-formed, the parts at `LAYER_H_FINE` - its `FINE_LAYERS` set, printed parts only), `test_belts.py` (the GT2 belts, purchased with no reference: each a stock length, its loop that long
 round its pulleys, the band on their tooth tips, their volume / bbox written in), `test_params_invariants.py` (locks),
 `test_robot.py` (link partition, frames, FK at
 zero = capture, the committed meshes vs a fresh export, inertials, URDF/SRDF/SDF consistency + cad's validators via

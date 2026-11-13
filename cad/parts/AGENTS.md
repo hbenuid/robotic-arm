@@ -156,14 +156,21 @@ Every part carries the make/buy label once: `COTS = True` in its module means **
 stages, not make/buy: never sort parts into make/buy folders or keep a second list by hand. Everything else is
 generated from the label:
 - **Lists** — `./cadtool python tools/bom.py [--module <module>] [--md|--json]` (kernel-free; `<module>` one of
-  `assemblies/arm.py MODULES`) prints what to print (part, quantity) and what to buy (`PURCHASE_SPEC`, pieces =
+  `assemblies/arm.py MODULES`) prints what to print (part, quantity, layer height) and what to buy (`PURCHASE_SPEC`, pieces =
   occurrences × `PURCHASE_QTY`, mass, vendor file or envelope), counted from the assembly tables. Purchased items that
   are **not modelled** are the one hand-kept table, `EXTRAS` in that tool (`assemblies/AGENTS.md`).
 - **STLs** — `./cadtool python tools/export_printables.py [--parts …]` writes `print/<name>.stl` for every printed part
   (git-ignored, mm, part-local frame, with the quantity to print); bought parts are refused.
+- **Layer height** — every printed part prints at `lib/params.py LAYER_H`, but a gear, a cycloidal disc or a timing
+  pulley at `LAYER_H_FINE`: its module declares `FINE_LAYERS = True` (`parts.fine_layers()`, the print list's
+  `layer_mm`, `tests/test_bom.py`). Fine layers smooth tooth and lobe flanks. A bearing seat printed upright gains
+  little from them (its diameter lies in the layer plane); a hole or a nut pocket printed on its side changes with the
+  layer height - its gauge prints at its part's (Fit gauges, next). No adaptive / variable layer height: a part's fits
+  are gauged at one.
 - **Fit gauges** — before the first parts: `./cadtool python tools/export_gauges.py` writes the test prints of every fit
   where a bought part meets a printed one (`print/gauges/`, one 3MF per plate; `lib/gauges`); the step that fits is the
-  constant's value. A part that adds a fit adds its `Use` to `lib/gauges/fits.py`.
+  constant's value. A gauge prints at the layer height of the parts it tests - a fit printed on its side, whose parts
+  print at both, at each. A part that adds a fit adds its `Use` to `lib/gauges/fits.py`.
 - **Printability** — before a printed part's first print, and after its geometry changes: `./cadtool cad stl dfm
   print/<name>.stl --process printing --angle-limit 45` (watertight, wall thickness, overhang area, support volume;
   45° is FDM's self-supporting angle in the `cad` skill's `references/manufacturing-printing.md`), and with

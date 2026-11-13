@@ -17,6 +17,7 @@ from lib.datum import IDENTITY
 
 NAME = pathlib.Path(__file__).stem
 ACCENT = True                 # the accent colour, lib/style.py: a drive part
+FINE_LAYERS = True            # printed at lib/params.py LAYER_H_FINE: its lobes
 REFERENCE = NAME
 CONVERTED = True
 LOCAL_FROM_REF = IDENTITY

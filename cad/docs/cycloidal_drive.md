@@ -88,7 +88,7 @@ fit, 6003 radial clearance, the 35.10 bore) or bushings/rollers on the pins — 
 | Support-pin hole | Ø5.15 × 11 blind (`support_pin_dia` + 2 × `dowel_bore_clearance_add`, `support_pin_hole_depth`) | keeps a 1 mm wall to the D-bore |
 | Support pin | 5 × 20 h6 dowel | 11 in the shaft + 4 gap (to the hub's flange) + 5 in the 625 (its pocket in the flange's inner face; the port's 2 gap + 5 + 2 proud) |
 | Bridge / retention flange | Ø23.10 (`bridge_flange_od` = seat OD + `bridge_flange_add` 6) | ruled loft (+e → −e) across the spacer zone; keeps the 6003s apart |
-| Material | PETG, 100 % infill, 0.16 mm layers | built at its stack position z 9..35 |
+| Material | PETG, 100 % infill, `LAYER_H` (`parts/AGENTS.md` Printed vs. bought) | built at its stack position z 9..35 |
 
 ## 2. Bearings (`cfg.bearings`)
 
@@ -289,7 +289,8 @@ tight. Never design a hole smaller than its steel part.
 | Mating surfaces | +0.15 | `mating_surface_add` | pilot recess 22.30 |
 | Bolt / head clearance | +0.4 on the Ø | `bolt_clearance_add` | M3 3.4 / 5.7, M4 4.4 |
 
-Print the discs flat at 100 % infill; ≤ 0.16 mm layers for bearing seats; test-print the fit gauges
+Print the discs flat at 100 % infill and `LAYER_H_FINE`, the drive's other printed parts at `LAYER_H` (`parts/AGENTS.md`
+Printed vs. bought); test-print the fit gauges
 first (`tools/export_gauges.py`: every fit in this table at steps round its value); PETG shrinks 0.3–0.5 % over 129 mm
 (the housing may need ~129.5 — not compensated).
 

@@ -1,5 +1,6 @@
 """The arm's print list and buy list, generated from the one make/buy label every part carries
-(parts.bought(name): the module declares COTS = True -> bought, anything else -> printed).
+(parts.bought(name): the module declares COTS = True -> bought, anything else -> printed). A printed part's row gives
+its layer height (layer_mm: lib/params.py LAYER_H, or LAYER_H_FINE where the module declares FINE_LAYERS = True).
 
     ./cadtool python tools/bom.py [--module cycloidal_drive|forearm_roll_drive|gripper|wrist_roll_drive] [--md | --json]
 
@@ -23,6 +24,7 @@ from assemblies import arm
 from assemblies._occurrences import module_rows
 from lib import reference as R
 from lib.forearm import DEFAULT as _FOREARM
+from lib.params import LAYER_H, LAYER_H_FINE
 from lib.wrist import DEFAULT as _WRIST
 from lib.wrist.layout import clamp_points as wrist_clamp_points
 
@@ -87,9 +89,14 @@ def _state(name: str) -> str:
     return "parametric" if parts.load(name).CONVERTED else "wrapper"
 
 
+def layer_mm(name: str) -> float:
+    """The layer height a printed part prints at: LAYER_H_FINE where its module declares FINE_LAYERS, else LAYER_H."""
+    return LAYER_H_FINE if parts.fine_layers(name) else LAYER_H
+
+
 def print_rows(module: str | None = None) -> list[dict]:
-    """The printed parts: one row per part, with how many to print."""
-    return [{"part": name, "group": parts.GROUPS[name], "qty": n, "state": _state(name)}
+    """The printed parts: one row per part, with how many to print and at which layer height."""
+    return [{"part": name, "group": parts.GROUPS[name], "qty": n, "layer_mm": layer_mm(name), "state": _state(name)}
             for name, n in sorted(part_counts(module).items()) if not parts.bought(name)]
 
 

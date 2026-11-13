@@ -25,6 +25,7 @@ from lib.pulley.body import build_pulley
 
 NAME = pathlib.Path(__file__).stem
 ACCENT = True                 # the accent colour, lib/style.py: a pulley
+FINE_LAYERS = True            # printed at lib/params.py LAYER_H_FINE: its GT2 teeth
 REFERENCE = None              # no reference file: tests/pulley/test_gt2_pulley_120t.py holds its numbers
 CONVERTED = True
 LOCAL_FROM_REF = IDENTITY     # modelled in the 90T's part frame
