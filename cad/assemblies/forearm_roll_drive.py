@@ -31,10 +31,12 @@ from assemblies._occurrences import located_children
 from lib import reference as R
 from lib.assembly import assembly
 from lib.forearm import DEFAULT, roll_idler_xy, stack_positions
+from lib.forearm.roll import home_magnet_frame, home_sensor_frame
 from lib.models import raw
 
 S = stack_positions(DEFAULT)
 _IDLER = roll_idler_xy(DEFAULT)   # the roll belt's tensioner's axis (module x, y)
+_HOME_SENSOR = home_sensor_frame(DEFAULT)   # the KY-003's frame behind the shaft (lib/forearm/roll.py)
 
 
 def _at(x: float = 0.0, y: float = 0.0, z: float = 0.0):
@@ -71,18 +73,25 @@ OCCURRENCES = [
     # the back panel in the frame's step on the rear face, over the shaft's bay, and its magnet pairs (built at their stations)
     ("forearm_roll_back_panel", None, _at()),
     ("roll_back_magnets",     None, _at()),
+    # the home sensor (RollHomeParams): its carrier on the opening's floor under the panel (built at its station), the
+    # KY-003 on it behind the shaft and the board's M2s + nuts (in the KY-003's frame); the magnet in the shaft's rear face
+    ("roll_home_carrier",     None, _at()),
+    ("ky003_hall_sensor",     "forearm_roll", _HOME_SENSOR),
+    ("roll_home_board_screws", None, _HOME_SENSOR),
+    ("roll_home_board_nuts",  None, _HOME_SENSOR),
+    ("roll_home_magnet",      None, home_magnet_frame(DEFAULT)),
 ]
 
 # The module's rigid bodies (robot/frames.py LINKS: "forearm_roll_drive#1:stator" in elbow_link, ":rotor" in forearm_link).
-ROTOR = frozenset({"forearm_roll_shaft", "forearm_roll_pulley", "roll_clamp_screws", "roll_clamp_nuts"})
+ROTOR = frozenset({"forearm_roll_shaft", "forearm_roll_pulley", "roll_clamp_screws", "roll_clamp_nuts", "roll_home_magnet"})
 BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES) - ROTOR}
 
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("stator") after any geometry change.
 EXPECTED = {
-    "leaves": 18, "solids": 49, "solid_volume": 393012.115,
-    "bodies": {"stator": {"leaves": 14, "solids": 39, "solid_volume": 348962.678},
-               "rotor": {"leaves": 4, "solids": 10, "solid_volume": 44049.437}},
+    "leaves": 23, "solids": 58, "solid_volume": 395192.497,
+    "bodies": {"stator": {"leaves": 18, "solids": 47, "solid_volume": 351145.911},
+               "rotor": {"leaves": 5, "solids": 11, "solid_volume": 44046.586}},
 }
 
 

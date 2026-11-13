@@ -69,7 +69,11 @@ robot/
   motor turn at 16° of the joint. `WRIST_PITCH_HOME_DEG` - wrist_pitch's (a KY-003 on a clip round the forearm's wrist
   boss end, under the wrist 90T's outer face, its magnet glued on that face: `lib/forearm/params.py WristHomeParams`),
   likewise: the zone runs on past the lower end, homing turns toward − until the switch turns on; `GT2_RATIO`'s 4.5:1
-  puts a motor turn at 80° of the joint. The other joints have no home sensor yet (`docs/open_issues.md`).
+  puts a motor turn at 80° of the joint. `FOREARM_ROLL_HOME_DEG` - forearm_roll's (a KY-003 on a carrier behind the roll
+  shaft, in the roll frame's bay under the back panel, its magnet pressed into the shaft's rear face:
+  `lib/forearm/params.py RollHomeParams`), likewise: the zone runs on past the lower end, homing turns toward − until the
+  switch turns on; `FOREARM_ROLL_RATIO`'s 4.5:1 puts a motor turn at 80° of the joint. wrist_roll has no home sensor yet
+  (`docs/open_issues.md`).
 
 ## Joints and links
 `base_link → base_yaw → shoulder_link → shoulder_pitch → upper_arm_link → elbow_pitch → elbow_link →

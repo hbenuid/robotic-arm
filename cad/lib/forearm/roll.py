@@ -33,6 +33,7 @@ from lib.forearm.link import x_cylinder, yz_prism
 from lib.forearm.params import DEFAULT, ForearmConfig
 from lib.geom import box, chamfer_outline, cylinder, faceted_end, hex_prism, nut_slot, single_solid, stop_wedge
 from lib.pulley.teeth import gt2_ring
+from lib.sensors import A3144_HALL_DEPTH, KY003_BOARD_W, KY003_HOLE_INSET, ky003_hall_point
 from lib.units import NUDGE
 
 FAR = 500.0   # past every part: the half-plane behind the frame's front face
@@ -139,6 +140,83 @@ def back_grill(cfg: ForearmConfig = DEFAULT):
     slots = [bd.Pos(k * b.grill_pitch, (bottom + top) / 2.0) * bd.Rectangle(b.grill_w, top - bottom) for k in range(-n, n + 1)]
     cut = _on_back(sum(slots[1:], slots[0]) & field, -1.0, b.t + b.rim_h + 2.0, cfg)
     return cut & _z_prism(tower_section(cfg, d.tower_y - half))
+
+
+# ---- the home sensor (RollHomeParams): where its parts sit, the shaft's magnet pocket, the frame's wire hole ---------
+def home_hall_point(cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float]:
+    """The KY-003's hall element in the module frame: chip_r off the roll axis, home_deg round from the magnet (where the
+    magnet stands at forearm_roll home_deg), air + the element's depth behind the shaft's rear face."""
+    h = cfg.drive.home
+    a = math.radians(h.magnet_deg + h.home_deg)
+    return (h.chip_r * math.cos(a), h.chip_r * math.sin(a), stack_positions(cfg)["z_shaft_end"] - h.air - A3144_HALL_DEPTH)
+
+
+def home_sensor_frame(cfg: ForearmConfig = DEFAULT) -> tuple:
+    """The KY-003's part frame in the module frame, as data: unturned (its header toward +X), its hall element on
+    home_hall_point() (lib/sensors.py ky003_hall_point)."""
+    hx, hy, hz = ky003_hall_point()
+    tx, ty, tz = home_hall_point(cfg)
+    return ((tx - hx, ty - hy, tz - hz), (0.0, 0.0, 0.0))
+
+
+def home_board_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
+    """The KY-003's two holes in its own frame (lib/sensors.py KY003_HOLE_*): the board's M2s."""
+    y = KY003_BOARD_W / 2.0 - KY003_HOLE_INSET
+    return [(KY003_HOLE_INSET, y), (KY003_HOLE_INSET, -y)]
+
+
+def home_strip_x(cfg: ForearmConfig = DEFAULT) -> tuple[float, float]:
+    """The carrier's x span in the module frame (its plate's, the KY-003 unturned): the leg and the strip as wide."""
+    (x0, _y, _z), _r = home_sensor_frame(cfg)
+    return (x0 + cfg.drive.home.plate_x[0], x0 + cfg.drive.home.plate_x[1])
+
+
+def home_magnet_frame(cfg: ForearmConfig = DEFAULT) -> tuple:
+    """The magnet's part frame (its axis on Z, its south pole's face on z = 0, the disc in +Z) in the module frame, the
+    zero pose: its pole face flush with the shaft's rear face, chip_r off the axis at magnet_deg."""
+    h = cfg.drive.home
+    a = math.radians(h.magnet_deg)
+    return ((h.chip_r * math.cos(a), h.chip_r * math.sin(a), stack_positions(cfg)["z_shaft_end"]), (0.0, 0.0, 0.0))
+
+
+def home_wire_axis(cfg: ForearmConfig = DEFAULT) -> tuple[tuple[float, float, float], tuple[float, float, float], float]:
+    """The carrier's tube and the frame's wire hole: (start, unit direction, length to wire_end) - from the tube's axis
+    point on the opening's floor (tube_s, tube_depth; x flush with the strip's -X side) down and back to wire_end in the
+    motor's pocket behind the board's cover."""
+    h = cfg.drive.home
+    p = back_point(home_strip_x(cfg)[0] + h.tube_od / 2.0, h.tube_s, h.tube_depth, cfg)
+    v = (0.0, h.wire_end[0] - p[1], h.wire_end[1] - p[2])
+    n = math.hypot(v[1], v[2])
+    return p, (0.0, v[1] / n, v[2] / n), n
+
+
+def home_magnet_pocket(cfg: ForearmConfig = DEFAULT):
+    """The magnet's pocket in the shaft's rear face (pocket_fit round it, as deep as it is thick)."""
+    h = cfg.drive.home
+    (x, y, z), _r = home_magnet_frame(cfg)
+    return cylinder(h.magnet_dia / 2.0 + h.pocket_fit, h.magnet_t + NUDGE, (x, y), z0=z - NUDGE)
+
+
+def teardrop_along(start, direction, radius: float, length: float, peak):
+    """A round hole cutter `radius` from `start` along the unit `direction`, `length` long, with a 45 deg peak toward
+    `peak` (a unit vector square to `direction`: the side that is up as the part prints)."""
+    d, p = bd.Vector(*direction), bd.Vector(*peak)
+    plane = bd.Plane(origin=start, x_dir=p.cross(d), z_dir=d)      # its +Y along `peak`
+    k = radius / math.sqrt(2.0)
+    sketch = bd.Circle(radius) + bd.Polygon((0.0, 0.0), (k, k), (0.0, radius * math.sqrt(2.0)), (-k, k), align=None)
+    return bd.extrude(plane * sketch, amount=length)
+
+
+def home_wire_hole(cfg: ForearmConfig = DEFAULT):
+    """The frame's wire hole: wire_fit round the carrier's tube, from the opening's floor down and back through the
+    frame into the motor's pocket behind the board's cover, wire_past beyond wire_end; its peak toward -Z (up as the
+    frame prints, front face down)."""
+    h = cfg.drive.home
+    p, (ux, uy, uz), n = home_wire_axis(cfg)
+    up = bd.Vector(0.0, 0.0, -1.0)
+    peak = up - bd.Vector(ux, uy, uz) * up.dot(bd.Vector(ux, uy, uz))
+    peak = peak.normalized()
+    return teardrop_along(p, (ux, uy, uz), h.tube_od / 2.0 + h.wire_fit, n + h.wire_past, (peak.X, peak.Y, peak.Z))
 
 
 def tower_section(cfg: ForearmConfig = DEFAULT, inset: float = 0.0):
@@ -289,6 +367,8 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     nut_z = (S["z_idler_roof"] - i.nut.h - i.nut_fit, S["z_idler_roof"])
     body = body - box((ix - i.travel - corner, ix + i.travel + corner), (iy - half, iy + half), nut_z)
     body = body - box((ix - corner, ix + corner), (y1 - i.entry, iy), nut_z)
+    # the home sensor's wire hole: from the opening's floor (the carrier's tube in it) into the motor's pocket
+    body = body - home_wire_hole(cfg)
     return single_solid(body)
 
 
@@ -343,7 +423,7 @@ def build_shaft(cfg: ForearmConfig = DEFAULT):
     for x, y in clamp_points(cfg):
         body = body - cylinder(w.bolt_dia / 2.0, S["z_meet"] - z0 + 2 * NUDGE, (x, y), z0=z0 - NUDGE)
         body = body - nut_slot(r_in, r_out, d.clamp_nut.af, p0 - NUDGE, p1, math.atan2(y, x))
-    return single_solid(body)
+    return single_solid(body - home_magnet_pocket(cfg))
 
 
 def build_back_panel(cfg: ForearmConfig = DEFAULT):

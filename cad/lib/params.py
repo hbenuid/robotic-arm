@@ -330,6 +330,12 @@ _WHOME = _FOREARM.home
 WRIST_HOME_MAGNET_MASS_G = NDFEB_DENSITY * _cyl_vol(_WHOME.magnet_dia / 2.0, _WHOME.magnet_t)                               # 0.42, Ø6 x 2
 WRIST_HOME_BOARD_SCREWS_MASS_G = STEEL_DENSITY * 2 * shcs_volume(_WHOME.board_screw, _WHOME.board_screw_len)               # 0.5, 2x M2x6
 WRIST_HOME_BOARD_NUTS_MASS_G = STEEL_DENSITY * 2 * nut_volume(_WHOME.board_nut)                                            # 0.3, 2x M2
+# the forearm_roll home sensor's (lib/forearm/params.py RollHomeParams): its magnet pressed into the roll shaft's rear face
+# (parts/joints/roll_home_magnet, base_yaw's disc) and the board's M2s and nuts on the carrier, likewise
+_RHOME = _FOREARM.drive.home
+ROLL_HOME_MAGNET_MASS_G = NDFEB_DENSITY * _cyl_vol(_RHOME.magnet_dia / 2.0, _RHOME.magnet_t)                                # 0.64, Ø6 x 3
+ROLL_HOME_BOARD_SCREWS_MASS_G = STEEL_DENSITY * 2 * shcs_volume(_RHOME.board_screw, _RHOME.board_screw_len)                # 0.5, 2x M2x6
+ROLL_HOME_BOARD_NUTS_MASS_G = STEEL_DENSITY * 2 * nut_volume(_RHOME.board_nut)                                             # 0.3, 2x M2
 # the base_yaw motor's (parts/base/yaw_motor_screws), likewise
 from lib.base.layout import motor_holes as _base_motor_holes  # noqa: E402
 
@@ -408,6 +414,10 @@ WRIST_PITCH_HOME_DEG = _FOREARM.home.home_deg   # -144
 # frame's tower at +/- 168.3 (lib/forearm/params.py stop_deg_width; tests/test_sweeps.py holds it between the limit
 # and 180 - stop_deg_width), which keeps the cables from winding
 FOREARM_ROLL_LIMIT_DEG = 166.0    # [DESIGN]
+# forearm_roll's home: where the magnet pressed into the roll shaft's rear face (lib/forearm/params.py RollHomeParams)
+# stands over the KY-003's chip on its carrier in the frame's bay - the middle of the switch's zone, which runs on past
+# the lower end (the edge toward + is where homing, turning toward -, stops: tests/forearm/test_roll_home.py)
+FOREARM_ROLL_HOME_DEG = _FOREARM.drive.home.home_deg   # -160
 # the wrist roll: 2 deg short of its printed hard stop - the lug on the wrist roll shaft's flange meets the post in
 # wrist_link's bay at +/- 168.66 (lib/wrist/params.py stop_deg_width; tests/test_sweeps.py holds it between the limit
 # and 180 - stop_deg_width), which keeps the gripper servo's cable through the rotor from winding

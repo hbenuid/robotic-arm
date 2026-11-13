@@ -112,7 +112,12 @@ wrist_pitch home sensor - the home angle, the frame through the wrist 90T's (the
 lower end for every A3144 operate point and the glued magnet's error, the layout under the 90T's face, its clip's,
 magnet's and fasteners' numbers (no reference), the clip's teardrop holes and slots, its fit round the wrist boss's end,
 the magnet on the 90T's face, over the chip at home and clear of the sensor and the clip over the travel, the wrist's
-turning parts and the gripper clear of them; `test_wrist_motor_screws`: the
+turning parts and the gripper clear of them; `test_roll_home`: the forearm_roll home sensor - the home angle, the
+switch's zone past the lower end for every A3144 operate point and the carrier's play, the layout behind the shaft (the
+chip `air` back, the header 0.98 off the shaft, the tube's axis into the motor's pocket behind the board's cover), its
+carrier's, magnet's and fasteners' numbers (no reference), the carrier's teardrop holes, head pockets and tube, its fit
+in the module (on the floor, the panel's rim in its notch, the wire hole open to the pocket), the magnet in the shaft,
+over the chip at home and the rotor clear of the sensor over the travel; `test_wrist_motor_screws`: the
 wrist-pitch motor's 4x M3 (no reference) - its numbers, the elbow motor's screw and seat, the counterbores on `j2_link`,
 the heads flush in place; `test_roll_motor_screws`: the roll motor's 4x M3 (no reference) - its numbers, the same head
 and counterbore through the roll frame's plate, its round holes and counterbores on the frame, the heads flush in the
