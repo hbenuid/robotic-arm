@@ -450,7 +450,10 @@ class RollDriveParams:
     clamp_screw_len: float = 45.0         # [DESIGN] M3 x 45 from its counterbore's floor: the tip at the shaft's rear face (which it sets) - 10
     #                                       longer than with the elbow's 2 mm lip, bearing 1 that much deeper
     clamp_head_clear: float = 0.25        # [DESIGN] the counterbores round the heads (on the radius) and over them
-    clamp_nut: NutSize = M3_NUT           # [DATASHEET] ISO 4032 M3, in the shaft's flange: its pocket open to the rear face and the bore, the nut
+    clamp_bore_wall: float = 0.8          # [DESIGN] the counterbores' wall to the cable bore: two beads of a 0.4 nozzle (the printability
+    #                                       check's minimum) - the bore narrows over their depth to keep it (layout.py clamp_bore_r), as
+    #                                       the circle cannot move out (the journals' and the neck's walls above)
+    clamp_nut: NutSize = M3_NUT          # [DATASHEET] ISO 4032 M3, in the shaft's flange: its pocket open to the rear face and the bore, the nut
     #                                       2 pitches short of the tip (parts/joints/roll_clamp_nuts)
     stop_lug_r: tuple = (19.5, 24.5)      # [DESIGN] the rotor's hard-stop lug on the shaft's flange (rooted 0.5 inside its Ø40), at +X in the zero pose
     stop_lug_t: float = 7.5               # [DESIGN] ... from the shaft's rear face

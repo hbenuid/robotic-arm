@@ -221,8 +221,9 @@ class WristBackPanelParams:
     magnet_t: float = 2.0
     pocket_dia: float = 3.2             # each magnet's pocket (glued in, pressed to its bottom) ...
     pocket_depth: float = 2.1           # ... in the step's floor and in the panel's inner face: 0.4 of the panel outside it
-    magnet_points: tuple = ((-22.0, -18.0), (22.0, -18.0), (-20.0, 19.0), (22.0, 19.0))   # (x, y) round the bay's bore (3.4+ of
-    #                                     wall to it and to the coupler face), the -X pair on the motor's side clear of the plate
+    magnet_points: tuple = ((-21.53, -17.53), (21.53, -17.53), (-19.5, 19.0), (22.0, 19.0))   # (x, y) round the bay's bore (3+ of
+    #                                     wall to it and to the coupler face, 0.8+ to the panel's edges: two beads of a 0.4 nozzle), the -X
+    #                                     pair on the motor's side clear of the plate
     notch_w: float = 6.0                # the gripper servo's cable's notch, from its edge toward the motor ...
     notch_reach: float = 9.0            # ... this far inside the bay's bore; a groove under it across the step's floor ...
     notch_groove: float = 2.0           # ... this deep, into the board's window
@@ -334,7 +335,8 @@ class WristRollParams:
     bore: float = 10.0                  # [DESIGN] the cable bore through both pieces (the gripper servo's 3-pin plug passes): the clamp's
     #                                     M3 between it and the band's core
     collar_od: float = 36.0             # [DESIGN] the shaft's flange behind bearing 1's Ø33 shoulder
-    clamp_circle_dia: float = 17.0      # [DESIGN] the rotor clamp's 4x M3 inside the band's core (1.3 of core outside them, 1.8 inside)
+    clamp_circle_dia: float = 17.6      # [DESIGN] the rotor clamp's 4x M3 inside the band's core (1.0 of core outside them, 2.1 inside;
+    #                                     their heads' counterbores 0.8 off the bore - two beads of a 0.4 nozzle: the printability check)
     clamp_angle_deg: float = 45.0       # [DESIGN] between the connector's bolts
     clamp_screw_len: float = 35.0       # [DESIGN] M3 x 35 (ISO 4762) from its counterbore's floor: its tip sets the shaft's rear face
     clamp_head_clear: float = 0.25      # [DESIGN] round the heads and over them

@@ -95,8 +95,8 @@
   <link name="shoulder_link">
     <inertial>
       <origin xyz="0.00021 0.012608 -0.022772" rpy="0 0 0" />
-      <mass value="1.508327" />
-      <inertia ixx="4.212778e-03" ixy="-2.445094e-06" ixz="-2.542016e-06" iyy="3.105278e-03" iyz="-4.226331e-04" izz="2.474630e-03" />
+      <mass value="1.508342" />
+      <inertia ixx="4.212828e-03" ixy="-2.442926e-06" ixz="-2.531679e-06" iyy="3.105327e-03" iyz="-4.226438e-04" izz="2.474634e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -151,9 +151,9 @@
   </link>
   <link name="forearm_link">
     <inertial>
-      <origin xyz="0.00651 -0.00006 0.095735" rpy="0 0 0" />
-      <mass value="0.618821" />
-      <inertia ixx="1.275387e-03" ixy="3.619588e-06" ixz="-2.168044e-04" iyy="1.338953e-03" iyz="2.093611e-06" izz="3.164856e-04" />
+      <origin xyz="0.006509 -0.00006 0.095725" rpy="0 0 0" />
+      <mass value="0.618946" />
+      <inertia ixx="1.275671e-03" ixy="3.619635e-06" ixz="-2.168428e-04" iyy="1.339242e-03" iyz="2.093959e-06" izz="3.165003e-04" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -172,7 +172,7 @@
     <inertial>
       <origin xyz="0.000345 0.012229 0.007438" rpy="0 0 0" />
       <mass value="0.431247" />
-      <inertia ixx="4.864138e-04" ixy="-2.265186e-05" ixz="-9.719118e-08" iyy="2.478229e-04" iyz="-3.443321e-05" izz="3.380982e-04" />
+      <inertia ixx="4.863874e-04" ixy="-2.265337e-05" ixz="-9.578146e-08" iyy="2.478138e-04" iyz="-3.443378e-05" izz="3.380813e-04" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -189,9 +189,9 @@
   </link>
   <link name="wrist_roll_link">
     <inertial>
-      <origin xyz="0.005284 -0.00002 0.030937" rpy="0 0 0" />
-      <mass value="0.134906" />
-      <inertia ixx="1.270035e-04" ixy="-1.750922e-08" ixz="-8.424124e-06" iyy="1.478119e-04" iyz="-1.092190e-07" izz="3.845455e-05" />
+      <origin xyz="0.005287 -0.00002 0.03095" rpy="0 0 0" />
+      <mass value="0.134864" />
+      <inertia ixx="1.268950e-04" ixy="-1.721731e-08" ixz="-8.412591e-06" iyy="1.476959e-04" iyz="-1.091387e-07" izz="3.843252e-05" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />

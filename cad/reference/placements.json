@@ -13,7 +13,7 @@
  "expected": {
   "leaf_occurrences": 90,
   "solids": 218,
-  "solid_volume": 2302506.451
+  "solid_volume": 2302518.77
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -7842,7 +7842,7 @@
     "note": "its printed tray on the pocket's floor, placed by the pocket's walls, the board on its block"
    },
    "solids": 1,
-   "solid_volume": 7060.307,
+   "solid_volume": 7072.626,
    "rel": {
     "position": [
      0.0,

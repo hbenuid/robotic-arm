@@ -61,7 +61,7 @@ GLUE_DEG = math.degrees((8.8 - HOME_MAGNET_DIA) / 2.0 / MAG_R)   # [ESTIMATE] ho
 TIP_TOP = K.pocket_y0 + 2.8                        # the 120T's M4s stand 2.8 out of the pocket's floor (HubParams' comment)
 # name -> (solids, volume mm^3, bbox min, bbox size): the build's own numbers
 LOCKS = {
-    "shoulder_home_tray": (1, 7060.307, (-14.8, -30.6, 0.0), (29.6, 61.2, 12.266878)),
+    "shoulder_home_tray": (1, 7072.626, (-14.8, -30.6, 0.0), (29.6, 61.2, 12.266878)),
     "shoulder_home_magnet": (1, 84.823, (-3.0, -3.0, 0.0), (6.0, 6.0, 3.0)),
     "shoulder_home_board_screws": (2, 79.167, (0.6, -6.9, -5.0), (3.8, 13.8, 8.0)),
     "shoulder_home_board_nuts": (2, 34.287, (0.5, -7.309401, 1.6), (4.0, 14.618802, 1.6)),
@@ -136,6 +136,18 @@ def test_the_layout():
     assert pin_d == pytest.approx(KY003_PIN_TAIL + H.relief_past) and lead_d == pytest.approx(KY003_LEAD_TAIL + H.relief_past)
     assert pin_d > H.plate_t > lead_d
     assert px[0] < lead_x[0] < lead_x[1] < pin_x[0] < pin_x[1] < px[1]
+
+
+def test_the_blocks_foot_keeps_two_beads_off_the_head_recesses():
+    """Where the block's slope meets the tray (block_z[0], across its width) it passes each board screw's head recess -
+    tilted with the KY-003 - 0.8 or more off: two beads of a 0.4 nozzle, the printability check's minimum. The distance
+    from that foot edge (along x) to the recess's axis, less its radius."""
+    top, r = K.pocket_y0 + H.tray_t, H.board_screw.head_dia / 2.0 + H.head_recess
+    for bx, by in home_board_points():
+        p, q = home_to_coupler(DEFAULT, (bx, by, 0.0)), home_to_coupler(DEFAULT, (bx, by, -10.0))
+        u = [qi - pi for qi, pi in zip(q, p, strict=True)]
+        d = abs((top - p[1]) * u[2] - (H.block_z[0] - p[2]) * u[1]) / math.hypot(u[1], u[2])   # |(e - p) . (u x X)| / |u x X|
+        assert d - r >= 0.8 - 1e-9, (bx, by, d - r)
 
 
 def test_the_parts_have_no_reference():
