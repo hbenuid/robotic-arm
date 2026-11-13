@@ -124,6 +124,29 @@ def test_the_jaws_run_in_mesh_and_clear(travel):
 
 
 @pytest.mark.slow
+def test_the_cage_leaves_no_sliver_by_the_access_holes():
+    """A connector hole within join_wall (two beads of a 0.4 nozzle: the printability check's minimum) of a tab screw's
+    access hole is joined to it - open through the plate where the sliver between them was - and only the -x pair is."""
+    from lib.gripper.body import connector_holes
+    from tests import built
+
+    cage, b, c = built.part("gripper_cage"), G.base, G.cage
+    z = layout.stations()
+    joined = []
+    for hx, hy in connector_holes():
+        for tx in b.holes_x:
+            for ty in (b.hole_y, -b.hole_y):
+                dist = math.dist((hx, hy), (tx, ty))
+                gap = dist - c.screw_hole / 2.0 - c.access_dia / 2.0
+                if gap < c.join_wall:
+                    joined.append((hx, hy))
+                    t = (c.screw_hole / 2.0 + max(gap, 0.0) / 2.0) / dist      # the sliver's middle, on the line between them
+                    px, py = hx + t * (tx - hx), hy + t * (ty - hy)
+                    for zz in (z["back_in"] + 0.3, z["back_in"] + c.back_t - 0.3):
+                        assert not is_inside(cage, px, py, zz), (hx, hy, tx, ty, zz)
+    assert c.join_wall >= 0.8 and len(joined) == 2 and all(hx < layout.x0() for hx, _ in joined)
+
+
 def test_the_cage_meets_the_connector():
     """The cage's four screw holes on the connector's plate's (and their nuts' slots out to an edge); its cable's hole
     on the connector's bore; it seats on the plate's face."""

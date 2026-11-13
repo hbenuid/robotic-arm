@@ -200,6 +200,12 @@ def build_cage(cfg: GripperConfig = DEFAULT):
             body -= bd.Pos(hx, hy, nut[0]) * bd.extrude(bd.RegularPolygon(c.nut_af / math.sqrt(3.0), 6, rotation=30.0), amount=c.nut_h)
             edge = wall_out + NUDGE if hy > 0 else -wall_out - NUDGE
             body -= box((hx - c.nut_af / 2.0, hx + c.nut_af / 2.0), sorted((hy, edge)), nut)
+        for tx in b.holes_x:   # a hole crowding a tab screw's access hole (the -x pair) is joined to it: no sliver between
+            for ty in (b.hole_y, -b.hole_y):
+                gap = math.dist((hx, hy), (tx, ty))
+                if gap - c.screw_hole / 2.0 - c.access_dia / 2.0 < c.join_wall:
+                    turn = bd.Rot(0.0, 0.0, math.degrees(math.atan2(ty - hy, tx - hx)))
+                    body -= bd.Pos((hx + tx) / 2.0, (hy + ty) / 2.0, mid) * turn * bd.Box(gap, c.screw_hole, c.back_t + 2 * NUDGE)
     # the servo's cable: a slot from over its case's end to the axis, and its plug's hole on the axis
     body -= bd.Pos((c.cable_x0 + x) / 2.0, 0.0, z["back_in"] - NUDGE) * bd.extrude(
         bd.SlotCenterToCenter(x - c.cable_x0, c.cable_w), amount=c.back_t + 2 * NUDGE)

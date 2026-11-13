@@ -109,6 +109,14 @@ def clamp_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
             for k in range(4)]
 
 
+def clamp_bore_r(cfg: ForearmConfig = DEFAULT) -> float:
+    """The cable bore's radius over the clamp's counterbores' depth (the pulley's front): narrowed to leave each
+    counterbore clamp_bore_wall to it."""
+    d = cfg.drive
+    head_r = d.clamp_screw.head_dia / 2.0 + d.clamp_head_clear
+    return min(d.bore / 2.0, d.clamp_circle_dia / 2.0 - head_r - d.clamp_bore_wall)
+
+
 def clamp_nut_pocket(cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float, float]:
     """(r_in, r_out, z0, z1) of each clamp screw's nut pocket in the shaft's flange, radially along its screw's angle
     like end_nut_pocket's: from inside the cable bore past the nut's corner; from the shaft's rear face (open: the nut

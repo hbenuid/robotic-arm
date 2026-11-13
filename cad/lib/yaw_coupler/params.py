@@ -229,8 +229,9 @@ class HomeTrayParams:
     wall_clear: float = 0.4               # the tray off each of the pocket's walls: the walls place it
     tip_clear: float = 1.0                # its holes this far round the M4s' tips (Ø4)
     slot: tuple = (8.0, 8.0)              # the finger slot through the tray at its back end: (along z, across x)
-    block_z: tuple = (13.7, 29.7)         # the block's footprint on the tray (z): forward of the M4s' tips (z 9.8), short of
-    #                                       the tray's front edge
+    block_z: tuple = (13.3, 29.7)         # the block's footprint on the tray (z): forward of the M4s' tips (z 9.8), short of
+    #                                       the tray's front edge - its foot 0.8 off the board screws' head recesses (two beads
+    #                                       of a 0.4 nozzle: the printability check), 2.5 ahead of the tips' holes
     plate_x: tuple = (-2.0, 19.5)         # the board's plate along the KY-003's x: past the chip's end and the header's ...
     plate_w: float = 18.0                 # ... this wide (the board 15) ...
     plate_t: float = 3.0                  # ... this thick under the board

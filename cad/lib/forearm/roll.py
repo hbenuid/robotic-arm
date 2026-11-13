@@ -15,6 +15,7 @@ import build123d as bd
 
 from lib.datum import to_location
 from lib.forearm.layout import (
+    clamp_bore_r,
     clamp_nut_pocket,
     clamp_points,
     coupler_steps,
@@ -389,7 +390,9 @@ def build_pulley(cfg: ForearmConfig = DEFAULT):
     body = body + cylinder(d.shoulder_dia / 2.0, d.run_gap, z0=S["z_boss"])
     body = body + cylinder(d.ring_core_dia / 2.0, S["z_ring_end"] - S["z_ring_flange_1"], z0=S["z_ring_flange_1"])
     body = body + cylinder(w.flange_dia / 2.0, z_end - S["z_wall"], z0=S["z_wall"])
-    body = body - cylinder(d.bore / 2.0, z_end - S["z_meet"] + 2 * NUDGE, z0=S["z_meet"] - NUDGE)
+    # the cable bore, narrowed over the clamp's counterbores' depth (clamp_bore_r: their wall to it)
+    body = body - cylinder(d.bore / 2.0, S["z_clamp_head"] - S["z_meet"] + NUDGE, z0=S["z_meet"] - NUDGE)
+    body = body - cylinder(clamp_bore_r(cfg), z_end - S["z_clamp_head"] + 2 * NUDGE, z0=S["z_clamp_head"] - NUDGE)
     # the rotor clamp: clearance end to end, each head's counterbore from the front face
     head_r = d.clamp_screw.head_dia / 2.0 + d.clamp_head_clear
     for x, y in clamp_points(cfg):
