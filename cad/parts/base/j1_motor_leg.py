@@ -9,10 +9,11 @@ post as wide, its faceted root standing on the disc's top face (the hub leg's sh
 up its outer face); its foot the root's part past the leg's outer face, down to the disc's underside, butting the disc
 there, held by
 2x M4 along the drive's axis from counterbores in the foot into nuts in slots in the disc, under the post; and the
-sleeve held in it - nothing else stops the drive's carrier turning at the motor end - by 3 radial M4 x 20 through the
-ring's middle (up and both sides: the motor's flats) into nuts pressed into lugs on the sleeve's bore, the holes
-slotted along the axis so the drive settles lengthwise before they lock it (ForkParams.sleeve_screw_len /
-sleeve_slot_len; lib/yaw_coupler/body.py build_motor_leg, in j1_coupler's part frame - lib/mounts.py places it at
+sleeve held in it - nothing else stops the drive's carrier turning at the motor end - by 3 radial M4s through the
+ring's middle (up and both sides: the motor's flats), their heads flush in round counterbores in the ring's flats, into
+nuts pressed into lugs on the sleeve's bore, the holes slotted along the axis so the drive settles lengthwise before
+they lock it (ForkParams.sleeve_screw_len / sleeve_head_seat / sleeve_counterbore_dia / sleeve_slot_len;
+lib/yaw_coupler/body.py build_motor_leg, in j1_coupler's part frame - lib/mounts.py places it at
 identity on j1_coupler#1). The screws and nuts are purchased parts of their own, mounted on it (fork_foot_screws /
 fork_foot_nuts, fork_sleeve_screws / fork_sleeve_nuts: lib/mounts.py FORK_MOUNTS).
 """

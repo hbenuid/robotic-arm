@@ -280,6 +280,13 @@ def fork_sleeve_screw_frame(cfg: YawCouplerConfig = DEFAULT) -> tuple:
     return ((round(fork_sleeve_bolt_x(cfg), 6), f.axis_y, f.axis_z), SLEEVE_SCREWS_TURN)
 
 
+def fork_sleeve_seat_r(cfg: YawCouplerConfig = DEFAULT) -> float:
+    """The sleeve's screws' heads' bearing faces' radius: the floors of the counterbores in the motor leg's ring flats
+    (ForkParams.sleeve_head_seat deep)."""
+    f = cfg.fork
+    return f.plate_r - f.sleeve_head_seat
+
+
 def fork_sleeve_nut_r(cfg: YawCouplerConfig = DEFAULT) -> float:
     """The sleeve's nuts' bearing faces' radius: the floors of their pockets in the sleeve's lugs (ShellParams.sleeve_nut_r
     to the nut's outer face)."""

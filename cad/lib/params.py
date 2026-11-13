@@ -208,7 +208,7 @@ CYCLOIDAL_MOTOR_BODY_LEN = _DRIVE.motor.body_length               # 48 [DATASHEE
 CYCLOIDAL_HUB_OD = _DRIVE.output_hub.od                           # 70.3 [DESIGN]
 CYCLOIDAL_HUB_PROUD = _DRIVE.output_hub.proud_above_housing       # 1 [DESIGN] hub face past the shell's hub end: on the yoke's leg
 CYCLOIDAL_HUB_FACE_Z = CYCLOIDAL_STACK_DEPTH + CYCLOIDAL_HUB_PROUD   # 62 [DESIGN] the hub's face on the yoke's hub-side leg
-CYCLOIDAL_SLEEVE_END_Z = _sleeve_end(_DRIVE)                      # -22 [DESIGN] the motor plate's sleeve's end on the yoke's motor-side leg
+CYCLOIDAL_SLEEVE_END_Z = _sleeve_end(_DRIVE)                      # -26 [DESIGN] the motor plate's sleeve's end on the yoke's motor-side leg
 CYCLOIDAL_SLEEVE_BOLT_COUNT = len(_DRIVE.shell.sleeve_bolt_deg)   # 3 [DESIGN] the yoke's motor leg's radial M4s into nuts in the sleeve's lugs
 CYCLOIDAL_HUB_BOLT_CIRCLE = _DRIVE.output_hub.arm_mount_bolt_circle_dia       # 50 [DESIGN] the hub's bolts into the yoke's leg ...
 CYCLOIDAL_HUB_BOLT_COUNT = _DRIVE.output_hub.arm_mount_bolt_count             # ... 4x M4 into captive nuts in the hub
@@ -347,11 +347,11 @@ YAW_MOTOR_SCREWS_MASS_G = (STEEL_DENSITY * len(_base_motor_holes(_BASE))
 from lib.yaw_coupler.layout import fork_motor_bolts as _fork_motor_bolts  # noqa: E402
 
 _FORK, _FORK_FOOT_BOLTS = _YAW_COUPLER.fork, len(_fork_motor_bolts(_YAW_COUPLER))
-FORK_HUB_SCREWS_MASS_G = STEEL_DENSITY * CYCLOIDAL_HUB_BOLT_COUNT * shcs_volume(M4_SHCS, _FORK.hub_screw_len)          # 14.2, 4x M4x25
+FORK_HUB_SCREWS_MASS_G = STEEL_DENSITY * CYCLOIDAL_HUB_BOLT_COUNT * shcs_volume(M4_SHCS, _FORK.hub_screw_len)          # 16.2, 4x M4x30
 FORK_HUB_NUTS_MASS_G = STEEL_DENSITY * CYCLOIDAL_HUB_BOLT_COUNT * nut_volume(M4_NUT)                                   # 3.0, 4x M4
-FORK_FOOT_SCREWS_MASS_G = STEEL_DENSITY * _FORK_FOOT_BOLTS * shcs_volume(M4_SHCS, _FORK.motor_screw_len)               # 4.1, 2x M4x10
+FORK_FOOT_SCREWS_MASS_G = STEEL_DENSITY * _FORK_FOOT_BOLTS * shcs_volume(M4_SHCS, _FORK.motor_screw_len)               # 3.7, 2x M4x8
 FORK_FOOT_NUTS_MASS_G = STEEL_DENSITY * _FORK_FOOT_BOLTS * nut_volume(M4_NUT)                                          # 1.5, 2x M4
-FORK_SLEEVE_SCREWS_MASS_G = STEEL_DENSITY * CYCLOIDAL_SLEEVE_BOLT_COUNT * shcs_volume(M4_SHCS, _FORK.sleeve_screw_len)   # 9.2, 3x M4x20
+FORK_SLEEVE_SCREWS_MASS_G = STEEL_DENSITY * CYCLOIDAL_SLEEVE_BOLT_COUNT * shcs_volume(M4_SHCS, _FORK.sleeve_screw_len)   # 8.0, 3x M4x16
 FORK_SLEEVE_NUTS_MASS_G = STEEL_DENSITY * CYCLOIDAL_SLEEVE_BOLT_COUNT * nut_volume(M4_NUT)                             # 2.3, 3x M4
 
 # --- Robot description (robot/frames.py, robot/arm.urdf) --------------------------------------

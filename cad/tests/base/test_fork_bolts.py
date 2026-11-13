@@ -22,6 +22,7 @@ from lib.yaw_coupler.layout import (
     fork_hub_screw_points,
     fork_sleeve_bolt_deg,
     fork_sleeve_nut_r,
+    fork_sleeve_seat_r,
 )
 from tests import built
 from tests.helpers import is_inside
@@ -29,11 +30,11 @@ from tests.helpers import is_inside
 F = YAW_COUPLER.fork
 # name -> (solids, volume mm^3, bbox min, bbox size): the build's own numbers
 LOCKS = {
-    "fork_hub_screws": (4, 1810.035, (-21.17767, -21.17767, -4.0), (42.355339, 42.355339, 29.0)),
+    "fork_hub_screws": (4, 2061.363, (-21.17767, -21.17767, -4.0), (42.355339, 42.355339, 34.0)),
     "fork_hub_nuts": (4, 382.322, (-21.581412, -21.581412, 0.0), (43.162825, 43.162825, 3.2)),
-    "fork_foot_screws": (2, 528.027, (-15.5, -3.5, -4.0), (31.0, 7.0, 14.0)),
+    "fork_foot_screws": (2, 477.761, (-15.5, -3.5, -4.0), (31.0, 7.0, 12.0)),
     "fork_foot_nuts": (2, 191.161, (-15.5, -4.041452, 0.0), (31.0, 8.082904, 3.2)),
-    "fork_sleeve_screws": (3, 1169.031, (-49.0, -3.5, -3.5), (98.0, 52.5, 7.0)),
+    "fork_sleeve_screws": (3, 1018.235, (-45.0, -3.5, -3.5), (90.0, 48.5, 7.0)),
     "fork_sleeve_nuts": (3, 286.741, (-28.2, -4.041452, -3.5), (56.4, 32.241452, 7.0)),
 }
 # each set: (its screws' length, its mass constant, its nuts' mass constant)
@@ -61,7 +62,7 @@ def _stations(name: str) -> list[tuple[tuple, tuple, tuple]]:
         return [((x, y, 0.0), up, _unit((x, y, 0.0))) for x, y in fork_hub_screw_points()]
     if kind == "foot":
         return [((x, y, 0.0), up, (0.0, 1.0, 0.0)) for x, y in fork_foot_screw_points()]
-    r = F.plate_r if name.endswith("screws") else fork_sleeve_nut_r()
+    r = fork_sleeve_seat_r() if name.endswith("screws") else fork_sleeve_nut_r()
     out = []
     for deg in fork_sleeve_bolt_deg():
         u = (math.cos(math.radians(deg)), math.sin(math.radians(deg)), 0.0)
@@ -98,7 +99,7 @@ def test_the_order_lines_and_masses_follow_the_fork(kind):
     steel = PARAMS.STEEL_DENSITY * screws.PURCHASE_QTY
     assert screws.MASS_G == screws_g == pytest.approx(steel * PARAMS.shcs_volume(PARAMS.M4_SHCS, length))
     assert nuts.MASS_G == nuts_g == pytest.approx(steel * PARAMS.nut_volume(PARAMS.M4_NUT))
-    assert (F.hub_screw_len, F.motor_screw_len, F.sleeve_screw_len) == (25.0, 10.0, 20.0)
+    assert (F.hub_screw_len, F.motor_screw_len, F.sleeve_screw_len) == (30.0, 8.0, 16.0)
 
 
 @pytest.mark.slow

@@ -419,7 +419,7 @@ FORK_MOUNTS: tuple[Mount, ...] = (
     Mount("fork_sleeve_screws#1", "fork_sleeve_screws", "j1_motor_leg#1", "shoulder_link", "shoulder_pitch",
           fork_sleeve_screw_frame(_YAW_COUPLER),
           "j1_motor_leg's ring to the drive's motor plate's sleeve: 3x M4 x sleeve_screw_len radially at sleeve_bolt_deg, "
-          "the heads on the ring's od"),
+          "the heads flush in the ring's counterbores"),
     Mount("fork_sleeve_nuts#1", "fork_sleeve_nuts", "fork_sleeve_screws#1", "shoulder_link", "shoulder_pitch",
           ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)),
           "the sleeve screws' nuts pressed into the sleeve's lugs, on their pockets' floors, a corner along the tangent"),

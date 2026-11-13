@@ -54,6 +54,7 @@ from lib.yaw_coupler.layout import (
     fork_sleeve_bolt_deg,
     fork_sleeve_nut_r,
     fork_sleeve_screw_frame,
+    fork_sleeve_seat_r,
 )
 from lib.yaw_coupler.params import RIM_CLEAR, THRUST_CLEAR
 from robot import frames as F
@@ -484,10 +485,11 @@ def test_pulley_bolts_clamp_their_joints(joint):
 def test_the_fork_bolts_reach_their_nuts():
     """The arithmetic of the fork's three sets (lib/mounts.py FORK_MOUNTS), in the drive's frame: the hub's 4 screws on
     its arm-mount pattern, their heads' bearing faces HEAD_SEAT inside the hub leg's outer face, pointing down the drive's
-    axis into the hub - their tips flush with the captive nuts' far faces; the foot's 2 at motor_head_seat out from the
-    motor leg's outer face (the sleeve's end), pointing up the axis into the disc - 0.7 past their nuts; the sleeve's 3 in
-    the ring's middle (sleeve_bolt_z), pointing in from its od at sleeve_bolt_deg - their tips flush with the nuts in the
-    lugs. Each set rides with shoulder_link, the stator's link; each nut set is hosted on its screws."""
+    axis into the hub - their tips 1.0 past the captive nuts' far faces, 0.5 inside the pockets; the foot's 2 at
+    motor_head_seat out from the motor leg's outer face (the sleeve's end), pointing up the axis into the disc - 2.0 past
+    their nuts; the sleeve's 3 in the ring's middle (sleeve_bolt_z), pointing in from the floors of the ring's
+    counterbores (fork_sleeve_seat_r) at sleeve_bolt_deg - their tips flush with the nuts in the lugs. Each set rides with
+    shoulder_link, the stator's link; each nut set is hosted on its screws."""
     f, sh, nut = YAW_COUPLER.fork, DEFAULT_CONFIG.shell, PARAMS.M4_NUT
     for kind, (screws_key, nuts_key, host, _) in FORK.items():
         screws, nuts = mounts.BY_KEY[screws_key], mounts.BY_KEY[nuts_key]
@@ -500,9 +502,10 @@ def test_the_fork_bolts_reach_their_nuts():
     assert mounts.BY_KEY["fork_hub_nuts#1"].frame == ((0.0, 0.0, fork_hub_nut_z(YAW_COUPLER)), (0.0, 0.0, 0.0))
     assert mounts.BY_KEY["fork_foot_nuts#1"].frame == ((0.0, 0.0, fork_foot_nut_z(YAW_COUPLER)), (0.0, 0.0, 0.0))
     assert mounts.BY_KEY["fork_sleeve_nuts#1"].frame == ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0))
-    assert f.hub_screw_len == pytest.approx(fork_hub_nut_z(YAW_COUPLER) + nut.h)                   # flush with the nuts
-    assert f.motor_screw_len - (fork_foot_nut_z(YAW_COUPLER) + nut.h) == pytest.approx(0.7)         # 0.7 past them
-    assert f.plate_r - f.sleeve_screw_len == pytest.approx(fork_sleeve_nut_r(YAW_COUPLER) - nut.h)  # flush with the nuts
+    assert f.hub_screw_len - (fork_hub_nut_z(YAW_COUPLER) + nut.h) == pytest.approx(1.0)           # 1.0 past the nuts ...
+    assert sh.hub_nut_depth - nut.h - 1.0 == pytest.approx(0.5)                                     # ... 0.5 inside the pockets
+    assert f.motor_screw_len - (fork_foot_nut_z(YAW_COUPLER) + nut.h) == pytest.approx(2.0)         # 2.0 past them
+    assert fork_sleeve_seat_r(YAW_COUPLER) - f.sleeve_screw_len == pytest.approx(fork_sleeve_nut_r(YAW_COUPLER) - nut.h)  # flush
     assert DEFAULT_CONFIG.housing.bolt_nut_thickness == nut.h
 
     drive, S = _world("cycloidal_drive#1"), stack_positions(DEFAULT_CONFIG)
@@ -521,7 +524,7 @@ def test_the_fork_bolts_reach_their_nuts():
     assert tuple(z) == pytest.approx((0.0, 0.0, -1.0), abs=1e-9)
     assert rel.position.Z == pytest.approx(S["hub_top"] + sh.yoke_leg - HEAD_SEAT)
     assert xy(fork_hub_screw_points(), rel) == xy(arm_mount_points())
-    assert rel.position.Z - f.hub_screw_len == pytest.approx(S["z_hub"] + sh.hub_nut_depth - nut.h)   # the nut's far face
+    assert rel.position.Z - f.hub_screw_len == pytest.approx(S["z_hub"] + sh.hub_nut_depth - nut.h - 1.0)   # past the nut
     rel, z, _ = in_drive("fork_foot_screws#1")                      # up the axis, motor_bolt_z either side, motor_bolt_y high
     assert tuple(z) == pytest.approx((0.0, 0.0, 1.0), abs=1e-9)
     assert rel.position.Z == pytest.approx(sleeve_end(DEFAULT_CONFIG) - f.motor_head_seat)
@@ -538,7 +541,7 @@ def test_the_fork_bolts_hold_the_drive(kind):
     """The fork's screws and nuts in place: the hub's heads on the floors of the hub leg's counterbores and their nuts on
     the floors of the hub's pockets (a slip fit: HousingParams.bolt_nut_pocket_af); the foot's heads on the floors of the
     foot's counterbores and their nuts on the outer walls of the disc's slots (NUT_SLOT over the nut); the sleeve's heads
-    on the ring's od - beside the slot, the ring under each head's rim - and their nuts on the floors of the lugs' pockets,
+    on the floors of the ring's counterbores - beside the slot, the ring under each head's rim - and their nuts on the floors of the lugs' pockets,
     pressed in by exactly the designed press (ShellParams.sleeve_nut_af). No screw runs into its host or into what its
     nuts sit in; the nuts touch nothing but their seats (the rest: test_motors_and_boards_clear_their_neighbours)."""
     screws_key, nuts_key, host_key, seat_key = FORK[kind]
@@ -552,11 +555,12 @@ def test_the_fork_bolts_hold_the_drive(kind):
         assert _on_plane(seat, wn.position, z, 1), kind                 # the nuts' seats, facing them
         assert interference(nuts, seat) < 1e-3, kind                    # a slip fit
         return
-    f, axis = YAW_COUPLER.fork, _dir(ws).normalized()
+    axis = _dir(ws).normalized()
     for deg in fork_sleeve_bolt_deg():
         u = (math.cos(math.radians(deg)), math.sin(math.radians(deg)), 0.0)
         inward = _dir(ws, (-u[0], -u[1], 0.0)).normalized()
-        head = (ws * Location((f.plate_r * u[0], f.plate_r * u[1], 0.0))).position
+        seat_r = fork_sleeve_seat_r(YAW_COUPLER)
+        head = (ws * Location((seat_r * u[0], seat_r * u[1], 0.0))).position
         rim = head + axis * (PARAMS.M4_SHCS.head_dia / 2.0 - 0.3)      # past the slot's end (sleeve_slot_len / 2)
         assert is_inside(host, *(rim + inward * 0.1)) and not is_inside(host, *(rim - inward * 0.1)), deg
         assert any(is_inside(s, *(rim - inward * 0.1)) for s in screws.solids()), deg

@@ -142,13 +142,13 @@ def arm_zone(cfg: DriveConfig = DEFAULT_CONFIG) -> tuple[float, float]:
 
 
 def sleeve_end(cfg: DriveConfig = DEFAULT_CONFIG) -> float:
-    """z of the motor plate's sleeve's end: through the yoke's motor-side leg, flush with its outer face (-22)."""
+    """z of the motor plate's sleeve's end: through the yoke's motor-side leg, flush with its outer face (-26)."""
     sh = cfg.shell
     return shell_ends(cfg)[0] - sh.end_plate_gap - sh.yoke_leg
 
 
 def sleeve_bolt_z(cfg: DriveConfig = DEFAULT_CONFIG) -> float:
-    """z of the sleeve's radial M4s (ShellParams.sleeve_bolt_deg): the middle of the yoke's motor-side leg (-18)."""
+    """z of the sleeve's radial M4s (ShellParams.sleeve_bolt_deg): the middle of the yoke's motor-side leg (-20)."""
     return sleeve_end(cfg) + cfg.shell.yoke_leg / 2.0
 
 

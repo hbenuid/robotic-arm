@@ -3,7 +3,7 @@ output hub to j1_coupler's hub-side leg.
 
 In the arm (lib/mounts.py FORK_MOUNTS, hosted on j1_coupler#1): the heads in the counterbores in the leg's outer face
 (lib/yaw_coupler/layout.py HEAD_SEAT deep), the shanks along the drive's axis through the leg and the hub's arm-mount
-holes into the nuts captive in the hub's flange (fork_hub_nuts), the tips flush with the nuts. Length:
+holes into the nuts captive in the hub's flange (fork_hub_nuts), the tips 1.0 past the nuts, inside their pockets. Length:
 lib/yaw_coupler/params.py ForkParams.hub_screw_len.
 
 No catalog model (the catalog has single fasteners only, vendor/README.md), no SolidWorks export and NO reference
