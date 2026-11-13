@@ -4,7 +4,7 @@
 
 One binary STL per part, in MILLIMETRES, in the part's own local frame: orienting it on the bed is the
 slicer's job (print notes - "print output-face-down" - live in each part's docstring). How many of each to
-print is the print list of tools/bom.py, repeated at the end. The body is built in-process
+print, and at which layer height, is the print list of tools/bom.py, repeated on each part's line. The body is built in-process
 (parts.build(name)): no STEP is written, no cad build starts. print/ is git-ignored (/cad/print/ in
 the root .gitignore) - the files are regenerable; an STL here whose part is gone or is now bought is deleted. The
 tolerances are finer than the URDF link meshes' (tools/robot/export_link_meshes.py): these get printed.
@@ -45,7 +45,8 @@ def main(argv=None) -> int:
         path = PRINT_DIR / f"{name}.stl"
         ok = export_stl(shape, str(path), tolerance=args.tolerance, angular_tolerance=args.angular)
         size = path.stat().st_size if path.exists() else 0
-        print(f"{name:28s} x{qty.get(name, 0)}  solids={len(shape.solids()):2d} vol={R.solid_volume(shape):11.1f} mm3 "
+        print(f"{name:28s} x{qty.get(name, 0)}  {bom.layer_mm(name):.2f} mm layers  "
+              f"solids={len(shape.solids()):2d} vol={R.solid_volume(shape):11.1f} mm3 "
               f"bbox={[round(v, 1) for v in R.bbox_size(shape)]} -> print/{path.name} {size / 1e6:.2f} MB {'OK' if ok else 'FAILED'}")
         if not ok:
             return 1

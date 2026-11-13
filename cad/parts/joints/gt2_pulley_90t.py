@@ -31,6 +31,7 @@ from lib.pulley.body import build_pulley
 
 NAME = pathlib.Path(__file__).stem
 ACCENT = True                 # the accent colour, lib/style.py: a pulley
+FINE_LAYERS = True            # printed at lib/params.py LAYER_H_FINE: its GT2 teeth
 REFERENCE = NAME              # reference/solidworks/<NAME>.step
 CONVERTED = True
 LOCAL_FROM_REF = IDENTITY     # modelled in the SolidWorks part frame
