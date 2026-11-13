@@ -11,7 +11,7 @@ def test_every_part_is_counted_once_per_occurrence():
     counts = bom.part_counts()
     leaves = (len(arm.OCCURRENCES) - len(arm.MODULES) + len(gripper.OCCURRENCES) + len(cycloidal_drive.OCCURRENCES)
               + len(forearm_roll_drive.OCCURRENCES) + len(wrist_roll_drive.OCCURRENCES))
-    assert sum(counts.values()) == leaves == 140
+    assert sum(counts.values()) == leaves == 145
     assert set(counts) == set(parts.names()) - set(parts.unplaced()), "a part under parts/ that no assembly places (or the reverse)"
     assert not set(counts) & set(parts.unplaced()), "a placed part still declares UNPLACED - drop it (and its EXTRAS row)"
     assert sum(bom.part_counts("gripper").values()) == len(gripper.OCCURRENCES)
@@ -25,8 +25,8 @@ def test_the_two_lists_partition_the_parts_by_the_cots_flag():
     assert {r["part"] for r in printed} | {r["part"] for r in bought} == set(parts.names()) - set(parts.unplaced())
     assert not {r["part"] for r in printed} & {r["part"] for r in bought}
     assert {r["part"] for r in bought} == (set(R.COTS) | {n for n in R.NO_REFERENCE if parts.bought(n)}) - set(parts.unplaced())
-    assert (len(printed), sum(r["qty"] for r in printed)) == (36, 39)
-    assert (len(bought), sum(bom.part_counts()[r["part"]] for r in bought)) == (72, 101)
+    assert (len(printed), sum(r["qty"] for r in printed)) == (37, 40)
+    assert (len(bought), sum(bom.part_counts()[r["part"]] for r in bought)) == (75, 105)
     assert {r["state"] for r in printed} <= {"wrapper", "parametric", "designed", "native", "measured", "no reference"}
     assert {r["part"] for r in printed if r["state"] == "no reference"} == {n for n in R.NO_REFERENCE if not parts.bought(n)}
     assert {r["part"] for r in printed if r["state"] == "designed"} == set(R.DESIGNED) - set(parts.unplaced())
@@ -52,12 +52,15 @@ def test_roll_drive_lists_follow_its_rows():
                       "roll_motor_screws": 4,                                              # the motor's 4x M3 into the plate
                       "roll_clamp_screws": 4, "roll_clamp_nuts": 4,                        # the rotor clamp, the pair 19 apart
                       "gt2_idler_20t": 1, "roll_idler_screw": 1, "roll_idler_nut": 1,   # the belt's tensioner
-                      "roll_back_magnets": 8}                                              # the back panel's 4 pairs
+                      "roll_back_magnets": 8,                                              # the back panel's 4 pairs
+                      "ky003_hall_sensor": 1, "roll_home_magnet": 1,                       # the home sensor behind the shaft
+                      "roll_home_board_screws": 2, "roll_home_board_nuts": 2}
     assert parts.load("roll_clamp_screws").PURCHASE_SPEC.startswith("M3 x 45 socket head cap screw")
     assert parts.load("roll_back_magnets").PURCHASE_SPEC == "3 x 2 mm N52 NdFeB disc magnet"
     states = {r["part"]: r["state"] for r in bom.print_rows("forearm_roll_drive")}
     assert states == {"forearm_roll_block": "native", "elbow_flange": "no reference", "forearm_roll_shaft": "native",
-                      "forearm_roll_pulley": "no reference", "forearm_roll_back_panel": "no reference"}
+                      "forearm_roll_pulley": "no reference", "forearm_roll_back_panel": "no reference",
+                      "roll_home_carrier": "no reference"}
     assert set(R.NATIVE) - {"base_motor_mount"} == {"forearm_roll_block", "forearm_roll_shaft"}
     assert [r["geometry"] for r in bom.buy_rows("forearm_roll_drive") if r["part"] == "bearing_6806"] == ["envelope"]
     # the forearm wall's M3 screws + nuts, no end cap; the motor's screws and the rotor clamp are modelled (no EXTRAS row)

@@ -296,6 +296,63 @@ class BackPanelParams:
     grill_pitch: float = GRILL_PITCH      # ... at this pitch, one on the roll axis' line
 
 
+@dataclass(frozen=True)
+class RollHomeParams:
+    """[DESIGN] The forearm_roll home sensor (docs/open_issues.md, the home sensors) - the user's pick (B3) of six previews:
+    a KY-003 hall module (parts/joints/ky003_hall_sensor, lib/sensors.py) behind the roll shaft in the frame's bay, under
+    the back panel - nothing shows outside -, facing a Ø magnet_dia x magnet_t N52 disc pressed flush into the shaft's
+    rear face (parts/joints/roll_home_magnet, its south pole out), which stands over the chip at forearm_roll `home_deg`
+    (lib/params.py FOREARM_ROLL_HOME_DEG). The magnet in line with the stop lug (magnet_deg), between the rotor clamp's
+    nuts; the chip at chip_r, home_deg round from it (20 deg below the stop post), its board unturned (its header toward
+    the side face, +X), the board's tallest part (the header) run_gap off the shaft. The KY-003 on a printed carrier
+    (parts/joints/roll_home_carrier): the board's plate, a leg back out of the bay's bore and a strip down the opening's
+    floor (the back panel's opening, lower part) to its bottom, where a tube plugs into the wire hole - it locates the
+    carrier and the sensor's lead runs down through it - and a notch takes the back panel's rim (a lip under the rim's
+    bottom run, a block beside it): the closed panel keeps it on the floor and from sliding up. No screw into the frame
+    (the home sensors' rule asks for M3 into a nut or an insert: the user's choice). The wire hole runs from the opening's
+    bottom down and back through the frame into the motor's pocket behind the MKS board's cover (the pocket's slide room),
+    where the lead goes on down to the board's plugs. The board by its two holes on 2 M2 up through the plate (heads under
+    it) into nuts on its component side. Prints on its -X side (the tube along the bed, the M2 holes teardrops). Frames:
+    the module frame (lib/forearm/roll.py home_*); the floor's (x, s, depth) as the back panel's (roll.py back_point)."""
+
+    home_deg: float = -160.0              # the magnet over the chip: its zone (+/-15.2 .. 20.1 deg at chip_r) runs 9.2 past the
+    #                                       -166 end or more; homing stops at -144.8 .. -139.9 (tests/forearm/test_roll_home.py)
+    magnet_deg: float = 0.0               # the magnet round the roll axis in the zero pose: in line with the stop lug, midway
+    #                                       between two of the rotor clamp's nuts (clamp_angle_deg 45)
+    chip_r: float = 15.5                  # the magnet's middle and the hall element off the roll axis: inside the shaft's Ø40
+    #                                       flange with 1.45 of wall, 3.5 off the clamp nuts' pockets
+    air: float = 2.0                      # the shaft's rear face .. the chip's branded face: the KY-003's header stands 1.02 over
+    #                                       the chip, so it keeps 0.98 off the turning shaft
+    magnet_dia: float = HOME_MAGNET_DIA   # [DESIGN] a Ø6 x 3 N52 disc (base_yaw's): 170 mT at the chip
+    magnet_t: float = 3.0
+    pocket_fit: float = 0.05              # the magnet's pocket in the shaft's rear face, on the radius (pressed in, flush)
+    # the carrier: the board's plate (in the KY-003's frame), the leg, the strip on the opening's floor
+    plate_x: tuple = (-2.0, 9.0)          # the board's plate along the KY-003's x: past its sensor end (under the chip's leads) ...
+    plate_w: float = 18.0                 # ... this wide (the board 15) ...
+    plate_t: float = 3.0                  # ... this thick under the board; the strip and the leg as thick
+    lead_relief: tuple = (3.2, 5.2, 5.0, 1.5)   # the plate's slot under the chip's leads' tails: KY-003 x0, x1, its length
+    #                                             across (y), its depth
+    knee_s: tuple = (-19.0, -17.0)        # the leg's foot: the strip's top end, on the floor's plane inside the bay's bore
+    floor_gap: float = 0.3                # the strip's bottom end off the opening's bottom wall
+    key_gap: float = 0.2                  # the rim's notch: the lip under the rim's bottom run and the block beside it, this off it
+    key_block: float = 2.5                # the block along the floor, its top 1.2 into the rim's depth
+    # the tube and the wire hole: down and back from the opening's bottom into the motor's pocket behind the board's cover
+    tube_od: float = 6.0                  # the carrier's tube ...
+    tube_id: float = 4.0                  # ... its bore (the KY-003's lead) ...
+    tube_len: float = 11.0                # ... this long from where it leaves the boss's axis point
+    tube_s: float = -39.5                 # where the tube's axis leaves the boss: on the floor's (x, s, depth), x the strip's -X
+    tube_depth: float = 9.0               # side + tube_od / 2 (flush with it: it prints along the bed); its top 0.2+ under the rim
+    wire_end: tuple = (-53.5, -28.0)      # (module y, z) the wire hole's axis reaches: inside the pocket's slide room behind the
+    #                                       board's cover (between it and the pocket's back, motor_drop + clearance)
+    wire_fit: float = 0.15                # the wire hole round the tube, on the radius
+    wire_past: float = 2.0                # the hole runs on past wire_end
+    board_screw: ShcsSize = M2_SHCS
+    board_screw_len: float = 6.0          # through the plate and the board, 1.4 into the nut
+    board_nut: NutSize = M2_NUT
+    board_hole_dia: float = M2_CLEAR      # the teardrop's round: its peak toward +X (up as the carrier prints, on its -X side)
+    head_clear: float = 0.3               # the M2s' heads' pockets under the plate (the leg runs back under the -Y one)
+
+
 ROLL_FRAME_R = 30.0   # [DESIGN] the roll frame's half width round the roll axis: its underside (6.0 over the upper arm's flat top),
 #                       its side (+N) face and its tower's top - the frame symmetric about the roll axis, the bearing boss centred
 #                       on its front face -, the forearm wall's radius (RollEndParams.wall_od / 2): the frame flush with the
@@ -492,6 +549,7 @@ class RollDriveParams:
     #                                       ring's flange and the belt's far run)
     idler: RollIdlerParams = RollIdlerParams()   # the roll belt's tensioner, on the frame's front face
     back: BackPanelParams = BackPanelParams()    # the removable back panel over the shaft's bay, on the frame's rear face
+    home: RollHomeParams = RollHomeParams()      # the home sensor behind the shaft, under the back panel
     t20_hub: float = 10.95                # [REFERENCE] vendor 20T: its tooth band's centre from its hub face (7.45 + 3.5)
     t20_len: float = 14.45                # [REFERENCE] vendor 20T: hub face .. its far end
     pulley_seat: float = 3.5              # [DESIGN] the 20T's hub face over the motor's pilot boss: the hub 1.5 down in the plate's pilot hole

@@ -4,16 +4,17 @@ The joints' endstop / home sensor: the A3144 switches when a magnet's SOUTH pole
 board carries its pull-up, a status LED and the 3-pin header (-, +, S) - S reads low while the magnet is there. The
 chip is rated 4.5..24 V: run it at 5 V. Each joint's is designed on its own (docs/open_issues.md, the home sensors).
 
-In the arm: x4 so far - base_yaw's (ky003_hall_sensor#1, a mount on base#1 - lib/mounts.py YAW_HOME_MOUNTS): on its
+In the arm: x5 - base_yaw's (ky003_hall_sensor#1, a mount on base#1 - lib/mounts.py YAW_HOME_MOUNTS): on its
 bracket under the base's motor plate (yaw_home_bracket), its chip under the 120T's home magnet (yaw_home_magnet);
 shoulder_pitch's (ky003_hall_sensor#2, a mount on j1_coupler#1 - SHOULDER_HOME_MOUNTS): on its tray in the coupler's
 pocket under the drive's turning shell (shoulder_home_tray), its chip under the magnet glued on a pillar of the shell
 (shoulder_home_magnet); elbow_pitch's (ky003_hall_sensor#3, a mount on j1_link#1 - ELBOW_HOME_MOUNTS): on its clip
 over the upper arm's slab end (elbow_home_clip), its chip under the magnet glued on the elbow 90T's outer face
-(elbow_home_magnet); and wrist_pitch's (ky003_hall_sensor#4, a mount on j2_link#1 - WRIST_HOME_MOUNTS): on its clip round
+(elbow_home_magnet); wrist_pitch's (ky003_hall_sensor#4, a mount on j2_link#1 - WRIST_HOME_MOUNTS): on its clip round
 the forearm's wrist end (wrist_home_clip), its chip under the magnet glued on the wrist 90T's outer face
-(wrist_home_magnet). The forearm roll's - beside the stop post on the frame's tower, a magnet in the shaft's stop lug
-- is not designed yet; its order line is tools/bom.py EXTRAS.
+(wrist_home_magnet); and forearm_roll's (ky003_hall_sensor:forearm_roll, a row of forearm_roll_drive#1): on its carrier
+behind the roll shaft in the frame's bay (roll_home_carrier), its chip behind the magnet pressed into the shaft's rear
+face (roll_home_magnet). The wrist roll has none yet (docs/open_issues.md).
 
 No catalog model (step.parts has no KY-003 and no A3144, only bare TO-92S packages - vendor/README.md) and no
 SolidWorks export: a NATIVE COTS part (lib/reference.py NATIVE_COTS) - its envelope IS the geometry and its reference
