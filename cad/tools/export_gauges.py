@@ -6,7 +6,8 @@ object, laid out as lib/gauges/layout.py packs them.
 
 A gauge prints one kind of fit (lib/gauges/fits.py GAUGES) at the arm's own sizes and at steps either side of them,
 every size debossed beside its hole, ring or clip, the arm's own with a bar under it. Print them as the arm prints
-(PETG, the arm's layer height - 0.16 or finer for the bearing seats -, flat as laid out), try the real part in every
+(PETG, flat as laid out, at the layer height of the parts each gauge tests - the print list's layer_mm, parts/AGENTS.md
+"Printed vs. bought"), try the real part in every
 step, and note the step that fits as its Use says (press, slide, line to line, clearance): that size is the constant's
 value. The bodies are built in-process; print/ is git-ignored (/cad/print/ in the root .gitignore) - the files are
 regenerable, and the plates of an earlier export are deleted first.

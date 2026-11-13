@@ -24,6 +24,11 @@ import math
 from lib.units import IN, NUDGE  # noqa: F401
 
 PETG_DENSITY = 1.27e-3  # [DESIGN] g/mm^3 - printed-part mass estimates
+LAYER_H = 0.20          # [DESIGN] mm - the layer height every printed part prints at (tools/bom.py's print list) ...
+LAYER_H_FINE = 0.16     # [DESIGN] mm - ... but a gear, a cycloidal disc or a timing pulley, whose module declares
+#                         FINE_LAYERS = True (parts.fine_layers()): smoother tooth and lobe flanks. A seat printed
+#                         upright gains little from it - its diameter lies in the layer plane (parts/AGENTS.md
+#                         "Printed vs. bought")
 
 # --- Fasteners - lib/fasteners.py (a leaf: the sizes, the clearance holes, the plain screw / nut builders) ----
 from lib.fasteners import (  # noqa: E402, F401

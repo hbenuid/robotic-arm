@@ -46,7 +46,7 @@ the CAD kernel), updating the plugin and what a pull that changes `pyproject.tom
 |---|---|
 | `./cadtool gen parts/<group>/<name>.py` (alias `step`) | **run the model script**: the machine's cad server builds it on this venv's Python and writes `parts/<group>/<name>.step` beside it (git-ignored); `took … nothing ran` when nothing changed, else `rebuilt:` names what did; `--force` runs every kernel call again |
 | `./cadtool gen assemblies/arm.py` | build `assemblies/arm.step` (git-ignored); every part runs with it (replayed when unchanged) and writes its own STEP |
-| `./cadtool python tools/bom.py [--module <module>] [--md\|--json]` | the **print list** and the **buy list**, of the arm or of one module of `assemblies/arm.py MODULES` ([`parts/AGENTS.md`](parts/AGENTS.md) Printed vs. bought) |
+| `./cadtool python tools/bom.py [--module <module>] [--md\|--json]` | the **print list** (each part's quantity and layer height) and the **buy list**, of the arm or of one module of `assemblies/arm.py MODULES` ([`parts/AGENTS.md`](parts/AGENTS.md) Printed vs. bought) |
 | `./cadtool python tools/export_printables.py [--parts …]` | one STL per **printed** part into `print/` (git-ignored) |
 | `./cadtool python tools/export_gauges.py [--only …] [--list]` | the **fit gauges** - test prints of every bearing, pin, screw, nut and servo fit at steps round the arm's sizes - one 3MF per bed plate into `print/gauges/` |
 | `./cadtool export <file.step> stl\|3mf\|glb [out]` | one mesh file per call from a STEP document (default: beside it) |

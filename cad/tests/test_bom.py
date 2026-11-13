@@ -4,6 +4,7 @@ import parts
 from assemblies import arm, cycloidal_drive, forearm_roll_drive, gripper, wrist_roll_drive
 from lib import reference as R
 from lib.cycloidal import DEFAULT_CONFIG as CFG
+from lib.params import LAYER_H, LAYER_H_FINE
 from tools import bom
 
 
@@ -31,6 +32,19 @@ def test_the_two_lists_partition_the_parts_by_the_cots_flag():
     assert {r["part"] for r in printed if r["state"] == "no reference"} == {n for n in R.NO_REFERENCE if not parts.bought(n)}
     assert {r["part"] for r in printed if r["state"] == "designed"} == set(R.DESIGNED) - set(parts.unplaced())
     assert {r["part"] for r in printed if r["state"] == "native"} == set(R.NATIVE)
+
+
+def test_the_print_list_gives_each_part_its_layer_height():
+    """Every printed part prints at LAYER_H but the gears, the cycloidal discs and the timing pulleys, whose modules
+    declare FINE_LAYERS: at LAYER_H_FINE (parts/AGENTS.md "Printed vs. bought"). Only a printed part declares it."""
+    fine = {n for n in parts.names() if parts.fine_layers(n)}
+    assert fine == {"gripper_pinion", "gripper_rack", "cycloidal_disc_1", "cycloidal_disc_2", "gt2_pulley_90t",
+                    "gt2_pulley_120t", "forearm_roll_pulley", "wrist_roll_pulley"}
+    assert not [n for n in fine if parts.bought(n)], "a purchased part declares FINE_LAYERS"
+    layers = {r["part"]: r["layer_mm"] for r in bom.print_rows()}
+    assert {n for n, h in layers.items() if h == LAYER_H_FINE} == fine
+    assert {n for n, h in layers.items() if h == LAYER_H} == set(layers) - fine
+    assert LAYER_H_FINE < LAYER_H
 
 
 def test_drive_buy_list_matches_the_drive_config():

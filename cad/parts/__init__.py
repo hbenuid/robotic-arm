@@ -62,6 +62,13 @@ def accent(name: str) -> bool:
     return bool(getattr(load(name), "ACCENT", False))
 
 
+def fine_layers(name: str) -> bool:
+    """True for a printed part at the fine layer height (the module declares FINE_LAYERS = True: a gear, a cycloidal
+    disc, a timing pulley), False for one at the arm's - lib/params.py LAYER_H_FINE / LAYER_H, the print list's
+    layer_mm (tools/bom.py)."""
+    return bool(getattr(load(name), "FINE_LAYERS", False))
+
+
 def unplaced() -> list[str]:
     """The parts modelled before any assembly places them (the module declares UNPLACED = "<why>"): the print and buy
     lists skip them; a purchased one still to be bought keeps its order line as a tools/bom.py EXTRAS row
