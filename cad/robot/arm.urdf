@@ -75,9 +75,9 @@
 <robot name="arm">
   <link name="base_link">
     <inertial>
-      <origin xyz="-0.062906 0.000225 0.044225" rpy="0 0 0" />
-      <mass value="1.496235" />
-      <inertia ixx="4.381811e-03" ixy="-1.088318e-05" ixz="-7.485110e-04" iyy="9.151671e-03" iyz="-6.126688e-06" izz="1.055284e-02" />
+      <origin xyz="-0.062879 0.000225 0.04426" rpy="0 0 0" />
+      <mass value="1.498325" />
+      <inertia ixx="4.384187e-03" ixy="-1.087423e-05" ixz="-7.495208e-04" iyy="9.153830e-03" iyz="-6.114772e-06" izz="1.055468e-02" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />

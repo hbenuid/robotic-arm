@@ -22,8 +22,9 @@ the lobe beyond it is gone, the motor sits in base_motor_mount - the base's D ca
 it - bolted to the posts by 4x M4 through its own posts into the M4 nuts pressed into the base's (hex pockets from the
 posts' back faces, a corner up). The window between the posts is the mount's inside: the cables come through it into
 the base (their way out of the base: docs/open_issues.md). A band of upright slits runs through the walls under the
-plate, the mount's too (SlitParams: round the round half and along the sides, none at the posts). The base keeps the tower, the plate's neck with the curved slot, and the D walls up to the joint
-face. Its walls are j1_coupler's cone carried on down (ShellParams.r / draft: flush under the coupler's rim, leaning out
+plate, the mount's too (SlitParams: round the round half and along the sides, none at the posts). The base keeps the
+tower, the plate's neck - solid, without the curved slot (PlateParams.arc_slot) -, and the D walls up to the joint face.
+Its walls are j1_coupler's cone carried on down (ShellParams.r / draft: flush under the coupler's rim, leaning out
 at BASE_DRAFT, 10.8 degrees, going down; the SolidWorks Ø106.7 stood under the coupler's Ø116), the inside leaning with
 them, the cap a full disc; at the table a Ø200 foot (FootParams): a flange, a straight chamfer up the wall, 6 screw
 holes through the flange with spot-faces in the chamfer, for fixing the base down (the stretched arm's centre of mass

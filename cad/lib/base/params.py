@@ -105,12 +105,13 @@ class BoreParams:
 @dataclass(frozen=True)
 class PlateParams:
     """The motor plate across the D, its top face flush with the shell's full-height top: a central opening of
-    opening_r that runs out to the wall from the +Z side round -X to a radial line (open_deg), and a curved slot of
-    width arc_slot_w on the +X side (centreline arc_slot_r, round ends at +/- arc_slot_half_deg)."""
+    opening_r that runs out to the wall from the +Z side round -X to a radial line (open_deg), and - with arc_slot -
+    a curved slot of width arc_slot_w on the +X side (centreline arc_slot_r, round ends at +/- arc_slot_half_deg)."""
 
     y: tuple = (-44.9, -39.9)
     opening_r: float = 42.33946
     open_deg: tuple = (90.0, 253.002235)
+    arc_slot: bool = True          # [DESIGN] the curved slot through the plate (the SolidWorks base's; DEFAULT: none)
     arc_slot_r: float = 49.33946
     arc_slot_w: float = 4.0
     arc_slot_half_deg: float = 45.954036
@@ -266,8 +267,8 @@ class YawHomeParams:
     (the plate's opening runs out to the wall from +Z round -X: PlateParams.open_deg), under the belt.
     The module lies on a printed bracket (parts/base/yaw_home_bracket) hung under the motor plate: a plain plate
     bracket_t thick, its top on the plate's underside - the board's underside on it, level with the plate's -, its outline
-    (x, z) from the chip's centre in the base's axes: a root under the plate on the +Z side, past the opening's edge and
-    clear of the plate's arc slot, carried in under the 120T to the board. 2 M3 SHCS (screw_len) up through it and the
+    (x, z) from the chip's centre in the base's axes: a root under the plate on the +Z side, past the opening's edge,
+    carried in under the 120T to the board. 2 M3 SHCS (screw_len) up through it and the
     plate at screw_points (from the chip too) into M3 nuts dropped into hex pockets in the plate's top (nut.af and
     nut_clear across the flats, nut.h deep: flush), reached from under the base through its open side. Slots relief_w
     wide in it under the header's pins (header_relief_len long) and under the chip's leads (lead_relief_len), each
@@ -284,7 +285,7 @@ class YawHomeParams:
     lead_relief_len: float = 5.0          # ... along the chip's 3 leads ...
     relief_past: float = 0.5              # ... and this deeper than their tails
     screw_points: tuple = ((6.0, 22.5), (15.0, 22.5))   # the M3s, (x, z) from the chip's centre: under the plate, 49.9 and
-    #                                                     51.7 off the axis at 83 and 73 deg (the arc slot ends at 46)
+    #                                                     51.7 off the axis at 83 and 73 deg
     screw: ShcsSize = M3_SHCS
     screw_len: float = 10.0               # through the bracket and the plate, 2.0 (4 pitches) past the nut's top
     screw_hole_dia: float = M3_CLEAR      # through the bracket and the plate
@@ -353,8 +354,11 @@ YAW_MOTOR_PAD = 2.0       # [DESIGN] the pad under the mount's plate round the m
 _HOLES = MotorHoleParams()
 # The motor plate as far under the belt as the SolidWorks one (the 20T's hub in its window, the idler on its spacer), so
 # the plate, the motor, its board and the bottom face come up with the belt: everything under the cap is that much
-# shorter than the SolidWorks base, the cap and all it carries that much lower on the table.
-_PLATE = replace(LEGACY.plate, y=tuple(round(y + YAW_BELT_Y - _SW_BELT_Y, 6) for y in LEGACY.plate.y))   # [DESIGN]
+# shorter than the SolidWorks base, the cap and all it carries that much lower on the table. It has no curved slot
+# (PlateParams.arc_slot): nothing passes through it - the 120T, the belt and the home sensor all stay clear of where it
+# was -, and without it the plate's neck between the central opening and the joint face is one solid piece.
+_PLATE = replace(LEGACY.plate, y=tuple(round(y + YAW_BELT_Y - _SW_BELT_Y, 6) for y in LEGACY.plate.y),
+                 arc_slot=False)   # [DESIGN]
 _BOTTOM_Y = round(_PLATE.y[0] - YAW_MOTOR_PAD - _DRIVE.motor.body_length - MKS_SERVO42D_STACK - BOARD_CLEAR, 6)
 _TOP_R = round(BASE_R + BASE_DRAFT * (LEGACY.cap.ring_top_y - LEGACY.cap.top_y), 6)   # the cone at the cap's top face
 # The bearing boss ends flush with the lower 6806's lower face: the SolidWorks boss ran 1 on past it, a seat nothing

@@ -122,9 +122,10 @@ def test_the_switch_zone_fits_between_the_ends():
 def test_the_layout():
     """The board on the bracket, level with the plate's underside; the chip 2.98 under the magnet's pole, the header 1.96
     under it and 4.96 under the 120T's face; the board, its pins and the plug clear of the plate and under the belt; the
-    M3s under the plate - clear of its opening, its arc slot and the wall -, through the plate into their nuts, flush in
-    pockets in its top, 4 pitches past them, with 2.6 of plate under the pockets; the M2s through the board's holes,
-    past their nuts; the slots under the pins' (through the bracket) and the leads' tails."""
+    M3s under the plate - clear of its opening and the wall (and of its arc slot, on a plate that has one) -, through
+    the plate into their nuts, flush in pockets in its top, 4 pitches past them, with 2.6 of plate under the pockets;
+    the M2s through the board's holes, past their nuts; the slots under the pins' (through the bracket) and the leads'
+    tails."""
     assert home_board_y() == PL.y[0]
     assert POLE_Y - CHIP_TOP == pytest.approx(2.98) and FACE_Y - CHIP_TOP == pytest.approx(5.98)
     header_top = home_board_y() + KY003_BOARD_T + KY003_HEADER_H
@@ -142,7 +143,7 @@ def test_the_layout():
         r, deg = math.hypot(x, z), math.degrees(math.atan2(z, x))
         pocket = (H.nut.af + H.nut_clear) / math.sqrt(3.0)           # the pocket's corners off the screw's axis
         assert r - pocket >= PL.opening_r + 3.0 and PL.open_deg[1] - 360.0 < deg < PL.open_deg[0]
-        assert abs(deg) - PL.arc_slot_half_deg >= 20.0
+        assert not PL.arc_slot or abs(deg) - PL.arc_slot_half_deg >= 20.0
         assert z + pocket <= inner_r(DEFAULT, PL.y[1]) - 5.0
     tip = home_bracket_frame()[0][1] + H.screw_len
     assert tip - PL.y[1] == pytest.approx(2.0) and tip - PL.y[1] >= 4 * M3_PITCH
