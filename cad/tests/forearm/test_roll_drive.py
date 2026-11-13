@@ -289,8 +289,9 @@ def test_module_colors(module):
     """Standalone: every part in its colour, as in the arm (tests/helpers.py part_colours)."""
     assert module.label == "forearm_roll_drive"
     # 2 bearings, the rotor clamp's screws and nuts, motor, board, 20T, the motor's screws, belt, the tensioner's idler,
-    # screw and nut, the back panel's magnets / frame, elbow flange, shaft, pulley, back panel
-    assert part_colours(module) == {True: 13, False: 5}
+    # screw and nut, the back panel's magnets, the home sensor's KY-003, magnet, M2s and nuts / frame, elbow flange,
+    # shaft, pulley, back panel, the home sensor's carrier
+    assert part_colours(module) == {True: 17, False: 6}
 
 
 @pytest.mark.slow
