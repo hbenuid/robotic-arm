@@ -94,7 +94,8 @@ build's feature probes, the yoke on the port's housing - its bore, od, pillars, 
 drive's own axis - two legs past the shell's ends, the disc's draft up them, the hub on one, the other its own part round the motor sleeve and bolted to it, the lowered ring - and the motor leg's numbers), `tests/wrist/` (`wrist_link`: the LEGACY build's feature probes, the seat on the
 coupler's flange, the end face on the NEMA 17 pattern, DEFAULT the wrist roll drive's frame on its plate and the wrist_pitch flange (the post) on it; the wrist roll
 drive - its axis the wrist offset across the pitch axis, the stack, the stock belt, the rotor's walls, the press fits,
-clean pairs against `wrist_link`, the pancake's way in from the bottom; `test_back_panel`: the wrist frame's back panel
+clean pairs against `wrist_link`, the pancake's way in from the bottom, the plate's slots on its tapped holes and its
+pilot; `test_back_panel`: the wrist frame's back panel
 and its magnet pairs (no reference) - their numbers, the panel flush and flat on the rear plane, `run_gap` off the
 turning shaft, its rim and notches, the frame's step and pockets, the magnets on their pockets' bottoms, clear of the
 drive; `gripper_j3_connector`: LEGACY's two bodies, DEFAULT's bolted hub), `tests/gripper/` (the gripper's measured parts against their exports' numbers; the module: its layout, its fits, the jaws in mesh over their travel, the cage on the connector), `tests/pulley/` (`gt2_pulley_90t`: the GT2 groove's tangency
