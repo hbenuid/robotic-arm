@@ -54,7 +54,7 @@ from lib.sensors import (
 )
 from robot import frames as F
 from tests import built
-from tests.helpers import interference, is_inside
+from tests.helpers import distance, interference, is_inside
 
 H = DEFAULT.home
 GAP = H.air + A3144_HALL_DEPTH                     # the magnet's pole face .. the hall element, at home
@@ -93,14 +93,15 @@ def _box_gap(a, b) -> float:
 
 
 def _nearest(movers, fixed, limit: float) -> tuple:
-    """(distance, mover, fixed) of the nearest pair - exact under `limit`, else `limit` (their boxes that far apart)."""
+    """(distance, mover, fixed) of the nearest pair - exact under `limit`, else `limit` (their boxes that far apart); a
+    false zero measured again (helpers.distance)."""
     best = (limit, "", "")
     boxes = [(fl, fs, fs.bounding_box()) for fl, fs in fixed]
     for ml, ms in movers:
         mbb = ms.bounding_box()
         for fl, fs, fbb in boxes:
             if _box_gap(mbb, fbb) < best[0]:
-                d = closest_points(ms, fs).distance
+                d = distance(ms, fs)
                 if d < best[0]:
                     best = (d, ml, fl)
     return best

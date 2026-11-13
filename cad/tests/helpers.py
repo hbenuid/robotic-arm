@@ -1,5 +1,5 @@
 """Geometry helpers shared by the geometry tests (tests/cycloidal/, tests/forearm/, tests/upper_arm/, tests/base/,
-tests/test_mounts.py), and the standalone modules' colour check (tests/test_assembly.py, the drives' own tests). The
+tests/test_mounts.py, tests/test_sweeps.py), and the standalone modules' colour check (tests/test_assembly.py, the drives' own tests). The
 drive's own config helpers stay in tests/cycloidal/helpers.py.
 
 CadQuery -> build123d idioms from the drive's port (see docs/cycloidal_drive.md "Port notes"):
@@ -11,7 +11,7 @@ CadQuery -> build123d idioms from the drive's port (see docs/cycloidal_drive.md 
 """
 from __future__ import annotations
 
-from build123d import Box, Color, Compound, Cylinder, GeomType, Pos, PositionMode, Shape, Vertex
+from build123d import Box, Color, Compound, Cylinder, GeomType, Location, Pos, PositionMode, Shape, Vertex
 
 import parts
 from assemblies._occurrences import colour
@@ -54,6 +54,21 @@ def interference(a: Shape, b: Shape) -> float:
     op.SetFuzzyValue(COINCIDENT_MM)
     op.Build()
     return R.solid_volume(Compound(op.Shape())) if op.IsDone() else 0.0
+
+
+JITTER = ((1.0, 0.7, 1.3), (-1.1, 0.9, -0.6), (0.4, -1.2, 0.8))   # x 0.01 mm: distance(), a re-checked boolean
+
+
+def distance(a: Shape, b: Shape) -> float:
+    """a.distance_to(b), its false zeros caught: BRepExtrema now and then reads 0 at one exact pose of two solids that
+    neither touch nor overlap (its inside-the-solid check misfires - forearm_roll -140 / -145 and elbow_pitch +92, 1.0 /
+    1.2 mm either side; the wrist 90T against the wrist home clip at wrist_pitch +10, 2.4). A zero is measured again
+    with the pose moved 0.01 mm three ways (JITTER) and the median kept: a false zero belongs to one pose, a real touch
+    stays within the jitter."""
+    d = a.distance_to(b)
+    if d >= 0.05:
+        return d
+    return sorted(a.moved(Location(tuple(0.01 * v for v in j))).distance_to(b) for j in JITTER)[1]
 
 
 def end_face(shape: Shape, which: str):
