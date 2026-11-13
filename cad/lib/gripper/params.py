@@ -161,6 +161,8 @@ class CageParams:
     ear_inner_gap: float = 0.375       # ... to this short of the case's end
     screw_hole: float = 3.4            # the tab screws' and the connector screws' clearance (lib/fasteners.py M3_CLEAR)
     access_dia: float = 6.5            # the back plate's hole over each tab screw: its head and the key
+    join_wall: float = 0.8             # a connector screw's hole nearer than this to an access hole is joined to it (a slot the
+    #                                    hole's width, through the plate): no sliver under two beads of a 0.4 nozzle
     nut_af: float = 5.6                # the connector screws' nut slots: M3 (5.5 across flats) + fit ...
     nut_h: float = 2.6                 # ... 2.4 thick + fit, centred in back_t
     cable_w: float = 4.5               # the servo cable's slot in the back plate, from cable_x0 to the axis ...

@@ -157,10 +157,11 @@ def test_the_rotor_walls():
     """Inside the band's core the clamp's M3 between the cable bore and the core (1+ mm each side); in the face the
     connector's nut pockets clear of the clamp's counterbores; the clamp's nut pockets inside the shaft's flange."""
     r_core, r_bore, r_bolt = D.ring_core_dia / 2.0, D.bore / 2.0, D.bolt_dia / 2.0
+    head = D.clamp_screw.head_dia / 2.0 + D.clamp_head_clear
     for x, y in clamp_points(DEFAULT):
         r = math.hypot(x, y)
-        assert r + r_bolt <= r_core - 1.0 and r - r_bolt >= r_bore + 1.0
-    head = D.clamp_screw.head_dia / 2.0 + D.clamp_head_clear
+        assert r + r_bolt <= r_core - 1.0 + 1e-9 and r - r_bolt >= r_bore + 1.0
+        assert r - head - r_bore >= 0.8 - 1e-9          # the heads' counterbores two beads off the cable bore
     r_in, r_out, z0, z1 = face_nut_pocket(DEFAULT)
     assert r_out > D.face_dia / 2.0 and S["z_ring_end"] < z0 < z1 < S["z_face"]   # open to the rim, a floor and a roof
     half = D.nut.af / 2.0 + D.nut_fit

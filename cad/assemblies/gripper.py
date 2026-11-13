@@ -34,8 +34,8 @@ BODIES = {
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("base") after any geometry change.
 EXPECTED = {
-    "leaves": 9, "solids": 12, "solid_volume": 87512.252,
-    "bodies": {"base": {"leaves": 5, "solids": 8, "solid_volume": 70280.109},
+    "leaves": 9, "solids": 12, "solid_volume": 87501.433,
+    "bodies": {"base": {"leaves": 5, "solids": 8, "solid_volume": 70269.29},
                "jaw_a": {"leaves": 2, "solids": 2, "solid_volume": 8616.072},
                "jaw_b": {"leaves": 2, "solids": 2, "solid_volume": 8616.072}},
 }

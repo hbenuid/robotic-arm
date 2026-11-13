@@ -22,6 +22,7 @@ from lib.forearm import (
     DEFAULT,
     ELBOW_INSET,
     WEB_DROP,
+    clamp_bore_r,
     clamp_nut_pocket,
     clamp_points,
     end_nut_pocket,
@@ -187,6 +188,9 @@ def test_stack():
     assert r_in < D.bore / 2.0 and D.collar_od / 2.0 - r_out >= 3.0 and (z0, z1) == (S["z_shaft_end"], S["z_clamp_nut_seat"])
     head_r = D.clamp_screw.head_dia / 2.0 + D.clamp_head_clear
     assert min(math.dist(a, b) for a in clamp_points(DEFAULT) for b in flange_bolt_points_module(DEFAULT)) - head_r - hole_r >= 3.0
+    # the counterbores two beads (0.8) off the cable bore: it narrows over their depth, the circle held by the walls above
+    assert D.clamp_bore_wall >= 0.8 and clamp_bore_r(DEFAULT) < D.bore / 2.0
+    assert clamp_r - head_r - clamp_bore_r(DEFAULT) == pytest.approx(D.clamp_bore_wall)
     # the forearm wall's screws through the wall and the spigot into nuts in the pulley's core: the tip 2 pitches past
     # its nut, the nut over the ring's rear flange and 2 mm short of the clamp's counterbores, 3 mm of the core outside
     # it, its pocket open into the bore

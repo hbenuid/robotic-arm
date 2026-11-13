@@ -11,7 +11,7 @@ the rest of the drive."""
 import math
 
 import pytest
-from build123d import Box, GeomType, Pos
+from build123d import Box, GeomType, Pos, Vector
 from cad.build123d import closest_points
 
 import parts
@@ -30,7 +30,7 @@ from lib.wrist.layout import (
     stack_positions,
     toward_motor,
 )
-from lib.wrist.roll import back_grill, back_grill_field, back_magnet, back_magnet_depths, back_point
+from lib.wrist.roll import _on_rear, back_grill, back_grill_field, back_magnet, back_magnet_depths, back_point
 from tests import built
 from tests.helpers import interference, is_inside
 
@@ -40,7 +40,7 @@ PANEL, MAGNETS = "wrist_back_panel", "wrist_back_magnets"
 # name -> (solids, volume mm^3, bbox min, bbox size): the build's own numbers
 LOCKS = {
     PANEL: (1, 5858.891, (-27.0, -30.0, -18.424332), (57.0, 53.932894, 8.799233)),
-    MAGNETS: (8, 113.097, (-23.5, -19.46795, -17.781645), (47.0, 40.289558, 7.025311)),
+    MAGNETS: (8, 113.097, (-23.03, -18.99795, -17.781645), (46.53, 39.819558, 6.991984)),
 }
 
 
@@ -114,6 +114,22 @@ def test_the_build_matches_its_numbers(name):
     assert R.bbox_min(shape) == pytest.approx(lo, abs=1e-3) and R.bbox_size(shape) == pytest.approx(size, abs=1e-3)
     if name == MAGNETS:
         assert R.solid_volume(shape) == pytest.approx(solids * math.pi * (B.magnet_dia / 2.0) ** 2 * B.magnet_t, rel=1e-6)
+
+
+@pytest.mark.slow
+def test_the_panels_pockets_keep_two_beads_off_its_edges(module):
+    """Each magnet pocket in the panel's inner face 0.8 (two beads of a 0.4 nozzle: the printability check's minimum) or
+    more off every face of the panel round it - its own wall and the faces parallel to the rear plane (its floor's skin,
+    the face it opens on) left out. The check itself misses these: the panel is slanted, its edges meet the pockets at
+    an angle."""
+    panel = _leaf(module, PANEL)
+    n = Vector(*rear_plane(DEFAULT)[1]).normalized()
+    sides = [f for f in panel.faces() if not (f.geom_type == GeomType.PLANE and abs(abs(f.normal_at().dot(n)) - 1.0) < 1e-6)]
+    for x, y in B.magnet_points:
+        pocket = _on_rear(x, y, B.pocket_dia / 2.0, B.t - B.pocket_depth, B.pocket_depth, DEFAULT)
+        walls = [d for f in sides if (d := closest_points(pocket, f).distance) > 1e-6
+                 or not (f.geom_type == GeomType.CYLINDER and abs(f.radius - B.pocket_dia / 2.0) < 1e-3)]
+        assert min(walls) >= 0.8 - 1e-3, (x, y, min(walls))
 
 
 @pytest.mark.slow
