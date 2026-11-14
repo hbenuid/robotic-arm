@@ -1,10 +1,12 @@
 """The local tooling stays healthy: the venv holds the cad library and the OCP kernel pyproject.toml pins
 (and only ONE OCP distribution) and no cad-server, and ./cadtool inspect (tools/step_facts.py) agrees with the kernel;
-the retired inspect verbs teach the new syntax, cad's telemetry and automatic updates stay off, no `cadgen` import, no
+the retired inspect verbs teach the new syntax, cad's telemetry and automatic updates stay off, ./cadtool doctor names
+what a `cad update` moved, no `cadgen` import, no
 CADGEN_ name and no second pin is left, the retired cadtool verbs say what replaced them and its snapshot / export name cad's document type,
 ./cadtool refuses what would move the machine off the pin and its stop ends only this venv's workers,
 the two .claude/settings.json are the same, no tracked CLAUDE.md hides an AGENTS.md, every tracked name is lowercase."""
 import json
+import os
 import pathlib
 import re
 import subprocess
@@ -92,6 +94,40 @@ def test_cad_automatic_updates_stay_off():
     off, doctor = install["body"].find('"$cad" update auto off'), install["body"].find('"$cad" doctor')
     assert -1 < off < doctor, "./cadtool server must store automatic updates off before `cad doctor` starts the server"
     assert "update auto status" in source, "./cadtool doctor no longer reads the stored choice"
+
+
+def cadtool_function(name: str, *args: str, env: dict[str, str] | None = None, stdin: str = "") -> str:
+    """What cadtool's function `name` prints, loaded alone with `eval` (macOS's bash 3.2 sources nothing from a
+    process substitution)."""
+    load = f'f=$(sed -n "/^{name}() {{/,/^}}/p" cadtool); eval "$f"; {name} "$@"'
+    proc = subprocess.run(["bash", "-c", load, "_", *args], cwd=CAD_DIR, env={**os.environ, **(env or {})},
+                          input=stdin, capture_output=True, text=True, check=True)
+    return proc.stdout.strip()
+
+
+def test_doctor_names_what_a_cad_update_moved(tmp_path):
+    """A `cad update` - the viewer's Update button - leaves the pin with no error: cad's own copy of a release becomes the
+    machine's installation and serves every session, and upstream's text-to-cad@text-to-cad plugin replaces this one
+    (docs/toolchain.md Gotchas). The uv tool's release and this plugin's entries still read the pin, so `./cadtool
+    doctor` also reads the server running, the installation cad's state folder names current (`CAD_STATE_DIR` first,
+    as cad's command reads it) and every other text-to-cad plugin."""
+    source = (CAD_DIR / "cadtool").read_text()
+    doctor = re.search(r"^  doctor\)(?P<body>.*?)^  setup\)", source, re.MULTILINE | re.DOTALL)
+    assert doctor, "cadtool has no doctor verb"
+    for check in ('said "the server running"', "$(installation ||", "$(other_plugins ||"):
+        assert check in doctor["body"], f"./cadtool doctor no longer checks {check}"
+    line = "engine server 36631 (cad-server 0.11.10), up 4h30m · workers 1/14 · RSS 3.6 GB of 6.0 GB\n"
+    assert cadtool_function("serving", stdin=line) == "0.11.10"
+    folder = tmp_path / "installations"
+    folder.mkdir()
+    prefix = str(tmp_path / "Application Support" / "cad" / "releases" / "9.9.9")
+    (folder / "current").write_text("9.9.9")
+    (folder / "9.9.9.json").write_text(json.dumps({"version": "9.9.9", "prefix": prefix}))
+    assert cadtool_function("installation", env={"CAD_STATE_DIR": str(tmp_path)}) == f"9.9.9 {prefix}"
+    plugins = tmp_path / "installed_plugins.json"
+    plugins.write_text(json.dumps({"version": 2, "plugins": {name: [{}] for name in (
+        "text-to-cad@earthtojake", "text-to-cad@text-to-cad", "cad@text-to-cad", "clangd-lsp@claude-plugins-official")}}))
+    assert cadtool_function("other_plugins", str(plugins)) == "cad@text-to-cad text-to-cad@text-to-cad"
 
 
 @pytest.mark.parametrize("verb", ["parts", "why", "compile", "store", "daemon", "cadgen"])

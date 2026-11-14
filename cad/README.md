@@ -61,7 +61,7 @@ the CAD kernel), updating the plugin and what a pull that changes `pyproject.tom
 | `./cadtool cad stl dfm print/<name>.stl --process printing` | printability of a printed part's STL: walls, overhangs, support ([`parts/AGENTS.md`](parts/AGENTS.md) Printed vs. bought) |
 | `./cadtool skill <skill> <tool> [args]` | a plugin skill script (`print3d orca_presets.py`), its `requirements.txt`, if any, fetched into uv's cache |
 | `./cadtool cad …` | any `cad` subcommand but `setup`, `update`, `uninstall`, `doctor`, `run` ([`docs/toolchain.md`](docs/toolchain.md) Gotchas) |
-| `./cadtool doctor` | the venv's, the server's and the plugin's release against the pin, the stored telemetry and automatic-update choices, the OCP kernel; changes nothing |
+| `./cadtool doctor` | the venv's, the server's and the plugin's release against the pin, the stored telemetry and automatic-update choices, the OCP kernel, the machine's installation and the server running (a `cad update` moves both), no other text-to-cad plugin; changes nothing |
 | `./cadtool pytest [-m "not slow"] [-n 4]` | test suite (the fast lane skips geometry builds; `-n`: worker processes, a whole test file each) |
 | `./cadtool lint [--fix] [path…]` | `ruff check` over `cad/` |
 | `./cadtool python …` | any python in the venv with `PYTHONPATH=cad/` (`-c "from assemblies.cycloidal_drive import totals; print(totals())"`) |
