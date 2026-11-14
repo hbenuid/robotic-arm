@@ -56,7 +56,9 @@ as a git note).
   ways: `cadtool` and `.env` export `CAD_TELEMETRY=0`, so no command of theirs shows the notice or sends; and `./cadtool
   server` stores `cad telemetry off` in cad's state directory (`settings.json`: `~/.local/state/cad/` on Linux,
   `~/Library/Application Support/cad/` on the Mac) BEFORE `cad doctor` starts the server, which goes by the stored choice
-  alone — the environment does not reach it. The stored answer is per machine: `telemetry` → `choice: off` in that file
+  — its own environment is not a client's. The one exception is the model builds it answers, which it counts only where
+  the caller's environment allows too (a build carries the caller's whole environment, cadtool's `CAD_TELEMETRY=0`
+  included); everything else the server and the plugin's server do goes by the stored choice. The stored answer is per machine: `telemetry` → `choice: off` in that file
   is the check, and `./cadtool doctor` reads it with the environment's switch taken off (with the switch on, `cad
   telemetry status` says off whatever is stored). `test_tooling.py` holds the order. Two ways this fails silently on a
   bump: a renamed switch does nothing and says nothing, and a new state folder starts with no answer (the old off moves into it only with `cad doctor` or `cad setup`).

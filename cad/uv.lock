@@ -66,14 +66,14 @@ wheels = [
 
 [[package]]
 name = "cad"
-version = "0.11.9"
+version = "0.11.10"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/00/e5/c82775e7200095a8b6ab982df72c701fd5938a6c407ba49d80e1314df047/cad-0.11.9.tar.gz", hash = "sha256:8dcc5fc52617931a7405618b957fdb68a0c152ca674f1df1f9f33bcf2187c00d", size = 1839782, upload-time = "2026-11-11T16:36:31.551Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/92/c2/fc16e70d1e4c06285a644045a7894d72b3365bacda35aea060810b12e4ac/cad-0.11.10.tar.gz", hash = "sha256:53bd954d5a37459680b9fd0a8c4408fff92b338480b199619de730c0d0b20df5", size = 1840437, upload-time = "2026-11-13T11:33:57.435Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b8/55/a85fe2794b9365a30c3766a3ad0d4a457fde9f33fc027ec0373697fbbbaf/cad-0.11.9-py3-none-any.whl", hash = "sha256:c93e89951dfaf935345d3acc876d9eb1f4ad5b8f3bdff5d29bb7d0a12b104bea", size = 1895460, upload-time = "2026-11-11T16:36:29.942Z" },
+    { url = "https://files.pythonhosted.org/packages/c5/a3/29af57951fecc5b43125093a8ebca9ae1698d52cef043a4b96035391fe7c/cad-0.11.10-py3-none-any.whl", hash = "sha256:21143412fc514de68046cbfe1f7140925eeaef00b8515a7ffc507e47f247332b", size = 1897861, upload-time = "2026-11-13T11:33:55.268Z" },
 ]
 
 [package.optional-dependencies]
@@ -842,7 +842,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "build123d", specifier = "==0.13.0" },
-    { name = "cad", extras = ["build123d"], specifier = "==0.11.9" },
+    { name = "cad", extras = ["build123d"], specifier = "==0.11.10" },
     { name = "cadquery-ocp-novtk", specifier = "==8.0.1.1.0" },
     { name = "numpy", specifier = ">=2.4.6" },
 ]
