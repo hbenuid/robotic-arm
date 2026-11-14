@@ -17,7 +17,8 @@ cadtool - cad + this uv project (paths relative to cad/)
                                                     stored off first, then `cad doctor`
                                                     (a linked worktree only checks it: a branch never moves the machine)
   ./cadtool doctor                                  the venv's, the server's and the plugin's release vs the pin, the stored telemetry
-                                                    and automatic-update choices, the OCP kernel
+                                                    and automatic-update choices, the OCP kernel, the machine's installation and the
+                                                    server running (a `cad update` moves both), no other text-to-cad plugin
   ./cadtool gen <model.py>... [--force]             build: run the model script(s) -> the sibling <name>.step (an assembly's
                                                     children write theirs too); a current one says "took ... nothing ran" and
                                                     keeps its file; --force runs every kernel call again (CAD_ENGINE_MEMO=0)
@@ -112,6 +113,39 @@ import json, pathlib
 path = pathlib.Path.home() / ".claude/plugins/installed_plugins.json"
 entries = json.loads(path.read_text())["plugins"].get("text-to-cad@earthtojake", []) if path.exists() else []
 print(" ".join(sorted({entry["version"] for entry in entries})))' 2>/dev/null
+}
+
+other_plugins() {  # every other text-to-cad plugin installed: upstream's installer puts text-to-cad@text-to-cad in this
+  # one's place (docs/toolchain.md Gotchas); cad@text-to-cad is the plugin's name before its rename
+  uv run --frozen python -c '
+import json, pathlib, sys
+path = pathlib.Path(sys.argv[1])
+plugins = json.loads(path.read_text())["plugins"] if path.exists() else {}
+print(" ".join(sorted(key for key in plugins if key != "text-to-cad@earthtojake" and "text-to-cad" in key.split("@"))))' \
+    "${1:-$HOME/.claude/plugins/installed_plugins.json}" 2>/dev/null
+}
+
+installation() {  # the machine's current cad installation, "<release> <prefix>": the one cad's state folder names
+  # (installations/current), read where cad's command reads it - CAD_STATE_DIR, else the platform's state folder
+  uv run --frozen python -c '
+import json, os, pathlib, sys
+home = pathlib.Path.home()
+if os.environ.get("CAD_STATE_DIR"):
+    state = pathlib.Path(os.environ["CAD_STATE_DIR"])
+elif sys.platform == "darwin":
+    state = home / "Library/Application Support/cad"
+else:
+    state = pathlib.Path(os.environ.get("XDG_STATE_HOME") or home / ".local/state") / "cad"
+try:
+    release = (state / "installations/current").read_text().strip()
+    print(release, json.loads((state / "installations" / f"{release}.json").read_text())["prefix"])
+except (OSError, ValueError, KeyError):
+    pass' 2>/dev/null
+}
+
+serving() {  # the release of the server running, from `cad status`'s first line on stdin:
+  # "engine server <pid> (cad-server <release>), up ..."
+  sed -n '1s/^engine server [0-9]* (cad-server \([^)]*\)).*/\1/p'
 }
 
 CAD_PLUGIN="${CAD_PLUGIN:-}"
@@ -283,6 +317,10 @@ case "$cmd" in
     plugin="$(grep -o -m1 'cad-mcp==[0-9][0-9.]*' "$CAD_PLUGIN/claude.mcp.json" || true)"
     said "the plugin's pin ($CAD_PLUGIN)" "${plugin#cad-mcp==}"
     said "the installed plugin entries" "$(plugin_entries || true)"
+    others="$(other_plugins || true)"
+    if [[ -n "$others" ]]; then
+      echo "other text-to-cad plugins: $others - MISMATCH, a cad update put them there: docs/toolchain.md Gotchas"; rc=1
+    fi
     told="$(env -u CAD_TELEMETRY -u DO_NOT_TRACK "$(cad_bin)" telemetry status 2>/dev/null | head -1 || true)"
     case "$told" in
       *"off: your choice"*) echo "telemetry: off, stored" ;;
@@ -300,7 +338,17 @@ case "$cmd" in
     fi
     if uv run --frozen python -c "import OCP.gp" 2>/dev/null; then echo "kernel: OCP imports"
     else echo "kernel: OCP.gp does not import - run ./cadtool setup"; rc=1; fi
-    "$(cad_bin)" status 2>&1 | head -1 || true
+    # A `cad update` (the viewer's Update button) leaves the uv tool and this plugin's entries on the pin: cad's own copy
+    # of the release becomes the machine's installation and serves every session (docs/toolchain.md Gotchas).
+    read -r release prefix <<<"$(installation || true)"
+    if [[ "$prefix" == "$(uv tool dir)/cad-server" ]]; then said "the machine's installation (cad-server's uv tool)" "$release"
+    else
+      echo "the machine's installation: cad-server ${release:-none}${prefix:+ in $prefix}, not the uv tool - MISMATCH," \
+        "./cadtool server; after a cad update, docs/toolchain.md Gotchas"; rc=1
+    fi
+    running="$("$(cad_bin)" status 2>&1 | head -1 || true)"
+    echo "$running"
+    if [[ "$running" == "engine server "* ]]; then said "the server running" "$(printf '%s\n' "$running" | serving)"; fi
     exit $rc ;;
   setup)
     # Bytecode compiled into .venv (never into cad/: PYTHONDONTWRITEBYTECODE above), else every process - each build

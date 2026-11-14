@@ -56,7 +56,9 @@ as a git note).
   ways: `cadtool` and `.env` export `CAD_TELEMETRY=0`, so no command of theirs shows the notice or sends; and `./cadtool
   server` stores `cad telemetry off` in cad's state directory (`settings.json`: `~/.local/state/cad/` on Linux,
   `~/Library/Application Support/cad/` on the Mac) BEFORE `cad doctor` starts the server, which goes by the stored choice
-  alone — the environment does not reach it. The stored answer is per machine: `telemetry` → `choice: off` in that file
+  — its own environment is not a client's. The one exception is the model builds it answers, which it counts only where
+  the caller's environment allows too (a build carries the caller's whole environment, cadtool's `CAD_TELEMETRY=0`
+  included); everything else the server and the plugin's server do goes by the stored choice. The stored answer is per machine: `telemetry` → `choice: off` in that file
   is the check, and `./cadtool doctor` reads it with the environment's switch taken off (with the switch on, `cad
   telemetry status` says off whatever is stored). `test_tooling.py` holds the order. Two ways this fails silently on a
   bump: a renamed switch does nothing and says nothing, and a new state folder starts with no answer (the old off moves into it only with `cad doctor` or `cad setup`).
@@ -180,6 +182,20 @@ cache, whose key omits Python. The proof the geometry did not move: the hash gat
   environment of its own (0.11: `uv run` with cad at the machine's release) instead of this venv: inside this project `./cadtool` overrides both (`cad/AGENTS.md`
   Running things). `./cadtool cad` refuses all of these. The plugin moves only with a bump, by the steps of "After a pull
   …". `text-to-cad@earthtojake` from GitHub stays upstream's documented manual install.
+- **When one ran anyway** (the Update button is one click), the machine leaves the pin with no error: cad's own copy of
+  the release (`releases/<ver>/` in its state folder) becomes the machine's installation (`installations/current` names
+  it) and serves every session, the user-scope `text-to-cad@earthtojake` is uninstalled for `text-to-cad@text-to-cad`
+  (a `text-to-cad` marketplace reading the state folder's `plugin/`), and other agent apps get its skills (GitHub
+  Copilot's in `~/.agents/skills`); `update.log` and `install-receipt.json` there say what it did. `./cadtool doctor`
+  names each: the server running, the machine's installation, other text-to-cad plugins. The way back, every other
+  session closed: `./cadtool stop --device`; move `installations/current` out of the state folder (`cad doctor`
+  registers the uv tool only where no live installation is current - else it says `registers nothing`); `./cadtool
+  server`, which makes the uv tool's the current one; `claude plugin uninstall text-to-cad@text-to-cad --scope user`,
+  `claude plugin marketplace remove text-to-cad`, `claude plugin install text-to-cad@earthtojake --scope user`
+  (`install` refreshes the marketplace clone first, so the entry lands at upstream's newest: a release past the pin is
+  brought back as the third entry is, Gotchas below); `./cadtool doctor` clean. The release's copy stays until
+  `"$(uv tool dir --bin)/cad" doctor --prune` (it lists what it removes and asks), the other apps' skills until removed
+  by hand.
 - `claude plugin marketplace update` alone makes no plugin cache directory (it refreshes only the clone `~/.claude/plugins/marketplaces/earthtojake/`), so on a branch that bumps the pin before the plugin update
   `./cadtool doctor` warns `no plugin cache for cad <ver>` and reports a MISMATCH against the old one:
   `CAD_PLUGIN=~/.claude/plugins/marketplaces/earthtojake ./cadtool doctor` checks the new pin against that clone, the
