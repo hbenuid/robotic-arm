@@ -191,19 +191,21 @@ def test_the_tray_holes_and_slots():
 
 @pytest.mark.slow
 def test_the_sensor_fits():
-    """In the coupler's frame: the tray on the pocket's floor, wall_clear off its walls, clear of the M4s; the board on
+    """In the coupler's frame: the tray on the pocket's floor (j1_coupler_plate's top face, under the cut), wall_clear off
+    its walls (j1_coupler's), clear of the M4s; the board on
     the plate, the screws' heads under it and the nuts on the board - touching, nothing overlapping anything still."""
     into = "j1_coupler#1"
     coupler = built.placed(into, into=into)
     ky, tray, screws, nuts = (built.placed(k, into=into) for k in SENSOR)
+    plate = built.placed("j1_coupler_plate#1", into=into)
     still = [coupler, built.placed("yaw_pulley_screws#1", into=into), built.placed("yaw_pulley_nuts#1", into=into),
-             built.placed("j1_motor_leg#1", into=into)]
+             built.placed("j1_motor_leg#1", into=into), plate]
     kit = [ky, tray, screws, nuts]
     for part in kit:
         for other in still + kit:
             if other is not part:
                 assert interference(part, other) < 0.01
-    assert closest_points(tray, coupler).distance < 0.01
+    assert closest_points(tray, plate).distance < 0.01
     assert closest_points(ky, tray).distance < 0.01 and closest_points(nuts, ky).distance < 0.01
     assert closest_points(screws, tray).distance < 0.01
     assert closest_points(tray, still[1]).distance >= H.tip_clear - 0.01

@@ -3,7 +3,8 @@ hub's 4 to the hub leg, the motor leg's foot's 2 to the disc, its ring's 3 to th
 with no reference (lib/reference.py NO_REFERENCE), which keep no reference file - THIS file locks their numbers (the
 pieces, the modelled volume and the bounding box, measured on the build and written in) and what they are: every screw
 on its pattern with its head's bearing face at its origin, every nut there with a corner where its pocket or slot has
-one (lib/yaw_coupler/layout.py fork_*_screw_*).
+one (lib/yaw_coupler/layout.py fork_*_screw_*). And the split coupler's coupler_plate_{screws,nuts}, the 4 M4 that hold
+j1_coupler on j1_coupler_plate (lib/yaw_coupler/params.py SplitParams; layout.py split_screw_*), locked the same way.
 The patterns in place - the heads on their seats, the nuts on theirs with the designed press, the reach - are
 tests/test_mounts.py."""
 import math
@@ -23,6 +24,7 @@ from lib.yaw_coupler.layout import (
     fork_sleeve_bolt_deg,
     fork_sleeve_nut_r,
     fork_sleeve_seat_r,
+    split_screw_points,
 )
 from tests import built
 from tests.helpers import is_inside
@@ -36,13 +38,22 @@ LOCKS = {
     "fork_foot_nuts": (2, 191.161, (-15.5, -4.041452, 0.0), (31.0, 8.082904, 3.2)),
     "fork_sleeve_screws": (3, 1018.235, (-45.0, -3.5, -3.5), (90.0, 48.5, 7.0)),
     "fork_sleeve_nuts": (3, 286.741, (-28.2, -4.041452, -3.5), (56.4, 32.241452, 7.0)),
+    "coupler_plate_screws": (4, 1357.646, (-25.5, -15.5, -4.0), (51.0, 31.0, 20.0)),
+    "coupler_plate_nuts": (4, 382.322, (-25.5, -16.041452, 0.0), (51.0, 32.082904, 3.2)),
 }
 # each set: (its screws' length, its mass constant, its nuts' mass constant)
 SETS = {
     "hub": (F.hub_screw_len, PARAMS.FORK_HUB_SCREWS_MASS_G, PARAMS.FORK_HUB_NUTS_MASS_G),
     "foot": (F.motor_screw_len, PARAMS.FORK_FOOT_SCREWS_MASS_G, PARAMS.FORK_FOOT_NUTS_MASS_G),
     "sleeve": (F.sleeve_screw_len, PARAMS.FORK_SLEEVE_SCREWS_MASS_G, PARAMS.FORK_SLEEVE_NUTS_MASS_G),
+    "plate": (YAW_COUPLER.split.screw_len, PARAMS.COUPLER_PLATE_SCREWS_MASS_G, PARAMS.COUPLER_PLATE_NUTS_MASS_G),
 }
+
+
+def _names(kind: str) -> tuple[str, str]:
+    """(its screws, its nuts) of a set."""
+    stem = "coupler_plate" if kind == "plate" else f"fork_{kind}"
+    return f"{stem}_screws", f"{stem}_nuts"
 
 
 def _unit(v) -> tuple[float, float, float]:
@@ -62,6 +73,8 @@ def _stations(name: str) -> list[tuple[tuple, tuple, tuple]]:
         return [((x, y, 0.0), up, _unit((x, y, 0.0))) for x, y in fork_hub_screw_points()]
     if kind == "foot":
         return [((x, y, 0.0), up, (0.0, 1.0, 0.0)) for x, y in fork_foot_screw_points()]
+    if kind == "plate":
+        return [((x, y, 0.0), up, (0.0, 1.0, 0.0)) for x, y in split_screw_points()]
     r = fork_sleeve_seat_r() if name.endswith("screws") else fork_sleeve_nut_r()
     out = []
     for deg in fork_sleeve_bolt_deg():
@@ -88,18 +101,19 @@ def test_they_are_purchased_parts_with_no_reference_in_the_base_group():
     assert LOCKS["fork_hub_screws"][0] == PARAMS.CYCLOIDAL_HUB_BOLT_COUNT == len(arm_mount_points(DRIVE)) == 4
     assert LOCKS["fork_sleeve_screws"][0] == PARAMS.CYCLOIDAL_SLEEVE_BOLT_COUNT == len(fork_sleeve_bolt_deg()) == 3
     assert LOCKS["fork_foot_screws"][0] == len(fork_foot_screw_points()) == 2
+    assert LOCKS["coupler_plate_screws"][0] == len(split_screw_points()) == 4
 
 
 @pytest.mark.parametrize("kind", list(SETS))
 def test_the_order_lines_and_masses_follow_the_fork(kind):
     length, screws_g, nuts_g = SETS[kind]
-    screws, nuts = parts.load(f"fork_{kind}_screws"), parts.load(f"fork_{kind}_nuts")
+    screws, nuts = (parts.load(n) for n in _names(kind))
     assert screws.LENGTH == length and screws.PURCHASE_SPEC == f"M4 x {length:g} socket head cap screw (ISO 4762)"
     assert nuts.PURCHASE_SPEC == "M4 hex nut (ISO 4032)" and nuts.PURCHASE_QTY == screws.PURCHASE_QTY
     steel = PARAMS.STEEL_DENSITY * screws.PURCHASE_QTY
     assert screws.MASS_G == screws_g == pytest.approx(steel * PARAMS.shcs_volume(PARAMS.M4_SHCS, length))
     assert nuts.MASS_G == nuts_g == pytest.approx(steel * PARAMS.nut_volume(PARAMS.M4_NUT))
-    assert (F.hub_screw_len, F.motor_screw_len, F.sleeve_screw_len) == (30.0, 8.0, 16.0)
+    assert (F.hub_screw_len, F.motor_screw_len, F.sleeve_screw_len, YAW_COUPLER.split.screw_len) == (30.0, 8.0, 16.0, 16.0)
 
 
 @pytest.mark.slow
@@ -116,9 +130,10 @@ def test_the_build_matches_its_numbers(name):
 @pytest.mark.parametrize("kind", list(SETS))
 def test_the_modelled_volumes_are_the_analytic_ones(kind):
     """lib/fasteners.py's volumes (what the masses are estimated from) are those of the modelled geometry."""
-    n, length = LOCKS[f"fork_{kind}_screws"][0], SETS[kind][0]
-    assert R.solid_volume(built.part(f"fork_{kind}_screws")) == pytest.approx(n * PARAMS.shcs_volume(PARAMS.M4_SHCS, length), rel=1e-6)
-    assert R.solid_volume(built.part(f"fork_{kind}_nuts")) == pytest.approx(n * PARAMS.nut_volume(PARAMS.M4_NUT), rel=1e-6)
+    (screws, nuts), length = _names(kind), SETS[kind][0]
+    n = LOCKS[screws][0]
+    assert R.solid_volume(built.part(screws)) == pytest.approx(n * PARAMS.shcs_volume(PARAMS.M4_SHCS, length), rel=1e-6)
+    assert R.solid_volume(built.part(nuts)) == pytest.approx(n * PARAMS.nut_volume(PARAMS.M4_NUT), rel=1e-6)
 
 
 @pytest.mark.slow
@@ -126,7 +141,7 @@ def test_the_modelled_volumes_are_the_analytic_ones(kind):
 def test_each_screw_stands_on_its_station(kind):
     """The head behind its bearing face (its socket open at the back), the shank along the axis to the length: the hub's
     and the foot's along +Z on their points, the sleeve's pointing in at the axis from the ring's od."""
-    name, size, length = f"fork_{kind}_screws", PARAMS.M4_SHCS, SETS[kind][0]
+    name, size, length = _names(kind)[0], PARAMS.M4_SHCS, SETS[kind][0]
     screws = built.part(name)
     for origin, axis, side in _stations(name):
         assert _inside(screws, _at(origin, axis, side, length - 0.1)) and not _inside(screws, _at(origin, axis, side, length + 0.1))
@@ -141,11 +156,12 @@ def test_each_screw_stands_on_its_station(kind):
 @pytest.mark.parametrize("kind", list(SETS))
 def test_each_nut_has_a_corner_where_its_seat_has_one(kind):
     """Standing on its bearing face, bored at the thread's diameter, a corner (and a flat 30 degrees on) where the hub's
-    pockets (along the radius), the disc's slots (up them, CORNER_DEG) and the sleeve's lugs (along the tangent) have one
+    pockets (along the radius), the disc's slots (up them, CORNER_DEG), the plate's pockets (along the coupler's Z,
+    CORNER_DEG) and the sleeve's lugs (along the tangent) have one
     (tests/test_mounts.py checks the seats and the press)."""
-    name, size = f"fork_{kind}_nuts", PARAMS.M4_NUT
+    name, size = _names(kind)[1], PARAMS.M4_NUT
     nuts, corner_r = built.part(name), hex_circumdiameter(size.af) / 2.0 - 0.05
-    if kind == "foot":
+    if kind in ("foot", "plate"):
         assert parts.load(name).CORNER_DEG == 90.0
     for origin, axis, corner in _stations(name):
         other = _cross(axis, corner)

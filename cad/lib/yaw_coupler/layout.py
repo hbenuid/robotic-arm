@@ -293,6 +293,30 @@ def fork_sleeve_nut_r(cfg: YawCouplerConfig = DEFAULT) -> float:
     return DRIVE.shell.sleeve_nut_r + DRIVE.housing.bolt_nut_thickness
 
 
+# ---- the split (SplitParams: j1_coupler on j1_coupler_plate; parts/base/coupler_plate_{screws,nuts}) -------------------
+# The 4 screws' frame: on the base_yaw axis in the plane of their counterbores' floors (HEAD_SEAT under the ring's top
+# face), +Z down this frame's -Y (through j1_coupler into the plate), +Y along this frame's +Z - so a screw at this
+# frame's (x, z) stands at (x, z) in its own. The nuts' frame: the screws' moved along +Z to the floors of their pockets.
+PLATE_SCREWS_TURN = (90.0, 0.0, 0.0)
+
+
+def split_screw_points(cfg: YawCouplerConfig = DEFAULT) -> list[tuple[float, float]]:
+    """(x, z) of the 4 screws that hold j1_coupler on the plate, in this frame (and, as (x, y), in their own)."""
+    s = cfg.split
+    return [(sx * s.screw_x, sz * s.screw_z) for sx in (1.0, -1.0) for sz in (1.0, -1.0)]
+
+
+def split_screw_frame(cfg: YawCouplerConfig = DEFAULT) -> tuple:
+    """The plate screws' frame: on the axis, at the floors of their counterbores in the ring's top face."""
+    return ((0.0, round(cfg.disc.ring_y1 - HEAD_SEAT, 6), 0.0), PLATE_SCREWS_TURN)
+
+
+def split_nut_z(cfg: YawCouplerConfig = DEFAULT) -> float:
+    """The plate nuts' bearing faces along the screws: the floors of their pockets, M4_NUT.h up from the plate's underside
+    (the recess's ceiling) - the nuts flush with it."""
+    return round(split_screw_frame(cfg)[0][1] - (cfg.hub.recess_y1 + M4_NUT.h), 6)
+
+
 # The base_yaw 120T (gt2_pulley_120t#1, lib/mounts.py) under the coupler: upside down (its +Y down the axis), its hub
 # end on the stub's end, turned HubParams.hole_deg about the axis onto the stub's diagonal holes.
 YAW_PULLEY_TURN = 180.0                  # about this frame's X: the pulley's +Y down the axis

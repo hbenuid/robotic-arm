@@ -358,6 +358,12 @@ FORK_FOOT_SCREWS_MASS_G = STEEL_DENSITY * _FORK_FOOT_BOLTS * shcs_volume(M4_SHCS
 FORK_FOOT_NUTS_MASS_G = STEEL_DENSITY * _FORK_FOOT_BOLTS * nut_volume(M4_NUT)                                          # 1.5, 2x M4
 FORK_SLEEVE_SCREWS_MASS_G = STEEL_DENSITY * CYCLOIDAL_SLEEVE_BOLT_COUNT * shcs_volume(M4_SHCS, _FORK.sleeve_screw_len)   # 8.0, 3x M4x16
 FORK_SLEEVE_NUTS_MASS_G = STEEL_DENSITY * CYCLOIDAL_SLEEVE_BOLT_COUNT * nut_volume(M4_NUT)                             # 2.3, 3x M4
+# The split coupler's 4 screws + nuts that hold j1_coupler on j1_coupler_plate (lib/yaw_coupler/params.py SplitParams)
+from lib.yaw_coupler.layout import split_screw_points as _split_screw_points  # noqa: E402
+
+_SPLIT, _SPLIT_BOLTS = _YAW_COUPLER.split, len(_split_screw_points(_YAW_COUPLER))
+COUPLER_PLATE_SCREWS_MASS_G = STEEL_DENSITY * _SPLIT_BOLTS * shcs_volume(M4_SHCS, _SPLIT.screw_len)                     # 10.7, 4x M4x16
+COUPLER_PLATE_NUTS_MASS_G = STEEL_DENSITY * _SPLIT_BOLTS * nut_volume(M4_NUT)                                          # 3.0, 4x M4
 
 # --- Robot description (robot/frames.py, robot/arm.urdf) --------------------------------------
 # The [ESTIMATE] joint limits and the actuator ratings are PLACEHOLDERS until measured on the hardware (the [DESIGN]

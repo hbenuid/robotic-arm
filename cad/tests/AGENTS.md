@@ -44,7 +44,7 @@ tracked name lowercase),
 `test_mounts.py` (the mounted motors: axis on the joint, face on the host's pad / plate, board on the rear face, interference budget,
 the base stack above the base bottom, the driven pulleys' planes within the shafts, the elbow motor's 20T level with its 90T; each belt joint's bearing stack between its
 coupler's stub and its driven pulley; the 90T pulley bolts: seats, reach, the opened holes, the nuts' designed press; the base_yaw
-thrust stack under `j1_coupler`),
+thrust stack under `j1_coupler_plate`),
 `test_layering.py` (the package layering, no `sys.path`, no direct part-module imports — AST scan),
 `test_gauges.py` (the fit gauges, `lib/gauges`: the list well-formed, every arm value in its sweep, the fasteners'
 clearance holes covered, the packing, imported without the kernel; slow: every coupon one solid on the bed, its round
@@ -89,9 +89,9 @@ the plate and its pad, the heads flush in place; `yaw_idler`: the base_yaw belt'
 takes, the belt frame's points in the base's, its stations, its axle's, nut's and spacer's numbers (no reference), its
 seat on the mount, the kit's fit; `yaw_home`: the base_yaw home sensor - the home angle, the switch's zone between the travel's ends for every A3144 operate point, the layout under the plate, its bracket's, magnet's and fasteners' numbers (no reference), the bracket's slots and holes and the plate's nut pockets, the fit, the magnet on the 120T's face and over the chip at home; `shoulder_home`: the shoulder_pitch home sensor - the home angle, the switch's zone past the lower end for every A3144 operate point and the glued magnet's error, the layout in the coupler's pocket, its tray's, magnet's and fasteners' numbers (no reference), the tray's holes and slots, the fit in the pocket, the magnet on its pillar, over the chip at home and clear of everything still over the travel; `yaw_pulley_screws` / `yaw_pulley_nuts`, purchased parts with no reference: the
 numbers no reference file holds for them - pieces, volume, bbox - and feature probes; the `j1_coupler` fork's screws and
-nuts - `fork_{hub,foot,sleeve}_{screws,nuts}`, `test_fork_bolts` - likewise), `tests/yaw_coupler/` (`j1_coupler`: the LEGACY
+nuts and the screws + nuts that hold it on its plate - `fork_{hub,foot,sleeve}_{screws,nuts}`, `coupler_plate_{screws,nuts}`, `test_fork_bolts` - likewise), `tests/yaw_coupler/` (`j1_coupler`: the LEGACY
 build's feature probes, the yoke on the port's housing - its bore, od, pillars, bolt circle; DEFAULT's fork on the
-drive's own axis - two legs past the shell's ends, the disc's draft up them, the hub on one, the other its own part round the motor sleeve and bolted to it, the lowered ring - and the motor leg's numbers), `tests/wrist/` (`wrist_link`: the LEGACY build's feature probes, the seat on the
+drive's own axis - two legs past the shell's ends, the disc's draft up them, the hub on one, the other its own part round the motor sleeve and bolted to it, the lowered ring - the motor leg's numbers, and the split: the plate under the cut at the pocket's floor, its numbers, the 4 screws' holes, counterbores and nuts' pockets), `tests/wrist/` (`wrist_link`: the LEGACY build's feature probes, the seat on the
 coupler's flange, the end face on the NEMA 17 pattern, DEFAULT the wrist roll drive's frame on its plate and the wrist_pitch flange (the post) on it; the wrist roll
 drive - its axis the wrist offset across the pitch axis, the stack, the stock belt, the rotor's walls, the press fits,
 clean pairs against `wrist_link`, the pancake's way in from the bottom, the plate's slots on its tapped holes and its

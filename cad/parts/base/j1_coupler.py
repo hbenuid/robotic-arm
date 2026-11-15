@@ -14,7 +14,11 @@ post as wide (straight sides) down to under the hub's bolts, growing out of the 
 disc's flat facing it carried on up its outer face - the -X one the held hub bolts to, its disc
 the motor leg's size, past the hub; the +X one its own part, parts/base/j1_motor_leg (a solid ring round the motor plate's sleeve,
 slid on over the motor, bolted to the sleeve by 3 radial M4s), standing on the disc and bolted to it by 2 M4s along
-the drive's axis into nuts in slots in the disc - this part stops at that leg's outer face; the ring under the drive flat to flat. Every number: lib/yaw_coupler/params.py
+the drive's axis into nuts in slots in the disc - this part stops at that leg's outer face; the ring under the drive flat to flat.
+DEFAULT prints in two parts (SplitParams), each flat on the bed: this part is the coupler above a cut at the floor of the
+pocket over the hub, printed upright on the cut (the pocket a window through it); parts/base/j1_coupler_plate is the rest
+(the stub, the recess and its rim, the 120T's nuts' pockets), held on by 4 M4 from counterbores in the ring's top face into
+nuts pressed into the plate's underside (parts/base/coupler_plate_screws / _nuts). Every number: lib/yaw_coupler/params.py
 (YawCouplerConfig; measured on the reference 2026-09-27; LEGACY: the Ø90.05 recess on the base's face, a Ø29.8 stub
 0.2 into the lip, a Ø15 bore, 4x Ø3.3, the -X cheek and the middle body under the housing's Ø116 cradle, a channel and
 two V-grooves round the 8-pillar housing's bottom and +/-45 degree pillars, 3 nut pockets).
@@ -26,7 +30,7 @@ Reference: mm units, 1 solid(s), volume 199961.4 mm^3,
 In the arm: x1 (j1_coupler#1).
 
 Conversion: build_yaw_coupler(LEGACY) reproduces the reference (REFERENCE_BUILD - tests/test_reference_match.py); the
-model builds DEFAULT (tests/yaw_coupler/).
+model builds DEFAULT's part above the cut (tests/yaw_coupler/).
 """
 import pathlib
 
@@ -49,7 +53,8 @@ def REFERENCE_BUILD():
 
 @step(out="j1_coupler.step")
 def j1_coupler():
-    """The coupler at its local origin (on the base_yaw axis at the seat-ring top); the assembly owns placement."""
+    """The coupler above its cut, at its local origin (on the base_yaw axis at the seat-ring top); the assembly owns
+    placement."""
     part = build_yaw_coupler(DEFAULT)
     part.label = NAME
     return part

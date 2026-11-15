@@ -254,6 +254,28 @@ class HomeTrayParams:
     head_recess: float = 0.4              # the M2s' heads' recess in the block: this far round them
 
 
+@dataclass(frozen=True)
+class SplitParams:
+    """[DESIGN] DEFAULT's coupler printed in two parts, each flat on the bed: cut level at y - the floor of the pocket over
+    the hub (YokeParams.pocket_y0) -, the part below it its own part (parts/base/j1_coupler_plate, lib/yaw_coupler/body.py
+    build_coupler_plate: the stub, the recess and its rim, the 120T's nuts' pockets, printed upside down) and the rest
+    j1_coupler (the disc above it, the fork's hub leg, the motor leg's foot joint - printed upright on the cut). Whole,
+    the coupler would stand on its stub with the disc 9.4 over the bed (support under all of it, the recess a 30 mm
+    roof); cut there, the pocket over the hub is a window through j1_coupler, its floor the plate's top face, so neither
+    part has a roof. The two held together by 4 M4 x screw_len (ISO 4762) parallel to the base_yaw axis at (+/-screw_x,
+    +/-screw_z) - inside the thrust washers' bore (lib/bearings.py THRUST_BORE), clear of the pocket's walls -, the heads in counterbores in
+    the ring's top face (lib/yaw_coupler/layout.py COUNTERBORE, HEAD_SEAT), the shanks through both into M4 nuts pressed
+    up into hex pockets (nut_af) from the plate's underside (the recess's ceiling), flush with it. Where a hole of the
+    motor leg's foot dips under the cut, its lower half runs straight down to the cut in j1_coupler (no knife edge where
+    the hole meets the cut face)."""
+
+    y: float = 8.0                # the cut, up from this frame's origin: the pocket's floor (pocket_y0)
+    screw_x: float = 22.0         # the 4 screws at (+/-screw_x, +/-screw_z): the counterbores 3.1 off the pocket's walls
+    screw_z: float = 12.0         # ... (pocket_half x), r 25.06 - the nuts' pockets 3.5 inside the washers' bore
+    screw_len: float = 16.0       # M4 x 16 from the counterbores' floors: the tips 0.72 inside the nuts' outer faces
+    nut_af: float = 6.85          # the nuts' hex pockets: upright, a corner along Z (the 120T's nuts' press, HubParams)
+
+
 CAPTURE_FACE_X = 31.5   # [REFERENCE] where the SolidWorks capture put the drive's z = 0 in this frame (placements.json
 #                         cycloidal_drive#1): the middle of its discs 7.5 off the base_yaw axis, toward the motor
 
@@ -265,6 +287,7 @@ class YawCouplerConfig:
     yoke: YokeParams = YokeParams()
     fork: ForkParams | None = None   # DEFAULT: the fork round the turning-shell drive (the yoke's cheek, cradle and sockets go)
     home: HomeTrayParams | None = None   # DEFAULT: the shoulder_pitch home sensor's tray in the pocket over the hub
+    split: SplitParams | None = None     # DEFAULT: printed in two parts, cut at the pocket's floor (j1_coupler_plate below)
 
 
 LEGACY = YawCouplerConfig()     # the SolidWorks part, exactly
@@ -304,4 +327,6 @@ DEFAULT = replace(LEGACY,
                   # housing's pillars go; YokeParams keeps the pocket over the hub
                   fork=ForkParams(),
                   # the shoulder_pitch home sensor on its tray in that pocket, its magnet glued on a pillar of the shell
-                  home=HomeTrayParams())
+                  home=HomeTrayParams(),
+                  # printed in two parts, each flat on the bed: cut at the pocket's floor, the plate under it its own part
+                  split=SplitParams(y=LEGACY.yoke.pocket_y0, nut_af=_J3_COUPLER.nut_af))
