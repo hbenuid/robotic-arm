@@ -27,6 +27,8 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field, replace
 
+from lib.fasteners import M4_NUT_SIDE_PRESS_AF
+
 
 @dataclass(frozen=True)
 class GearParams:
@@ -299,7 +301,7 @@ class ShellParams:
     sleeve_lug_w: float = 12.0         # [DESIGN] ... this wide, ...
     sleeve_lug_len: float = 10.0       # [DESIGN] ... this long from the sleeve's end at that face, then 45 deg out to the bore
     sleeve_nut_r: float = 25.0         # [DESIGN] each nut's inner face: its pocket from the lug's face out to the nut's outer face
-    sleeve_nut_af: float = 6.85        # [DESIGN] ... a press fit (j3_coupler's, lib/coupler/params.py): it opens toward the motor
+    sleeve_nut_af: float = M4_NUT_SIDE_PRESS_AF   # [MEASURE] ... 7.15, a press fit printed on its side: it opens toward the motor
     arm_windows: int = 2              # [DESIGN] the body's windows left solid under the upper arm: this many, centred on the
     #                                    first pillar (HousingParams.bolt_start_deg, on the arm's centreline) - the arm's root;
     #                                    the others open on the discs

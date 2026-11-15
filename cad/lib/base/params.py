@@ -39,6 +39,7 @@ from lib.fasteners import (
     M3_SHCS,
     M4_CLEAR,
     M4_NUT,
+    M4_NUT_SIDE_PRESS_AF,
     M4_SHCS,
     M5_CLEAR,
     M5_NUT,
@@ -163,9 +164,8 @@ class JointParams:
     screw: ShcsSize = M4_SHCS
     screw_len: float = 20.0        # the tip 4.0 past the nut's outer face
     nut: NutSize = M4_NUT
-    nut_pocket_af: float = 7.15    # [MEASURE] the press on the 7.0 nut, its pocket printed on its side (PETG, 0.20; the
-    #                                M4 NUT SIDE gauge): the screw pulls the nut home, it stays when the screw is out -
-    #                                6.85 (the elbow block's, j3_coupler's) would not take a nut, even drawn in
+    nut_pocket_af: float = M4_NUT_SIDE_PRESS_AF   # [MEASURE] 7.15, the press on the 7.0 nut, its pocket printed on its
+    #                                side (the M4 NUT SIDE gauge): the screw pulls the nut home, it stays when the screw is out
 
 
 @dataclass(frozen=True)

@@ -27,7 +27,7 @@ from lib.cycloidal import arm_mount_points, shell_ends, sleeve_bolt_z, sleeve_en
 from lib.cycloidal.layout import PILLAR_OVERSHOOT
 from lib.cycloidal.params import DEFAULT_CONFIG as DRIVE
 from lib.cycloidal.params import LEGACY_CONFIG as PORT
-from lib.fasteners import M4_CLEAR, M4_NUT, M4_SHCS
+from lib.fasteners import M4_CLEAR, M4_NUT, M4_NUT_SIDE_PRESS_AF, M4_SHCS
 from lib.geom import hex_circumdiameter, hull_faces
 from lib.style import EDGE_CHAMFER, SIDES
 from lib.yaw_coupler import DEFAULT, LEGACY, hole_points, nut_centres, od_point
@@ -179,7 +179,7 @@ def test_default_fork_holds_the_drives_ends():
         assert top_edge == pytest.approx(0.23, abs=0.005)
     # ... and 3 radial M4s through its ring into the sleeve (ShellParams.sleeve_bolt_deg): in the ring's middle, at the
     # motor's flats - up and both sides, none down where the post stands -, heads flush in round counterbores in the
-    # flats, their ends flush with the nuts pressed into the sleeve's lugs (j3_coupler's press fit), 3.85 off the motor's
+    # flats, their ends flush with the nuts pressed into the sleeve's lugs (M4_NUT_SIDE_PRESS_AF), 3.85 off the motor's
     # flats; the holes slotted along the axis, the screws floating +/-0.5 there, 3.5 of ring either side; the
     # counterbores as wide as the head's float, 2.0 of ring either side - the outline's chamfer and 0.5 of flat beside it
     assert fork_sleeve_bolt_x(DEFAULT) == pytest.approx((mx0 + mx1) / 2.0)
@@ -193,7 +193,7 @@ def test_default_fork_holds_the_drives_ends():
     assert (sh.yoke_leg - f.sleeve_slot_len) / 2.0 == pytest.approx(3.5)
     wall = (sh.yoke_leg - f.sleeve_counterbore_dia) / 2.0
     assert wall == pytest.approx(2.0) and wall - EDGE_CHAMFER == pytest.approx(0.5)
-    assert sh.sleeve_nut_af == J3_COUPLER.nut_af < M4_NUT.af
+    assert sh.sleeve_nut_af == M4_NUT_SIDE_PRESS_AF > M4_NUT.af          # printed on its side: PETG's undersize the press
     sweep = DRIVE.housing.od / 2.0                                  # the pillars' tips, turning
     assert f.axis_y - sweep - DEFAULT.disc.ring_y1 == pytest.approx(2.68, abs=0.005)
     assert LEGACY.disc.ring_y1 - DEFAULT.disc.ring_y1 == 2.0

@@ -208,7 +208,8 @@ GAUGES = (
     Gauge("m4hexs", "nuts", "M4 nut hex pockets, sideways", "M4 NUT SIDE", "side_strip", (
         Use(BASE.joint.nut_pocket_af, "the base's posts (press)"),
         Use(_D.shell.sleeve_nut_af, "the motor plate's sleeve lugs (press)"),
-        Use(_ROLL.nut_af, "forearm_roll_block's channels (press)")),
+        Use(_ROLL.nut_af, "forearm_roll_block's channels (press)"),
+        Use(WRIST.flange.nut_af, "wrist_link's channels (press)")),
         (("depth", M4_NUT.h), ("shape", "hex"), ("blind", True), ("screw", M4_CLEAR)),
         note="A corner up, an M4 hole on through."),
     Gauge("m4slot", "nuts", "M4 nut slot", "M4 NUT SLOT", "slot_strip", (

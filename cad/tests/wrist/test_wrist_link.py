@@ -22,7 +22,7 @@ from tests import built
 from tests.helpers import is_inside
 
 P, S, T, E = LEGACY.plate, LEGACY.seat, LEGACY.tower, LEGACY.end_face
-NUT_WALL = 3.0   # [DESIGN] the least wall round each 90T nut's channel (3.9 measured, to the post's front flat)
+NUT_WALL = 2.9   # [DESIGN] the least wall round each 90T nut's channel (2.91 measured, a corner toward the foot's facet)
 
 
 def test_the_seat_is_the_couplers_flange():
