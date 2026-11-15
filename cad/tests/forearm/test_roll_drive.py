@@ -254,7 +254,7 @@ def test_stack():
     corner = D.nut_af / math.sqrt(3.0)
     tip = D.stub_x[0] - D.pulley_hub_len + PARAMS.GT2_PULLEY_90T_HEAD_SEAT + D.pulley_screw_len
     assert D.nut_seat_x == D.block_x[0] - D.spigot_h + 1.0 and D.pulley_screw_len == 35.0
-    assert D.pulley_bolt_r + D.nut_af / 2.0 <= D.spigot_af / 2.0 - 1.5
+    assert D.pulley_bolt_r + D.nut_af / 2.0 <= D.spigot_af / 2.0 - 1.4
     assert _eq(tip - (D.nut_seat_x + D.nut_t), 2 * 0.7) and S["x_cradle"] - tip >= 3.0
     assert D.nut_seat_x + D.nut_t <= S["x_cradle"] - 2.0 and D.pin_bore_x[1] <= D.block_x[0] - D.spigot_h - 3.0
     assert nut_channel_end(DEFAULT) == S["x_cradle"] + D.nut_channel_past

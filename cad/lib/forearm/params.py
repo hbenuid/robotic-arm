@@ -39,6 +39,7 @@ from lib.fasteners import (
     M3_SHCS,
     M4_CLEAR,
     M4_NUT,
+    M4_NUT_SIDE_PRESS_AF,
     M5_CLEAR,
     M5_NUT,
     M5_SHCS,
@@ -469,7 +470,7 @@ class RollDriveParams:
     pin_bore_dia: float = 12.5            # [REFERENCE] the coupler's through bore
     pin_bore_x: tuple = (-47.0 - PULLEY_SEAT_SHIFT + ELBOW_INSET, -37.0)   # [DESIGN] from the stub's end, blind (5 under the recess's floor)
     spigot_af: float = 32.0               # [DESIGN] the frame's key under its underside: an octagon about the elbow axis (end_sides, a flat on
-    #                                       each axis), this across flats - 4 inside the post, its corners 2.1; the nuts' outer flats 1.6 inside it
+    #                                       each axis), this across flats - 4 inside the post, its corners 2.1; the nuts' outer flats 1.425 inside it
     spigot_h: float = 2.0                 # [DESIGN] ... standing this far under the underside, in the flange's recess (spigot_h deep)
     spigot_fit: float = 0.15              # [DESIGN] the recess over the spigot, a side (printed to printed: a slip, it centres the flange)
     pulley_bolt_r: float = 11.0           # [REFERENCE] the elbow 90T's 4x M4 at r 11 (the SolidWorks coupler's pattern) ...
@@ -480,7 +481,7 @@ class RollDriveParams:
     pulley_screw_len: float = 35.0        # [DESIGN] M4 x 35 (ISO 4762) from the floors of the pulley's counterbores
     #                                       (GT2_PULLEY_90T_HEAD_SEAT under its outer face), through the flange into the frame: 5 longer than the
     #                                       wrist's (FlangeParams.pulley_screw_len), whose flange is one with its frame
-    nut_af: float = 6.85                  # [DESIGN] the M4 nuts' (ISO 4032, s 7) hex channels - j3_coupler's pocket (lib/coupler/params.py)
+    nut_af: float = M4_NUT_SIDE_PRESS_AF  # [MEASURE] 7.15, the M4 nuts' (ISO 4032, s 7) hex channels: a press, printed on their side
     nut_t: float = M4_NUT.h               # [DATASHEET] 3.2, ISO 4032 M4 nut height (parts/joints/elbow_pulley_nuts)
     nut_seat_x: float = -ROLL_FRAME_R - 2.0 + 1.0   # [DESIGN] in the frame's spigot, 1 of it between each nut and the flange (spigot_h
     #                                       under the underside): the 90T, the flange and the frame one clamp; the screw ends 2 pitches past its

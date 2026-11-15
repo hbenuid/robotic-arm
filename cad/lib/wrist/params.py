@@ -33,7 +33,7 @@ from dataclasses import dataclass, replace
 from lib.bearings import BEARING_6806_BORE, BEARING_6806_OD, BEARING_6806_SHOULDER_DIA, BEARING_6806_WIDTH
 from lib.belts import GT2_PULLEY_20T_TEETH, centre_distance
 from lib.coupler.params import DEFAULT as COUPLER
-from lib.fasteners import M3_CLEAR, M3_NUT, M3_SHCS, M4_CLEAR, NutSize, ShcsSize
+from lib.fasteners import M3_CLEAR, M3_NUT, M3_SHCS, M4_CLEAR, M4_NUT_SIDE_PRESS_AF, NutSize, ShcsSize
 from lib.motors import MKS_SERVO42D_STACK, MKS_SERVO42D_W
 from lib.style import GRILL_PITCH, GRILL_SLOT
 
@@ -118,7 +118,8 @@ class FlangeParams:
     #                                                                    pulley_bolt_deg): on the axes the front nut's corner came 0.55
     #                                                                    off the post's front flat, turned it keeps 3.9
     pulley_bolt_dia: float = M4_CLEAR                                  # 4.4, as the elbow's (the coupler's 4.1 was the SolidWorks pattern)
-    nut_af: float = COUPLER.nut_af                                     # the channels: a press for the M4 nut (s 7) ...
+    nut_af: float = M4_NUT_SIDE_PRESS_AF                               # [MEASURE] 7.15, the channels: a press for the M4 nut (s 7),
+    #                                                                    printed on their side (wrist_link prints front face down) ...
     nut_corner_deg: float = 0.0                                        # ... a corner this far off the pattern's turn (pulley_bolt_deg
     #                                                                    off +X): the coupler's pockets, as parts/joints/wrist_pulley_nuts
     #                                                                    models the nuts, turned with the 90T

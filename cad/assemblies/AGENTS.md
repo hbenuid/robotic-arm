@@ -70,8 +70,9 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
   re-checks the geometry: axis on the joint, mounting face on the host's pad, each bearing stack's contacts
   (`test_bearing_stacks`), the pulley bolts' seats (`test_pulley_bolts_clamp_their_joints`) and reach
   (`test_the_pulley_bolts_reach_their_nuts`), zero interference with the neighbours - the one budget is the nuts'
-  designed press in their pockets (`_press`: the pulley bolts' `nut_af`, the base motor mount's
-  `JointParams.nut_pocket_af`); the base motor mount's joint is `tests/base/test_motor_mount.py`. The drive's own board
+  designed press in their pockets (`_press`: the pulley bolts' `nut_af`; none in the base's posts, whose
+  `JointParams.nut_pocket_af` is over the nut - their press is the sideways print's undersize); the base motor mount's
+  joint is `tests/base/test_motor_mount.py`. The drive's own board
   is a `cycloidal_drive.py` row (`stack_positions["z_mks_board"]`).
 - `assemblies/arm.py`: `OCCURRENCES = [(part, role|None, key), …]` in SolidWorks
   document order; `assemblies/_occurrences.py` places each occurrence as

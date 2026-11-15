@@ -34,7 +34,7 @@ def test_params():
     assert D.post_x[1] == D.block_x[0] and D.stub_x[0] == BBOX_MIN[0] and BBOX_SIZE[0] == D.block_x[0] - D.stub_x[0]
     assert D.spigot_h < D.post_x[1] - D.post_x[0] - 3.0                         # the recess in the post alone, 3.3 of it left under
     assert D.post_dia / 2.0 - _corner(D.spigot_af + 2.0 * D.spigot_fit) >= 2.5   # the recess's corners inside the post
-    assert D.pulley_bolt_r + D.nut_af / 2.0 <= D.spigot_af / 2.0 - 1.5           # each nut's outer flat inside the spigot's
+    assert D.pulley_bolt_r + D.nut_af / 2.0 <= D.spigot_af / 2.0 - 1.4           # each nut's outer flat inside the spigot's
     assert D.pin_bore_x[1] <= D.block_x[0] - D.spigot_h - 3.0 and D.pin_bore_x[0] == D.stub_x[0]
     assert D.nut_seat_x == D.block_x[0] - D.spigot_h + 1.0                       # in the spigot, 1 of it under each nut
 

@@ -68,6 +68,13 @@ M3_NUT = NutSize(3.0, 5.5, 2.4)               # [DATASHEET] ISO 4032 M3
 M5_SHCS = ShcsSize(5.0, 8.5, 5.0, 4.0, 2.5)   # [DATASHEET] ISO 4762 M5 (the wrist idler's axle)
 M5_NUT = NutSize(5.0, 8.0, 4.7)               # [DATASHEET] ISO 4032 M5
 
+# The press for an M4 nut (M4_NUT, s 7) in a hex pocket printed ON ITS SIDE - its axis along the bed, a corner up -,
+# PETG at 0.20 (the M4 NUT SIDE gauge, lib/gauges/fits.py m4hexs): the screw pulls the nut home, it stays when the
+# screw is out; 6.85 took no nut, even drawn in. Every M4 press pocket that prints on its side takes it - the base's
+# posts, the motor plate's sleeve lugs, the elbow 90T's channels in forearm_roll_block, the wrist 90T's in wrist_link;
+# the upright ones (j1_coupler's) keep their own size.
+M4_NUT_SIDE_PRESS_AF = 7.15   # [MEASURE]
+
 
 def hex_area(across_flats: float) -> float:
     return math.sqrt(3.0) / 2.0 * across_flats * across_flats
