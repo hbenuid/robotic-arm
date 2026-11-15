@@ -32,5 +32,6 @@ THRUST_OD = 90.0                 # [DATASHEET]
 THRUST_CAGE_WIDTH = 3.0          # [DATASHEET] AXK 6590 (the needles' diameter)
 THRUST_WASHER_WIDTH = 1.0        # [DATASHEET] AS 6590
 THRUST_STACK = THRUST_CAGE_WIDTH + 2.0 * THRUST_WASHER_WIDTH   # washer, cage, washer: the groove floor -> the coupler's seat
+#                                                                (5.0: the stack in hand measures the same)
 THRUST_CAGE_MASS_G = 40.0        # [DATASHEET] AXK6590-A/0-10 (distributor listing, 0.04 kg); weigh one
 THRUST_WASHER_MASS_G = 23.0      # [DATASHEET] AS6590 (distributor listing, 0.023 kg); weigh one
