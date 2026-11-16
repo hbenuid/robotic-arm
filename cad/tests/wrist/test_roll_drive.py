@@ -231,9 +231,11 @@ def test_module_colors(module):
 
 @pytest.mark.slow
 def test_bearings_press_on_the_journals_and_slip_in_the_seats(module, frame):
-    press = math.pi / 4.0 * ((D.bearing_bore + D.journal_add) ** 2 - D.bearing_bore ** 2) * D.bearing_width   # ~99 mm^3
-    for label, hub, z in (("bearing_6806:wrist_roll_1", "wrist_roll_shaft", S["z_bearing_1"]),
-                          ("bearing_6806:wrist_roll_2", "wrist_roll_pulley", S["z_bearing_2"])):
+    for label, hub, z, dia in (("bearing_6806:wrist_roll_1", "wrist_roll_shaft", S["z_bearing_1"],
+                                D.bearing_bore + D.journal_add),                                 # ~99 mm^3
+                               ("bearing_6806:wrist_roll_2", "wrist_roll_pulley", S["z_bearing_2"],
+                                D.pulley_journal_dia)):                                          # ~66 mm^3
+        press = math.pi / 4.0 * (dia ** 2 - D.bearing_bore ** 2) * D.bearing_width
         b = _leaf(module, label)
         assert interference(b, frame) < 1.0, label
         assert 0.9 * press <= interference(b, _leaf(module, hub)) <= press + 0.5, label

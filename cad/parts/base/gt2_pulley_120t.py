@@ -2,7 +2,7 @@
 build_pulley(YAW), in the 90T's part frame - origin on the axis at the lower flange's top, +Y up the axis toward the
 outer face).
 
-The 90T (parts/joints/gt2_pulley_90t) with GT2_PULLEY_120T_TEETH: the same journal (Ø30, in the lower base bearing) and
+The 90T (parts/joints/gt2_pulley_90t) with GT2_PULLEY_120T_TEETH: the same journal (a press in the lower base bearing) and
 ring under that bearing's inner ring, but the ring straight on the web - the 90T's plain hub between them gone
 (YAW_HUB_CUT), so the web's top stands just under the base's bearing boss and the rim rises beside it -, the same web
 height, bore and 4x M4 through the hub end to end, counterbored for the heads (the base_yaw pulley bolts:

@@ -23,6 +23,7 @@ from dataclasses import dataclass, replace
 
 from lib.bearings import (
     BEARING_6806_BORE,
+    BEARING_6806_JOURNAL_FINE,
     BEARING_6806_OD,
     BEARING_6806_SHOULDER_DIA,
     BEARING_6806_WIDTH,
@@ -403,7 +404,10 @@ class RollDriveParams:
     bearing_od: float = BEARING_6806_OD
     bearing_width: float = BEARING_6806_WIDTH
     seat_add: float = 0.15                # [DESIGN] PETG press allowance on the seat diameter (cf. the drive's 6814 seat)
-    journal_add: float = 0.3              # [DESIGN] the printed journals' interference in the inner rings (cf. the drive's hub)
+    journal_add: float = 0.3              # [DESIGN] the shaft's journal's interference in bearing 1's inner ring (cf. the drive's hub;
+    #                                       forearm_roll_shaft prints at 0.20 - untested there, docs/open_issues.md)
+    pulley_journal_dia: float = BEARING_6806_JOURNAL_FINE   # [MEASURE] 30.2, the pulley's journal in bearing 2: the firm press of
+    #                                       a 0.16 journal (forearm_roll_pulley prints at LAYER_H_FINE: its teeth)
     shoulder_dia: float = BEARING_6806_SHOULDER_DIA   # [DATASHEET] the rotor's shoulders bear on the inner rings only
     lip: float = 12.0                     # [DESIGN] the spacer between the pair's outer rings: 19 between their centres (9 with the elbow's 2 mm
     #                                       lip) - each bearing takes the forearm's bending moment over twice the span; bearing 1, the shaft
@@ -490,7 +494,7 @@ class RollDriveParams:
     #                                       the floor: the nuts drop in from the pocket before the motor
     # the rotor: the pulley (the ring on its core, its hub through bearing 2, its neck on to bearing 1, the spigot) and the
     # shaft (a collar that holds bearing 1: its journal through it, its flange behind it)
-    bore: float = 18.0                    # [DESIGN] the cable bore through both: the clamp's M3 sit between it and the Ø30.3 journals
+    bore: float = 18.0                    # [DESIGN] the cable bore through both: the clamp's M3 sit between it and the journals
     neck_dia: float = 29.9                # [DESIGN] the pulley's hub between the bearings: under the 6806's bore, so bearing 2 slides over it onto
     #                                       its journal; 1.0 of wall outside each clamp screw (clamp_circle_dia)
     ring_core_dia: float = 44.0           # [DESIGN] the pulley's core under the ring (the ring is an annulus fused on it)
@@ -501,8 +505,8 @@ class RollDriveParams:
     #                                       (af wide) - its height and its reach past the corner; the nut bears on its wall-side face
     # the rotor's own clamp: 4x M3 from the pulley's front face (heads sunk in counterbores, under the wall's recess)
     # through both pieces into nuts in the shaft's flange - the pulley, both inner rings and the shaft as one
-    clamp_circle_dia: float = 24.5        # [DESIGN] in the hubs, between the Ø18 bore and the Ø30.3 journals (1.55 / 1.2 mm of wall; 1.0 by the
-    #                                       pulley's neck)
+    clamp_circle_dia: float = 24.5        # [DESIGN] in the hubs, between the Ø18 bore and the journals (1.55 mm of wall to the bore; to the
+    #                                       journal 1.15 in the pulley's Ø30.2, 1.2 in the shaft's Ø30.3; 1.0 by the pulley's neck)
     clamp_angle_deg: float = 45.0         # [DESIGN] between the wall's screws (RollEndParams.bolt_angle_deg) and their nut pockets
     clamp_screw: ShcsSize = M3_SHCS       # [DATASHEET] ISO 4762 M3 (parts/joints/roll_clamp_screws)
     clamp_screw_len: float = 45.0         # [DESIGN] M3 x 45 from its counterbore's floor: the tip at the shaft's rear face (which it sets) - 10

@@ -269,7 +269,7 @@ def build_pulley(cfg: WristConfig = DEFAULT):
     on its core, the face gripper_j3_connector bolts to (its 4 nuts in pockets from the face's rim); the cable bore, the
     rotor clamp's 4 holes with their heads' counterbores in the face."""
     d, S = cfg.roll, stack_positions(cfg)
-    j_r = (d.bearing_bore + d.journal_add) / 2.0
+    j_r = d.pulley_journal_dia / 2.0
     z_end = S["z_face"]
     # the core: the hub, the shoulder, the core under the band, the face - then every cut, then the band fused on LAST
     # (an annulus on the core, so no boolean ever runs through its grooves)

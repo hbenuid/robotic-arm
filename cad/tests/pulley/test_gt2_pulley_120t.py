@@ -17,7 +17,7 @@ from tests import built
 from tests.helpers import is_inside
 from tests.pulley.helpers import at
 
-VOLUME = 33411.067                                   # mm^3, the build's
+VOLUME = 33610.198                                   # mm^3, the build's
 BBOX_MIN = (-39.143186, -6.7, -39.143186)
 BBOX_SIZE = (78.286373, 14.9, 78.286373)
 
@@ -51,7 +51,7 @@ def test_the_hub_web_and_holes_are_the_90ts(pulley):
     """The 90T's probes (tests/pulley/test_gt2_pulley_90t.py) YAW_HUB_CUT nearer the face, off the axes where the bolts
     are: the journal and the ring the 90T's, the ring straight on the web (no plain hub, no step)."""
     p = pulley
-    assert is_inside(p, *at(14.8, -3.5)) and not is_inside(p, *at(15.2, -3.5))              # the journal
+    assert is_inside(p, *at(15.05, -3.5)) and not is_inside(p, *at(15.15, -3.5))            # the journal, Ø30.2
     assert is_inside(p, *at(17.2, 1.0)) and not is_inside(p, *at(17.2, 0.1))                # the ring ...
     assert not is_inside(p, *at(17.5, 1.0)) and is_inside(p, *at(17.2, 2.0))                # ... Ø34.76, 1.5 high, on the web
     assert not is_inside(p, *at(17.45, 1.3))                                                # no step (the 90T's Ø35)
@@ -59,10 +59,10 @@ def test_the_hub_web_and_holes_are_the_90ts(pulley):
     assert not is_inside(p, *at(6.0, 0.0)) and is_inside(p, *at(6.5, 0.0))                  # the bore
     for x, z in YAW.bolt_points():
         u = (x / YAW.bolt_r, z / YAW.bolt_r)
-        for y in (YAW.end_y + 0.5, 0.0, YAW.face_y - YAW.counterbore[1] - 0.5):            # M4 clearance, end to counterbore
-            assert not is_inside(p, x + 2.1 * u[0], y, z + 2.1 * u[1]) and is_inside(p, x + 2.3 * u[0], y, z + 2.3 * u[1])
-        for y in (YAW.face_y - YAW.counterbore[1] + 0.5, YAW.face_y - 0.5):                # the head's counterbore, Ø7.4
-            assert not is_inside(p, x + 3.6 * u[0], y, z + 3.6 * u[1]) and is_inside(p, x + 3.8 * u[0], y, z + 3.8 * u[1])
+        for y in (YAW.end_y + 0.5, 0.0, YAW.face_y - YAW.counterbore[1] - 0.5):            # the shank's snug hole, Ø4.2,
+            assert not is_inside(p, x + 2.05 * u[0], y, z + 2.05 * u[1]) and is_inside(p, x + 2.15 * u[0], y, z + 2.15 * u[1])
+        for y in (YAW.face_y - YAW.counterbore[1] + 0.5, YAW.face_y - 0.5):                # end to counterbore; the head's, Ø7.05
+            assert not is_inside(p, x + 3.475 * u[0], y, z + 3.475 * u[1]) and is_inside(p, x + 3.575 * u[0], y, z + 3.575 * u[1])
 
 
 @pytest.mark.slow

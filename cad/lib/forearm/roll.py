@@ -381,7 +381,7 @@ def build_pulley(cfg: ForearmConfig = DEFAULT):
     face, into nuts in pockets in the core, pushed in from the bore); the cable bore, the rotor clamp's 4 holes with their
     heads' counterbores in the front face."""
     d, w, S = cfg.drive, cfg.roll_end, stack_positions(cfg)
-    j_r = (d.bearing_bore + d.journal_add) / 2.0
+    j_r = d.pulley_journal_dia / 2.0
     z_end = S["z_spigot_end"]
     # the core: the neck, the hub, the shoulder, the core under the ring, the spigot - then every cut, then the ring fused
     # on LAST (an annulus on the core, so no boolean ever runs through its 90 grooves)

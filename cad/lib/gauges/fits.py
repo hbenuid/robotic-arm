@@ -105,12 +105,14 @@ GAUGES = (
         (("band", 3.4),), note="A band as tall as the base's ring.", **BIG),
     Gauge("boss30", "journals", "Ø30 journals: the 6806s' inner races", "6806 BORE", "peg_strip", (
         Use(_ROLL.neck_dia, "forearm_roll_pulley's neck: the bearing slides over"),
-        Use(PULLEY.hub_dia, "the 90T / 120T hubs (line to line)"),
+        Use(PULLEY.hub_dia, "the 90T / 120T hubs (firm press, 0.16: measured)"),
+        Use(_ROLL.pulley_journal_dia, "forearm_roll_pulley (firm press, 0.16: measured)"),
+        Use(_WROLL.pulley_journal_dia, "wrist_roll_pulley (firm press, 0.16: measured)"),
         Use(YAW_COUPLER.hub.stub_dia, "j1_coupler_plate's stub (line to line)"),
         Use(_ROLL.stub_dia, "elbow_flange's stub (line to line)"),
         Use(WRIST.flange.stub_dia, "wrist_flange's stub (line to line)"),
-        Use(_ROLL.bearing_bore + _ROLL.journal_add, "forearm_roll_pulley, forearm_roll_shaft (press)"),
-        Use(_WROLL.bearing_bore + _WROLL.journal_add, "wrist_roll_pulley, wrist_roll_shaft (press)")),
+        Use(_ROLL.bearing_bore + _ROLL.journal_add, "forearm_roll_shaft (press)"),
+        Use(_WROLL.bearing_bore + _WROLL.journal_add, "wrist_roll_shaft (press)")),
         (("height", 5.0), ("spacing", 37.0), ("bore", 24.0)), note="Rings 5 mm tall, a 6806 over one at a time."),
     Gauge("boss17", "journals", "Ø17 journal: the 6003s' inner race", "6003 BORE", "peg_strip", (
         Use(_D.shaft.bearing_seat_od, "cycloidal_eccentric_shaft's lobes (light press)"),),
@@ -160,7 +162,8 @@ GAUGES = (
         Use(M3_CLEAR, "every other M3")),
         (("depth", 4.0),), note="The same holes printed sideways."),
     Gauge("m4", "screws", "M4 clearance holes", "M4 HOLE", "hole_strip", (
-        Use(M4_CLEAR, "the housing, fork, pulley and gearbox screws"),),
+        Use(M4_CLEAR, "the housing, fork and gearbox screws"),
+        Use(PULLEY.hole_dia, "gt2_pulley_90t, gt2_pulley_120t (snug, 0.16: measured)")),
         (("depth", 5.0), ("width", 4.5), ("floor", 0.0), ("through", True)), note="Through 5."),
     Gauge("m4s", "screws", "M4 clearance holes, sideways", "M4 HOLE SIDE", "side_strip", (
         Use(M4_CLEAR, "the base's and base_motor_mount's posts, the motor plate's sleeve (printed sideways)"),),
@@ -178,7 +181,7 @@ GAUGES = (
     Gauge("m4head", "screws", "M4 head counterbores", "M4 HEAD", "hole_strip", (
         Use(_D.housing.bolt_counterbore_dia, "cycloidal_shell_ring (housing bolts)"),
         Use(FORK_COUNTERBORE, "j1_coupler, j1_motor_leg (fork bolts, plate screws)"),
-        Use(PULLEY.counterbore[0], "gt2_pulley_90t, gt2_pulley_120t"),
+        Use(PULLEY.counterbore[0], "gt2_pulley_90t, gt2_pulley_120t (snug, 0.16: measured)"),
         Use(UPPER_ARM.arm.seat_pocket_dia, "j1_link's web (gearbox screws)")),
         (("depth", 4.5), ("width", 7.5), ("floor", 2.0), ("under", M4_CLEAR)), note="4.5 deep over an M4 hole."),
     # --- nuts

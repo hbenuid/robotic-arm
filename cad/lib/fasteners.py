@@ -75,6 +75,14 @@ M5_NUT = NutSize(5.0, 8.0, 4.7)               # [DATASHEET] ISO 4032 M5
 # the upright ones (j1_coupler's) keep their own size.
 M4_NUT_SIDE_PRESS_AF = 7.15   # [MEASURE]
 
+# The snug fits of an M4 socket head screw (M4_SHCS) through a part printed at LAYER_H_FINE (lib/params.py), its axis
+# upright - PETG at 0.16, measured on the 120T pulley's test plate: the shank's hole it slides through by hand with no
+# play, and the head's counterbore it goes into by hand and stays in when the part is turned over (M4_CLEAR and a 7.4
+# counterbore both had play there). Every 0.16 part with M4 screws through it takes them - the 90T and 120T pulleys
+# (lib/pulley/params.py DEFAULT); the 0.20 parts keep M4_CLEAR and their own counterbores.
+M4_CLEAR_FINE = 4.2           # [MEASURE]
+M4_HEAD_BORE_FINE = 7.05      # [MEASURE]
+
 
 def hex_area(across_flats: float) -> float:
     return math.sqrt(3.0) / 2.0 * across_flats * across_flats

@@ -13,8 +13,9 @@ teeth's side; the groove is lib/belts.py's), open underneath between the step an
 counterbore from the face for its head (DEFAULT).
 
 Two configurations of the 90T: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
-tests/test_reference_match.py); DEFAULT is what the part builds: the bolt holes at M4 clearance, the heads in
-counterbores. YAW is DEFAULT with 120 teeth and no plain hub between its ring and its web (below).
+tests/test_reference_match.py); DEFAULT is what the part builds: the hub a press in the 6806, the bolt holes snug on
+the M4 shanks, the heads in snug counterbores - the 0.16 sizes measured on the printed 120T. YAW is DEFAULT with 120 teeth
+and no plain hub between its ring and its web (below).
 
 Every number below was measured on the reference 2026-09-27 (face census; tests/pulley/test_gt2_pulley_90t.py re-checks
 the builds against it): [REFERENCE] unless tagged. Units mm. Frozen dataclasses; variants via dataclasses.replace.
@@ -23,6 +24,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
+from lib.bearings import BEARING_6806_JOURNAL_FINE
 from lib.belts import (
     GT2_PULLEY_90T_BOLT_R,
     GT2_PULLEY_90T_FACE_Y,
@@ -31,7 +33,7 @@ from lib.belts import (
     GT2_PULLEY_120T_TEETH,
     pulley_od,
 )
-from lib.fasteners import M4_CLEAR, M4_SHCS
+from lib.fasteners import M4_CLEAR_FINE, M4_HEAD_BORE_FINE
 
 _AXES = ((1.0, 0.0), (0.0, 1.0), (-1.0, 0.0), (0.0, -1.0))
 
@@ -47,7 +49,7 @@ class PulleyParams:
     rim_dia: float = 53.0              # the rim's inside (both flanges and the tooth band): the web inside it ...
     web_y0: float = 1.8                # ... from here up to the face, open underneath
     step: tuple | None = (35.0, 0.8)   # (dia, y0): a step under the web, from y0 up (None: the hub runs on up to the web)
-    hub_dia: float = 30.0              # the hub, from its end up to the step (its journal: below the ring)
+    hub_dia: float = 30.0              # the hub, from its end up to the step (its journal: below the ring; DEFAULT's a press)
     ring: tuple = (34.7592031398, -6.2, -4.7)   # (dia, y0, y1): a ring round the hub, under the lower 6806's inner ring
     bore_dia: float = 12.5
     bolt_r: float = GT2_PULLEY_90T_BOLT_R   # the 4 bolts, on the axes ...
@@ -70,11 +72,14 @@ class PulleyParams:
 
 LEGACY = PulleyParams()     # the SolidWorks part, exactly
 
-# What the part builds: the bolt holes opened to M4 clearance (the export's Ø3.9 sits under an M4's shank) - the bolts
-# pass through the pulley into the nuts under the stub -, each head sunk in a counterbore: 0.4 over the head (j1_coupler's
-# hub leg's and the drive's housing bolts' 7.4), its floor GT2_PULLEY_90T_HEAD_SEAT under the face (the head 1 under it);
-# 1.05 of wall left to the bore.
-DEFAULT = replace(LEGACY, hole_dia=M4_CLEAR, counterbore=(M4_SHCS.head_dia + 0.4, GT2_PULLEY_90T_HEAD_SEAT))   # [DESIGN]
+# What the part builds - its three fits the 0.16 sizes the 120T's test plate measured (the pulleys print at LAYER_H_FINE):
+# the hub a firm press in the lower 6806's inner ring (lib/bearings.py BEARING_6806_JOURNAL_FINE; the reference's 30.0
+# slid in with play), the bolt holes the M4 shank's snug hole (lib/fasteners.py M4_CLEAR_FINE; the export's Ø3.9 sits
+# under it) - the bolts pass through the pulley into the nuts under the stub -, each head sunk in its snug counterbore
+# (M4_HEAD_BORE_FINE), its floor GT2_PULLEY_90T_HEAD_SEAT under the face (the head 1 under it); 1.225 of wall left to
+# the bore.
+DEFAULT = replace(LEGACY, hub_dia=BEARING_6806_JOURNAL_FINE, hole_dia=M4_CLEAR_FINE,
+                  counterbore=(M4_HEAD_BORE_FINE, GT2_PULLEY_90T_HEAD_SEAT))   # [MEASURE]
 
 # The base_yaw joint's driven pulley (gt2_pulley_120t): DEFAULT with GT2_PULLEY_120T_TEETH - the base_yaw ratio 6:1 on the
 # motor's 20T, where the elbow's and the wrist's 90T give 4.5:1 - and its rim's inside grown with the teeth, keeping the
