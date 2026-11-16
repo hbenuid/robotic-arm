@@ -48,6 +48,9 @@ MULTI_BODY = {
     "fork_foot_nuts": 2,
     "fork_sleeve_screws": 3,
     "fork_sleeve_nuts": 3,
+    # the screws + nuts that hold j1_coupler on its plate (lib/mounts.py SPLIT_MOUNTS)
+    "coupler_plate_screws": 4,
+    "coupler_plate_nuts": 4,
     # the base motor mount's M4 screws + nuts (lib/mounts.py BASE_MOUNTS)
     "base_motor_mount_screws": 4,
     "base_motor_mount_nuts": 4,

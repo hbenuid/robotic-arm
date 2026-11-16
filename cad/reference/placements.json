@@ -11,9 +11,9 @@
  "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. A record with a `mount` block (keys under `mounted`) is a motor mount declared in lib/mounts.py, not a SolidWorks node: parent None, rel == world = host world * mount frame.",
  "root_label": "final_Arm_Assembly_Fully_Movable",
  "expected": {
-  "leaf_occurrences": 90,
-  "solids": 218,
-  "solid_volume": 2310627.246
+  "leaf_occurrences": 93,
+  "solids": 227,
+  "solid_volume": 2389754.505
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -26,6 +26,9 @@
   "base_motor_mount_screws#1",
   "base_motor_mount_nuts#1",
   "j1_motor_leg#1",
+  "j1_coupler_plate#1",
+  "coupler_plate_screws#1",
+  "coupler_plate_nuts#1",
   "fork_hub_screws#1",
   "fork_hub_nuts#1",
   "fork_foot_screws#1",
@@ -1530,6 +1533,315 @@
     90.393,
     135.003,
     24.301
+   ]
+  },
+  {
+   "key": "j1_coupler_plate#1",
+   "part": "j1_coupler_plate",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j1_coupler#1",
+    "link": "shoulder_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the plate under j1_coupler's cut (the stub, the recess over the thrust bearing, the 120T's nuts); built in the coupler's part frame"
+   },
+   "solids": 1,
+   "solid_volume": 77387.291,
+   "rel": {
+    "position": [
+     -0.0,
+     -5.092748,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     -86.305545,
+     0.0
+    ],
+    "matrix_3x4": [
+     [
+      0.064435731,
+      -0.0,
+      -0.997921859,
+      -0.0
+     ],
+     [
+      0.0,
+      1.0,
+      -0.0,
+      -5.092748
+     ],
+     [
+      0.997921859,
+      0.0,
+      0.064435731,
+      0.0
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -0.0,
+     -5.092748,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     0.0,
+     -86.305545,
+     0.0
+    ],
+    "matrix_3x4": [
+     [
+      0.064435731,
+      -0.0,
+      -0.997921859,
+      -0.0
+     ],
+     [
+      0.0,
+      1.0,
+      -0.0,
+      -5.092748
+     ],
+     [
+      0.997921859,
+      0.0,
+      0.064435731,
+      0.0
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -59.408,
+    -14.4,
+    -59.408
+   ],
+   "world_bbox_size": [
+    118.816,
+    17.307,
+    111.508
+   ]
+  },
+  {
+   "key": "coupler_plate_screws#1",
+   "part": "coupler_plate_screws",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j1_coupler#1",
+    "link": "shoulder_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      18.32211,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      90.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "j1_coupler onto its plate: 4x M4 x screw_len, the heads in the counterbores in the ring's top face, down parallel to the base_yaw axis through both"
+   },
+   "solids": 4,
+   "solid_volume": 1357.646,
+   "rel": {
+    "position": [
+     0.0,
+     13.229362,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     90.0,
+     -0.0,
+     86.305545
+    ],
+    "matrix_3x4": [
+     [
+      0.064435731,
+      -0.997921859,
+      -0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      -1.0,
+      13.229362
+     ],
+     [
+      0.997921859,
+      0.064435731,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     0.0,
+     13.229362,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     90.0,
+     -0.0,
+     86.305545
+    ],
+    "matrix_3x4": [
+     [
+      0.064435731,
+      -0.997921859,
+      -0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      -1.0,
+      13.229362
+     ],
+     [
+      0.997921859,
+      0.064435731,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -16.893,
+    -2.771,
+    -26.228
+   ],
+   "world_bbox_size": [
+    33.785,
+    20.0,
+    52.455
+   ]
+  },
+  {
+   "key": "coupler_plate_nuts#1",
+   "part": "coupler_plate_nuts",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "coupler_plate_screws#1",
+    "link": "shoulder_link",
+    "joint": "base_yaw",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      0.0,
+      13.52211
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the plate screws' nuts pressed up into the hex pockets in the plate's underside, flush, a corner along the coupler's Z"
+   },
+   "solids": 4,
+   "solid_volume": 382.322,
+   "rel": {
+    "position": [
+     -0.0,
+     -0.292748,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     90.0,
+     -0.0,
+     86.305545
+    ],
+    "matrix_3x4": [
+     [
+      0.064435731,
+      -0.997921859,
+      -0.0,
+      -0.0
+     ],
+     [
+      0.0,
+      0.0,
+      -1.0,
+      -0.292748
+     ],
+     [
+      0.997921859,
+      0.064435731,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -0.0,
+     -0.292748,
+     0.0
+    ],
+    "rotation_xyz_deg": [
+     90.0,
+     -0.0,
+     86.305545
+    ],
+    "matrix_3x4": [
+     [
+      0.064435731,
+      -0.997921859,
+      -0.0,
+      -0.0
+     ],
+     [
+      0.0,
+      0.0,
+      -1.0,
+      -0.292748
+     ],
+     [
+      0.997921859,
+      0.064435731,
+      0.0,
+      0.0
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -17.426,
+    -3.493,
+    -26.35
+   ],
+   "world_bbox_size": [
+    34.851,
+    3.2,
+    52.701
    ]
   },
   {
@@ -4440,7 +4752,7 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the upper washer, under j1_coupler's seat (its recess's ceiling) - it turns with the coupler"
+    "note": "the upper washer, under j1_coupler's seat (its recess's ceiling, on j1_coupler_plate) - it turns with the coupler"
    },
    "solids": 1,
    "solid_volume": 3043.418,
@@ -5367,7 +5679,7 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the base_yaw 120T's 4x M4 x pulley_screw_len: heads in its counterbores (under it), up through its hub and j1_coupler's stub"
+    "note": "the base_yaw 120T's 4x M4 x pulley_screw_len: heads in its counterbores (under it), up through its hub and j1_coupler's stub (on j1_coupler_plate)"
    },
    "solids": 4,
    "solid_volume": 2061.363,
@@ -5470,7 +5782,7 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the base_yaw screws' nuts in j1_coupler's hex pockets, flush with the floor of the pocket over its hub (nut_depth under pocket_y0), a corner along the coupler's Z"
+    "note": "the base_yaw screws' nuts in j1_coupler's hex pockets (in j1_coupler_plate), flush with the floor of the pocket over its hub (nut_depth under pocket_y0), a corner along the coupler's Z"
    },
    "solids": 4,
    "solid_volume": 382.322,

@@ -30,15 +30,15 @@ def _close(a, b, tol=1e-6):
 
 def test_record_counts_match_expected():
     parts_ = P.keys(kind="part", retired=True)
-    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 90      # 11 SolidWorks + 79 mounted (j3_coupler#1 / #2, the two 90Ts, the pancake and its 20T retired, still records)
+    assert len(parts_) == P.DATA["expected"]["leaf_occurrences"] == 93      # 11 SolidWorks + 82 mounted (j3_coupler#1 / #2, the two 90Ts, the pancake and its 20T retired, still records)
     modules = ["cycloidal_drive#1", "forearm_roll_drive#1", "wrist_roll_drive#1", "gripper#1"]
     assert P.keys(kind="module") == P.keys(kind="module", designed=True) == P.DATA["designed_modules"] == modules
-    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 218  # 23 + the base motor mount (1 + 4 + 4) + j1_coupler's motor leg + its fork's screws and nuts (2 x (4 + 2 + 3)) + (7 + 13) + 2 x (2 + 13) + the elbow gearbox (1) + its 20T (3) + its 4 M4 + the elbow, wrist and base_yaw motors' 3 x 4 screws + 6 bearings + 3 thrust + 3 pulleys + 6 x 4 pulley bolts + the base_yaw and wrist motors' 20Ts (2 x 3) + 3 belts + the elbow and base_yaw belts' tensioners (2 x 4) + the wrist belt's (3) + the base_yaw home sensor (the KY-003's 3 + the bracket + 4 x 2 fasteners + the magnet) + the wrist flange + the shoulder_pitch home sensor (the KY-003's 3 + the tray + 2 x 2 fasteners + the magnet) + the elbow_pitch home sensor (the KY-003's 3 + the clip + 2 x 2 fasteners + the magnet) + the wrist_pitch home sensor (the KY-003's 3 + the clip + 2 x 2 fasteners + the magnet)
+    assert sum(P.OCCURRENCES[k]["solids"] for k in parts_) == P.DATA["expected"]["solids"] == 227  # 23 + the base motor mount (1 + 4 + 4) + j1_coupler's plate (1 + 4 + 4) + its motor leg + its fork's screws and nuts (2 x (4 + 2 + 3)) + (7 + 13) + 2 x (2 + 13) + the elbow gearbox (1) + its 20T (3) + its 4 M4 + the elbow, wrist and base_yaw motors' 3 x 4 screws + 6 bearings + 3 thrust + 3 pulleys + 6 x 4 pulley bolts + the base_yaw and wrist motors' 20Ts (2 x 3) + 3 belts + the elbow and base_yaw belts' tensioners (2 x 4) + the wrist belt's (3) + the base_yaw home sensor (the KY-003's 3 + the bracket + 4 x 2 fasteners + the magnet) + the wrist flange + the shoulder_pitch home sensor (the KY-003's 3 + the tray + 2 x 2 fasteners + the magnet) + the elbow_pitch home sensor (the KY-003's 3 + the clip + 2 x 2 fasteners + the magnet) + the wrist_pitch home sensor (the KY-003's 3 + the clip + 2 x 2 fasteners + the magnet)
     assert len(P.keys(kind="part", mounted=False, retired=True)) == 11
     assert P.RETIRED == ("j3_coupler#1", "j3_coupler#2", "gt2_pulley_90t#1", "gt2_pulley_90t#2", "nema17_pancake#1",
                          "gt2_pulley_20t#1")
     assert set(P.RETIRED) <= set(P.OCCURRENCES)
-    assert len(P.keys(kind="part")) == 90 - len(P.RETIRED)
+    assert len(P.keys(kind="part")) == 93 - len(P.RETIRED)
 
 
 def test_mounted_records_follow_lib_mounts():
@@ -52,6 +52,7 @@ def test_mounted_records_follow_lib_mounts():
     keys = P.keys(kind="part", mounted=True)
     assert keys == mounts.keys() == [
         "base_motor_mount#1", "base_motor_mount_screws#1", "base_motor_mount_nuts#1", "j1_motor_leg#1",
+        "j1_coupler_plate#1", "coupler_plate_screws#1", "coupler_plate_nuts#1",
         "fork_hub_screws#1", "fork_hub_nuts#1", "fork_foot_screws#1", "fork_foot_nuts#1", "fork_sleeve_screws#1",
         "fork_sleeve_nuts#1", "nema17_48mm#1", "mks_servo42d#1", "eg17_g5_gearbox#1", "nema17_40mm#2", "mks_servo42d#2", "nema17_40mm#3",
         "mks_servo42d#3", "gt2_pulley_20t_8mm#1", "gt2_pulley_20t#3", "gt2_pulley_20t#4", "elbow_gearbox_screws#1", "elbow_motor_screws#1",

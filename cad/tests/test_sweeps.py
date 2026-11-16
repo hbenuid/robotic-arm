@@ -250,10 +250,10 @@ def test_any_yaw_keeps_the_arm_off_the_base():
     """The base is not round about the base_yaw axis - its motor mount stands out on one side - so the shoulder limits'
     poses (over the elbow's range, those down in the table skipped) are swept round it: every 30 degrees of yaw and the
     limits, everything base_yaw turns stays 1 mm off the base. The base is turned the other way instead, so one posed arm
-    serves every yaw. What turns on the axis - j1_coupler and its motor leg, their rim RIM_CLEAR over the base's top
+    serves every yaw. What turns on the axis - j1_coupler, its plate and its motor leg, their rim RIM_CLEAR over the base's top
     face, and inside the base the coupler's stub in its bearings on the thrust bearing, the 120T under it
     (tests/test_mounts.py) - keeps those gaps to the base itself and 1 mm to its off-axis parts."""
-    riding = ("j1_coupler#1:", "j1_motor_leg#1:")
+    riding = ("j1_coupler#1:", "j1_coupler_plate#1:", "j1_motor_leg#1:")
     inside = ("washer_as6590#2:", "gt2_pulley_120t#1:", "yaw_pulley_screws#1:", "yaw_pulley_nuts#1:")
     in_bore = ("base#1:", "bearing_6806#1:", "bearing_6806#2:", "washer_as6590#1:", "bearing_axk6590#1:",
                "yaw_belt#1:")   # the belt rides the 120T (tests/test_belts.py)

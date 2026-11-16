@@ -18,7 +18,8 @@ nuts, the 20T pulleys) is grey and the belts a darker grey, inside the modules t
     |                    mks_servo42d:base_yaw, yaw_motor_screws:base_yaw, gt2_pulley_20t:base_yaw, yaw_belt:base_yaw,
     |                    gt2_idler_20t / yaw_idler_spacer / _screw / _nut:base_yaw,
     |                    ky003_hall_sensor / yaw_home_bracket / _screws / _nuts / _board_screws / _board_nuts:base_yaw
-    |- shoulder_link     j1_coupler, j1_motor_leg, washer_as6590:base_yaw_2, gt2_pulley_120t:base_yaw,
+    |- shoulder_link     j1_coupler, j1_coupler_plate, coupler_plate_screws / _nuts:base_yaw, j1_motor_leg,
+    |                    washer_as6590:base_yaw_2, gt2_pulley_120t:base_yaw,
     |                    yaw_pulley_screws / _nuts:base_yaw, yaw_home_magnet:base_yaw,
     |                    ky003_hall_sensor / shoulder_home_tray / _board_screws / _board_nuts:shoulder_pitch,
     |                    cycloidal_drive (kept whole - see below)
@@ -113,11 +114,14 @@ OCCURRENCES = [
     ("yaw_home_board_screws", "base_yaw", "yaw_home_board_screws#1"),   # ... the board's 2 M2 ...
     ("yaw_home_board_nuts",   "base_yaw", "yaw_home_board_nuts#1"),     # ... into the nuts under the bracket
     ("j1_coupler",            None, "j1_coupler#1"),
+    ("j1_coupler_plate",      None, "j1_coupler_plate#1"),   # mounted: the plate under the coupler's cut (its stub, its recess), ...
+    ("coupler_plate_screws",  "base_yaw", "coupler_plate_screws#1"),   # ... the coupler held on it by 4x M4 ...
+    ("coupler_plate_nuts",    "base_yaw", "coupler_plate_nuts#1"),     # ... into the nuts pressed into its underside
     ("j1_motor_leg",          None, "j1_motor_leg#1"),     # mounted: the motor-side leg, a ring round the drive's motor sleeve
-    ("washer_as6590",         "base_yaw_2", "washer_as6590#2"),    # ... its upper washer under j1_coupler's seat
-    ("gt2_pulley_120t",       "base_yaw", "gt2_pulley_120t#1"),    # mounted: the base_yaw 120T on j1_coupler's stub end, in the lower base bearing
+    ("washer_as6590",         "base_yaw_2", "washer_as6590#2"),    # ... its upper washer under the coupler's seat (on its plate)
+    ("gt2_pulley_120t",       "base_yaw", "gt2_pulley_120t#1"),    # mounted: the base_yaw 120T on the coupler plate's stub end, in the lower base bearing
     ("yaw_pulley_screws",     "base_yaw", "yaw_pulley_screws#1"),  # mounted: the base_yaw 120T's 4x M4 ...
-    ("yaw_pulley_nuts",       "base_yaw", "yaw_pulley_nuts#1"),    # ... into the nuts in j1_coupler's hub
+    ("yaw_pulley_nuts",       "base_yaw", "yaw_pulley_nuts#1"),    # ... into the nuts in the coupler plate's hub
     ("yaw_home_magnet",       "base_yaw", "yaw_home_magnet#1"),    # mounted: the home magnet in the 120T's outer face
     ("fork_hub_screws",       "shoulder_pitch", "fork_hub_screws#1"),      # mounted: the drive's hub to the fork's hub leg, 4x M4 ...
     ("fork_hub_nuts",         "shoulder_pitch", "fork_hub_nuts#1"),        # ... into the nuts captive in the hub
@@ -198,8 +202,8 @@ GROUPS = [
                           "gt2_idler_20t#2", "yaw_idler_spacer#1", "yaw_idler_screw#1", "yaw_idler_nut#1",
                           "ky003_hall_sensor#1", "yaw_home_bracket#1", "yaw_home_screws#1", "yaw_home_nuts#1",
                           "yaw_home_board_screws#1", "yaw_home_board_nuts#1")),
-    ("shoulder_link",    ("j1_coupler#1", "j1_motor_leg#1", "washer_as6590#2", "gt2_pulley_120t#1", "yaw_pulley_screws#1",
-                          "yaw_pulley_nuts#1", "yaw_home_magnet#1", "fork_hub_screws#1", "fork_hub_nuts#1", "fork_foot_screws#1",
+    ("shoulder_link",    ("j1_coupler#1", "j1_coupler_plate#1", "coupler_plate_screws#1", "coupler_plate_nuts#1", "j1_motor_leg#1",
+                          "washer_as6590#2", "gt2_pulley_120t#1", "yaw_pulley_screws#1", "yaw_pulley_nuts#1", "yaw_home_magnet#1", "fork_hub_screws#1", "fork_hub_nuts#1", "fork_foot_screws#1",
                           "fork_foot_nuts#1", "fork_sleeve_screws#1", "fork_sleeve_nuts#1", "ky003_hall_sensor#2",
                           "shoulder_home_tray#1", "shoulder_home_board_screws#1", "shoulder_home_board_nuts#1", DRIVE_KEY)),
     ("upper_arm_link",   ("j1_link#1", "bearing_6806#3", "bearing_6806#4", "eg17_g5_gearbox#1", "elbow_gearbox_screws#1",
