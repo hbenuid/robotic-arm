@@ -10,7 +10,10 @@ its flat facing each leg carried up its outer face to under the hub's bolts, the
 as wide, growing out of the disc in planar facets - the held hub bolts to one; the
 other is its own part, parts/base/j1_motor_leg (no reference: its numbers are here), a solid ring round the motor
 plate's sleeve bolted to the disc and, by radial M4s, to the sleeve -, the ring lowered under the shell (tests/cycloidal/test_assembly.py checks the drive
-in place, tests/test_sweeps.py the arm's swing)."""
+in place, tests/test_sweeps.py the arm's swing). DEFAULT prints in two parts (SplitParams), cut at the floor of the
+pocket over the hub: j1_coupler above it, parts/base/j1_coupler_plate (no reference: its numbers are here) below,
+held together by 4 M4 - the tests of DEFAULT's shape probe the whole (DEFAULT unsplit), test_default_prints_in_two_parts
+the two parts and their joint."""
 import math
 from dataclasses import replace
 
@@ -20,7 +23,7 @@ from build123d import Location
 from lib import placements as P
 from lib import reference as R
 from lib.base import DEFAULT as BASE
-from lib.bearings import BEARING_6806_BORE, THRUST_OD, THRUST_STACK
+from lib.bearings import BEARING_6806_BORE, THRUST_BORE, THRUST_OD, THRUST_STACK
 from lib.belts import GT2_PULLEY_90T_BOLT_R
 from lib.coupler import DEFAULT as J3_COUPLER
 from lib.cycloidal import arm_mount_points, shell_ends, sleeve_bolt_z, sleeve_end, stack_positions
@@ -31,8 +34,10 @@ from lib.fasteners import M4_CLEAR, M4_NUT, M4_NUT_SIDE_PRESS_AF, M4_SHCS
 from lib.geom import hex_circumdiameter, hull_faces
 from lib.style import EDGE_CHAMFER, SIDES
 from lib.yaw_coupler import DEFAULT, LEGACY, hole_points, nut_centres, od_point
+from lib.yaw_coupler.body import build_yaw_coupler
 from lib.yaw_coupler.layout import (
     COUNTERBORE,
+    HEAD_SEAT,
     NUT_SLOT,
     below_axis,
     disc_corners,
@@ -47,6 +52,9 @@ from lib.yaw_coupler.layout import (
     fork_sleeve_bolt_x,
     fork_sleeve_seat_r,
     fork_x,
+    split_nut_z,
+    split_screw_frame,
+    split_screw_points,
 )
 from lib.yaw_coupler.params import BASE_DRAFT, BASE_R
 from tests import built
@@ -206,7 +214,8 @@ def legacy():
 
 @pytest.fixture(scope="module")
 def coupler():
-    return built.part("j1_coupler")
+    """DEFAULT's coupler whole (unsplit): what j1_coupler and j1_coupler_plate are, but the joint between them."""
+    return build_yaw_coupler(replace(DEFAULT, split=None))
 
 
 @pytest.mark.slow
@@ -269,7 +278,7 @@ def test_default_stands_on_the_thrust_bearing():
     h, c = DEFAULT.hub, BASE.cap
     assert replace(DEFAULT, hub=LEGACY.hub, disc=replace(DEFAULT.disc, y0=LEGACY.disc.y0, ring_y1=LEGACY.disc.ring_y1,
                                                          ring_x0=LEGACY.disc.ring_x0, band_r=LEGACY.disc.band_r,
-                                                         top_r=LEGACY.disc.top_r, sides=None), fork=None, home=None) == LEGACY
+                                                         top_r=LEGACY.disc.top_r, sides=None), fork=None, home=None, split=None) == LEGACY
     assert DEFAULT.disc.ring_x0 == -DEFAULT.disc.flat_x
     assert h.recess_y1 == pytest.approx(c.groove_y0 - c.ring_top_y + THRUST_STACK)
     assert h.recess_dia > THRUST_OD and h.recess_dia / 2.0 > c.groove_r[1]          # the rim wholly over the top face
@@ -298,7 +307,7 @@ def test_default_hub_takes_the_base_yaw_90t():
 
 @pytest.mark.slow
 def test_default_changes_the_hub_and_the_underside(coupler, legacy):
-    assert coupler.label == "j1_coupler" and coupler.is_valid and len(coupler.solids()) == 1
+    assert coupler.is_valid and len(coupler.solids()) == 1
     assert coupler.bounding_box().min.Y == pytest.approx(DEFAULT.hub.stub_y0, abs=1e-6)       # the stub's end, lower
     assert is_inside(coupler, 0, -9.2, 12) and not is_inside(coupler, 0, -9.4, 12) and not is_inside(legacy, 0, -9.2, 12)
     assert is_inside(coupler, 0, -5, 14.95) and not is_inside(coupler, 0, -5, 15.05)          # the stub Ø30 ...
@@ -425,6 +434,59 @@ def test_default_is_the_fork(coupler, legacy, motor_leg):
     # the yoke that held the port's housing is gone
     for probe in ((0, 40, 52.9), (20, 34.5, 20), (-31, 45.8, 49.2)):
         assert not is_inside(coupler, *probe) and is_inside(legacy, *probe)
+
+
+@pytest.mark.slow
+def test_default_prints_in_two_parts(coupler):
+    """Each part flat on the bed (SplitParams): cut level at the pocket's floor - the 120T's nuts' pockets wholly under it,
+    in the plate, the pocket a window through j1_coupler, its floor the plate's top face; the plate (parts/base/
+    j1_coupler_plate, no reference: its numbers here) the stub, the recess and its rim, printed upside down on the cut;
+    j1_coupler the rest, printed upright on it. Elsewhere the two are the whole; between them 4 M4 x screw_len parallel to
+    the axis - holes through both, the heads in counterbores HEAD_SEAT deep in the ring's top face, 3.1 off the pocket's
+    walls; the nuts in hex pockets (nut_af, a corner along Z) up from the plate's underside, flush, inside the thrust
+    washers' bore; the tips 0.72 inside the nuts. The motor leg's foot holes dip 0.2 under the cut: their lower halves run
+    straight down to it in j1_coupler (no knife edge on its bed face)."""
+    s, h, k, d = DEFAULT.split, DEFAULT.hub, DEFAULT.yoke, DEFAULT.disc
+    top, plate = built.part("j1_coupler"), built.part("j1_coupler_plate")
+    assert (top.label, plate.label) == ("j1_coupler", "j1_coupler_plate")
+    assert top.is_valid and plate.is_valid and len(top.solids()) == len(plate.solids()) == 1
+    assert R.solid_volume(top) == pytest.approx(225378.085, abs=0.5)
+    assert R.solid_volume(plate) == pytest.approx(77387.291, abs=0.5)
+    assert R.NO_REFERENCE["j1_coupler_plate"] == "lib/yaw_coupler/body.py:build_coupler_plate(DEFAULT)"
+    assert s.y == k.pocket_y0 and k.pocket_y0 - h.nut_depth > h.recess_y1 and s.nut_af == h.nut_af
+    assert top.bounding_box().min.Y == pytest.approx(s.y, abs=1e-6) and plate.bounding_box().max.Y == pytest.approx(s.y, abs=1e-6)
+    assert plate.bounding_box().min.Y == pytest.approx(h.stub_y0, abs=1e-6)
+    # the cut, and the whole either side of it
+    for x, z in ((0.0, 40.0), (-45.0, 0.0), (30.0, -30.0)):
+        assert is_inside(top, x, s.y + 0.05, z) and not is_inside(top, x, s.y - 0.05, z)
+        assert is_inside(plate, x, s.y - 0.05, z) and not is_inside(plate, x, s.y + 0.05, z)
+    for probe in ((0, -5, 14.7), (0, 1.0, 45.3), (0, 2, 7.7), (-44.0, 80.0, 0.0), (-25.0, d.ring_y1 - 0.3, 25.0), (0, 10, 20)):
+        assert is_inside(coupler, *probe) == (is_inside(top, *probe) or is_inside(plate, *probe)), probe
+    assert not is_inside(top, 0, s.y + 0.5, 20) and is_inside(plate, 0, s.y - 0.5, 20)        # the window, the floor
+    # the 4 screws: holes through both, counterbores in the ring's top face, nuts' pockets in the plate's underside
+    (px, _), corner = k.pocket_half, s.nut_af / math.sqrt(3.0)
+    seat = split_screw_frame(DEFAULT)[0][1]
+    assert seat == pytest.approx(d.ring_y1 - HEAD_SEAT) and split_nut_z(DEFAULT) == pytest.approx(seat - h.recess_y1 - M4_NUT.h)
+    assert seat - s.screw_len - h.recess_y1 == pytest.approx(0.72, abs=0.005)                  # the tips inside the nuts
+    for x, z in split_screw_points(DEFAULT):
+        assert abs(x) - COUNTERBORE / 2.0 - px == pytest.approx(3.1)                           # clear of the pocket's walls ...
+        assert math.hypot(x, z) + corner < THRUST_BORE / 2.0 - 3.0                              # ... and inside the washers
+        sx = math.copysign(1.0, x)
+        assert not is_inside(top, x, s.y + 1.0, z) and not is_inside(top, x, seat - 1.0, z)     # the hole
+        assert is_inside(top, x + sx * (M4_CLEAR / 2.0 + 0.3), seat - 0.3, z)
+        assert not is_inside(top, x + sx * (COUNTERBORE / 2.0 - 0.2), seat + 0.3, z)          # the counterbore ...
+        assert is_inside(top, x + sx * (COUNTERBORE / 2.0 + 0.2), seat + 0.3, z)              # ... HEAD_SEAT deep
+        assert not is_inside(plate, x, s.y - 1.0, z)                                            # the hole through the plate
+        assert not is_inside(plate, x + 3.0, h.recess_y1 + 1.0, z)                              # the nut's pocket: flats across x ...
+        assert is_inside(plate, x + sx * 3.6, h.recess_y1 + 1.0, z)
+        assert not is_inside(plate, x, h.recess_y1 + 1.0, z + 3.8)                              # ... a corner along z ...
+        assert is_inside(plate, x + sx * 3.0, h.recess_y1 + M4_NUT.h + 0.3, z)                 # ... M4_NUT.h deep
+    # the motor leg's foot holes: their lower halves down to the cut in j1_coupler
+    r, mx1 = M4_CLEAR / 2.0, fork_motor_leg_x(DEFAULT)[1]
+    for y, z in fork_motor_bolts(DEFAULT):
+        assert y - r < s.y < y
+        assert not is_inside(top, mx1 - 1.0, s.y + 0.05, z) and not is_inside(top, mx1 - 1.0, s.y + 0.05, z + r - 0.1)
+        assert is_inside(top, mx1 - 1.0, s.y + 0.05, z + r + 0.3) and is_inside(top, mx1 - 1.0, s.y + 0.05, z - r - 0.3)
 
 
 @pytest.fixture(scope="module")

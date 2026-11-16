@@ -21,6 +21,7 @@ from lib.yaw_coupler.params import (  # noqa: F401
     ForkParams,
     HomeTrayParams,
     HubParams,
+    SplitParams,
     YawCouplerConfig,
     YokeParams,
 )

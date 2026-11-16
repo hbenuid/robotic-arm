@@ -78,7 +78,7 @@ GAUGES = (
     Gauge("seat90", "seats", "Ø90 seats: the 6814s' outer races, the thrust washers and cage", "Ø90 SEAT", "ring_seats", (
         Use(_D.housing.output_bearing_seat_dia, "the 6814 seats: cycloidal_shell_ring, j1_link (press)"),
         Use(2.0 * BASE.cap.groove_r[1], "the thrust groove's outer wall: base (AXK / AS 6590)"),
-        Use(YAW_COUPLER.hub.recess_dia, "the upper thrust washer's recess: j1_coupler")),
+        Use(YAW_COUPLER.hub.recess_dia, "the upper thrust washer's recess: j1_coupler_plate")),
         (("band", 3.0),), note="3 mm seat over a 1 mm lip, 3 mm wall.", **BIG),
     Gauge("seat42", "seats", "Ø42 seats: the 6806s' outer races", "6806 SEAT", "seat_strip", (
         Use(UPPER_ARM.elbow.bore_dia, "j1_link's upper elbow seat (line to line)"),
@@ -106,7 +106,7 @@ GAUGES = (
     Gauge("boss30", "journals", "Ø30 journals: the 6806s' inner races", "6806 BORE", "peg_strip", (
         Use(_ROLL.neck_dia, "forearm_roll_pulley's neck: the bearing slides over"),
         Use(PULLEY.hub_dia, "the 90T / 120T hubs (line to line)"),
-        Use(YAW_COUPLER.hub.stub_dia, "j1_coupler's stub (line to line)"),
+        Use(YAW_COUPLER.hub.stub_dia, "j1_coupler_plate's stub (line to line)"),
         Use(_ROLL.stub_dia, "elbow_flange's stub (line to line)"),
         Use(WRIST.flange.stub_dia, "wrist_flange's stub (line to line)"),
         Use(_ROLL.bearing_bore + _ROLL.journal_add, "forearm_roll_pulley, forearm_roll_shaft (press)"),
@@ -177,7 +177,7 @@ GAUGES = (
         note="A head deep over an M3 hole. The wider ones elsewhere (rotor clamps, gripper) follow if these fit."),
     Gauge("m4head", "screws", "M4 head counterbores", "M4 HEAD", "hole_strip", (
         Use(_D.housing.bolt_counterbore_dia, "cycloidal_shell_ring (housing bolts)"),
-        Use(FORK_COUNTERBORE, "j1_coupler, j1_motor_leg (fork bolts)"),
+        Use(FORK_COUNTERBORE, "j1_coupler, j1_motor_leg (fork bolts, plate screws)"),
         Use(PULLEY.counterbore[0], "gt2_pulley_90t, gt2_pulley_120t"),
         Use(UPPER_ARM.arm.seat_pocket_dia, "j1_link's web (gearbox screws)")),
         (("depth", 4.5), ("width", 7.5), ("floor", 2.0), ("under", M4_CLEAR)), note="4.5 deep over an M4 hole."),
@@ -200,7 +200,7 @@ GAUGES = (
         Use(_D.shell.sleeve_nut_af, "the motor plate's sleeve (press)"),
         Use(_ROLL.nut_af, "forearm_roll_block (press)"),
         Use(WRIST.flange.nut_af, "wrist_link (press)"),
-        Use(YAW_COUPLER.hub.nut_af, "j1_coupler (press)"),
+        Use(YAW_COUPLER.hub.nut_af, "j1_coupler_plate: the 120T's and the plate screws' nuts (press)"),
         Use(BASE.joint.nut_pocket_af, "the base's posts (press)"),
         Use(_D.housing.bolt_nut_pocket_af, "j1_link's housing nuts, the output hub (captive)")),
         (("depth", M4_NUT.h + 0.2), ("width", 8.4), ("shape", "hex"), ("floor", 1.6), ("under", M4_CLEAR)),

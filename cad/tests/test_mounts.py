@@ -68,20 +68,20 @@ ON_AXIS = [m for m in mounts.MOUNTS if m.part in (mounts.BEARING, mounts.THRUST_
 THRUST = ("washer_as6590#1", "bearing_axk6590#1", "washer_as6590#2")   # up the base_yaw axis
 # per belt joint: (upper bearing, lower bearing, the housing, the coupler whose stub runs through them, its driven pulley)
 STACKS = {
-    "base_yaw": ("bearing_6806#1", "bearing_6806#2", "base#1", "j1_coupler#1", "gt2_pulley_120t#1"),
+    "base_yaw": ("bearing_6806#1", "bearing_6806#2", "base#1", "j1_coupler_plate#1", "gt2_pulley_120t#1"),
     "elbow_pitch": ("bearing_6806#3", "bearing_6806#4", "j1_link#1", "elbow_flange", "gt2_pulley_90t#3"),
     "wrist_pitch": ("bearing_6806#5", "bearing_6806#6", "j2_link#1", "wrist_flange#1", "gt2_pulley_90t#4"),
 }
 NO_SHOULDER = ("base_yaw",)   # the coupler stands on the thrust bearing, not on the upper inner ring
 # per bolted pulley: (its screw set, its nut set, the pulley, what the nuts sit in, the nut_af of that pocket, how much of
 # each nut is inside it) - the elbow's nuts wholly in the block's channels, the wrist's wholly in wrist_link's, the
-# base_yaw ones wholly in j1_coupler's pockets
+# base_yaw ones wholly in j1_coupler_plate's pockets
 PULLEY_BOLTS = {
     "elbow_pitch": ("elbow_pulley_screws#1", "elbow_pulley_nuts#1", "gt2_pulley_90t#3", "forearm_roll_drive#1",
                     FOREARM.drive.nut_af, FOREARM.drive.nut_t),
     "wrist_pitch": ("wrist_pulley_screws#1", "wrist_pulley_nuts#1", "gt2_pulley_90t#4", "wrist_link#1",
                     WRIST.flange.nut_af, PARAMS.M4_NUT.h),
-    "base_yaw": ("yaw_pulley_screws#1", "yaw_pulley_nuts#1", "gt2_pulley_120t#1", "j1_coupler#1",
+    "base_yaw": ("yaw_pulley_screws#1", "yaw_pulley_nuts#1", "gt2_pulley_120t#1", "j1_coupler_plate#1",
                  YAW_COUPLER.hub.nut_af, YAW_COUPLER.hub.nut_depth),
 }
 
@@ -225,8 +225,12 @@ def test_motors_and_boards_clear_their_neighbours():
             assert vol <= budget.get((m.key, key), 1.0), f"{m.key} x {key}: {vol:.1f} mm^3"
     # the mounts do not run into each other either (a bearing and the pulley in it only touch) - but the base_yaw motor's
     # screws' thread in the vendor 48 mm motor's tapped holes, modelled at the M3 minor diameter (the screws at the major:
-    # the drive's motor bolts' budget, tests/cycloidal/test_assembly.py), 4 x the thread (MotorParams.holes) long
-    designed = {frozenset(("nema17_48mm#1", "yaw_motor_screws#1")): 37.1}
+    # the drive's motor bolts' budget, tests/cycloidal/test_assembly.py), 4 x the thread (MotorParams.holes) long - and
+    # the nuts' designed press in j1_coupler_plate's pockets (a mount itself): the 120T's and the plate screws'
+    plate_press = _press(YAW_COUPLER.split.nut_af, PARAMS.M4_NUT.h) + 0.5
+    designed = {frozenset(("nema17_48mm#1", "yaw_motor_screws#1")): 37.1,
+                frozenset(("j1_coupler_plate#1", "yaw_pulley_nuts#1")): plate_press,
+                frozenset(("j1_coupler_plate#1", "coupler_plate_nuts#1")): plate_press}
     placed = [(m.key, built.placed(m.key)) for m in mounts.MOUNTS]
     for i, (ka, a) in enumerate(placed):
         for kb, b in placed[i + 1:]:
@@ -631,13 +635,13 @@ def test_bearing_stacks(joint):
 @pytest.mark.slow
 def test_thrust_bearing_carries_j1_coupler():
     """base_yaw's axial load: the lower washer on the floor of the base's groove, the needle cage on it, the upper washer
-    on the cage and j1_coupler's seat down on that - face to face up the axis, each contact the washers' whole annulus -;
+    on the cage and the seat of j1_coupler's plate (j1_coupler_plate) down on that - face to face up the axis, each contact the washers' whole annulus -;
     the stack THRUST_CLEAR inside the coupler's recess and RING_CLEAR round the base's seat ring (inside its bore) and
     inside the groove's wall; the coupler nowhere nearer the base than its rim's RIM_CLEAR over the top face (it turns on
     the stack, not on the base's face). No overlap: the stack against the base, the coupler and the 6806 pair is in
     test_motors_and_boards_clear_their_neighbours, the base against the coupler is RIM_CLEAR apart."""
     lower, cage, upper = (built.placed(k) for k in THRUST)
-    base, coupler = (built.placed(k) for k in ("base#1", "j1_coupler#1"))
+    base, coupler = (built.placed(k) for k in ("base#1", "j1_coupler_plate#1"))
     w = _world(THRUST[0])
     z = _dir(w).normalized()
     assert abs(z.dot(Vector(*F.JOINT_BY_NAME["base_yaw"].axis_w)) - 1.0) < 1e-6

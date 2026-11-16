@@ -1,5 +1,5 @@
-"""build123d builder of j1_coupler (and of DEFAULT's motor leg, j1_motor_leg) from YawCouplerConfig, in the coupler's
-part frame.
+"""build123d builder of j1_coupler (and of DEFAULT's motor leg, j1_motor_leg, and the plate under its cut,
+j1_coupler_plate) from YawCouplerConfig, in the coupler's part frame.
 
 Built in the part frame directly: the disc, the flare and the hub turn about the part's Y (the base_yaw axis), the
 yoke is prisms along X (the drive's axis) - their outlines in the YZ plane, lib/yaw_coupler/layout.py; DEFAULT's disc is
@@ -47,6 +47,7 @@ from lib.yaw_coupler.layout import (
     middle_outline,
     nut_centres,
     socket_outline,
+    split_screw_points,
 )
 from lib.yaw_coupler.params import DEFAULT, YawCouplerConfig
 
@@ -246,7 +247,9 @@ def _stub(cfg: YawCouplerConfig):
     return stub
 
 
-def build_yaw_coupler(cfg: YawCouplerConfig = DEFAULT):
+def _whole(cfg: YawCouplerConfig):
+    """The coupler in one piece: the disc and the yoke or the fork, their cuts, the recess, the stub, the bore, the holes
+    and their nuts' pockets."""
     d, h, k = cfg.disc, cfg.hub, cfg.yoke
     if cfg.fork is None:
         body, cuts = _disc(cfg) + _yoke(cfg), _yoke_cuts(cfg)
@@ -263,6 +266,46 @@ def build_yaw_coupler(cfg: YawCouplerConfig = DEFAULT):
             # a hex prism along Y, a corner along Z (hex_prism's vertex at +90 deg turns onto -Z)
             body = body - bd.Pos(x, k.pocket_y0 - h.nut_depth, z) * bd.Rot(-90.0, 0.0, 0.0) * hex_prism(
                 h.nut_af, math.pi / 2.0, h.nut_depth + NUDGE)
+    return single_solid(body)
+
+
+def _split_box(cfg: YawCouplerConfig, above: bool):
+    """Everything above (or below) the cut (SplitParams.y)."""
+    y = cfg.split.y
+    return _box((-_FAR, _FAR), (y, _FAR) if above else (-_FAR, y), (-_FAR, _FAR))
+
+
+def build_yaw_coupler(cfg: YawCouplerConfig = DEFAULT):
+    """j1_coupler: the whole coupler (_whole) - or, split (SplitParams, DEFAULT), its part above the cut, the plate
+    (build_coupler_plate) below: the 4 plate screws' holes through it from counterbores in the ring's top face, and the
+    motor leg's foot holes that dip under the cut run straight down to it."""
+    body = _whole(cfg)
+    s = cfg.split
+    if s is None:
+        return body
+    body = body & _split_box(cfg, above=True)
+    top = cfg.disc.ring_y1
+    for x, z in split_screw_points(cfg):
+        body = body - _ycyl(M4_CLEAR / 2.0, s.y - NUDGE, top + NUDGE, x, z) - _ycyl(COUNTERBORE / 2.0, top - HEAD_SEAT, top + 1.0, x, z)
+    if cfg.fork is not None:
+        f, r = cfg.fork, M4_CLEAR / 2.0
+        seat_x, mx1 = fork_motor_bolt_x(cfg)[0], fork_motor_leg_x(cfg)[1]
+        for y, z in fork_motor_bolts(cfg):
+            if y - r < s.y < y:
+                body = body - _box((seat_x - f.motor_screw_len - 0.5, mx1 + NUDGE), (s.y - NUDGE, y), (z - r, z + r))
+    return single_solid(body)
+
+
+def build_coupler_plate(cfg: YawCouplerConfig = DEFAULT):
+    """j1_coupler_plate (parts/base/j1_coupler_plate): the split coupler's part below the cut - the stub, the recess and its
+    rim, the 120T's holes and their nuts' pockets in its top face (the floor of the pocket over the hub) - and the 4 plate
+    screws' holes through it into M4 nuts' hex pockets (SplitParams.nut_af, a corner along Z) from its underside, the
+    recess's ceiling. In the coupler's part frame; it prints upside down, on the cut."""
+    s, h = cfg.split, cfg.hub
+    body = _whole(cfg) & _split_box(cfg, above=False)
+    for x, z in split_screw_points(cfg):
+        body = body - _ycyl(M4_CLEAR / 2.0, h.recess_y1 - NUDGE, s.y + NUDGE, x, z)
+        body = body - bd.Pos(x, h.recess_y1 - NUDGE, z) * bd.Rot(-90.0, 0.0, 0.0) * hex_prism(s.nut_af, math.pi / 2.0, M4_NUT.h + NUDGE)
     return single_solid(body)
 
 

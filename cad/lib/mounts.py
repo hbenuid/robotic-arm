@@ -56,7 +56,7 @@ j2_link's wrist boss (wrist_pitch) - each standing on the lip (its axis +Z on th
 first. They ride with the housing's link.
 The THRUST BEARING (THRUST_MOUNTS): the base_yaw joint's axial load - j1_coupler and all it carries - on a needle cage
 (parts/base/bearing_axk6590) between two washers (parts/base/washer_as6590) in the base's groove round its seat ring:
-the lower washer on the groove's floor and the cage on it ride with the base, the upper washer under j1_coupler's seat
+the lower washer on the groove's floor and the cage on it ride with the base, the upper washer under j1_coupler's seat (on j1_coupler_plate)
 (lib/yaw_coupler/params.py DEFAULT) with the coupler.
 The PULLEYS (PULLEY_MOUNTS): the elbow's and the wrist's 90T, whose SolidWorks poses (gt2_pulley_90t#1 / #2,
 retired - lib/placements.py) left no room for the lower bearing, re-declared PULLEY_SEAT_SHIFT further out along
@@ -74,7 +74,7 @@ The PULLEY BOLTS (FASTENER_MOUNTS): each pulley's 4x M4 screws and nuts, purchas
 (GT2_PULLEY_90T_HEAD_SEAT under its outer face, GT2_PULLEY_90T_FACE_Y) and its shanks into the hub; a nut set is hosted
 on its screw set, its bearing face where the host's seat lies along the screws - the elbow block's channel seats in its spigot
 (RollDriveParams.nut_seat_x, past the elbow flange), wrist_link's in its plate (FlangeParams.nut_seat_z, past the wrist
-flange - FLANGE_MOUNTS places it on wrist_link), j1_coupler's pockets in the floor of
+flange - FLANGE_MOUNTS places it on wrist_link), j1_coupler's pockets (in j1_coupler_plate) in the floor of
 the pocket over its hub (HubParams.nut_depth under YokeParams.pocket_y0).
 The FORK's screws and nuts (FORK_MOUNTS): what holds the cycloidal drive in j1_coupler's fork, purchased pattern parts
 (parts/base/fork_{hub,foot,sleeve}_{screws,nuts}) whose frames lib/yaw_coupler/layout.py gives in the coupler's frame
@@ -82,6 +82,11 @@ The FORK's screws and nuts (FORK_MOUNTS): what holds the cycloidal drive in j1_c
 motor leg's ring's 3x M4 radially into the nuts pressed into the sleeve's lugs - both patterns centred on the drive's
 axis, the shoulder_pitch joint's (their +Z along it) - and the motor leg's foot's 2x M4 beside it into the nuts in the
 disc's slots.
+The SPLIT (SPLIT_MOUNTS): DEFAULT's coupler prints in two parts (lib/yaw_coupler/params.py SplitParams) - the plate
+under its cut (parts/base/j1_coupler_plate: the stub, the recess, the 120T's nuts' pockets; what the 120T, its bolts
+and the upper thrust washer meet, which stay hosted on j1_coupler#1, the plate in the coupler's own frame) and the 4x
+M4 that hold j1_coupler on it (parts/base/coupler_plate_{screws,nuts}), down from the ring's top face into the nuts
+pressed into the plate's underside.
 The elbow belt's TENSIONER (IDLER_MOUNTS; lib/upper_arm/params.py ElbowIdlerParams): the idler (parts/joints/
 gt2_idler_20t), its printed spacer, its M5 axle and nut on j1_link, on the stepped slot's line where the stock belt puts
 the idler (lib/upper_arm/layout.py elbow_idler_z), each +Z up j1_link's +Y (N): the idler level with the belt, the spacer
@@ -172,6 +177,8 @@ from lib.yaw_coupler.layout import (
     fork_sleeve_screw_frame,
     home_magnet_frame,
     home_tray_frame,
+    split_nut_z,
+    split_screw_frame,
     yaw_pulley_frame,
 )
 from lib.yaw_coupler.layout import home_sensor_frame as shoulder_home_sensor_frame
@@ -187,6 +194,8 @@ PULLEY_BOLTS = ("elbow_pulley_screws", "elbow_pulley_nuts", "wrist_pulley_screws
                 "yaw_pulley_screws", "yaw_pulley_nuts")
 BASE_MOUNT, BASE_MOUNT_SCREWS, BASE_MOUNT_NUTS = "base_motor_mount", "base_motor_mount_screws", "base_motor_mount_nuts"
 YOKE_MOTOR_LEG = "j1_motor_leg"
+YOKE_PLATE = "j1_coupler_plate"
+SPLIT_BOLTS = ("coupler_plate_screws", "coupler_plate_nuts")
 FORK_ON_AXIS = ("fork_hub_screws", "fork_hub_nuts", "fork_sleeve_screws", "fork_sleeve_nuts")
 FORK_OFF_AXIS = ("fork_foot_screws", "fork_foot_nuts")
 FORK_BOLTS = FORK_ON_AXIS + FORK_OFF_AXIS
@@ -205,6 +214,7 @@ AXES: dict[str, tuple[tuple[float, float, float], bool]] = {
     **{part: ((0.0, 0.0, 1.0), True) for part in PULLEY_BOLTS},
     **{part: ((0.0, 0.0, 1.0), True) for part in FORK_ON_AXIS},
     **{part: ((0.0, 0.0, 1.0), False) for part in FORK_OFF_AXIS},
+    **{part: ((0.0, 0.0, 1.0), False) for part in SPLIT_BOLTS},
     **{part: ((0.0, 0.0, 1.0), False) for part in IDLER_KIT},
 }
 
@@ -346,7 +356,7 @@ THRUST_MOUNTS: tuple[Mount, ...] = (
           "the needle cage on the lower washer, round the base's seat ring"),
     Mount("washer_as6590#2", THRUST_WASHER, "j1_coupler#1", "shoulder_link", "base_yaw",
           ((0.0, round(_YAW_COUPLER.hub.recess_y1 - THRUST_WASHER_WIDTH, 6), 0.0), _UP),
-          "the upper washer, under j1_coupler's seat (its recess's ceiling) - it turns with the coupler"),
+          "the upper washer, under j1_coupler's seat (its recess's ceiling, on j1_coupler_plate) - it turns with the coupler"),
 )
 PULLEY_MOUNTS: tuple[Mount, ...] = (
     Mount("gt2_pulley_90t#3", PULLEY, "gt2_pulley_90t#1", "elbow_link", "elbow_pitch",
@@ -385,11 +395,11 @@ FASTENER_MOUNTS: tuple[Mount, ...] = (
           ((0.0, 0.0, round(_WRIST.flange.stub_z[1] - _WRIST.flange.nut_seat_z + _SEAT_TO_END, 6)), (0.0, 0.0, 0.0)),
           "the wrist screws' nuts on wrist_link's channel seats in its plate (nut_seat_z), turned with the 90T"),
     Mount("yaw_pulley_screws#1", "yaw_pulley_screws", "gt2_pulley_120t#1", "shoulder_link", "base_yaw", _SCREWS_IN_COUNTERBORES,
-          "the base_yaw 120T's 4x M4 x pulley_screw_len: heads in its counterbores (under it), up through its hub and j1_coupler's stub"),
+          "the base_yaw 120T's 4x M4 x pulley_screw_len: heads in its counterbores (under it), up through its hub and j1_coupler's stub (on j1_coupler_plate)"),
     Mount("yaw_pulley_nuts#1", "yaw_pulley_nuts", "yaw_pulley_screws#1", "shoulder_link", "base_yaw",
           ((0.0, 0.0, round(_YAW_SEAT_TO_END + _YAW_COUPLER.yoke.pocket_y0 - _YAW_COUPLER.hub.nut_depth - _YAW_COUPLER.hub.stub_y0, 6)),
            (0.0, 0.0, 0.0)),
-          "the base_yaw screws' nuts in j1_coupler's hex pockets, flush with the floor of the pocket over its hub "
+          "the base_yaw screws' nuts in j1_coupler's hex pockets (in j1_coupler_plate), flush with the floor of the pocket over its hub "
           "(nut_depth under pocket_y0), a corner along the coupler's Z"),
 )
 # The yoke's motor leg: j1_coupler's motor-side leg, its own part - a ring round the drive's motor sleeve bolted to the
@@ -397,6 +407,20 @@ FASTENER_MOUNTS: tuple[Mount, ...] = (
 YOKE_MOUNTS: tuple[Mount, ...] = (
     Mount("j1_motor_leg#1", YOKE_MOTOR_LEG, "j1_coupler#1", "shoulder_link", "base_yaw", ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)),
           "the motor-side leg on j1_coupler's disc, round the drive's motor sleeve; built in the coupler's part frame"),
+)
+# The split coupler (lib/yaw_coupler/params.py SplitParams): the plate under j1_coupler's cut - the stub, the recess, the
+# 120T's nuts - built in the coupler's frame, and the 4 screws that hold j1_coupler on it from the counterbores in the
+# ring's top face into the nuts pressed into its underside (lib/yaw_coupler/layout.py split_screw_frame, split_nut_z).
+SPLIT_MOUNTS: tuple[Mount, ...] = (
+    Mount("j1_coupler_plate#1", YOKE_PLATE, "j1_coupler#1", "shoulder_link", "base_yaw", ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)),
+          "the plate under j1_coupler's cut (the stub, the recess over the thrust bearing, the 120T's nuts); built in the "
+          "coupler's part frame"),
+    Mount("coupler_plate_screws#1", "coupler_plate_screws", "j1_coupler#1", "shoulder_link", "base_yaw", split_screw_frame(_YAW_COUPLER),
+          "j1_coupler onto its plate: 4x M4 x screw_len, the heads in the counterbores in the ring's top face, down "
+          "parallel to the base_yaw axis through both"),
+    Mount("coupler_plate_nuts#1", "coupler_plate_nuts", "coupler_plate_screws#1", "shoulder_link", "base_yaw",
+          ((0.0, 0.0, split_nut_z(_YAW_COUPLER)), (0.0, 0.0, 0.0)),
+          "the plate screws' nuts pressed up into the hex pockets in the plate's underside, flush, a corner along the coupler's Z"),
 )
 # The fork's screws and nuts, which hold the drive in it (lib/yaw_coupler/layout.py fork_*_screw_frame: frames in the
 # coupler's part frame, the motor leg's too): the hub's 4x M4 from the hub leg's counterbores along the drive's axis into
@@ -578,7 +602,7 @@ WRIST_HOME_MOUNTS: tuple[Mount, ...] = (
           wrist_home_magnet_frame(_FOREARM),
           "the home magnet glued onto the wrist 90T's outer face, south pole out: over the KY-003's chip at WRIST_PITCH_HOME_DEG"),
 )
-MOUNTS: tuple[Mount, ...] = (BASE_MOUNTS + YOKE_MOUNTS + FORK_MOUNTS + MOTOR_MOUNTS + MOTOR_PULLEY_MOUNTS + MOTOR_SCREW_MOUNTS + BEARING_MOUNTS
+MOUNTS: tuple[Mount, ...] = (BASE_MOUNTS + YOKE_MOUNTS + SPLIT_MOUNTS + FORK_MOUNTS + MOTOR_MOUNTS + MOTOR_PULLEY_MOUNTS + MOTOR_SCREW_MOUNTS + BEARING_MOUNTS
                              + THRUST_MOUNTS + PULLEY_MOUNTS + FLANGE_MOUNTS + FASTENER_MOUNTS + BELT_MOUNTS + IDLER_MOUNTS + YAW_IDLER_MOUNTS
                              + WRIST_IDLER_MOUNTS + YAW_HOME_MOUNTS + SHOULDER_HOME_MOUNTS + ELBOW_HOME_MOUNTS + WRIST_HOME_MOUNTS)
 BY_KEY: dict[str, Mount] = {m.key: m for m in MOUNTS}
