@@ -1,12 +1,14 @@
-"""The belt joints' bearings and the base_yaw thrust bearing - a leaf (lib/params.py re-exports it; the lib/ packages
-that size a seat, a stub or a shoulder for them - lib/base/, lib/coupler/, lib/forearm/, lib/yaw_coupler/ - import it
-directly).
+"""The belt joints' and the roll drives' bearings and the base_yaw thrust bearing - a leaf (lib/params.py re-exports it;
+the lib/ packages that size a seat, a stub or a shoulder for them - lib/base/, lib/coupler/, lib/forearm/, lib/wrist/,
+lib/yaw_coupler/ - import it directly).
 
 6806-2RS (61806), 30 x 42 x 7: a pair at each belt joint (base_yaw, elbow_pitch, wrist_pitch), one each side of the
 lip that splits the housing's bore (parts/joints/bearing_6806.py; lib/mounts.py places them). The coupler's stub
 turns in the upper one and reaches on through the lip to the 90T pulley, whose hub fills the lower one and bolts flat
 onto the stub's end. The bolts clamp both inner rings - the pulley's ring below, a shoulder on the stub above - and
 the stub's 2 mm inside the lip spaces them exactly as the lip spaces the outer rings: a solid joint, no play.
+Each roll drive takes a pair too, back to back in its frame's tower (lib/forearm/params.py RollDriveParams,
+lib/wrist/params.py WristRollParams; docs/forearm_roll.md, docs/wrist_roll.md).
 """
 BEARING_6806_BORE = 30.0          # [DATASHEET] 6806-2RS (61806)
 BEARING_6806_OD = 42.0            # [DATASHEET]
