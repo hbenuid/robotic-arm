@@ -2,7 +2,7 @@
 lib/pulley/body.py build_pulley(cfg), in the SolidWorks part frame - origin on the axis at the lower flange's top, +Y up
 the axis toward the outer face).
 
-The hub's Ø30 journal fills the lower 6806 of its joint, a ring under that bearing's inner ring; the web carries the
+The hub's journal presses into the lower 6806 of its joint, a ring under that bearing's inner ring; the web carries the
 toothed rim - the tooth band (the GT2 groove of lib/belts.py, lib/pulley/teeth.py) between two chamfered flanges -, open
 underneath between the hub's step and the rim; a Ø12.5 bore; 4x M4 on the pulley's own X / Z axes (lib/belts.py
 pulley_90t_bolt_points()) through the hub end to end (GT2_PULLEY_90T_FACE_Y), each counterbored from the outer face:
@@ -18,8 +18,10 @@ PULLEY_SEAT_SHIFT out along the axis: its journal in the lower 6806 of the joint
 ring; the elbow's also turned about its axis with the elbow block's bolt pattern - lib/mounts.py).
 
 Conversion: build_pulley(LEGACY) reproduces the reference (REFERENCE_BUILD - tests/test_reference_match.py); the model
-builds DEFAULT, its bolt holes opened from the export's Ø3.9 (under an M4's shank) to M4_CLEAR and counterbored for the
-heads (tests/pulley/ lock what DEFAULT changes, tests/test_mounts.py the holes in place).
+builds DEFAULT - the 0.16 fits measured on the printed 120T: its hub grown from the 6806's bore to a press
+(BEARING_6806_JOURNAL_FINE), its bolt holes opened from the export's Ø3.9 (under an M4's shank) to M4_CLEAR_FINE and
+counterbored for the heads (M4_HEAD_BORE_FINE) - tests/pulley/ lock what DEFAULT changes, tests/test_mounts.py the holes
+in place.
 """
 import pathlib
 

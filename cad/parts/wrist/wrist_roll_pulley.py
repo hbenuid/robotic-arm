@@ -1,4 +1,4 @@
-"""wrist_roll_pulley - the wrist roll drive's OUTPUT, the front piece of its rotor: its hub a Ø30.3 journal through
+"""wrist_roll_pulley - the wrist roll drive's OUTPUT, the front piece of its rotor: its hub a Ø30.2 journal through
 bearing 2 (the front 6806) to the lip's middle, where the shaft's hub meets it, the Ø33 shoulder on bearing 2's inner
 ring, the 40T GT2 band (two flanges) the pancake's 20T drives 2 : 1 on its Ø23 core, and the Ø42 face gripper_j3_connector
 bolts to - 4x M3 into nuts in pockets from the face's rim; the Ø10 cable bore (the gripper servo's leads); the rotor

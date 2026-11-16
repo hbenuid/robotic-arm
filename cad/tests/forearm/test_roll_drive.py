@@ -163,10 +163,12 @@ def test_stack():
     assert S["z_bearing_1"] < S["z_front"] < S["z_boss"]
     # the 6806 pair: the lip stops the outer rings and clears the pulley's neck and the shoulders, which bear on the inner
     # rings only; the neck under the bearing's bore - bearing 2 slides over it onto its journal; the tower round the seats
-    r_seat, j_r = (D.bearing_od + D.seat_add) / 2.0, (D.bearing_bore + D.journal_add) / 2.0
+    r_seat, j_r = (D.bearing_od + D.seat_add) / 2.0, (D.bearing_bore + D.journal_add) / 2.0   # j_r: the shaft's journal
+    p_r = D.pulley_journal_dia / 2.0                                                           # the pulley's (0.16)
     assert D.bearing_bore == PARAMS.BEARING_6806_BORE and D.bearing_od == PARAMS.BEARING_6806_OD and D.shoulder_dia == PARAMS.BEARING_6806_SHOULDER_DIA
-    assert j_r < D.shoulder_dia / 2.0 < D.lip_id / 2.0 - 1.0 and D.lip_id < D.bearing_od - 3.0
-    assert D.neck_dia < D.bearing_bore < 2.0 * j_r
+    assert D.pulley_journal_dia == PARAMS.BEARING_6806_JOURNAL_FINE
+    assert max(j_r, p_r) < D.shoulder_dia / 2.0 < D.lip_id / 2.0 - 1.0 and D.lip_id < D.bearing_od - 3.0
+    assert D.neck_dia < D.bearing_bore < 2.0 * min(j_r, p_r)
     assert D.tower_y - r_seat >= 4.0 and D.block_x[1] - r_seat >= 4.0 and r_seat + 4.0 <= -D.block_x[0]
     # the motor's face where its 20T meets the ring, the 20T's hub pulley_seat over the motor's pilot boss - down in the
     # plate's pilot hole, under the front face - and the 20T on the shaft to its far end; the plate in front of the motor
@@ -298,8 +300,9 @@ def test_module_colors(module):
 def test_bearings_press_on_the_journals_and_slip_in_the_seat(module):
     """Bearing 1 on the shaft's hub, bearing 2 on the pulley's, both in the frame's tower."""
     block = _leaf(module, "forearm_roll_block")
-    press = math.pi / 4.0 * ((D.bearing_bore + D.journal_add) ** 2 - D.bearing_bore ** 2) * D.bearing_width   # ~99 mm^3
-    for label, hub in (("bearing_6806:1", "forearm_roll_shaft"), ("bearing_6806:2", "forearm_roll_pulley")):
+    for label, hub, dia in (("bearing_6806:1", "forearm_roll_shaft", D.bearing_bore + D.journal_add),   # ~99 mm^3
+                            ("bearing_6806:2", "forearm_roll_pulley", D.pulley_journal_dia)):           # ~66 mm^3
+        press = math.pi / 4.0 * (dia ** 2 - D.bearing_bore ** 2) * D.bearing_width
         b = _leaf(module, label)
         assert interference(b, block) < 1.0, label                                        # the seat is the bearing OD + seat_add
         assert 0.9 * press <= interference(b, _leaf(module, hub)) <= press + 0.5, label   # the journal's interference in the inner ring
@@ -482,7 +485,7 @@ def _nut_pocket_probes(part, points, pocket, af: float):
 @pytest.mark.slow
 def test_pulley_and_shaft_features(module):
     pulley, shaft = _leaf(module, "forearm_roll_pulley"), _leaf(module, "forearm_roll_shaft")
-    w, j_r, a = DEFAULT.roll_end, (D.bearing_bore + D.journal_add) / 2.0, 22.5   # a: an angle clear of both screw patterns
+    w, j_r, a = DEFAULT.roll_end, D.pulley_journal_dia / 2.0, 22.5   # a: an angle clear of both screw patterns
     hole_r, head_r = w.bolt_dia / 2.0, D.clamp_screw.head_dia / 2.0 + D.clamp_head_clear
     # the pulley: the bore, the ring (a land, a groove, all round), its rear flange, the core, the shoulder, the hub, the spigot
     zm = S["z_ring_mid"]
@@ -514,7 +517,8 @@ def test_pulley_and_shaft_features(module):
     # the shaft: the bore, the hub, the shoulder, the flange, the lug at +X, the clamp's holes and its nuts' pockets
     zh = S["z_bearing_1"] + 3.0
     assert not is_inside(shaft, 0, 0, zh) and _round_trip(shaft, D.bore / 2.0 + 0.5, a, zh)
-    assert _round_trip(shaft, j_r - 0.3, a, zh) and not _round_trip(shaft, j_r + 0.3, a, zh)
+    s_r = (D.bearing_bore + D.journal_add) / 2.0                                # the shaft's journal (0.20)
+    assert _round_trip(shaft, s_r - 0.3, a, zh) and not _round_trip(shaft, s_r + 0.3, a, zh)
     assert _round_trip(shaft, D.shoulder_dia / 2.0 - 0.3, a, S["z_shoulder_1"] + 0.5) and not _round_trip(shaft, D.shoulder_dia / 2.0 + 0.3, a, S["z_shoulder_1"] + 0.5)
     assert _round_trip(shaft, D.collar_od / 2.0 - 0.5, 90.0, S["z_shaft_end"] + 1.0) and not _round_trip(shaft, D.collar_od / 2.0 + 0.5, 90.0, S["z_shaft_end"] + 1.0)
     assert is_inside(shaft, (D.stop_lug_r[0] + D.stop_lug_r[1]) / 2.0, 0, S["z_stop_lug"] + 1.0)

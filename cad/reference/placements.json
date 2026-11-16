@@ -13,7 +13,7 @@
  "expected": {
   "leaf_occurrences": 93,
   "solids": 227,
-  "solid_volume": 2389754.505
+  "solid_volume": 2390526.164
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -4858,7 +4858,7 @@
     "note": "the elbow 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower elbow bearing; turned pulley_bolt_deg about its axis with the block's bolt pattern (the nut channels clear of the ring cavity)"
    },
    "solids": 1,
-   "solid_volume": 23975.641,
+   "solid_volume": 24261.905,
    "rel": {
     "position": [
      -117.267896,
@@ -4931,7 +4931,7 @@
    "world_bbox_size": [
     59.67,
     59.188,
-    24.229
+    24.235
    ]
   },
   {
@@ -4961,7 +4961,7 @@
     "note": "the wrist 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower wrist bearing; turned pulley_bolt_deg about its axis with wrist_link's bolt pattern (the front nut clear of the post's flat)"
    },
    "solids": 1,
-   "solid_volume": 23975.641,
+   "solid_volume": 24261.905,
    "rel": {
     "position": [
      -169.609237,
@@ -5029,12 +5029,12 @@
    "world_bbox_min": [
     -199.219,
     352.061,
-    48.119
+    48.113
    ],
    "world_bbox_size": [
     59.67,
     59.188,
-    24.229
+    24.235
    ]
   },
   {
@@ -5064,7 +5064,7 @@
     "note": "the base_yaw 120T under j1_coupler, hub up: its hub end on the stub's end, its journal in the lower base bearing, its ring under that bearing's inner ring (it holds the coupler down on the thrust bearing); turned hole_deg about its axis onto the stub's diagonal holes"
    },
    "solids": 1,
-   "solid_volume": 33411.067,
+   "solid_volume": 33610.198,
    "rel": {
     "position": [
      0.0,

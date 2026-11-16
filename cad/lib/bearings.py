@@ -16,6 +16,12 @@ BEARING_6806_WIDTH = 7.0          # [DATASHEET]
 BEARING_6806_SHOULDER_DIA = 33.0  # [DATASHEET] class: a shoulder that bears on the inner ring only (above the Ø30 bore,
 #                                   under the inner ring's outer edge, ~33.7-35 by brand); verify on the bearing in hand
 BEARING_6806_MASS_G = 26.0        # [ESTIMATE] the 6808's 33 g scaled by the ring area (42^2 - 30^2) / (52^2 - 40^2); weigh one
+# The firm press of a printed journal in the 6806's inner ring, PETG at LAYER_H_FINE (lib/params.py), its axis upright:
+# the smallest journal that needs a vise or a clamp, the bearing still turning smoothly on it - measured on the 120T
+# pulley's test plate (plugs copying its hub; its 30.0 had slid in with play). Every 0.16 part's journal takes it - the
+# 90T / 120T hubs (lib/pulley/params.py DEFAULT), forearm_roll_pulley's and wrist_roll_pulley's (their pulley_journal_dia);
+# the 0.20 journals keep their own sizes, untested (docs/open_issues.md).
+BEARING_6806_JOURNAL_FINE = 30.2  # [MEASURE]
 
 # The 90T pulleys of the elbow and the wrist sit this far out along their axes from where the SolidWorks capture put
 # them (lib/mounts.py re-seats them), and the stubs they bolt onto reach this much further (lib/forearm/params.py

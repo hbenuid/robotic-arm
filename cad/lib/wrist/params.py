@@ -30,7 +30,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
-from lib.bearings import BEARING_6806_BORE, BEARING_6806_OD, BEARING_6806_SHOULDER_DIA, BEARING_6806_WIDTH
+from lib.bearings import (
+    BEARING_6806_BORE,
+    BEARING_6806_JOURNAL_FINE,
+    BEARING_6806_OD,
+    BEARING_6806_SHOULDER_DIA,
+    BEARING_6806_WIDTH,
+)
 from lib.belts import GT2_PULLEY_20T_TEETH, centre_distance
 from lib.coupler.params import DEFAULT as COUPLER
 from lib.fasteners import M3_CLEAR, M3_NUT, M3_SHCS, M4_CLEAR, M4_NUT_SIDE_PRESS_AF, NutSize, ShcsSize
@@ -283,9 +289,12 @@ class WristRollParams:
     bearing_width: float = BEARING_6806_WIDTH
     shoulder_dia: float = BEARING_6806_SHOULDER_DIA   # [DATASHEET] the rotor's shoulders bear on the inner rings only
     seat_add: float = 0.15              # [DESIGN] PETG press allowance on the seat diameter (the forearm roll's)
-    journal_add: float = 0.3            # [DESIGN] the printed journals' interference in the inner rings (the forearm roll's)
+    journal_add: float = 0.3            # [DESIGN] the shaft's journal's interference in bearing 1's inner ring (the forearm roll's;
+    #                                     wrist_roll_shaft prints at 0.20 - untested there, docs/open_issues.md)
+    pulley_journal_dia: float = BEARING_6806_JOURNAL_FINE   # [MEASURE] 30.2, the pulley's journal in bearing 2: the firm press of a
+    #                                     0.16 journal (wrist_roll_pulley prints at LAYER_H_FINE: its teeth)
     lip: float = 2.0                    # [DESIGN] between the pair's outer rings
-    lip_id: float = 37.6                # [DESIGN] clear of the hubs (Ø30.3) and the shoulders' Ø33
+    lip_id: float = 37.6                # [DESIGN] clear of the hubs (Ø30.2 / Ø30.3) and the shoulders' Ø33
     run_gap: float = 1.0                # [DESIGN] the rotor off the frame (the pulley's Ø33 shoulder spans it over bearing 2)
     # the motor: centred on the pitch axis (its body's middle at module z 0), its plug spun to +X (toward the side wall)
     pancake: PancakeParams = PancakeParams()
