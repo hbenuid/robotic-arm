@@ -90,7 +90,8 @@ def _tint(shape, color: bd.Color) -> None:
 def colour(name: str) -> str:
     """Part `name`'s colour wherever an assembly colours it (lib/style.py): BOUGHT for a purchased part
     (parts.bought(): COTS = True) - BELT for a belt (parts/*/<joint>_belt.py) -, ACCENT for a printed part that drives,
-    turns or covers (parts.accent(): ACCENT = True), BODY for the rest of the printed structure."""
+    turns or covers, or is a small separate print (parts.accent(): ACCENT = True), BODY for the rest of the printed
+    structure."""
     if parts.bought(name):
         return style.BELT if name.endswith("_belt") else style.BOUGHT
     return style.ACCENT if parts.accent(name) else style.BODY

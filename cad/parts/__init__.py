@@ -57,7 +57,8 @@ def bought(name: str) -> bool:
 
 
 def accent(name: str) -> bool:
-    """True for a printed part in the accent colour (the module declares ACCENT = True: it drives, turns or covers),
+    """True for a printed part in the accent colour (the module declares ACCENT = True: it drives, turns or covers, or
+    is a small separate print - an idler's spacer, the plate a split part bolts to),
     False for the structure - the colour every assembly gives it (lib/style.py, assemblies/_occurrences.py colour())."""
     return bool(getattr(load(name), "ACCENT", False))
 

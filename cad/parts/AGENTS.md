@@ -181,5 +181,6 @@ generated from the label:
   the last line and the exit: `OK` (0), `FAILED` (1), `NOT CHECKED` (3, never a pass). A finding that holds up the
   print is a row in `docs/open_issues.md`.
 - **Colours** — the grey of purchased parts in `arm.step` and every module's STEP; a printed part is ivory, or orange
-  where it drives, turns or covers: its module then declares `ACCENT = True` (`parts.accent()`;
+  where it drives, turns or covers or is a small separate print (an idler's spacer, the plate a split part bolts to):
+  its module then declares `ACCENT = True` (`parts.accent()`;
   `docs/design_language.md`, `assemblies/AGENTS.md` "What a part is shows as its colour").

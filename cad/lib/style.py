@@ -1,8 +1,9 @@
 """The arm's design language - what every part and assembly shares for how the arm looks (docs/design_language.md).
 
 The colours, one per kind of part, the same in the arm and in every module standing alone
-(assemblies/_occurrences.py colour()): a printed part is BODY (the structure) or ACCENT (what drives, turns or covers -
-the part module declares ACCENT = True, parts.accent()), each one of FILAMENTS (the colours of SUNLU PETG 2.0, the
+(assemblies/_occurrences.py colour()): a printed part is BODY (the structure) or ACCENT (what drives, turns or covers,
+and the small separate prints: an idler's spacer, the plate a split part bolts to - the part module declares
+ACCENT = True, parts.accent()), each one of FILAMENTS (the colours of SUNLU PETG 2.0, the
 filament the arm is printed in); a purchased part (parts.bought()) is BOUGHT, a belt (parts/*/<joint>_belt.py) BELT.
 
 The shapes: a faceted end (lib/geom.py faceted_end()) is a regular polygon of SIDES with a flat on each of the part's
@@ -62,6 +63,6 @@ def viewer_hex(filament: str) -> str:
 
 
 BODY = viewer_hex(FILAMENTS["bone_white"])      # [DESIGN] the printed structure
-ACCENT = viewer_hex(FILAMENTS["sunny_orange"])  # [DESIGN] the printed parts that drive, turn or cover
+ACCENT = viewer_hex(FILAMENTS["sunny_orange"])  # [DESIGN] the printed parts that drive, turn or cover, and the small separate prints
 BOUGHT = "#9AA0A6"     # [DESIGN] grey: every purchased part
 BELT = "#717276"       # [DESIGN] the belts, darker than the other purchased parts
