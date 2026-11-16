@@ -21,6 +21,7 @@ from lib.base.body import build_yaw_idler_spacer
 from lib.datum import IDENTITY
 
 NAME = pathlib.Path(__file__).stem
+ACCENT = True                 # the accent colour, lib/style.py: a small separate print, an idler's spacer
 REFERENCE = None              # no reference file: tests/base/test_yaw_idler.py holds its numbers
 CONVERTED = True
 LOCAL_FROM_REF = IDENTITY     # modelled in its own frame (on the idler's axle)

@@ -22,6 +22,7 @@ from lib.upper_arm import DEFAULT
 from lib.upper_arm.link import build_idler_spacer
 
 NAME = pathlib.Path(__file__).stem
+ACCENT = True                 # the accent colour, lib/style.py: a small separate print, an idler's spacer
 REFERENCE = None              # no reference file: tests/upper_arm/test_elbow_idler.py holds its numbers
 CONVERTED = True
 LOCAL_FROM_REF = IDENTITY     # modelled in its own frame (on the idler's axle)

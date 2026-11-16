@@ -20,6 +20,7 @@ from lib.yaw_coupler import DEFAULT
 from lib.yaw_coupler.body import build_coupler_plate
 
 NAME = pathlib.Path(__file__).stem
+ACCENT = True                 # the accent colour, lib/style.py: a small separate print, the plate j1_coupler bolts to
 REFERENCE = None
 CONVERTED = True
 

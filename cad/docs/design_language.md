@@ -31,7 +31,8 @@ designed here), each with its own look; these rules make them one.
   faces and on every cover - `lib/geom.py chamfer_outline()`, cut on the main body before its holes and pockets, so
   holes, bores and seats stay sharp. A 45° chamfer prints with no support, even on an edge facing the bed.
 - **Two tones.** The printed structure is `BODY`; what drives, turns or covers is `ACCENT` (its part module declares
-  `ACCENT = True`, `parts.accent()`); a purchased part is `BOUGHT` and a belt `BELT`. `assemblies/_occurrences.py
+  `ACCENT = True`, `parts.accent()`), and so is a small separate print that sits between or under the structure - an
+  idler's spacer, the plate a split part bolts to; a purchased part is `BOUGHT` and a belt `BELT`. `assemblies/_occurrences.py
   colour()` gives each part its colour, the same in the arm and in each module standing alone. `BODY` and `ACCENT` are
   colours of the filament the arm is printed in, SUNLU PETG 2.0 (`lib/style.py FILAMENTS`: its official names and
   hexes), each stored as its `viewer_hex()` - the hex the

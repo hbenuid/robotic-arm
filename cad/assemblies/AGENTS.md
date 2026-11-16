@@ -100,7 +100,8 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
   draws only the ones named). A second model would be the only way to get a STEP (a model takes no parameters).
 - **What a part is shows as its colour in every assembly, never a second model.** `_occurrences.colour(name)` picks one
   of `lib/style.py`'s colours (`docs/design_language.md`): a purchased part (`parts.bought()`) grey - a belt darker -, a
-  printed one orange where it drives, turns or covers (`parts.accent()`: its module declares `ACCENT = True`) and
+  printed one orange where it drives, turns or covers or is a small separate print (`parts.accent()`: its module
+  declares `ACCENT = True`) and
   ivory otherwise - the same part the same colour in the arm and in each module standing alone: `gripper.py`,
   `cycloidal_drive.py`, `forearm_roll_drive.py` and `wrist_roll_drive.py` pass `tint=True` to
   `occurrence_children` / `located_children`, `grouped_children` always colours (`_tint_parts`). Colours go on the
