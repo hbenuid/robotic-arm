@@ -47,8 +47,8 @@ the CAD kernel), updating the plugin and what a pull that changes `pyproject.tom
 | `./cadtool gen parts/<group>/<name>.py` (alias `step`) | **run the model script**: the machine's cad server builds it on this venv's Python and writes `parts/<group>/<name>.step` beside it (git-ignored); `took … nothing ran` when nothing changed, else `rebuilt:` names what did; `--force` runs every kernel call again |
 | `./cadtool gen assemblies/arm.py` | build `assemblies/arm.step` (git-ignored); every part runs with it (replayed when unchanged) and writes its own STEP |
 | `./cadtool python tools/bom.py [--module <module>] [--md\|--json]` | the **print list** (each part's quantity and layer height) and the **buy list**, of the arm or of one module of `assemblies/arm.py MODULES` ([`parts/AGENTS.md`](parts/AGENTS.md) Printed vs. bought) |
-| `./cadtool python tools/export_printables.py [--parts …]` | one STL per **printed** part into `print/` (git-ignored) |
-| `./cadtool python tools/export_gauges.py [--only …] [--list]` | the **fit gauges** - test prints of every bearing, pin, screw, nut and servo fit at steps round the arm's sizes - one 3MF per bed plate into `print/gauges/` |
+| `./cadtool python tools/export_printables.py [--parts …]` | one STEP per **printed** part into `print/` (git-ignored), for the slicer to mesh |
+| `./cadtool python tools/export_gauges.py [--only …] [--list]` | the **fit gauges** - test prints of every bearing, pin, screw, nut and servo fit at steps round the arm's sizes - one STEP per bed plate into `print/gauges/` |
 | `./cadtool export <file.step> stl\|3mf\|glb [out]` | one mesh file per call from a STEP document (default: beside it) |
 | `./cadtool inspect <file.step> [--planes] [--json]` | every leaf's ref, solids, faces, volume, bbox of a saved STEP (`--planes`: its planar faces) |
 | `./cadtool cad step inspect <file.step> "<ref>"` | what one ref (an occurrence path, `…/face 7`) names, and its measures |
@@ -58,7 +58,7 @@ the CAD kernel), updating the plugin and what a pull that changes `pyproject.tom
 | `./cadtool status` / `./cadtool stop` | the machine's cad server: what it runs and holds, for every session / end this venv's idle workers (after a `pyproject.toml` change, when leaving a worktree); `stop --device` stops the server for every session |
 | `./cadtool server` | the machine's `cad-server` at this project's pin, telemetry and automatic updates stored off first (`setup` runs it; a linked worktree only checks) |
 | `./cadtool validate robot/arm.urdf --strict` (`.srdf`, `.sdf --gz-check never`) | robot-description validators |
-| `./cadtool cad stl dfm print/<name>.stl --process printing` | printability of a printed part's STL: walls, overhangs, support ([`parts/AGENTS.md`](parts/AGENTS.md) Printed vs. bought) |
+| `./cadtool cad step dfm print/<name>.step --process printing` | printability of a printed part: walls, overhangs, support ([`parts/AGENTS.md`](parts/AGENTS.md) Printed vs. bought) |
 | `./cadtool skill <skill> <tool> [args]` | a plugin skill script (`print3d orca_presets.py`), its `requirements.txt`, if any, fetched into uv's cache |
 | `./cadtool cad …` | any `cad` subcommand but `setup`, `update`, `uninstall`, `doctor`, `run` ([`docs/toolchain.md`](docs/toolchain.md) Gotchas) |
 | `./cadtool doctor` | the venv's, the server's and the plugin's release against the pin, the stored telemetry and automatic-update choices, the OCP kernel, the machine's installation and the server running (a `cad update` moves both), no other text-to-cad plugin; changes nothing |
@@ -90,7 +90,7 @@ cad/
 ├── tools/        # import / extract / BOM / print export / inspect scripts (./cadtool python tools/…)
 ├── tests/        # pytest (the fast lane, the geometry tests, the per-subsystem suites)
 ├── docs/         # the drives' specs, the open-issues list, the toolchain notes
-├── print/        # git-ignored: one STL per printed part (tools/export_printables.py), the fit gauges in gauges/
+├── print/        # git-ignored: one STEP per printed part (tools/export_printables.py), the fit gauges in gauges/
 └── snapshots/    # git-ignored: snapshot PNGs
 ```
 Every folder with rules has its own guide — written for agents, readable by anyone:
