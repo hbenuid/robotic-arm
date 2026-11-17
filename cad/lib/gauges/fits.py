@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from lib.base.params import DEFAULT as BASE
 from lib.cycloidal.layout import ring_pin_hole_dia
 from lib.cycloidal.params import DEFAULT_CONFIG as DRIVE
-from lib.fasteners import M3_CLEAR, M4_CLEAR, M4_CLEAR_UPRIGHT, M4_NUT, M5_CLEAR, M5_NUT
+from lib.fasteners import M2_CLEAR, M3_CLEAR, M4_CLEAR, M4_CLEAR_UPRIGHT, M4_NUT, M5_CLEAR, M5_NUT
 from lib.forearm.params import DEFAULT as FOREARM
 from lib.gauges.coupons import REACH, STEP, sweep
 from lib.gripper.params import DEFAULT as GRIPPER
@@ -150,7 +150,8 @@ GAUGES = (
         (("depth", _ROLL.back.pocket_depth), ("width", 3.3)), note="Blind, as deep as the panels'."),
     # --- screws
     Gauge("m2", "screws", "M2 clearance holes", "M2 HOLE", "hole_strip", (
-        Use(BASE.home.board_hole_dia, "yaw_home_bracket: the KY-003 board's screws"),),
+        Use(BASE.home.board_hole_dia, "yaw_home_bracket: the KY-003 board's screws"),
+        Use(_WROLL.home.board_hole_dia, "wrist_roll_home_fin: the KY-003 board's screws")),
         (("depth", 3.0), ("width", 2.5), ("floor", 0.0), ("through", True)), note="Through 3."),
     Gauge("m3", "screws", "M3 clearance holes", "M3 HOLE", "hole_strip", (
         Use(2.0 * _GB.hole_r, "gripper_base, gripper_jaw, gripper_pinion (PapaBravo's)"),
@@ -195,6 +196,10 @@ GAUGES = (
         Use(_WROLL.nut.af + 2.0 * _WROLL.nut_fit, "wrist_roll_pulley's connector slots")),
         (("af", _ROLL.end_nut.af), ("height", _ROLL.end_nut.h + 0.2), ("screw", M3_CLEAR)),
         note="The size is the slot's width; a screw hole through each."),
+    Gauge("m2hex", "nuts", "M2 nut hex pockets", "M2 NUT", "hole_strip", (
+        Use(_WROLL.home.nut_pocket_af, "wrist_roll_home_fin's back: the KY-003 board's nuts (drop in)"),),
+        (("depth", _WROLL.home.nut_pocket_depth), ("width", 5.4), ("shape", "hex"), ("floor", 1.6), ("under", M2_CLEAR)),
+        note="A corner along the strip, an M2 hole under each."),
     Gauge("m3hex", "nuts", "M3 nut hex pockets", "M3 NUT", "hole_strip", (
         Use(_GC.nut_af, "gripper_cage's back plate"),
         Use(BASE.home.nut.af + BASE.home.nut_clear, "base_motor_mount's plate: the home bracket's nuts (drop in)"),

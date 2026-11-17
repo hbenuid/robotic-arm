@@ -86,6 +86,8 @@ MULTI_BODY = {
     "wrist_home_board_nuts": 2,
     "roll_home_board_screws": 2,
     "roll_home_board_nuts": 2,
+    "wrist_roll_home_board_screws": 2,
+    "wrist_roll_home_board_nuts": 2,
 }
 
 
