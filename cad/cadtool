@@ -43,7 +43,7 @@ cadtool - cad + this uv project (paths relative to cad/)
   ./cadtool skill <skill> <tool> [args]             a plugin skill script: skills/<skill>/scripts/<tool>
                                                     (+ the skill's requirements.txt, unlocked, in uv's cache)
   ./cadtool cad ...                                 any `cad` subcommand (`./cadtool cad --help`) but setup, update, uninstall, doctor, run
-                                                    (printability: ./cadtool cad stl dfm print/<name>.stl --process printing)
+                                                    (printability: ./cadtool cad step dfm print/<name>.step --process printing)
   ./cadtool pytest [-m "not slow"] [-n 4]           test suite (-n: worker processes, a whole test file each)
   ./cadtool lint [--fix] [path...]                  ruff check (lint only, no formatter; rules: pyproject.toml [tool.ruff])
   ./cadtool python -m assemblies.arm ...            any python in the venv (PYTHONPATH=cad/)
