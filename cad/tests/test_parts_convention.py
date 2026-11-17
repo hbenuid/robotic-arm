@@ -64,6 +64,12 @@ MULTI_BODY = {
     # the forearm roll rotor's clamp: its M3 screws + nuts (its drive's rows)
     "roll_clamp_screws": 4,
     "roll_clamp_nuts": 4,
+    # the wrist roll's: the pancake's M3, the rotor clamp's and the connector's M3 screws + nuts (its drive's rows)
+    "wrist_roll_motor_screws": 4,
+    "wrist_roll_clamp_screws": 4,
+    "wrist_roll_clamp_nuts": 4,
+    "wrist_roll_connector_screws": 4,
+    "wrist_roll_connector_nuts": 4,
     # the roll frame's back panel's magnets: a pair at each of its 4 points (its drive's row)
     "roll_back_magnets": 8,
     # the wrist frame's back panel's magnets, likewise (its drive's row)

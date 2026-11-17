@@ -43,6 +43,10 @@ RUN_GAP = 1.0      # the least gap between the turning rotor and the frame
 # The board's 4x M3 x 30 (the kit's, 19.6 into the motor) run through the pancake's own 4x M3 in the same holes - on the
 # motor the board's replace them (their length on a pancake: docs/open_issues.md): 4x 79.4 mm^3 of shank in the model
 KIT_OVERLAP = 317.7
+# ... and their tips reach 0.6 into the thread of the pancake's 4x M3 x 8 from the front (wrist_roll_motor_screws): the
+# kit's M3 x 30 are too long on a pancake (the same open issue), 4x 4.24 mm^3 in the model
+FRONT_OVERLAP = 4 * math.pi * (PARAMS.M3_SHCS.d / 2.0) ** 2 * (
+    PARAMS.MKS_SERVO42D_SCREW_REACH - (D.pancake.body_length - D.pad_screw_thread))   # 16.96
 
 
 def _offset_from_line(point, origin, axis) -> float:
@@ -86,9 +90,10 @@ def test_what_the_drive_replaced():
     assert {"nema17_pancake#1", "gt2_pulley_20t#1"} <= set(P.RETIRED) and "gripper_clamp_bracket#1" not in P.OCCURRENCES
     assert "brack_for_hand_cmap" in {s["label"] for s in P.DATA["skipped"]}
     assert F.LINKS["wrist_pitch_link"][-1] == "wrist_roll_drive#1:stator" and F.LINKS["wrist_roll_link"][0] == "wrist_roll_drive#1:rotor"
-    assert M.BODIES["rotor"] == {"wrist_roll_shaft", "wrist_roll_pulley"}
-    assert M.BODIES["stator"] == {"bearing_6806", "nema17_pancake", "mks_servo42d", "gt2_pulley_20t", "wrist_roll_belt",
-                                  "wrist_back_panel", "wrist_back_magnets"}
+    assert M.BODIES["rotor"] == {"wrist_roll_shaft", "wrist_roll_pulley", "wrist_roll_clamp_screws", "wrist_roll_clamp_nuts",
+                                 "wrist_roll_connector_screws", "wrist_roll_connector_nuts"}
+    assert M.BODIES["stator"] == {"bearing_6806", "nema17_pancake", "wrist_roll_motor_screws", "mks_servo42d", "gt2_pulley_20t",
+                                  "wrist_roll_belt", "wrist_back_panel", "wrist_back_magnets"}
 
 
 def test_stack():
@@ -225,8 +230,8 @@ def test_totals_and_bodies(module):
 def test_module_colors(module):
     """Standalone: every part in its colour, as in the arm (tests/helpers.py part_colours)."""
     assert module.label == "wrist_roll_drive"
-    assert part_colours(module) == {True: 7, False: 3}   # 2 bearings, the pancake, its board, its 20T, the belt, the magnets /
-    #                                                      the shaft, the pulley, the back panel
+    assert part_colours(module) == {True: 12, False: 3}   # 2 bearings, the pancake, its board, its 20T, the belt, the magnets,
+    #                                                       the 5 screw and nut sets / the shaft, the pulley, the back panel
 
 
 @pytest.mark.slow
@@ -246,9 +251,10 @@ def test_bearings_press_on_the_journals_and_slip_in_the_seats(module, frame):
 @pytest.mark.slow
 def test_everything_else_is_clean(module, frame):
     """Every pair in the module and every row against the frame below 1 mm^3, but the bearings' presses and the board's
-    screws in the pancake (KIT_OVERLAP)."""
+    screws in the pancake (KIT_OVERLAP) and in the thread of its front screws (FRONT_OVERLAP)."""
     press = {("bearing_6806:wrist_roll_1", "wrist_roll_shaft"), ("bearing_6806:wrist_roll_2", "wrist_roll_pulley")}
-    kit = {"mks_servo42d:wrist_roll", "nema17_pancake:wrist_roll"}
+    kit = {frozenset({"mks_servo42d:wrist_roll", "nema17_pancake:wrist_roll"}): KIT_OVERLAP,
+           frozenset({"mks_servo42d:wrist_roll", "wrist_roll_motor_screws"}): FRONT_OVERLAP}
     names = [c.label for c in module.children]
     for i, a in enumerate(names):
         assert interference(_leaf(module, a), frame) < 1.0, f"{a} x wrist_link"
@@ -256,8 +262,9 @@ def test_everything_else_is_clean(module, frame):
             if (a, b) in press or (b, a) in press:
                 continue
             vol = interference(_leaf(module, a), _leaf(module, b))
-            if {a, b} == kit:
-                assert 0.9 * KIT_OVERLAP <= vol <= KIT_OVERLAP, f"{a} x {b}: {vol:.1f} mm^3 (designed ~{KIT_OVERLAP})"
+            limit = kit.get(frozenset({a, b}))
+            if limit is not None:
+                assert 0.9 * limit <= vol <= limit + 0.01, f"{a} x {b}: {vol:.1f} mm^3 (designed ~{limit:.1f})"
                 continue
             assert vol < 1.0, f"{a} x {b}: {vol:.1f} mm^3"
 

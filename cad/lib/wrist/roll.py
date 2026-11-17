@@ -202,7 +202,8 @@ def build_frame(cfg: WristConfig = DEFAULT):
     the bearing boss from 1 mm under the facets up to bearing 2's front face; the back panel's step on the rear over the
     tower; the pancake's pocket from the plate's free face to the side wall, on down out through the bottom - it slides
     in from there, motor_drop back -, its front wall the plate (the 4 bolt slots and the pilot slot along Y - the belt's
-    tension -, the shaft's slit on down out through the bottom), a groove inside the side wall for its plug (and the
+    tension -, a boss round each bolt slot on the front face with the screw's head's counterbore through it, the shaft's
+    slit on down out through the bottom), a groove inside the side wall for its plug (and the
     board's motor plug's room); behind it the board's window, out through the rear and the bottom (its side plugs' rooms:
     in it, and under the panel's notch); the tower: bearing 1's seat, the lip, bearing 2's seat in the boss; the shaft's bay behind bearing 1 bored on through
     the rear, the stop post on the tower's rear face in it; the magnets' pockets in the step's floor; the cable's groove
@@ -223,6 +224,10 @@ def build_frame(cfg: WristConfig = DEFAULT):
     gx0, gx1, gy0, _gy1, _gz0, gz1 = pancake_plug_groove(cfg)
     body = body - box((gx0 - NUDGE, gx1), _bottom(gy0, cfg), (-FAR, gz1))
     for x, y in pad_bolt_points(cfg):
+        # a boss round each slot on the front face, the screw's head in its counterbore (a slot as the hole is: the head
+        # travels with the motor), from the face - the head bears on it - to the boss's top, flush
+        body = body + slot_y(x, y, d.pad_cbore_dia + 2.0 * d.boss_wall, d.pad_slot_len, S["z_front"], d.boss_h - NUDGE)
+        body = body - slot_y(x, y, d.pad_cbore_dia, d.pad_slot_len, S["z_front"] + NUDGE, d.boss_h)
         body = body - slot_y(x, y, d.pad_bolt_dia, d.pad_slot_len, S["z_motor_face"], d.pad_t)
     body = body - slot_y(S["x_motor"], S["y_motor"], d.pad_pilot_w, d.pad_slot_len, S["z_motor_face"], d.pad_t)
     # the shaft's slit through the plate, from the pilot slot down out through the bottom: the pancake slides in from

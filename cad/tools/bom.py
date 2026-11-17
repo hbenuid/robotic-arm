@@ -25,8 +25,6 @@ from assemblies._occurrences import module_rows
 from lib import reference as R
 from lib.forearm import DEFAULT as _FOREARM
 from lib.params import LAYER_H, LAYER_H_FINE
-from lib.wrist import DEFAULT as _WRIST
-from lib.wrist.layout import clamp_points as wrist_clamp_points
 
 # (module or None = the arm itself, what to order, pieces, why it is not modelled). Seeded with what
 # docs/cycloidal_drive.md states; the arm's other fasteners that are not parts (the modelled ones: parts.names()) and
@@ -39,18 +37,6 @@ EXTRAS = [
       "its nuts; bolt the wall on before the wrist-pitch motor goes on")),
     ("forearm_roll_drive", "M3 hex nut (ISO 4032) - in the roll pulley's core, for the forearm wall's screws", _FOREARM.roll_end.bolt_count,
      "pushed into the pockets from the pulley's cable bore before the wall goes on"),
-    ("wrist_roll_drive", (f"M3 x {_WRIST.roll.clamp_screw_len:g} socket head cap screw (ISO 4762) - the wrist roll rotor's clamp: the "
-                          "pulley through both 6806s into the shaft"), len(wrist_clamp_points(_WRIST)),
-     "heads in the pulley face's counterbores, into the nuts in the shaft's flange; tighten before the gripper's connector goes on"),
-    ("wrist_roll_drive", "M3 hex nut (ISO 4032) - in the wrist roll shaft's flange, for the rotor clamp", len(wrist_clamp_points(_WRIST)),
-     "pushed into the pockets from the shaft's rear face (in wrist_link's bay)"),
-    ("wrist_roll_drive", (f"M3 x {_WRIST.connector.bolt_len:g} socket head cap screw (ISO 4762) - gripper_j3_connector onto the wrist roll "
-                          "pulley's face"), len(_WRIST.connector.bolt_deg),
-     "heads between the connector's flange and its plate, a key past the plate's flats; bolt it on before the gripper's cage"),
-    ("wrist_roll_drive", "M3 hex nut (ISO 4032) - in the wrist roll pulley's face, for the connector's screws", len(_WRIST.connector.bolt_deg),
-     "pushed into the pockets from the face's rim"),
-    ("wrist_roll_drive", "M3 x 8 socket head cap screw - the wrist-roll pancake to wrist_link's plate", 4,
-     "through the plate's tension slots into the pancake's tapped holes"),
     # the rack & pinion gripper (PapaBravo's list: 4x M3 x 15, 4x M3 x 10, 8 nuts - the tab screws longer here by the
     # cage's ears; the pinion's screw is the servo's own horn screw)
     ("gripper", "M3 x 15 socket head cap screw (ISO 4762) - each rack onto its jaw", 4,
