@@ -30,9 +30,9 @@ nuts, the 20T pulleys) is grey and the belts a darker grey, inside the modules t
     |                    ky003_hall_sensor / elbow_home_clip / _board_screws / _board_nuts:elbow_pitch
     |- elbow_link        gt2_pulley_90t:j2, elbow_pulley_screws / _nuts:elbow_pitch, elbow_home_magnet:elbow_pitch,
     |                    forearm_roll_drive (kept whole - see below; its elbow flange is the elbow coupler's place)
-    |- forearm_link      j2_link, bearing_6806:wrist_pitch_1 / _2, nema17_40mm:wrist_pitch, mks_servo42d:wrist_pitch,
+    |- forearm_link      j2_link, j2_wall_bracket, wall_bracket_screws / _nuts:wrist_pitch, bearing_6806:wrist_pitch_1 / _2, nema17_40mm:wrist_pitch, mks_servo42d:wrist_pitch,
     |                    gt2_pulley_20t:wrist_pitch, wrist_motor_screws:wrist_pitch, wrist_belt:wrist_pitch,
-    |                    gt2_idler_20t / wrist_idler_screw / _nut:wrist_pitch,
+    |                    gt2_idler_20t / wrist_idler_spacer / _screw / _nut:wrist_pitch,
     |                    ky003_hall_sensor / wrist_home_clip / _board_screws / _board_nuts:wrist_pitch
     |- wrist_pitch_link  gt2_pulley_90t:j3, wrist_pulley_screws / _nuts:wrist_pitch, wrist_home_magnet:wrist_pitch,
     |                    wrist_link (the wrist roll drive's
@@ -160,6 +160,9 @@ OCCURRENCES = [
     # j3_coupler#1 (the elbow coupler) is retired: the roll drive's block bolts to the elbow pulley in its place
     ("forearm_roll_drive",    None, ROLL_KEY),             # module: assemblies/forearm_roll_drive.py (the forearm_roll joint; lib/mounts.py MODULE_MOUNTS)
     ("j2_link",               None, "j2_link#1"),
+    ("j2_wall_bracket",       None, "j2_wall_bracket#1"),   # mounted: the wall (the roll pulley on it), its gussets and the tongue on the web's end, ...
+    ("wall_bracket_screws",   "wrist_pitch", "wall_bracket_screws#1"),   # ... held by 3x M3 up from the web's underside ...
+    ("wall_bracket_nuts",     "wrist_pitch", "wall_bracket_nuts#1"),     # ... into the nuts in the tongue's top face
     ("bearing_6806",          "wrist_pitch_1", "bearing_6806#5"),  # mounted: j2_link's wrist boss
     ("bearing_6806",          "wrist_pitch_2", "bearing_6806#6"),
     ("nema17_40mm",           "wrist_pitch", "nema17_40mm#3"),     # mounted: j2_link's web, on round holes
@@ -168,6 +171,7 @@ OCCURRENCES = [
     ("wrist_motor_screws",    "wrist_pitch", "wrist_motor_screws#1"),   # mounted: the wrist motor's 4x M3, up through the web
     ("wrist_belt",            "wrist_pitch", "wrist_belt#1"),      # mounted: the wrist belt, round ...
     ("gt2_idler_20t",         "wrist_pitch", "gt2_idler_20t#3"),   # mounted: ... its tensioner under j2_link's web, ...
+    ("wrist_idler_spacer",    "wrist_pitch", "wrist_idler_spacer#1"),   # ... under its printed spacer, ...
     ("wrist_idler_screw",     "wrist_pitch", "wrist_idler_screw#1"),    # ... its M5 axle up through the web's slot ...
     ("wrist_idler_nut",       "wrist_pitch", "wrist_idler_nut#1"),      # ... into its nut, in the channel from the top face
     ("ky003_hall_sensor",     "wrist_pitch", "ky003_hall_sensor#4"),   # mounted: the wrist_pitch home sensor, ...
@@ -212,9 +216,9 @@ GROUPS = [
                           "shoulder_home_magnet#1", "ky003_hall_sensor#3", "elbow_home_clip#1", "elbow_home_board_screws#1",
                           "elbow_home_board_nuts#1")),
     ("elbow_link",       ("gt2_pulley_90t#3", "elbow_pulley_screws#1", "elbow_pulley_nuts#1", "elbow_home_magnet#1", ROLL_KEY)),
-    ("forearm_link",     ("j2_link#1", "bearing_6806#5", "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3",
-                          "gt2_pulley_20t#4", "wrist_motor_screws#1", "wrist_belt#1", "gt2_idler_20t#3",
-                          "wrist_idler_screw#1", "wrist_idler_nut#1", "ky003_hall_sensor#4", "wrist_home_clip#1",
+    ("forearm_link",     ("j2_link#1", "j2_wall_bracket#1", "wall_bracket_screws#1", "wall_bracket_nuts#1", "bearing_6806#5",
+                          "bearing_6806#6", "nema17_40mm#3", "mks_servo42d#3", "gt2_pulley_20t#4", "wrist_motor_screws#1",
+                          "wrist_belt#1", "gt2_idler_20t#3", "wrist_idler_spacer#1", "wrist_idler_screw#1", "wrist_idler_nut#1", "ky003_hall_sensor#4", "wrist_home_clip#1",
                           "wrist_home_board_screws#1", "wrist_home_board_nuts#1")),
     ("wrist_pitch_link", ("gt2_pulley_90t#4", "wrist_pulley_screws#1", "wrist_pulley_nuts#1", "wrist_home_magnet#1",
                           "wrist_link#1", "wrist_flange#1", WRIST_ROLL_KEY)),

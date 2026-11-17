@@ -262,6 +262,11 @@ PULLEY_NUTS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * nut_volume(M4_NUT)         
 # the wrist belt's tensioner's axle and its nut (parts/joints/wrist_idler_{screw,nut}; lib/forearm/params.py IdlerParams), likewise
 WRIST_IDLER_SCREW_MASS_G = STEEL_DENSITY * shcs_volume(_FOREARM.idler.screw, _FOREARM.idler.screw_len)   # 5.0, M5x20
 WRIST_IDLER_NUT_MASS_G = STEEL_DENSITY * nut_volume(_FOREARM.idler.nut)                                   # 1.3, M5
+# the split forearm's lap screws and nuts, the wall bracket onto j2_link (parts/joints/wall_bracket_{screws,nuts};
+# lib/forearm/params.py WallSplitParams)
+_LAP_BOLTS = len(_FOREARM.split.screw_points)
+WALL_BRACKET_SCREWS_MASS_G = STEEL_DENSITY * _LAP_BOLTS * shcs_volume(_FOREARM.split.screw, _FOREARM.split.screw_len)   # 2.8, 3x M3x8
+WALL_BRACKET_NUTS_MASS_G = STEEL_DENSITY * _LAP_BOLTS * nut_volume(_FOREARM.split.nut)                                   # 1.1, 3x M3
 # the roll belt's tensioner's axle and its nut (parts/joints/roll_idler_{screw,nut}; lib/forearm/params.py RollIdlerParams)
 ROLL_IDLER_SCREW_MASS_G = STEEL_DENSITY * shcs_volume(_FOREARM.drive.idler.screw, _FOREARM.drive.idler.screw_len)   # 5.8, M5x25
 ROLL_IDLER_NUT_MASS_G = STEEL_DENSITY * nut_volume(_FOREARM.drive.idler.nut)                                       # 1.3, M5

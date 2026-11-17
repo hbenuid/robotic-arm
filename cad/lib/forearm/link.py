@@ -5,16 +5,18 @@ import math
 
 import build123d as bd
 
-from lib.belts import GT2_IDLER_WIDTH
 from lib.forearm.layout import (
     disc_bolt_angles,
     disc_bolt_points,
     elbow_end_x,
     flange_bolt_points,
+    lap_nut_z,
+    lap_z,
     link_socket_points,
     motor_hole_points,
     screw_channel,
     screws_under_the_web,
+    wrist_idler_spacer_h,
     wrist_idler_xy,
 )
 from lib.forearm.params import DEFAULT, ForearmConfig
@@ -71,7 +73,8 @@ def roll_wall(cfg: ForearmConfig = DEFAULT):
     x0, x1 = r.wall_x
     axis = (0.0, r.axis_z)
     wall = yz_prism(wall_outline(cfg), x0, x1)
-    wall = wall - x_cylinder((r.flange_dia + r.flange_recess_add) / 2.0, r.flange_recess_depth + NUDGE, axis, x1 - r.flange_recess_depth)
+    depth = r.flange_recess_depth + r.flange_recess_clear
+    wall = wall - x_cylinder((r.flange_dia + r.flange_recess_add) / 2.0, depth + NUDGE, axis, x1 - depth)
     wall = wall - x_cylinder(r.cable_bore / 2.0, x1 - x0 + 2 * NUDGE, axis, x0 - NUDGE)
     for yz in flange_bolt_points(cfg):
         wall = wall - x_cylinder(r.bolt_dia / 2.0, x1 - x0 + 2 * NUDGE, yz, x0 - NUDGE)
@@ -151,24 +154,81 @@ def elbow_disc(cfg: ForearmConfig = DEFAULT):
 
 
 def idler_mount(body, cfg: ForearmConfig = DEFAULT):
-    """`body` with the wrist idler's rib under the web (from the idler's top face up to the web), the M5 slot through
-    the rib and the web, and the nut's channel (flats + nut_fit wide across x) from nut_floor up through the top face -
-    each on the idler's axis' line, running along y between IdlerParams.slot_y's ends."""
+    """`body` with the wrist idler's M5 slot through the web and the nut's channel (flats + nut_fit wide across x) from
+    nut_floor up through the top face - each on the idler's axis' line, running along y between IdlerParams.slot_y's
+    ends. No rib under the web: the web prints on its underside, the idler hangs under a spacer of its own
+    (build_idler_spacer)."""
     w, i = cfg.web, cfg.idler
     xi, _ = wrist_idler_xy(cfg)
     y0, y1 = i.slot_y
-    z_rib = cfg.roll_end.wrist_belt_z + GT2_IDLER_WIDTH / 2.0     # the idler's top face
 
     def along_y(width: float, z0: float, height: float):
         return bd.Pos(xi, (y0 + y1) / 2.0, z0) * bd.Rot(0.0, 0.0, 90.0) * bd.extrude(bd.SlotCenterToCenter(y1 - y0, width), amount=height)
 
-    body = body + along_y(i.rib_w, z_rib, w.z0 - z_rib + NUDGE)
-    body = body - along_y(i.slot_w, z_rib - NUDGE, w.z1 - z_rib + 2.0 * NUDGE)
+    body = body - along_y(i.slot_w, w.z0 - NUDGE, w.thickness + 2.0 * NUDGE)
     channel = (i.nut.af + i.nut_fit, y1 - y0 + hex_circumdiameter(i.nut.af) + i.nut_fit)
     return body - slab(channel[0], channel[1], w.z1 - i.nut_floor + NUDGE, xi, i.nut_floor, (y0 + y1) / 2.0)
 
 
+def build_idler_spacer(cfg: ForearmConfig = DEFAULT):
+    """The wrist idler's printed spacer (IdlerParams; parts/joints/wrist_idler_spacer), axis on Z: its land
+    (land_dia x land_h) on z=0, on the idler's bearing inner ring; its riser (riser_dia) on up to
+    z = wrist_idler_spacer_h(), on the web's underside; the axle's slot_w through both. Prints riser down."""
+    i, height = cfg.idler, wrist_idler_spacer_h(cfg)
+    body = cylinder(i.land_dia / 2.0, i.land_h) + cylinder(i.riser_dia / 2.0, height - i.land_h, z0=i.land_h)
+    return single_solid(body - through(i.slot_w / 2.0, height))
+
+
+def wall_bracket_region(cfg: ForearmConfig = DEFAULT):
+    """What the wall bracket takes of the whole forearm (WallSplitParams): the wall (from its wrist face on), the
+    tongue (the web over lap_z() from the wall back to lap_x) and the gussets (everything over the web's top face as far
+    along as they run)."""
+    r, w, s = cfg.roll_end, cfg.web, cfg.split
+    x0, top, y = r.wall_x[0], r.axis_z + r.wall_od, 2.0 * (w.half_w + r.wall_od)
+    z_lap = lap_z(cfg)
+    wall = slab(r.wall_x[1] + 10.0 - x0, y, top - w.z0 + 20.0, (x0 + r.wall_x[1] + 10.0) / 2.0, w.z0 - 10.0)
+    tongue = slab(x0 - s.lap_x, y, top - z_lap, (x0 + s.lap_x) / 2.0, z_lap)
+    gussets = slab(r.rib_len + 1.0, y, top - w.z1, x0 - (r.rib_len + 1.0) / 2.0, w.z1)
+    return wall + tongue + gussets
+
+
+def lap_cuts(cfg: ForearmConfig = DEFAULT):
+    """The lap's fastener cuts (WallSplitParams), at each screw point: the screw's clearance through both halves, its
+    head's counterbore head_h up from the web's underside, the nut's hex pocket down from the tongue's top face (a
+    corner along x)."""
+    w, s = cfg.web, cfg.split
+    cuts = []
+    for xy in s.screw_points:
+        cuts.append(through(s.bolt_dia / 2.0, w.thickness, xy, z0=w.z0))
+        cuts.append(cylinder(s.head_dia / 2.0, s.screw.head_h + NUDGE, xy, z0=w.z0 - NUDGE))
+        cuts.append(bd.Pos(xy[0], xy[1], lap_nut_z(cfg)) * hex_prism(s.nut.af + s.nut_fit, 0.0, s.nut.h + NUDGE))
+    return cuts
+
+
+def build_wall_bracket(cfg: ForearmConfig = DEFAULT):
+    """The wall bracket (WallSplitParams; parts/joints/j2_wall_bracket) in j2_link's part frame: the whole forearm's
+    wall, gussets and tongue (wall_bracket_region()), the lap's holes and nut pockets through the tongue. Prints on the
+    wall's elbow face."""
+    body = _build_whole(cfg) & wall_bracket_region(cfg)
+    for cut in lap_cuts(cfg):
+        body = body - cut
+    return single_solid(body)
+
+
 def build_link(cfg: ForearmConfig = DEFAULT):
+    """j2_link: the whole forearm (LEGACY: the SolidWorks part), or with cfg.split the web the wall bracket is lapped
+    onto - the whole less wall_bracket_region(), the lap's holes and the screws' counterbores through its end."""
+    body = _build_whole(cfg)
+    if cfg.split is not None:
+        body = body - wall_bracket_region(cfg)
+        for cut in lap_cuts(cfg):
+            body = body - cut
+    return single_solid(body)
+
+
+def _build_whole(cfg: ForearmConfig = DEFAULT):
+    """The whole forearm, one solid: the web, the elbow end (LEGACY's disc, DEFAULT's roll wall), the wrist boss, the motor's
+    seat, the idler's slot and channel (build_link splits it when cfg.split)."""
     w, d, b, s = cfg.web, cfg.disc, cfg.boss, cfg.slot
     if cfg.roll:
         # the straight web from the flange wall to the wrist pivot (faceted wrist end) and the wall's gussets on it, grown
@@ -216,8 +276,8 @@ def build_link(cfg: ForearmConfig = DEFAULT):
         for xy in motor_hole_points(cfg):
             body = body - cylinder(h.bolt_dia / 2.0, w.thickness + 2 * NUDGE, xy, z0=w.z0 - NUDGE)
             body = body - cylinder(h.pocket_dia / 2.0, h.screw.head_h + NUDGE, xy, z0=w.z0 - NUDGE)
-    # the wrist belt's idler (IdlerParams): the rib under the web its top bears on, the axle's slot through both, the
-    # nut's channel down from the top face - all along y over the idler's travel
+    # the wrist belt's idler (IdlerParams): the axle's slot through the web, the nut's channel down from the top face -
+    # both along y over the idler's travel
     if cfg.roll and cfg.idler is not None:
         body = idler_mount(body, cfg)
     # the locating sockets, both faces (LEGACY)

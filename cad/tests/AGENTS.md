@@ -114,7 +114,9 @@ build vs the SolidWorks part + feature probes, the roll end, the roll drive - it
 clearances in the arm with the elbow folded; the roll belt's tensioner (`test_roll_idler`: the stock belt round it, its
 riser, slot and nut channel on the roll frame, its axle's and nut's numbers - no reference) and the wrist belt's
 (`test_wrist_idler`: the stock belt round it, the band of belts its slot takes, its stations, its axle's and nut's
-numbers - no reference -, its rib, slot and nut channel on `j2_link`, the kit's fit); `test_wrist_home`: the
+numbers and its spacer's - no reference -, its slot and nut channel on `j2_link`, the kit's fit); `test_wall_split`: the
+forearm printed in two parts - `j2_wall_bracket` and the lap's `wall_bracket_{screws,nuts}` (no reference: their
+numbers), the lap's stations, the two parts the whole, the fasteners' fit; `test_wrist_home`: the
 wrist_pitch home sensor - the home angle, the frame through the wrist 90T's (the capture's), the switch's zone past the
 lower end for every A3144 operate point and the glued magnet's error, the layout under the 90T's face, its clip's,
 magnet's and fasteners' numbers (no reference), the clip's teardrop holes and slots, its fit round the wrist boss's end,
@@ -135,7 +137,8 @@ reference) - their numbers, the panel flush on the rear line and `run_gap` off t
 step, opening and pockets, the magnets on their pockets' bottoms, clear of the drive; `helpers.in_host()` places any
 occurrence in `j2_link`'s frame,
 `helpers.in_drive_frame()` in the roll drive's mount frame - `j2_link`'s before the forearm's turn,
-`lib/placements.py TURNS` - and `j2_link_in_drive_frame()` the turned `j2_link` in it). Geometry tests are
+`lib/placements.py TURNS` - and `j2_link_in_drive_frame()` the turned forearm in it; `helpers.forearm()` is `j2_link`
+fused with its wall bracket, the whole forearm the end's and the clearance tests probe). Geometry tests are
 `slow`.
 
 ## Where the locks live

@@ -117,8 +117,13 @@ KY-003's - and the home magnet glued on the 90T's outer face, hosted on the 90T 
 WRIST_PITCH_HOME_DEG (lib/params.py).
 The wrist belt's (WRIST_IDLER_MOUNTS; lib/forearm/params.py IdlerParams): the idler under j2_link's web where the
 stock belt puts it on the run leaving the motor's 20T (lib/forearm/layout.py wrist_idler_xy), standing on its lower face
-level with the belt, its M5 axle's head under it, the nut on its channel's floor down from the web's top face (each +Z
-up j2_link's +Z).
+level with the belt, its printed spacer between it and the web, its M5 axle's head under it, the nut on its channel's
+floor down from the web's top face (each +Z up j2_link's +Z).
+The SPLIT FOREARM (FOREARM_SPLIT_MOUNTS; lib/forearm/params.py WallSplitParams): DEFAULT's forearm prints in two parts -
+the wall bracket (parts/joints/j2_wall_bracket: the wall the roll pulley bolts onto, its gussets, the tongue over the
+web's end; in j2_link's own frame, hosted on j2_link#1 - the roll pulley and the roll drive stay hosted on j2_link#1)
+and the 3x M3 that hold its tongue on the web (parts/joints/wall_bracket_{screws,nuts}), up from the web's underside into
+the nuts in the tongue's top face.
 """
 from __future__ import annotations
 
@@ -128,7 +133,14 @@ from dataclasses import dataclass
 from lib.base.layout import home_bracket_frame, home_sensor_frame, joint_stations, yaw_belt_frame, yaw_idler_xz
 from lib.base.params import DEFAULT as _BASE
 from lib.bearings import THRUST_WASHER_WIDTH
-from lib.forearm import module_frame_in_host, wrist_belt_frame, wrist_idler_xy
+from lib.forearm import (
+    lap_nut_z,
+    lap_screw_head_z,
+    module_frame_in_host,
+    wrist_belt_frame,
+    wrist_idler_spacer_h,
+    wrist_idler_xy,
+)
 from lib.forearm.layout import home_clip_frame as wrist_home_clip_frame
 from lib.forearm.layout import home_magnet_frame as wrist_home_magnet_frame
 from lib.forearm.layout import home_sensor_frame as wrist_home_sensor_frame
@@ -196,12 +208,14 @@ BASE_MOUNT, BASE_MOUNT_SCREWS, BASE_MOUNT_NUTS = "base_motor_mount", "base_motor
 YOKE_MOTOR_LEG = "j1_motor_leg"
 YOKE_PLATE = "j1_coupler_plate"
 SPLIT_BOLTS = ("coupler_plate_screws", "coupler_plate_nuts")
+WALL_BRACKET = "j2_wall_bracket"
+LAP_BOLTS = ("wall_bracket_screws", "wall_bracket_nuts")
 FORK_ON_AXIS = ("fork_hub_screws", "fork_hub_nuts", "fork_sleeve_screws", "fork_sleeve_nuts")
 FORK_OFF_AXIS = ("fork_foot_screws", "fork_foot_nuts")
 FORK_BOLTS = FORK_ON_AXIS + FORK_OFF_AXIS
 MOTOR_SCREWS = ("elbow_gearbox_screws", "elbow_motor_screws", "wrist_motor_screws", "yaw_motor_screws")
 IDLER_KIT = ("gt2_idler_20t", "elbow_idler_spacer", "elbow_idler_screw", "elbow_idler_nut", "yaw_idler_spacer",
-             "yaw_idler_screw", "yaw_idler_nut", "wrist_idler_screw", "wrist_idler_nut")
+             "yaw_idler_screw", "yaw_idler_nut", "wrist_idler_spacer", "wrist_idler_screw", "wrist_idler_nut")
 
 # The part-frame axis tools/reference/mount_placements.py checks for each mounted part, and whether it lies ON its
 # joint's axis (a motor's shaft runs beside its joint, parallel; a bearing, a pulley or a pulley-bolt pattern sits on it).
@@ -215,6 +229,7 @@ AXES: dict[str, tuple[tuple[float, float, float], bool]] = {
     **{part: ((0.0, 0.0, 1.0), True) for part in FORK_ON_AXIS},
     **{part: ((0.0, 0.0, 1.0), False) for part in FORK_OFF_AXIS},
     **{part: ((0.0, 0.0, 1.0), False) for part in SPLIT_BOLTS},
+    **{part: ((0.0, 0.0, 1.0), False) for part in LAP_BOLTS},
     **{part: ((0.0, 0.0, 1.0), False) for part in IDLER_KIT},
 }
 
@@ -422,6 +437,21 @@ SPLIT_MOUNTS: tuple[Mount, ...] = (
           ((0.0, 0.0, split_nut_z(_YAW_COUPLER)), (0.0, 0.0, 0.0)),
           "the plate screws' nuts pressed up into the hex pockets in the plate's underside, flush, a corner along the coupler's Z"),
 )
+# The split forearm (lib/forearm/params.py WallSplitParams): the wall bracket - the wall, its gussets, the tongue over
+# the web's end - built in j2_link's frame, and the 3 screws that hold its tongue on the web, up from the counterbores
+# in the web's underside (lib/forearm/layout.py lap_screw_head_z) into the nuts in the tongue's top face (lap_nut_z).
+FOREARM_SPLIT_MOUNTS: tuple[Mount, ...] = (
+    Mount("j2_wall_bracket#1", WALL_BRACKET, "j2_link#1", "forearm_link", "wrist_pitch", ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)),
+          "the forearm's wall (the roll pulley bolts onto it), its gussets and the tongue lapped onto j2_link's web; built "
+          "in j2_link's part frame"),
+    Mount("wall_bracket_screws#1", "wall_bracket_screws", "j2_link#1", "forearm_link", "wrist_pitch",
+          ((0.0, 0.0, lap_screw_head_z(_FOREARM)), (0.0, 0.0, 0.0)),
+          "the wall bracket onto j2_link: 3x M3 x screw_len, the heads flush in the counterbores in the web's underside, up "
+          "through the web's end and the bracket's tongue"),
+    Mount("wall_bracket_nuts#1", "wall_bracket_nuts", "wall_bracket_screws#1", "forearm_link", "wrist_pitch",
+          ((0.0, 0.0, round(lap_nut_z(_FOREARM) - lap_screw_head_z(_FOREARM), 6)), (0.0, 0.0, 0.0)),
+          "the lap screws' nuts in the hex pockets in the tongue's top face, flush, a corner along j2_link's x"),
+)
 # The fork's screws and nuts, which hold the drive in it (lib/yaw_coupler/layout.py fork_*_screw_frame: frames in the
 # coupler's part frame, the motor leg's too): the hub's 4x M4 from the hub leg's counterbores along the drive's axis into
 # the nuts captive in its flange; the motor leg's foot's 2x M4 along it into the nuts in the disc's slots; its ring's 3x
@@ -502,16 +532,19 @@ YAW_IDLER_MOUNTS: tuple[Mount, ...] = (
 )
 # The wrist belt's tensioner (lib/forearm/params.py IdlerParams), under j2_link's web at the idler's place for the stock
 # belt (wrist_idler_xy()), each part's +Z up j2_link's +Z: the idler standing on its lower face level with the belt, the
-# screw's head under it, the nut on its channel's floor (IdlerParams.nut_floor).
+# spacer's land on its upper face, the screw's head under it, the nut on its channel's floor (IdlerParams.nut_floor).
 _W_IDLER_X, _W_IDLER_Y = (round(v, 6) for v in wrist_idler_xy(_FOREARM))
 _W_IDLER_Z = round(J2_BELT_Z - GT2_IDLER_WIDTH / 2.0, 6)
 WRIST_IDLER_MOUNTS: tuple[Mount, ...] = (
     Mount("gt2_idler_20t#3", "gt2_idler_20t", "j2_link#1", "forearm_link", "wrist_pitch",
           ((_W_IDLER_X, _W_IDLER_Y, _W_IDLER_Z), (0.0, 0.0, 0.0)),
           "the wrist belt's tensioner under j2_link's web, level with the belt, on its back on the run leaving the motor's 20T"),
+    Mount("wrist_idler_spacer#1", "wrist_idler_spacer", "j2_link#1", "forearm_link", "wrist_pitch",
+          ((_W_IDLER_X, _W_IDLER_Y, round(_FOREARM.web.z0 - wrist_idler_spacer_h(_FOREARM), 6)), (0.0, 0.0, 0.0)),
+          "its printed spacer: the land on the idler's inner ring, the riser on the web's underside"),
     Mount("wrist_idler_screw#1", "wrist_idler_screw", "j2_link#1", "forearm_link", "wrist_pitch",
           ((_W_IDLER_X, _W_IDLER_Y, _W_IDLER_Z), (0.0, 0.0, 0.0)),
-          "its M5 axle: the head under the idler, up through the idler, the rib and the web's slot into the nut"),
+          "its M5 axle: the head under the idler, up through the idler, the spacer and the web's slot into the nut"),
     Mount("wrist_idler_nut#1", "wrist_idler_nut", "j2_link#1", "forearm_link", "wrist_pitch",
           ((_W_IDLER_X, _W_IDLER_Y, _FOREARM.idler.nut_floor), (0.0, 0.0, 0.0)),
           "its nut on the floor of its channel down from the web's top face, its flats across j2_link's x"),
@@ -602,7 +635,7 @@ WRIST_HOME_MOUNTS: tuple[Mount, ...] = (
           wrist_home_magnet_frame(_FOREARM),
           "the home magnet glued onto the wrist 90T's outer face, south pole out: over the KY-003's chip at WRIST_PITCH_HOME_DEG"),
 )
-MOUNTS: tuple[Mount, ...] = (BASE_MOUNTS + YOKE_MOUNTS + SPLIT_MOUNTS + FORK_MOUNTS + MOTOR_MOUNTS + MOTOR_PULLEY_MOUNTS + MOTOR_SCREW_MOUNTS + BEARING_MOUNTS
+MOUNTS: tuple[Mount, ...] = (BASE_MOUNTS + YOKE_MOUNTS + SPLIT_MOUNTS + FOREARM_SPLIT_MOUNTS + FORK_MOUNTS + MOTOR_MOUNTS + MOTOR_PULLEY_MOUNTS + MOTOR_SCREW_MOUNTS + BEARING_MOUNTS
                              + THRUST_MOUNTS + PULLEY_MOUNTS + FLANGE_MOUNTS + FASTENER_MOUNTS + BELT_MOUNTS + IDLER_MOUNTS + YAW_IDLER_MOUNTS
                              + WRIST_IDLER_MOUNTS + YAW_HOME_MOUNTS + SHOULDER_HOME_MOUNTS + ELBOW_HOME_MOUNTS + WRIST_HOME_MOUNTS)
 BY_KEY: dict[str, Mount] = {m.key: m for m in MOUNTS}
