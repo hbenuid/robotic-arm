@@ -239,14 +239,16 @@ class YawIdlerParams:
     (parts/base/yaw_idler_nut) under the plate, held flats-on between two rails grown down from the plate's underside
     (the mount prints plate-down: the rails stand up off it): it slides with the screw. Both run across the belt between
     slot_y's ends, in the belt's frame (lib/base/layout.py yaw_belt_frame: its +Y the base's +Z, turned with the motor's
-    small z). Its stations along Y: lib/params.py YAW_IDLER_*."""
+    small z), symmetrical about the belt's centre line: the idler takes either strand from outside the loop, and on its
+    strand it goes in until the belt is tight - no end stop: past 3.0 off the far strand's teeth (the longest belt it
+    takes) its flange meets that strand. Its stations along Y: lib/params.py YAW_IDLER_*."""
 
     run: int = 1                          # the loop's run it presses (lib/belts.py belt_runs): the 120T back to the 20T, the +Z strand
-    x: float = 85.0                       # its axis this far out from the base_yaw axis, along the belt's centre line: on the
-    #                                       mount's plate, the nut's slot under it clear of the motor's face
-    slot_y: tuple = (-3.1, 24.1)          # its axis' range across the belt (the belt frame's y), the slots' end centres: in to 3.0
-    #                                       off the far strand's teeth (the longest belt it takes), out to 1.0 past just touching
-    #                                       the open loop's strand
+    x: float = 71.0                       # its axis this far out from the base_yaw axis, along the belt's centre line: on the
+    #                                       mount's plate, near the joint face where the loop is wide (the idler goes deeper
+    #                                       before it nears the far strand), the nut's rails short of the mount's posts
+    slot_y: tuple = (-27.8, 27.8)         # its axis' range across the belt (the belt frame's y), the slots' end centres:
+    #                                       symmetrical, each end 1.0 past just touching its strand of the open loop
     riser_dia: float = 12.0               # the spacer's riser, on the plate's top (as ElbowIdlerParams.riser_dia) ...
     land_dia: float = 7.0                 # [ESTIMATE] ... its land on the idler's bearing inner ring only (ElbowIdlerParams.land_dia)
     land_h: float = 1.0                   # the land over the riser: the idler's flange clear of the riser
@@ -350,7 +352,7 @@ YAW_BELT_Y = round(LEGACY.bore.lip_y[0] - (YAW.band_y1 / 2.0 - YAW.end_y), 6)   
 #                           under j1_coupler, lib/mounts.py), its plain hub gone (lib/pulley/params.py YAW_HUB_CUT) -, the motor's
 #                           20T level with it (tests/test_mounts.py)
 YAW_MOTOR_X = 122.0       # [DESIGN] the base_yaw motor's axis this far out along X: the open loop (392.4) shorter than the stock
-#                           belt, the idler (YawIdlerParams) taking up the rest inside its slot - it takes 392.4 .. 405.3
+#                           belt, the idler (YawIdlerParams) taking up the rest in its slot - it takes 392.4 .. 411.1
 YAW_MOTOR_PAD = 2.0       # [DESIGN] the pad under the mount's plate round the motor's face (MotorParams.pad_t): the plate 7 thick
 #                           there - 4 under the counterbored heads, the roll motor's -, the motor and its board this much lower
 _HOLES = MotorHoleParams()
