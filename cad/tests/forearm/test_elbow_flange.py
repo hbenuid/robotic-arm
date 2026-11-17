@@ -17,7 +17,7 @@ from tests.helpers import interference, is_inside
 
 D, S = DEFAULT.drive, stack_positions(DEFAULT)
 YE = S["y_elbow"]
-VOLUME = 9981.77                                     # mm^3, the build's
+VOLUME = 10158.487                                   # mm^3, the build's
 BBOX_MIN = (-45.0, -94.0, -20.0)                     # the module frame (assemblies/forearm_roll_drive.py places it at 0)
 BBOX_SIZE = (15.0, 40.0, 40.0)
 

@@ -46,7 +46,7 @@ from lib.belts import (  # noqa: E402, F401
 )
 # --- The belt joints' bearings + the base_yaw thrust bearing - lib/bearings.py (a leaf: lib/base/, lib/coupler/, lib/forearm/, lib/yaw_coupler/ import it)
 from lib.bearings import (  # noqa: E402, F401
-    BEARING_6806_BORE, BEARING_6806_JOURNAL_FINE, BEARING_6806_MASS_G, BEARING_6806_OD, BEARING_6806_SHOULDER_DIA,
+    BEARING_6806_BORE, BEARING_6806_JOURNAL, BEARING_6806_JOURNAL_FINE, BEARING_6806_MASS_G, BEARING_6806_OD, BEARING_6806_SHOULDER_DIA,
     BEARING_6806_WIDTH, PULLEY_SEAT_SHIFT, THRUST_BORE, THRUST_CAGE_MASS_G, THRUST_CAGE_WIDTH, THRUST_OD, THRUST_STACK,
     THRUST_WASHER_MASS_G, THRUST_WASHER_WIDTH,
 )

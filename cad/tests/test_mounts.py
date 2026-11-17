@@ -32,7 +32,7 @@ from lib.bearings import (
 from lib.coupler import DEFAULT as COUPLER
 from lib.cycloidal import DEFAULT_CONFIG, arm_mount_points, sleeve_bolt_z, sleeve_end, stack_positions
 from lib.datum import BASE_BOTTOM_Y, to_location
-from lib.fasteners import M4_CLEAR_FINE, M4_HEAD_BORE_FINE, hex_area
+from lib.fasteners import M4_CLEAR_FINE, M4_CLEAR_UPRIGHT, M4_HEAD_BORE_FINE, hex_area
 from lib.forearm import DEFAULT as FOREARM
 from lib.forearm import pulley_bolt_points
 from lib.pulley import DEFAULT as PULLEY_90T
@@ -100,6 +100,16 @@ def _journal_press(pulley_key: str) -> float:
     BEARING_6806_JOURNAL_FINE) over the bearing's bore, the bearing's whole width."""
     cfg = PULLEY_120T if pulley_key.startswith("gt2_pulley_120t") else PULLEY_90T
     return math.pi / 4.0 * (cfg.hub_dia ** 2 - PARAMS.BEARING_6806_BORE ** 2) * PARAMS.BEARING_6806_WIDTH
+
+
+def _stub_press() -> float:
+    """The designed overlap of a joint's stub in its upper 6806 (mm^3): the 0.20 press (BEARING_6806_JOURNAL) over the
+    bearing's bore, the bearing's whole width (the stub runs on through the lip)."""
+    return math.pi / 4.0 * (PARAMS.BEARING_6806_JOURNAL ** 2 - PARAMS.BEARING_6806_BORE ** 2) * PARAMS.BEARING_6806_WIDTH
+
+
+# the stub's holder as a neighbour: the elbow flange is a part of the forearm roll drive's module
+_STUB_HOLDER = {"elbow_flange": "forearm_roll_drive#1"}
 
 
 def _press(nut_af: float, depth: float, count: int = len(PARAMS.pulley_90t_bolt_points())) -> float:
@@ -209,8 +219,9 @@ def test_motors_and_boards_clear_their_neighbours():
     (the Ø22 pilot boss used to stand in j2_link's Ø20 central slot - the parametric forearm's slot is 22.3 wide) but
     the pulley nuts' designed press in their nut_af pockets (_press, test_pulley_bolts_clamp_their_joints), the base
     motor mount's nuts' in the base's posts (JointParams.nut_pocket_af) and the fork's sleeve nuts' in the sleeve's lugs
-    (ShellParams.sleeve_nut_af, test_the_fork_bolts_hold_the_drive) and the pulleys' journals' in their lower 6806s
-    (_journal_press). The yoke's motor leg is a neighbour too: the screws hosted on it are skipped below."""
+    (ShellParams.sleeve_nut_af, test_the_fork_bolts_hold_the_drive), the pulleys' journals' in their lower 6806s
+    (_journal_press) and the stubs' in their upper ones (_stub_press). The yoke's motor leg is a neighbour too: the
+    screws hosted on it are skipped below."""
     neighbours = ["base#1", "base_motor_mount#1", "j1_coupler#1", "j1_motor_leg#1", "j1_link#1", "j2_link#1", "gt2_pulley_90t#3",
                   "gt2_pulley_90t#4", "gt2_pulley_120t#1", "wrist_link#1"]
     shapes = {k: built.placed(k) for k in neighbours}
@@ -221,8 +232,9 @@ def test_motors_and_boards_clear_their_neighbours():
     budget[("fork_sleeve_nuts#1", "cycloidal_drive#1")] = (
         _press(DEFAULT_CONFIG.shell.sleeve_nut_af, PARAMS.M4_NUT.h, PARAMS.CYCLOIDAL_SLEEVE_BOLT_COUNT) + 0.5)
     journals = {(lower, pulley): _journal_press(pulley) + 0.5 for _, lower, _, _, pulley in STACKS.values()}
+    journals |= {(upper, _STUB_HOLDER.get(holder, holder)): _stub_press() + 0.5 for upper, _, _, holder, _ in STACKS.values()}
     budget |= journals
-    # line-to-line fits (the elbow's upper 6806 seat Ø42.0, the Ø30 stubs) leave float noise in the boolean
+    # line-to-line fits (the elbow's upper 6806 seat Ø42.0) leave float noise in the boolean
     # that differs per machine (0.05 mm^3 on x86_64 Linux, 0 on arm64 macOS) - the suite's 1 mm^3 'no overlap' budget;
     # a real misfit is far above it (0.1 mm across a bearing's face is ~68 mm^3)
     for m in mounts.MOUNTS:
@@ -232,14 +244,17 @@ def test_motors_and_boards_clear_their_neighbours():
                 continue   # a re-seated pulley is a neighbour of the others
             vol = interference(part, other)
             assert vol <= budget.get((m.key, key), 1.0), f"{m.key} x {key}: {vol:.1f} mm^3"
-    # the mounts do not run into each other either - but each pulley's journal pressed into its lower 6806, the base_yaw motor's
+    # the mounts do not run into each other either - but each pulley's journal pressed into its lower 6806 and each stub
+    # into its upper one, the base_yaw motor's
     # screws' thread in the vendor 48 mm motor's tapped holes, modelled at the M3 minor diameter (the screws at the major:
     # the drive's motor bolts' budget, tests/cycloidal/test_assembly.py), 4 x the thread (MotorParams.holes) long - and
-    # the nuts' designed press in j1_coupler_plate's pockets (a mount itself): the 120T's and the plate screws'
-    plate_press = _press(YAW_COUPLER.split.nut_af, PARAMS.M4_NUT.h) + 0.5
+    # the nuts' designed press in j1_coupler_plate's pockets (a mount itself): the 120T's and the plate screws' - none in
+    # the model while the pocket is the wider (M4_NUT_UPRIGHT_PRESS_AF: the press is PETG's undersize upright), so then
+    # they keep the 1 mm^3 'no overlap'
+    plate_press = _press(YAW_COUPLER.split.nut_af, PARAMS.M4_NUT.h)
+    plate = {frozenset(("j1_coupler_plate#1", nuts)): plate_press + 0.5 for nuts in ("yaw_pulley_nuts#1", "coupler_plate_nuts#1")}
     designed = {frozenset(("nema17_48mm#1", "yaw_motor_screws#1")): 37.1,
-                frozenset(("j1_coupler_plate#1", "yaw_pulley_nuts#1")): plate_press,
-                frozenset(("j1_coupler_plate#1", "coupler_plate_nuts#1")): plate_press,
+                **(plate if plate_press > 0.0 else {}),
                 **{frozenset(pair): limit for pair, limit in journals.items()}}
     placed = [(m.key, built.placed(m.key)) for m in mounts.MOUNTS]
     for i, (ka, a) in enumerate(placed):
@@ -448,7 +463,8 @@ def test_the_pulley_bolts_reach_their_nuts():
     assert PULLEY_90T.hole_dia == M4_CLEAR_FINE > PARAMS.M4_SHCS.d and M4_HEAD_BORE_FINE > PARAMS.M4_SHCS.head_dia  # snug, 0.16
     assert D.pulley_hub_len == y1 - y0 and D.nut_t == H.nut_depth == PARAMS.M4_NUT.h
     assert D.pulley_bolt_r == C.pulley_bolt_r == F.pulley_bolt_r == H.hole_r == PARAMS.GT2_PULLEY_90T_BOLT_R
-    assert D.pulley_bolt_dia == F.pulley_bolt_dia == H.hole_dia == PARAMS.M4_CLEAR > PARAMS.M4_SHCS.d
+    assert D.pulley_bolt_dia == F.pulley_bolt_dia == PARAMS.M4_CLEAR > PARAMS.M4_SHCS.d   # the frames' holes, on their side
+    assert D.flange_bolt_dia == F.flange_bolt_dia == H.hole_dia == M4_CLEAR_UPRIGHT > PARAMS.M4_SHCS.d   # upright, 0.20
 
 
 @pytest.mark.slow

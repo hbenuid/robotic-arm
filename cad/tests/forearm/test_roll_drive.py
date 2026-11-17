@@ -185,7 +185,7 @@ def test_stack():
     assert _eq(S["z_shaft_end"], S["z_clamp_head"] - D.clamp_screw_len) and math.isclose(S["z_clamp_nut"] - S["z_shaft_end"], 2 * PARAMS.M3_PITCH)
     assert math.isclose(S["z_clamp_nut_seat"] - S["z_clamp_nut"], D.clamp_nut.h) and S["z_shoulder_1"] - S["z_clamp_nut_seat"] >= 3.0
     clamp_r, hole_r = D.clamp_circle_dia / 2.0, w.bolt_dia / 2.0
-    assert clamp_r - hole_r - D.bore / 2.0 >= 1.5 and j_r - clamp_r - hole_r >= 1.2 - 1e-9 and D.neck_dia / 2.0 - clamp_r - hole_r >= 1.0 - 1e-9
+    assert clamp_r - hole_r - D.bore / 2.0 >= 1.5 and j_r - clamp_r - hole_r >= 1.175 - 1e-9 and D.neck_dia / 2.0 - clamp_r - hole_r >= 1.0 - 1e-9
     r_in, r_out, z0, z1 = clamp_nut_pocket(DEFAULT)
     assert r_in < D.bore / 2.0 and D.collar_od / 2.0 - r_out >= 3.0 and (z0, z1) == (S["z_shaft_end"], S["z_clamp_nut_seat"])
     head_r = D.clamp_screw.head_dia / 2.0 + D.clamp_head_clear

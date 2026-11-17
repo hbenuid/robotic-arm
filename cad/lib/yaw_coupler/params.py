@@ -45,10 +45,19 @@ from dataclasses import dataclass, replace
 
 from lib.base.params import BASE_DRAFT, BASE_R
 from lib.base.params import DEFAULT as _BASE
-from lib.bearings import BEARING_6806_BORE, THRUST_OD, THRUST_STACK
+from lib.bearings import BEARING_6806_JOURNAL, THRUST_OD, THRUST_STACK
 from lib.belts import GT2_PULLEY_90T_BOLT_R
 from lib.coupler.params import DEFAULT as _J3_COUPLER
-from lib.fasteners import M2_CLEAR, M2_NUT, M2_SHCS, M4_CLEAR, M4_NUT, NutSize, ShcsSize
+from lib.fasteners import (
+    M2_CLEAR,
+    M2_NUT,
+    M2_SHCS,
+    M4_CLEAR_UPRIGHT,
+    M4_NUT,
+    M4_NUT_UPRIGHT_PRESS_AF,
+    NutSize,
+    ShcsSize,
+)
 
 
 @dataclass(frozen=True)
@@ -194,6 +203,8 @@ class ForkParams:
     motor_nut_wall: float = 1.6      # [DESIGN] ... into M4 nuts in slots from the disc's top face, this far in from that face ...
     motor_screw_len: float = 8.0     # [DESIGN] ... M4 x 8 (ISO 4762): through the foot and the wall, 2.0 past the nut; the
     #                                  disc's holes run on 0.5 past the tips (lib/yaw_coupler/body.py _fork_cuts)
+    motor_foot_hole_dia: float = M4_CLEAR_UPRIGHT   # [MEASURE] 4.2, their holes through the foot: j1_motor_leg prints on
+    #                                  its outer face, so they stand upright (the disc's, on their side in j1_coupler: M4_CLEAR)
     hub_screw_len: float = 30.0      # [DESIGN] M4 x 30 (ISO 4762) from the hub leg's counterbores (layout.py HEAD_SEAT): 1.0 past
     #                                  the hub's captive nuts, 0.5 inside their pockets (ShellParams.hub_nut_depth)
     sleeve_screw_len: float = 16.0   # [DESIGN] the motor leg's radial M4 x 16 (ISO 4762) from the floors of its ring's
@@ -273,7 +284,10 @@ class SplitParams:
     screw_x: float = 22.0         # the 4 screws at (+/-screw_x, +/-screw_z): the counterbores 3.1 off the pocket's walls
     screw_z: float = 12.0         # ... (pocket_half x), r 25.06 - the nuts' pockets 3.5 inside the washers' bore
     screw_len: float = 16.0       # M4 x 16 from the counterbores' floors: the tips 0.72 inside the nuts' outer faces
-    nut_af: float = 6.85          # the nuts' hex pockets: upright, a corner along Z (the 120T's nuts' press, HubParams)
+    hole_dia: float = M4_CLEAR_UPRIGHT   # [MEASURE] 4.2, their holes through both parts, upright in each: snug, so the
+    #                               screws line the two up (lib/fasteners.py)
+    nut_af: float = M4_NUT_UPRIGHT_PRESS_AF   # [MEASURE] 7.1, the nuts' hex pockets: upright, a corner along Z (the 120T's
+    #                               nuts' press, HubParams)
 
 
 CAPTURE_FACE_X = 31.5   # [REFERENCE] where the SolidWorks capture put the drive's z = 0 in this frame (placements.json
@@ -306,14 +320,15 @@ _CAP = _BASE.cap                  # the base's frame: this part's origin at its 
 DEFAULT = replace(LEGACY,
                   hub=replace(LEGACY.hub, recess_dia=THRUST_OD + 2.0 * THRUST_CLEAR,
                               recess_y1=round(_CAP.groove_y0 - _CAP.ring_top_y + THRUST_STACK, 6),
-                              # the hub the base_yaw 120T bolts to (the 90T's hub): the stub the bearings' bore, on to the lip's lower
-                              # face (1.1 longer); the 90T's bolt circle at the diagonals (where the SolidWorks Ø3.3
-                              # holes were - the nuts clear of the pocket's walls), M4 clearance, the nuts sunk flush
-                              # in the pocket's floor in j3_coupler's press-fit pockets; the 90T's bore (the SolidWorks
-                              # Ø15 left 1.3 of wall to the holes)
-                              stub_dia=BEARING_6806_BORE, stub_y0=round(_BASE.bore.lip_y[0] - _CAP.ring_top_y, 6),
-                              bore_dia=_J3_COUPLER.bore_dia, hole_dia=M4_CLEAR, hole_r=GT2_PULLEY_90T_BOLT_R,
-                              nut_af=_J3_COUPLER.nut_af, nut_depth=M4_NUT.h),
+                              # the hub the base_yaw 120T bolts to (the 90T's hub): the stub a 0.20 journal's measured press
+                              # in the upper 6806 (BEARING_6806_JOURNAL), on to the lip's lower face (1.1 longer); the 90T's
+                              # bolt circle at the diagonals (where the SolidWorks Ø3.3 holes were - the nuts clear of the
+                              # pocket's walls), the measured snug upright M4 hole, the nuts sunk flush in the pocket's
+                              # floor in upright press pockets (lib/fasteners.py); the 90T's bore (the SolidWorks Ø15
+                              # left 1.3 of wall to the holes)
+                              stub_dia=BEARING_6806_JOURNAL, stub_y0=round(_BASE.bore.lip_y[0] - _CAP.ring_top_y, 6),
+                              bore_dia=_J3_COUPLER.bore_dia, hole_dia=M4_CLEAR_UPRIGHT, hole_r=GT2_PULLEY_90T_BOLT_R,
+                              nut_af=M4_NUT_UPRIGHT_PRESS_AF, nut_depth=M4_NUT.h),
                   # the ring RING_DROP lower: the drive's shell turns over it, its pillars sweeping 2.68 above the ring's top;
                   # flat to flat, symmetric under the centred fork (LEGACY's from the cheek's outer face); the disc
                   # BASE_R at its rim, drafted in at BASE_DRAFT (no band: the rim is lifted above band_y1), faceted like the
@@ -329,4 +344,4 @@ DEFAULT = replace(LEGACY,
                   # the shoulder_pitch home sensor on its tray in that pocket, its magnet glued on a pillar of the shell
                   home=HomeTrayParams(),
                   # printed in two parts, each flat on the bed: cut at the pocket's floor, the plate under it its own part
-                  split=SplitParams(y=LEGACY.yoke.pocket_y0, nut_af=_J3_COUPLER.nut_af))
+                  split=SplitParams(y=LEGACY.yoke.pocket_y0))

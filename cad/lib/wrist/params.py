@@ -32,6 +32,7 @@ from dataclasses import dataclass, replace
 
 from lib.bearings import (
     BEARING_6806_BORE,
+    BEARING_6806_JOURNAL,
     BEARING_6806_JOURNAL_FINE,
     BEARING_6806_OD,
     BEARING_6806_SHOULDER_DIA,
@@ -39,7 +40,7 @@ from lib.bearings import (
 )
 from lib.belts import GT2_PULLEY_20T_TEETH, centre_distance
 from lib.coupler.params import DEFAULT as COUPLER
-from lib.fasteners import M3_CLEAR, M3_NUT, M3_SHCS, M4_CLEAR, M4_NUT_SIDE_PRESS_AF, NutSize, ShcsSize
+from lib.fasteners import M3_CLEAR, M3_NUT, M3_SHCS, M4_CLEAR, M4_CLEAR_UPRIGHT, M4_NUT_SIDE_PRESS_AF, NutSize, ShcsSize
 from lib.motors import MKS_SERVO42D_STACK, MKS_SERVO42D_W
 from lib.style import GRILL_PITCH, GRILL_SLOT
 
@@ -107,7 +108,8 @@ class FlangeParams:
     step_dia: float = COUPLER.step[0]                                  # the inner-ring shoulder ...
     step_z: tuple = (_T + COUPLER.journal_y1 - PITCH_INSET, _T + COUPLER.step[1] - PITCH_INSET)   # ... down onto the upper wrist
     #                                                                    bearing's top face
-    stub_dia: float = COUPLER.stub_dia                                 # through the upper wrist bearing and j2_link's lip ...
+    stub_dia: float = BEARING_6806_JOURNAL                             # [MEASURE] 30.25, a 0.20 journal's press (the coupler's
+    #                                                                    30.0 the bore's), through the upper wrist bearing and j2_link's lip ...
     stub_z: tuple = (_T + COUPLER.step[1] - PITCH_INSET, _T + COUPLER.stub_y1 - PITCH_INSET)   # ... to the 90T's face (the lip's
     #                                                                    lower face): 9 long
     pulley_screw_len: float = 33.0                                     # [DESIGN] the 90T's 4 M4 x 33 (parts/joints/wrist_pulley_screws)
@@ -123,7 +125,10 @@ class FlangeParams:
     #                                                                    and nuts with it (lib/mounts.py; the elbow's RollDriveParams
     #                                                                    pulley_bolt_deg): on the axes the front nut's corner came 0.55
     #                                                                    off the post's front flat, turned it keeps 3.9
-    pulley_bolt_dia: float = M4_CLEAR                                  # 4.4, as the elbow's (the coupler's 4.1 was the SolidWorks pattern)
+    pulley_bolt_dia: float = M4_CLEAR                                  # 4.4, as the elbow's (the coupler's 4.1 was the SolidWorks pattern),
+    #                                                                    through wrist_link's plate (printed front face down: on their side) ...
+    flange_bolt_dia: float = M4_CLEAR_UPRIGHT                          # [MEASURE] ... 4.2 through the flange, which prints on its
+    #                                                                    stub's end: upright (the elbow's alike)
     nut_af: float = M4_NUT_SIDE_PRESS_AF                               # [MEASURE] 7.15, the channels: a press for the M4 nut (s 7),
     #                                                                    printed on their side (wrist_link prints front face down) ...
     nut_corner_deg: float = 0.0                                        # ... a corner this far off the pattern's turn (pulley_bolt_deg
@@ -289,12 +294,12 @@ class WristRollParams:
     bearing_width: float = BEARING_6806_WIDTH
     shoulder_dia: float = BEARING_6806_SHOULDER_DIA   # [DATASHEET] the rotor's shoulders bear on the inner rings only
     seat_add: float = 0.15              # [DESIGN] PETG press allowance on the seat diameter (the forearm roll's)
-    journal_add: float = 0.3            # [DESIGN] the shaft's journal's interference in bearing 1's inner ring (the forearm roll's;
-    #                                     wrist_roll_shaft prints at 0.20 - untested there, docs/open_issues.md)
+    journal_add: float = round(BEARING_6806_JOURNAL - BEARING_6806_BORE, 6)   # [MEASURE] 0.25, the shaft's journal's press in
+    #                                     bearing 1's inner ring: a 0.20 journal's (wrist_roll_shaft prints at LAYER_H; the forearm roll's)
     pulley_journal_dia: float = BEARING_6806_JOURNAL_FINE   # [MEASURE] 30.2, the pulley's journal in bearing 2: the firm press of a
     #                                     0.16 journal (wrist_roll_pulley prints at LAYER_H_FINE: its teeth)
     lip: float = 2.0                    # [DESIGN] between the pair's outer rings
-    lip_id: float = 37.6                # [DESIGN] clear of the hubs (Ø30.2 / Ø30.3) and the shoulders' Ø33
+    lip_id: float = 37.6                # [DESIGN] clear of the hubs (Ø30.2 / Ø30.25) and the shoulders' Ø33
     run_gap: float = 1.0                # [DESIGN] the rotor off the frame (the pulley's Ø33 shoulder spans it over bearing 2)
     # the motor: centred on the pitch axis (its body's middle at module z 0), its plug spun to +X (toward the side wall)
     pancake: PancakeParams = PancakeParams()

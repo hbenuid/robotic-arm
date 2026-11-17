@@ -17,7 +17,7 @@ import zipfile
 import build123d as bd
 import pytest
 
-from lib.fasteners import M2_CLEAR, M3_CLEAR, M4_CLEAR, M5_CLEAR
+from lib.fasteners import M2_CLEAR, M3_CLEAR, M4_CLEAR, M4_CLEAR_UPRIGHT, M5_CLEAR
 from lib.gauges import coupons as C
 from lib.gauges.fits import GAUGES, GROUPS
 from lib.gauges.layout import BED, MARGIN, Piece, pack
@@ -63,11 +63,14 @@ def test_every_arm_value_is_in_its_sweep(gauge):
 
 
 def test_the_fasteners_have_gauges():
-    """The clearance holes lib/fasteners.py defines each have a gauge, upright; the sideways M4 nut pockets' sizes are
-    in the upright gauge's sweep too."""
+    """The clearance holes lib/fasteners.py defines each have a gauge, upright - M4_CLEAR on its side, where every hole
+    of that size prints (an upright one takes M4_CLEAR_UPRIGHT); the sideways M4 nut pockets' sizes are in the upright
+    gauge's sweep too."""
     upright = {v for g in GAUGES if g.coupon != "side_strip" for v in g.values}
-    for clear in (M2_CLEAR, M3_CLEAR, M4_CLEAR, M5_CLEAR):
+    side = {v for g in GAUGES if g.coupon == "side_strip" for v in g.values}
+    for clear in (M2_CLEAR, M3_CLEAR, M4_CLEAR_UPRIGHT, M5_CLEAR):
         assert round(clear, 3) in upright, clear
+    assert round(M4_CLEAR, 3) in side
     gauge = {g.key: g for g in GAUGES}
     assert set(gauge["m4hexs"].values) <= set(gauge["m4hex"].values)
 

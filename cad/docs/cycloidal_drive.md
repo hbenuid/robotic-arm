@@ -202,7 +202,7 @@ PETG (aluminium viable): Ø70.3 (`od` = 70 mm 6814 bore + 0.3 interference grip)
 flange (`hub_flange`, the motor plate's mirror) in the body's pin ring, its face on the hub-end 6814 cut back over
 the outer race (`plate_relief_*`) - the flange stops the inner race -, then the grip, on past the lip to the
 `j1_coupler` fork's hub-side leg; 4 blind Ø4.20 × 18 pin holes on Ø60 closed by a 1 mm ceiling; Ø6 shaft-clearance
-bore through the flange; Ø16.2 × 5 625 pocket on the inner face; the **arm-mount pattern** 4 × Ø4.4 through-holes on
+bore through the flange; Ø16.2 × 5 625 pocket on the inner face; the **arm-mount pattern** 4 × `housing_bolt_hole_dia` through-holes (the port's Ø4.4, the build's Ø4.2) on
 Ø50 at 45° from the pins, each into a captive M4 nut pocket (7.2 AF × 4.7, `hub_nut_depth`) in the flange's inner
 face - the port bolted `j1_link` to it, the turning shell bolts the hub to the fork's leg (M4 × 25 from its
 counterbores, their ends flush with the nuts); a Ø36 lightening recess in the face (`arm_mount_pocket_dia`, 0 =
@@ -287,7 +287,7 @@ tight. Never design a hole smaller than its steel part.
 | Motor-shaft D-bore | +0.065 on the radius → Ø5.13 | `d_bore_clearance_add` | slip-to-light press |
 | Support-pin bore | +0.075 on the radius → Ø5.15 | `dowel_bore_clearance_add` | firm press |
 | Mating surfaces | +0.15 | `mating_surface_add` | pilot recess 22.30 |
-| Bolt / head clearance | +0.4 on the Ø | `bolt_clearance_add` | M3 3.4 / 5.7, M4 4.4 |
+| Bolt / head clearance | +0.4 on the Ø | `bolt_clearance_add` | M3 3.4 / 5.7, M4 4.4 (the port's; the build's M4 holes, upright at 0.20: `HousingParams.bolt_hole_dia` = `M4_CLEAR_UPRIGHT`, measured) |
 
 Print the discs flat at 100 % infill and `LAYER_H_FINE`, the drive's other printed parts at `LAYER_H` (`parts/AGENTS.md`
 Printed vs. bought); test-print the fit gauges

@@ -33,11 +33,11 @@
     <link name="shoulder_link">
       <pose relative_to="base_yaw">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.00021 0.011485 -0.022626 0 0 0</pose>
-        <mass>1.580153</mass>
+        <pose>0.00021 0.01148 -0.022636 0 0 0</pose>
+        <mass>1.580537</mass>
         <inertia>
-          <ixx>4.500060e-03</ixx><ixy>-2.452451e-06</ixy><ixz>-2.488204e-06</ixz>
-          <iyy>3.260701e-03</iyy><iyz>-3.992812e-04</iyz><izz>2.705146e-03</izz>
+          <ixx>4.501679e-03</ixx><ixy>-2.453188e-06</ixy><ixz>-2.491812e-06</ixz>
+          <iyy>3.262098e-03</iyy><iyz>-3.993578e-04</iyz><izz>2.705504e-03</izz>
         </inertia>
       </inertial>
       <visual name="shoulder_link_visual">
@@ -60,11 +60,11 @@
     <link name="upper_arm_link">
       <pose relative_to="shoulder_pitch">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.065245 -0.000016 0.047494 0 0 0</pose>
-        <mass>1.654286</mass>
+        <pose>0.065221 -0.000016 0.047492 0 0 0</pose>
+        <mass>1.65497</mass>
         <inertia>
-          <ixx>2.611034e-03</ixx><ixy>-3.055985e-06</ixy><ixz>9.666923e-05</ixz>
-          <iyy>7.221790e-03</iyy><iyz>-3.161286e-06</iyz><izz>6.530447e-03</izz>
+          <ixx>2.612399e-03</ixx><ixy>-3.055357e-06</ixy><ixz>9.657278e-05</ixz>
+          <iyy>7.225896e-03</iyy><iyz>-3.161224e-06</iyz><izz>6.535383e-03</izz>
         </inertia>
       </inertial>
       <visual name="upper_arm_link_visual">
@@ -87,11 +87,11 @@
     <link name="elbow_link">
       <pose relative_to="elbow_pitch">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.00571 -0.017816 0.015699 0 0 0</pose>
-        <mass>0.773131</mass>
+        <pose>0.005708 -0.017811 0.015689 0 0 0</pose>
+        <mass>0.773355</mass>
         <inertia>
-          <ixx>1.110531e-03</ixx><ixy>1.382296e-04</ixy><ixz>-1.919041e-05</ixz>
-          <iyy>6.206812e-04</iyy><iyz>5.826032e-05</iyz><izz>1.048593e-03</izz>
+          <ixx>1.110907e-03</ixx><ixy>1.382524e-04</ixy><ixz>-1.923579e-05</ixz>
+          <iyy>6.209930e-04</iyy><iyz>5.840184e-05</iyz><izz>1.048713e-03</izz>
         </inertia>
       </inertial>
       <visual name="elbow_link_visual">
@@ -141,11 +141,11 @@
     <link name="wrist_pitch_link">
       <pose relative_to="wrist_pitch">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0.000345 0.012221 0.007405 0 0 0</pose>
-        <mass>0.431536</mass>
+        <pose>0.000345 0.012215 0.007392 0 0 0</pose>
+        <mass>0.431747</mass>
         <inertia>
-          <ixx>4.871202e-04</ixx><ixy>-2.265465e-05</ixy><ixz>-1.008047e-07</ixz>
-          <iyy>2.485035e-04</iyy><iyz>-3.460837e-05</iyz><izz>3.381762e-04</izz>
+          <ixx>4.873332e-04</ixx><ixy>-2.265554e-05</ixy><ixz>-1.028160e-07</ixz>
+          <iyy>2.486851e-04</iyy><iyz>-3.467924e-05</iyz><izz>3.382478e-04</izz>
         </inertia>
       </inertial>
       <visual name="wrist_pitch_link_visual">

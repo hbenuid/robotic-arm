@@ -23,6 +23,7 @@ from dataclasses import dataclass, replace
 
 from lib.bearings import (
     BEARING_6806_BORE,
+    BEARING_6806_JOURNAL,
     BEARING_6806_JOURNAL_FINE,
     BEARING_6806_OD,
     BEARING_6806_SHOULDER_DIA,
@@ -39,6 +40,7 @@ from lib.fasteners import (
     M3_NUT,
     M3_SHCS,
     M4_CLEAR,
+    M4_CLEAR_UPRIGHT,
     M4_NUT,
     M4_NUT_SIDE_PRESS_AF,
     M5_CLEAR,
@@ -404,8 +406,8 @@ class RollDriveParams:
     bearing_od: float = BEARING_6806_OD
     bearing_width: float = BEARING_6806_WIDTH
     seat_add: float = 0.15                # [DESIGN] PETG press allowance on the seat diameter (cf. the drive's 6814 seat)
-    journal_add: float = 0.3              # [DESIGN] the shaft's journal's interference in bearing 1's inner ring (cf. the drive's hub;
-    #                                       forearm_roll_shaft prints at 0.20 - untested there, docs/open_issues.md)
+    journal_add: float = round(BEARING_6806_JOURNAL - BEARING_6806_BORE, 6)   # [MEASURE] 0.25, the shaft's journal's press in
+    #                                       bearing 1's inner ring: a 0.20 journal's (forearm_roll_shaft prints at LAYER_H)
     pulley_journal_dia: float = BEARING_6806_JOURNAL_FINE   # [MEASURE] 30.2, the pulley's journal in bearing 2: the firm press of
     #                                       a 0.16 journal (forearm_roll_pulley prints at LAYER_H_FINE: its teeth)
     shoulder_dia: float = BEARING_6806_SHOULDER_DIA   # [DATASHEET] the rotor's shoulders bear on the inner rings only
@@ -467,7 +469,8 @@ class RollDriveParams:
     post_chamfer: float = EDGE_CHAMFER    # [DESIGN] its foot's 45 deg chamfer (lib/style.py): its edge 2.26 off the bore's rim
     step_dia: float = BEARING_6806_SHOULDER_DIA   # [DESIGN] an inner-ring shoulder on the post's face, down onto the upper elbow bearing ...
     step_x: tuple = (-41.0 + ELBOW_INSET, -40.3 + ELBOW_INSET)   # [DESIGN] ... host -11 .. -10.3
-    stub_dia: float = 30.0                # [REFERENCE] in the upper of the elbow's 6806-2RS pair (lib/mounts.py bearing_6806#3; the 90T's hub in #4)
+    stub_dia: float = BEARING_6806_JOURNAL   # [MEASURE] 30.25, in the upper of the elbow's 6806-2RS pair (lib/mounts.py bearing_6806#3; the
+    #                                       90T's hub in #4): a 0.20 journal's press (the capture's coupler had the bore's 30.0)
     stub_x: tuple = (-47.0 - PULLEY_SEAT_SHIFT + ELBOW_INSET, -41.0 + ELBOW_INSET)   # [REFERENCE] host -20 .. -11: the capture coupler's
     #                                       end (-47) on through the lip to the re-seated elbow 90T, which bolts flat onto it (its 2 mm in the lip
     #                                       space the inner rings) - 9 long, as the wrist's (lib/wrist/params.py FlangeParams)
@@ -479,7 +482,9 @@ class RollDriveParams:
     spigot_fit: float = 0.15              # [DESIGN] the recess over the spigot, a side (printed to printed: a slip, it centres the flange)
     pulley_bolt_r: float = 11.0           # [REFERENCE] the elbow 90T's 4x M4 at r 11 (the SolidWorks coupler's pattern) ...
     pulley_bolt_deg: float = 45.0         # [DESIGN] ... turned off the axes, the elbow 90T with it (lib/mounts.py)
-    pulley_bolt_dia: float = M4_CLEAR     # [DESIGN] 4.4, M4 clearance up through the flange and the spigot to the nut seat
+    pulley_bolt_dia: float = M4_CLEAR     # [DESIGN] 4.4, M4 clearance up through the spigot to the nut seat (the frame prints front
+    #                                       face down: on their side) ...
+    flange_bolt_dia: float = M4_CLEAR_UPRIGHT   # [MEASURE] ... 4.2 through the flange, which prints on its stub's end: upright
     pulley_hub_len: float = GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_FACE_Y[0]   # [REFERENCE] 21.4, the 90T's length through its bolt holes:
     #                                       the screw heads sit in its counterbores (parts/joints/elbow_pulley_screws)
     pulley_screw_len: float = 35.0        # [DESIGN] M4 x 35 (ISO 4762) from the floors of the pulley's counterbores
@@ -506,7 +511,7 @@ class RollDriveParams:
     # the rotor's own clamp: 4x M3 from the pulley's front face (heads sunk in counterbores, under the wall's recess)
     # through both pieces into nuts in the shaft's flange - the pulley, both inner rings and the shaft as one
     clamp_circle_dia: float = 24.5        # [DESIGN] in the hubs, between the Ø18 bore and the journals (1.55 mm of wall to the bore; to the
-    #                                       journal 1.15 in the pulley's Ø30.2, 1.2 in the shaft's Ø30.3; 1.0 by the pulley's neck)
+    #                                       journal 1.15 in the pulley's Ø30.2, 1.175 in the shaft's Ø30.25; 1.0 by the pulley's neck)
     clamp_angle_deg: float = 45.0         # [DESIGN] between the wall's screws (RollEndParams.bolt_angle_deg) and their nut pockets
     clamp_screw: ShcsSize = M3_SHCS       # [DATASHEET] ISO 4762 M3 (parts/joints/roll_clamp_screws)
     clamp_screw_len: float = 45.0         # [DESIGN] M3 x 45 from its counterbore's floor: the tip at the shaft's rear face (which it sets) - 10

@@ -19,9 +19,12 @@ BEARING_6806_MASS_G = 26.0        # [ESTIMATE] the 6808's 33 g scaled by the rin
 # The firm press of a printed journal in the 6806's inner ring, PETG at LAYER_H_FINE (lib/params.py), its axis upright:
 # the smallest journal that needs a vise or a clamp, the bearing still turning smoothly on it - measured on the 120T
 # pulley's test plate (plugs copying its hub; its 30.0 had slid in with play). Every 0.16 part's journal takes it - the
-# 90T / 120T hubs (lib/pulley/params.py DEFAULT), forearm_roll_pulley's and wrist_roll_pulley's (their pulley_journal_dia);
-# the 0.20 journals keep their own sizes, untested (docs/open_issues.md).
+# 90T / 120T hubs (lib/pulley/params.py DEFAULT), forearm_roll_pulley's and wrist_roll_pulley's (their pulley_journal_dia).
 BEARING_6806_JOURNAL_FINE = 30.2  # [MEASURE]
+# The same press at LAYER_H (0.20), one step over the fine one - measured on j1_coupler_plate's test plate (plugs round
+# the stub's Ø12.5 bore, upright). Every 0.20 journal in a 6806 takes it: the stubs of j1_coupler_plate, elbow_flange
+# and wrist_flange, the roll shafts' journals (their journal_add).
+BEARING_6806_JOURNAL = 30.25      # [MEASURE]
 
 # The 90T pulleys of the elbow and the wrist sit this far out along their axes from where the SolidWorks capture put
 # them (lib/mounts.py re-seats them), and the stubs they bolt onto reach this much further (lib/forearm/params.py

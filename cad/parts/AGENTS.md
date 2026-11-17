@@ -166,10 +166,13 @@ generated from the label:
   `layer_mm`, `tests/test_bom.py`). Fine layers smooth tooth and lobe flanks. A bearing seat printed upright gains
   little from them (its diameter lies in the layer plane); a hole or a nut pocket printed on its side changes with the
   layer height - its gauge prints at its part's (Fit gauges, next). No adaptive / variable layer height: a part's fits
-  are gauged at one. A fit measured at `LAYER_H_FINE` is its own constant, and every `FINE_LAYERS` part with that fit
-  reads it - `lib/bearings.py BEARING_6806_JOURNAL_FINE` (a journal's press in the 6806), `lib/fasteners.py
-  M4_CLEAR_FINE` / `M4_HEAD_BORE_FINE` (an M4 shank's and head's snug holes); the `LAYER_H` parts keep their own sizes
-  until a gauge at 0.20 says otherwise.
+  are gauged at one. A fit measured at a layer height is its own constant, and every part printed at that height with
+  that fit - the same bought part, the same way up - reads it: at `LAYER_H_FINE` `lib/bearings.py
+  BEARING_6806_JOURNAL_FINE` (a journal's press in the 6806), `lib/fasteners.py M4_CLEAR_FINE` / `M4_HEAD_BORE_FINE`
+  (an M4 shank's and head's snug holes); at `LAYER_H` `BEARING_6806_JOURNAL`, `M4_CLEAR_UPRIGHT` (the shank's hole
+  printed upright), `M4_NUT_UPRIGHT_PRESS_AF` / `M4_NUT_SIDE_PRESS_AF` (the nut's press pocket upright / on its side).
+  A print orientation lives in the part's docstring: a fit's constant follows it (an upright hole and one on its side
+  are two fits), and a fit not yet measured at its part's height keeps its own size.
 - **Fit gauges** — before the first parts: `./cadtool python tools/export_gauges.py` writes the test prints of every fit
   where a bought part meets a printed one (`print/gauges/`, one 3MF per plate; `lib/gauges`); the step that fits is the
   constant's value. A gauge prints at the layer height of the parts it tests - a fit printed on its side, whose parts

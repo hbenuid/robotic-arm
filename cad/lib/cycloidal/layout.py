@@ -14,7 +14,7 @@ from lib.geom import hex_circumdiameter  # the arm-wide helper, re-exported for 
 
 __all__ = [
     "PILLAR_OVERSHOOT", "arm_mount_angles", "arm_mount_points", "arm_zone", "compute_housing_bolt_angles", "hex_circumdiameter",
-    "housing_bolt_points", "hub_flange", "hub_height", "motor_bolt_counterbore_depth", "motor_bolt_points", "output_pin_points",
+    "housing_bolt_hole_dia", "housing_bolt_points", "hub_flange", "hub_height", "motor_bolt_counterbore_depth", "motor_bolt_points", "output_pin_points",
     "pillar_corners", "pillar_half_width", "ring_pin_engagement", "ring_pin_hole_depth", "ring_pin_hole_dia", "ring_pin_points",
     "shell_ends", "sleeve_end", "stack_positions",
 ]
@@ -22,6 +22,13 @@ __all__ = [
 
 def _circle_points(radius: float, angles: list[float]) -> list[tuple[float, float]]:
     return [(radius * math.cos(a), radius * math.sin(a)) for a in angles]
+
+
+def housing_bolt_hole_dia(cfg: DriveConfig = DEFAULT_CONFIG) -> float:
+    """The M4 bolts' clearance holes - the housing's (the shell ring, the shell body) and the hub's arm mount: the
+    housing's bolt_hole_dia, else the port's bolt_dia + bolt_clearance_add (4.4)."""
+    h = cfg.housing
+    return h.bolt_hole_dia if h.bolt_hole_dia is not None else h.bolt_dia + cfg.tolerances.bolt_clearance_add
 
 
 def housing_bolt_points(cfg: DriveConfig = DEFAULT_CONFIG) -> list[tuple[float, float]]:

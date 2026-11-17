@@ -284,7 +284,7 @@ def build_elbow_flange(cfg: ForearmConfig = DEFAULT):
         body = body + x_cylinder(dia / 2.0, b - a, (y_e, 0.0), a)
     body = body - x_cylinder(d.pin_bore_dia / 2.0, d.pin_bore_x[1] - d.pin_bore_x[0] + NUDGE, (y_e, 0.0), d.pin_bore_x[0] - NUDGE)
     for y, z in pulley_bolt_points(cfg):
-        body = body - x_cylinder(d.pulley_bolt_dia / 2.0, p1 - d.stub_x[0] + 2 * NUDGE, (y_e + y, z), d.stub_x[0] - NUDGE)
+        body = body - x_cylinder(d.flange_bolt_dia / 2.0, p1 - d.stub_x[0] + 2 * NUDGE, (y_e + y, z), d.stub_x[0] - NUDGE)
     body = body - yz_prism(spigot_face(cfg, d.spigot_fit), p1 - d.spigot_h, p1 + NUDGE)
     return single_solid(body)
 
