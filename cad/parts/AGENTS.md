@@ -159,8 +159,10 @@ generated from the label:
   `assemblies/arm.py MODULES`) prints what to print (part, quantity, layer height) and what to buy (`PURCHASE_SPEC`, pieces =
   occurrences × `PURCHASE_QTY`, mass, vendor file or envelope), counted from the assembly tables. Purchased items that
   are **not modelled** are the one hand-kept table, `EXTRAS` in that tool (`assemblies/AGENTS.md`).
-- **STLs** — `./cadtool python tools/export_printables.py [--parts …]` writes `print/<name>.stl` for every printed part
-  (git-ignored, mm, part-local frame, with the quantity to print); bought parts are refused.
+- **Files to print** — `./cadtool python tools/export_printables.py [--parts …]` writes `print/<name>.step` for every
+  printed part (git-ignored, mm, part-local frame, with the quantity to print); bought parts are refused. STEP, not
+  STL: the slicer meshes the exact geometry itself. Anything else handed over to print (a fit plate, a copy in a
+  `print/` subfolder) goes out as STEP too; a mesh, when a tool needs one, is `./cadtool export <file.step> stl|3mf`.
 - **Layer height** — every printed part prints at `lib/params.py LAYER_H`, but a gear, a cycloidal disc or a timing
   pulley at `LAYER_H_FINE`: its module declares `FINE_LAYERS = True` (`parts.fine_layers()`, the print list's
   `layer_mm`, `tests/test_bom.py`). Fine layers smooth tooth and lobe flanks. A bearing seat printed upright gains
@@ -177,15 +179,14 @@ generated from the label:
   where a bought part meets a printed one (`print/gauges/`, one 3MF per plate; `lib/gauges`); the step that fits is the
   constant's value. A gauge prints at the layer height of the parts it tests - a fit printed on its side, whose parts
   print at both, at each. A part that adds a fit adds its `Use` to `lib/gauges/fits.py`.
-- **Printability** — before a printed part's first print, and after its geometry changes: `./cadtool cad stl dfm
-  print/<name>.stl --process printing --angle-limit 45` (watertight, wall thickness, overhang area, support volume;
+- **Printability** — before a printed part's first print, and after its geometry changes: `./cadtool cad step dfm
+  print/<name>.step --process printing --angle-limit 45` (wall thickness, overhang area, support volume, and what a
+  mesh check cannot judge: pins, embossed details, rounded edges on the plate, each finding's face named by its ref;
   45° is FDM's self-supporting angle in the `cad` skill's `references/manufacturing-printing.md`), and with
   `--candidates` the six axis-aligned build orientations ranked by support; `--json` gives the figures as `measurements`
-  and what they show as `findings`. The part's STEP takes the same check on its exact geometry, `./cadtool cad step dfm
-  parts/<group>/<name>.step --process printing --angle-limit 45` (same frame as its STL): it also judges what a mesh
-  cannot (pins, embossed details, rounded edges on the plate) and names each finding's face by its ref. The verdict is
-  the last line and the exit: `OK` (0), `FAILED` (1), `NOT CHECKED` (3, never a pass). A finding that holds up the
-  print is a row in `docs/open_issues.md`.
+  and what they show as `findings`. A mesh takes the same check as `./cadtool cad stl dfm <file.stl>` (watertightness
+  too). The verdict is the last line and the exit: `OK` (0), `FAILED` (1), `NOT CHECKED` (3, never a pass). A finding
+  that holds up the print is a row in `docs/open_issues.md`.
 - **Colours** — the grey of purchased parts in `arm.step` and every module's STEP; a printed part is ivory, or orange
   where it drives, turns or covers or is a small separate print (an idler's spacer, the plate a split part bolts to):
   its module then declares `ACCENT = True` (`parts.accent()`;
