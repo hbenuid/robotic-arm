@@ -161,7 +161,10 @@ class RollEndParams:
     rib_h: float = 20.0                   # [DESIGN] ... this high above the web at the wall
     flange_dia: float = 39.7              # [DESIGN] the pulley's spigot on its front face, in the wall's recess
     flange_recess_add: float = 0.3        # [DESIGN] PETG mating clearance on the recess diameter (Ø40.0)
-    flange_recess_depth: float = 2.0      # [DESIGN] a locating spigot, not a load path
+    flange_recess_depth: float = 2.0      # [DESIGN] a locating spigot, not a load path: the spigot's length
+    flange_recess_clear: float = 0.3      # [DESIGN] the recess this much deeper than the spigot is long: the wall bracket prints on
+    #                                       this face (WallSplitParams), so the recess's floor is a bridge - its sag must not hold
+    #                                       the spigot, the pulley's ring seats on the bed-flat face round it
     bolt_circle_dia: float = 31.0         # [DESIGN] 4x M3 on the axes (0 / 90 / 180 / 270 about the roll axis): through the pulley's spigot into
     #                                       its Ø44 core, the nuts in pockets from its bore (3 mm of the core outside them)
     bolt_count: int = 4

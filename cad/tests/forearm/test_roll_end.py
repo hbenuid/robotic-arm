@@ -177,7 +177,8 @@ def test_link_ends_at_the_wall_and_at_its_wrist_boss(link):
         assert not is_inside(link, R.wall_x[0] - 0.5, side * (apo - 0.5), w.z1 + 1.0)
         assert is_inside(link, R.wall_x[0] - 0.5, side * (apo - 0.5), w.z1 + 8.0)
     rr, rb = (R.flange_dia + R.flange_recess_add) / 2.0, R.cable_bore / 2.0
-    assert not is_inside(link, x_face - 1.0, 0, 25 + rr - 1.0) and is_inside(link, x_face - 3.0, 0, 25 + rr - 1.0)   # the spigot recess, 2 deep
+    depth = R.flange_recess_depth + R.flange_recess_clear                     # the spigot recess, past the spigot's length
+    assert not is_inside(link, x_face - depth + 0.1, 0, 25 + rr - 1.0) and is_inside(link, x_face - depth - 0.1, 0, 25 + rr - 1.0)
     assert not is_inside(link, xm, 0, 25) and not is_inside(link, xm, 0, 25 + rb - 1.0)               # the cable bore
     assert is_inside(link, xm, 0, 25 + rb + 1.5)
     # every screw goes in from the wrist side: its head's room behind the wall is open, over the web (the bottom one's

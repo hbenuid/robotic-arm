@@ -73,7 +73,8 @@ def roll_wall(cfg: ForearmConfig = DEFAULT):
     x0, x1 = r.wall_x
     axis = (0.0, r.axis_z)
     wall = yz_prism(wall_outline(cfg), x0, x1)
-    wall = wall - x_cylinder((r.flange_dia + r.flange_recess_add) / 2.0, r.flange_recess_depth + NUDGE, axis, x1 - r.flange_recess_depth)
+    depth = r.flange_recess_depth + r.flange_recess_clear
+    wall = wall - x_cylinder((r.flange_dia + r.flange_recess_add) / 2.0, depth + NUDGE, axis, x1 - depth)
     wall = wall - x_cylinder(r.cable_bore / 2.0, x1 - x0 + 2 * NUDGE, axis, x0 - NUDGE)
     for yz in flange_bolt_points(cfg):
         wall = wall - x_cylinder(r.bolt_dia / 2.0, x1 - x0 + 2 * NUDGE, yz, x0 - NUDGE)
