@@ -2,6 +2,12 @@
 lib/forearm/link.py build_link(cfg), in the SolidWorks part frame - origin on the elbow pivot, the wrist pivot at
 x = WebParams.wrist_x, +Z = N toward the motor-body side).
 
+DEFAULT prints in two parts (lib/forearm/params.py WallSplitParams): this part is the web, printed on its underside -
+the wall, its gussets and the web's top half over the wall's first lap_x are parts/joints/j2_wall_bracket, lapped onto
+the web's stepped-down end by 3 M3 up from the web's underside (parts/joints/wall_bracket_screws, the heads flush in
+counterbores) and the wrist motor's two front screws. What follows describes the whole forearm (lib/forearm/link.py
+_build_whole), both parts together.
+
 Elbow end (DEFAULT, the forearm roll): the flange wall at x -56..-48 - a faceted flange on the roll axis (y 0, z 25
 = the capture's wrist centre N-station, flats RollEndParams.wall_od across, whole all round under the roll pulley's
 ring, its corners inside the roll tensioner's screw head's path as the forearm rolls), its bottom flat level with the
@@ -18,8 +24,9 @@ boss and the wrist with it: -5..6), with the wrist-pitch motor's seat - in LEGAC
 central 20 mm slot for the pilot boss, two 3.2 mm side slots for the 31 mm bolt square), in DEFAULT round holes
 (lib/forearm/params.py MotorHoleParams) WRIST_MOTOR_CENTRES from the wrist, the 31 mm square's counterbored in the
 underside for the motor's 4x M3 (wrist_motor_screws, heads flush); lib/mounts.py places nema17_40mm#3 on it -,
-in DEFAULT the wrist belt's idler mount beside it (a rib under the web, an M5 slot along y through both, the nut's
-channel down from the top face - lib/forearm/params.py IdlerParams) and, in LEGACY only,
+in DEFAULT the wrist belt's idler mount beside it (an M5 slot along y through the web, the idler hung under it on a
+printed spacer - parts/joints/wrist_idler_spacer -, the nut's channel down from the top face - lib/forearm/params.py
+IdlerParams) and, in LEGACY only,
 the Ø5.18 x 2 locating sockets of the removed caps (j2_cap_1 / j2_cap_2, gone 2026-09-25). Wrist end: the boss with the
 Ø42.2 wrist_pitch bearing seat (lipped) - LEGACY Ø90 with the Ø80 recess j3_coupler's flange dips into, DEFAULT as wide
 as the web (its round end), ending at the seat's top, wrist_link's flange post reaching into the seat's bore, no recess. Every number:

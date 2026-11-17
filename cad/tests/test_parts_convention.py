@@ -51,6 +51,8 @@ MULTI_BODY = {
     # the screws + nuts that hold j1_coupler on its plate (lib/mounts.py SPLIT_MOUNTS)
     "coupler_plate_screws": 4,
     "coupler_plate_nuts": 4,
+    "wall_bracket_screws": 3,
+    "wall_bracket_nuts": 3,
     # the base motor mount's M4 screws + nuts (lib/mounts.py BASE_MOUNTS)
     "base_motor_mount_screws": 4,
     "base_motor_mount_nuts": 4,

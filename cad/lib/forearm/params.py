@@ -190,23 +190,53 @@ class IdlerParams:
     """[DESIGN] The wrist belt's tensioner (cad/AGENTS.md "Belts"): a smooth GT2 idler (parts/joints/gt2_idler_20t) on the
     belt's back, the stock wrist_belt being longer than the open loop at WRIST_MOTOR_CENTRES: the idler pushes the run
     leaving the motor's 20T into the loop until the belt fits (lib/belts.py idler_on_run, lib/forearm/layout.py
-    wrist_idler_xy). It hangs under the web, level with the belt, on an M5 SHCS up from under it
-    (parts/joints/wrist_idler_screw) through a rib under the web - the idler's top bears on it - and a slot through both,
-    along y between slot_y's ends; into the nut (parts/joints/wrist_idler_nut) held flats-on in a channel down from the
-    web's top face, under the motor's edge (the nut slides with the screw and cannot turn: the screw is turned from
-    below)."""
+    wrist_idler_xy). It hangs under the web, level with the belt, under a printed spacer (parts/joints/wrist_idler_spacer:
+    j2_link prints on its web's underside, so no rib grows from it - the spacer's riser stands on it, its land on the
+    idler's bearing inner ring, as on the elbow and base_yaw), on an M5 SHCS up from under it
+    (parts/joints/wrist_idler_screw) through the idler, the spacer and a slot through the web, along y between slot_y's
+    ends; into the nut (parts/joints/wrist_idler_nut) held flats-on in a channel down from the web's top face, under the
+    motor's edge (the nut slides with the screw and cannot turn: the screw is turned from below)."""
 
     along: float = 24.0                   # its axis this far from the motor's along the belt's run toward the wrist: the nut's channel
     #                                       between the motor's pilot hole and the wrist boss
     slot_y: tuple = (4.7, 21.0)           # its axis' range along y, the slots' end centres: in 4 past the stock belt's place (a stretched
     #                                       belt), out 1 past just touching the open loop's strand (the belt goes on slack)
-    rib_w: float = 7.0                    # [ESTIMATE] the rib's width: the idler's bearing inner ring only (the seller's drawing shows no bearing)
-    slot_w: float = M5_CLEAR              # the axle's slot through the rib and the web
+    riser_dia: float = 12.0               # the spacer's riser, on the web's underside (as ElbowIdlerParams.riser_dia) ...
+    land_dia: float = 7.0                 # [ESTIMATE] ... its land on the idler's bearing inner ring only (the seller's drawing shows no bearing)
+    land_h: float = 1.0                   # the land over the riser: the idler's flange clear of the riser
+    slot_w: float = M5_CLEAR              # the axle's slot through the web, the spacer's bore
     screw: ShcsSize = M5_SHCS             # [DATASHEET] ISO 4762 M5 (parts/joints/wrist_idler_screw)
     screw_len: float = 20.0               # [DESIGN] M5 x 20: from its head under the idler through the nut, its tip under the motor's face
     nut: NutSize = M5_NUT                 # [DATASHEET] ISO 4032 M5 (parts/joints/wrist_idler_nut)
     nut_fit: float = 0.2                  # [DESIGN] the channel: the nut's flats + this
     nut_floor: float = -2.0               # [DESIGN] the channel's floor (the nut's bearing face): 3 of web under it (DEFAULT's web)
+
+
+@dataclass(frozen=True)
+class WallSplitParams:
+    """[DESIGN] j2_link printed in two parts (lib/forearm/link.py build_link, build_wall_bracket): whole, the roll wall
+    stands upright on the web while the wrist boss lies flat on it, so one of their round features always prints on its
+    side. The WALL BRACKET (parts/joints/j2_wall_bracket) is the wall, its two gussets and a tongue - the web's top half
+    (above the web's mid-plane, lib/forearm/layout.py lap_z) from the wall's wrist face to lap_x - and prints on the
+    wall's elbow face; j2_link keeps the rest, the web with its end stepped down under the tongue, and prints on its
+    underside: every round feature of both stands upright as it prints. The lap is held by screws up from the web's
+    underside (parts/joints/wall_bracket_screws, the heads flush in counterbores) into nuts in hex pockets in the
+    tongue's top face (parts/joints/wall_bracket_nuts), and by the wrist motor's two front screws, which pass through
+    it; the web's lower half bears on the wall's wrist face below the tongue."""
+
+    lap_x: float = -72.5                  # the tongue's end, the web's step: midway between the wrist motor's front bolt holes'
+    #                                       far edge (x -71.2: they run through both halves) and its pilot hole (x -73.85)
+    screw_points: tuple = ((-61.0, 8.0), (-61.0, -8.0), (-67.0, 0.0))   # (x, y) in j2_link's frame: where the web is whole
+    #                                       (the wall's corner facets thin its lower half past |y| 12.4 at the wall) - two by the
+    #                                       wall either side of the wall's bottom screw, the third under the motor's face
+    screw: ShcsSize = M3_SHCS             # [DATASHEET] ISO 4762 M3, the heads in counterbores head_h deep: flush with the underside
+    screw_len: float = 8.0                # [DESIGN] M3 x 8: from the counterbore's floor through both halves, the tip flush with the
+    #                                       tongue's top face, through the whole nut
+    head_dia: float = MOTOR_40.motor_bolt_head_dia + PETGTolerances().bolt_clearance_add   # 5.7 [DESIGN] the counterbores: the
+    #                                       wrist motor's screws' beside them (MotorHoleParams.pocket_dia)
+    bolt_dia: float = M3_CLEAR            # 3.4, through both halves
+    nut: NutSize = M3_NUT                 # [DATASHEET] ISO 4032 M3 (parts/joints/wall_bracket_nuts)
+    nut_fit: float = 0.2                  # [DESIGN] the hex pockets: the nut's flats + this, a corner along x (up as the bracket prints)
 
 
 @dataclass(frozen=True)
@@ -244,7 +274,7 @@ class RollIdlerParams:
     #                                       nut's channel 5.3 off the motor's pocket, the idler 3.7 off the ring's flange
     travel: float = 3.0                   # +/- along module X (the push): the riser's slot and the nut's channel
     riser_w: float = 12.0                 # the riser's width across its slot (3.25 of wall either side of the M5)
-    land_w: float = 7.0                   # [ESTIMATE] the land on the riser's top: the idler's bearing inner ring only (IdlerParams.rib_w)
+    land_w: float = 7.0                   # [ESTIMATE] the land on the riser's top: the idler's bearing inner ring only (IdlerParams.land_dia)
     land_h: float = 1.0                   # the land over the riser: the idler's flange clear of the riser
     slot_w: float = M5_CLEAR              # the axle's slot through the land, the riser and the plate, on down past its tip
     screw: ShcsSize = M5_SHCS             # [DATASHEET] ISO 4762 M5 (parts/joints/roll_idler_screw), its head on the idler's top
@@ -655,6 +685,7 @@ class ForearmConfig:
     roll_turn_deg: float = 0.0             # the forearm and everything beyond it turned this far about the roll axis (j2_link's +X) from the
     #                                        capture (lib/placements.py TURNS); the roll drive keeps its pose
     home: WristHomeParams | None = None    # DEFAULT: the wrist_pitch home sensor's clip over the wrist boss's end
+    split: WallSplitParams | None = None   # DEFAULT: printed in two parts, the wall bracket lapped onto the web (None: one part)
 
 
 LEGACY = ForearmConfig()     # the SolidWorks part, exactly
@@ -711,4 +742,5 @@ DEFAULT = replace(
     elbow_inset=ELBOW_INSET,                          # [DESIGN] 5: the roll frame 6.0 over j1_link's flat top
     roll_turn_deg=180.0,                              # [DESIGN] the wrist-pitch motor on the other side of the forearm
     home=WristHomeParams(),
+    split=WallSplitParams(),                          # [DESIGN] the wall bracket on a lap: every round feature upright as it prints
 )

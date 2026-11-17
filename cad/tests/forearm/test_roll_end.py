@@ -15,7 +15,7 @@ from build123d import Box, Location
 
 from lib import mounts
 from lib import params as PARAMS
-from lib.belts import GT2_IDLER_WIDTH, GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, closed_belt_length
+from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, closed_belt_length
 from lib.datum import to_location
 from lib.forearm import DEFAULT, LEGACY, flange_bolt_points, link_socket_points, screws_under_the_web
 from lib.forearm.params import BOSS_TRIM, PULLEY_90T, SHORTENING, WEB_DROP, WRIST_MOTOR_CENTRES, RollEndParams
@@ -29,8 +29,7 @@ from lib.motors import (
     NEMA17_40_CONNECTOR_Z1,
 )
 from lib.style import COVER_CLEAR, COVER_WALL, EDGE_CHAMFER, SIDES
-from tests import built
-from tests.forearm.helpers import in_host
+from tests.forearm.helpers import forearm, in_host
 from tests.helpers import interference, is_inside
 
 R = DEFAULT.roll_end
@@ -115,7 +114,8 @@ def test_the_straight_web_the_wall_and_its_gussets():
 
 @pytest.fixture(scope="module")
 def link():
-    return built.part("j2_link")
+    """The whole forearm: j2_link and its wall bracket, printed apart (lib/forearm/params.py WallSplitParams)."""
+    return forearm()
 
 
 @pytest.mark.slow
@@ -124,9 +124,9 @@ def test_link_ends_at_the_wall_and_at_its_wrist_boss(link):
     assert link.is_valid and len(link.solids()) == 1
     bb = link.bounding_box()
     assert math.isclose(bb.max.X, R.wall_x[1], abs_tol=1e-6) and math.isclose(bb.min.X, w.wrist_x - w.half_w, abs_tol=1e-6)
-    # lowest: the wrist idler's rib (from the idler's top face up to the web), under the wall's bottom flat
-    z_rib = R.wrist_belt_z + GT2_IDLER_WIDTH / 2.0
-    assert math.isclose(bb.min.Z, z_rib, abs_tol=1e-6) and z_rib < R.axis_z - R.wall_od / 2.0
+    # lowest: the web's underside, level with the wall's bottom flat (no rib under it: the wrist idler hangs under a
+    # printed spacer, the web prints on its underside)
+    assert math.isclose(bb.min.Z, w.z0, abs_tol=1e-6) and math.isclose(w.z0, R.axis_z - R.wall_od / 2.0, abs_tol=1e-6)
     assert math.isclose(bb.max.Z, R.axis_z + R.wall_od / 2.0, abs_tol=1e-6)
     assert math.isclose(bb.max.Y, w.half_w, abs_tol=1e-6) and math.isclose(bb.min.Y, -w.half_w, abs_tol=1e-6)
     # the wrist end: faceted, as wide as the web (its end, diagonal and side flats); the boss's top the seat's top; the seat below and above the lip
@@ -188,7 +188,9 @@ def test_link_ends_at_the_wall_and_at_its_wrist_boss(link):
         for dy, dz in ((0.0, 0.0), (head_r, 0.0), (-head_r, 0.0), (0.0, head_r), (0.0, -head_r)):
             assert not is_inside(link, R.wall_x[0] - 1.0, y + dy, z + dz)
             assert not is_inside(link, R.wall_x[0] - R.screw.head_h - 1.0, y + dy, z + dz)
-    xc = (DEFAULT.motor_x + DEFAULT.holes.pilot_dia / 2.0 + R.wall_x[0]) / 2.0     # between the pilot hole and the wall
+    s = DEFAULT.split                                                              # the lap's middle screw, on y = 0
+    x_lap = max(x for x, y in s.screw_points if y == 0.0) + s.head_dia / 2.0
+    xc = (x_lap + R.wall_x[0]) / 2.0                     # between the lap's middle screw's counterbore and the wall
     for z in (w.z0 + 0.3, zm, w.z1 - 0.3):
         assert is_inside(link, xc, 0, z) and is_inside(link, R.wall_x[0] - 1.0, 0, z)                     # no channel
     assert not is_inside(link, R.wall_x[0] - 1.0, 0, w.z1 + 0.3)
@@ -224,5 +226,5 @@ def test_wrist_motor_plug_room_is_clear():
     frame = to_location(mounts.BY_KEY["nema17_40mm#3"].frame)
     room = Box(NEMA17_40_CONNECTOR_W, R.plug_clearance, NEMA17_40_CONNECTOR_Z1 - NEMA17_40_CONNECTOR_Z0).moved(
         frame * Location((0.0, -out - R.plug_clearance / 2.0, (NEMA17_40_CONNECTOR_Z0 + NEMA17_40_CONNECTOR_Z1) / 2.0)))
-    for key, other in (("j2_link", built.part("j2_link")), ("mks_servo42d#3", in_host("mks_servo42d#3"))):
+    for key, other in (("the forearm", forearm()), ("mks_servo42d#3", in_host("mks_servo42d#3"))):
         assert interference(room, other) == 0.0 and room.distance_to(other) > 1.0, key

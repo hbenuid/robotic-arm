@@ -169,6 +169,28 @@ def wrist_idler_xy(cfg: ForearmConfig = DEFAULT) -> tuple[float, float]:
     return (cfg.motor_x - x, -y)
 
 
+def wrist_idler_spacer_h(cfg: ForearmConfig = DEFAULT) -> float:
+    """The wrist idler's printed spacer's height (IdlerParams): from the idler's top face, level with the belt, up to the
+    web's underside."""
+    return round(cfg.web.z0 - (cfg.roll_end.wrist_belt_z + GT2_IDLER_WIDTH / 2.0), 6)
+
+
+def lap_z(cfg: ForearmConfig = DEFAULT) -> float:
+    """The split's lap plane (WallSplitParams): the web's mid-plane - the tongue above it, the web's end below it."""
+    return round((cfg.web.z0 + cfg.web.z1) / 2.0, 6)
+
+
+def lap_screw_head_z(cfg: ForearmConfig = DEFAULT) -> float:
+    """The lap screws' heads' bearing face (WallSplitParams): the counterbores' floor, head_h up from the web's underside."""
+    return round(cfg.web.z0 + cfg.split.screw.head_h, 6)
+
+
+def lap_nut_z(cfg: ForearmConfig = DEFAULT) -> float:
+    """The lap nuts' bearing face (WallSplitParams): their pockets' floor, the nut's height under the web's top face (the
+    nut flush with it)."""
+    return round(cfg.web.z1 - cfg.split.nut.h, 6)
+
+
 def module_frame_in_host(cfg: ForearmConfig = DEFAULT) -> tuple:
     """The roll drive's module frame as data in j2_link's frame before the forearm's turn (lib/mounts.py ModuleMount,
     roll_turn_deg - the elbow side's view of the forearm: the drive keeps its pose, j2_link turns about the roll axis):

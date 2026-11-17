@@ -567,7 +567,7 @@ def test_module_clears_its_neighbours_in_the_arm():
     module's, ELBOW_MOTOR_CENTRES from the elbow axis - turned about it over the elbow's range stay 1 mm off the whole
     module (lib/params.py ELBOW_PITCH_LIMITS_DEG: the lower limit keeps room to spare)."""
     module = _placed_module()
-    for key, other in (("j2_link", j2_link_in_drive_frame()), ("j1_link#1", in_drive_frame("j1_link#1"))):
+    for key, other in (("the forearm", j2_link_in_drive_frame()), ("j1_link#1", in_drive_frame("j1_link#1"))):
         vol = interference(module, other)
         assert vol < 1.0, f"module x {key}: {vol:.1f} mm^3"
     flange = _placed_part("elbow_flange")
@@ -616,14 +616,14 @@ def _radii(shape, axis_z: float) -> list[float]:
 
 @pytest.mark.slow
 def test_forearm_clears_the_elbow_while_rolling():
-    """j2_link rolls about the roll axis (host: through (0, 0, axis_z) along -X), which keeps every point's x and its
-    distance from the axis: the whole link ends at its wall's elbow face, and the upper arm's round end, the elbow pulley
+    """The forearm (j2_link with its wall bracket) rolls about the roll axis (host: through (0, 0, axis_z) along -X),
+    which keeps every point's x and its distance from the axis: the whole link ends at its wall's elbow face, and the upper arm's round end, the elbow pulley
     and the stator's parts (the frame, the board, the 20T, the belt, the tensioner's idler and nut) lie beyond that plane,
     so no roll angle brings them together. The roll motor's shaft and the tensioner's screw head pass the plane: in the
     slab they share with the link, the link stays inside a radius about the roll axis that they stay 2 mm outside."""
     link = j2_link_in_drive_frame()
     plane, axis_z = link.bounding_box().max.X, DEFAULT.roll_end.axis_z
-    assert plane == pytest.approx(DEFAULT.roll_end.wall_x[1], abs=1e-6), f"j2_link reaches x {plane:.2f}, past its wall"
+    assert plane == pytest.approx(DEFAULT.roll_end.wall_x[1], abs=1e-6), f"the forearm reaches x {plane:.2f}, past its wall"
     others = {key: in_drive_frame(key) for key in ("j1_link#1", "gt2_pulley_90t#3")}
     others |= {label: _placed_part(label) for label in ("forearm_roll_block", "mks_servo42d:forearm_roll", "gt2_pulley_20t:forearm_roll",
                                                         "forearm_roll_belt:forearm_roll", "gt2_idler_20t:forearm_roll", "roll_idler_nut")}

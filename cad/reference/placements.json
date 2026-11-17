@@ -11,9 +11,9 @@
  "frames": "rel = relative to the parent node (what assemblies/*.py compose); world = arm frame. A record with a `mount` block (keys under `mounted`) is a motor mount declared in lib/mounts.py, not a SolidWorks node: parent None, rel == world = host world * mount frame.",
  "root_label": "final_Arm_Assembly_Fully_Movable",
  "expected": {
-  "leaf_occurrences": 93,
-  "solids": 227,
-  "solid_volume": 2390911.381
+  "leaf_occurrences": 97,
+  "solids": 235,
+  "solid_volume": 2418209.951
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -29,6 +29,9 @@
   "j1_coupler_plate#1",
   "coupler_plate_screws#1",
   "coupler_plate_nuts#1",
+  "j2_wall_bracket#1",
+  "wall_bracket_screws#1",
+  "wall_bracket_nuts#1",
   "fork_hub_screws#1",
   "fork_hub_nuts#1",
   "fork_foot_screws#1",
@@ -80,6 +83,7 @@
   "yaw_idler_screw#1",
   "yaw_idler_nut#1",
   "gt2_idler_20t#3",
+  "wrist_idler_spacer#1",
   "wrist_idler_screw#1",
   "wrist_idler_nut#1",
   "ky003_hall_sensor#1",
@@ -1842,6 +1846,315 @@
     34.851,
     3.2,
     52.701
+   ]
+  },
+  {
+   "key": "j2_wall_bracket#1",
+   "part": "j2_wall_bracket",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j2_link#1",
+    "link": "forearm_link",
+    "joint": "wrist_pitch",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the forearm's wall (the roll pulley bolts onto it), its gussets and the tongue lapped onto j2_link's web; built in j2_link's part frame"
+   },
+   "solids": 1,
+   "solid_volume": 26587.21,
+   "rel": {
+    "position": [
+     -57.901212,
+     260.986268,
+     45.82614
+    ],
+    "rotation_xyz_deg": [
+     180.0,
+     -3.694455,
+     46.997641
+    ],
+    "matrix_3x4": [
+     [
+      0.680611114,
+      -0.729805829,
+      -0.064435731,
+      -57.90121177
+     ],
+     [
+      -0.731325626,
+      -0.682028466,
+      -0.0,
+      260.986268457
+     ],
+     [
+      -0.043947003,
+      0.047123501,
+      -0.997921859,
+      45.826139781
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -57.901212,
+     260.986268,
+     45.82614
+    ],
+    "rotation_xyz_deg": [
+     180.0,
+     -3.694455,
+     46.997641
+    ],
+    "matrix_3x4": [
+     [
+      0.680611114,
+      -0.729805829,
+      -0.064435731,
+      -57.90121177
+     ],
+     [
+      -0.731325626,
+      -0.682028466,
+      -0.0,
+      260.986268457
+     ],
+     [
+      -0.043947003,
+      0.047123501,
+      -0.997921859,
+      45.826139781
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -138.715,
+    275.629,
+    -7.536
+   ],
+   "world_bbox_size": [
+    69.228,
+    68.712,
+    61.398
+   ]
+  },
+  {
+   "key": "wall_bracket_screws#1",
+   "part": "wall_bracket_screws",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j2_link#1",
+    "link": "forearm_link",
+    "joint": "wrist_pitch",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      0.0,
+      -2.0
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the wall bracket onto j2_link: 3x M3 x screw_len, the heads flush in the counterbores in the web's underside, up through the web's end and the bracket's tongue"
+   },
+   "solids": 3,
+   "solid_volume": 362.361,
+   "rel": {
+    "position": [
+     -57.77234,
+     260.986268,
+     47.821983
+    ],
+    "rotation_xyz_deg": [
+     180.0,
+     -3.694455,
+     46.997641
+    ],
+    "matrix_3x4": [
+     [
+      0.680611114,
+      -0.729805829,
+      -0.064435731,
+      -57.772340308
+     ],
+     [
+      -0.731325626,
+      -0.682028466,
+      -0.0,
+      260.986268458
+     ],
+     [
+      -0.043947003,
+      0.047123501,
+      -0.997921859,
+      47.821983499
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -57.77234,
+     260.986268,
+     47.821983
+    ],
+    "rotation_xyz_deg": [
+     180.0,
+     -3.694455,
+     46.997641
+    ],
+    "matrix_3x4": [
+     [
+      0.680611114,
+      -0.729805829,
+      -0.064435731,
+      -57.772340308
+     ],
+     [
+      -0.731325626,
+      -0.682028466,
+      -0.0,
+      260.986268458
+     ],
+     [
+      -0.043947003,
+      0.047123501,
+      -0.997921859,
+      47.821983499
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -107.872,
+    297.391,
+    42.046
+   ],
+   "world_bbox_size": [
+    17.359,
+    16.412,
+    12.005
+   ]
+  },
+  {
+   "key": "wall_bracket_nuts#1",
+   "part": "wall_bracket_nuts",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "wall_bracket_screws#1",
+    "link": "forearm_link",
+    "joint": "wrist_pitch",
+    "frame_in_host": {
+     "position": [
+      0.0,
+      0.0,
+      5.6
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "the lap screws' nuts in the hex pockets in the tongue's top face, flush, a corner along j2_link's x"
+   },
+   "solids": 3,
+   "solid_volume": 137.727,
+   "rel": {
+    "position": [
+     -58.13318,
+     260.986268,
+     42.233621
+    ],
+    "rotation_xyz_deg": [
+     180.0,
+     -3.694455,
+     46.997641
+    ],
+    "matrix_3x4": [
+     [
+      0.680611114,
+      -0.729805829,
+      -0.064435731,
+      -58.133180402
+     ],
+     [
+      -0.731325626,
+      -0.682028466,
+      -0.0,
+      260.986268457
+     ],
+     [
+      -0.043947003,
+      0.047123501,
+      -0.997921859,
+      42.233621089
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -58.13318,
+     260.986268,
+     42.233621
+    ],
+    "rotation_xyz_deg": [
+     180.0,
+     -3.694455,
+     46.997641
+    ],
+    "matrix_3x4": [
+     [
+      0.680611114,
+      -0.729805829,
+      -0.064435731,
+      -58.133180402
+     ],
+     [
+      -0.731325626,
+      -0.682028466,
+      -0.0,
+      260.986268457
+     ],
+     [
+      -0.043947003,
+      0.047123501,
+      -0.997921859,
+      42.233621089
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -108.731,
+    297.104,
+    41.943
+   ],
+   "world_bbox_size": [
+    18.007,
+    16.986,
+    3.548
    ]
   },
   {
@@ -7098,6 +7411,109 @@
    ]
   },
   {
+   "key": "wrist_idler_spacer#1",
+   "part": "wrist_idler_spacer",
+   "kind": "part",
+   "path": null,
+   "parent": null,
+   "label_in_monolith": null,
+   "mount": {
+    "host": "j2_link#1",
+    "link": "forearm_link",
+    "joint": "wrist_pitch",
+    "frame_in_host": {
+     "position": [
+      -109.0,
+      8.693028,
+      -8.2
+     ],
+     "rotation_xyz_deg": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "source": "lib/mounts.py",
+    "note": "its printed spacer: the land on the idler's inner ring, the riser on the web's underside"
+   },
+   "solids": 1,
+   "solid_volume": 211.272,
+   "rel": {
+    "position": [
+     -137.903673,
+     334.771869,
+     59.208968
+    ],
+    "rotation_xyz_deg": [
+     180.0,
+     -3.694455,
+     46.997641
+    ],
+    "matrix_3x4": [
+     [
+      0.680611114,
+      -0.729805829,
+      -0.064435731,
+      -137.903672745
+     ],
+     [
+      -0.731325626,
+      -0.682028466,
+      -0.0,
+      334.771869194
+     ],
+     [
+      -0.043947003,
+      0.047123501,
+      -0.997921859,
+      59.208968247
+     ]
+    ]
+   },
+   "world": {
+    "position": [
+     -137.903673,
+     334.771869,
+     59.208968
+    ],
+    "rotation_xyz_deg": [
+     180.0,
+     -3.694455,
+     46.997641
+    ],
+    "matrix_3x4": [
+     [
+      0.680611114,
+      -0.729805829,
+      -0.064435731,
+      -137.903672745
+     ],
+     [
+      -0.731325626,
+      -0.682028466,
+      -0.0,
+      334.771869194
+     ],
+     [
+      -0.043947003,
+      0.047123501,
+      -0.997921859,
+      59.208968247
+     ]
+    ]
+   },
+   "world_bbox_min": [
+    -144.097,
+    328.772,
+    55.629
+   ],
+   "world_bbox_size": [
+    12.117,
+    12.0,
+    3.805
+   ]
+  },
+  {
    "key": "wrist_idler_screw#1",
    "part": "wrist_idler_screw",
    "kind": "part",
@@ -7121,7 +7537,7 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "its M5 axle: the head under the idler, up through the idler, the rib and the web's slot into the nut"
+    "note": "its M5 axle: the head under the idler, up through the idler, the spacer and the web's slot into the nut"
    },
    "solids": 1,
    "solid_volume": 641.783,
