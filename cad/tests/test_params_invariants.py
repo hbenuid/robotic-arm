@@ -233,7 +233,8 @@ def test_cycloidal_dead_params_gone():
 def test_the_elbow_flange_repeats_the_retired_coupler():
     """The forearm roll drive's elbow flange (its own part on the block) took the elbow coupler's place
     (lib/coupler/params.py, the part retired): it repeats the coupler's stub, its journal (carried up: the post) and the 90T's bolt circle at the elbow, and DEFAULT's
-    inner-ring shoulder and longer stub - DEFAULT adds exactly those two things to the SolidWorks part."""
+    inner-ring shoulder and longer stub - DEFAULT adds exactly those two things to the SolidWorks part. The stub is
+    the 0.20 journal's measured press (lib/bearings.py BEARING_6806_JOURNAL), where the coupler's was the bore."""
     from dataclasses import replace
 
     from lib.coupler import DEFAULT as COUPLER
@@ -241,7 +242,8 @@ def test_the_elbow_flange_repeats_the_retired_coupler():
     from lib.forearm import DEFAULT as FOREARM
 
     d = FOREARM.drive
-    assert (d.stub_dia, d.post_dia, d.pulley_bolt_r) == (LEGACY.stub_dia, LEGACY.journal_dia, LEGACY.pulley_bolt_r)
+    assert (d.post_dia, d.pulley_bolt_r) == (LEGACY.journal_dia, LEGACY.pulley_bolt_r) and LEGACY.stub_dia == p.BEARING_6806_BORE
+    assert d.stub_dia == p.BEARING_6806_JOURNAL
     assert LEGACY.step is None and COUPLER.step[0] == d.step_dia
     assert math.isclose(d.step_x[1] - d.step_x[0], COUPLER.step[1] - COUPLER.journal_y1, abs_tol=1e-9)
     assert math.isclose(d.stub_x[1] - d.stub_x[0], COUPLER.stub_y1 - COUPLER.step[1], abs_tol=1e-9)
@@ -252,7 +254,8 @@ def test_the_elbow_flange_repeats_the_retired_coupler():
 def test_the_6806_pair_fits_every_belt_joint_bore():
     """lib/bearings.py against the three bores it goes in (base_yaw, elbow_pitch, wrist_pitch) and the stubs in it:
     every seat takes the OD and is at least a bearing deep each side of the lip, every lip clears the inner rings,
-    every stub is the bore and every shoulder bears on the inner ring only."""
+    every stub is a 0.20 journal's measured press in it (the retired coupler's was the bore) and every shoulder bears on
+    the inner ring only."""
     from lib.base import DEFAULT as BASE
     from lib.coupler import DEFAULT as COUPLER
     from lib.forearm import DEFAULT as FOREARM
@@ -261,7 +264,7 @@ def test_the_6806_pair_fits_every_belt_joint_bore():
 
     bore, od, width, shoulder = p.BEARING_6806_BORE, p.BEARING_6806_OD, p.BEARING_6806_WIDTH, p.BEARING_6806_SHOULDER_DIA
     assert bore < shoulder < od and p.BEARING_6806_MASS_G > 0
-    assert COUPLER.stub_dia == FOREARM.drive.stub_dia == YAW_COUPLER.hub.stub_dia == bore
+    assert COUPLER.stub_dia == bore and FOREARM.drive.stub_dia == YAW_COUPLER.hub.stub_dia == p.BEARING_6806_JOURNAL > bore
     assert COUPLER.step[0] == FOREARM.drive.step_dia == shoulder
     e, w, b, c = UPPER_ARM.elbow, FOREARM.web, FOREARM.boss, BASE.bore
     seats = [(e.bore_dia, e.lip_y[1], e.recess_y), (e.seat_dia, e.y0, e.lip_y[0]),              # j1_link: upper, lower

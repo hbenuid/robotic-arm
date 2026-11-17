@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from lib.base.params import DEFAULT as BASE
 from lib.cycloidal.layout import ring_pin_hole_dia
 from lib.cycloidal.params import DEFAULT_CONFIG as DRIVE
-from lib.fasteners import M3_CLEAR, M4_CLEAR, M4_NUT, M5_CLEAR, M5_NUT
+from lib.fasteners import M3_CLEAR, M4_CLEAR, M4_CLEAR_UPRIGHT, M4_NUT, M5_CLEAR, M5_NUT
 from lib.forearm.params import DEFAULT as FOREARM
 from lib.gauges.coupons import REACH, STEP, sweep
 from lib.gripper.params import DEFAULT as GRIPPER
@@ -108,11 +108,11 @@ GAUGES = (
         Use(PULLEY.hub_dia, "the 90T / 120T hubs (firm press, 0.16: measured)"),
         Use(_ROLL.pulley_journal_dia, "forearm_roll_pulley (firm press, 0.16: measured)"),
         Use(_WROLL.pulley_journal_dia, "wrist_roll_pulley (firm press, 0.16: measured)"),
-        Use(YAW_COUPLER.hub.stub_dia, "j1_coupler_plate's stub (line to line)"),
-        Use(_ROLL.stub_dia, "elbow_flange's stub (line to line)"),
-        Use(WRIST.flange.stub_dia, "wrist_flange's stub (line to line)"),
-        Use(_ROLL.bearing_bore + _ROLL.journal_add, "forearm_roll_shaft (press)"),
-        Use(_WROLL.bearing_bore + _WROLL.journal_add, "wrist_roll_shaft (press)")),
+        Use(YAW_COUPLER.hub.stub_dia, "j1_coupler_plate's stub (firm press, 0.20: measured)"),
+        Use(_ROLL.stub_dia, "elbow_flange's stub (firm press, 0.20: measured)"),
+        Use(WRIST.flange.stub_dia, "wrist_flange's stub (firm press, 0.20: measured)"),
+        Use(_ROLL.bearing_bore + _ROLL.journal_add, "forearm_roll_shaft (firm press, 0.20: measured)"),
+        Use(_WROLL.bearing_bore + _WROLL.journal_add, "wrist_roll_shaft (firm press, 0.20: measured)")),
         (("height", 5.0), ("spacing", 37.0), ("bore", 24.0)), note="Rings 5 mm tall, a 6806 over one at a time."),
     Gauge("boss17", "journals", "Ø17 journal: the 6003s' inner race", "6003 BORE", "peg_strip", (
         Use(_D.shaft.bearing_seat_od, "cycloidal_eccentric_shaft's lobes (light press)"),),
@@ -162,11 +162,13 @@ GAUGES = (
         Use(M3_CLEAR, "every other M3")),
         (("depth", 4.0),), note="The same holes printed sideways."),
     Gauge("m4", "screws", "M4 clearance holes", "M4 HOLE", "hole_strip", (
-        Use(M4_CLEAR, "the housing, fork and gearbox screws"),
+        Use(M4_CLEAR_UPRIGHT, "upright at 0.20: the housing, coupler-plate, motor-leg foot, gearbox and flange screws "
+                              "(snug, 0.20: measured)"),
         Use(PULLEY.hole_dia, "gt2_pulley_90t, gt2_pulley_120t (snug, 0.16: measured)")),
         (("depth", 5.0), ("width", 4.5), ("floor", 0.0), ("through", True)), note="Through 5."),
     Gauge("m4s", "screws", "M4 clearance holes, sideways", "M4 HOLE SIDE", "side_strip", (
-        Use(M4_CLEAR, "the base's and base_motor_mount's posts, the motor plate's sleeve (printed sideways)"),),
+        Use(M4_CLEAR, "the base's and base_motor_mount's posts, the motor plate's sleeve, j1_coupler's fork bolts, "
+                      "the 90T screws in forearm_roll_block and wrist_link (printed sideways)"),),
         (("depth", 5.0),), note="The same holes printed sideways."),
     Gauge("m5", "screws", "M5 idler axles", "M5 HOLE", "hole_strip", (
         Use(M5_CLEAR, "the idler spacers' bores, the idler slots"),),
@@ -203,7 +205,8 @@ GAUGES = (
         Use(_D.shell.sleeve_nut_af, "the motor plate's sleeve (press)"),
         Use(_ROLL.nut_af, "forearm_roll_block (press)"),
         Use(WRIST.flange.nut_af, "wrist_link (press)"),
-        Use(YAW_COUPLER.hub.nut_af, "j1_coupler_plate: the 120T's and the plate screws' nuts (press)"),
+        Use(YAW_COUPLER.hub.nut_af, "j1_coupler_plate: the 120T's and the plate screws' nuts (press, upright, 0.20: "
+                                    "measured)"),
         Use(BASE.joint.nut_pocket_af, "the base's posts (press)"),
         Use(_D.housing.bolt_nut_pocket_af, "j1_link's housing nuts, the output hub (captive)")),
         (("depth", M4_NUT.h + 0.2), ("width", 8.4), ("shape", "hex"), ("floor", 1.6), ("under", M4_CLEAR)),

@@ -27,7 +27,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field, replace
 
-from lib.fasteners import M4_NUT_SIDE_PRESS_AF
+from lib.fasteners import M4_CLEAR_UPRIGHT, M4_NUT_SIDE_PRESS_AF
 
 
 @dataclass(frozen=True)
@@ -125,6 +125,8 @@ class HousingParams:
     bolt_circle_dia: float = 125.0     # outside the bore
     bolt_start_deg: float = 0.0        # [DESIGN] the first bolt (and its pillar) from +X, the rest evenly on round
     bolt_dia: float = 4.0              # M4
+    bolt_hole_dia: float | None = None   # the bolts' clearance holes (the housing's and the hub's arm mount); None: bolt_dia +
+    #                                    PETGTolerances.bolt_clearance_add, the port's (layout.py housing_bolt_hole_dia)
     bolt_length: float = 55.0          # M4 x 55 SHCS
     bolt_head_dia: float = 7.0
     bolt_head_height: float = 4.0
@@ -370,7 +372,9 @@ _HOUSING = replace(LEGACY_CONFIG.housing, bolt_count=6, bolt_start_deg=ARM_DEG,
                    bore_dia=LEGACY_CONFIG.housing.bore_dia - 2 * RING_INSET,                   # 108
                    bolt_circle_dia=LEGACY_CONFIG.housing.bolt_circle_dia - 2 * RING_INSET,     # 117
                    bolt_nut_turn_deg=30.0, edge_chamfer=1.0,
-                   bolt_length=65.0)   # the turning shell's: end to end, the shell ring's counterbores to nuts in the body
+                   bolt_length=65.0,   # the turning shell's: end to end, the shell ring's counterbores to nuts in the body
+                   bolt_hole_dia=M4_CLEAR_UPRIGHT)   # [MEASURE] 4.2: the holes stand upright in the shell ring, the
+#                                                    shell body and the hub, all printed at 0.20 on an end (lib/fasteners.py)
 _PORT_STACK = LEGACY_CONFIG.stack_up
 # the turning shell's hub end, the motor end's mirror: disc 2 -> its 6814 is the input clearance + the hub's flange (the
 # motor plate's thickness), one 6814 there, the port's 3 mm wall past it (= ShellParams.end_lip): the housing 61 deep

@@ -23,14 +23,14 @@ from build123d import Location
 from lib import placements as P
 from lib import reference as R
 from lib.base import DEFAULT as BASE
-from lib.bearings import BEARING_6806_BORE, THRUST_BORE, THRUST_OD, THRUST_STACK
+from lib.bearings import BEARING_6806_BORE, BEARING_6806_JOURNAL, THRUST_BORE, THRUST_OD, THRUST_STACK
 from lib.belts import GT2_PULLEY_90T_BOLT_R
 from lib.coupler import DEFAULT as J3_COUPLER
 from lib.cycloidal import arm_mount_points, shell_ends, sleeve_bolt_z, sleeve_end, stack_positions
 from lib.cycloidal.layout import PILLAR_OVERSHOOT
 from lib.cycloidal.params import DEFAULT_CONFIG as DRIVE
 from lib.cycloidal.params import LEGACY_CONFIG as PORT
-from lib.fasteners import M4_CLEAR, M4_NUT, M4_NUT_SIDE_PRESS_AF, M4_SHCS
+from lib.fasteners import M4_CLEAR, M4_CLEAR_UPRIGHT, M4_NUT, M4_NUT_SIDE_PRESS_AF, M4_NUT_UPRIGHT_PRESS_AF, M4_SHCS
 from lib.geom import hex_circumdiameter, hull_faces
 from lib.style import EDGE_CHAMFER, SIDES
 from lib.yaw_coupler import DEFAULT, LEGACY, hole_points, nut_centres, od_point
@@ -286,23 +286,26 @@ def test_default_stands_on_the_thrust_bearing():
 
 
 def test_default_hub_takes_the_base_yaw_90t():
-    """The stub the bearings' bore, its end on the lip's lower face where the 90T's hub end meets it (as at the wrist;
-    the SolidWorks end stopped 0.2 into the lip); the 90T's 4 bolts on its bolt circle at the diagonals (the 90T turned
-    45 degrees on its own pattern), M4 clearance, their nuts flush in the pocket's floor clear of its walls and of the
-    bore; the 90T's bore, 2.5 of wall to the holes (the SolidWorks Ø15 left 1.45)."""
+    """The stub a 0.20 journal's measured press in the bearings' bore, its end on the lip's lower face where the 90T's
+    hub end meets it (as at the wrist; the SolidWorks end stopped 0.2 into the lip); the 90T's 4 bolts on its bolt circle
+    at the diagonals (the 90T turned 45 degrees on its own pattern), the snug upright M4 hole, their nuts flush in the
+    pocket's floor in upright press pockets, clear of its walls and of the bore; the 90T's bore, 2.65 of wall to the
+    holes (the SolidWorks Ø15 left 1.45)."""
     h, b, c = DEFAULT.hub, BASE.bore, BASE.cap
-    assert h.stub_dia == BEARING_6806_BORE and (h.stub_round, h.hole_deg) == (LEGACY.hub.stub_round, LEGACY.hub.hole_deg)
+    assert h.stub_dia == BEARING_6806_JOURNAL > BEARING_6806_BORE
+    assert (h.stub_round, h.hole_deg) == (LEGACY.hub.stub_round, LEGACY.hub.hole_deg)
     assert h.stub_y0 == pytest.approx(b.lip_y[0] - c.ring_top_y) and LEGACY.hub.stub_y0 == pytest.approx(b.lip_y[1] - c.ring_top_y - 0.2)
-    assert (h.hole_dia, h.hole_r, h.bore_dia) == (M4_CLEAR, GT2_PULLEY_90T_BOLT_R, J3_COUPLER.bore_dia)
+    assert (h.hole_dia, h.hole_r, h.bore_dia) == (M4_CLEAR_UPRIGHT, GT2_PULLEY_90T_BOLT_R, J3_COUPLER.bore_dia)
     assert sorted(round(math.degrees(math.atan2(z, x))) % 360 for x, z in hole_points(DEFAULT)) == [45, 135, 225, 315]
-    assert (h.nut_af, h.nut_depth) == (J3_COUPLER.nut_af, M4_NUT.h) and LEGACY.hub.nut_af is None
+    assert (h.nut_af, h.nut_depth) == (M4_NUT_UPRIGHT_PRESS_AF, M4_NUT.h) and LEGACY.hub.nut_af is None
+    assert DEFAULT.split.nut_af == h.nut_af and DEFAULT.split.hole_dia == h.hole_dia
     corner = hex_circumdiameter(h.nut_af) / 2.0
     (px, pz), k = DEFAULT.yoke.pocket_half, DEFAULT.yoke
     for x, z in hole_points(DEFAULT):
         assert abs(x) + corner < px - 3.0 and abs(z) + corner < pz - 3.0                 # clear of the pocket's walls
         assert math.hypot(x, z) - corner > h.bore_dia / 2.0 + 0.5                        # ... and of the bore
     assert k.pocket_y0 - h.nut_depth > h.recess_y1 + 3.0                                 # material under the nuts
-    assert h.hole_r - (h.hole_dia + h.bore_dia) / 2.0 == pytest.approx(2.55)
+    assert h.hole_r - (h.hole_dia + h.bore_dia) / 2.0 == pytest.approx(2.65)
 
 
 @pytest.mark.slow
@@ -310,7 +313,7 @@ def test_default_changes_the_hub_and_the_underside(coupler, legacy):
     assert coupler.is_valid and len(coupler.solids()) == 1
     assert coupler.bounding_box().min.Y == pytest.approx(DEFAULT.hub.stub_y0, abs=1e-6)       # the stub's end, lower
     assert is_inside(coupler, 0, -9.2, 12) and not is_inside(coupler, 0, -9.4, 12) and not is_inside(legacy, 0, -9.2, 12)
-    assert is_inside(coupler, 0, -5, 14.95) and not is_inside(coupler, 0, -5, 15.05)          # the stub Ø30 ...
+    assert is_inside(coupler, 0, -5, 15.075) and not is_inside(coupler, 0, -5, 15.175)        # the stub Ø30.25 ...
     assert not is_inside(legacy, 0, -5, 14.95)                                                # ... was Ø29.8
     assert is_inside(coupler, 0, 2, 7.0) and not is_inside(coupler, 0, 2, 6.1) and not is_inside(legacy, 0, 2, 7.0)   # the bore
     for x, z in hole_points(DEFAULT):
@@ -450,8 +453,8 @@ def test_default_prints_in_two_parts(coupler):
     top, plate = built.part("j1_coupler"), built.part("j1_coupler_plate")
     assert (top.label, plate.label) == ("j1_coupler", "j1_coupler_plate")
     assert top.is_valid and plate.is_valid and len(top.solids()) == len(plate.solids()) == 1
-    assert R.solid_volume(top) == pytest.approx(225378.085, abs=0.5)
-    assert R.solid_volume(plate) == pytest.approx(77387.291, abs=0.5)
+    assert R.solid_volume(top) == pytest.approx(225433.861, abs=0.5)
+    assert R.solid_volume(plate) == pytest.approx(77532.357, abs=0.5)
     assert R.NO_REFERENCE["j1_coupler_plate"] == "lib/yaw_coupler/body.py:build_coupler_plate(DEFAULT)"
     assert s.y == k.pocket_y0 and k.pocket_y0 - h.nut_depth > h.recess_y1 and s.nut_af == h.nut_af
     assert top.bounding_box().min.Y == pytest.approx(s.y, abs=1e-6) and plate.bounding_box().max.Y == pytest.approx(s.y, abs=1e-6)
@@ -473,7 +476,7 @@ def test_default_prints_in_two_parts(coupler):
         assert math.hypot(x, z) + corner < THRUST_BORE / 2.0 - 3.0                              # ... and inside the washers
         sx = math.copysign(1.0, x)
         assert not is_inside(top, x, s.y + 1.0, z) and not is_inside(top, x, seat - 1.0, z)     # the hole
-        assert is_inside(top, x + sx * (M4_CLEAR / 2.0 + 0.3), seat - 0.3, z)
+        assert is_inside(top, x + sx * (s.hole_dia / 2.0 + 0.3), seat - 0.3, z)
         assert not is_inside(top, x + sx * (COUNTERBORE / 2.0 - 0.2), seat + 0.3, z)          # the counterbore ...
         assert is_inside(top, x + sx * (COUNTERBORE / 2.0 + 0.2), seat + 0.3, z)              # ... HEAD_SEAT deep
         assert not is_inside(plate, x, s.y - 1.0, z)                                            # the hole through the plate
@@ -505,7 +508,7 @@ def test_motor_leg(motor_leg):
     leg, f, d = motor_leg, DEFAULT.fork, DEFAULT.disc
     mx0, mx1 = fork_motor_leg_x(DEFAULT)
     assert leg.label == "j1_motor_leg" and leg.is_valid and len(leg.solids()) == 1
-    assert R.solid_volume(leg) == pytest.approx(77824.719, abs=0.5)
+    assert R.solid_volume(leg) == pytest.approx(77827.961, abs=0.5)
     bb = leg.bounding_box()
     assert (bb.min.X, bb.min.Y, bb.min.Z) == pytest.approx((mx0, d.y0, f.axis_z - f.plate_r), abs=1e-6)
     assert (bb.max.X, bb.max.Y, bb.max.Z) == pytest.approx((disc_r(DEFAULT, d.y0), f.axis_y + f.plate_r, f.axis_z + f.plate_r), abs=1e-6)

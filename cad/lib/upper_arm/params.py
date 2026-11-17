@@ -35,7 +35,7 @@ from lib.fasteners import (
     M2_NUT,
     M2_SHCS,
     M3_CLEAR,
-    M4_CLEAR,
+    M4_CLEAR_UPRIGHT,
     M4_SHCS,
     M5_CLEAR,
     M5_NUT,
@@ -364,6 +364,7 @@ _SEAT_R = EG17_G5.bolt_pcd / 2.0
 DEFAULT = replace(_SHORTENED, bearing=None,
                   arm=replace(_ARM, y_outer=_HUB_END_Y + _ARM.web_t + _ARM.seat_screw.head_h),   # 16.5
                   pad=replace(_SHORTENED.pad, x=round(_SHORTENED.slab.elbow_x - ELBOW_MOTOR_CENTRES, 6),   # 92.0
-                              holes=tuple((x, z, M4_CLEAR) for x, z in ((_SEAT_R, 0.0), (0.0, _SEAT_R), (-_SEAT_R, 0.0),
-                                                                        (0.0, -_SEAT_R)))),   # [DESIGN] M4 clearance
+                              holes=tuple((x, z, M4_CLEAR_UPRIGHT) for x, z in ((_SEAT_R, 0.0), (0.0, _SEAT_R),
+                                                                                (-_SEAT_R, 0.0), (0.0, -_SEAT_R)))),
+                  # [MEASURE] the snug upright M4 hole (the part prints on the shell's hub end: lib/fasteners.py)
                   idler=ElbowIdlerParams(), home=ElbowHomeParams())

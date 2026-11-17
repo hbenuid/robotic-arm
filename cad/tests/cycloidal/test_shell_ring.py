@@ -34,7 +34,7 @@ def ring():
 def test_numbers(ring):
     """One solid; the housing's od and pillars across, the shell's motor end to the body's face along the axis."""
     assert len(ring.solids()) == 1 and ring.is_valid
-    assert R.solid_volume(ring) == pytest.approx(75740.748, abs=0.5)
+    assert R.solid_volume(ring) == pytest.approx(75882.591, abs=0.5)
     bb = ring.bounding_box()
     assert (bb.min.Z, bb.max.Z) == pytest.approx((END, T), abs=1e-6)
     bb = ring.rotate(Axis.Z, -CFG.housing.bolt_start_deg).bounding_box()                 # its first pillar on X

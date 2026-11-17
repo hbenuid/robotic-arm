@@ -18,6 +18,7 @@ from cad import step
 from lib.cycloidal import (
     DEFAULT_CONFIG,
     DriveConfig,
+    housing_bolt_hole_dia,
     housing_bolt_points,
     ring_pin_hole_dia,
     ring_pin_points,
@@ -35,7 +36,7 @@ CONVERTED = True
 
 
 def build(cfg: DriveConfig = DEFAULT_CONFIG):
-    h, sh, b, tol = cfg.housing, cfg.shell, cfg.bearings, cfg.tolerances
+    h, sh, b = cfg.housing, cfg.shell, cfg.bearings
     t = cfg.stack_up.z_motor_plate_inner                            # 9: the motor plate's inner face, the body's
     z0 = shell_ends(cfg)[0]                                         # -13
     ring = cylinder(h.od / 2.0, t - z0, z0=z0)
@@ -46,7 +47,7 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     for xy in ring_pin_points(cfg):
         ring = ring - cylinder(ring_pin_hole_dia(cfg) / 2.0, t - pins_z + NUDGE, xy, z0=pins_z)
     for xy in housing_bolt_points(cfg):
-        ring = ring - cylinder((h.bolt_dia + tol.bolt_clearance_add) / 2.0, t - z0 + 2 * NUDGE, xy, z0=z0 - NUDGE)
+        ring = ring - cylinder(housing_bolt_hole_dia(cfg) / 2.0, t - z0 + 2 * NUDGE, xy, z0=z0 - NUDGE)
         ring = ring - cylinder(h.bolt_counterbore_dia / 2.0, h.bolt_counterbore_depth + NUDGE, xy, z0=z0 - NUDGE)
     ring = ring - reveal_window_cutter(cfg, t - z0, z_offset=z0)
     return chamfer_outer_silhouette(single_solid(ring), cfg, external_z=z0)

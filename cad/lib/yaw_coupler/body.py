@@ -224,7 +224,7 @@ def build_motor_leg(cfg: YawCouplerConfig):
     leg = leg - _xcyl(f.ring_bore_dia / 2.0, x0 - NUDGE, _FAR, f.axis_y, f.axis_z)
     seat_x = fork_motor_bolt_x(cfg)[0]
     for y, z in fork_motor_bolts(cfg):
-        leg = leg - _xcyl(M4_CLEAR / 2.0, x1 - NUDGE, _FAR, y, z) - _xcyl(COUNTERBORE / 2.0, seat_x, _FAR, y, z)
+        leg = leg - _xcyl(f.motor_foot_hole_dia / 2.0, x1 - NUDGE, _FAR, y, z) - _xcyl(COUNTERBORE / 2.0, seat_x, _FAR, y, z)
     for deg in fork_sleeve_bolt_deg(cfg):
         leg = leg - _sleeve_slot(cfg, deg) - _sleeve_counterbore(cfg, deg)
     return single_solid(leg)
@@ -286,7 +286,7 @@ def build_yaw_coupler(cfg: YawCouplerConfig = DEFAULT):
     body = body & _split_box(cfg, above=True)
     top = cfg.disc.ring_y1
     for x, z in split_screw_points(cfg):
-        body = body - _ycyl(M4_CLEAR / 2.0, s.y - NUDGE, top + NUDGE, x, z) - _ycyl(COUNTERBORE / 2.0, top - HEAD_SEAT, top + 1.0, x, z)
+        body = body - _ycyl(s.hole_dia / 2.0, s.y - NUDGE, top + NUDGE, x, z) - _ycyl(COUNTERBORE / 2.0, top - HEAD_SEAT, top + 1.0, x, z)
     if cfg.fork is not None:
         f, r = cfg.fork, M4_CLEAR / 2.0
         seat_x, mx1 = fork_motor_bolt_x(cfg)[0], fork_motor_leg_x(cfg)[1]
@@ -304,7 +304,7 @@ def build_coupler_plate(cfg: YawCouplerConfig = DEFAULT):
     s, h = cfg.split, cfg.hub
     body = _whole(cfg) & _split_box(cfg, above=False)
     for x, z in split_screw_points(cfg):
-        body = body - _ycyl(M4_CLEAR / 2.0, h.recess_y1 - NUDGE, s.y + NUDGE, x, z)
+        body = body - _ycyl(s.hole_dia / 2.0, h.recess_y1 - NUDGE, s.y + NUDGE, x, z)
         body = body - bd.Pos(x, h.recess_y1 - NUDGE, z) * bd.Rot(-90.0, 0.0, 0.0) * hex_prism(s.nut_af, math.pi / 2.0, M4_NUT.h + NUDGE)
     return single_solid(body)
 

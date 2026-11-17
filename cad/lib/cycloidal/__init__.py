@@ -6,7 +6,7 @@ package never pulls in OCCT). lib/ never imports parts/.
 """
 from lib.cycloidal.layout import (  # noqa: F401
     PILLAR_OVERSHOOT, arm_mount_angles, arm_mount_points, arm_zone, compute_housing_bolt_angles, hex_circumdiameter,
-    housing_bolt_points, hub_flange, hub_height, motor_bolt_counterbore_depth, motor_bolt_points,
+    housing_bolt_hole_dia, housing_bolt_points, hub_flange, hub_height, motor_bolt_counterbore_depth, motor_bolt_points,
     output_pin_points, pillar_corners, pillar_half_width, ring_pin_engagement, ring_pin_hole_depth, ring_pin_hole_dia,
     ring_pin_points, shell_ends, sleeve_bolt_z, sleeve_end, stack_positions,
 )

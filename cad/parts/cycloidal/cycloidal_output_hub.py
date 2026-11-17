@@ -30,6 +30,7 @@ from lib.cycloidal import (
     DriveConfig,
     arm_mount_angles,
     arm_mount_points,
+    housing_bolt_hole_dia,
     hub_flange,
     hub_height,
     output_pin_points,
@@ -68,7 +69,7 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     pin_depth = stack.z_bearing_top - hub.output_hub_pin_ceiling - z_hub                               # 19 (port), 18
     for xy in output_pin_points(cfg):
         result = result - cylinder(pin_r, pin_depth + NUDGE, xy, z0=-NUDGE)
-    arm_r = (h.bolt_dia + tol.bolt_clearance_add) / 2.0
+    arm_r = housing_bolt_hole_dia(cfg) / 2.0
     nut_depth = h.bolt_nut_depth if sh is None else sh.hub_nut_depth
     for angle, xy in zip(arm_mount_angles(cfg), arm_mount_points(cfg), strict=True):
         result = result - through(arm_r, height, xy)

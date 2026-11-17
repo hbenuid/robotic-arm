@@ -13,7 +13,7 @@
  "expected": {
   "leaf_occurrences": 93,
   "solids": 227,
-  "solid_volume": 2390526.164
+  "solid_volume": 2390840.381
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -1459,7 +1459,7 @@
     "note": "the motor-side leg on j1_coupler's disc, round the drive's motor sleeve; built in the coupler's part frame"
    },
    "solids": 1,
-   "solid_volume": 77824.719,
+   "solid_volume": 77827.961,
    "rel": {
     "position": [
      -0.0,
@@ -1562,7 +1562,7 @@
     "note": "the plate under j1_coupler's cut (the stub, the recess over the thrust bearing, the 120T's nuts); built in the coupler's part frame"
    },
    "solids": 1,
-   "solid_volume": 77387.291,
+   "solid_volume": 77532.357,
    "rel": {
     "position": [
      -0.0,
@@ -5167,7 +5167,7 @@
     "note": "the wrist_pitch output flange on wrist_link's coupler face, its recess on the key"
    },
    "solids": 1,
-   "solid_volume": 6586.428,
+   "solid_volume": 6752.337,
    "rel": {
     "position": [
      -191.277097,
@@ -5240,7 +5240,7 @@
    "world_bbox_size": [
     39.936,
     39.461,
-    13.232
+    13.24
    ]
   },
   {

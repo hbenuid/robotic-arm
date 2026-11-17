@@ -66,7 +66,7 @@ Every station: `stack_positions()`.
 | `x_coupler`, `x_free` | the plate's coupler face, its free face (the pocket's floor) | `axis_h` |
 
 ## 3. Fits and printing
-PETG, the forearm roll's rules: the seats the bearing OD + `seat_add`, the shaft's journal `journal_add` interference,
+PETG, the forearm roll's rules: the seats the bearing OD + `seat_add`, the shaft's journal `journal_add` - the 0.20 press -,
 the pulley's `pulley_journal_dia` - the 0.16 press (print the fit gauges first, `tools/export_gauges.py`). `wrist_link` prints front face down, as the forearm roll's frame: the
 seats print as vertical bores and the facets rise at 45°, and nothing round about the pitch axis is left on it (the flange
 its own part) - a printability check before the first print (`open_issues.md`). The wrist flange prints on the stub's end

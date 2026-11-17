@@ -25,7 +25,7 @@ from lib.belts import GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_TEETH, centre_distanc
 from lib.cycloidal import arm_zone, housing_bolt_points, shell_ends, stack_positions
 from lib.cycloidal.params import DEFAULT_CONFIG
 from lib.datum import to_location
-from lib.fasteners import M4_CLEAR
+from lib.fasteners import M4_CLEAR_UPRIGHT
 from lib.motors import EG17_G5
 from lib.style import EDGE_CHAMFER, SIDES
 from lib.upper_arm import DEFAULT, LEGACY, arm_slide, hub_bolt_points, pad_holes, socket_points
@@ -109,7 +109,7 @@ def test_default_web_holes_are_the_gearboxs_pattern():
     pcd = ((r, 0.0), (0.0, r), (-r, 0.0), (0.0, -r))
     bolts = sorted((round(p.X, 6), round(p.Z, 6)) for p in ((frame * Location((x, y, 0.0))).position for x, y in pcd))
     holes = sorted((round(DEFAULT.pad.x + x, 6), round(z, 6)) for x, z, _ in pad_holes(DEFAULT))
-    assert bolts == holes and all(dia == M4_CLEAR for _, _, dia in pad_holes(DEFAULT))
+    assert bolts == holes and all(dia == M4_CLEAR_UPRIGHT for _, _, dia in pad_holes(DEFAULT))   # upright, 0.20
     assert all((frame * Location((x, y, 0.0))).position.Y == pytest.approx(DEFAULT.arm.y_outer) for x, y in pcd)
     shaft = (frame * Location((0.0, 0.0, 1.0))).position - frame.position
     assert tuple(shaft) == pytest.approx((0.0, -1.0, 0.0), abs=1e-9)                # shaft -N, through the web
@@ -193,7 +193,7 @@ def test_default(link, legacy):
     the underside; no pad, no sockets, the second stage's seat gone."""
     dx, a = SHORTENING, DEFAULT.arm
     assert link.is_valid and len(link.solids()) == 1
-    assert R.solid_volume(link) == pytest.approx(292144.321, abs=0.5)
+    assert R.solid_volume(link) == pytest.approx(292541.211, abs=0.5)
     bb, hh, (z_0, z_1) = link.bounding_box(), DEFAULT_CONFIG.housing, arm_zone(DEFAULT_CONFIG)
     # across (Z) the body's pillars either side of +/-Z reach furthest: the windows on +/-Z are open; along Y the
     # shell's body, from its hub end to the shell ring's face (arm_zone's start); along X the slab's round end

@@ -187,7 +187,7 @@ class TestSolid:
         centreline): the od on X (the pillars there and opposite), on Y the chamfered corners of the pillars at
         +/-60 and +/-120 degrees from it; the plate's face (the shell ring's) to the hub end."""
         assert len(body_solid.solids()) == 1 and body_solid.is_valid
-        assert R.solid_volume(body_solid) == pytest.approx(152304.812, abs=0.5)
+        assert R.solid_volume(body_solid) == pytest.approx(152663.877, abs=0.5)
         bb = body_solid.rotate(Axis.Z, -CFG.housing.bolt_start_deg).bounding_box()
         assert (bb.size.X, bb.size.Y) == pytest.approx((CFG.housing.od, 116.023), abs=0.01)
         assert (bb.min.Z, bb.max.Z) == pytest.approx((Z0, END_1), abs=1e-6)

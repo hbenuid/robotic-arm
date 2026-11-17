@@ -19,6 +19,7 @@ import build123d as bd
 
 from lib.cycloidal.layout import (
     arm_zone,
+    housing_bolt_hole_dia,
     housing_bolt_points,
     pillar_corners,
     ring_pin_hole_dia,
@@ -111,12 +112,12 @@ def housing_bolt_cutters(cfg: DriveConfig = DEFAULT_CONFIG) -> list:
     bolt's end (stack_positions z_housing_nuts) - in the drive's frame, bolt by bolt (hole, pocket). build_shell_body
     cuts them; j1_link cuts them again once its arm is fused on (lib/upper_arm/link.py: the arm, flush with the hub end,
     covers the pocket on the lug under it)."""
-    h, tol = cfg.housing, cfg.tolerances
+    h = cfg.housing
     z0, z1, nut_z = arm_zone(cfg)[0], shell_ends(cfg)[1], stack_positions(cfg)["z_housing_nuts"]
     turn = math.radians(h.bolt_nut_turn_deg)
     cut = []
     for angle, xy in zip(compute_housing_bolt_angles(cfg), housing_bolt_points(cfg), strict=True):
-        cut.append(cylinder((h.bolt_dia + tol.bolt_clearance_add) / 2.0, z1 - z0 + 2 * NUDGE, xy, z0=z0 - NUDGE))
+        cut.append(cylinder(housing_bolt_hole_dia(cfg) / 2.0, z1 - z0 + 2 * NUDGE, xy, z0=z0 - NUDGE))
         cut.append(hex_pocket(cfg, xy, angle + turn, z1 - nut_z + NUDGE, z0=nut_z))
     return cut
 

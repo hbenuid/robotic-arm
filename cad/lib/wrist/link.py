@@ -159,7 +159,7 @@ def build_wrist_flange(cfg: WristConfig = DEFAULT):
     top = f.stub_z[1]
     body = body - cylinder(f.pin_bore_dia / 2.0, top - f.pin_bore_z1 + NUDGE, axis, f.pin_bore_z1)
     for x, y in pulley_bolt_points(cfg):
-        body = body - cylinder(f.pulley_bolt_dia / 2.0, top - f.post_z[0] + 2.0 * NUDGE, (x, y), f.post_z[0] - NUDGE)
+        body = body - cylinder(f.flange_bolt_dia / 2.0, top - f.post_z[0] + 2.0 * NUDGE, (x, y), f.post_z[0] - NUDGE)
     recess = faceted_end(f.key_af / 2.0 + f.key_fit, axis, SIDES)
     body = body - bd.Pos(0.0, 0.0, f.post_z[0] - NUDGE) * bd.extrude(recess, amount=f.key_h + NUDGE)
     return single_solid(body)

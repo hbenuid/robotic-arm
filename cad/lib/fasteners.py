@@ -71,17 +71,27 @@ M5_NUT = NutSize(5.0, 8.0, 4.7)               # [DATASHEET] ISO 4032 M5
 # The press for an M4 nut (M4_NUT, s 7) in a hex pocket printed ON ITS SIDE - its axis along the bed, a corner up -,
 # PETG at 0.20 (the M4 NUT SIDE gauge, lib/gauges/fits.py m4hexs): the screw pulls the nut home, it stays when the
 # screw is out; 6.85 took no nut, even drawn in. Every M4 press pocket that prints on its side takes it - the base's
-# posts, the motor plate's sleeve lugs, the elbow 90T's channels in forearm_roll_block, the wrist 90T's in wrist_link;
-# the upright ones (j1_coupler's) keep their own size.
+# posts, the motor plate's sleeve lugs, the elbow 90T's channels in forearm_roll_block, the wrist 90T's in wrist_link.
 M4_NUT_SIDE_PRESS_AF = 7.15   # [MEASURE]
+# The same press in a pocket printed UPRIGHT - its axis up, a corner across -, PETG at 0.20, the pocket opening on the
+# bed (j1_coupler_plate's test plate): the nut goes in with a push and stays when the part is turned over. Every upright
+# M4 press pocket takes it - j1_coupler_plate's (the 120T's nuts and the plate screws'); a pocket the nut drops into
+# (the drive's housing nuts, lib/cycloidal/params.py bolt_nut_pocket_af) is no press.
+M4_NUT_UPRIGHT_PRESS_AF = 7.1   # [MEASURE]
 
 # The snug fits of an M4 socket head screw (M4_SHCS) through a part printed at LAYER_H_FINE (lib/params.py), its axis
 # upright - PETG at 0.16, measured on the 120T pulley's test plate: the shank's hole it slides through by hand with no
 # play, and the head's counterbore it goes into by hand and stays in when the part is turned over (M4_CLEAR and a 7.4
 # counterbore both had play there). Every 0.16 part with M4 screws through it takes them - the 90T and 120T pulleys
-# (lib/pulley/params.py DEFAULT); the 0.20 parts keep M4_CLEAR and their own counterbores.
+# (lib/pulley/params.py DEFAULT).
 M4_CLEAR_FINE = 4.2           # [MEASURE]
 M4_HEAD_BORE_FINE = 7.05      # [MEASURE]
+# The shank's snug hole at LAYER_H (0.20), its axis upright - measured on j1_coupler_plate's test plate (6 long), the
+# same size as at 0.16. Every 0.20 M4 clearance hole printed upright takes it - j1_coupler_plate's and j1_coupler's
+# plate screws, the 120T's holes through the plate, j1_motor_leg's foot screws, the drive's housing bolts (the shell
+# ring, j1_link) and the output hub's, j1_link's gearbox screws, the elbow and wrist flanges' 90T screws; a hole printed
+# on its side keeps M4_CLEAR (untested there).
+M4_CLEAR_UPRIGHT = 4.2        # [MEASURE]
 
 
 def hex_area(across_flats: float) -> float:
