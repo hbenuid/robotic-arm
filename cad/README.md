@@ -48,7 +48,7 @@ the CAD kernel), updating the plugin and what a pull that changes `pyproject.tom
 | `./cadtool gen assemblies/arm.py` | build `assemblies/arm.step` (git-ignored); every part runs with it (replayed when unchanged) and writes its own STEP |
 | `./cadtool python tools/bom.py [--module <module>] [--md\|--json]` | the **print list** (each part's quantity and layer height) and the **buy list**, of the arm or of one module of `assemblies/arm.py MODULES` ([`parts/AGENTS.md`](parts/AGENTS.md) Printed vs. bought) |
 | `./cadtool python tools/export_printables.py [--parts …]` | one STEP per **printed** part into `print/` (git-ignored), for the slicer to mesh |
-| `./cadtool python tools/export_gauges.py [--only …] [--list]` | the **fit gauges** - test prints of every bearing, pin, screw, nut and servo fit at steps round the arm's sizes - one 3MF per bed plate into `print/gauges/` |
+| `./cadtool python tools/export_gauges.py [--only …] [--list]` | the **fit gauges** - test prints of every bearing, pin, screw, nut and servo fit at steps round the arm's sizes - one STEP per bed plate into `print/gauges/` |
 | `./cadtool export <file.step> stl\|3mf\|glb [out]` | one mesh file per call from a STEP document (default: beside it) |
 | `./cadtool inspect <file.step> [--planes] [--json]` | every leaf's ref, solids, faces, volume, bbox of a saved STEP (`--planes`: its planar faces) |
 | `./cadtool cad step inspect <file.step> "<ref>"` | what one ref (an occurrence path, `…/face 7`) names, and its measures |

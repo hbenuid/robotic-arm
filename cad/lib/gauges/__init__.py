@@ -5,5 +5,5 @@ fits.py    GAUGES: every kind of fit, the arm's sizes read from the constants th
 coupons.py the coupon builders (build123d, the kernel lazy), sweep(), build(gauge)
 layout.py  pack(): the coupons on the bed's plates (pure Python)
 
-tools/export_gauges.py writes them, one 3MF per plate (tools/AGENTS.md); tests/test_gauges.py checks them.
+tools/export_gauges.py writes them, one STEP per plate (tools/AGENTS.md); tests/test_gauges.py checks them.
 """

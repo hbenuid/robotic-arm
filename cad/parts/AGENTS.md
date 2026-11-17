@@ -176,7 +176,7 @@ generated from the label:
   A print orientation lives in the part's docstring: a fit's constant follows it (an upright hole and one on its side
   are two fits), and a fit not yet measured at its part's height keeps its own size.
 - **Fit gauges** — before the first parts: `./cadtool python tools/export_gauges.py` writes the test prints of every fit
-  where a bought part meets a printed one (`print/gauges/`, one 3MF per plate; `lib/gauges`); the step that fits is the
+  where a bought part meets a printed one (`print/gauges/`, one STEP per plate; `lib/gauges`); the step that fits is the
   constant's value. A gauge prints at the layer height of the parts it tests - a fit printed on its side, whose parts
   print at both, at each. A part that adds a fit adds its `Use` to `lib/gauges/fits.py`.
 - **Printability** — before a printed part's first print, and after its geometry changes: `./cadtool cad step dfm
