@@ -18,7 +18,7 @@ is flush with the shell's hub end (the face the part prints on); the elbow motor
 ELBOW_MOTOR_CENTRES from the elbow
 axis, where the second stage's seat was (gone), and turned over onto the arm's other side, down a square hole through
 the slab onto a web across it, flush with the slab's underside (the pad's tube gone); the elbow belt's tensioner
-(ElbowIdlerParams) on the stepped slot's line, its slots in that slot's place.
+(ElbowIdlerParams) just past the stepped slot's line toward the 90T, its slots across both strands in that slot's place.
 
 Every number below was measured on the reference 2026-09-24 (planar / cylindrical face census;
 tests/upper_arm/test_j1_link.py re-checks the builds against it): [REFERENCE] unless tagged.
@@ -203,8 +203,8 @@ class ArmParams:
     drive_z_at_y0: float = 66.5      # [REFERENCE] the drive's z at this frame's y = 0 (placements.json cycloidal_drive#1,
     #                                  j1_link#1: the SolidWorks hub face bolted to the top face, y 1.5, at the port's z 65)
     drive_x_deg: float = -47.584167  # [REFERENCE] the drive's +X in this frame, atan2(z, x), as the capture pose places it
-    width: float = 76.0              # [DESIGN] the slab across, symmetric: 16.4 of it beside the motor's hole, 10.8 past the
-    #                                  idler's nut slot at its outer end (tests/upper_arm/test_elbow_idler.py) - the plate's 90
+    width: float = 76.0              # [DESIGN] the slab across, symmetric: 16.4 of it beside the motor's hole, 9.3 past the
+    #                                  idler's nut slot at either end (tests/upper_arm/test_elbow_idler.py) - the plate's 90
     #                                  slimmed for mass
     end_r: float = 36.0              # [DESIGN] its faceted end about the elbow axis (lib/style.py SIDES), its flats this far
     #                                  off it: 14.9 of wall round the lower 6806's seat, the 90T's flange (r 29.6) under it
@@ -219,22 +219,26 @@ class ArmParams:
 class ElbowIdlerParams:
     """[DESIGN] The elbow belt's tensioner (cad/AGENTS.md "Belts"): a smooth GT2 idler (parts/joints/gt2_idler_20t) on
     the belt's back on its run from the 90T back to the motor's 20T (the +Z strand), `along` from the motor's axis -
-    beside the stepped slot's line (SlotParams.stepped_x - the SolidWorks slit was for it) -, pushed into the loop until
-    the stock ELBOW_BELT fits ELBOW_MOTOR_CENTRES (lib/belts.py idler_on_run; lib/upper_arm/layout.py elbow_belt_loop,
-    elbow_idler_x, elbow_idler_z). It hangs
+    just past the stepped slot's line (SlotParams.stepped_x - the SolidWorks slit was for it) toward the 90T -, pushed
+    into the loop until the stock ELBOW_BELT fits ELBOW_MOTOR_CENTRES (lib/belts.py idler_on_run; lib/upper_arm/layout.py
+    elbow_belt_loop, elbow_idler_x, elbow_idler_z). It hangs
     under the slab, level with the belt, under a printed spacer (parts/joints/elbow_idler_spacer: the slab's underside
     is the face the part prints on, so no riser grows from it - the spacer's riser stands on it, its land on the idler's
     bearing inner ring), on an M5 SHCS up from under it (parts/joints/elbow_idler_screw) through the idler, the spacer
     and a slot through the slab's floor into a nut (parts/joints/elbow_idler_nut) held flats-on in a slot down from the
     slab's top face, on the floor: both slots run along Z (the push) between slot_z's ends, and the nut slides with the
-    screw (turned from below). Its stations along N: lib/params.py J1_IDLER_*."""
+    screw (turned from below). The slots are symmetrical about the belt's centre line (the link's): the idler takes
+    either strand from outside the loop, and on its strand it goes in until the belt is tight - no end stop: past 3.0
+    off the far strand's teeth (the longest belt it takes) its flange meets that strand. Its stations along N:
+    lib/params.py J1_IDLER_*."""
 
     run: int = 1                          # the loop's run it presses (lib/belts.py belt_runs): the 90T back to the 20T, the +Z strand
-    along: float = 29.1                   # its axis this far from the motor's along the link: 1.9 nearer the motor than the
-    #                                       stepped slot's line (31.0); the nut's slot 3.4 off the motor's hole
-    #                                       (tests/upper_arm/test_elbow_idler.py)
-    slot_z: tuple = (-1.7, 22.4)          # its axis' range along Z, the slots' end centres: in to 3.0 off the far strand's teeth
-    #                                       (the longest belt it takes), out past just touching the open loop's strand
+    along: float = 34.1                   # its axis this far from the motor's along the link: toward the 90T, where the loop is
+    #                                       wider (the idler goes deeper before it nears the far strand), its flange 5.3 off the
+    #                                       90T's at the slots' middle, where it passes nearest; 3.1 past the stepped slot's
+    #                                       line (31.0), the nut's slot 8.4 off the motor's hole (tests/upper_arm/test_elbow_idler.py)
+    slot_z: tuple = (-23.9, 23.9)         # its axis' range along Z, the slots' end centres: symmetrical, each end 0.65 past just
+    #                                       touching its strand of the open loop
     riser_dia: float = 12.0               # the spacer's riser, on the slab's underside (as RollIdlerParams.riser_w) ...
     land_dia: float = 7.0                 # [ESTIMATE] ... its land on the idler's bearing inner ring only (RollIdlerParams.land_w)
     land_h: float = 1.0                   # the land over the riser: the idler's flange clear of the riser
@@ -306,7 +310,7 @@ class UpperArmConfig:
     bearing: BearingParams | None = BearingParams()   # None: no second-stage seat
     sockets: SocketParams | None = SocketParams()
     arm: ArmParams | None = None                      # DEFAULT: the arm rising off the drive's turning shell, not bolted to its hub
-    idler: ElbowIdlerParams | None = None             # DEFAULT: the elbow belt's tensioner, its slots in the stepped slot's place
+    idler: ElbowIdlerParams | None = None             # DEFAULT: the elbow belt's tensioner, its slots across the belt in the stepped slot's place
     home: ElbowHomeParams | None = None               # DEFAULT: the elbow_pitch home sensor's clip over the slab's end
 
 
@@ -354,7 +358,7 @@ _SHORTENED = shortened(replace(
 # second stage's seat was (gone: a stock belt runs the motor's 20T straight to the elbow's 90T, lib/params.py ELBOW_RATIO).
 ELBOW_BELT = 280   # [DESIGN] a stock 280-2GT closed belt, the elbow 20T to the elbow's 90T, round its idler
 ELBOW_MOTOR_CENTRES = 78.0   # [DESIGN] the elbow motor's axis this far from the elbow's: the open loop (272.4) shorter than the
-#                              stock belt, the idler (ElbowIdlerParams) taking up the rest - it takes 272.4 .. 287.3; the
+#                              stock belt, the idler (ElbowIdlerParams) taking up the rest - it takes 272.4 .. 290.6; the
 #                              gearbox passes the elbow's roll frame closest at the elbow's lower limit (tests/forearm/test_roll_drive.py)
 # The elbow motor stands on a 5:1 planetary (lib/motors.py EG17_G5, lib/params.py ELBOW_RATIO): the web's 4 holes are
 # the gearbox's output face's (its M4 on bolt_pcd, on the pad's X and Z), not the motor's NEMA 17 square.
