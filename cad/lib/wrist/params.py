@@ -41,8 +41,21 @@ from lib.bearings import (
 from lib.belts import GT2_PULLEY_20T_TEETH, centre_distance
 from lib.coupler.params import DEFAULT as COUPLER
 from lib.cycloidal.params import PETGTolerances
-from lib.fasteners import M3_CLEAR, M3_NUT, M3_SHCS, M4_CLEAR, M4_CLEAR_UPRIGHT, M4_NUT_SIDE_PRESS_AF, NutSize, ShcsSize
+from lib.fasteners import (
+    M2_CLEAR,
+    M2_NUT,
+    M2_SHCS,
+    M3_CLEAR,
+    M3_NUT,
+    M3_SHCS,
+    M4_CLEAR,
+    M4_CLEAR_UPRIGHT,
+    M4_NUT_SIDE_PRESS_AF,
+    NutSize,
+    ShcsSize,
+)
 from lib.motors import MKS_SERVO42D_STACK, MKS_SERVO42D_W, MOTOR_40
+from lib.sensors import HOME_MAGNET_DIA, KY003_BOARD_L
 from lib.style import GRILL_PITCH, GRILL_SLOT
 
 
@@ -247,6 +260,48 @@ class WristBackPanelParams:
 
 
 @dataclass(frozen=True)
+class WristRollHomeParams:
+    """[DESIGN] The wrist_roll home sensor (docs/open_issues.md, the home sensors) - the user's pick (B of three previews,
+    "glued fin"): a KY-003 hall module (parts/joints/ky003_hall_sensor, lib/sensors.py) standing upright beside the
+    pulley's face on a printed fin (parts/wrist/wrist_roll_home_fin), its chip on the module's +X (the far face's side)
+    facing the face's rim, and a Ø magnet_dia x magnet_t N52 disc glued on that rim (parts/wrist/wrist_roll_home_magnet,
+    its south pole out), which stands over the chip at wrist_roll `home_deg` (lib/params.py WRIST_ROLL_HOME_DEG). The
+    bay behind the shaft (the forearm roll's place) is too small, the belt takes the motor's side, the forearm sweeps the
+    plate's: the pulley's front on the far face's side is where there is room. The board upright on the fin's inner face,
+    its component side (the chip) toward R', its header toward the motor (+Y); the fin's back flush with the far face
+    (frame_r), so nothing stands past the frame's outline seen along R'. Its foot - a shoe over the front facet - sits on
+    the facet, the front face and the bearing boss's top and nests against the boss's round side, `gap` off each (the
+    glue's): nothing on the arm changes. Held by glue alone, the user's choice (the home sensors' rule asks for M3 into a
+    nut or an insert). The board by its two holes on 2 M2 from its component side (heads there) through the fin into nuts
+    in hex pockets in the fin's back. Prints on its back (the far face's side down): the M2 holes and the nut pockets
+    upright, the shoe's faces up. Frames: the module frame (lib/wrist/layout.py home_*); the fin's spans in the KY-003's
+    frame, as the other joints' clips."""
+
+    home_deg: float = -165.0              # the magnet over the chip: its zone (+/-8.6 .. 10.7 deg at the chip's r 25) runs 7.6 past
+    #                                       the -166 end or more (5.0 with the magnet glued 1 mm off); homing stops at
+    #                                       -156.4 .. -154.3; the magnet 0.69 clear of the connector's nearest nut slot at the
+    #                                       rim (tests/wrist/test_roll_home.py)
+    air: float = 1.5                      # the magnet's pole face .. the chip's branded face, at home (the clipped sensors')
+    magnet_dia: float = HOME_MAGNET_DIA   # [DESIGN] a Ø6 x 2 N52 disc: the elbow's and the wrist pitch's ...
+    magnet_t: float = 2.0                 # ... glued on the face's rim, its middle at the face's middle (it spans the face)
+    # the fin, in the KY-003's frame (its x along +Y, its y along -Z, its z toward R')
+    plate_x: tuple = (-6.0, KY003_BOARD_L)   # past the chip's end (3 behind it) .. the board's far end
+    plate_w: float = 18.0                 # this wide (the board 15)
+    shoe_x0: float = 21.5                 # the shoe's inner end (module x): on the bearing boss's top, 0.4 outside the seat
+    gap: float = 0.2                      # the fin off the front facet, the front face and the boss (the glue's)
+    relief_w: float = 2.0                 # the fin's slots across the pins' / the leads' row ...
+    header_relief_len: float = 9.0        # ... along the header's 3 pins (their tails stand 0.6 proud of the fin's back) ...
+    lead_relief_len: float = 5.0          # ... along the chip's 3 leads ...
+    relief_past: float = 0.5              # ... this deeper than their tails
+    board_screw: ShcsSize = M2_SHCS       # [DATASHEET] from the board's component side, heads there ...
+    board_screw_len: float = 4.0          # ... through the board and the fin: the tip at the fin's back, the nut's full height on it
+    board_nut: NutSize = M2_NUT           # [DATASHEET] ... into nuts in hex pockets in the fin's back
+    board_hole_dia: float = M2_CLEAR      # through the fin (upright as it prints)
+    nut_pocket_af: float = M2_NUT.af + 0.2   # the nut drops in (the screw pulls it to the floor; the hex stops it turning)
+    nut_pocket_depth: float = M2_NUT.h + 0.1   # from the fin's back
+
+
+@dataclass(frozen=True)
 class WristRollParams:
     """The wrist roll drive (assemblies/wrist_roll_drive.py; docs/wrist_roll.md), the forearm roll drive's pattern one
     joint further out: the pancake ON the wrist_pitch axis, on the plate's free face (the side away from the forearm),
@@ -358,6 +413,7 @@ class WristRollParams:
     tower_wall: float = 2.0             # [DESIGN] behind the shaft's hub length behind its rear face (the station the wrist pitch's +38 deg
     #                                     limit was set against: tests/test_sweeps.py)
     back: WristBackPanelParams = WristBackPanelParams()   # the back panel over the bay
+    home: WristRollHomeParams = WristRollHomeParams()     # the home sensor beside the pulley's face
     # the rotor
     bore: float = 10.0                  # [DESIGN] the cable bore through both pieces (the gripper servo's 3-pin plug passes): the clamp's
     #                                     M3 between it and the band's core

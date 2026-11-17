@@ -355,6 +355,12 @@ _RHOME = _FOREARM.drive.home
 ROLL_HOME_MAGNET_MASS_G = NDFEB_DENSITY * _cyl_vol(_RHOME.magnet_dia / 2.0, _RHOME.magnet_t)                                # 0.64, Ø6 x 3
 ROLL_HOME_BOARD_SCREWS_MASS_G = STEEL_DENSITY * 2 * shcs_volume(_RHOME.board_screw, _RHOME.board_screw_len)                # 0.5, 2x M2x6
 ROLL_HOME_BOARD_NUTS_MASS_G = STEEL_DENSITY * 2 * nut_volume(_RHOME.board_nut)                                             # 0.3, 2x M2
+# the wrist_roll home sensor's (lib/wrist/params.py WristRollHomeParams): its magnet glued on the roll pulley face's rim
+# (parts/wrist/wrist_roll_home_magnet, the elbow's disc) and the board's M2s and nuts on its fin, likewise
+_WRHOME = _WRIST.roll.home
+WRIST_ROLL_HOME_MAGNET_MASS_G = NDFEB_DENSITY * _cyl_vol(_WRHOME.magnet_dia / 2.0, _WRHOME.magnet_t)                        # 0.42, Ø6 x 2
+WRIST_ROLL_HOME_BOARD_SCREWS_MASS_G = STEEL_DENSITY * 2 * shcs_volume(_WRHOME.board_screw, _WRHOME.board_screw_len)        # 0.5, 2x M2x4
+WRIST_ROLL_HOME_BOARD_NUTS_MASS_G = STEEL_DENSITY * 2 * nut_volume(_WRHOME.board_nut)                                      # 0.3, 2x M2
 # the base_yaw motor's (parts/base/yaw_motor_screws), likewise
 from lib.base.layout import motor_holes as _base_motor_holes  # noqa: E402
 
@@ -447,6 +453,10 @@ FOREARM_ROLL_HOME_DEG = _FOREARM.drive.home.home_deg   # -160
 # wrist_link's bay at +/- 168.66 (lib/wrist/params.py stop_deg_width; tests/test_sweeps.py holds it between the limit
 # and 180 - stop_deg_width), which keeps the gripper servo's cable through the rotor from winding
 WRIST_ROLL_LIMIT_DEG = 166.0      # [DESIGN] the pancake through 2 : 1 (not CAN-driven yet)
+# wrist_roll's home: where the magnet glued on the roll pulley face's rim (lib/wrist/params.py WristRollHomeParams)
+# stands over the KY-003's chip on its fin beside the face - the middle of the switch's zone, which runs on past the
+# lower end (the edge toward + is where homing, turning toward -, stops: tests/wrist/test_roll_home.py)
+WRIST_ROLL_HOME_DEG = _WRIST.roll.home.home_deg   # -165
 JAW_TRAVEL_MM = _GRIPPER.layout.travel_x   # [DESIGN] 10.5: each jaw's +/- travel from zero (the racks centred, the jaws
 #                                 23 apart) - the racks' posts stop at the slots' ends at 10.84 opening, 10.86 closing
 #                                 (lib/gripper/params.py LayoutParams)
