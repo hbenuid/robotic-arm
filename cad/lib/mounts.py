@@ -88,8 +88,8 @@ and the upper thrust washer meet, which stay hosted on j1_coupler#1, the plate i
 M4 that hold j1_coupler on it (parts/base/coupler_plate_{screws,nuts}), down from the ring's top face into the nuts
 pressed into the plate's underside.
 The elbow belt's TENSIONER (IDLER_MOUNTS; lib/upper_arm/params.py ElbowIdlerParams): the idler (parts/joints/
-gt2_idler_20t), its printed spacer, its M5 axle and nut on j1_link, on the stepped slot's line where the stock belt puts
-the idler (lib/upper_arm/layout.py elbow_idler_z), each +Z up j1_link's +Y (N): the idler level with the belt, the spacer
+gt2_idler_20t), its printed spacer, its M5 axle and nut on j1_link, on its slots' line where the stock belt puts
+the idler (lib/upper_arm/layout.py elbow_idler_x, elbow_idler_z), each +Z up j1_link's +Y (N): the idler level with the belt, the spacer
 between it and the slab's underside, the screw's head under the idler, the nut on its slot's floor (lib/params.py
 J1_IDLER_*). The base_yaw belt's (YAW_IDLER_MOUNTS; lib/base/params.py YawIdlerParams): the same kit on the base's motor
 mount, where the stock belt puts the idler on the belt's open run (lib/base/layout.py yaw_idler_xz): the idler standing on

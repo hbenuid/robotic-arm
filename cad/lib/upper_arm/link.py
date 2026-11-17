@@ -56,7 +56,7 @@ def _cut_stepped_slot(body, cfg: UpperArmConfig, top: float):
 
 def _cut_idler_slots(body, cfg: UpperArmConfig, top: float):
     """`body` less the elbow idler's slots (ElbowIdlerParams), at elbow_idler_x() in the stepped slot's place, both
-    along Z between slot_z's ends: the axle's (slot_w) through the floor from the underside, and the nut's from the floor
+    along Z between slot_z's ends (across both strands): the axle's (slot_w) through the floor from the underside, and the nut's from the floor
     up through `top` - its flats + nut_fit across X, its corners + nut_fit past each end."""
     i, x, y0 = cfg.idler, elbow_idler_x(cfg), cfg.elbow.y0
     (za, zb), ledge = i.slot_z, y0 + i.floor

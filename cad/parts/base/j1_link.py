@@ -22,7 +22,7 @@ to ELBOW_MOTOR_CENTRES from the elbow axis, where the second stage's seat was (g
 the 90T), and turned over onto the arm's +Y side - down a square hole through the slab onto a web across it, flush
 with the slab's underside, the pad gone; the stepped slot - the elbow belt's tensioner slot - gives way to the
 tensioner's own (ElbowIdlerParams): an M5 slot through the slab's floor for the idler's axle, a nut slot down from the
-top face, both along Z on its line. Every number: lib/upper_arm/params.py (UpperArmConfig; measured on the reference
+top face, both along Z just past its line toward the 90T, across both strands. Every number: lib/upper_arm/params.py (UpperArmConfig; measured on the reference
 2026-09-24).
 
 Print: on the shell's hub end - the slab's underside and the motor web flush with it, one flat face - turned 45
