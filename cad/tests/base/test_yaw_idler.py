@@ -3,11 +3,12 @@ longer than the open loop at YAW_MOTOR_X, so an idler (gt2_idler_20t) on its bac
 motor's 20T, on the belt's long open run over the motor mount's plate, takes up the rest (lib/base/layout.py
 yaw_belt_loop, yaw_idler_xz). It stands on the plate on a printed spacer (yaw_idler_spacer: the mount prints plate-down),
 on an M5 (yaw_idler_screw) down through the idler, the spacer and a slot through the plate into a nut (yaw_idler_nut)
-between two rails under the plate: the slot and the nut's slot run across the belt between slot_y's ends, so the one
-idler takes any belt from the open loop to the longest that leaves it FAR_CLEAR off the far strand. The axle, the nut
-and the spacer have no reference (lib/reference.py NO_REFERENCE), so THIS file locks their numbers (pieces, the modelled
-volume and the bounding box, measured on the build and written in). The idler keeps clear of the far strand, the 20T
-and the 120T at both ends of its slot; the seat is probed on the mount; the kit fits."""
+between two rails under the plate: the slot and the nut's slot run across the belt between slot_y's ends, symmetrical
+about the belt's centre line (the idler takes either strand from outside), so the one idler takes any belt from the open
+loop to the longest that leaves it FAR_CLEAR off the far strand (DEEPEST: no end stop there - the belt is tight). The
+axle, the nut and the spacer have no reference (lib/reference.py NO_REFERENCE), so THIS file locks their numbers
+(pieces, the modelled volume and the bounding box, measured on the build and written in). The idler keeps clear of the
+far strand down to DEEPEST, and of the 20T and the 120T over its slot; the seat is probed on the mount; the kit fits."""
 import math
 
 import pytest
@@ -20,6 +21,7 @@ from lib import reference as R
 from lib.base import (
     DEFAULT,
     LEGACY,
+    inner_r,
     mount_inner_half,
     yaw_belt_frame,
     yaw_belt_loop,
@@ -81,6 +83,24 @@ def _far_gap(y: float) -> float:
     return d - GT2_IDLER_FLANGE_DIA / 2.0 - (GT2_BELT_THICKNESS - GT2_BELT_BACK)
 
 
+def _deepest(clear: float) -> float:
+    """The idler's deepest place on its strand (its frame's y): its flange `clear` off the far strand's teeth."""
+    lo, hi = -_open_strand(), yaw_belt_loop()[I.run + 1][1]
+    for _ in range(60):
+        mid = (lo + hi) / 2.0
+        lo, hi = (lo, mid) if _far_gap(mid) >= clear else (mid, hi)
+    return hi
+
+
+def _open_strand() -> float:
+    """The open loop's strand on the idler's run, across the belt (its frame's y) at the idler's x."""
+    (ax, ay), (bx, by), _ = belt_runs(yaw_belt_loop(idler=False))[I.run]
+    return ay + (by - ay) * (ALONG - ax) / (bx - ax)
+
+
+DEEPEST = _deepest(FAR_CLEAR)
+
+
 def _at(along: float, y: float) -> tuple[float, float, float]:
     """A point `along` the belt from the motor's axis, `y` across it, at the belt's height - in the base's frame."""
     x, z = yaw_belt_point(along, y)
@@ -102,26 +122,31 @@ def test_the_stock_belt_needs_its_idler():
 
 
 def test_the_slot_takes_a_band_of_belts():
-    """At the slot's outer end the idler clears the open loop's strand (it takes any belt down to the open loop); at
-    its inner end it keeps FAR_CLEAR off the far strand, and the belt that fits there is the longest it takes; the stock
-    belt STRETCH or more inside both."""
-    (ax, ay), (bx, by), _ = belt_runs(yaw_belt_loop(idler=False))[I.run]
-    strand = ay + (by - ay) * (ALONG - ax) / (bx - ax)              # the open loop's strand at the idler's x
-    assert I.slot_y[1] - idler_pitch_r() > strand
-    assert _far_gap(I.slot_y[0]) >= FAR_CLEAR
-    longest = belt_length(_loop_with_idler_at(I.slot_y[0]))
-    assert longest - YAW_BELT >= STRETCH and YAW_BELT - belt_length(yaw_belt_loop(idler=False)) >= STRETCH
-    assert longest == pytest.approx(405.3, abs=0.05)
+    """At the slot's outer end the idler clears the open loop's strand (it takes any belt down to the open loop); the
+    slot symmetrical about the belt's centre line, as the open loop is (its pulleys' centres on it), so its other end
+    clears the far strand from outside alike; on its strand, at DEEPEST - FAR_CLEAR off the far strand, inside the slot -
+    the belt that fits is the longest it takes; the stock belt STRETCH or more inside both."""
+    open_loop = yaw_belt_loop(idler=False)
+    strand = _open_strand()
+    (ax, ay), (bx, by), _ = belt_runs(open_loop)[0]                 # the far strand at the idler's x: the mirror
+    assert ay + (by - ay) * (ALONG - ax) / (bx - ax) == pytest.approx(-strand, abs=1e-9)
+    assert I.slot_y[0] == -I.slot_y[1] and I.slot_y[1] - idler_pitch_r() > strand
+    assert I.slot_y[0] < DEEPEST < yaw_belt_loop()[I.run + 1][1] and _far_gap(DEEPEST) == pytest.approx(FAR_CLEAR, abs=1e-6)
+    longest = belt_length(_loop_with_idler_at(DEEPEST))
+    assert longest - YAW_BELT >= STRETCH and YAW_BELT - belt_length(open_loop) >= STRETCH
+    assert longest == pytest.approx(411.1, abs=0.05)
 
 
-@pytest.mark.parametrize("y", [I.slot_y[0], yaw_belt_loop()[I.run + 1][1], I.slot_y[1]])
+@pytest.mark.parametrize("y", [DEEPEST, yaw_belt_loop()[I.run + 1][1], I.slot_y[1]])
 def test_the_idler_clears_the_far_strand_and_the_pulleys(y):
-    """Anywhere in its slot: FAR_CLEAR off the far strand (more off its place), well off the 20T and the 120T (their
-    pitch circles; the parts themselves: test_the_kit_fits)."""
-    assert _far_gap(y) >= FAR_CLEAR
+    """On its strand from DEEPEST out: FAR_CLEAR off the far strand (more off its place); there and at the mirror
+    place on the other strand, well off the 20T and the 120T (their pitch circles; the parts themselves:
+    test_the_kit_fits)."""
+    assert _far_gap(y) >= FAR_CLEAR - 1e-6
     flange = GT2_IDLER_FLANGE_DIA / 2.0
     for cx, cy, r in yaw_belt_loop(idler=False):
-        assert math.hypot(ALONG - cx, y - cy) - r - flange >= 5.0
+        for yy in (y, -y):
+            assert math.hypot(ALONG - cx, yy - cy) - r - flange >= 5.0
 
 
 def test_the_slot_runs_across_the_belt():
@@ -141,17 +166,18 @@ def test_the_slot_runs_across_the_belt():
 def test_the_stations():
     """Along Y: the idler level with the belt, the spacer from the plate's top to its lower face, its land narrower than
     the idler's seat (the bearing's inner ring only); the screw's head on the idler's top, its tip 2 pitches past the nut
-    on the plate's underside, the nut inside its rails; across: the nut's rails inside the window between the joint's
-    posts, past the mount's posts and short of the motor's face."""
+    on the plate's underside, the nut inside its rails; across: the nut's rails inside the mount's walls (their ends
+    past the window between the joint's posts, beside the posts), short of the mount's posts and of the motor's face."""
     assert PARAMS.YAW_IDLER_Y + GT2_IDLER_WIDTH / 2.0 == pytest.approx(YAW_BELT_Y)
     assert PARAMS.YAW_IDLER_SPACER_H == pytest.approx(yaw_idler_spacer_h()) == pytest.approx(PARAMS.YAW_IDLER_Y - PL.y[1])
     assert PARAMS.YAW_IDLER_SPACER_H > I.land_h and GT2_IDLER_BORE < I.slot_w < I.land_dia < min(GT2_IDLER_SEAT_DIA, I.riser_dia)
     tip, nut_low = PARAMS.YAW_IDLER_Y + GT2_IDLER_WIDTH - I.screw_len, PARAMS.YAW_IDLER_NUT_Y - I.nut.h
     assert PARAMS.YAW_IDLER_NUT_Y == PL.y[0] and nut_low - tip >= 2 * PARAMS.M5_PITCH - 1e-9 and I.rail_h >= I.nut.h
     (_, za), (_, zb) = yaw_idler_slot()
-    assert max(abs(za), abs(zb)) + REACH < mount_inner_half() and I.rail_wall >= 2.0
+    ends = max(abs(za), abs(zb)) + REACH + I.rail_wall                 # the rails' closed ends, across
+    assert mount_inner_half() < ends < inner_r(DEFAULT, PL.y[0]) - 10.0 and I.rail_wall >= 2.0
     near, far = I.x - HALF_NUT - I.rail_wall, I.x + HALF_NUT + I.rail_wall
-    assert near - (DEFAULT.joint.split_x + DEFAULT.mount.post_t) >= 10.0
+    assert near - (DEFAULT.joint.split_x + DEFAULT.mount.post_t) >= 0.5
     assert DEFAULT.motor.centre[0] - NEMA17_FACE / 2.0 - far >= 5.0
 
 
