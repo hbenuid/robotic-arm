@@ -4,15 +4,14 @@ Fast: every gauge well-formed (a known builder and options it takes, every arm v
 the clearance holes and press nut pocket lib/fasteners.py and the parts size have gauges, the titles in the label
 font's characters, the packing on synthetic pieces, lib/gauges imported without the kernel. Slow: every coupon one valid
 solid on the bed inside the margins, its round features at the sizes its labels print, the plates (every coupon once,
-none overlapping, the nested ones inside their ring's opening), a plate's 3MF (millimetres, one named object a coupon, the process's locale kept)."""
+none overlapping, the nested ones inside their ring's opening), a plate's STEP (millimetres, one named child a coupon, at its
+place on the bed)."""
 import inspect
 import itertools
-import locale
 import math
 import re
 import subprocess
 import sys
-import zipfile
 
 import build123d as bd
 import pytest
@@ -163,16 +162,20 @@ def test_the_plates(built):
 
 
 @pytest.mark.slow
-def test_a_plate_3mf(built, tmp_path):
+def test_a_plate_step(built, tmp_path):
+    """A plate's STEP, read back: millimetres, one child a coupon named by its key, its solid at its place on the bed."""
+    from cad import step
+
     from tools import export_gauges
     _, plates = built
-    path = tmp_path / "plate.3mf"
-    before = locale.setlocale(locale.LC_ALL)
-    export_gauges.write_plate(plates[0], path, 0.05, 0.3)
-    # lib3mf's write switches the process to the C locale: write_plate puts it back, or every later read without an
-    # encoding in this process is ASCII (test_tooling's of the code files failed so after this test)
-    assert locale.setlocale(locale.LC_ALL) == before
-    with zipfile.ZipFile(path) as z:
-        model = z.read("3D/3dmodel.model").decode()
-    assert 'unit="millimeter"' in model
-    assert sorted(re.findall(r'<object id="\d+" name="([^"]+)"', model)) == sorted(c.key for c, _, _ in plates[0])
+    path = tmp_path / "plate.step"
+    assert export_gauges.write_plate(plates[0], path)
+    assert "SI_UNIT(.MILLI.,.METRE.)" in path.read_text(encoding="ascii", errors="replace")
+    kids = {kid.label: kid for kid in step.read(str(path)).children}
+    assert sorted(kids) == sorted(c.key for c, _, _ in plates[0])
+    for coupon, x, y in plates[0]:
+        kid, want = kids[coupon.key], coupon.shape.bounding_box()
+        got = kid.bounding_box()
+        assert kid.volume == pytest.approx(coupon.shape.volume, rel=1e-6), coupon.key
+        assert abs(got.min.X - (x + want.min.X)) < EPS and abs(got.min.Y - (y + want.min.Y)) < EPS, coupon.key
+        assert abs(got.min.Z) < EPS, coupon.key
