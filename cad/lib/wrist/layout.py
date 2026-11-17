@@ -5,9 +5,22 @@ from __future__ import annotations
 import math
 
 from lib.belts import GT2_PULLEY_20T_TEETH, pulley_circle
-from lib.datum import compose
+from lib.datum import angles, compose
 from lib.fasteners import M3_PITCH
 from lib.motors import MKS_PLUG_ROOM, MKS_SERVO42D_HEADERS
+from lib.sensors import (
+    A3144_HALL_DEPTH,
+    A3144_LEAD_T,
+    KY003_BOARD_L,
+    KY003_BOARD_W,
+    KY003_HEADER_H,
+    KY003_HOLE_INSET,
+    KY003_LEAD_BEND_X,
+    KY003_LEAD_TAIL,
+    KY003_PIN_PITCH,
+    KY003_PIN_TAIL,
+    ky003_hall_point,
+)
 from lib.wrist.params import DEFAULT, WristConfig
 
 _AXES_DEG = (0.0, 90.0, 180.0, 270.0)
@@ -266,3 +279,75 @@ def face_nut_pocket(cfg: WristConfig = DEFAULT) -> tuple[float, float, float, fl
     d, c, S = cfg.roll, cfg.connector, stack_positions(cfg)
     r_in = c.bolt_circle_dia / 2.0 - d.nut.af / math.sqrt(3.0) - d.nut_fit
     return r_in, d.face_dia / 2.0 + 1.0, S["z_face_nut"] - d.nut_fit, S["z_face_nut_seat"]
+
+
+# --- the home sensor (WristRollHomeParams): the KY-003 upright beside the pulley's face on the module's +X, its fin, the
+# magnet glued on the face's rim -------------------------------------------------------------------------------------
+# the KY-003's frame in the module: its x (toward the header) along +Y, its y along -Z, its z (the branded face) toward R'
+_SENSOR_AXES = ((0.0, 1.0, 0.0), (0.0, 0.0, -1.0), (-1.0, 0.0, 0.0))
+
+
+def home_face_z(cfg: WristConfig = DEFAULT) -> float:
+    """The pulley face's middle along R' (module z): the chip's and the magnet's station."""
+    S = stack_positions(cfg)
+    return (S["z_ring_end"] + S["z_face"]) / 2.0
+
+
+def home_hall_point(cfg: WristConfig = DEFAULT) -> tuple[float, float, float]:
+    """The KY-003's hall element in the module frame: on +X, the face's rim + the magnet + `air` + the element's depth off
+    R', at the face's middle."""
+    h = cfg.roll.home
+    return (cfg.roll.face_dia / 2.0 + h.magnet_t + h.air + A3144_HALL_DEPTH, 0.0, home_face_z(cfg))
+
+
+def home_sensor_frame(cfg: WristConfig = DEFAULT) -> tuple:
+    """The KY-003's part frame in the module frame, as data: upright, its branded face toward R' (-X), its header toward
+    the motor (+Y), its hall element on home_hall_point() (lib/sensors.py ky003_hall_point)."""
+    local, hall = ky003_hall_point(), home_hall_point(cfg)
+    origin = tuple(hall[i] - sum(_SENSOR_AXES[k][i] * local[k] for k in range(3)) for i in range(3))
+    rows = tuple(tuple(_SENSOR_AXES[j][i] for j in range(3)) for i in range(3))
+    return tuple(round(v, 9) + 0.0 for v in origin), angles(rows)
+
+
+def home_fin_back(cfg: WristConfig = DEFAULT) -> float:
+    """The fin's back (module x): flush with the far face."""
+    return cfg.roll.frame_r
+
+
+def home_fin_t(cfg: WristConfig = DEFAULT) -> float:
+    """The fin under the board: the board's back (the KY-003's z = 0, module x) to the fin's back."""
+    return home_fin_back(cfg) - home_sensor_frame(cfg)[0][0]
+
+
+def home_board_points(cfg: WristConfig = DEFAULT) -> list[tuple[float, float]]:
+    """The KY-003's two holes in its own frame (lib/sensors.py KY003_HOLE_*): the board's M2s."""
+    y = KY003_BOARD_W / 2.0 - KY003_HOLE_INSET
+    return [(KY003_HOLE_INSET, y), (KY003_HOLE_INSET, -y)]
+
+
+def home_reliefs(cfg: WristConfig = DEFAULT) -> list[tuple[tuple, tuple, float]]:
+    """The fin's 2 slots in the KY-003's frame, ((x0, x1), (y0, y1), depth under the board): across the header's pins'
+    tails (one pitch behind its housing) and the chip's leads' tails (where they turn down), relief_w wide, relief_past
+    deeper than each - through the fin where that is past its thickness."""
+    h = cfg.roll.home
+    pin_x = KY003_BOARD_L - KY003_HEADER_H / 2.0 - KY003_PIN_PITCH
+    lead_x = KY003_LEAD_BEND_X + A3144_LEAD_T / 2.0
+    rows = ((pin_x, h.header_relief_len, KY003_PIN_TAIL), (lead_x, h.lead_relief_len, KY003_LEAD_TAIL))
+    return [((x - h.relief_w / 2.0, x + h.relief_w / 2.0), (-ln / 2.0, ln / 2.0), tail + h.relief_past) for x, ln, tail in rows]
+
+
+def home_magnet_deg(cfg: WristConfig = DEFAULT) -> float:
+    """The magnet round R' from the module's +X in the zero pose: over the chip (on +X) at wrist_roll home_deg."""
+    return -cfg.roll.home.home_deg
+
+
+def home_magnet_frame(cfg: WristConfig = DEFAULT) -> tuple:
+    """The magnet's part frame (its axis on Z, its south pole's face on z = 0, the disc in +Z) in the module frame, the
+    zero pose: on the face's rim at home_magnet_deg(), its pole face magnet_t off the rim (the disc touches it along its
+    middle), its axis toward R', its x along R'."""
+    h, a = cfg.roll.home, math.radians(home_magnet_deg(cfg))
+    r = cfg.roll.face_dia / 2.0 + h.magnet_t
+    c, s = math.cos(a), math.sin(a)
+    axes = ((0.0, 0.0, 1.0), (s, -c, 0.0), (-c, -s, 0.0))     # x along R', y = z x x, z toward R'
+    rows = tuple(tuple(axes[j][i] for j in range(3)) for i in range(3))
+    return (round(r * c, 9) + 0.0, round(r * s, 9) + 0.0, home_face_z(cfg)), angles(rows)

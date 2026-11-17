@@ -86,9 +86,10 @@ def test_what_the_drive_replaced():
     assert {"nema17_pancake#1", "gt2_pulley_20t#1"} <= set(P.RETIRED) and "gripper_clamp_bracket#1" not in P.OCCURRENCES
     assert "brack_for_hand_cmap" in {s["label"] for s in P.DATA["skipped"]}
     assert F.LINKS["wrist_pitch_link"][-1] == "wrist_roll_drive#1:stator" and F.LINKS["wrist_roll_link"][0] == "wrist_roll_drive#1:rotor"
-    assert M.BODIES["rotor"] == {"wrist_roll_shaft", "wrist_roll_pulley"}
+    assert M.BODIES["rotor"] == {"wrist_roll_shaft", "wrist_roll_pulley", "wrist_roll_home_magnet"}
     assert M.BODIES["stator"] == {"bearing_6806", "nema17_pancake", "mks_servo42d", "gt2_pulley_20t", "wrist_roll_belt",
-                                  "wrist_back_panel", "wrist_back_magnets"}
+                                  "wrist_back_panel", "wrist_back_magnets", "wrist_roll_home_fin", "ky003_hall_sensor",
+                                  "wrist_roll_home_board_screws", "wrist_roll_home_board_nuts"}
 
 
 def test_stack():
@@ -225,8 +226,9 @@ def test_totals_and_bodies(module):
 def test_module_colors(module):
     """Standalone: every part in its colour, as in the arm (tests/helpers.py part_colours)."""
     assert module.label == "wrist_roll_drive"
-    assert part_colours(module) == {True: 7, False: 3}   # 2 bearings, the pancake, its board, its 20T, the belt, the magnets /
-    #                                                      the shaft, the pulley, the back panel
+    assert part_colours(module) == {True: 11, False: 4}   # 2 bearings, the pancake, its board, its 20T, the belt, the magnets,
+    #                                                       the KY-003, its screws, its nuts, the home magnet / the shaft, the
+    #                                                       pulley, the back panel, the home sensor's fin
 
 
 @pytest.mark.slow

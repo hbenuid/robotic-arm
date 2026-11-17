@@ -9,7 +9,9 @@ the 6806 pair back to back on the tower's lip; the wrist roll belt (no idler yet
 docs/open_issues.md). Rotor: the pulley (wrist_roll_pulley, the output: its 40T band beside the pancake's 20T, its hub
 through bearing 2, the face gripper_j3_connector bolts to - 4x M3 into nuts in its rim) and the shaft (wrist_roll_shaft,
 a collar: its hub through bearing 1 to the pulley's, the rotor clamp's nuts and the stop lug in its flange), clamped by
-4x M3 from the pulley's face; the gripper servo's cable runs through both. MODULE FRAME (lib/wrist/params.py
+4x M3 from the pulley's face; the gripper servo's cable runs through both. The home sensor (lib/wrist/params.py
+WristRollHomeParams): a KY-003 upright on a printed fin glued on the far face's front corner (stator), facing a magnet
+glued on the pulley face's rim (rotor). MODULE FRAME (lib/wrist/params.py
 WristRollParams): origin on the roll axis R' at the pitch axis' station, +Z along R' toward the gripper, +X away from
 the plate (wrist_link's -Z), +Y = wrist_link's +Y (R' on the pancake's `side`), the pitch axis along X at y_motor (the
 arm's wrist offset across R'); the arm places it through lib/mounts.py MODULE_MOUNTS ("wrist_roll_drive#1" on wrist_link#1). Every
@@ -24,9 +26,10 @@ from lib import reference as R
 from lib.assembly import assembly
 from lib.models import raw
 from lib.wrist import DEFAULT
-from lib.wrist.layout import pancake_location, stack_positions
+from lib.wrist.layout import home_magnet_frame, home_sensor_frame, pancake_location, stack_positions
 
 S = stack_positions(DEFAULT)
+_HOME_SENSOR = home_sensor_frame(DEFAULT)   # the KY-003's frame beside the pulley's face (lib/wrist/layout.py)
 
 
 def _at(x: float = 0.0, y: float = 0.0, z: float = 0.0):
@@ -54,19 +57,26 @@ OCCURRENCES = [
     # the back panel over the shaft's bay, flush in the frame's rear step, and its magnet pairs
     ("wrist_back_panel",      None, _at()),
     ("wrist_back_magnets",    None, _at()),
+    # the home sensor (WristRollHomeParams): its fin on the far face's front corner (built at its station), the KY-003
+    # upright on it and the board's M2s + nuts (in the KY-003's frame); the magnet glued on the pulley face's rim
+    ("wrist_roll_home_fin",   None, _at()),
+    ("ky003_hall_sensor",     "wrist_roll", _HOME_SENSOR),
+    ("wrist_roll_home_board_screws", None, _HOME_SENSOR),
+    ("wrist_roll_home_board_nuts", None, _HOME_SENSOR),
+    ("wrist_roll_home_magnet", None, home_magnet_frame(DEFAULT)),
 ]
 
 # The module's rigid bodies (robot/frames.py LINKS: "wrist_roll_drive#1:stator" in wrist_pitch_link, ":rotor" in
 # wrist_roll_link - with the gripper).
-ROTOR = frozenset({"wrist_roll_shaft", "wrist_roll_pulley"})
+ROTOR = frozenset({"wrist_roll_shaft", "wrist_roll_pulley", "wrist_roll_home_magnet"})
 BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES) - ROTOR}
 
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("stator") after any geometry change.
 EXPECTED = {
-    "leaves": 10, "solids": 41, "solid_volume": 90462.684,
-    "bodies": {"stator": {"leaves": 8, "solids": 39, "solid_volume": 64742.58},
-               "rotor": {"leaves": 2, "solids": 2, "solid_volume": 25720.104}},
+    "leaves": 15, "solids": 50, "solid_volume": 93877.705,
+    "bodies": {"stator": {"leaves": 12, "solids": 47, "solid_volume": 68101.052},
+               "rotor": {"leaves": 3, "solids": 3, "solid_volume": 25776.653}},
 }
 
 
