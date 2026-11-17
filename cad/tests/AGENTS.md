@@ -98,7 +98,9 @@ clean pairs against `wrist_link`, the pancake's way in from the bottom, the plat
 pilot; `test_back_panel`: the wrist frame's back panel
 and its magnet pairs (no reference) - their numbers, the panel flush and flat on the rear plane, `run_gap` off the
 turning shaft, its rim and notches, the frame's step and pockets, the magnets on their pockets' bottoms, clear of the
-drive; `test_roll_home`: the wrist_roll home sensor - the home angle and the magnet clear of the connector's nut slots,
+drive; `test_roll_screws`: the drive's fasteners - the pancake's 4x M3, the rotor clamp's and the connector's 4x M3 +
+nuts (no reference) - their numbers, their seats, the bosses round the plate's slots the pancake's heads sit in, the
+wrist 90T's nuts' way in from the pocket kept open; `test_roll_home`: the wrist_roll home sensor - the home angle and the magnet clear of the connector's nut slots,
 the switch's zone past the lower end for every A3144 operate point and a magnet glued 1 mm off, the layout (the KY-003
 upright, its chip `air` off the magnet, the fin's back flush with the far face, the screws' and nuts' lengths), its
 fin's, magnet's and fasteners' numbers (no reference), the fin's holes, nut pockets and slots, its fit in the module

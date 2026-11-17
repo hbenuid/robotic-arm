@@ -300,6 +300,20 @@ from lib.forearm.layout import clamp_points as _roll_clamp_points  # noqa: E402
 _ROLL_CLAMP = len(_roll_clamp_points(_FOREARM))
 ROLL_CLAMP_SCREWS_MASS_G = STEEL_DENSITY * _ROLL_CLAMP * shcs_volume(_FOREARM.drive.clamp_screw, _FOREARM.drive.clamp_screw_len)   # 12.0, 4x M3x45
 ROLL_CLAMP_NUTS_MASS_G = STEEL_DENSITY * _ROLL_CLAMP * nut_volume(_FOREARM.drive.clamp_nut)                                    # 1.4, 4x M3
+# the wrist roll's: the pancake's M3 (parts/wrist/wrist_roll_motor_screws), the rotor clamp's and the connector's M3 + nuts
+# (parts/wrist/wrist_roll_{clamp,connector}_{screws,nuts}; lib/wrist/params.py WristRollParams, ConnectorParams), likewise
+from lib.wrist.layout import clamp_points as _wrist_clamp_points  # noqa: E402
+from lib.wrist.layout import connector_bolt_points_module as _wrist_connector_points  # noqa: E402
+from lib.wrist.layout import pad_bolt_points as _wrist_pad_points  # noqa: E402
+
+_WRIST_CLAMP, _WRIST_CONNECTOR = len(_wrist_clamp_points(_WRIST)), len(_wrist_connector_points(_WRIST))
+WRIST_ROLL_MOTOR_SCREWS_MASS_G = (STEEL_DENSITY * len(_wrist_pad_points(_WRIST))
+                                  * shcs_volume(_WRIST.roll.pad_screw, _WRIST.roll.pad_screw_len))                        # 3.8, 4x M3x8
+WRIST_ROLL_CLAMP_SCREWS_MASS_G = STEEL_DENSITY * _WRIST_CLAMP * shcs_volume(_WRIST.roll.clamp_screw, _WRIST.roll.clamp_screw_len)   # 9.8, 4x M3x35
+WRIST_ROLL_CLAMP_NUTS_MASS_G = STEEL_DENSITY * _WRIST_CLAMP * nut_volume(_WRIST.roll.nut)                                      # 1.4, 4x M3
+WRIST_ROLL_CONNECTOR_SCREWS_MASS_G = (STEEL_DENSITY * _WRIST_CONNECTOR
+                                      * shcs_volume(_WRIST.connector.screw, _WRIST.connector.bolt_len))                   # 4.2, 4x M3x10
+WRIST_ROLL_CONNECTOR_NUTS_MASS_G = STEEL_DENSITY * _WRIST_CONNECTOR * nut_volume(_WRIST.roll.nut)                              # 1.4, 4x M3
 # the roll frame's back panel's magnets (parts/joints/roll_back_magnets; lib/forearm/params.py BackPanelParams): plain
 # discs, a pair at each point, x NdFeB's density
 NDFEB_DENSITY = 7.5e-3   # [DATASHEET] g/mm^3 - sintered NdFeB magnets

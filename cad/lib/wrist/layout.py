@@ -110,8 +110,11 @@ def stack_positions(cfg: WristConfig = DEFAULT) -> dict[str, float]:
         "z_face": z_face, "z_clamp_head": z_clamp_head, "z_face_nut": z_face_nut,
         "z_face_nut_seat": z_face_nut + d.nut.h,                  # 33.65: its bearing face, toward the connector
         "z_connector": z_face + cfg.connector.hub_len,            # 41.9: the connector plate's hub-side face
+        "z_connector_head": z_face + cfg.connector.hub_flange_t,  # 38.65: its flange's plate side, the 4x M3's heads on it
         "z_motor_face": z_motor_face, "z_motor_rear": z_motor_rear, "z_pocket_rear": z_pocket_rear,
-        "z_front": z_motor_face + d.pad_t,                        # 15.5: the plate's front face = the frame's front face
+        "z_front": z_motor_face + d.pad_t,                        # 15.5: the plate's front face = the frame's front face, the
+        #                                                           pancake's M3 heads on it
+        "z_boss_top": z_motor_face + d.pad_t + d.boss_h,          # 18.5: the bosses round its slots, the heads flush
         "z_20t": z_motor_face + p.pilot_height + d.pulley_seat,   # 13.0: the 20T's hub face
         "x_coupler": x_coupler, "x_free": x_free,
         "x_motor": 0.0, "y_motor": -d.side * d.centre_distance,   # the pancake on the pitch axis

@@ -40,6 +40,7 @@ from lib.bearings import (
 )
 from lib.belts import GT2_PULLEY_20T_TEETH, centre_distance
 from lib.coupler.params import DEFAULT as COUPLER
+from lib.cycloidal.params import PETGTolerances
 from lib.fasteners import (
     M2_CLEAR,
     M2_NUT,
@@ -53,7 +54,7 @@ from lib.fasteners import (
     NutSize,
     ShcsSize,
 )
-from lib.motors import MKS_SERVO42D_STACK, MKS_SERVO42D_W
+from lib.motors import MKS_SERVO42D_STACK, MKS_SERVO42D_W, MOTOR_40
 from lib.sensors import HOME_MAGNET_DIA, KY003_BOARD_L
 from lib.style import GRILL_PITCH, GRILL_SLOT
 
@@ -377,6 +378,17 @@ class WristRollParams:
     pad_t: float = 4.0                  # [DESIGN] the plate (the pocket's front wall) the pancake's 4x M3 bolt through
     pad_slot_len: float = 5.0           # [DESIGN] +/- 2.5 along Y: the belt's tension (no idler)
     pad_bolt_dia: float = 3.4
+    # the pancake's 4x M3 (parts/wrist/wrist_roll_motor_screws): their heads flush in counterbores through a boss round
+    # each slot on the plate's front face - the plate is too thin for a counterbore, and the motor moved back to thicken
+    # it would put the plate in the way of the wrist 90T's two front nuts, which go into their channels from the pocket
+    boss_h: float = M3_SHCS.head_h      # [DESIGN] 3.0: each boss over the front face, the heads' height - they bear on the face
+    boss_wall: float = 1.5              # [DESIGN] round its counterbore (a slot too: the heads travel with the motor)
+    pad_cbore_dia: float = MOTOR_40.motor_bolt_head_dia + PETGTolerances().bolt_clearance_add   # 5.7 [DESIGN] the counterbores: the
+    #                                     other motors' (lib/forearm/params.py MotorHoleParams.pocket_dia)
+    pad_screw: ShcsSize = M3_SHCS       # [DATASHEET] ISO 4762 M3
+    pad_screw_thread: float = MOTOR_40.bolt_hole_depth - MOTOR_40.motor_bolt_thread_margin   # 4.0 [DESIGN] into the pancake's
+    #                                     tapped holes, the other motors' rule (its board's kit screws reach in from behind:
+    #                                     docs/open_issues.md)
     pad_pilot_w: float = 22.3           # [DESIGN] the pilot's slot
     pulley_seat: float = 0.5            # [DESIGN] the 20T's hub face over the pilot (the forearm roll's)
     t20_hub: float = 10.95              # [REFERENCE] vendor 20T: its tooth band's centre from its hub face (7.45 + 3.5)
@@ -423,7 +435,7 @@ class WristRollParams:
     face_nut_depth: float = 1.0         # [DESIGN] each nut's bearing face this far under the face
     connector_turn_deg: float = 176.818   # [REFERENCE] the connector's plate x axis in the module's x-y plane (the gripper keeps its
     #                                     capture orientation: tests/wrist/test_roll_drive.py checks it against the placements)
-    clamp_screw: ShcsSize = M3_SHCS     # [DATASHEET] ISO 4762 M3 (tools/bom.py EXTRAS)
+    clamp_screw: ShcsSize = M3_SHCS     # [DATASHEET] ISO 4762 M3 (parts/wrist/wrist_roll_clamp_screws)
     nut: NutSize = M3_NUT               # [DATASHEET] ISO 4032 M3: the clamp's in the shaft's flange, the connector's in the face
     bolt_dia: float = M3_CLEAR          # [DESIGN] 3.4: the clamp's and the connector's M3 through the rotor
 
@@ -436,6 +448,11 @@ class WristRollParams:
     def t20(self) -> float:
         """The 20T's tooth-band centre from the pancake's mounting face: over the pilot, its seat, the hub."""
         return self.pancake.pilot_height + self.pulley_seat + self.t20_hub
+
+    @property
+    def pad_screw_len(self) -> float:
+        """The pancake's M3 under the head (8): the plate under the heads and the thread in the pancake."""
+        return self.pad_t + self.pad_screw_thread
 
 
 @dataclass(frozen=True)
@@ -466,8 +483,9 @@ class ConnectorParams:
     bolt_circle_dia: float = 36.0       # [DESIGN] 4x M3 on it ...
     bolt_deg: tuple = (30.0, 150.0, 210.0, 330.0)   # [DESIGN] ... from the plate's x axis: outside its +/- 11.5 flats (x +/-15.6), a
     #                                     key reaches each head along Y past the plate
-    bolt_len: float = 10.0              # [DESIGN] M3 x 10: through the flange into its nut in the pulley's face, the tip 2 pitches past
-    screw: ShcsSize = M3_SHCS           # [DATASHEET] ISO 4762 M3 (tools/bom.py EXTRAS)
+    bolt_len: float = 10.0              # [DESIGN] M3 x 10: through the flange into its nut in the pulley's face, the tip at
+    #                                     its hole's end (z_ring_end), 2.6 past the nut
+    screw: ShcsSize = M3_SHCS           # [DATASHEET] ISO 4762 M3 (parts/wrist/wrist_roll_connector_screws)
 
     @property
     def hub_len(self) -> float:
