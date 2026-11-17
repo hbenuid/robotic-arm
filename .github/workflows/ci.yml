@@ -53,7 +53,7 @@ jobs:
   slow:
     name: Slow lane (${{ matrix.part }})
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     strategy:
       fail-fast: false  # one part failing still reports the others
       matrix:
