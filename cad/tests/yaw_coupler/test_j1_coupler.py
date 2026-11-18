@@ -130,8 +130,8 @@ def test_default_fork_holds_the_drives_ends():
     assert sorted(fork_hub_bolts(DEFAULT)) == pytest.approx(sorted((f.axis_y + y, f.axis_z + x) for x, y in arm_mount_points(DRIVE)))
     head = S["hub_top"] + sh.yoke_leg - (M4_SHCS.head_h + 0.5)        # the screws' heads' seats, drive z
     assert head - f.hub_screw_len == pytest.approx(S["z_hub"] + sh.hub_nut_depth - DRIVE.housing.bolt_nut_thickness - 1.0)
-    # both legs' round tops plate_r: the hub leg's 9.85 past the hub, its counterbores 16.3 inside the edge
-    assert f.plate_r - DRIVE.output_hub.od / 2.0 == pytest.approx(9.85)
+    # both legs' round tops plate_r: the hub leg's 9.725 past the hub, its counterbores 16.3 inside the edge
+    assert f.plate_r - DRIVE.output_hub.od / 2.0 == pytest.approx(9.725)
     reach = max(math.hypot(y - f.axis_y, z - f.axis_z) for y, z in fork_hub_bolts(DEFAULT)) + COUNTERBORE / 2.0
     assert f.plate_r - reach == pytest.approx(16.3, abs=0.01)
     # the disc faceted like the base, its flats on the base's cone: BASE_R at the rim, in at BASE_DRAFT; the posts down

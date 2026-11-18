@@ -108,6 +108,7 @@ class BearingParams:
     out_bore: float = 70.0     # 6814-2RS output bearings (x2)
     out_od: float = 90.0
     out_width: float = 10.0
+    out_inner_ring_od: float = 74.8   # [MEASURE] the 6814's inner ring out to its seal: 2.4 thick on the bought ones
     out_qty: int = 2
     inp_bore: float = 5.0      # 625-2RS eccentric-shaft support, output side (x1)
     inp_od: float = 16.0
@@ -178,7 +179,7 @@ class MotorParams:
 class OutputHubParams:
     """Output hub / plate dimensions - spec section 5.3."""
 
-    od: float = 70.3                   # 70 mm 6814 inner-race bore + 0.3 mm interference grip
+    od: float = 70.3                   # 70 mm 6814 inner-race bore + 0.3 mm interference grip (the port's; DEFAULT_CONFIG's: below)
     shaft_clearance_bore: float = 6.0  # 5 mm pin + 1 mm clearance
     output_hub_pin_ceiling: float = 1.0    # closed top above the blind pin holes
     proud_above_housing: float = 5.0   # output face past the housing output face (z=60 -> 65)
@@ -272,7 +273,7 @@ class ShellParams:
     HousingParams.lip_bore_dia, the bearing's outer race's stop), the 6814 (its outer race in the shell's seat), a
     plate_dia plate inside the shell's ring_bore_dia pin ring (the ring pins' ends in it) - the motor plate at the motor
     end, the hub's flange at the other, each the port's motor plate thick (StackUp.z_motor_plate_inner), its face cut
-    back over the 6814's turning outer race - and the stack's clearance to its disc (StackUp.input_clearance). So the
+    back over the 6814's seal and turning outer race - and the stack's clearance to its disc (StackUp.input_clearance). So the
     shell is symmetric about the middle of the discs. The motor plate's sleeve runs back over the motor (its bore clears
     the motor's and the MKS board's corners) through the yoke's motor-side leg, bolted to it by radial M4s into nuts
     pressed into lugs on its bore (sleeve_bolt_deg) - nothing else holds the carrier's motor end from turning; the hub
@@ -280,7 +281,9 @@ class ShellParams:
 
     plate_dia: float = 90.0            # [DESIGN] the motor plate and the hub's flange inside the shell's pin rings ...
     ring_bore_dia: float = 92.0        # [DESIGN] ... the pin rings' bore round them (1 a side); the ring-pin holes 1.9 outside it
-    plate_relief_dia: float = 79.0     # [DESIGN] each plate's face on its 6814 cut back from here out, over the turning outer race ...
+    plate_relief_dia: float = 74.0     # [DESIGN] each plate's face on its 6814 cut back from here out - 0.4 a side inside the
+    #                                    inner race's edge (BearingParams.out_inner_ring_od), over the seal and the turning
+    #                                    outer race ...
     plate_relief_depth: float = 0.6    # [DESIGN] ... this deep (the inner race bears on the face inside it)
     sleeve_bore_dia: float = 62.0      # [DESIGN] the sleeve's bore: the motor (42 x 43) and the MKS board (43 x 43) are 61 across the corners
     sleeve_od: float = 70.0            # [DESIGN] the sleeve behind the seat: the 6814 slides on over it ...
@@ -386,6 +389,8 @@ DEFAULT_CONFIG = replace(
                  ring_pin_length=40.0),   # the turning shell's: 5 into each pin ring past the 30 between the plates
     housing=replace(_HOUSING, od=_HOUSING.bolt_circle_dia + _HOUSING.bolt_nut_pocket_af + 2 * LUG_WALL),       # 129.2
     stack_up=_STACK,
-    output_hub=replace(LEGACY_CONFIG.output_hub, proud_above_housing=_SHELL.end_plate_gap),   # the hub's face on the yoke's leg
+    output_hub=replace(LEGACY_CONFIG.output_hub, proud_above_housing=_SHELL.end_plate_gap,   # the hub's face on the yoke's leg
+                       od=70.55),   # [MEASURE] the 6814's 70 bore + 0.55: a firm press at 0.20 (a ring test; the port's
+    #                                 70.3 was a little loose on the print) - the motor plate's sleeve end reads it too
     shell=_SHELL,
 )   # [DESIGN]

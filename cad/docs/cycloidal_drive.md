@@ -198,7 +198,7 @@ under `LUG_WALL` - 1 to leave the external faces 1 mm or more past the nut pocke
 
 ### 5.3 Output hub (`parts/cycloidal/cycloidal_output_hub.py`, `cfg.output_hub`)
 
-PETG (aluminium viable): Ø70.3 (`od` = 70 mm 6814 bore + 0.3 interference grip), 23 tall (the port's 28): a Ø90 × 9
+PETG (aluminium viable): Ø70.55 (`od` = 70 mm 6814 bore + 0.55, a firm press measured at 0.20), 23 tall (the port's 28): a Ø90 × 9
 flange (`hub_flange`, the motor plate's mirror) in the body's pin ring, its face on the hub-end 6814 cut back over
 the outer race (`plate_relief_*`) - the flange stops the inner race -, then the grip, on past the lip to the
 `j1_coupler` fork's hub-side leg; 4 blind Ø4.20 × 18 pin holes on Ø60 closed by a 1 mm ceiling; Ø6 shaft-clearance
@@ -243,12 +243,13 @@ face, the one the part prints on; nothing bolts the arm to the shell's end.
 - **The two ends mirror each other** about the middle of the discs (`tests/cycloidal/test_shell_body.py`): from the
   outside in, an `end_lip`, the 6814 (its outer race in the shell's seat), a `plate_dia` plate inside the shell's
   `ring_bore_dia` pin ring - the motor plate at the motor end, the hub's flange at the other, each the port's motor
-  plate thick, its face cut back `plate_relief_depth` from `plate_relief_dia` over the turning outer race - and the
+  plate thick, its face cut back `plate_relief_depth` from `plate_relief_dia` - inside the inner race's edge
+  (`out_inner_ring_od`) - over the seal and the turning outer race - and the
   stack's 4 mm clearance to its disc. The ring pins stand in both pin rings (`ring_pin_engagement` 5 into each).
 - **The motor plate is the carrier's motor end** (`parts/cycloidal/cycloidal_motor_plate.py`, its `LEGACY_CONFIG`
   build the port's plate): the plate - the motor's pilot, M3s and shaft bore as before - and a sleeve back over the
   motor: `sleeve_bore_dia` round the motor's and the MKS board's corners (61 across them), `sleeve_od`, and the hub's
-  70.3 grip over the last `out_width`, where the motor-end 6814 presses on after sliding over the rest; it runs
+  70.55 grip over the last `out_width`, where the motor-end 6814 presses on after sliding over the rest; it runs
   through the fork's motor-side leg to its outer face (`sleeve_end`), bolted to it - nothing else holds the carrier's
   motor end from turning (the output pins stop short of the plate, the plate turns in its 6814): three radial M4s
   through the leg's ring in its middle (`sleeve_bolt_z`) into nuts pressed into lugs on the sleeve's bore at the
@@ -280,7 +281,7 @@ tight. Never design a hole smaller than its steel part.
 | Fit | Adjustment | Field | Application |
 |---|---|---|---|
 | Bearing outer race → housing | +0.15 / +0.20 on the bore | `output_bearing_seat_dia` 90.15, `bearing_seat_bore_add` 0.2 | 6814 seats - the body's, the shell ring's - (firm press), 625 pocket 16.2 (slip-to-light press) |
-| 6814 inner race → hub / sleeve | +0.3 interference | `output_hub.od` 70.3; `ShellParams.sleeve_od` 70 | the hub's grip and the sleeve's last `out_width` (press); the sleeve behind it slides |
+| 6814 inner race → hub / sleeve | +0.55 interference (measured, 0.20) | `output_hub.od` 70.55; `ShellParams.sleeve_od` 70 | the hub's grip and the sleeve's last `out_width` (press); the sleeve behind it slides |
 | Ring & output pin holes | +0.20 → Ø4.20 | `ring_pin_press_sub` −0.20 | slip-press as printed, blind (the shell ring, the body, the hub) |
 | Disc centre bore | +0.10 → 35.10 | `center_bore_dia` | 6003 OD |
 | Disc output-pin holes | nominal 7.4, no offset | `output_pin_hole_dia` | shrink *reduces* backlash (§1.3) |
