@@ -155,10 +155,10 @@ class TestTurningShell:
 
     def test_the_shell_is_held_both_ways_along_the_axis(self):
         """At each end the shell's lip stops the 6814's outer race (and clears the sleeve / the hub), a held plate's face
-        its inner race - the motor plate's, the hub's flange's -, each face relieved over the outer race."""
+        its inner race - the motor plate's, the hub's flange's -, each face relieved over the seal and the outer race."""
         sh, b, h = CFG.shell, CFG.bearings, CFG.housing
         assert max(sh.sleeve_od, CFG.output_hub.od) < h.lip_bore_dia < b.out_od and sh.end_lip > 0
-        assert b.out_bore < sh.plate_relief_dia < b.out_od
+        assert CFG.output_hub.od < sh.plate_relief_dia < b.out_inner_ring_od < b.out_od
         assert hub_flange(CFG) == CFG.stack_up.z_motor_plate_inner and sh.plate_dia > b.out_bore
 
 

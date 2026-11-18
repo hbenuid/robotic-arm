@@ -12,7 +12,7 @@ through the 6814s.
 The turning shell (ShellParams) holds the hub - the carrier the output pins hold the discs from turning with, so the
 housing turns - and makes it the motor plate's mirror: a plate_dia flange (lib/cycloidal/layout.py hub_flange, 9) in
 the shell's pin ring, the pin holes and the 625 in its inner face, its outer face cut back over the hub-end 6814's
-turning outer race, whose inner race the grip carries and the flange stops (the shell is held both ways: this race,
+seal and turning outer race, whose inner race the grip carries and the flange stops (the shell is held both ways: this race,
 the shell's lip on its outer race, and the motor-end 6814 mirrored). The grip runs past the shell's end
 (proud_above_housing) onto the j1_coupler yoke's leg; the same 4 holes bolt it there, their nuts in hub_nut_depth
 pockets from the flange's inner face.

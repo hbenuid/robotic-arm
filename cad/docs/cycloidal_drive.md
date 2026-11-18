@@ -243,7 +243,8 @@ face, the one the part prints on; nothing bolts the arm to the shell's end.
 - **The two ends mirror each other** about the middle of the discs (`tests/cycloidal/test_shell_body.py`): from the
   outside in, an `end_lip`, the 6814 (its outer race in the shell's seat), a `plate_dia` plate inside the shell's
   `ring_bore_dia` pin ring - the motor plate at the motor end, the hub's flange at the other, each the port's motor
-  plate thick, its face cut back `plate_relief_depth` from `plate_relief_dia` over the turning outer race - and the
+  plate thick, its face cut back `plate_relief_depth` from `plate_relief_dia` - inside the inner race's edge
+  (`out_inner_ring_od`) - over the seal and the turning outer race - and the
   stack's 4 mm clearance to its disc. The ring pins stand in both pin rings (`ring_pin_engagement` 5 into each).
 - **The motor plate is the carrier's motor end** (`parts/cycloidal/cycloidal_motor_plate.py`, its `LEGACY_CONFIG`
   build the port's plate): the plate - the motor's pilot, M3s and shaft bore as before - and a sleeve back over the
