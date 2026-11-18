@@ -107,7 +107,8 @@ upright, its chip `air` off the magnet, the fin's back flush with the far face, 
 fin's, magnet's and fasteners' numbers (no reference), the fin's holes, nut pockets and slots, its fit in the module
 (`gap` off the frame, nothing past the far face), the magnet on the rim, over the chip at home and the rotor clear of
 the sensor over the travel; `gripper_j3_connector`: LEGACY's two bodies, DEFAULT's bolted hub), `tests/gripper/` (the gripper's measured parts against their exports' numbers; the module: its layout, its fits, the jaws in mesh over their travel, the cage on the connector), `tests/pulley/` (`gt2_pulley_90t`: the GT2 groove's tangency
-solve against the export's arcs, the LEGACY build's feature probes and surfaces, DEFAULT's opened holes;
+solve against the export's arcs, the LEGACY build's feature probes and surfaces, DEFAULT's opened holes and its hub
+filled from the ring to the step;
 `gt2_pulley_120t`, a part with no reference: its volume and bbox written in, the 90T's journal, ring and holes - its plain hub gone -, 120
 grooves; `helpers.py`: probe points about the axis, the surface census),
 `tests/forearm/` (the forearm: the LEGACY
