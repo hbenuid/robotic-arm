@@ -1,6 +1,8 @@
 [project]
 name = "robotic-arm"
-version = "0.1.0"
+version = "0.2.0"
+description = "Drives the robotic-arm's MKS SERVO42D boards over CAN: the robotic_arm package and its CLI"
+readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "pyserial>=3.5",
@@ -8,19 +10,24 @@ dependencies = [
 ]
 
 [project.scripts]
-launcher = "launcher:main"
+launcher = "robotic_arm.launcher:main"
+motor-control = "robotic_arm.motor_control:main"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-only-include = ["launcher.py", "motor_control.py", "src"]
+packages = ["src/robotic_arm"]
 
 [dependency-groups]
 dev = [
+    "pytest>=9.0.2",
     "ruff>=0.16.9",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.ruff]
 # Lint only (`uv run ruff check`); `ruff format` is not adopted. The repo's cad/ is its own uv project with its
@@ -33,7 +40,6 @@ extend-select = ["E", "F", "I", "UP", "B", "SIM"]
 # F401 is reported, never auto-removed: fix-on-save (VS Code) would delete an import typed before its first use.
 unfixable = ["F401"]
 ignore = [
-    "EXE001",  # launcher.py / motor_control.py keep their shebangs but run as `uv run launcher`
     "E501",    # line length: no formatter, long lines are house style
     "E741",    # ambiguous names (l / I / O): allowed where they are the domain's own symbols
     "SIM300",  # "yoda" flips `x <= LIMIT`: it takes any UPPER_CASE name for a constant; the asserts read value-first

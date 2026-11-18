@@ -7,19 +7,20 @@ stepper motors over CAN.
 cad/                 the mechanical design: parametric build123d code, its own uv project; also the robot
                      description (URDF / SRDF / SDF)
 software/
-  control/           the motor-control CLI (CAN via a CANable / slcan adapter), its own uv project
+  control/           robotic_arm, the motor-control package and its CLIs (CAN via a CANable), its own uv project
   firmware/          microcontroller firmware (archived STM32 test projects)
 ```
 
-The current work is the CAD; the software is picked up later. Both stay in one repo on purpose: when the software is
-picked up it has to match the CAD's robot description (`cad/robot/arm.urdf`, the joints, the reductions), and one
-repo keeps both sides in one commit.
+The main work is the CAD. The software is the arm's motor control: its basic commands are in place, homing and
+kinematics are planned, and other projects install it as a package. Both stay in one repo on purpose: the software
+has to match the CAD's robot description (`cad/robot/arm.urdf`, the joints, the reductions, the home angles; a CAD
+test checks it), and one repo keeps both sides in one commit.
 
 ## Getting started
 
 - **CAD** — [`cad/README.md`](cad/README.md): setup, `./cadtool`, the layout.
 - **Motor control** — [`software/control/README.md`](software/control/README.md): hardware, setup (Windows /
-  macOS / Linux), configuring the motors, running the CLI.
+  macOS / Linux), configuring the boards, running the CLIs, using the package.
 - **Firmware** — [`software/firmware/README.md`](software/firmware/README.md).
 
 ## Development

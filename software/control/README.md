@@ -1,17 +1,23 @@
-# software/control — the motor-control CLI
+# software/control — the arm's motor control
 
-An interactive CLI that drives MKS SERVO42D / 57D stepper drivers over a CAN bus through a CANable /
-slcan-compatible USB adapter, on macOS, Linux and Windows. Its own uv project; it never depends on the CAD
-([`cad/`](../../cad/README.md)). The software is picked up after the CAD — see the [repo README](../../README.md).
+`robotic_arm`, a Python package that drives the arm's MKS SERVO42D boards over CAN, plus its CLIs. It works through
+a CANable (slcan firmware: any OS; candleLight firmware: socketcan on Linux) or python-can's virtual bus for tests.
+It is its own uv project and never depends on the CAD ([`cad/`](../../cad/README.md)). Other projects install it as
+a package (`uv add --editable <path>/software/control`; [`docs/architecture.md`](docs/architecture.md)).
+
+It grew out of the BU Robotics Club's Arctos control code. The layer design and the CLI come from there; the code is
+rewritten for this arm and checked against the MKS manual V1.0.9 ([`docs/mks_can_protocol.md`](docs/mks_can_protocol.md)).
 
 ## Hardware
 
-- MKS SERVO42D stepper drivers. [`src/config.py`](src/config.py) names three (J1..J3 = CAN ids 1..3); the arm the CAD
-  describes carries more MKS boards, and which joint each CAN id drives is not confirmed yet:
-  [`cad/docs/open_issues.md`](../../cad/docs/open_issues.md). The joints and the motor on each:
-  [`cad/robot/AGENTS.md`](../../cad/robot/AGENTS.md).
-- CANable / slcan-compatible USB-to-CAN adapter
-- 500 kbit/s CAN bus (MKS factory default)
+- Six MKS SERVO42D boards, one per joint: base_yaw, shoulder_pitch, elbow_pitch, forearm_roll, wrist_pitch,
+  wrist_roll (the joints and the motor on each: [`cad/robot/AGENTS.md`](../../cad/robot/AGENTS.md)). The gripper's
+  MG996R is not on the CAN bus.
+- A CANable USB-to-CAN adapter.
+- A 500 kbit/s CAN bus (the MKS factory default).
+
+Not confirmed yet ([`cad/docs/open_issues.md`](../../cad/docs/open_issues.md)): which board carries which CAN id,
+which way each joint's encoder counts (`sign`), and which MKS firmware the boards run.
 
 ## Setup
 
@@ -20,17 +26,12 @@ slcan-compatible USB adapter, on macOS, Linux and Windows. Its own uv project; i
 1. Clone the repo.
 2. Double-click `software\control\launch.bat`. That's it.
 
-The first run installs uv and project dependencies (~30s); every subsequent
-run goes straight to the motor controller menu.
+The first run installs uv and the project's dependencies (~30 s); every later run goes straight to the motor
+controller menu.
 
 ### macOS / Linux
 
-Install `uv`:
-
-- macOS: `brew install uv`
-- Linux / macOS: `curl -LsSf https://astral.sh/uv/install.sh | sh`
-
-Then:
+Install `uv` (macOS: `brew install uv`; Linux / macOS: `curl -LsSf https://astral.sh/uv/install.sh | sh`), then:
 
 ```
 git clone <repo-url>
@@ -38,76 +39,78 @@ cd robotic-arm/software/control
 uv sync
 ```
 
-`uv sync` creates `software/control/.venv/`, installs `python-can` + `pyserial`, and registers
-the `launcher` console script in `.venv/bin/`.
+`uv sync` creates `software/control/.venv/`, installs `python-can`, `pyserial` and the package, and registers the
+`launcher` and `motor-control` commands.
 
-## Configure your motors
+## Configure the boards and the joint table
 
-Edit [`src/config.py`](src/config.py):
+Each board, once (on its menu or by command; the list: [`docs/mks_can_protocol.md`](docs/mks_can_protocol.md)
+"Setting up a board"): Mode **SR_vFOC**, CanRate 500K, and CanID its joint's row in `config.JOINTS`, 1 (base_yaw)
+to 6 (wrist_roll). Set the ids with one new board on the bus at a time: they all ship as id 1.
 
-- `JOINTS` — three `(name, can_id, gear_ratio)` tuples. Defaults are placeholders
-  (CAN IDs `0x01`/`0x02`/`0x03`, gear ratio `1.0`). Set CAN IDs to match what
-  you've programmed into each motor's on-board menu. The CAD's reductions are
-  in [`cad/robot/AGENTS.md`](../../cad/robot/AGENTS.md) ("The reductions the software must match"); `gear_ratio`
-  counts output turns per motor turn, so it takes their reciprocal. Which CAN id drives which joint is not confirmed
-  yet, so the ratios here stay `1.0`.
-- `CAN_CHANNEL` — the port for running `motor_control.py` directly; `uv run launcher` always passes the port it
-  detects (or your `--channel`), and stops when no serial port is present.
-- `CAN_BITRATE`, `DEFAULT_SPEED`, `DEFAULT_ACC`, `ENCODER_COUNTS_PER_REV` —
-  usually leave alone.
+[`src/robotic_arm/config.py`](src/robotic_arm/config.py):
 
-To set or check a motor's CAN ID, use the buttons + OLED on the SERVO42D/57D
-itself (Menu → CAN → ID).
+- `JOINTS`: one `JointConfig` per joint, holding its CAN id, `gear_ratio`, `sign`, hard limits and home angle. The
+  ratios, limits and home angles are the CAD's (`cad/lib/params.py`), and `cad/tests/test_robot.py` fails if they
+  drift. `gear_ratio` is **output turns per motor turn**, the reciprocal of the CAD's reductions (`1 / 22.5` for
+  the elbow). A joint with no board on the bus gets `can_id=None`.
+- `CAN_INTERFACE`, `CAN_CHANNEL`, `CAN_BITRATE`: the CLI's defaults. `uv run launcher` passes the serial port it
+  finds.
+- `DEFAULT_SPEED` (motor RPM), `DEFAULT_ACC`, `REPLY_TIMEOUT_S`, `ENCODER_COUNTS_PER_REV`: usually left alone.
 
 ## Run
 
-From `software/control/` (the CLI finds its `src/` modules relative to the current directory):
-
 ```
 cd software/control
-uv run launcher
+uv run launcher                                     # finds the CANable (slcan) and opens the menu
+uv run launcher --channel /dev/ttyACM0              # a port of your choice (macOS /dev/cu.usbmodem*, Windows COM3)
+uv run motor-control --interface socketcan --channel can0   # candleLight firmware (Linux; `ip link` sets the bitrate)
+uv run motor-control --fake                         # simulated boards, no hardware
 ```
 
-(Windows: just double-click `software\control\launch.bat` — same thing, no terminal needed.)
+(Windows: double-click `software\control\launch.bat`; it runs the same thing.)
 
-`launcher` auto-detects the CANable via `pyserial` — works on macOS
-(`/dev/cu.usbmodem*`), Linux (`/dev/ttyACM*`), and Windows (`COM*`). It opens
-the CAN bus at the configured bitrate and drops you into the interactive menu.
+**Safety**: `Ctrl+C` at any time sends an emergency stop to every board in `JOINTS` before exiting. A board whose
+CAN id is not there is not stopped. Disabling a motor frees its joint: support the arm first. A safe first command
+(no motion): `[0] Select motor → [1] Read / Status → [8] Read version (0x40)`, which also tells you the board's
+firmware.
 
-Override config from the command line if needed:
+### Checking one board
+
+`command_sweep` runs the club's command check on **one** board, named by its CAN id:
 
 ```
-uv run launcher --channel /dev/cu.usbmodemXXXX    # macOS
-uv run launcher --channel /dev/ttyACM0            # Linux
-uv run launcher --channel COM3                    # Windows
-uv run launcher --bitrate 250000                  # change bitrate
+uv run python -m robotic_arm.command_sweep --interface slcan --channel /dev/ttyACM0 --can-id 1
+uv run python -m robotic_arm.command_sweep --interface slcan --channel /dev/ttyACM0 --can-id 1 --motion
 ```
 
-**Safety**: `Ctrl+C` at any time sends emergency-stop to every motor in `JOINTS` (`src/config.py`) before
-exiting — a board whose CAN id is not there is not stopped. A safe first command (no motion): `[0] Select motor →
-[1] Read / Status → [4] Read motor status (0xF1)` — returns `Stopped` for a healthy motor.
+Without `--motion` it only reads. With it, after you type `MOVE` at a terminal, it enables and disables the motor,
+moves it 90° of the motor out and back (`--move-motor-deg`), spins it briefly, stops it and disables it. Before
+asking, it shows what that move is at each joint.
 
 ## Layout
 
 ```
-launcher.py              auto-detect CAN port + run motor_control
-motor_control.py         interactive CLI (menus, command dispatch)
-launch.bat               Windows double-click launcher
-src/
-  config.py              joint table, CAN bus settings, motion defaults
-  can_interface.py       thin python-can wrapper
-  motor_driver.py        MKS CAN protocol (CRC, encode/decode, commands)
-tests/                   pytest suite (currently broken — see Known issues)
-pyproject.toml, uv.lock  uv-managed project metadata
+launch.bat                     Windows double-click launcher
+src/robotic_arm/
+  config.py                    the joint table, CAN bus defaults, motion defaults
+  can_interface.py             layer 1: python-can frames with timestamps
+  motor_driver.py              layer 2: the MKS protocol, one board
+  joint.py                     layer 3: degrees <-> counts, limits
+  arm.py                       layer 4: every board - send all, collect, e-stop all, checked moves
+  fake.py                      simulated boards on the virtual bus
+  motor_control.py             the interactive CLI (`motor-control`)
+  launcher.py                  finds the adapter, runs the CLI (`launcher`)
+  command_sweep.py             one board's command check
+tests/                         pytest, on the virtual bus and the fake boards
+docs/architecture.md           the layers, using the package, the plan for the next layers
+docs/mks_can_protocol.md       the CAN commands, checked against the MKS manual V1.0.9
+pyproject.toml, uv.lock        uv-managed project metadata
 ```
 
 ## Development
 
-Lint with `uv run ruff check` here. The working rules — branches, commit messages, uv only, the hooks, CI — are the
-root [`AGENTS.md`](../../AGENTS.md), this folder's rules [`AGENTS.md`](AGENTS.md). The git pre-commit hook (ruff on
-the staged files, both projects) is installed per machine by `cad/cadtool setup`.
-
-## Known issues
-
-- [`tests/`](tests/) still imports `from arctos.*` and won't run until updated to match the current `src/` layout
-  (and `pytest` is not in the dev group yet). The CLI works without the test suite.
+`uv run pytest` runs the tests (no hardware: python-can's virtual bus) and `uv run ruff check` lints. The working
+rules (branches, commit messages, uv only, the hooks, CI) are the root [`AGENTS.md`](../../AGENTS.md); this
+folder's rules are [`AGENTS.md`](AGENTS.md). The git pre-commit hook (ruff on the staged files, both projects) is
+installed per machine by `cad/cadtool setup`.
