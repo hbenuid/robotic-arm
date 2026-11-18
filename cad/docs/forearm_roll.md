@@ -228,5 +228,5 @@ through the bay); the back panel's magnets (their hold, their stray field at the
 6806 seats' PETG fit; the frame's print orientation and its flex under the forearm's load, the
 6806 pair's tilt play at the roll, the rotor clamp's thin walls and its nut pockets' fit; `t20_hub`,
 the limit and the printed stop's strength; the elbow offset in a future IK; the room to lift the forearm further back
-than `ELBOW_PITCH_LIMITS_DEG`'s lower limit; the roll motor's **CAN id** (`software/control/src/config.py` has no row
-for it: it names fewer boards than the arm carries).
+than `ELBOW_PITCH_LIMITS_DEG`'s lower limit; the roll motor's **CAN id** (`software/control/src/robotic_arm/config.py`
+gives it 4, unconfirmed on the board).

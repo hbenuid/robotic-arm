@@ -45,17 +45,19 @@ robot/
   Commands below.
 - What is still an estimate or unconfirmed here - the `[ESTIMATE]` limits (`BASE_YAW_LIMIT_DEG`, the shoulder's lower
   one), efforts / velocities and jaw travel (`lib/params.py`), the axis signs (`robot/frames.py`), the link-membership
-  assumptions the URDF ledger lists, which CAN id drives which joint: `docs/open_issues.md`; wrist_roll and the jaws
-  are not driven by `software/control/src/config.py`.
+  assumptions the URDF ledger lists, which CAN id drives which joint: `docs/open_issues.md`. The six revolute joints
+  are `software/control/src/robotic_arm/config.py`'s `JOINTS`; the jaws (the MG996R) are not on the CAN bus.
 - **The reductions the software must match** (`lib/params.py`): `BASE_YAW_RATIO` (base_yaw: the 120T, the
   motor's 20T and the belt), `CYCLOIDAL_RATIO` (shoulder_pitch: the drive's shell
   turns, the same way as its motor - the port's hub turned against it), `ELBOW_RATIO` (elbow_pitch: two stages, the
   motor's planetary gearbox - `EG17_G5.ratio`, its output turning the same way as the motor (the sun drives, the ring
   held, the carrier out) - then the 20T on its shaft to the 90T), `GT2_RATIO` (wrist_pitch: the 90T on the motor's 20T),
   `FOREARM_ROLL_RATIO` (forearm_roll), `WRIST_ROLL_RATIO` (wrist_roll). They are motor revolutions per output revolution, while
-  `software/control/src/config.py`'s `gear_ratio` is output revolutions per motor revolution — the software's value
-  is the reciprocal (`1 / CYCLOIDAL_RATIO`, …).
-- **The home angles the software must match** (`lib/params.py`): `BASE_YAW_HOME_DEG` - base_yaw's home sensor (a
+  `software/control/src/robotic_arm/config.py`'s `gear_ratio` is output revolutions per motor revolution — the
+  software's value is the reciprocal (`1 / CYCLOIDAL_RATIO`, …), and its code reads it that way (`joint.py`: a joint
+  degree is `1 / gear_ratio` motor degrees). `tests/test_robot.py` checks every joint's ratio, limits and home angle
+  in that table against these.
+- **The home angles the software must match** (`lib/params.py`, `config.py`'s `home_deg`): `BASE_YAW_HOME_DEG` - base_yaw's home sensor (a
   KY-003 under the 120T, its magnet in the 120T's face: `lib/base/params.py YawHomeParams`) reads the magnet over its
   chip there, in the middle of the switch's zone, which runs on past the travel's - end. Homing turns base_yaw toward
   - until the switch turns on (if it is on already, out toward + first): that edge is the home; the 120T's 6:1 puts a

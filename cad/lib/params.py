@@ -203,8 +203,8 @@ from lib.cycloidal.layout import sleeve_end as _sleeve_end  # noqa: E402
 from lib.cycloidal.params import DEFAULT_CONFIG as _DRIVE  # noqa: E402
 
 CYCLOIDAL_RATIO = _DRIVE.ratio                                    # 21:1 [DESIGN] the 21 ring pins, the carrier held; the output (the shell) turns with the motor.
-#   NOTE: software/control/src/config.py JOINTS still carries gear_ratio 1.0 on J1..J3 - which MKS motor drives the
-#   shoulder_pitch joint (if any of them) is unconfirmed.
+#   software/control/src/robotic_arm/config.py's shoulder_pitch carries gear_ratio 1 / 21 (tests/test_robot.py checks);
+#   which CAN id its board has is unconfirmed.
 CYCLOIDAL_HOUSING_OD = _DRIVE.housing.od                          # 129.2 [DESIGN] the pillar tips; lib/cycloidal/params.py RING_INSET, LUG_WALL
 CYCLOIDAL_STACK_DEPTH = _DRIVE.stack_up.total_housing_depth       # 61 [DESIGN] motor-plate outer face -> the shell's hub end
 CYCLOIDAL_SHELL_ENDS_Z = _shell_ends(_DRIVE)                      # (-13, 61) [DESIGN] the turning shell's two ends: a lip past each 6814
