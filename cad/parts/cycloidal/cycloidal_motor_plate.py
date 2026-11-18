@@ -11,7 +11,7 @@ inserted one at a time from this face); the M4 through-holes (bolt_count) with c
 shared pillar / reveal-window silhouette; outer silhouette chamfered. The inner face seats on the ring gear body.
 The turning shell (DEFAULT_CONFIG, ShellParams): held, not part of the housing - a plate_dia plate inside the shell
 ring's pin ring (parts/cycloidal/cycloidal_shell_ring, which takes the ring pins and the housing bolts), its outer face
-cut back plate_relief_depth from plate_relief_dia out, over the motor-end 6814's turning outer race (its inner race
+cut back plate_relief_depth from plate_relief_dia out, over the motor-end 6814's seal and turning outer race (its inner race
 bears on the face inside), and a sleeve back over the motor: sleeve_bore_dia (the motor's and the board's corners),
 sleeve_od, and the hub's grip (OutputHubParams.od) over the last out_width - the 6814 slides on from the sleeve's end
 and presses on there. The sleeve runs through the j1_coupler yoke's motor-side leg (parts/base/j1_motor_leg, a ring round it) to

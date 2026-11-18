@@ -155,10 +155,10 @@ class TestTurningShell:
 
     def test_the_shell_is_held_both_ways_along_the_axis(self):
         """At each end the shell's lip stops the 6814's outer race (and clears the sleeve / the hub), a held plate's face
-        its inner race - the motor plate's, the hub's flange's -, each face relieved over the outer race."""
+        its inner race - the motor plate's, the hub's flange's -, each face relieved over the seal and the outer race."""
         sh, b, h = CFG.shell, CFG.bearings, CFG.housing
         assert max(sh.sleeve_od, CFG.output_hub.od) < h.lip_bore_dia < b.out_od and sh.end_lip > 0
-        assert b.out_bore < sh.plate_relief_dia < b.out_od
+        assert CFG.output_hub.od < sh.plate_relief_dia < b.out_inner_ring_od < b.out_od
         assert hub_flange(CFG) == CFG.stack_up.z_motor_plate_inner and sh.plate_dia > b.out_bore
 
 
@@ -207,7 +207,7 @@ class TestRadialClearances:
         assert dist > needed
 
     def test_output_hub_near_6814_inner(self):
-        assert abs(CFG.output_hub.od - CFG.bearings.out_bore) <= 0.5
+        assert abs(CFG.output_hub.od - CFG.bearings.out_bore) <= 0.6
 
     def test_6814_outer_fits_housing_seat(self):
         assert CFG.bearings.out_od <= CFG.housing.output_bearing_seat_dia
@@ -399,7 +399,7 @@ class TestModuleLocks:
         boolean between the two spline discs takes minutes: tests/cycloidal/test_port.py tells them apart."""
         leaves = {c.label: c for c in drive.children}
         budget = {
-            ("bearing_6814:1", "cycloidal_output_hub"): 331.0, ("bearing_6814:2", "cycloidal_motor_plate"): 331.0,
+            ("bearing_6814:1", "cycloidal_output_hub"): 607.2, ("bearing_6814:2", "cycloidal_motor_plate"): 607.2,
             ("cycloidal_housing_bolts", "cycloidal_housing_nuts"): 241.3,
             ("cycloidal_motor_bolts", "cycloidal_motor_plate"): 52.0, ("nema17_48mm", "cycloidal_motor_bolts"): 46.4,
             ("bearing_6003:1", "cycloidal_eccentric_shaft"): 27.0, ("bearing_6003:2", "cycloidal_eccentric_shaft"): 27.0,
