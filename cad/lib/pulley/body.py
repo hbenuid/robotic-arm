@@ -32,6 +32,8 @@ def build_pulley(cfg: PulleyParams = DEFAULT):
         body = body + _disc(step_dia / 2.0, step_y0, cfg.web_y0 + NUDGE)
     body = body + _disc(cfg.hub_dia / 2.0, cfg.end_y, hub_y1 + NUDGE)
     body = body + _disc(ring_dia / 2.0, ring_y0, ring_y1)
+    if cfg.neck_dia is not None and hub_y1 > ring_y1:   # the hub between the ring and the step at a diameter of its own
+        body = body + _disc(cfg.neck_dia / 2.0, ring_y1, hub_y1 + NUDGE)
     body = body - _disc(cfg.bore_dia / 2.0, cfg.end_y - NUDGE, cfg.face_y + NUDGE)
     cb_dia, cb_depth = cfg.counterbore
     for x, z in cfg.bolt_points():

@@ -20,8 +20,12 @@ ring; the elbow's also turned about its axis with the elbow block's bolt pattern
 Conversion: build_pulley(LEGACY) reproduces the reference (REFERENCE_BUILD - tests/test_reference_match.py); the model
 builds DEFAULT - the 0.16 fits measured on the printed 120T: its hub grown from the 6806's bore to a press
 (BEARING_6806_JOURNAL_FINE), its bolt holes opened from the export's Ø3.9 (under an M4's shank) to M4_CLEAR_FINE and
-counterbored for the heads (M4_HEAD_BORE_FINE) - tests/pulley/ lock what DEFAULT changes, tests/test_mounts.py the holes
-in place.
+counterbored for the heads (M4_HEAD_BORE_FINE); and the export's groove between the ring and the step filled out to the
+ring's diameter (PulleyParams.neck_dia), so the ring no longer overhangs it - tests/pulley/ lock what DEFAULT changes,
+tests/test_mounts.py the holes in place.
+
+PETG, printed face down (the outer face on the bed): the hub steps in all the way up, the lower flange over the teeth
+and the counterbores' floors the only overhangs left.
 """
 import pathlib
 
