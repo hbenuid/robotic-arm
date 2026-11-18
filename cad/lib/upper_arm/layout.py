@@ -89,7 +89,7 @@ def elbow_idler_z(cfg: UpperArmConfig = DEFAULT) -> float:
 def slab_taper_x(cfg: UpperArmConfig = DEFAULT) -> float:
     """Where the arm's slab (ArmParams) starts tapering onto a faceted end narrower than it, along the link: the elbow
     idler's nut slot's far side (its flats + nut_fit across X about elbow_idler_x()) - the slab keeps its width over
-    the idler's slots (125.2)."""
+    the idler's slots (130.2)."""
     i = cfg.idler
     return round(elbow_idler_x(cfg) + (i.nut.af + i.nut_fit) / 2.0, 6)
 

@@ -28,7 +28,7 @@ from lib.datum import to_location
 from lib.fasteners import M4_CLEAR_UPRIGHT
 from lib.motors import EG17_G5
 from lib.style import EDGE_CHAMFER, SIDES
-from lib.upper_arm import DEFAULT, LEGACY, arm_slide, hub_bolt_points, pad_holes, socket_points
+from lib.upper_arm import DEFAULT, LEGACY, arm_slide, elbow_idler_x, hub_bolt_points, pad_holes, socket_points
 from lib.upper_arm.link import drive_frame
 from lib.upper_arm.params import ELBOW_BELT, ELBOW_MOTOR_CENTRES, SHORTENING
 from tests import built
@@ -193,7 +193,7 @@ def test_default(link, legacy):
     the underside; no pad, no sockets, the second stage's seat gone."""
     dx, a = SHORTENING, DEFAULT.arm
     assert link.is_valid and len(link.solids()) == 1
-    assert R.solid_volume(link) == pytest.approx(292541.211, abs=0.5)
+    assert R.solid_volume(link) == pytest.approx(289639.588, abs=0.5)
     bb, hh, (z_0, z_1) = link.bounding_box(), DEFAULT_CONFIG.housing, arm_zone(DEFAULT_CONFIG)
     # across (Z) the body's pillars either side of +/-Z reach furthest: the windows on +/-Z are open; along Y the
     # shell's body, from its hub end to the shell ring's face (arm_zone's start); along X the slab's round end
@@ -240,12 +240,15 @@ def test_default(link, legacy):
         out = flat / math.hypot(x, y_)
         assert not is_inside(link, *_drive(x * (1.0 + out), y_ * (1.0 + out), nut_z + 1.0))   # the slab leaves it open
     # the plate's elbow end, in the slab: the elbow bearing stack; the stepped slot gives way to the elbow idler's slots
-    # (test_elbow_idler.py probes them) - solid where the slit and its counterbore ran, past the idler's slots
+    # (test_elbow_idler.py probes them) - solid where the slit and its counterbore ran, short of the idler's nut slot
+    # (which crosses the slit's line, toward the 90T)
     r_floor = (e.recess_dia + e.bore_dia) / 4.0
     assert not is_inside(link, s.elbow_x, e.recess_y + SLIDE + 0.5, r_floor) and is_inside(link, s.elbow_x, e.recess_y + SLIDE - 0.5, r_floor)
-    sl = DEFAULT.slots
+    sl, i = DEFAULT.slots, DEFAULT.idler
+    near = elbow_idler_x() - (i.nut.af + i.nut_fit) / 2.0 - 0.5            # the slit's strip short of the nut slot
+    assert sl.stepped_x - sl.width / 2.0 < near < sl.stepped_x
     for y in (e.relief_y - 1.0 + SLIDE, sl.counterbore_y + SLIDE - 1.0):
-        assert is_inside(link, sl.stepped_x, y, -15.0) and is_inside(link, sl.stepped_x + 4.0, y, -15.0)
+        assert is_inside(link, near, y, -15.0) and is_inside(link, near, y, 15.0)
     # no sockets (test_layout): where the cap's elbow-half ones were is outside the slimmed slab now
     for x, z in socket_points(LEGACY)[1]:
         assert not is_inside(link, x + dx, -23.0 + SLIDE, z)
