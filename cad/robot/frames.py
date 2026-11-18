@@ -219,7 +219,7 @@ JOINTS: list[Joint] = [
                 "on the thrust bearing in its groove (washer_as6590#1, bearing_axk6590#1, washer_as6590#2), held down by "
                 "the GT2 120T bolted to its stub's end under the lower bearing (gt2_pulley_120t#1); belt-driven (BASE_YAW_RATIO) by "
                 "nema17_48mm#1 (the 48 mm motor) + mks_servo42d#1 under the base plate (lib/mounts.py) "
-                "[which CAN id (software/control/src/config.py J1..J3) it is: unconfirmed]"),
+                "[its CAN id (software/control/src/robotic_arm/config.py JOINTS): unconfirmed]"),
     Joint("shoulder_pitch", "revolute", "shoulder_link", "upper_arm_link", SHOULDER_ORIGIN, N, SHOULDER_TO_ELBOW_INPLANE,
           PARAMS.SHOULDER_PITCH_LIMITS_DEG[0] * DEG, PARAMS.SHOULDER_PITCH_LIMITS_DEG[1] * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
           notes="the 21:1 cycloidal drive (CYCLOIDAL_RATIO, its own NEMA 17 x 48 + MKS board): the j1_coupler fork holds its "
@@ -236,7 +236,7 @@ JOINTS: list[Joint] = [
           notes="the forearm roll drive (assemblies/forearm_roll_drive.py, FOREARM_ROLL_RATIO 4.5): j2_link's wall bolts onto "
                 "the roll pulley's 90T ring; its axis ELBOW_ROLL_OFFSET across the elbow axis (an elbow offset); belt-driven "
                 "by the drive's own nema17_40mm + mks_servo42d on the elbow axis, in the roll frame's pocket "
-                "[a CAN id of its own - software/control/src/config.py names fewer than the arm's boards: unconfirmed]; "
+                "[which CAN id: unconfirmed]; "
                 "the printed hard stop 2 deg past "
                 "+/- FOREARM_ROLL_LIMIT_DEG"),
     Joint("wrist_pitch", "revolute", "forearm_link", "wrist_pitch_link", WRIST_PITCH_ORIGIN, WRIST_PITCH_AXIS, WRIST_ROLL_AXIS,
@@ -247,8 +247,8 @@ JOINTS: list[Joint] = [
           -PARAMS.WRIST_ROLL_LIMIT_DEG * DEG, PARAMS.WRIST_ROLL_LIMIT_DEG * DEG, PARAMS.WRIST_EFFORT_NM, PARAMS.WRIST_VELOCITY_RAD_S,
           notes="the wrist roll drive (assemblies/wrist_roll_drive.py, WRIST_ROLL_RATIO 2): the gripper's connector bolts to its "
                 "pulley's face; belt-driven by the NEMA17 pancake + its mks_servo42d on the wrist_pitch axis, WRIST_ROLL_OFFSET "
-                "across (a wrist offset) [a CAN id of its own - software/control/src/config.py names fewer than the arm's "
-                "boards: unconfirmed]; the printed hard stop 2 deg past +/- WRIST_ROLL_LIMIT_DEG"),
+                "across (a wrist offset) [which CAN id: unconfirmed]; the printed hard stop 2 deg past +/- "
+                "WRIST_ROLL_LIMIT_DEG"),
     Joint("jaw_a", "prismatic", "wrist_roll_link", "jaw_a_link", JAW_A_ORIGIN, tuple(-v for v in JAW_TRAVEL), WRIST_ROLL_AXIS,
           -PARAMS.JAW_TRAVEL_MM * 1e-3, PARAMS.JAW_TRAVEL_MM * 1e-3, PARAMS.JAW_EFFORT_N, PARAMS.JAW_VELOCITY_M_S,
           notes="positive = opening (jaw A moves away from jaw B); the MG996R's pinion drives both racks"),

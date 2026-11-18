@@ -1,15 +1,19 @@
 # robotic-arm
 
 A six-joint desktop robot arm with a parallel gripper: its CAD, and the software that drives its MKS SERVO42D stepper
-motors over CAN (a CANable / slcan-compatible USB adapter; macOS, Linux and Windows).
+motors over CAN (a CANable USB adapter: slcan on macOS, Linux and Windows, or socketcan on Linux).
 
 The repo splits CAD from everything else: `cad/` (the build123d CAD, its own uv project) and `software/` —
-`software/control/` (the motor-control CLI, its own uv project) and `software/firmware/` (microcontroller firmware).
-The root holds only repo-wide files (docs, `.github/`, `.githooks/`, `.claude/`, git config, the VS Code workspace).
+`software/control/` (the `robotic_arm` motor-control package and its CLIs, its own uv project) and
+`software/firmware/` (microcontroller firmware). The root holds only repo-wide files (docs, `.github/`, `.githooks/`,
+`.claude/`, git config, the VS Code workspace).
 
-The software will be worked on later: the current work is the CAD, and `software/` stays as it is until then. It stays
-in this repo on purpose — when it is picked up it needs the CAD's robot description (`cad/robot/arm.urdf`, the joint
-table, the drive ratios) to agree with `software/control/src/config.py`, and one repo keeps both sides in one commit.
+The CAD is the main work. `software/control/` is the one home of the arm's software: other projects install it as a
+package (`uv add --editable <path>/software/control`), and its layers past the arm's basic commands (homing,
+kinematics) are planned (`software/control/docs/architecture.md`). It stays in this repo on purpose — it needs the
+CAD's robot description (`cad/robot/arm.urdf`, the joint table, the drive ratios, the home angles) to agree with
+`software/control/src/robotic_arm/config.py` (`cad/tests/test_robot.py` checks), and one repo keeps both sides in one
+commit.
 
 ## Git workflow
 - Work on a branch — `cad/<topic>` for CAD work, `<area>/<topic>` otherwise — and push the **branch**.
@@ -88,7 +92,7 @@ folder is made for it outside the repo — and goes through Recipe E in `cad/ref
 ## CI (GitHub Actions)
 `.github/workflows/ci.yml` runs **only by hand** (Actions tab → CI → Run workflow, or
 `gh workflow run ci.yml --ref <branch>`; `gh run watch` follows it): fresh `ubuntu-24.04` runners clone the repo and,
-in parallel jobs, lint both projects, import the CLI, run `cad/`'s fast lane, its slow tests in three parts and
+in parallel jobs, lint both projects, run the motor-control tests, run `cad/`'s fast lane, its slow tests in three parts and
 `./cadtool gen` the arm - the run takes as long as its slowest job (`gh run list --workflow ci.yml` shows recent runs;
 the repo is public, so its standard runners cost no Actions minutes, and being manual-only it never runs for
 someone else's fork or pull request). It is the **clean-clone check** neither
@@ -99,13 +103,14 @@ bump, a new SolidWorks or vendor export or vendor STEP, a change to `cad/lib/ref
 inputs, or any large change - on the branch as it will merge (with `main` merged in if `main` moved), its result
 noted on the pull request (`gh pr comment <n>`). Suggest it then; never trigger it unasked. It checks and never
 writes (no hash gate, no snapshots, no commits). The runners are a third machine (x86_64 Linux): the "no exact float
-equality" rule of `cad/AGENTS.md` "Two machines" holds for them too. The motor-control `software/control/tests/` stay
-out until they are fixed.
+equality" rule of `cad/AGENTS.md` "Two machines" holds for them too.
 
 ## Software (`software/`)
-- `software/control/` is the motor-control CLI, its own uv project. Its rules — running it, the load-bearing
-  `sys.path` line, its known issues — are `software/control/AGENTS.md`, which loads when you work there; setup and use
-  are its `README.md`.
+- `software/control/` is the `robotic_arm` package (`src/robotic_arm/`) and its CLIs, its own uv project; its tests
+  run on python-can's virtual bus and simulated boards (`uv run pytest` there), never on the arm. Its rules — the
+  layers, what other projects rely on, `config.py`'s link to the CAD, the MKS manual the bytes follow — are
+  `software/control/AGENTS.md`, which loads when you work there; setup and use are its `README.md`.
+- Never run anything that talks to the arm from an agent session (the CLIs on a real adapter).
 - `software/firmware/` holds all firmware, one subfolder per board, part of neither uv project
   (`software/firmware/README.md`).
 
@@ -117,8 +122,8 @@ out until they are fixed.
   rules for every folder; each folder's own AGENTS.md (`parts/`, `assemblies/`, `robot/`, `lib/`, `tests/`, `tools/`,
   `reference/`, `vendor/`) loads when you work there.
 - What the software has to match — the joints and links, the reductions (and which way round `config.py`'s
-  `gear_ratio` reads), which motor sits on which joint — is `cad/robot/AGENTS.md`; which CAN id drives which joint is
-  unconfirmed (`cad/docs/open_issues.md`).
+  `gear_ratio` reads), the home angles, which motor sits on which joint — is `cad/robot/AGENTS.md`; which CAN id
+  drives which joint, each joint's encoder sign and the boards' firmware are unconfirmed (`cad/docs/open_issues.md`).
 
 ## Docs
 - The agent instructions are `AGENTS.md` files — this one, and one per folder that has rules of its own. Claude Code

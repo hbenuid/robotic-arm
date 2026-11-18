@@ -33,7 +33,8 @@ partition `parts.names()` by the flag, the occurrence counts, the drive's pieces
 well-formed, the parts at `LAYER_H_FINE` - its `FINE_LAYERS` set, printed parts only), `test_belts.py` (the GT2 belts, purchased with no reference: each a stock length, its loop that long
 round its pulleys, the band on their tooth tips, their volume / bbox written in), `test_params_invariants.py` (locks),
 `test_robot.py` (link partition, frames, FK at
-zero = capture, the committed meshes vs a fresh export, inertials, URDF/SRDF/SDF consistency + cad's validators via
+zero = capture, the committed meshes vs a fresh export, inertials, `software/control`'s joint table vs the CAD's
+reductions / limits / home angles (its `config.py` loaded by path), URDF/SRDF/SDF consistency + cad's validators via
 `./cadtool validate`, which need the pinned server: `./cadtool server`), `test_tooling.py` (the installed cad and OCP
 kernel are the pinned ones, one complete OCP distribution, no cad-server in the venv,
 `./cadtool inspect` agrees with the kernel, the retired inspect verbs,
