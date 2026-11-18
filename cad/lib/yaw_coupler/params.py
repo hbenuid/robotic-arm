@@ -192,7 +192,7 @@ class ForkParams:
     #                                  middle of the discs (the drive's z 24) on the base_yaw axis. The capture had it at
     #                                  CAPTURE_FACE_X: lib/placements.py SHIFTS moves the drive and all it carries the difference
     plate_r: float = 45.0            # [DESIGN] both legs' round tops round the axis, their posts as wide either side: the motor
-    #                                  leg's ring 9.8 of wall round its bore; the hub leg's disc 9.85 past the hub's od
+    #                                  leg's ring 9.8 of wall round its bore; the hub leg's disc 9.725 past the hub's od
     #                                  (lib/cycloidal/params.py OutputHubParams.od), the hub's counterbores 16.3 inside its edge
     ring_bore_dia: float = 70.4      # [DESIGN] the motor leg's ring round the sleeve: its 70 + 0.2 a side
     motor_leg_gap: float = 0.2       # [DESIGN] the disc's ring cut back this far off the motor leg's inner face

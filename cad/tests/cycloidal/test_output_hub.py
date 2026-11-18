@@ -19,11 +19,11 @@ cycloidal_output_hub = parts.load("cycloidal_output_hub")
 class TestOutputHubDimensions:
 
     def test_hub_od_near_bearing_bore(self):
-        """The hub OD is the 70 mm 6814 bore + 0.3 mm interference: within 0.5 mm."""
-        assert abs(CFG.output_hub.od - CFG.bearings.out_bore) <= 0.5
+        """The hub OD is the 70 mm 6814 bore + 0.55 mm interference (measured at 0.20): within 0.6 mm."""
+        assert abs(CFG.output_hub.od - CFG.bearings.out_bore) <= 0.6
 
     def test_hub_od_is_press_fit(self):
-        assert abs(CFG.bearings.out_bore - CFG.output_hub.od) < 0.5
+        assert 0.0 < CFG.output_hub.od - CFG.bearings.out_bore < 0.6
 
     def test_hub_height_matches_bearing_stack(self):
         """The turning shell's hub carries one 6814 (the other is on the motor plate's sleeve), past its flange."""

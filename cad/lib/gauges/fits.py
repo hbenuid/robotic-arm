@@ -98,7 +98,7 @@ GAUGES = (
     # --- bearings: a printed journal into an inner race
     Gauge("boss70", "journals", "Ø70 journals: the 6814s' inner races", "6814 BORE", "ring_bosses", (
         Use(_D.shell.sleeve_od, "the motor plate's sleeve: the 6814 slides on"),
-        Use(_D.output_hub.od, "the output hub's grip, the sleeve's last 10 mm (press)")),
+        Use(_D.output_hub.od, "the output hub's grip, the sleeve's last 10 mm (firm press, 0.20: measured)")),
         (("band", 4.0),), note="A 4 mm band, 3 mm wall; the bearing goes down over it.", **BIG),
     Gauge("boss65", "journals", "Ø64.8 ring: the thrust washers' and cage's bore", "THRUST BORE", "ring_bosses", (
         Use(2.0 * BASE.cap.groove_r[0], "the base's seat ring (clearance)"),),

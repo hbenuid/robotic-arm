@@ -179,7 +179,7 @@ class MotorParams:
 class OutputHubParams:
     """Output hub / plate dimensions - spec section 5.3."""
 
-    od: float = 70.3                   # 70 mm 6814 inner-race bore + 0.3 mm interference grip
+    od: float = 70.3                   # 70 mm 6814 inner-race bore + 0.3 mm interference grip (the port's; DEFAULT_CONFIG's: below)
     shaft_clearance_bore: float = 6.0  # 5 mm pin + 1 mm clearance
     output_hub_pin_ceiling: float = 1.0    # closed top above the blind pin holes
     proud_above_housing: float = 5.0   # output face past the housing output face (z=60 -> 65)
@@ -389,6 +389,8 @@ DEFAULT_CONFIG = replace(
                  ring_pin_length=40.0),   # the turning shell's: 5 into each pin ring past the 30 between the plates
     housing=replace(_HOUSING, od=_HOUSING.bolt_circle_dia + _HOUSING.bolt_nut_pocket_af + 2 * LUG_WALL),       # 129.2
     stack_up=_STACK,
-    output_hub=replace(LEGACY_CONFIG.output_hub, proud_above_housing=_SHELL.end_plate_gap),   # the hub's face on the yoke's leg
+    output_hub=replace(LEGACY_CONFIG.output_hub, proud_above_housing=_SHELL.end_plate_gap,   # the hub's face on the yoke's leg
+                       od=70.55),   # [MEASURE] the 6814's 70 bore + 0.55: a firm press at 0.20 (a ring test; the port's
+    #                                 70.3 was a little loose on the print) - the motor plate's sleeve end reads it too
     shell=_SHELL,
 )   # [DESIGN]

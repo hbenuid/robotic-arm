@@ -207,7 +207,7 @@ class TestRadialClearances:
         assert dist > needed
 
     def test_output_hub_near_6814_inner(self):
-        assert abs(CFG.output_hub.od - CFG.bearings.out_bore) <= 0.5
+        assert abs(CFG.output_hub.od - CFG.bearings.out_bore) <= 0.6
 
     def test_6814_outer_fits_housing_seat(self):
         assert CFG.bearings.out_od <= CFG.housing.output_bearing_seat_dia
@@ -399,7 +399,7 @@ class TestModuleLocks:
         boolean between the two spline discs takes minutes: tests/cycloidal/test_port.py tells them apart."""
         leaves = {c.label: c for c in drive.children}
         budget = {
-            ("bearing_6814:1", "cycloidal_output_hub"): 331.0, ("bearing_6814:2", "cycloidal_motor_plate"): 331.0,
+            ("bearing_6814:1", "cycloidal_output_hub"): 607.2, ("bearing_6814:2", "cycloidal_motor_plate"): 607.2,
             ("cycloidal_housing_bolts", "cycloidal_housing_nuts"): 241.3,
             ("cycloidal_motor_bolts", "cycloidal_motor_plate"): 52.0, ("nema17_48mm", "cycloidal_motor_bolts"): 46.4,
             ("bearing_6003:1", "cycloidal_eccentric_shaft"): 27.0, ("bearing_6003:2", "cycloidal_eccentric_shaft"): 27.0,
