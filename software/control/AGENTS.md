@@ -1,26 +1,31 @@
-# software/control/ — the motor-control CLI
+# software/control/ — the arm's motor control
 
 Loads when you work in `software/control/`. The repo-wide rules (git, uv, ruff and the hooks, CI, docs) are the root
-`AGENTS.md`; setup, configuring the motors and running the CLI are `README.md`. The software is picked up after the
-CAD: until then it stays as it is.
+`AGENTS.md`; setup, configuring the boards and running the CLIs are `README.md`; the layers and the plan for the next
+ones are `docs/architecture.md`; the MKS CAN protocol is `docs/mks_can_protocol.md`.
 
 ## Running
-- Run the CLI with `uv run launcher` from `software/control/` (entry point defined in `[project.scripts]`). After
-  adding or renaming entry points, run `uv sync` to refresh `.venv/bin/`.
-- Lint with `uv run ruff check` here; it is clean — keep it clean.
+- `uv run pytest` and `uv run ruff check` from `software/control/`; both are clean, keep them clean. CI runs both.
+- The CLIs: `uv run launcher` (finds the CANable), `uv run motor-control …`, `uv run motor-control --fake` (simulated
+  boards). After adding or renaming an entry point (`[project.scripts]`), `uv sync`.
+- **Never run anything that talks to the arm** (`launcher`, `motor-control` without `--fake`, `command_sweep`) from
+  an agent session: the tests use python-can's virtual bus and `robotic_arm.fake` only.
 - Never run CAD code with this venv: `cad/` is its own uv project.
 
 ## Code layout
-- `launcher.py` auto-detects the CANable via `serial.tools.list_ports` (pyserial) and calls `motor_control.main()`.
-- `motor_control.py` is the interactive CLI. Near the top it does `sys.path.insert(0, "src")` so
-  `src/can_interface.py`, `src/motor_driver.py`, `src/config.py` import without an `arctos.` prefix. **Don't** convert
-  `src/` into a real Python package without also rewriting those imports — the sys.path hack is load-bearing. `"src"`
-  is relative to the current directory, so the CLI runs from `software/control/` (`launch.bat` changes into its own
-  folder first).
-- Joint table and CAN settings live in `src/config.py` (`JOINTS`, `CAN_CHANNEL`, etc). What they must match — the
-  joints, the reductions and which way round `gear_ratio` reads, which motor sits on which joint — is
-  `cad/robot/AGENTS.md`; which CAN id drives which joint is unconfirmed (`cad/docs/open_issues.md`).
-
-## Known issues
-- `tests/` still imports `from arctos.*` and is broken, and `pytest` is not in the dev group; the CLI runs fine
-  without it. CI leaves these tests out (root `AGENTS.md` "CI").
+- `src/robotic_arm/` is the package (hatchling, `packages = ["src/robotic_arm"]`). It imports nothing outside
+  itself but python-can and pyserial: other projects install it (`uv add --editable`), so keep it that way.
+- Layers, each calling only those below it: `can_interface` → `motor_driver` → `joint` → `arm`; `config` holds the
+  arm's constants, `fake` simulates boards. The CLIs (`motor_control`, `launcher`, `command_sweep`) sit on top.
+- `config.py` imports only the standard library: `cad/tests/test_robot.py` loads it by its path and checks `JOINTS`'
+  ratios, limits and home angles against `cad/lib/params.py` (`tests/test_config.py` checks the imports). What the
+  table must match - the joints, the reductions and which way round `gear_ratio` reads (output turns per motor
+  turn), the home angles - is `cad/robot/AGENTS.md`. Which board carries which CAN id, each `sign` and the boards'
+  firmware are unconfirmed (`cad/docs/open_issues.md`).
+- Every MKS byte follows the manual V1.0.9, checked against it (never from memory); `tests/test_motor_driver.py`
+  holds the manual's example frames. The boards' firmware is unknown: a command or byte the version notes date goes
+  in its docstring, and the driver takes either reply where the manual shows they differ.
+- An experiment's limits are its own: `JointLimits` passed in by the caller. `config.JOINTS` holds only the arm's
+  hard limits.
+- `command_sweep` moves a motor: it takes one `--can-id` from the command line (never the table's), reads only
+  unless `--motion`, asks for `MOVE` at a terminal, and has no console script. Keep it that way.

@@ -2,9 +2,11 @@
 stays consistent with the CAD and with itself."""
 import functools
 import importlib
+import importlib.util
 import math
 import pathlib
 import subprocess
+import sys
 import xml.etree.ElementTree as ET
 
 import numpy as np
@@ -184,6 +186,49 @@ def test_urdf_limits_track_params():
     assert math.isclose(float(lim.get("upper")), PARAMS.JAW_TRAVEL_MM * 1e-3, abs_tol=1e-9)
     mimic = root.find("joint[@name='jaw_b']/mimic")
     assert mimic.get("joint") == "jaw_a" and float(mimic.get("multiplier")) == -1.0
+
+
+CONTROL_CONFIG = CAD_DIR.parent / "software" / "control" / "src" / "robotic_arm" / "config.py"
+
+
+def _control_config():
+    """software/control's config.py, loaded by its path: cad never depends on the motor-control package, and the file
+    imports only the standard library (software/control/tests/test_config.py keeps it so)."""
+    spec = importlib.util.spec_from_file_location("_control_config", CONTROL_CONFIG)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module   # its dataclass looks its module up while it is made
+    try:
+        spec.loader.exec_module(module)
+    finally:
+        del sys.modules[spec.name]
+    return module
+
+
+def test_the_motor_control_table_matches_the_cad():
+    """software/control's JOINTS are the URDF's revolute joints in chain order, each with the CAD's reduction (its
+    gear_ratio the reciprocal: output turns per motor turn), hard limits and home angle (robot/AGENTS.md)."""
+    table = {j.name: j for j in _control_config().JOINTS}
+    assert list(table) == [j.name for j in F.JOINTS if j.type == "revolute"]
+
+    def sym(limit):
+        return (-limit, limit)
+
+    cad = {   # name: (motor turns per output turn, limits deg, home deg)
+        "base_yaw": (PARAMS.BASE_YAW_RATIO, sym(PARAMS.BASE_YAW_LIMIT_DEG), PARAMS.BASE_YAW_HOME_DEG),
+        "shoulder_pitch": (PARAMS.CYCLOIDAL_RATIO, PARAMS.SHOULDER_PITCH_LIMITS_DEG, PARAMS.SHOULDER_PITCH_HOME_DEG),
+        "elbow_pitch": (PARAMS.ELBOW_RATIO, PARAMS.ELBOW_PITCH_LIMITS_DEG, PARAMS.ELBOW_PITCH_HOME_DEG),
+        "forearm_roll": (PARAMS.FOREARM_ROLL_RATIO, sym(PARAMS.FOREARM_ROLL_LIMIT_DEG), PARAMS.FOREARM_ROLL_HOME_DEG),
+        "wrist_pitch": (PARAMS.GT2_RATIO, PARAMS.WRIST_PITCH_LIMITS_DEG, PARAMS.WRIST_PITCH_HOME_DEG),
+        "wrist_roll": (PARAMS.WRIST_ROLL_RATIO, sym(PARAMS.WRIST_ROLL_LIMIT_DEG), PARAMS.WRIST_ROLL_HOME_DEG),
+    }
+    assert sorted(cad) == sorted(table)
+    for name, (ratio, limits, home) in cad.items():
+        row = table[name]
+        assert math.isclose(row.gear_ratio * ratio, 1.0, rel_tol=1e-9), (
+            f"{name}: gear_ratio {row.gear_ratio}, the CAD's reduction {ratio}:1 - it takes 1 / {ratio}")
+        assert all(math.isclose(a, b, abs_tol=1e-9) for a, b in zip(row.limits_deg, limits, strict=True)), (
+            f"{name}: limits {row.limits_deg}, the CAD's {limits}")
+        assert math.isclose(row.home_deg, home, abs_tol=1e-6), f"{name}: home {row.home_deg}, the CAD's {home}"
 
 
 def _hom(xyz, rpy):

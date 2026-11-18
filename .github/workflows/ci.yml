@@ -1,4 +1,4 @@
-# CI: a clean clone on fresh Linux runners - lint both uv projects, the CAD test suite, and build the arm from the
+# CI: a clean clone on fresh Linux runners - lint both uv projects, both test suites, and build the arm from the
 # committed inputs only (no ~/.cache/cad, no raw SolidWorks exports, no generated STEPs). It checks and never writes:
 # no hash gate (STEP bytes differ per machine), no snapshots, no commits. Manual only: Actions tab -> CI -> Run
 # workflow, or `gh workflow run ci.yml --ref <branch>` - when to run it: root AGENTS.md "CI".
@@ -31,12 +31,13 @@ jobs:
         with:
           cache-python: true
 
-      - name: Motor control - sync, lint, the CLI imports
+      # the tests run on python-can's virtual bus and simulated boards: no CAN hardware on a runner
+      - name: Motor control - sync, lint, tests
         working-directory: software/control
         run: |
           uv sync --frozen
           uv run --frozen ruff check
-          uv run --frozen python -c "import motor_control"
+          uv run --frozen pytest -p no:cacheprovider
 
       - name: CAD - sync + OCP kernel check
         working-directory: cad

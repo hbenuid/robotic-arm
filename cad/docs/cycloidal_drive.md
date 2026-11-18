@@ -367,9 +367,10 @@ shell's body), the `j1_coupler` fork and its motor leg (`j1_motor_leg`) - contac
   with `j1_link`, which holds the shell's body.
   `EXPECTED["bodies"]` locks the per-body totals and `TestPoseInTheArm` checks the joint origin sits on the drive
   axis. The arm STEP's viewer tree keeps the module whole under `shoulder_link` (one tinted copy -
-  `assemblies/AGENTS.md`); the per-link meshes split it. Which MKS motor (`software/control/src/config.py` J1..J3)
-  drives which joint is unconfirmed (`docs/open_issues.md`); `config.py` still carries `gear_ratio` 1.0 where this
-  joint needs `1 / CYCLOIDAL_RATIO`, the output turning with the motor (the direction: `robot/AGENTS.md`).
+  `assemblies/AGENTS.md`); the per-link meshes split it. The motor-control table
+  (`software/control/src/robotic_arm/config.py`) carries this joint's `gear_ratio` as `1 / CYCLOIDAL_RATIO`, the output
+  turning with the motor (the direction: `robot/AGENTS.md`); which CAN id its board has is unconfirmed
+  (`docs/open_issues.md`).
 
 ## Viewing the drive
 
