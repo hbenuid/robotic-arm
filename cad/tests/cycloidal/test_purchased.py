@@ -192,7 +192,7 @@ class TestHousingBolts:
         assert len(housing_bolts.solids()) == CFG.housing.bolt_count
 
     def test_bounding_box_z(self, housing_bolts):
-        """head_height + bolt_length = 4 + 55 = 59."""
+        """head_height + bolt_length."""
         h = CFG.housing
         assert abs(housing_bolts.bounding_box().size.Z - (h.bolt_head_height + h.bolt_length)) < 0.2
 
