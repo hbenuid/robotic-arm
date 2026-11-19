@@ -54,7 +54,7 @@ from lib.upper_arm.layout import (
 )
 from robot import frames as F
 from tests import built
-from tests.helpers import interference, is_inside
+from tests.helpers import Reach, interference, is_inside, nearest_under
 
 H = DEFAULT.home
 GAP = H.air + A3144_HALL_DEPTH                     # the magnet's pole face .. the hall element, at home
@@ -75,36 +75,16 @@ NEAR = ("gt2_pulley_90t", "elbow_pulley_screws", "elbow_pulley_nuts", "forearm_r
 CLIP = "elbow_home_clip#1"
 
 
-def _turned(shape, q: float):
-    """A shape of elbow_link (at its world pose, the joint at zero) with elbow_pitch at q."""
+def _turn(q: float) -> Location:
+    """What moves a shape of elbow_link (at its world pose, the joint at zero) to elbow_pitch q."""
     jw = F.joint_frame_world("elbow_pitch")
-    return shape.moved(jw * Location((0.0, 0.0, 0.0), (0.0, 0.0, 1.0), q) * jw.inverse())
+    return jw * Location((0.0, 0.0, 0.0), (0.0, 0.0, 1.0), q) * jw.inverse()
 
 
 def _elbow_link_parts(skip=("elbow_home_magnet#1",)) -> list:
     """(label, shape in W) of every part of elbow_link but `skip`, the joint at zero."""
     return [(f"{key}:{part}", built.part(part).moved(placement_at(part, world)))
             for key in F.LINKS["elbow_link"] if key not in skip for part, _role, world in world_rows(key)]
-
-
-def _box_gap(a, b) -> float:
-    d = (max(a.min.X - b.max.X, b.min.X - a.max.X, 0.0), max(a.min.Y - b.max.Y, b.min.Y - a.max.Y, 0.0),
-         max(a.min.Z - b.max.Z, b.min.Z - a.max.Z, 0.0))
-    return math.sqrt(sum(v * v for v in d))
-
-
-def _nearest(movers, fixed, limit: float) -> tuple:
-    """(distance, mover, fixed) of the nearest pair - exact under `limit`, else `limit` (their boxes that far apart)."""
-    best = (limit, "", "")
-    boxes = [(fl, fs, fs.bounding_box()) for fl, fs in fixed]
-    for ml, ms in movers:
-        mbb = ms.bounding_box()
-        for fl, fs, fbb in boxes:
-            if _box_gap(mbb, fbb) < best[0]:
-                d = closest_points(ms, fs).distance
-                if d < best[0]:
-                    best = (d, ml, fl)
-    return best
 
 
 def test_the_home_angle():
@@ -260,22 +240,25 @@ def test_the_magnet_on_the_90t_over_the_chip_at_home():
     # 2.5 um off the axis: the capture puts the 90T's axis ~3 um off the elbow joint's (placements.json), turned 41 deg
     assert along == pytest.approx(GAP, abs=1e-3) and (v + home.z_axis.direction * along).length < 5e-3
     assert (hall - loc.position).length > 15.0
-    sensor = [(k, built.placed(k)) for k in SENSOR]
-    clip = [(CLIP, built.placed(CLIP))]
+    # the least distances over the travel, exact under 5 mm (helpers.nearest_under), else 5
+    sensor = [Reach(built.placed(k)) for k in SENSOR]
+    clip = [Reach(built.placed(CLIP))]
     turning = [p for p in _elbow_link_parts() if p[0].rsplit(":", 1)[-1] in NEAR]
     assert len(turning) == len(NEAR)
     lower, upper = PARAMS.ELBOW_PITCH_LIMITS_DEG
-    near_sensor = near_clip = near_turning = math.inf
+    mag, rim = [Reach(magnet)], [Reach(s) for _, s in turning]
+    near_sensor = near_clip = near_turning = 5.0
     for q in [lower + 4.0 * i for i in range(int((upper - lower) / 4.0) + 1)] + [upper, PARAMS.ELBOW_PITCH_HOME_DEG]:
-        m = [("magnet", _turned(magnet, q))]
-        near_sensor = min(near_sensor, _nearest(m, sensor, 5.0)[0])
-        near_clip = min(near_clip, _nearest(m, clip, 5.0)[0])
-        d = _nearest([(label, _turned(s, q)) for label, s in turning], sensor + clip, 5.0)
-        near_turning = min(near_turning, d[0])
+        t = _turn(q)
+        near_sensor = nearest_under(mag, sensor, near_sensor, t)
+        near_clip = nearest_under(mag, clip, near_clip, t)
+        near_turning = nearest_under(rim, sensor + clip, near_turning, t)
     assert near_sensor == pytest.approx(1.42, abs=0.02)
     assert near_clip >= 4.0
     assert near_turning >= 2.3
-    block = [p for p in turning if p[0].endswith(":forearm_roll_block")]
+    block = [r for (label, _), r in zip(turning, rim, strict=True) if label.endswith(":forearm_roll_block")]
     assert len(block) == 1
-    top = min(_nearest([("block", _turned(block[0][1], q))], clip, 5.0)[0] for q in range(int(lower), int(upper) + 1, 8))
+    top = 5.0
+    for q in range(int(lower), int(upper) + 1, 8):
+        top = nearest_under(block, clip, top, _turn(q))
     assert top >= 2.9

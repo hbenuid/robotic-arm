@@ -167,5 +167,9 @@ step 5 in `cad/AGENTS.md` has the `totals()` one-liner).
   read 0.000 at -140 and -145 deg (1.004 either side, no overlap), the frame against `j1_link` at elbow +92 (1.217
   either side), the wrist 90T against the wrist home clip at wrist_pitch +10 (2.4 either side, arm64 macOS). A zero is
   a false contact until a second look agrees - `helpers.distance` measures it again with the pose moved 0.01 mm three
-  ways (`helpers.JITTER`) and keeps the median (the sweeps and the wrist home sensor's clearances measure with it); an
-  overlap (`helpers.interference`) is real.
+  ways (`helpers.JITTER`) and keeps the median (`helpers.distance_under`, which the sweeps and the home sensors' travel
+  measure with, hands it every reading under 0.05); an overlap (`helpers.interference`) is real.
+- A whole-solid distance query is slow on a part of hundreds of faces (a 90T, a roll pulley, `j1_link`: up to seconds
+  a pose, most of it on faces far from the other part) - a test measuring the same parts at many poses goes through
+  `helpers.Reach` + `distance_under` / `nearest_under` (the faces and their boxes gathered once, BRepExtrema only on the
+  faces in reach of each other; exact under its limit, the solids' insides counted), never `closest_points` in a loop.
