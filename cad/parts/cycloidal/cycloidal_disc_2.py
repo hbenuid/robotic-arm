@@ -2,12 +2,14 @@
 
 Ported from cycloidal_drive@2f1f67d src/cycloidal_disc.py (build_cycloidal_disc(phase_offset_deg=disc2_phase)). The reference
 reference/cycloidal_disc_2.step is that CadQuery builder's own export (manifest kind "designed").
-Local frame: profile centred on the disc axis, z 0..thickness (10); in the drive it orbits at
-(-e, 0) at stack z_disc2 (25) with a 6003 bearing in its 35.10 bore. PETG, 100 % infill.
+Local frame: profile centred on the disc axis, its 6003's seat z 0..thickness (10) - the 35.10 bore blind from z 0 -
+and the bearing lip above it (DiscParams.bearing_lip, the outer face: the hub's side); in the drive it orbits at
+(-e, 0) at stack z_disc2 (25), the bearing pressed in from its inner face onto the lip. PETG, 100 % infill, printed
+lip face down.
 The -9 deg phase is baked into the PRINTED profile (the output-pin holes stay at 0/90/180/270);
 a 180 deg assembly rotation would be a no-op on a 20-lobe disc, so disc 2 is its own part.
 Diverged from the port: build(LEGACY_CONFIG) reproduces the export (REFERENCE_BUILD - tests/cycloidal/test_port.py);
-the model builds DEFAULT_CONFIG's smaller pin circle (lib/cycloidal/params.py RING_INSET).
+the model builds DEFAULT_CONFIG's smaller pin circle (lib/cycloidal/params.py RING_INSET) and its bearing lip.
 """
 import pathlib
 
@@ -35,7 +37,7 @@ def phase_deg(cfg: DriveConfig = DEFAULT_CONFIG) -> float:
 
 
 def build(cfg: DriveConfig = DEFAULT_CONFIG):
-    return build_disc(cfg, phase_deg(cfg))
+    return build_disc(cfg, phase_deg(cfg), lip_on_top=True)   # its outer face, the hub's side, is the top
 
 
 def REFERENCE_BUILD():

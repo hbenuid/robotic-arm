@@ -2,10 +2,12 @@
 
 Ported from cycloidal_drive@2f1f67d src/cycloidal_disc.py (build_cycloidal_disc()). The reference
 reference/cycloidal_disc_1.step is that CadQuery builder's own export (manifest kind "designed").
-Local frame: profile centred on the disc axis, z 0..thickness (10); in the drive it orbits at
-(+e, 0) at stack z_disc1 (13) with a 6003 bearing in its 35.10 bore. PETG, 100 % infill.
+Local frame: profile centred on the disc axis, its 6003's seat z 0..thickness (10) - the 35.10 bore blind from the
+top - and the bearing lip below z 0 (DiscParams.bearing_lip, the outer face: the motor plate's side); in the drive it
+orbits at (+e, 0) at stack z_disc1 (13), the bearing pressed in from its inner face onto the lip. PETG, 100 % infill,
+printed lip face down.
 Diverged from the port: build(LEGACY_CONFIG) reproduces the export (REFERENCE_BUILD - tests/cycloidal/test_port.py);
-the model builds DEFAULT_CONFIG's smaller pin circle (lib/cycloidal/params.py RING_INSET).
+the model builds DEFAULT_CONFIG's smaller pin circle (lib/cycloidal/params.py RING_INSET) and its bearing lip.
 """
 import pathlib
 
