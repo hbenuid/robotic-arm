@@ -123,8 +123,8 @@ def arm_root(cfg: DriveConfig, height: float, z_offset: float = 0.0):
 
 def housing_bolt_cutters(cfg: DriveConfig = DEFAULT_CONFIG) -> list:
     """The turning shell's body's housing-bolt holes, end to end (arm_zone's start .. the shell's hub end), each with
-    its nut's hex pocket from the hub end, a flat outward (bolt_nut_turn_deg), its floor where the nut sits on the
-    bolt's end (stack_positions z_housing_nuts) - in the drive's frame, bolt by bolt (hole, pocket). build_shell_body
+    its nut's hex pocket from the hub end, a flat outward (bolt_nut_turn_deg), its floor the nut's seat, the nut just
+    inside the hub end (stack_positions z_housing_nuts) - in the drive's frame, bolt by bolt (hole, pocket). build_shell_body
     cuts them; j1_link cuts them again once its arm is fused on (lib/upper_arm/link.py: the arm, flush with the hub end,
     covers the pocket on the lug under it)."""
     h = cfg.housing

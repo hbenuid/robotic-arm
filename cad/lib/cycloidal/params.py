@@ -290,6 +290,9 @@ class ShellParams:
     sleeve_od: float = 70.0            # [DESIGN] the sleeve behind the seat: the 6814 slides on over it ...
     #                                    ... and presses on over the last out_width, at the hub's grip (OutputHubParams.od)
     end_lip: float = 3.0               # [DESIGN] the shell's lip past each 6814 (the port's output wall, StackUp.output_wall)
+    housing_nut_recess: float = 0.5    # [DESIGN] the housing nuts' outer faces this far inside the hub end, almost flush
+    #                                    (layout.py stack_positions z_housing_nuts): the bolts' ends past them, flush with
+    #                                    the hub end (HousingParams.bolt_length, the turning shell's)
     hub_nut_depth: float = 4.7         # [DESIGN] the hub's 4 captive nuts' pockets from its flange's inner face: the yoke's
     #                                    M4 x 30 (lib/yaw_coupler/params.py ForkParams.hub_screw_len) end 1.0 past the nuts,
     #                                    0.5 inside the pockets
@@ -380,7 +383,9 @@ _HOUSING = replace(LEGACY_CONFIG.housing, bolt_count=6, bolt_start_deg=ARM_DEG,
                    bolt_nut_turn_deg=30.0, edge_chamfer=1.0,
                    ring_pin_entry_chamfer_depth=0.8, ring_pin_entry_chamfer_add=1.6,   # [DESIGN] 0.8 x 45 deg, mouth
                    #   5.8: 1.1 of wall at the face to the pin ring's bore and to the window (1.9 below the cone)
-                   bolt_length=65.0,   # the turning shell's: end to end, the shell ring's counterbores to nuts in the body
+                   bolt_counterbore_depth=4.0,   # the head flush with the shell ring's end (an M4 head is 4.0 at most)
+                   bolt_length=70.0,   # the turning shell's: end to end - the head flush with the shell ring's end, the
+                   #                     end flush with the hub end (4 + 70 = the shell's 74), past its nut sunk in the body
                    bolt_hole_dia=M4_CLEAR_UPRIGHT)   # [MEASURE] 4.2: the holes stand upright in the shell ring, the
 #                                                    shell body and the hub, all printed at 0.20 on an end (lib/fasteners.py)
 _PORT_STACK = LEGACY_CONFIG.stack_up
