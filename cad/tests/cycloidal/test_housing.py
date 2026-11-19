@@ -28,12 +28,6 @@ def _aligned(part):
     return part.rotate(Axis.Z, -CFG.housing.bolt_start_deg)
 
 
-def _under_the_arm(mid: float) -> bool:
-    """The window centred at `mid` is one the body keeps solid under the upper arm (ShellParams.arm_windows)."""
-    off = math.remainder(mid - START, 2 * math.pi)
-    return abs(off) < CFG.shell.arm_windows / 2.0 * STEP
-
-
 @pytest.fixture(scope="module")
 def cutter():
     return reveal_window_cutter(CFG, height=10.0)
@@ -101,15 +95,14 @@ class TestProfileAlignment:
 
     def test_window_centres_are_void(self, sample_parts):
         parts = sample_parts
-        """Midway between bolt angles at r=64 (bore 54 < r < od 64.6): void - but the body's windows under the upper arm,
-        solid (ShellParams.arm_windows)."""
+        """Midway between bolt angles at r=64 (bore 54 < r < od 64.6): void, every window - the body's under the upper arm
+        too, solid only at its hub end, past these heights (ShellParams.arm_root_depth: tests/cycloidal/test_shell_body.py)."""
         sample_r = 64.0
         for angle in compute_housing_bolt_angles(CFG):
             mid = angle + STEP / 2.0
             x, y = sample_r * math.cos(mid), sample_r * math.sin(mid)
             for name, part, z in parts:
-                solid = name == "body" and _under_the_arm(mid)
-                assert is_inside(part, x, y, z) == solid, f"{name}: window centre angle={math.degrees(mid):.1f} deg, solid {solid}"
+                assert not is_inside(part, x, y, z), f"{name}: window centre angle={math.degrees(mid):.1f} deg"
 
 
 @pytest.mark.slow

@@ -78,7 +78,7 @@ clip over the travel, the elbow's turning parts clear of them;
 `elbow_idler`: the elbow belt's tensioner - the stock belt round it, the band of belts its slot takes, its stations,
 its axle's, nut's and spacer's numbers (no reference), its slots on `j1_link`, the kit's fit beside the 90T; `j1_link`: the LEGACY build's feature probes, DEFAULT's numbers, the web under the elbow motor's gearbox (its seat) and its
 holes, the arm - a flat slab - rising off the drive's turning shell - the drive's frame in the link's, its first pillar
-on the arm's centreline, the shell's body inside, its windows under the arm solid, the others open, the slab's faces
+on the arm's centreline, the shell's body inside, its windows under the arm solid as deep as the slab, open above it like the others, the slab's faces
 level end to end -, no sockets, the elbow block's floor), `tests/base/` (`base`: the LEGACY build's
 feature probes, the interface values lib/params.py and lib/datum.py take from it; DEFAULT's walls carrying
 j1_coupler's cone on down onto the foot's flange, its screw holes, its volume / box (`test_foot`); `base_motor_mount`:
