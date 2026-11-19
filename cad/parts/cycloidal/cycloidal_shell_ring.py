@@ -8,8 +8,9 @@ hub end's mirror: the housing's od with its pillars and windows from end to end,
 end_lip (HousingParams.lip_bore_dia) - the motor-end 6814's outer race's stop -, the 6814's seat
 (HousingParams.output_bearing_seat_dia, out_width deep: the race pressed in from z=0) and a ring_bore_dia pin ring round
 the held motor plate (z 0..9) with the 21 ring pins' blind holes from its face on the body (z=9: the pins stand in
-the body's pin ring and this ring closes over their other ends). The housing bolts' holes run through it, their heads'
-counterbores in the end face (z=-13), which is chamfered like the port's plate; the face on the body sharp.
+the body's pin ring and this ring closes over their other ends, its holes' lead-ins catching them - HousingParams
+ring_pin_entry_chamfer_*, lib/cycloidal/housing.py ring_pin_lead_ins). The housing bolts' holes run through it, their
+heads' counterbores in the end face (z=-13), which is chamfered like the port's plate; the face on the body sharp.
 """
 import pathlib
 
@@ -25,7 +26,7 @@ from lib.cycloidal import (
     shell_ends,
     stack_positions,
 )
-from lib.cycloidal.housing import PIN_END_CLEAR, chamfer_outer_silhouette, reveal_window_cutter
+from lib.cycloidal.housing import PIN_END_CLEAR, chamfer_outer_silhouette, reveal_window_cutter, ring_pin_lead_ins
 from lib.geom import cylinder, single_solid
 from lib.params import NUDGE
 
@@ -46,6 +47,8 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     pins_z = stack_positions(cfg)["z_ring_pins"] - PIN_END_CLEAR
     for xy in ring_pin_points(cfg):
         ring = ring - cylinder(ring_pin_hole_dia(cfg) / 2.0, t - pins_z + NUDGE, xy, z0=pins_z)
+    for cone in ring_pin_lead_ins(cfg, t, into=-1.0):                                                  # their mouths
+        ring = ring - cone
     for xy in housing_bolt_points(cfg):
         ring = ring - cylinder(housing_bolt_hole_dia(cfg) / 2.0, t - z0 + 2 * NUDGE, xy, z0=z0 - NUDGE)
         ring = ring - cylinder(h.bolt_counterbore_dia / 2.0, h.bolt_counterbore_depth + NUDGE, xy, z0=z0 - NUDGE)

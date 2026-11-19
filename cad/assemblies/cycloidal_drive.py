@@ -74,10 +74,10 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 # totals(body) after a geometry change): the drive's own leaves and solids + the 7-solid vendor motor + 16 fasteners +
 # the 13-solid board kit, and the same per rigid body.
 EXPECTED = {
-    "leaves": 19, "solids": 73, "solid_volume": 571827.851,
+    "leaves": 19, "solids": 73, "solid_volume": 571727.924,
     "bodies": {
         "stator": {"leaves": 13, "solids": 37, "solid_volume": 428020.304},
-        "rotor": {"leaves": 6, "solids": 36, "solid_volume": 143807.547},
+        "rotor": {"leaves": 6, "solids": 36, "solid_volume": 143707.619},
     },
 }
 

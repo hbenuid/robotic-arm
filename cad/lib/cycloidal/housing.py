@@ -93,6 +93,21 @@ PIN_END_CLEAR = 0.5   # [DESIGN] the ring pins' blind holes this far past the pi
 SECTOR_STEP_DEG = 7.5  # [DESIGN] the arm root's sector polygon: a vertex this often, its radius past the od covering the arcs
 
 
+def ring_pin_lead_ins(cfg: DriveConfig, face_z: float, into: float) -> list:
+    """The ring pins' holes' lead-ins (HousingParams.ring_pin_entry_chamfer_*), one cone per hole at its mouth on the pin
+    ring's face at face_z: the mouth (the hole's dia + ring_pin_entry_chamfer_add) narrowing to the hole's dia
+    ring_pin_entry_chamfer_depth into the part - into -1 for holes that run down from the face (the shell ring's), +1
+    up (the body's) -, carried NUDGE out past the face. They catch the pins' ends: the shell ring goes on over all 21
+    at once (docs/cycloidal_drive.md §5.5)."""
+    h = cfg.housing
+    depth, hole_r = h.ring_pin_entry_chamfer_depth, ring_pin_hole_dia(cfg) / 2.0
+    mouth_r = hole_r + h.ring_pin_entry_chamfer_add / 2.0
+    out_r = mouth_r + NUDGE * (mouth_r - hole_r) / depth                 # the slope carried past the face
+    return [bd.Solid.make_cone(hole_r, out_r, depth + NUDGE,
+                               bd.Plane(origin=(x, y, face_z + into * depth), z_dir=(0.0, 0.0, -into)))
+            for x, y in ring_pin_points(cfg)]
+
+
 def arm_root(cfg: DriveConfig, height: float, z_offset: float = 0.0):
     """The sector over the windows the upper arm rises from (ShellParams.arm_windows, centred on the first pillar at
     bolt_start_deg), z_offset .. + height: taken out of the window cutter, it leaves them solid. Its edges run through
@@ -128,8 +143,9 @@ def build_shell_body(cfg: DriveConfig = DEFAULT_CONFIG) -> bd.Solid:
     (lib/upper_arm/link.py). The housing's od with its pillars and windows from end to end, but the arm_windows under
     the arm (arm_root): solid, the arm's root; inside, the shell ring's
     mirror: the bore round the discs (to the hub's flange, arm_zone's end), a ring_bore_dia pin ring round the flange
-    with the 21 ring pins' blind holes from its face on the bore, the hub-end 6814's seat, the end_lip; the housing
-    bolts' holes through it and their nuts' hex pockets from the hub end (housing_bolt_cutters). The hub end chamfered
+    with the 21 ring pins' blind holes from its face on the bore (their lead-ins: ring_pin_lead_ins), the hub-end
+    6814's seat, the end_lip; the housing bolts' holes through it and their nuts' hex pockets from the hub end
+    (housing_bolt_cutters). The hub end chamfered
     like the port's output face; the face on the shell ring sharp."""
     h, sh, b, s = cfg.housing, cfg.shell, cfg.bearings, cfg.stack_up
     (z0, flange), z1 = arm_zone(cfg), shell_ends(cfg)[1]            # 9, 39, 61
@@ -143,6 +159,8 @@ def build_shell_body(cfg: DriveConfig = DEFAULT_CONFIG) -> bd.Solid:
     pins_top = at["z_ring_pins"] + cfg.gear.ring_pin_length + PIN_END_CLEAR
     for xy in ring_pin_points(cfg):
         body = body - cylinder(ring_pin_hole_dia(cfg) / 2.0, pins_top - flange + NUDGE, xy, z0=flange - NUDGE)
+    for cone in ring_pin_lead_ins(cfg, flange, into=1.0):
+        body = body - cone
     for cutter in housing_bolt_cutters(cfg):
         body = body - cutter
     windows = reveal_window_cutter(cfg, z1 - z0, z_offset=z0)
