@@ -45,7 +45,7 @@ from lib.wrist.layout import (
     stack_positions,
 )
 from tests import built
-from tests.helpers import interference, is_inside
+from tests.helpers import Reach, interference, is_inside, nearest_under
 
 D, S = DEFAULT.roll, stack_positions(DEFAULT)
 H = D.home
@@ -219,13 +219,11 @@ def test_the_magnet_on_the_rim_over_the_chip_at_home(module):
     assert hall.X - at_home.max.X == pytest.approx(GAP, abs=1e-3)
     (mx, my, mz), _rot = home_magnet_frame()
     assert (hall - Vector(mx, my, mz)).length > 40.0
-    rotor = [_leaf(module, label) for label in ROTOR]
-    kit = [_leaf(module, label) for label in KIT]
-    near = math.inf
+    # the least distance over the travel, exact under 5 mm (helpers.nearest_under), else 5
+    rotor = [Reach(_leaf(module, label)) for label in ROTOR]
+    kit = [Reach(_leaf(module, label)) for label in KIT]
+    near = 5.0
     lim = PARAMS.WRIST_ROLL_LIMIT_DEG
     for q in [-lim + 4.0 * i for i in range(int(2 * lim / 4.0) + 1)] + [lim, PARAMS.WRIST_ROLL_HOME_DEG, -158.0]:
-        for part in rotor:
-            moved = _turned(part, q)
-            for k in kit:
-                near = min(near, closest_points(moved, k).distance)
+        near = nearest_under(rotor, kit, near, Location((0.0, 0.0, 0.0), (0.0, 0.0, 1.0), q))
     assert near == pytest.approx(1.31, abs=0.02)

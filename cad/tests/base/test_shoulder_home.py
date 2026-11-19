@@ -51,7 +51,7 @@ from lib.yaw_coupler.layout import (
 )
 from robot import frames as F
 from tests import built
-from tests.helpers import interference, is_inside
+from tests.helpers import Reach, interference, is_inside, nearest_under
 
 H, K, FK = DEFAULT.home, DEFAULT.yoke, DEFAULT.fork
 GAP = H.air + A3144_HALL_DEPTH                     # the magnet's pole face .. the hall element, at home
@@ -69,10 +69,10 @@ LOCKS = {
 SENSOR = ("ky003_hall_sensor#2", "shoulder_home_tray#1", "shoulder_home_board_screws#1", "shoulder_home_board_nuts#1")
 
 
-def _turned(shape, q: float):
-    """A shape of upper_arm_link (at its world pose, the joint at zero) with shoulder_pitch at q."""
+def _turn(q: float) -> Location:
+    """What moves a shape of upper_arm_link (at its world pose, the joint at zero) to shoulder_pitch q."""
     jw = F.joint_frame_world("shoulder_pitch")
-    return shape.moved(jw * Location((0.0, 0.0, 0.0), (0.0, 0.0, 1.0), q) * jw.inverse())
+    return jw * Location((0.0, 0.0, 0.0), (0.0, 0.0, 1.0), q) * jw.inverse()
 
 
 def test_the_home_angle():
@@ -228,11 +228,12 @@ def test_the_magnet_on_its_pillar_over_the_chip_at_home():
     along = -v.dot(home.z_axis.direction)
     assert along == pytest.approx(GAP, abs=1e-3) and (v + home.z_axis.direction * along).length < 1e-3
     assert (hall - loc.position).length > 50.0
-    still = [built.placed(k) for k in ("j1_coupler#1", *SENSOR)]
-    sensor = still[1:]
+    # distances exact under 7 mm (helpers.distance_under), else 7
+    coupler, sensor = [Reach(built.placed("j1_coupler#1"))], [Reach(built.placed(k)) for k in SENSOR]
+    m, s = [Reach(magnet)], [Reach(shell)]
     lower, upper = PARAMS.SHOULDER_PITCH_LIMITS_DEG
     for q in [lower + 4.0 * i for i in range(int((upper - lower) / 4.0) + 1)] + [upper, PARAMS.SHOULDER_PITCH_HOME_DEG]:
-        m, s = _turned(magnet, q), _turned(shell, q)
-        assert closest_points(m, still[0]).distance >= 6.0
-        assert min(closest_points(m, k).distance for k in sensor) >= 1.4
-        assert min(closest_points(s, k).distance for k in sensor) >= 4.0
+        t = _turn(q)
+        assert nearest_under(m, coupler, 7.0, t) >= 6.0
+        assert nearest_under(m, sensor, 7.0, t) >= 1.4
+        assert nearest_under(s, sensor, 7.0, t) >= 4.0

@@ -32,7 +32,7 @@ claude plugin marketplace add https://github.com/earthtojake/text-to-cad.git
 claude plugin install text-to-cad@earthtojake
 claude plugin install text-to-cad@earthtojake --scope project   # the repo's own scope (docs/toolchain.md)
 ./cadtool gen assemblies/arm.py  # build the arm: generated STEPs are git-ignored, each machine builds its own
-./cadtool pytest                 # everything green?
+./cadtool pytest --full          # everything green?
 ```
 
 Always run through `./cadtool …` from `cad/`; `./cadtool doctor` checks the install. The pins (Python, cad,
@@ -62,7 +62,7 @@ the CAD kernel), updating the plugin and what a pull that changes `pyproject.tom
 | `./cadtool skill <skill> <tool> [args]` | a plugin skill script (`print3d orca_presets.py`), its `requirements.txt`, if any, fetched into uv's cache |
 | `./cadtool cad …` | any `cad` subcommand but `setup`, `update`, `uninstall`, `doctor`, `run` ([`docs/toolchain.md`](docs/toolchain.md) Gotchas) |
 | `./cadtool doctor` | the venv's, the server's and the plugin's release against the pin, the stored telemetry and automatic-update choices, the OCP kernel, the machine's installation and the server running (a `cad update` moves both), no other text-to-cad plugin; changes nothing |
-| `./cadtool pytest [-m "not slow"] [-n 4]` | test suite (the fast lane skips geometry builds; `-n`: worker processes, a whole test file each) |
+| `./cadtool pytest [--full] [pytest args]` | test suite: the test files a change reaches since they last passed (`--full`: every file), on workers sized to the machine (`-n` overrides; a whole test file each); `-m "not slow"` the fast lane, which skips geometry builds |
 | `./cadtool lint [--fix] [path…]` | `ruff check` over `cad/` |
 | `./cadtool python …` | any python in the venv with `PYTHONPATH=cad/` (`-c "from assemblies.cycloidal_drive import totals; print(totals())"`) |
 | `./cadtool clean [--all]` | delete `__pycache__/`, `.pytest_cache/`, `.ruff_cache/` (and any stray `__cadgen__/`); `--all` also empties `snapshots/` and `print/` and removes the git-ignored `assemblies/*.step`, `robot/links/*.step` |
@@ -104,7 +104,8 @@ vs. bought) · [`assemblies/`](assemblies/AGENTS.md) · [`robot/`](robot/AGENTS.
 ## Tests
 
 ```bash
-./cadtool pytest                 # everything (the geometry builds too; never writes a STEP)
+./cadtool pytest                 # the test files your changes reach (nothing changed: nothing runs)
+./cadtool pytest --full          # everything (the geometry builds too; never writes a STEP): Recipe C, before a PR
 ./cadtool pytest -m "not slow"   # fast lane: metadata, params, placements JSON, tooling (the pinned cad + one complete OCP kernel)
 ./cadtool pytest tests/cycloidal # the cycloidal drive's tests only (one folder per subsystem: tests/AGENTS.md)
 ```

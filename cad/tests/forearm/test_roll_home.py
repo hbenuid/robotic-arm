@@ -43,7 +43,7 @@ from lib.sensors import (
     switch_half_width,
 )
 from tests import built
-from tests.helpers import interference, is_inside
+from tests.helpers import Reach, interference, is_inside, nearest_under
 
 D, S = DEFAULT.drive, stack_positions(DEFAULT)
 H, B = D.home, D.back
@@ -218,13 +218,11 @@ def test_the_magnet_in_the_shaft_over_the_chip_at_home(module):
     assert S["z_shaft_end"] - hall.Z == pytest.approx(GAP)
     assert (hall - Vector(mx, my, mz)).length > 25.0
     assert closest_points(magnet, _leaf(module, "roll_clamp_nuts")).distance > 3.0     # between two of the clamp's nuts
-    rotor = [_leaf(module, label) for label in ROTOR]
-    kit = [_leaf(module, label) for label in KIT]
-    near = math.inf
+    # the least distance over the travel, exact under 5 mm (helpers.nearest_under), else 5
+    rotor = [Reach(_leaf(module, label)) for label in ROTOR]
+    kit = [Reach(_leaf(module, label)) for label in KIT]
+    near = 5.0
     lim = PARAMS.FOREARM_ROLL_LIMIT_DEG
     for q in [-lim + 8.0 * i for i in range(int(2 * lim / 8.0) + 1)] + [lim, PARAMS.FOREARM_ROLL_HOME_DEG]:
-        for part in rotor:
-            moved = _turned(part, q)
-            for k in kit:
-                near = min(near, closest_points(moved, k).distance)
+        near = nearest_under(rotor, kit, near, Location((0.0, 0.0, 0.0), (0.0, 0.0, 1.0), q))
     assert near == pytest.approx(0.98, abs=0.02)

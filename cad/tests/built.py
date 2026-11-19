@@ -1,8 +1,9 @@
 """One build per test process: the parts, modules and placed occurrences the geometry tests share.
 
 The geometry tests measure the same shapes over and over - a part in every file that places it, a module in every
-clearance it takes part in. These return each one built once per process (functools.cache; a pytest-xdist worker is
-a process of its own), so a cached shape is SHARED by every test that asks for it, and read-only:
+clearance it takes part in. These return each one built once per process (tests/picking.py's cache: functools.cache
+that also tells `./cadtool pytest` which part and module files every caller depends on; a pytest-xdist worker is a
+process of its own), so a cached shape is SHARED by every test that asks for it, and read-only:
 - measure it: tests/helpers.py interference / is_inside, cad.build123d closest_points, distance_to, volume
   (lib.reference.solid_volume), bounding_box(), faces() / edges(), is_valid, BRepGProp;
 - move a copy: .moved() and .rotate() return new shapes;
@@ -14,13 +15,13 @@ tests/conftest.py fails the test that changed one.
 """
 from __future__ import annotations
 
-import functools
 import importlib
 
 import parts
 from assemblies._occurrences import placement_at
 from lib import placements as P
 from lib.models import model_of, raw
+from tests import picking
 
 _KEPT: list[list] = []   # [shape, its fingerprint]: tests/conftest.py's check after every test
 
@@ -49,19 +50,19 @@ def _keep(shape):
     return shape
 
 
-@functools.cache
+@picking.cache
 def part(name: str):
     """parts.build(name): the part at its local origin."""
     return _keep(parts.build(name))
 
 
-@functools.cache
+@picking.cache
 def legacy(name: str):
     """The part's REFERENCE_BUILD(): the build a part that has left its reference is matched with."""
     return _keep(parts.load(name).REFERENCE_BUILD())
 
 
-@functools.cache
+@picking.cache
 def model(fn):
     """lib.models.raw(fn): a model's body - a module with its children in the module frame."""
     return _keep(raw(fn))
@@ -73,7 +74,7 @@ def leaf(fn, label: str):
     return next(c for c in model(fn).children if c.label == label)
 
 
-@functools.cache
+@picking.cache
 def placed(key: str, into: str | None = None):
     """An occurrence of placements.json at its world pose - a part as assemblies._occurrences.place_world() puts it, or a
     designed module - or re-expressed in the frame of the occurrence `into`."""

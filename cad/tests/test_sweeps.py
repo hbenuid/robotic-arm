@@ -10,8 +10,9 @@ stops; the gripper rolls clear of the wrist roll drive's frame and the forearm; 
 in front of their headers over the joints' ranges (an overlap, not a distance: `_plug_overlap`).
 Exact distances (BRepExtrema) at poses on the limits, for every part pair that could come nearer than the limit: a pair
 whose boxes are the limit apart is not measured - the world boxes, each part's own box turned with it (`_oriented`) and,
-for a part turning about one joint through many angles, its box in that joint's frame (`_hulls`); a pose with the arm
-down in the table the base stands on (below its bottom face) is skipped."""
+for a part turning about one joint through many angles, its box in that joint's frame (`_hulls`) - and of a pair
+measured, only the faces in reach of each other (helpers.distance_under); a pose with the arm down in the table the
+base stands on (below its bottom face) is skipped."""
 from __future__ import annotations
 
 import functools
@@ -33,7 +34,7 @@ from lib.wrist import DEFAULT as WRIST
 from lib.yaw_coupler.params import RIM_CLEAR
 from robot import frames as F
 from tests import built
-from tests.helpers import JITTER, distance, interference
+from tests.helpers import JITTER, Reach, distance, distance_under, interference
 
 pytestmark = pytest.mark.slow
 CLEAR = 1.0   # mm: what a part keeps off another link's parts
@@ -93,8 +94,9 @@ def _box_gap(a, b) -> float:
 
 
 def _boxed(parts) -> list:
-    """(label, shape, its bounding box) of every part - a pose measured against many boxed once."""
-    return [p if len(p) == 3 else (*p, p[1].bounding_box()) for p in parts]
+    """(label, shape, its holder) of every part - a pose measured against many boxed once. The holder (`_holder`, no
+    kernel call) holds the part's bounding box, so the gap between two holders bounds the parts' distance from below."""
+    return [p if len(p) == 3 else (*p, _holder(p[0], p[1])) for p in parts]
 
 
 def _hulls(parts, joint: str) -> list:
@@ -152,11 +154,18 @@ def _cross(u, v) -> list:
     return [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]]
 
 
+@functools.cache
+def _reach(part: str) -> Reach:
+    """A part's faces and their boxes (helpers.Reach), gathered once: every pose of the part shares its geometry."""
+    return Reach(built.part(part))
+
+
 def _closest(movers, fixed, limit: float, hulls=None) -> tuple:
     """(distance, mover, fixed part) of the nearest pair, exact wherever it is under `limit`. A pair whose world boxes
     are `limit` apart counts as their gap; one whose own boxes (`_oriented`) are, as `limit`; one whose mover's hull
     (`_hulls`, posed as the movers, one each) is, as the hull's distance - each bounds the pair's distance from below, so
-    such a pair cannot break the limit. The exact distance only under all three."""
+    such a pair cannot break the limit. Under all three, the distance on the faces in reach of each other
+    (helpers.distance_under: exact under `limit`, else `limit`)."""
     best = (math.inf, "", "")
     boxes = [(*p, _oriented(p[0], p[1])) for p in _boxed(fixed)]
     for i, (ml, ms, mbb) in enumerate(_boxed(movers)):
@@ -168,15 +177,17 @@ def _closest(movers, fixed, limit: float, hulls=None) -> tuple:
             if d < limit and hulls is not None:
                 d = hulls[i][1].distance_to(fs)
             if d < limit:
-                d = distance(ms, fs)
+                d = distance_under(_reach(ml.rsplit(":", 1)[-1]), _reach(fl.rsplit(":", 1)[-1]), limit,
+                                   ms.location, fs.location)
             if d < best[0]:
                 best = (d, ml, fl)
     return best
 
 
 def _in_table(parts) -> bool:
-    """A pose with the arm down in the table the base stands on (below its bottom face); `parts` boxed (`_boxed`)."""
-    return min(bb.min.Y for _, _, bb in parts) < BASE_BOTTOM_Y
+    """A pose with the arm down in the table the base stands on: a part's bounding box below its bottom face; `parts`
+    boxed (`_boxed`). A holder _EPS clear of the table decides for its part's box; the box is made only for the others."""
+    return any(h.min.Y < BASE_BOTTOM_Y + _EPS and s.bounding_box().min.Y < BASE_BOTTOM_Y for _, s, h in parts)
 
 
 def test_the_shoulder_range_keeps_the_upper_arm_off_the_fork_and_the_base():
@@ -487,7 +498,8 @@ def test_the_mks_boards_keep_their_plug_room(link):
             others = [p for name in links for p in at(name, q) if p[0] not in boards]
             if q and down({*links, link}, q):
                 continue
-            for rl, room, rbb in _boxed(_posed(rooms, *_chain(link, q))):
+            for rl, room in _posed(rooms, *_chain(link, q)):
+                rbb = room.bounding_box()      # a room is a plain box: its own box costs next to nothing
                 for pl, part, holder in others:
                     if _box_gap(rbb, holder) > _EPS or _box_gap(rbb, box(pl, part, holder)) > 0.0:
                         continue

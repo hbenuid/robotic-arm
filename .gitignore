@@ -6,6 +6,8 @@ __pycache__/
 # --- Python tooling ---
 .pytest_cache/
 *.egg-info/
+# `./cadtool pytest`'s record of the test files that passed and what each depends on (cad/tests/run.py)
+.picked.json
 
 # --- CAD (cad/ is its own uv project; see cad/README.md) ---
 # Meshes and STEPs are regenerated from the .py source - never committed. That includes each part's

@@ -54,7 +54,7 @@ from lib.sensors import (
 )
 from robot import frames as F
 from tests import built
-from tests.helpers import distance, interference, is_inside
+from tests.helpers import Reach, interference, is_inside, nearest_under
 
 H = DEFAULT.home
 GAP = H.air + A3144_HALL_DEPTH                     # the magnet's pole face .. the hall element, at home
@@ -84,27 +84,6 @@ def _link_parts(link: str, skip=("wrist_home_magnet#1",)) -> list:
     """(label, shape in W) of every part of a link but `skip`, its joints at zero."""
     return [(f"{key}:{part}", built.part(part).moved(placement_at(part, world)))
             for key in F.LINKS[link] if key not in skip for part, _role, world in world_rows(key)]
-
-
-def _box_gap(a, b) -> float:
-    d = (max(a.min.X - b.max.X, b.min.X - a.max.X, 0.0), max(a.min.Y - b.max.Y, b.min.Y - a.max.Y, 0.0),
-         max(a.min.Z - b.max.Z, b.min.Z - a.max.Z, 0.0))
-    return math.sqrt(sum(v * v for v in d))
-
-
-def _nearest(movers, fixed, limit: float) -> tuple:
-    """(distance, mover, fixed) of the nearest pair - exact under `limit`, else `limit` (their boxes that far apart); a
-    false zero measured again (helpers.distance)."""
-    best = (limit, "", "")
-    boxes = [(fl, fs, fs.bounding_box()) for fl, fs in fixed]
-    for ml, ms in movers:
-        mbb = ms.bounding_box()
-        for fl, fs, fbb in boxes:
-            if _box_gap(mbb, fbb) < best[0]:
-                d = distance(ms, fs)
-                if d < best[0]:
-                    best = (d, ml, fl)
-    return best
 
 
 def test_the_home_angle():
@@ -262,26 +241,27 @@ def test_the_magnet_on_the_90t_over_the_chip_at_home():
     # the capture puts the 90T's axis 4.7 um off the joint's: turned by the home angle, that leaves the magnet 9 um aside
     assert along == pytest.approx(GAP, abs=1e-3) and (v + home.z_axis.direction * along).length < 0.01
     assert (hall - loc.position).length > 15.0
-    sensor = [(k, built.placed(k)) for k in SENSOR]
-    clip = [(CLIP, built.placed(CLIP))]
-    turning = [p for p in _link_parts("wrist_pitch_link") if p[0].rsplit(":", 1)[-1] in NEAR]
+    # the least distances over the travel, exact under 5 mm (10 for the gripper: helpers.nearest_under), else that
+    sensor = [Reach(built.placed(k)) for k in SENSOR]
+    clip = [Reach(built.placed(CLIP))]
+    turning = [Reach(s) for label, s in _link_parts("wrist_pitch_link") if label.rsplit(":", 1)[-1] in NEAR]
     assert len(turning) == len(NEAR)
-    gripper = [p for link in ("wrist_roll_link", "jaw_a_link", "jaw_b_link") for p in _link_parts(link)]
+    gripper = [Reach(s) for link in ("wrist_roll_link", "jaw_a_link", "jaw_b_link") for _, s in _link_parts(link)]
     lower, upper = PARAMS.WRIST_PITCH_LIMITS_DEG
-    near_sensor = near_clip = near_turning = near_grip = math.inf
+    mag = [Reach(magnet)]
+    near_sensor = near_clip = near_turning = 5.0
+    near_grip = 10.0
     for q in [lower + 4.0 * i for i in range(int((upper - lower) / 4.0) + 1)] + [upper, PARAMS.WRIST_PITCH_HOME_DEG]:
         t = _turn("wrist_pitch", q)
-        m = [("magnet", magnet.moved(t))]
-        near_sensor = min(near_sensor, _nearest(m, sensor, 5.0)[0])
-        near_clip = min(near_clip, _nearest(m, clip, 5.0)[0])
-    # wrist_link's flat underside over the cap is the nearest pair at every angle (~7 s a pose): every 8 deg is enough
+        near_sensor = nearest_under(mag, sensor, near_sensor, t)
+        near_clip = nearest_under(mag, clip, near_clip, t)
+    # wrist_link's flat underside over the cap is the nearest pair at every angle: every 8 deg is enough
     for q in [lower + 8.0 * i for i in range(int((upper - lower) / 8.0) + 1)] + [upper, PARAMS.WRIST_PITCH_HOME_DEG]:
-        t = _turn("wrist_pitch", q)
-        near_turning = min(near_turning, _nearest([(label, s.moved(t)) for label, s in turning], sensor + clip, 5.0)[0])
+        near_turning = nearest_under(turning, sensor + clip, near_turning, _turn("wrist_pitch", q))
     for q in [lower + 8.0 * i for i in range(int((upper - lower) / 8.0) + 1)] + [upper]:
         for roll in (-PARAMS.WRIST_ROLL_LIMIT_DEG, -90.0, 0.0, 90.0, PARAMS.WRIST_ROLL_LIMIT_DEG):
             t = _turn("wrist_pitch", q) * _turn("wrist_roll", roll)
-            near_grip = min(near_grip, _nearest([(label, s.moved(t)) for label, s in gripper], sensor + clip, 10.0)[0])
+            near_grip = nearest_under(gripper, sensor + clip, near_grip, t)
     assert near_sensor == pytest.approx(1.43, abs=0.03)
     assert near_clip >= 4.0
     assert near_turning >= 2.2
