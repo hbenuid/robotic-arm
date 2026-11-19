@@ -110,7 +110,7 @@ sit well inside the 70 mm inner-race bore.
 | Ring pins | 4 × 40 h6 hardened dowel (buy 25) | 21 | `cycloidal_ring_pins` |
 | Output pins | 4 × 45 h6 hardened dowel; light press in the hub's 4.20 blind holes (printed ~4.00–4.10), hub ceiling / motor plate as backup capture, free through the discs' 7.4 holes | 4 | `cycloidal_output_pins` |
 | Shaft support pin | 5 × 20 h6 dowel | 1 | `cycloidal_shaft_support_pin` |
-| Housing bolts | M4 × 65 SHCS (ISO 4762, `bolt_length`), Ø7 × 4 head; counterbored in the shell ring's end, through the shell end to end into nuts sunk in its body (the port's M4 × 55 ended in the ring gear body) | 6 | `cycloidal_housing_bolts` |
+| Housing bolts | M4 × 70 SHCS (ISO 4762, `bolt_length`), Ø7 × 4 head; counterbored flush in the shell ring's end, through the shell end to end past nuts sunk just inside its body's hub end (the port's M4 × 55 ended in the ring gear body) | 6 | `cycloidal_housing_bolts` |
 | Housing nuts | M4 hex, 7.0 AF × 3.2 (pocket 7.2 AF), in the body's pockets from its hub end (`lib/cycloidal/housing.py build_shell_body`) | 6 | `cycloidal_housing_nuts` |
 | Motor bolts | M3 × 10 SHCS, Ø5.3 × 3 head (13 total): 6 through the plate + 4 engagement, head flush in the 3 mm inner-face pocket (`motor_bolt_counterbore_depth`) - the model places them `motor_bolt_recess` deeper (`stack_positions` `z_motor_bolts`, the drive repo's stack-up: heads 1 into the pocket's floor, tips 0.5 past the motor's 4.5 tapped holes; `docs/open_issues.md`) | 4 | `cycloidal_motor_bolts` |
 | Hub bolts + nuts | 4 × M4 × 30 (`lib/yaw_coupler/params.py ForkParams.hub_screw_len`) from the `j1_coupler` fork's hub-side leg into captive M4 nuts in the hub's flange (its arm-mount pattern, `ShellParams.hub_nut_depth`: the screws' ends 1 mm past the nuts, inside their pockets) — install the nuts before pressing the hub through its 6814 | 4 + 4 | the arm's `fork_hub_screws` + `fork_hub_nuts`, mounted on the fork (`lib/mounts.py FORK_MOUNTS`) |
@@ -146,16 +146,18 @@ at 9 and 39 (`arm_zone`, where the shell's body starts on the shell ring). Deriv
 **The ends:** the held hub is 23 tall (flange 9 + grip 10 + lip 3 + `proud_above_housing` 1 = `ShellParams.end_plate_gap`)
 at z 39, its face at **z = 62** (`CYCLOIDAL_HUB_FACE_Z`) on the `j1_coupler` fork's hub-side leg; the motor plate's
 sleeve ends at **z = −26** (`sleeve_end`, `CYCLOIDAL_SLEEVE_END_Z`) on the motor-side leg's outer face. **The housing
-bolts run end to end:** M4 × 65 from the shell ring's 4.5 counterbores (heads' tops at −12.5) to their ends at 56.5,
-flush with their nuts (stack `z_housing_nuts` 53.3, `test_full_nut_engagement`) in the body's pockets
-(`test_bolt_ends_inside_the_body`).
+bolts run end to end:** M4 × 70 from the shell ring's counterbores, `bolt_counterbore_depth` the head's height (heads'
+tops flush with its end, −13), to their ends flush with the hub end (61) - the shell's 74 is the head's 4 + 70, so
+neither end stands proud toward the fork's legs, `end_plate_gap` off -, past their nuts, whose outer faces sit
+`ShellParams.housing_nut_recess` inside the hub end (stack `z_housing_nuts` 57.3, `test_full_nut_engagement`,
+`test_bolts_flush_with_the_shells_ends`).
 **Total envelope with the motor:** the shell 74 (−13..61), the motor 48 behind the plate's face (the pilot recesses 2
 mm into the plate), the MKS board kit behind the motor 14.1 (module z −62.1 … 62).
 
 The module layout (`lib/cycloidal/layout.py stack_positions`, the drive repo's `assembly.py`
 numbers for the gear stack) places: discs at (±1.5, 0, 13 / 25) with their 6003s, the 6814s at 48 (the hub's) and −10
 (the motor plate's), hub and 625 at 39, ring pins at 4, output pins at 12, support pin at 24, motor bolts at −5,
-housing bolts at −12.5, nuts at 53.3; shaft, motor, motor plate and shell ring at 0 (built in place).
+housing bolts at −13, nuts at 57.3; shaft, motor, motor plate and shell ring at 0 (built in place).
 
 ## 5. Housing design notes (`cfg.housing`)
 
@@ -166,7 +168,7 @@ housing bolts at −12.5, nuts at 53.3; shaft, motor, motor plate and shell ring
 1. **Shell ring** (`parts/cycloidal/cycloidal_shell_ring.py`, z −13..9): the shell's motor end - from its end in, the
    Ø86.15 lip (`end_lip`, `lip_radial` 2 over the 90 mm outer race), the motor-end 6814's Ø90.15 seat, and a pin ring
    (`ring_bore_dia`) round the held motor plate with the 21 ring pins' blind holes Ø4.20 from its face on the body; the
-   M4 holes with Ø7.4 × 4.5 counterbores in the end face (z −13). The motor plate itself
+   M4 holes with Ø7.4 × 4.0 counterbores in the end face (z −13), the heads flush in them. The motor plate itself
    (`parts/cycloidal/cycloidal_motor_plate.py`) is held: §5.5.
 2. **The body** (`lib/cycloidal/housing.py build_shell_body`, z 9..61), **printed as one with `j1_link`** (the upper
    arm rises off it, §10): the Ø108 bore round the discs (9..39), a pin ring round the hub's flange (39..48) with the
@@ -266,7 +268,7 @@ face, the one the part prints on; nothing bolts the arm to the shell's end.
 - **Assembly, from the motor end:** the hub's nuts into its flange; the hub-end 6814 into the body's seat from inside
   (`j1_link` face down), the hub pressed into it grip first to its flange; the gear stack (output pins in the hub,
   discs, shaft, the ring pins into the body's pin ring) as before; the motor plate with its 6814 on its seat, the
-  shell ring over the sleeve and onto the ring pins' ends, bolted to the body with the M4 × 65s into its nuts; the
+  shell ring over the sleeve and onto the ring pins' ends, bolted to the body with the M4 × 70s into its nuts; the
   sleeve's three nuts pressed into its lugs, then the motor into the sleeve; the whole lowered into the fork, the hub
   bolted to its leg, the motor leg (`j1_motor_leg`) slid on over the motor and its board and bolted to the yoke's disc,
   then - the motor turned until the sleeve's holes show through the ring's - to the sleeve with the three M4 × 20s,

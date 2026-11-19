@@ -174,7 +174,7 @@ def test_cycloidal_stack_positions():
         "x_disc1": 1.5, "x_disc2": -1.5, "z_motor_plate": 0.0, "z_shell_ring": 0.0, "z_motor": 0.0, "z_mks_board": -48.0,
         "z_eccentric_shaft": 0.0, "z_ring_gear_body": 9.0, "z_disc1": 13.0, "z_disc2": 25.0, "z_6814_1": 48.0, "z_6814_2": -10.0,
         "z_hub": 39.0, "z_625": 39.0, "z_ring_pins": 4.0, "z_output_pins": 12.0, "z_support_pin": 24.0,
-        "z_motor_bolts": -5.0, "z_housing_bolts": -12.5, "z_housing_nuts": 53.3, "hub_top": 62.0,
+        "z_motor_bolts": -5.0, "z_housing_bolts": -13.0, "z_housing_nuts": 57.3, "hub_top": 62.0,
     }
     assert got.keys() == expected.keys()
     for key, value in expected.items():
@@ -212,7 +212,7 @@ def test_cycloidal_steel_masses_track_volumes():
     assert math.isclose(p.CYCLOIDAL_RING_PINS_MASS_G, 82.9, abs_tol=0.1)    # 21x 4 x 40
     assert math.isclose(p.CYCLOIDAL_OUTPUT_PINS_MASS_G, 17.8, abs_tol=0.1)
     assert math.isclose(p.CYCLOIDAL_SUPPORT_PIN_MASS_G, 3.1, abs_tol=0.1)
-    assert math.isclose(p.CYCLOIDAL_HOUSING_BOLTS_MASS_G, 45.7, abs_tol=0.1)   # 6x M4 x 65
+    assert math.isclose(p.CYCLOIDAL_HOUSING_BOLTS_MASS_G, 48.7, abs_tol=0.1)   # 6x M4 x 70
     assert math.isclose(p.CYCLOIDAL_HOUSING_NUTS_MASS_G, 6.4, abs_tol=0.1)
     assert math.isclose(p.CYCLOIDAL_MOTOR_BOLTS_MASS_G, 4.3, abs_tol=0.1)
     for mass in (p.CYCLOIDAL_MOTOR_MASS_G, p.BEARING_6003_MASS_G, p.BEARING_6814_MASS_G, p.BEARING_625_MASS_G):

@@ -290,19 +290,23 @@ class TestRingPinSpan:
 
 
 class TestHousingBoltEngagement:
-    """The turning shell's M4 x 65: heads in the shell ring, end to end through the body into nuts sunk in it."""
+    """The turning shell's M4 x 70: heads in the shell ring, end to end through the body past nuts sunk just inside
+    its hub end."""
 
     def test_full_nut_engagement(self):
-        """The bolts' ends flush with the nuts' outer faces."""
+        """The bolts' ends past the nuts' outer faces: the whole nut on the thread."""
         h, S = CFG.housing, stack_positions(CFG)
-        assert math.isclose(S["z_housing_bolts"] + h.bolt_head_height + h.bolt_length, S["z_housing_nuts"] + h.bolt_nut_thickness)
+        assert S["z_housing_bolts"] + h.bolt_head_height + h.bolt_length > S["z_housing_nuts"] + h.bolt_nut_thickness
 
-    def test_bolt_ends_inside_the_body(self):
-        """The nuts sunk in the body's hub end, short of it - so the bolts' ends stay off the yoke's leg; the heads
-        sunk in the shell ring's end."""
+    def test_bolts_flush_with_the_shells_ends(self):
+        """The heads' tops flush with the shell ring's end, the bolts' ends flush with the hub end - neither proud, so
+        both keep the shell's end_plate_gap to the yoke's legs; the nuts housing_nut_recess inside the hub end, past
+        the hub end's 6814."""
         h, S, (end_0, end_1) = CFG.housing, stack_positions(CFG), shell_ends(CFG)
-        assert CFG.stack_up.z_output_bearings < S["z_housing_nuts"] and S["z_housing_nuts"] + h.bolt_nut_thickness < end_1
-        assert S["z_housing_bolts"] > end_0
+        assert S["z_housing_bolts"] == pytest.approx(end_0)
+        assert S["z_housing_bolts"] + h.bolt_head_height + h.bolt_length == pytest.approx(end_1)
+        assert S["z_housing_nuts"] + h.bolt_nut_thickness == pytest.approx(end_1 - CFG.shell.housing_nut_recess)
+        assert CFG.stack_up.z_output_bearings < S["z_housing_nuts"]
 
     def test_counterbore_recesses_head(self):
         assert CFG.housing.bolt_counterbore_depth >= CFG.housing.bolt_head_height
@@ -343,7 +347,7 @@ class TestModuleLocks:
             "nema17_48mm": (0, 0, 0), "mks_servo42d": (0, 0, stack["z_mks_board"]), "cycloidal_motor_bolts": (0, 0, -5), "cycloidal_motor_plate": (0, 0, 0),
             "cycloidal_shell_ring": (0, 0, 0),
             "cycloidal_output_hub": (0, 0, 39), "cycloidal_shaft_support_pin": (0, 0, 24),
-            "bearing_625": (0, 0, 39), "cycloidal_housing_bolts": (0, 0, -12.5), "cycloidal_housing_nuts": (0, 0, 53.3),
+            "bearing_625": (0, 0, 39), "cycloidal_housing_bolts": (0, 0, -13.0), "cycloidal_housing_nuts": (0, 0, 57.3),
         }
         got = {name if role is None else f"{name}:{role}": pos for name, role, pos in cycloidal_drive.OCCURRENCES}
         assert got.keys() == want.keys()
