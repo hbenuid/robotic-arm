@@ -9,7 +9,7 @@ import pytest
 
 import parts
 from lib import reference as R
-from lib.cycloidal import hub_flange, hub_height, stack_positions
+from lib.cycloidal import hub_flange, hub_height, output_pin_ends, stack_positions
 from tests.cycloidal.helpers import CFG
 from tests.helpers import is_inside
 
@@ -134,9 +134,23 @@ class TestSolid:
         assert is_inside(hub_solid, x, y, bb.max.Z - 1.0, 1e-3), "Nut pocket extends too far - the proud section should be solid"
 
     def test_pin_holes_blind_from_output_face(self, hub_solid):
-        """A 1 mm ceiling stays solid above the pin holes (probe mid-ceiling above pin #1)."""
-        probe_z = CFG.stack_up.z_bearing_top - stack_positions(CFG)["z_hub"] - CFG.output_hub.output_hub_pin_ceiling / 2.0
-        assert is_inside(hub_solid, CFG.disc.output_pin_circle_dia / 2.0, 0.0, probe_z, 1e-3), "blind ceiling above the output pins is missing"
+        """The pin holes run from the inner face to the pins' ends (output_pin_ends: 10 deep, the rest of each pin in
+        the motor plate) and are solid above them (probe pin #1's axis)."""
+        top = output_pin_ends(CFG)[1] - stack_positions(CFG)["z_hub"]
+        assert top == pytest.approx(10.0)
+        x = CFG.disc.output_pin_circle_dia / 2.0
+        assert not is_inside(hub_solid, x, 0.0, top - 0.3, 1e-3), "the pin hole stops short of the pin's end"
+        assert is_inside(hub_solid, x, 0.0, top + 0.3, 1e-3), "blind ceiling above the output pins is missing"
+
+    def test_pin_holes_lead_ins(self, hub_solid):
+        """Each pin hole's mouth on the inner face has the motor plate's lead-in (HousingParams.ring_pin_entry_chamfer_*,
+        45 deg): open inside the mouth at the face, solid just past the hole's wall below the cone."""
+        h, d = CFG.housing, CFG.disc
+        hole_r = (d.output_pin_dia - CFG.tolerances.ring_pin_press_sub) / 2.0
+        mouth_r = hole_r + h.ring_pin_entry_chamfer_add / 2.0
+        r = d.output_pin_circle_dia / 2.0
+        assert not is_inside(hub_solid, r + mouth_r - 0.15, 0.0, 0.05, 1e-3), "no lead-in at the pin hole's mouth"
+        assert is_inside(hub_solid, r + hole_r + 0.15, 0.0, h.ring_pin_entry_chamfer_depth + 0.3, 1e-3), "the lead-in runs too deep"
 
     def test_central_lightening_pocket(self, hub_solid):
         """Empty at the centre near the top, solid floor above the grip zone, solid wall out at
@@ -158,7 +172,8 @@ class TestSolid:
         shaft_r = hub.shaft_clearance_bore / 2.0
         upper = math.pi * (hub_r ** 2 * height + ((CFG.shell.plate_dia / 2.0) ** 2 - hub_r ** 2) * flange - shaft_r ** 2 * flange)
         pocket_vol = math.pi * ((b.inp_od + tol.bearing_seat_bore_add) / 2.0) ** 2 * b.inp_width
-        pin_vol = d.output_pin_count * math.pi * ((d.output_pin_dia - tol.ring_pin_press_sub) / 2.0) ** 2 * (grip - hub.output_hub_pin_ceiling)
+        pin_depth = output_pin_ends(CFG)[1] - stack_positions(CFG)["z_hub"]
+        pin_vol = d.output_pin_count * math.pi * ((d.output_pin_dia - tol.ring_pin_press_sub) / 2.0) ** 2 * pin_depth
         arm_hole_vol = hub.arm_mount_bolt_count * math.pi * ((h.bolt_dia + tol.bolt_clearance_add) / 2.0) ** 2 * height
         nut_pocket_vol = hub.arm_mount_bolt_count * math.pi * (h.bolt_nut_pocket_af / 2.0) ** 2 * h.bolt_nut_depth
         lightening_vol = math.pi * (hub.arm_mount_pocket_dia / 2.0) ** 2 * (height - grip - hub.arm_mount_pocket_floor) if hub.arm_mount_pocket_dia > 0 else 0.0

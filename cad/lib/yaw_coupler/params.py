@@ -177,8 +177,9 @@ class ForkParams:
     facets' part past the leg's outer face down to the disc's underside, butting the disc there (this part ends at that
     face and the top face, its ring cut back motor_leg_gap off the leg); 2x M4
     x motor_screw_len along the drive's axis at motor_bolt_y, motor_bolt_z either side of it, from counterbores in the
-    foot into M4 nuts in slots from the disc's top face, under the leg's post. The ring is bolted to the sleeve too - nothing
-    else stops the carrier's motor end turning: M4 x sleeve_screw_len radially through it in its middle, at the drive's
+    foot into M4 nuts in slots from the disc's top face, under the leg's post. The ring is bolted to the sleeve too - it
+    and the drive's output pins (which tie the motor plate to the hub) stop the carrier's motor end turning: M4 x
+    sleeve_screw_len radially through it in its middle, at the drive's
     ShellParams.sleeve_bolt_deg (up and both sides; the post is under it), heads flush in round counterbores
     (sleeve_counterbore_dia, sleeve_head_seat deep) in the ring's flats - chamfered like the rest of its outline -, into
     nuts pressed into lugs on the sleeve's bore; the holes slotted along the axis (sleeve_slot_len), so the drive settles

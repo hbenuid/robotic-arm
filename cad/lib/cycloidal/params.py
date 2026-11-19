@@ -71,7 +71,8 @@ class DiscParams:
     inter_disc_spacer: float = 2.0
     output_pin_count: int = 4
     output_pin_circle_dia: float = 60.0
-    output_pin_dia: float = 4.0        # 4 x 45 mm h6 dowel, captured in blind hub holes
+    output_pin_dia: float = 4.0        # 4 x 45 mm h6 dowel, captured in blind holes (the hub's; with the shell turning, the
+    #                                    hub's and the motor plate's: layout.py output_pin_ends)
     output_pin_length: float = 45.0
     output_pin_hole_dia: float = 7.4   # 4 + 2*1.5 ecc + 0.4 clearance; 0.2 mm radial slack ~ +/-0.38 deg backlash
     lobe_chamfer: float = 1.0          # 45 deg chamfer on the outer epitrochoid edges (lead-in, elephant foot)
@@ -194,7 +195,8 @@ class OutputHubParams:
 
     od: float = 70.3                   # 70 mm 6814 inner-race bore + 0.3 mm interference grip (the port's; DEFAULT_CONFIG's: below)
     shaft_clearance_bore: float = 6.0  # 5 mm pin + 1 mm clearance
-    output_hub_pin_ceiling: float = 1.0    # closed top above the blind pin holes
+    output_hub_pin_ceiling: float = 1.0    # the port's closed top above the blind pin holes (the turning shell's pins and
+    #                                        holes end where layout.py output_pin_ends says)
     proud_above_housing: float = 5.0   # output face past the housing output face (z=60 -> 65)
     # the arm-mount pattern: the port bolts j1_link to it; with the shell turning (ShellParams) it bolts the hub to the
     # j1_coupler yoke's hub-side leg instead
@@ -289,8 +291,9 @@ class ShellParams:
     back over the 6814's seal and turning outer race - and the stack's clearance to its disc (StackUp.input_clearance). So the
     shell is symmetric about the middle of the discs. The motor plate's sleeve runs back over the motor (its bore clears
     the motor's and the MKS board's corners) through the yoke's motor-side leg, bolted to it by radial M4s into nuts
-    pressed into lugs on its bore (sleeve_bolt_deg) - nothing else holds the carrier's motor end from turning; the hub
-    runs on to the yoke's other leg. Both legs are yoke_leg thick, end_plate_gap off the shell's ends."""
+    pressed into lugs on its bore (sleeve_bolt_deg); the hub runs on to the yoke's other leg. Both legs are yoke_leg
+    thick, end_plate_gap off the shell's ends. The output pins run from the hub into the motor plate
+    (output_pin_plate_depth) - both held, so the pins are held at both ends and tie the plate to the hub."""
 
     plate_dia: float = 89.0          # [DESIGN] the motor plate and the hub's flange inside the shell's pin rings, their
     #                                    edge 0.5 inside the 6814's outer race (BearingParams.out_od) ...
@@ -316,6 +319,11 @@ class ShellParams:
     #                                    EDGE_CHAMFER on the seat flats and 0.5 of flat beside it ...
     end_plate_gap: float = 1.0         # [DESIGN] ... each this far off an end of the shell; the hub's face and the sleeve's
     #                                    end on their outer faces
+    output_pin_plate_depth: float = 5.0   # [DESIGN] the output pins stand this far into the motor plate (its blind holes
+    #                                    from the inner face), the rest of each pin in the hub (layout.py
+    #                                    output_pin_ends), the ring pins' lead-in at every mouth in both: 5 + the 30 between the plates + 10 is the
+    #                                    45 pin - the ring pins' 5 in each pin ring. The port's stopped short of the plate,
+    #                                    which its hub turned against
     sleeve_bolt_deg: tuple = (90.0, 0.0, 180.0)   # [DESIGN] the sleeve's radial M4s from the yoke's motor-side leg
     #                                    (lib/yaw_coupler/params.py ForkParams.sleeve_screw_len), in its middle
     #                                    (layout.py sleeve_bolt_z), at these angles from +X: the motor's flats, up and both
@@ -386,6 +394,7 @@ LEGACY_CONFIG = DriveConfig()
 #    (DriveConfig.ratio). The gear stack stays; the hub-end 6814 moves out past a flange on the hub, the motor plate's
 #    mirror (StackUp: output_clearance = the input clearance + that flange, one bearing), so the shell is the same at
 #    both ends; the ring pins span both pin rings; the housing bolts run end to end; the hub reaches the yoke's leg;
+#    the output pins run from the hub into the motor plate (ShellParams.output_pin_plate_depth), both held;
 #  * the ring pins' holes' lead-in (HousingParams.ring_pin_entry_chamfer_*): a 45 deg cone at each mouth, in both pin
 #    rings (the ends mirror), which catches the pins' ends - the shell ring goes on over all 21 at once;
 #  * the discs capture their 6003s: each disc DiscParams.bearing_lip thicker on its outer face - disc 1's toward the

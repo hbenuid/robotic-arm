@@ -93,19 +93,24 @@ PIN_END_CLEAR = 0.5   # [DESIGN] the ring pins' blind holes this far past the pi
 SECTOR_STEP_DEG = 7.5  # [DESIGN] the arm root's sector polygon: a vertex this often, its radius past the od covering the arcs
 
 
-def ring_pin_lead_ins(cfg: DriveConfig, face_z: float, into: float) -> list:
-    """The ring pins' holes' lead-ins (HousingParams.ring_pin_entry_chamfer_*), one cone per hole at its mouth on the pin
-    ring's face at face_z: the mouth (the hole's dia + ring_pin_entry_chamfer_add) narrowing to the hole's dia
-    ring_pin_entry_chamfer_depth into the part - into -1 for holes that run down from the face (the shell ring's), +1
-    up (the body's) -, carried NUDGE out past the face. They catch the pins' ends: the shell ring goes on over all 21
-    at once (docs/cycloidal_drive.md §5.5)."""
+def pin_lead_ins(cfg: DriveConfig, points, hole_dia: float, face_z: float, into: float) -> list:
+    """Lead-ins at the mouths of blind pin holes (HousingParams.ring_pin_entry_chamfer_*), one cone per hole at `points`
+    on a face at face_z: the mouth (hole_dia + ring_pin_entry_chamfer_add) narrowing to hole_dia
+    ring_pin_entry_chamfer_depth into the part - into -1 for holes that run down from the face, +1 up -, carried NUDGE
+    out past the face. They catch the ends of pins a part goes on over blind (docs/cycloidal_drive.md §5.5)."""
     h = cfg.housing
-    depth, hole_r = h.ring_pin_entry_chamfer_depth, ring_pin_hole_dia(cfg) / 2.0
+    depth, hole_r = h.ring_pin_entry_chamfer_depth, hole_dia / 2.0
     mouth_r = hole_r + h.ring_pin_entry_chamfer_add / 2.0
     out_r = mouth_r + NUDGE * (mouth_r - hole_r) / depth                 # the slope carried past the face
     return [bd.Solid.make_cone(hole_r, out_r, depth + NUDGE,
                                bd.Plane(origin=(x, y, face_z + into * depth), z_dir=(0.0, 0.0, -into)))
-            for x, y in ring_pin_points(cfg)]
+            for x, y in points]
+
+
+def ring_pin_lead_ins(cfg: DriveConfig, face_z: float, into: float) -> list:
+    """The ring pins' holes' lead-ins (pin_lead_ins) on a pin ring's face at face_z - into -1 for the shell ring's holes,
+    which run down from its face, +1 for the body's: the shell ring goes on over all 21 at once."""
+    return pin_lead_ins(cfg, ring_pin_points(cfg), ring_pin_hole_dia(cfg), face_z, into)
 
 
 def arm_root(cfg: DriveConfig, height: float, z_offset: float = 0.0):

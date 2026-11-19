@@ -12,7 +12,9 @@ shared pillar / reveal-window silhouette; outer silhouette chamfered. The inner 
 The turning shell (DEFAULT_CONFIG, ShellParams): held, not part of the housing - a plate_dia plate inside the shell
 ring's pin ring (parts/cycloidal/cycloidal_shell_ring, which takes the ring pins and the housing bolts), its outer face
 cut back plate_relief_depth from plate_relief_dia out, over the motor-end 6814's seal and turning outer race (its inner race
-bears on the face inside), and a sleeve back over the motor: sleeve_bore_dia (the motor's and the board's corners),
+bears on the face inside), the output pins' blind holes in its inner face (ShellParams.output_pin_plate_depth, a lead-in
+at each mouth: the pins run on from the hub into the plate, both held), and a sleeve back over the motor:
+sleeve_bore_dia (the motor's and the board's corners),
 sleeve_od, and the hub's grip (OutputHubParams.od) over the last out_width - the 6814 slides on from the sleeve's end
 and presses on there. The sleeve runs through the j1_coupler yoke's motor-side leg (parts/base/j1_motor_leg, a ring round it) to
 the leg's outer face (lib/cycloidal/layout.py sleeve_end: -22), bolted to it: the leg's radial M4s go into nuts pressed
@@ -35,12 +37,14 @@ from lib.cycloidal import (
     housing_bolt_points,
     motor_bolt_counterbore_depth,
     motor_bolt_points,
+    output_pin_ends,
+    output_pin_points,
     ring_pin_hole_dia,
     ring_pin_points,
     sleeve_bolt_z,
     sleeve_end,
 )
-from lib.cycloidal.housing import chamfer_outer_silhouette, reveal_window_cutter
+from lib.cycloidal.housing import chamfer_outer_silhouette, pin_lead_ins, reveal_window_cutter
 from lib.datum import IDENTITY
 from lib.geom import align_min, cylinder, hex_prism, single_solid, through
 from lib.params import NUDGE
@@ -97,11 +101,26 @@ def _sleeve_lugs(sleeve, cfg: DriveConfig):
     return sleeve
 
 
+def _output_pin_holes(plate, cfg: DriveConfig, t: float):
+    """The output pins' blind holes from the inner face down to the pins' ends (output_pin_ends), the hub's pin-hole
+    dia, each with the ring pins' lead-in at its mouth: the plate goes on over the pins' ends blind."""
+    d = cfg.disc
+    hole_dia = d.output_pin_dia - cfg.tolerances.ring_pin_press_sub                  # 4.20, as the hub's
+    z_end = output_pin_ends(cfg)[0]                                                  # 4
+    for xy in output_pin_points(cfg):
+        plate = plate - cylinder(hole_dia / 2.0, t - z_end + NUDGE, xy, z0=z_end)
+    for cone in pin_lead_ins(cfg, output_pin_points(cfg), hole_dia, t, into=-1.0):
+        plate = plate - cone
+    return plate
+
+
 def _carrier(cfg: DriveConfig):
-    """The turning shell's held plate and its sleeve (ShellParams), the sleeve's lugs for the yoke leg's screws."""
+    """The turning shell's held plate and its sleeve (ShellParams), the output pins' holes in its inner face, the
+    sleeve's lugs for the yoke leg's screws."""
     sh, b, stack = cfg.shell, cfg.bearings, cfg.stack_up
     t = stack.motor_plate_wall + stack.motor_plate_inner_wall      # 9
     plate = _motor_face(cylinder(sh.plate_dia / 2.0, t), cfg, t)
+    plate = _output_pin_holes(plate, cfg, t)
     relief = cylinder(sh.plate_dia / 2.0 + 1.0, sh.plate_relief_depth + NUDGE, z0=-NUDGE)
     plate = plate - (relief - cylinder(sh.plate_relief_dia / 2.0, sh.plate_relief_depth + 3 * NUDGE, z0=-2 * NUDGE))
     back = sleeve_end(cfg)

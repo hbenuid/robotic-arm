@@ -173,7 +173,7 @@ def test_cycloidal_stack_positions():
     expected = {
         "x_disc1": 1.5, "x_disc2": -1.5, "z_motor_plate": 0.0, "z_shell_ring": 0.0, "z_motor": 0.0, "z_mks_board": -48.0,
         "z_eccentric_shaft": 0.0, "z_ring_gear_body": 9.0, "z_disc1": 13.0, "z_disc2": 25.0, "z_6814_1": 48.0, "z_6814_2": -10.0,
-        "z_hub": 39.0, "z_625": 39.0, "z_ring_pins": 4.0, "z_output_pins": 12.0, "z_support_pin": 24.0,
+        "z_hub": 39.0, "z_625": 39.0, "z_ring_pins": 4.0, "z_output_pins": 4.0, "z_support_pin": 24.0,
         "z_motor_bolts": -5.0, "z_housing_bolts": -13.0, "z_housing_nuts": 57.3, "hub_top": 62.0,
     }
     assert got.keys() == expected.keys()

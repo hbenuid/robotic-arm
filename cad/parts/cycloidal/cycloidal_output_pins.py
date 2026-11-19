@@ -1,7 +1,8 @@
 """cycloidal_output_pins - the 4 output pins (4 x 45 mm h6 dowels) on the 60 mm circle, standing on z=0.
 
-In the drive: at stack z_output_pins (11), captured between the hub's blind holes (1 mm ceiling)
-and the motor plate; they ride in the discs' 7.4 mm holes and carry the output torque.
+In the drive: at stack z_output_pins (lib/cycloidal/layout.py output_pin_ends: the port's 11, hung from the hub's blind
+holes and stopping short of the motor plate; the turning shell's 4, captured between the motor plate's blind holes and
+the hub's, both held); they ride in the discs' 7.4 mm holes and hold the discs from turning.
 Ported from cycloidal_drive@2f1f67d src/purchased_parts.py; reference/cycloidal_output_pins.step is that builder's
 export (kind "cots"). No catalog model (the envelope is the geometry); a vendor/cycloidal_output_pins.step would be
 re-oriented by VENDOR_TO_REF into the same frame.
