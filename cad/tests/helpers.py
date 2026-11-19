@@ -127,10 +127,13 @@ class Reach:
                 n, p = plane.Axis().Direction(), plane.Location()
                 self.normal[i] = (n.X(), n.Y(), n.Z())
                 self.offset[i] = n.X() * p.X() + n.Y() * p.Y() + n.Z() * p.Z()
-        self.solids = []      # (solid, its box's low and high corners, one of its vertices)
+        # the whole shape's box (round its faces' boxes) by its 8 corners
+        lo, hi = self.lo.min(axis=0, initial=np.inf), self.hi.max(axis=0, initial=-np.inf)
+        self.box_corners = lo + (hi - lo) * np.array(_CORNERS, dtype=float)
+        self.solids = []      # (solid, its box's low and high corners, one of its vertices, its classifier: loaded once)
         for s in _explore(self.base, TopAbs_SOLID):
             lo, hi = _box(s)
-            self.solids.append((s, lo, hi, BRep_Tool.Pnt_s(TopoDS.Vertex(next(_explore(s, TopAbs_VERTEX))))))
+            self.solids.append([s, lo, hi, BRep_Tool.Pnt_s(TopoDS.Vertex(next(_explore(s, TopAbs_VERTEX)))), None])
 
     def at(self, move: Location | None = None) -> Location:
         """Its location moved by `move` (a move in its parent's frame, as Shape.moved() takes it)."""
@@ -141,14 +144,22 @@ class Reach:
 
 
 def _inside(point, trsf, solids) -> bool:
-    """`point` (moved by trsf) inside one of `solids` - a point outside a solid's box is outside it."""
+    """`point` (moved by trsf) inside one of `solids` (Reach.solids) - a point outside a solid's box is outside it; a
+    solid's classifier is loaded on its first use and kept (loading it is most of what a classification costs)."""
     from OCP.BRepClass3d import BRepClass3d_SolidClassifier
     from OCP.TopAbs import TopAbs_IN
 
     p = point.Transformed(trsf)
     xyz = (p.X(), p.Y(), p.Z())
-    return any(all(lo[i] <= xyz[i] <= hi[i] for i in range(3))
-               and BRepClass3d_SolidClassifier(solid, p, 1e-7).State() == TopAbs_IN for solid, lo, hi, _ in solids)
+    for entry in solids:
+        solid, lo, hi = entry[:3]
+        if all(lo[i] <= xyz[i] <= hi[i] for i in range(3)):
+            if entry[4] is None:
+                entry[4] = BRepClass3d_SolidClassifier(solid)
+            entry[4].Perform(p, 1e-7)
+            if entry[4].State() == TopAbs_IN:
+                return True
+    return False
 
 
 def _in_reach(lo, hi, olo, ohi, limit: float):
@@ -172,22 +183,32 @@ def _off_plane(corners, normal, offset):
 
 def distance_under(a: Reach, b: Reach, limit: float, at_a: Location | None = None, at_b: Location | None = None) -> float:
     """The distance between a at at_a and b at at_b (their locations, by default where they stood: Reach.at()) - exact
-    where it is under `limit`, else `limit`. What closest_points / distance() measure, on fewer faces: a's face boxes go
-    into b's frame (their corners moved - the moved box still holds the face), and a pair of faces cannot be nearer than
-    the gap between their boxes, nor than either box stands off the other face's plane where that face is flat
-    (`_off_plane`); BRepExtrema measures the faces of the pairs left under `limit`, both sides. The solids' insides count
-    as closest_points has them: a solid inside the other (no face in reach, or none touching) is at 0. A reading under
-    0.05 is measured again by distance() on the shapes themselves - the solids, its false zeros caught."""
+    where it is under `limit`, else `limit`. What closest_points / distance() measure, on fewer faces
+    (`_face_distance`); a reading under 0.05 is measured again by distance() on the shapes themselves - the solids,
+    its false zeros caught."""
+    at_a, at_b = a.at() if at_a is None else at_a, b.at() if at_b is None else at_b
+    d = _face_distance(a, b, limit, at_a, at_b)
+    return distance(a.shape_at(at_a), b.shape_at(at_b)) if d < 0.05 else d
+
+
+def _face_distance(a: Reach, b: Reach, limit: float, at_a: Location, at_b: Location) -> float:
+    """The distance between a at at_a and b at at_b, exact where under `limit`, else `limit`, measured on their faces:
+    a's face boxes go into b's frame (their corners moved - the moved box still holds the face), and a pair of faces
+    cannot be nearer than the gap between their boxes, nor than either box stands off the other face's plane where that
+    face is flat (`_off_plane`); BRepExtrema measures the faces of the pairs left under `limit`, both sides. The solids'
+    insides count as closest_points has them: a solid inside the other (no face in reach, or none touching) is at 0."""
     import numpy as np
     from OCP.BRep import BRep_Builder
     from OCP.BRepExtrema import BRepExtrema_DistShapeShape
     from OCP.TopLoc import TopLoc_Location
     from OCP.TopoDS import TopoDS_Compound
 
-    at_a, at_b = a.at() if at_a is None else at_a, b.at() if at_b is None else at_b
     rel = at_b.wrapped.Transformation().Inverted().Multiplied(at_a.wrapped.Transformation())   # a's frame -> b's
     r = np.array([[rel.Value(i, j) for j in (1, 2, 3)] for i in (1, 2, 3)])
     t = np.array([rel.Value(i, 4) for i in (1, 2, 3)])
+    whole = a.box_corners @ r.T + t                              # the whole shapes' boxes first: neither inside the
+    if not _in_reach(whole.min(axis=0), whole.max(axis=0), b.box_corners[0], b.box_corners[-1], limit):
+        return limit                                             # other, no face of one in reach of the other
     moved = a.corners @ r.T + t                                  # a's face boxes in b's frame, (faces, 8, 3)
     alo, ahi = moved.min(axis=1), moved.max(axis=1)              # and the world-axis boxes round them
     d = limit
@@ -219,11 +240,9 @@ def distance_under(a: Reach, b: Reach, limit: float, at_a: Location | None = Non
             for j in ib:
                 build.Add(fb, b.faces[j])
             d = min(d, BRepExtrema_DistShapeShape(fa, fb).Value())
-    if d > 0.0 and (any(_inside(p, rel, b.solids) for *_, p in a.solids)
-                    or any(_inside(p, rel.Inverted(), a.solids) for *_, p in b.solids)):
+    if d > 0.0 and (any(_inside(s[3], rel, b.solids) for s in a.solids)
+                    or any(_inside(s[3], rel.Inverted(), a.solids) for s in b.solids)):
         d = 0.0
-    if d < 0.05:
-        return distance(a.shape_at(at_a), b.shape_at(at_b))
     return d
 
 
