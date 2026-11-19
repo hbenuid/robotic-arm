@@ -306,8 +306,8 @@ class ShellParams:
     end_plate_gap: float = 1.0         # [DESIGN] ... each this far off an end of the shell; the hub's face and the sleeve's
     #                                    end on their outer faces
     output_pin_plate_depth: float = 5.0   # [DESIGN] the output pins stand this far into the motor plate (its blind holes
-    #                                    from the inner face, the ring pins' lead-in at each mouth), the rest of each pin
-    #                                    in the hub (layout.py output_pin_ends): 5 + the 30 between the plates + 10 is the
+    #                                    from the inner face), the rest of each pin in the hub (layout.py
+    #                                    output_pin_ends), the ring pins' lead-in at every mouth in both: 5 + the 30 between the plates + 10 is the
     #                                    45 pin - the ring pins' 5 in each pin ring. The port's stopped short of the plate,
     #                                    which its hub turned against
     sleeve_bolt_deg: tuple = (90.0, 0.0, 180.0)   # [DESIGN] the sleeve's radial M4s from the yoke's motor-side leg

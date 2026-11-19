@@ -16,7 +16,8 @@ seal and turning outer race, whose inner race the grip carries and the flange st
 the shell's lip on its outer race, and the motor-end 6814 mirrored). The grip runs past the shell's end
 (proud_above_housing) onto the j1_coupler yoke's leg; the same 4 holes bolt it there, their nuts in hub_nut_depth
 pockets from the flange's inner face. Its pin holes reach only to the pins' ends (lib/cycloidal/layout.py
-output_pin_ends): the pins run on into the motor plate (ShellParams.output_pin_plate_depth), the rest of each in the hub.
+output_pin_ends): the pins run on into the motor plate (ShellParams.output_pin_plate_depth), the rest of each in the hub;
+each hole's mouth has the motor plate's lead-in (lib/cycloidal/housing.py pin_lead_ins), so the pins' two ends mirror.
 
 Diverged from the port: build(LEGACY_CONFIG) reproduces the export (REFERENCE_BUILD - tests/cycloidal/test_port.py,
 tests/test_reference_match.py); the model builds DEFAULT_CONFIG (the turning shell's hub).
@@ -38,7 +39,7 @@ from lib.cycloidal import (
     output_pin_points,
     stack_positions,
 )
-from lib.cycloidal.housing import hex_pocket
+from lib.cycloidal.housing import hex_pocket, pin_lead_ins
 from lib.datum import IDENTITY
 from lib.geom import cylinder, single_solid, through
 from lib.params import NUDGE
@@ -71,6 +72,9 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     pin_depth = output_pin_ends(cfg)[1] - z_hub                                                        # 19 (port), 10
     for xy in output_pin_points(cfg):
         result = result - cylinder(pin_r, pin_depth + NUDGE, xy, z0=-NUDGE)
+    if sh is not None:   # the pins' two ends mirror: the motor plate's holes' lead-in at these mouths too
+        for cone in pin_lead_ins(cfg, output_pin_points(cfg), 2.0 * pin_r, 0.0, into=1.0):
+            result = result - cone
     arm_r = housing_bolt_hole_dia(cfg) / 2.0
     nut_depth = h.bolt_nut_depth if sh is None else sh.hub_nut_depth
     for angle, xy in zip(arm_mount_angles(cfg), arm_mount_points(cfg), strict=True):

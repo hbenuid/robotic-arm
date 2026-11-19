@@ -62,7 +62,7 @@ shell's `ShellParams`, `None` in the port's `LEGACY_CONFIG`); every number below
 |---|---|---|
 | Output pins | 4 at 90° (`output_pin_count`) | 4 × 45 mm h6 dowels (`output_pin_dia`, `output_pin_length`) on Ø60 (`output_pin_circle_dia`) |
 | Disc pin hole Ø | 7.40 (`output_pin_hole_dia`) | 4 + 2 × 1.5 ecc + 0.4 clearance |
-| Hub pin holes | Ø4.20 × 10 blind (`output_pin_dia` − `ring_pin_press_sub`, from the flange's inner face to the pins' ends, `lib/cycloidal/layout.py output_pin_ends`; the port's 19, to `z_bearing_top` − `output_hub_pin_ceiling`) | greased sliding fit through the discs; the pins stop the discs turning, so the ring - the shell - turns (§5.5) |
+| Hub pin holes | Ø4.20 × 10 blind (`output_pin_dia` − `ring_pin_press_sub`, from the flange's inner face to the pins' ends, `lib/cycloidal/layout.py output_pin_ends`; the port's 19, to `z_bearing_top` − `output_hub_pin_ceiling`), each with the ring pins' lead-in at its mouth - the pins' two ends mirror | greased sliding fit through the discs; the pins stop the discs turning, so the ring - the shell - turns (§5.5) |
 | Motor plate pin holes | Ø4.20 × 5 blind from the plate's inner face (`ShellParams.output_pin_plate_depth`), each with the ring pins' lead-in at its mouth (§5.5) | the hub and the plate are both held, so the pins run from one to the other - 5 in the plate, the 30 between the plates, 10 in the hub - held at both ends and captured between the two holes' floors. The port's pins hung from the hub and stopped short of its plate, which the hub turned against; hung from the hub, a pin bends under disc 1 by about the whole backlash below, held at both ends an order of magnitude less |
 
 Clearances: pin-hole inner edge 26.30 vs bore radius 17.55 → **8.75 mm wall**; pin-hole outer edge
@@ -205,7 +205,7 @@ under `LUG_WALL` - 1 to leave the external faces 1 mm or more past the nut pocke
 PETG (aluminium viable): Ø70.55 (`od` = 70 mm 6814 bore + 0.55, a firm press measured at 0.20), 23 tall (the port's 28): a Ø90 × 9
 flange (`hub_flange`, the motor plate's mirror) in the body's pin ring, its face on the hub-end 6814 cut back over
 the outer race (`plate_relief_*`) - the flange stops the inner race -, then the grip, on past the lip to the
-`j1_coupler` fork's hub-side leg; 4 blind Ø4.20 × 10 pin holes on Ø60, to the pins' ends (§1.3); Ø6 shaft-clearance
+`j1_coupler` fork's hub-side leg; 4 blind Ø4.20 × 10 pin holes on Ø60, to the pins' ends, a lead-in at each mouth (§1.3); Ø6 shaft-clearance
 bore through the flange; Ø16.2 × 5 625 pocket on the inner face; the **arm-mount pattern** 4 × `housing_bolt_hole_dia` through-holes (the port's Ø4.4, the build's Ø4.2) on
 Ø50 at 45° from the pins, each into a captive M4 nut pocket (7.2 AF × 4.7, `hub_nut_depth`) in the flange's inner
 face - the port bolted `j1_link` to it, the turning shell bolts the hub to the fork's leg (M4 × 25 from its
@@ -255,6 +255,8 @@ face, the one the part prints on; nothing bolts the arm to the shell's end.
   ring goes on last, over all 21 pins' ends at once, blind: the cones catch an end that is a little off and steer it
   in. They leave a thinner wall at the face, to the pin ring's bore and to the windows
   (`test_the_lead_ins_leave_a_wall_at_the_face`), and shorten each pin's grip in the full-size hole by their depth.
+  The output pins' holes take the same cone (`pin_lead_ins`) at both ends, the motor plate's and the hub's (§1.3): the
+  plate goes on over the pins' ends blind, and the two ends mirror.
 - **The motor plate is the carrier's motor end** (`parts/cycloidal/cycloidal_motor_plate.py`, its `LEGACY_CONFIG`
   build the port's plate): the plate - the motor's pilot, M3s and shaft bore as before - and a sleeve back over the
   motor: `sleeve_bore_dia` round the motor's and the MKS board's corners (61 across them), `sleeve_od`, and the hub's
