@@ -168,8 +168,9 @@ class ArmParams:
     (ElbowParams.y0) up to the relief's floor (ElbowParams.relief_y), end to end, both faces' outline chamfered
     (lib/style.py EDGE_CHAMFER) - the elbow block turns over its top face, the forearm roll drive's motor and
     board in it (they turn with the elbow and never roll: their height along Y is fixed) clear it further up - fused
-    into the shell's wall from fuse_r out, where the body's two windows under it are solid (lib/cycloidal/params.py
-    ShellParams.arm_windows; its other windows open on the discs). The slab's underside is flush with the shell's hub
+    into the shell's wall from fuse_r out, where the body's two windows under it are solid as deep as the slab, level
+    with its top (lib/cycloidal/params.py ShellParams.arm_windows, arm_root_depth; above it they open on the discs, as
+    its other windows do end to end). The slab's underside is flush with the shell's hub
     end, the web across the motor hole flush with both: one flat face, the one the part prints on (no support under the
     arm) - the plate as built slides along +Y until its underside is there (lib/upper_arm/layout.py arm_slide), the slab
     with it; what lies beyond the elbow moves with it (lib/placements.py SHIFTS), the elbow's belt stays under the arm,
