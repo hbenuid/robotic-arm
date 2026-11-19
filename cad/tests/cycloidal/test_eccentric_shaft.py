@@ -111,6 +111,24 @@ class TestSolid:
         upper = math.pi * (shaft.bearing_seat_od / 2.0) ** 2 * total_length
         assert lower < vol < upper, f"Volume {vol:.0f}mm^3 outside [{lower:.0f}, {upper:.0f}]"
 
+    def test_d_bore_clears_the_real_shaft(self, shaft_solid):
+        """The motor's real shaft - lib/cycloidal/motor.py shaft() with the measured flat, d_bore_flat in motor.py's
+        convention - stands clear of the D-bore, turned 1 deg too, and its flat stops it before 6 deg (the clearance
+        leaves it about 3 deg each way; the port's bore let it turn about 15). The kit motors' modelled shaft keeps the
+        port's flat (docs/open_issues.md), and the drive's interference budget cannot see it: the vendor rotor's D-cut
+        takes no boolean."""
+        from dataclasses import replace
+
+        import build123d as bd
+
+        from lib.cycloidal.motor import shaft
+        from tests.helpers import interference
+
+        real = shaft(replace(CFG.motor, shaft_dcut_flat=CFG.shaft.d_bore_flat))
+        assert interference(real, shaft_solid) < 1e-3
+        assert interference(bd.Rot(0, 0, 1.0) * real, shaft_solid) < 1e-3
+        assert interference(bd.Rot(0, 0, 6.0) * real, shaft_solid) > 1e-2
+
 
 class TestOutputPinHole:
 

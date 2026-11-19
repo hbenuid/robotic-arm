@@ -406,7 +406,7 @@ class TestModuleLocks:
             ("bearing_6814:1", "cycloidal_output_hub"): 607.2, ("bearing_6814:2", "cycloidal_motor_plate"): 607.2,
             ("cycloidal_housing_bolts", "cycloidal_housing_nuts"): 241.3,
             ("cycloidal_motor_bolts", "cycloidal_motor_plate"): 52.0, ("nema17_48mm", "cycloidal_motor_bolts"): 46.4,
-            ("bearing_6003:1", "cycloidal_eccentric_shaft"): 27.0, ("bearing_6003:2", "cycloidal_eccentric_shaft"): 27.0,
+            ("bearing_6003:1", "cycloidal_eccentric_shaft"): 40.3, ("bearing_6003:2", "cycloidal_eccentric_shaft"): 40.3,
             ("mks_servo42d", "nema17_48mm"): 159.4,
         }
         for (a, b), limit in budget.items():

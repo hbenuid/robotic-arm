@@ -1,20 +1,25 @@
 """cycloidal_eccentric_shaft - converts motor rotation into the discs' wobble.
 
 Ported from cycloidal_drive@2f1f67d src/eccentric_shaft.py (build_eccentric_shaft()); reference/
-cycloidal_eccentric_shaft.step is that builder's export (kind "designed"). PETG, 100 % infill.
+cycloidal_eccentric_shaft.step is that builder's export (kind "designed"). PETG, 100 % infill, printed upright on its
+output end at 0.20.
 
-Two 17.10 mm lobes 180 deg apart (one per disc, centres at +/-e), a 5 mm spine, a ruled-loft
-bridge/retention flange (23.10 mm) between the lobes, a 10 mm input collar with the motor-shaft
+Two lobes 180 deg apart (one per disc, centres at +/-e) pressed into the 6003s, a 5 mm spine, a ruled-loft
+bridge/retention flange between the lobes (lobe + bridge_flange_add), a 10 mm input collar with the motor-shaft
 D-bore, and a blind hole for the output-side 5 mm support dowel. Like the source, the geometry is
 built at its STACK position (z 9..35, datum = the motor-plate outer face), so the assembly places
 it with an identity Location.
+
+Diverged from the port: its lobes and its D-bore are the sizes a test print measured (lib/cycloidal/params.py
+DEFAULT_CONFIG); build(LEGACY_CONFIG) reproduces the export (REFERENCE_BUILD - tests/cycloidal/test_port.py,
+tests/test_reference_match.py).
 """
 import pathlib
 
 import build123d as bd
 from cad import step
 
-from lib.cycloidal import DEFAULT_CONFIG, DriveConfig
+from lib.cycloidal import DEFAULT_CONFIG, LEGACY_CONFIG, DriveConfig
 from lib.datum import IDENTITY
 from lib.geom import cylinder, single_solid
 from lib.params import NUDGE
@@ -51,20 +56,26 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     result = spine + collar + lobe1 + lobe2 + bridge
 
     # Blind hole for the steel support dowel, from the output face (z 24..35).
-    pin_bore_r = (shaft.support_pin_dia + 2 * tol.dowel_bore_clearance_add) / 2.0     # 5.15 / 2
+    pin_bore_r = (shaft.support_pin_dia + 2 * tol.dowel_bore_clearance_add) / 2.0     # Ø5.15
     depth = shaft.support_pin_hole_depth
     result = result - cylinder(pin_bore_r, depth + NUDGE, z0=z_end - depth)
 
     # Motor-shaft D-bore from the input face: round bore minus the half-space beyond the flat
     # (identical to the source's cut-then-union of the 0.25 mm key sliver, without the sliver).
-    bore_r = (shaft.d_bore_dia + 2 * tol.d_bore_clearance_add) / 2.0     # 5.13 / 2
-    flat_y = shaft.d_bore_flat / 2.0 + tol.d_bore_clearance_add          # 2.315, flat on +Y
+    bore_r = (shaft.d_bore_dia + 2 * tol.d_bore_clearance_add) / 2.0     # Ø5.15 (the port's 5.13)
+    flat_y = shaft.d_bore_flat / 2.0 + tol.d_bore_clearance_add          # 2.075 (the port's 2.315), flat on +Y
     bore = cylinder(bore_r, shaft.d_bore_depth + NUDGE, z0=z_start - NUDGE)
     if bore_r > flat_y:
         keep = bd.Pos(0, flat_y + 5.0, z_start + shaft.d_bore_depth / 2.0) * bd.Box(10.0, 10.0, shaft.d_bore_depth + 4 * NUDGE)
         bore = bore - keep
     result = result - bore
     return single_solid(result)
+
+
+def REFERENCE_BUILD():
+    """The CadQuery port (LEGACY_CONFIG) - what reference/cycloidal/cycloidal_eccentric_shaft.step holds
+    (tests/cycloidal/test_port.py)."""
+    return build(LEGACY_CONFIG)
 
 
 @step(out="cycloidal_eccentric_shaft.step")

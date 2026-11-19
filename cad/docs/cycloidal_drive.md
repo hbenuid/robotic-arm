@@ -79,15 +79,15 @@ fit, 6003 radial clearance, the 35.10 bore) or bushings/rollers on the pins — 
 
 | Parameter | Value | Notes |
 |---|---|---|
-| Bearing-seat OD | 17.10 (`bearing_seat_od`) | light press in the 6003 bore |
+| Bearing-seat OD | 17.15 (`bearing_seat_od`; the port's 17.10) | press in the 6003 bore, measured at 0.20 (a peg test: 17.10 was loose) |
 | Eccentricity | 1.50 | lobe 1 at (+e, 0), lobe 2 at (−e, 0) |
 | Spine OD | 5.00 (`spine_od`) | |
 | Input collar OD | 10.00 (`input_collar_od`) | wall around the D-bore |
-| D-bore Ø | 5.13 (`d_bore_dia` + 2 × `tolerances.d_bore_clearance_add`) | receives the motor shaft directly, flat on +Y (`d_bore_flat` 4.5, cut like the shaft's: flat-to-round 4.75, `lib/cycloidal/motor.py`) |
+| D-bore Ø | 5.15 (`d_bore_dia` + 2 × `tolerances.d_bore_clearance_add`; the port's 5.13) | receives the motor shaft directly, flat on +Y, `d_bore_flat` / 2 + the clearance off the axis: flat-to-round 4.65 on the real shaft's 4.5 (calipers), 0.15 over it on the round and on the flat - measured at 0.20 (a D-hole test). The port's flat sat 0.24 further out (a 4.75 shaft, `lib/cycloidal/motor.py`) and the shaft turned in it |
 | D-bore depth | 14.00 (`d_bore_depth`) | 13 mm engagement (22 shaft − 9 plate) + 1 mm clearance |
 | Support-pin hole | Ø5.15 × 11 blind (`support_pin_dia` + 2 × `dowel_bore_clearance_add`, `support_pin_hole_depth`) | keeps a 1 mm wall to the D-bore |
 | Support pin | 5 × 20 h6 dowel | 11 in the shaft + 4 gap (to the hub's flange) + 5 in the 625 (its pocket in the flange's inner face; the port's 2 gap + 5 + 2 proud) |
-| Bridge / retention flange | Ø23.10 (`bridge_flange_od` = seat OD + `bridge_flange_add` 6) | ruled loft (+e → −e) across the spacer zone; keeps the 6003s apart |
+| Bridge / retention flange | Ø23.15 (`bridge_flange_od` = seat OD + `bridge_flange_add` 6) | ruled loft (+e → −e) across the spacer zone; keeps the 6003s apart |
 | Material | PETG, 100 % infill, `LAYER_H` (`parts/AGENTS.md` Printed vs. bought) | built at its stack position z 9..35 |
 
 ## 2. Bearings (`cfg.bearings`)
@@ -294,7 +294,7 @@ tight. Never design a hole smaller than its steel part.
 | Ring & output pin holes | +0.20 → Ø4.20 | `ring_pin_press_sub` −0.20 | slip-press as printed, blind (the shell ring, the body, the hub); the ring pins' with a lead-in at the mouth (§5.5) |
 | Disc centre bore | +0.10 → 35.10 | `center_bore_dia` | 6003 OD |
 | Disc output-pin holes | nominal 7.4, no offset | `output_pin_hole_dia` | shrink *reduces* backlash (§1.3) |
-| Motor-shaft D-bore | +0.065 on the radius → Ø5.13 | `d_bore_clearance_add` | slip-to-light press |
+| Motor-shaft D-bore | +0.075 on the radius and the flat → Ø5.15, 4.65 flat-to-round (measured, 0.20) | `d_bore_clearance_add`, `shaft.d_bore_flat` | snug on the real 4.5 shaft (the port's +0.065 → 5.13, on a 4.75 shaft) |
 | Support-pin bore | +0.075 on the radius → Ø5.15 | `dowel_bore_clearance_add` | firm press |
 | Mating surfaces | +0.15 | `mating_surface_add` | pilot recess 22.30 |
 | Bolt / head clearance | +0.4 on the Ø | `bolt_clearance_add` | M3 3.4 / 5.7, M4 4.4 (the port's; the build's M4 holes, upright at 0.20: `HousingParams.bolt_hole_dia` = `M4_CLEAR_UPRIGHT`, measured) |
@@ -331,7 +331,7 @@ which also gives the disc's build order and the OCCT volume caveat: the discs' U
 `test_module_interference_budget` (mm³) holds the designed overlaps: the 6814 inner-race press fits on
 the hub and on the motor plate's sleeve, 330.6 each; housing bolts through the solid nuts 241.3; motor-bolt heads
 in the plate 51.9 (the modelled `motor_bolt_recess`, §3 - not a fit) and shanks in the vendor motor's tapped holes
-(modelled at the M3 minor diameter) 46.4; 6003 / lobe press fits 26.8 × 2; the MKS kit's four M3x30 in the same
+(modelled at the M3 minor diameter) 46.4; 6003 / lobe press fits 40.2 × 2; the MKS kit's four M3x30 in the same
 holes from the rear 159.4. Everything else is < 1 mm³; the whole module vs the arm - the base, `j1_link` (with the
 shell's body), the `j1_coupler` fork and its motor leg (`j1_motor_leg`) - contact at most (≤ 1,
 `TestPoseInTheArm`).
