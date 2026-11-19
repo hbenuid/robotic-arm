@@ -190,8 +190,9 @@ class TestRadialClearances:
         assert S["z_output_pins"] > CFG.stack_up.z_motor_plate_inner
 
     def test_output_pin_engages_disc1(self):
+        """The pins reach through disc 1 to its outer face - its bearing lip (DiscParams.bearing_lip) included."""
         S = stack_positions(CFG)
-        assert S["z_output_pins"] <= CFG.stack_up.z_disc1
+        assert S["z_output_pins"] <= CFG.stack_up.z_disc1 - CFG.disc.bearing_lip
 
     def test_output_hub_clears_retention_lip_bore(self):
         clearance = CFG.housing.lip_bore_dia - CFG.output_hub.od

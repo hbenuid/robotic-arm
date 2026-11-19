@@ -9,6 +9,7 @@
 """
 import math
 
+import build123d as bd
 import numpy as np
 import pytest
 
@@ -210,13 +211,13 @@ class TestSolid:
         assert disc_solid.is_valid
 
     def test_bounding_box_dimensions(self, disc_solid):
-        """XY extent ~ the lobe-tip circle (2 * (R - r + e): 99 mm), Z extent = thickness."""
+        """XY extent ~ the lobe-tip circle (2 * (R - r + e): 99 mm), Z extent = the seat + the lip (total_thickness)."""
         g = CFG.gear
         tip = 2.0 * (g.ring_pin_circle_radius - g.ring_pin_radius + g.eccentricity)
         size = disc_solid.bounding_box().size
         for axis, extent in (("X", size.X), ("Y", size.Y)):
             assert tip - 2.0 < extent < tip + 0.5, f"{axis} extent {extent:.2f}mm, expected ~{tip:.1f}mm"
-        assert abs(size.Z - CFG.disc.thickness) < 0.1
+        assert abs(size.Z - CFG.disc.total_thickness) < 0.1
 
     def test_lobe_chamfer_applied(self, disc_solid):
         """The bottom face's radial extent is `chamfer` smaller than the disc's (45 deg)."""
@@ -239,7 +240,7 @@ class TestSolid:
         bore_r, t = CFG.disc.center_bore_dia / 2.0, CFG.disc.thickness
         pin_hole_r, n_pins = CFG.disc.output_pin_hole_dia / 2.0, CFG.disc.output_pin_count
         lower = math.pi * (49.0 ** 2 - bore_r ** 2) * t * 0.7 - n_pins * math.pi * pin_hole_r ** 2 * t
-        upper = math.pi * 55.0 ** 2 * t
+        upper = math.pi * 55.0 ** 2 * CFG.disc.total_thickness
         assert lower < vol < upper, f"Volume {vol:.0f}mm^3 outside [{lower:.0f}, {upper:.0f}]"
 
 
@@ -257,6 +258,40 @@ class TestDiscFitment:
 
     def test_6003_bearing_width_matches_disc_thickness(self):
         assert CFG.bearings.ecc_width == CFG.disc.thickness
+
+    def test_bearing_lip_over_the_outer_race_only(self):
+        """The lip's hole clears the 6003's seal (its recess) and stays inside the largest shoulder on its outer ring:
+        it stops the outer race, never the seal or the turning inner race."""
+        d, b = CFG.disc, CFG.bearings
+        assert d.bearing_lip > 0, "DEFAULT_CONFIG's discs capture their 6003s"
+        assert b.ecc_seal_dia < d.bearing_lip_dia <= b.ecc_shoulder_max_dia < d.center_bore_dia
+
+
+@pytest.fixture(scope="module")
+def both_discs(disc_solid):
+    return {1: disc_solid, 2: cycloidal_disc_2.build()}
+
+
+@pytest.mark.slow
+class TestBearingLip:
+    """Each disc's lip on its OUTER face - disc 1's toward the motor plate (below its seat), disc 2's toward the hub
+    (above it) -, the seat blind from the inner face, flush with it: the 6003 presses in from there onto the lip.
+    Probe points (a boolean between spline discs takes minutes), at 45 deg - between the output-pin holes."""
+
+    @pytest.mark.parametrize("which", [1, 2])
+    def test_lip_on_the_outer_face(self, both_discs, which):
+        d = CFG.disc
+        solid = both_discs[which]
+        c, s = math.cos(math.radians(45.0)), math.sin(math.radians(45.0))
+        lip_z = -d.bearing_lip / 2.0 if which == 1 else d.thickness + d.bearing_lip / 2.0
+        over_race = (d.bearing_lip_dia / 2.0 + d.center_bore_dia / 2.0) / 2.0     # r 16.8: over the outer race
+        in_hole = d.bearing_lip_dia / 2.0 - 0.3                                       # inside the lip's hole
+        assert solid.is_inside(bd.Vector(over_race * c, over_race * s, lip_z)), "the lip covers the outer race"
+        assert not solid.is_inside(bd.Vector(in_hole * c, in_hole * s, lip_z)), "the lip's hole clears the seal"
+        assert not solid.is_inside(bd.Vector(over_race * c, over_race * s, d.thickness / 2.0)), "the bearing's seat"
+        bb = solid.bounding_box(optimal=True)
+        inner_face = bb.max.Z if which == 1 else bb.min.Z
+        assert abs(inner_face - (d.thickness if which == 1 else 0.0)) < 0.01, "the seat is open on the inner face"
 
     def test_output_pin_fits_disc_hole(self):
         clearance = CFG.disc.output_pin_hole_dia - CFG.disc.output_pin_dia
