@@ -3,7 +3,7 @@
 # no hash gate (STEP bytes differ per machine), no snapshots, no commits. Manual only: Actions tab -> CI -> Run
 # workflow, or `gh workflow run ci.yml --ref <branch>` - when to run it: root AGENTS.md "CI".
 # The jobs run side by side, each on a runner of its own (a public repo's ubuntu-24.04: 4 vCPUs, 16 GB): the run takes
-# as long as its slowest job - the arm build, then the slow lane's three parts - not their sum. A CAD job starts a
+# as long as its slowest job - one of the slow lane's parts or the arm build - not their sum. A CAD job starts a
 # Python process per cad server worker and per pytest worker, so its venv is synced with compiled bytecode
 # (`cadtool`'s PYTHONDONTWRITEBYTECODE keeps each from writing its own). The jobs that build or validate install the
 # pinned cad-server first (`./cadtool server`), as a machine does; the fast lane needs none.
@@ -54,7 +54,7 @@ jobs:
   slow:
     name: Slow lane (${{ matrix.part }})
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 15
     strategy:
       fail-fast: false  # one part failing still reports the others
       matrix:
@@ -63,14 +63,20 @@ jobs:
           # waiting one (--dist=worksteal; each worker builds the arm's shapes once), not as one file
           - part: sweeps
             args: --dist=worksteal tests/test_sweeps.py
-          # the other slow tests, a whole file per worker (pyproject.toml --dist=loadfile), in two parts that each
-          # leave out the other's files (a file named outright would run even if ignored), so a new test file
-          # always lands in one: tests/'s own files ...
+          # the other slow tests, a whole file per worker (pyproject.toml --dist=loadfile). The longest files are named
+          # outright, one per worker of their part (a file named outright runs even where a glob leaves it out); the
+          # two catch-all parts leave out every file a part names, so a new test file always lands in one of them.
+          # Rebalance from the parts' --durations when one part runs well past the others.
+          - part: mounts, gauges, assembly, robot
+            args: tests/test_mounts.py tests/test_gauges.py tests/test_assembly.py tests/test_robot.py
           - part: tests/test_*.py
-            args: --ignore=tests/test_sweeps.py --ignore-glob='tests/*/*'
-          # ... and its subfolders'
+            args: >-
+              --ignore=tests/test_sweeps.py --ignore=tests/test_mounts.py --ignore=tests/test_gauges.py
+              --ignore=tests/test_assembly.py --ignore=tests/test_robot.py --ignore-glob='tests/*/*'
+          - part: tests/forearm/
+            args: tests/forearm
           - part: tests/*/
-            args: --ignore-glob='tests/test_*.py'
+            args: --ignore-glob='tests/test_*.py' --ignore=tests/forearm
     steps:
       - uses: actions/checkout@v7
 
