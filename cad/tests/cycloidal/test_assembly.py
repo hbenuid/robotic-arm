@@ -385,7 +385,7 @@ class TestModuleLocks:
         assert abs(totals["solid_volume"] - cycloidal_drive.EXPECTED["solid_volume"]) <= 0.5
         # X / Y: the shell's pillars, turned bolt_start_deg (the upper arm's centreline on the first), their chamfered
         # outer corners; Z: 48 motor + 14.1 MKS board behind the plate, 62 to the hub face
-        assert totals["bbox_size"] == [127.775, 125.532, 124.1]
+        assert totals["bbox_size"] == [127.775, 125.532, 124.6]
         bodies = {body: cycloidal_drive.totals(body, shape=drive) for body in cycloidal_drive.BODIES}
         for body, got in bodies.items():
             want = cycloidal_drive.EXPECTED["bodies"][body]

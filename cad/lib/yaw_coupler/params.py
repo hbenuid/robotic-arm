@@ -197,17 +197,19 @@ class ForkParams:
     #                                  (lib/cycloidal/params.py OutputHubParams.od), the hub's counterbores 16.3 inside its edge
     ring_bore_dia: float = 70.4      # [DESIGN] the motor leg's ring round the sleeve: its 70 + 0.2 a side
     motor_leg_gap: float = 0.2       # [DESIGN] the disc's ring cut back this far off the motor leg's inner face
-    motor_bolt_y: float = 10.0       # [DESIGN] the motor leg's 2 M4s along the drive's axis, this high ...
+    motor_bolt_y: float = 8.3        # [DESIGN] the motor leg's 2 M4s along the drive's axis, this high: low enough that the
+    #                                  draft keeps their heads in the foot (the legs end_plate_gap off the shell), their nuts'
+    #                                  slots 4.0 over the disc's underside at the least ...
     motor_bolt_z: float = 12.0       # [DESIGN] ... this far either side of it (z) ...
     motor_head_seat: float = 1.2     # [DESIGN] ... their heads' seats this far out from the face the foot butts on (the clamped
-    #                                  wall): the heads' top edges 0.2 under the foot's drafted face (the disc's flat) ...
+    #                                  wall): the heads' top edges 0.05 under the foot's drafted face (the disc's flat) ...
     motor_nut_wall: float = 1.6      # [DESIGN] ... into M4 nuts in slots from the disc's top face, this far in from that face ...
     motor_screw_len: float = 8.0     # [DESIGN] ... M4 x 8 (ISO 4762): through the foot and the wall, 2.0 past the nut; the
     #                                  disc's holes run on 0.5 past the tips (lib/yaw_coupler/body.py _fork_cuts)
     motor_foot_hole_dia: float = M4_CLEAR_UPRIGHT   # [MEASURE] 4.2, their holes through the foot: j1_motor_leg prints on
     #                                  its outer face, so they stand upright (the disc's, on their side in j1_coupler: M4_CLEAR)
-    hub_screw_len: float = 30.0      # [DESIGN] M4 x 30 (ISO 4762) from the hub leg's counterbores (layout.py HEAD_SEAT): 1.0 past
-    #                                  the hub's captive nuts, 0.5 inside their pockets (ShellParams.hub_nut_depth)
+    hub_screw_len: float = 30.0      # [DESIGN] M4 x 30 (ISO 4762) from the hub leg's counterbores (layout.py HEAD_SEAT): 0.5 past
+    #                                  the hub's captive nuts, 1.0 inside their pockets (ShellParams.hub_nut_depth)
     sleeve_screw_len: float = 16.0   # [DESIGN] the motor leg's radial M4 x 16 (ISO 4762) from the floors of its ring's
     #                                  counterbores: their ends flush with the nuts in the sleeve's lugs
     #                                  (lib/cycloidal/params.py ShellParams.sleeve_nut_r) ...
@@ -316,7 +318,7 @@ RIM_CLEAR = 0.5                   # [DESIGN] the rim over the base's top face
 RING_DROP = 2.0                   # [DESIGN] the ring's top lowered under the drive's turning shell: its pillars 2.68 over it
 # BASE_R / BASE_DRAFT (lib/base/params.py: the base's walls carry the same cone on down): the disc's flats BASE_R off
 # the axis at its rim, drafted in at BASE_DRAFT - the base's octagon carried on up (sides) -, the flat facing each leg
-# carried on up its outer face (x +/-46) to meet it at y 63: the legs' root 20 thick, the motor leg's foot room for its M4s
+# carried on up the leg's outer face: the legs' root 19.5 thick at the rim, the motor leg's foot room for its M4s
 _CAP = _BASE.cap                  # the base's frame: this part's origin at its ring_top_y
 DEFAULT = replace(LEGACY,
                   hub=replace(LEGACY.hub, recess_dia=THRUST_OD + 2.0 * THRUST_CLEAR,

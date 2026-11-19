@@ -146,7 +146,7 @@ def test_cycloidal_interface():
     assert p.CYCLOIDAL_ARM_ZONE_Z == (9.0, 39.0)    # the plates' inner faces: the middle of the discs (24) between
     assert p.CYCLOIDAL_MOTOR_BODY_LEN == 48.0
     assert p.CYCLOIDAL_HUB_OD == 70.55
-    assert p.CYCLOIDAL_HUB_PROUD == 1.0 and p.CYCLOIDAL_HUB_FACE_Z == 62.0 and p.CYCLOIDAL_SLEEVE_END_Z == -26.0
+    assert p.CYCLOIDAL_HUB_PROUD == 1.5 and p.CYCLOIDAL_HUB_FACE_Z == 62.5 and p.CYCLOIDAL_SLEEVE_END_Z == -26.5
     assert p.CYCLOIDAL_SLEEVE_BOLT_COUNT == 3
     assert (p.CYCLOIDAL_HUB_BOLT_CIRCLE, p.CYCLOIDAL_HUB_BOLT_COUNT) == (50.0, 4)
     assert (p.CYCLOIDAL_HUB_BOLT_ANGLE_OFFSET_DEG, p.CYCLOIDAL_HUB_BOLT_DIA) == (45.0, 4.0)
@@ -174,7 +174,7 @@ def test_cycloidal_stack_positions():
         "x_disc1": 1.5, "x_disc2": -1.5, "z_motor_plate": 0.0, "z_shell_ring": 0.0, "z_motor": 0.0, "z_mks_board": -48.0,
         "z_eccentric_shaft": 0.0, "z_ring_gear_body": 9.0, "z_disc1": 13.0, "z_disc2": 25.0, "z_6814_1": 48.0, "z_6814_2": -10.0,
         "z_hub": 39.0, "z_625": 39.0, "z_ring_pins": 4.0, "z_output_pins": 4.0, "z_support_pin": 24.0,
-        "z_motor_bolts": -5.0, "z_housing_bolts": -13.0, "z_housing_nuts": 57.3, "hub_top": 62.0,
+        "z_motor_bolts": -5.0, "z_housing_bolts": -13.0, "z_housing_nuts": 57.3, "hub_top": 62.5,
     }
     assert got.keys() == expected.keys()
     for key, value in expected.items():
@@ -203,7 +203,7 @@ def test_cycloidal_derived_numbers():
     assert math.isclose(ring_pin_hole_dia(cfg), 4.20)
     assert ring_pin_engagement(cfg) == 5.0 and ring_pin_engagement(port) == 3.5 and ring_pin_hole_depth(port) == 31.5
     assert motor_bolt_counterbore_depth(cfg) == 3.0
-    assert hub_height(cfg) == 23.0 and hub_height(port) == 28.0   # the flange, the 6814's grip, the lip, onto the yoke
+    assert hub_height(cfg) == 23.5 and hub_height(port) == 28.0   # the flange, the 6814's grip, the lip, onto the yoke
     assert math.isclose(hex_circumdiameter(7.2), 8.3138, abs_tol=1e-3)
     assert cfg.gear.disc2_phase_deg == -9.0
 
