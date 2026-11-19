@@ -13,7 +13,7 @@
  "expected": {
   "leaf_occurrences": 97,
   "solids": 235,
-  "solid_volume": 2419353.524
+  "solid_volume": 2416802.823
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -1463,7 +1463,7 @@
     "note": "the motor-side leg on j1_coupler's disc, round the drive's motor sleeve; built in the coupler's part frame"
    },
    "solids": 1,
-   "solid_volume": 76491.968,
+   "solid_volume": 76205.856,
    "rel": {
     "position": [
      -0.0,
@@ -1530,13 +1530,13 @@
    },
    "world_bbox_min": [
     -42.514,
-    -4.993,
-    35.623
+    -4.493,
+    35.627
    ],
    "world_bbox_size": [
     90.393,
-    135.003,
-    23.785
+    134.503,
+    23.683
    ]
   },
   {
@@ -1566,7 +1566,7 @@
     "note": "the plate under j1_coupler's cut (the stub, the recess over the thrust bearing, the 120T's nuts); built in the coupler's part frame"
    },
    "solids": 1,
-   "solid_volume": 77683.646,
+   "solid_volume": 75419.057,
    "rel": {
     "position": [
      -0.0,
@@ -1632,14 +1632,14 @@
     ]
    },
    "world_bbox_min": [
-    -59.408,
+    -59.31,
     -14.4,
-    -59.408
+    -59.31
    ],
    "world_bbox_size": [
-    118.816,
+    118.621,
     17.307,
-    111.991
+    111.878
    ]
   },
   {
