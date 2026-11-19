@@ -8,7 +8,7 @@ body itself is matched by tests/cycloidal/test_port.py).
 import math
 
 import pytest
-from build123d import Axis
+from build123d import Axis, Location
 
 from lib import reference as R
 from lib.cycloidal import (
@@ -26,8 +26,9 @@ from lib.cycloidal import (
 from lib.cycloidal.housing import arm_root, build_shell_body
 from lib.cycloidal.layout import PILLAR_OVERSHOOT
 from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii
+from tests import built
 from tests.cycloidal.helpers import CFG
-from tests.helpers import is_inside, probe_volume, section_area
+from tests.helpers import distance, is_inside, probe_volume, section_area
 
 S = stack_positions(CFG)
 (END_0, END_1), (Z0, FLANGE) = shell_ends(CFG), arm_zone(CFG)   # -13, 61; 9, 39
@@ -116,10 +117,12 @@ class TestShellDimensions:
         assert 0 < gap < 0.5
 
     def test_the_plates_clear_the_pin_rings(self):
-        """The held plates (the motor plate, the hub's flange) inside the turning pin rings, 1 a side."""
-        sh = CFG.shell
-        assert (sh.ring_bore_dia - sh.plate_dia) / 2.0 == pytest.approx(1.0)
-        assert sh.plate_dia == CFG.bearings.out_od                 # the 6814's outer race's diameter: it can't pass the plate
+        """The held plates (the motor plate, the hub's flange) inside the turning pin rings, 1.5 a side, and as far off the
+        turning outer race and the shell under their rims: each face cut back as deep as the gap round its edge."""
+        sh, b = CFG.shell, CFG.bearings
+        assert (sh.ring_bore_dia - sh.plate_dia) / 2.0 == pytest.approx(1.5)
+        assert sh.plate_relief_depth == pytest.approx((sh.ring_bore_dia - sh.plate_dia) / 2.0)
+        assert sh.plate_relief_dia < sh.plate_dia < b.out_od       # the edge over the 6814's outer race, the face out past its inner race
 
     def test_integral_lips_block_the_6814s(self):
         assert CFG.housing.lip_bore_dia < CFG.bearings.out_od
@@ -226,6 +229,13 @@ class TestSolid:
             solid = abs(math.remainder(mid - start, 2 * math.pi)) < CFG.shell.arm_windows / 2.0 * step
             for z in (Z0 + 1.0, 30.0, FLANGE + 4.0, SEAT + 5.0, END_1 - 1.5):
                 assert is_inside(body_solid, r * math.cos(mid), r * math.sin(mid), z) == solid, (math.degrees(mid), z, solid)
+
+    def test_the_held_hub_runs_clear_of_the_body(self, body_solid):
+        """The held hub's flange, the motor plate's mirror, has the same running gap to the turning body: round its edge
+        and under its rim (tests/cycloidal/test_assembly.py: the motor plate against the shell ring)."""
+        hub = built.part("cycloidal_output_hub").moved(Location((0.0, 0.0, S["z_hub"])))
+        gap = (CFG.shell.ring_bore_dia - CFG.shell.plate_dia) / 2.0
+        assert distance(hub, body_solid) == pytest.approx(gap, abs=0.01)
 
     def test_bore(self, body_solid):
         """From the discs out: the bore, the pin ring round the hub's flange, the seat, the lip - each open inside its

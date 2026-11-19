@@ -280,12 +280,14 @@ class ShellParams:
     pressed into lugs on its bore (sleeve_bolt_deg) - nothing else holds the carrier's motor end from turning; the hub
     runs on to the yoke's other leg. Both legs are yoke_leg thick, end_plate_gap off the shell's ends."""
 
-    plate_dia: float = 90.0            # [DESIGN] the motor plate and the hub's flange inside the shell's pin rings ...
-    ring_bore_dia: float = 92.0        # [DESIGN] ... the pin rings' bore round them (1 a side); the ring-pin holes 1.9 outside it
+    plate_dia: float = 89.0          # [DESIGN] the motor plate and the hub's flange inside the shell's pin rings, their
+    #                                    edge 0.5 inside the 6814's outer race (BearingParams.out_od) ...
+    ring_bore_dia: float = 92.0        # [DESIGN] ... the pin rings' bore round them (1.5 a side); the ring-pin holes 1.9 outside it
     plate_relief_dia: float = 74.0     # [DESIGN] each plate's face on its 6814 cut back from here out - 0.4 a side inside the
     #                                    inner race's edge (BearingParams.out_inner_ring_od), over the seal and the turning
     #                                    outer race ...
-    plate_relief_depth: float = 0.6    # [DESIGN] ... this deep (the inner race bears on the face inside it)
+    plate_relief_depth: float = 1.5  # [DESIGN] ... this deep (the inner race bears on the face inside it): the gap under the
+    #                                    plate's rim to the turning outer race and the shell, the same as round its edge
     sleeve_bore_dia: float = 62.0      # [DESIGN] the sleeve's bore: the motor (42 x 43) and the MKS board (43 x 43) are 61 across the corners
     sleeve_od: float = 70.0            # [DESIGN] the sleeve behind the seat: the 6814 slides on over it ...
     #                                    ... and presses on over the last out_width, at the hub's grip (OutputHubParams.od)
