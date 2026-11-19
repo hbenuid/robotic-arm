@@ -30,11 +30,17 @@ def ring():
     return cycloidal_shell_ring.build()
 
 
+def _radial(solid, x, y, d, z):
+    """Is the point d out from (x, y) along its radius from the drive's axis (d < 0: in), at z, inside the solid?"""
+    a = math.atan2(y, x)
+    return is_inside(solid, x + d * math.cos(a), y + d * math.sin(a), z)
+
+
 @pytest.mark.slow
 def test_numbers(ring):
     """One solid; the housing's od and pillars across, the shell's motor end to the body's face along the axis."""
     assert len(ring.solids()) == 1 and ring.is_valid
-    assert R.solid_volume(ring) == pytest.approx(75970.053, abs=0.5)
+    assert R.solid_volume(ring) == pytest.approx(75870.125, abs=0.5)
     bb = ring.bounding_box()
     assert (bb.min.Z, bb.max.Z) == pytest.approx((END, T), abs=1e-6)
     bb = ring.rotate(Axis.Z, -CFG.housing.bolt_start_deg).bounding_box()                 # its first pillar on X
@@ -55,14 +61,18 @@ def test_bore(ring):
 @pytest.mark.slow
 def test_ring_pins_and_housing_bolts(ring):
     """The ring pins' blind holes from the face on the body down past the pins' ends (open at the face, solid under
-    their bottoms); the housing bolts' holes through, their heads' counterbores in the end face."""
+    their bottoms), each one's lead-in at its mouth - open to its rim on both sides (toward the bore and toward the
+    window), solid just past it; the housing bolts' holes through, their heads' counterbores in the end face."""
     h = CFG.housing
     pins_z = stack_positions(CFG)["z_ring_pins"]                  # 4
+    hole_r = ring_pin_hole_dia(CFG) / 2.0
+    mouth_r, depth = hole_r + h.ring_pin_entry_chamfer_add / 2.0, h.ring_pin_entry_chamfer_depth
     for x, y in ring_pin_points(CFG):
         assert not is_inside(ring, x, y, T - 0.5) and not is_inside(ring, x, y, pins_z + 0.1)
         assert is_inside(ring, x, y, pins_z - 1.0)                 # the hole's bottom
-        r, a = math.hypot(x, y) + ring_pin_hole_dia(CFG) / 2.0 + 0.3, math.atan2(y, x)
-        assert is_inside(ring, r * math.cos(a), r * math.sin(a), T - 0.5)
+        assert _radial(ring, x, y, hole_r + 0.3, T - depth - 0.5)  # the hole's wall below its lead-in
+        for side in (1.0, -1.0):
+            assert not _radial(ring, x, y, side * (mouth_r - 0.05), T - 0.02) and _radial(ring, x, y, side * (mouth_r + 0.15), T - 0.02)
     for x, y in housing_bolt_points(CFG):
         assert not is_inside(ring, x, y, T - 0.5) and not is_inside(ring, x, y, END + 6.0)
         off, a = (h.bolt_dia + 0.4) / 2.0 + 0.6, math.atan2(y, x) + math.pi / 2.0

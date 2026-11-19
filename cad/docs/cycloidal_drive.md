@@ -167,14 +167,14 @@ housing bolts at −13, nuts at 57.3; shaft, motor, motor plate and shell ring a
 
 1. **Shell ring** (`parts/cycloidal/cycloidal_shell_ring.py`, z −13..9): the shell's motor end - from its end in, the
    Ø86.15 lip (`end_lip`, `lip_radial` 2 over the 90 mm outer race), the motor-end 6814's Ø90.15 seat, and a pin ring
-   (`ring_bore_dia`) round the held motor plate with the 21 ring pins' blind holes Ø4.20 from its face on the body; the
-   M4 holes with Ø7.4 × 4.0 counterbores in the end face (z −13), the heads flush in them. The motor plate itself
-   (`parts/cycloidal/cycloidal_motor_plate.py`) is held: §5.5.
+   (`ring_bore_dia`) round the held motor plate with the 21 ring pins' blind holes Ø4.20 from its face on the body,
+   each with a lead-in at its mouth (§5.5); the M4 holes with Ø7.4 × 4.0 counterbores in the end face (z −13), the
+   heads flush in them. The motor plate itself (`parts/cycloidal/cycloidal_motor_plate.py`) is held: §5.5.
 2. **The body** (`lib/cycloidal/housing.py build_shell_body`, z 9..61), **printed as one with `j1_link`** (the upper
    arm rises off it, §10): the Ø108 bore round the discs (9..39), a pin ring round the hub's flange (39..48) with the
-   ring pins' blind holes from its face on the bore, the hub-end 6814's seat (48..58), the lip (58..61); the M4
-   through-holes, each backed by a full-height bolt pillar, and the housing nuts' **captive hex pockets** (7.2 AF)
-   from the hub end down to the nuts' seats, turned `bolt_nut_turn_deg` (a flat outward, §5.4).
+   ring pins' blind holes from its face on the bore (their lead-ins the shell ring's mirror), the hub-end 6814's seat
+   (48..58), the lip (58..61); the M4 through-holes, each backed by a full-height bolt pillar, and the housing nuts'
+   **captive hex pockets** (7.2 AF) from the hub end down to the nuts' seats, turned `bolt_nut_turn_deg` (a flat outward, §5.4).
 
 **Shared outer profile** — both parts carry the same pillar / window silhouette around the bolt
 circle (pillars `pillar_inner_w` 18 at the bore, `pillar_outer_w` 10 at the OD, one per bolt -
@@ -196,7 +196,8 @@ ring pins', so any start clears them. The port's motor plate and the housing bol
 
 **Outer-edge chamfer** (`edge_chamfer` 1.0; the port's 1.5, `chamfer_outer_silhouette`): the pillars' outer vertical
 corners always, plus the *entire* outer-wire perimeter of each part's external end face (the shell's two ends: the
-shell ring's z = −13, the body's z = 61); the faces where they meet (z = 9) stay sharp so the stack beds flush. Internal holes are never beveled. `edge_chamfer = 0` disables; keep it
+shell ring's z = −13, the body's z = 61); the faces where they meet (z = 9) stay sharp so the stack beds flush.
+Internal holes are never beveled, but for the ring pins' lead-ins (§5.5). `edge_chamfer = 0` disables; keep it
 under `LUG_WALL` - 1 to leave the external faces 1 mm or more past the nut pockets (§5.4).
 
 ### 5.3 Output hub (`parts/cycloidal/cycloidal_output_hub.py`, `cfg.output_hub`)
@@ -249,6 +250,11 @@ face, the one the part prints on; nothing bolts the arm to the shell's end.
   plate thick, its face cut back `plate_relief_depth` from `plate_relief_dia` - inside the inner race's edge
   (`out_inner_ring_od`) - over the seal and the turning outer race - and the
   stack's 4 mm clearance to its disc. The ring pins stand in both pin rings (`ring_pin_engagement` 5 into each).
+- **The ring pins' lead-ins** (`HousingParams.ring_pin_entry_chamfer_depth` / `_add`, `lib/cycloidal/housing.py
+  ring_pin_lead_ins`): a 45° cone at the mouth of every ring pin hole, in both pin rings (the ends mirror). The shell
+  ring goes on last, over all 21 pins' ends at once, blind: the cones catch an end that is a little off and steer it
+  in. They leave a thinner wall at the face, to the pin ring's bore and to the windows
+  (`test_the_lead_ins_leave_a_wall_at_the_face`), and shorten each pin's grip in the full-size hole by their depth.
 - **The motor plate is the carrier's motor end** (`parts/cycloidal/cycloidal_motor_plate.py`, its `LEGACY_CONFIG`
   build the port's plate): the plate - the motor's pilot, M3s and shaft bore as before - and a sleeve back over the
   motor: `sleeve_bore_dia` round the motor's and the MKS board's corners (61 across them), `sleeve_od`, and the hub's
@@ -269,7 +275,8 @@ face, the one the part prints on; nothing bolts the arm to the shell's end.
 - **Assembly, from the motor end:** the hub's nuts into its flange; the hub-end 6814 into the body's seat from inside
   (`j1_link` face down), the hub pressed into it grip first to its flange; the gear stack (output pins in the hub,
   discs, shaft, the ring pins into the body's pin ring) as before; the motor plate with its 6814 on its seat, the
-  shell ring over the sleeve and onto the ring pins' ends, bolted to the body with the M4 × 70s into its nuts; the
+  shell ring over the sleeve and onto the ring pins' ends (its bolt holes over the body's lines its pin holes up over
+  the pins; two opposite bolts started first), drawn down evenly onto the body by the M4 × 70s into its nuts; the
   sleeve's three nuts pressed into its lugs, then the motor into the sleeve; the whole lowered into the fork, the hub
   bolted to its leg, the motor leg (`j1_motor_leg`) slid on over the motor and its board and bolted to the yoke's disc,
   then - the motor turned until the sleeve's holes show through the ring's - to the sleeve with the three M4 × 20s,
@@ -285,7 +292,7 @@ tight. Never design a hole smaller than its steel part.
 |---|---|---|---|
 | Bearing outer race → housing | +0.15 / +0.20 on the bore | `output_bearing_seat_dia` 90.15, `bearing_seat_bore_add` 0.2 | 6814 seats - the body's, the shell ring's - (firm press), 625 pocket 16.2 (slip-to-light press) |
 | 6814 inner race → hub / sleeve | +0.55 interference (measured, 0.20) | `output_hub.od` 70.55; `ShellParams.sleeve_od` 70 | the hub's grip and the sleeve's last `out_width` (press); the sleeve behind it slides |
-| Ring & output pin holes | +0.20 → Ø4.20 | `ring_pin_press_sub` −0.20 | slip-press as printed, blind (the shell ring, the body, the hub) |
+| Ring & output pin holes | +0.20 → Ø4.20 | `ring_pin_press_sub` −0.20 | slip-press as printed, blind (the shell ring, the body, the hub); the ring pins' with a lead-in at the mouth (§5.5) |
 | Disc centre bore | +0.10 → 35.10 | `center_bore_dia` | 6003 OD |
 | Disc output-pin holes | nominal 7.4, no offset | `output_pin_hole_dia` | shrink *reduces* backlash (§1.3) |
 | Motor-shaft D-bore | +0.065 on the radius → Ø5.13 | `d_bore_clearance_add` | slip-to-light press |

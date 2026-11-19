@@ -17,8 +17,8 @@ Port adaptations (all listed in docs/cycloidal_drive.md "Port notes"):
 Two configurations: LEGACY_CONFIG is the port (what the CadQuery exports in reference/cycloidal/ were built
 from); DEFAULT_CONFIG is what the parts build - it differs in HousingParams.bolt_count, in the gear's size
 (RING_INSET: the ring-pin circle and the housing round it, smaller by the same amount), in its pillars' tips
-(LUG_WALL: the housing nuts turned a flat outward, less plastic past them) and in what turns (ShellParams: the carrier
-held, the housing shell the output, 21:1).
+(LUG_WALL: the housing nuts turned a flat outward, less plastic past them), in what turns (ShellParams: the carrier
+held, the housing shell the output, 21:1) and in the ring pins' holes' lead-in (HousingParams.ring_pin_entry_chamfer_*).
 Units: mm, degrees where named *_deg. The stack-up datum (Z=0) is the OUTER face of the motor plate
 (the NEMA 17 mounting face); +Z runs through the drive toward the output hub.
 """
@@ -141,8 +141,9 @@ class HousingParams:
     output_bearing_seat_dia: float = 90.15   # press fit for the 6814 outer races
     motor_plate_shaft_bore: float = 15.0     # [DESIGN] motor-shaft pass-through bore in the motor plate
     lip_radial: float = 2.0            # [DESIGN] integral 6814 retention lip, radial thickness
-    ring_pin_entry_chamfer_depth: float = 1.0   # [DESIGN] funnel at the bore/bearing-zone transition
-    ring_pin_entry_chamfer_add: float = 1.0     # [DESIGN] funnel entry dia = pin hole dia + this
+    ring_pin_entry_chamfer_depth: float = 1.0   # [DESIGN] the ring pins' holes' lead-in: a cone this deep at each mouth
+    #                                             (the port's funnel into its ring gear body; housing.py ring_pin_lead_ins)
+    ring_pin_entry_chamfer_add: float = 1.0     # [DESIGN] ... its mouth's dia = the pin hole's + this
     pillar_inner_w: float = 18.0       # [DESIGN] reveal-window pillar tangential width at the bore
     pillar_outer_w: float = 10.0       # [DESIGN] ... and at the OD
 
@@ -353,7 +354,7 @@ def compute_housing_bolt_angles(cfg: DriveConfig) -> list[float]:
 # The port: the CadQuery drive exactly (the designed parts' REFERENCE_BUILD - tests/cycloidal/test_port.py).
 LEGACY_CONFIG = DriveConfig()
 
-# What the parts build - four departures from the port:
+# What the parts build - five departures from the port:
 #  * the housing on 6 bolts, not 8 - 6 pillars at 60 degrees, the first at ARM_DEG: on the centreline of the upper arm,
 #    which rises off the turning shell between the two windows either side of it (ShellParams.arm_windows);
 #  * a smaller gear: the ring-pin circle and everything outside it (the bore, the bolt circle) RING_INSET further in
@@ -370,7 +371,9 @@ LEGACY_CONFIG = DriveConfig()
 #    output on one 6814 at each end - 58 mm apart where the port stacked two side by side (10) - and so 21:1
 #    (DriveConfig.ratio). The gear stack stays; the hub-end 6814 moves out past a flange on the hub, the motor plate's
 #    mirror (StackUp: output_clearance = the input clearance + that flange, one bearing), so the shell is the same at
-#    both ends; the ring pins span both pin rings; the housing bolts run end to end; the hub reaches the yoke's leg.
+#    both ends; the ring pins span both pin rings; the housing bolts run end to end; the hub reaches the yoke's leg;
+#  * the ring pins' holes' lead-in (HousingParams.ring_pin_entry_chamfer_*): a 45 deg cone at each mouth, in both pin
+#    rings (the ends mirror), which catches the pins' ends - the shell ring goes on over all 21 at once.
 RING_INSET = 4.0   # [DESIGN] mm, radial
 LUG_WALL = 2.5     # [DESIGN] mm, radial, past the housing nuts' pockets at the pillar tips
 ARM_DEG = 47.584167   # [DESIGN] the upper arm's centreline in the drive's frame, atan2(y, x): lib/upper_arm/params.py
@@ -381,6 +384,8 @@ _HOUSING = replace(LEGACY_CONFIG.housing, bolt_count=6, bolt_start_deg=ARM_DEG,
                    bore_dia=LEGACY_CONFIG.housing.bore_dia - 2 * RING_INSET,                   # 108
                    bolt_circle_dia=LEGACY_CONFIG.housing.bolt_circle_dia - 2 * RING_INSET,     # 117
                    bolt_nut_turn_deg=30.0, edge_chamfer=1.0,
+                   ring_pin_entry_chamfer_depth=0.8, ring_pin_entry_chamfer_add=1.6,   # [DESIGN] 0.8 x 45 deg, mouth
+                   #   5.8: 1.1 of wall at the face to the pin ring's bore and to the window (1.9 below the cone)
                    bolt_counterbore_depth=4.0,   # the head flush with the shell ring's end (an M4 head is 4.0 at most)
                    bolt_length=70.0,   # the turning shell's: end to end - the head flush with the shell ring's end, the
                    #                     end flush with the hub end (4 + 70 = the shell's 74), past its nut sunk in the body
