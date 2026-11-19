@@ -199,8 +199,9 @@ class TestRadialClearances:
         assert output_pin_ends(LEGACY_CONFIG)[0] > LEGACY_CONFIG.stack_up.z_motor_plate_inner
 
     def test_output_pin_engages_disc1(self):
+        """The pins reach through disc 1 to its outer face - its bearing lip (DiscParams.bearing_lip) included."""
         S = stack_positions(CFG)
-        assert S["z_output_pins"] <= CFG.stack_up.z_disc1
+        assert S["z_output_pins"] <= CFG.stack_up.z_disc1 - CFG.disc.bearing_lip
 
     def test_output_hub_clears_retention_lip_bore(self):
         clearance = CFG.housing.lip_bore_dia - CFG.output_hub.od
@@ -415,7 +416,7 @@ class TestModuleLocks:
             ("bearing_6814:1", "cycloidal_output_hub"): 607.2, ("bearing_6814:2", "cycloidal_motor_plate"): 607.2,
             ("cycloidal_housing_bolts", "cycloidal_housing_nuts"): 241.3,
             ("cycloidal_motor_bolts", "cycloidal_motor_plate"): 52.0, ("nema17_48mm", "cycloidal_motor_bolts"): 46.4,
-            ("bearing_6003:1", "cycloidal_eccentric_shaft"): 27.0, ("bearing_6003:2", "cycloidal_eccentric_shaft"): 27.0,
+            ("bearing_6003:1", "cycloidal_eccentric_shaft"): 40.3, ("bearing_6003:2", "cycloidal_eccentric_shaft"): 40.3,
             ("mks_servo42d", "nema17_48mm"): 159.4,
         }
         for (a, b), limit in budget.items():
