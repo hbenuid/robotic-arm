@@ -12,7 +12,15 @@ import pytest
 
 import parts
 from lib import reference as R
-from lib.cycloidal import LEGACY_CONFIG, motor_bolt_counterbore_depth, ring_pin_hole_dia, sleeve_bolt_z, sleeve_end
+from lib.cycloidal import (
+    LEGACY_CONFIG,
+    motor_bolt_counterbore_depth,
+    output_pin_ends,
+    output_pin_points,
+    ring_pin_hole_dia,
+    sleeve_bolt_z,
+    sleeve_end,
+)
 from tests.cycloidal.helpers import CFG
 from tests.helpers import is_inside
 
@@ -144,7 +152,7 @@ class TestCarrier:
     def test_numbers(self, carrier):
         sh, b = CFG.shell, CFG.bearings
         assert len(carrier.solids()) == 1 and carrier.is_valid
-        assert R.solid_volume(carrier) == pytest.approx(78813.655, abs=0.5)
+        assert R.solid_volume(carrier) == pytest.approx(78517.532, abs=0.5)
         bb = carrier.bounding_box()
         assert (bb.min.X, bb.min.Y, bb.min.Z) == pytest.approx((-sh.plate_dia / 2.0, -sh.plate_dia / 2.0, sleeve_end(CFG)), abs=1e-6)
         assert (bb.size.X, bb.size.Y, bb.size.Z) == pytest.approx((sh.plate_dia, sh.plate_dia, PLATE_T - sleeve_end(CFG)), abs=1e-6)
@@ -164,6 +172,25 @@ class TestCarrier:
         r = sh.sleeve_bore_dia / 2.0
         assert not is_inside(carrier, r * 0.7071 - 0.3, r * 0.7071, -20.0) and is_inside(carrier, r * 0.7071 + 0.3, r * 0.7071, -20.0)
         assert not is_inside(carrier, 0, 0, -20.0)                                           # the motor's room
+
+    def test_the_output_pins_holes(self, carrier):
+        """A blind hole from the inner face at each output pin, the hub's 4.20, down to the pin's end
+        (ShellParams.output_pin_plate_depth: 5), its mouth the ring pins' 45 deg lead-in; solid below it, and none
+        between the pins."""
+        d, h = CFG.disc, CFG.housing
+        hole_r = (d.output_pin_dia - CFG.tolerances.ring_pin_press_sub) / 2.0
+        z_end = output_pin_ends(CFG)[0]
+        assert PLATE_T - z_end == CFG.shell.output_pin_plate_depth == 5.0
+        mouth_r = hole_r + h.ring_pin_entry_chamfer_add / 2.0
+        for x, y in output_pin_points(CFG):
+            r, ux, uy = math.hypot(x, y), x / math.hypot(x, y), y / math.hypot(x, y)
+            assert not is_inside(carrier, x, y, z_end + 0.3) and is_inside(carrier, x, y, z_end - 0.3)   # its floor
+            out = r + hole_r + 0.15                                                       # just past the hole's wall ...
+            assert is_inside(carrier, out * ux, out * uy, PLATE_T - h.ring_pin_entry_chamfer_depth - 0.3)
+            out = r + mouth_r - 0.15                                                      # ... and inside the mouth
+            assert not is_inside(carrier, out * ux, out * uy, PLATE_T - 0.05)
+        r = d.output_pin_circle_dia / 2.0
+        assert is_inside(carrier, r * 0.7071, r * 0.7071, PLATE_T - 1.0)                 # between two pins
 
     def test_the_lugs_for_the_yoke_legs_screws(self, carrier):
         """The lugs on the sleeve's bore at the motor's flats, up and both sides (ShellParams.sleeve_bolt_deg; none down,

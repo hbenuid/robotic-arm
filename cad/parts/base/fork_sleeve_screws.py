@@ -1,5 +1,6 @@
 """fork_sleeve_screws - purchased (COTS) part: the 3 M4 socket head cap screws (ISO 4762) that bolt j1_motor_leg's ring to
-the cycloidal drive's motor plate's sleeve - nothing else stops the carrier's motor end turning.
+the cycloidal drive's motor plate's sleeve - they and the output pins (which tie the plate to the hub) stop the carrier's
+motor end turning.
 
 In the arm (lib/mounts.py FORK_MOUNTS, hosted on j1_motor_leg#1): radially through the ring's middle at the drive's
 ShellParams.sleeve_bolt_deg (the motor's flats: up and both sides, none down where the leg's post stands), the heads

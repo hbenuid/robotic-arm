@@ -15,7 +15,8 @@ the shell's pin ring, the pin holes and the 625 in its inner face, its outer fac
 seal and turning outer race, whose inner race the grip carries and the flange stops (the shell is held both ways: this race,
 the shell's lip on its outer race, and the motor-end 6814 mirrored). The grip runs past the shell's end
 (proud_above_housing) onto the j1_coupler yoke's leg; the same 4 holes bolt it there, their nuts in hub_nut_depth
-pockets from the flange's inner face.
+pockets from the flange's inner face. Its pin holes reach only to the pins' ends (lib/cycloidal/layout.py
+output_pin_ends): the pins run on into the motor plate (ShellParams.output_pin_plate_depth), the rest of each in the hub.
 
 Diverged from the port: build(LEGACY_CONFIG) reproduces the export (REFERENCE_BUILD - tests/cycloidal/test_port.py,
 tests/test_reference_match.py); the model builds DEFAULT_CONFIG (the turning shell's hub).
@@ -33,6 +34,7 @@ from lib.cycloidal import (
     housing_bolt_hole_dia,
     hub_flange,
     hub_height,
+    output_pin_ends,
     output_pin_points,
     stack_positions,
 )
@@ -66,7 +68,7 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
     result = result - cylinder(hub.shaft_clearance_bore / 2.0, clear + NUDGE, z0=-NUDGE)                # shaft clearance
     result = result - cylinder((b.inp_od + tol.bearing_seat_bore_add) / 2.0, b.inp_width + NUDGE, z0=-NUDGE)   # 625 pocket
     pin_r = (d.output_pin_dia - tol.ring_pin_press_sub) / 2.0                                          # 4.20 / 2
-    pin_depth = stack.z_bearing_top - hub.output_hub_pin_ceiling - z_hub                               # 19 (port), 18
+    pin_depth = output_pin_ends(cfg)[1] - z_hub                                                        # 19 (port), 10
     for xy in output_pin_points(cfg):
         result = result - cylinder(pin_r, pin_depth + NUDGE, xy, z0=-NUDGE)
     arm_r = housing_bolt_hole_dia(cfg) / 2.0
@@ -75,7 +77,7 @@ def build(cfg: DriveConfig = DEFAULT_CONFIG):
         result = result - through(arm_r, height, xy)
         result = result - hex_pocket(cfg, xy, angle, nut_depth + NUDGE, z0=-NUDGE)
     if hub.arm_mount_pocket_dia > 0.0:
-        z0 = pin_depth + hub.output_hub_pin_ceiling + hub.arm_mount_pocket_floor                        # 21, 20
+        z0 = stack.z_bearing_top - z_hub + hub.arm_mount_pocket_floor                                    # 21, 20
         result = result - cylinder(hub.arm_mount_pocket_dia / 2.0, height - z0 + NUDGE, z0=z0)
     return single_solid(result)
 

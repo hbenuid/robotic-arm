@@ -9,7 +9,8 @@ post as wide, its faceted root standing on the disc's top face (the hub leg's sh
 up its outer face); its foot the root's part past the leg's outer face, down to the disc's underside, butting the disc
 there, held by
 2x M4 along the drive's axis from counterbores in the foot into nuts in slots in the disc, under the post; and the
-sleeve held in it - nothing else stops the drive's carrier turning at the motor end - by 3 radial M4s through the
+sleeve held in it - it and the drive's output pins (which tie the motor plate to the hub) stop the carrier turning at
+the motor end - by 3 radial M4s through the
 ring's middle (up and both sides: the motor's flats), their heads flush in round counterbores in the ring's flats, into
 nuts pressed into lugs on the sleeve's bore, the holes slotted along the axis so the drive settles lengthwise before
 they lock it (ForkParams.sleeve_screw_len / sleeve_head_seat / sleeve_counterbore_dia / sleeve_slot_len;
