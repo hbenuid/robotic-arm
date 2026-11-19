@@ -15,7 +15,9 @@ Every test module's docstring says what it checks.
 
 ## Tests (`./cadtool pytest`)
 `tests/conftest.py` blocks top-level model builds (tests call bodies:
-`parts.build(name)`, `lib.models.raw(model)`), and fails the test that changed a shape `built.py` shares.
+`parts.build(name)`, `lib.models.raw(model)`), fails the test that changed a shape `built.py` shares, and keeps one
+STEP reader process for the whole test process (`cad.engine.reader.session`, as a build does - outside one, cad starts
+a reader for every read).
 `built.py` builds each part, module and placed occurrence once per test process (`part`, `legacy`, `model`, `leaf`,
 `placed`) — take geometry there, not from a fresh build (a build per test is most of what a slow test costs).
 Those shapes are SHARED, so READ-ONLY: measure them and move copies (`.moved()`, `.rotate()`); never
