@@ -64,7 +64,8 @@ shell's `ShellParams`, `None` in the port's `LEGACY_CONFIG`); every number below
 |---|---|---|
 | Output pins | 4 at 90° (`output_pin_count`) | 4 × 45 mm h6 dowels (`output_pin_dia`, `output_pin_length`) on Ø60 (`output_pin_circle_dia`) |
 | Disc pin hole Ø | 7.40 (`output_pin_hole_dia`) | 4 + 2 × 1.5 ecc + 0.4 clearance |
-| Hub pin holes | Ø4.20 × 18 blind (`output_pin_dia` − `ring_pin_press_sub`, from the flange's inner face to `z_bearing_top` − `output_hub_pin_ceiling`; the port's 19) | greased sliding fit through the discs; captured between the closed hub ceiling and the motor plate - both held: the pins stop the discs turning, so the ring - the shell - turns (§5.5) |
+| Hub pin holes | Ø4.20 × 10 blind (`output_pin_dia` − `ring_pin_press_sub`, from the flange's inner face to the pins' ends, `lib/cycloidal/layout.py output_pin_ends`; the port's 19, to `z_bearing_top` − `output_hub_pin_ceiling`), each with the ring pins' lead-in at its mouth - the pins' two ends mirror | greased sliding fit through the discs; the pins stop the discs turning, so the ring - the shell - turns (§5.5) |
+| Motor plate pin holes | Ø4.20 × 5 blind from the plate's inner face (`ShellParams.output_pin_plate_depth`), each with the ring pins' lead-in at its mouth (§5.5) | the hub and the plate are both held, so the pins run from one to the other - 5 in the plate, the 30 between the plates, 10 in the hub - held at both ends and captured between the two holes' floors. The port's pins hung from the hub and stopped short of its plate, which the hub turned against; hung from the hub, a pin bends under disc 1 by about the whole backlash below, held at both ends an order of magnitude less |
 
 Clearances: pin-hole inner edge 26.30 vs bore radius 17.55 → **8.75 mm wall**; pin-hole outer edge
 33.70 vs lobe valley 46.5 (~45.5 past the lobe chamfer) → **~12 mm wall**.
@@ -110,13 +111,13 @@ sit well inside the 70 mm inner-race bore.
 |---|---|---|---|
 | Motor | NEMA 17, 42.3² × 48 body, Ø5 shaft 22 long (4 round + 18 D-cut, `shaft_dcut_flat` 4.5 = flat-to-round 4.75, not the standard 4.5; assumed - the datasheet's is 24: `docs/open_issues.md`), Ø22 × 2 pilot, 4 × M3 on 31 mm square tapped 4.5, ~0.45 Nm | 1 | `nema17_48mm` |
 | Ring pins | 4 × 40 h6 hardened dowel (buy 25) | 21 | `cycloidal_ring_pins` |
-| Output pins | 4 × 45 h6 hardened dowel; light press in the hub's 4.20 blind holes (printed ~4.00–4.10), hub ceiling / motor plate as backup capture, free through the discs' 7.4 holes | 4 | `cycloidal_output_pins` |
+| Output pins | 4 × 45 h6 hardened dowel; light press in the hub's 4.20 blind holes (printed ~4.00–4.10), the other end in the motor plate's (§1.3), captured between the two, free through the discs' 7.4 holes | 4 | `cycloidal_output_pins` |
 | Shaft support pin | 5 × 20 h6 dowel | 1 | `cycloidal_shaft_support_pin` |
 | Housing bolts | M4 × 70 SHCS (ISO 4762, `bolt_length`), Ø7 × 4 head; counterbored flush in the shell ring's end, through the shell end to end past nuts sunk just inside its body's hub end (the port's M4 × 55 ended in the ring gear body) | 6 | `cycloidal_housing_bolts` |
 | Housing nuts | M4 hex, 7.0 AF × 3.2 (pocket 7.2 AF), in the body's pockets from its hub end (`lib/cycloidal/housing.py build_shell_body`) | 6 | `cycloidal_housing_nuts` |
 | Motor bolts | M3 × 10 SHCS, Ø5.3 × 3 head (13 total): 6 through the plate + 4 engagement, head flush in the 3 mm inner-face pocket (`motor_bolt_counterbore_depth`) - the model places them `motor_bolt_recess` deeper (`stack_positions` `z_motor_bolts`, the drive repo's stack-up: heads 1 into the pocket's floor, tips 0.5 past the motor's 4.5 tapped holes; `docs/open_issues.md`) | 4 | `cycloidal_motor_bolts` |
 | Hub bolts + nuts | 4 × M4 × 30 (`lib/yaw_coupler/params.py ForkParams.hub_screw_len`) from the `j1_coupler` fork's hub-side leg into captive M4 nuts in the hub's flange (its arm-mount pattern, `ShellParams.hub_nut_depth`: the screws' ends 1 mm past the nuts, inside their pockets) — install the nuts before pressing the hub through its 6814 | 4 + 4 | the arm's `fork_hub_screws` + `fork_hub_nuts`, mounted on the fork (`lib/mounts.py FORK_MOUNTS`) |
-| Sleeve bolts + nuts | 3 × M4 × 16 (`ForkParams.sleeve_screw_len`) radially through the fork's motor leg (`j1_motor_leg`), heads flush in round counterbores in its ring's flats (`ForkParams.sleeve_counterbore_dia`, `sleeve_head_seat`), into M4 nuts pressed into lugs on the motor plate's sleeve (`ShellParams.sleeve_bolt_deg`: the motor's flats, up and both sides; `sleeve_nut_r`: the screws' ends flush with the nuts) — they hold the carrier's motor end from turning; press the nuts in before the motor goes into the sleeve | 3 + 3 | the arm's `fork_sleeve_screws` + `fork_sleeve_nuts`, mounted on the motor leg (`lib/mounts.py FORK_MOUNTS`) |
+| Sleeve bolts + nuts | 3 × M4 × 16 (`ForkParams.sleeve_screw_len`) radially through the fork's motor leg (`j1_motor_leg`), heads flush in round counterbores in its ring's flats (`ForkParams.sleeve_counterbore_dia`, `sleeve_head_seat`), into M4 nuts pressed into lugs on the motor plate's sleeve (`ShellParams.sleeve_bolt_deg`: the motor's flats, up and both sides; `sleeve_nut_r`: the screws' ends flush with the nuts) — they and the output pins (§1.3) hold the carrier's motor end from turning; press the nuts in before the motor goes into the sleeve | 3 + 3 | the arm's `fork_sleeve_screws` + `fork_sleeve_nuts`, mounted on the motor leg (`lib/mounts.py FORK_MOUNTS`) |
 
 The purchased parts are modelled as the drive repo's simplified solids (annuli, cylinders, hex
 prisms): each module's `_envelope()`, which is also its reference STEP; where a vendor file exists the model shows it instead, the reference staying the envelope:
@@ -160,7 +161,7 @@ mm into the plate), the MKS board kit behind the motor 14.1 (module z −62.1 �
 
 The module layout (`lib/cycloidal/layout.py stack_positions`, the drive repo's `assembly.py`
 numbers for the gear stack) places: discs at (±1.5, 0, 13 / 25) with their 6003s, the 6814s at 48 (the hub's) and −10
-(the motor plate's), hub and 625 at 39, ring pins at 4, output pins at 12, support pin at 24, motor bolts at −5,
+(the motor plate's), hub and 625 at 39, ring pins at 4, output pins at 4 (`output_pin_ends`), support pin at 24, motor bolts at −5,
 housing bolts at −13, nuts at 57.3; shaft, motor, motor plate and shell ring at 0 (built in place).
 
 ## 5. Housing design notes (`cfg.housing`)
@@ -209,7 +210,7 @@ under `LUG_WALL` - 1 to leave the external faces 1 mm or more past the nut pocke
 PETG (aluminium viable): Ø70.55 (`od` = 70 mm 6814 bore + 0.55, a firm press measured at 0.20), 23 tall (the port's 28): a Ø90 × 9
 flange (`hub_flange`, the motor plate's mirror) in the body's pin ring, its face on the hub-end 6814 cut back over
 the outer race (`plate_relief_*`) - the flange stops the inner race -, then the grip, on past the lip to the
-`j1_coupler` fork's hub-side leg; 4 blind Ø4.20 × 18 pin holes on Ø60 closed by a 1 mm ceiling; Ø6 shaft-clearance
+`j1_coupler` fork's hub-side leg; 4 blind Ø4.20 × 10 pin holes on Ø60, to the pins' ends, a lead-in at each mouth (§1.3); Ø6 shaft-clearance
 bore through the flange; Ø16.2 × 5 625 pocket on the inner face; the **arm-mount pattern** 4 × `housing_bolt_hole_dia` through-holes (the port's Ø4.4, the build's Ø4.2) on
 Ø50 at 45° from the pins, each into a captive M4 nut pocket (7.2 AF × 4.7, `hub_nut_depth`) in the flange's inner
 face - the port bolted `j1_link` to it, the turning shell bolts the hub to the fork's leg (M4 × 25 from its
@@ -259,12 +260,15 @@ face, the one the part prints on; nothing bolts the arm to the shell's end.
   ring goes on last, over all 21 pins' ends at once, blind: the cones catch an end that is a little off and steer it
   in. They leave a thinner wall at the face, to the pin ring's bore and to the windows
   (`test_the_lead_ins_leave_a_wall_at_the_face`), and shorten each pin's grip in the full-size hole by their depth.
+  The output pins' holes take the same cone (`pin_lead_ins`) at both ends, the motor plate's and the hub's (§1.3): the
+  plate goes on over the pins' ends blind, and the two ends mirror.
 - **The motor plate is the carrier's motor end** (`parts/cycloidal/cycloidal_motor_plate.py`, its `LEGACY_CONFIG`
   build the port's plate): the plate - the motor's pilot, M3s and shaft bore as before - and a sleeve back over the
   motor: `sleeve_bore_dia` round the motor's and the MKS board's corners (61 across them), `sleeve_od`, and the hub's
   70.55 grip over the last `out_width`, where the motor-end 6814 presses on after sliding over the rest; it runs
-  through the fork's motor-side leg to its outer face (`sleeve_end`), bolted to it - nothing else holds the carrier's
-  motor end from turning (the output pins stop short of the plate, the plate turns in its 6814): three radial M4s
+  through the fork's motor-side leg to its outer face (`sleeve_end`), bolted to it - it and the output pins, which run
+  on from the hub into the plate (§1.3) and so tie the plate's angle to the hub's, hold the carrier's motor end from
+  turning: three radial M4s
   through the leg's ring in its middle (`sleeve_bolt_z`) into nuts pressed into lugs on the sleeve's bore at the
   motor's flats (`sleeve_bolt_deg`: up and both sides, none down where the leg's post stands; the lugs' inner ends 45°
   so the plate prints without support). The leg's holes are slotted along the axis (`ForkParams.sleeve_slot_len`):
@@ -279,13 +283,15 @@ face, the one the part prints on; nothing bolts the arm to the shell's end.
 - **Assembly, from the motor end:** the hub's nuts into its flange; the hub-end 6814 into the body's seat from inside
   (`j1_link` face down), the hub pressed into it grip first to its flange; the gear stack (output pins in the hub,
   discs - each 6003 pressed into its disc from the inner face onto the lip first -, shaft, the ring pins into the
-  body's pin ring) as before; the motor plate with its 6814 on its seat, the
-  shell ring over the sleeve and onto the ring pins' ends (its bolt holes over the body's lines its pin holes up over
+  body's pin ring) as before; the motor plate with its 6814 on its seat, down over the output pins' ends (the lead-ins
+  at their holes catch them), the shell ring over the sleeve and onto the ring pins' ends (its bolt holes over the body's lines its pin holes up over
   the pins; two opposite bolts started first), drawn down evenly onto the body by the M4 × 70s into its nuts; the
   sleeve's three nuts pressed into its lugs, then the motor into the sleeve; the whole lowered into the fork, the hub
   bolted to its leg, the motor leg (`j1_motor_leg`) slid on over the motor and its board and bolted to the yoke's disc,
-  then - the motor turned until the sleeve's holes show through the ring's - to the sleeve with the three M4 × 20s,
-  snug, sides before top (they pull the sleeve across the ring's 0.2 a side).
+  then to the sleeve with the three M4 × 20s, snug, sides before top (they pull the sleeve across the ring's 0.2 a
+  side) - the output pins hold the plate at the hub's angle, so the sleeve's holes come round with the hub's; the
+  screws' clearance (`M4_CLEAR` in the ring's slots and the lugs, the hub's bolts in the hub leg's) takes up what the
+  prints are off.
 
 ## 6. PETG print tolerances (`cfg.tolerances`)
 

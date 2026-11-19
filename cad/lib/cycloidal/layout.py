@@ -14,7 +14,7 @@ from lib.geom import hex_circumdiameter  # the arm-wide helper, re-exported for 
 
 __all__ = [
     "PILLAR_OVERSHOOT", "arm_mount_angles", "arm_mount_points", "arm_zone", "compute_housing_bolt_angles", "hex_circumdiameter",
-    "housing_bolt_hole_dia", "housing_bolt_points", "hub_flange", "hub_height", "motor_bolt_counterbore_depth", "motor_bolt_points", "output_pin_points",
+    "housing_bolt_hole_dia", "housing_bolt_points", "hub_flange", "hub_height", "motor_bolt_counterbore_depth", "motor_bolt_points", "output_pin_ends", "output_pin_points",
     "pillar_corners", "pillar_half_width", "ring_pin_engagement", "ring_pin_hole_depth", "ring_pin_hole_dia", "ring_pin_points",
     "shell_ends", "sleeve_end", "stack_positions",
 ]
@@ -148,6 +148,19 @@ def arm_zone(cfg: DriveConfig = DEFAULT_CONFIG) -> tuple[float, float]:
     return s.z_motor_plate_inner, s.z_output_bearings - hub_flange(cfg)
 
 
+def output_pin_ends(cfg: DriveConfig = DEFAULT_CONFIG) -> tuple[float, float]:
+    """z of the output pins' two ends, the bottoms of their blind holes. The port's hang from the hub's hole ceilings
+    (OutputHubParams.output_hub_pin_ceiling below z_bearing_top) and stop short of the motor plate (11 .. 56): its hub
+    turned against the plate. The turning shell holds both, so its pins run from one to the other -
+    ShellParams.output_pin_plate_depth into the motor plate, the rest of each pin in the hub (4 .. 49)."""
+    d, s = cfg.disc, cfg.stack_up
+    if cfg.shell is None:
+        top = s.z_bearing_top - cfg.output_hub.output_hub_pin_ceiling
+        return top - d.output_pin_length, top
+    bottom = s.z_motor_plate_inner - cfg.shell.output_pin_plate_depth
+    return bottom, bottom + d.output_pin_length
+
+
 def sleeve_end(cfg: DriveConfig = DEFAULT_CONFIG) -> float:
     """z of the motor plate's sleeve's end: through the yoke's motor-side leg, flush with its outer face (-26)."""
     sh = cfg.shell
@@ -191,7 +204,7 @@ def stack_positions(cfg: DriveConfig = DEFAULT_CONFIG) -> dict[str, float]:
         "z_hub": z_hub,
         "z_625": z_hub,
         "z_ring_pins": s.z_motor_plate_inner - ring_pin_engagement(cfg),             # 5.5 (port), 4
-        "z_output_pins": s.z_bearing_top - cfg.output_hub.output_hub_pin_ceiling - cfg.disc.output_pin_length,   # 11 (port), 12
+        "z_output_pins": output_pin_ends(cfg)[0],                                   # 11 (port), 4
         "z_support_pin": s.z_disc2 + cfg.disc.thickness - cfg.shaft.support_pin_hole_depth,    # 24
         "z_motor_bolts": s.z_motor_plate_inner - m.motor_bolt_total_length - m.motor_bolt_recess,   # -5
         "z_housing_bolts": bolts_z,

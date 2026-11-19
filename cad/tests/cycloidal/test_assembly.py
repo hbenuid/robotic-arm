@@ -21,10 +21,13 @@ from assemblies import cycloidal_drive
 from lib import placements as P
 from lib import reference as R
 from lib.cycloidal import (
+    LEGACY_CONFIG,
+    arm_zone,
     compute_housing_bolt_angles,
     hex_circumdiameter,
     hub_flange,
     hub_height,
+    output_pin_ends,
     ring_pin_engagement,
     shell_ends,
     sleeve_end,
@@ -184,10 +187,16 @@ class TestRadialClearances:
         d = CFG.disc
         assert d.output_pin_circle_dia / 2.0 + d.output_pin_dia / 2.0 < CFG.bearings.out_bore / 2.0
 
-    def test_output_pin_bottom_clears_motor_plate(self):
-        """Pin bottom (z 11) stays above the motor plate inner face (z 9)."""
-        S = stack_positions(CFG)
-        assert S["z_output_pins"] > CFG.stack_up.z_motor_plate_inner
+    def test_output_pins_run_from_the_hub_into_the_motor_plate(self):
+        """The turning shell holds the hub and the motor plate, so the pins run from one to the other: 5 in the plate
+        (ShellParams.output_pin_plate_depth, the ring pins' 5 in each pin ring), the 30 between the plates, 10 in the
+        hub. The port's turning hub stopped them short of the plate (z 11 past its face at 9)."""
+        lo, hi = output_pin_ends(CFG)
+        plate, flange = arm_zone(CFG)                                              # the plates' inner faces, 9 / 39
+        assert stack_positions(CFG)["z_output_pins"] == lo and hi - lo == CFG.disc.output_pin_length
+        assert (plate - lo, flange - plate, hi - flange) == pytest.approx((5.0, 30.0, 10.0))
+        assert CFG.shell.output_pin_plate_depth == ring_pin_engagement(CFG)
+        assert output_pin_ends(LEGACY_CONFIG)[0] > LEGACY_CONFIG.stack_up.z_motor_plate_inner
 
     def test_output_pin_engages_disc1(self):
         """The pins reach through disc 1 to its outer face - its bearing lip (DiscParams.bearing_lip) included."""
@@ -344,7 +353,7 @@ class TestModuleLocks:
             "cycloidal_disc_1": (stack["x_disc1"], 0, stack["z_disc1"]), "bearing_6003:1": (stack["x_disc1"], 0, stack["z_disc1"]),
             "cycloidal_disc_2": (stack["x_disc2"], 0, stack["z_disc2"]), "bearing_6003:2": (stack["x_disc2"], 0, stack["z_disc2"]),
             "bearing_6814:1": (0, 0, 48), "bearing_6814:2": (0, 0, -10),
-            "cycloidal_eccentric_shaft": (0, 0, 0), "cycloidal_ring_pins": (0, 0, 4), "cycloidal_output_pins": (0, 0, 12),
+            "cycloidal_eccentric_shaft": (0, 0, 0), "cycloidal_ring_pins": (0, 0, 4), "cycloidal_output_pins": (0, 0, 4),
             "nema17_48mm": (0, 0, 0), "mks_servo42d": (0, 0, stack["z_mks_board"]), "cycloidal_motor_bolts": (0, 0, -5), "cycloidal_motor_plate": (0, 0, 0),
             "cycloidal_shell_ring": (0, 0, 0),
             "cycloidal_output_hub": (0, 0, 39), "cycloidal_shaft_support_pin": (0, 0, 24),
