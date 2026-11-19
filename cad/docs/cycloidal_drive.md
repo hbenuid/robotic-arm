@@ -116,7 +116,7 @@ sit well inside the 70 mm inner-race bore.
 | Housing bolts | M4 × 70 SHCS (ISO 4762, `bolt_length`), Ø7 × 4 head; counterbored flush in the shell ring's end, through the shell end to end past nuts sunk just inside its body's hub end (the port's M4 × 55 ended in the ring gear body) | 6 | `cycloidal_housing_bolts` |
 | Housing nuts | M4 hex, 7.0 AF × 3.2 (pocket 7.2 AF), in the body's pockets from its hub end (`lib/cycloidal/housing.py build_shell_body`) | 6 | `cycloidal_housing_nuts` |
 | Motor bolts | M3 × 10 SHCS, Ø5.3 × 3 head (13 total): 6 through the plate + 4 engagement, head flush in the 3 mm inner-face pocket (`motor_bolt_counterbore_depth`) - the model places them `motor_bolt_recess` deeper (`stack_positions` `z_motor_bolts`, the drive repo's stack-up: heads 1 into the pocket's floor, tips 0.5 past the motor's 4.5 tapped holes; `docs/open_issues.md`) | 4 | `cycloidal_motor_bolts` |
-| Hub bolts + nuts | 4 × M4 × 30 (`lib/yaw_coupler/params.py ForkParams.hub_screw_len`) from the `j1_coupler` fork's hub-side leg into captive M4 nuts in the hub's flange (its arm-mount pattern, `ShellParams.hub_nut_depth`: the screws' ends 1 mm past the nuts, inside their pockets) — install the nuts before pressing the hub through its 6814 | 4 + 4 | the arm's `fork_hub_screws` + `fork_hub_nuts`, mounted on the fork (`lib/mounts.py FORK_MOUNTS`) |
+| Hub bolts + nuts | 4 × M4 × 30 (`lib/yaw_coupler/params.py ForkParams.hub_screw_len`) from the `j1_coupler` fork's hub-side leg into captive M4 nuts in the hub's flange (its arm-mount pattern, `ShellParams.hub_nut_depth`: the screws' ends 0.5 mm past the nuts, inside their pockets) — install the nuts before pressing the hub through its 6814 | 4 + 4 | the arm's `fork_hub_screws` + `fork_hub_nuts`, mounted on the fork (`lib/mounts.py FORK_MOUNTS`) |
 | Sleeve bolts + nuts | 3 × M4 × 16 (`ForkParams.sleeve_screw_len`) radially through the fork's motor leg (`j1_motor_leg`), heads flush in round counterbores in its ring's flats (`ForkParams.sleeve_counterbore_dia`, `sleeve_head_seat`), into M4 nuts pressed into lugs on the motor plate's sleeve (`ShellParams.sleeve_bolt_deg`: the motor's flats, up and both sides; `sleeve_nut_r`: the screws' ends flush with the nuts) — they and the output pins (§1.3) hold the carrier's motor end from turning; press the nuts in before the motor goes into the sleeve | 3 + 3 | the arm's `fork_sleeve_screws` + `fork_sleeve_nuts`, mounted on the motor leg (`lib/mounts.py FORK_MOUNTS`) |
 
 The purchased parts are modelled as the drive repo's simplified solids (annuli, cylinders, hex
@@ -148,9 +148,9 @@ at 9 and 39 (`arm_zone`, where the shell's body starts on the shell ring). Deriv
 (9..48, to the hub-end seat), `ring_gear_body_height` 52 (the body, 9..61). The discs' bearing lips (§1.2) stand
 `bearing_lip` into the input clearance and its mirror past disc 2, 3 short of the motor plate and of the hub's flange;
 the stack, the seats and the shaft's lobes do not move.
-**The ends:** the held hub is 23 tall (flange 9 + grip 10 + lip 3 + `proud_above_housing` 1 = `ShellParams.end_plate_gap`)
-at z 39, its face at **z = 62** (`CYCLOIDAL_HUB_FACE_Z`) on the `j1_coupler` fork's hub-side leg; the motor plate's
-sleeve ends at **z = −26** (`sleeve_end`, `CYCLOIDAL_SLEEVE_END_Z`) on the motor-side leg's outer face. **The housing
+**The ends:** the held hub is 23.5 tall (flange 9 + grip 10 + lip 3 + `proud_above_housing` 1.5 = `ShellParams.end_plate_gap`)
+at z 39, its face at **z = 62.5** (`CYCLOIDAL_HUB_FACE_Z`) on the `j1_coupler` fork's hub-side leg; the motor plate's
+sleeve ends at **z = −26.5** (`sleeve_end`, `CYCLOIDAL_SLEEVE_END_Z`) on the motor-side leg's outer face. **The housing
 bolts run end to end:** M4 × 70 from the shell ring's counterbores, `bolt_counterbore_depth` the head's height (heads'
 tops flush with its end, −13), to their ends flush with the hub end (61) - the shell's 74 is the head's 4 + 70, so
 neither end stands proud toward the fork's legs, `end_plate_gap` off -, past their nuts, whose outer faces sit
@@ -283,7 +283,8 @@ face, the one the part prints on; nothing bolts the arm to the shell's end.
   its inner race (`test_the_shell_is_held_both_ways_along_the_axis`).
 - **The fork's clearances:** the shell's pillars sweep r 64.6, 2.68 over the yoke's ring (lowered `RING_DROP` for
   them; `tests/yaw_coupler/test_j1_coupler.py`); the shoulder's whole range keeps the upper arm - `j1_link`, the
-  elbow motor, the shell - its 1 mm running gap off the fork's two legs (`tests/test_sweeps.py`).
+  elbow motor, the shell - its running gap (`ShellParams.end_plate_gap`) off the fork's two legs and 1 mm off every
+  other part of the shoulder (`tests/test_sweeps.py`).
 - **Assembly, from the motor end:** the hub's nuts into its flange; the hub-end 6814 into the body's seat from inside
   (`j1_link` face down), the hub pressed into it grip first to its flange; the gear stack (output pins in the hub,
   discs - each 6003 pressed into its disc from the inner face onto the lip first -, shaft, the ring pins into the
@@ -364,7 +365,7 @@ shell's body), the `j1_coupler` fork and its motor leg (`j1_motor_leg`) - contac
   hub's face at 62, the sleeve's end at −26. In the arm the axis is horizontal (module +Z → world −N, N = the pitch
   axes' direction, `robot/frames.py N`; module +Y → world up). The `j1_coupler` **fork**
   (`lib/yaw_coupler/params.py ForkParams`, DEFAULT) holds the drive on its own axis - the SolidWorks pose, 0.21 off
-  the SolidWorks yoke's cradle axis (`YokeParams.axis_y`) - with two legs (`ShellParams.yoke_leg`) 1 mm past the
+  the SolidWorks yoke's cradle axis (`YokeParams.axis_y`) - with two legs (`ShellParams.yoke_leg`) `ShellParams.end_plate_gap` past the
   shell's ends, mirror images about the middle of the discs, which sits on the base_yaw axis (`ForkParams.face_x`;
   the capture had it 7.5 off, toward the motor - the drive and all it carries moved along N,
   `lib/placements.py SHIFTS`), the yoke's disc faceted like the base under it (`DiscParams.sides`), the two legs alike -

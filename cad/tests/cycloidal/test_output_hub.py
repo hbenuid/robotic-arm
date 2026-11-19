@@ -28,14 +28,14 @@ class TestOutputHubDimensions:
     def test_hub_height_matches_bearing_stack(self):
         """The turning shell's hub carries one 6814 (the other is on the motor plate's sleeve), past its flange."""
         assert CFG.stack_up.output_bearing_total == CFG.bearings.out_width
-        assert hub_height(CFG) == hub_flange(CFG) + CFG.bearings.out_width + CFG.shell.end_lip + CFG.output_hub.proud_above_housing == 23.0
+        assert hub_height(CFG) == hub_flange(CFG) + CFG.bearings.out_width + CFG.shell.end_lip + CFG.output_hub.proud_above_housing == 23.5
 
     def test_proud_extension_reaches_the_yoke(self):
-        """The turning shell's hub runs on past the shell (z 61) onto the yoke's hub-side leg (z 62); the port's sat
+        """The turning shell's hub runs on past the shell (z 61) onto the yoke's hub-side leg (z 62.5); the port's sat
         5 mm proud (spec 5.3)."""
         hub = CFG.output_hub
-        assert hub.proud_above_housing == CFG.shell.end_plate_gap == 1.0
-        assert stack_positions(CFG)["z_hub"] + hub_height(CFG) == pytest.approx(62.0)
+        assert hub.proud_above_housing == CFG.shell.end_plate_gap == 1.5
+        assert stack_positions(CFG)["z_hub"] + hub_height(CFG) == pytest.approx(62.5)
 
     def test_shaft_bore_clears_spine(self):
         clearance = CFG.output_hub.shaft_clearance_bore - CFG.shaft.spine_od

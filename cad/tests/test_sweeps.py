@@ -181,15 +181,21 @@ def _in_table(parts) -> bool:
 
 def test_the_shoulder_range_keeps_the_upper_arm_off_the_fork_and_the_base():
     """The drive's turning shell and its held parts are coaxial (its own tests): the shoulder link's parts here are the
-    fork, its motor leg and what rides on them outside the drive; every 15 degrees and both limits. The nearest are the
-    fork's legs, their running gap (ShellParams.end_plate_gap) off the shell's ends at every angle."""
+    fork, its motor leg and what rides on them outside the drive; every 15 degrees and both limits. Every part keeps
+    CLEAR off (the shoulder home magnet passes its KY-003 1.44 off); the fork's two legs, the nearest, keep their running
+    gap (ShellParams.end_plate_gap) off the shell's ends at every angle."""
     fixed = [*_link_parts("base_link"), *(p for p in _link_parts("shoulder_link") if not p[0].startswith("cycloidal_drive"))]
+    legs = [p for p in fixed if p[0].startswith(("j1_coupler#", "j1_motor_leg#"))]
+    assert len(legs) == 2
     movers = _link_parts("upper_arm_link")
-    gap = DRIVE.shell.end_plate_gap - 0.01
+    clear, gap = CLEAR - 0.01, DRIVE.shell.end_plate_gap - 0.01
     lo, hi = PARAMS.SHOULDER_PITCH_LIMITS_DEG
     for shoulder in sorted({lo, hi, *range(int(lo), int(hi) + 1, 15)}):
-        d, ml, fl = _closest(_posed(movers, ("shoulder_pitch", shoulder)), fixed, gap)
-        assert d >= gap, f"shoulder {shoulder}: {ml} {d:.2f} mm from {fl}"
+        posed = _posed(movers, ("shoulder_pitch", shoulder))
+        d, ml, fl = _closest(posed, fixed, clear)
+        assert d >= clear, f"shoulder {shoulder}: {ml} {d:.2f} mm from {fl}"
+        d, ml, fl = _closest(posed, legs, gap)
+        assert d >= gap, f"shoulder {shoulder}: {ml} {d:.2f} mm from the fork's {fl}"
 
 
 def test_the_shoulder_limit_keeps_the_forearm_off_the_base_and_the_shoulder():

@@ -311,14 +311,15 @@ class ShellParams:
     #                                    (layout.py stack_positions z_housing_nuts): the bolts' ends past them, flush with
     #                                    the hub end (HousingParams.bolt_length, the turning shell's)
     hub_nut_depth: float = 4.7         # [DESIGN] the hub's 4 captive nuts' pockets from its flange's inner face: the yoke's
-    #                                    M4 x 30 (lib/yaw_coupler/params.py ForkParams.hub_screw_len) end 1.0 past the nuts,
-    #                                    0.5 inside the pockets
+    #                                    M4 x 30 (lib/yaw_coupler/params.py ForkParams.hub_screw_len) end 0.5 past the nuts,
+    #                                    1.0 inside the pockets
     yoke_leg: float = 12.0             # [DESIGN] the j1_coupler yoke's two legs (lib/yaw_coupler/params.py ForkParams), alike:
     #                                    the motor leg's ring round its radial M4s' round counterbores
     #                                    (ForkParams.sleeve_counterbore_dia), 2.0 of it either side - room for the outline's
     #                                    EDGE_CHAMFER on the seat flats and 0.5 of flat beside it ...
-    end_plate_gap: float = 1.0         # [DESIGN] ... each this far off an end of the shell; the hub's face and the sleeve's
-    #                                    end on their outer faces
+    end_plate_gap: float = 1.5         # [DESIGN] ... each this far off an end of the shell (the running gap between the held
+    #                                    fork and the turning shell, more than 1 for print warp and bearing play); the
+    #                                    hub's face and the sleeve's end on their outer faces
     output_pin_plate_depth: float = 5.0   # [DESIGN] the output pins stand this far into the motor plate (its blind holes
     #                                    from the inner face), the rest of each pin in the hub (layout.py
     #                                    output_pin_ends), the ring pins' lead-in at every mouth in both: 5 + the 30 between the plates + 10 is the

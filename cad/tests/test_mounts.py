@@ -517,7 +517,7 @@ def test_pulley_bolts_clamp_their_joints(joint):
 def test_the_fork_bolts_reach_their_nuts():
     """The arithmetic of the fork's three sets (lib/mounts.py FORK_MOUNTS), in the drive's frame: the hub's 4 screws on
     its arm-mount pattern, their heads' bearing faces HEAD_SEAT inside the hub leg's outer face, pointing down the drive's
-    axis into the hub - their tips 1.0 past the captive nuts' far faces, 0.5 inside the pockets; the foot's 2 at
+    axis into the hub - their tips 0.5 past the captive nuts' far faces, 1.0 inside the pockets; the foot's 2 at
     motor_head_seat out from the motor leg's outer face (the sleeve's end), pointing up the axis into the disc - 2.0 past
     their nuts; the sleeve's 3 in the ring's middle (sleeve_bolt_z), pointing in from the floors of the ring's
     counterbores (fork_sleeve_seat_r) at sleeve_bolt_deg - their tips flush with the nuts in the lugs. Each set rides with
@@ -534,8 +534,8 @@ def test_the_fork_bolts_reach_their_nuts():
     assert mounts.BY_KEY["fork_hub_nuts#1"].frame == ((0.0, 0.0, fork_hub_nut_z(YAW_COUPLER)), (0.0, 0.0, 0.0))
     assert mounts.BY_KEY["fork_foot_nuts#1"].frame == ((0.0, 0.0, fork_foot_nut_z(YAW_COUPLER)), (0.0, 0.0, 0.0))
     assert mounts.BY_KEY["fork_sleeve_nuts#1"].frame == ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0))
-    assert f.hub_screw_len - (fork_hub_nut_z(YAW_COUPLER) + nut.h) == pytest.approx(1.0)           # 1.0 past the nuts ...
-    assert sh.hub_nut_depth - nut.h - 1.0 == pytest.approx(0.5)                                     # ... 0.5 inside the pockets
+    assert f.hub_screw_len - (fork_hub_nut_z(YAW_COUPLER) + nut.h) == pytest.approx(0.5)           # 0.5 past the nuts ...
+    assert sh.hub_nut_depth - nut.h - 0.5 == pytest.approx(1.0)                                     # ... 1.0 inside the pockets
     assert f.motor_screw_len - (fork_foot_nut_z(YAW_COUPLER) + nut.h) == pytest.approx(2.0)         # 2.0 past them
     assert fork_sleeve_seat_r(YAW_COUPLER) - f.sleeve_screw_len == pytest.approx(fork_sleeve_nut_r(YAW_COUPLER) - nut.h)  # flush
     assert DEFAULT_CONFIG.housing.bolt_nut_thickness == nut.h
@@ -556,7 +556,7 @@ def test_the_fork_bolts_reach_their_nuts():
     assert tuple(z) == pytest.approx((0.0, 0.0, -1.0), abs=1e-9)
     assert rel.position.Z == pytest.approx(S["hub_top"] + sh.yoke_leg - HEAD_SEAT)
     assert xy(fork_hub_screw_points(), rel) == xy(arm_mount_points())
-    assert rel.position.Z - f.hub_screw_len == pytest.approx(S["z_hub"] + sh.hub_nut_depth - nut.h - 1.0)   # past the nut
+    assert rel.position.Z - f.hub_screw_len == pytest.approx(S["z_hub"] + sh.hub_nut_depth - nut.h - 0.5)   # past the nut
     rel, z, _ = in_drive("fork_foot_screws#1")                      # up the axis, motor_bolt_z either side, motor_bolt_y high
     assert tuple(z) == pytest.approx((0.0, 0.0, 1.0), abs=1e-9)
     assert rel.position.Z == pytest.approx(sleeve_end(DEFAULT_CONFIG) - f.motor_head_seat)
