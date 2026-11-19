@@ -184,9 +184,10 @@ housing bolts at −13, nuts at 57.3; shaft, motor, motor plate and shell ring a
 circle (pillars `pillar_inner_w` 18 at the bore, `pillar_outer_w` 10 at the OD, one per bolt -
 `lib/cycloidal/layout.py pillar_corners`) from end to end; the shell ring seats on the body's pillar faces, no
 continuous rim. One shared cutter (`lib/cycloidal/housing.py reveal_window_cutter`) is subtracted from every housing
-base solid. The turning shell's body keeps `ShellParams.arm_windows` (2) of its windows solid - the two either side of
-its first pillar, where the upper arm rises off it (`arm_root`, §10); the other four open on the discs and the ring
-pins; the shell ring's six are recesses in its wall, its pin ring closed inside them.
+base solid. The turning shell's body keeps `ShellParams.arm_windows` (2) of its windows solid at its hub end - the two
+either side of its first pillar, where the upper arm rises off it (`arm_root`, §10), `arm_root_depth` deep: the arm's
+slab, level with its top; above it they open on the discs like the other four, which are open end to end on the discs
+and the ring pins; the shell ring's six are recesses in its wall, its pin ring closed inside them.
 
 **Bolt count** (`bolt_count`) — a departure from the port (the others: the gear size and the pillar tips, §5.4, and
 the turning shell, §5.5): `DEFAULT_CONFIG` builds 6 bolts where the port (`LEGACY_CONFIG`) had 8, at 60°, the first
@@ -365,8 +366,8 @@ shell's body), the `j1_coupler` fork and its motor leg (`j1_motor_leg`) - contac
   the shell turns between them, over the yoke's lowered ring. The SolidWorks yoke (`LEGACY`,
   `lib/yaw_coupler/params.py`) cradled the port's housing on its pillars instead. **The upper arm rises off the
   shell:** `j1_link` (parametric, `lib/upper_arm/`, `ArmParams`: its slab, the elbow motor's seat in it and the elbow
-  belt's path) is printed with the shell's body, its arm rising out of the body's two solid windows, the four others
-  open on the discs; slid along N until its underside is flush with the shell's hub end (`arm_slide`: the part prints
+  belt's path) is printed with the shell's body, its arm rising out of the body's two windows, solid as deep as the
+  slab (`ShellParams.arm_root_depth`) and open above it like the four others; slid along N until its underside is flush with the shell's hub end (`arm_slide`: the part prints
   on that face, no support under the arm), and everything past the elbow with it (`lib/placements.py SHIFTS`): the end
   effector is off the base_yaw axis (`docs/open_issues.md`). The drive's frame in `j1_link`'s is the capture's
   (`tests/upper_arm/test_j1_link.py`); `TestPoseInTheArm` checks the shell's body in `j1_link` and the hub and the
