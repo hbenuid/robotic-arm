@@ -66,7 +66,7 @@ class GearParams:
 class DiscParams:
     """Cycloidal disc dimensions - spec section 1.2 & 1.3."""
 
-    thickness: float = 10.0            # matches the 6003 bearing width
+    thickness: float = 10.0            # matches the 6003 bearing width: the bearing's seat, the stack's disc_thickness
     center_bore_dia: float = 35.10     # 35 mm bearing OD + 0.10 mm clearance
     inter_disc_spacer: float = 2.0
     output_pin_count: int = 4
@@ -75,6 +75,16 @@ class DiscParams:
     output_pin_length: float = 45.0
     output_pin_hole_dia: float = 7.4   # 4 + 2*1.5 ecc + 0.4 clearance; 0.2 mm radial slack ~ +/-0.38 deg backlash
     lobe_chamfer: float = 1.0          # 45 deg chamfer on the outer epitrochoid edges (lead-in, elephant foot)
+    bearing_lip: float = 0.0           # [DESIGN] the disc's lip over its 6003's outer race: the disc this much thicker on
+    #                                    its outer face (lobes too), the bearing's seat blind from the inner face; 0 = the
+    #                                    port's through-bore
+    bearing_lip_dia: float = 32.0      # [DESIGN] the lip's hole: over the outer race only - past its seal
+    #                                    (BearingParams.ecc_seal_dia), inside the largest shoulder (ecc_shoulder_max_dia)
+
+    @property
+    def total_thickness(self) -> float:
+        """The printed disc end to end: the bearing's seat + the lip (11; the port's 10)."""
+        return self.thickness + self.bearing_lip
 
 
 @dataclass(frozen=True)
@@ -105,6 +115,8 @@ class BearingParams:
     ecc_bore: float = 17.0     # 6003-2RS eccentric bearings (x2)
     ecc_od: float = 35.0
     ecc_width: float = 10.0
+    ecc_seal_dia: float = 31.2           # [DATASHEET] the 6003-2RS outer ring's seal recess (SKF D2): the seal inside it
+    ecc_shoulder_max_dia: float = 33.0   # [DATASHEET] the largest bore of a shoulder against its outer ring (SKF Da max)
     out_bore: float = 70.0     # 6814-2RS output bearings (x2)
     out_od: float = 90.0
     out_width: float = 10.0
@@ -351,7 +363,7 @@ def compute_housing_bolt_angles(cfg: DriveConfig) -> list[float]:
 # The port: the CadQuery drive exactly (the designed parts' REFERENCE_BUILD - tests/cycloidal/test_port.py).
 LEGACY_CONFIG = DriveConfig()
 
-# What the parts build - six departures from the port:
+# What the parts build - seven departures from the port:
 #  * the housing on 6 bolts, not 8 - 6 pillars at 60 degrees, the first at ARM_DEG: on the centreline of the upper arm,
 #    which rises off the turning shell between the two windows either side of it (ShellParams.arm_windows);
 #  * a smaller gear: the ring-pin circle and everything outside it (the bore, the bolt circle) RING_INSET further in
@@ -371,6 +383,10 @@ LEGACY_CONFIG = DriveConfig()
 #    both ends; the ring pins span both pin rings; the housing bolts run end to end; the hub reaches the yoke's leg;
 #  * the ring pins' holes' lead-in (HousingParams.ring_pin_entry_chamfer_*): a 45 deg cone at each mouth, in both pin
 #    rings (the ends mirror), which catches the pins' ends - the shell ring goes on over all 21 at once;
+#  * the discs capture their 6003s: each disc DiscParams.bearing_lip thicker on its outer face - disc 1's toward the
+#    motor plate, disc 2's toward the hub, the ends' mirror kept -, a lip there over the bearing's outer race, its seat
+#    blind from the inner face (the bearing pressed in from there onto the lip; in the drive the shaft's bridge flange
+#    stops it that way). The seats, the stack and the shaft do not move: each lip stands in its clearance to the plate;
 #  * the fits measured on the printed parts ([MEASURE], each a test print at 0.20 layers): the output hub's grip in its
 #    6814 (output_hub.od), the eccentric shaft's lobes in the 6003s and its D-bore on the motor's shaft (shaft,
 #    tolerances.d_bore_clearance_add). The kit motors' modelled shaft keeps the port's flat (MotorParams.shaft_dcut_flat,
@@ -403,6 +419,7 @@ DEFAULT_CONFIG = replace(
                  ring_pin_length=40.0),   # the turning shell's: 5 into each pin ring past the 30 between the plates
     housing=replace(_HOUSING, od=_HOUSING.bolt_circle_dia + _HOUSING.bolt_nut_pocket_af + 2 * LUG_WALL),       # 129.2
     stack_up=_STACK,
+    disc=replace(LEGACY_CONFIG.disc, bearing_lip=1.0),   # the input clearance's 4 -> 3 left to the motor plate / the hub
     output_hub=replace(LEGACY_CONFIG.output_hub, proud_above_housing=_SHELL.end_plate_gap,   # the hub's face on the yoke's leg
                        od=70.55),   # [MEASURE] the 6814's 70 bore + 0.55: a firm press at 0.20 (a ring test; the port's
     #                                 70.3 was a little loose on the print) - the motor plate's sleeve end reads it too
