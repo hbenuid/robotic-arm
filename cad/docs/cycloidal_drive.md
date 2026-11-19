@@ -255,6 +255,10 @@ face, the one the part prints on; nothing bolts the arm to the shell's end.
   plate thick, its face cut back `plate_relief_depth` from `plate_relief_dia` - inside the inner race's edge
   (`out_inner_ring_od`) - over the seal and the turning outer race - and the
   stack's 4 mm clearance to its disc. The ring pins stand in both pin rings (`ring_pin_engagement` 5 into each).
+- **The held plates' running gap** to the turning shell is one value both ways: round each plate's edge (`plate_dia`
+  inside `ring_bore_dia`, the edge over the 6814's outer race) and under its rim (`plate_relief_depth`, over the outer
+  race and the shell's seat) - the plate's closest point to the turning parts (`tests/cycloidal/test_assembly.py`,
+  `test_shell_body.py`).
 - **The ring pins' lead-ins** (`HousingParams.ring_pin_entry_chamfer_depth` / `_add`, `lib/cycloidal/housing.py
   ring_pin_lead_ins`): a 45° cone at the mouth of every ring pin hole, in both pin rings (the ends mirror). The shell
   ring goes on last, over all 21 pins' ends at once, blind: the cones catch an end that is a little off and steer it

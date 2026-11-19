@@ -37,7 +37,7 @@ from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii
 from robot import frames as F
 from tests import built
 from tests.cycloidal.helpers import CFG
-from tests.helpers import interference, part_colours
+from tests.helpers import distance, interference, part_colours
 
 DRIVE_KEY = "cycloidal_drive#1"
 
@@ -149,11 +149,11 @@ class TestTurningShell:
         assert CFG.shell.sleeve_od == CFG.bearings.out_bore < CFG.output_hub.od   # slides on, presses on the seat
 
     def test_the_held_plate_sits_inside_the_shell_ring(self):
-        """1 a side between the held plate and the turning ring; the ring-pin holes 1.9 outside the ring's bore."""
+        """1.5 a side between the held plate and the turning ring; the ring-pin holes 1.9 outside the ring's bore."""
         from lib.cycloidal import ring_pin_hole_dia
 
         sh, g = CFG.shell, CFG.gear
-        assert (sh.ring_bore_dia - sh.plate_dia) / 2.0 == 1.0
+        assert (sh.ring_bore_dia - sh.plate_dia) / 2.0 == 1.5
         assert math.isclose(g.ring_pin_circle_radius - ring_pin_hole_dia(CFG) / 2.0 - sh.ring_bore_dia / 2.0, 1.9)
 
     def test_the_shell_is_held_both_ways_along_the_axis(self):
@@ -441,6 +441,15 @@ class TestModuleLocks:
         for a, b in clean:
             vol = interference(leaves[a], leaves[b])
             assert vol < 1.0, f"{a} x {b}: {vol:.2f} mm^3"
+
+    @pytest.mark.slow
+    def test_the_held_plate_runs_clear_of_the_shell_ring(self, drive):
+        """The held motor plate's closest point to the turning shell ring is ShellParams' running gap: round the plate's
+        edge, and under its rim, where its face is cut back as deep over the 6814's outer race and the ring's seat (the
+        hub's flange against the shell's body: tests/cycloidal/test_shell_body.py)."""
+        leaves = {c.label: c for c in drive.children}
+        gap = (CFG.shell.ring_bore_dia - CFG.shell.plate_dia) / 2.0
+        assert distance(leaves["cycloidal_motor_plate"], leaves["cycloidal_shell_ring"]) == pytest.approx(gap, abs=0.01)
 
 
 @pytest.mark.slow

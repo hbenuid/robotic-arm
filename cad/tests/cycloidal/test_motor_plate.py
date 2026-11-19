@@ -152,7 +152,7 @@ class TestCarrier:
     def test_numbers(self, carrier):
         sh, b = CFG.shell, CFG.bearings
         assert len(carrier.solids()) == 1 and carrier.is_valid
-        assert R.solid_volume(carrier) == pytest.approx(78517.532, abs=0.5)
+        assert R.solid_volume(carrier) == pytest.approx(75608.338, abs=0.5)
         bb = carrier.bounding_box()
         assert (bb.min.X, bb.min.Y, bb.min.Z) == pytest.approx((-sh.plate_dia / 2.0, -sh.plate_dia / 2.0, sleeve_end(CFG)), abs=1e-6)
         assert (bb.size.X, bb.size.Y, bb.size.Z) == pytest.approx((sh.plate_dia, sh.plate_dia, PLATE_T - sleeve_end(CFG)), abs=1e-6)
