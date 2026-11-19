@@ -43,7 +43,8 @@ The toolchain, its pins and upgrades: `docs/toolchain.md`.
    only the STEPs you meant to change may fail; a file can still come back with numerical-zero terms (≤ 1e-17, seen
    after a `lib/reference.py` edit): settle float noise with `./cadtool inspect diff <old.step> <new.step>` (the old
    one from the main checkout's `cad/`, or a copy kept before step 3).
-5. `./cadtool pytest -m "not slow"`, then `./cadtool pytest`; bump the locks the failures name (`tests/AGENTS.md`
+5. `./cadtool pytest -m "not slow"`, then `./cadtool pytest --full` (every file: a plain `./cadtool pytest` runs only
+   the files a change reaches, `tests/AGENTS.md` "Running the suite"); bump the locks the failures name (`tests/AGENTS.md`
    "Where the locks live"; a drive's `EXPECTED` (`assemblies/<drive>.py`) from
    `./cadtool python -c "from assemblies.<drive> import totals; print(totals(), totals('stator'))"`).
 6. A mounted part's geometry changed → `./cadtool python tools/reference/mount_placements.py` (its records carry

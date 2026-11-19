@@ -28,7 +28,7 @@ commit.
   worktree Claude Code refuses Bash commands it cannot confirm stay there (loops, heredocs, long `sed` / redirect
   chains on a path that contains `GitHub`): write a script and run it as one plain command, make edits with Edit.
 - **Every branch reaches `main` through a pull request** — several sessions work on branches at once and `main` moves
-  under them. When the branch is done (committed, the local suite green,
+  under them. When the branch is done (committed, the local suite green (`./cadtool pytest --full` in `cad/`),
   pushed), open one: `gh pr create --base main --head <branch> --title "<what it did, one line>" --body "<why, what
   changed, the checks run>"` (the commits stay the record: the body summarises, it does not replace them).
   `gh pr list` is then the list of branches waiting for `main`, each with its diff against today's `main` and a

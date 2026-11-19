@@ -1,17 +1,33 @@
 # tests/ — the pytest suite
 
 Loads when you work in `tests/`. Run it only through `./cadtool pytest` (`cad/AGENTS.md`); `-m "not slow"` is the fast
-lane. `-n <workers>` (pytest-xdist) spreads the suite over processes, a whole file per worker (`pyproject.toml` sets
-`--dist=loadfile`: a file's fixtures and `built.py` shapes are built once) — `-n 4` on a dev machine and in CI's slow
-lane (each worker holds its own shapes, ~1.5 GB at most; not `-n auto`, which starts one per core). A worker the
-system's out-of-memory killer takes does not fail the run, it hangs it (several sessions building at once can
-exhaust the RAM: pytest runs outside the cad server's memory cap): when a run overruns, look for the kill in the
-system log and re-run without `-n`. CI runs the slow
-lane as parallel jobs (`.github/workflows/ci.yml`'s matrix): `test_sweeps.py`, a few long sweeps, a test per worker
-(`--dist=worksteal`); parts that name the longest files outright, about one per worker; and two catch-alls - the rest
-of `tests/` itself, the rest of its subfolders - that leave out every file a part names, so a new test file always
-lands in one. A part running well past the others is rebalanced from its `--durations`.
-Every test module's docstring says what it checks.
+lane. Every test module's docstring says what it checks.
+
+## Running the suite (`tests/run.py`)
+- `./cadtool pytest` runs the test FILES a change reaches: a file passed once is run again only when something it
+  depends on changed since - its source, what it and its conftests import (read from the source, all the way down),
+  what `picking.py` recorded while it last ran (the parts and modules it took by name and their imports, the source
+  files it read as text, what a subprocess it started may run), and for every file all data and inputs (what is not a
+  `.py` of `cad/`) and the list of every path. Nothing reached: nothing runs. The record is `cad/.picked.json`, per
+  checkout; a file that fails, or does not run all its tests, leaves it. `--full` runs every file - **Recipe C step 5
+  and before a pull request** (`cad/AGENTS.md`); tests named on the command line (a path, a node, `-k`, `-m`) run as
+  named.
+- A cache shared across test files caches through `picking.cache`, never `functools.cache` (`test_picking.py`
+  checks): what its first computation took by name is recorded for every later caller - else a file taking a part
+  another file built would not depend on it. A test that starts a subprocess running project code other than through
+  `cadtool validate`, git or a `python -c` snippet whose imports `picking.subprocess_deps` can read makes its file
+  depend on every `.py` - add the command there if it runs none.
+- `-n <workers>` (pytest-xdist) spreads the files over processes, a whole file per worker (`pyproject.toml` sets
+  `--dist=loadfile`: a file's fixtures and `built.py` shapes are built once). Unless `-n` is given, the runner takes
+  the machine's performance cores and its free memory at `WORKER_MEMORY` a worker (each holds its own shapes, ~1.7 GB
+  at most) - a second session's suite, running already, leaves less free and gets fewer -, never more than the files
+  to run. A worker the system's out-of-memory killer takes does not fail the run, it hangs it (pytest runs outside the
+  cad server's memory cap): when a run overruns, look for the kill in the system log and re-run with `-n 1`.
+- On CI (`CI` set) the runner is plain pytest: what `ci.yml` names, nothing picked or recorded. CI runs the slow lane
+  as parallel jobs (`.github/workflows/ci.yml`'s matrix): `test_sweeps.py` and `test_robot.py`, a test per worker
+  (`--dist=worksteal`); parts that name the longest files or folders outright; and two catch-alls - the rest of
+  `tests/` itself, the rest of its subfolders - that leave out every file a part names, so a new test file always
+  lands in one. A part running well past the others is rebalanced from its `--durations`.
 
 ## Tests (`./cadtool pytest`)
 `tests/conftest.py` blocks top-level model builds (tests call bodies:
@@ -65,7 +81,8 @@ loading `build123d` / `OCP`; names the first offender; its assembly list is kept
 `helpers.py` (the geometry helpers every geometry test shares: `interference`, `is_inside`, `section_area`, …, and
 `part_colours`, an assembly's leaf colours),
 `totals.py` (what an occurrence contributes to the arm / link totals: its SolidWorks record, or its own build once
-converted — shared by `test_assembly.py` and `test_robot.py`), `built.py` (above),
+converted — shared by `test_assembly.py` and `test_robot.py`), `built.py` (above), `run.py` / `picking.py` (Running
+the suite, above; `test_picking.py` checks them: the shared caches, the subprocesses, the imports, the fingerprints),
 `tests/cycloidal/` (the drive: one module per part + housing / purchased / fitment / assembly / port,
 `from tests.cycloidal.helpers import CFG, …` for the drive's config, the
 `stack` fixture is `tests/cycloidal/conftest.py`; the shell ring and the shell's body (`test_shell_body.py`: the stack

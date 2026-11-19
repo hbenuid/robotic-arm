@@ -44,7 +44,9 @@ cadtool - cad + this uv project (paths relative to cad/)
                                                     (+ the skill's requirements.txt, unlocked, in uv's cache)
   ./cadtool cad ...                                 any `cad` subcommand (`./cadtool cad --help`) but setup, update, uninstall, doctor, run
                                                     (printability: ./cadtool cad step dfm print/<name>.step --process printing)
-  ./cadtool pytest [-m "not slow"] [-n 4]           test suite (-n: worker processes, a whole test file each)
+  ./cadtool pytest [--full] [pytest args]           test suite: the test files a change reaches since they last passed, on
+                                                    workers for the machine (tests/run.py); --full every file (Recipe C,
+                                                    before a PR); named tests (a path, -k, -m) run as named
   ./cadtool lint [--fix] [path...]                  ruff check (lint only, no formatter; rules: pyproject.toml [tool.ruff])
   ./cadtool python -m assemblies.arm ...            any python in the venv (PYTHONPATH=cad/)
   ./cadtool clean [--all]                           delete __pycache__/, .pytest_cache/, .ruff_cache/ (and any stray __cadgen__/);
@@ -368,7 +370,8 @@ case "$cmd" in
   python)
     exec uv run --frozen python "$@" ;;
   pytest)
-    exec uv run --frozen pytest "$@" ;;
+    # tests/run.py picks the test files and the workers, then runs pytest (tests/AGENTS.md)
+    exec uv run --frozen python -m tests.run "$@" ;;
   lint)
     exec uv run --frozen ruff check "$@" ;;
   clean)

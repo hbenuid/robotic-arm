@@ -6,10 +6,8 @@ j2_link_in_drive_frame() bring the arm and the turned forearm (j2_link with its 
 one (the elbow axis and the module's frame are given in it: lib/forearm/layout.py module_frame_in_host)."""
 from __future__ import annotations
 
-import functools
-
 from lib import placements as P
-from tests import built
+from tests import built, picking
 
 HOST = "j2_link#1"
 
@@ -19,7 +17,7 @@ def in_host(key: str):
     return built.placed(key, into=HOST)
 
 
-@functools.cache
+@picking.cache
 def forearm():
     """j2_link and its wall bracket (printed apart, lib/forearm/params.py WallSplitParams; the bracket built in j2_link's
     frame) fused into the one forearm - the wall, its gussets, the web, the wrist boss - that the end's and the
@@ -27,20 +25,20 @@ def forearm():
     return built.part("j2_link").fuse(built.part("j2_wall_bracket")).clean()
 
 
-@functools.cache
+@picking.cache
 def drive_frame_from_host():
     """j2_link's part frame (turned with the forearm) in its frame before the turn: half a turn about the roll axis."""
     return P.location(HOST, "world", turned=False).inverse() * P.location(HOST, "world")
 
 
-@functools.cache
+@picking.cache
 def in_drive_frame(key: str):
     """A part occurrence of placements.json, placed in j2_link's frame before the forearm's turn - the roll drive's
     mount frame (shared, read-only)."""
     return built.placed(key).moved(P.location(HOST, "world", turned=False).inverse())
 
 
-@functools.cache
+@picking.cache
 def j2_link_in_drive_frame():
     """j2_link with its wall bracket (forearm()) as the arm turns them, in the roll drive's mount frame (shared,
     read-only)."""
