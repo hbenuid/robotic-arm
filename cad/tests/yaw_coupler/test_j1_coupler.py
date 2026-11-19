@@ -111,7 +111,7 @@ def test_default_fork_holds_the_drives_ends():
     arm-mount pattern, their ends 0.5 past the hub's captive nuts, the hub leg's disc the motor leg's size round
     them, past the hub; the legs' posts straight down to where the disc's draft meets their outer faces, under the hub's
     bolt heads, their roots the hull of that section and the faceted disc's corners - the disc's flat facing a leg one
-    plane with its outer face, the legs' root 19.5 thick, the roots past the rim no further than the round tops (the motor
+    plane with its outer face, the legs' root 19.4 thick, the roots past the rim no further than the round tops (the motor
     leg's ring could not stay inside it);
     the motor leg round the sleeve (its ring's bore 0.2 a side), its 2 M4s through its foot into nuts under its post, the
     heads sunk in the foot, its 3 radial M4s through its ring into nuts pressed into the sleeve's lugs; the ring lowered under the turning shell's pillars (RING_DROP: 2.68 of clearance)."""
@@ -135,14 +135,14 @@ def test_default_fork_holds_the_drives_ends():
     reach = max(math.hypot(y - f.axis_y, z - f.axis_z) for y, z in fork_hub_bolts(DEFAULT)) + COUNTERBORE / 2.0
     assert f.plate_r - reach == pytest.approx(16.3, abs=0.01)
     # the disc faceted like the base, its flats on the base's cone: BASE_R at the rim, in at BASE_DRAFT; the posts down
-    # to where that draft meets the legs' outer faces, at y 39.4 - the legs' root 19.5 thick -, 29.4 under the hub's
+    # to where that draft meets the legs' outer faces, at y 39.4 - the legs' root 19.4 thick -, 29.4 under the hub's
     # lowest bolt heads' seats
     d, rim = DEFAULT.disc, disc_r(DEFAULT, DEFAULT.disc.y0)
     assert d.sides == BASE.shell.sides == SIDES and LEGACY.disc.sides is None
     post_y = fork_post_y(DEFAULT)
     assert disc_r(DEFAULT, DEFAULT.disc.band_y1) == BASE_R and disc_r(DEFAULT, post_y) == pytest.approx(mx1) == pytest.approx(-hx0)
     assert post_y == pytest.approx(39.375)
-    assert disc_r(DEFAULT, DEFAULT.disc.y0) - mx0 == pytest.approx(19.48, abs=0.01)
+    assert disc_r(DEFAULT, DEFAULT.disc.y0) - mx0 == pytest.approx(19.39, abs=0.01)
     assert BASE_DRAFT == pytest.approx(math.tan(math.radians(10.8)), abs=1e-3)
     seat = min(y for y, _ in fork_hub_bolts(DEFAULT)) - COUNTERBORE / 2.0
     assert seat - post_y == pytest.approx(29.35, abs=0.01)
@@ -170,7 +170,7 @@ def test_default_fork_holds_the_drives_ends():
         reach = max(math.hypot(x, z) for x, _, z in points)
         assert rim < reach <= math.hypot(mx1, f.plate_r + abs(f.axis_z)) + 1e-6
     # the round tops pass the rim too: inside it the motor leg's bore would break out of the ring at its outer face
-    assert math.hypot(mx1, f.plate_r) > rim and math.sqrt(rim * rim - mx1 * mx1) - f.ring_bore_dia / 2.0 == pytest.approx(-6.71, abs=0.01)
+    assert math.hypot(mx1, f.plate_r) > rim and math.sqrt(rim * rim - mx1 * mx1) - f.ring_bore_dia / 2.0 == pytest.approx(-6.91, abs=0.01)
     # the motor leg's ring round the sleeve; its 2 M4s: through the foot (butting the disc at the leg's outer face) and
     # the wall into nuts in slots under the leg's post, the screws' tips 2.0 past the nuts, the heads sunk in the foot -
     # their top edges 0.2 under its drafted face (the disc's flat)
@@ -182,7 +182,7 @@ def test_default_fork_holds_the_drives_ends():
     for y, z in fork_motor_bolts(DEFAULT):
         flat = DEFAULT.disc.top_r * math.tan(math.pi / SIDES)                                     # the disc's flat facing the leg
         assert mx0 < nut_x0 and abs(z) + (M4_NUT.af + NUT_SLOT) / 2.0 < flat                      # the slot under the root
-        assert y - corner > DEFAULT.disc.y0 + 4.0 and y + 2.2 < DEFAULT.disc.top_y                 # ... and in the disc
+        assert y - corner > DEFAULT.disc.y0 + 3.5 and y + 2.2 < DEFAULT.disc.top_y                 # ... and in the disc
         top_edge = disc_r(DEFAULT, y + M4_SHCS.head_dia / 2.0) - (seat_x + M4_SHCS.head_h)       # the head sunk under the flat
         assert top_edge == pytest.approx(0.05, abs=0.005)
     # ... and 3 radial M4s through its ring into the sleeve (ShellParams.sleeve_bolt_deg): in the ring's middle, at the
@@ -453,8 +453,8 @@ def test_default_prints_in_two_parts(coupler):
     top, plate = built.part("j1_coupler"), built.part("j1_coupler_plate")
     assert (top.label, plate.label) == ("j1_coupler", "j1_coupler_plate")
     assert top.is_valid and plate.is_valid and len(top.solids()) == len(plate.solids()) == 1
-    assert R.solid_volume(top) == pytest.approx(225374.523, abs=0.5)
-    assert R.solid_volume(plate) == pytest.approx(77683.646, abs=0.5)
+    assert R.solid_volume(top) == pytest.approx(225228.176, abs=0.5)
+    assert R.solid_volume(plate) == pytest.approx(75419.057, abs=0.5)
     assert R.NO_REFERENCE["j1_coupler_plate"] == "lib/yaw_coupler/body.py:build_coupler_plate(DEFAULT)"
     assert s.y == k.pocket_y0 and k.pocket_y0 - h.nut_depth > h.recess_y1 and s.nut_af == h.nut_af
     assert top.bounding_box().min.Y == pytest.approx(s.y, abs=1e-6) and plate.bounding_box().max.Y == pytest.approx(s.y, abs=1e-6)
@@ -508,7 +508,7 @@ def test_motor_leg(motor_leg):
     leg, f, d = motor_leg, DEFAULT.fork, DEFAULT.disc
     mx0, mx1 = fork_motor_leg_x(DEFAULT)
     assert leg.label == "j1_motor_leg" and leg.is_valid and len(leg.solids()) == 1
-    assert R.solid_volume(leg) == pytest.approx(76491.968, abs=0.5)
+    assert R.solid_volume(leg) == pytest.approx(76205.856, abs=0.5)
     bb = leg.bounding_box()
     assert (bb.min.X, bb.min.Y, bb.min.Z) == pytest.approx((mx0, d.y0, f.axis_z - f.plate_r), abs=1e-6)
     assert (bb.max.X, bb.max.Y, bb.max.Z) == pytest.approx((disc_r(DEFAULT, d.y0), f.axis_y + f.plate_r, f.axis_z + f.plate_r), abs=1e-6)

@@ -199,7 +199,7 @@ class ForkParams:
     motor_leg_gap: float = 0.2       # [DESIGN] the disc's ring cut back this far off the motor leg's inner face
     motor_bolt_y: float = 8.3        # [DESIGN] the motor leg's 2 M4s along the drive's axis, this high: low enough that the
     #                                  draft keeps their heads in the foot (the legs end_plate_gap off the shell), their nuts'
-    #                                  slots 4.0 over the disc's underside at the least ...
+    #                                  slots 3.5 over the disc's underside (the rim RIM_CLEAR up) ...
     motor_bolt_z: float = 12.0       # [DESIGN] ... this far either side of it (z) ...
     motor_head_seat: float = 1.2     # [DESIGN] ... their heads' seats this far out from the face the foot butts on (the clamped
     #                                  wall): the heads' top edges 0.05 under the foot's drafted face (the disc's flat) ...
@@ -314,11 +314,11 @@ LEGACY = YawCouplerConfig()     # the SolidWorks part, exactly
 # stack's OD, the rim RIM_CLEAR over the base's top face. The part keeps its placement (placements.json puts its origin
 # at the base's ring_top_y), so the seat is 1.1 higher than the SolidWorks ceiling, the stub 1.1 longer up into it.
 THRUST_CLEAR = 0.2                # [DESIGN] the recess round the washers and the cage (radial)
-RIM_CLEAR = 0.5                   # [DESIGN] the rim over the base's top face
+RIM_CLEAR = 1.0                   # [DESIGN] the rim over the base's top face: the running gap as the coupler turns on base_yaw
 RING_DROP = 2.0                   # [DESIGN] the ring's top lowered under the drive's turning shell: its pillars 2.68 over it
 # BASE_R / BASE_DRAFT (lib/base/params.py: the base's walls carry the same cone on down): the disc's flats BASE_R off
 # the axis at its rim, drafted in at BASE_DRAFT - the base's octagon carried on up (sides) -, the flat facing each leg
-# carried on up the leg's outer face: the legs' root 19.5 thick at the rim, the motor leg's foot room for its M4s
+# carried on up the leg's outer face: the legs' root 19.4 thick at the rim, the motor leg's foot room for its M4s
 _CAP = _BASE.cap                  # the base's frame: this part's origin at its ring_top_y
 DEFAULT = replace(LEGACY,
                   hub=replace(LEGACY.hub, recess_dia=THRUST_OD + 2.0 * THRUST_CLEAR,
