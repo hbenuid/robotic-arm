@@ -26,6 +26,7 @@ from lib.cycloidal import (
 from lib.cycloidal.housing import arm_root, build_shell_body
 from lib.cycloidal.layout import PILLAR_OVERSHOOT
 from lib.cycloidal.profiles import compute_epitrochoid, compute_profile_radii
+from lib.geom import cylinder
 from tests import built
 from tests.cycloidal.helpers import CFG
 from tests.helpers import distance, is_inside, probe_volume, section_area
@@ -201,33 +202,37 @@ class TestSolid:
         centreline): the od on X (the pillars there and opposite), on Y the chamfered corners of the pillars at
         +/-60 and +/-120 degrees from it; the plate's face (the shell ring's) to the hub end."""
         assert len(body_solid.solids()) == 1 and body_solid.is_valid
-        assert R.solid_volume(body_solid) == pytest.approx(153308.918, abs=0.5)
+        assert R.solid_volume(body_solid) == pytest.approx(118809.239, abs=0.5)
         bb = body_solid.rotate(Axis.Z, -CFG.housing.bolt_start_deg).bounding_box()
         assert (bb.size.X, bb.size.Y) == pytest.approx((CFG.housing.od, 116.023), abs=0.01)
         assert (bb.min.Z, bb.max.Z) == pytest.approx((Z0, END_1), abs=1e-6)
 
     def test_window_zone_has_pillars_only(self, body_solid):
-        """Round the discs: outside the upper arm's root only the bolt pillars remain (< 40 % of that part of the
-        annulus); the root (arm_root: the arm_windows either side of the first pillar, to the middle of the pillars that
-        bound them) solid but the bolts' holes."""
-        h, sh, z = CFG.housing, CFG.shell, S["z_disc2"] - 1.0
+        """Round the discs: only the bolt pillars remain, all round (< 40 % of the annulus between the bore and the od);
+        in the upper arm's root (arm_root: the arm_windows either side of the first pillar, to the middle of the pillars
+        that bound them, from the hub end arm_root_depth deep) that annulus solid but the bolts' holes."""
+        h, sh = CFG.housing, CFG.shell
         full_annulus = math.pi * ((h.od / 2.0) ** 2 - (h.bore_dia / 2.0) ** 2)
         share = sh.arm_windows / h.bolt_count
         root = arm_root(CFG, 200.0, -100.0)
-        open_area, root_area = section_area(body_solid - root, z), section_area(body_solid & root, z)
-        assert 0 < open_area < full_annulus * (1.0 - share) * 0.40, f"window zone area {open_area:.1f}mm^2 too large"
+        open_area = section_area(body_solid, S["z_disc2"] - 1.0)
+        assert 0 < open_area < full_annulus * 0.40, f"window zone area {open_area:.1f}mm^2 too large"
+        annulus = cylinder(h.od / 2.0 + 1.0, 200.0, z0=-100.0) - cylinder(h.bore_dia / 2.0, 200.0, z0=-100.0)
+        root_area = section_area(body_solid & root & annulus, END_1 - sh.arm_root_depth / 2.0)
         assert root_area > full_annulus * share * 0.95, f"the arm's root {root_area:.1f}mm^2"
 
     def test_windows_end_to_end(self, body_solid):
         """Midway between the pillars, past the bore's radius: void round the discs, the pin ring, the seat, the lip -
-        but the arm_windows either side of the first pillar, solid end to end (the upper arm's root)."""
-        h = CFG.housing
+        but the arm_windows either side of the first pillar, solid from the hub end arm_root_depth deep (the upper arm's
+        root), open past it."""
+        h, sh = CFG.housing, CFG.shell
         step, r = 2 * math.pi / h.bolt_count, (h.bore_dia + h.od) / 4.0
-        start = math.radians(h.bolt_start_deg)
+        start, root_top = math.radians(h.bolt_start_deg), END_1 - sh.arm_root_depth
         for a in compute_housing_bolt_angles(CFG):
             mid = a + step / 2.0
-            solid = abs(math.remainder(mid - start, 2 * math.pi)) < CFG.shell.arm_windows / 2.0 * step
-            for z in (Z0 + 1.0, 30.0, FLANGE + 4.0, SEAT + 5.0, END_1 - 1.5):
+            under_arm = abs(math.remainder(mid - start, 2 * math.pi)) < sh.arm_windows / 2.0 * step
+            for z in (Z0 + 1.0, 30.0, FLANGE + 2.0, root_top - 1.0, root_top + 1.0, SEAT + 5.0, END_1 - 1.5):
+                solid = under_arm and z > root_top
                 assert is_inside(body_solid, r * math.cos(mid), r * math.sin(mid), z) == solid, (math.degrees(mid), z, solid)
 
     def test_the_held_hub_runs_clear_of_the_body(self, body_solid):

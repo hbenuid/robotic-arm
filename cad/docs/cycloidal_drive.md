@@ -11,8 +11,9 @@
   `CYCLOIDAL_COTS` -, `origin: cycloidal_drive@2f1f67d`; regenerating them: `reference/AGENTS.md`).
   `tests/cycloidal/test_port.py` proves the port reproduces them in `LEGACY_CONFIG`: identical face sets; identical
   tessellations and the exact analytic volume for every part but the two spline discs, which match the reference's
-  lobe spline instead (`spline_deviation`). A part `DEFAULT_CONFIG` has moved away from its export (the bolt count,
-  §5.2; the gear size and the pillar tips, §5.4; the turning shell, §5.5) declares `REFERENCE_BUILD`, its
+  lobe spline instead (`spline_deviation`). A part `DEFAULT_CONFIG` has moved away from its export (the discs' bearing
+  lips, §1.2; the bolt count, §5.2; the gear size and the pillar tips, §5.4; the turning shell, §5.5) declares
+  `REFERENCE_BUILD`, its
   `LEGACY_CONFIG` build, and the test compares that.
 
 ## Overview
@@ -50,9 +51,10 @@ shell's `ShellParams`, `None` in the port's `LEGACY_CONFIG`); every number below
 | Lobes | 20 (`gear.num_lobes`) | sets the ratio |
 | Disc count | 2 | orbit centres 180° apart cancel vibration. Disc 2's epitrochoid is phase-rotated by `gear.disc2_phase_deg = -180°/N_lobes = -9°`; the output-pin holes are identical (disc-local 0/90/180/270 on the 60 mm circle). **The discs are distinct printed parts** — a 180° assembly rotation is a no-op on a 20-lobe disc. |
 | OD | ~99 (98.0 / 99.0 bbox) | epitrochoid profile (§8): tips R − r + e = 49.5, valleys R − r − e = 46.5 |
-| Centre bore Ø | 35.10 (`center_bore_dia`) | 35 mm 6003 OD + 0.10 clearance |
-| Thickness | 10.00 (`thickness`) | = 6003 width |
-| Lobe chamfer | 1.00 × 45° both faces (`lobe_chamfer`) | assembly lead-in, hides elephant foot; symmetric (no wrong side); costs ~20 % lobe contact length |
+| Centre bore Ø | 35.10 (`center_bore_dia`) | 35 mm 6003 OD + 0.10 clearance; the bearing's seat, blind from the disc's inner face (the port's ran through) |
+| Thickness | 10.00 (`thickness`) | = 6003 width: the seat's depth, the stack's `disc_thickness` |
+| Bearing lip | 1.00 (`bearing_lip`; the port's 0), hole Ø32 (`bearing_lip_dia`) | captures the 6003: the disc that much thicker on its outer face, lobes included (`total_thickness`), the lip there over the bearing's outer race only - past its seal (`BearingParams.ecc_seal_dia`), inside the largest shoulder on its outer ring (`ecc_shoulder_max_dia`). Disc 1's faces the motor plate, disc 2's the hub (the ends' mirror). The bearing presses in from the inner face onto the lip; in the drive the shaft's bridge flange (§1.4) stops it going back that way, so a disc can only creep toward its plate, against the press, 3 mm at most |
+| Lobe chamfer | 1.00 × 45° both faces (`lobe_chamfer`) | assembly lead-in, hides elephant foot; symmetric; costs ~20 % lobe contact length |
 | Inter-disc spacer | 2.00 (`inter_disc_spacer`) | |
 | Output pin holes | 4 × Ø7.4 on Ø60 | §1.3 |
 
@@ -79,15 +81,15 @@ fit, 6003 radial clearance, the 35.10 bore) or bushings/rollers on the pins — 
 
 | Parameter | Value | Notes |
 |---|---|---|
-| Bearing-seat OD | 17.10 (`bearing_seat_od`) | light press in the 6003 bore |
+| Bearing-seat OD | 17.15 (`bearing_seat_od`; the port's 17.10) | press in the 6003 bore, measured at 0.20 (a peg test: 17.10 was loose) |
 | Eccentricity | 1.50 | lobe 1 at (+e, 0), lobe 2 at (−e, 0) |
 | Spine OD | 5.00 (`spine_od`) | |
 | Input collar OD | 10.00 (`input_collar_od`) | wall around the D-bore |
-| D-bore Ø | 5.13 (`d_bore_dia` + 2 × `tolerances.d_bore_clearance_add`) | receives the motor shaft directly, flat on +Y (`d_bore_flat` 4.5, cut like the shaft's: flat-to-round 4.75, `lib/cycloidal/motor.py`) |
+| D-bore Ø | 5.15 (`d_bore_dia` + 2 × `tolerances.d_bore_clearance_add`; the port's 5.13) | receives the motor shaft directly, flat on +Y, `d_bore_flat` / 2 + the clearance off the axis: flat-to-round 4.65 on the real shaft's 4.5 (calipers), 0.15 over it on the round and on the flat - measured at 0.20 (a D-hole test). The port's flat sat 0.24 further out (a 4.75 shaft, `lib/cycloidal/motor.py`) and the shaft turned in it |
 | D-bore depth | 14.00 (`d_bore_depth`) | 13 mm engagement (22 shaft − 9 plate) + 1 mm clearance |
 | Support-pin hole | Ø5.15 × 11 blind (`support_pin_dia` + 2 × `dowel_bore_clearance_add`, `support_pin_hole_depth`) | keeps a 1 mm wall to the D-bore |
 | Support pin | 5 × 20 h6 dowel | 11 in the shaft + 4 gap (to the hub's flange) + 5 in the 625 (its pocket in the flange's inner face; the port's 2 gap + 5 + 2 proud) |
-| Bridge / retention flange | Ø23.10 (`bridge_flange_od` = seat OD + `bridge_flange_add` 6) | ruled loft (+e → −e) across the spacer zone; keeps the 6003s apart |
+| Bridge / retention flange | Ø23.15 (`bridge_flange_od` = seat OD + `bridge_flange_add` 6) | ruled loft (+e → −e) across the spacer zone; keeps the 6003s apart |
 | Material | PETG, 100 % infill, `LAYER_H` (`parts/AGENTS.md` Printed vs. bought) | built at its stack position z 9..35 |
 
 ## 2. Bearings (`cfg.bearings`)
@@ -142,7 +144,9 @@ What to order: `./cadtool python tools/bom.py --module cycloidal_drive` (the bol
 Behind z = 0, the mirror: the motor-end 6814 (−10..0) and the shell ring's lip (−13..−10) - the shell runs
 **z −13..61** (`shell_ends`), symmetric about the middle of the discs (z 24); the two plates' inner faces bound the gear
 at 9 and 39 (`arm_zone`, where the shell's body starts on the shell ring). Derived: `disc_zone` 26, `bore_zone` 39
-(9..48, to the hub-end seat), `ring_gear_body_height` 52 (the body, 9..61).
+(9..48, to the hub-end seat), `ring_gear_body_height` 52 (the body, 9..61). The discs' bearing lips (§1.2) stand
+`bearing_lip` into the input clearance and its mirror past disc 2, 3 short of the motor plate and of the hub's flange;
+the stack, the seats and the shaft's lobes do not move.
 **The ends:** the held hub is 23 tall (flange 9 + grip 10 + lip 3 + `proud_above_housing` 1 = `ShellParams.end_plate_gap`)
 at z 39, its face at **z = 62** (`CYCLOIDAL_HUB_FACE_Z`) on the `j1_coupler` fork's hub-side leg; the motor plate's
 sleeve ends at **z = −26** (`sleeve_end`, `CYCLOIDAL_SLEEVE_END_Z`) on the motor-side leg's outer face. **The housing
@@ -180,9 +184,10 @@ housing bolts at −13, nuts at 57.3; shaft, motor, motor plate and shell ring a
 circle (pillars `pillar_inner_w` 18 at the bore, `pillar_outer_w` 10 at the OD, one per bolt -
 `lib/cycloidal/layout.py pillar_corners`) from end to end; the shell ring seats on the body's pillar faces, no
 continuous rim. One shared cutter (`lib/cycloidal/housing.py reveal_window_cutter`) is subtracted from every housing
-base solid. The turning shell's body keeps `ShellParams.arm_windows` (2) of its windows solid - the two either side of
-its first pillar, where the upper arm rises off it (`arm_root`, §10); the other four open on the discs and the ring
-pins; the shell ring's six are recesses in its wall, its pin ring closed inside them.
+base solid. The turning shell's body keeps `ShellParams.arm_windows` (2) of its windows solid at its hub end - the two
+either side of its first pillar, where the upper arm rises off it (`arm_root`, §10), `arm_root_depth` deep: the arm's
+slab, level with its top; above it they open on the discs like the other four, which are open end to end on the discs
+and the ring pins; the shell ring's six are recesses in its wall, its pin ring closed inside them.
 
 **Bolt count** (`bolt_count`) — a departure from the port (the others: the gear size and the pillar tips, §5.4, and
 the turning shell, §5.5): `DEFAULT_CONFIG` builds 6 bolts where the port (`LEGACY_CONFIG`) had 8, at 60°, the first
@@ -277,7 +282,8 @@ face, the one the part prints on; nothing bolts the arm to the shell's end.
   elbow motor, the shell - its 1 mm running gap off the fork's two legs (`tests/test_sweeps.py`).
 - **Assembly, from the motor end:** the hub's nuts into its flange; the hub-end 6814 into the body's seat from inside
   (`j1_link` face down), the hub pressed into it grip first to its flange; the gear stack (output pins in the hub,
-  discs, shaft, the ring pins into the body's pin ring) as before; the motor plate with its 6814 on its seat, the
+  discs - each 6003 pressed into its disc from the inner face onto the lip first -, shaft, the ring pins into the
+  body's pin ring) as before; the motor plate with its 6814 on its seat, the
   shell ring over the sleeve and onto the ring pins' ends (its bolt holes over the body's lines its pin holes up over
   the pins; two opposite bolts started first), drawn down evenly onto the body by the M4 × 70s into its nuts; the
   sleeve's three nuts pressed into its lugs, then the motor into the sleeve; the whole lowered into the fork, the hub
@@ -298,12 +304,13 @@ tight. Never design a hole smaller than its steel part.
 | Ring & output pin holes | +0.20 → Ø4.20 | `ring_pin_press_sub` −0.20 | slip-press as printed, blind (the shell ring, the body, the hub); the ring pins' with a lead-in at the mouth (§5.5) |
 | Disc centre bore | +0.10 → 35.10 | `center_bore_dia` | 6003 OD |
 | Disc output-pin holes | nominal 7.4, no offset | `output_pin_hole_dia` | shrink *reduces* backlash (§1.3) |
-| Motor-shaft D-bore | +0.065 on the radius → Ø5.13 | `d_bore_clearance_add` | slip-to-light press |
+| Motor-shaft D-bore | +0.075 on the radius and the flat → Ø5.15, 4.65 flat-to-round (measured, 0.20) | `d_bore_clearance_add`, `shaft.d_bore_flat` | snug on the real 4.5 shaft (the port's +0.065 → 5.13, on a 4.75 shaft) |
 | Support-pin bore | +0.075 on the radius → Ø5.15 | `dowel_bore_clearance_add` | firm press |
 | Mating surfaces | +0.15 | `mating_surface_add` | pilot recess 22.30 |
 | Bolt / head clearance | +0.4 on the Ø | `bolt_clearance_add` | M3 3.4 / 5.7, M4 4.4 (the port's; the build's M4 holes, upright at 0.20: `HousingParams.bolt_hole_dia` = `M4_CLEAR_UPRIGHT`, measured) |
 
-Print the discs flat at 100 % infill and `LAYER_H_FINE`, the drive's other printed parts at `LAYER_H` (`parts/AGENTS.md`
+Print the discs flat, lip face down (the lip the first layers, the seat a pocket from the top: no overhang), at 100 %
+infill and `LAYER_H_FINE`, the drive's other printed parts at `LAYER_H` (`parts/AGENTS.md`
 Printed vs. bought); test-print the fit gauges
 first (`tools/export_gauges.py`: every fit in this table at steps round its value); PETG shrinks 0.3–0.5 % over 129 mm
 (the housing may need ~129.5 — not compensated).
@@ -335,7 +342,7 @@ which also gives the disc's build order and the OCCT volume caveat: the discs' U
 `test_module_interference_budget` (mm³) holds the designed overlaps: the 6814 inner-race press fits on
 the hub and on the motor plate's sleeve, 330.6 each; housing bolts through the solid nuts 241.3; motor-bolt heads
 in the plate 51.9 (the modelled `motor_bolt_recess`, §3 - not a fit) and shanks in the vendor motor's tapped holes
-(modelled at the M3 minor diameter) 46.4; 6003 / lobe press fits 26.8 × 2; the MKS kit's four M3x30 in the same
+(modelled at the M3 minor diameter) 46.4; 6003 / lobe press fits 40.2 × 2; the MKS kit's four M3x30 in the same
 holes from the rear 159.4. Everything else is < 1 mm³; the whole module vs the arm - the base, `j1_link` (with the
 shell's body), the `j1_coupler` fork and its motor leg (`j1_motor_leg`) - contact at most (≤ 1,
 `TestPoseInTheArm`).
@@ -363,8 +370,8 @@ shell's body), the `j1_coupler` fork and its motor leg (`j1_motor_leg`) - contac
   the shell turns between them, over the yoke's lowered ring. The SolidWorks yoke (`LEGACY`,
   `lib/yaw_coupler/params.py`) cradled the port's housing on its pillars instead. **The upper arm rises off the
   shell:** `j1_link` (parametric, `lib/upper_arm/`, `ArmParams`: its slab, the elbow motor's seat in it and the elbow
-  belt's path) is printed with the shell's body, its arm rising out of the body's two solid windows, the four others
-  open on the discs; slid along N until its underside is flush with the shell's hub end (`arm_slide`: the part prints
+  belt's path) is printed with the shell's body, its arm rising out of the body's two windows, solid as deep as the
+  slab (`ShellParams.arm_root_depth`) and open above it like the four others; slid along N until its underside is flush with the shell's hub end (`arm_slide`: the part prints
   on that face, no support under the arm), and everything past the elbow with it (`lib/placements.py SHIFTS`): the end
   effector is off the base_yaw axis (`docs/open_issues.md`). The drive's frame in `j1_link`'s is the capture's
   (`tests/upper_arm/test_j1_link.py`); `TestPoseInTheArm` checks the shell's body in `j1_link` and the hub and the

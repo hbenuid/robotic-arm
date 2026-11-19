@@ -199,7 +199,7 @@ def test_cycloidal_derived_numbers():
     assert cfg.stack_up.ring_gear_body_height == 52.0   # the turning shell's body (j1_link's): the motor plate's face to the hub end
     assert hub_flange(cfg) == 9.0 and hub_flange(port) == 0.0
     assert math.isclose(cfg.housing.lip_bore_dia, 86.15)
-    assert math.isclose(cfg.shaft.bridge_flange_od, 23.10)
+    assert math.isclose(cfg.shaft.bridge_flange_od, 23.15) and math.isclose(port.shaft.bridge_flange_od, 23.10)
     assert math.isclose(ring_pin_hole_dia(cfg), 4.20)
     assert ring_pin_engagement(cfg) == 5.0 and ring_pin_engagement(port) == 3.5 and ring_pin_hole_depth(port) == 31.5
     assert motor_bolt_counterbore_depth(cfg) == 3.0

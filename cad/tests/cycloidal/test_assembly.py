@@ -190,8 +190,9 @@ class TestRadialClearances:
         assert S["z_output_pins"] > CFG.stack_up.z_motor_plate_inner
 
     def test_output_pin_engages_disc1(self):
+        """The pins reach through disc 1 to its outer face - its bearing lip (DiscParams.bearing_lip) included."""
         S = stack_positions(CFG)
-        assert S["z_output_pins"] <= CFG.stack_up.z_disc1
+        assert S["z_output_pins"] <= CFG.stack_up.z_disc1 - CFG.disc.bearing_lip
 
     def test_output_hub_clears_retention_lip_bore(self):
         clearance = CFG.housing.lip_bore_dia - CFG.output_hub.od
@@ -406,7 +407,7 @@ class TestModuleLocks:
             ("bearing_6814:1", "cycloidal_output_hub"): 607.2, ("bearing_6814:2", "cycloidal_motor_plate"): 607.2,
             ("cycloidal_housing_bolts", "cycloidal_housing_nuts"): 241.3,
             ("cycloidal_motor_bolts", "cycloidal_motor_plate"): 52.0, ("nema17_48mm", "cycloidal_motor_bolts"): 46.4,
-            ("bearing_6003:1", "cycloidal_eccentric_shaft"): 27.0, ("bearing_6003:2", "cycloidal_eccentric_shaft"): 27.0,
+            ("bearing_6003:1", "cycloidal_eccentric_shaft"): 40.3, ("bearing_6003:2", "cycloidal_eccentric_shaft"): 40.3,
             ("mks_servo42d", "nema17_48mm"): 159.4,
         }
         for (a, b), limit in budget.items():
@@ -479,14 +480,15 @@ class TestPoseInTheArm:
 
     def test_the_shell_in_j1_link_and_the_hub_and_sleeve_on_the_yoke(self):
         """j1_link holds the shell's body: its face on the shell ring (arm_zone's start - the body's end face, in pieces
-        between its windows), its hub end (shell_ends); the held hub's face (hub_top) on the inner face of the
+        between its windows: the six pillars' ends, where the shell ring's pillars bear - its windows face the body's, and
+        the arm's root stops short of that end, ShellParams.arm_root_depth), its hub end (shell_ends); the held hub's face (hub_top) on the inner face of the
         j1_coupler fork's hub-side leg, the sleeve's end on the outer face of its motor leg (j1_motor_leg). Each seat: the planar faces
         perpendicular to the drive axis in its plane, their area together."""
         from lib.cycloidal import arm_zone
 
         world = P.location(DRIVE_KEY, "world")
         axis = (world * Location((0, 0, 1))).position - world.position      # the drive axis in world
-        for key, z, area in (("j1_link#1", arm_zone(CFG)[0], 1500), ("j1_link#1", shell_ends(CFG)[1], 2000),
+        for key, z, area in (("j1_link#1", arm_zone(CFG)[0], 750), ("j1_link#1", shell_ends(CFG)[1], 2000),
                              ("j1_coupler#1", stack_positions(CFG)["hub_top"], 2000), ("j1_motor_leg#1", sleeve_end(CFG), 500)):
             centre = (world * Location((0, 0, z))).position
             faces = [f for f in built.placed(key).faces().filter_by(GeomType.PLANE)

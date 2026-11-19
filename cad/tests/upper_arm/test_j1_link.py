@@ -5,7 +5,7 @@ elbow-end feature moves with the axis), no through slots, no cap sockets, the el
 to the relief's floor, on the floor of a deeper recess: no recess left), and the cycloidal drive's turning shell: the
 arm, one flat slab from the elbow half's underside to the relief's floor, narrower than the plate (ArmParams width,
 tapering onto a narrower faceted end, end_r, past the elbow idler's slots, its outline chamfered), rises off the shell, printed as one with the shell's body
-round the discs - out of the two windows it fills, the others open - slid along Y until its underside is flush with
+round the discs - out of the two windows it fills as deep as the slab, open above it like the others - slid along Y until its underside is flush with
 the shell's hub end (arm_slide); the elbow motor - the NEMA 17 holes on its pattern - moved out along the link to
 ELBOW_MOTOR_CENTRES from the elbow axis, where the second stage's seat was (gone), and turned over onto the arm's +Y
 side: down a square hole through the slab onto a web across it, flush with the slab's underside, the pad gone; the
@@ -79,7 +79,8 @@ def test_the_arm_rises_off_the_drives_shell():
     one flat face, the one the part prints on - the elbow motor's face the web's thickness above it; the fusion past
     the housing bolts' holes and inside the od; the
     drive's first pillar (HousingParams.bolt_start_deg, lib/cycloidal/params.py ARM_DEG) on the arm's centreline -
-    the link's +X -, the windows either side of it the arm's root (ShellParams.arm_windows)."""
+    the link's +X -, the windows either side of it the arm's root (ShellParams.arm_windows), as deep as the slab from
+    the hub end and level with its top (ShellParams.arm_root_depth)."""
     a, h = DEFAULT.arm, DEFAULT_CONFIG.housing
     capture = P.location("j1_link#1", "world").inverse() * P.location("cycloidal_drive#1", "world")
     mine = drive_frame(DEFAULT)
@@ -96,6 +97,7 @@ def test_the_arm_rises_off_the_drives_shell():
     d = along.position - origin.position
     assert math.degrees(math.atan2(d.Y, d.X)) == pytest.approx(h.bolt_start_deg, abs=1e-6) == pytest.approx(-a.drive_x_deg, abs=1e-6)
     assert DEFAULT_CONFIG.shell.arm_windows == 2 and 360.0 / h.bolt_count * DEFAULT_CONFIG.shell.arm_windows / 2.0 == 60.0
+    assert DEFAULT_CONFIG.shell.arm_root_depth == DEFAULT.elbow.relief_y - DEFAULT.elbow.y0 == 18.0
 
 
 def test_default_web_holes_are_the_gearboxs_pattern():
@@ -188,12 +190,13 @@ def test_default(link, legacy):
     """DEFAULT's numbers (no reference holds them) and its features: the arm off the shell - one flat slab, its two
     faces level from the shell to the elbow end (no step, no relief wall, no chamfer, nothing hanging under it), its
     underside on the shell's hub end (the part's lowest face), its sides -, the shell's body inside, its windows under
-    the slab solid and the others open, every housing nut's pocket open through the slab; the plate's shortened elbow
+    the slab solid up to the slab's top - beside it too, to the next pillars - and open above it like the others, every
+    housing nut's pocket open through the slab; the plate's shortened elbow
     end in the slab; the elbow motor's square hole through the slab at the pad's x and the web across it, flush with
     the underside; no pad, no sockets, the second stage's seat gone."""
     dx, a = SHORTENING, DEFAULT.arm
     assert link.is_valid and len(link.solids()) == 1
-    assert R.solid_volume(link) == pytest.approx(290284.680, abs=0.5)
+    assert R.solid_volume(link) == pytest.approx(255787.871, abs=0.5)
     bb, hh, (z_0, z_1) = link.bounding_box(), DEFAULT_CONFIG.housing, arm_zone(DEFAULT_CONFIG)
     # across (Z) the body's pillars either side of +/-Z reach furthest: the windows on +/-Z are open; along Y the
     # shell's body, from its hub end to the shell ring's face (arm_zone's start); along X the slab's round end
@@ -220,16 +223,23 @@ def test_default(link, legacy):
         assert is_inside(link, s.elbow_x + r * math.cos(half), y, -r * math.sin(half)) == inside, f"corner at {r}"
     edge = s.elbow_x + a.end_r - EDGE_CHAMFER / 2.0
     assert not is_inside(link, edge, hi - EDGE_CHAMFER / 2.0 + 0.2, 0) and is_inside(link, edge, y, 0), "the end's chamfer"
-    # the body's windows round the discs: the two either side of the arm's pillar solid, the others open (no collar)
-    start = math.radians(hh.bolt_start_deg)
+    # the body's windows round the discs: all six open (no collar); at the slab's height the two either side of the
+    # arm's pillar solid - at their middles (behind the slab) and beside the slab (47 deg off the arm's centreline: past
+    # its side, short of the next pillar) -, the others open
+    start, root = math.radians(hh.bolt_start_deg), shell_ends(DEFAULT_CONFIG)[1] - DEFAULT_CONFIG.shell.arm_root_depth / 2.0
     r_win = (hh.bore_dia + hh.od) / 4.0
-    for k, solid in ((1, True), (-1, True), (3, False), (-3, False), (5, False), (-5, False)):
-        t = start + k * math.pi / hh.bolt_count
-        assert is_inside(link, *_drive(r_win * math.cos(t), r_win * math.sin(t), 24.0)) == solid, f"window {k}"
+    assert r_win * math.sin(math.radians(47.0)) > a.width / 2.0 + 4.0                     # clear of the slab's side
+    for deg, under_arm in ((30, True), (-30, True), (47, True), (-47, True), (90, False), (-90, False), (150, False), (-150, False)):
+        t = start + math.radians(deg)
+        x, y_ = r_win * math.cos(t), r_win * math.sin(t)
+        assert not is_inside(link, *_drive(x, y_, 24.0)), f"window at {deg} deg, round the discs"
+        assert is_inside(link, *_drive(x, y_, root)) == under_arm, f"window at {deg} deg, at the slab's height"
     # the shell's body inside, at the drive's places: the bore round the discs, the hub-end seat and lip, the bolts'
     # holes through the collar, the nuts' pockets
-    sh, mid = DEFAULT_CONFIG.shell, (z_0 + z_1) / 2.0
-    assert not is_inside(link, *_drive(hh.bore_dia / 2.0 - 0.3, 0.0, mid)) and is_inside(link, *_drive(hh.bore_dia / 2.0 + 0.3, 0.0, mid))
+    # (the bore at the pillar opposite the arm: round the discs every window is open)
+    sh, mid, back = DEFAULT_CONFIG.shell, (z_0 + z_1) / 2.0, start + math.pi
+    for r, solid in ((hh.bore_dia / 2.0 - 0.3, False), (hh.bore_dia / 2.0 + 0.3, True)):
+        assert is_inside(link, *_drive(r * math.cos(back), r * math.sin(back), mid)) == solid, f"the bore at r {r}"
     seat = DEFAULT_CONFIG.stack_up.z_output_bearings + 5.0
     assert not is_inside(link, *_drive(hh.output_bearing_seat_dia / 2.0 - 0.1, 0.0, seat))
     assert is_inside(link, *_drive(hh.lip_bore_dia / 2.0 + 0.3, 0.0, shell_ends(DEFAULT_CONFIG)[1] - sh.end_lip / 2.0))

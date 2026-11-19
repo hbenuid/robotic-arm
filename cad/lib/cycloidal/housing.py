@@ -5,7 +5,7 @@ Port of cycloidal_drive@2f1f67d src/helpers/housing_profile.py. Both parts prese
 silhouette: trapezoidal pillars (one per M4 housing bolt, HousingParams.bolt_count, from bolt_start_deg) joined only
 at the inner annulus, with reveal windows between them. ``reveal_window_cutter`` is subtracted from an
 annular housing solid to imprint that profile; ``chamfer_outer_silhouette`` bevels the result's outer edges. The
-turning shell's body keeps the windows under the upper arm solid (``arm_root``).
+turning shell's body keeps the windows under the upper arm solid at its hub end, as deep as the arm (``arm_root``).
 
 Pillar (radially flipped trapezoid, lib/cycloidal/layout.py pillar_corners): ``pillar_inner_w`` (18)
 tangential at the bore, ``pillar_outer_w`` (10) at the OD; the radial bounds overshoot the bore (-1)
@@ -141,7 +141,8 @@ def build_shell_body(cfg: DriveConfig = DEFAULT_CONFIG) -> bd.Solid:
     """The turning shell's body round the discs (ShellParams), at its stack position: z = arm_zone's start (9, on the
     shell ring) .. the shell's hub end (61) - printed as one with j1_link, the upper arm rising off it
     (lib/upper_arm/link.py). The housing's od with its pillars and windows from end to end, but the arm_windows under
-    the arm (arm_root): solid, the arm's root; inside, the shell ring's
+    the arm solid from the hub end arm_root_depth deep (arm_root): the arm's root, level with its top - past it they
+    open on the discs like the others; inside, the shell ring's
     mirror: the bore round the discs (to the hub's flange, arm_zone's end), a ring_bore_dia pin ring round the flange
     with the 21 ring pins' blind holes from its face on the bore (their lead-ins: ring_pin_lead_ins), the hub-end
     6814's seat, the end_lip; the housing bolts' holes through it and their nuts' hex pockets from the hub end
@@ -165,6 +166,6 @@ def build_shell_body(cfg: DriveConfig = DEFAULT_CONFIG) -> bd.Solid:
         body = body - cutter
     windows = reveal_window_cutter(cfg, z1 - z0, z_offset=z0)
     if sh.arm_windows:
-        windows = windows - arm_root(cfg, z1 - z0 + 2.0, z0 - 1.0)
+        windows = windows - arm_root(cfg, sh.arm_root_depth + 1.0, z1 - sh.arm_root_depth)
     body = body - windows
     return chamfer_outer_silhouette(single_solid(body), cfg, external_z=z1)
