@@ -165,16 +165,16 @@ def stack_positions(cfg: DriveConfig = DEFAULT_CONFIG) -> dict[str, float]:
     Parts whose builder already emits geometry at its stack position (eccentric shaft, motor,
     motor plate, shell ring) are at 0. The port's two 6814s fill the seat's two slots (37, 47); the turning shell's
     are the hub's past its flange (48) and the one on the motor plate's sleeve, behind the plate (-10), its housing
-    bolts run from the shell ring's end (-13) and their nuts sit on their ends in the body (the port's in the ring gear
-    body's output face)."""
+    bolts run from the shell ring's end (-13) to the hub end and their nuts sit just inside it, in the body
+    (ShellParams.housing_nut_recess; the port's in the ring gear body's output face)."""
     s, e, h, m = cfg.stack_up, cfg.gear.eccentricity, cfg.housing, cfg.motor
-    bolts_z = shell_ends(cfg)[0] + h.bolt_counterbore_depth - h.bolt_head_height     # the heads' tops: 0.5 (port), -12.5
+    bolts_z = shell_ends(cfg)[0] + h.bolt_counterbore_depth - h.bolt_head_height     # the heads' tops: 0.5 (port), -13
     if cfg.shell is None:
         bearings = (s.z_output_bearings, s.z_output_bearings + cfg.bearings.out_width)              # 37, 47
         nuts_z = s.total_housing_depth - h.bolt_nut_depth                                          # 56
     else:
         bearings = (s.z_output_bearings, -cfg.bearings.out_width)                                  # 48, -10
-        nuts_z = bolts_z + h.bolt_head_height + h.bolt_length - h.bolt_nut_thickness               # 53.3
+        nuts_z = shell_ends(cfg)[1] - cfg.shell.housing_nut_recess - h.bolt_nut_thickness          # 57.3
     z_hub = s.z_output_bearings - hub_flange(cfg)                                    # 37 (port), 39
     return {
         "x_disc1": +e, "x_disc2": -e,

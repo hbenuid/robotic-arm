@@ -2,9 +2,9 @@
 (head top at z=0, shank in +Z).
 
 In the drive: at stack z_housing_bolts - the port's M4 x 55 (0.5): heads in the motor plate's counterbores, shanks
-through both housing parts into the captive nuts; the turning shell's M4 x 65 (-12.5): heads in the shell ring's
-counterbores, shanks through the shell end to end into nuts sunk in its body's hub end (j1_link's: the upper arm is
-printed with it). Plain cylinders (no thread, no socket).
+through both housing parts into the captive nuts; the turning shell's M4 x 70 (-13): heads flush in the shell ring's
+counterbores, shanks through the shell end to end, past the nuts sunk just inside its body's hub end, their ends
+flush with it (j1_link's: the upper arm is printed with it). Plain cylinders (no thread, no socket).
 Ported from cycloidal_drive@2f1f67d src/purchased_parts.py; reference/cycloidal_housing_bolts.step is that builder's
 export (kind "cots"). No catalog model (the envelope is the geometry); a vendor/cycloidal_housing_bolts.step would be
 re-oriented by VENDOR_TO_REF into the same frame. The export is the port's 8-bolt pattern (REFERENCE_BUILD); the model

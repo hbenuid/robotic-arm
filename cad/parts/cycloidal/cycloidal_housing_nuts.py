@@ -1,8 +1,9 @@
 """cycloidal_housing_nuts - the M4 hex nuts (bolt_count) (7 AF x 3.2) on the bolt circle, standing on z=0, keyed like
 their pockets (a corner radially outward, turned bolt_nut_turn_deg).
 
-In the drive: at stack z_housing_nuts, on the bolts' ends - the port's (56) in the ring gear body's output-face
-pockets, the turning shell's (53.3) in its body's pockets from the hub end (lib/cycloidal/housing.py build_shell_body).
+In the drive: at stack z_housing_nuts - the port's (56), on the bolts' ends, in the ring gear body's output-face
+pockets; the turning shell's (57.3), the bolts' ends past them, in its body's pockets just inside the hub end
+(ShellParams.housing_nut_recess; lib/cycloidal/housing.py build_shell_body).
 Solid hexagons (no thread).
 Ported from cycloidal_drive@2f1f67d src/purchased_parts.py; reference/cycloidal_housing_nuts.step is that builder's
 export (kind "cots"). No catalog model (the envelope is the geometry); a vendor/cycloidal_housing_nuts.step would be

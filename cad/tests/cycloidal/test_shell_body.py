@@ -167,12 +167,13 @@ class TestShellDimensions:
         assert max_r + g.eccentricity < h.bore_dia / 2.0
 
     def test_housing_bolts_end_in_their_nuts(self):
-        """The M4 x 65s run end to end: their heads' tops 0.5 inside the shell ring's end, their ends flush with the
-        nuts' outer faces, the nuts sunk in the body's hub end."""
+        """The M4 x 70s run end to end: their heads' tops flush with the shell ring's end, their ends flush with the
+        hub end, past the nuts' outer faces - the nuts sunk housing_nut_recess inside it."""
         h = CFG.housing
-        assert S["z_housing_bolts"] == pytest.approx(END_0 + h.bolt_counterbore_depth - h.bolt_head_height)
+        assert S["z_housing_bolts"] == pytest.approx(END_0 + h.bolt_counterbore_depth - h.bolt_head_height) == pytest.approx(END_0)
         end = S["z_housing_bolts"] + h.bolt_head_height + h.bolt_length
-        assert end == pytest.approx(S["z_housing_nuts"] + h.bolt_nut_thickness) and end < END_1
+        nut_face = S["z_housing_nuts"] + h.bolt_nut_thickness
+        assert end == pytest.approx(END_1) and nut_face == pytest.approx(END_1 - CFG.shell.housing_nut_recess) and end > nut_face
 
 
 @pytest.fixture(scope="module")
@@ -188,7 +189,7 @@ class TestSolid:
         centreline): the od on X (the pillars there and opposite), on Y the chamfered corners of the pillars at
         +/-60 and +/-120 degrees from it; the plate's face (the shell ring's) to the hub end."""
         assert len(body_solid.solids()) == 1 and body_solid.is_valid
-        assert R.solid_volume(body_solid) == pytest.approx(118164.199, abs=0.5)
+        assert R.solid_volume(body_solid) == pytest.approx(118909.167, abs=0.5)
         bb = body_solid.rotate(Axis.Z, -CFG.housing.bolt_start_deg).bounding_box()
         assert (bb.size.X, bb.size.Y) == pytest.approx((CFG.housing.od, 116.023), abs=0.01)
         assert (bb.min.Z, bb.max.Z) == pytest.approx((Z0, END_1), abs=1e-6)
