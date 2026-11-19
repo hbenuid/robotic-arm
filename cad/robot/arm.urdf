@@ -113,9 +113,9 @@
   </link>
   <link name="upper_arm_link">
     <inertial>
-      <origin xyz="0.065109 -0.000059 0.047563" rpy="0 0 0" />
-      <mass value="1.651285" />
-      <inertia ixx="2.607589e-03" ixy="1.309524e-06" ixz="9.153559e-05" iyy="7.213161e-03" iyz="-5.659269e-06" izz="6.525665e-03" />
+      <origin xyz="0.065119 -0.000059 0.047564" rpy="0 0 0" />
+      <mass value="1.651031" />
+      <inertia ixx="2.607206e-03" ixy="1.308530e-06" ixz="9.161887e-05" iyy="7.211702e-03" iyz="-5.659339e-06" izz="6.523954e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />

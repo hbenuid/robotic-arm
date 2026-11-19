@@ -78,6 +78,16 @@ class TestShellDimensions:
         assert g.ring_pin_circle_dia / 2.0 - ring_pin_hole_dia(CFG) / 2.0 - sh.ring_bore_dia / 2.0 == pytest.approx(1.9)
         assert g.ring_pin_circle_dia / 2.0 + ring_pin_hole_dia(CFG) / 2.0 < h.od / 2.0
 
+    def test_the_lead_ins_leave_a_wall_at_the_face(self):
+        """The ring pins' holes' lead-ins (both pin rings) are 45 deg cones; at the face, their rims keep 1.1 to the pin
+        ring's bore and to the windows (whose inner edge is the bore round the discs) - the walls' 1.9 below them."""
+        g, h, sh = CFG.gear, CFG.housing, CFG.shell
+        lead = h.ring_pin_entry_chamfer_add / 2.0
+        assert h.ring_pin_entry_chamfer_depth == pytest.approx(lead)
+        hole_r, pin_r = ring_pin_hole_dia(CFG) / 2.0, g.ring_pin_circle_dia / 2.0
+        assert pin_r - hole_r - lead - sh.ring_bore_dia / 2.0 == pytest.approx(1.1)
+        assert h.bore_dia / 2.0 - (pin_r + hole_r + lead) == pytest.approx(1.1)
+
     def test_bolt_holes_do_not_overlap_pin_holes(self):
         g, h, tol = CFG.gear, CFG.housing, CFG.tolerances
         pin_circle_r, bolt_circle_r = g.ring_pin_circle_dia / 2.0, h.bolt_circle_dia / 2.0
@@ -187,7 +197,7 @@ class TestSolid:
         centreline): the od on X (the pillars there and opposite), on Y the chamfered corners of the pillars at
         +/-60 and +/-120 degrees from it; the plate's face (the shell ring's) to the hub end."""
         assert len(body_solid.solids()) == 1 and body_solid.is_valid
-        assert R.solid_volume(body_solid) == pytest.approx(152663.877, abs=0.5)
+        assert R.solid_volume(body_solid) == pytest.approx(152563.950, abs=0.5)
         bb = body_solid.rotate(Axis.Z, -CFG.housing.bolt_start_deg).bounding_box()
         assert (bb.size.X, bb.size.Y) == pytest.approx((CFG.housing.od, 116.023), abs=0.01)
         assert (bb.min.Z, bb.max.Z) == pytest.approx((Z0, END_1), abs=1e-6)
@@ -226,11 +236,17 @@ class TestSolid:
         assert not is_inside(body_solid, h.bore_dia / 2.0 - 0.1, 0, 30.0)
 
     def test_ring_pin_holes(self, body_solid):
-        """Blind from the pin ring's face on the bore, past the pins' ends; solid beyond."""
+        """Blind from the pin ring's face on the bore, past the pins' ends; solid beyond. Each one's lead-in at its
+        mouth, the shell ring's mirror: open to its rim on both sides at the face, solid just past it."""
+        h = CFG.housing
         top = S["z_ring_pins"] + CFG.gear.ring_pin_length          # 44
+        mouth_r = (ring_pin_hole_dia(CFG) + h.ring_pin_entry_chamfer_add) / 2.0
         for x, y in ring_pin_points(CFG):
             assert not is_inside(body_solid, x, y, FLANGE + 0.5) and not is_inside(body_solid, x, y, top + 0.1)
             assert is_inside(body_solid, x, y, top + 1.0)
+            a = math.atan2(y, x)
+            for d, inside in ((mouth_r - 0.05, False), (mouth_r + 0.15, True), (-mouth_r + 0.05, False), (-mouth_r - 0.15, True)):
+                assert is_inside(body_solid, x + d * math.cos(a), y + d * math.sin(a), FLANGE + 0.02) == inside, (x, y, d)
 
     def test_nut_pockets(self, body_solid):
         """The housing nuts' hex pockets from the hub end down to the nuts' seats (z_housing_nuts): void 3 mm off each
