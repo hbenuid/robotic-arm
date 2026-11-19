@@ -99,9 +99,9 @@ class ShaftParams:
     support_pin_hole_depth: float = 11.0   # keeps a 1 mm wall to the 14 mm D-bore; pin 2 mm proud
     input_collar_od: float = 10.0      # enlarged input section around the D-bore
     d_bore_dia: float = 5.0            # motor shaft (clearance applied in the builder)
-    d_bore_flat: float = 4.5           # D-flat width (matches the motor shaft D-cut)
+    d_bore_flat: float = 4.5           # the bore's flat lies d_bore_flat / 2 (+ d_bore_clearance_add) off the axis (motor.py)
     d_bore_depth: float = 14.0         # clears the 22 mm motor shaft past the 9 mm plate (13 + 1)
-    bridge_flange_add: float = 6.0     # [DESIGN] bridge/retention flange OD = bearing_seat_od + this (23.10)
+    bridge_flange_add: float = 6.0     # [DESIGN] bridge/retention flange OD = bearing_seat_od + this (the port's 23.10)
 
     @property
     def bridge_flange_od(self) -> float:
@@ -363,7 +363,7 @@ def compute_housing_bolt_angles(cfg: DriveConfig) -> list[float]:
 # The port: the CadQuery drive exactly (the designed parts' REFERENCE_BUILD - tests/cycloidal/test_port.py).
 LEGACY_CONFIG = DriveConfig()
 
-# What the parts build - six departures from the port:
+# What the parts build - seven departures from the port:
 #  * the housing on 6 bolts, not 8 - 6 pillars at 60 degrees, the first at ARM_DEG: on the centreline of the upper arm,
 #    which rises off the turning shell between the two windows either side of it (ShellParams.arm_windows);
 #  * a smaller gear: the ring-pin circle and everything outside it (the bore, the bolt circle) RING_INSET further in
@@ -386,7 +386,11 @@ LEGACY_CONFIG = DriveConfig()
 #  * the discs capture their 6003s: each disc DiscParams.bearing_lip thicker on its outer face - disc 1's toward the
 #    motor plate, disc 2's toward the hub, the ends' mirror kept -, a lip there over the bearing's outer race, its seat
 #    blind from the inner face (the bearing pressed in from there onto the lip; in the drive the shaft's bridge flange
-#    stops it that way). The seats, the stack and the shaft do not move: each lip stands in its clearance to the plate.
+#    stops it that way). The seats, the stack and the shaft do not move: each lip stands in its clearance to the plate;
+#  * the fits measured on the printed parts ([MEASURE], each a test print at 0.20 layers): the output hub's grip in its
+#    6814 (output_hub.od), the eccentric shaft's lobes in the 6003s and its D-bore on the motor's shaft (shaft,
+#    tolerances.d_bore_clearance_add). The kit motors' modelled shaft keeps the port's flat (MotorParams.shaft_dcut_flat,
+#    baked into vendor/ by tools/reference/split_mks_motor.py; docs/open_issues.md).
 RING_INSET = 4.0   # [DESIGN] mm, radial
 LUG_WALL = 2.5     # [DESIGN] mm, radial, past the housing nuts' pockets at the pillar tips
 ARM_DEG = 47.584167   # [DESIGN] the upper arm's centreline in the drive's frame, atan2(y, x): lib/upper_arm/params.py
@@ -420,4 +424,12 @@ DEFAULT_CONFIG = replace(
                        od=70.55),   # [MEASURE] the 6814's 70 bore + 0.55: a firm press at 0.20 (a ring test; the port's
     #                                 70.3 was a little loose on the print) - the motor plate's sleeve end reads it too
     shell=_SHELL,
+    shaft=replace(LEGACY_CONFIG.shaft,
+                  bearing_seat_od=17.15,   # [MEASURE] the 6003's 17 bore + 0.15 at 0.20 (a peg test; the port's 17.10 was
+                  #                          loose on the print) - the bridge flange follows (+ bridge_flange_add: 23.15)
+                  d_bore_flat=4.0),   # [MEASURE] the motor's shaft is 4.5 flat to round (calipers): its flat 2.0 off the
+                  #                     axis, where the port's 4.5 put the bore's at 2.25 (a 4.75 shaft) - it turned 15 deg
+    tolerances=replace(LEGACY_CONFIG.tolerances,
+                       d_bore_clearance_add=0.075),   # [MEASURE] a D-hole test at 0.20: the shaft's D + 0.15 on the round
+    #                                                   and on the flat, Ø5.15 and 4.65 flat to round (the port's 0.065)
 )   # [DESIGN]

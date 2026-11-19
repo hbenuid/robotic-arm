@@ -115,7 +115,7 @@ GAUGES = (
         Use(_WROLL.bearing_bore + _WROLL.journal_add, "wrist_roll_shaft (firm press, 0.20: measured)")),
         (("height", 5.0), ("spacing", 37.0), ("bore", 24.0)), note="Rings 5 mm tall, a 6806 over one at a time."),
     Gauge("boss17", "journals", "Ø17 journal: the 6003s' inner race", "6003 BORE", "peg_strip", (
-        Use(_D.shaft.bearing_seat_od, "cycloidal_eccentric_shaft's lobes (light press)"),),
+        Use(_D.shaft.bearing_seat_od, "cycloidal_eccentric_shaft's lobes (press, 0.20: measured)"),),
         (("height", 5.0), ("spacing", 27.0)), note="Pegs 5 mm tall, a 6003 over one at a time."),
     # --- pins, shafts and pilots
     Gauge("pin4", "pins", "Ø4 pins: the ring pins and output pins", "4MM PIN", "hole_strip", (
@@ -125,7 +125,7 @@ GAUGES = (
         Use(_D.shaft.support_pin_dia + 2.0 * _TOL.dowel_bore_clearance_add, "cycloidal_eccentric_shaft (firm press)"),),
         (("depth", _D.shaft.support_pin_hole_depth), ("width", 5.3)), note="Blind, as deep as the shaft's."),
     Gauge("dbore", "pins", "The motor shaft's D-bore", "NEMA D-BORE", "hole_strip", (
-        Use(_D.shaft.d_bore_dia + 2.0 * _TOL.d_bore_clearance_add, "cycloidal_eccentric_shaft (slip to light press)"),),
+        Use(_D.shaft.d_bore_dia + 2.0 * _TOL.d_bore_clearance_add, "cycloidal_eccentric_shaft (snug, 0.20: measured)"),),
         (("depth", 10.0), ("width", 5.3), ("shape", "d"), ("floor", 0.0), ("through", True),
          ("d_flat", _D.shaft.d_bore_flat / 2.0 + _TOL.d_bore_clearance_add)),
         note="Through, 10 tall; the flat moves out half a step with each step."),
