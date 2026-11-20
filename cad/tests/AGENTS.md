@@ -57,10 +57,11 @@ reductions / limits / home angles (its `config.py` loaded by path), URDF/SRDF/SD
 `./cadtool validate`, which need the pinned server: `./cadtool server`), `test_tooling.py` (the installed cad and OCP
 kernel are the pinned ones, one complete OCP distribution, no cad-server in the venv,
 `./cadtool inspect` agrees with the kernel, the retired inspect verbs,
-telemetry and automatic updates kept off, no `cadgen` import, no `CADGEN_` name in the code and no second pin, `./cadtool cad` refusing what
+telemetry, cad's own updates and its plugin updates kept off, `./cadtool doctor`'s readers of what moves the machine,
+no `cadgen` import, no `CADGEN_` name in the code and no second pin, `./cadtool cad` refusing what
 moves the machine and its retired verbs saying what replaced them,
-`./cadtool stop` ending only this venv's workers, the two `.claude/settings.json` the same, no tracked `CLAUDE.md` / `CLAUDE.local.md`, every
-tracked name lowercase),
+`./cadtool stop` ending only this venv's workers, the two `.claude/settings.json` the same and the plugin from upstream's
+`latest` branch, no tracked `CLAUDE.md` / `CLAUDE.local.md`, every tracked name lowercase),
 `test_mounts.py` (the mounted motors: axis on the joint, face on the host's pad / plate, board on the rear face, interference budget,
 the base stack above the base bottom, the driven pulleys' planes within the shafts, the elbow motor's 20T level with its 90T; each belt joint's bearing stack between its
 coupler's stub and its driven pulley; the 90T pulley bolts: seats, reach, the opened holes, the nuts' designed press; the base_yaw

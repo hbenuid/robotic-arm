@@ -13,15 +13,16 @@ usage() {
 cadtool - cad + this uv project (paths relative to cad/)
   ./cadtool setup                                   per machine: uv sync, bytecode compiled (+ the OCP kernel check) + the git pre-commit hook (ruff)
                                                     + git notes fetching + ./cadtool server
-  ./cadtool server                                  the machine's cad-server at this project's pin, telemetry and automatic updates
-                                                    stored off first, then `cad doctor`
-                                                    (a linked worktree only checks it: a branch never moves the machine)
-  ./cadtool doctor                                  the venv's, the server's and the plugin's release vs the pin, the stored telemetry
-                                                    and automatic-update choices, the OCP kernel, the machine's installation and the
-                                                    server running (a `cad update` moves both), no other text-to-cad plugin
+  ./cadtool server                                  the machine's cad (a uv tool: the command and its server) at this project's pin,
+                                                    telemetry, cad's own updates and its plugin updates stored off first, then
+                                                    `cad server start` (a linked worktree only checks it: a branch never moves the machine)
+  ./cadtool doctor                                  the venv's, the machine's and the plugin's release vs the pin, the stored telemetry,
+                                                    update and plugin-update choices, the OCP kernel, the server running (its release,
+                                                    from the uv tool), no cad-server tool left, no other text-to-cad plugin
   ./cadtool gen <model.py>... [--force]             build: run the model script(s) -> the sibling <name>.step (an assembly's
                                                     children write theirs too); a current one says "took ... nothing ran" and
-                                                    keeps its file; --force runs every kernel call again (CAD_ENGINE_MEMO=0)
+                                                    keeps its file; --force runs every kernel call again (CAD_ENGINE_MEMO=0);
+                                                    starts the server where none runs (as every verb that needs it does)
   ./cadtool step ...                                alias of gen
   ./cadtool inspect <file.step> [--planes] [--json] every leaf's ref, solids, faces, volume, bbox of a saved STEP
                                                     (--planes: + every planar face as normal / offset / area)
@@ -42,7 +43,7 @@ cadtool - cad + this uv project (paths relative to cad/)
   ./cadtool stop --device                           stop the whole server, for EVERY session on this machine
   ./cadtool skill <skill> <tool> [args]             a plugin skill script: skills/<skill>/scripts/<tool>
                                                     (+ the skill's requirements.txt, unlocked, in uv's cache)
-  ./cadtool cad ...                                 any `cad` subcommand (`./cadtool cad --help`) but setup, update, uninstall, doctor, run
+  ./cadtool cad ...                                 any `cad` subcommand (`./cadtool cad --help`) but setup, update, plugin, run
                                                     (printability: ./cadtool cad step dfm print/<name>.step --process printing)
   ./cadtool pytest [--full] [pytest args]           test suite: the test files a change reaches since they last passed, on
                                                     workers for the machine (tests/run.py); --full every file (Recipe C,
@@ -87,17 +88,37 @@ doc_type() {  # cad's document type of a file (`cad <type> <operation> FILE`), f
   esac
 }
 
-server_release() {  # the cad-server uv installed, from its receipt: reading it runs nothing of cad, so tells no notice
+server_release() {  # the release of the machine's cad, the uv tool, from its environment's metadata (its receipt keeps
+  # only the specifier it was installed by): reading it runs nothing of cad, so tells no notice
+  local found
+  found="$(ls -d "$(uv tool dir)"/cad/lib/python*/site-packages/cad-[0-9]*.dist-info 2>/dev/null | head -1 || true)"
+  found="${found##*/cad-}"; echo "${found%.dist-info}"
+}
+
+old_tool() {  # the release of the cad-server uv tool, which carried the `cad` command until 0.11.12 (an alias of cad since)
   sed -n 's/.*name = "cad-server", specifier = "==\([^"]*\)".*/\1/p' "$(uv tool dir)/cad-server/uv-receipt.toml" 2>/dev/null
 }
 
-need_server() {
+need_cad() {  # the machine's cad at the pin
   local have want
   have="$(server_release || true)"; want="$(pin)"
   if [[ "$have" != "$want" ]]; then
-    echo "cadtool: cad-server ${have:-is not installed}, this checkout pins $want - ./cadtool setup (docs/toolchain.md)" >&2
+    [[ -n "$have" ]] || have="$(old_tool || true)"
+    echo "cadtool: cad ${have:-is not installed} on this machine, this checkout pins $want - ./cadtool setup (docs/toolchain.md)" >&2
     exit 1
   fi
+}
+
+need_server() {  # need_cad, and its server running: from cad 0.11.12 nothing but `cad server start` starts one, which
+  # joins a server of its own release, replaces an older release's and joins a newer one's (refused here)
+  local said want
+  need_cad; want="$(pin)"
+  said="$("$(cad_bin)" server start 2>&1)" || { printf 'cadtool: %s\n' "$said" >&2; exit 1; }
+  case "$said" in
+    "the cad server (cad $want) is already running"*) ;;
+    "started the cad server (cad $want)"*) printf 'cadtool: %s\n' "$said" >&2 ;;
+    *) printf 'cadtool: %s - the pin is %s (docs/toolchain.md Pins)\n' "$said" "$want" >&2; exit 1 ;;
+  esac
 }
 
 plugin_dir() {  # the plugin cache entry of the pin, else the newest (warned)
@@ -127,27 +148,22 @@ print(" ".join(sorted(key for key in plugins if key != "text-to-cad@earthtojake"
     "${1:-$HOME/.claude/plugins/installed_plugins.json}" 2>/dev/null
 }
 
-installation() {  # the machine's current cad installation, "<release> <prefix>": the one cad's state folder names
-  # (installations/current), read where cad's command reads it - CAD_STATE_DIR, else the platform's state folder
-  uv run --frozen python -c '
-import json, os, pathlib, sys
-home = pathlib.Path.home()
-if os.environ.get("CAD_STATE_DIR"):
-    state = pathlib.Path(os.environ["CAD_STATE_DIR"])
-elif sys.platform == "darwin":
-    state = home / "Library/Application Support/cad"
-else:
-    state = pathlib.Path(os.environ.get("XDG_STATE_HOME") or home / ".local/state") / "cad"
-try:
-    release = (state / "installations/current").read_text().strip()
-    print(release, json.loads((state / "installations" / f"{release}.json").read_text())["prefix"])
-except (OSError, ValueError, KeyError):
-    pass' 2>/dev/null
+plugin_release() {  # the release a plugin folder carries: its .claude-plugin/plugin.json's "version"
+  sed -n 's/^ *"version": *"\([^"]*\)".*/\1/p' "$1/.claude-plugin/plugin.json" 2>/dev/null | head -1
 }
 
-serving() {  # the release of the server running, from `cad status`'s first line on stdin:
-  # "engine server <pid> (cad-server <release>), up ..."
-  sed -n '1s/^engine server [0-9]* (cad-server \([^)]*\)).*/\1/p'
+running() {  # the server running, from `cad server status --json` on stdin: "<release> <its environment>", or
+  # "- <why not>" (none runs, or one of another release, which a cad command is refused)
+  uv run --frozen python -c '
+import json, os, sys
+try:
+    answer = json.load(sys.stdin)
+except ValueError:
+    answer = {}
+if answer.get("ok") and answer.get("version"):
+    print(answer["version"], os.path.realpath(answer.get("prefix") or "?"))
+else:
+    print("-", answer.get("error") or "no answer")' 2>/dev/null
 }
 
 CAD_PLUGIN="${CAD_PLUGIN:-}"
@@ -155,7 +171,7 @@ need_plugin() {
   [[ -n "$CAD_PLUGIN" ]] || CAD_PLUGIN="$(plugin_dir)"
   if [[ -z "$CAD_PLUGIN" || ! -d "$CAD_PLUGIN/skills" ]]; then
     echo "cadtool: text-to-cad@earthtojake plugin not found under ~/.claude/plugins/cache/earthtojake" >&2
-    echo "  install:  claude plugin marketplace add https://github.com/earthtojake/text-to-cad.git" >&2
+    echo "  install:  claude plugin marketplace add earthtojake/text-to-cad#latest" >&2
     echo "            claude plugin install text-to-cad@earthtojake" >&2
     exit 1
   fi
@@ -177,35 +193,46 @@ run_skill() {  # run_skill <skill> <tool> [args...]  ->  python skills/<skill>/s
   exec uv run --frozen ${with[@]+"${with[@]}"} python "$target" "$@"
 }
 
-cg() {  # the machine's pinned `cad`. Refused: what would move the machine off the pin, and `run`, which builds in the
-  # server's own environment instead of this venv (docs/toolchain.md Gotchas).
+cg() {  # the machine's pinned `cad`, its server started where a command needs it. Refused: what would move the machine
+  # off the pin or the agent apps' plugins (`plugin update` runs upstream's install command in every app), and `run`,
+  # which builds in the server's own environment instead of this venv (docs/toolchain.md Gotchas).
   case "${1:-}" in
-    setup|update|uninstall|doctor|run)
+    setup|update|plugin|run)
       echo "cadtool: 'cad $1' is not run here - ./cadtool setup / server / doctor / gen (docs/toolchain.md Gotchas)" >&2
       exit 2 ;;
+    ""|-*|help|server|telemetry|doctor|cache|requirement) need_cad ;;  # these need no server, or start / stop it
+    *) need_server ;;
   esac
-  need_server
   exec "$(cad_bin)" "$@"
 }
 
-install_server() {  # the machine's cad at the pin: telemetry off before anything else of cad runs, then `cad doctor`
-  local want had cad
-  want="$(pin)"; had="$(server_release || true)"; cad="$(cad_bin)"
+install_server() {  # the machine's cad at the pin: the stored choices before its server starts
+  local want had old cad
+  want="$(pin)"; had="$(server_release || true)"; old="$(old_tool || true)"; cad="$(cad_bin)"
   if [[ -f "$CAD_DIR/../.git" && -z "${CAD_STATE_DIR:-}" ]]; then  # a linked worktree: .git is a file
-    if [[ "$had" == "$want" ]]; then echo "cadtool: cad-server $had, the pin"; return 0; fi
-    echo "cadtool: cad-server ${had:-is not installed}, this worktree pins $want: a branch never moves the machine (docs/toolchain.md Testing a bump)" >&2
+    if [[ "$had" == "$want" && -z "$old" ]]; then echo "cadtool: cad $had, the pin"; return 0; fi
+    echo "cadtool: cad ${had:-${old:-is not installed}} on this machine, this worktree pins $want: a branch never moves the machine (docs/toolchain.md Testing a bump)" >&2
     return 1
   fi
-  if [[ "$had" != "$want" ]]; then
-    uv tool install --force --managed-python --python "$(cat "$CAD_DIR/.python-version")" "cad-server==$want"
+  # The release that goes stops its server first, by its own command: the cad-server tool (0.11.11 and earlier, whose
+  # `cad server` runs a server) says `cad stop`, the cad tool `cad server stop`; whichever runs, the server is stopped.
+  if [[ -n "$old" ]]; then
+    "$cad" stop || echo "cadtool: cad-server $old did not stop its server - the next start replaces it" >&2
+    uv tool uninstall cad-server
+    had=""  # its `cad` launcher went with it
+  elif [[ -n "$had" && "$had" != "$want" ]]; then
+    "$cad" server stop
   fi
-  # The stored choices, per machine: what the server and the plugin go by. Off first: `cad doctor` starts the server.
-  # Automatic updates (cad 0.11) would install a newer release by itself and move every agent app's plugin to it.
+  if [[ "$had" != "$want" ]]; then
+    uv tool install --force --managed-python --python "$(cat "$CAD_DIR/.python-version")" "cad==$want"
+  fi
+  # The stored choices, per machine: what the server goes by, so stored before it starts. Telemetry; cad's own update
+  # (on by default from 0.11.12: it would install every newer 0.x release by itself); and the plugin's (it would run
+  # upstream's install command in every agent app each time cad got newer).
   "$cad" telemetry off >/dev/null && echo "cadtool: cad telemetry off (stored)"
   "$cad" update auto off >/dev/null && echo "cadtool: cad automatic updates off (stored)"
-  "$cad" doctor
-  # The running server keeps the release it started with: the next client starts the pin's.
-  if [[ -n "$had" && "$had" != "$want" ]]; then "$cad" stop; fi
+  "$cad" plugin update auto off >/dev/null && echo "cadtool: cad's plugin updates off (stored)"
+  "$cad" server start
 }
 
 install_git_hook() {  # .git/hooks/pre-commit = a stub that runs the committed ../.githooks/pre-commit (ruff on the staged
@@ -288,13 +315,13 @@ case "$cmd" in
     if [[ $# -eq 0 ]]; then set -- assemblies/arm.step; fi
     cg viewer "$@" ;;
   status)
-    cg status "$@" ;;
+    cg server status "$@" ;;
   stop)
-    # `cad stop` stops the server for every session on the machine, so that takes --device; the server has no verb for
-    # one environment, so plain stop ends this venv's idle workers by their pid (tools/stop_workers.py).
-    if [[ "${1:-}" == "--device" ]]; then shift; cg stop "$@"; fi
-    need_server
-    "$(cad_bin)" status --json | uv run --frozen python tools/stop_workers.py ;;
+    # `cad server stop` stops the server for every session on the machine, so that takes --device; the server has no
+    # verb for one environment, so plain stop ends this venv's idle workers by their pid (tools/stop_workers.py).
+    if [[ "${1:-}" == "--device" ]]; then shift; cg server stop "$@"; fi
+    need_cad
+    { "$(cad_bin)" server status --json 2>/dev/null || true; } | uv run --frozen python tools/stop_workers.py ;;
   cad)
     cg "$@" ;;
   server)
@@ -303,10 +330,8 @@ case "$cmd" in
     skill="${1:?usage: cadtool skill <skill> <tool> [args]}"; tool="${2:?usage: cadtool skill <skill> <tool> [args]}"; shift 2
     run_skill "$skill" "$tool" "$@" ;;
   doctor)
-    # Changes nothing, so never `cad doctor`, which registers an installation and starts the server (./cadtool server
-    # runs it). Every release against the pin, and the stored telemetry and automatic-update choices with the
-    # environment's switches taken off: a switch reads "off" with no choice stored at all, and it never reaches the
-    # server.
+    # Changes nothing: every release against the pin, the stored choices with the environment's switches taken off (a
+    # switch reads "off" with no choice stored at all, and it never reaches the server), and the server running.
     rc=0
     need_plugin
     want="$(pin)"
@@ -315,42 +340,51 @@ case "$cmd" in
       else echo "$1: ${2:-none}, the pin is $want - MISMATCH, docs/toolchain.md Pins"; rc=1; fi
     }
     said "cad in the venv" "$(venv_cad || true)"
-    said "cad-server on this machine" "$(server_release || true)"
-    plugin="$(grep -o -m1 'cad-mcp==[0-9][0-9.]*' "$CAD_PLUGIN/claude.mcp.json" || true)"
-    said "the plugin's pin ($CAD_PLUGIN)" "${plugin#cad-mcp==}"
+    tool="$(server_release || true)"
+    said "cad on this machine (its uv tool)" "$tool"
+    old="$(old_tool || true)"
+    if [[ -n "$old" ]]; then
+      echo "the cad-server tool (0.11.11 and earlier): $old, still installed - MISMATCH, run ./cadtool server"; rc=1
+    fi
+    said "the plugin's release ($CAD_PLUGIN)" "$(plugin_release "$CAD_PLUGIN" || true)"
     said "the installed plugin entries" "$(plugin_entries || true)"
     others="$(other_plugins || true)"
     if [[ -n "$others" ]]; then
-      echo "other text-to-cad plugins: $others - MISMATCH, a cad update put them there: docs/toolchain.md Gotchas"; rc=1
+      echo "other text-to-cad plugins: $others - MISMATCH, upstream's installer put them there: docs/toolchain.md Gotchas"
+      rc=1
     fi
     told="$(env -u CAD_TELEMETRY -u DO_NOT_TRACK "$(cad_bin)" telemetry status 2>/dev/null | head -1 || true)"
     case "$told" in
       *"off: your choice"*) echo "telemetry: off, stored" ;;
       *) echo "telemetry: '${told:-no answer}' - NOT stored off, run ./cadtool server"; rc=1 ;;
     esac
-    # Asked of the pinned server only: an older one has no `update auto` and could read it as `cad update`.
-    if [[ "$(server_release || true)" == "$want" ]]; then
+    # Asked of the pinned cad only: these are its words, and a cad without `update auto` reads it as `cad update`.
+    if [[ "$tool" == "$want" ]]; then
       auto="$(env -u CAD_UPDATE_CHECK -u CI "$(cad_bin)" update auto status 2>/dev/null | head -1 || true)"
-      case "$auto" in
-        *"off (your choice)"*) echo "automatic updates: off, stored" ;;
-        *) echo "automatic updates: '${auto:-no answer}' - NOT stored off, run ./cadtool server"; rc=1 ;;
-      esac
+      if [[ "$auto" == "update auto: off" ]]; then echo "automatic updates: off, stored"
+      else echo "automatic updates: '${auto:-no answer}' - NOT stored off, run ./cadtool server"; rc=1; fi
+      auto="$("$(cad_bin)" plugin update auto status 2>/dev/null | head -1 || true)"
+      if [[ "$auto" == "plugin update auto: off" ]]; then echo "plugin updates: off, stored"
+      else echo "plugin updates: '${auto:-no answer}' - NOT stored off, run ./cadtool server"; rc=1; fi
     else
-      echo "automatic updates: not asked - the server is not the pin"
+      echo "automatic and plugin updates: not asked - cad on this machine is not the pin"
     fi
     if uv run --frozen python -c "import OCP.gp" 2>/dev/null; then echo "kernel: OCP imports"
     else echo "kernel: OCP.gp does not import - run ./cadtool setup"; rc=1; fi
-    # A `cad update` (the viewer's Update button) leaves the uv tool and this plugin's entries on the pin: cad's own copy
-    # of the release becomes the machine's installation and serves every session (docs/toolchain.md Gotchas).
-    read -r release prefix <<<"$(installation || true)"
-    if [[ "$prefix" == "$(uv tool dir)/cad-server" ]]; then said "the machine's installation (cad-server's uv tool)" "$release"
+    # The server every session builds on: the pin's, run from the uv tool - never from a venv's own `cad` (the library
+    # carries the command since 0.11.12), whose server would go with its worktree.
+    read -r release prefix <<<"$({ "$(cad_bin)" server status --json 2>/dev/null || true; } | running || true)"
+    if [[ "$release" == "-" ]]; then
+      case "$prefix" in
+        *"is not running"*) echo "the server running: none (the next ./cadtool gen starts it)" ;;
+        *) echo "the server running: $prefix - MISMATCH, docs/toolchain.md Pins"; rc=1 ;;
+      esac
     else
-      echo "the machine's installation: cad-server ${release:-none}${prefix:+ in $prefix}, not the uv tool - MISMATCH," \
-        "./cadtool server; after a cad update, docs/toolchain.md Gotchas"; rc=1
+      said "the server running" "$release"
+      home="$(cd "$(uv tool dir)/cad" 2>/dev/null && pwd -P || true)"
+      if [[ -n "$prefix" && "$prefix" == "$home" ]]; then echo "the server's environment: the uv tool ($home)"
+      else echo "the server's environment: ${prefix:-unknown}, not the uv tool's ${home:-(none)} - MISMATCH, ./cadtool stop --device"; rc=1; fi
     fi
-    running="$("$(cad_bin)" status 2>&1 | head -1 || true)"
-    echo "$running"
-    if [[ "$running" == "engine server "* ]]; then said "the server running" "$(printf '%s\n' "$running" | serving)"; fi
     exit $rc ;;
   setup)
     # Bytecode compiled into .venv (never into cad/: PYTHONDONTWRITEBYTECODE above), else every process - each build

@@ -2,8 +2,9 @@
   "extraKnownMarketplaces": {
     "earthtojake": {
       "source": {
-        "source": "git",
-        "url": "https://github.com/earthtojake/text-to-cad.git"
+        "source": "github",
+        "repo": "earthtojake/text-to-cad",
+        "ref": "latest"
       }
     }
   },

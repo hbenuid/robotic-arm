@@ -6,7 +6,7 @@
 # as long as its slowest job - one of the slow lane's parts or the arm build - not their sum. A CAD job starts a
 # Python process per cad server worker and per pytest worker, so its venv is synced with compiled bytecode
 # (`cadtool`'s PYTHONDONTWRITEBYTECODE keeps each from writing its own). The jobs that build or validate install the
-# pinned cad-server first (`./cadtool server`), as a machine does; the fast lane needs none.
+# pinned cad first (`./cadtool server`: the uv tool and its server), as a machine does; the fast lane needs none.
 name: CI
 
 on:

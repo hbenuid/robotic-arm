@@ -23,7 +23,7 @@ import `lib`, `parts`, `assemblies` and `robot`; only `tests` imports them.
 | `export_printables.py` | one STEP per printed part into `print/` (git-ignored) | — |
 | `export_gauges.py` | the fit gauges (`lib/gauges`): one STEP per bed plate into `print/gauges/` (git-ignored), every coupon a named body; `--list` the gauges, their sizes and the arm's; how to print and read them: its docstring | — |
 | `step_facts.py` | `./cadtool inspect` / `inspect diff` of saved STEPs | — |
-| `stop_workers.py` | `./cadtool stop`: this venv's idle workers on the machine's one server, from `cad status --json` | — |
+| `stop_workers.py` | `./cadtool stop`: this venv's idle workers on the machine's one server, from `cad server status --json` | — |
 | `robot/derive.py` | joint origins, link inertials, URDF / SDF drafts; `--check` compares the checked-in files | — (stdout) |
 | `robot/export_link_meshes.py` | `robot/meshes/<link>.stl` (`tests/test_robot.py` fails on a stale one) | *writes* |
 | `reference/import_solidworks.py` | the SolidWorks exports → `reference/solidworks/`, seeds `vendor/`, `manifest.json` | *writes* |
