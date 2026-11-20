@@ -1,10 +1,11 @@
 """The local tooling stays healthy: the venv holds the cad library and the OCP kernel pyproject.toml pins
 (and only ONE OCP distribution) and no cad-server, and ./cadtool inspect (tools/step_facts.py) agrees with the kernel;
-the retired inspect verbs teach the new syntax, cad's telemetry and automatic updates stay off, ./cadtool doctor names
-what a `cad update` moved, no `cadgen` import, no
+the retired inspect verbs teach the new syntax, cad's telemetry, its own updates and its plugin updates stay off,
+./cadtool doctor names what moves the machine off the pin, no `cadgen` import, no
 CADGEN_ name and no second pin is left, the retired cadtool verbs say what replaced them and its snapshot / export name cad's document type,
 ./cadtool refuses what would move the machine off the pin and its stop ends only this venv's workers,
-the two .claude/settings.json are the same, no tracked CLAUDE.md hides an AGENTS.md, every tracked name is lowercase."""
+the two .claude/settings.json are the same and take the plugin from upstream's `latest` branch, no tracked CLAUDE.md
+hides an AGENTS.md, every tracked name is lowercase."""
 import json
 import os
 import pathlib
@@ -30,13 +31,15 @@ def pinned(package: str) -> str:
 
 
 def test_installed_cad_is_the_pinned_one():
-    # The machine's cad-server and the plugin's claude.mcp.json carry the same pin; ./cadtool doctor checks those.
+    # The machine's cad (its uv tool) and the plugin's .claude-plugin/plugin.json carry the same pin; ./cadtool doctor
+    # checks those.
     assert metadata.version("cad") == pinned("cad"), "run ./cadtool setup"
 
 
 def test_the_server_stays_out_of_the_venv():
-    """cad-server in a venv lets that venv register as the machine's installation, and a worktree's goes with the
-    worktree (docs/toolchain.md Pins): the server is a uv tool, one per machine."""
+    """cad-server, an empty alias of cad since 0.11.12, is no dependency here: the toolchain's one pin is cad's, and
+    the machine's server runs from the cad uv tool, never from a venv's own `cad` command, whose server would go with
+    its worktree (docs/toolchain.md Pins)."""
     with pytest.raises(metadata.PackageNotFoundError):
         metadata.version("cad-server")
 
@@ -69,31 +72,36 @@ def test_step_facts_agree_with_the_kernel():
     assert step_facts.diff(path, path) == []
 
 
+def stored_before_the_server_starts(source: str, command: str) -> bool:
+    """Whether cadtool's install_server() runs `command` before `cad server start` - the one thing that starts the
+    server from cad 0.11.12, which goes by the choices stored then."""
+    install = re.search(r"^install_server\(\) \{(?P<body>.*?)^\}$", source, re.MULTILINE | re.DOTALL)
+    assert install, "cadtool has no install_server()"
+    stored, start = install["body"].find(f'"$cad" {command}'), install["body"].find('"$cad" server start')
+    return -1 < stored < start
+
+
 def test_cad_telemetry_stays_off():
     """cad sends usage stats and crash reports by default once a cad command has shown its notice; this repo keeps
     them off (docs/toolchain.md Pins). In the environment of every cadtool command (and VS Code's, `.env`) nothing shows
-    the notice or sends; `./cadtool server` stores the "off" the server and the plugin go by, before `cad doctor`
-    starts the server. That the choice IS stored is per machine: `./cadtool doctor` reads it and fails without it."""
+    the notice or sends; `./cadtool server` stores the "off" the server goes by, before it starts the server. That the
+    choice IS stored is per machine: `./cadtool doctor` reads it and fails without it."""
     source = (CAD_DIR / "cadtool").read_text()
     assert re.search(r"^export CAD_TELEMETRY=0$", source, re.MULTILINE), "cadtool no longer exports it"
-    install = re.search(r"^install_server\(\) \{(?P<body>.*?)^\}$", source, re.MULTILINE | re.DOTALL)
-    assert install, "cadtool has no install_server()"
-    off, doctor = install["body"].find('"$cad" telemetry off'), install["body"].find('"$cad" doctor')
-    assert -1 < off < doctor, "./cadtool server must store the off before `cad doctor` starts the server"
+    assert stored_before_the_server_starts(source, "telemetry off"), "./cadtool server must store the off first"
     assert re.search(r"^    install_server ;;$", source, re.MULTILINE), "`server` / `setup` no longer run it"
     assert "CAD_TELEMETRY=0" in (CAD_DIR / ".env").read_text().splitlines()
 
 
-def test_cad_automatic_updates_stay_off():
-    """From cad 0.11 the server installs a release that breaks nothing by itself and moves every agent app's plugin to
-    it, which takes the machine off the pin (docs/toolchain.md Pins). `./cadtool server` stores `cad update auto off`
-    before `cad doctor` starts the server, as it does the telemetry off; `./cadtool doctor` reads it back."""
+@pytest.mark.parametrize("switch", ["update auto", "plugin update auto"])
+def test_cad_updates_stay_off(switch):
+    """From cad 0.11.12 cad installs every newer 0.x release by itself, on by default (`update auto`), and its server
+    can run upstream's install command in every agent app each time cad got newer (`plugin update auto`): either takes
+    the machine off the pin (docs/toolchain.md Pins). `./cadtool server` stores both off before it starts the server,
+    as it does the telemetry off; `./cadtool doctor` reads each back."""
     source = (CAD_DIR / "cadtool").read_text()
-    install = re.search(r"^install_server\(\) \{(?P<body>.*?)^\}$", source, re.MULTILINE | re.DOTALL)
-    assert install, "cadtool has no install_server()"
-    off, doctor = install["body"].find('"$cad" update auto off'), install["body"].find('"$cad" doctor')
-    assert -1 < off < doctor, "./cadtool server must store automatic updates off before `cad doctor` starts the server"
-    assert "update auto status" in source, "./cadtool doctor no longer reads the stored choice"
+    assert stored_before_the_server_starts(source, f"{switch} off"), f"./cadtool server must store `{switch} off` first"
+    assert f'"$(cad_bin)" {switch} status' in source, f"./cadtool doctor no longer reads `{switch}`"
 
 
 def cadtool_function(name: str, *args: str, env: dict[str, str] | None = None, stdin: str = "") -> str:
@@ -105,25 +113,37 @@ def cadtool_function(name: str, *args: str, env: dict[str, str] | None = None, s
     return proc.stdout.strip()
 
 
-def test_doctor_names_what_a_cad_update_moved(tmp_path):
-    """A `cad update` - the viewer's Update button - leaves the pin with no error: cad's own copy of a release becomes the
-    machine's installation and serves every session, and upstream's text-to-cad@text-to-cad plugin replaces this one
-    (docs/toolchain.md Gotchas). The uv tool's release and this plugin's entries still read the pin, so `./cadtool
-    doctor` also reads the server running, the installation cad's state folder names current (`CAD_STATE_DIR` first,
-    as cad's command reads it) and every other text-to-cad plugin."""
+def test_doctor_names_what_moves_the_machine(tmp_path):
+    """What leaves the pin says no error of its own: a cad updated by itself or by hand (the uv tool's release), the
+    cad-server tool of 0.11.11 and earlier left beside the cad one, a server of another release or one run from a
+    venv's own `cad` (gone with its worktree), and upstream's installer, which puts text-to-cad@text-to-cad (or its
+    older cad@text-to-cad) beside this plugin (docs/toolchain.md Gotchas). `./cadtool doctor` reads each; its readers
+    are checked here on files of their shape: the tool's metadata and receipt (`UV_TOOL_DIR`, as uv reads it), the
+    plugin's manifest, `cad server status --json` and the installed plugins."""
     source = (CAD_DIR / "cadtool").read_text()
     doctor = re.search(r"^  doctor\)(?P<body>.*?)^  setup\)", source, re.MULTILINE | re.DOTALL)
     assert doctor, "cadtool has no doctor verb"
-    for check in ('said "the server running"', "$(installation ||", "$(other_plugins ||"):
+    for check in ('said "the server running"', "the server's environment", "$(old_tool ||", "$(other_plugins ||",
+                  "$(plugin_release "):
         assert check in doctor["body"], f"./cadtool doctor no longer checks {check}"
-    line = "engine server 36631 (cad-server 0.11.10), up 4h30m · workers 1/14 · RSS 3.6 GB of 6.0 GB\n"
-    assert cadtool_function("serving", stdin=line) == "0.11.10"
-    folder = tmp_path / "installations"
-    folder.mkdir()
-    prefix = str(tmp_path / "Application Support" / "cad" / "releases" / "9.9.9")
-    (folder / "current").write_text("9.9.9")
-    (folder / "9.9.9.json").write_text(json.dumps({"version": "9.9.9", "prefix": prefix}))
-    assert cadtool_function("installation", env={"CAD_STATE_DIR": str(tmp_path)}) == f"9.9.9 {prefix}"
+    tools = tmp_path / "tools"
+    (tools / "cad" / "lib" / "python3.14" / "site-packages" / "cad-9.9.9.dist-info").mkdir(parents=True)
+    (tools / "cad" / "lib" / "python3.14" / "site-packages" / "cad_mcp").mkdir()
+    (tools / "cad-server").mkdir()
+    (tools / "cad-server" / "uv-receipt.toml").write_text(
+        '[tool]\nrequirements = [{ name = "cad-server", specifier = "==0.11.11" }]\n')
+    assert cadtool_function("server_release", env={"UV_TOOL_DIR": str(tools)}) == "9.9.9"
+    assert cadtool_function("old_tool", env={"UV_TOOL_DIR": str(tools)}) == "0.11.11"
+    assert cadtool_function("server_release", env={"UV_TOOL_DIR": str(tmp_path / "none")}) == ""
+    (tmp_path / ".claude-plugin").mkdir()
+    (tmp_path / ".claude-plugin" / "plugin.json").write_text(json.dumps({"name": "text-to-cad", "version": "9.9.9"},
+                                                                        indent=2))
+    assert cadtool_function("plugin_release", str(tmp_path)) == "9.9.9"
+    status = json.dumps({"ok": True, "pid": 1, "version": "9.9.9", "prefix": str(tools / "cad"), "workers": []})
+    assert cadtool_function("running", stdin=status) == f"9.9.9 {os.path.realpath(tools / 'cad')}"
+    refused = json.dumps({"ok": False, "error": "the cad server is not running: run `cad server start`",
+                          "reason": "failed"})
+    assert cadtool_function("running", stdin=refused) == "- the cad server is not running: run `cad server start`"
     plugins = tmp_path / "installed_plugins.json"
     plugins.write_text(json.dumps({"version": 2, "plugins": {name: [{}] for name in (
         "text-to-cad@earthtojake", "text-to-cad@text-to-cad", "cad@text-to-cad", "clangd-lsp@claude-plugins-official")}}))
@@ -184,10 +204,11 @@ def test_the_pin_has_one_home():
         assert not second.search(path.read_text()), f"{path.name} restates the pin"
 
 
-@pytest.mark.parametrize("verb", ["setup", "update", "uninstall", "doctor", "run"])
+@pytest.mark.parametrize("verb", ["setup", "update", "plugin", "run"])
 def test_cadtool_refuses_what_moves_the_machine(verb):
-    """`cad setup` / `update` take every agent app to the newest release whatever the pin says, `doctor` can register
-    an installation and `run` builds outside this venv (docs/toolchain.md Gotchas). Refused before anything of cad runs."""
+    """`cad update` takes the machine past the pin, `cad setup` (kept for 0.11.11 and earlier's updater) and `cad plugin
+    update` run upstream's install command, which puts its newest plugin in every agent app, and `run` builds outside
+    this venv (docs/toolchain.md Gotchas). Refused before anything of cad runs."""
     proc = subprocess.run(["./cadtool", "cad", verb], cwd=CAD_DIR, capture_output=True, text=True, check=False)
     assert proc.returncode == 2, proc.stdout + proc.stderr
     assert f"'cad {verb}' is not run here" in proc.stderr
@@ -203,6 +224,12 @@ def test_stop_ends_only_this_venvs_idle_workers():
                           {"pid": 5, "alive": True, "busy": False}]}  # a worker of the server's own environment
     assert stop_workers.split(status, ours) == ([1], [2])
     assert stop_workers.split({"workers": None}, ours) == ([], [])
+    # `cad server status --json` with no server running is an error document: no worker to end, and no failure;
+    # one of another release (which a cad command does not talk to) is said and fails
+    assert stop_workers.refusal({"ok": True, **status}) is None
+    assert stop_workers.refusal({"ok": False, "error": "the cad server is not running: run `cad server start`"})[1] == 0
+    assert stop_workers.refusal({"ok": False, "error": "cad here is 9.9.9; the running server is 9.9.8: ..."})[1] == 1
+    assert stop_workers.refusal({})[1] == 1
 
 
 def test_claude_settings_are_the_same_in_the_root_and_in_cad():
@@ -212,6 +239,15 @@ def test_claude_settings_are_the_same_in_the_root_and_in_cad():
     root = json.loads((CAD_DIR.parent / ".claude" / "settings.json").read_text())
     cad = json.loads((CAD_DIR / ".claude" / "settings.json").read_text())
     assert cad == root, "the two .claude/settings.json differ - edit the root one and copy it to cad/.claude/"
+
+
+def test_the_plugin_comes_from_upstreams_latest_branch():
+    """Upstream's `latest` branch carries the plugin alone, moved to each release once it is on PyPI; its `main` is where
+    development happens, ahead of the release between two (docs/toolchain.md Pins)."""
+    root = json.loads((CAD_DIR.parent / ".claude" / "settings.json").read_text())
+    source = root["extraKnownMarketplaces"]["earthtojake"]["source"]
+    assert source.get("ref") == "latest", source
+    assert root["enabledPlugins"] == {"text-to-cad@earthtojake": True}
 
 
 def tracked_names() -> list[str]:

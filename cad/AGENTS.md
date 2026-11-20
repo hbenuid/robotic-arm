@@ -66,14 +66,15 @@ Every command, its flags and what it prints: `./cadtool help` (for people: the `
 - **Never call bare `python`** — the system Python has no build123d (`./cadtool python` is the venv's).
 - **Never add `cadquery-ocp`** (the VTK build) or `cad-server` to `pyproject.toml` (why: `docs/toolchain.md`). The venv
   holds the `cad` library (`from cad import step`; never `cadgen`, its deprecated earlier name: `docs/toolchain.md`
-  Pins): decorators, geometry, the STEP reader. `cad-server` is the machine's one server and the `cad` command —
-  engine, viewer, snapshots —, a uv tool at this project's pin; the `text-to-cad@earthtojake` plugin ships the
-  `/text-to-cad:*` skill docs alone - Claude Code starts no MCP server for it, so no `cad_*` tools (`docs/toolchain.md`
-  Pins).
-- **Never `cad run`, `cad setup`, `cad update` or upstream's installer, whatever a skill says.** The plugin's skills
-  build with `cad run` and, on a failure, tell you to run `curl … install.sh | sh`: `cad run` builds in an environment
-  of its own (`uv run` with cad at the machine's release), not in this venv, and the installer takes every agent app on
-  the machine to the newest release whatever the pin says (`docs/toolchain.md` Gotchas). Here `./cadtool gen` and `./cadtool setup` replace
+  Pins): decorators, geometry, the STEP reader. The machine's `cad` — the command and its one server: engine, viewer,
+  snapshots — is a uv tool of the same package at this project's pin (the venv's own `cad` command is never run:
+  `./cadtool` reaches the tool's); the `text-to-cad@earthtojake` plugin ships the `/text-to-cad:*` skill docs alone -
+  no MCP server for Claude Code, so no `cad_*` tools (`docs/toolchain.md` Pins).
+- **Never `cad run`, `cad setup`, `cad update`, `cad plugin update` or upstream's installer, whatever a skill says.**
+  The plugin's skills build with `cad run` and, when `cad` is missing, tell you to run `uv tool install cad` or `curl …
+  install.sh | sh`: `cad run` builds in an environment of its own (`uv run` with cad at the machine's release), not in
+  this venv, and the others take the machine or every agent app's plugin to the newest release whatever the pin says
+  (`docs/toolchain.md` Gotchas). Here `./cadtool gen` and `./cadtool setup` replace
   them; a broken install is `./cadtool doctor`.
 - **A model is a script you run.** `./cadtool gen <model.py>` hands it to the machine's warm cad server
   (`docs/toolchain.md` Pins), which builds it in a worker of this venv's Python and writes its sibling STEP (git-ignored;

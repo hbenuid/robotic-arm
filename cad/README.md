@@ -27,8 +27,8 @@ below; the repo's `.claude/settings.json` enables its marketplace) — installed
 cd cad
 ./cadtool setup                  # uv sync (build123d/OCP/cad into ./.venv, bytecode compiled; reinstalls the OCP kernel if it does not import)
                                  # + the git pre-commit hook (ruff on staged .py files) + git notes fetching
-                                 # + the machine's cad-server at the pin, its telemetry stored off first
-claude plugin marketplace add https://github.com/earthtojake/text-to-cad.git
+                                 # + the machine's cad at the pin, its telemetry and updates stored off first
+claude plugin marketplace add earthtojake/text-to-cad#latest
 claude plugin install text-to-cad@earthtojake
 claude plugin install text-to-cad@earthtojake --scope project   # the repo's own scope (docs/toolchain.md)
 ./cadtool gen assemblies/arm.py  # build the arm: generated STEPs are git-ignored, each machine builds its own
@@ -56,7 +56,7 @@ the CAD kernel), updating the plugin and what a pull that changes `pyproject.tom
 | `./cadtool snapshot assemblies/arm.step snapshots/arm.png --size-profile assembly` | a PNG still for review — also `.urdf`/`.sdf`/`.stl` inputs |
 | `./cadtool viewer [file…]` | the CAD Viewer: opens each file's page on the machine's server (default `assemblies/arm.step`; the link is good for a day) |
 | `./cadtool status` / `./cadtool stop` | the machine's cad server: what it runs and holds, for every session / end this venv's idle workers (after a `pyproject.toml` change, when leaving a worktree); `stop --device` stops the server for every session |
-| `./cadtool server` | the machine's `cad-server` at this project's pin, telemetry and automatic updates stored off first (`setup` runs it; a linked worktree only checks) |
+| `./cadtool server` | the machine's `cad` (a uv tool) at this project's pin, telemetry, cad's own updates and its plugin updates stored off first, then its server started (`setup` runs it; a linked worktree only checks) |
 | `./cadtool validate robot/arm.urdf --strict` (`.srdf`, `.sdf --gz-check never`) | robot-description validators |
 | `./cadtool cad step dfm print/<name>.step --process printing` | printability of a printed part: walls, overhangs, support ([`parts/AGENTS.md`](parts/AGENTS.md) Printed vs. bought) |
 | `./cadtool skill <skill> <tool> [args]` | a plugin skill script (`print3d orca_presets.py`), its `requirements.txt`, if any, fetched into uv's cache |

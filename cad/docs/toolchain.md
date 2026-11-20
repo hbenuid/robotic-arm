@@ -6,32 +6,36 @@ history of every bump is `git log -- pyproject.toml uv.lock` from `cad/` (the ol
 as a git note).
 
 ## Pins
-- **One pin, `"cad[build123d]==<ver>"` in `pyproject.toml`**, for the three things upstream releases together: the
-  library in the venv (`cad`; its earlier name `cadgen` is a deprecated alias of the same modules, which warns
+- **One pin, `"cad[build123d]==<ver>"` in `pyproject.toml`**, for the two things upstream releases together. One is
+  `cad`, a single package (0.11.12 merged `cad-server` and `cad-mcp` into it; both names are empty aliases now): in
+  the venv it is the library (its earlier name `cadgen` is a deprecated alias of the same modules, which warns
   `CadDeprecationWarning` on import from 0.11.1 - an error under pytest (Gotchas) -, so nothing here imports it:
-  `test_tooling.py` checks); the
-  machine's server, `cad-server`, which is the `cad` command and everything that runs (a uv tool: `./cadtool server` installs it from the pin on a uv-managed Python, `uv tool dir --bin` holds the
-  command); and the `text-to-cad@earthtojake` plugin (`~/.claude/plugins/cache/earthtojake/text-to-cad/<ver>/`): its
-  skills, and a `claude.mcp.json` that pins `cad-mcp==<ver>`, CAD's MCP server `cad` (a shim that talks to the running
-  server) for the apps that start it. Claude Code is not one: the plugin's manifest (`.claude-plugin/plugin.json`)
-  names no server - upstream's answer to Claude Desktop refusing every tool call of an MCP server Claude Code starts
-  (earthtojake/text-to-cad#814), and a `cad-mcp` Claude Code does start lists no tools without `CAD_MCP_CARDS=1` - so a
-  session here has no `cad_*` tools and shows a model with `./cadtool viewer <file>` (`cad/AGENTS.md` Running things).
-  Bump them together; `./cadtool doctor` reads each against the pin. `cadtool` restates the pin nowhere, and `cad-server` is never
-  a dependency here (`test_tooling.py` holds both). `claude plugin install` / `update` take the marketplace's newest
-  release, so update the plugin WITH a bump here, not before: its skills describe the release they came with. Upstream
-  can release again between a bump and its plugin update, and the plugin then lands ahead of the pin: after `claude
-  plugin marketplace update`, the clone's `VERSION` must be this pin - if it moved, bump again first.
-  **The server comes before the plugin, always:** the skills teach their release's `cad` verbs, and nothing but
-  `./cadtool server` installs `cad-server` here, telemetry and automatic updates stored off first (a skill that finds no
-  `cad` leads to upstream's installer: Gotchas).
-  The server asks `api.texttocad.dev` for the latest release (one anonymous request; `CAD_UPDATE_CHECK=0` in the server's
-  environment turns it off) and, while it is behind, shows an Update button in the viewer: here that update IS a bump
-  (the pin with the plugin: "After a pull …" below), and the button is never pressed (Gotchas). Nor does the server
-  update itself: automatic updates stay off (below).
+  `test_tooling.py` checks), and on the machine the same package as a uv tool is the `cad` command and everything that
+  runs (`./cadtool server` installs it from the pin on a uv-managed Python; `uv tool dir --bin` holds the command). The
+  library brings its own `cad` command (and a `uv`, a dependency of it) into the venv: `cadtool` never runs that one
+  (Gotchas). The other is the `text-to-cad@earthtojake` plugin (`~/.claude/plugins/cache/earthtojake/text-to-cad/<ver>/`),
+  from upstream's `latest` branch (the committed `.claude/settings.json` names it: the plugin alone, moved to each
+  release once it is on PyPI; upstream's `main` is where development happens, ahead of a release between two): its
+  skills, and `.claude-plugin/plugin.json`, whose `version` is the release. It names no MCP server for Claude Code, so
+  a session here has no `cad_*` tools and shows a model with `./cadtool viewer <file>` (`cad/AGENTS.md` Running
+  things). Bump them together; `./cadtool doctor` reads each against the pin. `cadtool` restates the pin nowhere, and
+  `cad-server` is never a dependency here (`test_tooling.py` holds both). `claude plugin install` / `update` take the
+  marketplace's newest release, so update the plugin WITH a bump here, not before: its skills describe the release they
+  came with. Upstream can release again between a bump and its plugin update, and the plugin then lands ahead of the
+  pin: after `claude plugin marketplace update`, the clone's `.claude-plugin/plugin.json` `version` must be this pin -
+  if it moved, bump again first.
+  **The machine's cad comes before the plugin, always:** the skills teach their release's `cad` verbs, and a skill that
+  finds `cad` missing or older than 0.11.12 tells the agent to run `uv tool install cad` - the newest release, whatever
+  the pin -, which nothing here runs (Gotchas): `./cadtool server` installs it, its choices stored off first.
+  The server reads `api.texttocad.dev/v1/releases` at most once an hour (one anonymous request; `CAD_UPDATE_CHECK=0` in
+  the server's environment turns it off) to decide its own update, which stays off here (below); a release it names is
+  a bump ("After a pull …" below).
 - **One cad server per computer.** Every venv, worktree and session, and the plugin, use one server — the engine, warm
-  workers, the documents they made, the CAD Viewer's page —, started by the first client that finds none (no timer stops
-  it) from the machine's current installation, which `cad doctor` registers (`./cadtool server` runs it). A model run
+  workers, the documents they made, the CAD Viewer's page. From 0.11.12 nothing starts it but `cad server start` (no
+  timer stops it): a client that finds none says `the cad server is not running: run cad server start`, so `./cadtool
+  gen` and every `cadtool` verb that needs it start it first, from the uv tool (`need_server`; a start joins a server of
+  its own release, replaces an older release's and joins a newer one's, which `cadtool` refuses). The server runs in
+  the environment of the `cad` that started it. A model run
   is built by a worker of the CALLER's Python: a worker is keyed by its script, the environment and the cad release, so
   every build here runs on this venv's pinned kernel and two worktrees share no worker, and the run's environment
   (`PYTHONPATH`, `CAD_ENGINE_MEMO`) goes with each build. What is NOT in the venv: `cad <type> snapshot` / `export` of a file and
@@ -45,8 +49,9 @@ as a git note).
   cap or on memory pressure (no idle timer). Those caps (`CAD_ENGINE_MEMORY_MB`, `CAD_ENGINE_WORKERS`,
   `CAD_ENGINE_WORKER_RSS_MB`) are read once, from the environment of whichever client started the server. pytest is
   outside all of it: its workers are plain processes. `./cadtool stop` ends this venv's idle workers, no other session's
-  (`tools/stop_workers.py`: `cad status --json` names each worker's Python, the server clears a dead idle one at its next
-  grant): do it when leaving a worktree. `./cadtool stop --device` stops the server for every session on the machine.
+  (`tools/stop_workers.py`: `cad server status --json` names each worker's Python, the server clears a dead idle one at
+  its next grant): do it when leaving a worktree. `./cadtool stop --device` (`cad server stop`) stops the server for every
+  session on the machine, whatever its release.
   The server serves on port 3245, the next free port if that is held, and keeps it. Each document is cached as last
   built in `~/.cache/cad/documents` (kept until deleted: `./cadtool cad delete <id> --yes`), its id made from the script's path
   and function, so worktrees never collide.
@@ -55,20 +60,24 @@ as a git note).
   command, the server, the plugin's — once a `cad` command has shown its one-line notice. This repo keeps them off, two
   ways: `cadtool` and `.env` export `CAD_TELEMETRY=0`, so no command of theirs shows the notice or sends; and `./cadtool
   server` stores `cad telemetry off` in cad's state directory (`settings.json`: `~/.local/state/cad/` on Linux,
-  `~/Library/Application Support/cad/` on the Mac) BEFORE `cad doctor` starts the server, which goes by the stored choice
-  — its own environment is not a client's. The one exception is the model builds it answers, which it counts only where
+  `~/Library/Application Support/cad/` on the Mac) BEFORE it runs `cad server start`, and the server goes by the stored
+  choice — its own environment is not a client's. The one exception is the model builds it answers, which it counts only where
   the caller's environment allows too (a build carries the caller's whole environment, cadtool's `CAD_TELEMETRY=0`
   included); everything else the server and the plugin's server do goes by the stored choice. The stored answer is per machine: `telemetry` → `choice: off` in that file
   is the check, and `./cadtool doctor` reads it with the environment's switch taken off (with the switch on, `cad
   telemetry status` says off whatever is stored). `test_tooling.py` holds the order. Two ways this fails silently on a
-  bump: a renamed switch does nothing and says nothing, and a new state folder starts with no answer (the old off moves into it only with `cad doctor` or `cad setup`).
-- **cad's automatic updates stay off.** From 0.11 the server reads the version feed once an hour and, by default,
-  installs a release that breaks nothing (a patch release below 1.0) by itself, moves every agent app's plugin to it
-  and switches once nothing has run for a minute: the machine would leave the pin under every session. `./cadtool
-  server` stores `cad update auto off` (`updates` → `automatic: false` in the same `settings.json`) beside the
-  telemetry off, before `cad doctor` starts the server; the viewer's menu item Automatic updates stays unticked.
-  `./cadtool doctor` reads it (`cad update auto status`: `off (your choice)`) and fails without it. The version check
-  and its Update button stay: they say a release is out, which here is a bump.
+  bump: a renamed switch does nothing and says nothing, and a new state folder starts with no answer.
+- **cad's own updates and its plugin updates stay off.** From 0.11.12 cad updates itself by default to every newer
+  release of its major version - for 0.x, any 0.x, minor releases with their hard cutovers included (Gotchas) -: its
+  server reads the feed about once an hour and, once nothing has run for a minute, stops, runs `uv tool install
+  --upgrade "cad>=<this>,<1"` on its own uv tool and starts again, under every session; and where its plugin switch is
+  on, the server then runs upstream's install command once (`cad plugin update`: the newest plugin in every agent app
+  it finds). Either takes the machine off the pin. `./cadtool server` stores both off beside the telemetry off, before
+  `cad server start`: `cad update auto off` (`auto_update` → `on: false` in the same `settings.json`; 0.11.11's
+  `updates` → `automatic: false` is read as off too, never written) and `cad plugin update auto off` (`plugin` →
+  `auto_update: false`, off by default, turned on by the install command). `./cadtool doctor` reads each (`update auto:
+  off`, `plugin update auto: off`) and fails without it. A typed `cad update` updates with the switch off, so
+  `./cadtool cad` refuses it (Gotchas).
 - **build123d 0.13.0 / OCP 8.0.1 (OCCT 8)**: cad 0.11's `build123d` extra requires `build123d>=0.13.0,<0.14` and
   `cadquery-ocp-novtk>=8.0,<8.1`; `pyproject.toml` pins the exact kernel (`cadquery-ocp-novtk==…`, the STEP bytes are
   per-kernel) and must never gain `cadquery-ocp`, the VTK build (see Gotchas below). OCCT 8.0.1's two known defects and
@@ -79,26 +88,33 @@ as a git note).
   suite green.
 
 ## After a pull that changes `pyproject.toml` / `uv.lock` (per-machine state git does not carry)
-A new pin moves the server under every session on the machine, so close the others first. `./cadtool stop &&
-./cadtool setup` (it also (re)installs the ruff git pre-commit hook: a stub `.git/hooks/pre-commit` → the committed
-`.githooks/pre-commit`; makes `git fetch` bring the git notes; and runs `./cadtool server`, which reinstalls `cad-server`
-at the pin, stores cad's telemetry and automatic updates off, runs `cad doctor` and stops the old release's server - in that order, and all of
-it before the plugin update: Pins, above), `claude plugin marketplace update earthtojake` (its clone's `VERSION` must be
-this pin: Pins, above), then from the repo root `claude plugin update text-to-cad@earthtojake --scope user` and
-`--scope project` (`~/.claude/plugins/installed_plugins.json` must show the new version for every entry (a session first
-started in `cad/` adds a third, which no `update` reaches: copy the new version into it by hand, Gotchas below); restart
-Claude Code), then `./cadtool doctor` must be clean. No `CAD_PLUGIN` in a shell profile (it overrides the plugin
-detection).
+A new pin moves the server under every session on the machine, so close the others first. `./cadtool stop; ./cadtool
+setup` (the stop ends this venv's workers where only the kernel moved, and refuses where the cad pin moved: setup then
+stops the old release's server itself; setup also (re)installs the ruff git pre-commit hook: a stub `.git/hooks/pre-commit` → the committed
+`.githooks/pre-commit`; makes `git fetch` bring the git notes; and runs `./cadtool server`, which stops the old
+release's server, reinstalls the cad uv tool at the pin - taking the cad-server tool of 0.11.11 and earlier away -,
+stores cad's telemetry, its own updates and its plugin updates off and starts the pin's server - in that order, and all
+of it before the plugin update: Pins, above), `claude plugin marketplace update earthtojake` (its clone must be on
+upstream's `latest` branch, `git -C ~/.claude/plugins/marketplaces/earthtojake branch --show-current`, and its
+`.claude-plugin/plugin.json` `version` this pin: Pins, above; a clone still on `main` moves once: Gotchas below), then
+from the repo root `claude plugin update text-to-cad@earthtojake --scope user` and `--scope project`
+(`~/.claude/plugins/installed_plugins.json` must show the new version for every entry (a session first started in
+`cad/` adds a third, which no `update` reaches: copy the new version into it by hand, Gotchas below); restart Claude
+Code), then `./cadtool doctor` must be clean. No `CAD_PLUGIN` in a shell profile (it overrides the plugin detection).
 
 ## Testing a bump (a branch never moves the machine)
 `./cadtool setup` on a bump's branch leaves the machine's server alone: a linked worktree only checks it, because `main`
 and the other sessions are still on the old release. Test the new one beside it, on a server of its own, with every
 command through a small wrapper outside the repo that exports, under one folder on disk (`/tmp` is RAM on the PC):
 `CAD_STATE_DIR` and `CAD_CACHE_DIR` (with a state folder named, nothing moves out of the old release's),
-`CAD_ENGINE_DIR` (its `stop` stays there), `UV_TOOL_DIR`, `UV_TOOL_BIN_DIR` and `CAD_LAUNCHER_DIR` (no second `cad` on the
-machine). `./cadtool server` then works from the worktree, and the rest of `cadtool` follows. Check these names against
-upstream's source first: a renamed one does nothing, silently. A change of Python alone needs the same for the document
-cache, whose key omits Python. The proof the geometry did not move: the hash gate in Gotchas below.
+`CAD_ENGINE_DIR` (its door, lock and port file: a server of its own, on the next free port, and its `server stop` stays
+there), `UV_TOOL_DIR` and `UV_TOOL_BIN_DIR` (no second `cad` on the machine), with that bin folder first on `PATH`.
+`./cadtool server` then works from the worktree, and the rest of `cadtool` follows; `CAD_PLUGIN=<a checkout of the new
+release's plugin> ./cadtool doctor` checks the plugin's release, the installed entries staying the old one. Check these
+names against upstream's source first: a renamed one does nothing, silently. A change of Python alone needs the same for
+the document cache, whose key omits Python. The proof the geometry did not move: the hash gate in Gotchas below (every
+model is a file ending in its build call under `parts/`, `assemblies/` and `robot/links/` - `parts/_templates/` holds
+templates, not models; `./cadtool gen` stops at the first model that fails).
 
 ## Gotchas (all verified)
 - `uv sync` prunes anything `uv pip install`-ed; `uv run` doesn't — that's why `cad` is a pyproject dependency, not a
@@ -124,8 +140,10 @@ cache, whose key omits Python. The proof the geometry did not move: the hash gat
   `uv sync --reinstall-package cadquery-ocp-novtk` (`./cadtool setup` does it when `OCP.gp` does not import, and
   `./cadtool doctor` reports it; `test_tooling.py` checks every RECORD file exists).
 - cad makes hard cutovers on the command line, and has no teaching errors: a retired verb or flag is an unrecognised
-  argument (0.11: `cad snapshot` is `cad <type> snapshot`, the type the file's), a retired decorator argument a
-  `TypeError` — read the error as the spec (each move: upstream `docs/migrations/`) — and a retired environment
+  argument (0.11: `cad snapshot` is `cad <type> snapshot`, the type the file's; 0.11.12: `cad status` / `cad stop` are
+  `cad server status` / `cad server stop`, the short forms hidden and kept only for the skills of 0.11.11 and earlier,
+  `cad doctor` reports and changes nothing, and nothing starts the server but `cad server start`), a retired decorator
+  argument a `TypeError` — read the error as the spec (each move: upstream `docs/migrations/`) — and a retired environment
   variable says nothing at all. The library's renames keep the old spelling one release at least, as an alias that
   warns once with `CadDeprecationWarning` (0.11: `read_step` → `step.read`, `cad.geometry` → `cad.build123d`;
   0.11.1: `cadgen` → `cad`):
@@ -168,34 +186,48 @@ cache, whose key omits Python. The proof the geometry did not move: the hash gat
   `__xbf_model__` and `Model.build` (`lib/models.py`, `tests/conftest.py`, `test_parts_convention.py`) — and that
   `./cadtool gen assemblies/arm.py` still lists every part as `…, a child` (a `building()` that silently read False
   would build every child as a raw body: the arm would still build, its children's STEPs unwritten).
-- `cad doctor` runs only from `./cadtool server` (`./cadtool cad doctor` is refused, `./cadtool doctor` changes nothing):
-  with no live installation on the machine it registers the environment it runs in as the machine's
-  (`installations/` in cad's state directory: what a client starts the server from) and starts the server. That is why
-  `cad-server` stays out of the venv: a worktree's venv registered there goes with the worktree. Run from the uv tool it
-  is safe. A second reason to keep it there: uvx would leave it in uv's cache, which `uv cache prune` empties.
-- Never run `cad setup` / `update` / `uninstall` here, the viewer's Update button (or its Automatic updates item) or
-  the `curl … install.sh | sh` line
-  upstream's README and migration guide lead with, which is `cad setup`: nothing asks, it takes every agent app on the
-  machine to the newest release whatever `pyproject.toml` pins, registers the installation it runs in, and replaces this
-  plugin with `text-to-cad@text-to-cad`, a local catalog in cad's state folder the committed `.claude/settings.json`
-  cannot name. The plugin's skills print that line when `cad` is missing, and build with `cad run`, which runs in an
-  environment of its own (0.11: `uv run` with cad at the machine's release) instead of this venv: inside this project `./cadtool` overrides both (`cad/AGENTS.md`
-  Running things). `./cadtool cad` refuses all of these. The plugin moves only with a bump, by the steps of "After a pull
-  …". `text-to-cad@earthtojake` from GitHub stays upstream's documented manual install.
-- **When one ran anyway** (the Update button is one click), the machine leaves the pin with no error: cad's own copy of
-  the release (`releases/<ver>/` in its state folder) becomes the machine's installation (`installations/current` names
-  it) and serves every session, the user-scope `text-to-cad@earthtojake` is uninstalled for `text-to-cad@text-to-cad`
-  (a `text-to-cad` marketplace reading the state folder's `plugin/`), and other agent apps get its skills (GitHub
-  Copilot's in `~/.agents/skills`); `update.log` and `install-receipt.json` there say what it did. `./cadtool doctor`
-  names each: the server running, the machine's installation, other text-to-cad plugins. The way back, every other
-  session closed: `./cadtool stop --device`; move `installations/current` out of the state folder (`cad doctor`
-  registers the uv tool only where no live installation is current - else it says `registers nothing`); `./cadtool
-  server`, which makes the uv tool's the current one; `claude plugin uninstall text-to-cad@text-to-cad --scope user`,
-  `claude plugin marketplace remove text-to-cad`, `claude plugin install text-to-cad@earthtojake --scope user`
-  (`install` refreshes the marketplace clone first, so the entry lands at upstream's newest: a release past the pin is
-  brought back as the third entry is, Gotchas below); `./cadtool doctor` clean. The release's copy stays until
-  `"$(uv tool dir --bin)/cad" doctor --prune` (it lists what it removes and asks), the other apps' skills until removed
-  by hand.
+- **The venv has a `cad` command of its own** (and a `uv`): from 0.11.12 the library is the whole package, so
+  `.venv/bin/cad` is there, and on the `PATH` of everything `uv run` starts and of a shell with the venv activated.
+  `cadtool` never runs it (`cad_bin` is the uv tool's). A server started from it (`cad server start` runs the server in
+  the starting `cad`'s own environment) would serve every session from a worktree's venv and go with the worktree: the
+  server's environment is the uv tool's (`./cadtool doctor` reads `cad server status --json`'s `prefix`; the way back is
+  `./cadtool stop --device`, then any `./cadtool gen`). Not uvx either: it leaves cad in uv's cache, which `uv cache
+  prune` empties.
+- Never run `cad setup` / `update` / `plugin update` here, `uv tool install cad` or `uv tool upgrade cad` without the
+  pin, or the `curl … install.sh | sh` line upstream's README and install guide lead with: `cad update` (typed, it
+  updates with automatic updates off) and an unpinned uv install take the machine to the newest release whatever
+  `pyproject.toml` pins; the install command (which `cad plugin update` runs, and plain `cad setup`, kept only for the
+  updater of 0.10.0 to 0.11.11) installs cad at the newest release where none is, puts its newest plugin in every agent
+  app it finds, removes what earlier releases left there and turns the plugin updates on. The plugin's skills say `uv
+  tool install cad` when `cad` is missing or older than 0.11.12, and build with `cad run`, which runs in an
+  environment of its own (`uv run` with cad at the machine's release) instead of this venv: inside this project
+  `./cadtool` overrides both (`cad/AGENTS.md` Running things). `./cadtool cad` refuses `setup`, `update`, `plugin` and
+  `run`. The plugin moves only with a bump, by the steps of "After a pull …". `text-to-cad@earthtojake` from GitHub
+  stays upstream's documented manual install.
+- **When one ran anyway**, the machine leaves the pin with no error. An update (typed, or automatic with the switch
+  on) moves the uv tool itself - `uv-receipt.toml` then keeps a range, `cad>=<release>,<1`: `./cadtool doctor` says the
+  tool's release and `./cadtool gen` refuses; the way back, every other session closed, is `./cadtool stop --device`
+  and `./cadtool server` (it installs the pin again). The install command leaves cad as it is but puts the newest
+  plugin in every agent app it finds (Claude Code's from upstream's `latest`, so an entry past the pin; earlier
+  releases' installer used `text-to-cad@text-to-cad`, a local catalog in cad's state folder, and GitHub Copilot's
+  skills in `~/.agents/skills`) and turns the plugin updates on: `./cadtool doctor` names the plugin entries, the
+  switch and other text-to-cad plugins. The way back: `./cadtool server` (the switch off), the entries brought back to
+  the pin as the third entry is (Gotchas below), another plugin uninstalled (`claude plugin uninstall
+  text-to-cad@text-to-cad --scope user`, then `claude plugin marketplace remove text-to-cad` - from a folder outside
+  the repo: below), the other apps' skills removed by hand. What 0.11.11 and earlier left in cad's state and cache
+  folders (`installations/`, `releases/<ver>/`) is read by nothing now: `./cadtool cad cache prune` removes the
+  release folders.
+- **A machine's marketplace still on upstream's `main`** (its clone from before the committed `.claude/settings.json`
+  named `latest`) stays there: `claude plugin marketplace update` keeps the branch it was added with, and no command
+  changes it. Move it once, every other session closed, **from a folder outside the repo**: `claude plugin
+  marketplace remove earthtojake` takes the marketplace out of the settings of every scope, the folder it runs in
+  counting as a project - from the repo root it would strip `extraKnownMarketplaces` and `enabledPlugins` from the
+  committed `.claude/settings.json` -, and uninstalls every entry of the plugin. Then `claude plugin marketplace add
+  earthtojake/text-to-cad#latest` (it records `{"source": "github", "repo": "earthtojake/text-to-cad", "ref":
+  "latest"}`, the committed settings' source, and declares it in `~/.claude/settings.json`, where an earlier add left
+  the old source), `claude plugin install text-to-cad@earthtojake --scope user`, and from
+  the repo root `--scope project` (and the third entry: below). Back up `~/.claude/plugins/installed_plugins.json`
+  and `known_marketplaces.json` first.
 - `claude plugin marketplace update` alone makes no plugin cache directory (it refreshes only the clone `~/.claude/plugins/marketplaces/earthtojake/`), so on a branch that bumps the pin before the plugin update
   `./cadtool doctor` warns `no plugin cache for cad <ver>` and reports a MISMATCH against the old one:
   `CAD_PLUGIN=~/.claude/plugins/marketplaces/earthtojake ./cadtool doctor` checks the new pin against that clone, the
@@ -208,14 +240,13 @@ cache, whose key omits Python. The proof the geometry did not move: the hash gat
   Copy the root entry's `version`, `installPath`, `gitCommitSha` and `lastUpdated` into it by hand (back the file up
   first); `claude plugin list` run from `cad/` then shows the new version for all three entries. `./cadtool doctor`
   reads every entry.
-- **A machine on cadgen 0.8 moves to cad (0.10 or later: the pin) once, from a plain terminal with every Claude
-  session closed**, not by "After a pull …": `cad doctor` moves 0.8's documents and Recents out of its state folder, which a live 0.8 is still using, and
-  the plugin's 0.8 server outlives its session. In order: `claude plugin marketplace update earthtojake` (its clone's
-  `VERSION` must be the pin, else stop); close every session; back up 0.8's state folder (`~/.local/state/cadgen`, on the
-  Mac `~/Library/Application Support/cadgen`); stop every 0.8 engine BEFORE pulling, since the pulled `cadtool` cannot
-  reach one: `./cadtool stop` in each checkout, then `~/.local/bin/cadgen stop` for the plugin's, and `pgrep -af cadgen`
-  must print nothing; `git pull --ff-only`; `./cadtool setup`; the plugin update of "After a pull …", third entry
-  included; `./cadtool doctor` clean; restart Claude Code; `./cadtool gen assemblies/arm.py`, cold once, as the cache does
-  not move. Once no 0.8 worktree is left: `"$(uv tool dir --bin)/cad" doctor --prune` (it lists what it removes and
-  asks; it takes `~/.local/bin/cadgen`), delete `~/.cache/cadgen` and the backup. Keep `~/.local/state/cadgen/settings.json`: its stored off covers an old
-  checkout run later.
+- **A machine on cadgen 0.8 moves to cad (the pin) once, from a plain terminal with every Claude session closed**,
+  not by "After a pull …": the plugin's 0.8 server outlives its session, and the pulled `cadtool` cannot reach a 0.8
+  engine. Nothing of cad reads or moves 0.8's state or cache (from 0.11.12; the documents and Recents stay behind). In
+  order: close every session; stop every 0.8 engine BEFORE pulling: `./cadtool stop` in each checkout, then
+  `~/.local/bin/cadgen stop` for the plugin's, and `pgrep -af cadgen` must print nothing; `git pull --ff-only`;
+  `./cadtool setup`; the marketplace moved to `latest` (Gotchas above) and the plugin update of "After a pull …", third
+  entry included; `./cadtool doctor` clean; restart Claude Code; `./cadtool gen assemblies/arm.py`, cold once, as the
+  cache does not move. Once no 0.8 worktree is left: delete `~/.local/bin/cadgen` and `~/.cache/cadgen` by hand
+  (`./cadtool cad doctor` says where they are, with their size). Keep `~/.local/state/cadgen/settings.json`: its stored
+  off covers an old checkout run later.
