@@ -13,7 +13,7 @@
  "expected": {
   "leaf_occurrences": 97,
   "solids": 235,
-  "solid_volume": 2416802.823
+  "solid_volume": 2415955.849
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -1154,7 +1154,7 @@
     "note": "the base's other half (its plate the motor's seat), bolted to the base's posts at the joint face; built in the base's part frame"
    },
    "solids": 1,
-   "solid_volume": 298307.35,
+   "solid_volume": 297862.5,
    "rel": {
     "position": [
      0.0,
@@ -1243,7 +1243,7 @@
     "joint": "base_yaw",
     "frame_in_host": {
      "position": [
-      63.0,
+      59.0,
       0.0,
       0.0
      ],
@@ -1254,15 +1254,15 @@
      ]
     },
     "source": "lib/mounts.py",
-    "note": "the mount's 4x M4 x screw_len: heads on its posts' inner faces, along -X through its posts and the base's"
+    "note": "the mount's 4x M4 x screw_len: heads in the counterbores in its posts' inner faces, along -X through its posts and the base's"
    },
    "solids": 4,
-   "solid_volume": 1558.708,
+   "solid_volume": 1156.584,
    "rel": {
     "position": [
-     62.869077,
+     58.87739,
      0.0,
-     -4.059451
+     -3.801708
     ],
     "rotation_xyz_deg": [
      0.0,
@@ -1274,7 +1274,7 @@
       0.064435731,
       0.0,
       -0.997921859,
-      62.869077113
+      58.877389677
      ],
      [
       0.0,
@@ -1286,15 +1286,15 @@
       0.997921859,
       0.0,
       0.064435731,
-      -4.059451064
+      -3.801708139
      ]
     ]
    },
    "world": {
     "position": [
-     62.869077,
+     58.87739,
      0.0,
-     -4.059451
+     -3.801708
     ],
     "rotation_xyz_deg": [
      0.0,
@@ -1306,7 +1306,7 @@
       0.064435731,
       0.0,
       -0.997921859,
-      62.869077113
+      58.877389677
      ],
      [
       0.0,
@@ -1318,17 +1318,17 @@
       0.997921859,
       0.0,
       0.064435731,
-      -4.059451064
+      -3.801708139
      ]
     ]
    },
    "world_bbox_min": [
-    40.102,
+    44.094,
     -101.0,
-    -49.307
+    -49.049
    ],
    "world_bbox_size": [
-    29.663,
+    21.68,
     58.1,
     90.238
    ]
@@ -1348,7 +1348,7 @@
      "position": [
       0.0,
       0.0,
-      12.8
+      8.8
      ],
      "rotation_xyz_deg": [
       0.0,

@@ -3,8 +3,8 @@ JointParams + MountParams): the base's D carried on at full width to a round end
 the same foot with its own screw holes, the window between the two parts' posts open into the base, room round the
 motor's board for the wiring; the slits through both parts' walls (SlitParams: one band, upright, round-ended, none at
 the joint's posts); the joint - the two parts meet at split_x without overlapping, flush on the walls, the plate's
-top, the foot and the bottom face, 4x M4 through the mount's posts and the base's from heads inside the mount into
-nuts pressed into the base's posts, the tips past the nuts - and the motor's seat on round holes YAW_MOTOR_X out, short
+top, the foot and the bottom face, 4x M4 through the mount's posts and the base's from heads in counterbores in the
+mount's posts into nuts pressed into the base's posts, the heads and the tips flush - and the motor's seat on round holes YAW_MOTOR_X out, short
 of the stock belt's own centre distance (its idler takes up the rest - tests/base/test_yaw_idler.py): the motor and its
 board clear the mount."""
 import itertools
@@ -39,7 +39,6 @@ from lib.belts import (
     closed_belt_length,
 )
 from lib.datum import BASE_BOTTOM_Y
-from lib.fasteners import M4_PITCH
 from lib.forearm import DEFAULT as FOREARM
 from lib.geom import hex_circumdiameter
 from lib.motors import MKS_SERVO42D_W, NEMA17_FACE, NEMA17_PILOT_DIA
@@ -101,22 +100,26 @@ def test_the_mount_is_the_bases_other_half():
 
 
 def test_joint_layout():
-    """4 bolts bolt_out out of the window's edge, through both parts' posts; each head on the mount's post's face, clear
-    of the window's edge and of the wall at its height (the key's way along -X inside the mount); heads and nut pockets
-    2 mm inside the plate's underside and the bottom face; the nut's pocket short of the joint face; each tip 2 pitches
-    past its nut."""
+    """4 bolts bolt_out out of the window's edge, through both parts' posts; each head in a counterbore in the mount's
+    post's face - 0.2 a side round the head, the head flush with the face, 3 mm of the post under it -, the counterbore
+    clear of the window's edge and of the wall at its height (the key's way along -X inside the mount); counterbores and
+    nut pockets 2 mm inside the plate's underside and the bottom face; the nut's pocket short of the joint face; each
+    tip flush with its nut's outer face (the whole nut threaded, nothing past it)."""
     pts = joint_bolt_points()
     z = W_IN + J.bolt_out
     assert len(pts) == 4 and {round(abs(pz), 6) for pz, _ in pts} == {round(z, 6)}
     corner = hex_circumdiameter(J.nut_pocket_af) / 2.0     # a corner up: the pocket's half height
     assert z - J.nut_pocket_af / 2.0 - W_IN >= 2.0 and z + J.nut_pocket_af / 2.0 < S.r         # the pocket in the post
-    half = max(corner, J.screw.head_dia / 2.0)
+    assert J.head_bore - J.screw.head_dia == pytest.approx(0.4) and J.head_seat == pytest.approx(J.screw.head_h)
+    assert MT.post_t - J.head_seat >= 3.0
+    half = max(corner, J.head_bore / 2.0)
     for _, y in pts:
-        assert z - J.screw.head_dia / 2.0 - W_IN >= 2.0 and inner_r(DEFAULT, y + half) - (z + J.screw.head_dia / 2.0) >= 10.0
+        assert z - J.head_bore / 2.0 - W_IN >= 2.0 and inner_r(DEFAULT, y + half) - (z + J.head_bore / 2.0) >= 10.0
         assert PL.y[0] - y - half >= 2.0 and y - half - S.y0 >= 2.0
         assert min(PL.y[0] - y, y - S.y0) == pytest.approx(J.bolt_inset)
-    assert J.post_t - J.nut.h >= 2.0 and ST["x_nut_face"] < ST["x_split"] and ST["x_head"] == J.split_x + MT.post_t
-    assert ST["x_post"] - ST["x_tip"] >= 2.0 * M4_PITCH
+    assert J.post_t - J.nut.h >= 2.0 and ST["x_nut_face"] < ST["x_split"] and ST["x_face"] == J.split_x + MT.post_t
+    assert ST["x_head"] == pytest.approx(ST["x_face"] - J.head_seat)
+    assert ST["x_tip"] == pytest.approx(ST["x_post"])
 
 
 def test_the_mount_foot_holes():
@@ -196,7 +199,13 @@ def test_the_parts_meet_at_the_joint(base, mount):
             assert not is_inside(part, x, y, z + J.bolt_dia / 2.0 - 0.1) and is_inside(part, x, y, z + J.bolt_dia / 2.0 + 0.1)
     assert not is_inside(base, x_base, -70, 0) and not is_inside(base, x_base, -99, 0)   # the window into the base, full height
     assert not is_inside(mount, 90, -70, 0) and not is_inside(mount, x_mount, -99, 0)    # the mount's inside, open underneath
-    assert not is_inside(mount, ST["x_head"] + 1.0, -70, W_IN + J.bolt_out)                # the posts' faces open to the heads
+    assert not is_inside(mount, ST["x_face"] + 1.0, -70, W_IN + J.bolt_out)                # the posts' faces open to the heads
+    r_bore, r_hole = J.head_bore / 2.0, J.bolt_dia / 2.0
+    for z, y in joint_bolt_points():                    # each head's counterbore, head_bore wide, its floor at x_head
+        x = ST["x_face"] - 0.5
+        assert not is_inside(mount, x, y, z + r_bore - 0.1) and is_inside(mount, x, y, z + r_bore + 0.1)
+        x = ST["x_head"] - 0.5
+        assert not is_inside(mount, x, y, z + r_hole - 0.1) and is_inside(mount, x, y, z + r_hole + 0.1)
     y_plate = (PL.y[0] + PL.y[1]) / 2.0
     assert is_inside(base, J.split_x - 2.0, y_plate, 0) and is_inside(mount, J.split_x + 2.0, y_plate, 0)   # the plate whole: no belt slot
 
@@ -300,14 +309,16 @@ def test_the_mount_carries_the_seat(mount):
 
 @pytest.mark.slow
 def test_the_screws_clamp_the_joint():
-    """Every head's bearing face on a mount's post's inner face, every tip 2 pitches past its nut's outer face, into the
-    base's cavity below the plate; each nut coaxial with its screw."""
+    """Every head's bearing face on its counterbore's floor in a mount's post, the head flush with the post's inner face,
+    every tip flush with its nut's outer face, below the plate; each nut coaxial with its screw."""
     screws = built.placed("base_motor_mount_screws#1", into="base#1")   # in the base's frame (it is turned in W:
     nuts = built.placed("base_motor_mount_nuts#1", into="base#1")         # lib/placements.py TURNS)
     for solid in screws.solids():
         bb = solid.bounding_box()
         assert bb.max.X == pytest.approx(ST["x_head"] + J.screw.head_h, abs=1e-4)
-        assert bb.min.X == pytest.approx(ST["x_tip"], abs=1e-4) and ST["x_post"] - bb.min.X >= 2.0 * M4_PITCH
+        assert bb.max.X == pytest.approx(ST["x_face"], abs=1e-4)
+        assert bb.min.X == pytest.approx(ST["x_tip"], abs=1e-4)
+        assert bb.min.X == pytest.approx(ST["x_post"], abs=1e-4)
         assert bb.max.Y < PL.y[0]
     assert sorted((round(n.bounding_box().min.X, 4), round(n.bounding_box().max.X, 4)) for n in nuts.solids()) == [
         (round(ST["x_post"], 4), round(ST["x_nut_face"], 4))] * 4

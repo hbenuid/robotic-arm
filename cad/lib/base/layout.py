@@ -208,10 +208,12 @@ def joint_bolt_points(cfg: BaseConfig = DEFAULT) -> list[tuple[float, float]]:
 
 def joint_stations(cfg: BaseConfig = DEFAULT) -> dict[str, float]:
     """The joint's stations along X: the base posts' back face (the nuts' outer faces flush with it), the joint face,
-    the mount posts' inner face (under the screws' heads), the nuts' bearing faces and the screws' tips."""
+    the mount posts' inner face, the screws' heads' bearing faces (the counterbores' floors, head_seat inside it), the
+    nuts' bearing faces and the screws' tips."""
     j = cfg.joint
-    back, head = j.split_x - j.post_t, j.split_x + cfg.mount.post_t
-    return {"x_post": back, "x_split": j.split_x, "x_head": head, "x_nut_face": back + j.nut.h,
+    back, face = j.split_x - j.post_t, j.split_x + cfg.mount.post_t
+    head = face - j.head_seat
+    return {"x_post": back, "x_split": j.split_x, "x_face": face, "x_head": head, "x_nut_face": back + j.nut.h,
             "x_tip": head - j.screw_len}
 
 
