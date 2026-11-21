@@ -37,13 +37,13 @@
     72.1,
     200.0
    ],
-   "bytes": 801220,
+   "bytes": 818119,
    "file": "native/base_motor_mount.step",
    "kind": "native",
    "origin": "native",
    "product": "base_motor_mount - the base_yaw motor's MOUNT: the base's other half, bolted to the base's end across the plane",
-   "sha256": "676259ce5e1c83217269092b1f32a97d30a8f056951b5164a0a0bc811affa230",
-   "solid_volume": 298307.35,
+   "sha256": "18ce1ea6cfd6c3744f3ca400ba5a567b42d8bbd3de5ffd16951f9173c7526046",
+   "solid_volume": 297806.894,
    "solids": 1,
    "source": "lib/base/body.py:build_motor_mount(DEFAULT)",
    "units": "mm"
@@ -79,15 +79,15 @@
    "bbox_size": [
     90.167,
     58.1,
-    24.0
+    20.0
    ],
    "bytes": 129113,
    "file": "native/base_motor_mount_screws.step",
    "kind": "cots",
    "origin": "native",
    "product": "base_motor_mount_screws - purchased (COTS) part: the base motor mount's 4 M4 socket head cap screws (ISO 4762).",
-   "sha256": "1806536a36405f537fd2a8f5d7b19138e34c9bcda8d22081687801be7b7461eb",
-   "solid_volume": 1558.708,
+   "sha256": "2ac2e04360f7948e02d745d892bebb325e35534d67ea9ec5b4b89854c5057798",
+   "solid_volume": 1357.646,
    "solids": 4,
    "source": "parts/base/base_motor_mount_screws.py:_envelope()",
    "units": "mm"

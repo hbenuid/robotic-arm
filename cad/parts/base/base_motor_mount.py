@@ -15,9 +15,10 @@ axle's slot through the plate across the belt, and under the plate two rails eit
 bears up on the plate's underside between them and slides with the axle (lib/base/body.py _idler_seat). Open
 underneath, and open toward the base: the window between the two parts' posts takes the cables into the base. Two
 posts at the joint face (post_t deep, from the window out to the walls, full height below the plate) facing the
-base's, with 2 M4 clearance holes each along X: 4x M4 SHCS (base_motor_mount_screws), their heads on the posts' inner
-faces inside the mount - turned along -X from underneath, the base off the table - run through both pairs of posts
-into the M4 nuts pressed into the base's posts (base_motor_mount_nuts).
+base's, with 2 M4 clearance holes each along X: 4x M4 SHCS (base_motor_mount_screws), their heads in round
+counterbores in the posts' inner faces inside the mount (JointParams.head_bore / head_seat, printed on their side) -
+turned along -X from underneath, the base off the table - run through both pairs of posts into the M4 nuts pressed
+into the base's posts (base_motor_mount_nuts).
 
 NATIVE part (lib/reference.py NATIVE): designed here in build123d (lib/base/body.py build_motor_mount(cfg), every
 number lib/base/params.py), in the base's part frame - lib/mounts.py places it on base#1 at identity; its reference is

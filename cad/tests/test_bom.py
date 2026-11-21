@@ -136,7 +136,7 @@ def test_the_base_motor_mount_takes_its_m4_screws_and_nuts():
     rows = {r["part"]: r for r in bom.buy_rows() if r["part"].startswith("base_motor_mount_")}
     assert set(rows) == {"base_motor_mount_screws", "base_motor_mount_nuts"}
     assert all((r["pieces"], r["geometry"]) == (4, "envelope") for r in rows.values())
-    assert rows["base_motor_mount_screws"]["order"].startswith("M4 x 20 socket head cap screw (ISO 4762)")
+    assert rows["base_motor_mount_screws"]["order"].startswith("M4 x 16 socket head cap screw (ISO 4762)")
     assert rows["base_motor_mount_nuts"]["order"].startswith("M4 hex nut (ISO 4032)")
 
 

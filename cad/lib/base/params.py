@@ -153,8 +153,10 @@ class JointParams:
     in to the window between the posts (MountParams: full height, it opens the mount into the base), from the bottom
     face up to the plate's underside; the mount's own posts (MountParams.post_t) face them. 2 M4 per side along X,
     bolt_out out of the window's edge, bolt_inset under the plate's underside and above the bottom face, through the
-    mount's post and the base's: the heads on the mount's posts' inner faces, the nuts pressed into hex pockets in the
-    base's posts (their outer faces flush with the posts' back faces, a corner up), the tips out into the base."""
+    mount's post and the base's: the heads in round counterbores in the mount's posts' inner faces (head_bore wide,
+    head_seat deep: the heads under the faces, printed on their side - the mount prints plate down), the nuts pressed
+    into hex pockets in the base's posts (their outer faces flush with the posts' back faces, a corner up), the tips out
+    into the base."""
 
     split_x: float = 55.0          # just past the tower's round (shell.r): the base keeps a flat full-width end
     post_t: float = 8.0
@@ -162,7 +164,9 @@ class JointParams:
     bolt_out: float = 10.0         # the bolts' axis out of the window's edge (z +/- 41.58): the nut's pocket 6.4 clear of it
     bolt_dia: float = M4_CLEAR
     screw: ShcsSize = M4_SHCS
-    screw_len: float = 20.0        # the tip 4.0 past the nut's outer face
+    head_bore: float = M4_SHCS.head_dia + 0.4   # 7.4, the arm's M4 counterbore (the fork's, the drive's housing bolts')
+    head_seat: float = M4_SHCS.head_h + 0.5     # 4.5 deep: the heads 0.5 under the posts' faces, 3.5 of the post under them
+    screw_len: float = 16.0        # the tip 4.5 past the nut's outer face
     nut: NutSize = M4_NUT
     nut_pocket_af: float = M4_NUT_SIDE_PRESS_AF   # [MEASURE] 7.15, the press on the 7.0 nut, its pocket printed on its
     #                                side (the M4 NUT SIDE gauge): the screw pulls the nut home, it stays when the screw is out
@@ -178,8 +182,8 @@ class MountParams:
     the base between its two posts at the joint, which mirror the base's (post_t deep along X, from the window -
     `room` clear of the board's square in Z, lib/base/layout.py mount_inner_half(): the cables' way into the base - out
     to the wall, from the bottom face up to the plate's underside): the 4 M4 run through both pairs of posts, the heads
-    on the mount's posts' inner faces (turned from underneath, the base off the table), into the M4 nuts pressed into
-    the base's posts (JointParams)."""
+    in counterbores in the mount's posts' inner faces (turned from underneath, the base off the table), into the M4
+    nuts pressed into the base's posts (JointParams)."""
 
     room: float = 10.0
     post_t: float = 8.0

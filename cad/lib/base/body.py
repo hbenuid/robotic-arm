@@ -9,7 +9,8 @@ plate's neck) and ends in two posts with the M4 holes and the nuts' pockets, the
 motor mount; build_motor_mount (cfg.mount) is the base's other half - the same leaning walls carried on from the
 joint face to a round end about mount_end_x() (_mount_d: the wedge and a cone round that centre), the foot round it,
 the plate with the motor's seat and the belt's idler's seat (cfg.idler), and two posts at the joint facing the base's,
-the M4 through both; build_yaw_idler_spacer is that idler's printed spacer. Without it (LEGACY)
+the M4 through both, their heads in counterbores in the mount's posts; build_yaw_idler_spacer is that idler's printed
+spacer. Without it (LEGACY)
 build_base is the whole SolidWorks part. With a shell draft (DEFAULT) the walls lean out going down, inside and out:
 _d's cylinder becomes a cone round the axis and its block a wedge between leaning planes (_dd); with cfg.foot (DEFAULT)
 they stand on a flange with a straight chamfer up the wall (a cone and a wedge again) and the screw holes through it;
@@ -271,9 +272,19 @@ def _posts(cfg: BaseConfig):
 def _bolt_holes(cfg: BaseConfig, body):
     """`body` less the 4 M4 clearance holes along X through the posts and the ears."""
     j, st = cfg.joint, joint_stations(cfg)
-    x = (st["x_post"] - 1.0, st["x_head"] + 1.0)
+    x = (st["x_post"] - 1.0, st["x_face"] + 1.0)
     for z, y in joint_bolt_points(cfg):
         body = body - _x_bore(j.bolt_dia / 2.0, x, z, y)
+    return body
+
+
+def _head_bores(cfg: BaseConfig, body):
+    """`body` (the motor mount) less the screws' heads' counterbores: head_bore wide, from the posts' inner faces in to
+    the heads' bearing faces."""
+    j, st = cfg.joint, joint_stations(cfg)
+    x = (st["x_head"], st["x_face"] + 1.0)
+    for z, y in joint_bolt_points(cfg):
+        body = body - _x_bore(j.head_bore / 2.0, x, z, y)
     return body
 
 
@@ -383,7 +394,7 @@ def build_motor_mount(cfg: BaseConfig = DEFAULT):
     hollow, `shell.wall` thick, open underneath and toward the base, on the foot (_mount_foot) and its screw holes; the
     plate across its top with the motor's seat (_motor_seat: under it only the pad, the screws hold the motor) and, with cfg.idler, the
     belt's tensioner's seat (_idler_seat); two posts at the joint face, post_t deep, from the window out to the walls,
-    and the M4 holes through them; the slits (cfg.slits)."""
+    the M4 holes through them and the heads' counterbores in their inner faces (_head_bores); the slits (cfg.slits)."""
     s, p, j, mt = cfg.shell, cfg.plate, cfg.joint, cfg.mount
     x0, r_out, r_in = j.split_x, partial(outer_r, cfg), partial(inner_r, cfg)
     body = _mount_d(cfg, r_out, (s.y0, p.y[1]), x0)
@@ -396,7 +407,7 @@ def build_motor_mount(cfg: BaseConfig = DEFAULT):
     body = _motor_seat(cfg, body)
     if cfg.idler is not None:
         body = _idler_seat(cfg, body)
-    body = _foot_holes(cfg, _bolt_holes(cfg, body), mount_foot_holes(cfg))
+    body = _foot_holes(cfg, _head_bores(cfg, _bolt_holes(cfg, body)), mount_foot_holes(cfg))
     return single_solid(bd.Rot(-90.0, 0.0, 0.0) * _slit_cuts(cfg, body, "mount"))
 
 

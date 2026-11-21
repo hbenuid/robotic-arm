@@ -281,7 +281,7 @@ YAW_IDLER_NUT_MASS_G = STEEL_DENSITY * nut_volume(_BASE.idler.nut)              
 from lib.base.layout import joint_bolt_points as _joint_bolt_points  # noqa: E402
 
 _JOINT_BOLTS = len(_joint_bolt_points(_BASE))
-BASE_MOUNT_SCREWS_MASS_G = STEEL_DENSITY * _JOINT_BOLTS * shcs_volume(_BASE.joint.screw, _BASE.joint.screw_len)   # 12.2, 4x M4x20
+BASE_MOUNT_SCREWS_MASS_G = STEEL_DENSITY * _JOINT_BOLTS * shcs_volume(_BASE.joint.screw, _BASE.joint.screw_len)   # 10.7, 4x M4x16
 BASE_MOUNT_NUTS_MASS_G = STEEL_DENSITY * _JOINT_BOLTS * nut_volume(_BASE.joint.nut)                              # 3.0, 4x M4
 
 # The elbow gearbox's screws (parts/joints/elbow_gearbox_screws) and the elbow motor's (parts/joints/elbow_motor_screws,

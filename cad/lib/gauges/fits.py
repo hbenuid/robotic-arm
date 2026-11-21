@@ -184,6 +184,7 @@ GAUGES = (
     Gauge("m4head", "screws", "M4 head counterbores", "M4 HEAD", "hole_strip", (
         Use(_D.housing.bolt_counterbore_dia, "cycloidal_shell_ring (housing bolts)"),
         Use(FORK_COUNTERBORE, "j1_coupler, j1_motor_leg (fork bolts, plate screws)"),
+        Use(BASE.joint.head_bore, "base_motor_mount's posts (the joint's screws, printed on their side)"),
         Use(PULLEY.counterbore[0], "gt2_pulley_90t, gt2_pulley_120t (snug, 0.16: measured)"),
         Use(UPPER_ARM.arm.seat_pocket_dia, "j1_link's web (gearbox screws)")),
         (("depth", 4.5), ("width", 7.5), ("floor", 2.0), ("under", M4_CLEAR)), note="4.5 deep over an M4 hole."),
