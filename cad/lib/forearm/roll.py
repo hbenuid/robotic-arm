@@ -1,12 +1,13 @@
 """build123d builders of the forearm roll drive's printed parts (RollDriveParams, module frame, at their stack
 stations): the frame (stator, forearm_roll_block - one body round the motor: the octagonal elbow end with the spigot
 under it that keys the elbow flange, the motor's pocket open through its bottom and the plate, the tower with the 6806
-pair and the bearing boss on its front face - the tower the forearm flange's octagon seen along the roll axis, the front
-face's long edges faceted), the elbow flange (stator, elbow_flange - the elbow's output flange, its own part under the
-frame's underside), the pulley (rotor, the output - its integral 90T is the GT2 ring of lib/pulley/teeth.py
-- its hub on through the tower to bearing 1), the shaft (rotor, a collar that holds bearing 1) and the back panel (stator,
-a plate flush with the frame's rear face over the shaft's bay - its step, the opening and the magnets on the rear face:
-back_face / back_point; its grill: back_grill)."""
+pair and the bearing boss flush in its front face - the tower the forearm flange's octagon seen along the roll axis, the
+front face's long edges faceted, nothing proud of the face it prints on), the elbow flange (stator, elbow_flange - the
+elbow's output flange, its own part under the frame's underside), the pulley (rotor, the output - its integral 90T is the
+GT2 ring of lib/pulley/teeth.py - its hub on through the tower to bearing 1), the shaft (rotor, a collar that holds
+bearing 1), the back panel (stator, a plate flush with the frame's rear face over the shaft's bay - its step, the opening
+and the magnets on the rear face: back_face / back_point; its grill: back_grill) and the belt tensioner's spacer (stator,
+roll_idler_spacer, between the frame's front face and the idler)."""
 from __future__ import annotations
 
 import math
@@ -27,12 +28,13 @@ from lib.forearm.layout import (
     pad_bolt_points,
     plug_slots,
     pulley_bolt_points,
+    roll_idler_spacer_h,
     roll_idler_xy,
     stack_positions,
 )
 from lib.forearm.link import x_cylinder, yz_prism
 from lib.forearm.params import DEFAULT, ForearmConfig
-from lib.geom import box, chamfer_outline, cylinder, faceted_end, hex_prism, nut_slot, single_solid, stop_wedge
+from lib.geom import box, chamfer_outline, cylinder, faceted_end, hex_prism, nut_slot, single_solid, stop_wedge, through
 from lib.pulley.teeth import gt2_ring
 from lib.sensors import A3144_HALL_DEPTH, KY003_BOARD_W, KY003_HOLE_INSET, ky003_hall_point
 from lib.units import NUDGE
@@ -296,29 +298,25 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     and the front face's two long edges faceted (front_facet); the motor's pocket between the floor and the side wall, open
     down through the octagon's bottom (the motor slides up into it), a groove inside each wall at the board's side plugs;
     its front wall the plate (the pilot hole, the motor's 4 M3 holes with their heads' counterbores, the shaft's slit down
-    out through the bottom), the plate's face the frame's one front face - on it the roll belt's tensioner's riser, its
-    M5's slot and its nut's channel under the face, the nut in from the pocket -; the tower: bearing 1's seat from the
-    shaft's bay behind it - bored on through the frame's back -, the lip (the spacer), bearing 2's seat in the bearing
-    boss - round on the front face, rising out of the facets, the ring's flange turning over it -, the stop post on the tower's face in the bay;
+    out through the bottom), the plate's face the frame's one front face, nothing proud of it (the frame prints flat on
+    it) - in it the roll belt's tensioner's M5 slot (its spacer stands on the face: build_idler_spacer) and its nut's
+    channel under the face, the nut in from the pocket -; the tower: bearing 1's seat from the shaft's bay behind it -
+    bored on through the frame's back -, the lip (the spacer), bearing 2's seat in the bearing boss - round, flush with
+    the front face through the facets, the pulley's core turning over it -, the stop post on the tower's face in the bay;
     the rear face: the back panel's step across it, the opening grown down below the bay's bore, the magnets' pockets;
     the elbow 90T's 4x M4 up through the spigot into nuts in hex channels, open into the pocket."""
     d, S = cfg.drive, stack_positions(cfg)
     y_e = S["y_elbow"]
     # the material first: the profile across the frame's depth, the tower cut to the forearm flange's octagon and the
     # front face's long edges faceted, the outline chamfered on both side faces (lib/style.py EDGE_CHAMFER), the spigot
-    # under it (from 1 mm inside: one body), the bearing boss up to bearing 2's front face - from 1 mm under the facets (one body), so it rises
-    # out of them
+    # under it (from 1 mm inside: one body), the bearing boss up to bearing 2's front face, flush with the front face - from
+    # 1 mm under the facets (one body): a round drum through them
     prism = yz_prism(profile(cfg), d.block_x[0], d.block_x[1]) & _z_prism(tower_section(cfg))
     body = chamfer_outline(prism - front_facets(cfg), (1.0, 0.0, 0.0))
     body = body + yz_prism(spigot_face(cfg), d.block_x[0] - d.spigot_h, d.block_x[0] + 1.0)
     boss_z0 = S["z_front"] - d.front_facet - 1.0
     body = body + cylinder(d.bearing_boss_dia / 2.0, S["z_boss"] - boss_z0, z0=boss_z0)
-    # the roll belt's tensioner's riser on the front face (from 1 mm inside it: one body), its land on top under the idler's
-    # bearing inner ring; both stadiums along X, the idler's push, +/- travel
     i, (ix, iy) = d.idler, roll_idler_xy(cfg)
-    land0 = S["z_idler"] - i.land_h
-    body = body + bd.Pos(ix, iy, S["z_front"] - 1.0) * bd.extrude(bd.SlotCenterToCenter(2.0 * i.travel, i.riser_w), amount=land0 - S["z_front"] + 1.0)
-    body = body + bd.Pos(ix, iy, land0 - NUDGE) * bd.extrude(bd.SlotCenterToCenter(2.0 * i.travel, i.land_w), amount=i.land_h + NUDGE)
     # the motor's pocket, between the floor and the side wall, from the board's back to the plate, open on down out through
     # the octagon's bottom; the plate in front of it: the pilot hole and the motor's four M3 holes, each screw's head flush
     # in a counterbore in the front face, the motor centred on the elbow axis
@@ -359,11 +357,12 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     for y, z in pulley_bolt_points(cfg):
         body = body - x_cylinder(d.pulley_bolt_dia / 2.0, d.nut_seat_x - x_key + 2 * NUDGE, (y_e + y, z), x_key - NUDGE)
         body = body - _x_hex(d.nut_af, x_end - d.nut_seat_x, (y_e + y, z), d.nut_seat_x, math.degrees(math.atan2(z, y)))
-    # the tensioner's M5: its slot through the land, the riser and the plate, on down past the screw's tip; the nut's
-    # channel under the face along X, past the slot's ends both ways (the nut flats-on, sliding with it), and its way in:
-    # a recess in the plate's inner face from the motor's pocket (entry inside its top edge) along +Y into the channel
+    # the tensioner's M5: its slot (a stadium along X, the idler's push, +/- travel) down through the plate from the front
+    # face, on past the screw's tip; the nut's channel under the face along X, past the slot's ends both ways (the nut
+    # flats-on, sliding with it), and its way in: a recess in the plate's inner face from the motor's pocket (entry inside
+    # its top edge) along +Y into the channel
     tip = S["z_idler_top"] - i.screw_len
-    body = body - bd.Pos(ix, iy, tip - i.tip_clear) * bd.extrude(bd.SlotCenterToCenter(2.0 * i.travel, i.slot_w), amount=S["z_idler"] - tip + i.tip_clear + NUDGE)
+    body = body - bd.Pos(ix, iy, tip - i.tip_clear) * bd.extrude(bd.SlotCenterToCenter(2.0 * i.travel, i.slot_w), amount=S["z_front"] - tip + i.tip_clear + NUDGE)
     half, corner = i.nut.af / 2.0 + i.nut_fit, i.nut.af / math.sqrt(3.0) + i.nut_fit
     nut_z = (S["z_idler_roof"] - i.nut.h - i.nut_fit, S["z_idler_roof"])
     body = body - box((ix - i.travel - corner, ix + i.travel + corner), (iy - half, iy + half), nut_z)
@@ -375,20 +374,22 @@ def build_block(cfg: ForearmConfig = DEFAULT):
 
 def build_pulley(cfg: ForearmConfig = DEFAULT):
     """The pulley (forearm_roll_pulley) in the module frame - the roll's output: the integral 90T ring (two flanges) on
-    a Ø44 core, its hub - a journal through bearing 2, then the neck (neck_dia, under the bearing's bore: bearing 2 slides
-    over it) on through the lip to bearing 1's front face, where the shaft's journal meets it -, the Ø33 shoulder on
-    bearing 2's inner ring, the Ø39.7 spigot on its front face in the forearm wall's recess (the wall bolts onto the ring's
-    face, into nuts in pockets in the core, pushed in from the bore); the cable bore, the rotor clamp's 4 holes with their
-    heads' counterbores in the front face."""
+    a Ø44 core - on down past the ring's rear flange to run_gap over the frame's front face and bearing 2 -, its hub - a
+    journal through bearing 2, then the neck (neck_dia, under the bearing's bore: bearing 2 slides over it) on through
+    the lip to bearing 1's front face, where the shaft's journal meets it -, the Ø33 shoulder on bearing 2's inner ring,
+    the Ø39.7 spigot on its front face in the forearm wall's recess (the wall bolts onto the ring's face, into nuts in
+    pockets in the core, pushed in from the bore); the cable bore, the rotor clamp's 4 holes with their heads'
+    counterbores in the front face."""
     d, w, S = cfg.drive, cfg.roll_end, stack_positions(cfg)
     j_r = d.pulley_journal_dia / 2.0
     z_end = S["z_spigot_end"]
-    # the core: the neck, the hub, the shoulder, the core under the ring, the spigot - then every cut, then the ring fused
-    # on LAST (an annulus on the core, so no boolean ever runs through its 90 grooves)
+    z_core = S["z_boss"] + d.run_gap
+    # the core: the neck, the hub, the shoulder, the core (under the ring and on down to the shoulder), the spigot - then
+    # every cut, then the ring fused on LAST (an annulus on the core, so no boolean ever runs through its 90 grooves)
     body = cylinder(d.neck_dia / 2.0, S["z_bearing_2"] - S["z_meet"], z0=S["z_meet"])
     body = body + cylinder(j_r, S["z_boss"] - S["z_bearing_2"], z0=S["z_bearing_2"])
     body = body + cylinder(d.shoulder_dia / 2.0, d.run_gap, z0=S["z_boss"])
-    body = body + cylinder(d.ring_core_dia / 2.0, S["z_ring_end"] - S["z_ring_flange_1"], z0=S["z_ring_flange_1"])
+    body = body + cylinder(d.ring_core_dia / 2.0, S["z_ring_end"] - z_core, z0=z_core)
     body = body + cylinder(w.flange_dia / 2.0, z_end - S["z_wall"], z0=S["z_wall"])
     # the cable bore, narrowed over the clamp's counterbores' depth (clamp_bore_r: their wall to it)
     body = body - cylinder(d.bore / 2.0, S["z_clamp_head"] - S["z_meet"] + NUDGE, z0=S["z_meet"] - NUDGE)
@@ -447,3 +448,12 @@ def build_back_panel(cfg: ForearmConfig = DEFAULT):
     for x, s in b.magnet_points:
         body = body - _on_back(bd.Pos(x, s) * bd.Circle(b.pocket_dia / 2.0), b.t - b.pocket_depth, b.pocket_depth + NUDGE, cfg)
     return single_solid(body - back_grill(cfg))
+
+
+def build_idler_spacer(cfg: ForearmConfig = DEFAULT):
+    """The roll belt tensioner's printed spacer (RollIdlerParams; parts/joints/roll_idler_spacer), axis on Z: its land
+    (land_dia x land_h) on z=0, under the idler's bearing inner ring; its riser (riser_dia) on up to
+    z = roll_idler_spacer_h(), on the frame's front face; the axle's slot_w through both. Prints riser down."""
+    i, height = cfg.drive.idler, roll_idler_spacer_h(cfg)
+    body = cylinder(i.land_dia / 2.0, i.land_h) + cylinder(i.riser_dia / 2.0, height - i.land_h, z0=i.land_h)
+    return single_solid(body - through(i.slot_w / 2.0, height))

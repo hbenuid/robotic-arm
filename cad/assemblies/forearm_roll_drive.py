@@ -9,9 +9,10 @@ retired (lib/placements.py RETIRED); the 40 mm kit motor + MKS board ON the elbo
 (open down through the octagon's bottom - the motor slides up into it, turned so its connector and the board's motor plug
 point down into the opening -, the side face closed, the pocket's front wall the plate, its 4x M3 from the front face,
 heads flush in counterbores: roll_motor_screws) and the 20T on the motor shaft, its hub down in the plate's pilot hole;
-the roll belt's tensioner on the frame's front face (the idler on a riser, its M5 and nut: RollIdlerParams); the 6806
-pair back to back in the tower, a 12 mm spacer between them. Rotor: the pulley (forearm_roll_pulley, the output: the
-integral 90T ring over the bearing boss on the frame's front face, its hub down through bearing 2 and its neck on to
+the roll belt's tensioner on the frame's front face (the idler on a printed spacer, roll_idler_spacer - nothing grows
+from the face, which the frame prints on -, its M5 and nut: RollIdlerParams); the 6806 pair back to back in the tower,
+a 12 mm spacer between them, bearing 2's front face flush with the frame's. Rotor: the pulley (forearm_roll_pulley, the
+output: the integral 90T ring on a core down to run_gap over the frame's front face, its hub down through bearing 2 and its neck on to
 bearing 1, the spigot the forearm's wall bolts onto - 4x M3 into nuts in its core; forearm_link) and the shaft
 (forearm_roll_shaft, a collar that holds bearing 1: its journal through it, the rotor clamp's nuts and the stop lug in
 its flange - in through the frame's back), clamped by 4x M3 from the pulley's front face into nuts in the shaft's flange
@@ -65,8 +66,10 @@ OCCURRENCES = [
     # the motor's 4x M3 from the plate's front face (turned over: the heads up), flush in its counterbores
     ("roll_motor_screws",     None, ((S["x_motor"], S["y_motor"], S["z_motor_screws"]), (180.0, 0.0, 0.0))),
     ("forearm_roll_belt",     "forearm_roll", ((S["x_motor"], S["y_motor"], S["z_ring_mid"]), (0.0, 0.0, 90.0))),   # the 20T to the ring: its frame's +X up module +Y
-    # the belt's tensioner (RollIdlerParams): the idler on the riser's land, level with the belt; its M5 down from the
-    # idler's top (turned over: the head up) into the nut under the frame's face, bearing up on the channel's roof
+    # the belt's tensioner (RollIdlerParams): the idler on its printed spacer's land, level with the belt - the spacer
+    # turned over, its land's face under the idler, its riser on the frame's front face; its M5 down from the idler's top
+    # (turned over: the head up) into the nut under the frame's face, bearing up on the channel's roof
+    ("roll_idler_spacer",     None, ((*_IDLER, S["z_idler"]), (180.0, 0.0, 0.0))),
     ("gt2_idler_20t",         "forearm_roll", _at(*_IDLER, S["z_idler"])),
     ("roll_idler_screw",      None, ((*_IDLER, S["z_idler_top"]), (180.0, 0.0, 0.0))),
     ("roll_idler_nut",        None, _at(*_IDLER, S["z_idler_roof"] - DEFAULT.drive.idler.nut.h)),
@@ -89,9 +92,9 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("stator") after any geometry change.
 EXPECTED = {
-    "leaves": 23, "solids": 58, "solid_volume": 395300.906,
-    "bodies": {"stator": {"leaves": 18, "solids": 47, "solid_volume": 351206.233},
-               "rotor": {"leaves": 5, "solids": 11, "solid_volume": 44094.672}},
+    "leaves": 24, "solids": 59, "solid_volume": 395789.043,
+    "bodies": {"stator": {"leaves": 19, "solids": 48, "solid_volume": 350777.727},
+               "rotor": {"leaves": 5, "solids": 11, "solid_volume": 45011.315}},
 }
 
 

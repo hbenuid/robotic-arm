@@ -1,7 +1,7 @@
 """roll_idler_screw - purchased (COTS) part: the roll belt tensioner's axle, an M5 socket head cap screw (ISO 4762).
 
 In the arm: one, in forearm_roll_drive (lib/forearm/params.py RollIdlerParams): its head's bearing face on the idler's
-top (gt2_idler_20t), the shank down through the idler, the riser on the roll frame's front face and its slot into the
+top (gt2_idler_20t), the shank down through the idler, its spacer (roll_idler_spacer) and the roll frame's slot into the
 nut in the channel under the face (roll_idler_nut); slid along the slot to tension the roll belt, then turned from
 above to clamp the idler there. Length: RollIdlerParams.screw_len, its tip 2 pitches and more past the nut.
 
@@ -27,7 +27,7 @@ COTS = True
 MASS_G = ROLL_IDLER_SCREW_MASS_G   # [ESTIMATE] the modelled steel (lib/params.py)
 PURCHASE_SPEC = f"M{SCREW.d:g} x {LENGTH:g} socket head cap screw (ISO 4762)"
 PURCHASE_QTY = 1   # pieces per occurrence
-PURCHASE_NOTE = "the roll belt tensioner's axle: down through the idler and the roll frame's riser into its nut"
+PURCHASE_NOTE = "the roll belt tensioner's axle: down through the idler, its spacer and the roll frame into its nut"
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 

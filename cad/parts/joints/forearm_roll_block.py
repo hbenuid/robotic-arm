@@ -2,18 +2,20 @@
 flange (elbow_flange, its own part) bolts to, ONE body round the roll motor: seen along the elbow axis an octagon about
 it (its flats r 42 off it, round j1_link's round end) hulled up to the TOWER round the roll axis (ELBOW_ROLL_OFFSET above
 the elbow axis; seen along the roll axis the forearm flange's octagon, its top corners faceted, and the front face's long
-edges faceted 45 deg - front_facet - the bearing boss rising out of them), from its underside (6.0 over j1_link's flat
+edges faceted 45 deg - front_facet - the bearing boss a round drum through them), from its underside (6.0 over j1_link's flat
 top: ELBOW_INSET; under it the SPIGOT - an octagon about the elbow axis, spigot_af across flats, spigot_h tall - in the
 elbow flange's recess: the elbow 90T bolts up through the flange and the spigot into 4x M4 nuts in hex channels that
 open up into the motor's pocket; j3_coupler#1 is retired) to its side (+N) face, closed. The 40 mm kit motor sits on the
 elbow axis in the POCKET between the floor and the side wall, open down through the octagon's bottom (the motor slides up
 into it; its board's side plugs in a groove inside each wall, their cables down out through the bottom), its front wall
 the PLATE (the pilot hole and the motor's 4 M3 holes, the screws' heads flush in counterbores - roll_motor_screws; the
-shaft's slit down to the bottom), whose face is the frame's one front face; the tower carries the 6806 pair back to back
+shaft's slit down to the bottom), whose face is the frame's one front face, nothing proud of it - the frame prints flat
+on it (the roll belt tensioner's spacer is its own part, roll_idler_spacer); the tower carries the 6806 pair back to back
 on a 12 mm spacer (the lip) - bearing 1's seat open into the shaft's BAY behind it (bored on through the frame's back,
-the stop post on the tower's face), bearing 2's seat in the BEARING BOSS, round on the front face, the pulley's ring
-turning over it; the rear face stepped for the removable BACK PANEL (forearm_roll_back_panel, flush in the step, held
-by magnets in pockets in the step's floor), the bay's opening grown down below its bore.
+the stop post on the tower's face), bearing 2's seat in the BEARING BOSS, round and flush with the front face (bearing
+2's front face on it), the pulley's core turning over it; the rear face stepped for the removable BACK PANEL
+(forearm_roll_back_panel, flush in the step, held by magnets in pockets in the step's floor), the bay's opening grown
+down below its bore.
 
 NATIVE part (lib/reference.py NATIVE): designed here in build123d (lib/forearm/roll.py build_block(cfg), every number
 lib/forearm/params.py RollDriveParams, in the drive's MODULE frame at its stack station - assemblies/forearm_roll_drive.py

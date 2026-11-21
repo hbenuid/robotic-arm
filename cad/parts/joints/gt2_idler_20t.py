@@ -6,7 +6,7 @@ SolidWorks export: a NATIVE COTS part (lib/reference.py NATIVE_COTS) - its envel
 seller's drawing, and its reference is that envelope (reference/native/gt2_idler_20t.step,
 tools/reference/import_native.py). Frame: axis on Z, standing on z=0.
 Dimensions: lib/belts.py GT2_IDLER_*. In the arm: the roll belt's tensioner, in forearm_roll_drive
-(lib/forearm/params.py RollIdlerParams) - on the riser on the roll frame's front face, on an M5 SHCS down from its top
+(lib/forearm/params.py RollIdlerParams) - on its printed spacer (roll_idler_spacer) on the roll frame's front face, on an M5 SHCS down from its top
 (roll_idler_screw) into a nut under the face (roll_idler_nut), slid along N to tension the belt; and the elbow belt's
 (gt2_idler_20t#1, lib/upper_arm/params.py ElbowIdlerParams) - under j1_link's slab below its printed spacer
 (elbow_idler_spacer), on an M5 SHCS up from under it (elbow_idler_screw) into a nut in a slot down from the slab's top
