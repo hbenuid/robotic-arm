@@ -154,9 +154,9 @@ class JointParams:
     face up to the plate's underside; the mount's own posts (MountParams.post_t) face them. 2 M4 per side along X,
     bolt_out out of the window's edge, bolt_inset under the plate's underside and above the bottom face, through the
     mount's post and the base's: the heads in round counterbores in the mount's posts' inner faces (head_bore wide,
-    head_seat deep: the heads under the faces, printed on their side - the mount prints plate down), the nuts pressed
-    into hex pockets in the base's posts (their outer faces flush with the posts' back faces, a corner up), the tips out
-    into the base."""
+    head_seat deep: the heads flush with the faces, printed on their side - the mount prints plate down), the nuts
+    pressed into hex pockets in the base's posts (their outer faces flush with the posts' back faces, a corner up), the
+    tips flush with the nuts' outer faces (the whole nut threaded, nothing out into the base)."""
 
     split_x: float = 55.0          # just past the tower's round (shell.r): the base keeps a flat full-width end
     post_t: float = 8.0
@@ -165,8 +165,8 @@ class JointParams:
     bolt_dia: float = M4_CLEAR
     screw: ShcsSize = M4_SHCS
     head_bore: float = M4_SHCS.head_dia + 0.4   # 7.4, the arm's M4 counterbore (the fork's, the drive's housing bolts')
-    head_seat: float = M4_SHCS.head_h + 0.5     # 4.5 deep: the heads 0.5 under the posts' faces, 3.5 of the post under them
-    screw_len: float = 16.0        # the tip 4.5 past the nut's outer face
+    head_seat: float = M4_SHCS.head_h           # 4.0 deep: the heads flush with the posts' faces, 4.0 of the post under them
+    screw_len: float = 12.0        # the tip flush with the nut's outer face (the user's pick over 0.5 past it)
     nut: NutSize = M4_NUT
     nut_pocket_af: float = M4_NUT_SIDE_PRESS_AF   # [MEASURE] 7.15, the press on the 7.0 nut, its pocket printed on its
     #                                side (the M4 NUT SIDE gauge): the screw pulls the nut home, it stays when the screw is out

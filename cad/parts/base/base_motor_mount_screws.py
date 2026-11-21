@@ -4,8 +4,8 @@ They bolt the motor mount (base_motor_mount) to the base (base) across the joint
 
 In the arm (lib/mounts.py, hosted on base_motor_mount#1): the heads in the counterbores in the inner faces of the
 mount's two posts, the shanks along the base's -X through the mount's posts and the base's into the M4 nuts pressed
-into the base's posts (base_motor_mount_nuts), the tips out into the base's cavity. Length: lib/base/params.py
-JointParams.screw_len.
+into the base's posts (base_motor_mount_nuts), the heads flush with the posts' faces, the tips flush with the nuts'
+outer faces. Length: lib/base/params.py JointParams.screw_len.
 
 No catalog model (the catalog has single fasteners only, vendor/README.md) and no SolidWorks export: a NATIVE COTS
 pattern part (lib/reference.py NATIVE_COTS) like elbow_pulley_screws - its envelope IS the geometry (lib/fasteners.py
