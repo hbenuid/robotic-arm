@@ -8,7 +8,7 @@ from lib.forearm.layout import (  # noqa: F401
     clamp_bore_r, clamp_nut_pocket, clamp_points, coupler_steps, disc_bolt_angles, end_nut_pocket, screw_channel, screws_under_the_web,
     disc_bolt_points, elbow_end_x, flange_bolt_points, flange_bolt_points_module, lap_nut_z, lap_screw_head_z, lap_z, link_socket_points,
     module_frame_in_host, motor_hole_points, motor_pocket, nut_channel_end, pad_bolt_points, plug_slots, pulley_bolt_points,
-    roll_belt_loop, roll_idler_xy, side_headers, side_plug_room, stack_positions, wrist_belt_frame, wrist_belt_loop,
+    roll_belt_loop, roll_idler_spacer_h, roll_idler_xy, side_headers, side_plug_room, stack_positions, wrist_belt_frame, wrist_belt_loop,
     wrist_idler_spacer_h, wrist_idler_xy,
 )
 from lib.forearm.params import (  # noqa: F401

@@ -169,6 +169,13 @@ def wrist_idler_xy(cfg: ForearmConfig = DEFAULT) -> tuple[float, float]:
     return (cfg.motor_x - x, -y)
 
 
+def roll_idler_spacer_h(cfg: ForearmConfig = DEFAULT) -> float:
+    """The roll idler's printed spacer's height (RollIdlerParams): from the frame's front face up to the idler's
+    underside, level with the belt."""
+    S = stack_positions(cfg)
+    return round(S["z_idler"] - S["z_front"], 6)
+
+
 def wrist_idler_spacer_h(cfg: ForearmConfig = DEFAULT) -> float:
     """The wrist idler's printed spacer's height (IdlerParams): from the idler's top face, level with the belt, up to the
     web's underside."""
@@ -202,20 +209,24 @@ def module_frame_in_host(cfg: ForearmConfig = DEFAULT) -> tuple:
 def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
     """Module-frame stations of the roll drive (RollDriveParams; the frame, the shaft and the pulley builders emit their
     geometry at these stations, their rows at 0). From the forearm wall back: the ring's front face on the wall, the
-    ring, bearing 2 right under it (the bearing boss's top), the lip (the spacer between the outer rings), bearing 1 - the
-    pulley's neck meets the shaft at its front face -, the shaft behind it - its rear face at the rotor clamp's tips -,
-    the bay bored on through the back past the tower's rear (tower_rear, the outline's); the motor's face where its 20T
-    meets the ring (pulley_seat), the plate in front of it - its face the block's front face, the motor screws' heads
-    flush in it. The elbow axis runs along X at y = y_elbow, under the tower at z = 0; the motor sits on it. Every number
-    a row or a test needs comes from here."""
+    ring, the pulley's core on down to run_gap over the frame's front face; the motor's face where its 20T meets the ring
+    (pulley_seat), the plate in front of it - its face the block's front face, the motor screws' heads flush in it, and
+    nothing proud of it: the frame prints flat on it -; bearing 2 right under that face (the bearing boss flush in it),
+    the lip (the spacer between the outer rings), bearing 1 - the pulley's neck meets the shaft at its front face -, the
+    shaft behind it - its rear face at the rotor clamp's tips -, the bay bored on through the back past the tower's rear
+    (tower_rear, the outline's). The elbow axis runs along X at y = y_elbow, under the tower at z = 0; the motor sits on
+    it. Every number a row or a test needs comes from here."""
     d, w = cfg.drive, cfg.roll_end
     z_wall = -w.wall_x[1]                                         # 48: the forearm wall's elbow face = the ring's front face
     z_ring = z_wall - d.ring_flange_t - d.ring_width              # 39.8: the teeth
     z_ring_flange_1 = z_ring - d.ring_flange_t                    # 38.6: the ring's rear flange
-    z_boss = z_ring_flange_1 - d.run_gap                          # 37.6: the bearing boss's top = bearing 2's front face
-    z_bearing_2 = z_boss - d.bearing_width                        # 30.6
-    z_lip = z_bearing_2 - d.lip                                   # 18.6: the spacer's rear = bearing 1's front face
-    z_bearing_1 = z_lip - d.bearing_width                         # 11.6: the seat's rear, into the bay
+    z_ring_mid = z_ring + d.ring_width / 2.0                      # 43.3
+    z_motor_face = z_ring_mid - d.t20                             # 26.85: the 20T's teeth level with the ring's, its hub pulley_seat over the pilot boss
+    z_front = z_motor_face + d.pad_t                              # 33.85: the plate's front face = the block's front face
+    z_boss = z_front                                              # 33.85: the bearing boss's top = bearing 2's front face, flush with it
+    z_bearing_2 = z_boss - d.bearing_width                        # 26.85
+    z_lip = z_bearing_2 - d.lip                                   # 14.85: the spacer's rear = bearing 1's front face
+    z_bearing_1 = z_lip - d.bearing_width                         # 7.85: the seat's rear, into the bay
     z_wall_back = -w.wall_x[0]                                    # 56: the wall's wrist face = its screws' heads
     z_end_tip = z_wall_back - w.screw_len                         # 40: their tips, in the pulley's core
     z_end_nut = z_end_tip + 2 * M3_PITCH                          # 41: each nut's far face, 2 pitches short of the tip
@@ -223,11 +234,8 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
     z_clamp_head = z_spigot_end - d.clamp_screw.head_h - d.clamp_head_clear   # 46.8: the clamp's counterbores' floor
     z_shaft_end = z_clamp_head - d.clamp_screw_len                # 1.8: the clamp's tips = the shaft's rear face
     z_clamp_nut = z_shaft_end + 2 * M3_PITCH                      # 2.8: each clamp nut's far face
-    z_meet = z_lip                                                # 18.6: the pulley's neck meets the shaft's journal at bearing 1's front face
-    z_ring_mid = z_ring + d.ring_width / 2.0                      # 43.3
-    z_motor_face = z_ring_mid - d.t20                             # 26.85: the 20T's teeth level with the ring's, its hub pulley_seat over the pilot boss
-    z_front = z_motor_face + d.pad_t                              # 33.85: the plate's front face = the block's front face
-    z_idler = z_ring_mid - GT2_IDLER_WIDTH / 2.0                  # 38.8: the idler's underside (its channel on the belt) = the riser's land
+    z_meet = z_lip                                                # 14.85: the pulley's neck meets the shaft's journal at bearing 1's front face
+    z_idler = z_ring_mid - GT2_IDLER_WIDTH / 2.0                  # 38.8: the idler's underside (its channel on the belt) = the spacer's land
     return {
         "z_block": 0.0, "z_shaft": 0.0, "z_pulley": 0.0,
         "z_tower_rear": d.tower_rear,                             # 0.75: the tower's rear in the profile (the rear line's anchor)
@@ -238,8 +246,8 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
         "z_end_tip": z_end_tip, "z_end_nut": z_end_nut,
         "z_end_nut_seat": z_end_nut + d.end_nut.h,                # 43.4: each wall nut's bearing face, toward the wall
         "z_stop_lug": z_shaft_end,                                # 1.8 .. +stop_lug_t on the shaft's flange
-        "z_stop_post": z_bearing_1 - d.stop_post_t,               # 6.8 .. 11.6 on the tower's face behind bearing 1
-        "z_shoulder_1": z_bearing_1 - d.run_gap,                  # 10.6: the shaft's Ø33 shoulder on bearing 1's inner ring
+        "z_stop_post": z_bearing_1 - d.stop_post_t,               # 3.0 .. 7.85 on the tower's face behind bearing 1
+        "z_shoulder_1": z_bearing_1 - d.run_gap,                  # 6.85: the shaft's Ø33 shoulder on bearing 1's inner ring
         "z_bearing_1": z_bearing_1, "z_lip": z_lip,
         "z_meet": z_meet,
         "z_bearing_2": z_bearing_2, "z_boss": z_boss,

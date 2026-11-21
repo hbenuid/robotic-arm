@@ -1,8 +1,8 @@
 """elbow_idler_spacer - the printed spacer of the elbow belt's tensioner (parametric build123d, lib/upper_arm/link.py
 build_idler_spacer): a stepped sleeve on the idler's axle between the idler and j1_link's slab.
 
-j1_link prints on its slab's underside (lib/upper_arm/params.py ArmParams), so the riser the roll frame grows under its
-idler (lib/forearm/params.py RollIdlerParams) is a part of its own here: its riser (ElbowIdlerParams.riser_dia) on the
+j1_link prints on its slab's underside (lib/upper_arm/params.py ArmParams), so no riser grows from it under the idler:
+the riser is a part of its own, as on the roll frame (parts/joints/roll_idler_spacer) - its riser (ElbowIdlerParams.riser_dia) on the
 slab's underside, its land (land_dia x land_h) on the idler's bearing inner ring only - the idler's flanges clear of
 the riser -, its bore the axle's slot (slot_w); J1_IDLER_SPACER_H tall, so the idler hangs level with the belt
 (lib/params.py). Frame: axis on Z, the land's face on z=0, the riser's on z=J1_IDLER_SPACER_H. Prints riser down.

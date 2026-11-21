@@ -240,8 +240,8 @@ class ElbowIdlerParams:
     #                                       line (31.0), the nut's slot 8.4 off the motor's hole (tests/upper_arm/test_elbow_idler.py)
     slot_z: tuple = (-23.9, 23.9)         # its axis' range along Z, the slots' end centres: symmetrical, each end 0.65 past just
     #                                       touching its strand of the open loop
-    riser_dia: float = 12.0               # the spacer's riser, on the slab's underside (as RollIdlerParams.riser_w) ...
-    land_dia: float = 7.0                 # [ESTIMATE] ... its land on the idler's bearing inner ring only (RollIdlerParams.land_w)
+    riser_dia: float = 12.0               # the spacer's riser, on the slab's underside (as RollIdlerParams.riser_dia) ...
+    land_dia: float = 7.0                 # [ESTIMATE] ... its land on the idler's bearing inner ring only (RollIdlerParams.land_dia)
     land_h: float = 1.0                   # the land over the riser: the idler's flange clear of the riser
     slot_w: float = M5_CLEAR              # the axle's slot through the floor, the spacer's bore
     screw: ShcsSize = M5_SHCS             # [DATASHEET] ISO 4762 M5 (parts/joints/elbow_idler_screw), its head under the idler
