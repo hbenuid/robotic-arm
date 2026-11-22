@@ -104,13 +104,16 @@ def test_stack():
     assert S["z_motor_face"] + S["z_motor_rear"] == 0.0 and S["z_motor_face"] - S["z_motor_rear"] == p.body_length
     assert -p.body_w / 2.0 - S["x_free"] >= 1.0 and S["x_free"] - S["x_coupler"] == DEFAULT.plate.thickness
     assert S["z_20t"] + D.t20_hub == S["z_ring_mid"] == S["z_motor_face"] + D.t20
-    # the stations, the band back: its rear flange, run_gap, bearing 2 (the boss's top), the lip, bearing 1; the hubs
-    # meet in the lip's middle; the face in front of the band
+    # the stations, the band back: its rear flange, run_gap, bearing 2 (just under the front face), the lip, bearing 1;
+    # the hubs meet in the lip's middle; the face in front of the band
     assert S["z_ring_flange_1"] == pytest.approx(S["z_ring"] - D.ring_flange_t)
     assert S["z_boss"] == pytest.approx(S["z_ring_flange_1"] - D.run_gap) == pytest.approx(S["z_bearing_2"] + D.bearing_width)
     assert S["z_lip"] == pytest.approx(S["z_bearing_2"] - D.lip) and S["z_bearing_1"] == pytest.approx(S["z_lip"] - D.bearing_width)
     assert S["z_meet"] == pytest.approx(S["z_lip"] + D.lip / 2.0) and S["z_face"] == pytest.approx(S["z_ring_end"] + D.face_t)
-    assert S["z_front"] < S["z_boss"]                                   # the bearing boss stands on the plate's face
+    # nothing proud of the front face (the frame prints flat on it): bearing 2 just under it, in its seat open through it;
+    # the plate the pancake's screw heads' counterbores + 4 under them
+    assert S["z_front"] - S["z_boss"] == pytest.approx(0.25)
+    assert S["z_front"] - S["z_pad_seat"] == D.pad_cbore_depth and S["z_pad_seat"] - S["z_motor_face"] == 4.0
     # the bay, bored on through the rear: the plate's coupler face 4+ mm under it, bearing 1 through it with the shaft;
     # the frame's rear at the tower's far side the station the wrist pitch's +38 deg limit was set against
     assert S["z_bay"] == pytest.approx(S["z_shaft_end"] - (S["z_meet"] - S["z_bearing_1"]) - D.bay_clear)
@@ -346,9 +349,9 @@ def _z_cylinders(shape) -> list[tuple[float, float, float, float, float]]:
 def test_the_plate_slots_on_the_pancakes_holes(module, frame):
     """The plate's 4 bolt slots on the pancake's 4 tapped M3 and its pilot slot on its Ø22 pilot, each measured on its
     part: the vendor model's tapped holes (bores under M3_CLEAR off the pilot, up to the mounting face) on pad_bolt_points
-    and nowhere else, the pilot on the motor's axis; each slot through the plate (pad_t from the pancake's face) centred
-    on them - its end arcs pad_slot_len / 2 either way along Y, the belt's tension travel - an M3's clearance
-    (M3_CLEAR) wide, the pilot's wider than the pilot."""
+    and nowhere else, the pilot on the motor's axis; each slot through the plate centred on them - the bolt slots from the
+    pancake's face to their counterbores' floor (z_pad_seat), the pilot's through pad_t; its end arcs pad_slot_len / 2
+    either way along Y, the belt's tension travel - an M3's clearance (M3_CLEAR) wide, the pilot's wider than the pilot."""
     p, motor, face, half = D.pancake, (S["x_motor"], S["y_motor"]), S["z_motor_face"], D.pad_slot_len / 2.0
     points = pad_bolt_points(DEFAULT)
     cyls = _z_cylinders(_leaf(module, "nema17_pancake:wrist_roll"))
@@ -360,18 +363,19 @@ def test_the_plate_slots_on_the_pancakes_holes(module, frame):
     pilot = [c for c in cyls if math.dist(c[:2], motor) < 1e-3 and math.isclose(c[2], p.pilot_dia / 2.0, abs_tol=1e-3)
              and c[4] > face]
     assert pilot, "no Ø22 pilot on the motor's axis in front of its mounting face"
-    plate = [c for c in _z_cylinders(frame)
-             if math.isclose(c[3], face, abs_tol=1e-3) and math.isclose(c[4], face + D.pad_t, abs_tol=1e-3)]
+    frame_cyls = _z_cylinders(frame)
 
-    def width(xy) -> float:
-        """The slot centred on xy: its two end arcs, half either way along Y through the plate - its width."""
+    def width(xy, top) -> float:
+        """The slot centred on xy: its two end arcs, half either way along Y from the pancake's face to `top` - its width."""
         radii = []
         for dy in (-half, half):
-            ends = [c[2] for c in plate if math.dist(c[:2], (xy[0], xy[1] + dy)) < 1e-3]
+            ends = [c[2] for c in frame_cyls if math.dist(c[:2], (xy[0], xy[1] + dy)) < 1e-3
+                    and math.isclose(c[3], face, abs_tol=1e-3) and math.isclose(c[4], top, abs_tol=1e-3)]
             assert ends, f"no slot end through the plate at ({xy[0]:.2f}, {xy[1] + dy:.2f})"
             radii += ends
         return 2.0 * min(radii)
 
-    widths = [round(width(xy), 3) for xy in points]
+    widths = [round(width(xy, S["z_pad_seat"]), 3) for xy in points]
     assert min(widths) >= PARAMS.M3_CLEAR - 1e-6, f"the bolt slots {widths} wide, under M3_CLEAR ({PARAMS.M3_CLEAR})"
-    assert width(motor) > p.pilot_dia, f"the pilot slot {width(motor):.3f} wide, the pilot Ø{p.pilot_dia}"
+    pilot_w = width(motor, S["z_front"])
+    assert pilot_w > p.pilot_dia, f"the pilot slot {pilot_w:.3f} wide, the pilot Ø{p.pilot_dia}"

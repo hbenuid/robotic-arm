@@ -1,7 +1,7 @@
 """The wrist_roll home sensor (lib/wrist/params.py WristRollHomeParams): a KY-003 hall module upright on a printed fin
 beside the roll pulley's face, on the far face's side, and a Ø6 x 2 N52 magnet glued on the face's rim, which stands over
-the chip at WRIST_ROLL_HOME_DEG (lib/params.py). The fin is glued on the frame's front facet, front face and bearing boss
-(0.2 off each): nothing on the arm changes.
+the chip at WRIST_ROLL_HOME_DEG (lib/params.py). The fin is glued on the frame's front facet and front face (0.2 off
+each): nothing on the arm changes.
 
 The home angle is where the switch's zone sits: it must run on past the lower end of the travel for every operate point
 the A3144 may have (lib/sensors.py A3144_OPERATE_MT, switch_half_width()) - by more than a magnet glued 1 mm off its
@@ -55,7 +55,7 @@ R_HALL = home_hall_point()[0]                      # the hall element off the ro
 GLUE_DEG = math.degrees(1.0 / (FACE_R + H.magnet_t / 2.0))   # the magnet glued 1 mm off its mark round the rim
 # name -> (solids, volume mm^3, bbox min, bbox size): the build's own numbers
 LOCKS = {
-    "wrist_roll_home_fin": (1, 2750.715, (21.5, -2.99, 8.782843), (8.5, 24.5, 31.867157)),
+    "wrist_roll_home_fin": (1, 2040.496, (21.5, -2.99, 13.882843), (8.5, 24.5, 26.767157)),
     "wrist_roll_home_magnet": (1, 56.549, (-3.0, -3.0, 0.0), (6.0, 6.0, 2.0)),
     "wrist_roll_home_board_screws": (2, 66.6, (0.6, -6.9, -2.4), (3.8, 13.8, 6.0)),
     "wrist_roll_home_board_nuts": (2, 34.287, (0.5, -7.309401, -2.28), (4.0, 14.618802, 1.6)),
@@ -197,7 +197,7 @@ def test_the_sensor_fits(module, frame):
     assert closest_points(ky, fin).distance < 0.01
     assert closest_points(kit["wrist_roll_home_board_screws"], ky).distance < 0.01
     assert closest_points(kit["wrist_roll_home_board_nuts"], fin).distance < 0.01
-    assert closest_points(ky, frame).distance >= 5.9
+    assert closest_points(ky, frame).distance >= 5.7
     assert max(p.bounding_box().max.X for label, p in kit.items() if label not in ("ky003_hall_sensor:wrist_roll",
                "wrist_roll_home_board_screws")) <= D.frame_r + 1e-6
     assert kit["wrist_roll_home_board_screws"].bounding_box().max.X - D.frame_r == pytest.approx(0.02, abs=1e-6)   # the tips

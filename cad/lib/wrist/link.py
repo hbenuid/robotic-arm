@@ -118,13 +118,14 @@ def _post_bounds(cfg: WristConfig):
 
 
 def _foot(cfg: WristConfig):
-    """The frame's foot under the flange's post: the post's front flat carried on down past the free face into the front
-    facet's foot, so that it runs on down into the frame's front face - an octagon about the pitch axis with its corners on
-    the post's diameter (lib/style.py SIDES, a flat on each axis), not an arc: wrist_link keeps nothing round about the
-    pitch axis - and the key on the coupler face (key_*)."""
+    """The frame's foot under the flange's post: the post's front flat carried on down through the plate (and past the
+    free face, where the front facet runs on under it) into the front facet's foot, so that it runs on down into the
+    frame's front face - an octagon about the pitch axis with its corners on the post's diameter (lib/style.py SIDES, a
+    flat on each axis), not an arc: wrist_link keeps nothing round about the pitch axis - and the key on the coupler
+    face (key_*)."""
     f, p, d = cfg.flange, cfg.plate, cfg.roll
     axis = (p.pitch_x, 0.0)
-    drop = d.front_facet - p.thickness   # the coupler face's front facet runs on this far under the free face
+    drop = max(d.front_facet - p.thickness, 0.0)   # how far the coupler face's front facet runs on under the free face
     octo = faceted_end(f.post_dia / 2.0 * math.cos(math.pi / SIDES), axis, SIDES)
     foot = bd.Pos(0.0, 0.0, -drop) * bd.extrude(octo, amount=f.post_z[0] + drop)
     key = bd.Pos(0.0, 0.0, f.post_z[0] - NUDGE) * bd.extrude(faceted_end(f.key_af / 2.0, axis, SIDES), amount=f.key_h + NUDGE)

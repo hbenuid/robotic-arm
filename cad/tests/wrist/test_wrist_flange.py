@@ -19,9 +19,9 @@ from tests.helpers import interference, is_inside
 
 F, P, D = DEFAULT.flange, DEFAULT.plate, DEFAULT.roll
 PX = P.pitch_x
-VOLUME = 6752.337                                    # mm^3, the build's
+VOLUME = 6827.206                                    # mm^3, the build's
 BBOX_MIN = (-63.945774, -20.0, 5.0)                  # wrist_link's part frame (the mount places it on wrist_link as it stands)
-BBOX_SIZE = (35.0, 40.0, 11.0)
+BBOX_SIZE = (37.0, 40.0, 11.0)
 
 
 def test_params():

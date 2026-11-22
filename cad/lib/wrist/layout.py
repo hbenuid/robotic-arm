@@ -69,7 +69,7 @@ def module_frame_in_host(cfg: WristConfig = DEFAULT) -> tuple:
 def stack_positions(cfg: WristConfig = DEFAULT) -> dict[str, float]:
     """Module-frame stations of the drive (the frame, the pulley and the shaft builders emit their geometry at these
     stations, their rows at 0). Along Z: the pancake centred on the pitch axis (its body's middle at z 0), its 20T's
-    band where the 40T's is; from the band back: the band's rear flange, run_gap, bearing 2 (the boss's top), the lip,
+    band where the 40T's is; from the band back: the band's rear flange, run_gap, bearing 2 (just under the front face), the lip,
     bearing 1, the shaft behind it - its rear face at the rotor clamp's tips -, the bay; from the band forward the face
     the connector bolts to. Along X: the plate's coupler face and free face under R'. Every number a row or a test
     needs comes from here."""
@@ -78,7 +78,8 @@ def stack_positions(cfg: WristConfig = DEFAULT) -> dict[str, float]:
     z_ring_mid = z_motor_face + d.t20                             # 23.95: the 20T's band = the 40T's
     z_ring = z_ring_mid - d.ring_width / 2.0                      # 20.45
     z_ring_flange_1 = z_ring - d.ring_flange_t                    # 19.25: the band's rear flange
-    z_boss = z_ring_flange_1 - d.run_gap                          # 18.25: the bearing boss's top = bearing 2's front face
+    z_boss = z_ring_flange_1 - d.run_gap                          # 18.25: bearing 2's front face, 0.25 under the frame's front face
+    #                                                               (z_front: its seat open through it)
     z_bearing_2 = z_boss - d.bearing_width                       # 11.25
     z_lip = z_bearing_2 - d.lip                                   # 9.25
     z_bearing_1 = z_lip - d.bearing_width                        # 2.25: the tower's rear face, in the bay
@@ -112,9 +113,9 @@ def stack_positions(cfg: WristConfig = DEFAULT) -> dict[str, float]:
         "z_connector": z_face + cfg.connector.hub_len,            # 41.9: the connector plate's hub-side face
         "z_connector_head": z_face + cfg.connector.hub_flange_t,  # 38.65: its flange's plate side, the 4x M3's heads on it
         "z_motor_face": z_motor_face, "z_motor_rear": z_motor_rear, "z_pocket_rear": z_pocket_rear,
-        "z_front": z_motor_face + d.pad_t,                        # 15.5: the plate's front face = the frame's front face, the
-        #                                                           pancake's M3 heads on it
-        "z_boss_top": z_motor_face + d.pad_t + d.boss_h,          # 18.5: the bosses round its slots, the heads flush
+        "z_front": z_motor_face + d.pad_t,                        # 18.5: the plate's front face = the frame's front face (it
+        #                                                           prints on it: nothing stands proud), the pancake's M3 heads flush
+        "z_pad_seat": z_motor_face + d.pad_t - d.pad_cbore_depth,  # 15.5: their counterbores' floor, the heads on it
         "z_20t": z_motor_face + p.pilot_height + d.pulley_seat,   # 13.0: the 20T's hub face
         "x_coupler": x_coupler, "x_free": x_free,
         "x_motor": 0.0, "y_motor": -d.side * d.centre_distance,   # the pancake on the pitch axis

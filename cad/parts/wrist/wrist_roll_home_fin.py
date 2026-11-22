@@ -4,9 +4,9 @@ far face's side of wrist_link, its chip facing the magnet glued on the face's ri
 
 The upright plate the board stands on - on 2 M2 from its component side (wrist_roll_home_board_screws) through its own
 holes into nuts in hex pockets in the fin's back (wrist_roll_home_board_nuts) -, its back flush with the far face; under
-it the shoe over the front facet, which sits on the facet, the front face and the bearing boss's top and nests against
-the boss's round side (that places it), 0.2 off each for the glue. Glued on: nothing on the arm changes (the user's
-choice). Every number: lib/wrist/params.py WristRollHomeParams. Frame: wrist_roll_drive's module frame (built at its
+it the shoe over the front facet, which sits on the facet and the front face, 0.2 off each for the glue, its inner end
+just outside bearing 2's seat; its place along the face is marked off that seat (nothing on the flat face locates it).
+Glued on: nothing on the arm changes (the user's choice). Every number: lib/wrist/params.py WristRollHomeParams. Frame: wrist_roll_drive's module frame (built at its
 station). Prints on its back (the far face's side down): the M2 holes and the nut pockets upright, nothing overhanging.
 
 In the arm: x1 (wrist_roll_home_fin, a row of wrist_roll_drive#1 - the stator, wrist_pitch_link).
