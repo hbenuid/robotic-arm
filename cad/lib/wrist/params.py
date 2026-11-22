@@ -403,11 +403,11 @@ class WristRollParams:
     side_t: float = 7.5                 # [DESIGN] the far face's wall over the pocket and the board's window: its inside 22.5 off R', outside
     #                                     the pancake's body + pocket_clear (21.5) and the board's housing + board_clear (21.95)
     front_facet: float = 4.9            # [DESIGN] the front face's two long edges faceted this far at 45 deg, straight end to end (no
-    #                                     bearing boss through them): bearing 2's seat, open through the face, keeps 4.0 of wall
-    #                                     to the far face's facet and 1.0 to the coupler face's (axis_h 27, 3 nearer R' than
-    #                                     frame_r) - the user's pick over a Ø52 boss carried up flush with the face (4.9 both
-    #                                     sides); a 4.0 wall there too would need a 1.9 facet, which the outline's
-    #                                     EDGE_CHAMFER does not build on
+    #                                     bearing boss through them, as the forearm roll frame's: RollDriveParams): bearing 2's
+    #                                     seat, open through the face, keeps 4.0 of wall to the far face's facet and 1.0 to the
+    #                                     coupler face's (axis_h 27, 3 nearer R' than frame_r) - the user's pick over a Ø52 boss
+    #                                     carried up flush with the face (4.9 both sides); a 4.0 wall there too would need a
+    #                                     1.9 facet, which the outline's EDGE_CHAMFER does not build on
     rear_low: float = -18.5             # [DESIGN] the frame's rear behind the motor (module z): the plate's octagon cut there - as deep as
     #                                     the wrist pitch's +38 deg limit allows (2.4 off the forearm's wrist board there, tests/test_sweeps.py)
     rear_bend: float = 25.0             # [DESIGN] the rear one slanted plane from the tower's far rear corner (z_rear) down to rear_low
