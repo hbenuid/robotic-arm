@@ -211,7 +211,7 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
     geometry at these stations, their rows at 0). From the forearm wall back: the ring's front face on the wall, the
     ring, the pulley's core on down to run_gap over the frame's front face; the motor's face where its 20T meets the ring
     (pulley_seat), the plate in front of it - its face the block's front face, the motor screws' heads flush in it, and
-    nothing proud of it: the frame prints flat on it -; bearing 2 right under that face (the bearing boss flush in it),
+    nothing proud of it: the frame prints flat on it -; bearing 2 right under that face (its seat open through it),
     the lip (the spacer between the outer rings), bearing 1 - the pulley's neck meets the shaft at its front face -, the
     shaft behind it - its rear face at the rotor clamp's tips -, the bay bored on through the back past the tower's rear
     (tower_rear, the outline's). The elbow axis runs along X at y = y_elbow, under the tower at z = 0; the motor sits on

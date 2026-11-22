@@ -151,15 +151,15 @@ def test_stack():
     assert _eq(S["z_bearing_2"] - S["z_bearing_1"], D.bearing_width + D.lip, 19.0)
     assert _eq(S["z_meet"], S["z_lip"], S["z_bearing_1"] + D.bearing_width) and _eq(S["z_shoulder_1"], S["z_bearing_1"] - D.run_gap)
     assert S["z_wall"] >= UPPER_ARM_END_R + 1.5                 # the rolling forearm, whatever its roll angle, clears j1_link's round end
-    # the bearing boss: bearing 2's seat in it, 4 mm of wall or more; its top bearing 2's front face, flush with the
-    # front face, run_gap under the pulley's core, the ring's rear flange and the belt's edge clear above it; centred on
-    # the frame - the underside's plane, the side face and the tower's top all ROLL_FRAME_R off the roll axis, the
-    # forearm wall's radius: the frame flush with the round parts that turn about the roll axis - and on the flat of the
-    # front face, 4 inside the three sides (the tower's corners are sharp); the whole pair under the front face
-    r_boss = D.bearing_boss_dia / 2.0
-    assert r_boss - (D.bearing_od + D.seat_add) / 2.0 >= 4.0 and r_boss < D.ring_flange_dia / 2.0
+    # bearing 2's seat open through the front face (z_boss: bearing 2's front face on it), 4 mm of wall or more inside
+    # both front facets' top edges - nothing stands out of the facets round it -; run_gap under the pulley's core, the
+    # ring's rear flange and the belt's edge clear above it; centred on the frame - the underside's plane, the side face
+    # and the tower's top all ROLL_FRAME_R off the roll axis, the forearm wall's radius: the frame flush with the round
+    # parts that turn about the roll axis -; the whole pair under the front face
+    r_seat = (D.bearing_od + D.seat_add) / 2.0
+    assert min(D.block_x[1], -D.block_x[0]) - D.front_facet - r_seat >= 4.0
     assert S["z_boss"] < S["z_ring_flange_1"] < S["z_ring_mid"] - BELT_W / 2.0
-    assert _eq(-D.block_x[0], D.block_x[1], D.tower_y, w.wall_od / 2.0) and r_boss <= D.tower_y - 4.0
+    assert _eq(-D.block_x[0], D.block_x[1], D.tower_y, w.wall_od / 2.0)
     assert S["z_bearing_1"] < S["z_bearing_2"] < S["z_front"] == S["z_boss"]
     # the 6806 pair: the lip stops the outer rings and clears the pulley's neck and the shoulders, which bear on the inner
     # rings only; the neck under the bearing's bore - bearing 2 slides over it onto its journal; the tower round the seats
@@ -369,28 +369,30 @@ def _round_trip(part, r: float, a_deg: float, z: float) -> bool:
 @pytest.mark.slow
 def test_frame_features(module):
     block = _leaf(module, "forearm_roll_block")
-    r_seat, r_lip, r_boss = (D.bearing_od + D.seat_add) / 2.0, D.lip_id / 2.0, D.bearing_boss_dia / 2.0
-    # the tower: the two seats, the lip between them; bearing 2's seat open through the front face; the bearing boss
-    # flush with the face, nothing in front of it
+    r_seat, r_lip = (D.bearing_od + D.seat_add) / 2.0, D.lip_id / 2.0
+    # the tower: the two seats, the lip between them; bearing 2's seat open through the front face, nothing in front of
+    # the face round it
     for z in (S["z_bearing_1"] + 3.0, S["z_bearing_2"] + 3.0):
         assert not is_inside(block, 0, -(r_seat - 0.5), z) and is_inside(block, 0, -(r_seat + 0.5), z)
     assert is_inside(block, 0, -(r_lip + 0.5), S["z_lip"] + 1.0) and not is_inside(block, 0, -(r_lip - 0.5), S["z_lip"] + 1.0)
     assert not is_inside(block, 0, -(r_seat - 0.5), S["z_boss"] - 0.5)
     for x, y in ((0.0, 1.0), (1.0, 0.0), (0.0, -1.0), (-1.0, 0.0)):
-        assert not is_inside(block, x * (r_boss - 0.5), y * (r_boss - 0.5), S["z_front"] + 0.5)
+        assert not is_inside(block, x * (r_seat + 2.0), y * (r_seat + 2.0), S["z_front"] + 0.5)
     assert not is_inside(block, 0, r_seat + 1.0, S["z_boss"] + 0.5)
     # one flat front face, the frame's front-most plane (it prints on it: nothing proud of it - the boss flush, the
     # tensioner's riser a spacer of its own, tests/forearm/test_roll_idler.py): material just behind it, none in front
     assert block.bounding_box().max.Z == pytest.approx(S["z_front"], abs=1e-6)
     assert is_inside(block, -20.0, -30.0, S["z_front"] - 0.5) and not is_inside(block, -20.0, -30.0, S["z_front"] + 0.5)
-    # its two long edges faceted front_facet at 45 deg end to end (at the tower's foot and on the plate over the motor),
-    # material just inside each facet, none past it; the bearing boss a round drum through them, flush with the face -
-    # its round where the facet would have cut, nothing past its radius
+    # its two long edges faceted front_facet at 45 deg, straight end to end (at the tower's foot, beside bearing 2's
+    # seat - nothing of a boss past the facet there - and on the plate over the motor), material just inside each facet,
+    # none past it; the seat's wall at the facet's top edge
     for sx in (1.0, -1.0):
-        for y in (-30.0, S["y_elbow"]):
+        for y in (-30.0, 0.0, S["y_elbow"]):
             mid = (sx * (D.block_x[1] - D.front_facet / 2.0), S["z_front"] - D.front_facet / 2.0)
             assert is_inside(block, mid[0] - sx * 0.35, y, mid[1] - 0.35) and not is_inside(block, mid[0] + sx * 0.35, y, mid[1] + 0.35)
-        assert is_inside(block, sx * (r_boss - 0.5), 0.0, S["z_front"] - 1.0) and not is_inside(block, sx * (r_boss + 0.5), 0.0, S["z_front"] - 1.0)
+        edge = D.block_x[1] - D.front_facet
+        assert is_inside(block, sx * (r_seat + 0.5), 0.0, S["z_front"] - 0.5) and is_inside(block, sx * (edge - 0.5), 0.0, S["z_front"] - 0.5)
+        assert not is_inside(block, sx * (edge + 0.5), 0.0, S["z_front"] - 0.2)
     # the tower seen along the roll axis: the forearm flange's octagon (its flats tower_y = wall_od / 2, end_sides) - its top
     # corners cut to the diagonal flats, material just inside them, none past (probed round the lip, behind the seats)
     for sx in (1.0, -1.0):

@@ -30,6 +30,7 @@ from lib.belts import (
 )
 from lib.fasteners import nut_volume, shcs_volume
 from lib.forearm import DEFAULT, motor_pocket, roll_belt_loop, roll_idler_spacer_h, roll_idler_xy, stack_positions
+from lib.style import EDGE_CHAMFER
 from tests import built
 from tests.helpers import interference, is_inside
 
@@ -108,7 +109,7 @@ def test_the_spacer_the_screw_and_the_nut():
     _y0, y1, _z0, _z1 = motor_pocket(DEFAULT)
     assert iy - (I.nut.af / 2.0 + I.nut_fit) - y1 >= 2.5
     assert y1 - I.entry < S["y_motor"] + D.motor.body_width / 2.0 < y1   # the way in starts under the motor's face, which shuts it
-    assert iy + I.riser_dia / 2.0 < -D.bearing_boss_dia / 2.0 - 5.0    # the spacer off the bearing boss
+    assert iy + I.riser_dia / 2.0 < -D.ring_core_dia / 2.0 - 5.0      # the spacer off the pulley's core, which turns over the face
 
 
 def test_the_kit_is_parts_with_no_reference():
@@ -158,8 +159,10 @@ def test_the_slot_and_channel_on_the_frame(module):
     reach = I.travel + I.nut.af / math.sqrt(3.0) + I.nut_fit
     for x in (ix - I.travel, ix + I.travel):
         assert not is_inside(block, x, iy + I.nut.af / 2.0, z_nut) and is_inside(block, x, iy + I.nut.af / 2.0 + I.nut_fit + 0.5, z_nut)
-    x_facet = D.block_x[1] - D.front_facet + (S["z_front"] - z_nut)        # the facet's x at the nut's height
-    for x in (ix - reach - 0.5, ix + reach + 0.5, x_facet - 0.5):
+    # the frame's outside at the nut's height: the facet's x there, or - the nut under the facet's foot - the side face
+    # inside its outline's chamfer (EDGE_CHAMFER)
+    x_out = min(D.block_x[1] - D.front_facet + (S["z_front"] - z_nut), D.block_x[1] - EDGE_CHAMFER)
+    for x in (ix - reach - 0.5, ix + reach + 0.5, x_out - 0.5):
         assert is_inside(block, x, iy, z_nut), x
     assert is_inside(block, ix + reach - 1.0, iy, S["z_idler_roof"] + I.roof / 2.0)
     _y0, y1, _z0, _z1 = motor_pocket(DEFAULT)

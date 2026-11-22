@@ -1,8 +1,8 @@
 """build123d builders of the forearm roll drive's printed parts (RollDriveParams, module frame, at their stack
 stations): the frame (stator, forearm_roll_block - one body round the motor: the octagonal elbow end with the spigot
 under it that keys the elbow flange, the motor's pocket open through its bottom and the plate, the tower with the 6806
-pair and the bearing boss flush in its front face - the tower the forearm flange's octagon seen along the roll axis, the
-front face's long edges faceted, nothing proud of the face it prints on), the elbow flange (stator, elbow_flange - the
+pair, bearing 2's seat open through its front face - the tower the forearm flange's octagon seen along the roll axis, the
+front face's long edges faceted straight, nothing proud of the face it prints on), the elbow flange (stator, elbow_flange - the
 elbow's output flange, its own part under the frame's underside), the pulley (rotor, the output - its integral 90T is the
 GT2 ring of lib/pulley/teeth.py - its hub on through the tower to bearing 1), the shaft (rotor, a collar that holds
 bearing 1), the back panel (stator, a plate flush with the frame's rear face over the shaft's bay - its step, the opening
@@ -301,21 +301,18 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     out through the bottom), the plate's face the frame's one front face, nothing proud of it (the frame prints flat on
     it) - in it the roll belt's tensioner's M5 slot (its spacer stands on the face: build_idler_spacer) and its nut's
     channel under the face, the nut in from the pocket -; the tower: bearing 1's seat from the shaft's bay behind it -
-    bored on through the frame's back -, the lip (the spacer), bearing 2's seat in the bearing boss - round, flush with
-    the front face through the facets, the pulley's core turning over it -, the stop post on the tower's face in the bay;
+    bored on through the frame's back -, the lip (the spacer), bearing 2's seat open through the front face - 4 of wall
+    inside the facets, the pulley's core turning over it -, the stop post on the tower's face in the bay;
     the rear face: the back panel's step across it, the opening grown down below the bay's bore, the magnets' pockets;
     the elbow 90T's 4x M4 up through the spigot into nuts in hex channels, open into the pocket."""
     d, S = cfg.drive, stack_positions(cfg)
     y_e = S["y_elbow"]
     # the material first: the profile across the frame's depth, the tower cut to the forearm flange's octagon and the
-    # front face's long edges faceted, the outline chamfered on both side faces (lib/style.py EDGE_CHAMFER), the spigot
-    # under it (from 1 mm inside: one body), the bearing boss up to bearing 2's front face, flush with the front face - from
-    # 1 mm under the facets (one body): a round drum through them
+    # front face's long edges faceted (straight end to end: they leave bearing 2's seat its wall), the outline chamfered on
+    # both side faces (lib/style.py EDGE_CHAMFER), the spigot under it (from 1 mm inside: one body)
     prism = yz_prism(profile(cfg), d.block_x[0], d.block_x[1]) & _z_prism(tower_section(cfg))
     body = chamfer_outline(prism - front_facets(cfg), (1.0, 0.0, 0.0))
     body = body + yz_prism(spigot_face(cfg), d.block_x[0] - d.spigot_h, d.block_x[0] + 1.0)
-    boss_z0 = S["z_front"] - d.front_facet - 1.0
-    body = body + cylinder(d.bearing_boss_dia / 2.0, S["z_boss"] - boss_z0, z0=boss_z0)
     i, (ix, iy) = d.idler, roll_idler_xy(cfg)
     # the motor's pocket, between the floor and the side wall, from the board's back to the plate, open on down out through
     # the octagon's bottom; the plate in front of it: the pilot hole and the motor's four M3 holes, each screw's head flush
@@ -334,7 +331,7 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     # there motor_drop back (the shaft in the slit, the pilot boss under the plate), then forward into the pilot hole
     slit = (S["x_motor"] - d.shaft_slit / 2.0, S["x_motor"] + d.shaft_slit / 2.0)
     body = body - box(slit, (S["y_elbow"] - d.end_r - 1.0, S["y_motor"]), (S["z_motor_face"] - NUDGE, S["z_front"] + NUDGE))
-    # the tower, from the bay to the boss's top: bearing 1's seat, the lip, bearing 2's seat (open through the top)
+    # the tower, from the bay to the front face: bearing 1's seat, the lip, bearing 2's seat (open through the top)
     r_seat = (d.bearing_od + d.seat_add) / 2.0
     body = body - cylinder(r_seat, d.bearing_width + NUDGE, z0=S["z_bearing_1"] - NUDGE)
     body = body - cylinder(d.lip_id / 2.0, d.lip + 2 * NUDGE, z0=S["z_lip"] - NUDGE)

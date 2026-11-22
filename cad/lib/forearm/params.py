@@ -393,8 +393,8 @@ class RollHomeParams:
 
 
 ROLL_FRAME_R = 30.0   # [DESIGN] the roll frame's half width round the roll axis: its underside (6.0 over the upper arm's flat top),
-#                       its side (+N) face and its tower's top - the frame symmetric about the roll axis, the bearing boss centred
-#                       on its front face -, the forearm wall's radius (RollEndParams.wall_od / 2): the frame flush with the
+#                       its side (+N) face and its tower's top - the frame symmetric about the roll axis, bearing 2's seat centred
+#                       in its front face -, the forearm wall's radius (RollEndParams.wall_od / 2): the frame flush with the
 #                       round parts that turn about the roll axis (RollDriveParams block_x, tower_y; tests/forearm/test_roll_drive.py test_stack)
 ELBOW_INSET = 5.0     # [DESIGN] the roll frame and everything beyond the elbow this far along -N (toward the upper arm) from the
 #                       capture (ForearmConfig.elbow_inset, lib/placements.py SHIFTS): the frame's underside 6.0 over j1_link's flat
@@ -420,8 +420,8 @@ class RollDriveParams:
     the front face, the heads flush in counterbores -
     motor_holes, parts/joints/roll_motor_screws), the block's one flat front face the plate's - the 20T's teeth level
     with the ring (pulley_seat), the plate pad_t thick behind the face - nothing stands proud of it, so the frame prints
-    flat on it; a round bearing boss flush in that face round the roll axis, the 6806 pair in the tower under it (lip
-    apart, bearing 2's front face on the face), the shaft's bay behind them bored on through the frame's back, closed by
+    flat on it; the 6806 pair in the tower under it round the roll axis (lip apart, bearing 2's seat open through the
+    face, its front face on it, the facets leaving the seat its wall), the shaft's bay behind them bored on through the frame's back, closed by
     a removable back panel flush with the rear face (back: BackPanelParams).
     Rotor: the PULLEY (forearm_roll_pulley: the integral 90T ring on a core down to run_gap over the face, its hub down
     through bearing 2 and its neck on to bearing 1's front face, the spigot the forearm wall bolts onto - the roll's output) and the SHAFT
@@ -483,13 +483,11 @@ class RollDriveParams:
     motor_drop: float = 2.25              # [DESIGN] how far back the motor slides in: its pilot boss (pilot_height) under the plate + 0.25
     shaft_slit: float = 6.0               # [DESIGN] the shaft's slit through the plate, from the pilot hole down out through the bottom: the
     #                                       Ø5 shaft passes it as the motor slides up (the screws' holes stay whole either side)
-    bearing_boss_dia: float = 52.0        # [DESIGN] the boss round the roll axis, bearing 2's seat in it (4.9 of wall), FLUSH with the front face
-    #                                       (bearing 2's front face on it too: the frame prints flat on the face - layout.py stack_positions):
-    #                                       a round drum through the front facets (front_facet), which would thin the seat's wall to 1.9;
-    #                                       4 inside the frame's underside, side face and the tower's octagon; the pulley's core turns run_gap over it
-    front_facet: float = 7.0              # [DESIGN] the front face's two long edges (with the underside and the side face) faceted this far at
-    #                                       45 deg, end to end: as far as the plate over the motor's pocket allows - 4.95 of wall at the
-    #                                       pocket's corners, 4.65 at the motor screws' counterbores (roll.py front_facets)
+    front_facet: float = 4.9              # [DESIGN] the front face's two long edges (with the underside and the side face) faceted this far at
+    #                                       45 deg, end to end, straight: the most that leaves 4 of wall round bearing 2's seat where it opens
+    #                                       through the front face (block_x[1] - front_facet - its radius = 4.025), so the seat needs no boss
+    #                                       standing out of the facets (bearing 2's front face is on the front face: layout.py stack_positions);
+    #                                       the pocket's corners and the motor screws' counterbores further inside them (roll.py front_facets)
     bay_r: float = 25.6                   # [DESIGN] the shaft's bay behind bearing 1, bored on through the frame's back (the rear line): round
     #                                       the stop lug's corners (r 24.6) + 1; the shaft, bearing 1 pressed on it, goes in along the axis from behind
     # the elbow flange under the frame's underside (module -X) about the elbow axis (y = elbow_y), where j3_coupler#1 was
