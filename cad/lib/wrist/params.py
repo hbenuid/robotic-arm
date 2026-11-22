@@ -66,8 +66,8 @@ class PlateParams:
 
     thickness: float = 5.0
     pitch_x: float = -45.445774        # the wrist_pitch axis (x, 0), j3_coupler#2's
-    pitch_r: float = 39.000699         # the round end on it (DEFAULT: the roll frame's octagonal end about it, its flats this far
-    #                                    off the axis - lib/wrist/roll.py side_profile)
+    pitch_r: float = 39.000699         # the round end on it (DEFAULT: the octagon about the axis the back panel's region keeps off
+    #                                    the plate in, lib/wrist/roll.py _plate_prism; the frame's own end is WristRollParams.end_r)
     half_width: float = 39.0
 
 
@@ -308,7 +308,7 @@ class WristRollParams:
     belted to the roll axis beside it - centre_distance across in the wrist's swing plane, at the motor's height - so the
     wrist roll axis R' no longer meets the pitch axis (a wrist offset: the wrist is no longer spherical). wrist_link IS
     the frame (the stator), laid out as the forearm roll's frame (lib/forearm/roll.py build_block): one body - seen along
-    the pitch axis an octagon about it (pitch_r) hulled to the tower round R', its wall on the forearm's side the plate
+    the pitch axis an octagon about it (end_r) hulled to the tower round R', its wall on the forearm's side the plate
     (the wrist_pitch output flange on it: FlangeParams; no plate past the frame), from the plate's coupler face to the
     closed far (+X) face (side_t), its rear one slanted plane (rear_low,
     rear_bend), the front face's long edges faceted (front_facet). The pancake's pocket opens down through the BOTTOM -
@@ -400,6 +400,13 @@ class WristRollParams:
     # seen along R' the tower the octagon about it, the motor's side bounded by the plate and the far face
     frame_r: float = 30.0               # [DESIGN] the tower's octagon about R' (lib/style.py SIDES, these flats): the far face (x frame_r),
     #                                     the tower's far side
+    end_r: float = 30.0                 # [DESIGN] the octagon about the pitch axis (its flats this far off it): the frame's end past
+    #                                     the pancake, 6 past its pocket (the body + the tension travel + pocket_clear: 24) and
+    #                                     0.4 past the wrist 90T (r 29.6) on the plate's other side (the pocket and the board's
+    #                                     window run on out through it, as they did); its 45 deg flats leave 2.2 of wall to the
+    #                                     outer screw counterbores - the user's pick over a straight cut at 30 and 26 (the
+    #                                     octagon at 26 cuts those counterbores open); was the SolidWorks plate's round end
+    #                                     (PlateParams.pitch_r, 39)
     side_t: float = 7.5                 # [DESIGN] the far face's wall over the pocket and the board's window: its inside 22.5 off R', outside
     #                                     the pancake's body + pocket_clear (21.5) and the board's housing + board_clear (21.95)
     front_facet: float = 4.9            # [DESIGN] the front face's two long edges faceted this far at 45 deg, straight end to end (no

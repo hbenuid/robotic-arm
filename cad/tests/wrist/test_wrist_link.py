@@ -146,7 +146,13 @@ def test_the_part_is_the_roll_frame(wrist, legacy):
     assert is_inside(legacy, 20.0, 0.0, 22.0) and not is_inside(wrist, 20.0, 0.0, 22.0)
     for x in (ST["z_front"] + 2.0, 30.0, d.rear_low - 2.0, -30.0):
         assert not is_inside(wrist, P.pitch_x + x, 25.0, 2.5), x
-    assert is_inside(wrist, P.pitch_x, P.pitch_r - 0.5, 2.5) and not is_inside(wrist, P.pitch_x, P.pitch_r + 0.5, 2.5)
+    # that end end_r off the pitch axis (not the SolidWorks plate's pitch_r), past the pancake's pocket and the wrist 90T,
+    # its 45 deg flats too (between the front face and the end: x + y = end_r * sqrt 2)
+    assert d.end_r < P.pitch_r
+    assert is_inside(wrist, P.pitch_x, d.end_r - 0.5, 2.5) and not is_inside(wrist, P.pitch_x, d.end_r + 0.5, 2.5)
+    y45 = d.end_r * math.sqrt(2.0) - 15.5
+    assert is_inside(wrist, P.pitch_x + 15.5, y45 - 0.5, 2.5) and not is_inside(wrist, P.pitch_x + 15.5, y45 + 0.5, 2.5)
+    assert d.end_r - (d.pancake.body_w / 2.0 + d.pad_slot_len / 2.0 + d.pocket_clear) >= 6.0 and d.end_r >= 29.6 + 0.4 - 1e-6
     # the pancake's pocket on the pitch axis, its floor the plate's free face; the plate in front of it, the shaft's slit
     ym = ST["y_motor"]
     assert not is_inside(wrist, *_part(0.0, ym, 0.0))

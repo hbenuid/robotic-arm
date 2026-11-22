@@ -69,11 +69,11 @@ def _bottom(y_from: float, cfg: WristConfig = DEFAULT) -> tuple[float, float]:
 
 def side_profile(cfg: WristConfig = DEFAULT):
     """The frame seen along the pitch axis, a face in module (y, z): an octagon about the pitch axis (lib/geom.py
-    faceted_end, flats pitch_r - the forearm roll frame's octagonal end about its motor's axis) cut at rear_low, hulled to
+    faceted_end, flats end_r - the forearm roll frame's octagonal end about its motor's axis) cut at rear_low, hulled to
     the tower round R' (frame_r either side, z_rear to the front face) - cut at the front face and on the rear's slanted
     plane (rear_line) - straight sides, sharp corners."""
-    d, S, p = cfg.roll, stack_positions(cfg), cfg.plate
-    octagon = faceted_end(p.pitch_r, (S["y_motor"], 0.0)) & bd.Pos(0.0, (d.rear_low + FAR) / 2.0) * bd.Rectangle(4 * FAR, FAR - d.rear_low)
+    d, S = cfg.roll, stack_positions(cfg)
+    octagon = faceted_end(d.end_r, (S["y_motor"], 0.0)) & bd.Pos(0.0, (d.rear_low + FAR) / 2.0) * bd.Rectangle(4 * FAR, FAR - d.rear_low)
     tower = bd.Pos(0.0, (S["z_rear"] + S["z_front"]) / 2.0) * bd.Rectangle(2.0 * d.frame_r, S["z_front"] - S["z_rear"])
     hull = bd.make_hull((octagon + tower).edges())
     hull = hull & bd.Pos(0.0, (S["z_front"] - FAR) / 2.0) * bd.Rectangle(4 * FAR, FAR + S["z_front"])
