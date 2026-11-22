@@ -270,14 +270,17 @@ class RollIdlerParams:
     no riser grows from the face - the spacer's riser stands on it, its land under the idler's bearing inner ring, as on
     the elbow, base_yaw and wrist idlers) on an M5 SHCS down from its top (parts/joints/roll_idler_screw) through the
     idler, the spacer and the plate's slot into a nut (parts/joints/roll_idler_nut) held flats-on in a channel under the
-    face, closed at both ends: the slot and the channel run along N (module X, the push), +/- travel to tension the
-    belt, and the spacer and the nut slide with the screw (turned from above). The nut goes in from the motor's pocket
-    before the motor (entry: a recess in the plate's inner face over the pocket's top edge, then along +Y into the
-    channel); the motor's face then shuts the way."""
+    face, closed at both ends: the slot and the channel run along N (module X, the push), from `slot`'s out end to its
+    in end to tension the belt, and the spacer and the nut slide with the screw (turned from above). The nut goes in
+    from the motor's pocket before the motor (entry: a recess in the plate's inner face over the pocket's top edge,
+    then along +Y into the channel), the pocket's far face set back to the channel over its upper part (setback_h), so
+    the way is open from below all the way in."""
 
     along: float = 31.7                   # its axis this far from the motor's along the belt's centre line, toward the ring: the
     #                                       nut's channel 5.3 off the motor's pocket, the idler 3.7 off the ring's flange
-    travel: float = 3.0                   # +/- along module X (the push): the plate's slot and the nut's channel
+    slot: tuple[float, float] = (-8.0, 3.0)   # the plate's slot and the nut's channel along module X (the push) from its place:
+    #                                       out of the loop (the slack end: the stock belt 8.5 slack there, to put it on) and
+    #                                       into it (the tight end: the idler's flange 3.8 off the belt's far run there, 3 at +3.8)
     riser_dia: float = 12.0               # the spacer's riser, on the frame's front face (3.25 of wall round the M5's hole)
     land_dia: float = 7.0                 # [ESTIMATE] its land on the riser's top: the idler's bearing inner ring only (IdlerParams.land_dia)
     land_h: float = 1.0                   # the land over the riser: the idler's flange clear of the riser
@@ -289,7 +292,11 @@ class RollIdlerParams:
     roof: float = 3.0                     # [DESIGN] the plate over the channel: the nut's bearing face pulled up against it
     tip_clear: float = 1.0                # [DESIGN] the screw's hole on past its tip
     entry: float = 4.25                   # [DESIGN] the nut's way in: its recess starts this far inside the pocket's top edge - 3 under the
-    #                                       motor's face, which shuts the way once the motor is in - and runs on into the channel
+    #                                       motor's face - and runs on into the channel
+    setback_h: float = 32.0               # [DESIGN] the motor pocket's far face set back to the nut channel's near side from the plate
+    #                                       (the motor's face) this far down, then 45 deg back to the face (prints without support):
+    #                                       the nut's way open from below into the channel; the face's lower part stays, for the
+    #                                       walls at the pocket's rear corner and to the back panel's opening (layout.py roll_idler_setback)
 
 
 @dataclass(frozen=True)

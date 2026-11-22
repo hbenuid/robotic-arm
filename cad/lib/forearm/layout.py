@@ -176,6 +176,16 @@ def roll_idler_spacer_h(cfg: ForearmConfig = DEFAULT) -> float:
     return round(S["z_idler"] - S["z_front"], 6)
 
 
+def roll_idler_setback(cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float, float]:
+    """The roll idler nut's way in (RollIdlerParams.setback_h), (y_face, y_back, z_low, z_top): the motor pocket's far
+    face (y_face, motor_pocket's y1) set back to y_back - the nut channel's near side - from the plate's inner face
+    (z_top, the motor's face) down to z_low, then 45 deg back to y_face, (y_back - y_face) further down."""
+    i = cfg.drive.idler
+    _y0, y1, _z0, z1 = motor_pocket(cfg)
+    _x, iy = roll_idler_xy(cfg)
+    return (y1, iy - (i.nut.af / 2.0 + i.nut_fit), z1 - i.setback_h, z1)
+
+
 def wrist_idler_spacer_h(cfg: ForearmConfig = DEFAULT) -> float:
     """The wrist idler's printed spacer's height (IdlerParams): from the idler's top face, level with the belt, up to the
     web's underside."""

@@ -28,6 +28,7 @@ from lib.forearm.layout import (
     pad_bolt_points,
     plug_slots,
     pulley_bolt_points,
+    roll_idler_setback,
     roll_idler_spacer_h,
     roll_idler_xy,
     stack_positions,
@@ -300,7 +301,8 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     its front wall the plate (the pilot hole, the motor's 4 M3 holes with their heads' counterbores, the shaft's slit down
     out through the bottom), the plate's face the frame's one front face, nothing proud of it (the frame prints flat on
     it) - in it the roll belt's tensioner's M5 slot (its spacer stands on the face: build_idler_spacer) and its nut's
-    channel under the face, the nut in from the pocket -; the tower: bearing 1's seat from the shaft's bay behind it -
+    channel under the face, the nut in from the pocket, whose far face is set back to the channel over its upper part -;
+    the tower: bearing 1's seat from the shaft's bay behind it -
     bored on through the frame's back -, the lip (the spacer), bearing 2's seat open through the front face - 4 of wall
     inside the facets, the pulley's core turning over it -, the stop post on the tower's face in the bay;
     the rear face: the back panel's step across it, the opening grown down below the bay's bore, the magnets' pockets;
@@ -354,16 +356,22 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     for y, z in pulley_bolt_points(cfg):
         body = body - x_cylinder(d.pulley_bolt_dia / 2.0, d.nut_seat_x - x_key + 2 * NUDGE, (y_e + y, z), x_key - NUDGE)
         body = body - _x_hex(d.nut_af, x_end - d.nut_seat_x, (y_e + y, z), d.nut_seat_x, math.degrees(math.atan2(z, y)))
-    # the tensioner's M5: its slot (a stadium along X, the idler's push, +/- travel) down through the plate from the front
-    # face, on past the screw's tip; the nut's channel under the face along X, past the slot's ends both ways (the nut
-    # flats-on, sliding with it), and its way in: a recess in the plate's inner face from the motor's pocket (entry inside
-    # its top edge) along +Y into the channel
+    # the tensioner's M5: its slot (a stadium along X, the idler's push, from slot's out end to its in end) down through
+    # the plate from the front face, on past the screw's tip; the nut's channel under the face along X, past the slot's
+    # ends both ways (the nut flats-on, sliding with it), and its way in: a recess in the plate's inner face from the
+    # motor's pocket (entry inside its top edge) along +Y into the channel, under it the pocket's far face set back to the
+    # channel's near side over its upper part, then 45 deg back to the face (roll_idler_setback): open from below
     tip = S["z_idler_top"] - i.screw_len
-    body = body - bd.Pos(ix, iy, tip - i.tip_clear) * bd.extrude(bd.SlotCenterToCenter(2.0 * i.travel, i.slot_w), amount=S["z_front"] - tip + i.tip_clear + NUDGE)
+    (out, inn), mid = i.slot, ix + sum(i.slot) / 2.0
+    body = body - bd.Pos(mid, iy, tip - i.tip_clear) * bd.extrude(bd.SlotCenterToCenter(inn - out, i.slot_w), amount=S["z_front"] - tip + i.tip_clear + NUDGE)
     half, corner = i.nut.af / 2.0 + i.nut_fit, i.nut.af / math.sqrt(3.0) + i.nut_fit
     nut_z = (S["z_idler_roof"] - i.nut.h - i.nut_fit, S["z_idler_roof"])
-    body = body - box((ix - i.travel - corner, ix + i.travel + corner), (iy - half, iy + half), nut_z)
+    body = body - box((ix + out - corner, ix + inn + corner), (iy - half, iy + half), nut_z)
     body = body - box((ix - corner, ix + corner), (y1 - i.entry, iy), nut_z)
+    y_face, y_back, z_low, z_top = roll_idler_setback(cfg)
+    body = body - box((S["x_cradle"], S["x_side"]), (y_face - NUDGE, y_back), (z_low, z_top))
+    slope = bd.Polygon((y_face - NUDGE, z_low + NUDGE), (y_back, z_low + NUDGE), (y_face - NUDGE, z_low - (y_back - y_face) - NUDGE), align=None)
+    body = body - yz_prism(slope, S["x_cradle"], S["x_side"])
     # the home sensor's wire hole: from the opening's floor (the carrier's tube in it) into the motor's pocket
     body = body - home_wire_hole(cfg)
     return single_solid(body)

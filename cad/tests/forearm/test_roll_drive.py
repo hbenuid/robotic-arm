@@ -33,6 +33,7 @@ from lib.forearm import (
     pad_bolt_points,
     plug_slots,
     pulley_bolt_points,
+    roll_idler_setback,
     side_headers,
     side_plug_room,
     stack_positions,
@@ -422,12 +423,14 @@ def test_frame_features(module):
     bb = block.bounding_box()
     assert math.isclose(bb.min.Y, ye - D.end_r, abs_tol=0.01) and math.isclose(bb.min.Z, -D.end_r, abs_tol=0.01)
     # the motor's pocket: the floor and the side wall either side of it - the side face closed -, the space, open down
-    # through the octagon's bottom between the walls; its top and back round it
+    # through the octagon's bottom between the walls; its top and back round it - its back below the idler nut's way in
+    # (its upper part set back: tests/forearm/test_roll_idler.py)
     _y0, y1, z0, _z1 = motor_pocket(DEFAULT)
+    z_back = roll_idler_setback()[2] - (roll_idler_setback()[1] - y1) - 1.0
     assert is_inside(block, S["x_cradle"] - 1.0, ye, 0.0) and not is_inside(block, S["x_cradle"] + 1.0, ye, 0.0)
     assert is_inside(block, S["x_side"] + 1.0, ye, 0.0) and not is_inside(block, S["x_side"] - 1.0, ye, 0.0)
     assert is_inside(block, D.block_x[1] - 0.5, ye, 0.0)
-    assert is_inside(block, 10.0, y1 + 1.0, 0.0) and not is_inside(block, 10.0, y1 - 1.0, 0.0)
+    assert is_inside(block, 10.0, y1 + 1.0, z_back) and not is_inside(block, 10.0, y1 - 1.0, z_back)
     assert not is_inside(block, 10.0, ye - D.end_r + 1.0, 0.0) and is_inside(block, S["x_side"] + 3.0, ye - D.end_r + 1.0, 0.0)
     assert is_inside(block, 10.0, ye, z0 - 1.0) and not is_inside(block, 10.0, ye, z0 + 1.0)
     # the side plugs' grooves inside the walls: open from the pocket out to the skin, from the plug down out through the
