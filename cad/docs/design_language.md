@@ -53,7 +53,7 @@ designed here), each with its own look; these rules make them one.
 ## Where it stands
 In the model: the colours; the upper arm (`j1_link`: its faceted elbow end, its slab's outline chamfered); the roll
 frame (`forearm_roll_block`: its tower the forearm flange's octagon carried back through it, its front face's long edges
-faceted, the bearing boss rising out of them, its outline chamfered, its back panel grilled); the forearm (`j2_link`: its web as wide as its
+faceted straight end to end, flat on the face it prints on, its outline chamfered, its back panel grilled); the forearm (`j2_link`: its web as wide as its
 cover's end, its wrist end and boss faceted and chamfered, its flange faceted and the web growing out of it, the
 flange's lower facets carried on along the web into its chamfer); the wrist (`wrist_link`: its roll frame
 laid out as the roll frame's - an octagon about the pitch axis hulled to its tower, the far face closed, a grilled back

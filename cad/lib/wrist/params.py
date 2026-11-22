@@ -399,13 +399,14 @@ class WristRollParams:
     #                                     the tower's far side
     side_t: float = 7.5                 # [DESIGN] the far face's wall over the pocket and the board's window: its inside 22.5 off R', outside
     #                                     the pancake's body + pocket_clear (21.5) and the board's housing + board_clear (21.95)
-    front_facet: float = 7.0            # [DESIGN] the front face's two long edges faceted this far at 45 deg (the forearm roll frame's): 4+ of
-    #                                     wall left to the pocket's corner; the bearing boss carried down through them (it rises out of them)
+    front_facet: float = 7.0            # [DESIGN] the front face's two long edges faceted this far at 45 deg: 4+ of wall left to the pocket's
+    #                                     corner; the bearing boss carried down through them (it rises out of them, so they leave its seat
+    #                                     whole - the forearm roll frame's seat is flush with its face: its facets 4.9, RollDriveParams)
     rear_low: float = -18.5             # [DESIGN] the frame's rear behind the motor (module z): the plate's octagon cut there - as deep as
     #                                     the wrist pitch's +38 deg limit allows (2.4 off the forearm's wrist board there, tests/test_sweeps.py)
     rear_bend: float = 25.0             # [DESIGN] the rear one slanted plane from the tower's far rear corner (z_rear) down to rear_low
     #                                     this far from R' toward the motor - past the back panel's edge (the panel lies flat), flat beyond
-    bearing_boss_dia: float = 52.0      # [DESIGN] round R' on the front face, bearing 2's seat in it (the forearm roll's)
+    bearing_boss_dia: float = 52.0      # [DESIGN] round R' on the front face, bearing 2's seat in it (4.9 of wall)
     bay_r: float = 22.7                 # [DESIGN] the shaft's bay behind bearing 1, bored on through the frame's rear: the stop lug's corners
     #                                     (r 21.68: its flat end's) + run_gap all round; bearing 1 (r 21) passes through it with the shaft, in
     #                                     from behind (the back panel off)
