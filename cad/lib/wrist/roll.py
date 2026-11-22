@@ -69,11 +69,11 @@ def _bottom(y_from: float, cfg: WristConfig = DEFAULT) -> tuple[float, float]:
 
 def side_profile(cfg: WristConfig = DEFAULT):
     """The frame seen along the pitch axis, a face in module (y, z): an octagon about the pitch axis (lib/geom.py
-    faceted_end, flats pitch_r - the forearm roll frame's octagonal end about its motor's axis) cut at rear_low, hulled to
+    faceted_end, flats end_r - the forearm roll frame's octagonal end about its motor's axis) cut at rear_low, hulled to
     the tower round R' (frame_r either side, z_rear to the front face) - cut at the front face and on the rear's slanted
     plane (rear_line) - straight sides, sharp corners."""
-    d, S, p = cfg.roll, stack_positions(cfg), cfg.plate
-    octagon = faceted_end(p.pitch_r, (S["y_motor"], 0.0)) & bd.Pos(0.0, (d.rear_low + FAR) / 2.0) * bd.Rectangle(4 * FAR, FAR - d.rear_low)
+    d, S = cfg.roll, stack_positions(cfg)
+    octagon = faceted_end(d.end_r, (S["y_motor"], 0.0)) & bd.Pos(0.0, (d.rear_low + FAR) / 2.0) * bd.Rectangle(4 * FAR, FAR - d.rear_low)
     tower = bd.Pos(0.0, (S["z_rear"] + S["z_front"]) / 2.0) * bd.Rectangle(2.0 * d.frame_r, S["z_front"] - S["z_rear"])
     hull = bd.make_hull((octagon + tower).edges())
     hull = hull & bd.Pos(0.0, (S["z_front"] - FAR) / 2.0) * bd.Rectangle(4 * FAR, FAR + S["z_front"])
@@ -199,20 +199,19 @@ def back_grill(cfg: WristConfig = DEFAULT):
 def build_frame(cfg: WristConfig = DEFAULT):
     """The frame in the module frame: the envelope (seen along the pitch axis the plate's octagon hulled to the tower round
     R', from the plate's coupler face to the closed far face, the front facets off, both side faces' outline chamfered),
-    the bearing boss from 1 mm under the facets up to bearing 2's front face; the back panel's step on the rear over the
+    nothing proud of the front face (the frame prints flat on it); the back panel's step on the rear over the
     tower; the pancake's pocket from the plate's free face to the side wall, on down out through the bottom - it slides
     in from there, motor_drop back -, its front wall the plate (the 4 bolt slots and the pilot slot along Y - the belt's
-    tension -, a boss round each bolt slot on the front face with the screw's head's counterbore through it, the shaft's
+    tension -, each bolt slot's counterbore for the screw's head in the front face, the shaft's
     slit on down out through the bottom), a groove inside the side wall for its plug (and the
     board's motor plug's room); behind it the board's window, out through the rear and the bottom (its side plugs' rooms:
-    in it, and under the panel's notch); the tower: bearing 1's seat, the lip, bearing 2's seat in the boss; the shaft's bay behind bearing 1 bored on through
+    in it, and under the panel's notch); the tower: bearing 1's seat, the lip, bearing 2's seat open through the front
+    face; the shaft's bay behind bearing 1 bored on through
     the rear, the stop post on the tower's rear face in it; the magnets' pockets in the step's floor; the cable's groove
     across it into the window."""
     d, b, S, s = cfg.roll, cfg.roll.back, stack_positions(cfg), toward_motor(cfg)
     x_wall = side_wall_x(cfg)
     body = envelope(cfg)
-    boss_z0 = S["z_front"] - d.front_facet - 1.0
-    body = body + cylinder(d.bearing_boss_dia / 2.0, S["z_boss"] - boss_z0, z0=boss_z0)
     # the back panel's step: back.t in from the rear plane over the tower, from its far side to the board's window
     w0, w1, _wz0, wz1 = board_window(cfg)
     w_near = w0 if s > 0 else w1
@@ -224,22 +223,22 @@ def build_frame(cfg: WristConfig = DEFAULT):
     gx0, gx1, gy0, _gy1, _gz0, gz1 = pancake_plug_groove(cfg)
     body = body - box((gx0 - NUDGE, gx1), _bottom(gy0, cfg), (-FAR, gz1))
     for x, y in pad_bolt_points(cfg):
-        # a boss round each slot on the front face, the screw's head in its counterbore (a slot as the hole is: the head
-        # travels with the motor), from the face - the head bears on it - to the boss's top, flush
-        body = body + slot_y(x, y, d.pad_cbore_dia + 2.0 * d.boss_wall, d.pad_slot_len, S["z_front"], d.boss_h - NUDGE)
-        body = body - slot_y(x, y, d.pad_cbore_dia, d.pad_slot_len, S["z_front"] + NUDGE, d.boss_h)
+        # each slot's counterbore in the front face (a slot as the hole is: the head travels with the motor), the head on
+        # its floor and flush with the face
+        body = body - slot_y(x, y, d.pad_cbore_dia, d.pad_slot_len, S["z_pad_seat"] + NUDGE, d.pad_cbore_depth)
         body = body - slot_y(x, y, d.pad_bolt_dia, d.pad_slot_len, S["z_motor_face"], d.pad_t)
     body = body - slot_y(S["x_motor"], S["y_motor"], d.pad_pilot_w, d.pad_slot_len, S["z_motor_face"], d.pad_t)
     # the shaft's slit through the plate, from the pilot slot down out through the bottom: the pancake slides in from
     # there motor_drop back (its shaft up the slit, its pilot behind the plate), then forward into the pilot slot
     slit = (S["x_motor"] - d.shaft_slit / 2.0, S["x_motor"] + d.shaft_slit / 2.0)
     body = body - box(slit, _bottom(S["y_motor"], cfg), (S["z_motor_face"] - NUDGE, S["z_front"] + NUDGE))
-    # the tower: bearing 1's seat, the lip, bearing 2's seat (open through the boss's top); the shaft's bay behind bearing
-    # 1 bored on through the rear (the shaft and bearing 1 go in from behind, the panel off); the stop post in it at -X
+    # the tower: bearing 1's seat, the lip, bearing 2's seat (open through the front face, bearing 2 just under it); the
+    # shaft's bay behind bearing 1 bored on through the rear (the shaft and bearing 1 go in from behind, the panel off);
+    # the stop post in it at -X
     r_seat = (d.bearing_od + d.seat_add) / 2.0
     body = body - cylinder(r_seat, d.bearing_width + NUDGE, z0=S["z_bearing_1"] - NUDGE)
     body = body - cylinder(d.lip_id / 2.0, d.lip + 2 * NUDGE, z0=S["z_lip"] - NUDGE)
-    body = body - cylinder(r_seat, d.bearing_width + 2 * NUDGE, z0=S["z_bearing_2"])
+    body = body - cylinder(r_seat, S["z_front"] - S["z_bearing_2"] + NUDGE, z0=S["z_bearing_2"])
     body = body - cylinder(d.bay_r, S["z_bearing_1"] + FAR, z0=-FAR)
     body = body + stop_wedge(d.stop_post_r[0], d.stop_post_r[1], S["z_stop_post"], d.stop_post_t, d.stop_deg_width, 180.0)
     # the magnets' pockets in the step's floor; the cable's groove across it from the bay into the window

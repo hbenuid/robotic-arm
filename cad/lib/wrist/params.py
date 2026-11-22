@@ -66,8 +66,8 @@ class PlateParams:
 
     thickness: float = 5.0
     pitch_x: float = -45.445774        # the wrist_pitch axis (x, 0), j3_coupler#2's
-    pitch_r: float = 39.000699         # the round end on it (DEFAULT: the roll frame's octagonal end about it, its flats this far
-    #                                    off the axis - lib/wrist/roll.py side_profile)
+    pitch_r: float = 39.000699         # the round end on it (DEFAULT: the octagon about the axis the back panel's region keeps off
+    #                                    the plate in, lib/wrist/roll.py _plate_prism; the frame's own end is WristRollParams.end_r)
     half_width: float = 39.0
 
 
@@ -270,8 +270,8 @@ class WristRollHomeParams:
     plate's: the pulley's front on the far face's side is where there is room. The board upright on the fin's inner face,
     its component side (the chip) toward R', its header toward the motor (+Y); the fin's back flush with the far face
     (frame_r), so nothing stands past the frame's outline seen along R'. Its foot - a shoe over the front facet - sits on
-    the facet, the front face and the bearing boss's top and nests against the boss's round side, `gap` off each (the
-    glue's): nothing on the arm changes. Held by glue alone, the user's choice (the home sensors' rule asks for M3 into a
+    the facet and the front face, from shoe_x0 beside bearing 2's seat to the far face, `gap` off each (the glue's):
+    nothing on the arm changes. Held by glue alone, the user's choice (the home sensors' rule asks for M3 into a
     nut or an insert). The board by its two holes on 2 M2 from its component side (heads there) through the fin into nuts
     in hex pockets in the fin's back. Prints on its back (the far face's side down): the M2 holes and the nut pockets
     upright, the shoe's faces up. Frames: the module frame (lib/wrist/layout.py home_*); the fin's spans in the KY-003's
@@ -287,8 +287,8 @@ class WristRollHomeParams:
     # the fin, in the KY-003's frame (its x along +Y, its y along -Z, its z toward R')
     plate_x: tuple = (-6.0, KY003_BOARD_L)   # past the chip's end (3 behind it) .. the board's far end
     plate_w: float = 18.0                 # this wide (the board 15)
-    shoe_x0: float = 21.5                 # the shoe's inner end (module x): on the bearing boss's top, 0.4 outside the seat
-    gap: float = 0.2                      # the fin off the front facet, the front face and the boss (the glue's)
+    shoe_x0: float = 21.5                 # the shoe's inner end (module x): on the front face, 0.4 outside bearing 2's seat
+    gap: float = 0.2                      # the fin off the front facet and the front face (the glue's)
     relief_w: float = 2.0                 # the fin's slots across the pins' / the leads' row ...
     header_relief_len: float = 9.0        # ... along the header's 3 pins (their tails stand 0.6 proud of the fin's back) ...
     lead_relief_len: float = 5.0          # ... along the chip's 3 leads ...
@@ -308,15 +308,16 @@ class WristRollParams:
     belted to the roll axis beside it - centre_distance across in the wrist's swing plane, at the motor's height - so the
     wrist roll axis R' no longer meets the pitch axis (a wrist offset: the wrist is no longer spherical). wrist_link IS
     the frame (the stator), laid out as the forearm roll's frame (lib/forearm/roll.py build_block): one body - seen along
-    the pitch axis an octagon about it (pitch_r) hulled to the tower round R', its wall on the forearm's side the plate
+    the pitch axis an octagon about it (end_r) hulled to the tower round R', its wall on the forearm's side the plate
     (the wrist_pitch output flange on it: FlangeParams; no plate past the frame), from the plate's coupler face to the
     closed far (+X) face (side_t), its rear one slanted plane (rear_low,
     rear_bend), the front face's long edges faceted (front_facet). The pancake's pocket opens down through the BOTTOM -
     the frame's end beyond the motor, away from R' - and the pancake slides in from there, its shaft up a slit along the
     tension slots; its front wall the plate the pancake bolts to (slotted along Y: the belt's tension), a groove inside
     the side wall for its plug; no wall behind it: a window there - open at the rear and the bottom - takes the pancake's
-    MKS board, on its rear face. The tower round R': the 6806 pair back to back on a lip, a bearing boss on the front
-    face, the shaft's bay behind bearing 1 bored on through the frame's rear (the shaft goes in from behind), closed by a
+    MKS board, on its rear face. Nothing stands proud of the front face - the frame prints flat on it: the pancake's
+    screw heads in counterbores in the plate, bearing 2's seat open through the face. The tower round R': the 6806 pair
+    back to back on a lip, the shaft's bay behind bearing 1 bored on through the frame's rear (the shaft goes in from behind), closed by a
     removable BACK PANEL flush in a step on the rear (back: WristBackPanelParams - its notch lets the gripper servo's
     cable out of the rotor's bore), the hard stop's post in the bay. The rotor: the
     PULLEY (wrist_roll_pulley: its hub through bearing 2, the 40T band, the face gripper_j3_connector bolts to - the
@@ -375,14 +376,16 @@ class WristRollParams:
     board_clear: float = 0.45           # [DESIGN] round the board's housing in the window, along Y past the tension travel: the
     #                                     window's wall to the shaft's bay keeps 1.43 (pocket_clear's 0.75 would leave 1.13)
     shaft_slit: float = 6.0             # [DESIGN] the Ø5 shaft's slit through the plate, from the pilot slot down out through the bottom
-    pad_t: float = 4.0                  # [DESIGN] the plate (the pocket's front wall) the pancake's 4x M3 bolt through
+    pad_t: float = 7.0                  # [DESIGN] the plate (the pocket's front wall) the pancake's 4x M3 bolt through: pad_cbore_depth
+    #                                     for their heads + 4.0 under them; thickened forward over the old 4.0 plate, so the
+    #                                     frame's front face is where the bosses round the heads stood and the frame prints
+    #                                     flat on it (the motor moved back instead would put the plate in the way of the
+    #                                     wrist 90T's two front nuts, which go into their channels from the pocket)
     pad_slot_len: float = 5.0           # [DESIGN] +/- 2.5 along Y: the belt's tension (no idler)
     pad_bolt_dia: float = 3.4
-    # the pancake's 4x M3 (parts/wrist/wrist_roll_motor_screws): their heads flush in counterbores through a boss round
-    # each slot on the plate's front face - the plate is too thin for a counterbore, and the motor moved back to thicken
-    # it would put the plate in the way of the wrist 90T's two front nuts, which go into their channels from the pocket
-    boss_h: float = M3_SHCS.head_h      # [DESIGN] 3.0: each boss over the front face, the heads' height - they bear on the face
-    boss_wall: float = 1.5              # [DESIGN] round its counterbore (a slot too: the heads travel with the motor)
+    # the pancake's 4x M3 (parts/wrist/wrist_roll_motor_screws): their heads flush in counterbores in the plate's front
+    # face, slots as the holes are (the heads travel with the motor)
+    pad_cbore_depth: float = M3_SHCS.head_h   # [DESIGN] 3.0: the heads' height - flush with the face, they bear on the floor
     pad_cbore_dia: float = MOTOR_40.motor_bolt_head_dia + PETGTolerances().bolt_clearance_add   # 5.7 [DESIGN] the counterbores: the
     #                                     other motors' (lib/forearm/params.py MotorHoleParams.pocket_dia)
     pad_screw: ShcsSize = M3_SHCS       # [DATASHEET] ISO 4762 M3
@@ -397,16 +400,25 @@ class WristRollParams:
     # seen along R' the tower the octagon about it, the motor's side bounded by the plate and the far face
     frame_r: float = 30.0               # [DESIGN] the tower's octagon about R' (lib/style.py SIDES, these flats): the far face (x frame_r),
     #                                     the tower's far side
+    end_r: float = 30.0                 # [DESIGN] the octagon about the pitch axis (its flats this far off it): the frame's end past
+    #                                     the pancake, 6 past its pocket (the body + the tension travel + pocket_clear: 24) and
+    #                                     0.4 past the wrist 90T (r 29.6) on the plate's other side (the pocket and the board's
+    #                                     window run on out through it, as they did); its 45 deg flats leave 2.2 of wall to the
+    #                                     outer screw counterbores - the user's pick over a straight cut at 30 and 26 (the
+    #                                     octagon at 26 cuts those counterbores open); was the SolidWorks plate's round end
+    #                                     (PlateParams.pitch_r, 39)
     side_t: float = 7.5                 # [DESIGN] the far face's wall over the pocket and the board's window: its inside 22.5 off R', outside
     #                                     the pancake's body + pocket_clear (21.5) and the board's housing + board_clear (21.95)
-    front_facet: float = 7.0            # [DESIGN] the front face's two long edges faceted this far at 45 deg: 4+ of wall left to the pocket's
-    #                                     corner; the bearing boss carried down through them (it rises out of them, so they leave its seat
-    #                                     whole - the forearm roll frame's seat is flush with its face: its facets 4.9, RollDriveParams)
+    front_facet: float = 4.9            # [DESIGN] the front face's two long edges faceted this far at 45 deg, straight end to end (no
+    #                                     bearing boss through them, as the forearm roll frame's: RollDriveParams): bearing 2's
+    #                                     seat, open through the face, keeps 4.0 of wall to the far face's facet and 1.0 to the
+    #                                     coupler face's (axis_h 27, 3 nearer R' than frame_r) - the user's pick over a Ø52 boss
+    #                                     carried up flush with the face (4.9 both sides); a 4.0 wall there too would need a
+    #                                     1.9 facet, which the outline's EDGE_CHAMFER does not build on
     rear_low: float = -18.5             # [DESIGN] the frame's rear behind the motor (module z): the plate's octagon cut there - as deep as
     #                                     the wrist pitch's +38 deg limit allows (2.4 off the forearm's wrist board there, tests/test_sweeps.py)
     rear_bend: float = 25.0             # [DESIGN] the rear one slanted plane from the tower's far rear corner (z_rear) down to rear_low
     #                                     this far from R' toward the motor - past the back panel's edge (the panel lies flat), flat beyond
-    bearing_boss_dia: float = 52.0      # [DESIGN] round R' on the front face, bearing 2's seat in it (4.9 of wall)
     bay_r: float = 22.7                 # [DESIGN] the shaft's bay behind bearing 1, bored on through the frame's rear: the stop lug's corners
     #                                     (r 21.68: its flat end's) + run_gap all round; bearing 1 (r 21) passes through it with the shaft, in
     #                                     from behind (the back panel off)
@@ -452,8 +464,9 @@ class WristRollParams:
 
     @property
     def pad_screw_len(self) -> float:
-        """The pancake's M3 under the head (8): the plate under the heads and the thread in the pancake."""
-        return self.pad_t + self.pad_screw_thread
+        """The pancake's M3 under the head (8): the plate under the heads (pad_t less their counterbores) and the thread in
+        the pancake."""
+        return self.pad_t - self.pad_cbore_depth + self.pad_screw_thread
 
 
 @dataclass(frozen=True)

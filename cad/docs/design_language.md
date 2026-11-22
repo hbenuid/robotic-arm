@@ -17,7 +17,7 @@ designed here), each with its own look; these rules make them one.
   planar facets, the body's flat facing it running on up its face (`lib/geom.py hull_solid`); where the plate is the
   wider, the body's facets run on along it into its edge chamfer.
 - **What turns stays round.** A part that turns against a neighbour keeps its round: the cycloidal drive, a bearing boss
-  standing proud of a face (the roll frame's, the wrist frame's), the pulleys and the base's cap - a facet there would
+  standing proud of a face (the two roll frames have none: their faces print flat), the pulleys and the base's cap - a facet there would
   sweep a corner past the part beside it. The one exception is the fork's disc, the base's octagon carried up: its
   corners sweep over the base's top face, nothing beside them. A link's end with a bearing seat inside it is structure:
   faceted round the seat.
@@ -57,7 +57,7 @@ faceted straight end to end, flat on the face it prints on, its outline chamfere
 cover's end, its wrist end and boss faceted and chamfered, its flange faceted and the web growing out of it, the
 flange's lower facets carried on along the web into its chamfer); the wrist (`wrist_link`: its roll frame
 laid out as the roll frame's - an octagon about the pitch axis hulled to its tower, the far face closed, a grilled back
-panel over the bay, its front edges faceted, the bearing boss rising out of them -, no plate past it: the wrist flange's
+panel over the bay, its front edges faceted straight end to end, nothing proud of its front face -, no plate past it: the wrist flange's
 post stands on the frame, cut flat on its front face and rear); the fork (`j1_coupler`, `j1_motor_leg`: their legs' tops faceted and chamfered - on the motor leg not on the
 flats the sleeve's screws seat on, which span its whole thickness -, the legs growing out of the disc in planar facets,
 the disc and the ring on it octagons); the base and

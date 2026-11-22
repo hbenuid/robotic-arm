@@ -146,19 +146,26 @@ def test_the_part_is_the_roll_frame(wrist, legacy):
     assert is_inside(legacy, 20.0, 0.0, 22.0) and not is_inside(wrist, 20.0, 0.0, 22.0)
     for x in (ST["z_front"] + 2.0, 30.0, d.rear_low - 2.0, -30.0):
         assert not is_inside(wrist, P.pitch_x + x, 25.0, 2.5), x
-    assert is_inside(wrist, P.pitch_x, P.pitch_r - 0.5, 2.5) and not is_inside(wrist, P.pitch_x, P.pitch_r + 0.5, 2.5)
+    # that end end_r off the pitch axis (not the SolidWorks plate's pitch_r), past the pancake's pocket and the wrist 90T,
+    # its 45 deg flats too (between the front face and the end: x + y = end_r * sqrt 2)
+    assert d.end_r < P.pitch_r
+    assert is_inside(wrist, P.pitch_x, d.end_r - 0.5, 2.5) and not is_inside(wrist, P.pitch_x, d.end_r + 0.5, 2.5)
+    y45 = d.end_r * math.sqrt(2.0) - 15.5
+    assert is_inside(wrist, P.pitch_x + 15.5, y45 - 0.5, 2.5) and not is_inside(wrist, P.pitch_x + 15.5, y45 + 0.5, 2.5)
+    assert d.end_r - (d.pancake.body_w / 2.0 + d.pad_slot_len / 2.0 + d.pocket_clear) >= 6.0 and d.end_r >= 29.6 + 0.4 - 1e-6
     # the pancake's pocket on the pitch axis, its floor the plate's free face; the plate in front of it, the shaft's slit
     ym = ST["y_motor"]
     assert not is_inside(wrist, *_part(0.0, ym, 0.0))
     assert not is_inside(wrist, *_part(ST["x_free"] + 0.1, ym + 18.0, 0.0)) and is_inside(wrist, *_part(ST["x_free"] - 0.1, ym + 18.0, 0.0))
     assert is_inside(wrist, *_part(10.0, ym + 18.0, (ST["z_motor_face"] + ST["z_front"]) / 2.0))   # beside the slit
     assert not is_inside(wrist, *_part(10.0, ym, (ST["z_motor_face"] + ST["z_front"]) / 2.0))
-    # the tower round R': bearing 1's seat, the lip, the boss's top
+    # the tower round R': bearing 1's seat, the lip, bearing 2's seat open through the front face - nothing proud of it
     r_seat = (d.bearing_od + d.seat_add) / 2.0
     z1 = (ST["z_bearing_1"] + ST["z_lip"]) / 2.0
     assert not is_inside(wrist, *_part(0.0, r_seat - 0.1, z1)) and is_inside(wrist, *_part(0.0, r_seat + 0.1, z1))
     assert not is_inside(wrist, *_part(0.0, d.lip_id / 2.0 - 0.2, ST["z_meet"])) and is_inside(wrist, *_part(0.0, d.lip_id / 2.0 + 0.2, ST["z_meet"]))
-    assert is_inside(wrist, *_part(0.0, 24.0, ST["z_boss"] - 0.2)) and not is_inside(wrist, *_part(0.0, 24.0, ST["z_boss"] + 0.2))
+    assert not is_inside(wrist, *_part(0.0, r_seat - 0.1, ST["z_front"] - 0.1)) and is_inside(wrist, *_part(0.0, r_seat + 0.1, ST["z_front"] - 0.1))
+    assert is_inside(wrist, *_part(0.0, 24.0, ST["z_front"] - 0.2)) and not is_inside(wrist, *_part(0.0, 24.0, ST["z_front"] + 0.2))
     # the pocket on down out through the bottom (the pancake slides in from there), the far face's wall closed over it,
     # the plug's groove inside the wall (a skin outside it), the shaft's slit out through the bottom too
     s, xw = toward_motor(DEFAULT), side_wall_x(DEFAULT)
@@ -177,7 +184,7 @@ def test_the_part_is_the_roll_frame(wrist, legacy):
     assert is_inside(wrist, *_part(-(d.bay_r + 0.3), 0.0, ST["z_bay"] + 1.0))
     # the wrist_pitch output flange is its own part (FlangeParams, j3_coupler#2 retired; tests/wrist/test_wrist_flange.py):
     # on the coupler face only the key - an octagon, key_af across flats, a flat on each axis - nothing of the post, the
-    # shoulder or the stub; under the face the foot, the post's front flat carried on down past the free face into the
+    # shoulder or the stub; under the face the foot, the post's front flat carried on down through the plate into the
     # front facet's foot (beside it the facet stays); each 90T nut's hex channel - the pattern turned pulley_bolt_deg -
     # from its seat in the plate down, open into the pancake's pocket below it (the nut drops in from there), 1 of the
     # plate over it, the M4's clearance on up through the key
@@ -189,7 +196,8 @@ def test_the_part_is_the_roll_frame(wrist, legacy):
         assert not is_inside(wrist, px + dx * (f.key_af / 2.0 + 0.3), dy * (f.key_af / 2.0 + 0.3), zk)
     assert wrist.bounding_box().max.Z == pytest.approx(f.post_z[0] + f.key_h, abs=1e-6)   # nothing over the key
     assert not is_inside(wrist, px, f.post_dia / 2.0 - 1.0, sum(f.post_z) / 2.0) and not is_inside(wrist, px, 0.0, sum(f.stub_z) / 2.0)
-    assert is_inside(wrist, px + ST["z_front"] - 0.3, 0.0, -1.0) and not is_inside(wrist, px + ST["z_front"] - 0.3, 18.0, -1.0)
+    zf = P.thickness / 2.0                                    # in the plate, where the coupler face's facet cuts 2+ deep
+    assert is_inside(wrist, px + ST["z_front"] - 0.3, 0.0, zf) and not is_inside(wrist, px + ST["z_front"] - 0.3, 18.0, zf)
     assert f.nut_seat_z == f.post_z[0] - 1.0
     for x, y in pulley_bolt_points(DEFAULT):
         flat = math.radians(f.pulley_bolt_deg + f.nut_corner_deg + 30.0)  # toward a flat: 3.0 is inside the hex, outside the M4

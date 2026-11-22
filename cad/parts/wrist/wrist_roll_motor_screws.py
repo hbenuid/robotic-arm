@@ -1,10 +1,10 @@
 """wrist_roll_motor_screws - purchased (COTS) part: the wrist-roll pancake's 4 M3 socket head cap screws (ISO 4762).
 
 They hold the pancake (nema17_pancake:wrist_roll) on wrist_link's plate - the pocket's front wall, slotted along Y for
-the belt's tension (no idler): the heads in the counterbores through the bosses round the slots on the plate's front
-face (WristRollParams boss_*, pad_cbore_dia), bearing on the face and flush with the bosses' tops, the shanks through the
-slots into the pancake's tapped holes, pad_screw_thread of thread in them. Length (under the head):
-WristRollParams.pad_screw_len (the plate and that thread). Fit them once the pancake is forward in its pilot slot, from
+the belt's tension (no idler): the heads in the counterbores round the slots in the plate's front face
+(WristRollParams pad_cbore_*), bearing on their floors and flush with the face, the shanks through the slots into the
+pancake's tapped holes, pad_screw_thread of thread in them. Length (under the head): WristRollParams.pad_screw_len (the
+plate under the counterbores and that thread). Fit them once the pancake is forward in its pilot slot, from
 the front face (the 20T clear inside them); slacken them to tension the belt.
 
 In the arm: x1, in wrist_roll_drive (its row in assemblies/wrist_roll_drive.py, the stator - wrist_pitch_link). The board's
@@ -39,7 +39,7 @@ COTS = True
 MASS_G = WRIST_ROLL_MOTOR_SCREWS_MASS_G   # [ESTIMATE] the modelled steel (lib/params.py)
 PURCHASE_SPEC = f"M{SCREW.d:g} x {LENGTH:g} socket head cap screw (ISO 4762)"
 PURCHASE_QTY = len(POINTS)   # pieces per occurrence (the whole pattern)
-PURCHASE_NOTE = ("the wrist-roll pancake onto wrist_link's plate: heads in the bosses' counterbores on its front face, "
+PURCHASE_NOTE = ("the wrist-roll pancake onto wrist_link's plate: heads in the counterbores in its front face, "
                  "through the tension slots into the pancake's tapped holes")
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY

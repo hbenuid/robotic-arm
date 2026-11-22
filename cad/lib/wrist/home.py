@@ -1,7 +1,7 @@
 """build123d builder of the wrist_roll home sensor's fin (lib/wrist/params.py WristRollHomeParams;
 parts/wrist/wrist_roll_home_fin), in wrist_roll_drive's module frame: the upright plate the KY-003 stands on beside the
-pulley's face, its back flush with the far face, and the shoe under it over the front facet, which nests against the
-bearing boss (lib/wrist/layout.py home_*). Imported explicitly by the part, so importing lib.wrist never pulls in OCCT."""
+pulley's face, its back flush with the far face, and the shoe under it on the front facet and the front face
+(lib/wrist/layout.py home_*). Imported explicitly by the part, so importing lib.wrist never pulls in OCCT."""
 from __future__ import annotations
 
 import math
@@ -33,21 +33,19 @@ def _half_space(point, normal):
 
 
 def frame_keepout(cfg: WristConfig = DEFAULT):
-    """The frame round its far face's front corner, `gap` bigger all round: under the front face, under the front facet
-    (its 45 deg plane from the far face to the front face) and the bearing boss up to its top - what the fin's shoe is
-    cut by, so it sits on them with the glue's gap."""
+    """The frame round its far face's front corner, `gap` bigger all round: under the front face and under the front
+    facet (its 45 deg plane from the far face to the front face) - what the fin's shoe is cut by, so it sits on them
+    with the glue's gap."""
     d, h, S = cfg.roll, cfg.roll.home, stack_positions(cfg)
     facet = d.frame_r + S["z_front"] - d.front_facet                    # the facet's plane: x + z = facet
     body = box((-_FAR, _FAR), (-_FAR, _FAR), (-_FAR, S["z_front"] + h.gap))
-    body = body & _half_space((0.0, 0.0, facet + h.gap * math.sqrt(2.0)), (-1.0, 0.0, -1.0))
-    boss_z0 = S["z_front"] - d.front_facet - 1.0
-    return body + cylinder(d.bearing_boss_dia / 2.0 + h.gap, S["z_boss"] + h.gap - boss_z0 + 1.0, z0=boss_z0 - 1.0)
+    return body & _half_space((0.0, 0.0, facet + h.gap * math.sqrt(2.0)), (-1.0, 0.0, -1.0))
 
 
 def build_home_fin(cfg: WristConfig = DEFAULT):
     """The fin, one solid in the module frame: the upright plate from the board's back to the far face (plate_x along the
     KY-003, plate_w across it), from the facet up; the shoe from shoe_x0 to the far face under the plate's lower edge, down
-    onto the facet, the front face and the boss's top, round the boss's side - every one `gap` off; the board's 2 M2 holes
+    onto the facet and the front face - both `gap` off; the board's 2 M2 holes
     through it, a nut's hex pocket in its back at each; its slots under the header's pins' tails and the chip's leads'."""
     d, h, S = cfg.roll, cfg.roll.home, stack_positions(cfg)
     sensor = to_location(home_sensor_frame(cfg))
