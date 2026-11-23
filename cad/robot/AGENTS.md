@@ -116,7 +116,7 @@ joints' motors are mounted occurrences (`lib/mounts.py`, `assemblies/AGENTS.md`)
 ./cadtool python tools/robot/derive.py                 # joint origins + link inertials (m, kg, rad)
 ./cadtool python tools/robot/derive.py --check robot/arm.urdf robot/arm.sdf   # files vs CAD (tests run this)
 ./cadtool python tools/robot/export_link_meshes.py --links <link> ...   # the meshes of the links a change touched (Recipe C step 8)
-./cadtool validate robot/arm.urdf --strict             # also .srdf / .sdf --gz-check never
+./cadtool validate robot/arm.urdf --strict             # also .srdf (arm.sdf: cad has no SDF reader, --check above is its check)
 ./cadtool snapshot robot/arm.urdf snapshots/arm_urdf.png --pose '{"shoulder_pitch": 45}'   # posed stills
 ./cadtool viewer robot/arm.urdf                        # meshes + joint sliders (base_yaw, shoulder_pitch, elbow_pitch, forearm_roll, wrist_pitch, wrist_roll, jaw_a)
 ```

@@ -54,7 +54,8 @@ The toolchain, its pins and upgrades: `docs/toolchain.md`.
    link's `<inertial>` block from `--urdf-draft` / `--sdf-draft` into `robot/arm.urdf` / `arm.sdf` (never a generator).
 8. `./cadtool python tools/robot/export_link_meshes.py --links <those links>` and `./cadtool gen robot/links/<link>.py`
    (a mesh left stale fails `tests/test_robot.py`'s slow lane).
-9. `./cadtool validate robot/arm.urdf --strict` (and `arm.srdf --strict`, `arm.sdf --gz-check never`); `--check` again.
+9. `./cadtool validate robot/arm.urdf --strict` (and `arm.srdf --strict`; `arm.sdf` has no cad validator, step 7's
+   `--check` is its check); `--check` again.
 10. `./cadtool snapshot assemblies/arm.step snapshots/arm.png --size-profile assembly` (+ each changed
     module's `assemblies/<module>.step`, `robot/arm.urdf`) and LOOK at them.
 11. Docs: the doc that owns the changed rule (Docs, below), `docs/open_issues.md`
@@ -70,7 +71,8 @@ Every command, its flags and what it prints: `./cadtool help` (for people: the `
   snapshots — is a uv tool of the same package at this project's pin (the venv's own `cad` command is never run:
   `./cadtool` reaches the tool's); the `text-to-cad@earthtojake` plugin ships the `/text-to-cad:*` skill docs alone -
   no MCP server for Claude Code, so no `cad_*` tools (`docs/toolchain.md` Pins).
-- **Never `cad run`, `cad setup`, `cad update`, `cad plugin update` or upstream's installer, whatever a skill says.**
+- **Never `cad run`, `cad setup`, `cad update`, `cad plugin install` / `update` or upstream's installer, whatever a
+  skill says.**
   The plugin's skills build with `cad run` and, when `cad` is missing, tell you to run `uv tool install cad` or `curl …
   install.sh | sh`: `cad run` builds in an environment of its own (`uv run` with cad at the machine's release), not in
   this venv, and the others take the machine or every agent app's plugin to the newest release whatever the pin says

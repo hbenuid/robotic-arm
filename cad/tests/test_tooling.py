@@ -96,7 +96,7 @@ def test_cad_telemetry_stays_off():
 @pytest.mark.parametrize("switch", ["update auto", "plugin update auto"])
 def test_cad_updates_stay_off(switch):
     """From cad 0.11.12 cad installs every newer 0.x release by itself, on by default (`update auto`), and its server
-    can run upstream's install command in every agent app each time cad got newer (`plugin update auto`): either takes
+    can run `cad plugin install` in every agent app each time cad got newer (`plugin update auto`): either takes
     the machine off the pin (docs/toolchain.md Pins). `./cadtool server` stores both off before it starts the server,
     as it does the telemetry off; `./cadtool doctor` reads each back."""
     source = (CAD_DIR / "cadtool").read_text()
@@ -162,7 +162,7 @@ def test_retired_cadtool_verbs_say_what_replaced_them(verb):
 @pytest.mark.parametrize(("source", "kind"), [
     ("assemblies/arm.step", "step"), ("vendor/x.STP", "step"), ("print/base.stl", "stl"), ("a.glb", "glb"),
     ("a.3mf", "threemf"), ("a.xbf", "xbf"), ("a.dxf", "dxf"), ("robot/arm.urdf", "urdf"), ("robot/arm.srdf", "srdf"),
-    ("robot/arm.sdf", "sdf"), ("009e0c63-bcc4-5f1c-9e2c-f9146bfc6a87", "model")])
+    ("009e0c63-bcc4-5f1c-9e2c-f9146bfc6a87", "model")])
 def test_cadtool_names_cads_document_type(source, kind):
     """cad 0.11's verbs are `cad <document type> <operation> FILE`: `./cadtool snapshot` / `export` take the type from
     the file's suffix, and anything else is a document id, `model`'s. The function is loaded with `eval`: macOS's bash
@@ -170,6 +170,16 @@ def test_cadtool_names_cads_document_type(source, kind):
     load = 'f=$(sed -n "/^doc_type() {/,/^}/p" cadtool); eval "$f"; doc_type "$1"'
     proc = subprocess.run(["bash", "-c", load, "_", source], cwd=CAD_DIR, capture_output=True, text=True, check=True)
     assert proc.stdout.strip() == kind
+
+
+@pytest.mark.parametrize("verb", [["validate", "robot/arm.sdf"], ["snapshot", "robot/arm.sdf", "x.png"],
+                                  ["export", "robot/arm.SDF", "glb"], ["viewer", "robot/arm.sdf"]])
+def test_cadtool_refuses_an_sdf(verb):
+    """cad 0.11.15 removed its SDF document type (`cad sdf` is an unknown command): `./cadtool` refuses an `.sdf`
+    itself, before anything of cad runs, and names the check the repo keeps (`tools/robot/derive.py --check`)."""
+    proc = subprocess.run(["./cadtool", *verb], cwd=CAD_DIR, capture_output=True, text=True, check=False)
+    assert proc.returncode == 2, proc.stdout + proc.stderr
+    assert "no SDF reader" in proc.stderr and "derive.py --check" in proc.stderr
 
 
 def code_files() -> list[pathlib.Path]:
@@ -206,9 +216,9 @@ def test_the_pin_has_one_home():
 
 @pytest.mark.parametrize("verb", ["setup", "update", "plugin", "run"])
 def test_cadtool_refuses_what_moves_the_machine(verb):
-    """`cad update` takes the machine past the pin, `cad setup` (kept for 0.11.11 and earlier's updater) and `cad plugin
-    update` run upstream's install command, which puts its newest plugin in every agent app, and `run` builds outside
-    this venv (docs/toolchain.md Gotchas). Refused before anything of cad runs."""
+    """`cad update` takes the machine past the pin, `cad setup` (kept for 0.11.11 and earlier's updater) runs upstream's
+    install command and `cad plugin install` (`update` its earlier name) puts the newest plugin in every agent app, and
+    `run` builds outside this venv (docs/toolchain.md Gotchas). Refused before anything of cad runs."""
     proc = subprocess.run(["./cadtool", "cad", verb], cwd=CAD_DIR, capture_output=True, text=True, check=False)
     assert proc.returncode == 2, proc.stdout + proc.stderr
     assert f"'cad {verb}' is not run here" in proc.stderr

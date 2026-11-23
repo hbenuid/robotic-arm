@@ -29,12 +29,13 @@ cadtool - cad + this uv project (paths relative to cad/)
   ./cadtool inspect diff <a.step> <b.step> [--tol X] same geometry? (exit 1 if not) - a LOCAL tool, tools/step_facts.py
   ./cadtool cad step inspect <file.step> ["<ref>"]  what a document holds, or what one ref names (the server's own;
                                                     a document id: cad model inspect <id>)
-  ./cadtool snapshot <file.step|.urdf|.sdf|.stl|id> <out.png> [--size-profile assembly --camera iso --display ...]
+  ./cadtool snapshot <file.step|.urdf|.stl|id> <out.png> [--size-profile assembly --camera iso --display ...]
   ./cadtool snapshot <file|id> --job job.json       the path you name is the file you get (a job: the paths its outputs
                                                     name); cad's document type from the file's suffix (cad step snapshot,
                                                     cad urdf snapshot ...)
   ./cadtool export <file.step> stl|3mf|glb [out]    one mesh file per call (default: <file>.<format> beside it)
-  ./cadtool validate <file.urdf|.srdf|.sdf> [--strict] [--gz-check never]
+  ./cadtool validate <file.urdf|.srdf> [--strict]   cad's robot-description validators (cad reads no .sdf from 0.11.15:
+                                                    robot/arm.sdf is tools/robot/derive.py --check's)
   ./cadtool viewer [file|id ...]                    the server opens each on its page, /<id> (default assemblies/arm.step);
                                                     the link printed is good for a day
   ./cadtool status                                  the machine's server: every session's workers, the documents it holds, its port, its cache
@@ -83,9 +84,18 @@ doc_type() {  # cad's document type of a file (`cad <type> <operation> FILE`), f
     *.dxf) echo dxf ;;
     *.urdf) echo urdf ;;
     *.srdf) echo srdf ;;
-    *.sdf) echo sdf ;;
     *) echo model ;;
   esac
+}
+
+refuse_sdf() {  # cad 0.11.15 removed its SDF document type (`cad sdf` is an unknown command): an .sdf is refused here
+  local f
+  for f in "$@"; do
+    case "$(printf '%s' "$f" | tr '[:upper:]' '[:lower:]')" in
+      *.sdf) echo "cadtool: $f - cad has no SDF reader from 0.11.15; ./cadtool python tools/robot/derive.py --check" \
+                  "robot/arm.urdf robot/arm.sdf compares it with the CAD (Gazebo's own: gz sdf --check)" >&2; exit 2 ;;
+    esac
+  done
 }
 
 server_release() {  # the release of the machine's cad, the uv tool, from its environment's metadata (its receipt keeps
@@ -194,7 +204,7 @@ run_skill() {  # run_skill <skill> <tool> [args...]  ->  python skills/<skill>/s
 }
 
 cg() {  # the machine's pinned `cad`, its server started where a command needs it. Refused: what would move the machine
-  # off the pin or the agent apps' plugins (`plugin update` runs upstream's install command in every app), and `run`,
+  # off the pin or the agent apps' plugins (`plugin install` / `update` put the newest in every app), and `run`,
   # which builds in the server's own environment instead of this venv (docs/toolchain.md Gotchas).
   case "${1:-}" in
     setup|update|plugin|run)
@@ -228,7 +238,7 @@ install_server() {  # the machine's cad at the pin: the stored choices before it
   fi
   # The stored choices, per machine: what the server goes by, so stored before it starts. Telemetry; cad's own update
   # (on by default from 0.11.12: it would install every newer 0.x release by itself); and the plugin's (it would run
-  # upstream's install command in every agent app each time cad got newer).
+  # `cad plugin install` in every agent app each time cad got newer).
   "$cad" telemetry off >/dev/null && echo "cadtool: cad telemetry off (stored)"
   "$cad" update auto off >/dev/null && echo "cadtool: cad automatic updates off (stored)"
   "$cad" plugin update auto off >/dev/null && echo "cadtool: cad's plugin updates off (stored)"
@@ -296,23 +306,26 @@ case "$cmd" in
     case "${1:-}" in
       ""|-*) echo "usage: cadtool snapshot <file|id> <out.png> [options] - the file first: it names cad's document type" >&2; exit 2 ;;
     esac
+    refuse_sdf "$1"
     cg "$(doc_type "$1")" snapshot "$@" ;;
   export)
     doc="${1:?usage: cadtool export <file.step> stl|3mf|glb [out]}"; fmt="${2:?usage: cadtool export <file.step> stl|3mf|glb [out]}"; shift 2
     case "$fmt" in stl|3mf|glb) ;; *) echo "cadtool: export format must be stl|3mf|glb (got '$fmt')" >&2; exit 2 ;; esac
+    refuse_sdf "$doc"
     cg "$(doc_type "$doc")" export "$doc" "${1:-${doc%.*}.$fmt}" ;;
   validate)
     file="${1:-}"
+    refuse_sdf "$file"
     case "$file" in
       *.urdf) cg urdf validate "$@" ;;
       *.srdf) cg srdf validate "$@" ;;
-      *.sdf)  cg sdf validate "$@" ;;
-      *) echo "usage: cadtool validate <file.urdf|.srdf|.sdf> [--strict] [--gz-check never] [--json]" >&2; exit 2 ;;
+      *) echo "usage: cadtool validate <file.urdf|.srdf> [--strict] [--json]" >&2; exit 2 ;;
     esac ;;
   viewer)
     # The machine's server (started when none runs) registers each file / document id and opens its page, /<id>; the
     # printed link is good for a day.
     if [[ $# -eq 0 ]]; then set -- assemblies/arm.step; fi
+    refuse_sdf "$@"
     cg viewer "$@" ;;
   status)
     cg server status "$@" ;;
