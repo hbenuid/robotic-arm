@@ -53,11 +53,11 @@ the CAD kernel), updating the plugin and what a pull that changes `pyproject.tom
 | `./cadtool inspect <file.step> [--planes] [--json]` | every leaf's ref, solids, faces, volume, bbox of a saved STEP (`--planes`: its planar faces) |
 | `./cadtool cad step inspect <file.step> "<ref>"` | what one ref (an occurrence path, `…/face 7`) names, and its measures |
 | `./cadtool inspect diff <a.step> <b.step> [--tol X]` | same geometry, leaf by leaf, as a copy kept from before a change? |
-| `./cadtool snapshot assemblies/arm.step snapshots/arm.png --size-profile assembly` | a PNG still for review — also `.urdf`/`.sdf`/`.stl` inputs |
+| `./cadtool snapshot assemblies/arm.step snapshots/arm.png --size-profile assembly` | a PNG still for review — also `.urdf`/`.stl` inputs |
 | `./cadtool viewer [file…]` | the CAD Viewer: opens each file's page on the machine's server (default `assemblies/arm.step`; the link is good for a day) |
 | `./cadtool status` / `./cadtool stop` | the machine's cad server: what it runs and holds, for every session / end this venv's idle workers (after a `pyproject.toml` change, when leaving a worktree); `stop --device` stops the server for every session |
 | `./cadtool server` | the machine's `cad` (a uv tool) at this project's pin, telemetry, cad's own updates and its plugin updates stored off first, then its server started (`setup` runs it; a linked worktree only checks) |
-| `./cadtool validate robot/arm.urdf --strict` (`.srdf`, `.sdf --gz-check never`) | robot-description validators |
+| `./cadtool validate robot/arm.urdf --strict` (`.srdf`) | robot-description validators (`arm.sdf` has none in cad: `tools/robot/derive.py --check` compares it with the CAD) |
 | `./cadtool cad step dfm print/<name>.step --process printing` | printability of a printed part: walls, overhangs, support ([`parts/AGENTS.md`](parts/AGENTS.md) Printed vs. bought) |
 | `./cadtool skill <skill> <tool> [args]` | a plugin skill script (`print3d orca_presets.py`), its `requirements.txt`, if any, fetched into uv's cache |
 | `./cadtool cad …` | any `cad` subcommand but `setup`, `update`, `uninstall`, `doctor`, `run` ([`docs/toolchain.md`](docs/toolchain.md) Gotchas) |
@@ -119,7 +119,7 @@ files; the cage that holds it on the wrist is designed here.
 ## AI CAD assistance
 
 The `text-to-cad@earthtojake` plugin's `/text-to-cad:*` skills drive the run-the-model → inspect → snapshot loop
-this repo is aligned with (plus `robot-simulation` for the URDF/SRDF/SDF and `print3d` for slicing; printability is
+this repo is aligned with (plus `robot-simulation` for the URDF/SRDF and `print3d` for slicing; printability is
 `cad stl dfm`); they run the `cad` command — inside this project, `./cadtool …`, which builds on this venv and never runs
 `cad run` or the installer they mention ([`AGENTS.md`](AGENTS.md) Running things).
 The plugin gives Claude Code the skills alone, no MCP server: asked to show a model, Claude runs

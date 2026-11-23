@@ -46,8 +46,10 @@ as a git note).
   release than the server still builds if the two speak one contract (a line says which to update) and is refused if
   not. One memory budget: `./cadtool status` shows the server's processes against a cap of a quarter of the RAM and the
   workers against the core count; a worker retires over a quarter of the RAM, and the least recently used goes at the
-  cap or on memory pressure (no idle timer). Those caps (`CAD_ENGINE_MEMORY_MB`, `CAD_ENGINE_WORKERS`,
-  `CAD_ENGINE_WORKER_RSS_MB`) are read once, from the environment of whichever client started the server. pytest is
+  cap or on memory pressure (no idle timer). A BUSY worker is never retired, but from 0.11.14 one past half the RAM (at
+  least 4 GiB) at two of the server's rounds running is killed, and its build fails as out of memory - a build in native
+  code cannot stop itself. Those caps (`CAD_ENGINE_MEMORY_MB`, `CAD_ENGINE_WORKERS`, `CAD_ENGINE_WORKER_RSS_MB`,
+  `CAD_ENGINE_WORKER_CEILING_MB`) are read once, from the environment of whichever client started the server. pytest is
   outside all of it: its workers are plain processes. `./cadtool stop` ends this venv's idle workers, no other session's
   (`tools/stop_workers.py`: `cad server status --json` names each worker's Python, the server clears a dead idle one at
   its next grant): do it when leaving a worktree. `./cadtool stop --device` (`cad server stop`) stops the server for every
@@ -71,8 +73,8 @@ as a git note).
   release of its major version - for 0.x, any 0.x, minor releases with their hard cutovers included (Gotchas) -: its
   server reads the feed about once an hour and, once nothing has run for a minute, stops, runs `uv tool install
   --upgrade "cad>=<this>,<1"` on its own uv tool and starts again, under every session; and where its plugin switch is
-  on, the server then runs upstream's install command once (`cad plugin update`: the newest plugin in every agent app
-  it finds). Either takes the machine off the pin. `./cadtool server` stores both off beside the telemetry off, before
+  on, the server then runs the plugin's install once (`cad plugin install`, in cad from 0.11.14; `cad plugin update` is
+  its hidden 0.11.12 name: the newest plugin in every agent app it finds). Either takes the machine off the pin. `./cadtool server` stores both off beside the telemetry off, before
   `cad server start`: `cad update auto off` (`auto_update` → `on: false` in the same `settings.json`; 0.11.11's
   `updates` → `automatic: false` is read as off too, never written) and `cad plugin update auto off` (`plugin` →
   `auto_update: false`, off by default, turned on by the install command). `./cadtool doctor` reads each (`update auto:
@@ -142,7 +144,9 @@ templates, not models; `./cadtool gen` stops at the first model that fails).
 - cad makes hard cutovers on the command line, and has no teaching errors: a retired verb or flag is an unrecognised
   argument (0.11: `cad snapshot` is `cad <type> snapshot`, the type the file's; 0.11.12: `cad status` / `cad stop` are
   `cad server status` / `cad server stop`, the short forms hidden and kept only for the skills of 0.11.11 and earlier,
-  `cad doctor` reports and changes nothing, and nothing starts the server but `cad server start`), a retired decorator
+  `cad doctor` reports and changes nothing, and nothing starts the server but `cad server start`; 0.11.15: the `sdf`
+  document type is gone - `cad sdf validate` / `snapshot` and `cad.sdf`, with no alias -, so `./cadtool` refuses an
+  `.sdf` itself and `robot/arm.sdf` is checked by `tools/robot/derive.py --check` alone), a retired decorator
   argument a `TypeError` — read the error as the spec (each move: upstream `docs/migrations/`) — and a retired environment
   variable says nothing at all. The library's renames keep the old spelling one release at least, as an alias that
   warns once with `CadDeprecationWarning` (0.11: `read_step` → `step.read`, `cad.geometry` → `cad.build123d`;
@@ -193,12 +197,14 @@ templates, not models; `./cadtool gen` stops at the first model that fails).
   server's environment is the uv tool's (`./cadtool doctor` reads `cad server status --json`'s `prefix`; the way back is
   `./cadtool stop --device`, then any `./cadtool gen`). Not uvx either: it leaves cad in uv's cache, which `uv cache
   prune` empties.
-- Never run `cad setup` / `update` / `plugin update` here, `uv tool install cad` or `uv tool upgrade cad` without the
-  pin, or the `curl … install.sh | sh` line upstream's README and install guide lead with: `cad update` (typed, it
-  updates with automatic updates off) and an unpinned uv install take the machine to the newest release whatever
-  `pyproject.toml` pins; the install command (which `cad plugin update` runs, and plain `cad setup`, kept only for the
-  updater of 0.10.0 to 0.11.11) installs cad at the newest release where none is, puts its newest plugin in every agent
-  app it finds, removes what earlier releases left there and turns the plugin updates on. The plugin's skills say `uv
+- Never run `cad setup` / `update` / `plugin install` / `plugin update` here, `uv tool install cad` or `uv tool upgrade
+  cad` without the pin, or the `curl … install.sh | sh` line upstream's README and install guide lead with: `cad update`
+  (typed, it updates with automatic updates off) and an unpinned uv install take the machine to the newest release
+  whatever `pyproject.toml` pins; `cad plugin install` (0.11.14; `cad plugin update` its hidden earlier name) puts the
+  newest plugin in every agent app it finds and removes what earlier releases left there; and the hosted install
+  command (plain `cad setup` too, kept only for the updater of 0.10.0 to 0.11.11) installs cad at the newest release
+  where none is - from 0.11.14 it also brings a working one up to date with `cad update`, where a person ran it -, then
+  hands over to `cad plugin install` and turns the plugin updates on. The plugin's skills say `uv
   tool install cad` when `cad` is missing or older than 0.11.12, and build with `cad run`, which runs in an
   environment of its own (`uv run` with cad at the machine's release) instead of this venv: inside this project
   `./cadtool` overrides both (`cad/AGENTS.md` Running things). `./cadtool cad` refuses `setup`, `update`, `plugin` and
@@ -207,8 +213,8 @@ templates, not models; `./cadtool gen` stops at the first model that fails).
 - **When one ran anyway**, the machine leaves the pin with no error. An update (typed, or automatic with the switch
   on) moves the uv tool itself - `uv-receipt.toml` then keeps a range, `cad>=<release>,<1`: `./cadtool doctor` says the
   tool's release and `./cadtool gen` refuses; the way back, every other session closed, is `./cadtool stop --device`
-  and `./cadtool server` (it installs the pin again). The install command leaves cad as it is but puts the newest
-  plugin in every agent app it finds (Claude Code's from upstream's `latest`, so an entry past the pin; earlier
+  and `./cadtool server` (it installs the pin again). `cad plugin install` leaves cad as it is (the hosted install
+  command updates it too, as above) but puts the newest plugin in every agent app it finds (Claude Code's from upstream's `latest`, so an entry past the pin; earlier
   releases' installer used `text-to-cad@text-to-cad`, a local catalog in cad's state folder, and GitHub Copilot's
   skills in `~/.agents/skills`) and turns the plugin updates on: `./cadtool doctor` names the plugin entries, the
   switch and other text-to-cad plugins. The way back: `./cadtool server` (the switch off), the entries brought back to
