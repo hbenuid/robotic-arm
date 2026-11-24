@@ -404,10 +404,11 @@ def build_pulley(cfg: ForearmConfig = DEFAULT):
     for x, y in clamp_points(cfg):
         body = body - cylinder(w.bolt_dia / 2.0, z_end - S["z_meet"] + 2 * NUDGE, (x, y), z0=S["z_meet"] - NUDGE)
         body = body - cylinder(head_r, z_end - S["z_clamp_head"] + NUDGE, (x, y), z0=S["z_clamp_head"])
-    # the forearm wall's 4x M3: clearance from the front face on past each nut to the screw's tip, and each nut's pocket -
-    # a slot from the cable bore outward along the screw's angle, a flat either side - in the core
+    # the forearm wall's 4x M3: clearance from the front face on 2 pitches past each nut (z_end_hole: room past the tip,
+    # flush with the nut's far face), and each nut's pocket - a slot from the cable bore outward along the screw's angle, a
+    # flat either side - in the core
     r_in, r_out, z0, z1 = end_nut_pocket(cfg)
-    z_hole = S["z_end_tip"] - d.end_nut_fit
+    z_hole = S["z_end_hole"] - d.end_nut_fit
     for x, y in flange_bolt_points_module(cfg):
         body = body - cylinder(w.bolt_dia / 2.0, z_end - z_hole + NUDGE, (x, y), z0=z_hole)
         body = body - nut_slot(r_in, r_out, d.end_nut.af, z0, z1, math.atan2(y, x))

@@ -305,6 +305,12 @@ from lib.forearm.layout import clamp_points as _roll_clamp_points  # noqa: E402
 _ROLL_CLAMP = len(_roll_clamp_points(_FOREARM))
 ROLL_CLAMP_SCREWS_MASS_G = STEEL_DENSITY * _ROLL_CLAMP * shcs_volume(_FOREARM.drive.clamp_screw, _FOREARM.drive.clamp_screw_len)   # 12.0, 4x M3x45
 ROLL_CLAMP_NUTS_MASS_G = STEEL_DENSITY * _ROLL_CLAMP * nut_volume(_FOREARM.drive.clamp_nut)                                    # 1.4, 4x M3
+# the forearm wall's onto the roll pulley (parts/joints/roll_wall_{screws,nuts}; lib/forearm/params.py RollEndParams screw_*), likewise
+from lib.forearm.layout import flange_bolt_points_module as _roll_wall_points  # noqa: E402
+
+_ROLL_WALL = len(_roll_wall_points(_FOREARM))
+ROLL_WALL_SCREWS_MASS_G = STEEL_DENSITY * _ROLL_WALL * shcs_volume(_FOREARM.roll_end.screw, _FOREARM.roll_end.screw_len)   # 4.7, 4x M3x12
+ROLL_WALL_NUTS_MASS_G = STEEL_DENSITY * _ROLL_WALL * nut_volume(_FOREARM.drive.end_nut)                                    # 1.4, 4x M3
 # the wrist roll's: the pancake's M3 (parts/wrist/wrist_roll_motor_screws), the rotor clamp's and the connector's M3 + nuts
 # (parts/wrist/wrist_roll_{clamp,connector}_{screws,nuts}; lib/wrist/params.py WristRollParams, ConnectorParams), likewise
 from lib.wrist.layout import clamp_points as _wrist_clamp_points  # noqa: E402

@@ -23,7 +23,6 @@ import parts
 from assemblies import arm
 from assemblies._occurrences import module_rows
 from lib import reference as R
-from lib.forearm import DEFAULT as _FOREARM
 from lib.params import LAYER_H, LAYER_H_FINE
 
 # (module or None = the arm itself, what to order, pieces, why it is not modelled). Seeded with what
@@ -31,12 +30,6 @@ from lib.params import LAYER_H, LAYER_H_FINE
 # the electronics are not listed yet (docs/open_issues.md).
 EXTRAS = [
     ("cycloidal_drive", "bearing grease", 1, "the output pins are a greased sliding fit through the discs"),
-    ("forearm_roll_drive", f"M3 x {_FOREARM.roll_end.screw_len:g} socket head cap screw (ISO 4762) - the forearm wall onto the roll pulley's face",
-     _FOREARM.roll_end.bolt_count,
-     ("heads on the wall's wrist face (the bottom one just over the web), through the wall and the pulley's spigot into "
-      "its nuts; bolt the wall on before the wrist-pitch motor goes on")),
-    ("forearm_roll_drive", "M3 hex nut (ISO 4032) - in the roll pulley's core, for the forearm wall's screws", _FOREARM.roll_end.bolt_count,
-     "pushed into the pockets from the pulley's cable bore before the wall goes on"),
     # the rack & pinion gripper (PapaBravo's list: 4x M3 x 15, 4x M3 x 10, 8 nuts - the tab screws longer here by the
     # cage's ears; the pinion's screw is the servo's own horn screw)
     ("gripper", "M3 x 15 socket head cap screw (ISO 4762) - each rack onto its jaw", 4,

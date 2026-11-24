@@ -237,9 +237,11 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
     z_bearing_2 = z_boss - d.bearing_width                        # 26.85
     z_lip = z_bearing_2 - d.lip                                   # 14.85: the spacer's rear = bearing 1's front face
     z_bearing_1 = z_lip - d.bearing_width                         # 7.85: the seat's rear, into the bay
-    z_wall_back = -w.wall_x[0]                                    # 56: the wall's wrist face = its screws' heads
-    z_end_tip = z_wall_back - w.screw_len                         # 40: their tips, in the pulley's core
-    z_end_nut = z_end_tip + 2 * M3_PITCH                          # 41: each nut's far face, 2 pitches short of the tip
+    z_wall_back = -w.wall_x[0]                                    # 56: the wall's wrist face = its screws' heads' tops
+    z_end_head = z_wall_back - w.head_seat                        # 53: the counterbores' floor = the heads' bearing face
+    z_end_tip = z_end_head - w.screw_len                          # 41: their tips, in the pulley's core
+    z_end_nut = z_end_tip                                         # 41: each nut's far face, flush with its tip
+    z_end_hole = z_end_nut - 2 * M3_PITCH                         # 40: the pulley's hole on past the nut, 2 pitches
     z_spigot_end = z_wall + w.flange_recess_depth                 # 50: the pulley's front face
     z_clamp_head = z_spigot_end - d.clamp_screw.head_h - d.clamp_head_clear   # 46.8: the clamp's counterbores' floor
     z_shaft_end = z_clamp_head - d.clamp_screw_len                # 1.8: the clamp's tips = the shaft's rear face
@@ -253,7 +255,7 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
         "z_clamp_nut": z_clamp_nut,
         "z_clamp_nut_seat": z_clamp_nut + d.clamp_nut.h,          # 5.2: its bearing face, toward the pulley
         "z_clamp_head": z_clamp_head,
-        "z_end_tip": z_end_tip, "z_end_nut": z_end_nut,
+        "z_end_head": z_end_head, "z_end_tip": z_end_tip, "z_end_nut": z_end_nut, "z_end_hole": z_end_hole,
         "z_end_nut_seat": z_end_nut + d.end_nut.h,                # 43.4: each wall nut's bearing face, toward the wall
         "z_stop_lug": z_shaft_end,                                # 1.8 .. +stop_lug_t on the shaft's flange
         "z_stop_post": z_bearing_1 - d.stop_post_t,               # 3.0 .. 7.85 on the tower's face behind bearing 1
