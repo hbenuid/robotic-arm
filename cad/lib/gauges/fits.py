@@ -178,7 +178,8 @@ GAUGES = (
         Use(_D.motor.motor_bolt_head_dia + _TOL.bolt_clearance_add, "cycloidal_motor_plate"),
         Use(BASE.motor.holes.pocket_dia, "base_motor_mount"),
         Use(_ROLL.motor_holes.pocket_dia, "forearm_roll_block"),
-        Use(FOREARM.holes.pocket_dia, "j2_link")),
+        Use(FOREARM.holes.pocket_dia, "j2_link"),
+        Use(FOREARM.roll_end.head_dia, "j2_wall_bracket (the wall's screws onto the roll pulley)")),
         (("depth", FOREARM.holes.screw.head_h), ("width", 5.8), ("floor", 2.0), ("under", M3_CLEAR)),
         note="A head deep over an M3 hole. The wider ones elsewhere (rotor clamps, gripper) follow if these fit."),
     Gauge("m4head", "screws", "M4 head counterbores", "M4 HEAD", "hole_strip", (

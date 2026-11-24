@@ -174,6 +174,8 @@ NO_REFERENCE: dict[str, str] = {
     "roll_idler_spacer": "lib/forearm/roll.py:build_idler_spacer(DEFAULT)",
     "roll_clamp_screws": "parts/joints/roll_clamp_screws.py:_envelope()",
     "roll_clamp_nuts": "parts/joints/roll_clamp_nuts.py:_envelope()",
+    "roll_wall_screws": "parts/joints/roll_wall_screws.py:_envelope()",
+    "roll_wall_nuts": "parts/joints/roll_wall_nuts.py:_envelope()",
     "wrist_roll_motor_screws": "parts/wrist/wrist_roll_motor_screws.py:_envelope()",
     "wrist_roll_clamp_screws": "parts/wrist/wrist_roll_clamp_screws.py:_envelope()",
     "wrist_roll_clamp_nuts": "parts/wrist/wrist_roll_clamp_nuts.py:_envelope()",

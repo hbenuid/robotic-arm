@@ -35,7 +35,7 @@ from tests.helpers import interference, is_inside
 S, W, R_END, H = DEFAULT.split, DEFAULT.web, DEFAULT.roll_end, DEFAULT.holes
 # name -> (solids, volume mm^3, bbox min, bbox size): the build's own numbers
 LOCKS = {
-    "j2_wall_bracket": (1, 26356.831, (-86.0, -33.556206, -5.0), (38.0, 67.112413, 60.0)),
+    "j2_wall_bracket": (1, 26159.571, (-86.0, -33.556206, -5.0), (38.0, 67.112413, 60.0)),
     "wall_bracket_screws": (3, 362.361, (-69.75, -10.75, -3.0), (11.5, 21.5, 11.0)),
     "wall_bracket_nuts": (3, 137.727, (-70.175426, -10.75, 0.0), (12.350853, 21.5, 2.4)),
 }

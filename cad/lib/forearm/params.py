@@ -133,9 +133,9 @@ class RollEndParams:
     it: lib/wrist/params.py WristRollParams; the wrist dropped WEB_DROP along the pitch axis with the web since, so the
     roll axis crosses that axis that far from it). The rotor's pulley
     (parts/joints/forearm_roll_pulley: the roll's 90T ring, the output) puts its Ø39.7 spigot into a shallow locating
-    recess on the wall's elbow face, the ring's face on the wall; 4x M3 from the wall's wrist face run through the wall
-    and the spigot into nuts in the pulley's core (the bottom one's head just over the web's top face); the cables pass
-    through the bore. The wall stands 48 mm
+    recess on the wall's elbow face, the ring's face on the wall; 4x M3 from counterbores in the wall's wrist face (the
+    heads flush) run through the wall and the spigot into nuts in the pulley's core (parts/joints/roll_wall_screws,
+    roll_wall_nuts); the cables pass through the bore. The wall stands 48 mm
     along the roll axis from the elbow axis' station (and ForearmConfig.elbow_offset across from it): whatever the
     forearm's roll angle, it clears the upper arm's faceted end (lib/upper_arm/params.py ArmParams.end_r). It is a
     faceted flange about the roll axis (flats wall_od / 2 off it) through its whole thickness - the roll frame's tower
@@ -170,17 +170,24 @@ class RollEndParams:
     bolt_count: int = 4
     bolt_angle_deg: float = 0.0
     bolt_dia: float = M3_CLEAR            # [DESIGN] 3.4, through the wall and the pulley's spigot to its nut
-    screw: ShcsSize = M3_SHCS             # [DATASHEET] ISO 4762 M3, heads on the wall's wrist face (tools/bom.py EXTRAS)
-    screw_len: float = 16.0               # [DESIGN] M3 x 16: through the wall (6 at the holes, less the recess) and the spigot into its nut in the
-    #                                       pulley's core (RollDriveParams.end_nut), 2 pitches past it
+    screw: ShcsSize = M3_SHCS             # [DATASHEET] ISO 4762 M3 (parts/joints/roll_wall_screws), the heads in counterbores in the wall's
+    #                                       wrist face
+    head_dia: float = MOTOR_40.motor_bolt_head_dia + PETGTolerances().bolt_clearance_add   # 5.7 [DESIGN] the counterbores, as the lap
+    #                                       screws' and the motors' (WallSplitParams.head_dia)
+    head_seat: float = M3_SHCS.head_h     # [DESIGN] 3.0, the counterbores' depth: the heads flush with the wall's wrist face; 2.7 of the
+    #                                       wall left under them at the holes (8 less the recess, less this)
+    screw_len: float = 12.0               # [DESIGN] M3 x 12 from the counterbore's floor: through the wall and the spigot into its nut in the
+    #                                       pulley's core (RollDriveParams.end_nut), the tip flush with the nut's far face - the whole nut on
+    #                                       the thread (M3 x 13, 2 pitches past it, is no stock length; the pulley's hole runs on 2 pitches
+    #                                       past the nut all the same: lib/forearm/layout.py stack_positions z_end_hole)
     channel_clear: float = 0.5            # [DESIGN] the channel under the web for a screw whose head would land in the web: the head + this all
     #                                       round, open to the web's underside, from the wall into the motor slot (the screw lays in, a key reaches it);
     #                                       none does in DEFAULT - the bottom one's head, this far round it, clears the web's top face
     cable_bore: float = 24.0              # [DESIGN] round the rotor's Ø18 bore (RollDriveParams.bore)
     plug_clearance: float = 10.0          # [DESIGN] the wrist motor's connector plug needs this much room beyond its connector (turned
     #                                       sideways, lib/mounts.py: clear of the web, the gussets and the wall)
-    motor_wall_clear: float = 1.5         # [DESIGN] the wrist motor's body at least this far off the wall screws' heads (the screws are
-    #                                       reached with the motor off)
+    motor_wall_clear: float = 1.5         # [DESIGN] the wrist motor's body at least this far off the wall screws' heads, whatever of them
+    #                                       stands proud of the wall's wrist face (none: head_seat) - the screws are reached with the motor off
     wrist_belt: int = 280                 # [DESIGN] 280-2GT closed belt, 6 mm (a multipack length, lib/belts.py STANDARD_2GT_LENGTHS): longer
     #                                       than the open loop at WRIST_MOTOR_CENTRES - the idler takes up the rest (IdlerParams)
     wrist_belt_z: float = 0.3             # [REFERENCE] the wrist belt's mid-plane: the wrist 90T's tooth band (its re-seated pose, lib/mounts.py
@@ -546,7 +553,7 @@ class RollDriveParams:
     ring_core_dia: float = 44.0           # [DESIGN] the pulley's core under the ring (the ring is an annulus fused on it)
     collar_od: float = 40.0               # [DESIGN] the shaft's flange behind bearing 1's Ø33 shoulder
     end_nut: NutSize = M3_NUT             # [DATASHEET] ISO 4032 M3: the nuts of the forearm wall's 4 screws (RollEndParams.screw), in the pulley's
-    #                                       core (tools/bom.py EXTRAS) - each screw clamps the wall onto the ring's face
+    #                                       core (parts/joints/roll_wall_nuts) - each screw clamps the wall onto the ring's face
     end_nut_fit: float = 0.2              # [DESIGN] each nut's pocket - a slot from the cable bore out past the nut's corner, a flat either side
     #                                       (af wide) - its height and its reach past the corner; the nut bears on its wall-side face
     # the rotor's own clamp: 4x M3 from the pulley's front face (heads sunk in counterbores, under the wall's recess)

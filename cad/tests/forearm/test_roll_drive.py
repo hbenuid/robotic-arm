@@ -199,11 +199,12 @@ def test_stack():
     # the counterbores two beads (0.8) off the cable bore: it narrows over their depth, the circle held by the walls above
     assert D.clamp_bore_wall >= 0.8 and clamp_bore_r(DEFAULT) < D.bore / 2.0
     assert clamp_r - head_r - clamp_bore_r(DEFAULT) == pytest.approx(D.clamp_bore_wall)
-    # the forearm wall's screws through the wall and the spigot into nuts in the pulley's core: the tip 2 pitches past
-    # its nut, the nut over the ring's rear flange and 2 mm short of the clamp's counterbores, 3 mm of the core outside
-    # it, its pocket open into the bore
-    assert S["z_wall_back"] == -w.wall_x[0] and S["z_end_tip"] == S["z_wall_back"] - w.screw_len and w.bolt_dia == PARAMS.M3_CLEAR
-    assert math.isclose(S["z_end_nut"] - S["z_end_tip"], 2 * PARAMS.M3_PITCH) and math.isclose(S["z_end_nut_seat"] - S["z_end_nut"], D.end_nut.h)
+    # the forearm wall's screws from the counterbores' floor through the wall and the spigot into nuts in the pulley's
+    # core: the tip flush with its nut's far face, the hole on 2 pitches past it, the nut over the ring's rear flange and
+    # 2 mm short of the clamp's counterbores, 3 mm of the core outside it, its pocket open into the bore
+    assert S["z_wall_back"] == -w.wall_x[0] and S["z_end_head"] == S["z_wall_back"] - w.head_seat and w.bolt_dia == PARAMS.M3_CLEAR
+    assert S["z_end_tip"] == S["z_end_head"] - w.screw_len == S["z_end_nut"] and math.isclose(S["z_end_nut_seat"] - S["z_end_nut"], D.end_nut.h)
+    assert math.isclose(S["z_end_nut"] - S["z_end_hole"], 2 * PARAMS.M3_PITCH)
     r_in, r_out, z0, z1 = end_nut_pocket(DEFAULT)
     assert r_in < D.bore / 2.0 and D.ring_core_dia / 2.0 - r_out >= 3.0 and (z0, z1) == (S["z_end_nut"] - D.end_nut_fit, S["z_end_nut_seat"])
     assert z0 >= S["z_ring_flange_1"] + 2.0 and z1 <= S["z_clamp_head"] - 2.0 and w.cable_bore >= D.bore
@@ -296,10 +297,10 @@ def test_totals_and_bodies(module):
 def test_module_colors(module):
     """Standalone: every part in its colour, as in the arm (tests/helpers.py part_colours)."""
     assert module.label == "forearm_roll_drive"
-    # 2 bearings, the rotor clamp's screws and nuts, motor, board, 20T, the motor's screws, belt, the tensioner's idler,
-    # screw and nut, the back panel's magnets, the home sensor's KY-003, magnet, M2s and nuts / frame, elbow flange,
-    # shaft, pulley, back panel, the home sensor's carrier, the tensioner's spacer
-    assert part_colours(module) == {True: 17, False: 7}
+    # 2 bearings, the rotor clamp's screws and nuts, the forearm wall's screws and nuts, motor, board, 20T, the motor's
+    # screws, belt, the tensioner's idler, screw and nut, the back panel's magnets, the home sensor's KY-003, magnet, M2s
+    # and nuts / frame, elbow flange, shaft, pulley, back panel, the home sensor's carrier, the tensioner's spacer
+    assert part_colours(module) == {True: 19, False: 7}
 
 
 @pytest.mark.slow
@@ -513,10 +514,10 @@ def test_pulley_and_shaft_features(module):
     assert _round_trip(pulley, D.neck_dia / 2.0 - 0.2, a, zn) and not _round_trip(pulley, D.neck_dia / 2.0 + 0.2, a, zn)
     assert not _round_trip(pulley, D.bore / 2.0 - 0.5, a, zn)
     assert _round_trip(pulley, w.flange_dia / 2.0 - 0.5, a, S["z_wall"] + 1.0) and not _round_trip(pulley, w.flange_dia / 2.0 + 0.5, a, S["z_wall"] + 1.0)
-    # the forearm wall's 4x M3: the hole from the front face on past each nut to the tip, the nut's pocket in the core
+    # the forearm wall's 4x M3: the hole from the front face on 2 pitches past each nut, the nut's pocket in the core
     for x, y in flange_bolt_points_module(DEFAULT):
-        assert not is_inside(pulley, x, y, S["z_wall"] + 1.0) and not is_inside(pulley, x, y, S["z_end_tip"] - D.end_nut_fit + 0.3)
-        assert is_inside(pulley, x, y, S["z_end_tip"] - D.end_nut_fit - 0.3)
+        assert not is_inside(pulley, x, y, S["z_wall"] + 1.0) and not is_inside(pulley, x, y, S["z_end_hole"] - D.end_nut_fit + 0.3)
+        assert is_inside(pulley, x, y, S["z_end_hole"] - D.end_nut_fit - 0.3)
     _nut_pocket_probes(pulley, flange_bolt_points_module(DEFAULT), end_nut_pocket(DEFAULT), D.end_nut.af)
     # the rotor clamp: each hole through the hub, its head's counterbore in the front face
     for x, y in clamp_points(DEFAULT):
