@@ -71,14 +71,12 @@ def test_the_walls_screw_and_nut():
 
 def test_the_stations():
     """The heads flush with the wall's wrist face in counterbores head_seat deep (the head's height), wide enough for
-    it, 2.7 of the wall left under them at the holes (the recess on the elbow face over them); the tips flush with the
+    it, 5.0 of the wall left under them at the holes (its elbow face flat, no recess); the tips flush with the
     nuts' far faces, the whole nut on the thread; the nut's bearing face on its pocket's end."""
     assert W.head_seat == W.screw.head_h == 3.0 and W.head_dia == 5.7 and W.head_dia > W.screw.head_dia
     assert math.isclose(S["z_wall_back"] - S["z_end_head"], W.head_seat)
-    wall_at_holes = (W.wall_x[1] - W.wall_x[0]) - (W.flange_recess_depth + W.flange_recess_clear)
-    assert all(math.hypot(y, z - W.axis_z) + W.bolt_dia / 2.0 < (W.flange_dia + W.flange_recess_add) / 2.0
-               for y, z in flange_bolt_points(DEFAULT))                   # every hole inside the recess
-    assert math.isclose(wall_at_holes - W.head_seat, 2.7)
+    wall_at_holes = W.wall_x[1] - W.wall_x[0]
+    assert math.isclose(wall_at_holes - W.head_seat, 5.0)
     assert math.isclose(S["z_end_head"] - W.screw_len, S["z_end_tip"]) and S["z_end_tip"] == S["z_end_nut"]
     assert math.isclose(S["z_end_nut"] + D.end_nut.h, S["z_end_nut_seat"])
 

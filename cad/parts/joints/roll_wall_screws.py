@@ -1,12 +1,12 @@
 """roll_wall_screws - purchased (COTS) part: the forearm wall's 4 M3 socket head cap screws (ISO 4762).
 
 They bolt the forearm's wall (j2_wall_bracket) onto the forearm roll pulley (forearm_roll_pulley): from counterbores in
-the wall's wrist face, through the wall and the pulley's spigot into the nuts in the pulley's core (roll_wall_nuts) -
+the wall's wrist face, through the wall and the pulley's front face into the nuts in the pulley's core (roll_wall_nuts) -
 each one clamps the wall onto the ring's face (lib/forearm/params.py RollEndParams screw / head_* / screw_len).
 
 In the arm: x1, in forearm_roll_drive (its row in assemblies/forearm_roll_drive.py, the ROTOR - forearm_link): the
 heads in the counterbores, flush with the wall's wrist face (lib/forearm/layout.py stack_positions z_end_head), the
-shanks down the M3 clearance holes through the wall and the spigot, the tips flush with the nuts' far faces
+shanks down the M3 clearance holes through the wall into the pulley, the tips flush with the nuts' far faces
 (z_end_tip). Length (under the head): RollEndParams.screw_len. Bolt the wall on before the wrist-pitch motor goes on
 (the motor stands in front of the heads).
 
@@ -38,7 +38,7 @@ MASS_G = ROLL_WALL_SCREWS_MASS_G   # [ESTIMATE] the modelled steel (lib/params.p
 PURCHASE_SPEC = f"M{SCREW.d:g} x {LENGTH:g} socket head cap screw (ISO 4762)"
 PURCHASE_QTY = len(POINTS)   # pieces per occurrence (the whole pattern)
 PURCHASE_NOTE = ("the forearm wall onto the roll pulley: heads flush in the wall's wrist-face counterbores, through the "
-                 "wall and the pulley's spigot into the nuts in its core; bolt the wall on before the wrist-pitch motor")
+                 "wall and the pulley's front face into the nuts in its core; bolt the wall on before the wrist-pitch motor")
 VENDOR_STEP = pathlib.Path(__file__).resolve().parents[2] / "vendor" / f"{NAME}.step"
 VENDOR_TO_REF = IDENTITY
 

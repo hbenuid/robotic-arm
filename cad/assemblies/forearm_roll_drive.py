@@ -13,10 +13,10 @@ the roll belt's tensioner on the frame's front face (the idler on a printed spac
 from the face, which the frame prints on -, its M5 and nut: RollIdlerParams); the 6806 pair back to back in the tower,
 a 12 mm spacer between them, bearing 2's front face flush with the frame's. Rotor: the pulley (forearm_roll_pulley, the
 output: the integral 90T ring on a core down to run_gap over the frame's front face, its hub down through bearing 2 and its neck on to
-bearing 1, the spigot the forearm's wall bolts onto - 4x M3 from the wall's counterbores into nuts in its core:
+bearing 1, its flat front face the forearm's wall bolts onto - 4x M3 from the wall's counterbores into nuts in its core:
 roll_wall_screws, roll_wall_nuts, on the rotor; forearm_link) and the shaft
 (forearm_roll_shaft, a collar that holds bearing 1: its journal through it, the rotor clamp's nuts and the stop lug in
-its flange - in through the frame's back), clamped by 4x M3 from the pulley's front face into nuts in the shaft's flange
+its flange - in through the frame's back), clamped by 4x M4 from the pulley's front face into nuts in the shaft's flange
 (roll_clamp_screws, roll_clamp_nuts: on the rotor). The shaft's bay is closed by a removable back panel flush with the
 frame's rear face (forearm_roll_back_panel, in a step across the face, over the bay and the opening grown down below
 it), held by 4 magnet pairs (roll_back_magnets) - both on the stator. MODULE FRAME (lib/forearm/params.py RollDriveParams): origin on the roll axis at the elbow
@@ -56,12 +56,12 @@ OCCURRENCES = [
     ("forearm_roll_shaft",    None, _at()),
     ("bearing_6806",          "2",  _at(z=S["z_bearing_2"])),
     ("forearm_roll_pulley",   None, _at()),
-    # the rotor clamp: its 4x M3 from the pulley's front face (turned over: the heads up), on the counterbores' floor, into
+    # the rotor clamp: its 4x M4 from the pulley's front face (turned over: the heads up), on the counterbores' floor, into
     # the nuts in the shaft's flange (their far faces 2 pitches short of the tips)
     ("roll_clamp_screws",     None, ((0.0, 0.0, S["z_clamp_head"]), (180.0, 0.0, 0.0))),
     ("roll_clamp_nuts",       None, _at(z=S["z_clamp_nut"])),
     # the forearm wall's 4x M3 from its wrist face (turned over: the heads up, flush in its counterbores) through the wall
-    # and the spigot into the nuts in the pulley's core (their far faces flush with the tips)
+    # into the nuts in the pulley's core (their far faces flush with the tips)
     ("roll_wall_screws",      None, ((0.0, 0.0, S["z_end_head"]), (180.0, 0.0, 0.0))),
     ("roll_wall_nuts",        None, _at(z=S["z_end_nut"])),
     # the roll motor, its board and its 20T - on the elbow axis (-Y) - carry the joint as their role (labels unique in the arm)
@@ -98,9 +98,9 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("stator") after any geometry change.
 EXPECTED = {
-    "leaves": 26, "solids": 67, "solid_volume": 390674.664,
+    "leaves": 26, "solids": 67, "solid_volume": 390884.257,
     "bodies": {"stator": {"leaves": 19, "solids": 48, "solid_volume": 344883.467},
-               "rotor": {"leaves": 7, "solids": 19, "solid_volume": 45791.196}},
+               "rotor": {"leaves": 7, "solids": 19, "solid_volume": 46000.79}},
 }
 
 

@@ -70,7 +70,7 @@ def test_roll_drive_lists_follow_its_rows():
                       "roll_back_magnets": 8,                                              # the back panel's 4 pairs
                       "ky003_hall_sensor": 1, "roll_home_magnet": 1,                       # the home sensor behind the shaft
                       "roll_home_board_screws": 2, "roll_home_board_nuts": 2}
-    assert parts.load("roll_clamp_screws").PURCHASE_SPEC.startswith("M3 x 45 socket head cap screw")
+    assert parts.load("roll_clamp_screws").PURCHASE_SPEC.startswith("M4 x 40 socket head cap screw")
     assert parts.load("roll_wall_screws").PURCHASE_SPEC.startswith("M3 x 12 socket head cap screw")
     assert parts.load("roll_back_magnets").PURCHASE_SPEC == "3 x 2 mm N52 NdFeB disc magnet"
     states = {r["part"]: r["state"] for r in bom.print_rows("forearm_roll_drive")}

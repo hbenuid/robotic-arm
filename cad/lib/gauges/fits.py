@@ -156,7 +156,7 @@ GAUGES = (
     Gauge("m3", "screws", "M3 clearance holes", "M3 HOLE", "hole_strip", (
         Use(2.0 * _GB.hole_r, "gripper_base, gripper_jaw, gripper_pinion (PapaBravo's)"),
         Use(2.0 * GRIPPER.rack.hole_r, "gripper_rack (PapaBravo's)"),
-        Use(M3_CLEAR, "the motor screws, the rotor clamps, the connector, gripper_cage, the home bracket")),
+        Use(M3_CLEAR, "the motor screws, the wrist rotor clamp, the connector, gripper_cage, the home bracket")),
         (("depth", 4.0), ("width", 3.5), ("floor", 0.0), ("through", True)), note="Through 4."),
     Gauge("m3s", "screws", "M3 clearance holes, sideways", "M3 HOLE SIDE", "side_strip", (
         Use(2.0 * _GB.hole_r, "gripper parts (PapaBravo's)"), Use(2.0 * GRIPPER.rack.hole_r, "gripper_rack"),
@@ -165,7 +165,8 @@ GAUGES = (
     Gauge("m4", "screws", "M4 clearance holes", "M4 HOLE", "hole_strip", (
         Use(M4_CLEAR_UPRIGHT, "upright at 0.20: the housing, coupler-plate, motor-leg foot, gearbox and flange screws "
                               "(snug, 0.20: measured)"),
-        Use(PULLEY.hole_dia, "gt2_pulley_90t, gt2_pulley_120t (snug, 0.16: measured)")),
+        Use(PULLEY.hole_dia, "gt2_pulley_90t, gt2_pulley_120t (snug, 0.16: measured)"),
+        Use(_ROLL.clamp_bolt_dia, "forearm_roll_pulley (0.16), forearm_roll_shaft (0.20): the rotor clamp")),
         (("depth", 5.0), ("width", 4.5), ("floor", 0.0), ("through", True)), note="Through 5."),
     Gauge("m4s", "screws", "M4 clearance holes, sideways", "M4 HOLE SIDE", "side_strip", (
         Use(M4_CLEAR, "the base's and base_motor_mount's posts, the motor plate's sleeve, j1_coupler's fork bolts, "
@@ -187,12 +188,12 @@ GAUGES = (
         Use(FORK_COUNTERBORE, "j1_coupler, j1_motor_leg (fork bolts, plate screws)"),
         Use(BASE.joint.head_bore, "base_motor_mount's posts (the joint's screws, printed on their side)"),
         Use(PULLEY.counterbore[0], "gt2_pulley_90t, gt2_pulley_120t (snug, 0.16: measured)"),
-        Use(UPPER_ARM.arm.seat_pocket_dia, "j1_link's web (gearbox screws)")),
+        Use(UPPER_ARM.arm.seat_pocket_dia, "j1_link's web (gearbox screws)"),
+        Use(_ROLL.clamp_screw.head_dia + 2.0 * _ROLL.clamp_head_clear, "forearm_roll_pulley (the rotor clamp)")),
         (("depth", 4.5), ("width", 7.5), ("floor", 2.0), ("under", M4_CLEAR)), note="4.5 deep over an M4 hole."),
     # --- nuts
     Gauge("m3slot", "nuts", "M3 nut slots, slid in from the side", "M3 NUT SLOT", "slot_strip", (
         Use(_ROLL.end_nut.af, "forearm_roll_pulley: the wall screws' nuts (line to line)"),
-        Use(_ROLL.clamp_nut.af, "forearm_roll_shaft: the clamp's nuts (line to line)"),
         Use(_WROLL.nut.af, "wrist_roll_shaft: the clamp's nuts (line to line)"),
         Use(_GB.nut_y[1] - _GB.nut_y[0], "gripper_base's traps"),
         Use(_WROLL.nut.af + 2.0 * _WROLL.nut_fit, "wrist_roll_pulley's connector slots")),
@@ -226,7 +227,8 @@ GAUGES = (
         (("depth", M4_NUT.h), ("shape", "hex"), ("blind", True), ("screw", M4_CLEAR)),
         note="A corner up, an M4 hole on through."),
     Gauge("m4slot", "nuts", "M4 nut slot", "M4 NUT SLOT", "slot_strip", (
-        Use(M4_NUT.af + FORK_NUT_SLOT, "j1_coupler's disc (the fork's foot nuts)"),),
+        Use(M4_NUT.af + FORK_NUT_SLOT, "j1_coupler's disc (the fork's foot nuts)"),
+        Use(_ROLL.clamp_nut.af, "forearm_roll_shaft: the clamp's nuts (line to line)")),
         (("af", M4_NUT.af), ("height", M4_NUT.h + FORK_NUT_SLOT), ("screw", M4_CLEAR)), note="The size is the width."),
     Gauge("m5slot", "nuts", "M5 nut channels (the idler axles)", "M5 NUT SLOT", "hole_strip", (
         Use(UPPER_ARM.idler.nut.af + UPPER_ARM.idler.nut_fit, "j1_link"),

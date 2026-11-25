@@ -1,12 +1,12 @@
-"""roll_clamp_screws - purchased (COTS) part: the forearm roll rotor clamp's 4 M3 socket head cap screws (ISO 4762).
+"""roll_clamp_screws - purchased (COTS) part: the forearm roll rotor clamp's 4 M4 socket head cap screws (ISO 4762).
 
 They clamp the roll's rotor as one: from the pulley's front face (forearm_roll_pulley) through its hub, both 6806 inner
 rings and the shaft (forearm_roll_shaft) into the nuts in the shaft's flange (roll_clamp_nuts) - the pulley, both inner
 rings and the shaft one body, the drive whole without the forearm (lib/forearm/params.py RollDriveParams clamp_*).
 
 In the arm: x1, in forearm_roll_drive (its row in assemblies/forearm_roll_drive.py, the ROTOR - forearm_link): the heads
-in the counterbores in the pulley's front face (clamp_head_clear round and over them, under the forearm wall's recess),
-the shanks down the M3 clearance holes through both pieces, the tips at the shaft's rear face (which the length sets:
+in the counterbores in the pulley's front face (clamp_head_clear round them, clamp_head_sink further under the face, under the forearm wall's elbow face),
+the shanks down the M4 clearance holes through both pieces, the tips at the shaft's rear face (which the length sets:
 lib/forearm/layout.py stack_positions z_shaft_end). Length (under the head): RollDriveParams.clamp_screw_len. Tighten
 them before the forearm wall goes on (docs/forearm_roll.md section 4).
 

@@ -1,5 +1,5 @@
-"""The forearm roll rotor's clamp (lib/forearm/params.py RollDriveParams clamp_*): 4x M3 SHCS (roll_clamp_screws) from
-the pulley's front face through both pieces and both 6806 inner rings into 4 M3 nuts (roll_clamp_nuts) in the shaft's
+"""The forearm roll rotor's clamp (lib/forearm/params.py RollDriveParams clamp_*): 4x M4 SHCS (roll_clamp_screws) from
+the pulley's front face through both pieces and both 6806 inner rings into 4 M4 nuts (roll_clamp_nuts) in the shaft's
 flange - the pulley, the inner rings and the shaft one body. Purchased parts with no reference (lib/reference.py
 NO_REFERENCE), which keep no reference file - THIS file locks their numbers (the pieces, the modelled volume and the
 bounding box, measured on the build and written in) and what they are: the screw clamp_screw_len under the head, on
@@ -26,8 +26,8 @@ D, S = DEFAULT.drive, stack_positions(DEFAULT)
 SCREWS, NUTS = "roll_clamp_screws", "roll_clamp_nuts"
 # name -> (solids, volume mm^3, bbox min, bbox size): the build's own numbers
 LOCKS = {
-    SCREWS: (4, 1529.299, (-11.412058, -11.412058, -3.0), (22.824116, 22.824116, 48.0)),
-    NUTS: (4, 183.635, (-11.729484, -11.729484, 0.0), (23.458968, 23.458968, 2.4)),
+    SCREWS: (4, 2564.018, (-11.631728, -11.631728, -4.0), (23.263456, 23.263456, 44.0)),
+    NUTS: (4, 382.322, (-12.035471, -12.035471, 0.0), (24.070941, 24.070941, 3.2)),
 }
 
 
@@ -53,26 +53,27 @@ def test_they_are_purchased_parts_with_no_reference_on_the_rotor():
 
 
 def test_the_clamps_screw_and_nut():
-    """ISO 4762 M3, clamp_screw_len under the head; ISO 4032 M3; both on the clamp's circle (the screws' pattern
+    """ISO 4762 M4, clamp_screw_len under the head; ISO 4032 M4; both on the clamp's circle (the screws' pattern
     mirrored in y: the row turns it over about X); the masses the modelled steel."""
     screws, nuts = parts.load(SCREWS), parts.load(NUTS)
-    assert screws.SCREW == D.clamp_screw == PARAMS.M3_SHCS and nuts.NUT == D.clamp_nut == PARAMS.M3_NUT
-    assert screws.LENGTH == D.clamp_screw_len == 45.0
-    assert screws.PURCHASE_SPEC == "M3 x 45 socket head cap screw (ISO 4762)" and nuts.PURCHASE_SPEC == "M3 hex nut (ISO 4032)"
+    assert screws.SCREW == D.clamp_screw == PARAMS.M4_SHCS and nuts.NUT == D.clamp_nut == PARAMS.M4_NUT
+    assert screws.LENGTH == D.clamp_screw_len == 40.0
+    assert screws.PURCHASE_SPEC == "M4 x 40 socket head cap screw (ISO 4762)" and nuts.PURCHASE_SPEC == "M4 hex nut (ISO 4032)"
     assert sorted((x, -y) for x, y in screws.POINTS) == sorted(clamp_points(DEFAULT)) == sorted(nuts.POINTS)
     assert all(math.isclose(math.hypot(x, y), D.clamp_circle_dia / 2.0) for x, y in nuts.POINTS)
     n = LOCKS[SCREWS][0]
-    assert screws.MASS_G == PARAMS.ROLL_CLAMP_SCREWS_MASS_G == pytest.approx(PARAMS.STEEL_DENSITY * n * shcs_volume(D.clamp_screw, 45.0))
+    assert screws.MASS_G == PARAMS.ROLL_CLAMP_SCREWS_MASS_G == pytest.approx(PARAMS.STEEL_DENSITY * n * shcs_volume(D.clamp_screw, 40.0))
     assert nuts.MASS_G == PARAMS.ROLL_CLAMP_NUTS_MASS_G == pytest.approx(PARAMS.STEEL_DENSITY * n * nut_volume(D.clamp_nut))
 
 
 def test_the_stations():
-    """The heads' bearing faces on the counterbores' floor, their tops clamp_head_clear under the pulley's front face;
-    the tips at the shaft's rear face; each nut 2 pitches short of its tip, its bearing face on its pocket's end."""
+    """The heads' bearing faces on the counterbores' floor, their tops clamp_head_clear + clamp_head_sink under the
+    pulley's flat front face; the tips at the shaft's rear face; each nut 2 pitches short of its tip, its bearing face
+    on its pocket's end."""
     head_top = S["z_clamp_head"] + D.clamp_screw.head_h
-    assert math.isclose(S["z_spigot_end"] - head_top, D.clamp_head_clear)
+    assert math.isclose(S["z_wall"] - head_top, D.clamp_head_clear + D.clamp_head_sink)
     assert math.isclose(S["z_clamp_head"] - D.clamp_screw_len, S["z_shaft_end"])
-    assert math.isclose(S["z_clamp_nut"] - S["z_shaft_end"], 2 * PARAMS.M3_PITCH)
+    assert math.isclose(S["z_clamp_nut"] - S["z_shaft_end"], 2 * PARAMS.M4_PITCH)
     assert math.isclose(S["z_clamp_nut"] + D.clamp_nut.h, S["z_clamp_nut_seat"])
 
 
@@ -90,17 +91,18 @@ def test_the_build_matches_its_numbers(name):
 
 @pytest.mark.slow
 def test_in_place_the_clamp_sits_on_its_seats_clear_of_the_drive(module):
-    """The placed patterns: the heads from the counterbores' floors to clamp_head_clear under the pulley's face, the
+    """The placed patterns: the heads from the counterbores' floors to clamp_head_clear + clamp_head_sink under the
+    pulley's face, the
     tips at the shaft's rear face, the nuts between their stations; the heads bear on the pulley, the nuts on the
     shaft, the shanks clear of the holes; no interference with anything else in the drive."""
     screws, nuts = _leaf(module, SCREWS), _leaf(module, NUTS)
     pulley, shaft = _leaf(module, "forearm_roll_pulley"), _leaf(module, "forearm_roll_shaft")
     bb = screws.bounding_box()
-    assert bb.max.Z == pytest.approx(S["z_spigot_end"] - D.clamp_head_clear, abs=1e-6) and bb.min.Z == pytest.approx(S["z_shaft_end"], abs=1e-6)
+    assert bb.max.Z == pytest.approx(S["z_wall"] - D.clamp_head_clear - D.clamp_head_sink, abs=1e-6) and bb.min.Z == pytest.approx(S["z_shaft_end"], abs=1e-6)
     bb = nuts.bounding_box()
     assert bb.min.Z == pytest.approx(S["z_clamp_nut"], abs=1e-6) and bb.max.Z == pytest.approx(S["z_clamp_nut_seat"], abs=1e-6)
     assert closest_points(screws, pulley).distance < 0.01 and closest_points(nuts, shaft).distance < 0.01
-    hole_gap = (DEFAULT.roll_end.bolt_dia - D.clamp_screw.d) / 2.0
+    hole_gap = (D.clamp_bolt_dia - D.clamp_screw.d) / 2.0
     assert closest_points(screws, shaft).distance == pytest.approx(hole_gap, abs=0.01)
     for part in (screws, nuts):
         for other in module.children:

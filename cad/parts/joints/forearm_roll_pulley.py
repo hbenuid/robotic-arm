@@ -2,14 +2,14 @@
 flanges) on a Ø44 core - on down past the rear flange to run_gap over the frame's front face, where bearing 2's front face
 is flush -, its hub a Ø30.2 journal down through bearing 2
 (the front 6806), then a Ø29.9 neck (bearing 2 slides over it) on through the tower's spacer to bearing 1's front face,
-where the shaft's journal meets it; the Ø39.7 spigot on its front face in the forearm
-wall's recess - the wall bolts onto the ring's face, 4x M3 on Ø31 into nuts in pockets in the core (pushed in from the
-Ø18 cable bore); the rotor clamp's 4x M3 on Ø24.5 from counterbores in its front face through both pieces into the
-shaft's nuts.
+where the shaft's journal meets it; its front face the ring's, flat (no spigot), on the forearm wall's flat elbow
+face - the wall bolts onto it, 4x M3 on Ø31 into nuts in pockets in the core (pushed in from the Ø16 cable bore),
+the screws centring it; the rotor clamp's 4x M4 on Ø23 from counterbores in its front face (the heads sunk) through
+both pieces into the shaft's nuts.
 
 Designed here, no reference: tests/forearm/test_roll_drive.py holds its numbers (lib/forearm/roll.py
 build_pulley(cfg), every number lib/forearm/params.py RollDriveParams, in the drive's MODULE frame at its stack
-station - assemblies/forearm_roll_drive.py places it at 0). PETG, printed spigot down. In the arm: x1, inside
+station - assemblies/forearm_roll_drive.py places it at 0). PETG, printed front face down (flat on the bed). In the arm: x1, inside
 forearm_roll_drive#1 - forearm_link.
 """
 import pathlib

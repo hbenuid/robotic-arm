@@ -94,14 +94,15 @@ def screw_channel(z: float, cfg: ForearmConfig = DEFAULT) -> tuple[float, float,
 def end_nut_pocket(cfg: ForearmConfig = DEFAULT) -> tuple[float, float, float, float]:
     """(r_in, r_out, z0, z1) of each wall screw's nut pocket in the pulley's core, module frame, radially along its
     screw's angle: from inside the cable bore (it opens there) past the nut's outer corner (a corner radial, a flat
-    either side) by end_nut_fit; from end_nut_fit under the nut to its bearing face."""
+    either side) by end_nut_fit; from end_nut_fit under the nut to its bearing face. The pockets reach up beside the
+    clamp's counterbores (45 deg round from them), where the bore narrows (clamp_bore_r): they open into it there too."""
     d, S = cfg.drive, stack_positions(cfg)
     r_out = cfg.roll_end.bolt_circle_dia / 2.0 + d.end_nut.af / math.sqrt(3.0) + d.end_nut_fit
-    return d.bore / 2.0 - 1.0, r_out, S["z_end_nut"] - d.end_nut_fit, S["z_end_nut_seat"]
+    return min(d.bore / 2.0, clamp_bore_r(cfg)) - 1.0, r_out, S["z_end_nut"] - d.end_nut_fit, S["z_end_nut_seat"]
 
 
 def clamp_points(cfg: ForearmConfig = DEFAULT) -> list[tuple[float, float]]:
-    """The rotor clamp's 4x M3 in the module x-y plane: on clamp_circle_dia, from clamp_angle_deg (between the wall's
+    """The rotor clamp's 4x M4 in the module x-y plane: on clamp_circle_dia, from clamp_angle_deg (between the wall's
     screws)."""
     d = cfg.drive
     r = d.clamp_circle_dia / 2.0
@@ -242,10 +243,10 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
     z_end_tip = z_end_head - w.screw_len                          # 41: their tips, in the pulley's core
     z_end_nut = z_end_tip                                         # 41: each nut's far face, flush with its tip
     z_end_hole = z_end_nut - 2 * M3_PITCH                         # 40: the pulley's hole on past the nut, 2 pitches
-    z_spigot_end = z_wall + w.flange_recess_depth                 # 50: the pulley's front face
-    z_clamp_head = z_spigot_end - d.clamp_screw.head_h - d.clamp_head_clear   # 46.8: the clamp's counterbores' floor
-    z_shaft_end = z_clamp_head - d.clamp_screw_len                # 1.8: the clamp's tips = the shaft's rear face
-    z_clamp_nut = z_shaft_end + 2 * M3_PITCH                      # 2.8: each clamp nut's far face
+    z_clamp_head = (z_wall - d.clamp_screw.head_h - d.clamp_head_clear
+                    - d.clamp_head_sink)                          # 41.75: the clamp's counterbores' floor, in the pulley's flat front face
+    z_shaft_end = z_clamp_head - d.clamp_screw_len                # 1.75: the clamp's tips = the shaft's rear face
+    z_clamp_nut = z_shaft_end + 2 * d.clamp_pitch                 # 3.15: each clamp nut's far face
     z_meet = z_lip                                                # 14.85: the pulley's neck meets the shaft's journal at bearing 1's front face
     z_idler = z_ring_mid - GT2_IDLER_WIDTH / 2.0                  # 38.8: the idler's underside (its channel on the belt) = the spacer's land
     return {
@@ -253,7 +254,7 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
         "z_tower_rear": d.tower_rear,                             # 0.75: the tower's rear in the profile (the rear line's anchor)
         "z_shaft_end": z_shaft_end,
         "z_clamp_nut": z_clamp_nut,
-        "z_clamp_nut_seat": z_clamp_nut + d.clamp_nut.h,          # 5.2: its bearing face, toward the pulley
+        "z_clamp_nut_seat": z_clamp_nut + d.clamp_nut.h,          # 6.35: its bearing face, toward the pulley
         "z_clamp_head": z_clamp_head,
         "z_end_head": z_end_head, "z_end_tip": z_end_tip, "z_end_nut": z_end_nut, "z_end_hole": z_end_hole,
         "z_end_nut_seat": z_end_nut + d.end_nut.h,                # 43.4: each wall nut's bearing face, toward the wall
@@ -266,8 +267,7 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
         "z_ring_flange_1": z_ring_flange_1, "z_ring": z_ring, "z_ring_mid": z_ring_mid,
         "z_ring_end": z_wall,                                     # 48: the ring's front flange face
         "z_front": z_front,
-        "z_wall": z_wall,                                         # 48: the spigot starts here
-        "z_spigot_end": z_spigot_end,
+        "z_wall": z_wall,                                         # 48: ... = the pulley's flat front face = the wall's elbow face
         "z_wall_back": z_wall_back,
         "z_motor_face": z_motor_face,
         "z_motor_board": z_motor_face - d.motor.body_length,      # -12.65: the board's frame (the motor's rear face)

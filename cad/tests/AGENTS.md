@@ -153,7 +153,7 @@ over the chip at home and the rotor clear of the sensor over the travel; `test_w
 wrist-pitch motor's 4x M3 (no reference) - its numbers, the elbow motor's screw and seat, the counterbores on `j2_link`,
 the heads flush in place; `test_roll_motor_screws`: the roll motor's 4x M3 (no reference) - its numbers, the same head
 and counterbore through the roll frame's plate, its round holes and counterbores on the frame, the heads flush in the
-module; `test_roll_clamp`: the roll rotor clamp's 4x M3 + nuts (no reference) - their numbers, on the rotor, the heads
+module; `test_roll_clamp`: the roll rotor clamp's 4x M4 + nuts (no reference) - their numbers, on the rotor, the heads
 on the pulley's counterbores' floors, the tips at the shaft's rear face, the nuts on their seats and held from turning
 by the pockets, clear of the drive; `test_roll_wall_screws`: the forearm wall's 4x M3 + nuts into the roll pulley (no
 reference) - their numbers, on the rotor, the wall's counterbores, the heads flush in them on the forearm, the tips flush

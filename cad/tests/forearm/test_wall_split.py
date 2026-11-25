@@ -35,7 +35,7 @@ from tests.helpers import interference, is_inside
 S, W, R_END, H = DEFAULT.split, DEFAULT.web, DEFAULT.roll_end, DEFAULT.holes
 # name -> (solids, volume mm^3, bbox min, bbox size): the build's own numbers
 LOCKS = {
-    "j2_wall_bracket": (1, 26159.571, (-86.0, -33.556206, -5.0), (38.0, 67.112413, 60.0)),
+    "j2_wall_bracket": (1, 27925.812, (-86.0, -33.556206, -5.0), (38.0, 67.112413, 60.0)),
     "wall_bracket_screws": (3, 362.361, (-69.75, -10.75, -3.0), (11.5, 21.5, 11.0)),
     "wall_bracket_nuts": (3, 137.727, (-70.175426, -10.75, 0.0), (12.350853, 21.5, 2.4)),
 }
@@ -46,13 +46,13 @@ def test_the_configs():
     assert LEGACY.split is None and DEFAULT.split is not None
 
 
-def test_the_spigot_clears_the_recess_floor():
-    """The bracket prints on the wall's elbow face, so the roll pulley's spigot recess's floor is a bridge: the recess
-    runs flange_recess_clear past the spigot's length (the pulley's front face, stack_positions), the pulley's ring
-    seating on the bed-flat face round it."""
+def test_the_wall_and_the_pulley_meet_flat():
+    """The bracket prints on the wall's elbow face and the roll pulley on its front face: both flat (no spigot, no
+    recess - its floor would print as a bridge), the pulley's front face the ring's, on the wall (stack_positions);
+    the wall's screws centre it."""
     S_ = stack_positions()
-    assert S_["z_spigot_end"] - S_["z_wall"] == pytest.approx(R_END.flange_recess_depth)
-    assert R_END.flange_recess_clear == pytest.approx(0.3)
+    assert "z_spigot_end" not in S_ and S_["z_ring_end"] == S_["z_wall"] == -R_END.wall_x[1]
+    assert not any(hasattr(R_END, name) for name in ("flange_dia", "flange_recess_depth", "flange_recess_clear"))
 
 
 def test_the_lap_stations():

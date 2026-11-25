@@ -164,7 +164,6 @@ FOREARM_WALL_X = _FOREARM.roll_end.wall_x          # (-56, -48) [DESIGN] the fla
 FOREARM_WALL_OD = _FOREARM.roll_end.wall_od        # 60 [DESIGN] the flange wall's round outline about the roll axis (on a foot as wide as the web)
 FOREARM_PLUG_CLEARANCE = _FOREARM.roll_end.plug_clearance   # 10 [DESIGN] the wrist motor's connector plug: its room beyond the connector (sideways)
 FOREARM_MOTOR_WALL_CLEAR = _FOREARM.roll_end.motor_wall_clear   # 1.5 [DESIGN] the wrist motor's body to the wall screws' heads at the slots' wall end
-FOREARM_FLANGE_DIA = _FOREARM.roll_end.flange_dia  # 39.7 [DESIGN] the roll pulley's spigot the forearm wall bolts onto
 FOREARM_ROLL_BELT_LENGTH = _FOREARM.drive.roll_belt          # 280-2GT [DESIGN] the roll belt (90T ring on the shaft, 20T on the motor, round its idler)
 FOREARM_ROLL_MOTOR_XY = (0.0, _FOREARM.drive.motor_y)        # (0, -74) [DESIGN] the roll motor's axis in the module frame: on the elbow axis, the drive's centre distance under the roll axis
 ROLL_MOTOR_SCREW_LEN = (_FOREARM.drive.pad_t - _FOREARM.drive.motor_holes.screw.head_h
@@ -303,8 +302,8 @@ ROLL_MOTOR_SCREWS_MASS_G = (STEEL_DENSITY * len(_roll_motor_points(_FOREARM))
 from lib.forearm.layout import clamp_points as _roll_clamp_points  # noqa: E402
 
 _ROLL_CLAMP = len(_roll_clamp_points(_FOREARM))
-ROLL_CLAMP_SCREWS_MASS_G = STEEL_DENSITY * _ROLL_CLAMP * shcs_volume(_FOREARM.drive.clamp_screw, _FOREARM.drive.clamp_screw_len)   # 12.0, 4x M3x45
-ROLL_CLAMP_NUTS_MASS_G = STEEL_DENSITY * _ROLL_CLAMP * nut_volume(_FOREARM.drive.clamp_nut)                                    # 1.4, 4x M3
+ROLL_CLAMP_SCREWS_MASS_G = STEEL_DENSITY * _ROLL_CLAMP * shcs_volume(_FOREARM.drive.clamp_screw, _FOREARM.drive.clamp_screw_len)   # 20.1, 4x M4x40
+ROLL_CLAMP_NUTS_MASS_G = STEEL_DENSITY * _ROLL_CLAMP * nut_volume(_FOREARM.drive.clamp_nut)                                    # 3.0, 4x M4
 # the forearm wall's onto the roll pulley (parts/joints/roll_wall_{screws,nuts}; lib/forearm/params.py RollEndParams screw_*), likewise
 from lib.forearm.layout import flange_bolt_points_module as _roll_wall_points  # noqa: E402
 

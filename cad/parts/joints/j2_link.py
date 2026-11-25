@@ -11,7 +11,7 @@ _build_whole), both parts together.
 Elbow end (DEFAULT, the forearm roll): the flange wall at x -56..-48 - a faceted flange on the roll axis (y 0, z 25
 = the capture's wrist centre N-station, flats RollEndParams.wall_od across, whole all round under the roll pulley's
 ring, its corners inside the roll tensioner's screw head's path as the forearm rolls), its bottom flat level with the
-web's underside - with the roll pulley's Ø40 x 2 spigot recess on its elbow face, 4x M3 on Ø31 (the bottom one's head
+web's underside - its elbow face flat on the roll pulley's flat front face, 4x M3 on Ø31 (the bottom one's head
 just over the web) and the Ø24 cable bore on the roll axis, braced by two gussets on the web either side of the wrist
 motor; the web, wider than the flange, runs straight from the wall to the wrist, no taper, growing out of the flange
 through its two lower diagonal facets carried on along it (RollEndParams.facet_len, into the web's edge chamfer;

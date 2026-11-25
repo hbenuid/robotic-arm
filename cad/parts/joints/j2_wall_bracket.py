@@ -4,11 +4,11 @@ and the tongue that laps onto j2_link's web.
 Designed here, no reference: tests/forearm/test_wall_split.py holds its numbers. DEFAULT's forearm prints in two parts
 (lib/forearm/params.py WallSplitParams): whole, the wall stands upright on the web while the wrist boss lies flat on
 it, so one of their round features always printed on its side. This is the wall's part - the faceted flange about the
-roll axis with the roll pulley's spigot recess, its 4 M3 holes (the screws' heads flush in counterbores in its wrist
+roll axis, its elbow face flat on the roll pulley's flat front face, its 4 M3 holes (the screws' heads flush in counterbores in its wrist
 face: roll_wall_screws) and the cable bore; the two gussets; the tongue, the
 web's top half from the wall's wrist face to WallSplitParams.lap_x, with the lap screws' holes and their nuts' hex
-pockets in its top face (parts/joints/wall_bracket_nuts). It prints on the wall's elbow face: the flange's holes and
-the recess stand upright, the tongue and the gussets up from it. In j2_link's part frame (lib/forearm/link.py
+pockets in its top face (parts/joints/wall_bracket_nuts). It prints on the wall's elbow face: the flange's holes
+stand upright, the tongue and the gussets up from it. In j2_link's part frame (lib/forearm/link.py
 build_wall_bracket); lib/mounts.py places it at identity on j2_link#1.
 """
 import pathlib

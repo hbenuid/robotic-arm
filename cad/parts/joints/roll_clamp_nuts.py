@@ -1,4 +1,4 @@
-"""roll_clamp_nuts - purchased (COTS) part: the forearm roll rotor clamp's 4 M3 hex nuts (ISO 4032), in the roll shaft.
+"""roll_clamp_nuts - purchased (COTS) part: the forearm roll rotor clamp's 4 M4 hex nuts (ISO 4032), in the roll shaft.
 
 The rotor clamp's screws (roll_clamp_screws) run into them from the pulley's front face.
 
