@@ -13,7 +13,7 @@
  "expected": {
   "leaf_occurrences": 97,
   "solids": 235,
-  "solid_volume": 2415833.458
+  "solid_volume": 2417624.458
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -1154,7 +1154,7 @@
     "note": "the base's other half (its plate the motor's seat), bolted to the base's posts at the joint face; built in the base's part frame"
    },
    "solids": 1,
-   "solid_volume": 297862.5,
+   "solid_volume": 299653.5,
    "rel": {
     "position": [
      0.0,

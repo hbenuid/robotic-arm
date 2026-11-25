@@ -9,7 +9,8 @@ plate's neck) and ends in two posts with the M4 holes and the nuts' pockets, the
 motor mount; build_motor_mount (cfg.mount) is the base's other half - the same leaning walls carried on from the
 joint face to a round end about mount_end_x() (_mount_d: the wedge and a cone round that centre), the foot round it,
 the plate with the motor's seat and the belt's idler's seat (cfg.idler), and two posts at the joint facing the base's,
-the M4 through both, their heads in counterbores in the mount's posts; build_yaw_idler_spacer is that idler's printed
+the M4 through both, their heads in counterbores in the mount's posts, and with cfg.key a tapered key on each of
+the mount's posts in a pocket in the base's (_joint_key); build_yaw_idler_spacer is that idler's printed
 spacer. Without it (LEGACY)
 build_base is the whole SolidWorks part. With a shell draft (DEFAULT) the walls lean out going down, inside and out:
 _d's cylinder becomes a cone round the axis and its block a wedge between leaning planes (_dd); with cfg.foot (DEFAULT)
@@ -33,6 +34,8 @@ from lib.base.layout import (
     home_screw_points,
     inner_r,
     joint_bolt_points,
+    joint_key_sections,
+    joint_key_y,
     joint_stations,
     motor_face_y,
     motor_holes,
@@ -278,6 +281,25 @@ def _bolt_holes(cfg: BaseConfig, body):
     return body
 
 
+def _section(pts, grow: float):
+    """A planar polygon of working (u, v) points on the XY plane, grown `grow` outward (its corners sharp)."""
+    face = bd.Face(bd.Wire.make_polygon([bd.Vector(u, v, 0.0) for u, v in pts], close=True))
+    return bd.offset(face, grow, kind=bd.Kind.INTERSECTION).faces()[0] if grow > 0.0 else face
+
+
+def _joint_key(cfg: BaseConfig, sz: int, grow: float = 0.0, extra: float = 0.0, past: float = 0.0):
+    """One joint key (KeyParams; lib/base/layout.py joint_key_sections) at z = sz * key.z - or, with grow = key.fit and
+    extra = key.relief, its pocket: the V across (x, z) extruded along Y, the 45 degree ends (x, y) extruded along Z,
+    each grown `grow` outward, their common part. Every face a plane."""
+    across, along = joint_key_sections(cfg, extra=extra, past=past, sz=sz)
+    (lo, hi), span = joint_key_y(cfg), cfg.key.root_w + 2.0 * (past + grow) + 2.0
+    v = bd.Pos(0.0, 0.0, lo - span) * bd.extrude(_section([_pt(x, z) for x, z in across], grow),
+                                                 amount=hi - lo + 2.0 * span, dir=(0.0, 0.0, 1.0))
+    on_xz = bd.Location(bd.Plane(origin=(0.0, 0.0, 0.0), x_dir=(1.0, 0.0, 0.0), z_dir=(0.0, -1.0, 0.0)))   # (u, v) -> (u, 0, v)
+    ends = bd.Pos(0.0, -sz * cfg.key.z, 0.0) * bd.extrude(on_xz * _section(along, grow), amount=span, both=True)
+    return v & ends
+
+
 def _head_bores(cfg: BaseConfig, body):
     """`body` (the motor mount) less the screws' heads' counterbores: head_bore wide, from the posts' inner faces in to
     the heads' bearing faces."""
@@ -321,9 +343,9 @@ def _slit_cuts(cfg: BaseConfig, body, part: str):
 
 def build_base(cfg: BaseConfig = DEFAULT):
     """The base: the whole SolidWorks part (cfg.joint None), else its -X side up to the joint face, the posts, the M4
-    holes and the nuts' hex pockets (from the posts' back face, nut.h deep); the home sensor's bracket's M3 holes
-    through the plate and its nuts' hex pockets in the plate's top (cfg.home); the foot's screw holes (cfg.foot), the
-    slits (cfg.slits)."""
+    holes and the nuts' hex pockets (from the posts' back face, nut.h deep), the joint keys' pockets (cfg.key); the
+    home sensor's bracket's M3 holes through the plate and its nuts' hex pockets in the plate's top (cfg.home); the
+    foot's screw holes (cfg.foot), the slits (cfg.slits)."""
     body = _cap(cfg, _walls(cfg)) + _plate(cfg)
     if cfg.joint is None:
         body = body + _rim(cfg)
@@ -333,6 +355,10 @@ def build_base(cfg: BaseConfig = DEFAULT):
         body = _bolt_holes(cfg, body)
         for z, y in joint_bolt_points(cfg):
             body = body - _x_hex(j.nut_pocket_af, (st["x_post"] - NUDGE, st["x_nut_face"]), z, y)
+        if cfg.key is not None:
+            k = cfg.key
+            for sz in (1, -1):
+                body = body - _joint_key(cfg, sz, grow=k.fit, extra=k.relief, past=1.0)
     if cfg.home is not None:
         h, (y0, y1) = cfg.home, cfg.plate.y
         for x, z in home_screw_points(cfg):
@@ -394,7 +420,8 @@ def build_motor_mount(cfg: BaseConfig = DEFAULT):
     hollow, `shell.wall` thick, open underneath and toward the base, on the foot (_mount_foot) and its screw holes; the
     plate across its top with the motor's seat (_motor_seat: under it only the pad, the screws hold the motor) and, with cfg.idler, the
     belt's tensioner's seat (_idler_seat); two posts at the joint face, post_t deep, from the window out to the walls,
-    the M4 holes through them and the heads' counterbores in their inner faces (_head_bores); the slits (cfg.slits)."""
+    the M4 holes through them and the heads' counterbores in their inner faces (_head_bores), a key on each (cfg.key);
+    the slits (cfg.slits)."""
     s, p, j, mt = cfg.shell, cfg.plate, cfg.joint, cfg.mount
     x0, r_out, r_in = j.split_x, partial(outer_r, cfg), partial(inner_r, cfg)
     body = _mount_d(cfg, r_out, (s.y0, p.y[1]), x0)
@@ -404,6 +431,8 @@ def build_motor_mount(cfg: BaseConfig = DEFAULT):
     ri, w_in, x, y = inner_r(cfg, s.y0), mount_inner_half(cfg), (x0, x0 + mt.post_t), (s.y0, p.y[0] + NUDGE)
     posts = _block(x, (w_in, ri + NUDGE), y) + _block(x, (-ri - NUDGE, -w_in), y)
     body = body + (posts & _mount_d(cfg, r_out, (s.y0 - 1.0, p.y[1]), x0))
+    if cfg.key is not None:
+        body = body + _joint_key(cfg, 1, past=0.5) + _joint_key(cfg, -1, past=0.5)
     body = _motor_seat(cfg, body)
     if cfg.idler is not None:
         body = _idler_seat(cfg, body)

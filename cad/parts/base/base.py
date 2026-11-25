@@ -20,7 +20,8 @@ hung 6.1 below the SolidWorks one. It ends at the joint face x = split_x
 (JointParams), just past the round, in two posts inside the side walls, from the bottom face up to the plate's neck:
 the lobe beyond it is gone, the motor sits in base_motor_mount - the base's D carried on to a round end, its foot round
 it - bolted to the posts by 4x M4 through its own posts into the M4 nuts pressed into the base's (hex pockets from the
-posts' back faces, a corner up). The window between the posts is the mount's inside: the cables come through it into
+posts' back faces, a corner up); a pocket in each of its posts takes a tapered key on the mount's (KeyParams), which
+lines the two up. The window between the posts is the mount's inside: the cables come through it into
 the base (their way out of the base: docs/open_issues.md). A band of upright slits runs through the walls under the
 plate, the mount's too (SlitParams: round the round half and along the sides, none at the posts). The base keeps the
 tower, the plate's neck - solid, without the curved slot (PlateParams.arc_slot) -, and the D walls up to the joint face.

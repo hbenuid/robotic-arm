@@ -18,6 +18,7 @@ from lib.base import (
     flare_points,
     inner_r,
     joint_bolt_points,
+    joint_key_y,
     joint_stations,
     motor_face_y,
     motor_holes,
@@ -46,6 +47,7 @@ from tests import built
 from tests.helpers import interference, is_inside
 
 J, M, S, PL, MT, F, SL = DEFAULT.joint, DEFAULT.motor, DEFAULT.shell, DEFAULT.plate, DEFAULT.mount, DEFAULT.foot, DEFAULT.slits
+K = DEFAULT.key
 ST = joint_stations()
 W_IN = mount_inner_half()             # the window between the two parts' posts (|z|)
 CX = mount_end_x()                    # the mount's end round's centre
@@ -122,6 +124,25 @@ def test_joint_layout():
     assert ST["x_tip"] == pytest.approx(ST["x_post"])
 
 
+def test_key_layout():
+    """The joint's keys (KeyParams): every face upright or at 45 degrees (the V's sides and the ends), none of their ends
+    on the bed (the mount prints plate down, the base foot down), the root 1 under the plate's underside; each key and
+    its pocket - grown `fit` a side, the tip `relief` deeper - inside its post: clear of the window, of the wall, of the
+    bolts' holes and of the nuts' pockets behind them."""
+    lo, hi = joint_key_y()
+    assert (K.root_w - K.tip_w) / 2.0 == pytest.approx(K.depth)                # the sides at 45 degrees, like the ends
+    assert lo - S.y0 == pytest.approx(K.foot) and K.foot > 0.0 and PL.y[0] - hi == pytest.approx(K.head) and K.head > 0.0
+    assert hi - lo == pytest.approx(62.1) and hi - lo - 2.0 * K.depth > 0.0     # the key's length; its tip as long, less its ends
+    assert K.fit == pytest.approx(0.10) and K.relief == pytest.approx(0.35)
+    half = K.root_w / 2.0 + K.fit * math.sqrt(2.0)                              # the pocket's mouth on the joint face
+    assert K.z - half - W_IN >= 10.0
+    nut = hex_circumdiameter(J.nut_pocket_af) / 2.0
+    for z, _ in joint_bolt_points():
+        assert K.z - half - (abs(z) + max(J.bolt_dia / 2.0, nut)) >= 1.0       # clear of the bolt's hole and its nut
+    assert min(inner_r(DEFAULT, y) for y in (lo, hi)) - (K.z + half) >= 4.0     # inside the post, short of the wall
+    assert J.split_x - K.depth - K.fit - K.relief - ST["x_nut_face"] >= 1.0     # the pocket's floor in front of the nuts
+
+
 def test_the_mount_foot_holes():
     """The mount's 4 screw holes: the base's round half's, mirrored onto its end round - on hole_r about its centre,
     each spot-face clear of the wall and inside the flange's rim, neighbours a spot-face apart."""
@@ -182,7 +203,7 @@ def mount():
 def test_the_parts_meet_at_the_joint(base, mount):
     assert mount.is_valid and len(mount.solids()) == 1
     bb, bm = base.bounding_box(), mount.bounding_box()
-    assert bb.max.X == pytest.approx(J.split_x, abs=1e-6) and bm.min.X == pytest.approx(J.split_x, abs=1e-6)
+    assert bb.max.X == pytest.approx(J.split_x, abs=1e-6) and bm.min.X == pytest.approx(J.split_x - K.depth, abs=1e-6)   # the keys
     assert bm.max.X == pytest.approx(CX + F.r, abs=1e-6) and (bm.min.Z, bm.max.Z) == pytest.approx((-F.r, F.r), abs=1e-6)
     assert bm.min.Y == pytest.approx(BASE_BOTTOM_Y, abs=1e-6) == bb.min.Y
     assert bm.max.Y == pytest.approx(PL.y[1], abs=1e-6)     # the plate's top and the walls' tops: one face, printed down
@@ -208,6 +229,32 @@ def test_the_parts_meet_at_the_joint(base, mount):
         assert not is_inside(mount, x, y, z + r_hole - 0.1) and is_inside(mount, x, y, z + r_hole + 0.1)
     y_plate = (PL.y[0] + PL.y[1]) / 2.0
     assert is_inside(base, J.split_x - 2.0, y_plate, 0) and is_inside(mount, J.split_x + 2.0, y_plate, 0)   # the plate whole: no belt slot
+
+
+@pytest.mark.slow
+def test_the_keys_locate_the_mount(base, mount):
+    """Each key on the mount's post sits in its pocket in the base's post: at half its depth its sides `fit` off the
+    pocket's (normal to the 45 degree faces: fit * sqrt 2 across), its ends the same along the axis, its tip `fit` +
+    `relief` off the pocket's floor - the parts' faces meet with nothing else touching."""
+    lo, hi = joint_key_y()
+    t = K.depth / 2.0
+    x, ym = J.split_x - t, (lo + hi) / 2.0
+    hw = K.root_w / 2.0 - t                      # the key's half width there; the pocket's is fit * sqrt 2 more
+    gap = K.fit * math.sqrt(2.0)
+    e = 0.02
+    for sz in (1, -1):
+        zc = sz * K.z
+        assert is_inside(mount, x, ym, zc) and not is_inside(base, x, ym, zc)
+        for side in (1, -1):                     # across: the key's side, then the pocket's
+            z_key = zc + side * hw
+            assert is_inside(mount, x, ym, z_key - side * e) and not is_inside(mount, x, ym, z_key + side * e)
+            assert not is_inside(base, x, ym, z_key + side * (gap - e)) and is_inside(base, x, ym, z_key + side * (gap + e))
+        for y_key, out in ((lo + t, -1), (hi - t, 1)):   # along the axis: the key's ends, then the pocket's
+            assert is_inside(mount, x, y_key - out * e, zc) and not is_inside(mount, x, y_key + out * e, zc)
+            assert not is_inside(base, x, y_key + out * (gap - e), zc) and is_inside(base, x, y_key + out * (gap + e), zc)
+        x_floor = J.split_x - K.depth - K.fit - K.relief
+        assert is_inside(mount, J.split_x - K.depth + e, ym, zc) and not is_inside(mount, J.split_x - K.depth - e, ym, zc)
+        assert not is_inside(base, x_floor + e, ym, zc) and is_inside(base, x_floor - e, ym, zc)   # the tip's relief
 
 
 @pytest.mark.slow

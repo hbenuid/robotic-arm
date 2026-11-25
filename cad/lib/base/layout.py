@@ -206,6 +206,28 @@ def joint_bolt_points(cfg: BaseConfig = DEFAULT) -> list[tuple[float, float]]:
     return [(sz * z, y) for sz in (1, -1) for y in (cfg.plate.y[0] - j.bolt_inset, s.y0 + j.bolt_inset)]
 
 
+def joint_key_y(cfg: BaseConfig = DEFAULT) -> tuple[float, float]:
+    """The joint keys' root on the joint face along Y (KeyParams): `foot` over the bottom face to `head` under the
+    plate's underside."""
+    k = cfg.key
+    return (cfg.shell.y0 + k.foot, cfg.plate.y[0] - k.head)
+
+
+def joint_key_sections(cfg: BaseConfig = DEFAULT, *, extra: float = 0.0, past: float = 0.0,
+                       sz: int = 1) -> tuple[list[tuple[float, float]], list[tuple[float, float]]]:
+    """One joint key's two sections (KeyParams) before any offset: across, (x, z) - the V, its root on the joint face
+    (x = split_x), its tip depth + extra toward -X (the 45 degree sides carried on: the tip `extra` narrower each side) -
+    and along, (x, y) - its 45 degree ends; both carried `past` back through the face along the same lines. The key at
+    z = sz * key.z; lib/base/body.py extrudes each, offsets them for the pocket and keeps their common part."""
+    k, x0 = cfg.key, cfg.joint.split_x
+    zc, hr, ht, d = sz * k.z, k.root_w / 2.0, k.tip_w / 2.0 - extra, k.depth + extra
+    xt, xb = x0 - d, x0 + past
+    lo, hi = joint_key_y(cfg)
+    across = [(xb, zc - hr - past), (xt, zc - ht), (xt, zc + ht), (xb, zc + hr + past)]
+    along = [(xb, lo - past), (xt, lo + d), (xt, hi - d), (xb, hi + past)]
+    return across, along
+
+
 def joint_stations(cfg: BaseConfig = DEFAULT) -> dict[str, float]:
     """The joint's stations along X: the base posts' back face (the nuts' outer faces flush with it), the joint face,
     the mount posts' inner face, the screws' heads' bearing faces (the counterbores' floors, head_seat inside it), the

@@ -17,7 +17,8 @@ ring sized for the thrust bearing's bore, and the +X lobe cut off at a joint fac
 bolt-on motor mount (MountParams, parts/base/base_motor_mount) - the base's D carried on to a round end, its foot round
 it -, its motor seat on round holes YAW_MOTOR_X out and the belt's tensioner on its plate (YawIdlerParams); the walls
 j1_coupler's cone carried on down (ShellParams.r / draft: BASE_R, BASE_DRAFT) onto a Ø200 foot - a flange, a straight
-chamfer up the wall, screw holes (FootParams); a band of slits through both parts' walls (SlitParams); the base_yaw
+chamfer up the wall, screw holes (FootParams); a band of slits through both parts' walls (SlitParams); a tapered key
+on each of the mount's joint posts in a pocket in the base's (KeyParams), which line the two up; the base_yaw
 home sensor's bracket hung under the motor plate on 2 M3 into nuts in hex pockets in the plate's top (YawHomeParams).
 
 Every number below was measured on the reference 2026-09-25 (vertex / face census; tests/base/test_base.py
@@ -190,6 +191,30 @@ class MountParams:
 
 
 @dataclass(frozen=True)
+class KeyParams:
+    """[DESIGN] The joint's keys, which line the motor mount up on the base before the bolts clamp it (JointParams alone
+    left it the M4s' play in their holes): an upright key on each of the mount's posts' joint faces, z = +/- z off the
+    axis (between the bolts and the wall), in a pocket in the base's post facing it. Its section across (x, z) a V:
+    root_w wide on the joint face, tip_w at `depth` - 45 degree sides, which steer the mount in sideways and, printed a
+    little fat, stop it a hair short instead of jamming; its ends (x, y) at 45 degrees too, its root on the face from
+    foot above the bottom face to head under the plate's underside (lib/base/layout.py joint_key_y): every face upright
+    or at 45 degrees, nothing overhangs - the mount printed plate down, the base foot down -, and no end on the bed.
+    The sides locate it across, the ends along the axis. The pocket: the key grown `fit` a side (its sides and its ends),
+    and `relief` deeper at the tip along the same 45 degree lines - the tip clears its floor by fit + relief, so only
+    the sides and the ends can touch."""
+
+    z: float = 51.0
+    root_w: float = 8.0
+    tip_w: float = 2.0
+    depth: float = 3.0
+    foot: float = 4.0        # the root's foot over the bottom face (no end on the bed)
+    head: float = 1.0        # the root's top under the plate's underside
+    fit: float = 0.10        # [DESIGN] a side: the user's pick from the 0.10 / 0.15 / 0.20 test plate (2026-11-25,
+    #                          the key upright at 0.20 layers as on the parts: cad/print/joint_key_fit, git-ignored)
+    relief: float = 0.35     # the pocket deeper at the tip than `fit`
+
+
+@dataclass(frozen=True)
 class SlitParams:
     """[DESIGN] The slits through the base's and the motor mount's walls: one band of upright slits, `w` wide and `h`
     tall with round ends, cut straight across through the wall (their sides upright, their round tops w / 2 - no bridge
@@ -314,6 +339,7 @@ class BaseConfig:
     motor: MotorParams = MotorParams()
     joint: JointParams | None = None   # None: one part, the lobe included (the SolidWorks base)
     mount: MountParams | None = None   # the bolt-on motor mount (with joint)
+    key: KeyParams | None = None       # the joint's keys on the mount's posts, their pockets in the base's (with joint)
     foot: FootParams | None = None     # None: the walls stand straight on the table (the SolidWorks base)
     idler: YawIdlerParams | None = None   # the belt's tensioner on the motor mount's plate (with mount)
     slits: SlitParams | None = None    # the slits through the base's and the mount's walls (with mount)
@@ -381,5 +407,5 @@ DEFAULT = replace(LEGACY, shell=replace(LEGACY.shell, y0=_BOTTOM_Y, r=_TOP_R, dr
                               boss_y0=_BOSS_Y0),                                                           # [DESIGN]
                   motor=replace(LEGACY.motor, centre=(YAW_MOTOR_X, LEGACY.motor.centre[1]), hole_dia=_HOLES.bolt_dia,
                                 holes=_HOLES, pad_t=YAW_MOTOR_PAD),                                     # [DESIGN]
-                  joint=JointParams(), mount=MountParams(), foot=FootParams(), idler=YawIdlerParams(),
+                  joint=JointParams(), mount=MountParams(), key=KeyParams(), foot=FootParams(), idler=YawIdlerParams(),
                   slits=SlitParams(), home=YawHomeParams())                                            # [DESIGN]
