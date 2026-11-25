@@ -9,9 +9,9 @@ ones are `docs/architecture.md`; the MKS CAN protocol is `docs/mks_can_protocol.
 - The CLIs: `uv run launcher` (finds the CANable), `uv run motor-control …`, `uv run motor-control --fake` (simulated
   boards), `uv run dashboard` (the browser dashboard; `--fake` for simulated boards that move in time). After adding
   or renaming an entry point (`[project.scripts]`), `uv sync`.
-- **Never run anything that talks to the arm** (`launcher`, `motor-control` or `dashboard` without `--fake`,
-  `command_sweep`) from an agent session: the tests use python-can's virtual bus and `robotic_arm.fake` only.
-  `dashboard --fake --no-browser --port <n>` is safe to run, and to drive with a headless browser.
+- The tests never reach hardware: they use python-can's virtual bus and `robotic_arm.fake` only.
+  `dashboard --fake --no-browser --port <n>` serves the page on simulated boards (to drive it with a headless
+  browser, say).
 - Never run CAD code with this venv: `cad/` is its own uv project.
 
 ## Code layout

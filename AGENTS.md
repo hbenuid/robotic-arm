@@ -110,7 +110,6 @@ equality" rule of `cad/AGENTS.md` "Two machines" holds for them too.
   run on python-can's virtual bus and simulated boards (`uv run pytest` there), never on the arm. Its rules — the
   layers, what other projects rely on, `config.py`'s link to the CAD, the MKS manual the bytes follow — are
   `software/control/AGENTS.md`, which loads when you work there; setup and use are its `README.md`.
-- Never run anything that talks to the arm from an agent session (the CLIs on a real adapter).
 - `software/firmware/` holds all firmware, one subfolder per board, part of neither uv project
   (`software/firmware/README.md`).
 
