@@ -7,16 +7,26 @@ ones are `docs/architecture.md`; the MKS CAN protocol is `docs/mks_can_protocol.
 ## Running
 - `uv run pytest` and `uv run ruff check` from `software/control/`; both are clean, keep them clean. CI runs both.
 - The CLIs: `uv run launcher` (finds the CANable), `uv run motor-control …`, `uv run motor-control --fake` (simulated
-  boards). After adding or renaming an entry point (`[project.scripts]`), `uv sync`.
-- **Never run anything that talks to the arm** (`launcher`, `motor-control` without `--fake`, `command_sweep`) from
-  an agent session: the tests use python-can's virtual bus and `robotic_arm.fake` only.
+  boards), `uv run dashboard` (the browser dashboard; `--fake` for simulated boards that move in time). After adding
+  or renaming an entry point (`[project.scripts]`), `uv sync`.
+- **Never run anything that talks to the arm** (`launcher`, `motor-control` or `dashboard` without `--fake`,
+  `command_sweep`) from an agent session: the tests use python-can's virtual bus and `robotic_arm.fake` only.
+  `dashboard --fake --no-browser --port <n>` is safe to run, and to drive with a headless browser.
 - Never run CAD code with this venv: `cad/` is its own uv project.
 
 ## Code layout
 - `src/robotic_arm/` is the package (hatchling, `packages = ["src/robotic_arm"]`). It imports nothing outside
   itself but python-can and pyserial: other projects install it (`uv add --editable`), so keep it that way.
 - Layers, each calling only those below it: `can_interface` → `motor_driver` → `joint` → `arm`; `config` holds the
-  arm's constants, `fake` simulates boards. The CLIs (`motor_control`, `launcher`, `command_sweep`) sit on top.
+  arm's constants, `fake` simulates boards. The CLIs (`motor_control`, `launcher`, `command_sweep`) and the
+  dashboard (`dashboard/`) sit on top.
+- The dashboard (`dashboard/`): `bus.py` is the only code there that touches the CAN bus, on its own thread (a
+  CANInterface is not thread-safe), and it never blocks for long, so a stop goes out at once. `bench.py` owns every
+  check and safety rule. The page (`static/`) is trusted with none of them: a move the page asks for is checked in
+  `bench.check`, and the jog keep-alive, the page-silence stop and the window stop run on the bus thread's tick.
+  Keep it that way. A new motion command goes through `Bench._start_motion`. A new code that moves the motor goes in
+  `RAW_REFUSED`. The server binds 127.0.0.1 only, and checks the page's token and the Host header on every API call.
+  It uses the standard library only (`http.server`, no web framework).
 - `config.py` imports only the standard library: `cad/tests/test_robot.py` loads it by its path and checks `JOINTS`'
   ratios, limits and home angles against `cad/lib/params.py` (`tests/test_config.py` checks the imports). What the
   table must match - the joints, the reductions and which way round `gear_ratio` reads (output turns per motor

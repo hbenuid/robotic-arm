@@ -8,10 +8,18 @@ The boards answer the commands motor_driver sends, in the bytes of the MKS manua
 (a move lands at once; it is not the firmware). A board with respond=False stays silent, like one that is missing.
 `received` records every frame the boards saw, in order. The virtual bus reaches only buses in the same process,
 opened on the same channel name; give each test its own name.
+
+A board with simulate=True moves in time instead: 0xF4 / 0xF5 / 0xF6 ramp the speed by the manual's acc rule (9.1: 1 RPM
+every (256 - acc) x 50 us) up to the commanded RPM and brake onto a position target, answering 1 at the start and 2
+when the motion ends (11.3 / 11.4: speed 0 is a stop, ramped or, at acc 0, at once); 0xF1, 0x32, 0x38 and 0x39 report
+the motion. `switch_zone` puts a home switch on IN_1 (pulled up, read low inside the zone, as a KY-003 pulls it), in
+counts of the shaft's own travel: 0x92 and homing move the coordinate's zero, not the switch. It is still not the
+firmware - the dashboard's --fake and its tests use it.
 """
 
 from __future__ import annotations
 
+import math
 import threading
 import time
 from collections.abc import Iterable
@@ -47,6 +55,19 @@ class FakeBoard:
     params: dict[int, bytes] = field(default_factory=dict)    # 0x00 read-backs by code
     reports: dict[int, int] = field(default_factory=dict)     # 0x01: read code -> period ms
     last_seen: float = field(default_factory=time.monotonic)
+    angle_error: int = 0            # 0x39
+    # --- simulate=True only ---
+    simulate: bool = False
+    switch_zone: tuple[int, int] | None = None   # shaft counts (position + origin) where IN_1 reads low
+    origin: int = 0                 # the shaft's travel at the coordinate's zero
+    sub: float = 0.0                # the position's fraction of a count
+    velocity: float = 0.0           # counts/s, signed
+    target: int | None = None       # a position move's target; None: a speed run (run_rpm, 0 = stopping)
+    run_rpm: int = 0                # a speed run's signed RPM
+    move_rpm: int = 0
+    acc: int = 0
+    done_code: int | None = None    # the motion's command code, answered 2 when it ends
+    sim_time: float = field(default_factory=time.monotonic)
 
 
 # Settings the fake only stores - each answers 1 (success), and 0x00 reads the value back.
@@ -54,8 +75,20 @@ SETTINGS = frozenset({0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x8B
                       0x9B, 0x9D, 0x9E, Cmd.SET_HOME_PARAMS})
 
 
+COUNTS_PER_RPM_S = 0x4000 / 60   # counts per second at 1 RPM
+
+
 def _int48(value: int) -> bytes:
     return value.to_bytes(6, "big", signed=True)
+
+
+def _accel(acc: int) -> float:
+    """counts/s^2 for the ramp `acc` (9.1: 1 RPM every (256 - acc) x 50 us); acc 0 is no ramp."""
+    return math.inf if acc == 0 else COUNTS_PER_RPM_S / ((256 - acc) * 50e-6)
+
+
+def _halt(board: FakeBoard) -> None:
+    board.velocity, board.target, board.run_rpm, board.speed_rpm, board.status = 0.0, None, 0, 0, 1
 
 
 class FakeBoards:
@@ -103,12 +136,78 @@ class FakeBoards:
         for board in self.boards.values():
             if board.heartbeat_ms and (now - board.last_seen) * 1000 > board.heartbeat_ms and not board.heartbeat_tripped:
                 board.heartbeat_tripped, board.speed_rpm, board.status = True, 0, 1
+                _halt(board)
+            if board.simulate:
+                self._simulate(board, now)
             for code, period in list(board.reports.items()):
                 due = self._next_report.setdefault((board.can_id, code), now + period / 1000)
                 if now >= due and board.respond:
                     self._next_report[(board.can_id, code)] = now + period / 1000
                     for body in self._answer(board, bytes([code])):
                         self._reply(board, body)
+
+    def _simulate(self, board: FakeBoard, now: float) -> None:
+        """Advance a simulate=True board's motion to `now`."""
+        dt, board.sim_time = min(0.05, now - board.sim_time), now
+        if dt <= 0:
+            return
+        a = _accel(board.acc)
+        pos = board.position + board.sub
+        rem = 0.0
+        if board.target is not None:
+            rem = board.target - pos
+            top = board.move_rpm * COUNTS_PER_RPM_S
+            brake = top if a == math.inf else math.sqrt(2 * a * abs(rem))
+            want = math.copysign(min(top, max(brake, 20.0)), rem) if rem else 0.0
+        else:
+            want = board.run_rpm * COUNTS_PER_RPM_S
+        v = board.velocity
+        v = want if abs(want - v) <= a * dt else v + math.copysign(a * dt, want - v)
+        moved = v * dt
+        if board.target is not None and (abs(rem) <= 1 or (moved * rem > 0 and abs(moved) >= abs(rem))):
+            pos, v, board.target = float(board.target), 0.0, None
+        else:
+            pos += moved
+        board.position = math.floor(pos)
+        board.sub = pos - board.position
+        board.velocity = v
+        board.speed_rpm = round(v / COUNTS_PER_RPM_S)
+        if v == 0.0 and board.target is None and board.run_rpm == 0:
+            board.status = 1
+            if board.done_code is not None:
+                code, board.done_code = board.done_code, None
+                if board.respond:
+                    self._reply(board, bytes([code, 2]))
+        else:
+            board.status = 2 if abs(v) < abs(want) - 1 else 3 if abs(v) > abs(want) + 1 else 4
+        rpm = abs(v) / COUNTS_PER_RPM_S
+        board.milliamps = round(250 + 0.6 * rpm + (400 if board.status in (2, 3) else 0))
+        board.angle_error = round(v / COUNTS_PER_RPM_S * 4)
+        if board.switch_zone is not None:
+            lo, hi = board.switch_zone
+            board.io = (board.io & ~1) | (0 if lo <= board.position + board.origin <= hi else 1)
+
+    def _simulated_motion(self, board: FakeBoard, code: int, data: bytes) -> list[bytes]:
+        """0xF4 / 0xF5 / 0xF6 on a simulate=True board: start the motion; the tick answers 2 when it ends."""
+        if not board.enabled:
+            return [bytes([code, 0])]
+        if code == Cmd.SPEED:
+            speed, board.acc = ((data[0] & 0x0F) << 8) | data[1], data[2]
+            board.target, board.run_rpm = None, -speed if data[0] & 0x80 else speed
+            board.done_code = code if speed == 0 else None
+        else:
+            speed, board.acc = int.from_bytes(data[0:2], "big"), data[2]
+            value = int.from_bytes(data[3:6], "big", signed=True)
+            if speed == 0:   # 11.3.2 / 11.4.2: the stop
+                board.target, board.run_rpm = None, 0
+            else:
+                board.target = value if code == Cmd.MOVE_TO_AXIS else board.position + value
+                board.move_rpm, board.run_rpm = min(speed, 3000), 0
+            board.done_code = code
+        if board.acc == 0 and board.target is None and board.run_rpm == 0:
+            board.velocity = 0.0
+        board.sim_time = time.monotonic()
+        return [bytes([code, 1])]
 
     def _handle(self, frame: Frame) -> None:
         board = self.boards.get(frame.can_id)
@@ -155,7 +254,7 @@ class FakeBoards:
         if code == Cmd.READ_POWER:
             return [bytes([code]) + encode_uint16(board.millivolts) + encode_uint16(board.milliamps)]
         if code == Cmd.READ_ANGLE_ERROR:
-            return [bytes([code, 0, 0, 0, 0])]
+            return [bytes([code]) + board.angle_error.to_bytes(4, "big", signed=True)]
         if code == Cmd.READ_ENABLED:
             return [bytes([code, int(board.enabled)])]
         if code == Cmd.READ_HOME_STATUS:
@@ -174,16 +273,26 @@ class FakeBoards:
             board.heartbeat_ms, board.heartbeat_tripped = int.from_bytes(data, "big"), False
             return [bytes([code, 1])]
         if code == Cmd.GO_HOME:
+            if board.simulate:   # lands on the switch's edge at once; that becomes the coordinate's zero
+                _halt(board)
+                edge = board.switch_zone[1] if board.switch_zone is not None else board.position + board.origin
+                board.origin, board.sub = edge, 0.0
             board.position, board.home_status = 0, (*board.home_status[:-1], 1)
             return [bytes([code, 1]), bytes([code, 2])]
         if code == Cmd.SET_ZERO:
-            board.position = 0
+            board.origin += board.position
+            board.position, board.sub = 0, 0.0
             return [bytes([code, 1])]
         if code == Cmd.READ_STATUS:
             return [bytes([code, board.status])]
         if code == Cmd.ENABLE and data:
             board.enabled = bool(data[0])
+            if board.simulate and not board.enabled:
+                _halt(board)
             return [bytes([code, 1])]
+        if board.simulate and ((code in (Cmd.MOVE_TO_AXIS, Cmd.MOVE_RELATIVE_AXIS) and len(data) == 6)
+                               or (code == Cmd.SPEED and len(data) == 3)):
+            return self._simulated_motion(board, code, data)
         if code in (Cmd.MOVE_TO_AXIS, Cmd.MOVE_RELATIVE_AXIS) and len(data) == 6:
             if not board.enabled:
                 return [bytes([code, 0])]
@@ -198,7 +307,8 @@ class FakeBoards:
             board.status = 4 if speed else 1
             return [bytes([code, 1 if speed else 2])]
         if code == Cmd.EMERGENCY_STOP:
-            board.speed_rpm, board.status = 0, 1
+            _halt(board)
+            board.done_code = None
             return [bytes([code, 1])]
         return []
 

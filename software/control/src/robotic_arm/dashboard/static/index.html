@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="dashboard-token" content="__TOKEN__">
+<title>MKS motor dashboard</title>
+<link rel="stylesheet" href="/style.css">
+<script src="/app.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <strong>MKS motor dashboard</strong>
+    <span id="conn" class="conn">connecting…</span>
+  </div>
+  <div class="board">
+    <label>Joint
+      <select id="joint-select"></select>
+    </label>
+    <label>CAN id
+      <input id="canid-input" type="number" min="1" max="2047" step="1">
+    </label>
+    <button id="board-apply" class="btn small">Use</button>
+    <span id="online" class="pill">offline</span>
+  </div>
+  <div class="modes" role="group" aria-label="Mode">
+    <button id="mode-joint" class="seg">Joint mode</button>
+    <button id="mode-bench" class="seg">Bench mode</button>
+  </div>
+  <div class="rec">
+    <button id="rec-toggle" class="btn small">● Record</button>
+    <button id="rec-download" class="btn small ghost">CSV</button>
+  </div>
+  <button id="halt" class="stop" title="Emergency stop (Esc or Space)">STOP</button>
+</header>
+
+<div id="question-banner" class="question-banner hidden">
+  <div id="question-text"></div>
+  <div id="question-options" class="row"></div>
+</div>
+<div id="bench-banner" class="banner warn hidden">Bench mode: motor degrees and RPM inside the bench window. The arm's limits are not checked: use it with the motor off the arm.</div>
+<div id="ref-banner" class="banner hidden">Joint mode has no reference yet, so nothing moves: home the joint (Homing), or tell the page where it is now (Limits &amp; reference).</div>
+
+<main class="layout">
+  <section class="col">
+    <div class="card readouts">
+      <div class="big">
+        <div class="label" id="pos-label">Position</div>
+        <div class="value"><span id="pos-value">—</span><span class="unit" id="pos-unit"></span></div>
+        <div class="sub" id="pos-sub">—</div>
+      </div>
+      <div class="big">
+        <div class="label">Speed</div>
+        <div class="value"><span id="speed-value">—</span><span class="unit" id="speed-unit"></span></div>
+        <div class="sub" id="speed-sub">—</div>
+      </div>
+      <dl class="grid" id="readout-grid">
+        <div><dt>Status</dt><dd id="r-status">—</dd></div>
+        <div><dt>Motor</dt><dd id="r-enabled">—</dd></div>
+        <div><dt>Stall</dt><dd id="r-stalled">—</dd></div>
+        <div><dt>Home switch (IN_1)</dt><dd id="r-io">—</dd></div>
+        <div><dt>Supply</dt><dd id="r-volts">—</dd></div>
+        <div><dt>Current</dt><dd id="r-amps">—</dd></div>
+        <div><dt>Angle error</dt><dd id="r-error">—</dd></div>
+        <div><dt>Home status</dt><dd id="r-home">—</dd></div>
+        <div><dt>Firmware</dt><dd id="r-version">—</dd></div>
+        <div><dt>Reference</dt><dd id="r-reference">—</dd></div>
+      </dl>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>Position and speed</h2>
+        <div class="row">
+          <label class="inline">Last
+            <select id="graph-window">
+              <option value="10">10 s</option>
+              <option value="30" selected>30 s</option>
+              <option value="60">1 min</option>
+              <option value="300">5 min</option>
+            </select>
+          </label>
+          <button id="graph-pause" class="btn small ghost">Pause</button>
+        </div>
+      </div>
+      <canvas id="graph" height="300"></canvas>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Motion</h2><span id="motion-state" class="pill">idle</span></div>
+      <div class="row">
+        <button id="enable-on" class="btn">Enable</button>
+        <button id="enable-off" class="btn ghost">Disable</button>
+        <button id="soft-stop" class="btn warnbtn">Stop (ramped)</button>
+      </div>
+      <div class="sliders">
+        <label>Speed <span id="speed-cap-text" class="muted"></span>
+          <div class="row"><input id="speed-range" type="range" min="0" max="10" step="0.1"><input id="speed-num" type="number" step="0.1" class="num"></div>
+        </label>
+        <label>Ramp (acc, 0–255; 0 = no ramp, larger = steeper)
+          <div class="row"><input id="acc-range" type="range" min="0" max="255" step="1" value="2"><input id="acc-num" type="number" min="0" max="255" step="1" value="2" class="num"></div>
+        </label>
+      </div>
+      <div class="jog">
+        <button id="jog-minus" class="btn jogbtn">◀ − Jog</button>
+        <span class="muted small">hold to move (or ← / →)</span>
+        <button id="jog-plus" class="btn jogbtn">Jog + ▶</button>
+      </div>
+      <div class="row">
+        <label class="inline">Go to <input id="goto-value" type="number" step="0.1" class="num"> <span class="unit-pos"></span></label>
+        <button id="goto-btn" class="btn">Move</button>
+      </div>
+      <div class="row">
+        <label class="inline">Step <input id="step-value" type="number" step="0.1" value="5" class="num"> <span class="unit-pos"></span></label>
+        <button id="step-minus" class="btn">− Step</button>
+        <button id="step-plus" class="btn">+ Step</button>
+      </div>
+      <div class="row bench-only">
+        <label class="inline">Run at <input id="run-rpm" type="number" step="1" value="30" class="num"> RPM</label>
+        <button id="run-ccw" class="btn">CCW</button>
+        <button id="run-cw" class="btn">CW</button>
+        <span class="muted small">bench only; stops at the window's edge</span>
+      </div>
+      <div id="motion-msg" class="msg"></div>
+    </div>
+  </section>
+
+  <section class="col">
+    <nav class="tabs" id="tabs">
+      <button data-tab="limits" class="tab active">Limits &amp; reference</button>
+      <button data-tab="homing" class="tab">Homing</button>
+      <button data-tab="tests" class="tab">Tests</button>
+      <button data-tab="bringup" class="tab">Bring-up</button>
+      <button data-tab="settings" class="tab">Settings</button>
+      <button data-tab="log" class="tab">Log</button>
+    </nav>
+
+    <div class="card tabpane" id="tab-limits">
+      <h2>Limits</h2>
+      <div class="joint-only">
+        <p class="muted small">Joint degrees. The arm's own limits for <span class="joint-name"></span> are <span id="hard-limits"></span>; these narrow them for this session.</p>
+        <div class="form">
+          <label>Min (°)<input id="lim-jmin" type="number" step="0.1"></label>
+          <label>Max (°)<input id="lim-jmax" type="number" step="0.1"></label>
+          <label>Max speed, °/s (cap <span id="cap-text"></span>)<input id="lim-jspeed" type="number" step="0.1"></label>
+        </div>
+      </div>
+      <div class="bench-only">
+        <p class="muted small">Motor-shaft degrees around the encoder's zero, and motor RPM (ceiling <span id="bench-ceiling"></span>).</p>
+        <div class="form">
+          <label>Window min (° motor)<input id="lim-bmin" type="number" step="1"></label>
+          <label>Window max (° motor)<input id="lim-bmax" type="number" step="1"></label>
+          <label>Max speed (RPM)<input id="lim-brpm" type="number" step="1"></label>
+        </div>
+        <p class="muted small" id="bench-joint-hint"></p>
+      </div>
+      <div class="row"><button id="limits-apply" class="btn">Apply limits</button><span id="limits-msg" class="msg"></span></div>
+
+      <h2>Sign</h2>
+      <p class="muted small">+1 if the encoder counts up as the joint turns positive. config.JOINTS has <b id="config-sign"></b>, which isn't confirmed on the arm yet. Use the direction check (Bring-up) to measure it. Changing the sign here clears the reference.</p>
+      <div class="row">
+        <button id="sign-plus" class="seg">+1</button>
+        <button id="sign-minus" class="seg">−1</button>
+      </div>
+
+      <div class="joint-only">
+        <h2>Reference</h2>
+        <p class="muted small">The joint angle at the encoder's zero. Homing sets it (the switch's edge is home_deg <span id="home-deg"></span>°). You can also tell the page where the joint is now. It's lost when the board loses power.</p>
+        <p id="ref-text" class="reftext"></p>
+        <div class="row">
+          <label class="inline">The joint is at <input id="ref-deg" type="number" step="0.1" class="num"> ° now</label>
+          <button id="ref-set" class="btn">Set</button>
+          <button id="ref-clear" class="btn ghost">Clear</button>
+        </div>
+        <div id="ref-msg" class="msg"></div>
+      </div>
+    </div>
+
+    <div class="card tabpane hidden" id="tab-homing">
+      <h2>Home switch</h2>
+      <p class="big-io" id="io-big">IN_1: —</p>
+      <p class="muted small">The KY-003 pulls IN_1 low when it sees its magnet (the board pulls the pin up). Turn the joint through the switch by hand or by jog and watch this change before you home it.</p>
+      <h2>Homing (0x90, then 0x91)</h2>
+      <div class="form">
+        <label>Switch closed level<select id="home-trig"><option value="0">0: low (KY-003)</option><option value="1">1: high</option></select></label>
+        <label>Direction<select id="home-dir"><option value="0">0: CW</option><option value="1">1: CCW</option></select></label>
+        <label>Speed (RPM) <span id="home-speed-hint" class="muted small"></span><input id="home-rpm" type="number" min="1" step="1"></label>
+        <label>End limit<select id="home-end"><option value="0">0: off</option><option value="1">1: on</option></select></label>
+        <label>hm_mode<select id="home-mode"><option value="0">0: origin switch (V1.0.9)</option><option value="none">leave out (older firmware)</option><option value="1">1: mechanical limit</option><option value="2">2: single turn</option></select></label>
+      </div>
+      <p class="muted small">Homing turns toward − (every joint's switch is at its lower end) until the switch turns on. Which motor direction that is depends on the joint's belt or gear and on its sign: watch the first run and press STOP if it heads the wrong way.</p>
+      <div class="row">
+        <button id="home-go" class="btn">Home</button>
+        <button id="zero-set" class="btn ghost">Set zero here (0x92)</button>
+        <button id="stall-release" class="btn ghost">Release stall (0x3D)</button>
+        <button id="calibrate" class="btn ghost bench-only">Calibrate (0x80)…</button>
+      </div>
+      <div id="homing-msg" class="msg"></div>
+    </div>
+
+    <div class="card tabpane hidden" id="tab-tests">
+      <nav class="subtabs" id="test-tabs">
+        <button data-test="repeat" class="subtab active">Repeat moves</button>
+        <button data-test="step" class="subtab">Step</button>
+        <button data-test="sweep" class="subtab">Speed sweep</button>
+      </nav>
+      <div class="testform" id="test-repeat">
+        <p class="muted small">Moves back and forth between A and B, and reads the error at each end after a dwell. It stops on a stall.</p>
+        <div class="form">
+          <label>A <span class="unit-pos"></span><input id="rep-a" type="number" step="0.1"></label>
+          <label>B <span class="unit-pos"></span><input id="rep-b" type="number" step="0.1"></label>
+          <label>Cycles<input id="rep-cycles" type="number" min="1" step="1" value="5"></label>
+          <label>Speed <span class="unit-speed"></span><input id="rep-speed" type="number" step="0.1"></label>
+          <label>acc<input id="rep-acc" type="number" min="0" max="255" value="2"></label>
+          <label>Dwell (s)<input id="rep-dwell" type="number" min="0" step="0.1" value="0.5"></label>
+        </div>
+        <button class="btn start" data-kind="repeat">Start repeat moves</button>
+      </div>
+      <div class="testform hidden" id="test-step">
+        <p class="muted small">A single step from where the joint is. The encoder is polled every 5 ms, and the page reports rise time, overshoot, settling time and final error.</p>
+        <div class="form">
+          <label>Step <span class="unit-pos"></span><input id="step-size" type="number" step="0.1" value="5"></label>
+          <label>Speed <span class="unit-speed"></span><input id="step-speed" type="number" step="0.1"></label>
+          <label>acc<input id="step-acc" type="number" min="0" max="255" value="2"></label>
+          <label>Record (s)<input id="step-duration" type="number" min="0.5" max="30" step="0.5" value="3"></label>
+        </div>
+        <button class="btn start" data-kind="step">Start step</button>
+      </div>
+      <div class="testform hidden" id="test-sweep">
+        <p class="muted small">Moves end to end at each speed. Over the middle half of each move it records the measured speed, the current (0x38, V1.0.9 only) and the angle error.</p>
+        <div class="form">
+          <label>From <span class="unit-pos"></span><input id="sw-a" type="number" step="0.1"></label>
+          <label>To <span class="unit-pos"></span><input id="sw-b" type="number" step="0.1"></label>
+          <label class="wide">Speeds <span class="unit-speed"></span><input id="sw-speeds" type="text"></label>
+          <label>acc<input id="sw-acc" type="number" min="0" max="255" value="2"></label>
+        </div>
+        <button class="btn start" data-kind="sweep">Start sweep</button>
+      </div>
+    </div>
+
+    <div class="card tabpane hidden" id="tab-bringup">
+      <h2>Which CAN ids answer</h2>
+      <div class="row">
+        <label class="inline">ids <input id="scan-first" type="number" min="1" max="2047" value="1" class="num"> to <input id="scan-last" type="number" min="1" max="2047" value="16" class="num"></label>
+        <button id="scan-go" class="btn">Scan (0x40)</button>
+      </div>
+      <p class="muted small">Every board ships at id 1, so two new boards on one bus answer as one. Connect one at a time while you set the ids.</p>
+      <div id="scan-result"></div>
+      <h2>Checks</h2>
+      <div class="checks">
+        <div class="check">
+          <h3>Firmware</h3>
+          <p class="muted small">Reads 0x40, checks whether the board answers V1.0.9's newer reads, and reads its work mode and settings with 0x00.</p>
+          <button class="btn start" data-kind="firmware">Run firmware check</button>
+        </div>
+        <div class="check">
+          <h3>Direction (the sign)</h3>
+          <p class="muted small">Steps the encoder up by a small amount, then asks which way the joint (or the shaft, in bench mode) turned, and steps back. This works before the reference is set.</p>
+          <div class="form">
+            <label>Step <span class="unit-pos"></span><input id="dir-amount" type="number" step="0.5"></label>
+            <label>Speed <span class="unit-speed"></span><input id="dir-speed" type="number" step="0.1"></label>
+          </div>
+          <button class="btn start" data-kind="direction">Run direction check</button>
+        </div>
+        <div class="check">
+          <h3>Home switch zone</h3>
+          <p class="muted small">Moves slowly from A to B and back while polling IN_1 every 10 ms, and reports where the switch turns on and off in each direction.</p>
+          <div class="form">
+            <label>A <span class="unit-pos"></span><input id="sz-a" type="number" step="0.1"></label>
+            <label>B <span class="unit-pos"></span><input id="sz-b" type="number" step="0.1"></label>
+            <label>Speed <span class="unit-speed"></span><input id="sz-speed" type="number" step="0.1"></label>
+          </div>
+          <button class="btn start" data-kind="switch">Run switch zone</button>
+        </div>
+      </div>
+      <h2>Findings</h2>
+      <p class="muted small">What the checks measured, to copy into config.py or open_issues.md. The page doesn't edit files.</p>
+      <textarea id="findings" readonly rows="6"></textarea>
+      <div class="row"><button id="findings-copy" class="btn small">Copy</button><button id="findings-clear" class="btn small ghost">Clear</button></div>
+    </div>
+
+    <div class="card tabpane hidden" id="tab-settings">
+      <div class="card-head"><h2>Board settings</h2><button id="settings-read" class="btn small">Read (0x00)</button></div>
+      <p class="muted small">These writes are saved on the board and stay after a restart. The page asks before each one.</p>
+      <table class="kv" id="settings-table"><tbody></tbody></table>
+      <div class="form settings-form">
+        <label>Work mode (0x82)<select id="set-82"></select></label><button class="btn small" data-set="82">Write</button>
+        <label>Working current, mA (0x83)<input id="set-83" type="number" min="0" max="3000" step="50"></label><button class="btn small" data-set="83">Write</button>
+        <label>Microsteps (0x84)<input id="set-84" type="number" min="1" max="255"></label><button class="btn small" data-set="84">Write</button>
+        <label>Stall protection (0x88)<select id="set-88"><option value="0">0: off</option><option value="1">1: on</option></select></label><button class="btn small" data-set="88">Write</button>
+        <label>CAN id (0x8B)<input id="set-8B" type="number" min="1" max="2047"></label><button class="btn small" data-set="8B">Write</button>
+        <label>Heartbeat, ms (0x98, 0 = off)<input id="set-98" type="number" min="0" step="100"></label><button class="btn small" data-set="98">Write</button>
+      </div>
+      <div class="row">
+        <button class="btn ghost" data-action="3D">Release stall</button>
+        <button class="btn ghost" data-action="41">Restart board</button>
+        <button class="btn danger" data-action="3F">Restore factory defaults…</button>
+      </div>
+      <div id="settings-msg" class="msg"></div>
+    </div>
+
+    <div class="card tabpane hidden" id="tab-log">
+      <div class="card-head">
+        <h2>CAN log</h2>
+        <div class="row">
+          <label class="inline"><input id="log-polls" type="checkbox"> show polls</label>
+          <button id="log-pause" class="btn small ghost">Pause</button>
+          <button id="log-clear" class="btn small ghost">Clear view</button>
+        </div>
+      </div>
+      <div class="row">
+        <label class="inline wide">Raw command (hex, no id or check byte)<input id="raw-hex" type="text" placeholder="40"></label>
+        <button id="raw-send" class="btn">Send</button>
+      </div>
+      <div id="raw-msg" class="msg mono"></div>
+      <div class="logbox"><table id="log-table"><tbody></tbody></table></div>
+      <p class="muted small" id="bus-counts"></p>
+    </div>
+
+    <div class="card" id="routine-card">
+      <div class="card-head">
+        <h2 id="routine-title">Test results</h2>
+        <div class="row">
+          <span id="routine-status" class="pill">none</span>
+          <button id="routine-cancel" class="btn small warnbtn">Cancel</button>
+          <button id="routine-csv" class="btn small ghost">CSV</button>
+        </div>
+      </div>
+      <div id="routine-progress" class="muted">No test has run yet: start one from Tests, Bring-up or Homing.</div>
+      <div id="routine-error" class="msg err"></div>
+      <ul id="routine-summary" class="summary"></ul>
+      <canvas id="routine-chart" height="220" class="hidden"></canvas>
+      <div class="tablebox"><table id="routine-table"><thead></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+</main>
+<div id="toasts" class="toasts"></div>
+</body>
+</html>
