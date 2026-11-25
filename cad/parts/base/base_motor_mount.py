@@ -18,7 +18,9 @@ posts at the joint face (post_t deep, from the window out to the walls, full hei
 base's, with 2 M4 clearance holes each along X: 4x M4 SHCS (base_motor_mount_screws), their heads in round
 counterbores in the posts' inner faces inside the mount (JointParams.head_bore / head_seat, printed on their side) -
 turned along -X from underneath, the base off the table - run through both pairs of posts into the M4 nuts pressed
-into the base's posts (base_motor_mount_nuts).
+into the base's posts (base_motor_mount_nuts). On each post's joint face a tapered key (KeyParams: a V across, its
+sides and ends at 45 degrees, printed upright like the posts) into a pocket in the base's post, `fit` a side and
+`relief` deeper at its tip: it lines the mount up on the base, across and along the axis, before the bolts clamp it.
 
 NATIVE part (lib/reference.py NATIVE): designed here in build123d (lib/base/body.py build_motor_mount(cfg), every
 number lib/base/params.py), in the base's part frame - lib/mounts.py places it on base#1 at identity; its reference is

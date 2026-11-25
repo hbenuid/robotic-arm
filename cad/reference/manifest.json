@@ -28,22 +28,22 @@
   },
   "base_motor_mount": {
    "bbox_min": [
-    55.0,
+    52.0,
     -105.5,
     -100.0
    ],
    "bbox_size": [
-    140.108,
+    143.108,
     72.1,
     200.0
    ],
-   "bytes": 818083,
+   "bytes": 853729,
    "file": "native/base_motor_mount.step",
    "kind": "native",
    "origin": "native",
    "product": "base_motor_mount - the base_yaw motor's MOUNT: the base's other half, bolted to the base's end across the plane",
-   "sha256": "75b7e92263b9ef13f302aa8b11957a610f071dff9ed1b1c1dc567e9a3c828e75",
-   "solid_volume": 297862.501,
+   "sha256": "5709a691b23f7e10653d3480a7e546e25b1a55f5885e41e57bbf201061267e23",
+   "solid_volume": 299653.501,
    "solids": 1,
    "source": "lib/base/body.py:build_motor_mount(DEFAULT)",
    "units": "mm"
