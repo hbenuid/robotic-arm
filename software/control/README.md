@@ -111,7 +111,7 @@ after the last one. Any motion or test stops if the page goes quiet for 2 s (tab
 every move is a position move toward a checked target, so a crashed dashboard leaves the joint inside its limits; the
 constant-speed run is bench mode's only, and it stops at the window's edge. A board that goes silent and comes back
 loses its reference, in case it lost power. The raw command box refuses the commands that move the motor. Ctrl+C in
-the terminal stops a moving motor and quits.
+the terminal, or killing the process (SIGTERM, SIGHUP), stops a moving motor and quits.
 
 ### Checking one board
 

@@ -6,8 +6,8 @@
     uv run dashboard --fake                   # simulated boards that move in time - no hardware
 
 The server listens on 127.0.0.1 only. Every API call carries a token the server puts in the page it serves, and the
-Host header must name this machine, so another site open in the browser cannot drive the motor. Ctrl+C stops a
-moving motor (F7) and quits.
+Host header must name this machine, so another site open in the browser cannot drive the motor. Ctrl+C - or SIGTERM
+or SIGHUP (a killed background run, a closed terminal) - stops a moving motor (F7) and quits.
 """
 
 from __future__ import annotations
@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 import secrets
+import signal
 import sys
 import webbrowser
 from http import HTTPStatus
@@ -276,8 +277,14 @@ def main(argv: list[str] | None = None) -> None:
         sys.exit(f"Cannot listen on 127.0.0.1:{args.port} ({e}): is a dashboard running already? --port picks another")
     url = f"http://127.0.0.1:{server.server_address[1]}/"
     print(f"Connected to {label}")
-    print(f"Dashboard: {url}   (Ctrl+C stops a moving motor and quits)")
+    print(f"Dashboard: {url}   (Ctrl+C stops a moving motor and quits)", flush=True)
 
+    def on_terminate(_signum: int, _frame: object) -> None:
+        raise KeyboardInterrupt   # SIGTERM (a killed background run, a closed terminal) stops the motor like Ctrl+C
+
+    signal.signal(signal.SIGTERM, on_terminate)
+    if hasattr(signal, "SIGHUP"):
+        signal.signal(signal.SIGHUP, on_terminate)
     if not args.no_browser:
         webbrowser.open(url)
     try:
