@@ -25,6 +25,7 @@ packages = ["src/robotic_arm"]
 dev = [
     "pytest>=9.0.2",
     "ruff>=0.16.9",
+    "ty>=0.0.111",
 ]
 
 [tool.pytest.ini_options]
@@ -45,3 +46,11 @@ ignore = [
     "E741",    # ambiguous names (l / I / O): allowed where they are the domain's own symbols
     "SIM300",  # "yoda" flips `x <= LIMIT`: it takes any UPPER_CASE name for a constant; the asserts read value-first
 ]
+
+[tool.ty]
+# Type check (`uv run ty check`): ty's own rules, every one at its default level - none switched off here. A
+# warning fails the check too, as a ruff finding does: the project stays at zero (`# ty: ignore[<rule>]` with its
+# reason where a finding is wrong). The repo's cad/ has its own [tool.ty] (`./cadtool lint` there).
+
+[tool.ty.terminal]
+error-on-warning = true

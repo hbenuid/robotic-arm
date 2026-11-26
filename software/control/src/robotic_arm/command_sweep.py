@@ -102,6 +102,8 @@ def motion_checks(motor: MotorDriver, move_counts: int, rpm: int) -> Iterator[Ch
 
     start = motor.read_encoder()
     yield Check("Read start position (0x31)", start is not None, "No response" if start is None else f"{start} counts")
+    if start is None:   # the caller stopped at that failure; nothing below runs without a start
+        return
     target = start + move_counts
     yield Check(f"Absolute move to {target} (0xF5)", motor.move_to_axis(target, rpm, 2), "accepted or not")
     stopped = motor.wait_stopped(travel_s(move_counts, rpm))

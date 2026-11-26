@@ -30,6 +30,12 @@ def wait_until(pred: Callable[[], object], timeout: float = 3.0) -> None:
         time.sleep(0.01)
 
 
+def known[T](value: T | None) -> T:
+    """`value`, failing the test where it is None (a read the board did not answer)."""
+    assert value is not None
+    return value
+
+
 def zeroed(b: Bench) -> bool:
     """The board's automatic Set zero, when it came on, is done: moves may go out."""
     return not b._zero_pending and not b._zeroing
@@ -88,10 +94,10 @@ def test_a_simulated_move_takes_time_and_answers_twice(channel):
         assert motor.read_encoder() == 0x4000
         assert motor.move_to_axis(100 * 0x4000, 300, 100)
         time.sleep(0.2)
-        assert motor.read_speed() > 0
+        assert known(motor.read_speed()) > 0
         assert motor.move_to_axis(0, 0, 0)               # 11.4.2: speed 0, acc 0 stops at once
         assert motor.wait_stopped(1.0)
-        assert 0x4000 < motor.read_encoder() < 100 * 0x4000
+        assert 0x4000 < known(motor.read_encoder()) < 100 * 0x4000
 
 
 def test_the_switch_zone_reads_on_in1_and_homing_zeroes_at_its_edge(channel):
@@ -99,17 +105,17 @@ def test_the_switch_zone_reads_on_in1_and_homing_zeroes_at_its_edge(channel):
             CANInterface(channel, "virtual", bitrate=None) as can:
         motor = MotorDriver(can, 1)
         motor.enable(True)
-        assert motor.read_io() & 1 == 1
+        assert known(motor.read_io()) & 1 == 1
         motor.move_to_axis(-700, 600, 0)
         motor.wait_reply(Cmd.MOVE_TO_AXIS, 2.0)
         time.sleep(0.02)
-        assert motor.read_io() & 1 == 0                  # inside: low, as a KY-003 pulls it
+        assert known(motor.read_io()) & 1 == 0                  # inside: low, as a KY-003 pulls it
         assert motor.go_home() == 1
         assert motor.read_encoder() == 0                 # the zone's edge is the new zero ...
         motor.move_to_axis(-100, 600, 0)
         motor.wait_reply(Cmd.MOVE_TO_AXIS, 2.0)
         time.sleep(0.02)
-        assert motor.read_io() & 1 == 0                  # ... and the zone did not move with it
+        assert known(motor.read_io()) & 1 == 0                  # ... and the zone did not move with it
 
 
 # --- checks before sending --------------------------------------------------------------------------------------------
@@ -309,7 +315,8 @@ def test_a_board_that_comes_on_gets_its_zero_set_so_moves_land(channel):
             b.enable(True)
             seq = b.move_to(1.0, 5, 2)
             assert b.wait_motion_end(seq, 3.0, threading.Event()) is not None
-            wait_until(lambda: abs(b.readout.counts - round(b.joint().counts_per_deg)) <= 2)   # not 1551 off
+            wait_until(lambda: b.readout.counts is not None
+                       and abs(b.readout.counts - round(b.joint().counts_per_deg)) <= 2)   # not 1551 off
         finally:
             b.close()
 
@@ -535,7 +542,7 @@ def test_the_firmware_check(bench):
 
 def test_calibration_is_refused_in_joint_mode(bench):
     r = run(bench, "calibrate")
-    assert r.status == "failed" and "bench mode" in r.error
+    assert r.status == "failed" and "bench mode" in known(r.error)
 
 
 # --- the HTTP server ------------------------------------------------------------------------------------------------------
@@ -630,7 +637,7 @@ def test_the_server_needs_its_token_and_a_local_host(rig):
             return res.status, res.read(), res
 
         status, page, res = get("/")
-        assert status == 200 and "default-src 'none'" in res.getheader("Content-Security-Policy")
+        assert status == 200 and "default-src 'none'" in res.getheader("Content-Security-Policy", "")
         token = page.decode().split('name="dashboard-token" content="')[1].split('"')[0]
         assert len(token) > 20
         assert get("/api/state")[0] == 403

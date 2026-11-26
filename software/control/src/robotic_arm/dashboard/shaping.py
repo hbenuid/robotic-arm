@@ -142,13 +142,18 @@ class Shaper(threading.Thread):
             now = time.monotonic()
             d = self.dir
             if self.jog_dir is None:
+                assert self.target is not None   # a move (not a jog) is made with its target
                 target, bounded = self.target, True
             else:
                 target = counts + d * max(self.vmax * COUNTS_PER_RPM_S * self.lead_s, 64)
                 lo, hi = b._bounds()
-                bounded = (d > 0 and hi is not None and target >= hi) or (d < 0 and lo is not None and target <= lo)
-                if bounded:
-                    target = hi if d > 0 else lo
+                bounded = True
+                if d > 0 and hi is not None and target >= hi:
+                    target = hi
+                elif d < 0 and lo is not None and target <= lo:
+                    target = lo
+                else:
+                    bounded = False
                 target = max(-INT24_MAX, min(INT24_MAX, round(target)))
             rem = (target - counts) * d
             if self.jog_dir is None and rem <= 2:

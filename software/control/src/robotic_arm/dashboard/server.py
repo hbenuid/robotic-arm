@@ -181,7 +181,9 @@ def make_server(rig: Rig, host: str = "127.0.0.1", port: int = DEFAULT_PORT) -> 
             pass
 
         def _host_ok(self) -> bool:
-            bound = self.server.server_address[1]
+            address = self.server.server_address
+            assert isinstance(address, tuple)   # an IPv4 server's (host, port)
+            bound = address[1]
             return self.headers.get("Host", "") in {f"127.0.0.1:{bound}", f"localhost:{bound}"}
 
         def _token_ok(self) -> bool:
