@@ -2,7 +2,8 @@
 
 can_interface (CAN frames) -> motor_driver (the MKS protocol, one board) -> joint (degrees <-> counts, limits) ->
 arm (every board on the bus); config holds the arm's constants, fake simulates boards for tests. The CLIs:
-motor_control (interactive), launcher (finds the adapter, runs it), command_sweep (one board's command check).
+motor_control (interactive), launcher (finds the adapter, runs it), command_sweep (one board's command check), and
+dashboard (one board in the browser: drive it, test it, bring it up).
 """
 
 from robotic_arm.arm import Arm

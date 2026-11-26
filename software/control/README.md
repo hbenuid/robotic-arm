@@ -75,6 +75,60 @@ CAN id is not there is not stopped. Disabling a motor frees its joint: support t
 (no motion): `[0] Select motor → [1] Read / Status → [8] Read version (0x40)`, which also tells you the board's
 firmware.
 
+### The dashboard
+
+A page in your browser for driving and testing the boards on the bus, served from your own machine. It starts with
+`--joint`'s board and adds every other board whose CAN id is a joint's in `config.JOINTS` (`--no-scan` skips that;
+the page's **+** card adds one by hand). Each motor is a card across the top: its position, speed and state, and a
+small jog. Click a card (or press 1-9) to make it the active one, which the panels below drive, graph and test.
+**Move together** gives each motor a target and starts them in the same instant, timed to arrive together; if one
+move is refused, nothing moves. STOP stops them all.
+
+```
+uv run dashboard                                    # finds the CANable (slcan), opens http://127.0.0.1:8765/
+uv run dashboard --joint elbow_pitch                # the joint to start on (the page can change it)
+uv run dashboard --channel /dev/cu.usbmodem…        # a port of your choice
+uv run dashboard --fake                             # simulated boards that move in time, no hardware
+```
+
+It shows the board's readouts live (position, speed, status, enable, stall, the home switch on IN_1, voltage,
+current, angle error), with position and speed graphed, and every CAN frame in a log. From it you can:
+
+- enable or disable the motor, move it with ← / → (or the ◀ ▶ buttons: a tap steps by the Step amount, a hold
+  jogs until you let go), change the speed with ↑ / ↓, go to an angle, set the ramp;
+- set limits: a min and a max, from where the motor is now (Here) or typed, and a switch to turn them off;
+- experiment with smoothness (Smoothing in the left panel, the Tuning tab): the board's own straight ramp, or an
+  S-curve the dashboard shapes by streaming speed updates to the board (curve linear / smoothstep / sine / quintic,
+  ease time, updates per second, how hard the board follows), with Snappy / Balanced / Smooth presets; the board's
+  work mode, microsteps, interpolation, current and holding current; its PID gains (firmware V1.0.8+); the graph's
+  speed from the encoder or the board, the commanded speed over it, and 20 / 10 / 5 ms sampling;
+- home it (0x90 + 0x91), set its zero, release a stall, calibrate it (bench mode only);
+- run the tests: repeat moves between two angles, a step response, a speed sweep;
+- run the bring-up checks: which CAN ids answer, the board's firmware, which way the encoder counts (the joint's
+  `sign`), and where the home switch turns on and off. It lists what it measured as text for `config.py` or
+  `open_issues.md`; it never edits files;
+- read and write the board's settings (work mode, current, microsteps, stall protection, CAN id, heartbeat), send a
+  raw command, and record the readouts to CSV.
+
+It has two modes. **Joint mode** works in joint degrees through the joint's ratio and sign, at no more than 10 °/s
+(`--max-joint-speed` raises the cap). With the joint's reference (the joint angle at the encoder's zero: home the
+joint, or tell the page where it is) the angles are the joint's; without it they count from the encoder's zero.
+**Bench mode** works in degrees and RPM of the motor's shaft.
+
+**Limits** are on by default. Each side is your own if you set it (Here, or typed); otherwise, once joint mode has a
+reference, it's the arm's own from `config.JOINTS`; otherwise that side is open. Every move and jog is checked against
+them before anything is sent. They follow the physical position through a change of mode, sign or reference. Set
+zero shifts them with the zero; homing or a power loss clears them. Switched off, nothing limits the position: only
+the speed cap and STOP remain.
+
+**Safety**: STOP (the button, Esc, or Space outside a text box) sends F7 and an immediate F5 stop. These go ahead of
+anything else queued. A jog stops when you let go: the page repeats it every 0.1 s, and the server stops the motor 0.4 s
+after the last one. A jog aims at most 2 s of travel ahead (never past a limit), and its keep-alives move that target
+on, so a crashed dashboard leaves at most that much travel. Any motion or test stops if the page goes quiet for 2 s (tab
+closed, laptop asleep). The constant-speed run is bench mode's only, and it stops at a limit. A board that goes silent
+and comes back loses its reference and your limits, in case it lost power. The raw command box refuses the commands
+that move the motor. Ctrl+C in the terminal, or killing the process (SIGTERM, SIGHUP), stops a moving motor and quits.
+
 ### Checking one board
 
 `command_sweep` runs the club's command check on **one** board, named by its CAN id:
@@ -102,6 +156,14 @@ src/robotic_arm/
   motor_control.py             the interactive CLI (`motor-control`)
   launcher.py                  finds the adapter, runs the CLI (`launcher`)
   command_sweep.py             one board's command check
+  dashboard/                   the dashboard (`dashboard`): one board, in the browser
+    bus.py                       the one thread on the CAN bus: queue, polls, replies, log
+    bench.py                     one motor: units, limits, the safety rules
+    rig.py                       every motor on the page: the active one, STOP all, moves together
+    routines.py                  the tests and bring-up checks
+    shaping.py                   S-curve moves: the speed streamed to the board as F5 updates
+    server.py                    the local HTTP server and the command
+    static/                      the page (HTML, CSS, JS)
 tests/                         pytest, on the virtual bus and the fake boards
 docs/architecture.md           the layers, using the package, the plan for the next layers
 docs/mks_can_protocol.md       the CAN commands, checked against the MKS manual V1.0.9

@@ -12,6 +12,7 @@ dependencies = [
 [project.scripts]
 launcher = "robotic_arm.launcher:main"
 motor-control = "robotic_arm.motor_control:main"
+dashboard = "robotic_arm.dashboard.server:main"
 
 [build-system]
 requires = ["hatchling"]
