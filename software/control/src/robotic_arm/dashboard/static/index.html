@@ -60,11 +60,12 @@
       </div>
     </details>
 
+    <div class="field-head"><span>Jog</span><span class="muted small">hold to move, let go to stop</span></div>
     <div class="jog">
-      <button id="jog-minus" class="jogbtn" title="Tap: step · hold: jog (or ←)">◀ −</button>
-      <button id="jog-plus" class="jogbtn" title="Tap: step · hold: jog (or →)">+ ▶</button>
+      <button id="jog-minus" class="jogbtn" title="Jog while held (or Shift + ←)">◀ Jog</button>
+      <button id="jog-plus" class="jogbtn" title="Jog while held (or Shift + →)">Jog ▶</button>
     </div>
-    <div class="keys muted small"><kbd>←</kbd><kbd>→</kbd> tap = step, hold = jog · <kbd>↑</kbd><kbd>↓</kbd> speed</div>
+    <div class="keys muted small"><kbd>Shift</kbd> + <kbd>←</kbd><kbd>→</kbd> jog (hold)<br><kbd>←</kbd><kbd>→</kbd> step · <kbd>↑</kbd><kbd>↓</kbd> speed</div>
 
     <div id="limits-box" class="limits">
       <div class="field-head">
@@ -122,9 +123,9 @@
     <div class="field">
       <div class="field-head"><span>Step</span><span class="muted small unit-pos-text"></span></div>
       <div class="row tight">
-        <button id="step-minus" class="btn ghost">−</button>
+        <button id="step-minus" class="btn ghost" title="Step back by this amount (or ←)">◀ Step</button>
         <input id="step-value" type="number" step="0.1" value="5" class="grow">
-        <button id="step-plus" class="btn ghost">+</button>
+        <button id="step-plus" class="btn ghost" title="Step on by this amount (or →)">Step ▶</button>
       </div>
     </div>
     <div class="field bench-only">
