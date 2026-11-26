@@ -55,7 +55,7 @@ commands.
 | code | request | reply data (after the code) | since | |
 |---|---|---|---|---|
 | `30` | `30` | carry int32 (turns), value uint16 (0-0x3FFF in the turn) | | ✓ `read_encoder_carry` |
-| `31` | `31` | value int48: the cumulative encoder count, 0x4000 per motor turn - the `F4` / `F5` coordinate | | ✓ `read_encoder` |
+| `31` | `31` | value int48: the cumulative encoder count, 0x4000 per motor turn - the `F4` / `F5` coordinate once `92` or homing zeroed it (see "The coordinate") | | ✓ `read_encoder` |
 | `32` | `32` | speed int16, RPM; positive turning CCW | | ✓ `read_speed` |
 | `33` | `33` | received pulses int32 (pulse modes) | | |
 | `34` | `34` | bit0 IN_1, bit1 IN_2, bit2 OUT_1, bit3 OUT_2 (after `9E`: bit0 En, bit1 Dir) | V1.0.3 | ✓ `read_io` |
@@ -131,6 +131,11 @@ zero (§7.1). A board that starts on the switch first backs off it.
   `F7` above 1000 RPM is not recommended.
 - **The coordinate** is `31`'s value, 0x4000 per motor turn, int24 in `F4` / `F5` (±8,388,607 = ±512 motor turns).
   Its zero is set by homing (`91`) or `92`; before either, the power-on position is the zero (§11.4.3).
+  **Measured (base_yaw, V1.0.9, 2026-11-26):** before `92` or homing, `31` does not read that coordinate: after
+  power-on it read the encoder's own angle in the turn (`30`: carry 0, value 1551) while `F5` counted from the
+  power-on spot, so `F5` to 0 stopped where `31` read 1551 and `F5` to 273 where it read 1817 (inside the arrival
+  window). After `92`, `30` and `31` read 0 and `F5` to 546 landed at 539. The dashboard sends `92` when a board
+  comes on.
 - **Direction:** the manual contradicts itself on which way the encoder counts (§5.1.1's example: +0x4000 after a
   CCW turn; §5.1.2: "after one turn clockwise, += 0x4000" but its example says CCW; §5.1.5: CW +). So each joint's
   `sign` in `config.JOINTS` is measured on the arm, not taken from the manual.

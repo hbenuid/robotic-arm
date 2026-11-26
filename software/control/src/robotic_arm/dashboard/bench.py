@@ -20,6 +20,9 @@ The safety rules, all on the bus thread's tick so they hold whatever the page do
 - A bench speed run stops when it passes a limit.
 - A board that goes silent for longer than OFFLINE_S and comes back loses the reference and the user's limits: if it
   lost power, its encoder's zero moved.
+- A board that comes on - first seen, or back from a silence - gets Set zero (0x92) once it reports stopped, and no
+  move goes out before: after power-on 0x31 reads the encoder's own angle while F4 / F5 count from the power-on
+  spot, so every target would land that far off (seen on V1.0.9: 1551 counts) until 0x92 or homing.
 """
 
 from __future__ import annotations
@@ -206,6 +209,8 @@ class Bench:
         self._last_page_halt = 0.0
         self._online = False
         self._offline_since: float | None = None
+        self._zero_pending = True               # Set zero once the board answers, stopped (the module's notes)
+        self._zeroing = False
         self._version_asked = 0.0
         self._last_recording: list[tuple] = []
         self.routine = None                     # a routines.Routine while one runs or after it ends
@@ -644,6 +649,7 @@ class Bench:
             if self.mode == "joint":
                 self.zero_deg = self.joint_config.home_deg
                 self.reference = f"homed: the switch's edge is home_deg {self.joint_config.home_deg:g} deg"
+            self._zero_pending = False   # homing zeroes the coordinate and the encoder's reading alike
             self._clear_user_limits("homing moved the encoder's zero")
 
     # --- bus replies and the safety tick (bus thread) -----------------------------------------------------------------
@@ -736,7 +742,13 @@ class Bench:
                                 "the reference is cleared - home it or set it again", "warn")
                 self._clear_user_limits("the board was silent and came back (its encoder's zero may have moved)")
                 self._offline_since = None
+                self._zero_pending = True
             self._online = online
+            if (self._zero_pending and online and not self._zeroing and self.motion is None
+                    and not (self.routine is not None and self.routine.active)
+                    and self.readout.status == 1 and not self._stale("status", 0.5)):
+                self._zero_pending, self._zeroing = False, True
+                threading.Thread(target=self._auto_zero, name="dashboard-auto-zero", daemon=True).start()   # blocks
 
     # --- stopping ---------------------------------------------------------------------------------------------------
 
@@ -806,6 +818,7 @@ class Bench:
     def _start_motion(self, kind: str, data: bytes, acc: int, *, routine: bool = False) -> int:
         """Send a motion frame; returns the event seq from before it (to wait for its end). Raises Refused."""
         with self._lock:
+            self._require_zeroed()
             if not routine:
                 if self.routine is not None and self.routine.active:
                     raise Refused(f"a test is running ({self.routine.title}): cancel it first")
@@ -960,6 +973,7 @@ class Bench:
             deg = self.to_value(shift) if self.mode == "joint" and self.zero_deg is not None else None
         self._status_command(bytes([Cmd.SET_ZERO]), "set zero")
         with self._lock:
+            self._zero_pending = False
             self.readout.counts = 0
             lim = self.limits
             self.limits = replace(lim, count_lo=None if lim.count_lo is None else lim.count_lo - shift,
@@ -967,6 +981,24 @@ class Bench:
             if deg is not None:
                 self.zero_deg = deg
                 self.reference = f"kept through set zero: the encoder's zero is {deg:g} deg"
+
+    def _require_zeroed(self) -> None:
+        """No move to a board that just came on until its zero is set (the module's notes). Under the lock."""
+        if self._zero_pending or self._zeroing:
+            raise Refused(f"{self.joint_config.name} just came on and its zero is not set yet: wait a moment, or "
+                          "press Set zero")
+
+    def _auto_zero(self) -> None:
+        """Set zero for a board that just came on (the tick starts it, off the bus thread: it waits for the reply)."""
+        try:
+            self.set_zero()
+            self.notice("Zero set: the board just came on")
+        except Refused as e:
+            self.notice(f"The board just came on and its zero could not be set ({e}): press Set zero before moving",
+                        "warn")
+        finally:
+            with self._lock:
+                self._zeroing = False
 
     def release_stall(self) -> None:
         self._status_command(bytes([Cmd.RELEASE_STALL]), "release stall")

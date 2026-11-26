@@ -122,6 +122,12 @@ reference never sets them by itself. Every move and jog is checked against them 
 the physical position through a change of mode, sign or reference. Set zero shifts them with the zero; homing or a
 power loss clears them. Switched off, nothing limits the position: only the speed cap and STOP remain.
 
+**Set zero when a board comes on**: after power-up a board's targets count from where it switched on, while its
+encoder reads the magnet's own angle, so every move would land that far off until Set zero or homing (base_yaw:
+1551 counts). So when a board comes on - the dashboard starts, or it answers again after a silence - the dashboard
+presses Set zero for it once it reports stopped, and refuses moves until then. The Set zero button stays for any
+other time.
+
 **Safety**: STOP (the button, Esc, or Space outside a text box) sends F7 and an immediate F5 stop. These go ahead of
 anything else queued. A jog stops when you let go: the page repeats it every 0.1 s, and the server stops the motor 0.4 s
 after the last one. A jog aims at most 2 s of travel ahead (never past a limit), and its keep-alives move that target

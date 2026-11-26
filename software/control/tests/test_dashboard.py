@@ -30,6 +30,11 @@ def wait_until(pred: Callable[[], object], timeout: float = 3.0) -> None:
         time.sleep(0.01)
 
 
+def zeroed(b: Bench) -> bool:
+    """The board's automatic Set zero, when it came on, is done: moves may go out."""
+    return not b._zero_pending and not b._zeroing
+
+
 @pytest.fixture
 def sim(channel: str) -> Iterator[FakeBoards]:
     with server.fake_boards(channel) as boards:
@@ -40,7 +45,7 @@ def sim(channel: str) -> Iterator[FakeBoards]:
 def bench(channel: str, sim: FakeBoards) -> Iterator[Bench]:
     can = CANInterface(channel, "virtual", bitrate=None)
     b = Bench(can, joint="elbow_pitch", max_joint_speed=60.0)
-    wait_until(lambda: b.readout.counts is not None)
+    wait_until(lambda: b.readout.counts is not None and zeroed(b))
     yield b
     b.close()
     can.close()
@@ -293,6 +298,45 @@ def test_a_board_back_from_silence_loses_the_reference(bench, sim):
     wait_until(lambda: bench.zero_deg is None, 1.0)
 
 
+def test_a_board_that_comes_on_gets_its_zero_set_so_moves_land(channel):
+    # after power-on 0x31 reads the encoder's own angle while F5 counts from the power-on spot (V1.0.9, 1551 counts)
+    board = FakeBoard(ELBOW, simulate=True, encoder_offset=1551)
+    with FakeBoards(channel, [board]) as sim, CANInterface(channel, "virtual", bitrate=None) as can:
+        b = Bench(can, joint="elbow_pitch", max_joint_speed=60.0)
+        try:
+            wait_until(lambda: zeroed(b) and b.readout.counts == 0)
+            assert board.encoder_offset == 0 and len(frames(sim, Cmd.SET_ZERO)) == 1
+            b.enable(True)
+            seq = b.move_to(1.0, 5, 2)
+            assert b.wait_motion_end(seq, 3.0, threading.Event()) is not None
+            wait_until(lambda: abs(b.readout.counts - round(b.joint().counts_per_deg)) <= 2)   # not 1551 off
+        finally:
+            b.close()
+
+
+def test_no_move_before_a_board_that_came_on_is_zeroed(channel):
+    board = FakeBoard(ELBOW, status=3)                   # not stopped yet: the zero waits
+    with FakeBoards(channel, [board]) as sim, CANInterface(channel, "virtual", bitrate=None) as can:
+        b = Bench(can, joint="elbow_pitch", max_joint_speed=60.0)
+        try:
+            wait_until(lambda: b._online and b.readout.status == 3)
+            with pytest.raises(Refused, match="just came on"):
+                b.move_to(1.0, 5, 2)
+            assert frames(sim, Cmd.SET_ZERO) == [] and frames(sim, Cmd.MOVE_TO_AXIS) == []
+            board.status = 1
+            wait_until(lambda: zeroed(b))
+            assert len(frames(sim, Cmd.SET_ZERO)) == 1
+            board.respond = False                        # a power cut: back, it reads its own angle again
+            wait_until(lambda: not b._online, 2.5)
+            board.encoder_offset = 700
+            board.respond = True
+            # the reads skipped while it was silent come back within ~5 s (bus.py), then the zero goes out
+            wait_until(lambda: zeroed(b) and len(frames(sim, Cmd.SET_ZERO)) == 2 and b.readout.counts == 0, 8.0)
+            assert board.encoder_offset == 0
+        finally:
+            b.close()
+
+
 def test_cancelling_a_test_stops_the_motor(bench, sim):
     bench_mode(bench, 60)
     r = routines.start(bench, "repeat", {"a": 0, "b": 300, "cycles": 3, "speed": 60, "acc": 2, "dwell": 0})
@@ -502,7 +546,7 @@ def rig(channel: str, sim: FakeBoards) -> Iterator[Rig]:
     can = CANInterface(channel, "virtual", bitrate=None)
     r = Rig(can, max_joint_speed=60.0)
     r.add_motor("elbow_pitch", ELBOW)
-    wait_until(lambda: r.bench().readout.counts is not None)
+    wait_until(lambda: r.bench().readout.counts is not None and zeroed(r.bench()))
     yield r
     r.close()
     can.close()
