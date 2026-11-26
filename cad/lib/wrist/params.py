@@ -393,7 +393,7 @@ class WristRollParams:
     #                                     tapped holes, the other motors' rule (its board's kit screws reach in from behind:
     #                                     docs/open_issues.md)
     pad_pilot_w: float = 22.3           # [DESIGN] the pilot's slot
-    pulley_seat: float = 0.5            # [DESIGN] the 20T's hub face over the pilot (the forearm roll's)
+    pulley_seat: float = 0.5            # [DESIGN] the 20T's hub face over the pilot
     t20_hub: float = 10.95              # [REFERENCE] vendor 20T: its tooth band's centre from its hub face (7.45 + 3.5)
     # the frame round the motor and the tower (lib/wrist/roll.py side_profile, tower_section): seen along the pitch axis the
     # plate's octagon about it hulled to the tower round R', from the plate's coupler face to the closed far (+X) face;

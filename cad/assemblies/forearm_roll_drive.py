@@ -8,7 +8,8 @@ j1_link's bore) on the frame's spigot; the elbow 90T pulley bolts up through it 
 retired (lib/placements.py RETIRED); the 40 mm kit motor + MKS board ON the elbow axis in its pocket
 (open down through the octagon's bottom - the motor slides up into it, turned so its connector and the board's motor plug
 point down into the opening -, the side face closed, the pocket's front wall the plate, its 4x M3 from the front face,
-heads flush in counterbores: roll_motor_screws) and the 20T on the motor shaft, its hub down in the plate's pilot hole;
+heads flush in counterbores: roll_motor_screws) and the 20T on the motor shaft hub out (its teeth toward the motor, its
+set screws toward the wrist), its far end pulley_gap over the front face;
 the roll belt's tensioner on the frame's front face (the idler on a printed spacer, roll_idler_spacer - nothing grows
 from the face, which the frame prints on -, its M5 and nut: RollIdlerParams); the 6806 pair back to back in the tower,
 a 12 mm spacer between them, bearing 2's front face flush with the frame's. Rotor: the pulley (forearm_roll_pulley, the
@@ -63,7 +64,7 @@ OCCURRENCES = [
     # the roll motor, its board and its 20T - on the elbow axis (-Y) - carry the joint as their role (labels unique in the arm)
     ("nema17_40mm",           "forearm_roll", ((S["x_motor"], S["y_motor"], S["z_motor_face"]), (0.0, 0.0, DEFAULT.drive.motor_spin_deg))),    # its connector down (-Y)
     ("mks_servo42d",          "forearm_roll", ((S["x_motor"], S["y_motor"], S["z_motor_board"]), (0.0, 0.0, DEFAULT.drive.motor_spin_deg))),
-    ("gt2_pulley_20t",        "forearm_roll", ((S["x_motor"], S["y_motor"], S["z_20t"]), (0.0, -90.0, 0.0))),   # hub face pulley_seat over the pilot boss, bore axis along +Z
+    ("gt2_pulley_20t",        "forearm_roll", ((S["x_motor"], S["y_motor"], S["z_20t"]), (0.0, 90.0, 0.0))),    # hub out: its hub face toward the wrist, its far end pulley_gap over the front face
     # the motor's 4x M3 from the plate's front face (turned over: the heads up), flush in its counterbores
     ("roll_motor_screws",     None, ((S["x_motor"], S["y_motor"], S["z_motor_screws"]), (180.0, 0.0, 0.0))),
     ("forearm_roll_belt",     "forearm_roll", ((S["x_motor"], S["y_motor"], S["z_ring_mid"]), (0.0, 0.0, 90.0))),   # the 20T to the ring: its frame's +X up module +Y
@@ -93,9 +94,9 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("stator") after any geometry change.
 EXPECTED = {
-    "leaves": 24, "solids": 59, "solid_volume": 392823.514,
-    "bodies": {"stator": {"leaves": 19, "solids": 48, "solid_volume": 344883.467},
-               "rotor": {"leaves": 5, "solids": 11, "solid_volume": 47940.047}},
+    "leaves": 24, "solids": 59, "solid_volume": 390234.21,
+    "bodies": {"stator": {"leaves": 19, "solids": 48, "solid_volume": 344494.941},
+               "rotor": {"leaves": 5, "solids": 11, "solid_volume": 45739.269}},
 }
 
 

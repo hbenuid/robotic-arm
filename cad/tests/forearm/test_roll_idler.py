@@ -49,9 +49,9 @@ D, I, S = DEFAULT.drive, DEFAULT.drive.idler, stack_positions(DEFAULT)
 SPACER = "roll_idler_spacer"
 # name -> (solids, volume mm^3, bbox min, bbox size): the build's own numbers
 LOCKS = {
-    "roll_idler_screw": (1, 739.958, (-4.25, -4.25, -5.0), (8.5, 8.5, 30.0)),
+    "roll_idler_screw": (1, 641.783, (-4.25, -4.25, -5.0), (8.5, 8.5, 25.0)),
     "roll_idler_nut": (1, 168.216, (-4.618802, -4.0, 0.0), (9.237604, 8.0, 4.7)),
-    SPACER: (1, 367.615, (-6.0, -6.0, 0.0), (12.0, 12.0, 4.95)),
+    SPACER: (1, 77.264, (-6.0, -6.0, 0.0), (12.0, 12.0, 1.7)),
 }
 CLEAR = 3.0        # the idler's flange off the belt's far run and the ring's flange, at its place and at its slot's deep end
 HUB_R = 8.0        # the vendor 20T's hub (its flange side), the idler's flange in its plane at the belt's lower edge
@@ -111,7 +111,8 @@ def test_the_slot_takes_the_belt_on_and_tightens_it():
 
 def test_the_spacer_the_screw_and_the_nut():
     """The idler level with the belt on the spacer's land - the land narrower than the idler's seat (its bearing's
-    inner ring only), the spacer from the frame's front face up to the idler, its riser 3 mm or more round the axle and
+    inner ring only), the spacer from the frame's front face up to the idler (its riser 0.5 or more under the land: the
+    belt runs low over the face), its riser 3 mm or more round the axle and
     on the face's flat (inside the facets) anywhere in the slot; the screw's head on the idler's top, the shank through
     the spacer and the roof into the nut, its tip 2 pitches or more past the nut and inside its hole, its hole clear of
     the shaft's bay; the nut's bearing face on the channel's roof, the channel 2.5 or more off the motor pocket's box,
@@ -120,7 +121,7 @@ def test_the_spacer_the_screw_and_the_nut():
     45 deg back to the face - its lower part, by the back panel's opening, where it was (tests/forearm/
     test_roll_back_panel.py keeps the wall there)."""
     assert S["z_idler"] + GT2_IDLER_WIDTH / 2.0 == pytest.approx(S["z_ring_mid"])
-    assert roll_idler_spacer_h() == pytest.approx(S["z_idler"] - S["z_front"]) and roll_idler_spacer_h() > I.land_h + 2.0
+    assert roll_idler_spacer_h() == pytest.approx(S["z_idler"] - S["z_front"], abs=1e-6) and roll_idler_spacer_h() - I.land_h >= 0.5
     assert GT2_IDLER_BORE < I.slot_w < I.land_dia < min(GT2_IDLER_SEAT_DIA, I.riser_dia)
     assert (I.riser_dia - I.slot_w) / 2.0 >= 3.0
     ix, iy = roll_idler_xy()
@@ -128,7 +129,7 @@ def test_the_spacer_the_screw_and_the_nut():
     assert reach + I.riser_dia / 2.0 <= D.block_x[1] - D.front_facet - 2.0
     tip = S["z_idler_top"] - I.screw_len
     nut_far = S["z_idler_roof"] - I.nut.h
-    assert nut_far - tip >= 2 * PARAMS.M5_PITCH and math.hypot(reach, iy) - I.slot_w / 2.0 >= D.bay_r + 5.0
+    assert nut_far - tip >= 2 * PARAMS.M5_PITCH - 1e-9 and math.hypot(reach, iy) - I.slot_w / 2.0 >= D.bay_r + 5.0
     assert S["z_idler_roof"] == pytest.approx(S["z_front"] - I.roof) and I.roof >= 3.0
     _y0, y1, z0, z1 = motor_pocket(DEFAULT)
     half = I.nut.af / 2.0 + I.nut_fit
