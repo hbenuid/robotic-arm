@@ -25,6 +25,9 @@ from lib.yaw_coupler.layout import COUNTERBORE as FORK_COUNTERBORE
 from lib.yaw_coupler.layout import NUT_SLOT as FORK_NUT_SLOT
 from lib.yaw_coupler.params import DEFAULT as YAW_COUPLER
 
+_HUB_NUT_AF = YAW_COUPLER.hub.nut_af   # DEFAULT's hub has its nut pockets (None: the SolidWorks part's has none)
+assert _HUB_NUT_AF is not None
+
 
 @dataclass(frozen=True)
 class Use:
@@ -211,7 +214,7 @@ GAUGES = (
         Use(_D.shell.sleeve_nut_af, "the motor plate's sleeve (press)"),
         Use(_ROLL.nut_af, "forearm_roll_block (press)"),
         Use(WRIST.flange.nut_af, "wrist_link (press)"),
-        Use(YAW_COUPLER.hub.nut_af, "j1_coupler_plate: the 120T's and the plate screws' nuts (press, upright, 0.20: "
+        Use(_HUB_NUT_AF, "j1_coupler_plate: the 120T's and the plate screws' nuts (press, upright, 0.20: "
                                     "measured)"),
         Use(BASE.joint.nut_pocket_af, "the base's posts (press)"),
         Use(_D.housing.bolt_nut_pocket_af, "j1_link's housing nuts, the output hub (captive)")),

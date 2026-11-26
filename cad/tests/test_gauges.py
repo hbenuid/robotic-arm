@@ -171,7 +171,7 @@ def test_a_plate_step(built, tmp_path):
     path = tmp_path / "plate.step"
     assert export_gauges.write_plate(plates[0], path)
     assert "SI_UNIT(.MILLI.,.METRE.)" in path.read_text(encoding="ascii", errors="replace")
-    kids = {kid.label: kid for kid in step.read(str(path)).children}
+    kids = {kid.label: kid for kid in step.read(str(path)).children}  # ty: ignore[missing-attribute]
     assert sorted(kids) == sorted(c.key for c, _, _ in plates[0])
     for coupon, x, y in plates[0]:
         kid, want = kids[coupon.key], coupon.shape.bounding_box()

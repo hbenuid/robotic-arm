@@ -19,6 +19,8 @@ Run:  ./cadtool gen assemblies/cycloidal_drive.py             -> assemblies/cycl
 
 from __future__ import annotations
 
+from typing import Any
+
 from cad import step
 
 from assemblies._occurrences import located_children
@@ -73,7 +75,7 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 # Totals of the model (tests/cycloidal/test_assembly.py locks them; refresh with totals() /
 # totals(body) after a geometry change): the drive's own leaves and solids + the 7-solid vendor motor + 16 fasteners +
 # the 13-solid board kit, and the same per rigid body.
-EXPECTED = {
+EXPECTED: dict[str, Any] = {
     "leaves": 19, "solids": 73, "solid_volume": 567907.945,
     "bodies": {
         "stator": {"leaves": 13, "solids": 37, "solid_volume": 424200.326},

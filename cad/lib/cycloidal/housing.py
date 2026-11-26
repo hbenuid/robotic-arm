@@ -81,7 +81,7 @@ def chamfer_outer_silhouette(shape: bd.Shape, cfg: DriveConfig = DEFAULT_CONFIG,
             sel.append(e)
     if external_z is not None:
         sel += list(end_face(solid, external_z).outer_wire().edges())
-    return solid.chamfer(ch, None, sel) if sel else solid
+    return solid.chamfer(ch, None, sel) if sel else solid   # build123d types chamfer() Solid | Part  # ty: ignore[invalid-explicit-return]
 
 
 def hex_pocket(cfg: DriveConfig, xy, angle_rad: float, depth: float, z0: float = 0.0):

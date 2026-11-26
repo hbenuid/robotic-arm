@@ -29,6 +29,7 @@ dev = [
     "pytest>=8.0",
     "pytest-xdist>=3.8.0",
     "ruff>=0.16.9",
+    "ty>=0.0.111",
 ]
 
 [tool.uv]
@@ -84,3 +85,31 @@ ignore = [
 
 [tool.ruff.lint.isort]
 split-on-trailing-comma = false
+
+[tool.ty]
+# Type check (`./cadtool lint` runs it after ruff): ty's own rules at their default levels, but for the ones set
+# below. A warning fails the check too, as a ruff finding does: cad/ stays at zero (`# ty: ignore[<rule>]` with its
+# reason where a finding is wrong). software/control/ has its own [tool.ty].
+
+[tool.ty.terminal]
+error-on-warning = true
+
+[tool.ty.analysis]
+# OCP is the compiled OCCT kernel and ships no type stubs: ty sees none of its names, so every OCP import is Any.
+replace-imports-with-any = ["OCP.**"]
+
+[tool.ty.rules]
+# A config block the LEGACY part has none of is None (`roll: WristRollParams | None = None`), filled in by DEFAULT:
+# ty would flag every use of one (`DEFAULT.roll.x`: ~1870 of them) though DEFAULT always has it. The tests build
+# LEGACY and DEFAULT both, so a block missing where it is used fails a test. Off for every union in cad/ (an XML
+# lookup's `Element | None` too); software/control/ keeps it.
+missing-union-attribute = "ignore"
+
+[[tool.ty.overrides]]
+# `@step(...)`: the cad library makes its `step` module callable at run time (a ModuleType subclass), which ty
+# cannot see - every part's decorator would be not-callable; each `step.read(...)` elsewhere carries a
+# `# ty: ignore[missing-attribute]` for the same reason. Drop both once the library types its `step`.
+include = ["parts/**", "assemblies/**", "robot/**"]
+
+[tool.ty.overrides.rules]
+not-callable = "ignore"

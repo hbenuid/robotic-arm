@@ -62,4 +62,4 @@ def build_home_fin(cfg: WristConfig = DEFAULT):
         body = body - sensor * bd.Pos(x, y, -t - 1.0) * hex_prism(h.nut_pocket_af, math.radians(90.0), h.nut_pocket_depth + 1.0)
     for rx, ry, depth in home_reliefs(cfg):
         body = body - sensor * box(rx, ry, (-depth, NUDGE))
-    return single_solid(max(body.solids(), key=lambda s: s.volume))
+    return single_solid(max(body.solids(), key=lambda s: s.volume))   # ty types these solids Shape  # ty: ignore[missing-attribute]

@@ -244,7 +244,7 @@ def test_the_elbow_flange_repeats_the_retired_coupler():
     d = FOREARM.drive
     assert (d.post_dia, d.pulley_bolt_r) == (LEGACY.journal_dia, LEGACY.pulley_bolt_r) and LEGACY.stub_dia == p.BEARING_6806_BORE
     assert d.stub_dia == p.BEARING_6806_JOURNAL
-    assert LEGACY.step is None and COUPLER.step[0] == d.step_dia
+    assert LEGACY.step is None and COUPLER.step is not None and COUPLER.step[0] == d.step_dia
     assert math.isclose(d.step_x[1] - d.step_x[0], COUPLER.step[1] - COUPLER.journal_y1, abs_tol=1e-9)
     assert math.isclose(d.stub_x[1] - d.stub_x[0], COUPLER.stub_y1 - COUPLER.step[1], abs_tol=1e-9)
     assert replace(COUPLER, step=None, stub_y1=LEGACY.stub_y1) == LEGACY
@@ -265,7 +265,7 @@ def test_the_6806_pair_fits_every_belt_joint_bore():
     bore, od, width, shoulder = p.BEARING_6806_BORE, p.BEARING_6806_OD, p.BEARING_6806_WIDTH, p.BEARING_6806_SHOULDER_DIA
     assert bore < shoulder < od and p.BEARING_6806_MASS_G > 0
     assert COUPLER.stub_dia == bore and FOREARM.drive.stub_dia == YAW_COUPLER.hub.stub_dia == p.BEARING_6806_JOURNAL > bore
-    assert COUPLER.step[0] == FOREARM.drive.step_dia == shoulder
+    assert COUPLER.step is not None and COUPLER.step[0] == FOREARM.drive.step_dia == shoulder
     e, w, b, c = UPPER_ARM.elbow, FOREARM.web, FOREARM.boss, BASE.bore
     seats = [(e.bore_dia, e.lip_y[1], e.recess_y), (e.seat_dia, e.y0, e.lip_y[0]),              # j1_link: upper, lower
              (b.seat_dia, b.lip_z[1], b.seat_z1), (b.seat_dia, w.z0, b.lip_z[0]),               # j2_link

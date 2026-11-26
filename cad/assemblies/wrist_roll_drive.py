@@ -20,6 +20,8 @@ arm's wrist offset across R'); the arm places it through lib/mounts.py MODULE_MO
 station comes from lib/wrist stack_positions() - never type one here. Gear ratio 40 / 20 = 2 (WRIST_ROLL_RATIO) on the
 belt (wrist_roll_belt, WRIST_ROLL_BELT_LENGTH).
 """
+from typing import Any
+
 from cad import step
 
 from assemblies._occurrences import located_children
@@ -84,7 +86,7 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("stator") after any geometry change.
-EXPECTED = {
+EXPECTED: dict[str, Any] = {
     "leaves": 20, "solids": 70, "solid_volume": 95804.157,
     "bodies": {"stator": {"leaves": 13, "solids": 51, "solid_volume": 67873.981},
                "rotor": {"leaves": 7, "solids": 19, "solid_volume": 27930.176}},

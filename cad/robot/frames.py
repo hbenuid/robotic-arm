@@ -121,9 +121,17 @@ ELBOW_TO_WRIST_INPLANE = (-142.926, 153.58, 9.229)   # [REFERENCE] forearm_link 
 WRIST_CENTRE_ALONG_N = -17.0                 # [REFERENCE] see above: along the capture's N (the wrist_pitch axis before the turn)
 _len = math.sqrt(sum(v * v for v in ELBOW_TO_WRIST_INPLANE))
 FOREARM_ROLL_AXIS = tuple(v / _len for v in ELBOW_TO_WRIST_INPLANE)                    # unit, elbow -> wrist
-FOREARM_ROLL_ORIGIN = P.shifted("j2_link#1", tuple(o + PARAMS.FOREARM_ROLL_AXIS_Z * n for o, n in zip(_J2_CAPTURE_ORIGIN, N, strict=True)),
+
+
+def _along_n(origin, d: float) -> tuple[float, float, float]:
+    """`origin` moved `d` along N."""
+    x, y, z = (o + d * n for o, n in zip(origin, N, strict=True))
+    return x, y, z
+
+
+FOREARM_ROLL_ORIGIN = P.shifted("j2_link#1", _along_n(_J2_CAPTURE_ORIGIN, PARAMS.FOREARM_ROLL_AXIS_Z),
                                 turned=False)   # at the elbow axis' station; on the turn's axis (turned=False: N is the record's +Z to 6 decimals)
-WRIST_CENTRE = P.shifted("j3_coupler#2", tuple(o + WRIST_CENTRE_ALONG_N * n for o, n in zip(_WRIST_PITCH_CAPTURE_ORIGIN, N, strict=True)))
+WRIST_CENTRE = P.shifted("j3_coupler#2", _along_n(_WRIST_PITCH_CAPTURE_ORIGIN, WRIST_CENTRE_ALONG_N))
 
 # --- rigid links: placement keys that move together -----------------------------------------
 LINK_ORDER = ["base_link", "shoulder_link", "upper_arm_link", "elbow_link", "forearm_link", "wrist_pitch_link",

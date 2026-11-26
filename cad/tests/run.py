@@ -125,7 +125,7 @@ class Deps:
         and its conftests' imports, the modules it took by name and theirs, the source files it read as text (every
         .py file where it ran a subprocess that may run any of them), and every file's data (`common`)."""
         conftests = [str(Path("cad", *Path(test).parts[:i], "conftest.py")) for i in range(1, len(Path(test).parts))]
-        roots = ["cad/" + test, *(c for c in conftests if c in self.ids)]
+        roots: list[str | None] = ["cad/" + test, *(c for c in conftests if c in self.ids)]   # closure() drops a None
         roots += [self.module_file(n[len("mod:"):]) for n in notes if n.startswith("mod:")]
         deps = self.closure(roots) | {"cad/" + n[len("file:"):] for n in notes if n.startswith("file:")}
         if "*py" in notes:

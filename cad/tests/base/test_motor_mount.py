@@ -165,6 +165,7 @@ def test_the_slits():
     _, (_, yw) = flare_points()
     assert BAND == (yw + SL.over_flare, yw + SL.over_flare + SL.h) and BAND[1] < PL.y[0] - 5.0 and SL.over_flare >= 4.0
     rm, n = outer_r(DEFAULT, sum(BAND) / 2.0) - S.wall / 2.0, S.sides
+    assert n is not None   # DEFAULT's shell is faceted
     half = rm * math.tan(math.pi / n) - SL.pitch / 2.0          # a flat's slits' reach from its middle
     per_flat = 2 * math.floor(half / SL.pitch) + 1
     base, mount = slits(DEFAULT, "base"), slits(DEFAULT, "mount")

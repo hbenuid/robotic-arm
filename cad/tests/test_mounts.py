@@ -112,10 +112,11 @@ def _stub_press() -> float:
 _STUB_HOLDER = {"elbow_flange": "forearm_roll_drive#1"}
 
 
-def _press(nut_af: float, depth: float, count: int = len(PARAMS.pulley_90t_bolt_points())) -> float:
+def _press(nut_af: float | None, depth: float, count: int = len(PARAMS.pulley_90t_bolt_points())) -> float:
     """The designed overlap of `count` nuts (ISO 4032, M4_NUT.af across flats; a joint's 4 by default) in pockets nut_af
     across flats, `depth` of each nut inside (docs/open_issues.md: the PETG press) - mm^3; none where the pocket is the
     wider (the base's posts: their press is PETG's undersize on its side, JointParams.nut_pocket_af)."""
+    assert nut_af is not None, "the joint's nut pockets"
     return count * max(0.0, hex_area(PARAMS.M4_NUT.af) - hex_area(nut_af)) * depth
 
 

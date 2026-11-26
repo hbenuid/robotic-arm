@@ -35,7 +35,7 @@ def main(argv=None) -> int:
 
     R.REF_SOLIDWORKS_DIR.mkdir(parents=True, exist_ok=True)
     R.VENDOR_DIR.mkdir(exist_ok=True)
-    jobs = [(name, prod, rel, "custom") for name, (prod, rel) in R.CUSTOM.items()]
+    jobs: list[tuple[str, str, str | None, str]] = [(name, prod, rel, "custom") for name, (prod, rel) in R.CUSTOM.items()]
     others = R.CYCLOIDAL_PARTS | R.NATIVE_PARTS
     jobs += [(name, prod, rel, "cots") for name, (prod, rel) in R.COTS.items() if name not in others]
 

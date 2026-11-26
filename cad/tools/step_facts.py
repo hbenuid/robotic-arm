@@ -18,8 +18,12 @@ import argparse
 import json
 import pathlib
 import sys
+from typing import TYPE_CHECKING
 
 from lib.reference import solid_volume
+
+if TYPE_CHECKING:
+    import build123d as bd
 
 # First arguments of the removed `cadgen step inspect` (cadgen 0.6.5), kept only to teach the syntax.
 RETIRED_VERBS = ("refs", "measure", "align", "frame", "interfere", "validate")
@@ -29,7 +33,7 @@ def _xyz(v) -> list[float]:
     return [v.X, v.Y, v.Z]
 
 
-def leaves(path: str | pathlib.Path) -> list[tuple[str, str, object]]:
+def leaves(path: str | pathlib.Path) -> list[tuple[str, str, bd.Shape]]:
     """(occurrence path, label, the leaf in world coordinates) for every leaf, in document order."""
     import build123d as bd
     from cad import step
@@ -51,7 +55,7 @@ def leaves(path: str | pathlib.Path) -> list[tuple[str, str, object]]:
             segment = f"{kid.label}.{n}" if counts[kid.label] > 1 else kid.label
             walk(kid, f"{here}/{segment}", world)
 
-    root = step.read(str(path))
+    root = step.read(str(path))  # ty: ignore[missing-attribute]
     walk(root, root.label or "", bd.Location())
     return found
 
@@ -94,7 +98,7 @@ def facts(path: str | pathlib.Path) -> dict:
             "faces": sum(r["faces"] for r in rows),
             "volume": sum(r["volume"] for r in rows),
             "bbox_min": lo or [0.0, 0.0, 0.0],
-            "bbox_size": [h - l for l, h in zip(lo, hi, strict=True)] if rows else [0.0, 0.0, 0.0],
+            "bbox_size": [h - l for l, h in zip(lo, hi, strict=True)] if lo is not None and hi is not None else [0.0, 0.0, 0.0],
         },
     }
 

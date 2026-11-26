@@ -85,6 +85,8 @@ class SeatParams:
 
 
 _T = PlateParams.thickness   # the plate's coupler face, where FlangeParams' stations start
+_STEP = COUPLER.step         # (dia, y1): DEFAULT's inner-ring shoulder (None: the SolidWorks coupler's has none)
+assert _STEP is not None
 # [DESIGN] wrist_link and everything it carries (the wrist roll drive, the gripper) this far along its +Z (toward the
 # forearm) from the capture, on the wrist pitch axis (WristConfig.pitch_inset, lib/placements.py SHIFTS): its coupler face
 # FACE_GAP (2) off j2_link's wrist boss (trimmed flush with the upper wrist bearing: lib/forearm/params.py BOSS_TRIM) - the
@@ -119,12 +121,12 @@ class FlangeParams:
     #                                                                    frame's foot under it from the free face, lib/wrist/link.py _foot)
     post_chamfer: float = 1.0                                          # [DESIGN] its foot's 45 deg chamfer: EDGE_CHAMFER (lib/style.py)
     #                                                                    would leave the 1.3 post no straight band
-    step_dia: float = COUPLER.step[0]                                  # the inner-ring shoulder ...
-    step_z: tuple = (_T + COUPLER.journal_y1 - PITCH_INSET, _T + COUPLER.step[1] - PITCH_INSET)   # ... down onto the upper wrist
+    step_dia: float = _STEP[0]                                  # the inner-ring shoulder ...
+    step_z: tuple = (_T + COUPLER.journal_y1 - PITCH_INSET, _T + _STEP[1] - PITCH_INSET)   # ... down onto the upper wrist
     #                                                                    bearing's top face
     stub_dia: float = BEARING_6806_JOURNAL                             # [MEASURE] 30.25, a 0.20 journal's press (the coupler's
     #                                                                    30.0 the bore's), through the upper wrist bearing and j2_link's lip ...
-    stub_z: tuple = (_T + COUPLER.step[1] - PITCH_INSET, _T + COUPLER.stub_y1 - PITCH_INSET)   # ... to the 90T's face (the lip's
+    stub_z: tuple = (_T + _STEP[1] - PITCH_INSET, _T + COUPLER.stub_y1 - PITCH_INSET)   # ... to the 90T's face (the lip's
     #                                                                    lower face): 9 long
     pulley_screw_len: float = 33.0                                     # [DESIGN] the 90T's 4 M4 x 33 (parts/joints/wrist_pulley_screws)
     #                                                                    from the floors of its counterbores, through the flange into
@@ -132,7 +134,7 @@ class FlangeParams:
     #                                                                    pancake. Not an ISO 4762 length ...
     pulley_screw_bought: float = 35.0                                  # [DESIGN] ... so bought as M4 x 35, cut to pulley_screw_len
     pin_bore_dia: float = COUPLER.bore_dia                             # [REFERENCE] blind from the stub's end ...
-    pin_bore_z1: float = _T + COUPLER.step[1] - PITCH_INSET + 1.0      # ... to 1 over the stub's base (where it stopped when the
+    pin_bore_z1: float = _T + _STEP[1] - PITCH_INSET + 1.0      # ... to 1 over the stub's base (where it stopped when the
     #                                                                    nuts sat there)
     pulley_bolt_r: float = COUPLER.pulley_bolt_r                       # [REFERENCE] the 90T's 4 M4 at r 11 ...
     pulley_bolt_deg: float = 45.0                                      # [DESIGN] ... turned off the axes, the wrist 90T, its screws

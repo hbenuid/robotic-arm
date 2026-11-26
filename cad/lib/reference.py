@@ -325,7 +325,7 @@ def load(name: str, *, label: str | None = None) -> bd.Shape:
     if not path.exists():
         raise FileNotFoundError(f"missing reference STEP {path} - run tools/reference/import_solidworks.py "
                                 f"(tools/cycloidal/import_cadquery.py for the drive, tools/reference/import_native.py for a native part)")
-    shape = step.read(path)          # cad: an input of the model that calls it
+    shape = step.read(path)          # cad: an input of the model that calls it  # ty: ignore[missing-attribute]
     shape.label = label or name
     return shape
 

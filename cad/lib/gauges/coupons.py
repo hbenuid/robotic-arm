@@ -56,7 +56,7 @@ class Coupon:
     arm values among them; a ring's clear `opening` round `centre` (lib/gauges/layout.py nests small strips there)."""
     key: str
     title: str
-    shape: object
+    shape: bd.Shape
     sizes: list = field(default_factory=list)
     marks: tuple = ()
     orient: str = "upright"
@@ -105,7 +105,7 @@ def hexagon(af, z0, z1, x=0.0, y=0.0, corner_deg=0.0):
 def d_shape(d, flat, z0, z1, x=0.0, y=0.0):
     """A D: a circle `d`, its flat `flat` off the axis on +Y."""
     face = bd.Circle(d / 2.0) - bd.Pos(0.0, flat) * bd.Rectangle(2.0 * d, d, align=(bd.Align.CENTER, bd.Align.MIN))
-    return bd.Pos(x, y, z0) * bd.extrude(face, amount=z1 - z0)
+    return bd.Pos(x, y, z0) * bd.extrude(face, amount=z1 - z0)   # build123d types the sketch Compound  # ty: ignore[invalid-argument-type]
 
 
 def _label(size, x, y, z_top, marks, font=TXT):
@@ -174,6 +174,7 @@ def hole_strip(key, title, values, *, depth, width, shape="round", floor=1.2, wa
         elif shape == "d":
             c = d_shape(s, d_flat + (s - values[0]) / 2.0, z0, top + NUDGE, x)
         else:
+            assert channel is not None, "a channel strip takes its length"
             c = box(x - s / 2.0, x + s / 2.0, -channel / 2.0, channel / 2.0, z0, top + NUDGE)
         for d in (push, under):
             if d is not None:

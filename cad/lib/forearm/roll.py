@@ -205,7 +205,7 @@ def teardrop_along(start, direction, radius: float, length: float, peak):
     plane = bd.Plane(origin=start, x_dir=p.cross(d), z_dir=d)      # its +Y along `peak`
     k = radius / math.sqrt(2.0)
     sketch = bd.Circle(radius) + bd.Polygon((0.0, 0.0), (k, k), (0.0, radius * math.sqrt(2.0)), (-k, k), align=None)
-    return bd.extrude(plane * sketch, amount=length)
+    return bd.extrude(plane * sketch, amount=length)   # build123d types the sketch Compound | Wire  # ty: ignore[invalid-argument-type]
 
 
 def home_wire_hole(cfg: ForearmConfig = DEFAULT):
