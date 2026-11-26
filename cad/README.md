@@ -59,7 +59,6 @@ the CAD kernel), updating the plugin and what a pull that changes `pyproject.tom
 | `./cadtool server` | the machine's `cad` (a uv tool) at this project's pin, telemetry, cad's own updates and its plugin updates stored off first, then its server started (`setup` runs it; a linked worktree only checks) |
 | `./cadtool validate robot/arm.urdf --strict` (`.srdf`) | robot-description validators (`arm.sdf` has none in cad: `tools/robot/derive.py --check` compares it with the CAD) |
 | `./cadtool cad step dfm print/<name>.step --process printing` | printability of a printed part: walls, overhangs, support ([`parts/AGENTS.md`](parts/AGENTS.md) Printed vs. bought) |
-| `./cadtool skill <skill> <tool> [args]` | a plugin skill script (`print3d orca_presets.py`), its `requirements.txt`, if any, fetched into uv's cache |
 | `./cadtool cad …` | any `cad` subcommand but `setup`, `update`, `uninstall`, `doctor`, `run` ([`docs/toolchain.md`](docs/toolchain.md) Gotchas) |
 | `./cadtool doctor` | the venv's, the server's and the plugin's release against the pin, the stored telemetry and automatic-update choices, the OCP kernel, the machine's installation and the server running (a `cad update` moves both), no other text-to-cad plugin; changes nothing |
 | `./cadtool pytest [--full] [pytest args]` | test suite: the test files a change reaches since they last passed (`--full`: every file), on workers sized to the machine (`-n` overrides; a whole test file each); `-m "not slow"` the fast lane, which skips geometry builds |
