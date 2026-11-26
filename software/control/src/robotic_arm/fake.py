@@ -38,7 +38,9 @@ class FakeBoard:
     respond: bool = True
     checksum: Checksum = Checksum.SUM8
     enabled: bool = False
-    position: int = 0               # the 0x31 coordinate, counts
+    position: int = 0               # the 0xF4 / 0xF5 coordinate, counts
+    encoder_offset: int = 0         # 0x30 / 0x31 read position + this: a real board reads its encoder's own angle at
+                                    # power-on while F4 / F5 count from there, until 0x92 or homing (seen on V1.0.9)
     speed_rpm: int = 0              # signed, as 0x32 reports it
     status: int = 1                 # 0xF1: 1 stopped
     io: int = 0                     # 0x34
@@ -255,10 +257,10 @@ class FakeBoards:
             self._next_report.pop((board.can_id, data[0]), None)
             return [bytes([Cmd.AUTO_REPORT, data[0], 1])]
         if code == Cmd.READ_ENCODER_CARRY:
-            carry, value = divmod(board.position, 0x4000)
+            carry, value = divmod(board.position + board.encoder_offset, 0x4000)
             return [bytes([code]) + carry.to_bytes(4, "big", signed=True) + encode_uint16(value)]
         if code == Cmd.READ_ENCODER:
-            return [bytes([code]) + _int48(board.position)]
+            return [bytes([code]) + _int48(board.position + board.encoder_offset)]
         if code == Cmd.READ_SPEED:
             return [bytes([code]) + board.speed_rpm.to_bytes(2, "big", signed=True)]
         if code == Cmd.READ_IO:
@@ -289,11 +291,11 @@ class FakeBoards:
                 _halt(board)
                 edge = board.switch_zone[1] if board.switch_zone is not None else board.position + board.origin
                 board.origin, board.sub = edge, 0.0
-            board.position, board.home_status = 0, (*board.home_status[:-1], 1)
+            board.position, board.encoder_offset, board.home_status = 0, 0, (*board.home_status[:-1], 1)
             return [bytes([code, 1]), bytes([code, 2])]
         if code == Cmd.SET_ZERO:
             board.origin += board.position
-            board.position, board.sub = 0, 0.0
+            board.position, board.sub, board.encoder_offset = 0, 0.0, 0
             return [bytes([code, 1])]
         if code == Cmd.READ_STATUS:
             return [bytes([code, board.status])]

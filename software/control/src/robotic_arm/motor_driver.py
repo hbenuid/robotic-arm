@@ -280,7 +280,8 @@ class MotorDriver:
     # --- reads -----------------------------------------------------------------------------------------------------
 
     def read_encoder(self, timeout: float = REPLY_TIMEOUT_S) -> int | None:
-        """0x31 (5.1.2): the cumulative encoder value, int48, 0x4000 per motor turn - the 0xF4 / 0xF5 coordinate."""
+        """0x31 (5.1.2): the cumulative encoder value, int48, 0x4000 per motor turn - the 0xF4 / 0xF5 coordinate once
+        0x92 or homing zeroed it; after power-on it reads the encoder's own angle (docs/mks_can_protocol.md)."""
         reply = self.request(bytes([Cmd.READ_ENCODER]), timeout)
         return None if reply is None else decode_encoder(reply)
 

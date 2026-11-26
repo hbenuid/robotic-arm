@@ -167,6 +167,7 @@ class Rig:
                     raise Refused(f"{bench.joint_config.name}: a test is running")
                 if bench.motion in ("home", "calibrate"):
                     raise Refused(f"{bench.joint_config.name} is {bench.motion}")
+                bench._require_zeroed()
                 here = bench.value_now()
                 if here is None or bench._stale("counts", 0.5):
                     raise Refused(f"{bench.joint_config.name}: no fresh encoder reading")
