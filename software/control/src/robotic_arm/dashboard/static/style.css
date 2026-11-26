@@ -176,6 +176,11 @@ kbd { display: inline-block; min-width: 18px; padding: 0 4px; margin: 0 1px; bor
 .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 6px 0; }
 .grid3 label, .settings label { display: block; font-size: 11px; color: var(--muted); }
 .grid3 label input, .grid3 label select, .settings label input, .settings label select { display: block; width: 100%; margin-top: 3px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 6px 0; }
+.grid4 label { display: block; font-size: 11px; color: var(--muted); }
+.grid4 label input { display: block; width: 100%; margin-top: 3px; }
+.warnline { color: var(--warn); }
+.rowlabel { min-width: 76px; }
 .grid3 .span2 { grid-column: span 2; }
 .grid3 .span3 { grid-column: span 3; }
 .about { margin: 4px 0 8px; }

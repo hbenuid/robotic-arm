@@ -25,7 +25,9 @@ ones are `docs/architecture.md`; the MKS CAN protocol is `docs/mks_can_protocol.
   check and safety rule. The page (`static/`) is trusted with none of them: a move the page asks for is checked in
   `bench.check` (the limits, the speed cap), and the jog keep-alive, the page-silence stop and the run's limit stop
   run on the bus thread's tick. Limits are kept in encoder counts (`Limits.count_lo` / `count_hi`), not in the page's
-  units.
+  units. A shaped (S-curve) move's `shaping.Shaper` sends only under the bench's lock after checking the shaping
+  generation, and every stop bumps it (`Bench._stop_shaper`) and purges the queued motion frames (`BusWorker.purge`):
+  nothing queued before a stop goes out after it.
   Keep it that way. A new motion command goes through `Bench._start_motion`. A new code that moves the motor goes in
   `RAW_REFUSED`. The server binds 127.0.0.1 only, and checks the page's token and the Host header on every API call.
   It uses the standard library only (`http.server`, no web framework).

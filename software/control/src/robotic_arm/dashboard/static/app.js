@@ -18,7 +18,7 @@ const TESTS = {
 
 const S = {
   st: null, samples: [], sampleSeq: 0, logSeq: 0, noticeSeq: 0,
-  logPaused: false, graphPaused: false, graphSpan: 30,
+  logPaused: false, graphPaused: false, graphSpan: 30, speedSrc: "encoder", showCmd: true, pidLoop: "vfoc",
   context: null, jogDir: 0, jogTimer: null, press: null,
   routineKey: null, routineTable: null, questionKey: null, findings: null, filled: false,
 };
@@ -142,6 +142,9 @@ function render(st) {
     $("joint-select").innerHTML = st.joints.map((j) => `<option value="${j.name}">${j.name}</option>`).join("");
     $("set-82").innerHTML = Object.entries(st.work_modes).map(([k, v]) => `<option value="${k}">${k} ${v}</option>`).join("");
     $("set-82").value = "5";
+    $("pf-curve").innerHTML = st.curves.map((c) => `<option value="${c}">${c}</option>`).join("");
+    $("set-9B").innerHTML = Array.from({ length: 9 }, (_, i) => `<option value="${i}">${(i + 1) * 10} %</option>`).join("");
+    $("set-9B").value = "4";
     showTest($("test-kind").value);
   }
   const key = `${st.mode}|${st.joint}|${st.can_id}|${st.zero_deg === null}|${st.sign}`;
@@ -202,6 +205,7 @@ function render(st) {
   $("enable-toggle").querySelector(".tlabel").textContent = r.enabled === null ? "Motor ?" : on ? "Motor on" : "Motor off";
   $("ref-needed").classList.toggle("hidden", !noRef);
   renderLimits(st);
+  renderProfile(st);
   const busy = testing ? `test: ${st.routine.title}` : st.motion || (moving ? r.status_name : null);
   $("motion-state").textContent = busy || "idle";
   $("motion-state").className = `pill ${busy ? "busy" : ""}`;
@@ -240,6 +244,26 @@ function render(st) {
 
   renderRoutine(st);
   if (!S.graphPaused) drawGraph(st, u);
+}
+
+function renderProfile(st) {
+  const p = st.profile, sc = p.kind === "scurve";
+  const set = (id, v) => { if (document.activeElement !== $(id)) $(id).value = v; };
+  $$("#profile-kind button").forEach((b) => b.classList.toggle("on", b.dataset.kind === p.kind));
+  $("acc-row").classList.toggle("hidden", sc);
+  $("ease-row").classList.toggle("hidden", !sc);
+  $("smooth-hint").textContent = sc ? `${p.curve} · ${p.ease_s} s to full speed · more in Tuning` : "acc: 0 = no ramp, larger = steeper";
+  set("pf-kind", p.kind);
+  set("pf-curve", p.curve);
+  set("pf-ease", p.ease_s);
+  set("pf-rate", p.rate_hz);
+  set("pf-follow", p.follow_acc);
+  set("pf-acc", $("acc-num").value);
+  if (![$("ease-num"), $("ease-range")].includes(document.activeElement)) {
+    $("ease-num").value = p.ease_s;
+    $("ease-range").value = p.ease_s;
+  }
+  $$("#poll-ms button").forEach((b) => b.classList.toggle("on", Number(b.dataset.ms) === st.poll_ms));
 }
 
 function renderLimits(st) {
@@ -333,7 +357,8 @@ function prep(canvas) {
 
 const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-function pane(ctx, box, xs, ys, xr, yr, color, label, lines = []) {
+// One plot: a y grid, dashed level `lines`, and each of `series` ({xs, ys, color, dash}) on shared axes.
+function pane(ctx, box, series, xr, yr, label, lines = []) {
   const { x, y, w, h } = box;
   let [y0, y1] = yr;
   if (!(y1 - y0 > 1e-9)) { y0 -= 1; y1 += 1; }
@@ -356,20 +381,38 @@ function pane(ctx, box, xs, ys, xr, yr, color, label, lines = []) {
     ctx.save(); ctx.setLineDash([5, 4]); ctx.strokeStyle = c;
     ctx.beginPath(); ctx.moveTo(x, sy(v)); ctx.lineTo(x + w, sy(v)); ctx.stroke(); ctx.restore();
   }
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  let started = false;
-  for (let i = 0; i < xs.length; i++) {
-    if (ys[i] === null || Number.isNaN(ys[i])) { started = false; continue; }
-    if (!started) { ctx.moveTo(sx(xs[i]), sy(ys[i])); started = true; } else ctx.lineTo(sx(xs[i]), sy(ys[i]));
+  for (const { xs, ys, color, dash } of series) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = dash ? 1.5 : 2;
+    if (dash) ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    let started = false;
+    for (let i = 0; i < xs.length; i++) {
+      if (ys[i] === null || Number.isNaN(ys[i])) { started = false; continue; }
+      if (!started) { ctx.moveTo(sx(xs[i]), sy(ys[i])); started = true; } else ctx.lineTo(sx(xs[i]), sy(ys[i]));
+    }
+    ctx.stroke();
+    ctx.restore();
   }
-  ctx.stroke();
   if (label) {
-    ctx.fillStyle = color;
+    ctx.fillStyle = series.length ? series[0].color : css("--muted");
     ctx.font = "600 12px system-ui";
     ctx.fillText(label, x + 4, y + 14);
   }
+}
+
+// Speed worked out from the encoder: the position's slope over about 50 ms each side, in the mode's speed unit.
+function encoderSpeed(pts, pos, joint) {
+  const n = pts.length, out = new Array(n).fill(null);
+  if (n < 2) return out;
+  const spacing = (pts[n - 1][1] - pts[0][1]) / (n - 1);
+  const k = clamp(Math.round(0.05 / (spacing || 0.02)), 3, 25);
+  for (let i = 0; i < n; i++) {
+    const a = Math.max(0, i - k), b = Math.min(n - 1, i + k), dt = pts[b][1] - pts[a][1];
+    if (dt > 0) out[i] = (pos[b] - pos[a]) / dt / (joint ? 1 : 6);   // deg/s at the joint; motor deg/s / 6 = RPM
+  }
+  return out;
 }
 
 function drawGraph(st, u) {
@@ -379,18 +422,25 @@ function drawGraph(st, u) {
     ctx.fillText(st.online ? "waiting for the encoder …" : "board offline: no readings", 12, h / 2);
     return;
   }
+  const joint = st.mode === "joint";
   const span = S.graphSpan, tEnd = S.samples[S.samples.length - 1][1];
   const pts = S.samples.filter((s) => s[1] >= tEnd - span && s[2] !== null);
   const xs = pts.map((s) => s[1] - tEnd), pos = pts.map((s) => u.pos(s[2]));
-  const spd = pts.map((s) => (s[3] === null ? null : u.spd(s[3])));
+  const spd = S.speedSrc === "encoder" ? encoderSpeed(pts, pos, joint) : pts.map((s) => (s[3] === null ? null : u.spd(s[3])));
+  // the commanded speed: RPM signed with the encoder's count -> the shown unit, signed with the shown position
+  const toUnit = (c) => (joint ? st.sign * c * 6 * st.gear_ratio : c);
+  const cmd = pts.map((s) => (s[8] === null || s[8] === undefined ? null : toUnit(s[8])));
+  const showCmd = S.showCmd && cmd.some((v) => v !== null);
   const right = 54, gap = 16, ph = (h - gap - 16) * 0.64, sh = h - gap - 16 - ph;
   const ok = (a) => a.filter((v) => v !== null && Number.isFinite(v));
-  const pr = ok(pos), sr = ok(spd);
+  const pr = ok(pos), sr = ok(spd).concat(showCmd ? ok(cmd) : []);
   const lines = st.window.filter((v) => v !== null).map((v) => [v, css("--warn")]);
-  pane(ctx, { x: 4, y: 2, w: w - right - 4, h: ph }, xs, pos, [-span, 0], [Math.min(...pr), Math.max(...pr)], css("--pos"),
-    `position (${u.posUnit})`, lines);
-  pane(ctx, { x: 4, y: ph + gap, w: w - right - 4, h: sh }, xs, spd, [-span, 0], [Math.min(0, ...sr), Math.max(0, ...sr)],
-    css("--spd"), `speed (${u.spdUnit})`);
+  pane(ctx, { x: 4, y: 2, w: w - right - 4, h: ph }, [{ xs, ys: pos, color: css("--pos") }], [-span, 0],
+    [Math.min(...pr), Math.max(...pr)], `position (${u.posUnit})`, lines);
+  const speedSeries = [{ xs, ys: spd, color: css("--spd") }];
+  if (showCmd) speedSeries.push({ xs, ys: cmd, color: css("--ok"), dash: true });
+  pane(ctx, { x: 4, y: ph + gap, w: w - right - 4, h: sh }, speedSeries, [-span, 0], [Math.min(0, ...sr), Math.max(0, ...sr)],
+    `speed (${u.spdUnit}, ${S.speedSrc === "encoder" ? "from the encoder" : "board"})${showCmd ? "   - - commanded" : ""}`);
   ctx.fillStyle = css("--faint"); ctx.font = "11px system-ui";
   const tstep = niceStep(span, 6);
   for (let t = -Math.floor(span / tstep) * tstep; t <= 0; t += tstep) {
@@ -409,7 +459,8 @@ function drawChart(canvas, chart) {
   const colors = [css("--pos"), css("--spd"), css("--ok"), css("--warn"), css("--err")];
   names.forEach((k, i) => {
     const pts = chart.series[k];
-    pane(ctx, { x: 4, y: 18, w: w - 52, h: h - 36 }, pts.map((p) => p[0]), pts.map((p) => p[1]), xr, yr, colors[i % 5], "");
+    pane(ctx, { x: 4, y: 18, w: w - 52, h: h - 36 }, [{ xs: pts.map((p) => p[0]), ys: pts.map((p) => p[1]), color: colors[i % 5] }],
+      xr, yr, "");
     ctx.fillStyle = colors[i % 5]; ctx.font = "600 11px system-ui";
     ctx.fillText(k, 6 + i * 150, 11);
   });
@@ -502,6 +553,26 @@ function homeNow(el) {
   if (confirm(`Home ${st.joint}: it turns ${dir} at ${$("home-rpm").value} RPM until the switch turns on.\n\nWatch it, and press STOP if it heads the wrong way. (Homing settings: Setup tab.)`)) {
     startTest("home", el);
   }
+}
+
+// --- board settings -------------------------------------------------------------------------------------------------
+
+async function readSettings(msgEl) {
+  say(msgEl, "reading …");
+  const r = await api("read_settings");
+  if (!r.ok) { say(msgEl, r.error, false); return; }
+  const names = { "82": "work mode", "83": "current mA", "84": "microsteps", "88": "stall protection", "89": "interpolation (MPlyer)",
+    "8A": "bitrate (2 = 500K)", "8B": "CAN id", "8C": "response mode", "9B": "holding current (0-8 = 10-90 %)", "9E": "limit remap" };
+  $("settings-table").querySelector("tbody").replaceChildren(...Object.entries(r.settings).map(([code, v]) => {
+    const tr = document.createElement("tr");
+    const shown = v === null ? "no reply" : v.value === null ? "not readable" : code === "82" ? `${v.value} ${S.st.work_modes[v.value] ?? ""}` : String(v.value);
+    [names[code] ?? `0x${code}`, shown].forEach((c) => tr.append(Object.assign(document.createElement("td"), { textContent: c })));
+    const input = $(`set-${code}`);
+    if (input && v && v.value !== null) input.value = String(v.value);
+    return tr;
+  }));
+  const missing = Object.values(r.settings).filter((v) => v === null).length;
+  say(msgEl, missing === Object.keys(r.settings).length ? "no reply to 0x00 reads (firmware before V1.0.6?)" : "read", missing < Object.keys(r.settings).length);
 }
 
 // --- log ------------------------------------------------------------------------------------------------------------
@@ -729,21 +800,62 @@ function bind() {
   };
   $("findings-clear").onclick = () => api("clear_findings");
 
-  $("settings-read").onclick = async () => {
-    say($("settings-msg"), "reading …");
-    const r = await api("read_settings");
-    if (!r.ok) { say($("settings-msg"), r.error, false); return; }
-    const names = { "82": "work mode", "83": "current mA", "84": "microsteps", "88": "stall protection", "89": "MPlyer",
-      "8A": "bitrate (2 = 500K)", "8B": "CAN id", "8C": "response mode", "9E": "limit remap" };
-    $("settings-table").querySelector("tbody").replaceChildren(...Object.entries(r.settings).map(([code, v]) => {
-      const tr = document.createElement("tr");
-      const shown = v === null ? "no reply" : v.value === null ? "not readable" : code === "82" ? `${v.value} ${S.st.work_modes[v.value] ?? ""}` : String(v.value);
-      [names[code] ?? `0x${code}`, shown].forEach((c) => tr.append(Object.assign(document.createElement("td"), { textContent: c })));
-      const input = $(`set-${code}`);
-      if (input && v && v.value !== null) input.value = String(v.value);
-      return tr;
-    }));
-    say($("settings-msg"), "read", true);
+  $("settings-read").onclick = () => readSettings($("settings-msg"));
+  $("tune-read").onclick = () => readSettings($("tune-msg"));
+
+  // motion profile (left panel and Tuning tab)
+  const sendProfile = (values, okText = "profile set") => act("profile", values, $("motion-msg"), okText);
+  $$("#profile-kind button").forEach((b) => (b.onclick = () => sendProfile({ kind: b.dataset.kind }, b.textContent)));
+  $("ease-range").oninput = () => ($("ease-num").value = $("ease-range").value);
+  $("ease-range").onchange = () => sendProfile({ ease_s: num("ease-range") }, `ease ${num("ease-range")} s`);
+  $("ease-num").onchange = () => { $("ease-range").value = $("ease-num").value; sendProfile({ ease_s: num("ease-num") }); };
+  for (const [id, key, parse] of [["pf-kind", "kind", String], ["pf-curve", "curve", String], ["pf-ease", "ease_s", parseFloat],
+    ["pf-rate", "rate_hz", parseFloat], ["pf-follow", "follow_acc", (v) => parseInt(v, 10)]]) {
+    $(id).onchange = () => sendProfile({ [key]: parse($(id).value) });
+  }
+  $("pf-acc").oninput = () => { $("acc-num").value = $("pf-acc").value; $("acc-range").value = $("pf-acc").value; };
+  const PRESETS = {
+    snappy: { profile: { kind: "board" }, acc: 240 },
+    balanced: { profile: { kind: "scurve", curve: "smoothstep", ease_s: 0.5, rate_hz: 50, follow_acc: 240 } },
+    smooth: { profile: { kind: "scurve", curve: "quintic", ease_s: 1.2, rate_hz: 50, follow_acc: 220 } },
+  };
+  for (const b of $$("[data-preset]")) {
+    b.onclick = () => {
+      const p = PRESETS[b.dataset.preset];
+      if (p.acc !== undefined) { $("acc-num").value = p.acc; $("acc-range").value = p.acc; }
+      sendProfile(p.profile, `${b.textContent} preset`);
+    };
+  }
+
+  // graph options
+  for (const b of $$("#speed-src button")) {
+    b.onclick = () => { S.speedSrc = b.dataset.src; $$("#speed-src button").forEach((x) => x.classList.toggle("on", x === b)); };
+  }
+  $("g-cmd").onchange = () => (S.showCmd = $("g-cmd").checked);
+  for (const b of $$("#poll-ms button")) {
+    b.onclick = () => act("poll_period", { ms: Number(b.dataset.ms) }, $("tune-msg"), `sampling every ${b.dataset.ms} ms`);
+  }
+
+  // PID (firmware V1.0.8+)
+  for (const b of $$("#pid-loop button")) {
+    b.onclick = () => { S.pidLoop = b.dataset.loop; $$("#pid-loop button").forEach((x) => x.classList.toggle("on", x === b)); };
+  }
+  $("pid-defaults").onclick = () => {
+    const d = S.st.pid_defaults[S.pidLoop];
+    for (const k of ["kp", "ki", "kd", "kv"]) $(`pid-${k}`).value = d[k];
+    say($("pid-msg"), `${S.pidLoop} factory defaults filled in: Write sends them`);
+  };
+  $("pid-read").onclick = async () => {
+    const r = await api("read_pid", { loop: S.pidLoop });
+    say($("pid-msg"), r.ok ? `${S.pidLoop} raw: Kp Ki ${r.pid.kp_ki ?? "no reply"} · Kd Kv ${r.pid.kd_kv ?? "no reply"}` : r.error, r.ok);
+  };
+  $("pid-write").onclick = () => {
+    const g = {};
+    for (const k of ["kp", "ki", "kd", "kv"]) if ($(`pid-${k}`).value !== "") g[k] = parseInt($(`pid-${k}`).value, 10);
+    const text = Object.entries(g).map(([k, v]) => `${k} ${v}`).join(", ");
+    if (confirm(`Write the ${S.pidLoop} PID gains (${text}) to board ${S.st.can_id}? They are saved on the board.`)) {
+      act("pid", { loop: S.pidLoop, ...g }, $("pid-msg"));
+    }
   };
   for (const b of $$("[data-set]")) {
     b.onclick = () => {

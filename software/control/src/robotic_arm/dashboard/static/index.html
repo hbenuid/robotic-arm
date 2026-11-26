@@ -74,11 +74,22 @@
       </div>
     </div>
     <div class="field">
-      <div class="field-head"><span title="The board's own ramp: 0 = none, larger = steeper">Ramp</span><span class="muted small">acc 0–255</span></div>
-      <div class="row tight">
+      <div class="field-head">
+        <span>Smoothing</span>
+        <div class="seg small" role="group" id="profile-kind">
+          <button data-kind="board" title="The board's own straight ramp">Board ramp</button>
+          <button data-kind="scurve" title="The dashboard eases the speed in and out">S-curve</button>
+        </div>
+      </div>
+      <div class="row tight" id="acc-row" title="The board's ramp: 0 = none, larger = steeper">
         <input id="acc-range" type="range" min="0" max="255" step="1" value="2">
         <input id="acc-num" type="number" min="0" max="255" step="1" value="2" class="num">
       </div>
+      <div class="row tight hidden" id="ease-row" title="Seconds from standstill to full speed">
+        <input id="ease-range" type="range" min="0.05" max="3" step="0.05">
+        <input id="ease-num" type="number" min="0.05" max="5" step="0.05" class="num">
+      </div>
+      <div id="smooth-hint" class="muted small"></div>
     </div>
 
     <div class="field">
@@ -162,6 +173,7 @@
     <nav class="tabs" id="tabs">
       <button data-tab="setup" class="active">Setup</button>
       <button data-tab="tests">Tests</button>
+      <button data-tab="tuning">Tuning</button>
       <button data-tab="advanced">Advanced</button>
     </nav>
 
@@ -295,14 +307,80 @@
       </details>
     </div>
 
+    <div class="pane hidden" id="tab-tuning">
+      <section class="block">
+        <h3>Motion profile</h3>
+        <div class="row tight wrap">
+          <span class="muted small">Presets</span>
+          <button class="btn ghost small" data-preset="snappy" title="Board ramp, acc 240">Snappy</button>
+          <button class="btn ghost small" data-preset="balanced" title="S-curve, smoothstep, 0.5 s">Balanced</button>
+          <button class="btn ghost small" data-preset="smooth" title="S-curve, quintic, 1.2 s">Smooth</button>
+        </div>
+        <div class="grid3">
+          <label>Profile<select id="pf-kind"><option value="board">Board ramp</option><option value="scurve">S-curve</option></select></label>
+          <label>Curve<select id="pf-curve"></select></label>
+          <label>Ease, s<input id="pf-ease" type="number" min="0.05" max="5" step="0.05"></label>
+          <label>Updates / s<input id="pf-rate" type="number" min="5" max="100" step="5"></label>
+          <label title="How hard the board follows each speed update">Follow ramp<input id="pf-follow" type="number" min="1" max="255"></label>
+          <label title="The board ramp's acc, used by Board ramp">Board ramp<input id="pf-acc" type="number" min="0" max="255"></label>
+        </div>
+        <p class="muted small">S-curve: the dashboard sends the board a new speed many times a second, so the speed eases in and out along the curve. Quintic is the softest, linear the most direct.</p>
+      </section>
+
+      <section class="block">
+        <div class="row between"><h3>Board</h3><button id="tune-read" class="btn ghost small">Read</button></div>
+        <div class="settings">
+          <label>Work mode<select id="set-82"></select></label><button class="btn ghost small" data-set="82">Write</button>
+          <label>Microsteps<input id="set-84" type="number" min="1" max="255"></label><button class="btn ghost small" data-set="84">Write</button>
+          <label>Interpolation (MPlyer)<select id="set-89"><option value="1">on</option><option value="0">off</option></select></label><button class="btn ghost small" data-set="89">Write</button>
+          <label>Current mA<input id="set-83" type="number" min="0" max="3000" step="50"></label><button class="btn ghost small" data-set="83">Write</button>
+          <label>Holding current<select id="set-9B"></select></label><button class="btn ghost small" data-set="9B">Write</button>
+        </div>
+        <div id="tune-msg" class="msg"></div>
+        <p class="muted small">SR_vFOC (5) is the smoothest work mode. Interpolation on cuts noise at low speed. Holding current only counts in the OPEN and CLOSE modes. Each write is saved on the board.</p>
+      </section>
+
+      <section class="block">
+        <details>
+          <summary>PID gains (firmware V1.0.8+)</summary>
+          <p class="muted small warnline">Factory-tuned. MKS: "proceed with extreme caution to avoid damaging the motor". Note the defaults before changing anything.</p>
+          <div class="row tight">
+            <div class="seg small" role="group" id="pid-loop"><button data-loop="vfoc" class="on">vFOC</button><button data-loop="close">CLOSE</button></div>
+          </div>
+          <div class="grid4">
+            <label>Kp<input id="pid-kp" type="number" min="0" max="1024"></label>
+            <label>Ki<input id="pid-ki" type="number" min="0" max="1024"></label>
+            <label>Kd<input id="pid-kd" type="number" min="0" max="1024"></label>
+            <label>Kv<input id="pid-kv" type="number" min="0" max="1024"></label>
+          </div>
+          <div class="row tight">
+            <button id="pid-read" class="btn ghost small">Read</button>
+            <button id="pid-defaults" class="btn ghost small">Fill defaults</button>
+            <button id="pid-write" class="btn ghost small">Write</button>
+          </div>
+          <div id="pid-msg" class="msg mono"></div>
+        </details>
+      </section>
+
+      <section class="block">
+        <h3>Graph</h3>
+        <div class="row tight">
+          <span class="muted small rowlabel">Speed from</span>
+          <div class="seg small" role="group" id="speed-src"><button data-src="encoder" class="on" title="Worked out from the encoder: smooth">Encoder</button><button data-src="board" title="The board's own reading (0x32), whole RPM">Board</button></div>
+          <label class="inline small muted"><input id="g-cmd" type="checkbox" checked> commanded</label>
+        </div>
+        <div class="row tight">
+          <span class="muted small rowlabel">Sample every</span>
+          <div class="seg small" role="group" id="poll-ms"><button data-ms="20">20 ms</button><button data-ms="10">10 ms</button><button data-ms="5">5 ms</button></div>
+        </div>
+      </section>
+    </div>
+
     <div class="pane hidden" id="tab-advanced">
       <section class="block">
         <div class="row between"><h3>Board settings</h3><button id="settings-read" class="btn ghost small">Read</button></div>
         <table class="kv" id="settings-table"><tbody></tbody></table>
         <div class="settings">
-          <label>Work mode<select id="set-82"></select></label><button class="btn ghost small" data-set="82">Write</button>
-          <label>Current mA<input id="set-83" type="number" min="0" max="3000" step="50"></label><button class="btn ghost small" data-set="83">Write</button>
-          <label>Microsteps<input id="set-84" type="number" min="1" max="255"></label><button class="btn ghost small" data-set="84">Write</button>
           <label>Stall protection<select id="set-88"><option value="0">off</option><option value="1">on</option></select></label><button class="btn ghost small" data-set="88">Write</button>
           <label>CAN id<input id="set-8B" type="number" min="1" max="2047"></label><button class="btn ghost small" data-set="8B">Write</button>
           <label>Heartbeat ms<input id="set-98" type="number" min="0" step="100"></label><button class="btn ghost small" data-set="98">Write</button>

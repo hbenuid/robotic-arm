@@ -195,7 +195,9 @@ def test_a_constant_speed_run_is_bench_modes_only_and_stops_at_a_limit(bench, si
     stops = [f for f in frames(sim, Cmd.SPEED) if f[1] & 0x0F == 0 and f[2] == 0]
     assert len(stops) == 1                               # the limit's ramped F6 stop, sent once
     assert sum("reached a limit" in n["text"] for n in bench.notices) == 1
-    assert 90 < bench.readout.counts * 360 / 0x4000 < 200
+    # crossing 90 deg while ramping up at acc 200 (~100 RPM there), the same ramp down coasts as far again (~180 deg),
+    # plus up to a poll or two before the tick sees it
+    assert 90 < bench.readout.counts * 360 / 0x4000 < 260
 
 
 def test_the_raw_box_refuses_what_moves(bench, sim):
@@ -274,6 +276,89 @@ def test_cancelling_a_test_stops_the_motor(bench, sim):
     assert r.status == "cancelled"
     wait_until(lambda: any(f[1:3] == b"\x00\x00" for f in frames(sim, Cmd.MOVE_TO_AXIS)), 1.0)
     wait_until(lambda: bench.readout.status == 1, 3.0)
+
+
+# --- shaped (S-curve) moves ---------------------------------------------------------------------------------------------
+
+
+def speeds_sent(sim: FakeBoards, after: int = 0) -> list[int]:
+    """The RPMs of the F5 frames the elbow board got (from frame number `after` on), stops left out."""
+    return [int.from_bytes(f[1:3], "big") for f in frames(sim, Cmd.MOVE_TO_AXIS)[after:] if f[1:3] != b"\x00\x00"]
+
+
+def test_an_s_curve_move_eases_in_and_lands_on_its_target(bench, sim):
+    bench_mode(bench)
+    bench.set_profile(kind="scurve", curve="smoothstep", ease_s=0.3, rate_hz=100, follow_acc=250)
+    seq = bench.move_to(720, 600, 2)                     # two motor turns
+    assert bench.wait_motion_end(seq, 5.0, threading.Event()) is not None
+    assert bench.fresh_counts() == 2 * 0x4000            # on the target exactly
+    speeds = speeds_sent(sim)
+    assert len(speeds) >= 10 and max(speeds) <= 600
+    rising = speeds[: speeds.index(max(speeds)) + 1]
+    assert rising == sorted(rising) and len(set(rising)) >= 5   # many small steps up, not one jump
+    assert any(s[8] for s in bench.samples)              # the commanded speed was recorded for the graph
+
+
+def test_an_s_curve_jog_eases_out_after_release(bench, sim):
+    bench_mode(bench, 300)
+    bench.set_profile(kind="scurve", curve="sine", ease_s=0.3, rate_hz=100, follow_acc=250)
+    bench.jog(1, 300, 2)
+    for _ in range(6):
+        time.sleep(0.1)
+        bench.jog(1, 300, 2)                             # keep-alives
+    before = len(frames(sim, Cmd.MOVE_TO_AXIS))
+    bench.jog_release()
+    wait_until(lambda: bench.readout.status == 1 and bench.readout.speed_rpm == 0, 3.0)
+    after = speeds_sent(sim, before)
+    assert len(after) >= 5 and after == sorted(after, reverse=True)   # eased down in steps
+    assert frames(sim, Cmd.MOVE_TO_AXIS)[-1][1:3] == b"\x00\x00"      # then the board's own stop
+
+
+def test_stop_leaves_no_shaped_speed_behind(bench, sim):
+    bench_mode(bench, 300)
+    bench.set_profile(kind="scurve", ease_s=1.0, rate_hz=100)
+    bench.move_to(20 * 360, 300, 2)
+    time.sleep(0.3)
+    assert bench.halt() is True
+    time.sleep(0.3)
+    sent = sim.sent_to(ELBOW)
+    last_stop = max(i for i, f in enumerate(sent) if f[0] == Cmd.EMERGENCY_STOP)
+    assert not any(f[0] == Cmd.MOVE_TO_AXIS and f[1:3] != b"\x00\x00" for f in sent[last_stop:])
+    assert bench._shaper is None and bench.readout.cmd_rpm is None
+
+
+def test_a_stop_purges_the_moves_still_queued(channel):
+    from robotic_arm.dashboard.bench import MOTION_CODES
+    from robotic_arm.dashboard.bus import BusWorker
+
+    with CANInterface(channel, "virtual", bitrate=None) as can:
+        worker = BusWorker(can)                          # not started: the queue stays as built
+        worker.send(1, bytes([Cmd.MOVE_TO_AXIS, 0, 60, 2, 0, 16, 0]))
+        worker.send(1, bytes([Cmd.READ_ENCODER]))
+        worker.send(2, bytes([Cmd.MOVE_TO_AXIS, 0, 60, 2, 0, 16, 0]))
+        worker.send(1, bytes([Cmd.SPEED, 0, 30, 2]))
+        assert worker.purge(1, MOTION_CODES) == 2
+        assert [(i, d[0]) for i, d, _, _ in worker._out] == [(1, Cmd.READ_ENCODER), (2, Cmd.MOVE_TO_AXIS)]
+
+
+def test_profile_pid_and_sampling_settings(bench, sim):
+    for bad in ({"kind": "jerky"}, {"curve": "cubic"}, {"ease_s": 0}, {"rate_hz": 500}, {"follow_acc": 0}):
+        with pytest.raises(Refused):
+            bench.set_profile(**bad)
+    bench.set_profile(kind="scurve", curve="quintic", ease_s=1.2)
+    assert (bench.profile.kind, bench.profile.curve, bench.profile.ease_s) == ("scurve", "quintic", 1.2)
+    bench.write_pid("vfoc", kp=220, ki=100)
+    assert sim.boards[ELBOW].params[0x96] == bytes([0, 0, 220, 0, 100])   # 5.3.1: 96 00 Kp Ki
+    bench.write_pid("close", kd=250, kv=300)
+    assert sim.boards[ELBOW].params[0x97] == bytes([1, 0, 250, 1, 44])     # 5.3.4: 97 01 Kd Kv
+    with pytest.raises(Refused, match="together"):
+        bench.write_pid("vfoc", kp=200)
+    with pytest.raises(Refused, match="0..1024"):
+        bench.write_pid("vfoc", kd=2000, kv=1)
+    bench.set_poll_period(5)
+    assert bench._poll_profile[2] == 0.005
+    with pytest.raises(Refused):
+        bench.set_poll_period(7)
 
 
 # --- settings, scan ---------------------------------------------------------------------------------------------------

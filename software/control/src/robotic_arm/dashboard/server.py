@@ -65,6 +65,15 @@ def dispatch(bench: Bench, action: str, b: dict[str, Any]) -> dict[str, Any]:
             bench.set_mode(str(b["mode"]))
         case "speed_limits":
             bench.set_speed_limits(*(None if b.get(k) in (None, "") else float(b[k]) for k in ("joint_speed", "bench_rpm")))
+        case "profile":
+            bench.set_profile(**{k: b.get(k) for k in ("kind", "curve", "ease_s", "rate_hz", "follow_acc")})
+        case "poll_period":
+            bench.set_poll_period(_int(b["ms"]))
+        case "pid":
+            gains = {k: None if b.get(k) in (None, "") else _int(b[k]) for k in ("kp", "ki", "kd", "kv")}
+            return {"message": bench.write_pid(str(b["loop"]), **gains)}
+        case "read_pid":
+            return {"pid": bench.read_pid(str(b["loop"]))}
         case "limits_on":
             bench.set_limits_on(bool(b["on"]))
         case "limit":

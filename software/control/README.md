@@ -92,6 +92,11 @@ current, angle error), with position and speed graphed, and every CAN frame in a
 - enable or disable the motor, move it with ← / → (or the ◀ ▶ buttons: a tap steps by the Step amount, a hold
   jogs until you let go), change the speed with ↑ / ↓, go to an angle, set the ramp;
 - set limits: a min and a max, from where the motor is now (Here) or typed, and a switch to turn them off;
+- experiment with smoothness (Smoothing in the left panel, the Tuning tab): the board's own straight ramp, or an
+  S-curve the dashboard shapes by streaming speed updates to the board (curve linear / smoothstep / sine / quintic,
+  ease time, updates per second, how hard the board follows), with Snappy / Balanced / Smooth presets; the board's
+  work mode, microsteps, interpolation, current and holding current; its PID gains (firmware V1.0.8+); the graph's
+  speed from the encoder or the board, the commanded speed over it, and 20 / 10 / 5 ms sampling;
 - home it (0x90 + 0x91), set its zero, release a stall, calibrate it (bench mode only);
 - run the tests: repeat moves between two angles, a step response, a speed sweep;
 - run the bring-up checks: which CAN ids answer, the board's firmware, which way the encoder counts (the joint's
@@ -150,6 +155,7 @@ src/robotic_arm/
     bus.py                       the one thread on the CAN bus: queue, polls, replies, log
     bench.py                     the board under test: units, limits, the safety rules
     routines.py                  the tests and bring-up checks
+    shaping.py                   S-curve moves: the speed streamed to the board as F5 updates
     server.py                    the local HTTP server and the command
     static/                      the page (HTML, CSS, JS)
 tests/                         pytest, on the virtual bus and the fake boards

@@ -39,6 +39,7 @@ from robotic_arm import config
 from robotic_arm.can_interface import CANInterface
 from robotic_arm.config import ENCODER_COUNTS_PER_REV, JointConfig
 from robotic_arm.dashboard.bus import BusWorker
+from robotic_arm.dashboard.shaping import CURVES, Profile, Shaper
 from robotic_arm.joint import Joint
 from robotic_arm.motor_driver import (
     HARDWARE_NAMES,
@@ -69,6 +70,7 @@ REPLY_S = 0.15            # the dashboard's commands wait this long for their re
 BENCH_RPM_CEILING = 1000  # the manual: no immediate stop (F7, acc 0) above 1000 RPM
 DEFAULT_JOINT_SPEED_CAP = 10.0
 MOTOR_DEG_PER_COUNT = 360.0 / ENCODER_COUNTS_PER_REV
+MOTION_CODES = (Cmd.MOVE_RELATIVE_AXIS, Cmd.MOVE_TO_AXIS, Cmd.SPEED)   # what a stop purges from the queue
 FAST_POLL = (Cmd.READ_ENCODER, Cmd.READ_SPEED, Cmd.READ_STATUS)
 SLOW_POLL = (Cmd.READ_ENABLED, Cmd.READ_STALL, Cmd.READ_IO, Cmd.READ_POWER, Cmd.READ_ANGLE_ERROR,
              Cmd.READ_HOME_STATUS)
@@ -84,11 +86,16 @@ SETTINGS = {
     0x83: ("working current, mA", 2, 0, 3000),
     0x84: ("microsteps", 1, 1, 255),
     0x88: ("stall protection", 1, 0, 1),
+    0x89: ("interpolation (MPlyer)", 1, 0, 1),            # 5.2.9: 256-step interpolation, less noise at low speed
     0x8B: ("CAN id", 2, 1, 0x7FF),
     0x98: ("heartbeat, ms (0 = off)", 4, 0, 0xFFFF_FFFF),
+    0x9B: ("holding current (0-8 = 10-90 %)", 1, 0, 8),   # 5.2.4: OPEN and CLOSE modes only, not vFOC
 }
 ACTIONS = {0x3D: "release stall", 0x41: "restart", 0x3F: "restore factory defaults"}
-READABLE = (0x82, 0x83, 0x84, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x9E)   # 0x00 read-backs the Settings panel shows
+READABLE = (0x82, 0x83, 0x84, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x9B, 0x9E)   # 0x00 read-backs the Settings panel shows
+# 5.3 (V1.0.8): the position loop's gains, 0-1024 each; code, then 00 + Kp Ki or 01 + Kd Kv. The manual's defaults.
+PID_CODES = {"vfoc": 0x96, "close": 0x97}
+PID_DEFAULTS = {"vfoc": {"kp": 220, "ki": 100, "kd": 270, "kv": 320}, "close": {"kp": 200, "ki": 80, "kd": 250, "kv": 300}}
 WORK_MODES = {0: "CR_OPEN", 1: "CR_CLOSE", 2: "CR_vFOC", 3: "SR_OPEN", 4: "SR_CLOSE", 5: "SR_vFOC"}
 
 
@@ -123,10 +130,11 @@ class Readout:
     angle_error: int | None = None
     home_status: tuple[int, ...] | None = None
     version: str | None = None
+    cmd_rpm: float | None = None      # a shaped move's commanded speed, RPM signed with the encoder's count
     updated: dict[str, float] = field(default_factory=dict)
 
 
-SAMPLE_FIELDS = ("t", "counts", "speed_rpm", "status", "milliamps", "angle_error", "io")
+SAMPLE_FIELDS = ("t", "counts", "speed_rpm", "status", "milliamps", "angle_error", "io", "cmd_rpm")
 
 
 class Bench:
@@ -172,7 +180,11 @@ class Bench:
         self._version_asked = 0.0
         self._last_recording: list[tuple] = []
         self.routine = None                     # a routines.Routine while one runs or after it ends
-        self._poll_profile = (FAST_POLL, SLOW_POLL, 0.02)
+        self.profile = Profile()
+        self._shape_gen = 0                     # bumped by every stop: a running Shaper sends nothing after it
+        self._shaper: Shaper | None = None
+        self._fast_s = 0.02
+        self._poll_profile = (FAST_POLL, SLOW_POLL, self._fast_s)
         self.worker.on_reply = self._on_reply
         self.worker.on_tick = self._tick
         self.worker.driver(self.can_id)
@@ -367,6 +379,84 @@ class Bench:
                 new = replace(new, bench_rpm=float(bench_rpm))
             self.limits = new
 
+    def set_profile(self, **values: Any) -> None:
+        """How moves are shaped (shaping.Profile): kind 'board' or 'scurve', curve, ease_s, rate_hz, follow_acc. It
+        applies to the next move or jog."""
+        with self._lock:
+            new = replace(self.profile, **{k: v for k, v in values.items() if k in asdict(self.profile) and v is not None})
+            new.ease_s, new.rate_hz, new.follow_acc = float(new.ease_s), float(new.rate_hz), int(new.follow_acc)
+            if new.kind not in ("board", "scurve"):
+                raise Refused("the profile is board or scurve")
+            if new.curve not in CURVES:
+                raise Refused(f"the curve is one of {', '.join(CURVES)}")
+            if not 0.05 <= new.ease_s <= 5:
+                raise Refused("ease time 0.05..5 s")
+            if not 5 <= new.rate_hz <= 100:
+                raise Refused("update rate 5..100 per second")
+            if not 1 <= new.follow_acc <= MAX_ACC:
+                raise Refused(f"follow ramp 1..{MAX_ACC}")
+            self.profile = new
+
+    def set_poll_period(self, ms: float) -> None:
+        """How often the encoder, speed and status are read (the graph's detail): 5, 10 or 20 ms."""
+        if ms not in (5, 10, 20):
+            raise Refused("the poll period is 5, 10 or 20 ms")
+        with self._lock:
+            default = self._poll_profile == (FAST_POLL, SLOW_POLL, self._fast_s)
+            self._fast_s = ms / 1000
+            if default:
+                self._poll_profile = (FAST_POLL, SLOW_POLL, self._fast_s)
+                self.worker.set_poll(self.can_id, *self._poll_profile)
+
+    def write_pid(self, loop: str, **gains: int) -> str:
+        """5.3 (firmware V1.0.8+): the position loop's Kp, Ki (sent together) and Kd, Kv (together), 0-1024 each."""
+        if loop not in PID_CODES:
+            raise Refused("the loop is vfoc or close")
+        with self._lock:
+            self._require_idle("changing the PID gains")
+        code, sent = PID_CODES[loop], []
+        for sub, (a, b) in ((0, ("kp", "ki")), (1, ("kd", "kv"))):
+            if gains.get(a) is None and gains.get(b) is None:
+                continue
+            if gains.get(a) is None or gains.get(b) is None:
+                raise Refused(f"{a} and {b} go together")
+            for name in (a, b):
+                if not 0 <= int(gains[name]) <= 1024:
+                    raise Refused(f"{name} {gains[name]} outside 0..1024")
+            data = bytes([code, sub]) + int(gains[a]).to_bytes(2, "big") + int(gains[b]).to_bytes(2, "big")
+            self._status_command(data, f"set {a}/{b} ({loop}; firmware V1.0.8+)", timeout=0.5)
+            sent.append(f"{a} {gains[a]}, {b} {gains[b]}")
+        return f"{loop}: " + "; ".join(sent) if sent else "nothing to write"
+
+    def read_pid(self, loop: str) -> dict[str, str | None]:
+        """5.3's read-backs (00 code 00 / 00 code 01), as the raw bytes the board sends."""
+        if loop not in PID_CODES:
+            raise Refused("the loop is vfoc or close")
+        code, out = PID_CODES[loop], {}
+        for sub, name in ((0, "kp_ki"), (1, "kd_kv")):
+            reply = self.worker.request(self.can_id, bytes([Cmd.READ_PARAM, code, sub]), code=code, timeout=0.3)
+            out[name] = None if reply is None else bytes(reply.data[1:]).hex(" ")
+        return out
+
+    # --- shaped moves (shaping.Shaper) ------------------------------------------------------------------------------
+
+    def _stop_shaper(self) -> None:
+        """Under the lock: no shaped speed is sent after this."""
+        self._shape_gen += 1
+        self._shaper = None
+        self.readout.cmd_rpm = None
+
+    def _start_shaper(self, start: int, vmax: float, *, target: int | None = None, jog_dir: int | None = None) -> None:
+        with self._lock:
+            shaper = Shaper(self, self._shape_gen, start, vmax, target=target, jog_dir=jog_dir, lead_s=JOG_LEAD_S)
+            self._shaper = shaper
+        shaper.start()
+
+    def _shaper_done(self, shaper: Shaper) -> None:
+        with self._lock:
+            if self._shaper is shaper:
+                self._shaper = None
+
     def set_limits_on(self, on: bool) -> None:
         with self._lock:
             self.limits = replace(self.limits, on=bool(on))
@@ -485,7 +575,8 @@ class Bench:
             elif code == Cmd.READ_VERSION and (v := decode_version(reply)) is not None:
                 r.version = f"{v.firmware_text} ({HARDWARE_NAMES.get(v.hardware, v.hardware)})"
             elif (code in (Cmd.MOVE_TO_AXIS, Cmd.MOVE_RELATIVE_AXIS, Cmd.SPEED) and not is_poll
-                  and reply.status in (2, 3) and self.motion in ("move", "jog", "run", "step")):
+                  and reply.status in (2, 3) and self.motion in ("move", "jog", "run", "step")
+                  and self._shaper is None):   # a shaped move ends when its Shaper does (an update's 2 is not it)
                 if reply.status == 3:
                     self.notice("The board stopped the move at a limit (status 3)", "warn")
                 self._end_motion()
@@ -493,7 +584,8 @@ class Bench:
     def _add_sample(self) -> None:
         r = self.readout
         self.sample_seq += 1
-        row = (self.sample_seq, time.time(), r.counts, r.speed_rpm, r.status, r.milliamps, r.angle_error, r.io)
+        row = (self.sample_seq, time.time(), r.counts, r.speed_rpm, r.status, r.milliamps, r.angle_error, r.io,
+               r.cmd_rpm)
         self.samples.append(row)
         if self._recording is not None and len(self._recording) < RECORD_MAX:
             self._recording.append(row)
@@ -508,7 +600,7 @@ class Bench:
         with self._lock:
             if self._jog is not None and now - self._jog_keepalive > JOG_KEEPALIVE_S:
                 self._jog = None
-                self._soft_stop_frames()
+                self._soft_stop_frames()   # the page lost: the board's own ramp, not an eased stop
             busy = self.motion is not None or self._moving() or (self.routine is not None and self.routine.active)
             if busy and now - self._last_page > PAGE_TIMEOUT_S and now - self._last_page_halt > 0.5:
                 self._last_page_halt = now
@@ -542,7 +634,10 @@ class Bench:
     # --- stopping ---------------------------------------------------------------------------------------------------
 
     def _soft_stop_frames(self) -> None:
-        """A ramped stop for what is running, queued ahead of everything (any thread, never blocks)."""
+        """A ramped stop for what is running, queued ahead of everything (any thread, never blocks); queued moves
+        and a shaped move's further speeds are dropped first."""
+        self._stop_shaper()
+        self.worker.purge(self.can_id, MOTION_CODES)
         acc = self._last_acc
         if self.motion == "run":
             self.worker.send(self.can_id, speed_request(0, 0, acc), priority=True)
@@ -558,6 +653,8 @@ class Bench:
             self.routine.cancel.set()
         run = self.motion == "run"
         self._end_motion()
+        self._stop_shaper()
+        self.worker.purge(self.can_id, MOTION_CODES)   # no move queued before the stop goes out after it
         if run:
             self.worker.send(self.can_id, speed_request(0, 0, 0), priority=True)
         self.worker.send(self.can_id, move_to_axis_request(0, 0, 0), priority=True)
@@ -596,6 +693,7 @@ class Bench:
                 if self.routine is not None and self.routine.active:
                     self.routine.cancel.set()
                 self._end_motion()
+                self._stop_shaper()
         self._status_command(bytes([Cmd.ENABLE, int(on)]), "enable" if on else "disable")
 
     def _start_motion(self, kind: str, data: bytes, acc: int, *, routine: bool = False) -> int:
@@ -623,8 +721,19 @@ class Bench:
         return seq
 
     def move_to(self, value: float, speed: float, acc: int, *, routine: bool = False) -> int:
+        """A move to `value` (the mode's unit): straight to the board (its own ramp, `acc`), or shaped (the S-curve
+        profile: a slow first F5, then the Shaper's updates up to `speed`)."""
         counts, rpm = self.check(value, speed, acc)
-        return self._start_motion("move", move_to_axis_request(counts, rpm, acc), acc, routine=routine)
+        with self._lock:
+            self._stop_shaper()
+            shaped, start = self.profile.kind == "scurve", self.readout.counts
+        if not shaped or start is None:
+            return self._start_motion("move", move_to_axis_request(counts, rpm, acc), acc, routine=routine)
+        follow = self.profile.follow_acc
+        seq = self._start_motion("move", move_to_axis_request(counts, max(1, round(0.03 * rpm)), follow), follow,
+                                 routine=routine)
+        self._start_shaper(start, rpm, target=counts)
+        return seq
 
     def move_by(self, delta: float, speed: float, acc: int) -> int:
         now = self.value_now()
@@ -665,6 +774,29 @@ class Bench:
             here = self.readout.counts
             if here is None or self._stale("counts", 0.5):
                 raise Refused("no fresh encoder reading: is the board answering?")
+            shaper = self._shaper if self._shaper is not None and self._shaper.jog_dir is not None else None
+            if shaper is not None and shaper.jog_dir == direction * self._value_dir():
+                self._jog, self._jog_keepalive = direction, now_t   # a shaped jog: kept alive, sped up or resumed
+                shaper.vmax = float(rpm)
+                shaper.resume()
+                return "jogging"
+            if self.profile.kind == "scurve":
+                follow = self.profile.follow_acc
+                target = self._jog_target(here, direction, rpm, follow)
+                if target is None:
+                    raise Refused(f"at the {'max' if direction > 0 else 'min'} limit (switch the limits off to go on)")
+                self._stop_shaper()
+                self._jog, self._jog_keepalive, self._jog_goal, self._jog_rpm = direction, now_t, target, rpm
+                shaped = True
+            else:
+                shaped = False
+        if shaped:
+            self._start_motion("jog", move_to_axis_request(target, max(1, round(0.03 * rpm)), follow), follow)
+            with self._lock:
+                self._jog = direction   # _start_motion's reply path may have cleared it
+            self._start_shaper(here, rpm, jog_dir=direction * self._value_dir())
+            return "jog started"
+        with self._lock:
             if self._jog == direction:
                 self._jog_keepalive = now_t
                 new, goal = self._jog_target(here, direction, rpm, acc), self._jog_goal
@@ -688,7 +820,10 @@ class Bench:
         with self._lock:
             if self._jog is not None:
                 self._jog = None
-                self._soft_stop_frames()
+                if self._shaper is not None and self._shaper.jog_dir is not None:
+                    self._shaper.release()   # eases down along the curve, then stops
+                else:
+                    self._soft_stop_frames()
 
     def run(self, cw: bool, rpm: float, acc: int) -> None:
         """Bench mode only: a constant-speed run (F6), stopped by a limit, the page's silence or a stop."""
@@ -817,14 +952,15 @@ class Bench:
         buf = io.StringIO()
         out = csv.writer(buf)
         unit = "joint_deg" if self.mode == "joint" else "motor_deg"
-        out.writerow(["time_s", "counts", unit, "speed_rpm", "status", "milliamps", "angle_error_motor_deg", "in1"])
+        out.writerow(["time_s", "counts", unit, "speed_rpm", "status", "milliamps", "angle_error_motor_deg", "in1",
+                      "commanded_rpm"])
         t0 = rows[0][1] if rows else 0.0
-        for _, t, counts, rpm, status, ma, err, io_bits in rows:
+        for _, t, counts, rpm, status, ma, err, io_bits, cmd in rows:
             value = None if counts is None else self.to_value(counts)
             out.writerow([f"{t - t0:.4f}", counts, "" if value is None else f"{value:.4f}", rpm,
                           STATUS_NAMES.get(status, status) if status is not None else "", ma,
                           "" if err is None else f"{err * 360 / 51200:.4f}",
-                          "" if io_bits is None else io_bits & 1])
+                          "" if io_bits is None else io_bits & 1, "" if cmd is None else f"{cmd:.2f}"])
         return buf.getvalue()
 
     def samples_since(self, seq: int) -> list[tuple]:
@@ -880,6 +1016,11 @@ class Bench:
                 "bench_rpm_ceiling": BENCH_RPM_CEILING,
                 "limits": {**self.limit_view(), "joint_speed": self.limits.joint_speed,
                            "bench_rpm": self.limits.bench_rpm},
+                "profile": asdict(self.profile),
+                "curves": list(CURVES),
+                "shaping": self._shaper is not None,
+                "poll_ms": round(self._fast_s * 1000),
+                "pid_defaults": PID_DEFAULTS,
                 "window": self.window(),
                 "speed_cap": self.speed_cap(),
                 "motion": self.motion,
@@ -916,6 +1057,12 @@ class Bench:
         start = time.monotonic()
         deadline = start + timeout
         moving = (Cmd.MOVE_TO_AXIS, Cmd.MOVE_RELATIVE_AXIS, Cmd.SPEED)
+        with self._lock:
+            shaper = self._shaper
+        if shaper is not None:   # a shaped move: its Shaper ends at the target, then the board's own reply
+            while not shaper.done.wait(0.01):
+                if cancel.is_set() or time.monotonic() > deadline:
+                    return None
         while time.monotonic() < deadline and not cancel.is_set():
             for _, reply in self.worker.events_since(after_seq):
                 if reply.can_id == self.can_id and reply.code in moving and reply.status in (2, 3):

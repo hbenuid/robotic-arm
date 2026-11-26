@@ -168,6 +168,20 @@ class BusWorker:
     def send(self, can_id: int, data: bytes, *, priority: bool = False) -> None:
         self.submit(can_id, data, wait=False, priority=priority)
 
+    def purge(self, can_id: int, codes: Iterable[int]) -> int:
+        """Drop the frames with these codes still queued for `can_id` (a stop must not be followed by a move queued
+        before it); their waiters get None. Returns how many."""
+        codes = set(codes)
+        with self._out_lock:
+            keep, dropped = collections.deque(), []
+            for item in self._out:
+                (dropped if item[0] == can_id and item[1][0] in codes else keep).append(item)
+            self._out = keep
+        for _, _, waiter, _ in dropped:
+            if waiter is not None:
+                waiter.future.set_result(None)
+        return len(dropped)
+
     def set_poll(self, can_id: int | None, fast: Iterable[int], slow: Iterable[int],
                  fast_s: float = 0.02, slow_s: float = 0.25) -> None:
         """Poll `fast` every `fast_s` and `slow` (one at a time, round robin) every `slow_s / len(slow)` on `can_id`."""
