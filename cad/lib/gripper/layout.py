@@ -95,7 +95,3 @@ def tool0(cfg: GripperConfig = DEFAULT) -> tuple:
 def jaw_origin(cfg: GripperConfig = DEFAULT) -> tuple:
     """Where both jaw joints sit (robot/frames.py): on R', level with the racks' bars' outer faces."""
     return to_module((x0(cfg), 0.0, stations(cfg)["rack"]), cfg)
-
-
-# jaw a's opening direction in the module frame (B's -x); jaw b mimics it, multiplier -1
-JAW_A_OPENS = (0.0, -1.0, 0.0)

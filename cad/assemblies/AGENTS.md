@@ -104,7 +104,7 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
   declares `ACCENT = True`) and
   ivory otherwise - the same part the same colour in the arm and in each module standing alone: `gripper.py`,
   `cycloidal_drive.py`, `forearm_roll_drive.py` and `wrist_roll_drive.py` pass `tint=True` to
-  `occurrence_children` / `located_children`, `grouped_children` always colours (`_tint_parts`). Colours go on the
+  `located_children`, `grouped_children` always colours (`_tint_parts`). Colours go on the
   LEAVES only (`_tint`), never on a group or module node: cad writes a multi-solid part's colour on its solids, and a colour on an enclosing
   node outranks those in the renderers (verified by snapshot: the bought MKS boards and the MG996R drew in their
   link's colour while the groups carried one). Separate make/buy models were tried and removed as
@@ -141,8 +141,8 @@ placing / tinting helpers, also used by `robot/`, `tools/` and `tests/`). Every 
   `:<body>` key suffix (`"cycloidal_drive#1:rotor"`, `_occurrences.split_key`) selects one. Keep `EXPECTED`
   (whole module + `bodies`) in step with the geometry (`totals()` / `totals(body)`).
 - **Assemblies are native build123d**: a model body returns `lib.assembly.assembly(name, children)` =
-  `Compound(label=…, children=[…])`, and the `_occurrences` helpers (`occurrence_children`,
-  `grouped_children`, `located_children`) RETURN the placed children, each labelled with `lib.assembly`'s
+  `Compound(label=…, children=[…])`, and the `_occurrences` helpers (`grouped_children`,
+  `located_children`) RETURN the placed children, each labelled with `lib.assembly`'s
   `label_shape` (`gt2_pulley_90t:j3`: `label_text`'s compact form).
 - When adding source-level joints, they are build123d joints in the model body (a `bd.RevoluteJoint` on the
   parent's part, a `bd.RigidJoint` of the same label on the child's) and `cad.build123d` mechanism states (viewer

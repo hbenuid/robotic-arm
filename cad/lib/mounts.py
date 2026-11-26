@@ -212,7 +212,6 @@ WALL_BRACKET = "j2_wall_bracket"
 LAP_BOLTS = ("wall_bracket_screws", "wall_bracket_nuts")
 FORK_ON_AXIS = ("fork_hub_screws", "fork_hub_nuts", "fork_sleeve_screws", "fork_sleeve_nuts")
 FORK_OFF_AXIS = ("fork_foot_screws", "fork_foot_nuts")
-FORK_BOLTS = FORK_ON_AXIS + FORK_OFF_AXIS
 MOTOR_SCREWS = ("elbow_gearbox_screws", "elbow_motor_screws", "wrist_motor_screws", "yaw_motor_screws")
 IDLER_KIT = ("gt2_idler_20t", "elbow_idler_spacer", "elbow_idler_screw", "elbow_idler_nut", "yaw_idler_spacer",
              "yaw_idler_screw", "yaw_idler_nut", "wrist_idler_spacer", "wrist_idler_screw", "wrist_idler_nut")

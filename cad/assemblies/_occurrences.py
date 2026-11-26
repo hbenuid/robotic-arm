@@ -57,25 +57,6 @@ def _details(role) -> tuple:
     return () if role is None else (role,)
 
 
-def occurrence_children(rows, modules: dict | None = None, tint: bool = False) -> list:
-    """Every row of an OCCURRENCES table as a placed, labelled child (for lib.assembly.assembly()).
-
-    `modules` maps a module name to its MODEL (a zero-arg cad model returning the module
-    Compound in its own frame); it is moved to the module's placement key. With `tint` the module
-    is colored like the arm: every part colour() (_tint_parts)."""
-    modules = modules or {}
-    children = []
-    for name, role, key in rows:
-        if name in modules:
-            children.append(label_shape(geometry(modules[name]).moved(P.location(key, "rel")), name))
-        else:
-            children.append(label_shape(place(name, key), name, *_details(role)))
-    if tint:
-        for child in children:
-            _tint_parts(child)
-    return children
-
-
 def _tint(shape, color: bd.Color) -> None:
     """Set `color` on every LEAF of `shape` (on `shape` itself when it has no children). Never on an inner node:
     cad writes a multi-solid part's colour on its solids, and a colour on an enclosing assembly
@@ -109,7 +90,9 @@ def _tint_parts(shape) -> None:
 
 
 def grouped_children(rows, groups, modules: dict | None = None, root: bd.Location | None = None) -> list:
-    """occurrence_children(), but bucketed into labelled group Compounds (viewer/STEP tree nodes).
+    """Every row of an OCCURRENCES table as a placed, labelled child (for lib.assembly.assembly()), bucketed into
+    labelled group Compounds (viewer/STEP tree nodes). `modules` maps a module name to its MODEL (a zero-arg cad model
+    returning the module Compound in its own frame), moved to the module's placement key.
 
     `groups` rows are (group_label, occurrence keys); together the keys must cover the OCCURRENCES rows' keys exactly
     once. Every part, inside the modules too, gets its colour() (_tint_parts). The colours overwrite imported-STEP
@@ -222,8 +205,3 @@ def place_world_at(part_name: str, world: bd.Location, into=None):
     re-expressed in another frame (`into` = that frame's world Location, so the result is
     `into^-1 * world * LOCAL_FROM_REF^-1 * local`). Used for per-link meshes."""
     return _part(part_name).moved(placement_at(part_name, world, into))
-
-
-def place_world(part_name: str, key: str, into=None):
-    """place_world_at() for a part occurrence key of placements.json."""
-    return place_world_at(part_name, P.location(key, "world"), into)
