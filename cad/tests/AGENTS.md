@@ -59,7 +59,7 @@ kernel are the pinned ones, one complete OCP distribution, no cad-server in the 
 `./cadtool inspect` agrees with the kernel, the retired inspect verbs,
 telemetry, cad's own updates and its plugin updates kept off, `./cadtool doctor`'s readers of what moves the machine,
 no `cadgen` import, no `CADGEN_` name in the code and no second pin, `./cadtool cad` refusing what
-moves the machine and its retired verbs saying what replaced them,
+moves the machine,
 `./cadtool stop` ending only this venv's workers, the two `.claude/settings.json` the same and the plugin from upstream's
 `latest` branch, no tracked `CLAUDE.md` / `CLAUDE.local.md`, every tracked name lowercase),
 `test_mounts.py` (the mounted motors: axis on the joint, face on the host's pad / plate, board on the rear face, interference budget,

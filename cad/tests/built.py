@@ -76,7 +76,7 @@ def leaf(fn, label: str):
 
 @picking.cache
 def placed(key: str, into: str | None = None):
-    """An occurrence of placements.json at its world pose - a part as assemblies._occurrences.place_world() puts it, or a
+    """An occurrence of placements.json at its world pose - a part as assemblies._occurrences.place_world_at() puts it, or a
     designed module - or re-expressed in the frame of the occurrence `into`."""
     o = P.OCCURRENCES[key]
     world = P.location(key, "world")

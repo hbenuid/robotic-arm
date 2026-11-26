@@ -4,7 +4,7 @@
 # every other verb is that server's `cad` command, which uv installs at this project's pin) plus the usual dev
 # commands, all inside THIS uv project (Python 3.14 + build123d + the cad library), always from cad/ with
 # PYTHONPATH=cad/ so `lib`, `parts`, `assemblies` and `robot` import the same way for you and for the workers.
-# Only `skill` and `doctor` need the text-to-cad@earthtojake plugin itself (CAD_PLUGIN=<dir> overrides
+# Only `doctor` needs the text-to-cad@earthtojake plugin itself (CAD_PLUGIN=<dir> overrides
 # its auto-detection).
 set -euo pipefail
 
@@ -42,8 +42,6 @@ cadtool - cad + this uv project (paths relative to cad/)
   ./cadtool stop                                    end THIS venv's idle workers, no other session's (the next gen starts a fresh one):
                                                     after a pyproject.toml / uv.lock change, and when leaving a worktree
   ./cadtool stop --device                           stop the whole server, for EVERY session on this machine
-  ./cadtool skill <skill> <tool> [args]             a plugin skill script: skills/<skill>/scripts/<tool>
-                                                    (+ the skill's requirements.txt, unlocked, in uv's cache)
   ./cadtool cad ...                                 any `cad` subcommand (`./cadtool cad --help`) but setup, update, plugin, run
                                                     (printability: ./cadtool cad step dfm print/<name>.step --process printing)
   ./cadtool pytest [--full] [pytest args]           test suite: the test files a change reaches since they last passed, on
@@ -54,7 +52,6 @@ cadtool - cad + this uv project (paths relative to cad/)
   ./cadtool clean [--all]                           delete __pycache__/, .pytest_cache/, .ruff_cache/ (and any stray __cadgen__/);
                                                     --all also empties snapshots/ and print/ and deletes
                                                     assemblies/*.step, robot/links/*.step
-Retired (each says what replaced it): why, compile, store, daemon, cadgen, parts.
 Env: CAD_PLUGIN=<plugin dir> overrides detection. The document cache: ~/.cache/cad/documents
      (CAD_CACHE_DIR moves it; ./cadtool cad delete <id> --yes removes one).
 USAGE
@@ -187,22 +184,6 @@ need_plugin() {
   fi
 }
 
-run_skill() {  # run_skill <skill> <tool> [args...]  ->  python skills/<skill>/scripts/<tool> args
-  local skill="$1" tool="$2"; shift 2
-  need_plugin
-  local target="$CAD_PLUGIN/skills/$skill/scripts/$tool"
-  if [[ ! -e "$target" ]]; then
-    echo "cadtool: no such plugin tool: $target" >&2
-    exit 1
-  fi
-  # The skill's own libraries, if it lists any in a requirements.txt, ride in uv's cached overlay for
-  # this run, never in this project's lock. A requirements file that pins cad is left out: this venv's cad IS
-  # that pin (`./cadtool doctor`), and resolving it afresh could pull a second cad + kernel.
-  local reqs="$CAD_PLUGIN/skills/$skill/requirements.txt" with=()
-  if [[ -f "$reqs" ]] && ! grep -Eq '^(cad|cadgen|cad-server)([^a-z-]|$)' "$reqs"; then with=(--with-requirements "$reqs"); fi
-  exec uv run --frozen ${with[@]+"${with[@]}"} python "$target" "$@"
-}
-
 cg() {  # the machine's pinned `cad`, its server started where a command needs it. Refused: what would move the machine
   # off the pin or the agent apps' plugins (`plugin install` / `update` put the newest in every app), and `run`,
   # which builds in the server's own environment instead of this venv (docs/toolchain.md Gotchas).
@@ -290,16 +271,6 @@ case "$cmd" in
     need_server
     if [[ $force -eq 1 ]]; then export CAD_ENGINE_MEMO=0; fi
     for f in "${files[@]}"; do uv run --frozen python "$f"; done ;;
-  why|compile|store|daemon|cadgen|parts)
-    case "$cmd" in
-      why) said="no staleness check: run the model (./cadtool gen) - 'took ... nothing ran' is current, 'rebuilt: ...' says what changed" ;;
-      compile) said="nothing to compile: the engine reads a STEP as it is" ;;
-      store) said="no store: ./cadtool status (the server, its documents, its cache), ./cadtool cad delete <id> --yes" ;;
-      daemon) said="one server per computer: ./cadtool status, ./cadtool stop" ;;
-      parts) said="cad 0.11 retired the plugin's step-parts skill: step.parts by hand, vendor/AGENTS.md Recipe D" ;;
-      *) said="the command is cad now: ./cadtool cad <verb>" ;;
-    esac
-    echo "cadtool $cmd: retired - $said" >&2; exit 2 ;;
   inspect)
     exec uv run --frozen python tools/step_facts.py "$@" ;;
   snapshot)
@@ -339,9 +310,6 @@ case "$cmd" in
     cg "$@" ;;
   server)
     install_server ;;
-  skill)
-    skill="${1:?usage: cadtool skill <skill> <tool> [args]}"; tool="${2:?usage: cadtool skill <skill> <tool> [args]}"; shift 2
-    run_skill "$skill" "$tool" "$@" ;;
   doctor)
     # Changes nothing: every release against the pin, the stored choices with the environment's switches taken off (a
     # switch reads "off" with no choice stored at all, and it never reaches the server), and the server running.

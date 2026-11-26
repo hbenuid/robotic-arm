@@ -163,7 +163,7 @@ src/robotic_arm/
   motor_control.py             the interactive CLI (`motor-control`)
   launcher.py                  finds the adapter, runs the CLI (`launcher`)
   command_sweep.py             one board's command check
-  dashboard/                   the dashboard (`dashboard`): one board, in the browser
+  dashboard/                   the dashboard (`dashboard`): every board on the bus, in the browser
     bus.py                       the one thread on the CAN bus: queue, polls, replies, log
     bench.py                     one motor: units, limits, the safety rules
     rig.py                       every motor on the page: the active one, STOP all, moves together

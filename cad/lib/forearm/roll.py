@@ -14,12 +14,10 @@ import math
 
 import build123d as bd
 
-from lib.datum import to_location
 from lib.forearm.layout import (
     clamp_nut_pocket,
     clamp_points,
     coupler_steps,
-    module_frame_in_host,
     motor_pocket,
     nut_channel_end,
     pad_bolt_points,
@@ -38,11 +36,6 @@ from lib.sensors import A3144_HALL_DEPTH, KY003_BOARD_W, KY003_HOLE_INSET, ky003
 from lib.units import NUDGE
 
 FAR = 500.0   # past every part: the half-plane behind the frame's front face
-
-
-def host_to_module(cfg: ForearmConfig = DEFAULT) -> bd.Location:
-    """j2_link's frame before the forearm's turn -> the module frame (the inverse of the module's mount frame)."""
-    return to_location(module_frame_in_host(cfg)).inverse()
 
 
 def _x_hex(across_flats: float, length: float, yz, x0: float, flat_deg: float):

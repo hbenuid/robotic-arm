@@ -32,14 +32,14 @@ LAYER_H_FINE = 0.16     # [DESIGN] mm - ... but a gear, a cycloidal disc or a ti
 
 # --- Fasteners - lib/fasteners.py (a leaf: the sizes, the clearance holes, the plain screw / nut builders) ----
 from lib.fasteners import (  # noqa: E402, F401
-    M2_CLEAR, M2_NUT, M2_SHCS, M3_CLEAR, M3_CSK, M3_NUT, M3_PITCH, M3_SHCS, M4_CLEAR, M4_NUT, M4_PITCH, M4_SHCS, M5_CLEAR,
-    M5_NUT, M5_PITCH, M5_SHCS, csk_volume, nut_volume, shcs_volume,
+    M2_CLEAR, M2_NUT, M2_SHCS, M3_CLEAR, M3_NUT, M3_PITCH, M3_SHCS, M4_CLEAR, M4_NUT, M4_PITCH, M4_SHCS, M5_CLEAR,
+    M5_NUT, M5_PITCH, M5_SHCS, nut_volume, shcs_volume,
 )
 
 # --- Belt drive (GT2) - lib/belts.py (a leaf: lib/forearm/ imports it directly) ------------------
 from lib.belts import (  # noqa: E402, F401
     GT2_BELT_BACK, GT2_BELT_MASS_G_PER_M, GT2_BELT_THICKNESS, GT2_BELT_W, GT2_BLEND_R, GT2_FLANK_ANGLE, GT2_FLANK_R, GT2_GROOVE_R, GT2_IDLER_BORE, GT2_IDLER_CHANNEL_W,
-    GT2_IDLER_FLANGE_DIA, GT2_IDLER_SEAT_DIA, GT2_IDLER_WIDTH, GT2_PITCH, GT2_PLD, GT2_PULLEY_20T_PITCH_DIA,
+    GT2_IDLER_FLANGE_DIA, GT2_IDLER_SEAT_DIA, GT2_IDLER_WIDTH, GT2_PITCH, GT2_PLD,
     GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_BOLT_R, GT2_PULLEY_90T_FACE_Y, GT2_PULLEY_90T_HEAD_SEAT, GT2_PULLEY_90T_PITCH_DIA,
     GT2_PULLEY_90T_TEETH, GT2_PULLEY_120T_TEETH, GT2_RATIO, GT2_TIP_R, GT2_TOOTH_DEPTH, STANDARD_2GT_LENGTHS, flank_offset, pulley_90t_bolt_points,
     pulley_od,
@@ -162,7 +162,6 @@ FOREARM_ROLL_TURN_DEG = _FOREARM.roll_turn_deg     # 180 [DESIGN] the forearm + 
 #                                                    (lib/placements.py TURNS): the wrist-pitch motor on the upper arm's side of it
 FOREARM_WALL_X = _FOREARM.roll_end.wall_x          # (-56, -44.75) [DESIGN] the flange wall: wrist face .. elbow face (44.75 from the elbow axis)
 FOREARM_WALL_OD = _FOREARM.roll_end.wall_od        # 60 [DESIGN] the flange wall's round outline about the roll axis (on a foot as wide as the web)
-FOREARM_PLUG_CLEARANCE = _FOREARM.roll_end.plug_clearance   # 10 [DESIGN] the wrist motor's connector plug: its room beyond the connector (sideways)
 FOREARM_MOTOR_WALL_CLEAR = _FOREARM.roll_end.motor_wall_clear   # 1.5 [DESIGN] the wrist motor's body to the wall screws' heads at the slots' wall end
 FOREARM_ROLL_BELT_LENGTH = _FOREARM.drive.roll_belt          # 280-2GT [DESIGN] the roll belt (90T ring on the shaft, 20T on the motor, round its idler)
 FOREARM_ROLL_MOTOR_XY = (0.0, _FOREARM.drive.motor_y)        # (0, -74) [DESIGN] the roll motor's axis in the module frame: on the elbow axis, the drive's centre distance under the roll axis
@@ -173,7 +172,6 @@ ELBOW_ROLL_OFFSET = _FOREARM.elbow_offset                    # 74 [DESIGN] the r
 #                                                              centre distance (the stock belt round its idler), the roll motor on the elbow axis - the arm's
 #                                                              elbow offset (lib/placements.py SHIFTS)
 FOREARM_ROLL_RATIO = _FOREARM.drive.ring_teeth / GT2_PULLEY_20T_TEETH   # 4.5:1 [DESIGN] like the other belt joints
-FOREARM_ROLL_BLOCK_X = _FOREARM.drive.block_x       # (-30, 30) [DESIGN] the roll frame's extent along N: its underside 6.0 mm above the upper arm's flat top (host z -11)
 # The wrist roll (lib/wrist/params.py WristRollParams; assemblies/wrist_roll_drive.py, docs/wrist_roll.md): the pancake ON
 # the wrist-pitch axis, on wrist_link's plate, belted to the roll axis beside it - the forearm roll's pattern
 from lib.wrist.params import DEFAULT as _WRIST  # noqa: E402

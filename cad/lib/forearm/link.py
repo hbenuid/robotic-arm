@@ -144,18 +144,6 @@ def corner_facets(cfg: ForearmConfig = DEFAULT) -> list:
     return cuts
 
 
-def elbow_disc(cfg: ForearmConfig = DEFAULT):
-    """The j3_coupler interface: the disc with its bore, the 4x M4 clearance holes and their hex nut pockets
-    (the material only; the web is added by build_link, the elbow block reuses this in M3)."""
-    d = cfg.disc
-    body = cylinder(d.dia / 2.0, d.z1 - d.z0, z0=d.z0)
-    body = body - through(d.bore_dia / 2.0, d.z1 - d.z0, z0=d.z0)
-    for angle, xy in zip(disc_bolt_angles(cfg), disc_bolt_points(cfg), strict=True):
-        body = body - cylinder(d.bolt_dia / 2.0, d.bolt_z1 - d.z0 + NUDGE, xy, z0=d.z0 - NUDGE)
-        body = body - bd.Pos(xy[0], xy[1], d.nut_z0) * hex_prism(d.nut_af, angle, d.z1 - d.nut_z0 + NUDGE)
-    return body
-
-
 def idler_mount(body, cfg: ForearmConfig = DEFAULT):
     """`body` with the wrist idler's M5 slot through the web and the nut's channel (flats + nut_fit wide across x) from
     nut_floor up through the top face - each on the idler's axis' line, running along y between IdlerParams.slot_y's

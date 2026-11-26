@@ -152,15 +152,6 @@ def test_doctor_names_what_moves_the_machine(tmp_path):
     assert cadtool_function("other_plugins", str(plugins)) == "cad@text-to-cad text-to-cad@text-to-cad"
 
 
-@pytest.mark.parametrize("verb", ["parts", "why", "compile", "store", "daemon", "cadgen"])
-def test_retired_cadtool_verbs_say_what_replaced_them(verb):
-    """A retired verb exits 2 and says what replaced it, before anything of cad runs (`parts`: cad 0.11 retired the
-    plugin's step-parts skill; step.parts is reached by hand, vendor/AGENTS.md Recipe D)."""
-    proc = subprocess.run(["./cadtool", verb], cwd=CAD_DIR, capture_output=True, text=True, check=False)
-    assert proc.returncode == 2, proc.stdout + proc.stderr
-    assert f"cadtool {verb}: retired - " in proc.stderr
-
-
 @pytest.mark.parametrize(("source", "kind"), [
     ("assemblies/arm.step", "step"), ("vendor/x.STP", "step"), ("print/base.stl", "stl"), ("a.glb", "glb"),
     ("a.3mf", "threemf"), ("a.xbf", "xbf"), ("a.dxf", "dxf"), ("robot/arm.urdf", "urdf"), ("robot/arm.srdf", "srdf"),

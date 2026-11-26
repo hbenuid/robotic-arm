@@ -14,7 +14,6 @@ GT2_PULLEY_90T_TEETH = 90                           # [REFERENCE] printed 90T pu
 GT2_PULLEY_120T_TEETH = 120                         # [DESIGN] printed 120T pulley, the base_yaw joint's (parts/base/gt2_pulley_120t)
 GT2_PULLEY_20T_TEETH = 20                           # [REFERENCE] purchased 20T pulley (parts/wrist/gt2_pulley_20t)
 GT2_PULLEY_90T_PITCH_DIA = GT2_PULLEY_90T_TEETH * GT2_PITCH / math.pi   # 57.30 mm pitch diameter
-GT2_PULLEY_20T_PITCH_DIA = GT2_PULLEY_20T_TEETH * GT2_PITCH / math.pi   # 12.73 mm
 GT2_RATIO = GT2_PULLEY_90T_TEETH / GT2_PULLEY_20T_TEETH                 # 4.5:1 [REFERENCE] a 90T on its 20T (the elbow and wrist belts): motor turns per output turn; config.py's gear_ratio is 1 / the joint's (robot/AGENTS.md)
 GT2_PLD = 0.254                                     # [DATASHEET] pitch-line distance: pitch radius - pulley outside radius
 GT2_BELT_W = 6.0                                    # [DATASHEET] the 6 mm belt every joint uses

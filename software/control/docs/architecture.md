@@ -6,7 +6,7 @@ so everything above the motor driver here is new, and its Arctos numbers (joint 
 this arm.
 
 ```
-  user interface        motor_control.py (CLI), command_sweep.py, dashboard/ (one board in the browser);
+  user interface        motor_control.py (CLI), command_sweep.py, dashboard/ (every board on the bus, in the browser);
                         another project's code
   kinematics            - planned: numeric FK / IK from cad/robot/arm.urdf
   arm (layer 4)         arm.py        every board on one bus: send all, collect, e-stop all, checked moves

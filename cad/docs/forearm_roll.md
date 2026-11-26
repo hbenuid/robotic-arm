@@ -91,7 +91,7 @@ long edges are faceted straight end to end (`roll.py front_facets`, `front_facet
 through the face inside them; closed: the
 motor's pocket opens down through the octagon's bottom instead, the shaft's bay through the frame's back (under the
 removable back panel, flush with the rear line: §0). The
-measured SolidWorks coupler (`reference/solidworks/j3_coupler.step`: Ø78 flange host z −10…0, Ø62 boss
+measured SolidWorks coupler (`lib/coupler/params.py CouplerParams`: Ø78 flange host z −10…0, Ø62 boss
 −14…−10, Ø40 journal −15.3…−14, Ø30 stub −22…−15.3, Ø12.5 bore, 4× M4 at r 11 from the pulley) gives the elbow flange
 (`elbow_flange`) under the underside about the elbow axis its journal - carried up to the underside as one post (`post_dia`) -, stub, bore
 and bolt circle; its flange and boss, which turned in the Ø80 recess `j1_link`'s top no longer has, are not repeated.
