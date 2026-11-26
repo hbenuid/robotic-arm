@@ -145,7 +145,7 @@ class Shaper(threading.Thread):
                 target, bounded = self.target, True
             else:
                 target = counts + d * max(self.vmax * COUNTS_PER_RPM_S * self.lead_s, 64)
-                lo, hi, _, _ = b._bounds()
+                lo, hi = b._bounds()
                 bounded = (d > 0 and hi is not None and target >= hi) or (d < 0 and lo is not None and target <= lo)
                 if bounded:
                     target = hi if d > 0 else lo

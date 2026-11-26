@@ -229,7 +229,7 @@ function render(st) {
   // setup
   $("cap-text").textContent = `max ${st.max_joint_speed}`;
   $("bench-ceiling").textContent = `max ${st.bench_rpm_ceiling}`;
-  $("limits-hint").textContent = joint_mode ? `The arm's own range: ${st.hard_limits[0]} to ${st.hard_limits[1]}° (used as the limits once the joint has a reference, unless you set your own).` :
+  $("limits-hint").textContent = joint_mode ? `The arm's own range: ${st.hard_limits[0]} to ${st.hard_limits[1]}° (Use arm range, under Limits, sets it once the joint has a reference).` :
     joint ? `1 motor turn = ${fmt(360 * joint.gear_ratio, 1)}° at ${st.joint}.` : "";
   $("config-sign").textContent = st.config_sign > 0 ? "+1" : "−1";
   $("sign-plus").classList.toggle("on", st.sign > 0);
@@ -376,15 +376,17 @@ function renderLimits(st) {
   sw.setAttribute("aria-pressed", String(L.on));
   sw.querySelector(".slabel").textContent = L.on ? "ON" : "OFF";
   for (const side of ["min", "max"]) {
-    const input = $(`lim-${side}`), v = L[side], src = L[`${side}_src`];
+    const input = $(`lim-${side}`), v = L[side];
     if (document.activeElement !== input) input.value = v === null ? "" : round(v, 2);
-    input.classList.toggle("arm", src === "arm");
-    input.title = src === "arm" ? "the arm's own limit (config.JOINTS)" : src === "yours" ? "your limit" : "no limit this side";
-    $(`lim-${side}-clear`).disabled = src !== "yours";
+    input.title = v === null ? "no limit this side" : "";
+    $(`lim-${side}-clear`).disabled = v === null;
   }
+  const arm = $("lim-arm"), [lo, hi] = st.hard_limits;
+  arm.disabled = !L.arm_ready;
+  arm.title = L.arm_ready ? `Set the limits to ${st.joint}'s range: ${lo} to ${hi}°` :
+    "Needs a reference: home the joint, or set where it is (Setup)";
   $("limits-note").textContent = !L.on ? "Off: free movement. Only the speed cap and STOP apply." :
-    L.min === null && L.max === null ? "None set: move to an end and press Here." :
-    L.min_src === "arm" || L.max_src === "arm" ? "Grey: the arm's own limit. Here or a typed value replaces it." : "";
+    L.min === null && L.max === null ? `None set: move to an end and press Here${L.arm_ready ? ", or Use arm range" : ""}.` : "";
 }
 
 function setStat(id, text, fresh) {
@@ -874,11 +876,14 @@ function bind() {
   for (const side of ["min", "max"]) {
     const input = $(`lim-${side}`);
     $(`lim-${side}-here`).onclick = () => act("limit", { side, here: true }, $("motion-msg"), `${side} limit set here`);
-    $(`lim-${side}-clear`).onclick = () => act("limit", { side, value: null }, $("motion-msg"), `your ${side} cleared`);
-    input.addEventListener("change", () => act("limit", { side, value: input.value === "" ? null : parseFloat(input.value) },
-      $("motion-msg"), `${side} limit set`));
+    $(`lim-${side}-clear`).onclick = () => act("limit", { side, value: null }, $("motion-msg"), `${side} cleared: open`);
+    input.addEventListener("change", () => {
+      const value = input.value === "" ? null : parseFloat(input.value);
+      act("limit", { side, value }, $("motion-msg"), value === null ? `${side} cleared: open` : `${side} limit set`);
+    });
     input.addEventListener("keydown", (e) => { if (e.key === "Enter") input.blur(); });
   }
+  $("lim-arm").onclick = () => act("arm_limits", {}, $("motion-msg"), "limits set to the arm's range");
   $("run-cw").onclick = () => act("run", { cw: true, rpm: num("run-rpm"), acc: int("acc-num") }, $("motion-msg"), "running CW");
   $("run-ccw").onclick = () => act("run", { cw: false, rpm: num("run-rpm"), acc: int("acc-num") }, $("motion-msg"), "running CCW");
   $("soft-stop").onclick = () => { jogStop(false); act("stop", {}, $("motion-msg"), "stopping"); };
