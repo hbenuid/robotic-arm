@@ -4,13 +4,7 @@ Pure-Python config and layout here (lib/wrist/params.py, layout.py); the build12
 roll.py and connector.py (imported explicitly by the parts, so importing this package never pulls in OCCT). Never
 imports lib/params.py.
 """
-from lib.wrist.layout import (  # noqa: F401
-    end_face_holes,
-    pulley_bolt_points,
-    seat_bolt_points,
-    slope_x,
-    stack_positions,
-)
+from lib.wrist.layout import end_face_holes, pulley_bolt_points, seat_bolt_points, slope_x, stack_positions  # noqa: F401
 from lib.wrist.params import (  # noqa: F401
     DEFAULT,
     LEGACY,

@@ -41,14 +41,7 @@ import build123d as bd
 
 from lib import params as PARAMS
 from lib import placements as P
-from lib.datum import (  # noqa: F401  (the datum frames live below assemblies/)
-    BASE_BOTTOM_Y,
-    BASE_FORWARD,
-    U,
-    base_frame,
-    frame,
-    rotation,
-)
+from lib.datum import BASE_BOTTOM_Y, BASE_FORWARD, U, base_frame, frame, rotation  # noqa: F401  (the datum frames live below assemblies/)
 from lib.gripper.layout import jaw_origin, tool0
 from lib.wrist.layout import gripper_frame_in_host
 
