@@ -89,7 +89,7 @@ def test_belt_motor_and_mks_board_track_reference():
     for belt in (YAW_BELT, p.ELBOW_BELT_LENGTH, p.FOREARM_ROLL_BELT_LENGTH, p.WRIST_BELT_LENGTH):
         assert belt in STANDARD_2GT_LENGTHS, belt
     # the body FOREARM_MOTOR_WALL_CLEAR or more off the wall screws' heads, clear of the boss
-    assert p.J2_MOTOR_X + p.NEMA17_40_BODY_W / 2 + p.M3_SHCS.head_h + p.FOREARM_MOTOR_WALL_CLEAR <= p.FOREARM_WALL_X[0] + 1e-9
+    assert p.J2_MOTOR_X + p.NEMA17_40_BODY_W / 2 + p.M4_SHCS.head_h + p.FOREARM_MOTOR_WALL_CLEAR <= p.FOREARM_WALL_X[0] + 1e-9
     assert p.WRIST_BELT_LENGTH == 280
     assert p.J2_MOTOR_X - p.NEMA17_40_BODY_W / 2 >= wrist_x + boss_r
     assert p.FOREARM_WALL_X[0] < p.FOREARM_WALL_X[1] < 0 and p.FOREARM_ROLL_AXIS_Z == 42.0 - 17.0

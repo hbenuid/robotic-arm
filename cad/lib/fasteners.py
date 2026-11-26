@@ -83,13 +83,15 @@ M4_NUT_UPRIGHT_PRESS_AF = 7.1   # [MEASURE]
 # upright - PETG at 0.16, measured on the 120T pulley's test plate: the shank's hole it slides through by hand with no
 # play, and the head's counterbore it goes into by hand and stays in when the part is turned over (M4_CLEAR and a 7.4
 # counterbore both had play there). Every 0.16 part with M4 screws through it takes them - the 90T and 120T pulleys
-# (lib/pulley/params.py DEFAULT).
+# (lib/pulley/params.py DEFAULT); the forearm roll pulley takes the hole (its rotor clamp's heads sink in wider
+# counterbores, lib/forearm/params.py RollDriveParams clamp_*).
 M4_CLEAR_FINE = 4.2           # [MEASURE]
 M4_HEAD_BORE_FINE = 7.05      # [MEASURE]
 # The shank's snug hole at LAYER_H (0.20), its axis upright - measured on j1_coupler_plate's test plate (6 long), the
 # same size as at 0.16. Every 0.20 M4 clearance hole printed upright takes it - j1_coupler_plate's and j1_coupler's
 # plate screws, the 120T's holes through the plate, j1_motor_leg's foot screws, the drive's housing bolts (the shell
-# ring, j1_link) and the output hub's, j1_link's gearbox screws, the elbow and wrist flanges' 90T screws; a hole printed
+# ring, j1_link) and the output hub's, j1_link's gearbox screws, the elbow and wrist flanges' 90T screws, the forearm
+# roll shaft's clamp screws; a hole printed
 # on its side keeps M4_CLEAR (untested there).
 M4_CLEAR_UPRIGHT = 4.2        # [MEASURE]
 

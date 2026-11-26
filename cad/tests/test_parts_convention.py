@@ -63,12 +63,9 @@ MULTI_BODY = {
     "wrist_motor_screws": 4,
     "roll_motor_screws": 4,
     "yaw_motor_screws": 4,
-    # the forearm roll rotor's clamp: its M3 screws + nuts (its drive's rows)
+    # the forearm roll rotor's clamp, through the forearm wall: its M4 screws + nuts (its drive's rows)
     "roll_clamp_screws": 4,
     "roll_clamp_nuts": 4,
-    # the forearm wall's M3 screws + nuts onto the roll pulley (its drive's rows)
-    "roll_wall_screws": 4,
-    "roll_wall_nuts": 4,
     # the wrist roll's: the pancake's M3, the rotor clamp's and the connector's M3 screws + nuts (its drive's rows)
     "wrist_roll_motor_screws": 4,
     "wrist_roll_clamp_screws": 4,

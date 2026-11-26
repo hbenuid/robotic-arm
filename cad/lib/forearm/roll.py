@@ -16,12 +16,9 @@ import build123d as bd
 
 from lib.datum import to_location
 from lib.forearm.layout import (
-    clamp_bore_r,
     clamp_nut_pocket,
     clamp_points,
     coupler_steps,
-    end_nut_pocket,
-    flange_bolt_points_module,
     module_frame_in_host,
     motor_pocket,
     nut_channel_end,
@@ -379,39 +376,24 @@ def build_block(cfg: ForearmConfig = DEFAULT):
 
 def build_pulley(cfg: ForearmConfig = DEFAULT):
     """The pulley (forearm_roll_pulley) in the module frame - the roll's output: the integral 90T ring (two flanges) on
-    a Ø44 core - on down past the ring's rear flange to run_gap over the frame's front face and bearing 2 -, its hub - a
-    journal through bearing 2, then the neck (neck_dia, under the bearing's bore: bearing 2 slides over it) on through
-    the lip to bearing 1's front face, where the shaft's journal meets it -, the Ø33 shoulder on bearing 2's inner ring,
-    the Ø39.7 spigot on its front face in the forearm wall's recess (the wall bolts onto the ring's face, into nuts in
-    pockets in the core, pushed in from the bore); the cable bore, the rotor clamp's 4 holes with their heads'
-    counterbores in the front face."""
-    d, w, S = cfg.drive, cfg.roll_end, stack_positions(cfg)
+    a Ø44 core, from the ring's rear flange on; under it the Ø33 shoulder on down to bearing 2's inner ring (the flange
+    over the frame's front face), its hub - a journal through bearing 2, then the neck (neck_dia, under the bearing's
+    bore: bearing 2 slides over it) on through the lip to bearing 1's front face, where the shaft's journal meets it;
+    its front face the ring's, flat (no spigot: the pulley prints on it), on the forearm wall's flat elbow face; the
+    cable bore, straight through, and the rotor clamp's 4 holes end to end (the screws come from the wall)."""
+    d, S = cfg.drive, stack_positions(cfg)
     j_r = d.pulley_journal_dia / 2.0
-    z_end = S["z_spigot_end"]
-    z_core = S["z_boss"] + d.run_gap
-    # the core: the neck, the hub, the shoulder, the core (under the ring and on down to the shoulder), the spigot - then
-    # every cut, then the ring fused on LAST (an annulus on the core, so no boolean ever runs through its 90 grooves)
+    z_end, z_core = S["z_wall"], S["z_ring_flange_1"]
+    # the core: the neck, the hub, the shoulder (on up to the ring's rear flange), the core under the ring - then every
+    # cut, then the ring fused on LAST (an annulus on the core, so no boolean ever runs through its 90 grooves)
     body = cylinder(d.neck_dia / 2.0, S["z_bearing_2"] - S["z_meet"], z0=S["z_meet"])
     body = body + cylinder(j_r, S["z_boss"] - S["z_bearing_2"], z0=S["z_bearing_2"])
-    body = body + cylinder(d.shoulder_dia / 2.0, d.run_gap, z0=S["z_boss"])
+    body = body + cylinder(d.shoulder_dia / 2.0, z_core - S["z_boss"], z0=S["z_boss"])
     body = body + cylinder(d.ring_core_dia / 2.0, S["z_ring_end"] - z_core, z0=z_core)
-    body = body + cylinder(w.flange_dia / 2.0, z_end - S["z_wall"], z0=S["z_wall"])
-    # the cable bore, narrowed over the clamp's counterbores' depth (clamp_bore_r: their wall to it)
-    body = body - cylinder(d.bore / 2.0, S["z_clamp_head"] - S["z_meet"] + NUDGE, z0=S["z_meet"] - NUDGE)
-    body = body - cylinder(clamp_bore_r(cfg), z_end - S["z_clamp_head"] + 2 * NUDGE, z0=S["z_clamp_head"] - NUDGE)
-    # the rotor clamp: clearance end to end, each head's counterbore from the front face
-    head_r = d.clamp_screw.head_dia / 2.0 + d.clamp_head_clear
+    # the cable bore and the rotor clamp's clearance, end to end
+    body = body - cylinder(d.bore / 2.0, z_end - S["z_meet"] + 2 * NUDGE, z0=S["z_meet"] - NUDGE)
     for x, y in clamp_points(cfg):
-        body = body - cylinder(w.bolt_dia / 2.0, z_end - S["z_meet"] + 2 * NUDGE, (x, y), z0=S["z_meet"] - NUDGE)
-        body = body - cylinder(head_r, z_end - S["z_clamp_head"] + NUDGE, (x, y), z0=S["z_clamp_head"])
-    # the forearm wall's 4x M3: clearance from the front face on 2 pitches past each nut (z_end_hole: room past the tip,
-    # flush with the nut's far face), and each nut's pocket - a slot from the cable bore outward along the screw's angle, a
-    # flat either side - in the core
-    r_in, r_out, z0, z1 = end_nut_pocket(cfg)
-    z_hole = S["z_end_hole"] - d.end_nut_fit
-    for x, y in flange_bolt_points_module(cfg):
-        body = body - cylinder(w.bolt_dia / 2.0, z_end - z_hole + NUDGE, (x, y), z0=z_hole)
-        body = body - nut_slot(r_in, r_out, d.end_nut.af, z0, z1, math.atan2(y, x))
+        body = body - cylinder(d.clamp_bolt_dia / 2.0, z_end - S["z_meet"] + 2 * NUDGE, (x, y), z0=S["z_meet"] - NUDGE)
     ring = gt2_ring(d.ring_teeth, d.ring_width, d.ring_flange_dia, d.ring_flange_t, z0=S["z_ring"], inner_dia=d.ring_core_dia - 0.2)
     return single_solid(body + ring)
 
@@ -421,7 +403,7 @@ def build_shaft(cfg: ForearmConfig = DEFAULT):
     to the bearing's front face, where the pulley's neck meets it, the Ø33 shoulder on bearing 1's inner ring, the flange
     behind it with the rotor clamp's four nuts (pockets open to its rear face and into the bore) and the hard-stop lug;
     the cable bore."""
-    d, w, S = cfg.drive, cfg.roll_end, stack_positions(cfg)
+    d, S = cfg.drive, stack_positions(cfg)
     j_r = (d.bearing_bore + d.journal_add) / 2.0
     z0 = S["z_shaft_end"]
     body = cylinder(j_r, S["z_meet"] - S["z_bearing_1"], z0=S["z_bearing_1"])
@@ -431,7 +413,7 @@ def build_shaft(cfg: ForearmConfig = DEFAULT):
     body = body - cylinder(d.bore / 2.0, S["z_meet"] - z0 + 2 * NUDGE, z0=z0 - NUDGE)
     r_in, r_out, p0, p1 = clamp_nut_pocket(cfg)
     for x, y in clamp_points(cfg):
-        body = body - cylinder(w.bolt_dia / 2.0, S["z_meet"] - z0 + 2 * NUDGE, (x, y), z0=z0 - NUDGE)
+        body = body - cylinder(d.clamp_bolt_dia / 2.0, S["z_meet"] - z0 + 2 * NUDGE, (x, y), z0=z0 - NUDGE)
         body = body - nut_slot(r_in, r_out, d.clamp_nut.af, p0 - NUDGE, p1, math.atan2(y, x))
     return single_solid(body - home_magnet_pocket(cfg))
 
