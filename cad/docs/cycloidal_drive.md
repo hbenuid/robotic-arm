@@ -213,7 +213,7 @@ the outer race (`plate_relief_*`) - the flange stops the inner race -, then the 
 `j1_coupler` fork's hub-side leg; 4 blind Ø4.20 × 10 pin holes on Ø60, to the pins' ends, a lead-in at each mouth (§1.3); Ø6 shaft-clearance
 bore through the flange; Ø16.2 × 5 625 pocket on the inner face; the **arm-mount pattern** 4 × `housing_bolt_hole_dia` through-holes (the port's Ø4.4, the build's Ø4.2) on
 Ø50 at 45° from the pins, each into a captive M4 nut pocket (7.2 AF × 4.7, `hub_nut_depth`) in the flange's inner
-face - the port bolted `j1_link` to it, the turning shell bolts the hub to the fork's leg (M4 × 25 from its
+face - the port bolted `j1_link` to it, the turning shell bolts the hub to the fork's leg (M4 × `ForkParams.hub_screw_len` from its
 counterbores, their ends flush with the nuts); a Ø36 lightening recess in the face (`arm_mount_pocket_dia`, 0 =
 sealed). The grip passes the lip bore with ~7.9 mm radial clearance. It is held: the carrier, with the output pins
 (§5.5). Print output-face-down.
@@ -293,7 +293,7 @@ face, the one the part prints on; nothing bolts the arm to the shell's end.
   the pins; two opposite bolts started first), drawn down evenly onto the body by the M4 × 70s into its nuts; the
   sleeve's three nuts pressed into its lugs, then the motor into the sleeve; the whole lowered into the fork, the hub
   bolted to its leg, the motor leg (`j1_motor_leg`) slid on over the motor and its board and bolted to the yoke's disc,
-  then to the sleeve with the three M4 × 20s, snug, sides before top (they pull the sleeve across the ring's 0.2 a
+  then to the sleeve with the three M4 × `ForkParams.sleeve_screw_len`, snug, sides before top (they pull the sleeve across the ring's 0.2 a
   side) - the output pins hold the plate at the hub's angle, so the sleeve's holes come round with the hub's; the
   screws' clearance (`M4_CLEAR` in the ring's slots and the lugs, the hub's bolts in the hub leg's) takes up what the
   prints are off.

@@ -141,7 +141,7 @@ vendor file and the import, and write its numbers into a test of its own (Part s
 
 ## Modelled, not placed yet
 A part may be modelled before an assembly places it (a sensor whose mount is not designed yet), or kept modelled with
-no occurrence (the port's ring gear body for `test_port`, an idler kit the design dropped). It declares
+no occurrence (none does today). It declares
 `UNPLACED = "<why, and what would place it>"` (`parts.unplaced()`); `tests/test_bom.py` then leaves it out of the
 "every part is placed" check, and the print and buy lists never see it (they count occurrences). A purchased one still
 to be bought keeps its order line as a `tools/bom.py EXTRAS` row (a printed one, or one nobody buys now, has none).

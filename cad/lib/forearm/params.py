@@ -524,8 +524,8 @@ class RollDriveParams:
     pulley_hub_len: float = GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_FACE_Y[0]   # [REFERENCE] 21.4, the 90T's length through its bolt holes:
     #                                       the screw heads sit in its counterbores (parts/joints/elbow_pulley_screws)
     pulley_screw_len: float = 35.0        # [DESIGN] M4 x 35 (ISO 4762) from the floors of the pulley's counterbores
-    #                                       (GT2_PULLEY_90T_HEAD_SEAT under its outer face), through the flange into the frame: 5 longer than the
-    #                                       wrist's (FlangeParams.pulley_screw_len), whose flange is one with its frame
+    #                                       (GT2_PULLEY_90T_HEAD_SEAT under its outer face), through the flange into the frame (the wrist's:
+    #                                       FlangeParams.pulley_screw_len, an M4 x 35 cut to 33)
     nut_af: float = M4_NUT_SIDE_PRESS_AF  # [MEASURE] 7.15, the M4 nuts' (ISO 4032, s 7) hex channels: a press, printed on their side
     nut_t: float = M4_NUT.h               # [DATASHEET] 3.2, ISO 4032 M4 nut height (parts/joints/elbow_pulley_nuts)
     nut_seat_x: float = -ROLL_FRAME_R - 2.0 + 1.0   # [DESIGN] in the frame's spigot, 1 of it between each nut and the flange (spigot_h
