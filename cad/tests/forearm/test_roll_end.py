@@ -61,22 +61,22 @@ def test_default_layout():
     x, h = DEFAULT.motor_x, DEFAULT.holes
     assert x == DEFAULT.web.wrist_x + WRIST_MOTOR_CENTRES and DEFAULT.slot is None and DEFAULT.slide_range is None
     assert closed_belt_length(WRIST_MOTOR_CENTRES, GT2_PULLEY_90T_TEETH, GT2_PULLEY_20T_TEETH) < R.wrist_belt
-    assert x + NEMA17_40_BODY_W / 2.0 + R.screw.head_h + R.motor_wall_clear <= R.wall_x[0] + 1e-9
+    assert x + NEMA17_40_BODY_W / 2.0 + DEFAULT.drive.clamp_screw.head_h + R.motor_wall_clear <= R.wall_x[0] + 1e-9
     assert x - NEMA17_40_BODY_W / 2.0 >= DEFAULT.web.wrist_x + DEFAULT.boss.dia / 2.0
     assert h.pilot_dia >= 22.3 and h.bolt_half == 15.5 and x + h.pilot_dia / 2.0 <= R.wall_x[0] - 4.0
-    assert len(flange_bolt_points(DEFAULT)) == 4 and (R.bolt_circle_dia / 2.0, 25.0) in flange_bolt_points(DEFAULT)
+    assert len(flange_bolt_points(DEFAULT)) == 4                       # the rotor clamp's, through the wall (test_roll_clamp)
     assert PARAMS.J2_MOTOR_X == x and PARAMS.FOREARM_ROLL_AXIS_Z == R.axis_z
 
 
 def test_the_wall_screws_way_in():
-    """No wall screw's head lands in the web: the web dropped under the bottom one, so every head - channel_clear round
-    it - clears the web's top face and none needs a channel under the web (screws_under_the_web); the bottom one's
-    head room just over the web."""
+    """No wall screw's head (the rotor clamp's, through the wall) lands in the web: every head - channel_clear round
+    it - clears the web's top face and none needs a channel under the web (screws_under_the_web); the lower two's
+    head room well over the web."""
     w = DEFAULT.web
-    reach = R.screw.head_dia / 2.0 + R.channel_clear
+    reach = DEFAULT.drive.clamp_screw.head_dia / 2.0 + R.channel_clear
     assert screws_under_the_web(DEFAULT) == []
     assert all(z - reach >= w.z1 for _, z in flange_bolt_points(DEFAULT))
-    assert min(z for _, z in flange_bolt_points(DEFAULT)) - reach - w.z1 == pytest.approx(0.25)
+    assert min(z for _, z in flange_bolt_points(DEFAULT)) - reach - w.z1 == pytest.approx(6.868272, abs=1e-5)
 
 
 def test_the_web_grows_out_of_the_flange():
@@ -97,11 +97,11 @@ def test_the_web_grows_out_of_the_flange():
 
 def test_the_straight_web_the_wall_and_its_gussets():
     """The web runs straight from the wall to its faceted wrist end, wider than the wall's faceted flange (the flange
-    over the recess with room to spare, and over the roll pulley's ring it bolts onto, all round) - the wall's foot as
+    over the cable bore with room to spare, and over the roll pulley's ring it bolts onto, all round) - the wall's foot as
     wide as the web -; the gussets stand beside the wrist motor and its board, inside the web."""
     D, w, h = DEFAULT.drive, DEFAULT.web, DEFAULT.holes
     assert w.half_w == DEFAULT.boss.dia / 2.0 > R.wall_od / 2.0 and PARAMS.FOREARM_WALL_OD == R.wall_od
-    assert R.wall_od / 2.0 >= (R.flange_dia + R.flange_recess_add) / 2.0 + 8.0
+    assert R.wall_od / 2.0 >= D.bore / 2.0 + 8.0
     assert R.wall_od >= D.ring_flange_dia
     # the motor's footprint on the web: its body and its bolt holes 3 mm inside the web's sides
     assert w.half_w >= NEMA17_40_BODY_W / 2.0 + 3.0 and w.half_w >= h.bolt_half + h.bolt_dia / 2.0 + 3.0
@@ -145,14 +145,14 @@ def test_link_ends_at_the_wall_and_at_its_wrist_boss(link):
     assert is_inside(link, -120, w.half_w - 1.0, w.z1 - 1.0) and is_inside(link, -120, w.half_w - 1.0, w.z0 + 1.0)
     assert not is_inside(link, -120, w.half_w + 1.0, zm)                                                 # the web's side
     # the wall: the faceted flange about the roll axis through its whole thickness, its bottom flat level with the web's
-    # underside (the roll pulley's ring bears on it all round, the recess closed); the flange recess on its elbow face,
-    # the cable bore and the bolt holes through it; no foot - the flange's corners, the lower ones too, at every station
+    # underside (the roll pulley's ring bears on it all round); its elbow face flat (no recess: the roll pulley's face
+    # is flat too), the cable bore and the bolt holes through it; no foot - the flange's corners, the lower ones too, at every station
     xm, x_face, top, foot = (R.wall_x[0] + R.wall_x[1]) / 2.0, R.wall_x[1], R.axis_z + R.wall_od / 2.0, w.half_w
     bottom, apo = 2 * R.axis_z - top, R.wall_od / 2.0
     assert bottom == w.z0
     assert is_inside(link, xm, 0, top - 1.0) and not is_inside(link, xm, 0, top + 1.0)
     assert is_inside(link, xm, 0, bottom + 1.0) and not is_inside(link, xm, 0, bottom - 1.0)                # the bottom
-    assert is_inside(link, x_face - 0.5, 0, R.axis_z - (R.flange_dia + R.flange_recess_add) / 2.0 - 1.0)   # ... under the recess
+    assert is_inside(link, x_face - 0.5, 0, R.axis_z - DEFAULT.drive.bore / 2.0 - 1.0)                          # ... flat under the bore
     assert not is_inside(link, xm, 40, 50) and not is_inside(link, xm, foot - 1.0, top - 1.0)             # no corners
     r_corner = apo / math.cos(math.pi / SIDES)
     for x in (R.wall_x[0] + 0.3, xm, x_face - 0.3):
@@ -176,19 +176,19 @@ def test_link_ends_at_the_wall_and_at_its_wrist_boss(link):
         # the gussets' feet cut by the same facet near the wall, standing on it higher up
         assert not is_inside(link, R.wall_x[0] - 0.5, side * (apo - 0.5), w.z1 + 1.0)
         assert is_inside(link, R.wall_x[0] - 0.5, side * (apo - 0.5), w.z1 + 8.0)
-    rr, rb = (R.flange_dia + R.flange_recess_add) / 2.0, R.cable_bore / 2.0
-    depth = R.flange_recess_depth + R.flange_recess_clear                     # the spigot recess, past the spigot's length
-    assert not is_inside(link, x_face - depth + 0.1, 0, 25 + rr - 1.0) and is_inside(link, x_face - depth - 0.1, 0, 25 + rr - 1.0)
+    rb = DEFAULT.drive.bore / 2.0                                              # the wall's cable hole: the rotor's bore
+    for r in (rb + 1.0, 18.0, 20.5):                                          # the elbow face flat: no recess round the bore
+        assert is_inside(link, x_face - 0.1, r * math.cos(math.radians(22.5)), 25 + r * math.sin(math.radians(22.5))), r
     assert not is_inside(link, xm, 0, 25) and not is_inside(link, xm, 0, 25 + rb - 1.0)               # the cable bore
     assert is_inside(link, xm, 0, 25 + rb + 1.5)
-    # every screw goes in from the wrist side: its head's room behind the wall is open, over the web (the bottom one's
-    # just over its top face, the web whole under it)
-    head_r = R.screw.head_dia / 2.0
+    # every screw (the rotor clamp's, through the wall) goes in from the wrist side: its head's room behind the wall is
+    # open, over the web (the lower two's well over its top face, the web whole under them)
+    head_r, head_h = DEFAULT.drive.clamp_screw.head_dia / 2.0, DEFAULT.drive.clamp_screw.head_h
     for y, z in flange_bolt_points(DEFAULT):
         assert not is_inside(link, xm, y, z) and not is_inside(link, R.wall_x[0] + 0.1, y, z)
         for dy, dz in ((0.0, 0.0), (head_r, 0.0), (-head_r, 0.0), (0.0, head_r), (0.0, -head_r)):
             assert not is_inside(link, R.wall_x[0] - 1.0, y + dy, z + dz)
-            assert not is_inside(link, R.wall_x[0] - R.screw.head_h - 1.0, y + dy, z + dz)
+            assert not is_inside(link, R.wall_x[0] - head_h - 1.0, y + dy, z + dz)
     s = DEFAULT.split                                                              # the lap's middle screw, on y = 0
     x_lap = max(x for x, y in s.screw_points if y == 0.0) + s.head_dia / 2.0
     xc = (x_lap + R.wall_x[0]) / 2.0                     # between the lap's middle screw's counterbore and the wall

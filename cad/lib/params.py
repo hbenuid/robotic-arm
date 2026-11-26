@@ -160,11 +160,10 @@ YAW_IDLER_NUT_Y = _BASE.plate.y[0]                            # -38.4 the nut's 
 FOREARM_ROLL_AXIS_Z = _FOREARM.roll_end.axis_z     # 25 [REFERENCE] the roll axis' N-station in j2_link's frame = the wrist centre's (42 - 17)
 FOREARM_ROLL_TURN_DEG = _FOREARM.roll_turn_deg     # 180 [DESIGN] the forearm + all beyond it turned about the roll axis from the capture
 #                                                    (lib/placements.py TURNS): the wrist-pitch motor on the upper arm's side of it
-FOREARM_WALL_X = _FOREARM.roll_end.wall_x          # (-56, -48) [DESIGN] the flange wall: wrist face .. elbow face (48 from the elbow axis)
+FOREARM_WALL_X = _FOREARM.roll_end.wall_x          # (-56, -44.75) [DESIGN] the flange wall: wrist face .. elbow face (44.75 from the elbow axis)
 FOREARM_WALL_OD = _FOREARM.roll_end.wall_od        # 60 [DESIGN] the flange wall's round outline about the roll axis (on a foot as wide as the web)
 FOREARM_PLUG_CLEARANCE = _FOREARM.roll_end.plug_clearance   # 10 [DESIGN] the wrist motor's connector plug: its room beyond the connector (sideways)
 FOREARM_MOTOR_WALL_CLEAR = _FOREARM.roll_end.motor_wall_clear   # 1.5 [DESIGN] the wrist motor's body to the wall screws' heads at the slots' wall end
-FOREARM_FLANGE_DIA = _FOREARM.roll_end.flange_dia  # 39.7 [DESIGN] the roll pulley's spigot the forearm wall bolts onto
 FOREARM_ROLL_BELT_LENGTH = _FOREARM.drive.roll_belt          # 280-2GT [DESIGN] the roll belt (90T ring on the shaft, 20T on the motor, round its idler)
 FOREARM_ROLL_MOTOR_XY = (0.0, _FOREARM.drive.motor_y)        # (0, -74) [DESIGN] the roll motor's axis in the module frame: on the elbow axis, the drive's centre distance under the roll axis
 ROLL_MOTOR_SCREW_LEN = (_FOREARM.drive.pad_t - _FOREARM.drive.motor_holes.screw.head_h
@@ -268,7 +267,7 @@ _LAP_BOLTS = len(_FOREARM.split.screw_points)
 WALL_BRACKET_SCREWS_MASS_G = STEEL_DENSITY * _LAP_BOLTS * shcs_volume(_FOREARM.split.screw, _FOREARM.split.screw_len)   # 2.8, 3x M3x8
 WALL_BRACKET_NUTS_MASS_G = STEEL_DENSITY * _LAP_BOLTS * nut_volume(_FOREARM.split.nut)                                   # 1.1, 3x M3
 # the roll belt's tensioner's axle and its nut (parts/joints/roll_idler_{screw,nut}; lib/forearm/params.py RollIdlerParams)
-ROLL_IDLER_SCREW_MASS_G = STEEL_DENSITY * shcs_volume(_FOREARM.drive.idler.screw, _FOREARM.drive.idler.screw_len)   # 5.8, M5x25
+ROLL_IDLER_SCREW_MASS_G = STEEL_DENSITY * shcs_volume(_FOREARM.drive.idler.screw, _FOREARM.drive.idler.screw_len)   # 5.0, M5x20
 ROLL_IDLER_NUT_MASS_G = STEEL_DENSITY * nut_volume(_FOREARM.drive.idler.nut)                                       # 1.3, M5
 # the elbow belt's tensioner's axle and its nut (parts/joints/elbow_idler_{screw,nut}; lib/upper_arm/params.py ElbowIdlerParams)
 ELBOW_IDLER_SCREW_MASS_G = STEEL_DENSITY * shcs_volume(_UPPER_ARM.idler.screw, _UPPER_ARM.idler.screw_len)   # 5.8, M5x25
@@ -299,18 +298,13 @@ from lib.forearm.layout import pad_bolt_points as _roll_motor_points  # noqa: E4
 
 ROLL_MOTOR_SCREWS_MASS_G = (STEEL_DENSITY * len(_roll_motor_points(_FOREARM))
                             * shcs_volume(_FOREARM.drive.motor_holes.screw, ROLL_MOTOR_SCREW_LEN))   # 3.8, 4x M3x8
-# the roll rotor's clamp (parts/joints/roll_clamp_{screws,nuts}; lib/forearm/params.py RollDriveParams clamp_*), likewise
+# the roll rotor's clamp - through the forearm wall, the pulley and the shaft (parts/joints/roll_clamp_{screws,nuts};
+# lib/forearm/params.py RollDriveParams clamp_*), likewise
 from lib.forearm.layout import clamp_points as _roll_clamp_points  # noqa: E402
 
 _ROLL_CLAMP = len(_roll_clamp_points(_FOREARM))
-ROLL_CLAMP_SCREWS_MASS_G = STEEL_DENSITY * _ROLL_CLAMP * shcs_volume(_FOREARM.drive.clamp_screw, _FOREARM.drive.clamp_screw_len)   # 12.0, 4x M3x45
-ROLL_CLAMP_NUTS_MASS_G = STEEL_DENSITY * _ROLL_CLAMP * nut_volume(_FOREARM.drive.clamp_nut)                                    # 1.4, 4x M3
-# the forearm wall's onto the roll pulley (parts/joints/roll_wall_{screws,nuts}; lib/forearm/params.py RollEndParams screw_*), likewise
-from lib.forearm.layout import flange_bolt_points_module as _roll_wall_points  # noqa: E402
-
-_ROLL_WALL = len(_roll_wall_points(_FOREARM))
-ROLL_WALL_SCREWS_MASS_G = STEEL_DENSITY * _ROLL_WALL * shcs_volume(_FOREARM.roll_end.screw, _FOREARM.roll_end.screw_len)   # 4.7, 4x M3x12
-ROLL_WALL_NUTS_MASS_G = STEEL_DENSITY * _ROLL_WALL * nut_volume(_FOREARM.drive.end_nut)                                    # 1.4, 4x M3
+ROLL_CLAMP_SCREWS_MASS_G = STEEL_DENSITY * _ROLL_CLAMP * shcs_volume(_FOREARM.drive.clamp_screw, _FOREARM.drive.clamp_screw_len)   # 24.1, 4x M4x50
+ROLL_CLAMP_NUTS_MASS_G = STEEL_DENSITY * _ROLL_CLAMP * nut_volume(_FOREARM.drive.clamp_nut)                                    # 3.0, 4x M4
 # the wrist roll's: the pancake's M3 (parts/wrist/wrist_roll_motor_screws), the rotor clamp's and the connector's M3 + nuts
 # (parts/wrist/wrist_roll_{clamp,connector}_{screws,nuts}; lib/wrist/params.py WristRollParams, ConnectorParams), likewise
 from lib.wrist.layout import clamp_points as _wrist_clamp_points  # noqa: E402
