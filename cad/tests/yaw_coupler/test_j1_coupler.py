@@ -128,7 +128,8 @@ def test_default_fork_holds_the_drives_ends():
     assert hx1 + mx0 == pytest.approx(2.0 * middle) and hx0 + mx1 == pytest.approx(2.0 * middle)
     assert middle == pytest.approx(0.0, abs=1e-9)                     # ... on the base_yaw axis: the legs mirror about it too
     assert hx0 < -DEFAULT.disc.flat_x < hx1 and mx0 < DEFAULT.disc.flat_x < mx1   # each straddling a flat of the disc
-    assert sorted(fork_hub_bolts(DEFAULT)) == pytest.approx(sorted((f.axis_y + y, f.axis_z + x) for x, y in arm_mount_points(DRIVE)))
+    want = sorted((f.axis_y + y, f.axis_z + x) for x, y in arm_mount_points(DRIVE))   # flat: approx takes no nested pairs
+    assert [c for b in sorted(fork_hub_bolts(DEFAULT)) for c in b] == pytest.approx([c for b in want for c in b])
     head = S["hub_top"] + sh.yoke_leg - (M4_SHCS.head_h + 0.5)        # the screws' heads' seats, drive z
     assert head - f.hub_screw_len == pytest.approx(S["z_hub"] + sh.hub_nut_depth - DRIVE.housing.bolt_nut_thickness - 0.5)
     # both legs' round tops plate_r: the hub leg's 9.725 past the hub, its counterbores 16.3 inside the edge

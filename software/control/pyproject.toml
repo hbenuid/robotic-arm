@@ -24,7 +24,7 @@ packages = ["src/robotic_arm"]
 [dependency-groups]
 dev = [
     "pytest>=9.0.2",
-    "ruff>=0.16.9",
+    "ruff>=0.17.6",
     "ty>=0.0.111",
 ]
 

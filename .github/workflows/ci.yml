@@ -27,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v10.2.0  # exact tags only: setup-uv publishes no floating major tag (v10)
+      - uses: astral-sh/setup-uv@v10.4.0  # exact tags only: setup-uv publishes no floating major tag (v10)
         with:
           cache-python: true
 
@@ -87,7 +87,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v10.2.0
+      - uses: astral-sh/setup-uv@v10.4.0
         with:
           cache-python: true
 
@@ -110,7 +110,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v10.2.0
+      - uses: astral-sh/setup-uv@v10.4.0
         with:
           cache-python: true
 
