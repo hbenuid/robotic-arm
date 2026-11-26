@@ -55,6 +55,7 @@ def run(bench: Bench, kind: str, answers: list[str] | None = None, timeout: floa
     answers = list(answers or [])
     deadline = time.monotonic() + timeout
     while r.active:
+        bench.touch()                                    # the page's pings: past 2 s of silence the bench stops it
         if r.question is not None and answers:
             r.answer(answers.pop(0))
         assert time.monotonic() < deadline, f"{kind} still {r.status}: {r.progress}"
@@ -313,6 +314,33 @@ def test_an_s_curve_jog_eases_out_after_release(bench, sim):
     after = speeds_sent(sim, before)
     assert len(after) >= 5 and after == sorted(after, reverse=True)   # eased down in steps
     assert frames(sim, Cmd.MOVE_TO_AXIS)[-1][1:3] == b"\x00\x00"      # then the board's own stop
+
+
+def test_a_shaped_move_ends_when_the_board_settles_short(bench, sim):
+    sim.boards[ELBOW].settle_short = 36                  # as the base's V1.0.9 board did, inside its arrival window
+    bench_mode(bench)
+    bench.set_profile(kind="scurve", ease_s=0.3, rate_hz=100)
+    seq = bench.move_to(360, 600, 2)
+    assert bench.wait_motion_end(seq, 5.0, threading.Event()) is not None
+    assert bench.fresh_counts() == 0x4000 - 36
+    r = run(bench, "repeat", a=0, b=90, cycles=1, speed=600, acc=250, dwell=0)
+    assert r.status == "done", r.error                   # the test that timed out on the base
+
+
+def test_microsteps_scale_every_speed_sent(bench, sim):
+    sim.boards[ELBOW].params[0x84] = bytes([128])
+    bench.microsteps, bench._micro_asked = None, 0.0
+    wait_until(lambda: bench.microsteps == 128)          # read from the board by itself
+    assert bench.speed_factor == 0.125                   # 9.1: at 128 a speed value of 1200 runs 150 RPM
+    bench.set_reference(0.0)
+    assert bench.check(5, 10, 2)[1] == 300               # 10 deg/s at the elbow: 37.5 RPM = 300 eighths, exactly
+    bench_mode(bench)
+    seq = bench.move_to(90, 60, 250)
+    assert int.from_bytes(frames(sim, Cmd.MOVE_TO_AXIS)[-1][1:3], "big") == 480   # 60 RPM in eighths
+    bench.wait_motion_end(seq, 3.0, threading.Event())
+    assert bench.fresh_counts() == 0x1000
+    bench.write_setting(0x84, 16)
+    assert bench.speed_factor == 1.0 and bench.speed_to_rpm(60) == 60
 
 
 def test_stop_leaves_no_shaped_speed_behind(bench, sim):

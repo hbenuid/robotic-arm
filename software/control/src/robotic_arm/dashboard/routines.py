@@ -511,7 +511,7 @@ def home(bench: Bench, r: Routine, p: dict[str, Any]) -> None:
     hm_mode = p.get("hm_mode")
     hm_mode = None if hm_mode in (None, "", "none") else int(_num(p, "hm_mode", 0, 0, 2))
     if bench.mode == "joint":
-        dps = bench.joint().rpm_to_dps(rpm)
+        dps = bench.joint().rpm_to_dps(rpm * bench.speed_factor)   # 0x90's speed is the board's speed value
         if dps > bench.speed_cap() + 1e-9:
             raise Refused(f"{rpm} RPM is {dps:.1f} deg/s at {bench.joint_config.name}, over the {bench.speed_cap():g} "
                           "deg/s cap")

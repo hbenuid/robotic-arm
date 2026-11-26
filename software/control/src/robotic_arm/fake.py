@@ -67,7 +67,13 @@ class FakeBoard:
     move_rpm: int = 0
     acc: int = 0
     done_code: int | None = None    # the motion's command code, answered 2 when it ends
+    settle_short: int = 0           # a position move ends this many counts short (V1.0.8+'s arrival window, 0x95)
     sim_time: float = field(default_factory=time.monotonic)
+
+    def speed_factor(self) -> float:
+        """Real RPM per unit of a speed value at the microsteps set by 0x84 (9.1: 1 at 16 / 32 / 64, else 16 / m)."""
+        m = self.params.get(0x84, b"\x10")[0]
+        return 1.0 if m in (16, 32, 64) else 16 / m
 
 
 # Settings the fake only stores - each answers 1 (success), and 0x00 reads the value back.
@@ -151,7 +157,7 @@ class FakeBoards:
         dt, board.sim_time = min(0.05, now - board.sim_time), now
         if dt <= 0:
             return
-        a = _accel(board.acc)
+        a = _accel(board.acc) * board.speed_factor()   # the ramp steps one speed value at a time
         pos = board.position + board.sub
         rem = 0.0
         if board.target is not None:
@@ -191,9 +197,10 @@ class FakeBoards:
         """0xF4 / 0xF5 / 0xF6 on a simulate=True board: start the motion; the tick answers 2 when it ends."""
         if not board.enabled:
             return [bytes([code, 0])]
+        f = board.speed_factor()
         if code == Cmd.SPEED:
             speed, board.acc = ((data[0] & 0x0F) << 8) | data[1], data[2]
-            board.target, board.run_rpm = None, -speed if data[0] & 0x80 else speed
+            board.target, board.run_rpm = None, round((-speed if data[0] & 0x80 else speed) * f)
             board.done_code = code if speed == 0 else None
         else:
             speed, board.acc = int.from_bytes(data[0:2], "big"), data[2]
@@ -201,8 +208,13 @@ class FakeBoards:
             if speed == 0:   # 11.3.2 / 11.4.2: the stop
                 board.target, board.run_rpm = None, 0
             else:
-                board.target = value if code == Cmd.MOVE_TO_AXIS else board.position + value
-                board.move_rpm, board.run_rpm = min(speed, 3000), 0
+                target = value if code == Cmd.MOVE_TO_AXIS else board.position + value
+                travel = target - board.position
+                if board.settle_short:   # inside the window it stays put; from outside it stops at its edge
+                    target = board.position if abs(travel) <= board.settle_short else \
+                        target - (board.settle_short if travel > 0 else -board.settle_short)
+                board.target = target
+                board.move_rpm, board.run_rpm = min(speed, 3000) * f, 0
             board.done_code = code
         if board.acc == 0 and board.target is None and board.run_rpm == 0:
             board.velocity = 0.0

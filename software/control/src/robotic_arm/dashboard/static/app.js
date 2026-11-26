@@ -362,6 +362,10 @@ function renderProfile(st) {
     $("ease-range").value = p.ease_s;
   }
   $$("#poll-ms button").forEach((b) => b.classList.toggle("on", Number(b.dataset.ms) === st.poll_ms));
+  const m = st.microsteps;
+  $("micro-note").textContent = m === null ? "Microsteps: not read yet (16 assumed)." :
+    `Microsteps ${m}: the board's speed step is ${st.speed_factor === 1 ? "1 RPM" : `${st.speed_factor} RPM (${fmt(1 / st.speed_factor, 0)}× finer)`}` +
+    (st.mode === "joint" ? `, ${fmt(st.speed_factor * 6 * st.gear_ratio, 3)} °/s at ${st.joint}.` : ".");
 }
 
 function renderLimits(st) {
@@ -421,7 +425,7 @@ function fillDefaults(st, u) {
     $("sz-speed").value = round(Math.min(2, cap), 1);
     $("ref-deg").value = st.home_deg;
     $("ref-quick").value = st.home_deg;
-    $("home-rpm").value = Math.max(1, Math.floor(Math.min(5, cap) / 6 / st.gear_ratio));
+    $("home-rpm").value = Math.max(1, Math.floor(Math.min(5, cap) / 6 / st.gear_ratio / st.speed_factor));
   } else {
     $("sz-a").value = 180; $("sz-b").value = -180; $("sz-speed").value = Math.min(30, cap);
     $("home-rpm").value = 30;
@@ -430,8 +434,8 @@ function fillDefaults(st, u) {
 }
 
 function homeHint() {
-  const st = S.st, rpm = num("home-rpm");
-  $("home-speed-hint").textContent = st && Number.isFinite(rpm) ? `= ${fmt(rpm * 6 * st.gear_ratio, 1)} °/s` : "";
+  const st = S.st, value = num("home-rpm");   // the board's speed value: RPM x speed_factor
+  $("home-speed-hint").textContent = st && Number.isFinite(value) ? `= ${fmt(value * st.speed_factor * 6 * st.gear_ratio, 1)} °/s` : "";
 }
 
 // --- graph ----------------------------------------------------------------------------------------------------------

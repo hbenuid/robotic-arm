@@ -88,10 +88,12 @@ class Shaper(threading.Thread):
     """
 
     def __init__(self, bench: Bench, gen: int, start: int, vmax: float, *, target: int | None = None,
-                 jog_dir: int | None = None, lead_s: float = 2.0):
+                 jog_dir: int | None = None, lead_s: float = 2.0, factor: float = 1.0):
         super().__init__(name="dashboard-shaper", daemon=True)
         p = bench.profile
-        self.bench, self.gen, self.vmax = bench, gen, float(vmax)
+        self.bench, self.gen, self.vmax = bench, gen, float(vmax)   # vmax: real motor RPM
+        self.factor = factor            # real RPM per unit of the board's speed value (9.1: 16 / microsteps off 16-64)
+        self.stopped_since: float | None = None
         self.curve, self.ease, self.period, self.follow = p.curve, p.ease_s, 1.0 / p.rate_hz, p.follow_acc
         self.f = CURVES[p.curve]
         self.target, self.jog_dir, self.lead_s = target, jog_dir, lead_s
@@ -106,8 +108,8 @@ class Shaper(threading.Thread):
 
     @property
     def floor(self) -> int:
-        """The lowest RPM sent: below it the board's own ramp finishes the move on its target."""
-        return max(1, round(0.03 * self.vmax))
+        """The lowest speed value sent: below it the board's own ramp finishes the move on its target."""
+        return max(1, round(0.03 * self.vmax / self.factor))
 
     # called under the bench's lock
     def release(self) -> None:
@@ -151,6 +153,15 @@ class Shaper(threading.Thread):
             rem = (target - counts) * d
             if self.jog_dir is None and rem <= 2:
                 return False                                   # there: the last F5 lands it
+            stopped = b.readout.status == 1 and b.readout.speed_rpm == 0 and not b._stale("status", 0.3)
+            if self.jog_dir is None and self.decel is not None and stopped:
+                # on the way in and standing still: the board settled near its target - inside its "position reached"
+                # window (0x95, V1.0.8+: 200 of 65535 a turn by default) - and will not creep the last counts
+                self.stopped_since = self.stopped_since or now
+                if now - self.stopped_since >= 0.3:
+                    return False
+            else:
+                self.stopped_since = None
             if self.release_at is None:
                 v_time = self.vmax * self.f(min(1.0, (now - self.t0) / self.ease))
             else:
@@ -172,7 +183,7 @@ class Shaper(threading.Thread):
                     vp, tp = self.decel
                     v_dist = vp * speed_by_area(self.curve, rem / (vp * COUNTS_PER_RPM_S * tp)) if vp > 0 and tp > 0 else 0.0
             self.v = max(0.0, min(v_time, v_dist, self.vmax))
-            rpm = max(self.floor, min(3000, round(self.v)))
+            rpm = max(self.floor, min(3000, round(self.v / self.factor)))   # the board's speed value
             b.readout.cmd_rpm = self.v * d
             if (target, rpm) != self.last_sent:
                 b._last_acc = self.follow

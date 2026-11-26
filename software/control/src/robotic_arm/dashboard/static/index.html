@@ -357,7 +357,8 @@
           <label>Holding current<select id="set-9B"></select></label><button class="btn ghost small" data-set="9B">Write</button>
         </div>
         <div id="tune-msg" class="msg"></div>
-        <p class="muted small">SR_vFOC (5) is the smoothest work mode. Interpolation on cuts noise at low speed. Holding current only counts in the OPEN and CLOSE modes. Each write is saved on the board.</p>
+        <p id="micro-note" class="small"></p>
+        <p class="muted small">SR_vFOC (5) is the smoothest work mode. Interpolation on cuts noise at low speed. The board's speed steps are whole RPM at 16, 32 or 64 microsteps and finer at 128 or 256 (1/8, 1/16 RPM): the dashboard scales every speed to match. Holding current only counts in the OPEN and CLOSE modes. Each write is saved on the board.</p>
       </section>
 
       <section class="block">

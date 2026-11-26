@@ -45,6 +45,7 @@ from robotic_arm.motor_driver import (
     HARDWARE_NAMES,
     INT24_MAX,
     MAX_ACC,
+    MAX_SPEED_RPM,
     STATUS_NAMES,
     Checksum,
     Cmd,
@@ -213,6 +214,8 @@ class Bench:
         self._shaper: Shaper | None = None
         self._fast_s = 0.02
         self._poll_profile = (FAST_POLL, SLOW_POLL, self._fast_s)
+        self.microsteps: int | None = None      # the board's 0x84, read once it answers (speed_factor)
+        self._micro_asked = 0.0
         self.worker.driver(self.can_id)
         self._apply_poll()
         self.worker.add_listener(self._on_reply, self._tick)
@@ -313,6 +316,19 @@ class Bench:
         """+1 when the mode's value grows with the encoder's count, -1 when it falls (joint mode, sign -1)."""
         return 1 if self.mode == "bench" or self.sign > 0 else -1
 
+    def _read_microsteps(self) -> None:
+        """0x00 0x84 (5.1.10): the microsteps the speed values scale by."""
+        can_id = self.can_id
+        reply = self.worker.request(can_id, bytes([Cmd.READ_PARAM, 0x84]), code=0x84, timeout=0.3)
+        if reply is None or len(reply.data) < 2 or bytes(reply.data[1:3]) == b"\xff\xff":
+            return   # not readable (firmware before V1.0.6?): 16 stays assumed, tried again in 5 s
+        with self._lock:
+            if can_id == self.can_id:
+                self.microsteps = reply.data[1]
+        if self.microsteps not in (16, 32, 64):
+            self.notice(f"{self.microsteps} microsteps: the board's speed unit is {self.speed_factor:g} RPM; the "
+                        "dashboard scales every speed to match")
+
     def _arm_bounds(self) -> tuple[int | None, int | None]:
         """config.JOINTS' limits in counts (lo, hi): joint mode with a reference only."""
         if self.mode != "joint" or self.zero_deg is None:
@@ -355,20 +371,34 @@ class Bench:
                 return min(self.limits.bench_rpm, BENCH_RPM_CEILING)
             return min(self.limits.joint_speed, self.max_joint_speed)
 
+    @property
+    def speed_factor(self) -> float:
+        """Real motor RPM per unit of the board's speed value: 1 at 16, 32 or 64 microsteps, 16 / microsteps at any
+        other (9.1: "the speed value is calibrated based on 16/32/64 subdivisions ... other subdivisions ... based
+        on 16": at 128 a value of 1200 runs 150 RPM). 16 is assumed until the board's 0x84 has been read."""
+        m = self.microsteps or 16
+        return 1.0 if m in (16, 32, 64) else 16 / m
+
     def speed_to_rpm(self, speed: float) -> int:
-        """`speed` in the mode's unit -> whole motor RPM, never above the cap (rounded down where rounding would pass it)."""
+        """`speed` in the mode's unit -> the board's speed value (whole RPM at 16/32/64 microsteps, finer at more:
+        speed_factor), never above the cap - rounded down where rounding would pass it."""
         cap = self.speed_cap()
         if not 0 < speed <= cap + 1e-9:
             raise Refused(f"speed {speed:g} outside 0..{cap:g} {'RPM' if self.mode == 'bench' else 'deg/s'} (the cap)")
-        if self.mode == "bench":
-            return max(1, min(math.floor(cap + 1e-9), round(speed)))
+        f = self.speed_factor
         joint = self.joint()
-        rpm = max(1, round(joint.dps_to_rpm(speed)))
-        while rpm > 1 and joint.rpm_to_dps(rpm) > cap + 1e-9:
-            rpm -= 1
-        if joint.rpm_to_dps(rpm) > cap + 1e-9:
-            raise Refused(f"{cap:g} deg/s is under the board's 1 RPM ({joint.rpm_to_dps(1):.2f} deg/s at {joint.name})")
-        return rpm
+        actual = speed if self.mode == "bench" else joint.dps_to_rpm(speed)
+        in_unit = (lambda rpm: rpm) if self.mode == "bench" else joint.rpm_to_dps
+        value = max(1, round(actual / f))
+        while value > 1 and in_unit(value * f) > cap + 1e-9:
+            value -= 1
+        if in_unit(value * f) > cap + 1e-9:
+            raise Refused(f"{cap:g} is under the board's slowest step ({in_unit(f):.3g} at {self.microsteps or 16} "
+                          "microsteps)")
+        if value > MAX_SPEED_RPM:
+            raise Refused(f"{speed:g} needs a speed value of {value}, past the board's {MAX_SPEED_RPM} "
+                          f"({MAX_SPEED_RPM * f:g} RPM at {self.microsteps} microsteps)")
+        return value
 
     def check(self, value: float, speed: float, acc: int) -> tuple[int, int]:
         """(position counts, RPM) for a move to `value` at `speed` (the mode's units); raises Refused."""
@@ -419,6 +449,7 @@ class Bench:
                 self.zero_deg, self.reference = None, "not set"
                 self.readout = Readout()
                 self.limits = replace(self.limits, on=True, count_lo=None, count_hi=None)
+                self.microsteps = None
             self.worker.driver(can_id)
             self._apply_poll()
         self.notice(f"Board: {cfg.name} at CAN id {can_id} (0x{can_id:02X})")
@@ -516,9 +547,12 @@ class Bench:
         self._shaper = None
         self.readout.cmd_rpm = None
 
-    def _start_shaper(self, start: int, vmax: float, *, target: int | None = None, jog_dir: int | None = None) -> None:
+    def _start_shaper(self, start: int, value: int, *, target: int | None = None, jog_dir: int | None = None) -> None:
+        """A Shaper up to the board's speed `value` (as speed_to_rpm gives it)."""
         with self._lock:
-            shaper = Shaper(self, self._shape_gen, start, vmax, target=target, jog_dir=jog_dir, lead_s=JOG_LEAD_S)
+            f = self.speed_factor
+            shaper = Shaper(self, self._shape_gen, start, value * f, target=target, jog_dir=jog_dir, lead_s=JOG_LEAD_S,
+                            factor=f)
             self._shaper = shaper
         shaper.start()
 
@@ -689,6 +723,9 @@ class Bench:
             if online and self.readout.version is None and now - self._version_asked > 2.0:
                 self._version_asked = now
                 self.worker.send(self.can_id, bytes([Cmd.READ_VERSION]))
+            if online and self.microsteps is None and now - self._micro_asked > 5.0:
+                self._micro_asked = now   # a blocking read: off the bus thread
+                threading.Thread(target=self._read_microsteps, name="dashboard-microsteps", daemon=True).start()
             if self._online and not online:
                 self._offline_since = last
                 self.notice(f"Board {self.can_id} stopped answering", "warn")
@@ -820,8 +857,9 @@ class Bench:
         """A jog's F5 target in counts: JOG_LEAD_S of travel ahead (and at least twice the braking distance, so it
         does not slow for it), never past a limit; None when already at the limit that way."""
         cdir = direction * self._value_dir()
-        v = rpm * COUNTS_PER_RPM_S
-        brake = 0.0 if acc == 0 else v * v / (2 * COUNTS_PER_RPM_S / ((256 - acc) * 50e-6))   # 9.1's ramp
+        f = self.speed_factor   # `rpm` is the board's speed value; its ramp steps by one value too (9.1)
+        v = rpm * f * COUNTS_PER_RPM_S
+        brake = 0.0 if acc == 0 else v * v / (2 * COUNTS_PER_RPM_S * f / ((256 - acc) * 50e-6))
         target = here + cdir * max(v * JOG_LEAD_S, 2 * brake, 64)
         lo, hi, _, _ = self._bounds()
         if cdir > 0 and hi is not None:
@@ -847,7 +885,7 @@ class Bench:
             shaper = self._shaper if self._shaper is not None and self._shaper.jog_dir is not None else None
             if shaper is not None and shaper.jog_dir == direction * self._value_dir():
                 self._jog, self._jog_keepalive = direction, now_t   # a shaped jog: kept alive, sped up or resumed
-                shaper.vmax = float(rpm)
+                shaper.vmax = rpm * self.speed_factor
                 shaper.resume()
                 return "jogging"
             if self.profile.kind == "scurve":
@@ -939,6 +977,7 @@ class Bench:
                 self._require_idle(ACTIONS[code])
             reply = self.worker.request(self.can_id, bytes([code]), timeout=0.5)
             if code == 0x3F:
+                self.microsteps = None   # back to the factory's 16, read again
                 self.notice("Factory defaults restored: the board's CAN id is 1 again and its work mode CR_vFOC "
                             "(a pulse mode) - set SR_vFOC and the id again", "warn")
             if reply is None:
@@ -953,6 +992,12 @@ class Bench:
             self._require_idle(f"setting the {name}")
         data = bytes([code]) + value.to_bytes(size, "big")
         self._status_command(data, f"set {name}", ok=(1, 2) if code == 0x83 else (1,), timeout=0.5)
+        if code == 0x84:
+            with self._lock:
+                self.microsteps = value
+            if value not in (16, 32, 64):
+                self.notice(f"{value} microsteps: the board's speed unit is {self.speed_factor:g} RPM now; the "
+                            "dashboard scales every speed to match (the ramp, acc, is that much gentler too)")
         if code == 0x8B:
             with self._lock:
                 self.worker.remove_poll(self.can_id)
@@ -1092,6 +1137,8 @@ class Bench:
                 "shaping": self._shaper is not None,
                 "poll_ms": round(self._fast_s * 1000),
                 "pid_defaults": PID_DEFAULTS,
+                "microsteps": self.microsteps,
+                "speed_factor": self.speed_factor,
                 "window": self.window(),
                 "speed_cap": self.speed_cap(),
                 "motion": self.motion,
