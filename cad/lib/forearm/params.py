@@ -137,8 +137,10 @@ class RollEndParams:
     roll axis crosses that axis that far from it). The rotor's pulley
     (parts/joints/forearm_roll_pulley: the roll's 90T ring, the output) has a flat front face - the ring's - flat on the
     wall's flat elbow face (no spigot, no recess: both parts print on those faces), the wall centred on the roll axis by
-    its screws: 4x M3 from counterbores in the wall's wrist face (the heads flush) run through the wall into nuts in the
-    pulley's core (parts/joints/roll_wall_screws, roll_wall_nuts); the cables pass through the bore. The wall stands 48 mm
+    the rotor clamp's screws: 4x M4 from counterbores in the wall's wrist face run through the wall, the pulley and the
+    shaft into the nuts in the shaft's flange (RollDriveParams clamp_*: parts/joints/roll_clamp_screws, roll_clamp_nuts) -
+    the wall, the pulley, both inner rings and the shaft one clamp; the cables pass through the rotor's bore, the wall's
+    hole the same (RollDriveParams.bore). The wall stands 48 mm
     along the roll axis from the elbow axis' station (and ForearmConfig.elbow_offset across from it): whatever the
     forearm's roll angle, it clears the upper arm's faceted end (lib/upper_arm/params.py ArmParams.end_r). It is a
     faceted flange about the roll axis (flats wall_od / 2 off it) through its whole thickness - the roll frame's tower
@@ -162,30 +164,15 @@ class RollEndParams:
     #                                       corner facets' top edge at the wall out to the flange's side flats (_RIB_Y)
     rib_len: float = 30.0                 # [DESIGN] ... this far along the web from the wall
     rib_h: float = 20.0                   # [DESIGN] ... this high above the web at the wall
-    bolt_circle_dia: float = 31.0         # [DESIGN] 4x M3 on the axes (0 / 90 / 180 / 270 about the roll axis): through the pulley's face into
-    #                                       its Ø44 core, the nuts in pockets from its bore (3 mm of the core outside them); they centre the
-    #                                       wall on the roll axis (bolt_dia's play, no spigot)
-    bolt_count: int = 4
-    bolt_angle_deg: float = 0.0
-    bolt_dia: float = M3_CLEAR            # [DESIGN] 3.4, through the wall and the pulley's face to its nut
-    screw: ShcsSize = M3_SHCS             # [DATASHEET] ISO 4762 M3 (parts/joints/roll_wall_screws), the heads in counterbores in the wall's
-    #                                       wrist face
-    head_dia: float = MOTOR_40.motor_bolt_head_dia + PETGTolerances().bolt_clearance_add   # 5.7 [DESIGN] the counterbores, as the lap
-    #                                       screws' and the motors' (WallSplitParams.head_dia)
-    head_seat: float = M3_SHCS.head_h     # [DESIGN] 3.0, the counterbores' depth: the heads flush with the wall's wrist face; 5.0 of the
-    #                                       wall left under them at the holes (8 less this)
-    screw_len: float = 12.0               # [DESIGN] M3 x 12 from the counterbore's floor: through the wall and the pulley's face into its nut in the
-    #                                       pulley's core (RollDriveParams.end_nut), the tip flush with the nut's far face - the whole nut on
-    #                                       the thread (M3 x 13, 2 pitches past it, is no stock length; the pulley's hole runs on 2 pitches
-    #                                       past the nut all the same: lib/forearm/layout.py stack_positions z_end_hole)
-    channel_clear: float = 0.5            # [DESIGN] the channel under the web for a screw whose head would land in the web: the head + this all
-    #                                       round, open to the web's underside, from the wall into the motor slot (the screw lays in, a key reaches it);
-    #                                       none does in DEFAULT - the bottom one's head, this far round it, clears the web's top face
-    cable_bore: float = 24.0              # [DESIGN] round the rotor's bore (RollDriveParams.bore)
-    plug_clearance: float = 10.0          # [DESIGN] the wrist motor's connector plug needs this much room beyond its connector (turned
+    channel_clear: float = 0.5            # [DESIGN] the channel under the web for a wall screw (the rotor clamp's, through the wall) whose head
+    #                                       would land in the web: the head + this all round, open to the web's underside, from the wall into
+    #                                       the motor slot (the screw lays in, a key reaches it); none does in DEFAULT - the lower heads, this
+    #                                       far round them, clear the web's top face
+    plug_clearance: float = 10.0         # [DESIGN] the wrist motor's connector plug needs this much room beyond its connector (turned
     #                                       sideways, lib/mounts.py: clear of the web, the gussets and the wall)
     motor_wall_clear: float = 1.5         # [DESIGN] the wrist motor's body at least this far off the wall screws' heads, whatever of them
-    #                                       stands proud of the wall's wrist face (none: head_seat) - the screws are reached with the motor off
+    #                                       stands proud of the wall's wrist face (none: RollDriveParams.clamp_head_clear under it) - the screws
+    #                                       are reached with the motor off
     wrist_belt: int = 280                 # [DESIGN] 280-2GT closed belt, 6 mm (a multipack length, lib/belts.py STANDARD_2GT_LENGTHS): longer
     #                                       than the open loop at WRIST_MOTOR_CENTRES - the idler takes up the rest (IdlerParams)
     wrist_belt_z: float = 0.3             # [REFERENCE] the wrist belt's mid-plane: the wrist 90T's tooth band (its re-seated pose, lib/mounts.py
@@ -435,13 +422,13 @@ class RollDriveParams:
     flat on it; the 6806 pair in the tower under it round the roll axis (lip apart, bearing 2's seat open through the
     face, its front face on it, the facets leaving the seat its wall), the shaft's bay behind them bored on through the frame's back, closed by
     a removable back panel flush with the rear face (back: BackPanelParams).
-    Rotor: the PULLEY (forearm_roll_pulley: the integral 90T ring on a core down to run_gap over the face, its hub down
-    through bearing 2 and its neck on to bearing 1's front face, its flat front face the forearm wall bolts onto - the roll's output) and the SHAFT
-    (forearm_roll_shaft: a collar that holds bearing 1 - its journal through it, its flange behind it with the clamp's
-    nuts and the stop lug); the rotor's own clamp - 4x M4 from the pulley's front face through both pieces into the
-    shaft's nuts - holds the
-    pulley, both inner rings and the shaft as one, the drive whole without the forearm; the forearm wall's 4x M3 into
-    nuts in the pulley's core. MODULE FRAME: origin on the roll axis at the elbow axis' station
+    Rotor: the PULLEY (forearm_roll_pulley: the integral 90T ring on its core, the Ø33 shoulder on down to bearing 2's
+    inner ring, its hub through bearing 2 and its neck on to bearing 1's front face, its flat front face the forearm wall
+    bolts onto - the roll's output) and the SHAFT (forearm_roll_shaft: a collar that holds bearing 1 - its journal
+    through it, its flange behind it with the clamp's nuts and the stop lug); the rotor clamp - 4x M4 from the forearm
+    wall's wrist face through the wall and both pieces into the shaft's nuts - holds the wall, the pulley, both inner
+    rings and the shaft as one (the bearings' presses hold the rotor until the wall is on). MODULE FRAME: origin on the
+    roll axis at the elbow axis' station
     (host (0, 0, axis_z)); +Z along the roll axis toward the wrist (host -X); +X = host +Z (N, away from the upper arm);
     +Y = host +Y = up in the arm's swing plane; the elbow axis runs along X through y = elbow_y (below the roll axis).
     Stations in that frame: layout.stack_positions(), the ring's set by the forearm wall (RollEndParams.wall_x), the
@@ -545,35 +532,31 @@ class RollDriveParams:
     #                                       the floor: the nuts drop in from the pocket before the motor
     # the rotor: the pulley (the ring on its core, its hub through bearing 2, its neck on to bearing 1, its flat front face)
     # and the shaft (a collar that holds bearing 1: its journal through it, its flange behind it)
-    bore: float = 16.0                    # [DESIGN] the cable bore through both: the clamp's M4 sit between it and the journals, 1.35 of
-    #                                       wall or more round each (clamp_circle_dia)
+    bore: float = 12.5                    # [DESIGN] the cable bore through both and the forearm wall (the elbow 90T's bore,
+    #                                       lib/pulley/params.py bore_dia): the clamp's M4 sit between it and the journals, 3.15 of wall to it
     neck_dia: float = 29.9                # [DESIGN] the pulley's hub between the bearings: under the 6806's bore, so bearing 2 slides over it onto
     #                                       its journal; 1.35 of wall outside each clamp screw (clamp_circle_dia)
-    ring_core_dia: float = 44.0           # [DESIGN] the pulley's core under the ring (the ring is an annulus fused on it)
+    ring_core_dia: float = 44.0           # [DESIGN] the pulley's core under the ring (the ring is an annulus fused on it), from the ring's rear
+    #                                       flange: under it the Ø33 shoulder on down to bearing 2, the flange 4.75 over the frame's face
     collar_od: float = 40.0               # [DESIGN] the shaft's flange behind bearing 1's Ø33 shoulder
-    end_nut: NutSize = M3_NUT             # [DATASHEET] ISO 4032 M3: the nuts of the forearm wall's 4 screws (RollEndParams.screw), in the pulley's
-    #                                       core (parts/joints/roll_wall_nuts) - each screw clamps the wall onto the ring's face
-    end_nut_fit: float = 0.2              # [DESIGN] each nut's pocket - a slot from the cable bore out past the nut's corner, a flat either side
-    #                                       (af wide) - its height and its reach past the corner; the nut bears on its wall-side face
-    # the rotor's own clamp: 4x M4 from the pulley's front face (heads sunk in counterbores, under the wall's elbow face)
-    # through both pieces into nuts in the shaft's flange - the pulley, both inner rings and the shaft as one
-    clamp_circle_dia: float = 23.0        # [DESIGN] in the hubs, between the bore and the journals (1.4 mm of wall to the bore; to the
-    #                                       journal 1.5 in the pulley's Ø30.2, 1.525 in the shaft's Ø30.25; 1.35 by the pulley's neck)
-    clamp_angle_deg: float = 45.0         # [DESIGN] between the wall's screws (RollEndParams.bolt_angle_deg) and their nut pockets
+    # the rotor clamp: 4x M4 from counterbores in the forearm wall's wrist face through the wall, the pulley and the shaft
+    # into nuts in the shaft's flange - the wall, the pulley, both inner rings and the shaft as one; the screws centre the
+    # wall on the roll axis
+    clamp_circle_dia: float = 23.0        # [DESIGN] in the hubs, between the bore and the journals (to the journal 1.5 in the pulley's Ø30.2,
+    #                                       1.525 in the shaft's Ø30.25; 1.35 by the pulley's neck)
+    clamp_angle_deg: float = 45.0         # [DESIGN] the first screw's angle about the roll axis (the four 90 apart)
     clamp_screw: ShcsSize = M4_SHCS       # [DATASHEET] ISO 4762 M4 (parts/joints/roll_clamp_screws)
     clamp_pitch: float = M4_PITCH         # [DATASHEET] its coarse thread: the nut 2 pitches short of the tip
-    clamp_bolt_dia: float = M4_CLEAR_FINE   # [MEASURE] 4.2, the clearance through both pieces, upright: the pulley's at 0.16, the shaft's
-    #                                       at 0.20 (M4_CLEAR_UPRIGHT, the same size)
-    clamp_screw_len: float = 40.0         # [DESIGN] M4 x 40 from its counterbore's floor: the tip at the shaft's rear face (which it sets)
-    clamp_head_clear: float = 0.25        # [DESIGN] the counterbores round the heads (on the radius) and over them
-    clamp_head_sink: float = 2.0          # [DESIGN] ... and the heads this much deeper still, so the stock M4 x 40 ends at the shaft's rear
-    #                                       face with the flange deep enough for the M4 nut (an M4 x 45 would carry the flange 3 mm further
-    #                                       into the bay)
-    clamp_bore_wall: float = 0.8          # [DESIGN] the counterbores' wall to the cable bore: two beads of a 0.4 nozzle (the printability
-    #                                       check's minimum) - the bore narrows over their depth to keep it (layout.py clamp_bore_r), as
-    #                                       the circle cannot move out (the journals' and the neck's walls above)
+    clamp_bolt_dia: float = M4_CLEAR_FINE   # [MEASURE] 4.2, the clearance through the three, upright: the pulley's at 0.16, the shaft's
+    #                                       and the wall's at 0.20 (M4_CLEAR_UPRIGHT, the same size)
+    clamp_screw_len: float = 50.0         # [DESIGN] M4 x 50 from its counterbore's floor in the wall: the tip at the shaft's rear face (which
+    #                                       it sets)
+    clamp_head_clear: float = 0.25        # [DESIGN] the wall's counterbores round the heads (on the radius) and over them: the heads that far
+    #                                       under the wall's wrist face
     clamp_nut: NutSize = M4_NUT          # [DATASHEET] ISO 4032 M4, in the shaft's flange: its pocket open to the rear face and the bore, the nut
     #                                       2 pitches short of the tip (parts/joints/roll_clamp_nuts)
+    clamp_nut_fit: float = 0.2            # [DESIGN] each nut's pocket - a slot from inside the bore out past the nut's corner, a flat either
+    #                                       side (af wide, line to line) - its reach past the corner
     stop_lug_r: tuple = (19.5, 24.5)      # [DESIGN] the rotor's hard-stop lug on the shaft's flange (rooted 0.5 inside its Ø40), at +X in the zero pose
     stop_lug_t: float = 3.75              # [DESIGN] ... from the shaft's rear face: 2.35 short of bearing 1's rear face (the shaft's flange
     #                                       ends run_gap short of it), 2.5 of it beside the post

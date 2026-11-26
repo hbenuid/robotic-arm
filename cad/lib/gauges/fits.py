@@ -166,7 +166,7 @@ GAUGES = (
         Use(M4_CLEAR_UPRIGHT, "upright at 0.20: the housing, coupler-plate, motor-leg foot, gearbox and flange screws "
                               "(snug, 0.20: measured)"),
         Use(PULLEY.hole_dia, "gt2_pulley_90t, gt2_pulley_120t (snug, 0.16: measured)"),
-        Use(_ROLL.clamp_bolt_dia, "forearm_roll_pulley (0.16), forearm_roll_shaft (0.20): the rotor clamp")),
+        Use(_ROLL.clamp_bolt_dia, "forearm_roll_pulley (0.16), forearm_roll_shaft and j2_wall_bracket (0.20): the rotor clamp")),
         (("depth", 5.0), ("width", 4.5), ("floor", 0.0), ("through", True)), note="Through 5."),
     Gauge("m4s", "screws", "M4 clearance holes, sideways", "M4 HOLE SIDE", "side_strip", (
         Use(M4_CLEAR, "the base's and base_motor_mount's posts, the motor plate's sleeve, j1_coupler's fork bolts, "
@@ -179,8 +179,7 @@ GAUGES = (
         Use(_D.motor.motor_bolt_head_dia + _TOL.bolt_clearance_add, "cycloidal_motor_plate"),
         Use(BASE.motor.holes.pocket_dia, "base_motor_mount"),
         Use(_ROLL.motor_holes.pocket_dia, "forearm_roll_block"),
-        Use(FOREARM.holes.pocket_dia, "j2_link"),
-        Use(FOREARM.roll_end.head_dia, "j2_wall_bracket (the wall's screws onto the roll pulley)")),
+        Use(FOREARM.holes.pocket_dia, "j2_link")),
         (("depth", FOREARM.holes.screw.head_h), ("width", 5.8), ("floor", 2.0), ("under", M3_CLEAR)),
         note="A head deep over an M3 hole. The wider ones elsewhere (rotor clamps, gripper) follow if these fit."),
     Gauge("m4head", "screws", "M4 head counterbores", "M4 HEAD", "hole_strip", (
@@ -189,15 +188,14 @@ GAUGES = (
         Use(BASE.joint.head_bore, "base_motor_mount's posts (the joint's screws, printed on their side)"),
         Use(PULLEY.counterbore[0], "gt2_pulley_90t, gt2_pulley_120t (snug, 0.16: measured)"),
         Use(UPPER_ARM.arm.seat_pocket_dia, "j1_link's web (gearbox screws)"),
-        Use(_ROLL.clamp_screw.head_dia + 2.0 * _ROLL.clamp_head_clear, "forearm_roll_pulley (the rotor clamp)")),
+        Use(_ROLL.clamp_screw.head_dia + 2.0 * _ROLL.clamp_head_clear, "j2_wall_bracket (the rotor clamp's heads)")),
         (("depth", 4.5), ("width", 7.5), ("floor", 2.0), ("under", M4_CLEAR)), note="4.5 deep over an M4 hole."),
     # --- nuts
     Gauge("m3slot", "nuts", "M3 nut slots, slid in from the side", "M3 NUT SLOT", "slot_strip", (
-        Use(_ROLL.end_nut.af, "forearm_roll_pulley: the wall screws' nuts (line to line)"),
         Use(_WROLL.nut.af, "wrist_roll_shaft: the clamp's nuts (line to line)"),
         Use(_GB.nut_y[1] - _GB.nut_y[0], "gripper_base's traps"),
         Use(_WROLL.nut.af + 2.0 * _WROLL.nut_fit, "wrist_roll_pulley's connector slots")),
-        (("af", _ROLL.end_nut.af), ("height", _ROLL.end_nut.h + 0.2), ("screw", M3_CLEAR)),
+        (("af", _WROLL.nut.af), ("height", _WROLL.nut.h + 0.2), ("screw", M3_CLEAR)),
         note="The size is the slot's width; a screw hole through each."),
     Gauge("m2hex", "nuts", "M2 nut hex pockets", "M2 NUT", "hole_strip", (
         Use(_WROLL.home.nut_pocket_af, "wrist_roll_home_fin's back: the KY-003 board's nuts (drop in)"),),

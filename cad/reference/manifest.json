@@ -538,13 +538,13 @@
     40.0,
     13.1
    ],
-   "bytes": 115352,
+   "bytes": 115442,
    "file": "native/forearm_roll_shaft.step",
    "kind": "native",
    "origin": "native",
    "product": "forearm_roll_shaft - the rear piece of the forearm roll drive's ROTOR, ELBOW_ROLL_OFFSET above the elbow axis: a collar",
-   "sha256": "4cc2164760bc2d6051e9cd83004d3ee5df50e1adbdb78656cdaa6d7c33ec79d2",
-   "solid_volume": 8144.305,
+   "sha256": "0a0a29f644d9205fcfe74471fc0f583fbbfeaa0aa4681a1d5201ca48dd194338",
+   "solid_volume": 8934.773,
    "solids": 1,
    "source": "lib/forearm/roll.py:build_shaft(DEFAULT)",
    "units": "mm"

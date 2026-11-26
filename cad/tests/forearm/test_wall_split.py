@@ -35,7 +35,7 @@ from tests.helpers import interference, is_inside
 S, W, R_END, H = DEFAULT.split, DEFAULT.web, DEFAULT.roll_end, DEFAULT.holes
 # name -> (solids, volume mm^3, bbox min, bbox size): the build's own numbers
 LOCKS = {
-    "j2_wall_bracket": (1, 27925.812, (-86.0, -33.556206, -5.0), (38.0, 67.112413, 60.0)),
+    "j2_wall_bracket": (1, 30092.12, (-86.0, -33.556206, -5.0), (38.0, 67.112413, 60.0)),
     "wall_bracket_screws": (3, 362.361, (-69.75, -10.75, -3.0), (11.5, 21.5, 11.0)),
     "wall_bracket_nuts": (3, 137.727, (-70.175426, -10.75, 0.0), (12.350853, 21.5, 2.4)),
 }
@@ -71,12 +71,12 @@ def test_the_lap_stations():
     assert front_holes - S.lap_x == pytest.approx(S.lap_x - pilot, abs=0.1) and S.lap_x - pilot >= 1.2   # midway, 1.3 either side
     corner_y = R_END.wall_od / 2.0 * math.tan(math.pi / SIDES)                           # the facets' feet at the wall
     nut_reach = hex_circumdiameter(S.nut.af + S.nut_fit) / 2.0
-    _, z_bottom = min(flange_bolt_points(), key=lambda p: p[1])                          # the wall's bottom screw, its head
-    head_r = R_END.screw.head_dia / 2.0
+    _, z_bottom = min(flange_bolt_points(), key=lambda p: p[1])                          # the wall's lowest screw (the rotor
+    head_r, head_h = DEFAULT.drive.clamp_screw.head_dia / 2.0, DEFAULT.drive.clamp_screw.head_h   # clamp's), its head
     for x, y in S.screw_points:
         assert abs(y) + S.head_dia / 2.0 <= corner_y - 1.0
         assert S.lap_x + nut_reach + 1.5 <= x <= R_END.wall_x[0] - nut_reach - 1.5
-        assert abs(y) - nut_reach >= head_r + 1.0 or R_END.wall_x[0] - R_END.screw.head_h - (x + S.head_dia / 2.0) >= 1.0
+        assert abs(y) - nut_reach >= head_r + 1.0 or R_END.wall_x[0] - head_h - (x + S.head_dia / 2.0) >= 1.0
         assert z_bottom - head_r > W.z1                                                    # its head over the web's top face
         for hx, hy in motor_hole_points():
             assert math.hypot(x - hx, y - hy) >= S.head_dia / 2.0 + H.pocket_dia / 2.0 + 2.0
