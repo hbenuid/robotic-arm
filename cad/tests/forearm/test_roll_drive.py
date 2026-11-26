@@ -139,13 +139,13 @@ def test_stack():
     assert D.stub_dia < D.step_dia < D.post_dia - 2.0 * D.post_chamfer and z_axis + D.post_x[0] > UPPER_ARM_FACE_Z
     assert D.post_dia / 2.0 < UPPER_ARM_BORE_R and D.stub_dia / 2.0 < UPPER_ARM_BORE_R
     assert z_axis + D.stub_x[0] == ELBOW_PULLEY_FACE_Z and D.pin_bore_x[0] == D.stub_x[0]
-    # the stations, the forearm wall back: the ring's front face on the wall, the ring, its rear flange 4.75 over the
+    # the stations, the forearm wall back: the ring's front face on the wall, the ring, its rear flange 1.5 over the
     # frame's front face, the pulley's Ø33 shoulder on down to bearing 2; bearing 2 RIGHT UNDER that face (its front face flush with it - the bearing
     # boss's top: nothing proud of the face the frame prints on), the lip - the spacer between the outer rings, the pair
     # 19 apart centre to centre -, bearing 1; the pulley's neck meets the shaft's journal at bearing 1's front face
     assert _eq(S["z_ring_end"], S["z_wall"], -w.wall_x[1]) and "z_spigot_end" not in S   # the pulley's front face flat: the ring's
     assert _eq(S["z_ring"], S["z_wall"] - D.ring_flange_t - D.ring_width) and _eq(S["z_ring_flange_1"], S["z_ring"] - D.ring_flange_t)
-    assert _eq(S["z_boss"], S["z_front"], S["z_bearing_2"] + D.bearing_width) and _eq(S["z_ring_flange_1"] - S["z_front"], 4.75)
+    assert _eq(S["z_boss"], S["z_front"], S["z_bearing_2"] + D.bearing_width) and _eq(S["z_ring_flange_1"] - S["z_front"], 1.5)
     assert _eq(S["z_lip"], S["z_bearing_2"] - D.lip) and _eq(S["z_bearing_1"], S["z_lip"] - D.bearing_width)
     assert _eq(S["z_bearing_2"] - S["z_bearing_1"], D.bearing_width + D.lip, 19.0)
     assert _eq(S["z_meet"], S["z_lip"], S["z_bearing_1"] + D.bearing_width) and _eq(S["z_shoulder_1"], S["z_bearing_1"] - D.run_gap)
@@ -169,14 +169,14 @@ def test_stack():
     assert max(j_r, p_r) < D.shoulder_dia / 2.0 < D.lip_id / 2.0 - 1.0 and D.lip_id < D.bearing_od - 3.0
     assert D.neck_dia < D.bearing_bore < 2.0 * min(j_r, p_r)
     assert D.tower_y - r_seat >= 4.0 and D.block_x[1] - r_seat >= 4.0 and r_seat + 4.0 <= -D.block_x[0]
-    # the motor's face where its 20T meets the ring, the 20T's hub pulley_seat over the motor's pilot boss - down in the
-    # plate's pilot hole, under the front face - and the 20T on the shaft to its far end; the plate in front of the motor
-    # the block's front face, pad_t thick: the motor screws' heads flush in it (tests/forearm/test_roll_motor_screws.py).
-    # The shaft's tip passes the forearm wall's plane: the rolling forearm keeps clear of it round the roll axis
-    # (test_forearm_clears_the_elbow_while_rolling)
+    # the motor's face where its 20T meets the ring, the 20T hub out - its far end (its teeth's) pulley_gap over the
+    # front face, its hub and set screws toward the wrist, the shaft on past the set screws
+    # (tests/forearm/test_roll_motor_screws.py); the plate in front of the motor the block's front face, pad_t thick: the
+    # motor screws' heads flush in it. The 20T's hub and the shaft's tip pass the forearm wall's plane: the rolling
+    # forearm keeps clear of them round the roll axis (test_forearm_clears_the_elbow_while_rolling)
     assert _eq(S["z_ring_mid"] - S["z_motor_face"], D.t20) and _eq(S["z_front"], S["z_motor_face"] + D.pad_t)
-    assert _eq(S["z_20t"], S["z_motor_face"] + D.motor.pilot_height + D.pulley_seat) and S["z_20t"] < S["z_front"]
-    assert S["z_20t"] + D.t20_len <= S["z_motor_face"] + D.motor.shaft_length
+    assert _eq(S["z_20t_end"], S["z_front"] + D.pulley_gap) and _eq(S["z_20t"], S["z_20t_end"] + D.t20_len)
+    assert S["z_20t"] - D.t20_set_screws[0] < S["z_motor_face"] + D.motor.shaft_length < S["z_20t"]
     # the rotor clamp (M4, through the forearm wall, the pulley and the shaft): its heads in the wall's counterbores,
     # clamp_head_clear under its wrist face, its tips at the shaft's rear face, the nuts 2 pitches short of them in the
     # flange; in front of each nut the flange and the Ø33 shoulder (1.5 mm or more, to bearing 1's rear face) over all of
@@ -624,19 +624,20 @@ def _radii(shape, axis_z: float) -> list[float]:
 def test_forearm_clears_the_elbow_while_rolling():
     """The forearm (j2_link with its wall bracket) rolls about the roll axis (host: through (0, 0, axis_z) along -X),
     which keeps every point's x and its distance from the axis: the whole link ends at its wall's elbow face, and the upper arm's round end, the elbow pulley
-    and the stator's parts (the frame, the board, the 20T, the belt, the tensioner's idler and nut) lie beyond that plane,
-    so no roll angle brings them together. The roll motor's shaft and the tensioner's screw head pass the plane: in the
-    slab they share with the link, the link stays inside a radius about the roll axis that they stay 2 mm outside."""
+    and the stator's parts (the frame, the board, the belt, the tensioner's idler and nut) lie beyond that plane,
+    so no roll angle brings them together. The roll motor's shaft, its 20T's hub (hub out) and the tensioner's screw
+    head pass the plane: in the slab they share with the link, the link stays inside a radius about the roll axis that
+    they stay 2 mm outside."""
     link = j2_link_in_drive_frame()
     plane, axis_z = link.bounding_box().max.X, DEFAULT.roll_end.axis_z
     assert plane == pytest.approx(DEFAULT.roll_end.wall_x[1], abs=1e-6), f"the forearm reaches x {plane:.2f}, past its wall"
     others = {key: in_drive_frame(key) for key in ("j1_link#1", "gt2_pulley_90t#3")}
-    others |= {label: _placed_part(label) for label in ("forearm_roll_block", "mks_servo42d:forearm_roll", "gt2_pulley_20t:forearm_roll",
+    others |= {label: _placed_part(label) for label in ("forearm_roll_block", "mks_servo42d:forearm_roll",
                                                         "forearm_roll_belt:forearm_roll", "gt2_idler_20t:forearm_roll", "roll_idler_nut")}
     for key, other in others.items():
         x = other.bounding_box().min.X
         assert x >= plane, f"{key} reaches x {x:.2f}, into the rolling forearm's side of x {plane:.2f}"
-    past = {label: _placed_part(label) for label in ("nema17_40mm:forearm_roll", "roll_idler_screw")}
+    past = {label: _placed_part(label) for label in ("nema17_40mm:forearm_roll", "gt2_pulley_20t:forearm_roll", "roll_idler_screw")}
     x0 = min(part.bounding_box().min.X for part in past.values())
     assert x0 < plane
     reach = max(_radii(_slab(link, x0, plane + 0.01), axis_z))

@@ -160,7 +160,7 @@ YAW_IDLER_NUT_Y = _BASE.plate.y[0]                            # -38.4 the nut's 
 FOREARM_ROLL_AXIS_Z = _FOREARM.roll_end.axis_z     # 25 [REFERENCE] the roll axis' N-station in j2_link's frame = the wrist centre's (42 - 17)
 FOREARM_ROLL_TURN_DEG = _FOREARM.roll_turn_deg     # 180 [DESIGN] the forearm + all beyond it turned about the roll axis from the capture
 #                                                    (lib/placements.py TURNS): the wrist-pitch motor on the upper arm's side of it
-FOREARM_WALL_X = _FOREARM.roll_end.wall_x          # (-56, -48) [DESIGN] the flange wall: wrist face .. elbow face (48 from the elbow axis)
+FOREARM_WALL_X = _FOREARM.roll_end.wall_x          # (-56, -44.75) [DESIGN] the flange wall: wrist face .. elbow face (44.75 from the elbow axis)
 FOREARM_WALL_OD = _FOREARM.roll_end.wall_od        # 60 [DESIGN] the flange wall's round outline about the roll axis (on a foot as wide as the web)
 FOREARM_PLUG_CLEARANCE = _FOREARM.roll_end.plug_clearance   # 10 [DESIGN] the wrist motor's connector plug: its room beyond the connector (sideways)
 FOREARM_MOTOR_WALL_CLEAR = _FOREARM.roll_end.motor_wall_clear   # 1.5 [DESIGN] the wrist motor's body to the wall screws' heads at the slots' wall end
@@ -267,7 +267,7 @@ _LAP_BOLTS = len(_FOREARM.split.screw_points)
 WALL_BRACKET_SCREWS_MASS_G = STEEL_DENSITY * _LAP_BOLTS * shcs_volume(_FOREARM.split.screw, _FOREARM.split.screw_len)   # 2.8, 3x M3x8
 WALL_BRACKET_NUTS_MASS_G = STEEL_DENSITY * _LAP_BOLTS * nut_volume(_FOREARM.split.nut)                                   # 1.1, 3x M3
 # the roll belt's tensioner's axle and its nut (parts/joints/roll_idler_{screw,nut}; lib/forearm/params.py RollIdlerParams)
-ROLL_IDLER_SCREW_MASS_G = STEEL_DENSITY * shcs_volume(_FOREARM.drive.idler.screw, _FOREARM.drive.idler.screw_len)   # 5.8, M5x25
+ROLL_IDLER_SCREW_MASS_G = STEEL_DENSITY * shcs_volume(_FOREARM.drive.idler.screw, _FOREARM.drive.idler.screw_len)   # 5.0, M5x20
 ROLL_IDLER_NUT_MASS_G = STEEL_DENSITY * nut_volume(_FOREARM.drive.idler.nut)                                       # 1.3, M5
 # the elbow belt's tensioner's axle and its nut (parts/joints/elbow_idler_{screw,nut}; lib/upper_arm/params.py ElbowIdlerParams)
 ELBOW_IDLER_SCREW_MASS_G = STEEL_DENSITY * shcs_volume(_UPPER_ARM.idler.screw, _UPPER_ARM.idler.screw_len)   # 5.8, M5x25

@@ -58,14 +58,17 @@ def test_the_wrist_motors_head_and_counterbore_in_a_thinner_plate():
 
 def test_the_stations():
     """The counterbores' floor head_h under the front face, the plate pad_t from the motor's face to it; the thread in
-    the motor short of its holes' bottom; the 20T's hub 1.5 into the pilot hole (its set screws above the face) and its
-    bore on the shaft to its far end."""
+    the motor short of its holes' bottom; the 20T hub out, its far end pulley_gap over the face, its teeth level with the
+    ring's, and the shaft on past its set screws' holes (0.35: the screws' axis 1.85 short of the shaft's tip)."""
     assert S["z_motor_screws"] == pytest.approx(S["z_front"] - SCREW.head_h)
     assert S["z_front"] - S["z_motor_face"] == pytest.approx(D.pad_t)
     tip = S["z_motor_screws"] - PARAMS.ROLL_MOTOR_SCREW_LEN
     assert S["z_motor_face"] - tip == pytest.approx(H.thread) and H.thread < D.motor.bolt_hole_depth
-    assert S["z_front"] - S["z_20t"] == pytest.approx(1.5)
-    assert S["z_motor_face"] + D.motor.shaft_length - (S["z_20t"] + D.t20_len) >= 2.0
+    assert S["z_20t_end"] - S["z_front"] == pytest.approx(D.pulley_gap) and D.pulley_gap >= 2.0
+    assert S["z_20t"] - S["z_20t_end"] == pytest.approx(D.t20_len)
+    assert S["z_20t"] - D.t20_hub == pytest.approx(S["z_ring_mid"])
+    shaft_tip, near, far = S["z_motor_face"] + D.motor.shaft_length, *(S["z_20t"] - s for s in D.t20_set_screws)
+    assert shaft_tip - near == pytest.approx(0.35) and far < shaft_tip
 
 
 @pytest.mark.slow

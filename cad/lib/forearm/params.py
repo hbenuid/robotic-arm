@@ -140,7 +140,7 @@ class RollEndParams:
     the rotor clamp's screws: 4x M4 from counterbores in the wall's wrist face run through the wall, the pulley and the
     shaft into the nuts in the shaft's flange (RollDriveParams clamp_*: parts/joints/roll_clamp_screws, roll_clamp_nuts) -
     the wall, the pulley, both inner rings and the shaft one clamp; the cables pass through the rotor's bore, the wall's
-    hole the same (RollDriveParams.bore). The wall stands 48 mm
+    hole the same (RollDriveParams.bore). The wall's elbow face stands 44.75 mm
     along the roll axis from the elbow axis' station (and ForearmConfig.elbow_offset across from it): whatever the
     forearm's roll angle, it clears the upper arm's faceted end (lib/upper_arm/params.py ArmParams.end_r). It is a
     faceted flange about the roll axis (flats wall_od / 2 off it) through its whole thickness - the roll frame's tower
@@ -152,7 +152,10 @@ class RollEndParams:
     The roll drive's frame, shaft and pulley: lib/forearm/roll.py."""
 
     axis_z: float = 25.0                  # [REFERENCE] the wrist centre's N-station above the elbow origin (42 − 17)
-    wall_x: tuple = (-56.0, -48.0)        # [DESIGN] the wall's wrist face .. elbow face (8 thick): 48 from the elbow axis (>= the upper arm's round end + 3)
+    wall_x: tuple = (-56.0, -44.75)       # [DESIGN] the wall's wrist face .. elbow face (11.25 thick): the elbow face 44.75 from the elbow
+    #                                       axis (>= the upper arm's round end + 1.5) - the pulley's front face, so it sets the roll belt's plane:
+    #                                       the ring's rear flange 1.5 over the frame's front face, the idler's spacer and the pulley short (the
+    #                                       20T hub out to reach that low: RollDriveParams.pulley_gap); the wrist face sets the forearm's place
     wall_od: float = 60.0                 # [DESIGN] the wall's faceted outline about the roll axis, across its flats: it covers the pulley's ring
     #                                       (its flanges Ø59.19) all round (no wider: the roll idler's screw, 42.3 off the roll axis, has its head
     #                                       4.8 past the wall's elbow face - a wider wall would meet it as the forearm rolls; the flange's corners
@@ -278,11 +281,11 @@ class RollIdlerParams:
     land_h: float = 1.0                   # the land over the riser: the idler's flange clear of the riser
     slot_w: float = M5_CLEAR              # the axle's hole through the spacer, and its slot through the plate on down past its tip
     screw: ShcsSize = M5_SHCS             # [DATASHEET] ISO 4762 M5 (parts/joints/roll_idler_screw), its head on the idler's top
-    screw_len: float = 25.0               # [DESIGN] M5 x 25: through the idler, the spacer, the roof and the nut, its tip 2 pitches+ past it
+    screw_len: float = 20.0               # [DESIGN] M5 x 20: through the idler, the spacer, the roof and the nut, its tip 2 pitches+ past it
     nut: NutSize = M5_NUT                 # [DATASHEET] ISO 4032 M5 (parts/joints/roll_idler_nut)
     nut_fit: float = 0.2                  # [DESIGN] the channel: the nut's flats + this, its height + this
     roof: float = 3.0                     # [DESIGN] the plate over the channel: the nut's bearing face pulled up against it
-    tip_clear: float = 1.0                # [DESIGN] the screw's hole on past its tip
+    tip_clear: float = 2.75               # [DESIGN] the screw's hole on past its tip - deep enough for an M5 x 25 as well
     entry: float = 4.25                   # [DESIGN] the nut's way in: its recess starts this far inside the pocket's top edge - 3 under the
     #                                       motor's face - and runs on into the channel
     setback_h: float = 32.0               # [DESIGN] the motor pocket's far face set back to the nut channel's near side from the plate
@@ -418,7 +421,7 @@ class RollDriveParams:
     groove inside each wall at its board's side headers), the pocket's front wall its plate (round holes: its 4x M3 from
     the front face, the heads flush in counterbores -
     motor_holes, parts/joints/roll_motor_screws), the block's one flat front face the plate's - the 20T's teeth level
-    with the ring (pulley_seat), the plate pad_t thick behind the face - nothing stands proud of it, so the frame prints
+    with the ring (the 20T hub out, pulley_gap), the plate pad_t thick behind the face - nothing stands proud of it, so the frame prints
     flat on it; the 6806 pair in the tower under it round the roll axis (lip apart, bearing 2's seat open through the
     face, its front face on it, the facets leaving the seat its wall), the shaft's bay behind them bored on through the frame's back, closed by
     a removable back panel flush with the rear face (back: BackPanelParams).
@@ -537,7 +540,7 @@ class RollDriveParams:
     neck_dia: float = 29.9                # [DESIGN] the pulley's hub between the bearings: under the 6806's bore, so bearing 2 slides over it onto
     #                                       its journal; 1.35 of wall outside each clamp screw (clamp_circle_dia)
     ring_core_dia: float = 44.0           # [DESIGN] the pulley's core under the ring (the ring is an annulus fused on it), from the ring's rear
-    #                                       flange: under it the Ø33 shoulder on down to bearing 2, the flange 4.75 over the frame's face
+    #                                       flange: under it the Ø33 shoulder on down to bearing 2, the flange 1.5 over the frame's face
     collar_od: float = 40.0               # [DESIGN] the shaft's flange behind bearing 1's Ø33 shoulder
     # the rotor clamp: 4x M4 from counterbores in the forearm wall's wrist face through the wall, the pulley and the shaft
     # into nuts in the shaft's flange - the wall, the pulley, both inner rings and the shaft as one; the screws centre the
@@ -598,16 +601,21 @@ class RollDriveParams:
     home: RollHomeParams = RollHomeParams()      # the home sensor behind the shaft, under the back panel
     t20_hub: float = 10.95                # [REFERENCE] vendor 20T: its tooth band's centre from its hub face (7.45 + 3.5)
     t20_len: float = 14.45                # [REFERENCE] vendor 20T: hub face .. its far end
-    pulley_seat: float = 3.5              # [DESIGN] the 20T's hub face over the motor's pilot boss: the hub 1.5 down in the plate's pilot hole
-    #                                       (pad_t - pilot_height - this), the motor pad_t behind the front face
+    t20_set_screws: tuple = (2.5, 5.5)    # [REFERENCE] vendor 20T: its two M3 set screws' holes, from its hub face
+    # the 20T sits HUB OUT on the motor's shaft: its teeth toward the motor, its hub and set screws toward the wrist, out
+    # in the open - so nothing of it stands between the frame's face and the teeth, and the belt runs low over the frame
+    pulley_gap: float = 2.7               # [DESIGN] the 20T's far end (its teeth's end, toward the motor) over the frame's front face - set
+    #                                       with a 2.7 gauge on the face; the motor's shaft (shaft_length) then reaches 0.35 past its set
+    #                                       screws' holes (tests/forearm/test_roll_motor_screws.py)
     pad_t: float = 7.0                    # [DESIGN] the plate's thickness: 4 under the motor screws' heads + their counterbores (head_h), the
-    #                                       heads flush in the front face - the plate grown 3 toward the motor, the face kept (the 20T's hub
-    #                                       face 1.5 under it, its set screws above it); the screws: lib/params.py ROLL_MOTOR_SCREW_LEN
+    #                                       heads flush in the front face - the plate grown 3 toward the motor, the face kept; the screws:
+    #                                       lib/params.py ROLL_MOTOR_SCREW_LEN
 
     @property
     def t20(self) -> float:
-        """The 20T's tooth-band centre from the motor's mounting face: over the pilot boss, its seat, the hub."""
-        return self.motor.pilot_height + self.pulley_seat + self.t20_hub
+        """The 20T's tooth-band centre from the motor's mounting face: through the plate, the gap over its face, the teeth's
+        half (the 20T hub out: its band's centre t20_len - t20_hub from its far end)."""
+        return self.pad_t + self.pulley_gap + (self.t20_len - self.t20_hub)
 
     @property
     def elbow_y(self) -> float:
