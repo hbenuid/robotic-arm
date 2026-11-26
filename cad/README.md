@@ -26,7 +26,7 @@ below; the repo's `.claude/settings.json` enables its marketplace) — installed
 ```bash
 cd cad
 ./cadtool setup                  # uv sync (build123d/OCP/cad into ./.venv, bytecode compiled; reinstalls the OCP kernel if it does not import)
-                                 # + the git pre-commit hook (ruff on staged .py files) + git notes fetching
+                                 # + the git pre-commit hook (ruff on staged .py files, then ty) + git notes fetching
                                  # + the machine's cad at the pin, its telemetry and updates stored off first
 claude plugin marketplace add earthtojake/text-to-cad#latest
 claude plugin install text-to-cad@earthtojake
@@ -63,7 +63,7 @@ the CAD kernel), updating the plugin and what a pull that changes `pyproject.tom
 | `./cadtool cad …` | any `cad` subcommand but `setup`, `update`, `uninstall`, `doctor`, `run` ([`docs/toolchain.md`](docs/toolchain.md) Gotchas) |
 | `./cadtool doctor` | the venv's, the server's and the plugin's release against the pin, the stored telemetry and automatic-update choices, the OCP kernel, the machine's installation and the server running (a `cad update` moves both), no other text-to-cad plugin; changes nothing |
 | `./cadtool pytest [--full] [pytest args]` | test suite: the test files a change reaches since they last passed (`--full`: every file), on workers sized to the machine (`-n` overrides; a whole test file each); `-m "not slow"` the fast lane, which skips geometry builds |
-| `./cadtool lint [--fix] [path…]` | `ruff check` over `cad/` |
+| `./cadtool lint [--fix] [path…]` | `ruff check`, then `ty check`, over `cad/` (or the paths named; `--fix` is ruff's) |
 | `./cadtool python …` | any python in the venv with `PYTHONPATH=cad/` (`-c "from assemblies.cycloidal_drive import totals; print(totals())"`) |
 | `./cadtool clean [--all]` | delete `__pycache__/`, `.pytest_cache/`, `.ruff_cache/` (and any stray `__cadgen__/`); `--all` also empties `snapshots/` and `print/` and removes the git-ignored `assemblies/*.step`, `robot/links/*.step` |
 

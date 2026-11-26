@@ -11,7 +11,7 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 cadtool - cad + this uv project (paths relative to cad/)
-  ./cadtool setup                                   per machine: uv sync, bytecode compiled (+ the OCP kernel check) + the git pre-commit hook (ruff)
+  ./cadtool setup                                   per machine: uv sync, bytecode compiled (+ the OCP kernel check) + the git pre-commit hook (ruff + ty)
                                                     + git notes fetching + ./cadtool server
   ./cadtool server                                  the machine's cad (a uv tool: the command and its server) at this project's pin,
                                                     telemetry, cad's own updates and its plugin updates stored off first, then
@@ -49,7 +49,7 @@ cadtool - cad + this uv project (paths relative to cad/)
   ./cadtool pytest [--full] [pytest args]           test suite: the test files a change reaches since they last passed, on
                                                     workers for the machine (tests/run.py); --full every file (Recipe C,
                                                     before a PR); named tests (a path, -k, -m) run as named
-  ./cadtool lint [--fix] [path...]                  ruff check (lint only, no formatter; rules: pyproject.toml [tool.ruff])
+  ./cadtool lint [--fix] [path...]                  ruff check (lint only, no formatter), then ty check (types) - rules: pyproject.toml [tool.ruff] / [tool.ty]
   ./cadtool python -m assemblies.arm ...            any python in the venv (PYTHONPATH=cad/)
   ./cadtool clean [--all]                           delete __pycache__/, .pytest_cache/, .ruff_cache/ (and any stray __cadgen__/);
                                                     --all also empties snapshots/ and print/ and deletes
@@ -246,12 +246,12 @@ install_server() {  # the machine's cad at the pin: the stored choices before it
 }
 
 install_git_hook() {  # .git/hooks/pre-commit = a stub that runs the committed ../.githooks/pre-commit (ruff on the staged
-  # .py files).
+  # .py files, ty on their projects).
   local hooks stub marker="installed by cad/cadtool setup"
   hooks="$(git rev-parse --git-path hooks)" || return 0
   stub="$hooks/pre-commit"
   if [[ -e "$stub" ]] && ! grep -q "$marker" "$stub"; then
-    echo "cadtool: $stub exists and is not ours - left alone (the ruff pre-commit hook is NOT installed)" >&2
+    echo "cadtool: $stub exists and is not ours - left alone (the ruff + ty pre-commit hook is NOT installed)" >&2
     return 0
   fi
   mkdir -p "$hooks"
@@ -420,7 +420,16 @@ case "$cmd" in
     # tests/run.py picks the test files and the workers, then runs pytest (tests/AGENTS.md)
     exec uv run --frozen python -m tests.run "$@" ;;
   lint)
-    exec uv run --frozen ruff check "$@" ;;
+    # ruff check with every argument, then ty check over the same paths (the whole project when none is named; an
+    # option - `--fix` and the like - is ruff's only); both run, and either finding fails the command
+    ty_paths=()
+    for arg in "$@"; do
+      case "$arg" in -*) ;; *) ty_paths+=("$arg") ;; esac
+    done
+    rc=0
+    uv run --frozen ruff check "$@" || rc=1
+    uv run --frozen ty check ${ty_paths[@]+"${ty_paths[@]}"} || rc=1
+    exit $rc ;;
   clean)
     # Regenerable caches only; --all also drops the git-ignored review artifacts. Never touches .venv,
     # the part STEPs, the committed reference/vendor/mesh files or the document cache (`./cadtool cad delete`).

@@ -17,6 +17,7 @@
     "files.exclude": {
       "**/__pycache__": true
     },
+    "python.languageServer": "None",
     "[python]": {
       "editor.codeActionsOnSave": {
         "source.fixAll.ruff": "explicit",
@@ -27,7 +28,8 @@
   "extensions": {
     "recommendations": [
       "ms-python.python",
-      "charliermarsh.ruff"
+      "charliermarsh.ruff",
+      "astral-sh.ty"
     ]
   }
 }

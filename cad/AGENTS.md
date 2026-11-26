@@ -5,8 +5,8 @@ checklist (Recipe C), layering, the lazy kernel, the two machines. **Audience:**
 folder's own rules live in its AGENTS.md — `parts/`, `assemblies/`, `robot/`, `lib/`, `tests/`, `tools/`, `reference/`,
 `vendor/` — which loads when you work there; Start here says which file owns which task.
 
-The root `AGENTS.md` loads with this file, so its rules (git, uv, ruff and the hooks, CI, docs) are not repeated here.
-The toolchain, its pins and upgrades: `docs/toolchain.md`.
+The root `AGENTS.md` loads with this file, so its rules (git, uv, ruff, ty and the hooks, CI, docs) are not repeated
+here. The toolchain, its pins and upgrades: `docs/toolchain.md`.
 
 ## Start here — task → where to look
 | you want to … | read | then follow |

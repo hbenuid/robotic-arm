@@ -1,11 +1,12 @@
 # software/control/ — the arm's motor control
 
-Loads when you work in `software/control/`. The repo-wide rules (git, uv, ruff and the hooks, CI, docs) are the root
-`AGENTS.md`; setup, configuring the boards and running the CLIs are `README.md`; the layers and the plan for the next
-ones are `docs/architecture.md`; the MKS CAN protocol is `docs/mks_can_protocol.md`.
+Loads when you work in `software/control/`. The repo-wide rules (git, uv, ruff, ty and the hooks, CI, docs) are the
+root `AGENTS.md`; setup, configuring the boards and running the CLIs are `README.md`; the layers and the plan for the
+next ones are `docs/architecture.md`; the MKS CAN protocol is `docs/mks_can_protocol.md`.
 
 ## Running
-- `uv run pytest` and `uv run ruff check` from `software/control/`; both are clean, keep them clean. CI runs both.
+- `uv run pytest`, `uv run ruff check` and `uv run ty check` from `software/control/`; all three are clean, keep them
+  clean. CI runs all three.
 - The CLIs: `uv run launcher` (finds the CANable), `uv run motor-control …`, `uv run motor-control --fake` (simulated
   boards), `uv run dashboard` (the browser dashboard; `--fake` for simulated boards that move in time). After adding
   or renaming an entry point (`[project.scripts]`), `uv sync`.

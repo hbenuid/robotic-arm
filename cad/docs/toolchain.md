@@ -92,7 +92,7 @@ as a git note).
 ## After a pull that changes `pyproject.toml` / `uv.lock` (per-machine state git does not carry)
 A new pin moves the server under every session on the machine, so close the others first. `./cadtool stop; ./cadtool
 setup` (the stop ends this venv's workers where only the kernel moved, and refuses where the cad pin moved: setup then
-stops the old release's server itself; setup also (re)installs the ruff git pre-commit hook: a stub `.git/hooks/pre-commit` → the committed
+stops the old release's server itself; setup also (re)installs the ruff + ty git pre-commit hook: a stub `.git/hooks/pre-commit` → the committed
 `.githooks/pre-commit`; makes `git fetch` bring the git notes; and runs `./cadtool server`, which stops the old
 release's server, reinstalls the cad uv tool at the pin - taking the cad-server tool of 0.11.11 and earlier away -,
 stores cad's telemetry, its own updates and its plugin updates off and starts the pin's server - in that order, and all

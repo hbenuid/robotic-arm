@@ -20,6 +20,11 @@
             "type": "command",
             "command": "bash \"$(git -C \"${CLAUDE_PROJECT_DIR:-.}\" rev-parse --show-toplevel)/.claude/hooks/ruff-check.sh\"",
             "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "bash \"$(git -C \"${CLAUDE_PROJECT_DIR:-.}\" rev-parse --show-toplevel)/.claude/hooks/ty-check.sh\"",
+            "timeout": 30
           }
         ]
       }

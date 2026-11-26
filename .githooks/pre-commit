@@ -1,29 +1,32 @@
 #!/usr/bin/env bash
-# pre-commit: `ruff check` on the staged .py files, each with the ruff and the [tool.ruff] of its own uv project
-# (software/control/ or cad/; a .py file outside both is not checked). A finding blocks the commit; fix it
-# (`./cadtool lint --fix` in cad/, `uv run ruff check --fix` in software/control/), re-stage, commit again - or skip
-# the gate once with `git commit --no-verify`.
+# pre-commit, in each uv project (software/control/ or cad/; a .py file outside both is not checked) that has staged
+# .py files: `ruff check` on those files, then `ty check` on the whole project (a change to one file can break the
+# types of another) - each with the ruff / ty and the [tool.ruff] / [tool.ty] of that project; a staged
+# pyproject.toml alone runs its project's ty too. A finding blocks the commit; fix it (`./cadtool lint --fix` in cad/,
+# `uv run ruff check --fix` / `uv run ty check` in software/control/), re-stage, commit again - or skip the gate once
+# with `git commit --no-verify`.
 # Installed per machine by `cad/cadtool setup`: a stub .git/hooks/pre-commit that runs this committed file.
-# Lints the working-tree copy of each staged file (a partly staged file is checked as it is on disk).
-# macOS bash 3.2, no GNU coreutils.
+# Checks the working tree (a partly staged file is checked as it is on disk). macOS bash 3.2, no GNU coreutils.
 set -euo pipefail
 
 repo="$(git rev-parse --show-toplevel)"
 cd "$repo"
 
-control_files=(); cad_files=()
+control_files=(); cad_files=(); control_ty=0; cad_ty=0
 while IFS= read -r f; do
   case "$f" in
-    cad/*.py)              cad_files+=("${f#cad/}") ;;
-    software/control/*.py) control_files+=("${f#software/control/}") ;;
+    cad/*.py)              cad_files+=("${f#cad/}"); cad_ty=1 ;;
+    software/control/*.py) control_files+=("${f#software/control/}"); control_ty=1 ;;
+    cad/pyproject.toml)              cad_ty=1 ;;
+    software/control/pyproject.toml) control_ty=1 ;;
   esac
 done < <(git diff --cached --name-only --diff-filter=ACMR)
-[ ${#control_files[@]} -eq 0 ] && [ ${#cad_files[@]} -eq 0 ] && exit 0
+[ $control_ty -eq 0 ] && [ $cad_ty -eq 0 ] && exit 0
 
 # a GUI git client may run hooks without the login shell's PATH
 PATH="$PATH:$HOME/.local/bin:$HOME/.cargo/bin:/opt/homebrew/bin:/usr/local/bin"
 if ! command -v uv >/dev/null 2>&1; then
-  echo "pre-commit: uv not found - ruff did not run (git commit --no-verify to commit anyway)" >&2
+  echo "pre-commit: uv not found - ruff and ty did not run (git commit --no-verify to commit anyway)" >&2
   exit 1
 fi
 
@@ -31,10 +34,16 @@ rc=0
 if [ ${#control_files[@]} -gt 0 ]; then
   (cd software/control && uv run --frozen --quiet ruff check --force-exclude "${control_files[@]}") || rc=1
 fi
+if [ $control_ty -eq 1 ]; then
+  (cd software/control && uv run --frozen --quiet ty check --output-format concise) || rc=1
+fi
 if [ ${#cad_files[@]} -gt 0 ]; then
   (cd cad && uv run --frozen --quiet ruff check --force-exclude "${cad_files[@]}") || rc=1
 fi
+if [ $cad_ty -eq 1 ]; then
+  (cd cad && uv run --frozen --quiet ty check --output-format concise) || rc=1
+fi
 if [ $rc -ne 0 ]; then
-  echo "pre-commit: ruff found problems - commit blocked (git commit --no-verify to commit anyway)" >&2
+  echo "pre-commit: ruff or ty found problems - commit blocked (git commit --no-verify to commit anyway)" >&2
 fi
 exit $rc
