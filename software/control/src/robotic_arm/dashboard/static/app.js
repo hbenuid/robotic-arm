@@ -178,8 +178,10 @@ function render(st) {
   const counts = r.counts;
   $("pos-label").textContent = joint_mode ? (u.rel ? "Position (no reference)" : "Joint angle") : "Motor shaft";
   $("pos-value").textContent = counts === null ? "—" : fmt(u.pos(counts), 2);
-  $("pos-unit").textContent = u.posUnit;
-  $("pos-sub").textContent = counts === null ? "no encoder reading" : `${counts} counts · ${fmt(counts / 16384, 3)} motor turns`;
+  // the big number carries a short unit; "from encoder zero" leads the line under it (a long unit wrapped there)
+  $("pos-unit").textContent = u.rel ? "°" : u.posUnit;
+  $("pos-sub").textContent = counts === null ? "no encoder reading" :
+    `${u.rel ? "from encoder zero · " : ""}${counts} counts · ${fmt(counts / 16384, 3)} motor turns`;
   const rpm = r.speed_rpm;
   $("speed-value").textContent = rpm === null ? "—" : fmt(u.spd(rpm), joint_mode ? 1 : 0);
   $("speed-unit").textContent = u.spdUnit;

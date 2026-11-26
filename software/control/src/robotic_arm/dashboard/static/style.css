@@ -170,7 +170,8 @@ kbd { display: inline-block; min-width: 18px; padding: 0 4px; margin: 0 1px; bor
 .hero { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
 .metric .label { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
 .metric .value { font-size: 56px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
-.metric .unit { font-size: 18px; color: var(--muted); margin-left: 8px; font-weight: 500; letter-spacing: 0; }
+.metric .unit { font-size: 18px; color: var(--muted); margin-left: 8px; font-weight: 500; letter-spacing: 0;
+  white-space: nowrap; display: inline-block; }   /* "° from encoder zero" moves down whole, never split */
 .metric .sub { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
