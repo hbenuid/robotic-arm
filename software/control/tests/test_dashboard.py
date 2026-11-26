@@ -506,6 +506,15 @@ def test_a_rig_polls_every_motor_and_switches_the_active_one(rig):
         rig.remove_motor("m1")
 
 
+def test_the_page_lists_the_motors_by_can_id(rig):
+    wrist = rig.add_motor("wrist_pitch", 5)
+    base = rig.add_motor("base_yaw", 1)                  # added last, listed first
+    assert [m["can_id"] for m in rig.state()["motors"]] == [1, 3, 5]
+    rig.set_active(wrist)
+    rig.remove_motor(wrist)
+    assert rig.active == base                            # the active one gone: the first on the page takes over
+
+
 def test_discover_adds_the_boards_whose_id_is_a_joints(rig):
     added = rig.discover(1, 10)
     assert sorted(rig.bench(k).can_id for k in added) == [1, 2, 4, 5, 6]   # the elbow (3) was there already

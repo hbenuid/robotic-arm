@@ -328,7 +328,7 @@ def main(argv: list[str] | None = None) -> None:
     print(f"Connected to {label}")
     if not args.no_scan:
         added = rig.discover(1, 16)
-        names = [f"{rig.motors[k].joint_config.name} (id {rig.motors[k].can_id})" for k in rig.motors]
+        names = [f"{rig.motors[k].joint_config.name} (id {rig.motors[k].can_id})" for k in rig.ordered()]
         print(f"Motors: {', '.join(names)}" + (f" - {len(added)} found on the bus" if added else ""))
     url = f"http://127.0.0.1:{server.server_address[1]}/"
     print(f"Dashboard: {url}   (Ctrl+C stops every moving motor and quits)", flush=True)

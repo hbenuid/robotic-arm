@@ -27,7 +27,7 @@ from robotic_arm.motor_driver import Cmd, move_to_axis_request
 
 
 class Rig:
-    """The motors on the page, in the order they were added; `active` is the one the panels drive."""
+    """The motors on the page, listed by CAN id (`ordered`); `active` is the one the panels drive."""
 
     def __init__(self, can: CANInterface, *, max_joint_speed: float = DEFAULT_JOINT_SPEED_CAP,
                  priority_estop: bool = False, label: str = ""):
@@ -54,6 +54,12 @@ class Rig:
             if key not in self.motors:
                 raise Refused(f"no motor {key!r} on the page")
             return self.motors[key]
+
+    def ordered(self) -> list[str]:
+        """The motors' keys by CAN id: the page's cards and its keys 1-9 go in this order. Sorted on every call, as
+        a board's CAN id can change while it is on the page (0x8B)."""
+        with self._lock:
+            return sorted(self.motors, key=lambda k: self.motors[k].can_id)
 
     def add_motor(self, joint: str, can_id: int) -> str:
         """Put `joint`'s board at `can_id` on the page; the first one becomes the active one."""
@@ -84,7 +90,7 @@ class Rig:
             bench.close()
             del self.motors[key]
             if self.active == key:
-                self.active = next(iter(self.motors))
+                self.active = self.ordered()[0]
                 self.motors[self.active].set_background(False)
 
     def set_active(self, key: str) -> None:
@@ -223,6 +229,6 @@ class Rig:
             key = self.active
             if active != key:
                 samples_after = 0
-            motors = [{"key": k, "active": k == key, **b.card()} for k, b in self.motors.items()]
+            motors = [{"key": k, "active": k == key, **self.motors[k].card()} for k in self.ordered()]
             bench = self.motors[key]
         return {**bench.state(samples_after, log_after, notices_after), "active": key, "motors": motors}
