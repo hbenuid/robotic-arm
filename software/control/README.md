@@ -94,8 +94,9 @@ uv run dashboard --fake                             # simulated boards that move
 It shows the board's readouts live (position, speed, status, enable, stall, the home switch on IN_1, voltage,
 current, angle error), with position and speed graphed, and every CAN frame in a log. From it you can:
 
-- enable or disable the motor, move it with ← / → (or the ◀ ▶ buttons: a tap steps by the Step amount, a hold
-  jogs until you let go), change the speed with ↑ / ↓, go to an angle, set the ramp;
+- enable or disable the motor; step it with ← / → (or the Step buttons: one press, one step of the Step amount);
+  jog it with Shift + ← / → (or the ◀ Jog ▶ buttons: it moves while held and stops when you let go); change the
+  speed with ↑ / ↓, go to an angle, set the ramp;
 - set limits: a min and a max, from where the motor is now (Here) or typed, and a switch to turn them off;
 - experiment with smoothness (Smoothing in the left panel, the Tuning tab): the board's own straight ramp, or an
   S-curve the dashboard shapes by streaming speed updates to the board (curve linear / smoothstep / sine / quintic,

@@ -19,7 +19,7 @@ const TESTS = {
 const S = {
   st: null, samples: [], sampleSeq: 0, logSeq: 0, noticeSeq: 0,
   logPaused: false, graphPaused: false, graphSpan: 30, speedSrc: "encoder", showCmd: true, pidLoop: "vfoc",
-  context: null, jogDir: 0, jogTimer: null, press: null, activeKey: null, cards: {}, jogMotor: null,
+  context: null, jogDir: 0, jogTimer: null, activeKey: null, cards: {}, jogMotor: null,
   routineKey: null, routineTable: null, questionKey: null, findings: null, filled: false,
 };
 
@@ -275,7 +275,7 @@ function renderMotors(st) {
       card.innerHTML = `<div class="mc-head"><span class="mc-num"></span><span class="dot"></span><span class="mc-name"></span>` +
         `<span class="mc-id"></span><button class="mc-x" title="Take this motor off the page">×</button></div>` +
         `<div class="mc-value"><span class="v"></span><span class="u"></span></div><div class="mc-sub"></div>` +
-        `<div class="mc-jog"><button data-dir="-1" title="Tap: step · hold: jog">◀ −</button><button data-dir="1" title="Tap: step · hold: jog">+ ▶</button></div>`;
+        `<div class="mc-jog"><button data-dir="-1" title="Jog while held">◀ Jog</button><button data-dir="1" title="Jog while held">Jog ▶</button></div>`;
       S.cards[m.key] = card;
       bindCard(card, m.key);
     }
@@ -318,10 +318,10 @@ function bindCard(card, key) {
       b.setPointerCapture(e.pointerId);
       b.classList.add("held");
       if (key !== S.activeKey && !(await selectMotor(key))) { b.classList.remove("held"); return; }
-      pressStart(dir, key);   // this card's motor, whatever the page still shows
+      jogStart(dir, key);   // this card's motor, whatever the page still shows
     });
-    b.addEventListener("pointerup", () => { b.classList.remove("held"); pressEnd(dir); });
-    b.addEventListener("pointercancel", () => { b.classList.remove("held"); pressCancel(); });
+    b.addEventListener("pointerup", () => { b.classList.remove("held"); jogEnd(); });
+    b.addEventListener("pointercancel", () => { b.classList.remove("held"); jogEnd(); });
   }
 }
 
@@ -723,45 +723,23 @@ function jogStop(release) {
   if (release) api("jog_release", { motor: S.jogMotor });
 }
 
-// A press (an arrow key or a jog button): released within TAP_MS it steps by the Step amount; held longer it jogs
-// until released.
-const TAP_MS = 250;
+// Step and jog never share an input: ← / → (and the Step row's − / +) step by the Step amount, once per press;
+// Shift + ← / → and the ◀ ▶ buttons jog while held.
 
 function stepBy(dir, motor = S.activeKey) {
-  act("step", { delta: dir * num("step-value"), speed: num("speed-num"), acc: int("acc-num"), motor }, $("motion-msg"), "step");
+  act("step", { delta: dir * num("step-value"), speed: num("speed-num"), acc: int("acc-num"), motor }, $("motion-msg"),
+    `step ${dir > 0 ? "+" : "−"}${$("step-value").value}`);
 }
 
-function pressStart(dir, motor = S.activeKey) {
-  if (S.press) return;
-  const press = { dir, jogging: false, motor };
-  press.timer = setTimeout(() => { if (S.press === press) { press.jogging = true; jogStart(dir, motor); } }, TAP_MS);
-  S.press = press;
-  $(dir > 0 ? "jog-plus" : "jog-minus").classList.add("held");
-}
-
-function pressEnd(dir) {
-  const press = S.press;
-  if (!press || press.dir !== dir) return;
-  S.press = null;
-  clearTimeout(press.timer);
-  $("jog-plus").classList.remove("held");
-  $("jog-minus").classList.remove("held");
-  if (press.jogging) jogStop(true); else stepBy(dir, press.motor);
-}
-
-function pressCancel(release = true) {   // focus lost, STOP: end a jog, never step
-  if (S.press) clearTimeout(S.press.timer);
-  S.press = null;
-  $("jog-plus").classList.remove("held");
-  $("jog-minus").classList.remove("held");
-  jogStop(release);
+function jogEnd() {   // a released key or button, lost focus, STOP: end the jog
+  jogStop(true);
 }
 
 function bindJog(id, dir) {
   const el = $(id);
-  el.addEventListener("pointerdown", (e) => { if (!el.disabled) { el.setPointerCapture(e.pointerId); pressStart(dir); } });
-  el.addEventListener("pointerup", () => pressEnd(dir));
-  el.addEventListener("pointercancel", () => pressCancel());
+  el.addEventListener("pointerdown", (e) => { if (!el.disabled) { el.setPointerCapture(e.pointerId); jogStart(dir); } });
+  el.addEventListener("pointerup", jogEnd);
+  el.addEventListener("pointercancel", jogEnd);
 }
 
 function nudgeSpeed(d) {
@@ -782,7 +760,7 @@ function typing(e) {
 }
 
 async function halt() {
-  pressCancel(false);
+  jogStop(false);
   if ($("question").open) $("question").close();
   const r = await api("halt");
   toast(r.ok ? r.message : r.error, r.ok ? "warn" : "err");
@@ -833,24 +811,25 @@ function bind() {
     }
     if (/^[1-9]$/.test(e.key) && !e.repeat && !document.querySelector("dialog[open]")) {
       const m = S.st && S.st.motors[Number(e.key) - 1];
-      if (m) { e.preventDefault(); pressCancel(); selectMotor(m.key); }
+      if (m) { e.preventDefault(); jogEnd(); selectMotor(m.key); }
       return;
     }
     const dir = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
     if (dir) {
       e.preventDefault();
-      if (!e.repeat && !$(dir > 0 ? "jog-plus" : "jog-minus").disabled) pressStart(dir);
+      if (e.repeat || $(dir > 0 ? "jog-plus" : "jog-minus").disabled) return;   // one press, one step
+      if (e.shiftKey) jogStart(dir); else stepBy(dir);
       return;
     }
     if (e.key === "ArrowUp" || e.key === "ArrowDown") { e.preventDefault(); nudgeSpeed(e.key === "ArrowUp" ? 1 : -1); }
   });
   document.addEventListener("keyup", (e) => {
     if (e.key === " " && !typing(e)) e.preventDefault();
-    const dir = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
-    if (dir) pressEnd(dir);
+    // letting go of the arrow or of Shift ends a keyboard jog
+    if ((e.key === "ArrowRight" && S.jogDir > 0) || (e.key === "ArrowLeft" && S.jogDir < 0) || (e.key === "Shift" && S.jogDir)) jogEnd();
   });
-  window.addEventListener("blur", () => pressCancel());
-  document.addEventListener("visibilitychange", () => { if (document.hidden) pressCancel(); });
+  window.addEventListener("blur", jogEnd);
+  document.addEventListener("visibilitychange", () => { if (document.hidden) jogEnd(); });
   $("question").addEventListener("cancel", (e) => { e.preventDefault(); halt(); });   // Esc in the dialog is STOP too
 
   $("mode-joint").onclick = () => act("mode", { mode: "joint" }, $("motion-msg"), "joint mode");
