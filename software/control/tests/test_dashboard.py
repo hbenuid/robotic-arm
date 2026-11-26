@@ -63,7 +63,7 @@ def run(bench: Bench, kind: str, answers: list[str] | None = None, timeout: floa
 
 def bench_mode(bench: Bench, rpm: float = 600) -> None:
     bench.set_mode("bench")
-    bench.set_limits(bench_rpm=rpm)
+    bench.set_speed_limits(bench_rpm=rpm)
     bench.enable(True)
 
 
@@ -109,21 +109,21 @@ def test_the_switch_zone_reads_on_in1_and_homing_zeroes_at_its_edge(channel):
 
 
 def test_joint_mode_checks_every_move_before_sending(bench, sim):
-    with pytest.raises(Refused, match="reference"):
-        bench.move_to(-30, 5, 2)
+    bench.check(150, 5, 2)                               # no reference, no limit set: open (from the encoder's zero)
     bench.set_reference(0.0)
     bench.enable(True)
-    with pytest.raises(Refused, match="outside"):
-        bench.move_to(150, 5, 2)                         # past the arm's 144
+    with pytest.raises(Refused, match="outside the limits"):
+        bench.move_to(150, 5, 2)                         # with a reference the arm's 144 applies
     with pytest.raises(Refused, match="cap"):
         bench.move_to(5, 61, 2)                          # past the 60 deg/s cap
-    bench.set_limits(joint_min=-10, joint_max=10, joint_speed=10)
-    with pytest.raises(Refused, match="outside"):
-        bench.move_to(15, 5, 2)                          # past the page's own limit
+    bench.set_speed_limits(joint_speed=10)
     with pytest.raises(Refused, match="cap"):
         bench.move_to(5, 11, 2)
     with pytest.raises(Refused):
-        bench.set_limits(joint_min=-50)                  # wider than the arm
+        bench.set_speed_limits(joint_speed=61)           # past the dashboard's cap
+    bench.set_limit("max", 10.0)
+    with pytest.raises(Refused, match="outside the limits"):
+        bench.move_to(15, 5, 2)                          # past your own max
     assert frames(sim, Cmd.MOVE_TO_AXIS) == []
     bench.move_to(2, 10, 2)
     sent = frames(sim, Cmd.MOVE_TO_AXIS)[-1]
@@ -131,32 +131,70 @@ def test_joint_mode_checks_every_move_before_sending(bench, sim):
     assert int.from_bytes(sent[4:7], "big", signed=True) == round(2 * bench.joint().counts_per_deg)
 
 
-def test_bench_mode_keeps_to_its_window_and_speed(bench, sim):
+def test_limits_off_means_free_movement(bench, sim):
+    bench.set_reference(0.0)
+    with pytest.raises(Refused, match="outside the limits"):
+        bench.check(150, 5, 2)
+    bench.set_limits_on(False)
+    assert bench.check(150, 5, 2)[0] == round(150 * bench.joint().counts_per_deg)
+    assert bench.window() == (None, None)
+    with pytest.raises(Refused, match="cap"):
+        bench.check(150, 61, 2)                          # the speed cap stays
+    bench.set_limits_on(True)
+    with pytest.raises(Refused, match="outside the limits"):
+        bench.check(150, 5, 2)
+
+
+def test_limits_set_here_follow_the_position_not_the_units(bench, sim):
+    bench_mode(bench)
+    seq = bench.move_to(90, 600, 250)
+    bench.wait_motion_end(seq, 2.0, threading.Event())
+    wait_until(lambda: bench.readout.counts == 0x1000)
+    bench.set_limit("max", here=True)                    # 90 deg of the motor
+    bench.set_limit("min", -45.0)
+    assert bench.limit_view() == {"on": True, "min": -45.0, "min_src": "yours", "max": 90.0, "max_src": "yours"}
+    with pytest.raises(Refused, match="outside the limits"):
+        bench.check(100, 60, 2)
+    with pytest.raises(Refused, match="at the max limit"):
+        bench.jog(1, 60, 2)                              # at the max: no jog further that way
+    with pytest.raises(Refused, match="below"):
+        bench.set_limit("min", 120.0)                    # min above max
+    bench.set_mode("joint")                              # the same physical limits in joint units (sign -1 flips them)
+    bench.set_sign(-1)
+    view = bench.limit_view()
+    cpd = bench.joint().counts_per_deg
+    assert view["min"] == pytest.approx(-0x1000 / cpd) and view["max"] == pytest.approx(0x800 / cpd)   # sign -1
+    bench.set_zero()                                     # the encoder's zero moves: the limits move with it
+    assert bench.limits.count_hi == 0 and bench.limits.count_lo == round(-45 / 360 * 0x4000) - 0x1000
+    bench.homed()                                        # homing moves the zero by an unknown amount: cleared
+    assert bench.limits.count_lo is None and bench.limits.count_hi is None
+
+
+def test_bench_mode_speed_cap(bench, sim):
     bench.set_mode("bench")
     bench.enable(True)
-    with pytest.raises(Refused, match="window"):
-        bench.move_to(400, 30, 2)
     with pytest.raises(Refused, match="cap"):
         bench.move_to(90, 100, 2)                        # the 60 RPM default
     with pytest.raises(Refused):
-        bench.set_limits(bench_rpm=1500)                 # the manual's 1000 RPM ceiling
-    bench.set_limits(bench_rpm=600)
+        bench.set_speed_limits(bench_rpm=1500)           # the manual's 1000 RPM ceiling
+    bench.set_speed_limits(bench_rpm=600)
     seq = bench.move_to(90, 600, 250)
     assert bench.wait_motion_end(seq, 2.0, threading.Event()) == 2
     assert bench.fresh_counts() == round(90 / 360 * 0x4000)
 
 
-def test_a_constant_speed_run_is_bench_modes_only_and_stops_at_the_window(bench, sim):
+def test_a_constant_speed_run_is_bench_modes_only_and_stops_at_a_limit(bench, sim):
     bench.set_reference(0)
     with pytest.raises(Refused, match="bench mode"):
         bench.run(False, 30, 2)
     bench_mode(bench)
-    bench.set_limits(bench_min=-90, bench_max=90)
+    bench.set_limit("min", -90.0)
+    bench.set_limit("max", 90.0)
     bench.run(False, 300, 200)                           # CCW: the fake counts up
     wait_until(lambda: bench.motion is None and bench.readout.status == 1, 3.0)
     stops = [f for f in frames(sim, Cmd.SPEED) if f[1] & 0x0F == 0 and f[2] == 0]
-    assert len(stops) == 1                               # the window's ramped F6 stop, sent once
-    assert sum("left the bench window" in n["text"] for n in bench.notices) == 1
+    assert len(stops) == 1                               # the limit's ramped F6 stop, sent once
+    assert sum("reached a limit" in n["text"] for n in bench.notices) == 1
     assert 90 < bench.readout.counts * 360 / 0x4000 < 200
 
 
@@ -172,14 +210,31 @@ def test_the_raw_box_refuses_what_moves(bench, sim):
 
 
 def test_a_jog_stops_when_its_keepalives_stop(bench, sim):
-    bench_mode(bench, 300)
-    bench.set_limits(bench_max=20 * 360)                 # 20 motor turns: the jog's edge is far off
+    bench_mode(bench, 300)                               # no limits set: the jog's target is its lead ahead
     bench.jog(1, 300, 200)
     time.sleep(0.15)
     assert bench.jog(1, 300, 200) == "jogging"           # a keep-alive, then none
     wait_until(lambda: any(f[1:3] == b"\x00\x00" for f in frames(sim, Cmd.MOVE_TO_AXIS)), 1.5)
     wait_until(lambda: bench.readout.status == 1 and bench.readout.speed_rpm == 0, 3.0)
-    assert 0 < bench.readout.counts < 10 * 0x4000        # stopped well short of the edge
+    assert 0 < bench.readout.counts < 10 * 0x4000        # stopped well short of its 10-turn lead
+
+
+def test_a_long_jog_moves_its_target_on(bench, sim, monkeypatch):
+    from robotic_arm.dashboard import bench as bench_module
+
+    monkeypatch.setattr(bench_module, "JOG_LEAD_S", 0.2)   # a short lead: the keep-alives must move it on
+    bench_mode(bench, 300)
+    lead = 300 * 0x4000 / 60 * 0.2                         # acc 255: braking is short, the lead sets the target
+    end = time.monotonic() + 0.9
+    bench.jog(1, 300, 255)
+    while time.monotonic() < end:
+        time.sleep(0.1)
+        bench.jog(1, 300, 255)
+    assert bench.readout.counts > 1.5 * lead              # well past the first target
+    targets = [int.from_bytes(f[4:7], "big", signed=True) for f in frames(sim, Cmd.MOVE_TO_AXIS) if f[1:3] != b"\x00\x00"]
+    assert len(targets) >= 3 and targets == sorted(targets)
+    bench.jog_release()
+    wait_until(lambda: bench.readout.status == 1 and bench.readout.speed_rpm == 0, 3.0)
 
 
 def test_the_page_going_silent_halts_motion(bench, sim):
@@ -332,8 +387,11 @@ def test_the_server_needs_its_token_and_a_local_host(bench):
             return json.loads(conn.getresponse().read())
 
         assert post({"action": "ping"}) == {"ok": True}
-        refused = post({"action": "move", "value": 1, "speed": 1, "acc": 2})
-        assert refused["ok"] is False and "reference" in refused["error"]
+        refused = post({"action": "move", "value": 1, "speed": 100, "acc": 2})
+        assert refused["ok"] is False and "cap" in refused["error"]
+        assert post({"action": "limit", "side": "max", "value": 5}) == {"ok": True}
+        assert post({"action": "limits_on", "on": False}) == {"ok": True}
+        assert bench.limit_view()["on"] is False
         assert post({"action": "nonsense"})["ok"] is False
     finally:
         srv.shutdown()

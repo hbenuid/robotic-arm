@@ -152,7 +152,7 @@ def _unit(bench: Bench) -> tuple[str, str]:
 def _need_value(bench: Bench) -> float:
     value = bench.value_now()
     if value is None:
-        raise Refused("no position: joint mode needs its reference first (home it, or set where it is)")
+        raise Refused("no encoder reading: is the board answering?")
     return value
 
 
@@ -491,7 +491,7 @@ def switch_zone(bench: Bench, r: Routine, p: dict[str, Any]) -> None:
     if len(edges) <= 2 and all(sum(1 for lg, _, _ in edges if lg == leg) <= 1 for leg in ("A->B", "B->A")):
         r.summary.append("One edge each way: the zone runs on past the span's end (as each joint's does past its "
                          "lower limit) - only its near edge is in reach")
-    if bench.mode == "joint":
+    if bench.mode == "joint" and bench.zero_deg is not None:   # joint angles: comparable with home_deg
         toward_minus = [w for lg, e, w in edges if e.startswith("on") and
                         ((lg == "A->B") == (b < a))]
         if toward_minus:
@@ -545,8 +545,8 @@ def home(bench: Bench, r: Routine, p: dict[str, Any]) -> None:
         r.rows.append(["0x91", "complete" if result == 2 else "failed"])
     if result != 2:
         raise Refused("the board reports homing failed")
+    bench.homed()
     if bench.mode == "joint":
-        bench._homed()
         r.summary.append(f"Homed: the encoder's zero is the switch's edge, {bench.joint_config.home_deg:g} deg "
                          f"(config's home_deg). Joint mode is referenced.")
     else:

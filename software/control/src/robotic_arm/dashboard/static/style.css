@@ -110,9 +110,23 @@ label.inline { display: inline-flex; align-items: center; gap: 6px; }
 .power .led { width: 10px; height: 10px; border-radius: 50%; background: var(--faint); }
 .power.on { border-color: var(--ok); color: var(--ok); background: var(--ok-weak); }
 .power.on .led { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
-.callout { border: 1px solid var(--warn); background: var(--warn-weak); border-radius: 10px; padding: 10px 12px; }
-.callout-title { font-weight: 700; color: var(--warn); margin-bottom: 8px; }
-.callout .row { margin-bottom: 0; }
+.refhint { border: 1px solid var(--line-strong); border-radius: 10px; padding: 8px 10px; background: var(--raised); }
+.refhint summary { cursor: pointer; color: var(--warn); font-size: 12px; font-weight: 600; }
+.refhint .row { margin-bottom: 0; }
+.keys { text-align: center; margin-top: -4px; }
+kbd { display: inline-block; min-width: 18px; padding: 0 4px; margin: 0 1px; border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 4px; font: 11px ui-monospace, Menlo, monospace; color: var(--text); text-align: center; }
+.limits { border: 1px solid var(--line-strong); border-radius: 10px; padding: 10px; background: var(--raised); }
+.limits.off { border-color: var(--warn); background: var(--warn-weak); }
+.limits.off .lim-row { opacity: 0.45; }
+.lim-row { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+.lim-name { width: 28px; color: var(--muted); font-size: 12px; font-weight: 600; }
+.lim-row input.arm { color: var(--muted); font-style: italic; }
+.btn.icon { padding: 4px 8px; }
+.switch { display: inline-flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--line-strong); border-radius: 999px; padding: 2px 8px 2px 2px; cursor: pointer; font-size: 11px; font-weight: 700; color: var(--muted); }
+.switch .knob { width: 16px; height: 16px; border-radius: 50%; background: var(--faint); transition: background 0.15s; }
+.switch.on { border-color: var(--ok); color: var(--ok); }
+.switch.on .knob { background: var(--ok); }
+.switch:not(.on) { border-color: var(--warn); color: var(--warn); }
 .jog { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .jogbtn {
   background: var(--raised); border: 1px solid var(--line-strong); border-radius: 12px; padding: 20px 0;

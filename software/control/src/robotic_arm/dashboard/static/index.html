@@ -30,19 +30,40 @@
 
     <button id="enable-toggle" class="power" aria-pressed="false"><span class="led"></span><span class="tlabel">Motor off</span></button>
 
-    <div id="ref-needed" class="callout hidden">
-      <div class="callout-title">Where is the joint?</div>
-      <button id="ref-home" class="btn full">Home it</button>
-      <div class="row">
+    <details id="ref-needed" class="refhint hidden">
+      <summary>No reference: angles count from the encoder's zero</summary>
+      <div class="row tight">
+        <button id="ref-home" class="btn small">Home it</button>
         <span class="muted small">or it's at</span>
         <input id="ref-quick" type="number" step="0.1" class="num">
-        <button id="ref-quick-set" class="btn ghost">Set</button>
+        <button id="ref-quick-set" class="btn ghost small">Set</button>
       </div>
-    </div>
+    </details>
 
     <div class="jog">
-      <button id="jog-minus" class="jogbtn" title="Hold (or ←)">◀ −</button>
-      <button id="jog-plus" class="jogbtn" title="Hold (or →)">+ ▶</button>
+      <button id="jog-minus" class="jogbtn" title="Tap: step · hold: jog (or ←)">◀ −</button>
+      <button id="jog-plus" class="jogbtn" title="Tap: step · hold: jog (or →)">+ ▶</button>
+    </div>
+    <div class="keys muted small"><kbd>←</kbd><kbd>→</kbd> tap = step, hold = jog · <kbd>↑</kbd><kbd>↓</kbd> speed</div>
+
+    <div id="limits-box" class="limits">
+      <div class="field-head">
+        <span>Limits</span>
+        <button id="limits-toggle" class="switch" aria-pressed="true"><span class="knob"></span><span class="slabel">ON</span></button>
+      </div>
+      <div class="lim-row">
+        <span class="lim-name">min</span>
+        <input id="lim-min" type="number" step="0.1" placeholder="open" class="grow">
+        <button id="lim-min-here" class="btn ghost small" title="Set the min limit where the motor is now">Here</button>
+        <button id="lim-min-clear" class="btn ghost small icon" title="Clear your min (the arm's own applies, if any)">×</button>
+      </div>
+      <div class="lim-row">
+        <span class="lim-name">max</span>
+        <input id="lim-max" type="number" step="0.1" placeholder="open" class="grow">
+        <button id="lim-max-here" class="btn ghost small" title="Set the max limit where the motor is now">Here</button>
+        <button id="lim-max-clear" class="btn ghost small icon" title="Clear your max (the arm's own applies, if any)">×</button>
+      </div>
+      <div id="limits-note" class="muted small"></div>
     </div>
 
     <div class="field">
@@ -112,6 +133,7 @@
       <span id="chip-switch" class="chip">switch</span>
       <span id="chip-stall" class="chip">stall</span>
       <span id="chip-ref" class="chip">reference</span>
+      <span id="chip-limits" class="chip">limits</span>
     </div>
     <div class="graph-card">
       <div class="graph-head">
@@ -158,22 +180,14 @@
       </section>
 
       <section class="block">
-        <h3>Limits</h3>
-        <div class="grid3 joint-only">
-          <label>Min °<input id="lim-jmin" type="number" step="0.1"></label>
-          <label>Max °<input id="lim-jmax" type="number" step="0.1"></label>
-          <label>°/s <span id="cap-text" class="muted"></span><input id="lim-jspeed" type="number" step="0.1"></label>
-        </div>
-        <div class="grid3 bench-only">
-          <label>Min ° motor<input id="lim-bmin" type="number" step="1"></label>
-          <label>Max ° motor<input id="lim-bmax" type="number" step="1"></label>
-          <label>RPM <span id="bench-ceiling" class="muted"></span><input id="lim-brpm" type="number" step="1"></label>
-        </div>
-        <div class="row between">
-          <span id="limits-hint" class="muted small"></span>
+        <h3>Speed limit</h3>
+        <div class="row tight">
+          <label class="inline small muted joint-only">°/s <input id="lim-jspeed" type="number" step="0.1" class="num"> <span id="cap-text"></span></label>
+          <label class="inline small muted bench-only">RPM <input id="lim-brpm" type="number" step="1" class="num"> <span id="bench-ceiling"></span></label>
           <button id="limits-apply" class="btn ghost small">Apply</button>
         </div>
         <div id="limits-msg" class="msg"></div>
+        <div id="limits-hint" class="muted small"></div>
       </section>
 
       <section class="block joint-only">

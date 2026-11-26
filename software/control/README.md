@@ -89,8 +89,9 @@ uv run dashboard --fake                             # simulated boards that move
 It shows the board's readouts live (position, speed, status, enable, stall, the home switch on IN_1, voltage,
 current, angle error), with position and speed graphed, and every CAN frame in a log. From it you can:
 
-- enable or disable the motor, jog it (hold the button or ← / →), move it to an angle, step it, set the speed and
-  ramp;
+- enable or disable the motor, move it with ← / → (or the ◀ ▶ buttons: a tap steps by the Step amount, a hold
+  jogs until you let go), change the speed with ↑ / ↓, go to an angle, set the ramp;
+- set limits: a min and a max, from where the motor is now (Here) or typed, and a switch to turn them off;
 - home it (0x90 + 0x91), set its zero, release a stall, calibrate it (bench mode only);
 - run the tests: repeat moves between two angles, a step response, a speed sweep;
 - run the bring-up checks: which CAN ids answer, the board's firmware, which way the encoder counts (the joint's
@@ -99,19 +100,24 @@ current, angle error), with position and speed graphed, and every CAN frame in a
 - read and write the board's settings (work mode, current, microsteps, stall protection, CAN id, heartbeat), send a
   raw command, and record the readouts to CSV.
 
-It has two modes. **Joint mode** works in joint degrees through the joint's ratio and sign. Every move is checked
-against the arm's limits in `config.JOINTS`, narrowed by the page's, at no more than 10 °/s (`--max-joint-speed`
-raises the cap). It needs the joint's reference (the joint angle at the encoder's zero): home the joint, or tell the
-page where it is. **Bench mode** works in degrees and RPM of the motor's shaft, inside a travel window, for a motor off
-the arm.
+It has two modes. **Joint mode** works in joint degrees through the joint's ratio and sign, at no more than 10 °/s
+(`--max-joint-speed` raises the cap). With the joint's reference (the joint angle at the encoder's zero: home the
+joint, or tell the page where it is) the angles are the joint's; without it they count from the encoder's zero.
+**Bench mode** works in degrees and RPM of the motor's shaft.
+
+**Limits** are on by default. Each side is your own if you set it (Here, or typed); otherwise, once joint mode has a
+reference, it's the arm's own from `config.JOINTS`; otherwise that side is open. Every move and jog is checked against
+them before anything is sent. They follow the physical position through a change of mode, sign or reference. Set
+zero shifts them with the zero; homing or a power loss clears them. Switched off, nothing limits the position: only
+the speed cap and STOP remain.
 
 **Safety**: STOP (the button, Esc, or Space outside a text box) sends F7 and an immediate F5 stop. These go ahead of
 anything else queued. A jog stops when you let go: the page repeats it every 0.1 s, and the server stops the motor 0.4 s
-after the last one. Any motion or test stops if the page goes quiet for 2 s (tab closed, laptop asleep). In joint mode
-every move is a position move toward a checked target, so a crashed dashboard leaves the joint inside its limits; the
-constant-speed run is bench mode's only, and it stops at the window's edge. A board that goes silent and comes back
-loses its reference, in case it lost power. The raw command box refuses the commands that move the motor. Ctrl+C in
-the terminal, or killing the process (SIGTERM, SIGHUP), stops a moving motor and quits.
+after the last one. A jog aims at most 2 s of travel ahead (never past a limit), and its keep-alives move that target
+on, so a crashed dashboard leaves at most that much travel. Any motion or test stops if the page goes quiet for 2 s (tab
+closed, laptop asleep). The constant-speed run is bench mode's only, and it stops at a limit. A board that goes silent
+and comes back loses its reference and your limits, in case it lost power. The raw command box refuses the commands
+that move the motor. Ctrl+C in the terminal, or killing the process (SIGTERM, SIGHUP), stops a moving motor and quits.
 
 ### Checking one board
 

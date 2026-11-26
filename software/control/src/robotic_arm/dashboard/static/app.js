@@ -19,7 +19,7 @@ const TESTS = {
 const S = {
   st: null, samples: [], sampleSeq: 0, logSeq: 0, noticeSeq: 0,
   logPaused: false, graphPaused: false, graphSpan: 30,
-  context: null, jogDir: 0, jogTimer: null,
+  context: null, jogDir: 0, jogTimer: null, press: null,
   routineKey: null, routineTable: null, questionKey: null, findings: null, filled: false,
 };
 
@@ -182,6 +182,10 @@ function render(st) {
   chip("chip-stall", r.stalled === null || stale("stalled") ? "stall ?" : r.stalled ? "STALLED" : "no stall", r.stalled ? "err" : "");
   chip("chip-ref", !joint_mode ? "bench: encoder zero" : noRef ? "no reference" : st.reference.startsWith("homed") ? "homed" : "reference set",
     !joint_mode ? "" : noRef ? "warn" : "ok");
+  const L = st.limits;
+  const span = (v) => (v === null ? "open" : fmt(v, 1));
+  chip("chip-limits", !L.on ? "limits OFF" : L.min === null && L.max === null ? "limits on · none set" : `limits ${span(L.min)} … ${span(L.max)}`,
+    !L.on ? "warn" : L.min === null && L.max === null ? "" : "ok");
 
   // stats
   setStat("r-volts", r.millivolts === null ? "n/a" : `${fmt(r.millivolts / 1000, 2)} V`, fresh.power);
@@ -197,6 +201,7 @@ function render(st) {
   $("enable-toggle").setAttribute("aria-pressed", String(on));
   $("enable-toggle").querySelector(".tlabel").textContent = r.enabled === null ? "Motor ?" : on ? "Motor on" : "Motor off";
   $("ref-needed").classList.toggle("hidden", !noRef);
+  renderLimits(st);
   const busy = testing ? `test: ${st.routine.title}` : st.motion || (moving ? r.status_name : null);
   $("motion-state").textContent = busy || "idle";
   $("motion-state").className = `pill ${busy ? "busy" : ""}`;
@@ -204,13 +209,13 @@ function render(st) {
   $("speed-range").max = st.speed_cap;
   $("speed-range").step = joint_mode ? 0.1 : 1;
   if (num("speed-num") > st.speed_cap) setSpeed(st.speed_cap);
-  ["goto-btn", "step-minus", "step-plus", "jog-minus", "jog-plus", "run-cw", "run-ccw"].forEach((id) => ($(id).disabled = noRef || testing || !st.online));
+  ["goto-btn", "step-minus", "step-plus", "jog-minus", "jog-plus", "run-cw", "run-ccw"].forEach((id) => ($(id).disabled = testing || !st.online));
 
   // setup
-  $("cap-text").textContent = `≤ ${st.max_joint_speed}`;
-  $("bench-ceiling").textContent = `≤ ${st.bench_rpm_ceiling}`;
-  $("limits-hint").textContent = joint_mode ? `arm: ${st.hard_limits[0]} to ${st.hard_limits[1]}°` :
-    joint ? `= ${fmt(st.limits.bench_min * joint.gear_ratio, 1)} to ${fmt(st.limits.bench_max * joint.gear_ratio, 1)}° at the joint` : "";
+  $("cap-text").textContent = `max ${st.max_joint_speed}`;
+  $("bench-ceiling").textContent = `max ${st.bench_rpm_ceiling}`;
+  $("limits-hint").textContent = joint_mode ? `The arm's own range: ${st.hard_limits[0]} to ${st.hard_limits[1]}° (used as the limits once the joint has a reference, unless you set your own).` :
+    joint ? `1 motor turn = ${fmt(360 * joint.gear_ratio, 1)}° at ${st.joint}.` : "";
   $("config-sign").textContent = st.config_sign > 0 ? "+1" : "−1";
   $("sign-plus").classList.toggle("on", st.sign > 0);
   $("sign-minus").classList.toggle("on", st.sign < 0);
@@ -237,6 +242,25 @@ function render(st) {
   if (!S.graphPaused) drawGraph(st, u);
 }
 
+function renderLimits(st) {
+  const L = st.limits;
+  $("limits-box").classList.toggle("off", !L.on);
+  const sw = $("limits-toggle");
+  sw.classList.toggle("on", L.on);
+  sw.setAttribute("aria-pressed", String(L.on));
+  sw.querySelector(".slabel").textContent = L.on ? "ON" : "OFF";
+  for (const side of ["min", "max"]) {
+    const input = $(`lim-${side}`), v = L[side], src = L[`${side}_src`];
+    if (document.activeElement !== input) input.value = v === null ? "" : round(v, 2);
+    input.classList.toggle("arm", src === "arm");
+    input.title = src === "arm" ? "the arm's own limit (config.JOINTS)" : src === "yours" ? "your limit" : "no limit this side";
+    $(`lim-${side}-clear`).disabled = src !== "yours";
+  }
+  $("limits-note").textContent = !L.on ? "Off: free movement. Only the speed cap and STOP apply." :
+    L.min === null && L.max === null ? "None set: move to an end and press Here." :
+    L.min_src === "arm" || L.max_src === "arm" ? "Grey: the arm's own limit. Here or a typed value replaces it." : "";
+}
+
 function setStat(id, text, fresh) {
   const el = $(id);
   el.textContent = text;
@@ -249,15 +273,12 @@ function setSpeed(v) {
 }
 
 function fillDefaults(st, u) {
-  const cap = st.speed_cap, [lo, hi] = st.window, joint = st.mode === "joint";
-  const here = st.readout.counts === null || u.rel ? null : u.pos(st.readout.counts);
+  const cap = st.speed_cap, joint = st.mode === "joint";
+  const here = st.readout.counts === null ? null : u.pos(st.readout.counts);
+  const lo = st.window[0] ?? (here ?? 0) - (joint ? 40 : 360), hi = st.window[1] ?? (here ?? 0) + (joint ? 40 : 360);
   const speed = joint ? Math.min(5, cap) : Math.min(60, cap);
   setSpeed(round(speed, 1));
-  $("lim-jmin").value = st.limits.joint_min;
-  $("lim-jmax").value = st.limits.joint_max;
   $("lim-jspeed").value = st.limits.joint_speed;
-  $("lim-bmin").value = st.limits.bench_min;
-  $("lim-bmax").value = st.limits.bench_max;
   $("lim-brpm").value = st.limits.bench_rpm;
   if (document.activeElement !== $("canid-input")) $("canid-input").value = st.can_id;
   $("joint-select").value = st.joint;
@@ -365,7 +386,7 @@ function drawGraph(st, u) {
   const right = 54, gap = 16, ph = (h - gap - 16) * 0.64, sh = h - gap - 16 - ph;
   const ok = (a) => a.filter((v) => v !== null && Number.isFinite(v));
   const pr = ok(pos), sr = ok(spd);
-  const lines = u.rel ? [] : [[st.window[0], css("--warn")], [st.window[1], css("--warn")]];
+  const lines = st.window.filter((v) => v !== null).map((v) => [v, css("--warn")]);
   pane(ctx, { x: 4, y: 2, w: w - right - 4, h: ph }, xs, pos, [-span, 0], [Math.min(...pr), Math.max(...pr)], css("--pos"),
     `position (${u.posUnit})`, lines);
   pane(ctx, { x: 4, y: ph + gap, w: w - right - 4, h: sh }, xs, spd, [-span, 0], [Math.min(0, ...sr), Math.max(0, ...sr)],
@@ -528,16 +549,66 @@ function jogStop(release) {
   if (release) api("jog_release");
 }
 
-function bindJog(id, dir) {
-  const el = $(id);
-  el.addEventListener("pointerdown", (e) => { if (!el.disabled) { el.setPointerCapture(e.pointerId); jogStart(dir); } });
-  for (const ev of ["pointerup", "pointercancel", "lostpointercapture"]) el.addEventListener(ev, () => jogStop(true));
+// A press (an arrow key or a jog button): released within TAP_MS it steps by the Step amount; held longer it jogs
+// until released.
+const TAP_MS = 250;
+
+function stepBy(dir) {
+  act("step", { delta: dir * num("step-value"), speed: num("speed-num"), acc: int("acc-num") }, $("motion-msg"), "step");
 }
 
-const typing = (e) => e.target && ["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName);
+function pressStart(dir) {
+  if (S.press) return;
+  const press = { dir, jogging: false };
+  press.timer = setTimeout(() => { if (S.press === press) { press.jogging = true; jogStart(dir); } }, TAP_MS);
+  S.press = press;
+  $(dir > 0 ? "jog-plus" : "jog-minus").classList.add("held");
+}
+
+function pressEnd(dir) {
+  const press = S.press;
+  if (!press || press.dir !== dir) return;
+  S.press = null;
+  clearTimeout(press.timer);
+  $("jog-plus").classList.remove("held");
+  $("jog-minus").classList.remove("held");
+  if (press.jogging) jogStop(true); else stepBy(dir);
+}
+
+function pressCancel(release = true) {   // focus lost, STOP: end a jog, never step
+  if (S.press) clearTimeout(S.press.timer);
+  S.press = null;
+  $("jog-plus").classList.remove("held");
+  $("jog-minus").classList.remove("held");
+  jogStop(release);
+}
+
+function bindJog(id, dir) {
+  const el = $(id);
+  el.addEventListener("pointerdown", (e) => { if (!el.disabled) { el.setPointerCapture(e.pointerId); pressStart(dir); } });
+  el.addEventListener("pointerup", () => pressEnd(dir));
+  el.addEventListener("pointercancel", () => pressCancel());
+}
+
+function nudgeSpeed(d) {
+  const st = S.st;
+  if (!st) return;
+  const inc = st.mode === "bench" ? 10 : st.speed_cap <= 5 ? 0.5 : 1;
+  const v = round(clamp(num("speed-num") + d * inc, inc, st.speed_cap), 1);
+  setSpeed(v);
+  say($("motion-msg"), `speed ${v} ${st.mode === "bench" ? "RPM" : "°/s"}`, true);
+}
+
+// Text and number boxes keep their keys; sliders and buttons do not (an arrow there moves the motor).
+function typing(e) {
+  const t = e.target;
+  if (!t || !t.tagName) return false;
+  if (t.tagName === "INPUT") return !["range", "checkbox", "button"].includes(t.type);
+  return t.tagName === "TEXTAREA" || t.tagName === "SELECT";
+}
 
 async function halt() {
-  jogStop(false);
+  pressCancel(false);
   if ($("question").open) $("question").close();
   const r = await api("halt");
   toast(r.ok ? r.message : r.error, r.ok ? "warn" : "err");
@@ -557,16 +628,21 @@ function bind() {
       halt();
       return;
     }
-    if (e.repeat) return;
-    if (e.key === "ArrowRight" && !$("jog-plus").disabled) { e.preventDefault(); jogStart(1); }
-    if (e.key === "ArrowLeft" && !$("jog-minus").disabled) { e.preventDefault(); jogStart(-1); }
+    const dir = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+    if (dir) {
+      e.preventDefault();
+      if (!e.repeat && !$(dir > 0 ? "jog-plus" : "jog-minus").disabled) pressStart(dir);
+      return;
+    }
+    if (e.key === "ArrowUp" || e.key === "ArrowDown") { e.preventDefault(); nudgeSpeed(e.key === "ArrowUp" ? 1 : -1); }
   });
   document.addEventListener("keyup", (e) => {
     if (e.key === " " && !typing(e)) e.preventDefault();
-    if ((e.key === "ArrowRight" && S.jogDir > 0) || (e.key === "ArrowLeft" && S.jogDir < 0)) jogStop(true);
+    const dir = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+    if (dir) pressEnd(dir);
   });
-  window.addEventListener("blur", () => jogStop(true));
-  document.addEventListener("visibilitychange", () => { if (document.hidden) jogStop(true); });
+  window.addEventListener("blur", () => pressCancel());
+  document.addEventListener("visibilitychange", () => { if (document.hidden) pressCancel(); });
   $("question").addEventListener("cancel", (e) => { e.preventDefault(); halt(); });   // Esc in the dialog is STOP too
 
   $("mode-joint").onclick = () => act("mode", { mode: "joint" }, $("motion-msg"), "joint mode");
@@ -587,8 +663,20 @@ function bind() {
   const move = (extra) => ({ speed: num("speed-num"), acc: int("acc-num"), ...extra });
   $("goto-btn").onclick = () => act("move", move({ value: num("goto-value") }), $("motion-msg"), "moving");
   $("goto-value").addEventListener("keydown", (e) => { if (e.key === "Enter") $("goto-btn").click(); });
-  $("step-minus").onclick = () => act("step", move({ delta: -num("step-value") }), $("motion-msg"), "moving");
-  $("step-plus").onclick = () => act("step", move({ delta: num("step-value") }), $("motion-msg"), "moving");
+  $("step-minus").onclick = () => stepBy(-1);
+  $("step-plus").onclick = () => stepBy(1);
+  $("limits-toggle").onclick = () => {
+    const on = !!(S.st && S.st.limits.on);
+    act("limits_on", { on: !on }, $("motion-msg"), on ? "limits off: free movement" : "limits on");
+  };
+  for (const side of ["min", "max"]) {
+    const input = $(`lim-${side}`);
+    $(`lim-${side}-here`).onclick = () => act("limit", { side, here: true }, $("motion-msg"), `${side} limit set here`);
+    $(`lim-${side}-clear`).onclick = () => act("limit", { side, value: null }, $("motion-msg"), `your ${side} cleared`);
+    input.addEventListener("change", () => act("limit", { side, value: input.value === "" ? null : parseFloat(input.value) },
+      $("motion-msg"), `${side} limit set`));
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") input.blur(); });
+  }
   $("run-cw").onclick = () => act("run", { cw: true, rpm: num("run-rpm"), acc: int("acc-num") }, $("motion-msg"), "running CW");
   $("run-ccw").onclick = () => act("run", { cw: false, rpm: num("run-rpm"), acc: int("acc-num") }, $("motion-msg"), "running CCW");
   $("soft-stop").onclick = () => { jogStop(false); act("stop", {}, $("motion-msg"), "stopping"); };
@@ -619,10 +707,8 @@ function bind() {
       r.found.map((f) => `id ${f.can_id}: ${f.board}, fw ${f.firmware}`).join(" · ");
   };
   $("limits-apply").onclick = () => {
-    const limits = S.st.mode === "joint" ?
-      { joint_min: num("lim-jmin"), joint_max: num("lim-jmax"), joint_speed: num("lim-jspeed") } :
-      { bench_min: num("lim-bmin"), bench_max: num("lim-bmax"), bench_rpm: num("lim-brpm") };
-    act("limits", { limits }, $("limits-msg"), "applied").then((r) => { if (r.ok) S.context = null; });
+    const body = S.st.mode === "joint" ? { joint_speed: num("lim-jspeed") } : { bench_rpm: num("lim-brpm") };
+    act("speed_limits", body, $("limits-msg"), "applied").then((r) => { if (r.ok) S.context = null; });
   };
   $("sign-plus").onclick = () => act("sign", { sign: 1 }, $("ref-msg"), "sign +1");
   $("sign-minus").onclick = () => act("sign", { sign: -1 }, $("ref-msg"), "sign −1");

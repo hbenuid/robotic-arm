@@ -1,18 +1,25 @@
-"""The dashboard's model of the board under test: its joint, the units and limits of each mode, the safety rules.
+"""The dashboard's model of the board under test: its joint, the units of each mode, the limits, the safety rules.
 
-Two modes. **Joint mode**: joint degrees through the joint's gear ratio and sign (config.JOINTS), every move checked
-by Joint.check_move against the arm's hard limits narrowed by the page's, at no more than `max_joint_speed` deg/s.
-It needs the joint's reference - the joint angle at the encoder's zero - from homing or from the user saying where the
-joint is; until then nothing moves in joint mode but the direction check's small confirmed step. **Bench mode**:
-degrees and RPM of the motor's own shaft, inside a travel window round the encoder's zero, for a motor off the arm.
+Two modes. **Joint mode**: joint degrees through the joint's gear ratio and sign (config.JOINTS), at no more than
+`max_joint_speed` deg/s. With a reference (the joint angle at the encoder's zero: homing, or the user saying where the
+joint is) the angles are the joint's; without one they count from the encoder's zero. **Bench mode**: degrees and RPM
+of the motor's own shaft.
+
+**Limits** (the user's choice: one switch, on by default): while on, every move and jog stays between a min and a max.
+Each is the user's own - set from where the motor is ("here") or typed - or, if not set, the arm's limit from
+config.JOINTS once joint mode has a reference; with neither, that side is open. They are kept in encoder counts, so
+they stay with the physical position through a change of mode, sign or reference; 0x92 shifts them with the zero,
+and homing or a power loss (the zero moves by an unknown amount) clears them. Switched off, nothing limits the
+position: only the speed cap and STOP remain.
 
 The safety rules, all on the bus thread's tick so they hold whatever the page does:
 - STOP (halt) sends F7 and an immediate F5 stop (and an F6 stop after a speed run) ahead of everything queued.
-- A jog moves toward the window's edge and stops (ramped) when the page's keep-alives stop for JOG_KEEPALIVE_S.
+- A jog aims JOG_LEAD_S of travel ahead (never past a limit) and the page's keep-alives move that target on; it stops
+  (ramped) when the keep-alives stop for JOG_KEEPALIVE_S, and a crashed dashboard leaves at most that lead of travel.
 - Any motion or test stops when the page has not been heard from for PAGE_TIMEOUT_S.
-- A bench speed run stops when it leaves the window.
-- A board that goes silent for longer than OFFLINE_S and comes back loses joint mode's reference: if it lost power,
-  its encoder's zero moved.
+- A bench speed run stops when it passes a limit.
+- A board that goes silent for longer than OFFLINE_S and comes back loses the reference and the user's limits: if it
+  lost power, its encoder's zero moved.
 """
 
 from __future__ import annotations
@@ -32,7 +39,7 @@ from robotic_arm import config
 from robotic_arm.can_interface import CANInterface
 from robotic_arm.config import ENCODER_COUNTS_PER_REV, JointConfig
 from robotic_arm.dashboard.bus import BusWorker
-from robotic_arm.joint import Joint, JointLimits, LimitError
+from robotic_arm.joint import Joint
 from robotic_arm.motor_driver import (
     HARDWARE_NAMES,
     INT24_MAX,
@@ -54,6 +61,8 @@ from robotic_arm.motor_driver import (
 )
 
 JOG_KEEPALIVE_S = 0.4     # a jog stops this long after the page's last keep-alive (it sends one every 0.1 s)
+JOG_LEAD_S = 2.0          # a jog's target runs this much travel ahead of the motor; keep-alives move it on
+COUNTS_PER_RPM_S = ENCODER_COUNTS_PER_REV / 60   # encoder counts per second at 1 RPM
 PAGE_TIMEOUT_S = 2.0      # motion and tests stop when the page is silent this long (it pings every 0.25 s)
 OFFLINE_S = 1.0           # no reply for this long: the board is shown offline
 REPLY_S = 0.15            # the dashboard's commands wait this long for their reply
@@ -89,14 +98,13 @@ class Refused(Exception):
 
 @dataclass
 class Limits:
-    """The page's limits. Joint mode: joint degrees and deg/s, inside the arm's own. Bench mode: motor degrees round
-    the encoder's zero and RPM."""
+    """The limits. `on`: the position limits apply. count_lo / count_hi: the user's own bounds in encoder counts (the
+    motor must stay >= count_lo and <= count_hi); None: not set. The speed caps always apply."""
 
-    joint_min: float
-    joint_max: float
     joint_speed: float
-    bench_min: float = -360.0
-    bench_max: float = 360.0
+    on: bool = True
+    count_lo: int | None = None
+    count_hi: int | None = None
     bench_rpm: float = 60.0
 
 
@@ -141,8 +149,7 @@ class Bench:
         self.sign = self.joint_config.sign
         self.zero_deg: float | None = None
         self.reference = "not set"
-        lo, hi = self.joint_config.limits_deg
-        self.limits = Limits(lo, hi, self.max_joint_speed)
+        self.limits = Limits(self.max_joint_speed)
         self.readout = Readout()
         self.samples: collections.deque[tuple] = collections.deque(maxlen=SAMPLES_MAX)
         self.sample_seq = 0
@@ -155,6 +162,8 @@ class Bench:
         self._last_acc = config.DEFAULT_ACC
         self._jog: int | None = None
         self._jog_keepalive = 0.0
+        self._jog_goal: int | None = None       # the running jog's F5 target, counts
+        self._jog_rpm = 0
         self._window_stop = False
         self._last_page = time.monotonic()
         self._last_page_halt = 0.0
@@ -193,26 +202,69 @@ class Bench:
         """Encoder counts per the mode's position unit (a joint degree, or a motor degree)."""
         return self.joint().counts_per_deg if self.mode == "joint" else 1 / MOTOR_DEG_PER_COUNT
 
-    def to_value(self, counts: int) -> float | None:
-        """`counts` in the mode's unit; None in joint mode without a reference."""
+    def to_value(self, counts: int) -> float:
+        """`counts` in the mode's unit: motor degrees, the joint's angle, or (no reference) joint degrees from the
+        encoder's zero."""
         with self._lock:
             if self.mode == "bench":
                 return counts * MOTOR_DEG_PER_COUNT
+            joint = self.joint()
             if self.zero_deg is None:
-                return None
-            return self.joint().counts_to_deg(counts)
+                return self.sign * counts / joint.counts_per_deg
+            return joint.counts_to_deg(counts)
+
+    def value_to_counts(self, value: float) -> int:
+        """The mode's unit -> encoder counts (to_value's inverse)."""
+        with self._lock:
+            if self.mode == "bench":
+                return round(value / MOTOR_DEG_PER_COUNT)
+            joint = self.joint()
+            if self.zero_deg is None:
+                return round(self.sign * value * joint.counts_per_deg)
+            return joint.deg_to_counts(value)
 
     def value_now(self) -> float | None:
         counts = self.readout.counts
         return None if counts is None else self.to_value(counts)
 
-    def window(self) -> tuple[float, float]:
-        """The travel the mode allows: joint mode the page's limits inside the arm's, bench mode the window."""
+    def _value_dir(self) -> int:
+        """+1 when the mode's value grows with the encoder's count, -1 when it falls (joint mode, sign -1)."""
+        return 1 if self.mode == "bench" or self.sign > 0 else -1
+
+    def _arm_bounds(self) -> tuple[int | None, int | None]:
+        """config.JOINTS' limits in counts (lo, hi): joint mode with a reference only."""
+        if self.mode != "joint" or self.zero_deg is None:
+            return None, None
+        joint = self.joint()
+        a, b = (joint.deg_to_counts(d) for d in self.joint_config.limits_deg)
+        return min(a, b), max(a, b)
+
+    def _bounds(self, *, even_off: bool = False) -> tuple[int | None, int | None, str | None, str | None]:
+        """(lo, hi, lo's source, hi's source) in counts: the user's bound, else the arm's, else None (open); all
+        None while the limits are off (unless `even_off`, for showing them)."""
+        if not self.limits.on and not even_off:
+            return None, None, None, None
+        arm_lo, arm_hi = self._arm_bounds()
+        lo, lo_src = (self.limits.count_lo, "yours") if self.limits.count_lo is not None else (arm_lo, "arm" if arm_lo is not None else None)
+        hi, hi_src = (self.limits.count_hi, "yours") if self.limits.count_hi is not None else (arm_hi, "arm" if arm_hi is not None else None)
+        return lo, hi, lo_src, hi_src
+
+    def limit_view(self) -> dict[str, Any]:
+        """The limits as the page shows them: min and max in the mode's unit, each with its source."""
         with self._lock:
-            if self.mode == "bench":
-                return self.limits.bench_min, self.limits.bench_max
-            lim = self.joint().limits(JointLimits(self.limits.joint_min, self.limits.joint_max))
-            return lim.min_deg, lim.max_deg
+            lo, hi, lo_src, hi_src = self._bounds(even_off=True)
+            low = (None if lo is None else self.to_value(lo), lo_src)
+            high = (None if hi is None else self.to_value(hi), hi_src)
+            mn, mx = (low, high) if self._value_dir() > 0 else (high, low)
+            return {"on": self.limits.on, "min": mn[0], "min_src": mn[1], "max": mx[0], "max_src": mx[1]}
+
+    def window(self) -> tuple[float | None, float | None]:
+        """The travel the limits allow now, in the mode's unit; None for an open side (or the limits off)."""
+        with self._lock:
+            if not self.limits.on:
+                return None, None
+            view = self.limit_view()
+            return view["min"], view["max"]
 
     def speed_cap(self) -> float:
         """The fastest the mode allows: deg/s of the joint, or RPM of the motor."""
@@ -241,23 +293,17 @@ class Bench:
         with self._lock:
             if not 0 <= acc <= MAX_ACC:
                 raise Refused(f"acc {acc} outside 0..{MAX_ACC}")
+            if not math.isfinite(value):
+                raise Refused(f"not a position: {value}")
             rpm = self.speed_to_rpm(speed)
-            if self.mode == "bench":
-                lo, hi = self.window()
-                if not math.isfinite(value) or not lo <= value <= hi:
-                    raise Refused(f"{value:g} deg of the motor is outside the bench window {lo:g}..{hi:g}")
-                counts = round(value / MOTOR_DEG_PER_COUNT)
-                if abs(counts) > INT24_MAX:
-                    raise Refused(f"{value:g} deg is past the board's +/-{INT24_MAX} counts")
-                return counts, rpm
-            if self.zero_deg is None:
-                raise Refused("joint mode needs the joint's reference first: home it, or set where it is now "
-                              "(Limits & reference)")
-            lim = JointLimits(self.limits.joint_min, self.limits.joint_max, math.inf)
-            try:
-                counts, _ = self.joint().check_move(value, speed, acc, lim)
-            except (LimitError, ValueError) as e:
-                raise Refused(str(e)) from e
+            counts = self.value_to_counts(value)
+            if abs(counts) > INT24_MAX:
+                raise Refused(f"{value:g} is past the board's +/-{INT24_MAX} counts")
+            lo, hi, _, _ = self._bounds()
+            if (lo is not None and counts < lo) or (hi is not None and counts > hi):
+                mn, mx = self.window()
+                span = f"{'open' if mn is None else f'{mn:.2f}'} .. {'open' if mx is None else f'{mx:.2f}'}"
+                raise Refused(f"{value:g} is outside the limits ({span}); switch the limits off to go past them")
             return counts, rpm
 
     # --- page settings ----------------------------------------------------------------------------------------------
@@ -290,8 +336,7 @@ class Bench:
             if changed:
                 self.zero_deg, self.reference = None, "not set"
                 self.readout = Readout()
-            lo, hi = cfg.limits_deg
-            self.limits.joint_min, self.limits.joint_max = lo, hi
+                self.limits = replace(self.limits, on=True, count_lo=None, count_hi=None)
             self.worker.driver(can_id)
             self.worker.set_poll(can_id, *self._poll_profile)
         self.notice(f"Board: {cfg.name} at CAN id {can_id} (0x{can_id:02X})")
@@ -304,23 +349,66 @@ class Bench:
                 self._require_idle("changing the mode")
                 self.mode = mode
         if mode == "bench":
-            self.notice("Bench mode: motor degrees and RPM inside the bench window; the arm's limits are not "
-                        "checked - use it with the motor off the arm", "warn")
+            self.notice("Bench mode: motor degrees and RPM; the arm's own limits do not apply here, your own do while "
+                        "the limits are on", "warn")
 
-    def set_limits(self, **values: float) -> None:
+    def set_speed_limits(self, joint_speed: float | None = None, bench_rpm: float | None = None) -> None:
+        """The speed caps: joint mode's deg/s (never above max_joint_speed), bench mode's RPM."""
         with self._lock:
-            new = replace(self.limits, **{k: float(v) for k, v in values.items() if k in asdict(self.limits)})
-            lo, hi = self.joint_config.limits_deg
-            if not lo <= new.joint_min < new.joint_max <= hi:
-                raise Refused(f"joint limits must lie inside the arm's {lo:g}..{hi:g} deg, min below max")
-            if not 0 < new.joint_speed <= self.max_joint_speed:
-                raise Refused(f"joint speed limit 0..{self.max_joint_speed:g} deg/s (the dashboard's cap; "
-                              f"--max-joint-speed raises it)")
-            if not new.bench_min < new.bench_max or abs(new.bench_min) > 360 * 500 or abs(new.bench_max) > 360 * 500:
-                raise Refused("bench window: min below max, within +/-500 motor turns")
-            if not 1 <= new.bench_rpm <= BENCH_RPM_CEILING:
-                raise Refused(f"bench speed limit 1..{BENCH_RPM_CEILING} RPM")
+            new = self.limits
+            if joint_speed is not None:
+                if not 0 < joint_speed <= self.max_joint_speed:
+                    raise Refused(f"joint speed limit 0..{self.max_joint_speed:g} deg/s (the dashboard's cap; "
+                                  f"--max-joint-speed raises it)")
+                new = replace(new, joint_speed=float(joint_speed))
+            if bench_rpm is not None:
+                if not 1 <= bench_rpm <= BENCH_RPM_CEILING:
+                    raise Refused(f"bench speed limit 1..{BENCH_RPM_CEILING} RPM")
+                new = replace(new, bench_rpm=float(bench_rpm))
             self.limits = new
+
+    def set_limits_on(self, on: bool) -> None:
+        with self._lock:
+            self.limits = replace(self.limits, on=bool(on))
+        if not on:
+            self.notice("Limits off: nothing limits the position now - only the speed cap and STOP", "warn")
+
+    def set_limit(self, side: str, value: float | None = None, *, here: bool = False) -> None:
+        """Set the min or max limit: where the motor is now (`here`), at `value` (the mode's unit), or clear it
+        (`value` None) - then the arm's own applies, if there is one."""
+        if side not in ("min", "max"):
+            raise Refused("a limit is min or max")
+        with self._lock:
+            if here:
+                counts = self.readout.counts
+                if counts is None or self._stale("counts", 0.5):
+                    raise Refused("no fresh encoder reading: is the board answering?")
+            elif value is None:
+                counts = None
+            else:
+                if not math.isfinite(value):
+                    raise Refused(f"not a position: {value}")
+                counts = self.value_to_counts(value)
+                if abs(counts) > INT24_MAX:
+                    raise Refused(f"{value:g} is past the board's +/-{INT24_MAX} counts")
+            key = "count_lo" if (side == "min") == (self._value_dir() > 0) else "count_hi"
+            new = replace(self.limits, **{key: counts})
+            lo, hi, _, _ = self._bounds_of(new)
+            if lo is not None and hi is not None and lo >= hi:
+                raise Refused("the min limit must be below the max")
+            self.limits = new
+
+    def _bounds_of(self, limits: Limits) -> tuple[int | None, int | None, str | None, str | None]:
+        before, self.limits = self.limits, limits
+        try:
+            return self._bounds(even_off=True)
+        finally:
+            self.limits = before
+
+    def _clear_user_limits(self, why: str) -> None:
+        if self.limits.count_lo is not None or self.limits.count_hi is not None:
+            self.limits = replace(self.limits, count_lo=None, count_hi=None)
+            self.notice(f"Your limits are cleared: {why} - set them again", "warn")
 
     def set_sign(self, sign: int, *, routine: bool = False) -> None:
         if sign not in (1, -1):
@@ -355,11 +443,14 @@ class Bench:
         with self._lock:
             self.zero_deg, self.reference = None, "not set"
 
-    def _homed(self) -> None:
-        """Homing succeeded: the encoder's zero is the switch's edge, the joint's home_deg."""
+    def homed(self) -> None:
+        """Homing succeeded: the encoder's zero is the switch's edge - joint mode's reference is the joint's home_deg
+        there - and your limits, counted from the old zero, are cleared."""
         with self._lock:
-            self.zero_deg = self.joint_config.home_deg
-            self.reference = f"homed: the switch's edge is home_deg {self.joint_config.home_deg:g} deg"
+            if self.mode == "joint":
+                self.zero_deg = self.joint_config.home_deg
+                self.reference = f"homed: the switch's edge is home_deg {self.joint_config.home_deg:g} deg"
+            self._clear_user_limits("homing moved the encoder's zero")
 
     # --- bus replies and the safety tick (bus thread) -----------------------------------------------------------------
 
@@ -408,7 +499,7 @@ class Bench:
             self._recording.append(row)
 
     def _end_motion(self) -> None:
-        self.motion, self._jog = None, None
+        self.motion, self._jog, self._jog_goal = None, None, None
 
     def _moving(self) -> bool:
         return self.readout.status in (2, 3, 4, 5, 6) and not self._stale("status", 0.5)
@@ -422,11 +513,12 @@ class Bench:
             if busy and now - self._last_page > PAGE_TIMEOUT_S and now - self._last_page_halt > 0.5:
                 self._last_page_halt = now
                 self._halt_frames(f"the page has been silent for {PAGE_TIMEOUT_S:g} s")
-            if (self.motion == "run" and not self._window_stop and self.mode == "bench" and self.readout.counts is not None
-                    and not self.limits.bench_min <= self.readout.counts * MOTOR_DEG_PER_COUNT <= self.limits.bench_max):
-                self._window_stop = True   # once: the run's stop is on its way
-                self._soft_stop_frames()
-                self.notice("The speed run left the bench window: stopped", "warn")
+            if self.motion == "run" and not self._window_stop and self.readout.counts is not None:
+                lo, hi, _, _ = self._bounds()
+                if (lo is not None and self.readout.counts < lo) or (hi is not None and self.readout.counts > hi):
+                    self._window_stop = True   # once: the run's stop is on its way
+                    self._soft_stop_frames()
+                    self.notice("The speed run reached a limit: stopped", "warn")
             if (self.motion in ("move", "jog", "run") and now - self._motion_since > 0.3 and self.readout.status == 1
                     and self.readout.updated.get("status", 0) > self._motion_since + 0.2 and self._jog is None):
                 self._end_motion()   # stopped by status (when no second reply came)
@@ -439,10 +531,11 @@ class Bench:
                 self._offline_since = last
                 self.notice(f"Board {self.can_id} stopped answering", "warn")
             elif not self._online and online and self._offline_since is not None:
-                if self.zero_deg is not None and self.mode == "joint":
+                if self.zero_deg is not None:
                     self.zero_deg, self.reference = None, "not set"
                     self.notice("The board was silent and came back: if it lost power its encoder's zero moved, so "
                                 "the reference is cleared - home it or set it again", "warn")
+                self._clear_user_limits("the board was silent and came back (its encoder's zero may have moved)")
                 self._offline_since = None
             self._online = online
 
@@ -536,7 +629,7 @@ class Bench:
     def move_by(self, delta: float, speed: float, acc: int) -> int:
         now = self.value_now()
         if now is None or self._stale("counts", 0.5):
-            raise Refused("no position to step from (joint mode needs its reference; is the board answering?)")
+            raise Refused("no position to step from: is the board answering?")
         return self.move_to(now + delta, speed, acc)
 
     def move_counts_relative(self, delta_counts: int, speed: float, acc: int, *, routine: bool = False) -> int:
@@ -544,23 +637,51 @@ class Bench:
         rpm = self.speed_to_rpm(speed)
         return self._start_motion("move", move_relative_axis_request(delta_counts, rpm, acc), acc, routine=routine)
 
+    def _jog_target(self, here: int, direction: int, rpm: int, acc: int) -> int | None:
+        """A jog's F5 target in counts: JOG_LEAD_S of travel ahead (and at least twice the braking distance, so it
+        does not slow for it), never past a limit; None when already at the limit that way."""
+        cdir = direction * self._value_dir()
+        v = rpm * COUNTS_PER_RPM_S
+        brake = 0.0 if acc == 0 else v * v / (2 * COUNTS_PER_RPM_S / ((256 - acc) * 50e-6))   # 9.1's ramp
+        target = here + cdir * max(v * JOG_LEAD_S, 2 * brake, 64)
+        lo, hi, _, _ = self._bounds()
+        if cdir > 0 and hi is not None:
+            target = min(target, hi)
+        if cdir < 0 and lo is not None:
+            target = max(target, lo)
+        target = max(-INT24_MAX, min(INT24_MAX, round(target)))
+        return None if (target - here) * cdir <= 0 else target
+
     def jog(self, direction: int, speed: float, acc: int) -> str:
-        """Start a jog toward the window's edge, or keep the running one alive (the page repeats this every 0.1 s)."""
+        """Start a jog (+1 / -1 in the mode's unit), or keep the running one alive - the page repeats this every
+        0.1 s, and each keep-alive moves the target on once a quarter of its lead is used (or the speed changed)."""
         if direction not in (1, -1):
             raise Refused("jog direction is +1 or -1")
+        if not 0 <= acc <= MAX_ACC:
+            raise Refused(f"acc {acc} outside 0..{MAX_ACC}")
+        rpm = self.speed_to_rpm(speed)
         now_t = time.monotonic()
         with self._lock:
+            here = self.readout.counts
+            if here is None or self._stale("counts", 0.5):
+                raise Refused("no fresh encoder reading: is the board answering?")
             if self._jog == direction:
                 self._jog_keepalive = now_t
-                return "jogging"
-            lo, hi = self.window()
-            edge = hi if direction > 0 else lo
-            here = self.value_now()
-            if here is not None and (here >= edge - 1e-6 if direction > 0 else here <= edge + 1e-6):
-                raise Refused(f"already at the {'upper' if direction > 0 else 'lower'} end ({edge:g})")
-            counts, rpm = self.check(edge, speed, acc)
-            self._jog, self._jog_keepalive = direction, now_t
-        self._start_motion("jog", move_to_axis_request(counts, rpm, acc), acc)
+                new, goal = self._jog_target(here, direction, rpm, acc), self._jog_goal
+                if new is None or goal is None or (rpm == self._jog_rpm and abs(new - goal) * 4 < abs(new - here)):
+                    return "jogging"
+                self._jog_goal, self._jog_rpm, self._last_acc = new, rpm, acc
+                retarget = move_to_axis_request(new, rpm, acc)
+            else:
+                target = self._jog_target(here, direction, rpm, acc)
+                if target is None:
+                    raise Refused(f"at the {'max' if direction > 0 else 'min'} limit (switch the limits off to go on)")
+                self._jog, self._jog_keepalive, self._jog_goal, self._jog_rpm = direction, now_t, target, rpm
+                retarget = None
+        if retarget is not None:
+            self.worker.send(self.can_id, retarget)   # 11.4 note 2: F5 takes a new target while it runs
+            return "jogging"
+        self._start_motion("jog", move_to_axis_request(target, rpm, acc), acc)
         return "jog started"
 
     def jog_release(self) -> None:
@@ -570,29 +691,36 @@ class Bench:
                 self._soft_stop_frames()
 
     def run(self, cw: bool, rpm: float, acc: int) -> None:
-        """Bench mode only: a constant-speed run (F6), stopped by the window, the page's silence or a stop."""
+        """Bench mode only: a constant-speed run (F6), stopped by a limit, the page's silence or a stop."""
         with self._lock:
             if self.mode != "bench":
                 raise Refused("a constant-speed run is bench mode's only: a joint's moves stay position moves, so "
-                              "a lost page or a crashed dashboard leaves it inside its limits")
-            value = self.value_now()
-            if value is None:
+                              "a lost page or a crashed dashboard leaves at most a jog's lead of travel")
+            counts = self.readout.counts
+            if counts is None:
                 raise Refused("no position reading yet")
-            if not self.limits.bench_min <= value <= self.limits.bench_max:
-                raise Refused("the motor is outside the bench window")
+            lo, hi, _, _ = self._bounds()
+            if (lo is not None and counts < lo) or (hi is not None and counts > hi):
+                raise Refused("the motor is outside the limits")
             whole = self.speed_to_rpm(rpm)
             if not 0 <= acc <= MAX_ACC:
                 raise Refused(f"acc {acc} outside 0..{MAX_ACC}")
         self._start_motion("run", speed_request(int(cw), whole, acc), acc)
 
     def set_zero(self) -> None:
-        """0x92: the current position becomes the encoder's zero; joint mode's reference follows."""
+        """0x92: the current position becomes the encoder's zero; the reference and your limits follow it."""
         with self._lock:
             self._require_idle("setting the zero")
-            deg = self.value_now() if self.mode == "joint" else None
+            shift = self.readout.counts
+            if shift is None or self._stale("counts", 0.5):
+                raise Refused("no fresh encoder reading: is the board answering?")
+            deg = self.to_value(shift) if self.mode == "joint" and self.zero_deg is not None else None
         self._status_command(bytes([Cmd.SET_ZERO]), "set zero")
         with self._lock:
             self.readout.counts = 0
+            lim = self.limits
+            self.limits = replace(lim, count_lo=None if lim.count_lo is None else lim.count_lo - shift,
+                                  count_hi=None if lim.count_hi is None else lim.count_hi - shift)
             if deg is not None:
                 self.zero_deg = deg
                 self.reference = f"kept through set zero: the encoder's zero is {deg:g} deg"
@@ -750,7 +878,8 @@ class Bench:
                 "counts_per_unit": self.counts_per_unit(),
                 "max_joint_speed": self.max_joint_speed,
                 "bench_rpm_ceiling": BENCH_RPM_CEILING,
-                "limits": asdict(self.limits),
+                "limits": {**self.limit_view(), "joint_speed": self.limits.joint_speed,
+                           "bench_rpm": self.limits.bench_rpm},
                 "window": self.window(),
                 "speed_cap": self.speed_cap(),
                 "motion": self.motion,

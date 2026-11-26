@@ -63,8 +63,13 @@ def dispatch(bench: Bench, action: str, b: dict[str, Any]) -> dict[str, Any]:
             bench.select(str(b["joint"]), _int(b["can_id"]))
         case "mode":
             bench.set_mode(str(b["mode"]))
-        case "limits":
-            bench.set_limits(**{k: float(v) for k, v in dict(b["limits"]).items()})
+        case "speed_limits":
+            bench.set_speed_limits(*(None if b.get(k) in (None, "") else float(b[k]) for k in ("joint_speed", "bench_rpm")))
+        case "limits_on":
+            bench.set_limits_on(bool(b["on"]))
+        case "limit":
+            value = b.get("value")
+            bench.set_limit(str(b["side"]), None if value in (None, "") else float(value), here=bool(b.get("here")))
         case "sign":
             bench.set_sign(_int(b["sign"]))
         case "reference":

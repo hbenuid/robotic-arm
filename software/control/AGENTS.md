@@ -23,7 +23,9 @@ ones are `docs/architecture.md`; the MKS CAN protocol is `docs/mks_can_protocol.
 - The dashboard (`dashboard/`): `bus.py` is the only code there that touches the CAN bus, on its own thread (a
   CANInterface is not thread-safe), and it never blocks for long, so a stop goes out at once. `bench.py` owns every
   check and safety rule. The page (`static/`) is trusted with none of them: a move the page asks for is checked in
-  `bench.check`, and the jog keep-alive, the page-silence stop and the window stop run on the bus thread's tick.
+  `bench.check` (the limits, the speed cap), and the jog keep-alive, the page-silence stop and the run's limit stop
+  run on the bus thread's tick. Limits are kept in encoder counts (`Limits.count_lo` / `count_hi`), not in the page's
+  units.
   Keep it that way. A new motion command goes through `Bench._start_motion`. A new code that moves the motor goes in
   `RAW_REFUSED`. The server binds 127.0.0.1 only, and checks the page's token and the Host header on every API call.
   It uses the standard library only (`http.server`, no web framework).
