@@ -62,6 +62,13 @@ class Joint:
         return self.config.name
 
     @property
+    def board(self) -> MotorDriver:
+        """The joint's board - a ValueError for a joint with none mapped (Arm.mapped holds only joints with one)."""
+        if self.motor is None:
+            raise ValueError(f"no board mapped to {self.name}")
+        return self.motor
+
+    @property
     def counts_per_deg(self) -> float:
         """Encoder counts per joint degree: a motor turn is ENCODER_COUNTS_PER_REV, a joint degree 1/gear_ratio of a
         motor degree."""

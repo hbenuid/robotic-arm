@@ -78,7 +78,7 @@ def _x_prism(outline: list, x0: float, x1: float):
 
 def _revolved(profile: list):
     """The (r, y) profile turned about the part's Y."""
-    return bd.revolve(bd.Polygon(*profile, align=None), bd.Axis.Y)
+    return bd.revolve(bd.Polygon(*profile, align=None), bd.Axis.Y)   # build123d types a Polygon apart from Face  # ty: ignore[invalid-argument-type]
 
 
 def _ycone(r0: float, r1: float, y0: float, y1: float, sides: int):

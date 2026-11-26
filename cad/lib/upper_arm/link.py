@@ -120,7 +120,7 @@ def _pad(cfg: UpperArmConfig):
     cove = _block((-oh, cx), (-oh, oh), (y0, cy))
     pad = pad + (cove - bd.Pos(cx, 0.0, cy) * bd.Rot(90.0, 0.0, 0.0) * bd.Cylinder(p.cove_r, 2.0 * oh + 2.0))
     for sz in (1.0, -1.0):
-        cove = _block((wh, oh), sorted((sz * p.cavity_half_z, sz * oh)), (y0, zy))
+        cove = _block((wh, oh), tuple(sorted((sz * p.cavity_half_z, sz * oh))), (y0, zy))
         pad = pad + (cove - x_cylinder(p.cove_r, oh - wh + 2.0, (-sz * zz, zy), wh - 1.0))
     # hollow it: the cavity down to the floor, the pilot opening through the floor
     pad = pad - _block(p.cavity_x, (-p.cavity_half_z, p.cavity_half_z), (p.floor_y, cfg.slab.lip_top + 1.0))

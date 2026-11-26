@@ -71,7 +71,7 @@ def test_legacy_surfaces_are_the_references(legacy):
     ref = reference.load("gt2_pulley_90t")
     assert legacy.is_valid and len(legacy.solids()) == 1
     assert surfaces(legacy) == surfaces(ref)
-    assert legacy.volume == pytest.approx(ref.volume, rel=1e-7)
+    assert legacy.volume == pytest.approx(ref.volume, rel=1e-7)   # reference.load() types it Shape  # ty: ignore[missing-attribute]
 
 
 @pytest.mark.slow
@@ -103,6 +103,7 @@ def test_default_grows_the_hub_and_counterbores_the_bolt_holes(pulley, legacy):
     holes = 4 * math.pi * (r_hole ** 2 - (LEGACY.hole_dia / 2.0) ** 2) * (DEFAULT.face_y - DEFAULT.end_y)
     counterbores = 4 * math.pi * ((cb_dia / 2.0) ** 2 - r_hole ** 2) * cb_depth
     r_ring, r_old = DEFAULT.ring[0] / 2.0, LEGACY.hub_dia / 2.0
+    assert DEFAULT.step is not None   # DEFAULT's hub steps down onto the bearing
     journal = math.pi * ((DEFAULT.hub_dia / 2.0) ** 2 - r_old ** 2) * (DEFAULT.ring[1] - DEFAULT.end_y)   # under the ring
     neck = math.pi * (r_ring ** 2 - r_old ** 2) * (DEFAULT.step[1] - DEFAULT.ring[2])        # the groove, ring to step
     assert DEFAULT.neck_dia == DEFAULT.ring[0]

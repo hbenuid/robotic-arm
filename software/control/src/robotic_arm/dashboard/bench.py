@@ -33,7 +33,7 @@ import io
 import math
 import threading
 import time
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field, replace
 from typing import Any
@@ -180,7 +180,10 @@ class Bench:
         self.max_joint_speed = float(max_joint_speed)
         self.priority_estop = priority_estop
         self._owns_worker = worker is None
-        self.worker = worker if worker is not None else BusWorker(can, checksum)
+        if worker is None:
+            assert can is not None   # the check above: exactly one of the two
+            worker = BusWorker(can, checksum)
+        self.worker = worker
         self._notices = notices if notices is not None else Notices()
         self.tag = ""                           # a Rig sets "<joint>: " to tell motors' notices apart
         self._background = False                # a Rig's inactive motor: polled slower
@@ -1116,7 +1119,7 @@ class Bench:
             return [s for s in self.samples if s[0] > seq]
 
     @contextmanager
-    def poll_profile(self, fast: tuple[int, ...], slow: tuple[int, ...], fast_s: float) -> Iterator[None]:
+    def poll_profile(self, fast: tuple[int, ...], slow: tuple[int, ...], fast_s: float) -> Generator[None]:
         """Poll other reads, or faster, for a while (a test that needs them)."""
         with self._lock:
             before, self._poll_profile = self._poll_profile, (fast, slow, fast_s)

@@ -58,7 +58,7 @@ class Arm:
         """Send `data` to each joint's board (default: every mapped one) without waiting; returns their names."""
         targets = self._targets(names)
         for joint in targets:
-            joint.motor.send(data)
+            joint.board.send(data)
         return [j.name for j in targets]
 
     def collect(
@@ -79,7 +79,7 @@ class Arm:
             joint = pending.get(frame.can_id)
             if joint is None:
                 return False
-            reply = joint.motor.parse(frame)
+            reply = joint.board.parse(frame)
             return reply is not None and reply.code == code and (accept is None or accept(reply))
 
         deadline = time.monotonic() + timeout
@@ -88,7 +88,9 @@ class Arm:
             if frame is None:
                 break
             joint = pending.pop(frame.can_id)
-            got[joint.name] = joint.motor.parse(frame)
+            reply = joint.board.parse(frame)
+            assert reply is not None   # wanted() took only a frame that parses
+            got[joint.name] = reply
         return got
 
     def request_all(
@@ -116,7 +118,7 @@ class Arm:
         sent, failed = [], []
         for joint in self.mapped:
             try:
-                joint.motor.send(request)
+                joint.board.send(request)
                 sent.append(joint.name)
             except CanError:
                 failed.append(joint.name)
@@ -156,6 +158,6 @@ class Arm:
         ids = {self.joints[n].config.can_id for n in frames}
         self.can.discard(lambda f: f.can_id in ids and len(f.data) > 1 and f.data[0] == Cmd.MOVE_TO_AXIS)
         for name, data in frames.items():
-            self.joints[name].motor.send(data)
+            self.joints[name].board.send(data)
         replies = self.collect(Cmd.MOVE_TO_AXIS, frames, timeout)
         return {n: n in replies and replies[n].status in (1, 2) for n in frames}

@@ -50,7 +50,9 @@ def test_one_ocp_distribution_and_it_is_complete():
     assert metadata.version("cadquery-ocp-novtk") == pinned("cadquery-ocp-novtk")
     with pytest.raises(metadata.PackageNotFoundError):
         metadata.version("cadquery-ocp")
-    missing = [str(f) for f in metadata.files("cadquery-ocp-novtk") if not pathlib.Path(f.locate()).exists()]
+    files = metadata.files("cadquery-ocp-novtk")
+    assert files is not None, "cadquery-ocp-novtk lists no files (no RECORD)"
+    missing = [str(f) for f in files if not pathlib.Path(f.locate()).exists()]
     assert not missing, f"{len(missing)} OCP files missing - uv sync --reinstall-package cadquery-ocp-novtk"
 
 
@@ -237,14 +239,15 @@ def test_stop_ends_only_this_venvs_idle_workers():
     # `cad server status --json` with no server running is an error document: no worker to end, and no failure;
     # one of another release (which a cad command does not talk to) is said and fails
     assert stop_workers.refusal({"ok": True, **status}) is None
-    assert stop_workers.refusal({"ok": False, "error": "the cad server is not running: run `cad server start`"})[1] == 0
-    assert stop_workers.refusal({"ok": False, "error": "cad here is 9.9.9; the running server is 9.9.8: ..."})[1] == 1
-    assert stop_workers.refusal({})[1] == 1
+    for answer, code in (({"ok": False, "error": "the cad server is not running: run `cad server start`"}, 0),
+                         ({"ok": False, "error": "cad here is 9.9.9; the running server is 9.9.8: ..."}, 1), ({}, 1)):
+        refused = stop_workers.refusal(answer)
+        assert refused is not None and refused[1] == code, answer
 
 
 def test_claude_settings_are_the_same_in_the_root_and_in_cad():
     """A Claude Code session reads the shared .claude/settings.json of the directory it starts in only (it is not
-    inherited like AGENTS.md), so cad/.claude/settings.json is a copy of the root one: the ruff hook and the
+    inherited like AGENTS.md), so cad/.claude/settings.json is a copy of the root one: the ruff and ty hooks and the
     text-to-cad@earthtojake plugin, whether the session starts in the repo root or in cad/."""
     root = json.loads((CAD_DIR.parent / ".claude" / "settings.json").read_text())
     cad = json.loads((CAD_DIR / ".claude" / "settings.json").read_text())

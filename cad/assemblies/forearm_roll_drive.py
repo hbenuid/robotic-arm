@@ -27,6 +27,8 @@ one here. Gear ratio 90 / 20 = 4.5 (FOREARM_ROLL_RATIO) on the belt (forearm_rol
 90T's M4 screws + nuts into the frame are the arm's
 (lib/mounts.py FASTENER_MOUNTS).
 """
+from typing import Any
+
 from cad import step
 
 from assemblies._occurrences import located_children
@@ -93,7 +95,7 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("stator") after any geometry change.
-EXPECTED = {
+EXPECTED: dict[str, Any] = {
     "leaves": 24, "solids": 59, "solid_volume": 390234.21,
     "bodies": {"stator": {"leaves": 19, "solids": 48, "solid_volume": 344494.941},
                "rotor": {"leaves": 5, "solids": 11, "solid_volume": 45739.269}},

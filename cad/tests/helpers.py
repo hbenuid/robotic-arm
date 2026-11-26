@@ -22,7 +22,7 @@ from lib.geom import align_min
 
 
 def is_inside(solid: Shape, x: float, y: float, z: float, tol: float = 1e-6) -> bool:
-    return solid.is_inside((x, y, z), tol)
+    return solid.is_inside((x, y, z), tol)   # build123d has is_inside on Solid / Compound, not Shape  # ty: ignore[missing-attribute]
 
 
 COINCIDENT_MM = 1e-5   # faces nearer than this are one face to interference() (the Common's fuzzy value)

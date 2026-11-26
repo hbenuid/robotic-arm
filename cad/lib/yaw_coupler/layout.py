@@ -171,6 +171,8 @@ def disc_corners(cfg: YawCouplerConfig, y: float) -> list[tuple[float, float, fl
     """(x, y, z) of the faceted disc's corners at height y (DiscParams.sides): its flats disc_r(y) off the base_yaw axis,
     one facing each of +/-X and +/-Z (lib/geom.py faceted_end, turned onto this frame's XZ plane)."""
     n = cfg.disc.sides
+    if n is None:
+        raise ValueError("a round disc (DiscParams.sides None) has no corners")
     r = disc_r(cfg, y) / math.cos(math.pi / n)
     return [(r * math.cos(math.pi * (2 * k + 1) / n), y, r * math.sin(math.pi * (2 * k + 1) / n)) for k in range(n)]
 

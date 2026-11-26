@@ -20,7 +20,11 @@ def is_model(obj) -> bool:
 
 def model_of(module: ModuleType, name: str | None = None):
     """The module's model: the attribute named after its file stem (or `name`)."""
-    stem = name or pathlib.Path(module.__file__).stem
+    stem = name
+    if not stem:
+        if module.__file__ is None:
+            raise TypeError(f"{module.__name__}: no file to name its model after - pass `name`")
+        stem = pathlib.Path(module.__file__).stem
     fn = getattr(module, stem, None)
     if not is_model(fn):
         raise TypeError(f"{module.__name__}: expected `@step(out=\"{stem}.step\") def {stem}()` - a model named "

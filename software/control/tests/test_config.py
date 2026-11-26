@@ -28,5 +28,5 @@ def test_config_imports_only_the_standard_library():
     """cad/tests/test_robot.py loads this file by its path, without the package or its dependencies."""
     tree = ast.parse(pathlib.Path(config.__file__).read_text())
     modules = {a.name for n in ast.walk(tree) if isinstance(n, ast.Import) for a in n.names}
-    modules |= {n.module for n in ast.walk(tree) if isinstance(n, ast.ImportFrom)}
+    modules |= {n.module or "." for n in ast.walk(tree) if isinstance(n, ast.ImportFrom)}   # ".": a relative import
     assert modules <= {"__future__", "dataclasses"}

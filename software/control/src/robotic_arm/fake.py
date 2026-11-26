@@ -66,7 +66,7 @@ class FakeBoard:
     velocity: float = 0.0           # counts/s, signed
     target: int | None = None       # a position move's target; None: a speed run (run_rpm, 0 = stopping)
     run_rpm: int = 0                # a speed run's signed RPM
-    move_rpm: int = 0
+    move_rpm: float = 0.0           # a position move's RPM: its speed value x speed_factor()
     acc: int = 0
     done_code: int | None = None    # the motion's command code, answered 2 when it ends
     settle_short: int = 0           # a position move ends this many counts short (V1.0.8+'s arrival window, 0x95)

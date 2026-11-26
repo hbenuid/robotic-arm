@@ -54,7 +54,7 @@ def chamfer_outline(prism, axis: tuple, length: float = style.EDGE_CHAMFER) -> b
     before its holes and pockets so that they stay sharp."""
     solid = single_solid(prism)
     faces = solid.faces().sort_by(bd.Axis((0.0, 0.0, 0.0), axis))
-    return solid.chamfer(length, None, list(faces[0].outer_wire().edges()) + list(faces[-1].outer_wire().edges()))
+    return solid.chamfer(length, None, list(faces[0].outer_wire().edges()) + list(faces[-1].outer_wire().edges()))  # build123d types chamfer() Solid | Part  # ty: ignore[invalid-explicit-return]
 
 
 def hull_faces(points, tol: float = 1e-6) -> list[list[tuple[float, float, float]]]:

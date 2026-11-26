@@ -81,6 +81,7 @@ def test_the_yoke_is_the_housings_shape():
     k, h = LEGACY.yoke, PORT.housing
     assert (2.0 * k.cradle_r, 2.0 * k.od_r, 2.0 * k.bolt_circle_r) == (h.bore_dia, h.od, h.bolt_circle_dia)
     assert k.nut_af == pytest.approx(h.bolt_nut_pocket_af, abs=0.01) and k.nut_depth == h.bolt_nut_depth
+    assert k.groove_z is not None   # LEGACY's yoke has the groove
     near, end = k.groove_z
     c = (below_axis(LEGACY, k.cradle_r, near), near)
     d = (below_axis(LEGACY, k.od_r, end), end)
@@ -299,6 +300,7 @@ def test_default_hub_takes_the_base_yaw_90t():
     assert sorted(round(math.degrees(math.atan2(z, x))) % 360 for x, z in hole_points(DEFAULT)) == [45, 135, 225, 315]
     assert (h.nut_af, h.nut_depth) == (M4_NUT_UPRIGHT_PRESS_AF, M4_NUT.h) and LEGACY.hub.nut_af is None
     assert DEFAULT.split.nut_af == h.nut_af and DEFAULT.split.hole_dia == h.hole_dia
+    assert h.nut_af is not None
     corner = hex_circumdiameter(h.nut_af) / 2.0
     (px, pz), k = DEFAULT.yoke.pocket_half, DEFAULT.yoke
     for x, z in hole_points(DEFAULT):

@@ -241,8 +241,8 @@ def check_urdf(path: pathlib.Path, tol_m=1e-6, tol_rad=1e-6, rel_inertia=1e-3) -
     problems = []
     if root.get("name") != F.ROBOT_NAME:
         problems.append(f"robot name {root.get('name')!r} != {F.ROBOT_NAME!r}")
-    joints = {j.get("name"): j for j in root.findall("joint")}
-    links = {l.get("name"): l for l in root.findall("link")}
+    joints = {j.get("name", ""): j for j in root.findall("joint")}
+    links = {l.get("name", ""): l for l in root.findall("link")}
     if set(links) != set(F.LINK_ORDER):
         problems.append(f"links {sorted(links)} != {sorted(F.LINK_ORDER)}")
     if set(joints) != {j.name for j in F.JOINTS}:
@@ -269,7 +269,7 @@ def check_urdf(path: pathlib.Path, tol_m=1e-6, tol_rad=1e-6, rel_inertia=1e-3) -
                 problems.append(f"{j.name}: axis must be 0 0 1 (frames put Z on the axis)")
             lim = el.find("limit")
             for attr, want in (("lower", j.lower), ("upper", j.upper), ("effort", j.effort), ("velocity", j.velocity)):
-                if lim is None or abs(float(lim.get(attr)) - want) > 1e-6:
+                if lim is None or abs(float(lim.attrib[attr]) - want) > 1e-6:
                     problems.append(f"{j.name}: limit {attr} != {want}")
         mim = el.find("mimic")
         if (mim is None) != (j.mimic is None):
@@ -283,7 +283,7 @@ def check_urdf(path: pathlib.Path, tol_m=1e-6, tol_rad=1e-6, rel_inertia=1e-3) -
         if inertial is None:
             problems.append(f"{link}: missing inertial")
             continue
-        got_mass = float(inertial.find("mass").get("value"))
+        got_mass = float(inertial.find("mass").attrib["value"])
         if abs(got_mass - mass) > rel_inertia * mass:
             problems.append(f"{link}: mass {got_mass} != {mass:.6f}")
         got_com = _floats(inertial.find("origin").get("xyz"))
@@ -291,14 +291,14 @@ def check_urdf(path: pathlib.Path, tol_m=1e-6, tol_rad=1e-6, rel_inertia=1e-3) -
             problems.append(f"{link}: COM {got_com} != {[round(v, 6) for v in com]}")
         ie = inertial.find("inertia")
         for attr, want in (("ixx", I[0][0]), ("iyy", I[1][1]), ("izz", I[2][2]), ("ixy", I[0][1]), ("ixz", I[0][2]), ("iyz", I[1][2])):
-            got = float(ie.get(attr))
+            got = float(ie.attrib[attr])
             if abs(got - want) > rel_inertia * max(abs(want), 1e-9):
                 problems.append(f"{link}: {attr} {got:.6e} != {want:.6e}")
         for tag in ("visual", "collision"):
             mesh = el.find(f"{tag}/geometry/mesh")
             if mesh is None or mesh.get("filename") != f"meshes/{link}.stl":
                 problems.append(f"{link}: {tag} mesh should be meshes/{link}.stl")
-            elif not (path.parent / mesh.get("filename")).exists():
+            elif not (path.parent / f"meshes/{link}.stl").exists():
                 problems.append(f"{link}: mesh file missing: {mesh.get('filename')}")
     return problems
 
@@ -328,7 +328,7 @@ def check_sdf(path: pathlib.Path, tol=1e-6) -> list[str]:
         if j.type != "fixed":
             lim = el.find("axis/limit")
             for tag, want in (("lower", j.lower), ("upper", j.upper), ("effort", j.effort), ("velocity", j.velocity)):
-                if lim is None or abs(float(lim.find(tag).text) - want) > 1e-6:
+                if lim is None or abs(float(lim.findtext(tag, "")) - want) > 1e-6:
                     problems.append(f"{j.name}: limit {tag} != {want}")
     return problems
 

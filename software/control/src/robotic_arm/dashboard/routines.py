@@ -289,7 +289,7 @@ def speed_sweep(bench: Bench, r: Routine, p: dict[str, Any]) -> None:
                             (Cmd.READ_STATUS, Cmd.READ_STALL), 0.01):
         for i, speed in enumerate(speeds):
             target = ends[i % 2]
-            start = bench.value_now()
+            start = _need_value(bench)
             r.say(f"{i + 1}/{len(speeds)}: {speed:g} {speed_unit} to {target:g}")
             seq0 = bench.sample_seq
             took = _move_and_wait(bench, r, target, speed, acc)

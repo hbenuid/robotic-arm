@@ -179,7 +179,7 @@ pyproject.toml, uv.lock        uv-managed project metadata
 
 ## Development
 
-`uv run pytest` runs the tests (no hardware: python-can's virtual bus) and `uv run ruff check` lints. The working
-rules (branches, commit messages, uv only, the hooks, CI) are the root [`AGENTS.md`](../../AGENTS.md); this
-folder's rules are [`AGENTS.md`](AGENTS.md). The git pre-commit hook (ruff on the staged files, both projects) is
-installed per machine by `cad/cadtool setup`.
+`uv run pytest` runs the tests (no hardware: python-can's virtual bus), `uv run ruff check` lints and
+`uv run ty check` checks the types. The working rules (branches, commit messages, uv only, the hooks, CI) are the
+root [`AGENTS.md`](../../AGENTS.md); this folder's rules are [`AGENTS.md`](AGENTS.md). The git pre-commit hook (ruff
+on the staged files, ty on their project, both projects) is installed per machine by `cad/cadtool setup`.

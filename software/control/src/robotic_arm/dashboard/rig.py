@@ -171,14 +171,13 @@ class Rig:
                 here = bench.value_now()
                 if here is None or bench._stale("counts", 0.5):
                     raise Refused(f"{bench.joint_config.name}: no fresh encoder reading")
-                plans.append([key, bench, float(value), abs(float(value) - here), bench.speed_cap() * speed_pct / 100])
-        moving = [p for p in plans if p[3] > 1e-9]
+                plans.append((key, bench, float(value), abs(float(value) - here), bench.speed_cap() * speed_pct / 100))
+        moving = [p for p in plans if p[3] > 1e-9]   # (key, bench, target, distance, speed)
         if not moving:
             return {"message": "every motor is at its target already"}
         if together:
             duration = max(dist / speed for _, _, _, dist, speed in moving)
-            for p in moving:
-                p[4] = max(p[3] / duration, 1e-6)
+            moving = [(key, bench, value, dist, max(dist / duration, 1e-6)) for key, bench, value, dist, _ in moving]
         checked = []
         for key, bench, value, _, speed in moving:
             try:
@@ -228,6 +227,8 @@ class Rig:
         (`active` differs) gets the active one's samples from the start."""
         with self._lock:
             key = self.active
+            if key is None:
+                raise Refused("no motor on the page")
             if active != key:
                 samples_after = 0
             motors = [{"key": k, "active": k == key, **self.motors[k].card()} for k in self.ordered()]

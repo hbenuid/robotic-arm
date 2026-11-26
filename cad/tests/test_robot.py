@@ -63,7 +63,7 @@ def test_links_partition_every_placement_once():
     for mkey in P.keys(kind="module", designed=True):    # a designed module: whole once, or every body once
         used = [split_key(k)[1] for k in keys if split_key(k)[0] == mkey]
         bodies = module_bodies(P.OCCURRENCES[mkey]["part"])
-        assert used == [None] or (None not in used and sorted(used) == sorted(bodies)), (mkey, used)
+        assert used == [None] or (None not in used and sorted(b for b in used if b is not None) == sorted(bodies)), (mkey, used)
     assert "cycloidal_drive#1:stator" in F.LINKS["shoulder_link"]   # housing + motor ride with the holder
     assert "cycloidal_drive#1:rotor" in F.LINKS["upper_arm_link"]    # output hub + pins ride with j1_link
     assert "forearm_roll_drive#1:stator" in F.LINKS["elbow_link"]    # the elbow block rides with the elbow pulley
@@ -171,21 +171,21 @@ def test_urdf_srdf_sdf_are_consistent():
 def test_urdf_limits_track_params():
     root = ET.parse(URDF).getroot()
     lim = root.find("joint[@name='base_yaw']/limit")
-    assert math.isclose(float(lim.get("upper")), math.radians(PARAMS.BASE_YAW_LIMIT_DEG), abs_tol=1e-6)
+    assert math.isclose(float(lim.attrib["upper"]), math.radians(PARAMS.BASE_YAW_LIMIT_DEG), abs_tol=1e-6)
     lim = root.find("joint[@name='shoulder_pitch']/limit")
     lower, upper = PARAMS.SHOULDER_PITCH_LIMITS_DEG
-    assert math.isclose(float(lim.get("lower")), math.radians(lower), abs_tol=1e-6)
-    assert math.isclose(float(lim.get("upper")), math.radians(upper), abs_tol=1e-6)
+    assert math.isclose(float(lim.attrib["lower"]), math.radians(lower), abs_tol=1e-6)
+    assert math.isclose(float(lim.attrib["upper"]), math.radians(upper), abs_tol=1e-6)
     lim = root.find("joint[@name='wrist_pitch']/limit")
     lower, upper = PARAMS.WRIST_PITCH_LIMITS_DEG
-    assert math.isclose(float(lim.get("lower")), math.radians(lower), abs_tol=1e-6)
-    assert math.isclose(float(lim.get("upper")), math.radians(upper), abs_tol=1e-6)
+    assert math.isclose(float(lim.attrib["lower"]), math.radians(lower), abs_tol=1e-6)
+    assert math.isclose(float(lim.attrib["upper"]), math.radians(upper), abs_tol=1e-6)
     lim = root.find("joint[@name='forearm_roll']/limit")
-    assert math.isclose(float(lim.get("upper")), math.radians(PARAMS.FOREARM_ROLL_LIMIT_DEG), abs_tol=1e-6)
+    assert math.isclose(float(lim.attrib["upper"]), math.radians(PARAMS.FOREARM_ROLL_LIMIT_DEG), abs_tol=1e-6)
     lim = root.find("joint[@name='jaw_a']/limit")
-    assert math.isclose(float(lim.get("upper")), PARAMS.JAW_TRAVEL_MM * 1e-3, abs_tol=1e-9)
+    assert math.isclose(float(lim.attrib["upper"]), PARAMS.JAW_TRAVEL_MM * 1e-3, abs_tol=1e-9)
     mimic = root.find("joint[@name='jaw_b']/mimic")
-    assert mimic.get("joint") == "jaw_a" and float(mimic.get("multiplier")) == -1.0
+    assert mimic.get("joint") == "jaw_a" and float(mimic.attrib["multiplier"]) == -1.0
 
 
 CONTROL_CONFIG = CAD_DIR.parent / "software" / "control" / "src" / "robotic_arm" / "config.py"
@@ -195,6 +195,7 @@ def _control_config():
     """software/control's config.py, loaded by its path: cad never depends on the motor-control package, and the file
     imports only the standard library (software/control/tests/test_config.py keeps it so)."""
     spec = importlib.util.spec_from_file_location("_control_config", CONTROL_CONFIG)
+    assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module   # its dataclass looks its module up while it is made
     try:

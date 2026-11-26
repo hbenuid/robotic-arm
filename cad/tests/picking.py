@@ -62,7 +62,7 @@ def cache(fn):
             note(dep)
         return value
 
-    call.cache_clear = recorded.clear
+    call.cache_clear = recorded.clear   # functools.wraps' wrapper takes it at run time  # ty: ignore[missing-attribute]
     return call
 
 
@@ -159,8 +159,9 @@ def install(active: bool) -> None:
             note(dep)
         return real_popen(self, args, *rest, **kwargs)
 
-    importlib.import_module, subprocess.Popen.__init__ = import_module, popen
-    builtins.open = io.open = open_
+    # the recorders pass the real ones' arguments through
+    importlib.import_module, subprocess.Popen.__init__ = import_module, popen  # ty: ignore[invalid-assignment]
+    builtins.open = io.open = open_  # ty: ignore[invalid-assignment]
 
 
 def collected(ids) -> None:
@@ -172,6 +173,7 @@ def collected(ids) -> None:
     for nodeid in ids:
         path = nodeid.split("::")[0]
         counts[path] = counts.get(path, 0) + 1
+    assert OUT is not None   # _active: OUT is set
     Path(OUT, "collected.json").write_text(json.dumps(counts))
 
 
@@ -179,4 +181,5 @@ def finish() -> None:
     """Write this process's notes and outcomes for the runner."""
     if _active[0] and _files:
         data = {path: {**entry, "notes": sorted(entry["notes"])} for path, entry in _files.items()}
+        assert OUT is not None   # _active: OUT is set
         Path(OUT, f"worker-{os.getpid()}.json").write_text(json.dumps(data))

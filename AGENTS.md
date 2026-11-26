@@ -88,6 +88,18 @@ folder is made for it outside the repo — and goes through Recipe E in `cad/ref
   the git pre-commit hook (`.githooks/pre-commit`, installed per machine by `./cadtool setup`) blocks a commit
   with findings in the staged files; VS Code fixes / sorts imports on save (workspace settings, Ruff extension).
   `F401` is never auto-fixed (`unfixable`): an import written before its first use must survive a save.
+- Type-check with ty (Astral's checker, a locked dev dependency in both uv projects beside ruff; config in each
+  `pyproject.toml` `[tool.ty]`, a warning failing the check like an error): `uv run ty check` in `software/control/`,
+  and `./cadtool lint` in `cad/` runs it after ruff. Both are clean; keep them clean. Type hints stay optional - ty
+  infers the rest. A finding is fixed in the code; a wrong one (a library typed looser than it runs) gets
+  `# ty: ignore[<rule>]` with its reason on the line - ty reports one that is no longer needed. `software/control/`
+  keeps every rule on; `cad/`'s `[tool.ty]` says what it turns off and why (the optional config blocks, OCP, the cad
+  library's `@step`). It runs at the same points as ruff: a second PostToolUse hook (`.claude/hooks/ty-check.sh`, the
+  edited file only - registered in both settings files), the pre-commit hook (the whole project of every staged
+  `.py` file: a change can break another file's types), CI, and VS Code - ty's extension (`astral-sh.ty`, a workspace
+  recommendation) is the editor's language server: completions, hover, go-to-definition and the errors, Pylance
+  switched off (`python.languageServer` `None` in the workspace settings). ty is beta: a bump (`uv lock --upgrade`
+  takes it with the rest) can report new findings - fix them on the bump's branch.
 
 ## CI (GitHub Actions)
 `.github/workflows/ci.yml` runs **only by hand** (Actions tab → CI → Run workflow, or

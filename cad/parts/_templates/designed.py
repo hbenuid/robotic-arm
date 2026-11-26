@@ -43,6 +43,7 @@ def designed():
     with bd.BuildPart() as bp:
         bd.Box(width, depth, thickness, align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MIN))
     part = bp.part
+    assert part is not None   # BuildPart.part is None only while it holds nothing
     part.label = NAME
     return part
 

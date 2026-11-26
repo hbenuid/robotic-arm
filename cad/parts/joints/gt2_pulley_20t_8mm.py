@@ -36,7 +36,7 @@ FIVE_MM = pathlib.Path(__file__).resolve().parents[2] / "vendor" / "gt2_pulley_2
 def _envelope():
     """The 5 mm pulley's vendor solids (the body, its two set screws) less a Ø8 bore along +X."""
     bore = bd.Cylinder(BORE / 2.0, 30.0 + 2 * NUDGE, rotation=(0, 90, 0)).moved(bd.Location((15.0, 0.0, 0.0)))
-    return pattern(s - bore for s in step.read(FIVE_MM).solids())
+    return pattern(s - bore for s in step.read(FIVE_MM).solids())  # ty: ignore[missing-attribute]
 
 
 @step(out="gt2_pulley_20t_8mm.step")

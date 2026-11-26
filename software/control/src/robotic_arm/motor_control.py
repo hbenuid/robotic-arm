@@ -265,14 +265,14 @@ def menu_select(s: Session) -> None:
     if choice == "b":
         return
     if choice == "a":
-        s.selected = [Target(j.name, j.motor, j) for j in s.arm.mapped]
+        s.selected = [Target(j.name, j.board, j) for j in s.arm.mapped]
     elif choice == "i":
         can_id = input_int("CAN id (1-2047, 0x.. for hex)")
         if can_id is None or not 1 <= can_id <= 0x7FF:
             print("  Must be 1-2047.")
             return
-        joint = next((j for j in s.arm.mapped if j.motor.can_id == can_id), None)
-        s.selected = [Target(f"{can_id:#04x}", joint.motor if joint else MotorDriver(s.arm.can, can_id), joint)]
+        joint = next((j for j in s.arm.mapped if j.board.can_id == can_id), None)
+        s.selected = [Target(f"{can_id:#04x}", joint.board if joint else MotorDriver(s.arm.can, can_id), joint)]
     elif choice.isdigit() and 1 <= int(choice) <= len(joints):
         joint = joints[int(choice) - 1]
         if joint.motor is None:
@@ -285,7 +285,7 @@ def menu_select(s: Session) -> None:
     print(f"  Selected: {s.label}")
 
 
-def submenu(s: Session, title: str, items: dict[str, tuple[str, Callable[[], None]]]) -> None:
+def submenu(s: Session, title: str, items: dict[str, tuple[str, Callable[[], object]]]) -> None:
     while True:
         print(f"\n  --- {title} ---")
         for key, (text, _) in items.items():
