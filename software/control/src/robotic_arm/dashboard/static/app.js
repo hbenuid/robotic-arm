@@ -517,6 +517,19 @@ function encoderSpeed(pts, pos, joint) {
   return out;
 }
 
+// [lo, hi] widened about its middle to at least `span`.
+function atLeast([lo, hi], span) {
+  const mid = (lo + hi) / 2;
+  return hi - lo >= span ? [lo, hi] : [mid - span / 2, mid + span / 2];
+}
+
+// The graph's tightest zoom. A still motor's encoder dithers by one count (0.022° at the motor), and an axis fitted
+// to the data alone zooms in until that dither fills the pane. The position axis spans at least 2° in bench mode and,
+// in joint mode, 0.1° or 2° of motor turn through the gear, whichever is more; the speed axis at least ±1 RPM in bench
+// mode and, in joint mode, ±1 °/s or ±1 RPM at the motor, whichever is more. One count is then at most about 1/90 of
+// the axis on every joint, and a still motor draws flat.
+const POS_FLOOR = { motor: 2, joint: 0.1 }, SPD_FLOOR = 1;
+
 function drawGraph(st, u) {
   const { ctx, w, h } = prep($("graph"));
   if (!S.samples.length) {
@@ -537,11 +550,13 @@ function drawGraph(st, u) {
   const ok = (a) => a.filter((v) => v !== null && Number.isFinite(v));
   const pr = ok(pos), sr = ok(spd).concat(showCmd ? ok(cmd) : []);
   const lines = st.window.filter((v) => v !== null).map((v) => [v, css("--warn")]);
+  const posFloor = joint ? Math.max(POS_FLOOR.joint, POS_FLOOR.motor * st.gear_ratio) : POS_FLOOR.motor;
+  const spdFloor = joint ? Math.max(SPD_FLOOR, 6 * st.gear_ratio) : SPD_FLOOR;   // 1 RPM = 6 °/s at the motor
   pane(ctx, { x: 4, y: 2, w: w - right - 4, h: ph }, [{ xs, ys: pos, color: css("--pos") }], [-span, 0],
-    [Math.min(...pr), Math.max(...pr)], `position (${u.posUnit})`, lines);
+    atLeast([Math.min(...pr), Math.max(...pr)], posFloor), `position (${u.posUnit})`, lines);
   const speedSeries = [{ xs, ys: spd, color: css("--spd") }];
   if (showCmd) speedSeries.push({ xs, ys: cmd, color: css("--ok"), dash: true });
-  pane(ctx, { x: 4, y: ph + gap, w: w - right - 4, h: sh }, speedSeries, [-span, 0], [Math.min(0, ...sr), Math.max(0, ...sr)],
+  pane(ctx, { x: 4, y: ph + gap, w: w - right - 4, h: sh }, speedSeries, [-span, 0], [Math.min(-spdFloor, ...sr), Math.max(spdFloor, ...sr)],
     `speed (${u.spdUnit}, ${S.speedSrc === "encoder" ? "from the encoder" : "board"})${showCmd ? "   - - commanded" : ""}`);
   ctx.fillStyle = css("--faint"); ctx.font = "11px system-ui";
   const tstep = niceStep(span, 6);
