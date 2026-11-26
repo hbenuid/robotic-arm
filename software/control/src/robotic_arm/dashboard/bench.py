@@ -329,32 +329,29 @@ class Bench:
             self.notice(f"{self.microsteps} microsteps: the board's speed unit is {self.speed_factor:g} RPM; the "
                         "dashboard scales every speed to match")
 
-    def _arm_bounds(self) -> tuple[int | None, int | None]:
-        """config.JOINTS' limits in counts (lo, hi): joint mode with a reference only."""
+    def _arm_bounds(self) -> tuple[int, int] | None:
+        """config.JOINTS' limits in counts (lo, hi) under the reference; None without joint mode and a reference."""
         if self.mode != "joint" or self.zero_deg is None:
-            return None, None
+            return None
         joint = self.joint()
         a, b = (joint.deg_to_counts(d) for d in self.joint_config.limits_deg)
         return min(a, b), max(a, b)
 
-    def _bounds(self, *, even_off: bool = False) -> tuple[int | None, int | None, str | None, str | None]:
-        """(lo, hi, lo's source, hi's source) in counts: the user's bound, else the arm's, else None (open); all
-        None while the limits are off (unless `even_off`, for showing them)."""
+    def _bounds(self, *, even_off: bool = False) -> tuple[int | None, int | None]:
+        """(lo, hi) in counts: the limits you set, None for an open side; both None while the limits are off (unless
+        `even_off`, for showing them). The arm's own range is never applied by itself: `use_arm_limits` sets it."""
         if not self.limits.on and not even_off:
-            return None, None, None, None
-        arm_lo, arm_hi = self._arm_bounds()
-        lo, lo_src = (self.limits.count_lo, "yours") if self.limits.count_lo is not None else (arm_lo, "arm" if arm_lo is not None else None)
-        hi, hi_src = (self.limits.count_hi, "yours") if self.limits.count_hi is not None else (arm_hi, "arm" if arm_hi is not None else None)
-        return lo, hi, lo_src, hi_src
+            return None, None
+        return self.limits.count_lo, self.limits.count_hi
 
     def limit_view(self) -> dict[str, Any]:
-        """The limits as the page shows them: min and max in the mode's unit, each with its source."""
+        """The limits as the page shows them: min and max in the mode's unit (None: open), and whether the arm's own
+        range can be set (joint mode with a reference)."""
         with self._lock:
-            lo, hi, lo_src, hi_src = self._bounds(even_off=True)
-            low = (None if lo is None else self.to_value(lo), lo_src)
-            high = (None if hi is None else self.to_value(hi), hi_src)
+            lo, hi = self._bounds(even_off=True)
+            low, high = (None if c is None else self.to_value(c) for c in (lo, hi))
             mn, mx = (low, high) if self._value_dir() > 0 else (high, low)
-            return {"on": self.limits.on, "min": mn[0], "min_src": mn[1], "max": mx[0], "max_src": mx[1]}
+            return {"on": self.limits.on, "min": mn, "max": mx, "arm_ready": self._arm_bounds() is not None}
 
     def window(self) -> tuple[float | None, float | None]:
         """The travel the limits allow now, in the mode's unit; None for an open side (or the limits off)."""
@@ -411,7 +408,7 @@ class Bench:
             counts = self.value_to_counts(value)
             if abs(counts) > INT24_MAX:
                 raise Refused(f"{value:g} is past the board's +/-{INT24_MAX} counts")
-            lo, hi, _, _ = self._bounds()
+            lo, hi = self._bounds()
             if (lo is not None and counts < lo) or (hi is not None and counts > hi):
                 mn, mx = self.window()
                 span = f"{'open' if mn is None else f'{mn:.2f}'} .. {'open' if mx is None else f'{mx:.2f}'}"
@@ -462,8 +459,7 @@ class Bench:
                 self._require_idle("changing the mode")
                 self.mode = mode
         if mode == "bench":
-            self.notice("Bench mode: motor degrees and RPM; the arm's own limits do not apply here, your own do while "
-                        "the limits are on", "warn")
+            self.notice("Bench mode: motor degrees and RPM; your limits apply while they are on", "warn")
 
     def set_speed_limits(self, joint_speed: float | None = None, bench_rpm: float | None = None) -> None:
         """The speed caps: joint mode's deg/s (never above max_joint_speed), bench mode's RPM."""
@@ -569,7 +565,7 @@ class Bench:
 
     def set_limit(self, side: str, value: float | None = None, *, here: bool = False) -> None:
         """Set the min or max limit: where the motor is now (`here`), at `value` (the mode's unit), or clear it
-        (`value` None) - then the arm's own applies, if there is one."""
+        (`value` None) - that side is open then."""
         if side not in ("min", "max"):
             raise Refused("a limit is min or max")
         with self._lock:
@@ -587,17 +583,21 @@ class Bench:
                     raise Refused(f"{value:g} is past the board's +/-{INT24_MAX} counts")
             key = "count_lo" if (side == "min") == (self._value_dir() > 0) else "count_hi"
             new = replace(self.limits, **{key: counts})
-            lo, hi, _, _ = self._bounds_of(new)
-            if lo is not None and hi is not None and lo >= hi:
+            if new.count_lo is not None and new.count_hi is not None and new.count_lo >= new.count_hi:
                 raise Refused("the min limit must be below the max")
             self.limits = new
 
-    def _bounds_of(self, limits: Limits) -> tuple[int | None, int | None, str | None, str | None]:
-        before, self.limits = self.limits, limits
-        try:
-            return self._bounds(even_off=True)
-        finally:
-            self.limits = before
+    def use_arm_limits(self) -> None:
+        """Set both limits to the arm's own range (config.JOINTS), under the joint's reference. Only on request: a
+        reference never sets them by itself."""
+        with self._lock:
+            bounds = self._arm_bounds()
+            if bounds is None:
+                raise Refused("the arm's range needs joint mode and a reference: home the joint, or tell the page "
+                              "where it is")
+            self.limits = replace(self.limits, count_lo=bounds[0], count_hi=bounds[1])
+            lo, hi = self.joint_config.limits_deg
+        self.notice(f"Limits set to {self.joint_config.name}'s range: {lo:g} to {hi:g} deg")
 
     def _clear_user_limits(self, why: str) -> None:
         if self.limits.count_lo is not None or self.limits.count_hi is not None:
@@ -710,7 +710,7 @@ class Bench:
                 self._last_page_halt = now
                 self._halt_frames(f"the page has been silent for {PAGE_TIMEOUT_S:g} s")
             if self.motion == "run" and not self._window_stop and self.readout.counts is not None:
-                lo, hi, _, _ = self._bounds()
+                lo, hi = self._bounds()
                 if (lo is not None and self.readout.counts < lo) or (hi is not None and self.readout.counts > hi):
                     self._window_stop = True   # once: the run's stop is on its way
                     self._soft_stop_frames()
@@ -861,7 +861,7 @@ class Bench:
         v = rpm * f * COUNTS_PER_RPM_S
         brake = 0.0 if acc == 0 else v * v / (2 * COUNTS_PER_RPM_S * f / ((256 - acc) * 50e-6))
         target = here + cdir * max(v * JOG_LEAD_S, 2 * brake, 64)
-        lo, hi, _, _ = self._bounds()
+        lo, hi = self._bounds()
         if cdir > 0 and hi is not None:
             target = min(target, hi)
         if cdir < 0 and lo is not None:
@@ -942,7 +942,7 @@ class Bench:
             counts = self.readout.counts
             if counts is None:
                 raise Refused("no position reading yet")
-            lo, hi, _, _ = self._bounds()
+            lo, hi = self._bounds()
             if (lo is not None and counts < lo) or (hi is not None and counts > hi):
                 raise Refused("the motor is outside the limits")
             whole = self.speed_to_rpm(rpm)

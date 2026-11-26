@@ -116,11 +116,11 @@ It has two modes. **Joint mode** works in joint degrees through the joint's rati
 joint, or tell the page where it is) the angles are the joint's; without it they count from the encoder's zero.
 **Bench mode** works in degrees and RPM of the motor's shaft.
 
-**Limits** are on by default. Each side is your own if you set it (Here, or typed); otherwise, once joint mode has a
-reference, it's the arm's own from `config.JOINTS`; otherwise that side is open. Every move and jog is checked against
-them before anything is sent. They follow the physical position through a change of mode, sign or reference. Set
-zero shifts them with the zero; homing or a power loss clears them. Switched off, nothing limits the position: only
-the speed cap and STOP remain.
+**Limits** are on by default and start open. Each side is what you set (Here, or typed); × or an empty box opens that
+side again. Use arm range sets both to the arm's own from `config.JOINTS` once joint mode has a reference - a
+reference never sets them by itself. Every move and jog is checked against them before anything is sent. They follow
+the physical position through a change of mode, sign or reference. Set zero shifts them with the zero; homing or a
+power loss clears them. Switched off, nothing limits the position: only the speed cap and STOP remain.
 
 **Safety**: STOP (the button, Esc, or Space outside a text box) sends F7 and an immediate F5 stop. These go ahead of
 anything else queued. A jog stops when you let go: the page repeats it every 0.1 s, and the server stops the motor 0.4 s

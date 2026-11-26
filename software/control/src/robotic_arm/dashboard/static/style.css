@@ -149,7 +149,6 @@ kbd { display: inline-block; min-width: 18px; padding: 0 4px; margin: 0 1px; bor
 .limits.off .lim-row { opacity: 0.45; }
 .lim-row { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
 .lim-name { width: 28px; color: var(--muted); font-size: 12px; font-weight: 600; }
-.lim-row input.arm { color: var(--muted); font-style: italic; }
 .btn.icon { padding: 4px 8px; }
 .switch { display: inline-flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--line-strong); border-radius: 999px; padding: 2px 8px 2px 2px; cursor: pointer; font-size: 11px; font-weight: 700; color: var(--muted); }
 .switch .knob { width: 16px; height: 16px; border-radius: 50%; background: var(--faint); transition: background 0.15s; }

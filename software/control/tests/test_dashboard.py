@@ -113,9 +113,11 @@ def test_the_switch_zone_reads_on_in1_and_homing_zeroes_at_its_edge(channel):
 def test_joint_mode_checks_every_move_before_sending(bench, sim):
     bench.check(150, 5, 2)                               # no reference, no limit set: open (from the encoder's zero)
     bench.set_reference(0.0)
+    bench.check(150, 5, 2)                               # a reference sets no limit by itself
+    bench.use_arm_limits()
     bench.enable(True)
     with pytest.raises(Refused, match="outside the limits"):
-        bench.move_to(150, 5, 2)                         # with a reference the arm's 144 applies
+        bench.move_to(150, 5, 2)                         # the arm's 144, once asked for
     with pytest.raises(Refused, match="cap"):
         bench.move_to(5, 61, 2)                          # past the 60 deg/s cap
     bench.set_speed_limits(joint_speed=10)
@@ -135,6 +137,7 @@ def test_joint_mode_checks_every_move_before_sending(bench, sim):
 
 def test_limits_off_means_free_movement(bench, sim):
     bench.set_reference(0.0)
+    bench.use_arm_limits()
     with pytest.raises(Refused, match="outside the limits"):
         bench.check(150, 5, 2)
     bench.set_limits_on(False)
@@ -147,6 +150,27 @@ def test_limits_off_means_free_movement(bench, sim):
         bench.check(150, 5, 2)
 
 
+def test_the_arm_range_is_set_only_on_request_and_every_side_clears_to_open(bench, sim):
+    with pytest.raises(Refused, match="reference"):
+        bench.use_arm_limits()                           # no reference: the arm's range has no place yet
+    bench.set_reference(0.0)
+    view = bench.limit_view()
+    assert (view["min"], view["max"], view["arm_ready"]) == (None, None, True)   # the reference set nothing
+    bench.use_arm_limits()
+    lo, hi = bench.joint_config.limits_deg
+    view = bench.limit_view()
+    assert view["min"] == pytest.approx(lo, abs=0.01) and view["max"] == pytest.approx(hi, abs=0.01)
+    bench.set_limit("max", 30.0)                         # a typed value replaces it
+    assert bench.limit_view()["max"] == pytest.approx(30.0, abs=0.01)
+    bench.set_limit("min", None)                         # cleared: open, not back to the arm's
+    bench.set_limit("max", None)
+    assert (bench.limit_view()["min"], bench.limit_view()["max"]) == (None, None)
+    bench.check(lo - 20, 5, 2)                           # past the arm's range: allowed, nothing set
+    bench_mode(bench)
+    with pytest.raises(Refused, match="joint mode"):
+        bench.use_arm_limits()
+
+
 def test_limits_set_here_follow_the_position_not_the_units(bench, sim):
     bench_mode(bench)
     seq = bench.move_to(90, 600, 250)
@@ -154,7 +178,7 @@ def test_limits_set_here_follow_the_position_not_the_units(bench, sim):
     wait_until(lambda: bench.readout.counts == 0x1000)
     bench.set_limit("max", here=True)                    # 90 deg of the motor
     bench.set_limit("min", -45.0)
-    assert bench.limit_view() == {"on": True, "min": -45.0, "min_src": "yours", "max": 90.0, "max_src": "yours"}
+    assert bench.limit_view() == {"on": True, "min": -45.0, "max": 90.0, "arm_ready": False}
     with pytest.raises(Refused, match="outside the limits"):
         bench.check(100, 60, 2)
     with pytest.raises(Refused, match="at the max limit"):

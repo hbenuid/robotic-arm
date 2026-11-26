@@ -76,14 +76,15 @@
         <span class="lim-name">min</span>
         <input id="lim-min" type="number" step="0.1" placeholder="open" class="grow">
         <button id="lim-min-here" class="btn ghost small" title="Set the min limit where the motor is now">Here</button>
-        <button id="lim-min-clear" class="btn ghost small icon" title="Clear your min (the arm's own applies, if any)">×</button>
+        <button id="lim-min-clear" class="btn ghost small icon" title="Clear the min: no limit that side">×</button>
       </div>
       <div class="lim-row">
         <span class="lim-name">max</span>
         <input id="lim-max" type="number" step="0.1" placeholder="open" class="grow">
         <button id="lim-max-here" class="btn ghost small" title="Set the max limit where the motor is now">Here</button>
-        <button id="lim-max-clear" class="btn ghost small icon" title="Clear your max (the arm's own applies, if any)">×</button>
+        <button id="lim-max-clear" class="btn ghost small icon" title="Clear the max: no limit that side">×</button>
       </div>
+      <button id="lim-arm" class="btn ghost small joint-only">Use arm range</button>
       <div id="limits-note" class="muted small"></div>
     </div>
 

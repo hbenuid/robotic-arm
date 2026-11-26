@@ -111,6 +111,8 @@ def dispatch_motor(rig: Rig, bench: Any, action: str, b: dict[str, Any]) -> dict
         case "limit":
             value = b.get("value")
             bench.set_limit(str(b["side"]), None if value in (None, "") else float(value), here=bool(b.get("here")))
+        case "arm_limits":
+            bench.use_arm_limits()
         case "sign":
             bench.set_sign(_int(b["sign"]))
         case "reference":
