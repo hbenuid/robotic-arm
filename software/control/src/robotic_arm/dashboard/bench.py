@@ -71,6 +71,8 @@ BENCH_RPM_CEILING = 1000  # the manual: no immediate stop (F7, acc 0) above 1000
 DEFAULT_JOINT_SPEED_CAP = 10.0
 MOTOR_DEG_PER_COUNT = 360.0 / ENCODER_COUNTS_PER_REV
 MOTION_CODES = (Cmd.MOVE_RELATIVE_AXIS, Cmd.MOVE_TO_AXIS, Cmd.SPEED)   # what a stop purges from the queue
+BACKGROUND_FAST_S = 0.05  # an inactive motor's encoder / speed / status polling (the active one: 20 ms or set)
+BACKGROUND_SLOW_S = 1.0
 FAST_POLL = (Cmd.READ_ENCODER, Cmd.READ_SPEED, Cmd.READ_STATUS)
 SLOW_POLL = (Cmd.READ_ENABLED, Cmd.READ_STALL, Cmd.READ_IO, Cmd.READ_POWER, Cmd.READ_ANGLE_ERROR,
              Cmd.READ_HOME_STATUS)
@@ -137,19 +139,47 @@ class Readout:
 SAMPLE_FIELDS = ("t", "counts", "speed_rpm", "status", "milliamps", "angle_error", "io", "cmd_rpm")
 
 
-class Bench:
-    """The board under test and the dashboard's rules for it. Thread-safe: the page's requests, the test routines
-    and the bus thread all call in."""
+class Notices:
+    """The notices the page shows as pop-ups, numbered; one list for every motor on the bus."""
 
-    def __init__(self, can: CANInterface, *, joint: str = config.JOINTS[0].name, can_id: int | None = None,
-                 max_joint_speed: float = DEFAULT_JOINT_SPEED_CAP, priority_estop: bool = False,
-                 checksum: Checksum = Checksum.SUM8, label: str = ""):
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._items: collections.deque[dict[str, Any]] = collections.deque(maxlen=300)
+        self._seq = 0
+
+    def add(self, text: str, level: str = "info") -> None:
+        with self._lock:
+            self._seq += 1
+            self._items.append({"seq": self._seq, "t": time.time(), "level": level, "text": text})
+
+    def since(self, seq: int) -> list[dict[str, Any]]:
+        with self._lock:
+            return [n for n in self._items if n["seq"] > seq]
+
+
+class Bench:
+    """One motor - its board and joint - and the dashboard's rules for it. Thread-safe: the page's requests, the test
+    routines and the bus thread all call in.
+
+    Alone it runs its own bus thread on `can`; on a Rig it shares the rig's `worker` and `notices` with the others.
+    """
+
+    def __init__(self, can: CANInterface | None = None, *, joint: str = config.JOINTS[0].name,
+                 can_id: int | None = None, max_joint_speed: float = DEFAULT_JOINT_SPEED_CAP,
+                 priority_estop: bool = False, checksum: Checksum = Checksum.SUM8, label: str = "",
+                 worker: BusWorker | None = None, notices: Notices | None = None):
         if not max_joint_speed > 0:
             raise ValueError("max_joint_speed must be > 0")
+        if (can is None) == (worker is None):
+            raise ValueError("a Bench takes either a CAN bus (its own bus thread) or a shared worker")
         self.label = label
         self.max_joint_speed = float(max_joint_speed)
         self.priority_estop = priority_estop
-        self.worker = BusWorker(can, checksum)
+        self._owns_worker = worker is None
+        self.worker = worker if worker is not None else BusWorker(can, checksum)
+        self._notices = notices if notices is not None else Notices()
+        self.tag = ""                           # a Rig sets "<joint>: " to tell motors' notices apart
+        self._background = False                # a Rig's inactive motor: polled slower
         self._lock = threading.RLock()
         self.mode = "joint"
         self.joint_config: JointConfig = self._config_named(joint)
@@ -162,8 +192,6 @@ class Bench:
         self.samples: collections.deque[tuple] = collections.deque(maxlen=SAMPLES_MAX)
         self.sample_seq = 0
         self._recording: list[tuple] | None = None
-        self.notices: collections.deque[dict[str, Any]] = collections.deque(maxlen=200)
-        self._notice_seq = 0
         self.findings: list[str] = []
         self.motion: str | None = None          # "move", "jog", "run", "home", "calibrate", "step", None
         self._motion_since = 0.0
@@ -185,16 +213,58 @@ class Bench:
         self._shaper: Shaper | None = None
         self._fast_s = 0.02
         self._poll_profile = (FAST_POLL, SLOW_POLL, self._fast_s)
-        self.worker.on_reply = self._on_reply
-        self.worker.on_tick = self._tick
         self.worker.driver(self.can_id)
-        self.worker.set_poll(self.can_id, *self._poll_profile)
-        self.worker.start()
+        self._apply_poll()
+        self.worker.add_listener(self._on_reply, self._tick)
+        if self._owns_worker:
+            self.worker.start()
 
     def close(self) -> None:
+        """Stop this motor's tests, polling and listening (and its bus thread, if it has its own)."""
         if self.routine is not None:
             self.routine.cancel.set()
-        self.worker.close()
+        with self._lock:
+            self._stop_shaper()
+        self.worker.remove_listener(self._on_reply)
+        self.worker.remove_poll(self.can_id)
+        if self._owns_worker:
+            self.worker.close()
+
+    @property
+    def notices(self) -> list[dict[str, Any]]:
+        return self._notices.since(0)
+
+    def _apply_poll(self) -> None:
+        """Poll the board: the current profile, or - an inactive motor on a Rig, at the default profile - slower."""
+        fast, slow, fast_s = self._poll_profile
+        if self._background and self._poll_profile == (FAST_POLL, SLOW_POLL, self._fast_s):
+            self.worker.set_poll(self.can_id, fast, slow, BACKGROUND_FAST_S, BACKGROUND_SLOW_S)
+        else:
+            self.worker.set_poll(self.can_id, fast, slow, fast_s)
+
+    def set_background(self, background: bool) -> None:
+        with self._lock:
+            self._background = background
+            self._apply_poll()
+
+    def card(self) -> dict[str, Any]:
+        """What a motor card on the page shows."""
+        with self._lock:
+            r, now = self.readout, time.monotonic()
+            fresh = {k: now - t < 1.0 for k, t in r.updated.items()}
+            return {
+                "joint": self.joint_config.name, "can_id": self.can_id, "mode": self.mode, "online": self._online,
+                "value": None if r.counts is None else self.to_value(r.counts),
+                "unit": "°" if self.mode == "joint" else "° motor", "referenced": self.zero_deg is not None,
+                "speed": None if r.speed_rpm is None else (self.joint().rpm_to_dps(r.speed_rpm) if self.mode == "joint"
+                                                            else r.speed_rpm),
+                "speed_unit": "°/s" if self.mode == "joint" else "RPM",
+                "enabled": r.enabled if fresh.get("enabled") else None,
+                "moving": self._moving(), "stalled": bool(r.stalled), "motion": self.motion,
+                "switch_on": None if r.io is None or not fresh.get("io") else (r.io & 1) == 0,
+                "limits_on": self.limits.on,
+                "testing": self.routine is not None and self.routine.active,
+            }
 
     # --- units ------------------------------------------------------------------------------------------------------
 
@@ -325,10 +395,8 @@ class Bench:
         self._last_page = time.monotonic()
 
     def notice(self, text: str, level: str = "info") -> None:
-        with self._lock:
-            self._notice_seq += 1
-            self.notices.append({"seq": self._notice_seq, "t": time.time(), "level": level, "text": text})
-        self.worker.note(text)
+        self._notices.add(self.tag + text, level)
+        self.worker.note(self.tag + text)
 
     def _require_idle(self, what: str) -> None:
         if self.routine is not None and self.routine.active:
@@ -344,13 +412,15 @@ class Bench:
         with self._lock:
             self._require_idle("changing the board")
             changed = (cfg.name, can_id) != (self.joint_config.name, self.can_id)
+            if can_id != self.can_id:
+                self.worker.remove_poll(self.can_id)
             self.joint_config, self.can_id, self.sign = cfg, can_id, cfg.sign
             if changed:
                 self.zero_deg, self.reference = None, "not set"
                 self.readout = Readout()
                 self.limits = replace(self.limits, on=True, count_lo=None, count_hi=None)
             self.worker.driver(can_id)
-            self.worker.set_poll(can_id, *self._poll_profile)
+            self._apply_poll()
         self.notice(f"Board: {cfg.name} at CAN id {can_id} (0x{can_id:02X})")
 
     def set_mode(self, mode: str) -> None:
@@ -406,7 +476,7 @@ class Bench:
             self._fast_s = ms / 1000
             if default:
                 self._poll_profile = (FAST_POLL, SLOW_POLL, self._fast_s)
-                self.worker.set_poll(self.can_id, *self._poll_profile)
+                self._apply_poll()
 
     def write_pid(self, loop: str, **gains: int) -> str:
         """5.3 (firmware V1.0.8+): the position loop's Kp, Ki (sent together) and Kd, Kv (together), 0-1024 each."""
@@ -885,9 +955,10 @@ class Bench:
         self._status_command(data, f"set {name}", ok=(1, 2) if code == 0x83 else (1,), timeout=0.5)
         if code == 0x8B:
             with self._lock:
+                self.worker.remove_poll(self.can_id)
                 self.can_id = value
                 self.worker.driver(value)
-                self.worker.set_poll(value, *self._poll_profile)
+                self._apply_poll()
             self.notice(f"The board's CAN id is {value} now; the dashboard follows it. config.JOINTS has "
                         f"{self.joint_config.name} at {self.joint_config.can_id}")
         return f"{name} set to {value}"
@@ -972,13 +1043,13 @@ class Bench:
         """Poll other reads, or faster, for a while (a test that needs them)."""
         with self._lock:
             before, self._poll_profile = self._poll_profile, (fast, slow, fast_s)
-            self.worker.set_poll(self.can_id, *self._poll_profile)
+            self._apply_poll()
         try:
             yield
         finally:
             with self._lock:
                 self._poll_profile = before
-                self.worker.set_poll(self.can_id, *before)
+                self._apply_poll()
 
     # --- the page's view --------------------------------------------------------------------------------------------
 
@@ -1035,12 +1106,12 @@ class Bench:
                     "angle_error_deg": None if r.angle_error is None else r.angle_error * 360 / 51200,
                     "home_status": r.home_status, "version": r.version, "fresh": fresh,
                 },
-                "skipped_reads": [f"0x{c:02X}" for c in self.worker.skipped_reads()],
+                "skipped_reads": [f"0x{c:02X}" for c in self.worker.skipped_reads(self.can_id)],
                 "counts_bus": dict(self.worker.counts),
                 "sample_fields": ("seq", *SAMPLE_FIELDS),
                 "samples": samples,
                 "log": [asdict(e) for e in self.worker.log_since(log_after)][-500:],
-                "notices": [n for n in self.notices if n["seq"] > notices_after],
+                "notices": self._notices.since(notices_after),
                 "recording": None if self._recording is None else len(self._recording),
                 "routine": routine,
                 "findings": list(self.findings),

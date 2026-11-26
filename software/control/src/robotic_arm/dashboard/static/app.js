@@ -19,7 +19,7 @@ const TESTS = {
 const S = {
   st: null, samples: [], sampleSeq: 0, logSeq: 0, noticeSeq: 0,
   logPaused: false, graphPaused: false, graphSpan: 30, speedSrc: "encoder", showCmd: true, pidLoop: "vfoc",
-  context: null, jogDir: 0, jogTimer: null, press: null,
+  context: null, jogDir: 0, jogTimer: null, press: null, activeKey: null, cards: {}, jogMotor: null,
   routineKey: null, routineTable: null, questionKey: null, findings: null, filled: false,
 };
 
@@ -71,11 +71,18 @@ const stamp = () => new Date().toISOString().replace(/[:T]/g, "-").slice(0, 19);
 
 async function poll() {
   try {
-    const res = await fetch(`/api/state?samples=${S.sampleSeq}&log=${S.logSeq}&notices=${S.noticeSeq}`,
+    const res = await fetch(`/api/state?samples=${S.sampleSeq}&log=${S.logSeq}&notices=${S.noticeSeq}&active=${S.activeKey ?? ""}`,
       { headers: { "X-Dashboard-Token": TOKEN } });
     if (res.status === 403) throw new Error("the dashboard restarted: reload the page");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const st = await res.json();
+    if (st.active !== S.activeKey) {   // another motor is active: its samples came from the start; its panels refill
+      S.activeKey = st.active;
+      S.samples = [];
+      S.sampleSeq = 0;
+      S.context = null;
+      S.routineKey = S.routineTable = S.questionKey = S.findings = null;
+    }
     ingest(st);
     render(st);
   } catch (e) {
@@ -145,6 +152,10 @@ function render(st) {
     $("pf-curve").innerHTML = st.curves.map((c) => `<option value="${c}">${c}</option>`).join("");
     $("set-9B").innerHTML = Array.from({ length: 9 }, (_, i) => `<option value="${i}">${(i + 1) * 10} %</option>`).join("");
     $("set-9B").value = "4";
+    $("add-joint").innerHTML = st.joints.map((j) => `<option value="${j.name}">${j.name}</option>`).join("");
+    const free = st.joints.find((j) => !st.motors.some((m) => m.joint === j.name)) || st.joints[0];
+    $("add-joint").value = free.name;
+    $("add-id").value = free.can_id ?? "";
     showTest($("test-kind").value);
   }
   const key = `${st.mode}|${st.joint}|${st.can_id}|${st.zero_deg === null}|${st.sign}`;
@@ -243,7 +254,94 @@ function render(st) {
   $("log-polls").checked = st.log_polls;
 
   renderRoutine(st);
+  renderMotors(st);
   if (!S.graphPaused) drawGraph(st, u);
+}
+
+// --- the motor cards ------------------------------------------------------------------------------------------------
+
+function renderMotors(st) {
+  const box = $("motor-cards");
+  const keys = st.motors.map((m) => m.key);
+  for (const key of Object.keys(S.cards)) {
+    if (!keys.includes(key)) { S.cards[key].remove(); delete S.cards[key]; }
+  }
+  st.motors.forEach((m, i) => {
+    let card = S.cards[m.key];
+    if (!card) {
+      card = document.createElement("div");
+      card.className = "mcard";
+      card.dataset.key = m.key;
+      card.innerHTML = `<div class="mc-head"><span class="mc-num"></span><span class="dot"></span><span class="mc-name"></span>` +
+        `<span class="mc-id"></span><button class="mc-x" title="Take this motor off the page">×</button></div>` +
+        `<div class="mc-value"><span class="v"></span><span class="u"></span></div><div class="mc-sub"></div>` +
+        `<div class="mc-jog"><button data-dir="-1" title="Tap: step · hold: jog">◀ −</button><button data-dir="1" title="Tap: step · hold: jog">+ ▶</button></div>`;
+      S.cards[m.key] = card;
+      bindCard(card, m.key);
+    }
+    if (box.children[i] !== card) box.insertBefore(card, box.children[i] || null);
+    card.classList.toggle("active", m.active);
+    card.querySelector(".mc-num").textContent = i + 1;
+    card.querySelector(".dot").classList.toggle("on", m.online);
+    card.querySelector(".mc-name").textContent = m.joint;
+    card.querySelector(".mc-id").textContent = `id ${m.can_id}`;
+    card.querySelector(".mc-x").classList.toggle("hidden", m.active || st.motors.length === 1);
+    card.querySelector(".v").textContent = m.value === null ? "—" : fmt(m.value, 1);
+    card.querySelector(".u").textContent = m.mode === "joint" && !m.referenced ? "° from zero" : m.unit;
+    const state = !m.online ? `<span class="bad">offline</span>` : m.stalled ? `<span class="bad">STALLED</span>` :
+      m.testing ? `<span class="busy">test</span>` : m.moving ? `<span class="busy">moving</span>` : "stopped";
+    const power = m.enabled === null ? "?" : m.enabled ? `<span class="on">on</span>` : "off";
+    card.querySelector(".mc-sub").innerHTML = `id ${m.can_id} · ${m.speed === null ? "—" : fmt(m.speed, m.mode === "joint" ? 1 : 0)} ${m.speed_unit} · ${power} · ${state}` +
+      (m.limits_on ? "" : ` · <span class="bad">limits off</span>`);
+  });
+  $("halt").textContent = st.motors.length > 1 ? "STOP ALL" : "STOP";
+  $("together-open").disabled = st.motors.length < 2;
+}
+
+async function selectMotor(key) {
+  if (key === S.activeKey) return true;
+  const r = await api("select_motor", { key });
+  if (!r.ok) { toast(r.error, "err"); return false; }
+  return true;
+}
+
+function bindCard(card, key) {
+  card.addEventListener("click", (e) => { if (!e.target.closest("button")) selectMotor(key); });
+  card.querySelector(".mc-x").onclick = async () => {
+    if (!confirm("Take this motor off the page? (Its board keeps running as it is; STOP still reaches only the motors on the page.)")) return;
+    const r = await api("remove_motor", { key });
+    if (!r.ok) toast(r.error, "err");
+  };
+  for (const b of card.querySelectorAll(".mc-jog button")) {
+    const dir = Number(b.dataset.dir);
+    b.addEventListener("pointerdown", async (e) => {
+      b.setPointerCapture(e.pointerId);
+      b.classList.add("held");
+      if (key !== S.activeKey && !(await selectMotor(key))) { b.classList.remove("held"); return; }
+      pressStart(dir, key);   // this card's motor, whatever the page still shows
+    });
+    b.addEventListener("pointerup", () => { b.classList.remove("held"); pressEnd(dir); });
+    b.addEventListener("pointercancel", () => { b.classList.remove("held"); pressCancel(); });
+  }
+}
+
+function openTogether() {
+  const st = S.st;
+  $("together-rows").replaceChildren(...st.motors.map((m) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td><b></b> <span class="muted small"></span></td><td class="muted small"></td><td><input type="number" step="0.1"></td><td class="muted small"></td>`;
+    tr.querySelector("b").textContent = m.joint;
+    tr.querySelector("span").textContent = `id ${m.can_id}`;
+    tr.children[1].textContent = m.value === null ? "now —" : `now ${fmt(m.value, 2)}`;
+    const input = tr.querySelector("input");
+    input.dataset.key = m.key;
+    input.value = m.value === null ? "" : round(m.value, 2);
+    tr.children[3].textContent = m.mode === "joint" && !m.referenced ? "° from zero" : m.unit;
+    return tr;
+  }));
+  $("together-acc").value = $("acc-num").value;
+  say($("together-msg"), "");
+  $("together").showModal();
 }
 
 function renderProfile(st) {
@@ -596,14 +694,15 @@ function addLog(entries) {
 
 // --- jog, stop ------------------------------------------------------------------------------------------------------
 
-function jogStart(dir) {
+function jogStart(dir, motor = S.activeKey) {
   if (S.jogDir === dir) return;
   jogStop(true);
   S.jogDir = dir;
+  S.jogMotor = motor;
   $(dir > 0 ? "jog-plus" : "jog-minus").classList.add("held");
   const send = async () => {
     if (S.jogDir !== dir) return;
-    const r = await api("jog", { direction: dir, speed: num("speed-num"), acc: int("acc-num") });
+    const r = await api("jog", { direction: dir, speed: num("speed-num"), acc: int("acc-num"), motor });
     if (!r.ok && S.jogDir === dir) { say($("motion-msg"), r.error, false); jogStop(true); }
   };
   send();
@@ -617,21 +716,21 @@ function jogStop(release) {
   S.jogDir = 0;
   $("jog-plus").classList.remove("held");
   $("jog-minus").classList.remove("held");
-  if (release) api("jog_release");
+  if (release) api("jog_release", { motor: S.jogMotor });
 }
 
 // A press (an arrow key or a jog button): released within TAP_MS it steps by the Step amount; held longer it jogs
 // until released.
 const TAP_MS = 250;
 
-function stepBy(dir) {
-  act("step", { delta: dir * num("step-value"), speed: num("speed-num"), acc: int("acc-num") }, $("motion-msg"), "step");
+function stepBy(dir, motor = S.activeKey) {
+  act("step", { delta: dir * num("step-value"), speed: num("speed-num"), acc: int("acc-num"), motor }, $("motion-msg"), "step");
 }
 
-function pressStart(dir) {
+function pressStart(dir, motor = S.activeKey) {
   if (S.press) return;
-  const press = { dir, jogging: false };
-  press.timer = setTimeout(() => { if (S.press === press) { press.jogging = true; jogStart(dir); } }, TAP_MS);
+  const press = { dir, jogging: false, motor };
+  press.timer = setTimeout(() => { if (S.press === press) { press.jogging = true; jogStart(dir, motor); } }, TAP_MS);
   S.press = press;
   $(dir > 0 ? "jog-plus" : "jog-minus").classList.add("held");
 }
@@ -643,7 +742,7 @@ function pressEnd(dir) {
   clearTimeout(press.timer);
   $("jog-plus").classList.remove("held");
   $("jog-minus").classList.remove("held");
-  if (press.jogging) jogStop(true); else stepBy(dir);
+  if (press.jogging) jogStop(true); else stepBy(dir, press.motor);
 }
 
 function pressCancel(release = true) {   // focus lost, STOP: end a jog, never step
@@ -690,6 +789,35 @@ async function halt() {
 function bind() {
   $("halt").onclick = halt;
   $("q-stop").onclick = halt;   // the dialog's backdrop covers the panel's STOP
+  $("together-stop").onclick = halt;
+
+  // motors: add, find, move together
+  $("add-joint").onchange = () => {
+    const j = S.st && S.st.joints.find((x) => x.name === $("add-joint").value);
+    if (j && j.can_id) $("add-id").value = j.can_id;
+  };
+  $("add-go").onclick = async () => {
+    const r = await api("add_motor", { joint: $("add-joint").value, can_id: int("add-id"), activate: true });
+    toast(r.ok ? `${$("add-joint").value} added` : r.error, r.ok ? "info" : "err");
+  };
+  $("add-find").onclick = async () => {
+    $("add-find").disabled = true;
+    const r = await api("discover", { first: 1, last: 16 });
+    $("add-find").disabled = false;
+    toast(r.ok ? r.message : r.error, r.ok ? "info" : "err");
+  };
+  $("together-open").onclick = openTogether;
+  $("together-cancel").onclick = () => $("together").close();
+  $("together-pct").oninput = () => ($("together-pct-text").textContent = `${$("together-pct").value} % of each cap`);
+  $("together").addEventListener("cancel", (e) => { e.preventDefault(); halt(); });   // Esc is STOP here too
+  $("together-go").onclick = async () => {
+    const targets = {};
+    for (const input of $("together-rows").querySelectorAll("input")) if (input.value !== "") targets[input.dataset.key] = parseFloat(input.value);
+    say($("together-msg"), "starting …");
+    const r = await api("move_together", { targets, speed_pct: num("together-pct"), together: $("together-sync").checked, acc: int("together-acc") });
+    say($("together-msg"), r.ok ? r.message : r.error, r.ok);
+    if (r.ok) setTimeout(() => $("together").close(), 600);
+  };
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") { e.preventDefault(); halt(); return; }
     if (typing(e)) return;
@@ -697,6 +825,11 @@ function bind() {
       e.preventDefault();
       if (document.activeElement && document.activeElement.blur) document.activeElement.blur();   // no button re-fires on keyup
       halt();
+      return;
+    }
+    if (/^[1-9]$/.test(e.key) && !e.repeat && !document.querySelector("dialog[open]")) {
+      const m = S.st && S.st.motors[Number(e.key) - 1];
+      if (m) { e.preventDefault(); pressCancel(); selectMotor(m.key); }
       return;
     }
     const dir = { ArrowRight: 1, ArrowLeft: -1 }[e.key];

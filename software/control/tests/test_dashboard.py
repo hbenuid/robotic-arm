@@ -15,6 +15,7 @@ from robotic_arm.can_interface import CANInterface
 from robotic_arm.dashboard import routines, server
 from robotic_arm.dashboard.bench import Bench, Refused
 from robotic_arm.dashboard.bus import describe
+from robotic_arm.dashboard.rig import Rig
 from robotic_arm.fake import FakeBoard, FakeBoards
 from robotic_arm.motor_driver import Cmd, MotorDriver
 
@@ -372,7 +373,7 @@ def test_settings_are_range_checked_and_the_can_id_followed(bench, sim):
     with pytest.raises(Refused):
         bench.write_setting(0x8A, 1)                     # the bitrate is not one the page writes
     bench.write_setting(0x8B, 7)
-    assert bench.can_id == 7 and bench.worker.poll_id == 7
+    assert bench.can_id == 7 and bench.worker.poll_ids == [7]
 
 
 def test_the_scan_finds_every_board(bench):
@@ -444,8 +445,76 @@ def test_calibration_is_refused_in_joint_mode(bench):
 # --- the HTTP server ------------------------------------------------------------------------------------------------------
 
 
-def test_the_server_needs_its_token_and_a_local_host(bench):
-    srv = server.make_server(bench, port=0)
+@pytest.fixture
+def rig(channel: str, sim: FakeBoards) -> Iterator[Rig]:
+    can = CANInterface(channel, "virtual", bitrate=None)
+    r = Rig(can, max_joint_speed=60.0)
+    r.add_motor("elbow_pitch", ELBOW)
+    wait_until(lambda: r.bench().readout.counts is not None)
+    yield r
+    r.close()
+    can.close()
+
+
+def bench_mode_all(r: Rig, rpm: float = 600) -> None:
+    for b in r.motors.values():
+        bench_mode(b, rpm)
+
+
+def test_a_rig_polls_every_motor_and_switches_the_active_one(rig):
+    wrist = rig.add_motor("wrist_pitch", 5)
+    wait_until(lambda: rig.bench(wrist).readout.counts is not None)
+    assert sorted(rig.worker.poll_ids) == [3, 5]
+    assert rig.active == "m1" and rig.bench(wrist)._background
+    rig.set_active(wrist)
+    assert rig.active == wrist and not rig.bench(wrist)._background and rig.bench("m1")._background
+    view = rig.state(active=wrist)
+    assert view["joint"] == "wrist_pitch" and [m["active"] for m in view["motors"]] == [False, True]
+    with pytest.raises(Refused, match="already"):
+        rig.add_motor("base_yaw", 5)                     # one motor per CAN id
+    rig.remove_motor(wrist)
+    assert rig.active == "m1" and rig.worker.poll_ids == [3]
+    with pytest.raises(Refused, match="last motor"):
+        rig.remove_motor("m1")
+
+
+def test_discover_adds_the_boards_whose_id_is_a_joints(rig):
+    added = rig.discover(1, 10)
+    assert sorted(rig.bench(k).can_id for k in added) == [1, 2, 4, 5, 6]   # the elbow (3) was there already
+    assert len(rig.motors) == 6
+
+
+def test_stop_stops_every_motor(rig, sim):
+    wrist = rig.add_motor("wrist_pitch", 5)
+    wait_until(lambda: rig.bench(wrist).readout.counts is not None)
+    bench_mode_all(rig, 60)
+    rig.bench("m1").move_to(300, 60, 2)
+    rig.bench(wrist).move_to(300, 60, 2)
+    time.sleep(0.2)
+    assert rig.halt_all() == {"m1": True, wrist: True}
+    assert frames(sim, Cmd.EMERGENCY_STOP, 3) and frames(sim, Cmd.EMERGENCY_STOP, 5)
+
+
+def test_a_move_together_checks_every_target_then_arrives_together(rig, sim):
+    wrist = rig.add_motor("wrist_pitch", 5)
+    wait_until(lambda: rig.bench(wrist).readout.counts is not None)
+    bench_mode_all(rig)
+    rig.bench(wrist).set_limit("max", 45.0)
+    with pytest.raises(Refused, match="nothing moved"):
+        rig.move_together({"m1": 360, wrist: 90}, 100, 250)   # the wrist's 90 is past its max
+    assert frames(sim, Cmd.MOVE_TO_AXIS, 3) == [] and frames(sim, Cmd.MOVE_TO_AXIS, 5) == []
+    rig.bench(wrist).set_limits_on(False)
+    rig.move_together({"m1": 360, wrist: 90}, 100, 250)
+    rpm_elbow = int.from_bytes(frames(sim, Cmd.MOVE_TO_AXIS, 3)[-1][1:3], "big")
+    rpm_wrist = int.from_bytes(frames(sim, Cmd.MOVE_TO_AXIS, 5)[-1][1:3], "big")
+    assert (rpm_elbow, rpm_wrist) == (600, 150)           # a quarter of the travel at a quarter of the speed
+    for key in ("m1", wrist):
+        wait_until(lambda key=key: rig.bench(key).readout.status == 1 and rig.bench(key).motion is None, 3.0)
+    assert rig.bench("m1").fresh_counts() == 0x4000 and rig.bench(wrist).fresh_counts() == 0x1000
+
+
+def test_the_server_needs_its_token_and_a_local_host(rig):
+    srv = server.make_server(rig, port=0)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     port = srv.server_address[1]
     try:
@@ -476,8 +545,14 @@ def test_the_server_needs_its_token_and_a_local_host(bench):
         assert refused["ok"] is False and "cap" in refused["error"]
         assert post({"action": "limit", "side": "max", "value": 5}) == {"ok": True}
         assert post({"action": "limits_on", "on": False}) == {"ok": True}
-        assert bench.limit_view()["on"] is False
+        assert rig.bench().limit_view()["on"] is False
         assert post({"action": "nonsense"})["ok"] is False
+        key = post({"action": "add_motor", "joint": "wrist_pitch", "can_id": 5})["key"]
+        assert post({"action": "select_motor", "key": key}) == {"ok": True}
+        status, body, _ = get(f"/api/state?active={key}", {"X-Dashboard-Token": token})
+        view = json.loads(body)
+        assert view["active"] == key and view["joint"] == "wrist_pitch" and len(view["motors"]) == 2
+        assert post({"action": "limits_on", "on": False, "motor": "m1"}) == {"ok": True}   # another motor by key
     finally:
         srv.shutdown()
         srv.server_close()

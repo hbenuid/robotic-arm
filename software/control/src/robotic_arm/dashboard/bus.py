@@ -76,10 +76,26 @@ class _Waiter:
         self.future: Future[Reply | None] = Future()
 
 
+class _PollPlan:
+    """One board's polling: the reads, their pace, what is in flight, what goes unanswered."""
+
+    __slots__ = ("fast", "fast_s", "inflight", "misses", "next_fast", "next_slow", "skipped", "slow", "slow_index",
+                 "slow_s")
+
+    def __init__(self, fast: tuple[int, ...], slow: tuple[int, ...], fast_s: float, slow_s: float):
+        self.fast, self.slow, self.fast_s, self.slow_s = fast, slow, fast_s, slow_s
+        self.next_fast = self.next_slow = 0.0
+        self.slow_index = 0
+        self.inflight: dict[int, float] = {}
+        self.misses: collections.Counter[int] = collections.Counter()
+        self.skipped: dict[int, float] = {}
+
+
 class BusWorker:
     """The thread that owns `can`. Every public method may be called from any thread.
 
-    on_reply(reply, is_poll) and on_tick(now) are called on the worker thread: keep them short, never block in them.
+    It polls every board given to set_poll(). The listeners' on_reply(reply, is_poll) and on_tick(now) are called on
+    the worker thread, for every board's replies and every loop: keep them short, never block in them.
     """
 
     def __init__(self, can: CANInterface, checksum: Checksum = Checksum.SUM8):
@@ -96,28 +112,14 @@ class BusWorker:
         self._log_seq = 0
         self._log_lock = threading.Lock()
         self.log_polls = False
-        # polling: worker-thread state, set through set_poll()
         self._poll_lock = threading.Lock()
-        self._poll_id: int | None = None
-        self._fast: tuple[int, ...] = ()
-        self._slow: tuple[int, ...] = ()
-        self._fast_s = 0.02
-        self._slow_s = 0.25
-        self._next_fast = 0.0
-        self._next_slow = 0.0
-        self._slow_index = 0
-        self._poll_reset = False
-        self._inflight: dict[int, float] = {}    # worker thread only, like _misses and _skipped
-        self._misses: collections.Counter[int] = collections.Counter()
-        self._skipped: dict[int, float] = {}
-        self._skipped_view: tuple[int, ...] = ()  # _skipped's keys, for the other threads
+        self._plans: dict[int, _PollPlan] = {}   # can_id -> its polling, under _poll_lock
         self.last_reply: dict[int, float] = {}   # can_id -> time.monotonic() of its last checked reply
         self.bus_error: str | None = None
         # every key there from the start: the page's threads copy it while the worker counts
         self.counts = collections.Counter(tx=0, rx=0, missed=0, bad=0, bus_error=0)
         self._tick_error_at = 0.0
-        self.on_reply: Callable[[Reply, bool], None] = lambda _reply, _poll: None
-        self.on_tick: Callable[[float], None] = lambda _now: None
+        self._listeners: tuple[tuple[Callable[[Reply, bool], None], Callable[[float], None]], ...] = ()
         self._stop = threading.Event()
         self._thread = threading.Thread(target=self._run, name="dashboard-bus", daemon=True)
 
@@ -182,21 +184,40 @@ class BusWorker:
                 waiter.future.set_result(None)
         return len(dropped)
 
-    def set_poll(self, can_id: int | None, fast: Iterable[int], slow: Iterable[int],
-                 fast_s: float = 0.02, slow_s: float = 0.25) -> None:
-        """Poll `fast` every `fast_s` and `slow` (one at a time, round robin) every `slow_s / len(slow)` on `can_id`."""
+    def add_listener(self, on_reply: Callable[[Reply, bool], None], on_tick: Callable[[float], None]) -> None:
         with self._poll_lock:
-            self._poll_reset = self._poll_reset or can_id != self._poll_id   # the worker clears its poll state
-            self._poll_id, self._fast, self._slow = can_id, tuple(fast), tuple(slow)
-            self._fast_s, self._slow_s = fast_s, slow_s
+            self._listeners = (*self._listeners, (on_reply, on_tick))
+
+    def remove_listener(self, on_reply: Callable[[Reply, bool], None]) -> None:
+        with self._poll_lock:
+            self._listeners = tuple(pair for pair in self._listeners if pair[0] != on_reply)
+
+    def set_poll(self, can_id: int, fast: Iterable[int], slow: Iterable[int],
+                 fast_s: float = 0.02, slow_s: float = 0.25) -> None:
+        """Poll `fast` every `fast_s` and `slow` (one at a time, round robin) every `slow_s / len(slow)` on `can_id`;
+        a board already polled keeps what it has in flight."""
+        with self._poll_lock:
+            plan = self._plans.get(can_id)
+            if plan is None:
+                self._plans[can_id] = _PollPlan(tuple(fast), tuple(slow), fast_s, slow_s)
+            else:
+                plan.fast, plan.slow, plan.fast_s, plan.slow_s = tuple(fast), tuple(slow), fast_s, slow_s
+                plan.slow_index %= max(1, len(plan.slow))
+
+    def remove_poll(self, can_id: int) -> None:
+        with self._poll_lock:
+            self._plans.pop(can_id, None)
 
     @property
-    def poll_id(self) -> int | None:
-        return self._poll_id
+    def poll_ids(self) -> list[int]:
+        with self._poll_lock:
+            return list(self._plans)
 
-    def skipped_reads(self) -> list[int]:
-        """The poll reads skipped as unanswered (the board's firmware may not have them)."""
-        return list(self._skipped_view)
+    def skipped_reads(self, can_id: int) -> list[int]:
+        """`can_id`'s poll reads skipped as unanswered (the board's firmware may not have them)."""
+        with self._poll_lock:
+            plan = self._plans.get(can_id)
+            return [] if plan is None else sorted(plan.skipped)
 
     @property
     def event_seq(self) -> int:
@@ -242,13 +263,13 @@ class BusWorker:
             self._poll(now)
             self._receive()
             self._expire(time.monotonic())
-            self._skipped_view = tuple(sorted(self._skipped))
-            try:
-                self.on_tick(time.monotonic())
-            except Exception as e:  # noqa: BLE001 - a bug in a check must not kill the bus thread (and the stops)
-                if time.monotonic() - self._tick_error_at > 1.0:
-                    self._tick_error_at = time.monotonic()
-                    self.note(f"internal error in the safety tick: {e!r}")
+            for _, on_tick in self._listeners:
+                try:
+                    on_tick(time.monotonic())
+                except Exception as e:  # noqa: BLE001 - a bug in a check must not kill the bus thread (and the stops)
+                    if time.monotonic() - self._tick_error_at > 1.0:
+                        self._tick_error_at = time.monotonic()
+                        self.note(f"internal error in the safety tick: {e!r}")
         for waiter in self._waiters:
             waiter.future.set_result(None)
 
@@ -281,31 +302,28 @@ class BusWorker:
         return True
 
     def _poll(self, now: float) -> None:
+        due: list[tuple[int, int]] = []
         with self._poll_lock:
-            can_id, fast, slow = self._poll_id, self._fast, self._slow
-            fast_s, slow_s = self._fast_s, self._slow_s
-            reset, self._poll_reset = self._poll_reset, False
-        if reset:
-            self._inflight.clear()
-            self._misses.clear()
-            self._skipped.clear()
-        if can_id is None:
-            return
-        codes: list[int] = []
-        if fast and now >= self._next_fast:
-            self._next_fast = now + fast_s
-            codes += fast
-        if slow and now >= self._next_slow:
-            self._next_slow = now + slow_s / len(slow)
-            self._slow_index = (self._slow_index + 1) % len(slow)
-            codes.append(slow[self._slow_index])
-        for code in codes:
-            if code in self._inflight:
-                continue
-            if code in self._skipped and now < self._skipped[code]:
-                continue
-            if self._transmit(can_id, bytes([code]), now, None, True):
-                self._inflight[code] = now + POLL_REPLY_S
+            for can_id, plan in self._plans.items():
+                codes: list[int] = []
+                if plan.fast and now >= plan.next_fast:
+                    plan.next_fast = now + plan.fast_s
+                    codes += plan.fast
+                if plan.slow and now >= plan.next_slow:
+                    plan.next_slow = now + plan.slow_s / len(plan.slow)
+                    plan.slow_index = (plan.slow_index + 1) % len(plan.slow)
+                    codes.append(plan.slow[plan.slow_index])
+                for code in codes:
+                    if code in plan.inflight or (code in plan.skipped and now < plan.skipped[code]):
+                        continue
+                    plan.inflight[code] = now + POLL_REPLY_S
+                    due.append((can_id, code))
+        for can_id, code in due:   # sent outside the lock; a failed send is no longer in flight
+            if not self._transmit(can_id, bytes([code]), now, None, True):
+                with self._poll_lock:
+                    plan = self._plans.get(can_id)
+                    if plan is not None:
+                        plan.inflight.pop(code, None)
 
     def _receive(self) -> None:
         frame = self._can.receive(timeout=RECEIVE_S)
@@ -323,11 +341,13 @@ class BusWorker:
             self._add_log("rx", frame.can_id, frame.data, f"unparsed frame ({why})")
             return
         self.last_reply[frame.can_id] = time.monotonic()
-        is_poll = frame.can_id == self._poll_id and reply.code in self._inflight
-        if is_poll:
-            del self._inflight[reply.code]
-            self._misses[reply.code] = 0
-            self._skipped.pop(reply.code, None)
+        with self._poll_lock:
+            plan = self._plans.get(frame.can_id)
+            is_poll = plan is not None and reply.code in plan.inflight
+            if is_poll:
+                del plan.inflight[reply.code]
+                plan.misses[reply.code] = 0
+                plan.skipped.pop(reply.code, None)
         for waiter in list(self._waiters):
             if waiter.can_id == reply.can_id and waiter.code == reply.code and (waiter.accept is None or waiter.accept(reply)):
                 self._waiters.remove(waiter)
@@ -341,25 +361,32 @@ class BusWorker:
                 self._cond.notify_all()
         if not is_poll or self.log_polls:
             self._add_log("rx", frame.can_id, frame.data, describe("rx", reply.data))
-        try:
-            self.on_reply(reply, is_poll)
-        except Exception as e:  # noqa: BLE001 - as on_tick: report, keep the bus thread alive
-            self.note(f"internal error handling a reply: {e!r}")
+        for on_reply, _ in self._listeners:
+            try:
+                on_reply(reply, is_poll)
+            except Exception as e:  # noqa: BLE001 - as on_tick: report, keep the bus thread alive
+                self.note(f"internal error handling a reply: {e!r}")
 
     def _expire(self, now: float) -> None:
         for waiter in [w for w in self._waiters if now > w.deadline]:
             self._waiters.remove(waiter)
             waiter.future.set_result(None)
-        answered = self._poll_id is not None and now - self.last_reply.get(self._poll_id, -1e9) < 1.0
-        for code, deadline in list(self._inflight.items()):
-            if now > deadline:
-                self._inflight.pop(code, None)
-                self.counts["missed"] += 1
-                self._misses[code] += 1
-                if answered and self._misses[code] >= UNSUPPORTED_AFTER and code not in self._skipped:
-                    self._skipped[code] = now + UNSUPPORTED_RETRY_S
-                    self.note(f"0x{code:02X} ({NAMES.get(code, '?')}) unanswered {UNSUPPORTED_AFTER} times while the "
-                              f"board answers other reads: skipped (its firmware may not have it), retried every "
-                              f"{UNSUPPORTED_RETRY_S:.0f} s")
-                elif code in self._skipped:
-                    self._skipped[code] = now + UNSUPPORTED_RETRY_S
+        notes: list[tuple[int, int]] = []
+        with self._poll_lock:
+            for can_id, plan in self._plans.items():
+                answered = now - self.last_reply.get(can_id, -1e9) < 1.0
+                for code, deadline in list(plan.inflight.items()):
+                    if now <= deadline:
+                        continue
+                    del plan.inflight[code]
+                    self.counts["missed"] += 1
+                    plan.misses[code] += 1
+                    if answered and plan.misses[code] >= UNSUPPORTED_AFTER and code not in plan.skipped:
+                        plan.skipped[code] = now + UNSUPPORTED_RETRY_S
+                        notes.append((can_id, code))
+                    elif code in plan.skipped:
+                        plan.skipped[code] = now + UNSUPPORTED_RETRY_S
+        for can_id, code in notes:
+            self.note(f"board {can_id}: 0x{code:02X} ({NAMES.get(code, '?')}) unanswered {UNSUPPORTED_AFTER} times while "
+                      f"it answers other reads: skipped (its firmware may not have it), retried every "
+                      f"{UNSUPPORTED_RETRY_S:.0f} s")

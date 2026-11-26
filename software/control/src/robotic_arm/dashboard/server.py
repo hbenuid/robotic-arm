@@ -1,13 +1,16 @@
-"""`uv run dashboard`: a page in the browser for driving and testing one MKS board, served from this machine.
+"""`uv run dashboard`: a page in the browser for driving and testing the MKS boards on the bus, served from this machine.
 
-    uv run dashboard                          # finds the CANable (slcan), opens the page
+    uv run dashboard                          # finds the CANable (slcan), finds the boards, opens the page
     uv run dashboard --channel /dev/cu.usbmodem206E38534D4D1
     uv run dashboard --interface socketcan --channel can0
     uv run dashboard --fake                   # simulated boards that move in time - no hardware
 
+It starts with --joint's board (at --can-id, or the joint's id in config.JOINTS), then scans ids 1-16 and adds every
+board whose id is a joint's (--no-scan skips that); the page adds and removes motors too.
+
 The server listens on 127.0.0.1 only. Every API call carries a token the server puts in the page it serves, and the
-Host header must name this machine, so another site open in the browser cannot drive the motor. Ctrl+C - or SIGTERM
-or SIGHUP (a killed background run, a closed terminal) - stops a moving motor (F7) and quits.
+Host header must name this machine, so another site open in the browser cannot drive the motors. Ctrl+C - or SIGTERM
+or SIGHUP (a killed background run, a closed terminal) - stops every moving motor (F7) and quits.
 """
 
 from __future__ import annotations
@@ -27,7 +30,8 @@ from urllib.parse import parse_qs, urlparse
 from robotic_arm import config
 from robotic_arm.can_interface import CANInterface
 from robotic_arm.dashboard import routines
-from robotic_arm.dashboard.bench import DEFAULT_JOINT_SPEED_CAP, Bench, Refused
+from robotic_arm.dashboard.bench import DEFAULT_JOINT_SPEED_CAP, Refused
+from robotic_arm.dashboard.rig import Rig
 
 DEFAULT_PORT = 8765
 MAX_BODY = 64 * 1024
@@ -46,15 +50,43 @@ def _int(value: Any) -> int:
     return int(value, 0) if isinstance(value, str) else int(value)
 
 
-def dispatch(bench: Bench, action: str, b: dict[str, Any]) -> dict[str, Any]:
-    """Run one page action; returns what the page shows. Raises Refused for a command the dashboard will not send."""
+def dispatch(rig: Rig, action: str, b: dict[str, Any]) -> dict[str, Any]:
+    """Run one page action - on motor b["motor"], or the active one; returns what the page shows. Raises Refused for a
+    command the dashboard will not send."""
     match action:
         case "ping":
             return {}
         case "halt":
-            confirmed = bench.halt()
-            return {"message": "STOP sent" + {True: ", confirmed", False: ", the board answered F7 with a failure",
-                                              None: " - no F7 confirmation (board silent?)"}[confirmed]}
+            confirmed = rig.halt_all()
+            silent = [rig.motors[k].joint_config.name for k, ok in confirmed.items() if ok is None and k in rig.motors]
+            failed = [rig.motors[k].joint_config.name for k, ok in confirmed.items() if ok is False and k in rig.motors]
+            return {"message": f"STOP sent to {len(confirmed)} motor(s)"
+                    + (f"; no confirmation from {', '.join(silent)}" if silent else "")
+                    + (f"; F7 failed on {', '.join(failed)}" if failed else "") + ("" if silent or failed else ", confirmed")}
+        case "select_motor":
+            rig.set_active(str(b["key"]))
+            return {}
+        case "add_motor":
+            key = rig.add_motor(str(b["joint"]), _int(b["can_id"]))
+            if b.get("activate"):
+                rig.set_active(key)
+            return {"key": key}
+        case "remove_motor":
+            rig.remove_motor(str(b["key"]))
+            return {}
+        case "discover":
+            added = rig.discover(_int(b.get("first", 1)), _int(b.get("last", 16)))
+            return {"message": f"added {len(added)} motor(s)" if added else "no new boards with a joint's CAN id"}
+        case "move_together":
+            targets = {str(k): float(v) for k, v in dict(b["targets"]).items() if v not in (None, "")}
+            return rig.move_together(targets, float(b.get("speed_pct", 50)), _int(b.get("acc", 2)),
+                                     together=bool(b.get("together", True)))
+    return dispatch_motor(rig, rig.bench(b.get("motor") or None), action, b)
+
+
+def dispatch_motor(rig: Rig, bench: Any, action: str, b: dict[str, Any]) -> dict[str, Any]:
+    """One motor's action."""
+    match action:
         case "stop":
             bench.stop()
         case "enable":
@@ -134,8 +166,8 @@ def dispatch(bench: Bench, action: str, b: dict[str, Any]) -> dict[str, Any]:
     return {}
 
 
-def make_server(bench: Bench, host: str = "127.0.0.1", port: int = DEFAULT_PORT) -> ThreadingHTTPServer:
-    """The HTTP server for `bench`; port 0 picks a free one (server.server_address)."""
+def make_server(rig: Rig, host: str = "127.0.0.1", port: int = DEFAULT_PORT) -> ThreadingHTTPServer:
+    """The HTTP server for `rig`; port 0 picks a free one (server.server_address)."""
     token = secrets.token_urlsafe(24)
     static = resources.files("robotic_arm.dashboard") / "static"
 
@@ -185,14 +217,15 @@ def make_server(bench: Bench, host: str = "127.0.0.1", port: int = DEFAULT_PORT)
                 return self._refuse(HTTPStatus.NOT_FOUND, "not found")
             if not self._token_ok():
                 return self._refuse(HTTPStatus.FORBIDDEN, "missing or wrong token: reload the page")
-            bench.touch()
+            rig.touch()
             q = {k: v[-1] for k, v in parse_qs(url.query).items()}
             if url.path == "/api/state":
                 try:
                     after = (int(q.get("samples", 0)), int(q.get("log", 0)), int(q.get("notices", 0)))
                 except ValueError:
                     return self._refuse(HTTPStatus.BAD_REQUEST, "bad query")
-                return self._json(bench.state(*after))
+                return self._json(rig.state(*after, active=q.get("active")))
+            bench = rig.bench()
             if url.path == "/api/record.csv":
                 return self._send(HTTPStatus.OK, bench.recording_csv().encode(), "text/csv; charset=utf-8")
             if url.path == "/api/routine.csv":
@@ -209,10 +242,10 @@ def make_server(bench: Bench, host: str = "127.0.0.1", port: int = DEFAULT_PORT)
             length = int(self.headers.get("Content-Length") or 0)
             if not 0 < length <= MAX_BODY:
                 return self._refuse(HTTPStatus.BAD_REQUEST, "bad body")
-            bench.touch()
+            rig.touch()
             try:
                 body = json.loads(self.rfile.read(length))
-                result = dispatch(bench, str(body.get("action")), body)
+                result = dispatch(rig, str(body.get("action")), body)
             except Refused as e:
                 return self._json({"ok": False, "error": str(e)})
             except (KeyError, ValueError, TypeError, json.JSONDecodeError) as e:
@@ -259,6 +292,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
                         help="STOP sends V1.0.9's immediate form (F7 01) - once the boards are known to run it")
     parser.add_argument("--port", type=int, default=DEFAULT_PORT, help=f"the page's port (default {DEFAULT_PORT})")
     parser.add_argument("--no-browser", action="store_true", help="do not open the page")
+    parser.add_argument("--no-scan", action="store_true",
+                        help="only --joint's board: do not look for the others at start (the page can add them)")
     return parser.parse_args(argv)
 
 
@@ -281,17 +316,22 @@ def main(argv: list[str] | None = None) -> None:
     except Exception as e:  # noqa: BLE001 - serial, python-can or OS: any failure to open ends the run
         sys.exit(f"Failed to open the CAN bus: {e}")
     label = f"{args.channel} ({args.interface}{f', {bitrate} bps' if bitrate else ''})" + (" - SIMULATED" if fake else "")
-    bench = Bench(can, joint=args.joint, can_id=args.can_id, max_joint_speed=args.max_joint_speed,
-                  priority_estop=args.priority_estop, label=label)
+    rig = Rig(can, max_joint_speed=args.max_joint_speed, priority_estop=args.priority_estop, label=label)
+    first = next(j for j in config.JOINTS if j.name == args.joint)
+    rig.add_motor(args.joint, args.can_id or first.can_id or 1)
     try:
-        server = make_server(bench, port=args.port)
+        server = make_server(rig, port=args.port)
     except OSError as e:
-        bench.close()
+        rig.close()
         can.close()
         sys.exit(f"Cannot listen on 127.0.0.1:{args.port} ({e}): is a dashboard running already? --port picks another")
-    url = f"http://127.0.0.1:{server.server_address[1]}/"
     print(f"Connected to {label}")
-    print(f"Dashboard: {url}   (Ctrl+C stops a moving motor and quits)", flush=True)
+    if not args.no_scan:
+        added = rig.discover(1, 16)
+        names = [f"{rig.motors[k].joint_config.name} (id {rig.motors[k].can_id})" for k in rig.motors]
+        print(f"Motors: {', '.join(names)}" + (f" - {len(added)} found on the bus" if added else ""))
+    url = f"http://127.0.0.1:{server.server_address[1]}/"
+    print(f"Dashboard: {url}   (Ctrl+C stops every moving motor and quits)", flush=True)
 
     def on_terminate(_signum: int, _frame: object) -> None:
         raise KeyboardInterrupt   # SIGTERM (a killed background run, a closed terminal) stops the motor like Ctrl+C
@@ -306,10 +346,11 @@ def main(argv: list[str] | None = None) -> None:
     except KeyboardInterrupt:
         print("\nStopping ...")
     finally:
-        if bench.motion is not None or bench.readout.status not in (None, 1):
-            print("STOP:", "confirmed" if bench.halt("the dashboard is closing") else "sent")
+        if any(b.motion is not None or b.readout.status not in (None, 1) for b in rig.motors.values()):
+            confirmed = rig.halt_all("the dashboard is closing")
+            print("STOP:", "confirmed" if all(confirmed.values()) else "sent")
         server.server_close()
-        bench.close()
+        rig.close()
         can.close()
         if fake is not None:
             fake.close()

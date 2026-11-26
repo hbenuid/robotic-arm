@@ -21,8 +21,10 @@ ones are `docs/architecture.md`; the MKS CAN protocol is `docs/mks_can_protocol.
   arm's constants, `fake` simulates boards. The CLIs (`motor_control`, `launcher`, `command_sweep`) and the
   dashboard (`dashboard/`) sit on top.
 - The dashboard (`dashboard/`): `bus.py` is the only code there that touches the CAN bus, on its own thread (a
-  CANInterface is not thread-safe), and it never blocks for long, so a stop goes out at once. `bench.py` owns every
-  check and safety rule. The page (`static/`) is trusted with none of them: a move the page asks for is checked in
+  CANInterface is not thread-safe), and it never blocks for long, so a stop goes out at once; it polls every board
+  and hands every reply and tick to every motor's listener. `bench.py` (one motor) owns every check and safety
+  rule; `rig.py` holds the motors on the page - which is active, STOP for all, moves together (every target checked
+  before any is sent). The page (`static/`) is trusted with none of them: a move the page asks for is checked in
   `bench.check` (the limits, the speed cap), and the jog keep-alive, the page-silence stop and the run's limit stop
   run on the bus thread's tick. Limits are kept in encoder counts (`Limits.count_lo` / `count_hi`), not in the page's
   units. A shaped (S-curve) move's `shaping.Shaper` sends only under the bench's lock after checking the shaping

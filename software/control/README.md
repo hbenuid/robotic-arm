@@ -77,7 +77,12 @@ firmware.
 
 ### The dashboard
 
-A page in your browser for driving and testing **one** board, served from your own machine:
+A page in your browser for driving and testing the boards on the bus, served from your own machine. It starts with
+`--joint`'s board and adds every other board whose CAN id is a joint's in `config.JOINTS` (`--no-scan` skips that;
+the page's **+** card adds one by hand). Each motor is a card across the top: its position, speed and state, and a
+small jog. Click a card (or press 1-9) to make it the active one, which the panels below drive, graph and test.
+**Move together** gives each motor a target and starts them in the same instant, timed to arrive together; if one
+move is refused, nothing moves. STOP stops them all.
 
 ```
 uv run dashboard                                    # finds the CANable (slcan), opens http://127.0.0.1:8765/
@@ -153,7 +158,8 @@ src/robotic_arm/
   command_sweep.py             one board's command check
   dashboard/                   the dashboard (`dashboard`): one board, in the browser
     bus.py                       the one thread on the CAN bus: queue, polls, replies, log
-    bench.py                     the board under test: units, limits, the safety rules
+    bench.py                     one motor: units, limits, the safety rules
+    rig.py                       every motor on the page: the active one, STOP all, moves together
     routines.py                  the tests and bring-up checks
     shaping.py                   S-curve moves: the speed streamed to the board as F5 updates
     server.py                    the local HTTP server and the command

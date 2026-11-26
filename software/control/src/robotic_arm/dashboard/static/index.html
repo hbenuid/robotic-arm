@@ -11,6 +11,26 @@
 <body>
 <div class="app">
 
+  <!-- top: every motor -->
+  <header class="motorbar">
+    <div id="motor-cards" class="motor-cards"></div>
+    <div class="mcard add" id="add-card">
+      <div class="mc-head"><span class="mc-name">Add a motor</span></div>
+      <div class="row tight">
+        <select id="add-joint" class="grow"></select>
+        <input id="add-id" type="number" min="1" max="2047" class="num narrow" title="CAN id">
+      </div>
+      <div class="row tight">
+        <button id="add-go" class="btn small">Add</button>
+        <button id="add-find" class="btn ghost small" title="Scan ids 1-16 and add every board whose id is a joint's">Find boards</button>
+      </div>
+    </div>
+    <div class="bar-tools">
+      <button id="together-open" class="btn ghost" title="Give each motor a target and start them together">Move together…</button>
+      <span class="muted small keyhint"><kbd>1</kbd>–<kbd>9</kbd> pick a motor</span>
+    </div>
+  </header>
+
   <!-- left: drive by hand -->
   <aside class="panel left">
     <div class="ident">
@@ -415,6 +435,29 @@
     </div>
   </aside>
 </div>
+
+<dialog id="together">
+  <div class="q-title">Move together</div>
+  <p class="muted small">A target for each motor (leave one blank to keep it still). Every move is checked first: if one is refused, nothing moves.</p>
+  <table class="together-table"><tbody id="together-rows"></tbody></table>
+  <div class="row tight">
+    <span class="rowlabel muted small">Speed</span>
+    <input id="together-pct" type="range" min="5" max="100" step="5" value="50" class="grow">
+    <span id="together-pct-text" class="small">50 % of each cap</span>
+  </div>
+  <div class="row tight">
+    <label class="inline small"><input id="together-sync" type="checkbox" checked> arrive together (the faster ones slow down)</label>
+    <span class="muted small">ramp</span><input id="together-acc" type="number" min="0" max="255" value="2" class="num narrow">
+  </div>
+  <div id="together-msg" class="msg"></div>
+  <div class="row between">
+    <button id="together-stop" class="btn stopbtn">STOP</button>
+    <div class="row end">
+      <button id="together-cancel" class="btn ghost">Close</button>
+      <button id="together-go" class="btn">Go together</button>
+    </div>
+  </div>
+</dialog>
 
 <dialog id="question">
   <div class="q-title" id="question-title"></div>

@@ -31,13 +31,42 @@ h3 { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: 
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
 /* --- three panels ---------------------------------------------------------------------------------------------- */
-.app { display: grid; grid-template-columns: 290px minmax(0, 1fr) 380px; height: 100vh; }
+.app { display: grid; grid-template-columns: 290px minmax(0, 1fr) 380px; grid-template-rows: auto minmax(0, 1fr); height: 100vh; }
+
+/* --- the motor bar ------------------------------------------------------------------------------------------- */
+.motorbar { grid-column: 1 / -1; display: flex; gap: 10px; align-items: stretch; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line); overflow-x: auto; }
+.motor-cards { display: flex; gap: 10px; }
+.mcard { flex: none; width: 160px; background: var(--raised); border: 1px solid var(--line-strong); border-radius: 10px; padding: 7px 9px; cursor: pointer; user-select: none; }
+.mcard:hover { border-color: var(--faint); }
+.mcard.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); cursor: default; }
+.mcard.add { cursor: default; border-style: dashed; width: 180px; }
+.mc-head { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; }
+.mc-num { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 5px; background: var(--bg); border: 1px solid var(--line-strong); font: 600 11px ui-monospace, Menlo, monospace; }
+.mc-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mc-id { display: none; }
+.mc-x { background: transparent; border: 0; color: var(--faint); cursor: pointer; font-size: 14px; padding: 0 2px; }
+.mc-x:hover { color: var(--err); }
+.mcard .dot { width: 8px; height: 8px; box-shadow: none; }
+.mc-value { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 2px; white-space: nowrap; overflow: hidden; }
+.mc-value .u { font-size: 12px; color: var(--muted); margin-left: 4px; font-weight: 500; }
+.mc-sub { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mc-sub .on { color: var(--ok); }
+.mc-sub .busy { color: var(--accent); }
+.mc-sub .bad { color: var(--err); }
+.mc-jog { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+.mc-jog button { background: var(--bg); border: 1px solid var(--line-strong); border-radius: 7px; padding: 4px 0; cursor: pointer; font-weight: 700; touch-action: none; }
+.mc-jog button.held { background: var(--accent); color: #fff; border-color: var(--accent); }
+.bar-tools { display: flex; flex-direction: column; justify-content: center; gap: 6px; margin-left: auto; padding-left: 6px; }
+.keyhint { white-space: nowrap; }
+.together-table { margin: 8px 0; }
+.together-table td { border: 0; padding: 4px 6px; vertical-align: middle; }
+.together-table input { width: 110px; }
 .panel { overflow: auto; padding: 16px; }
 .left { background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px; }
 .center { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .right { background: var(--panel); border-left: 1px solid var(--line); padding-top: 10px; }
 @media (max-width: 1150px) {
-  .app { grid-template-columns: 1fr; height: auto; }
+  .app { grid-template-columns: 1fr; grid-template-rows: auto; height: auto; }
   .panel { overflow: visible; }
   .left, .right { border: 0; }
   .center { min-height: 640px; }
