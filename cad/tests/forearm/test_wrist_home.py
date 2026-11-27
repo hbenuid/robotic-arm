@@ -71,7 +71,7 @@ SENSOR = ("ky003_hall_sensor#4", "wrist_home_board_screws#1", "wrist_home_board_
 CLIP = "wrist_home_clip#1"
 # wrist_pitch_link's parts that pass near the clip over the travel - the rest (the pancake, its board and belt) stay above
 # the wrist frame's underside
-NEAR = ("gt2_pulley_90t", "wrist_pulley_screws", "wrist_pulley_nuts", "wrist_link", "wrist_flange", "wrist_back_panel",
+NEAR = ("gt2_pulley_90t_wrist", "wrist_pulley_screws", "wrist_pulley_nuts", "wrist_link", "wrist_flange", "wrist_back_panel",
         "wrist_back_magnets")
 
 
@@ -101,7 +101,7 @@ def test_the_home_angle():
 def test_the_frame_through_the_90t_is_the_captures():
     """The wrist 90T's frame in j2_link's, as placements.json records the two: its origin on the wrist axis at
     home_pulley_z() - the belt's plane (J2_BELT_Z) plus half its tooth band -, its +Y j2_link's -Z, its +X at pulley_x_deg."""
-    t = P.location("j2_link#1", "world").inverse() * P.location("gt2_pulley_90t#4", "world")
+    t = P.location("j2_link#1", "world").inverse() * P.location("gt2_pulley_90t_wrist#1", "world")
     o, x, y = t.position, t.x_axis.direction, t.y_axis.direction
     assert (o.X, o.Y, o.Z) == pytest.approx((DEFAULT.web.wrist_x, 0.0, home_pulley_z()), abs=1e-4)
     assert (y.X, y.Y, y.Z) == pytest.approx((0.0, 0.0, -1.0), abs=1e-6)
@@ -230,7 +230,7 @@ def test_the_magnet_on_the_90t_over_the_chip_at_home():
     hall element, its pole face `air` + the element's depth off it; over the travel it keeps 1.4 or more off the sensor
     (the outer nut) and 4 off the clip; the wrist's turning parts keep 2.2 or more off the clip and the sensor (wrist_link
     over the cap), the gripper 6 or more at any wrist roll; at zero the magnet is far away."""
-    pulley = built.placed("gt2_pulley_90t#4")
+    pulley = built.placed("gt2_pulley_90t_wrist#1")
     magnet = built.placed("wrist_home_magnet#1")
     assert interference(magnet, pulley) < 1e-3 and closest_points(magnet, pulley).distance < 0.01
     hall = (P.location("ky003_hall_sensor#4", "world") * Location(ky003_hall_point())).position

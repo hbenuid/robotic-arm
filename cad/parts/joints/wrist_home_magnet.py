@@ -1,13 +1,13 @@
 """wrist_home_magnet - purchased (COTS) part: the wrist_pitch home magnet, an N52 NdFeB disc (lib/forearm/params.py
 WristHomeParams magnet_dia / magnet_t: Ø6 x 2, the elbow's).
 
-Glued onto the wrist 90T's outer face (gt2_pulley_90t, printed), WristHomeParams chip_x / chip_y off the wrist axis, its
+Glued onto the wrist 90T's outer face (gt2_pulley_90t_wrist, printed), WristHomeParams chip_x / chip_y off the wrist axis, its
 SOUTH pole out - toward the KY-003 on its clip (ky003_hall_sensor on wrist_home_clip): the A3144 switches on a south pole
 at its branded face. It turns with the 90T (wrist_pitch_link) and stands over the chip at wrist_pitch WRIST_PITCH_HOME_DEG
 (lib/params.py). Mark the pole before gluing (the module's LED lights with the south pole toward the chip); nothing on the
 face locates it, and 1 mm off its mark round the axis moves home 2.4 deg (docs/open_issues.md).
 
-In the arm: x1 (wrist_home_magnet#1, a mount on gt2_pulley_90t#4 - lib/mounts.py WRIST_HOME_MOUNTS; wrist_pitch_link).
+In the arm: x1 (wrist_home_magnet#1, a mount on gt2_pulley_90t_wrist#1 - lib/mounts.py WRIST_HOME_MOUNTS; wrist_pitch_link).
 
 No catalog model (none adopted), no export and NO reference file: a part with no reference (lib/reference.py
 NO_REFERENCE) - its envelope IS the geometry (a plain disc) and tests/forearm/test_wrist_home.py locks its numbers.

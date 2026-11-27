@@ -179,7 +179,7 @@ class RollEndParams:
     wrist_belt: int = 280                 # [DESIGN] 280-2GT closed belt, 6 mm (a multipack length, lib/belts.py STANDARD_2GT_LENGTHS): longer
     #                                       than the open loop at WRIST_MOTOR_CENTRES - the idler takes up the rest (IdlerParams)
     wrist_belt_z: float = 0.3             # [REFERENCE] the wrist belt's mid-plane: the wrist 90T's tooth band (its re-seated pose, lib/mounts.py
-    #                                       gt2_pulley_90t#4), under the web - the motor's 20T level with it (tests/test_mounts.py); DEFAULT drops
+    #                                       gt2_pulley_90t_wrist#1), under the web - the motor's 20T level with it (tests/test_mounts.py); DEFAULT drops
     #                                       it with the web and the wrist (WEB_DROP)
 
 
@@ -524,8 +524,8 @@ class RollDriveParams:
     pulley_hub_len: float = GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_FACE_Y[0]   # [REFERENCE] 21.4, the 90T's length through its bolt holes:
     #                                       the screw heads sit in its counterbores (parts/joints/elbow_pulley_screws)
     pulley_screw_len: float = 35.0        # [DESIGN] M4 x 35 (ISO 4762) from the floors of the pulley's counterbores
-    #                                       (GT2_PULLEY_90T_HEAD_SEAT under its outer face), through the flange into the frame (the wrist's:
-    #                                       FlangeParams.pulley_screw_len, an M4 x 35 cut to 33)
+    #                                       (GT2_PULLEY_90T_HEAD_SEAT under its outer face), through the flange into the frame (the wrist's
+    #                                       FlangeParams.pulley_screw_len the same, its 90T's heads 2 higher: gt2_pulley_90t_wrist)
     nut_af: float = M4_NUT_SIDE_PRESS_AF  # [MEASURE] 7.15, the M4 nuts' (ISO 4032, s 7) hex channels: a press, printed on their side
     nut_t: float = M4_NUT.h               # [DATASHEET] 3.2, ISO 4032 M4 nut height (parts/joints/elbow_pulley_nuts)
     nut_seat_x: float = -ROLL_FRAME_R - 2.0 + 1.0   # [DESIGN] in the frame's spigot, 1 of it between each nut and the flange (spigot_h
@@ -655,7 +655,7 @@ class WristHomeParams:
     magnet_t: float = 2.0
     pulley_x_deg: float = -117.865052     # [REFERENCE] the wrist 90T's own +X in j2_link's frame, atan2(y, x) about the wrist axis:
     #                                       its pulley_bolt_deg (lib/wrist/params.py) and the capture's; its +Y is j2_link's -Z,
-    #                                       its +Z at this + 90 (placements.json gt2_pulley_90t#4, j2_link#1;
+    #                                       its +Z at this + 90 (placements.json gt2_pulley_90t_wrist#1, j2_link#1;
     #                                       tests/forearm/test_wrist_home.py)
     gap: float = 0.2                      # the cap and the jaw off the boss's faces (the glue's)
     wall: float = 3.0                     # the cap round the end and the spine outside the end flat ...

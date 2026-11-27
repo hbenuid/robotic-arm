@@ -141,6 +141,7 @@ NO_REFERENCE: dict[str, str] = {
     "cycloidal_shell_ring": "parts/cycloidal/cycloidal_shell_ring.py:build(DEFAULT_CONFIG)",
     "gripper_cage": "lib/gripper/body.py:build_cage(DEFAULT)",
     "gt2_pulley_120t": "lib/pulley/body.py:build_pulley(YAW)",
+    "gt2_pulley_90t_wrist": "lib/pulley/body.py:build_pulley(WRIST)",
     "j1_motor_leg": "lib/yaw_coupler/body.py:build_motor_leg(DEFAULT)",
     "j1_coupler_plate": "lib/yaw_coupler/body.py:build_coupler_plate(DEFAULT)",
     "coupler_plate_screws": "parts/base/coupler_plate_screws.py:_envelope()",

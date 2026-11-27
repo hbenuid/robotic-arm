@@ -159,7 +159,7 @@ def test_the_kit_fits():
     link, belt = built.part("j2_link"), built.placed("wrist_belt#1", into=into)
     idler, spacer, screw, nut = (built.placed(k, into=into) for k in
                                  ("gt2_idler_20t#3", "wrist_idler_spacer#1", "wrist_idler_screw#1", "wrist_idler_nut#1"))
-    pulleys = [built.placed(k, into=into) for k in ("gt2_pulley_20t#4", "gt2_pulley_90t#4")]
+    pulleys = [built.placed(k, into=into) for k in ("gt2_pulley_20t#4", "gt2_pulley_90t_wrist#1")]
     near = [link, belt, *pulleys, built.placed("nema17_40mm#3", into=into), built.placed("wrist_motor_screws#1", into=into)]
     kit = [idler, spacer, screw, nut]
     for part in kit:

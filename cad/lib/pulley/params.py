@@ -1,6 +1,7 @@
 """PulleyParams - every dimension of the printed 90T GT2 pulley (gt2_pulley_90t: the driven pulley of the elbow and the
-wrist belts - its hub turns in the joint's lower 6806 and bolts flat onto the stub beyond it), in its part frame; YAW is
-the base_yaw belt's 120T (gt2_pulley_120t), the same pulley with more teeth.
+wrist belts - its hub turns in the joint's lower 6806 and bolts flat onto the stub beyond it), in its part frame; WRIST is
+the wrist's own print (gt2_pulley_90t_wrist), its counterbores shallower; YAW is the base_yaw belt's 120T
+(gt2_pulley_120t), the same pulley with more teeth.
 
 Frame (= the SolidWorks part frame of gt2_pulley_90t, which placements.json and lib/mounts.py place): origin on the axis
 at the lower flange's top (where the teeth start), +Y up the axis toward the outer face, the pulley bolts' heads sunk in
@@ -15,8 +16,8 @@ counterbore from the face for its head (DEFAULT).
 Two configurations of the 90T: LEGACY reproduces the SolidWorks reference (the part's REFERENCE_BUILD -
 tests/test_reference_match.py); DEFAULT is what the part builds: the hub a press in the 6806, the bolt holes snug on
 the M4 shanks, the heads in snug counterbores - the 0.16 sizes measured on the printed 120T -, and the hub between the
-ring and the step as wide as the ring (no groove for the ring to overhang, printed face down). YAW is DEFAULT with 120
-teeth and no plain hub between its ring and its web (below).
+ring and the step as wide as the ring (no groove for the ring to overhang, printed face down). WRIST is DEFAULT with its
+counterbores 2 shallower (below); YAW is DEFAULT with 120 teeth and no plain hub between its ring and its web (below).
 
 Every number below was measured on the reference 2026-09-27 (face census; tests/pulley/test_gt2_pulley_90t.py re-checks
 the builds against it): [REFERENCE] unless tagged. Units mm. Frozen dataclasses; variants via dataclasses.replace.
@@ -31,6 +32,7 @@ from lib.belts import (
     GT2_PULLEY_90T_FACE_Y,
     GT2_PULLEY_90T_HEAD_SEAT,
     GT2_PULLEY_90T_TEETH,
+    GT2_PULLEY_90T_WRIST_HEAD_SEAT,
     GT2_PULLEY_120T_TEETH,
     pulley_od,
 )
@@ -87,6 +89,11 @@ LEGACY = PulleyParams()     # the SolidWorks part, exactly
 DEFAULT = replace(LEGACY, hub_dia=BEARING_6806_JOURNAL_FINE, hole_dia=M4_CLEAR_FINE,
                   counterbore=(M4_HEAD_BORE_FINE, GT2_PULLEY_90T_HEAD_SEAT),   # [MEASURE]
                   neck_dia=LEGACY.ring[0])
+
+# The wrist belt's driven pulley (gt2_pulley_90t_wrist): DEFAULT with its counterbores GT2_PULLEY_90T_WRIST_HEAD_SEAT deep -
+# 2 shallower, the heads 1 proud of the face -, so its stack takes the elbow's M4 x 35 uncut (wrist_link's nuts sit 2
+# nearer the 90T than the elbow block's: the pancake under its plate). Nothing else differs; the elbow keeps DEFAULT.
+WRIST = replace(DEFAULT, counterbore=(M4_HEAD_BORE_FINE, GT2_PULLEY_90T_WRIST_HEAD_SEAT))   # [DESIGN]
 
 # The base_yaw joint's driven pulley (gt2_pulley_120t): DEFAULT with GT2_PULLEY_120T_TEETH - the base_yaw ratio 6:1 on the
 # motor's 20T, where the elbow's and the wrist's 90T give 4.5:1 - and its rim's inside grown with the teeth, keeping the

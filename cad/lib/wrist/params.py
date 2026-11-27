@@ -114,7 +114,8 @@ class FlangeParams:
     stations are the retired coupler's (lib/coupler/params.py DEFAULT) on the coupler face, less PITCH_INSET (the wrist
     that much nearer the forearm): the 6806 stack, the 90T and its screws' heads stay; the post is 1.3 long, the stub 9
     - the elbow flange's design (lib/forearm/params.py RollDriveParams post_x / stub_x). The pancake 1.25 under the 5 mm
-    plate leaves no room for the elbow's spigot and M4 x 35: the nuts sit in the plate, the screws M4 x 33."""
+    plate leaves no room for the elbow's spigot: the nuts sit in the plate, 2 nearer the 90T than the elbow's, so the
+    wrist's own 90T (gt2_pulley_90t_wrist) holds the heads 2 higher and the screws are the elbow's M4 x 35."""
 
     post_dia: float = COUPLER.journal_dia                              # [REFERENCE] Ø40 over j2_link's Ø42.2 seat
     post_z: tuple = (_T, _T + COUPLER.journal_y1 - PITCH_INSET)        # the coupler face .. 0.7 over the upper wrist bearing (the
@@ -128,11 +129,11 @@ class FlangeParams:
     #                                                                    30.0 the bore's), through the upper wrist bearing and j2_link's lip ...
     stub_z: tuple = (_T + _STEP[1] - PITCH_INSET, _T + COUPLER.stub_y1 - PITCH_INSET)   # ... to the 90T's face (the lip's
     #                                                                    lower face): 9 long
-    pulley_screw_len: float = 33.0                                     # [DESIGN] the 90T's 4 M4 x 33 (parts/joints/wrist_pulley_screws)
-    #                                                                    from the floors of its counterbores, through the flange into
-    #                                                                    the plate's nuts: the tips 2 pitches past them, 0.65 over the
-    #                                                                    pancake. Not an ISO 4762 length ...
-    pulley_screw_bought: float = 35.0                                  # [DESIGN] ... so bought as M4 x 35, cut to pulley_screw_len
+    pulley_screw_len: float = 35.0                                     # [DESIGN] the 90T's 4 M4 x 35 (ISO 4762, uncut: the elbow's;
+    #                                                                    parts/joints/wrist_pulley_screws) from the floors of its
+    #                                                                    counterbores (GT2_PULLEY_90T_WRIST_HEAD_SEAT under its face),
+    #                                                                    through the flange into the plate's nuts: the tips 2 pitches
+    #                                                                    past them, 0.65 over the pancake
     pin_bore_dia: float = COUPLER.bore_dia                             # [REFERENCE] blind from the stub's end ...
     pin_bore_z1: float = _T + _STEP[1] - PITCH_INSET + 1.0      # ... to 1 over the stub's base (where it stopped when the
     #                                                                    nuts sat there)
