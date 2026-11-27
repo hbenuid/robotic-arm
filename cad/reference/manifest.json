@@ -1001,15 +1001,15 @@
    "bbox_size": [
     29.0,
     29.0,
-    37.0
+    39.0
    ],
-   "bytes": 128681,
+   "bytes": 128841,
    "file": "native/wrist_pulley_screws.step",
    "kind": "cots",
    "origin": "native",
    "product": "wrist_pulley_screws - purchased (COTS) part: the wrist 90T's 4 M4 socket head cap screws (ISO 4762).",
-   "sha256": "0db6e528d4f043eba2dd8b78c7582d6723e94779f2bf9bc6754df3e6888f8b66",
-   "solid_volume": 2212.159,
+   "sha256": "34a34f7666faa98aee954a818705d2a979737bc457d6679f1b3a461c658c8ece",
+   "solid_volume": 2312.69,
    "solids": 4,
    "source": "parts/joints/wrist_pulley_screws.py:_envelope()",
    "units": "mm"

@@ -26,12 +26,12 @@ BBOX_SIZE = (37.0, 40.0, 11.0)
 
 def test_params():
     """The flange spans the coupler face to the stub's end; the key inside the bolt circle and under the pin bore; the
-    nuts 1 of the plate under the face; the 90T's screws M4 x 33, bought as M4 x 35."""
+    nuts 1 of the plate under the face; the 90T's screws M4 x 35, the elbow's, uncut."""
     assert R.NO_REFERENCE["wrist_flange"] == "lib/wrist/link.py:build_wrist_flange(DEFAULT)"
     assert (F.post_z[0], F.stub_z[1]) == (P.thickness, BBOX_MIN[2] + BBOX_SIZE[2])
     assert F.key_af / 2.0 + F.key_fit + 1.0 <= F.pulley_bolt_r - F.pulley_bolt_dia / 2.0   # 1 of wall to the M4 holes
     assert F.post_z[0] + F.key_h < F.pin_bore_z1 and F.pin_bore_z1 == F.stub_z[0] + 1.0
-    assert F.nut_seat_z == F.post_z[0] - 1.0 and (F.pulley_screw_len, F.pulley_screw_bought) == (33.0, 35.0)
+    assert F.nut_seat_z == F.post_z[0] - 1.0 and F.pulley_screw_len == 35.0
 
 
 @pytest.fixture(scope="module")

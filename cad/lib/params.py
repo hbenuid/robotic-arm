@@ -40,7 +40,7 @@ from lib.fasteners import (  # noqa: E402, F401
 from lib.belts import (  # noqa: E402, F401
     GT2_BELT_BACK, GT2_BELT_MASS_G_PER_M, GT2_BELT_THICKNESS, GT2_BELT_W, GT2_BLEND_R, GT2_FLANK_ANGLE, GT2_FLANK_R, GT2_GROOVE_R, GT2_IDLER_BORE, GT2_IDLER_CHANNEL_W,
     GT2_IDLER_FLANGE_DIA, GT2_IDLER_SEAT_DIA, GT2_IDLER_WIDTH, GT2_PITCH, GT2_PLD,
-    GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_BOLT_R, GT2_PULLEY_90T_FACE_Y, GT2_PULLEY_90T_HEAD_SEAT, GT2_PULLEY_90T_PITCH_DIA,
+    GT2_PULLEY_20T_TEETH, GT2_PULLEY_90T_BOLT_R, GT2_PULLEY_90T_FACE_Y, GT2_PULLEY_90T_HEAD_SEAT, GT2_PULLEY_90T_PITCH_DIA, GT2_PULLEY_90T_WRIST_HEAD_SEAT,
     GT2_PULLEY_90T_TEETH, GT2_PULLEY_120T_TEETH, GT2_RATIO, GT2_TIP_R, GT2_TOOTH_DEPTH, STANDARD_2GT_LENGTHS, flank_offset, pulley_90t_bolt_points,
     pulley_od,
 )
@@ -253,7 +253,7 @@ from lib.yaw_coupler.params import DEFAULT as _YAW_COUPLER  # noqa: E402
 
 _PULLEY_BOLTS = len(pulley_90t_bolt_points())
 ELBOW_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _FOREARM.drive.pulley_screw_len)   # 18.2, 4x M4x35
-WRIST_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _WRIST.flange.pulley_screw_len)    # 17.4, 4x M4x33
+WRIST_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _WRIST.flange.pulley_screw_len)    # 18.2, 4x M4x35
 YAW_PULLEY_SCREWS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * shcs_volume(M4_SHCS, _YAW_COUPLER.hub.pulley_screw_len)   # 16.2, 4x M4x30
 PULLEY_NUTS_MASS_G = STEEL_DENSITY * _PULLEY_BOLTS * nut_volume(M4_NUT)                                              # 3.0, 4x M4 (each joint)
 # the wrist belt's tensioner's axle and its nut (parts/joints/wrist_idler_{screw,nut}; lib/forearm/params.py IdlerParams), likewise

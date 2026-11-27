@@ -40,6 +40,11 @@ GT2_PULLEY_90T_BOLT_R = 11.0                        # [REFERENCE] the 4x M4 on t
 GT2_PULLEY_90T_HEAD_SEAT = 5.0                      # [DESIGN] the M4 heads' seats (the counterbores' floors) this far under
 #                                                     the outer face: the heads 1 under it, each screw 5 shorter than with
 #                                                     its head on the face and every tip where it was (lib/pulley/params.py)
+GT2_PULLEY_90T_WRIST_HEAD_SEAT = GT2_PULLEY_90T_HEAD_SEAT - 2.0   # [DESIGN] the wrist 90T's (gt2_pulley_90t_wrist): its
+#                                                     heads 2 nearer the face - 1 proud of it -, so the wrist's stack is
+#                                                     the elbow's length and takes the elbow's M4 x 35 uncut, the tips where
+#                                                     a cut M4 x 33's were (wrist_link's nuts can move neither way: the
+#                                                     wrist flange over them, the wrist roll pancake under its plate)
 
 # The purchased toothless idler (parts/joints/gt2_idler_20t), a 20T-size smooth idler for the 6 mm belt, as the seller's
 # drawing gives it (WINSINN "GT2 Idler Pulley - 20 Toothless, 5mm Bore", aluminium): two flanges on a smooth belt seat,

@@ -183,7 +183,7 @@ LINKS: dict[str, list[str]] = {
     # wrist_link IS the wrist roll drive's frame, which carries the drive's STATOR - the pancake (on the pitch axis) and
     # its 20T, both bearings, the belt (assemblies/wrist_roll_drive.py BODIES); the wrist_pitch home magnet is glued on the
     # 90T's outer face
-    "wrist_pitch_link": ["wrist_link#1", "wrist_flange#1", "gt2_pulley_90t#4", "wrist_pulley_screws#1",
+    "wrist_pitch_link": ["wrist_link#1", "wrist_flange#1", "gt2_pulley_90t_wrist#1", "wrist_pulley_screws#1",
                          "wrist_pulley_nuts#1", "wrist_home_magnet#1", "wrist_roll_drive#1:stator"],
     # the drive's ROTOR - the pulley (its 40T band, the roll's output, the gripper's connector bolted to its face) and the
     # shaft clamped to it - carries the gripper's base body: the connector, the cage, the MG996R, the base, the pinion

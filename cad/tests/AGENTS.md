@@ -131,7 +131,8 @@ the sensor over the travel; `gripper_j3_connector`: LEGACY's two bodies, DEFAULT
 solve against the export's arcs, the LEGACY build's feature probes and surfaces, DEFAULT's opened holes and its hub
 filled from the ring to the step;
 `gt2_pulley_120t`, a part with no reference: its volume and bbox written in, the 90T's journal, ring and holes - its plain hub gone -, 120
-grooves; `helpers.py`: probe points about the axis, the surface census),
+grooves; `gt2_pulley_90t_wrist`, a part with no reference: its volume and bbox written in, DEFAULT with only its counterbores
+shallower; `helpers.py`: probe points about the axis, the surface census),
 `tests/forearm/` (the forearm: the LEGACY
 build vs the SolidWorks part + feature probes, the roll end, the roll drive - its axis across the wrist pitch axis, stack, press fits, clean pairs,
 clearances in the arm with the elbow folded; the roll belt's tensioner (`test_roll_idler`: the stock belt round it, its

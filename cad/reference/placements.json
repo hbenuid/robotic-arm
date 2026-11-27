@@ -13,7 +13,7 @@
  "expected": {
   "leaf_occurrences": 97,
   "solids": 235,
-  "solid_volume": 2430670.662
+  "solid_volume": 2430972.648
  },
  "designed_modules": [
   "cycloidal_drive#1",
@@ -62,7 +62,7 @@
   "bearing_axk6590#1",
   "washer_as6590#2",
   "gt2_pulley_90t#3",
-  "gt2_pulley_90t#4",
+  "gt2_pulley_90t_wrist#1",
   "gt2_pulley_120t#1",
   "wrist_flange#1",
   "elbow_pulley_screws#1",
@@ -5248,8 +5248,8 @@
    ]
   },
   {
-   "key": "gt2_pulley_90t#4",
-   "part": "gt2_pulley_90t",
+   "key": "gt2_pulley_90t_wrist#1",
+   "part": "gt2_pulley_90t_wrist",
    "kind": "part",
    "path": null,
    "parent": null,
@@ -5274,7 +5274,7 @@
     "note": "the wrist 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower wrist bearing; turned pulley_bolt_deg about its axis with wrist_link's bolt pattern (the front nut clear of the post's flat)"
    },
    "solids": 1,
-   "solid_volume": 25541.233,
+   "solid_volume": 25742.688,
    "rel": {
     "position": [
      -169.609237,
@@ -5770,13 +5770,13 @@
    "parent": null,
    "label_in_monolith": null,
    "mount": {
-    "host": "gt2_pulley_90t#4",
+    "host": "gt2_pulley_90t_wrist#1",
     "link": "wrist_pitch_link",
     "joint": "wrist_pitch",
     "frame_in_host": {
      "position": [
       0.0,
-      3.2,
+      5.2,
       0.0
      ],
      "rotation_xyz_deg": [
@@ -5789,12 +5789,12 @@
     "note": "the wrist 90T's 4x M4 x pulley_screw_len: heads in its counterbores, down through its hub and the wrist flange"
    },
    "solids": 4,
-   "solid_volume": 2212.159,
+   "solid_volume": 2312.69,
    "rel": {
     "position": [
-     -169.403043,
+     -169.274172,
      381.654996,
-     65.451626
+     67.447469
     ],
     "rotation_xyz_deg": [
      -180.0,
@@ -5806,27 +5806,27 @@
       0.327074206,
       0.94279929,
       -0.064435727,
-      -169.403043085
+      -169.274171632
      ],
      [
       0.94476264,
       -0.327755327,
       3e-09,
-      381.654995857
+      381.65499585
      ],
      [
       -0.02111915,
       -0.060876468,
       -0.997921859,
-      65.451625566
+      67.447469284
      ]
     ]
    },
    "world": {
     "position": [
-     -169.403043,
+     -169.274172,
      381.654996,
-     65.451626
+     67.447469
     ],
     "rotation_xyz_deg": [
      -180.0,
@@ -5838,19 +5838,19 @@
       0.327074206,
       0.94279929,
       -0.064435727,
-      -169.403043085
+      -169.274171632
      ],
      [
       0.94476264,
       -0.327755327,
       3e-09,
-      381.654995857
+      381.65499585
      ],
      [
       -0.02111915,
       -0.060876468,
       -0.997921859,
-      65.451625566
+      67.447469284
      ]
     ]
    },
@@ -5860,9 +5860,9 @@
     31.722
    ],
    "world_bbox_size": [
-    28.614,
+    28.743,
     27.785,
-    38.617
+    40.613
    ]
   },
   {
@@ -5880,7 +5880,7 @@
      "position": [
       0.0,
       0.0,
-      28.4
+      30.4
      ],
      "rotation_xyz_deg": [
       0.0,
@@ -9890,7 +9890,7 @@
    "parent": null,
    "label_in_monolith": null,
    "mount": {
-    "host": "gt2_pulley_90t#4",
+    "host": "gt2_pulley_90t_wrist#1",
     "link": "wrist_pitch_link",
     "joint": "wrist_pitch",
     "frame_in_host": {

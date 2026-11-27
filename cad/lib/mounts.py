@@ -60,7 +60,8 @@ the lower washer on the groove's floor and the cage on it ride with the base, th
 (lib/yaw_coupler/params.py DEFAULT) with the coupler.
 The PULLEYS (PULLEY_MOUNTS): the elbow's and the wrist's 90T, whose SolidWorks poses (gt2_pulley_90t#1 / #2,
 retired - lib/placements.py) left no room for the lower bearing, re-declared PULLEY_SEAT_SHIFT further out along
-their own axis (+Y): the host of such a mount is the capture pose it corrects. Each turns about its axis with its host's
+their own axis (+Y): the host of such a mount is the capture pose it corrects. The wrist's is its own print
+(gt2_pulley_90t_wrist: the 90T with shallower counterbores, lib/pulley/params.py WRIST), in the 90T's part frame. Each turns about its axis with its host's
 bolt pattern: the elbow's RollDriveParams.pulley_bolt_deg (lib/forearm/params.py: its nut channels would otherwise stop
 short of the ring cavity), the wrist's FlangeParams.pulley_bolt_deg (lib/wrist/params.py: its front nut would otherwise
 stand 0.55 mm inside the post's front flat). The base_yaw pulley (gt2_pulley_120t#1, the 90T with
@@ -154,6 +155,7 @@ from lib.params import (
     GT2_IDLER_WIDTH,
     GT2_PULLEY_90T_FACE_Y,
     GT2_PULLEY_90T_HEAD_SEAT,
+    GT2_PULLEY_90T_WRIST_HEAD_SEAT,
     J1_ARM_SLIDE,
     J1_BELT_Y,
     J1_IDLER_LEDGE_Y,
@@ -200,6 +202,7 @@ MOTOR_48, MOTOR_40, BOARD = "nema17_48mm", "nema17_40mm", "mks_servo42d"
 MOTORS = (MOTOR_48, MOTOR_40)
 GEARBOX = "eg17_g5_gearbox"
 BEARING, PULLEY, YAW_PULLEY, MOTOR_PULLEY = "bearing_6806", "gt2_pulley_90t", "gt2_pulley_120t", "gt2_pulley_20t"
+WRIST_PULLEY = "gt2_pulley_90t_wrist"
 GEARBOX_PULLEY = "gt2_pulley_20t_8mm"
 THRUST_CAGE, THRUST_WASHER = "bearing_axk6590", "washer_as6590"
 PULLEY_BOLTS = ("elbow_pulley_screws", "elbow_pulley_nuts", "wrist_pulley_screws", "wrist_pulley_nuts",
@@ -222,7 +225,8 @@ AXES: dict[str, tuple[tuple[float, float, float], bool]] = {
     MOTOR_48: ((0.0, 0.0, 1.0), False), MOTOR_40: ((0.0, 0.0, 1.0), False), MOTOR_PULLEY: ((1.0, 0.0, 0.0), False),
     GEARBOX: ((0.0, 0.0, 1.0), False), GEARBOX_PULLEY: ((1.0, 0.0, 0.0), False),
     **{part: ((0.0, 0.0, 1.0), False) for part in MOTOR_SCREWS},
-    BEARING: ((0.0, 0.0, 1.0), True), PULLEY: ((0.0, 1.0, 0.0), True), YAW_PULLEY: ((0.0, 1.0, 0.0), True),
+    BEARING: ((0.0, 0.0, 1.0), True), PULLEY: ((0.0, 1.0, 0.0), True), WRIST_PULLEY: ((0.0, 1.0, 0.0), True),
+    YAW_PULLEY: ((0.0, 1.0, 0.0), True),
     THRUST_CAGE: ((0.0, 0.0, 1.0), True), THRUST_WASHER: ((0.0, 0.0, 1.0), True),
     **{part: ((0.0, 0.0, 1.0), True) for part in PULLEY_BOLTS},
     **{part: ((0.0, 0.0, 1.0), True) for part in FORK_ON_AXIS},
@@ -378,7 +382,7 @@ PULLEY_MOUNTS: tuple[Mount, ...] = (
           ((0.0, PULLEY_SEAT_SHIFT, 0.0), (0.0, _FOREARM.drive.pulley_bolt_deg, 0.0)),
           "the elbow 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower elbow bearing; "
           "turned pulley_bolt_deg about its axis with the block's bolt pattern (the nut channels clear of the ring cavity)"),
-    Mount("gt2_pulley_90t#4", PULLEY, "gt2_pulley_90t#2", "wrist_pitch_link", "wrist_pitch",
+    Mount("gt2_pulley_90t_wrist#1", WRIST_PULLEY, "gt2_pulley_90t#2", "wrist_pitch_link", "wrist_pitch",
           ((0.0, PULLEY_SEAT_SHIFT, 0.0), (0.0, _WRIST.flange.pulley_bolt_deg, 0.0)),
           "the wrist 90T, PULLEY_SEAT_SHIFT out from its SolidWorks pose (retired): its hub in the lower wrist bearing; "
           "turned pulley_bolt_deg about its axis with wrist_link's bolt pattern (the front nut clear of the post's flat)"),
@@ -397,6 +401,9 @@ FLANGE_MOUNTS: tuple[Mount, ...] = (
 # X / Z axes. A nut set's frame runs from those floors: the hub's end lies _SEAT_TO_END down the screws.
 _SCREWS_IN_COUNTERBORES = ((0.0, round(GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_HEAD_SEAT, 6), 0.0), (90.0, 0.0, 0.0))
 _SEAT_TO_END = GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_HEAD_SEAT - GT2_PULLEY_90T_FACE_Y[0]
+# the wrist 90T's: its counterbores GT2_PULLEY_90T_WRIST_HEAD_SEAT deep (gt2_pulley_90t_wrist), the heads that much higher
+_WRIST_SCREWS_IN_COUNTERBORES = ((0.0, round(GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_WRIST_HEAD_SEAT, 6), 0.0), (90.0, 0.0, 0.0))
+_WRIST_SEAT_TO_END = GT2_PULLEY_90T_FACE_Y[1] - GT2_PULLEY_90T_WRIST_HEAD_SEAT - GT2_PULLEY_90T_FACE_Y[0]
 _YAW_SEAT_TO_END = _YAW_PULLEY.face_y - GT2_PULLEY_90T_HEAD_SEAT - _YAW_PULLEY.end_y   # the 120T's: its plain hub gone
 FASTENER_MOUNTS: tuple[Mount, ...] = (
     Mount("elbow_pulley_screws#1", "elbow_pulley_screws", "gt2_pulley_90t#3", "elbow_link", "elbow_pitch", _SCREWS_IN_COUNTERBORES,
@@ -404,10 +411,11 @@ FASTENER_MOUNTS: tuple[Mount, ...] = (
     Mount("elbow_pulley_nuts#1", "elbow_pulley_nuts", "elbow_pulley_screws#1", "elbow_link", "elbow_pitch",
           ((0.0, 0.0, round(_FOREARM.drive.nut_seat_x - (_FOREARM.drive.stub_x[0] - _SEAT_TO_END), 6)), (0.0, 0.0, 0.0)),
           "the elbow screws' nuts on the block's channel seats in its spigot (nut_seat_x), a flat toward the axis"),
-    Mount("wrist_pulley_screws#1", "wrist_pulley_screws", "gt2_pulley_90t#4", "wrist_pitch_link", "wrist_pitch", _SCREWS_IN_COUNTERBORES,
+    Mount("wrist_pulley_screws#1", "wrist_pulley_screws", "gt2_pulley_90t_wrist#1", "wrist_pitch_link", "wrist_pitch",
+          _WRIST_SCREWS_IN_COUNTERBORES,
           "the wrist 90T's 4x M4 x pulley_screw_len: heads in its counterbores, down through its hub and the wrist flange"),
     Mount("wrist_pulley_nuts#1", "wrist_pulley_nuts", "wrist_pulley_screws#1", "wrist_pitch_link", "wrist_pitch",
-          ((0.0, 0.0, round(_WRIST.flange.stub_z[1] - _WRIST.flange.nut_seat_z + _SEAT_TO_END, 6)), (0.0, 0.0, 0.0)),
+          ((0.0, 0.0, round(_WRIST.flange.stub_z[1] - _WRIST.flange.nut_seat_z + _WRIST_SEAT_TO_END, 6)), (0.0, 0.0, 0.0)),
           "the wrist screws' nuts on wrist_link's channel seats in its plate (nut_seat_z), turned with the 90T"),
     Mount("yaw_pulley_screws#1", "yaw_pulley_screws", "gt2_pulley_120t#1", "shoulder_link", "base_yaw", _SCREWS_IN_COUNTERBORES,
           "the base_yaw 120T's 4x M4 x pulley_screw_len: heads in its counterbores (under it), up through its hub and j1_coupler's stub (on j1_coupler_plate)"),
@@ -631,7 +639,7 @@ WRIST_HOME_MOUNTS: tuple[Mount, ...] = (
           "the board's 2 M2: the heads under the clip's plate, up through the plate and the board"),
     Mount("wrist_home_board_nuts#1", "wrist_home_board_nuts", "j2_link#1", "forearm_link", "wrist_pitch", _WHOME_SENSOR,
           "their nuts on the board's component side"),
-    Mount("wrist_home_magnet#1", "wrist_home_magnet", "gt2_pulley_90t#4", "wrist_pitch_link", "wrist_pitch",
+    Mount("wrist_home_magnet#1", "wrist_home_magnet", "gt2_pulley_90t_wrist#1", "wrist_pitch_link", "wrist_pitch",
           wrist_home_magnet_frame(_FOREARM),
           "the home magnet glued onto the wrist 90T's outer face, south pole out: over the KY-003's chip at WRIST_PITCH_HOME_DEG"),
 )

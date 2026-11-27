@@ -26,7 +26,7 @@ def test_the_two_lists_partition_the_parts_by_the_cots_flag():
     assert {r["part"] for r in printed} | {r["part"] for r in bought} == set(parts.names()) - set(parts.unplaced())
     assert not {r["part"] for r in printed} & {r["part"] for r in bought}
     assert {r["part"] for r in bought} == (set(R.COTS) | {n for n in R.NO_REFERENCE if parts.bought(n)}) - set(parts.unplaced())
-    assert (len(printed), sum(r["qty"] for r in printed)) == (42, 45)
+    assert (len(printed), sum(r["qty"] for r in printed)) == (43, 45)
     assert (len(bought), sum(bom.part_counts()[r["part"]] for r in bought)) == (87, 118)
     assert {r["state"] for r in printed} <= {"wrapper", "parametric", "designed", "native", "measured", "no reference"}
     assert {r["part"] for r in printed if r["state"] == "no reference"} == {n for n in R.NO_REFERENCE if not parts.bought(n)}
@@ -39,7 +39,7 @@ def test_the_print_list_gives_each_part_its_layer_height():
     declare FINE_LAYERS: at LAYER_H_FINE (parts/AGENTS.md "Printed vs. bought"). Only a printed part declares it."""
     fine = {n for n in parts.names() if parts.fine_layers(n)}
     assert fine == {"gripper_pinion", "gripper_rack", "cycloidal_disc_1", "cycloidal_disc_2", "gt2_pulley_90t",
-                    "gt2_pulley_120t", "forearm_roll_pulley", "wrist_roll_pulley"}
+                    "gt2_pulley_90t_wrist", "gt2_pulley_120t", "forearm_roll_pulley", "wrist_roll_pulley"}
     assert not [n for n in fine if parts.bought(n)], "a purchased part declares FINE_LAYERS"
     layers = {r["part"]: r["layer_mm"] for r in bom.print_rows()}
     assert {n for n, h in layers.items() if h == LAYER_H_FINE} == fine
@@ -118,11 +118,12 @@ def test_the_driven_pulleys_take_their_m4_screws_and_nuts():
                          "yaw_pulley_screws", "yaw_pulley_nuts"}
     assert all((r["pieces"], r["geometry"]) == (4, "envelope") for r in rows.values())
     assert rows["elbow_pulley_screws"]["order"].startswith("M4 x 35 socket head cap screw")   # on through the elbow flange
-    assert rows["wrist_pulley_screws"]["order"] == "M4 x 35 socket head cap screw (ISO 4762), cut to 33 mm"   # through its flange
+    assert rows["wrist_pulley_screws"]["order"] == rows["elbow_pulley_screws"]["order"]   # the elbow's, uncut: its own 90T
     assert rows["yaw_pulley_screws"]["order"].startswith("M4 x 30 socket head cap screw")
     assert all(rows[n]["order"] == "M4 hex nut (ISO 4032)" for n in ("elbow_pulley_nuts", "wrist_pulley_nuts", "yaw_pulley_nuts"))
-    driven = {r["part"]: r["qty"] for r in bom.print_rows() if r["part"] in ("gt2_pulley_90t", "gt2_pulley_120t")}
-    assert driven == {"gt2_pulley_90t": 2, "gt2_pulley_120t": 1} and sum(driven.values()) == len(rows) // 2   # a pulley per bolted joint
+    driven = {r["part"]: r["qty"] for r in bom.print_rows() if r["part"] in ("gt2_pulley_90t", "gt2_pulley_90t_wrist", "gt2_pulley_120t")}
+    assert driven == {"gt2_pulley_90t": 1, "gt2_pulley_90t_wrist": 1, "gt2_pulley_120t": 1}
+    assert sum(driven.values()) == len(rows) // 2   # a pulley per bolted joint
     assert not any("M4" in spec for owner, spec, _, _ in bom.EXTRAS if owner == "forearm_roll_drive")
 
 

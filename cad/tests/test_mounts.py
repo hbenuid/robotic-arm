@@ -9,6 +9,7 @@ by its 4x M4 screws + nuts; j1_coupler stands on the base_yaw thrust bearing in 
 120T; and nothing runs into the neighbours but the nuts' designed press in their pockets."""
 import functools
 import math
+from dataclasses import replace
 
 import pytest
 from build123d import Align, Cylinder, GeomType, Location, Pos, Vector
@@ -36,6 +37,7 @@ from lib.fasteners import M4_CLEAR_FINE, M4_CLEAR_UPRIGHT, M4_HEAD_BORE_FINE, he
 from lib.forearm import DEFAULT as FOREARM
 from lib.forearm import pulley_bolt_points
 from lib.pulley import DEFAULT as PULLEY_90T
+from lib.pulley import WRIST as PULLEY_90T_WRIST
 from lib.pulley import YAW as PULLEY_120T
 from lib.pulley.params import YAW_HUB_CUT
 from lib.upper_arm import DEFAULT as UPPER_ARM
@@ -63,14 +65,14 @@ from tests.helpers import interference, is_inside
 
 MOTORS = [m for m in mounts.MOUNTS if m.part in mounts.MOTORS]
 BOARDS = {m.host: m for m in mounts.MOUNTS if m.part == mounts.BOARD}
-ON_AXIS = [m for m in mounts.MOUNTS if m.part in (mounts.BEARING, mounts.THRUST_CAGE, mounts.THRUST_WASHER, mounts.PULLEY, mounts.YAW_PULLEY,
-                                                  *mounts.PULLEY_BOLTS)]
+ON_AXIS = [m for m in mounts.MOUNTS if m.part in (mounts.BEARING, mounts.THRUST_CAGE, mounts.THRUST_WASHER, mounts.PULLEY, mounts.WRIST_PULLEY,
+                                                  mounts.YAW_PULLEY, *mounts.PULLEY_BOLTS)]
 THRUST = ("washer_as6590#1", "bearing_axk6590#1", "washer_as6590#2")   # up the base_yaw axis
 # per belt joint: (upper bearing, lower bearing, the housing, the coupler whose stub runs through them, its driven pulley)
 STACKS = {
     "base_yaw": ("bearing_6806#1", "bearing_6806#2", "base#1", "j1_coupler_plate#1", "gt2_pulley_120t#1"),
     "elbow_pitch": ("bearing_6806#3", "bearing_6806#4", "j1_link#1", "elbow_flange", "gt2_pulley_90t#3"),
-    "wrist_pitch": ("bearing_6806#5", "bearing_6806#6", "j2_link#1", "wrist_flange#1", "gt2_pulley_90t#4"),
+    "wrist_pitch": ("bearing_6806#5", "bearing_6806#6", "j2_link#1", "wrist_flange#1", "gt2_pulley_90t_wrist#1"),
 }
 NO_SHOULDER = ("base_yaw",)   # the coupler stands on the thrust bearing, not on the upper inner ring
 # per bolted pulley: (its screw set, its nut set, the pulley, what the nuts sit in, the nut_af of that pocket, how much of
@@ -79,7 +81,7 @@ NO_SHOULDER = ("base_yaw",)   # the coupler stands on the thrust bearing, not on
 PULLEY_BOLTS = {
     "elbow_pitch": ("elbow_pulley_screws#1", "elbow_pulley_nuts#1", "gt2_pulley_90t#3", "forearm_roll_drive#1",
                     FOREARM.drive.nut_af, FOREARM.drive.nut_t),
-    "wrist_pitch": ("wrist_pulley_screws#1", "wrist_pulley_nuts#1", "gt2_pulley_90t#4", "wrist_link#1",
+    "wrist_pitch": ("wrist_pulley_screws#1", "wrist_pulley_nuts#1", "gt2_pulley_90t_wrist#1", "wrist_link#1",
                     WRIST.flange.nut_af, PARAMS.M4_NUT.h),
     "base_yaw": ("yaw_pulley_screws#1", "yaw_pulley_nuts#1", "gt2_pulley_120t#1", "j1_coupler_plate#1",
                  YAW_COUPLER.hub.nut_af, YAW_COUPLER.hub.nut_depth),
@@ -224,7 +226,7 @@ def test_motors_and_boards_clear_their_neighbours():
     (_journal_press) and the stubs' in their upper ones (_stub_press). The yoke's motor leg is a neighbour too: the
     screws hosted on it are skipped below."""
     neighbours = ["base#1", "base_motor_mount#1", "j1_coupler#1", "j1_motor_leg#1", "j1_link#1", "j2_link#1", "gt2_pulley_90t#3",
-                  "gt2_pulley_90t#4", "gt2_pulley_120t#1", "wrist_link#1"]
+                  "gt2_pulley_90t_wrist#1", "gt2_pulley_120t#1", "wrist_link#1"]
     shapes = {k: built.placed(k) for k in neighbours}
     shapes |= {k: built.placed(k) for k in ("cycloidal_drive#1", "forearm_roll_drive#1")}
     budget = {(nuts, host): _press(nut_af, depth) + 0.5 for _, nuts, _, host, nut_af, depth in PULLEY_BOLTS.values()}
@@ -287,7 +289,7 @@ def test_belt_pulley_planes_are_reachable():
     face and the shaft tip along the shaft's axis (the 20T's band in the driven pulley's: docs/open_issues.md)."""
     motor_shaft = DEFAULT_CONFIG.motor.shaft_length
     for m, pulley_key, shaft in (("eg17_g5_gearbox#1", "gt2_pulley_90t#3", PARAMS.EG17_G5.shaft_end),
-                                 ("nema17_40mm#3", "gt2_pulley_90t#4", motor_shaft), ("nema17_48mm#1", "gt2_pulley_120t#1", motor_shaft)):
+                                 ("nema17_40mm#3", "gt2_pulley_90t_wrist#1", motor_shaft), ("nema17_48mm#1", "gt2_pulley_120t#1", motor_shaft)):
         world = _world(m)
         z = _dir(world).normalized()
         pulley = built.placed(pulley_key)
@@ -400,7 +402,7 @@ def test_bearings_and_pulleys_sit_on_their_joint_axes():
     assert by_joint == {j: list(s[:2]) for j, s in STACKS.items()}
     for j, (up, _, host, _, _) in STACKS.items():
         assert mounts.BY_KEY[up].host == host and mounts.BY_KEY[up].link == F.JOINT_BY_NAME[j].parent
-    for key, spin in (("gt2_pulley_90t#3", FOREARM.drive.pulley_bolt_deg), ("gt2_pulley_90t#4", WRIST.flange.pulley_bolt_deg)):
+    for key, spin in (("gt2_pulley_90t#3", FOREARM.drive.pulley_bolt_deg), ("gt2_pulley_90t_wrist#1", WRIST.flange.pulley_bolt_deg)):
         m = mounts.BY_KEY[key]
         assert m.host in P.RETIRED and m.frame == ((0.0, PARAMS.PULLEY_SEAT_SHIFT, 0.0), (0.0, spin, 0.0))
         assert m.link == F.JOINT_BY_NAME[m.joint].child
@@ -435,32 +437,42 @@ def test_the_elbow_pulley_holes_line_up_with_the_block_bolts():
 
 def test_the_pulley_bolts_reach_their_nuts():
     """The arithmetic of the three 90T stacks (lib/mounts.py FASTENER_MOUNTS): each screw set's heads on the floors of
-    the pulley's counterbores (GT2_PULLEY_90T_HEAD_SEAT under its outer face), its nuts on their host's seats - the elbow block's and wrist_link's channel seats, j1_coupler's
-    pockets under the floor of the pocket over its hub - and every screw reaching two pitches past its nut; every host
-    drills the pulley's own hole circle, with M4 clearance."""
+    the pulley's counterbores (GT2_PULLEY_90T_HEAD_SEAT under its outer face; the wrist's own 90T's
+    GT2_PULLEY_90T_WRIST_HEAD_SEAT), its nuts on their host's seats - the elbow block's and wrist_link's channel seats,
+    j1_coupler's pockets under the floor of the pocket over its hub - and every screw a stock ISO 4762 length, a
+    multiple of 5, uncut, reaching two pitches past its nut; every host drills the pulley's own hole circle, with M4
+    clearance."""
     D, C, F, (y0, y1) = FOREARM.drive, COUPLER, WRIST.flange, PARAMS.GT2_PULLEY_90T_FACE_Y
     H, K, seat = YAW_COUPLER.hub, YAW_COUPLER.yoke, PARAMS.GT2_PULLEY_90T_HEAD_SEAT
+    wseat = PARAMS.GT2_PULLEY_90T_WRIST_HEAD_SEAT
+    seats = {"elbow_pitch": seat, "wrist_pitch": wseat, "base_yaw": seat}
+    past = {}
     for joint, length in (("elbow_pitch", D.pulley_screw_len), ("wrist_pitch", F.pulley_screw_len), ("base_yaw", H.pulley_screw_len)):
         screws, nuts = (mounts.BY_KEY[k] for k in PULLEY_BOLTS[joint][:2])
         assert screws.host == PULLEY_BOLTS[joint][2] and nuts.host == screws.key, joint
-        assert screws.frame == ((0.0, round(y1 - seat, 6), 0.0), (90.0, 0.0, 0.0)), joint      # +Z into the hub
-        assert length - (nuts.frame[0][2] + PARAMS.M4_NUT.h) >= 2 * PARAMS.M4_PITCH - 1e-9, joint
-        bought = F.pulley_screw_bought if joint == "wrist_pitch" else length   # the wrist's: M4 x 35 cut to 33
-        assert parts.load(screws.part).PURCHASE_SPEC.startswith(f"M4 x {bought:g} "), joint
+        assert screws.frame == ((0.0, round(y1 - seats[joint], 6), 0.0), (90.0, 0.0, 0.0)), joint      # +Z into the hub
+        past[joint] = length - (nuts.frame[0][2] + PARAMS.M4_NUT.h)
+        assert past[joint] >= 2 * PARAMS.M4_PITCH - 1e-9, joint
+        assert length % 5.0 == 0.0, joint                                                        # a stock length ...
+        assert parts.load(screws.part).PURCHASE_SPEC == f"M4 x {length:g} socket head cap screw (ISO 4762)", joint   # ... uncut
     assert math.isclose(mounts.BY_KEY["elbow_pulley_nuts#1"].frame[0][2], D.nut_seat_x - (D.stub_x[0] - (y1 - seat - y0)))
-    assert math.isclose(mounts.BY_KEY["wrist_pulley_nuts#1"].frame[0][2], F.stub_z[1] - F.nut_seat_z + (y1 - seat - y0))
+    assert math.isclose(mounts.BY_KEY["wrist_pulley_nuts#1"].frame[0][2], F.stub_z[1] - F.nut_seat_z + (y1 - wseat - y0))
     # the two flanges' stubs alike, 9 from the 90T's face to the bearing's top - the wrist's stands where the retired
     # coupler stood, PITCH_INSET nearer the forearm -; each flange its own part, its 90T's screws on through it into the
     # frame's nuts: the elbow's in the roll frame's spigot, the wrist's in wrist_link's plate - both 1 of the frame under
-    # the nut -, the wrist's 2 shorter (the pancake under the plate), both bought as M4 x 35
+    # the nut -, the wrist's nuts 2 nearer its 90T (the pancake under the plate): its own 90T holds the heads 2 higher,
+    # so both are the same M4 x 35, each 2 pitches past its nut
     assert F.stub_z[1] - F.stub_z[0] == D.stub_x[1] - D.stub_x[0] == 9.0
     assert F.nut_seat_z == F.post_z[0] - 1.0 and D.nut_seat_x == D.block_x[0] - D.spigot_h + 1.0
-    assert D.pulley_screw_len == F.pulley_screw_len + 2.0 == F.pulley_screw_bought
+    assert D.pulley_screw_len == F.pulley_screw_len == 35.0 and seat - wseat == 2.0
+    assert past["wrist_pitch"] == pytest.approx(past["elbow_pitch"]) == pytest.approx(2 * PARAMS.M4_PITCH)
     assert F.stub_z[1] - F.post_z[0] == pytest.approx(C.stub_y1 - PITCH_INSET)
     yaw_seat_to_end = PULLEY_120T.face_y - seat - PULLEY_120T.end_y   # the 120T's: its plain hub gone (YAW_HUB_CUT)
     assert yaw_seat_to_end == pytest.approx(y1 - seat - y0 - YAW_HUB_CUT)
     assert math.isclose(mounts.BY_KEY["yaw_pulley_nuts#1"].frame[0][2], yaw_seat_to_end + K.pocket_y0 - H.nut_depth - H.stub_y0, abs_tol=1e-6)
     assert PULLEY_90T.counterbore == (M4_HEAD_BORE_FINE, seat) and seat >= PARAMS.M4_SHCS.head_h + 0.5   # the heads under the face
+    assert PULLEY_90T_WRIST == replace(PULLEY_90T, counterbore=(M4_HEAD_BORE_FINE, wseat))   # the wrist's: nothing else differs
+    assert wseat == PARAMS.M4_SHCS.head_h - 1.0                                               # its heads 1 proud of the face
     assert PULLEY_90T.hole_dia == M4_CLEAR_FINE > PARAMS.M4_SHCS.d and M4_HEAD_BORE_FINE > PARAMS.M4_SHCS.head_dia  # snug, 0.16
     assert D.pulley_hub_len == y1 - y0 and D.nut_t == H.nut_depth == PARAMS.M4_NUT.h
     assert D.pulley_bolt_r == C.pulley_bolt_r == F.pulley_bolt_r == H.hole_r == PARAMS.GT2_PULLEY_90T_BOLT_R
@@ -471,8 +483,8 @@ def test_the_pulley_bolts_reach_their_nuts():
 @pytest.mark.slow
 @pytest.mark.parametrize("joint", list(PULLEY_BOLTS))
 def test_pulley_bolts_clamp_their_joints(joint):
-    """Each 90T's 4x M4: the heads bear on the floors of the pulley's counterbores, clear of their walls and under its
-    outer face, each shank runs through the pulley's snug M4_CLEAR_FINE hole (the SolidWorks Ø3.9 took no M4 - the part
+    """Each 90T's 4x M4: the heads bear on the floors of the pulley's counterbores, clear of their walls (under its
+    outer face; the wrist's own 90T's 1 proud of it), each shank runs through the pulley's snug M4_CLEAR_FINE hole (the SolidWorks Ø3.9 took no M4 - the part
     opens it), the nuts bear on their host's seats and sit in its pockets with exactly the designed press, and the ring the
     heads sweep clears the parent link through a whole turn."""
     screws_key, nuts_key, pulley_key, host_key, nut_af, depth = PULLEY_BOLTS[joint]
@@ -485,11 +497,12 @@ def test_pulley_bolts_clamp_their_joints(joint):
         return any(round(f.normal_at().dot(z)) == sign and abs((f.center() - origin).dot(z)) < 1e-3
                    for f in shape.faces().filter_by(GeomType.PLANE) if abs(abs(f.normal_at().dot(z)) - 1.0) < 1e-6)
 
+    seat = PARAMS.GT2_PULLEY_90T_WRIST_HEAD_SEAT if joint == "wrist_pitch" else PARAMS.GT2_PULLEY_90T_HEAD_SEAT
+    cfg = {"base_yaw": PULLEY_120T, "wrist_pitch": PULLEY_90T_WRIST}.get(joint, PULLEY_90T)
+    assert cfg.counterbore[1] == seat, joint
     assert planar(pulley, ws.position, -1), joint          # the counterbores' floors, facing the heads
-    assert planar(pulley, ws.position - z * PARAMS.GT2_PULLEY_90T_HEAD_SEAT, -1), joint   # the outer face, over them
+    assert planar(pulley, ws.position - z * seat, -1), joint   # the outer face, over them
     assert planar(host, wn.position, 1), joint             # the seat, facing the nuts
-    seat = PARAMS.GT2_PULLEY_90T_HEAD_SEAT
-    cfg = PULLEY_120T if joint == "base_yaw" else PULLEY_90T
     hub = cfg.face_y - seat - cfg.end_y                    # the floors to the hub's end (the 120T's YAW_HUB_CUT shorter)
     r_hole, r_bore = PULLEY_90T.hole_dia / 2.0, PULLEY_90T.counterbore[0] / 2.0
     for x, y in PARAMS.pulley_90t_bolt_points():
