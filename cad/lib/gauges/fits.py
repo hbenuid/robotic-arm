@@ -195,7 +195,6 @@ GAUGES = (
         (("depth", 4.5), ("width", 7.5), ("floor", 2.0), ("under", M4_CLEAR)), note="4.5 deep over an M4 hole."),
     # --- nuts
     Gauge("m3slot", "nuts", "M3 nut slots, slid in from the side", "M3 NUT SLOT", "slot_strip", (
-        Use(_WROLL.nut.af, "wrist_roll_shaft: the clamp's nuts (line to line)"),
         Use(_GB.nut_y[1] - _GB.nut_y[0], "gripper_base's traps"),
         Use(_WROLL.nut.af + 2.0 * _WROLL.nut_fit, "wrist_roll_pulley's connector slots")),
         (("af", _WROLL.nut.af), ("height", _WROLL.nut.h + 0.2), ("screw", M3_CLEAR)),
@@ -207,7 +206,8 @@ GAUGES = (
     Gauge("m3hex", "nuts", "M3 nut hex pockets", "M3 NUT", "hole_strip", (
         Use(_GC.nut_af, "gripper_cage's back plate"),
         Use(BASE.home.nut.af + BASE.home.nut_clear, "base_motor_mount's plate: the home bracket's nuts (drop in)"),
-        Use(GRIPPER.jaw.nut_af, "gripper_jaw (pressed)")),
+        Use(GRIPPER.jaw.nut_af, "gripper_jaw (pressed)"),
+        Use(_WROLL.clamp_nut_af, "wrist_roll_shaft: the clamp's nuts (press, upright: an estimate)")),
         (("depth", _GC.nut_h), ("width", 6.8), ("shape", "hex"), ("floor", 1.6), ("under", M3_CLEAR)),
         note="A corner along the strip, an M3 hole under each."),
     Gauge("m4hex", "nuts", "M4 nut hex pockets", "M4 NUT", "hole_strip", (
@@ -217,6 +217,7 @@ GAUGES = (
         Use(_HUB_NUT_AF, "j1_coupler_plate: the 120T's and the plate screws' nuts (press, upright, 0.20: "
                                     "measured)"),
         Use(BASE.joint.nut_pocket_af, "the base's posts (press)"),
+        Use(_ROLL.clamp_nut_af, "forearm_roll_shaft: the clamp's nuts (press, upright, 0.20: measured)"),
         Use(_D.housing.bolt_nut_pocket_af, "j1_link's housing nuts, the output hub (captive)")),
         (("depth", M4_NUT.h + 0.2), ("width", 8.4), ("shape", "hex"), ("floor", 1.6), ("under", M4_CLEAR)),
         note="Upright; the press size sideways too (next)."),
@@ -228,8 +229,7 @@ GAUGES = (
         (("depth", M4_NUT.h), ("shape", "hex"), ("blind", True), ("screw", M4_CLEAR)),
         note="A corner up, an M4 hole on through."),
     Gauge("m4slot", "nuts", "M4 nut slot", "M4 NUT SLOT", "slot_strip", (
-        Use(M4_NUT.af + FORK_NUT_SLOT, "j1_coupler's disc (the fork's foot nuts)"),
-        Use(_ROLL.clamp_nut.af, "forearm_roll_shaft: the clamp's nuts (line to line)")),
+        Use(M4_NUT.af + FORK_NUT_SLOT, "j1_coupler's disc (the fork's foot nuts)"),),
         (("af", M4_NUT.af), ("height", M4_NUT.h + FORK_NUT_SLOT), ("screw", M4_CLEAR)), note="The size is the width."),
     Gauge("m5slot", "nuts", "M5 nut channels (the idler axles)", "M5 NUT SLOT", "hole_strip", (
         Use(UPPER_ARM.idler.nut.af + UPPER_ARM.idler.nut_fit, "j1_link"),

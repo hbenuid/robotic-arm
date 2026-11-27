@@ -225,8 +225,9 @@ def test_the_wrist_90t_nuts_still_go_in_from_the_pocket():
 @pytest.mark.slow
 @pytest.mark.parametrize("name, host", [(CLAMP_NUTS, "wrist_roll_shaft"), (CONNECTOR_NUTS, "wrist_roll_pulley")])
 def test_the_pockets_hold_the_nuts_from_turning(module, name, host):
-    """Each nut a corner radial in its pocket's slot, its flats along the slot's sides: 20 degrees about its own axis runs
-    its corners into the part (the connector's pockets are nut_fit wider either side)."""
+    """Each clamp nut in its closed hex pocket, a flat toward the axis as the pocket's; each connector nut a corner radial
+    in its pocket's slot, its flats along the slot's sides: 20 degrees about its own axis runs its corners into the part
+    (the clamp's pockets are a press, the connector's nut_fit wider either side)."""
     nuts, part = _leaf(module, name), _leaf(module, host)
     points = parts.load(name).POINTS
     for solid, (x, y) in zip(sorted(nuts.solids(), key=lambda s: math.atan2(s.center().Y, s.center().X)),

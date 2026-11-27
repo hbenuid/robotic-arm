@@ -44,6 +44,7 @@ from lib.fasteners import (
     M4_CLEAR_UPRIGHT,
     M4_NUT,
     M4_NUT_SIDE_PRESS_AF,
+    M4_NUT_UPRIGHT_PRESS_AF,
     M4_PITCH,
     M4_SHCS,
     M5_CLEAR,
@@ -299,9 +300,9 @@ class BackPanelParams:
     """[DESIGN] The roll frame's removable back panel (parts/joints/forearm_roll_back_panel): a plate flush with the
     frame's rear face (the rear line, lib/forearm/roll.py rear_line) in a step cut across the face's full width, from the
     tower's top - the panel's top corners cut to the tower's octagon - down to `bottom`, over the shaft's bay - whose opening grows on down below the bay's bore, a pocket
-    opening_depth in from the face: the shaft, its clamp nuts and the stop are reached with the panel off. Flush, so the
+    opening_depth in from the face: the shaft and its clamp nuts are reached with the panel off. Flush, so the
     elbow motor's stack (its gearbox nearest) passes the rear line as it would the frame's face. The panel turns
-    run_gap clear of the shaft's rear face and its lug (a relief where it passes over them), is located by a U rim in the
+    run_gap clear of the shaft's rear face (a relief where it passes over it), is located by a U rim in the
     opening's lower part and held by magnet pairs (parts/joints/roll_back_magnets): one disc in a pocket in the step's
     floor, one in a pocket in the panel's inner face, each pressed to its pocket's bottom. A grill of straight slots up
     the face (lib/style.py GRILL_SLOT / GRILL_PITCH) is cut through it over the bay and the opening, grill_clear inside
@@ -343,8 +344,8 @@ class RollHomeParams:
     a KY-003 hall module (parts/joints/ky003_hall_sensor, lib/sensors.py) behind the roll shaft in the frame's bay, under
     the back panel - nothing shows outside -, facing a Ø magnet_dia x magnet_t N52 disc pressed flush into the shaft's
     rear face (parts/joints/roll_home_magnet, its south pole out), which stands over the chip at forearm_roll `home_deg`
-    (lib/params.py FOREARM_ROLL_HOME_DEG). The magnet in line with the stop lug (magnet_deg), between the rotor clamp's
-    nuts; the chip at chip_r, home_deg round from it (20 deg below the stop post), its board unturned (its header toward
+    (lib/params.py FOREARM_ROLL_HOME_DEG). The magnet at magnet_deg (+X in the zero pose), between the rotor clamp's
+    nuts; the chip at chip_r, home_deg round from it, its board unturned (its header toward
     the side face, +X), the board's tallest part (the header) run_gap off the shaft. The KY-003 on a printed carrier
     (parts/joints/roll_home_carrier): the board's plate, a leg back out of the bay's bore and a strip down the opening's
     floor (the back panel's opening, lower part) to its bottom, where a tube plugs into the wire hole - it locates the
@@ -358,7 +359,7 @@ class RollHomeParams:
 
     home_deg: float = -160.0              # the magnet over the chip: its zone (+/-15.2 .. 20.1 deg at chip_r) runs 9.2 past the
     #                                       -166 end or more; homing stops at -144.8 .. -139.9 (tests/forearm/test_roll_home.py)
-    magnet_deg: float = 0.0               # the magnet round the roll axis in the zero pose: in line with the stop lug, midway
+    magnet_deg: float = 0.0               # the magnet round the roll axis in the zero pose: at +X, midway
     #                                       between two of the rotor clamp's nuts (clamp_angle_deg 45)
     chip_r: float = 15.5                  # the magnet's middle and the hall element off the roll axis: inside the shaft's Ø40
     #                                       flange with 1.45 of wall, 3.5 off the clamp nuts' pockets
@@ -428,7 +429,7 @@ class RollDriveParams:
     Rotor: the PULLEY (forearm_roll_pulley: the integral 90T ring on its core, the Ø33 shoulder on down to bearing 2's
     inner ring, its hub through bearing 2 and its neck on to bearing 1's front face, its flat front face the forearm wall
     bolts onto - the roll's output) and the SHAFT (forearm_roll_shaft: a collar that holds bearing 1 - its journal
-    through it, its flange behind it with the clamp's nuts and the stop lug); the rotor clamp - 4x M4 from the forearm
+    through it, its flange behind it with the clamp's nuts); the rotor clamp - 4x M4 from the forearm
     wall's wrist face through the wall and both pieces into the shaft's nuts - holds the wall, the pulley, both inner
     rings and the shaft as one (the bearings' presses hold the rotor until the wall is on). MODULE FRAME: origin on the
     roll axis at the elbow axis' station
@@ -451,7 +452,7 @@ class RollDriveParams:
     shoulder_dia: float = BEARING_6806_SHOULDER_DIA   # [DATASHEET] the rotor's shoulders bear on the inner rings only
     lip: float = 12.0                     # [DESIGN] the spacer between the pair's outer rings: 19 between their centres (9 with the elbow's 2 mm
     #                                       lip) - each bearing takes the forearm's bending moment over twice the span; bearing 1, the shaft
-    #                                       and the stop that much deeper, the stop lug 2.3 inside the rear line (tests/forearm/test_roll_drive.py)
+    #                                       that much deeper, its flange inside the rear line (tests/forearm/test_roll_drive.py)
     lip_id: float = 37.6                  # [DESIGN] j1_link's elbow lip (37.64): clear of the pulley's neck and the shoulders' Ø33
     run_gap: float = 1.0                  # [DESIGN] the pulley's Ø44 core over bearing 2 and the frame's front face (the pulley's Ø33 shoulder spans it)
     # the frame: x along N (its underside at -X, 6.0 over the upper arm's flat top, host z -11), y up in the swing plane
@@ -490,8 +491,8 @@ class RollDriveParams:
     #                                       through the front face (block_x[1] - front_facet - its radius = 4.025), so the seat needs no boss
     #                                       standing out of the facets (bearing 2's front face is on the front face: layout.py stack_positions);
     #                                       the pocket's corners and the motor screws' counterbores further inside them (roll.py front_facets)
-    bay_r: float = 25.6                   # [DESIGN] the shaft's bay behind bearing 1, bored on through the frame's back (the rear line): round
-    #                                       the stop lug's corners (r 24.6) + 1; the shaft, bearing 1 pressed on it, goes in along the axis from behind
+    bay_r: float = 25.6                   # [DESIGN] the shaft's bay behind bearing 1, bored on through the frame's back (the rear line):
+    #                                       the shaft, bearing 1 pressed on it (r 21), goes in along the axis from behind
     # the elbow flange under the frame's underside (module -X) about the elbow axis (y = elbow_y), where j3_coupler#1 was
     # (host z = module x + axis_z): the post, the shoulder, the stub - over j1_link's Ø42 bore, never over its flat top
     # (the SolidWorks coupler's Ø78 flange and Ø62 boss turned in the Ø80 recess the top had: lib/upper_arm/params.py).
@@ -556,21 +557,11 @@ class RollDriveParams:
     #                                       it sets)
     clamp_head_clear: float = 0.25        # [DESIGN] the wall's counterbores round the heads (on the radius) and over them: the heads that far
     #                                       under the wall's wrist face
-    clamp_nut: NutSize = M4_NUT          # [DATASHEET] ISO 4032 M4, in the shaft's flange: its pocket open to the rear face and the bore, the nut
-    #                                       2 pitches short of the tip (parts/joints/roll_clamp_nuts)
-    clamp_nut_fit: float = 0.2            # [DESIGN] each nut's pocket - a slot from inside the bore out past the nut's corner, a flat either
-    #                                       side (af wide, line to line) - its reach past the corner
-    stop_lug_r: tuple = (19.5, 24.5)      # [DESIGN] the rotor's hard-stop lug on the shaft's flange (rooted 0.5 inside its Ø40), at +X in the zero pose
-    stop_lug_t: float = 3.75              # [DESIGN] ... from the shaft's rear face: 2.35 short of bearing 1's rear face (the shaft's flange
-    #                                       ends run_gap short of it), 2.5 of it beside the post
-    stop_post_r: tuple = (21.6, 26.0)     # [DESIGN] the frame's post on the tower's rear face at -X, inside the bay (fused into its wall, r 25.5):
-    #                                       they overlap r 21.6..24.5; clear of bearing 1 (r 21) and the shaft's flange (r 20)
-    stop_post_t: float = 4.85             # [DESIGN] ... back from the tower's rear face: 2.5 of the lug's length beside it
-    stop_deg_width: float = 10.0          # [DESIGN] angular width of each at its outer radius - its sides parallel
-    #                                       (lib/geom.py stop_wedge), so wider in: the post's inner corner meets the
-    #                                       lug's side at +/- 168.3, not 180 - width (tests/test_sweeps.py holds it
-    #                                       between the limit and 180 - width); FOREARM_ROLL_LIMIT_DEG stops 2 deg short
-    #                                       of it
+    clamp_nut: NutSize = M4_NUT          # [DATASHEET] ISO 4032 M4, in the shaft's flange: its pocket open to the rear face, the nut 2 pitches
+    #                                       short of the tip (parts/joints/roll_clamp_nuts)
+    clamp_nut_af: float = M4_NUT_UPRIGHT_PRESS_AF   # [MEASURE] 7.1, each nut's pocket: a closed hex, a flat toward the bore
+    #                                       (lib/geom.py nut_pocket) - the upright press, the shaft printed rear face down
+    #                                       (the pockets open on the bed); 1.70 of wall to the bore
     # the 90T ring (integral to the pulley; the 20T is flanged on its hub side only, so the ring carries two flanges)
     ring_teeth: int = 90
     ring_width: float = 7.0               # [DATASHEET] 6 mm belt

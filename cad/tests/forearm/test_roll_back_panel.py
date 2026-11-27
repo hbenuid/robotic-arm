@@ -3,7 +3,7 @@
 grown down below the bay's bore, held by 4 magnet pairs (roll_back_magnets). Both are designed here with no reference
 (lib/reference.py NO_REFERENCE) - THIS file locks their numbers (pieces, volume, bounding box, measured on the build and
 written in) and what they are: the panel's outer face on the rear line (the elbow motor's board passes it as it passed
-the rear line before the bay was bored through the back), run_gap off the turning shaft and its lug, located by its rim
+the rear line before the bay was bored through the back), run_gap off the turning shaft, located by its rim
 in the opening, its grill's slots open onto the bay and grill_clear off the rim; the frame's step, opening and pockets; each magnet pressed to its pocket's bottom, the pair facing
 across the step's floor - and all of it clear of the rest of the drive. The elbow motor and its board against the
 whole module over the elbow's range: tests/forearm/test_roll_drive.py."""
@@ -148,15 +148,15 @@ def test_the_frames_step_opening_and_pockets():
 @pytest.mark.slow
 def test_the_panel_is_flush_on_the_rear_line_and_clear_of_the_shaft(module):
     """Its outer face on the rear line, nothing of it past it; on the step's floor (contact, no overlap with the frame);
-    run_gap or more off the shaft's rear face and its lug's sweep at any roll (a disc stop_lug_r[1] round the roll axis
-    from the shaft's rear face), its thinnest over the bay's bore's top edge; its rim in the opening, rim_clear off its
+    run_gap or more off the shaft's rear face at any roll (a disc collar_od across round the roll axis from the
+    shaft's rear face: the flange's sweep), its thinnest over the bay's bore's top edge; its rim in the opening, rim_clear off its
     walls."""
     panel, frame, shaft = _leaf(module, PANEL), _leaf(module, FRAME), _leaf(module, "forearm_roll_shaft")
     outs = [_out(v) for v in panel.vertices()]
     assert max(outs) == pytest.approx(0.0, abs=1e-6)
     assert interference(panel, frame) == pytest.approx(0.0, abs=1e-6) and closest_points(panel, frame).distance < 1e-6
-    sweep = cylinder(D.stop_lug_r[1], D.stop_lug_t, z0=S["z_shaft_end"])
-    assert closest_points(panel, sweep).distance == pytest.approx(D.run_gap, abs=1e-6)
+    sweep = cylinder(D.collar_od / 2.0, S["z_shoulder_1"] - S["z_shaft_end"], z0=S["z_shaft_end"])
+    assert closest_points(panel, sweep).distance >= D.run_gap
     assert closest_points(panel, shaft).distance >= D.run_gap
     # the rim: rim_w wide, rim_clear inside the opening's side walls (x = +/-bay_r) and its bottom, rim_h tall
     mid, h = D.bay_r - B.rim_clear - B.rim_w / 2.0, B.t + B.rim_h / 2.0

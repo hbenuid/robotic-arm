@@ -103,8 +103,6 @@ def stack_positions(cfg: WristConfig = DEFAULT) -> dict[str, float]:
         "z_board_back": z_motor_rear - d.board_stack,             # -25.6: the MKS board's back, 11 behind the frame's rear
         "z_bay": z_bay, "z_shaft_end": z_shaft_end, "z_clamp_nut": z_clamp_nut,
         "z_clamp_nut_seat": z_clamp_nut + d.nut.h,                # -0.2: its bearing face, toward the pulley
-        "z_stop_lug": z_shaft_end,                                # -3.6 .. +stop_lug_t on the shaft's flange
-        "z_stop_post": z_bearing_1 - d.stop_post_t,               # -1.6 .. 2.25 on the tower's rear face
         "z_shoulder_1": z_bearing_1 - d.run_gap,                  # 1.25: the shaft's Ø33 shoulder on bearing 1's inner ring
         "z_bearing_1": z_bearing_1, "z_lip": z_lip, "z_meet": z_meet, "z_bearing_2": z_bearing_2, "z_boss": z_boss,
         "z_ring_flange_1": z_ring_flange_1, "z_ring": z_ring, "z_ring_mid": z_ring_mid, "z_ring_end": z_ring_end,
@@ -242,13 +240,12 @@ def clamp_points(cfg: WristConfig = DEFAULT) -> list[tuple[float, float]]:
             for k in range(4)]
 
 
-def clamp_nut_pocket(cfg: WristConfig = DEFAULT) -> tuple[float, float, float, float]:
-    """(r_in, r_out, z0, z1) of each clamp nut's pocket in the shaft's flange, radially along its screw's angle: from
-    inside the cable bore past the nut's corner by nut_fit; from the shaft's rear face (open: the nut goes in there) to
-    the nut's bearing face."""
+def clamp_nut_pocket(cfg: WristConfig = DEFAULT) -> tuple[float, float, float]:
+    """(af, z0, z1) of each clamp nut's pocket in the shaft's flange: a closed hex on the screw's axis, clamp_nut_af
+    across flats, a flat toward the bore (lib/geom.py nut_pocket); from the shaft's rear face (open: the nut goes in
+    there) to the nut's bearing face."""
     d, S = cfg.roll, stack_positions(cfg)
-    r_out = d.clamp_circle_dia / 2.0 + d.nut.af / math.sqrt(3.0) + d.nut_fit
-    return d.bore / 2.0 - 1.0, r_out, S["z_shaft_end"], S["z_clamp_nut_seat"]
+    return d.clamp_nut_af, S["z_shaft_end"], S["z_clamp_nut_seat"]
 
 
 def gripper_frame_in_module(cfg: WristConfig = DEFAULT) -> tuple:

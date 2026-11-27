@@ -4,7 +4,7 @@ the tower round R', its wall on the forearm's side the plate, the pancake in fro
 shaft's bay bored through the rear under a removable back panel; lib/wrist/link.py adds the wrist_pitch flange on the
 plate's coupler face), the back panel, the pulley
 (rotor, the output - its 40T band the GT2 ring of lib/pulley/teeth.py, its face the connector bolts to) and the shaft
-(rotor, a collar behind bearing 1 with the stop lug)."""
+(rotor, a collar behind bearing 1)."""
 from __future__ import annotations
 
 import math
@@ -12,7 +12,7 @@ import math
 import build123d as bd
 
 from lib.datum import to_location
-from lib.geom import box, cylinder, faceted_end, nut_slot, single_solid, slot_y, stop_wedge
+from lib.geom import box, cylinder, faceted_end, nut_pocket, nut_slot, single_solid, slot_y
 from lib.pulley.teeth import gt2_ring
 from lib.style import EDGE_CHAMFER, SIDES
 from lib.units import NUDGE
@@ -207,7 +207,7 @@ def build_frame(cfg: WristConfig = DEFAULT):
     board's motor plug's room); behind it the board's window, out through the rear and the bottom (its side plugs' rooms:
     in it, and under the panel's notch); the tower: bearing 1's seat, the lip, bearing 2's seat open through the front
     face; the shaft's bay behind bearing 1 bored on through
-    the rear, the stop post on the tower's rear face in it; the magnets' pockets in the step's floor; the cable's groove
+    the rear; the magnets' pockets in the step's floor; the cable's groove
     across it into the window."""
     d, b, S, s = cfg.roll, cfg.roll.back, stack_positions(cfg), toward_motor(cfg)
     x_wall = side_wall_x(cfg)
@@ -233,14 +233,12 @@ def build_frame(cfg: WristConfig = DEFAULT):
     slit = (S["x_motor"] - d.shaft_slit / 2.0, S["x_motor"] + d.shaft_slit / 2.0)
     body = body - box(slit, _bottom(S["y_motor"], cfg), (S["z_motor_face"] - NUDGE, S["z_front"] + NUDGE))
     # the tower: bearing 1's seat, the lip, bearing 2's seat (open through the front face, bearing 2 just under it); the
-    # shaft's bay behind bearing 1 bored on through the rear (the shaft and bearing 1 go in from behind, the panel off);
-    # the stop post in it at -X
+    # shaft's bay behind bearing 1 bored on through the rear (the shaft and bearing 1 go in from behind, the panel off)
     r_seat = (d.bearing_od + d.seat_add) / 2.0
     body = body - cylinder(r_seat, d.bearing_width + NUDGE, z0=S["z_bearing_1"] - NUDGE)
     body = body - cylinder(d.lip_id / 2.0, d.lip + 2 * NUDGE, z0=S["z_lip"] - NUDGE)
     body = body - cylinder(r_seat, S["z_front"] - S["z_bearing_2"] + NUDGE, z0=S["z_bearing_2"])
     body = body - cylinder(d.bay_r, S["z_bearing_1"] + FAR, z0=-FAR)
-    body = body + stop_wedge(d.stop_post_r[0], d.stop_post_r[1], S["z_stop_post"], d.stop_post_t, d.stop_deg_width, 180.0)
     # the magnets' pockets in the step's floor; the cable's groove across it from the bay into the window
     for x, y in b.magnet_points:
         body = body - _on_rear(x, y, b.pocket_dia / 2.0, b.t - NUDGE, b.pocket_depth + NUDGE, cfg)
@@ -299,18 +297,16 @@ def build_pulley(cfg: WristConfig = DEFAULT):
 def build_shaft(cfg: WristConfig = DEFAULT):
     """The shaft (wrist_roll_shaft) in the module frame - a collar behind bearing 1: its hub (a journal) up through
     bearing 1 to the lip's middle where the pulley's meets it, the Ø33 shoulder on bearing 1's inner ring, the flange
-    behind it with the rotor clamp's 4 nuts (pockets open to its rear face and into the bore) and the hard-stop lug; the
-    cable bore."""
+    behind it with the rotor clamp's 4 nuts (closed hex pockets open to its rear face); the cable bore."""
     d, S = cfg.roll, stack_positions(cfg)
     j_r = (d.bearing_bore + d.journal_add) / 2.0
     z0 = S["z_shaft_end"]
     body = cylinder(j_r, S["z_meet"] - S["z_bearing_1"], z0=S["z_bearing_1"])
     body = body + cylinder(d.shoulder_dia / 2.0, d.run_gap, z0=S["z_shoulder_1"])
     body = body + cylinder(d.collar_od / 2.0, S["z_shoulder_1"] - z0, z0=z0)
-    body = body + stop_wedge(d.stop_lug_r[0], d.stop_lug_r[1], S["z_stop_lug"], d.stop_lug_t, d.stop_deg_width, 0.0)
     body = body - cylinder(d.bore / 2.0, S["z_meet"] - z0 + 2 * NUDGE, z0=z0 - NUDGE)
-    r_in, r_out, p0, p1 = clamp_nut_pocket(cfg)
+    af, p0, p1 = clamp_nut_pocket(cfg)
     for x, y in clamp_points(cfg):
         body = body - cylinder(d.bolt_dia / 2.0, S["z_meet"] - z0 + 2 * NUDGE, (x, y), z0=z0 - NUDGE)
-        body = body - nut_slot(r_in, r_out, d.nut.af, p0 - NUDGE, p1, math.atan2(y, x))
+        body = body - nut_pocket(x, y, af, p0 - NUDGE, p1)
     return single_solid(body)

@@ -238,8 +238,7 @@ JOINTS: list[Joint] = [
                 "the roll pulley's 90T ring; its axis ELBOW_ROLL_OFFSET across the elbow axis (an elbow offset); belt-driven "
                 "by the drive's own nema17_40mm + mks_servo42d on the elbow axis, in the roll frame's pocket "
                 "[which CAN id: unconfirmed]; "
-                "the printed hard stop 2 deg past "
-                "+/- FOREARM_ROLL_LIMIT_DEG"),
+                "no printed hard stop: +/- FOREARM_ROLL_LIMIT_DEG is the software's"),
     Joint("wrist_pitch", "revolute", "forearm_link", "wrist_pitch_link", WRIST_PITCH_ORIGIN, WRIST_PITCH_AXIS, WRIST_ROLL_AXIS,
           PARAMS.WRIST_PITCH_LIMITS_DEG[0] * DEG, PARAMS.WRIST_PITCH_LIMITS_DEG[1] * DEG, PARAMS.ARM_JOINT_EFFORT_NM, PARAMS.ARM_JOINT_VELOCITY_RAD_S,
           notes="GT2 90T pulley + J3-coupler at the wrist, turning in the bearing_6806#5 / #6 pair; belt-driven by nema17_40mm#3 + mks_servo42d#3 on "
@@ -248,8 +247,8 @@ JOINTS: list[Joint] = [
           -PARAMS.WRIST_ROLL_LIMIT_DEG * DEG, PARAMS.WRIST_ROLL_LIMIT_DEG * DEG, PARAMS.WRIST_EFFORT_NM, PARAMS.WRIST_VELOCITY_RAD_S,
           notes="the wrist roll drive (assemblies/wrist_roll_drive.py, WRIST_ROLL_RATIO 2): the gripper's connector bolts to its "
                 "pulley's face; belt-driven by the NEMA17 pancake + its mks_servo42d on the wrist_pitch axis, WRIST_ROLL_OFFSET "
-                "across (a wrist offset) [which CAN id: unconfirmed]; the printed hard stop 2 deg past +/- "
-                "WRIST_ROLL_LIMIT_DEG"),
+                "across (a wrist offset) [which CAN id: unconfirmed]; no printed hard stop: +/- "
+                "WRIST_ROLL_LIMIT_DEG is the software's"),
     Joint("jaw_a", "prismatic", "wrist_roll_link", "jaw_a_link", JAW_A_ORIGIN, tuple(-v for v in JAW_TRAVEL), WRIST_ROLL_AXIS,
           -PARAMS.JAW_TRAVEL_MM * 1e-3, PARAMS.JAW_TRAVEL_MM * 1e-3, PARAMS.JAW_EFFORT_N, PARAMS.JAW_VELOCITY_M_S,
           notes="positive = opening (jaw A moves away from jaw B); the MG996R's pinion drives both racks"),
