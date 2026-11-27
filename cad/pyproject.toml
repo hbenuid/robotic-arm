@@ -20,7 +20,7 @@ dependencies = [
     # machine's `cad` (a uv tool: the command and its server), and the text-to-cad@earthtojake plugin's
     # .claude-plugin/plugin.json names the same release: bump them together (docs/toolchain.md Pins, `./cadtool
     # doctor` checks). Never add cad-server (an alias of cad since 0.11.12) here.
-    "cad[build123d]==0.11.17",
+    "cad[build123d]==0.11.18",
     "numpy>=2.4.6",
 ]
 
