@@ -11,8 +11,8 @@ into it; its board's side plugs in a groove inside each wall, their cables down 
 the PLATE (the pilot hole and the motor's 4 M3 holes, the screws' heads flush in counterbores - roll_motor_screws; the
 shaft's slit down to the bottom), whose face is the frame's one front face, nothing proud of it - the frame prints flat
 on it (the roll belt tensioner's spacer is its own part, roll_idler_spacer); the tower carries the 6806 pair back to back
-on a 12 mm spacer (the lip) - bearing 1's seat open into the shaft's BAY behind it (bored on through the frame's back,
-the stop post on the tower's face), bearing 2's seat open through the front face (bearing 2's front face on it, 4 mm of
+on a 12 mm spacer (the lip) - bearing 1's seat open into the shaft's BAY behind it (bored on through the frame's back),
+bearing 2's seat open through the front face (bearing 2's front face on it, 4 mm of
 wall inside the facets), the pulley's core turning over it; the rear face stepped for the removable BACK PANEL
 (forearm_roll_back_panel, flush in the step, held by magnets in pockets in the step's floor), the bay's opening grown
 down below its bore.

@@ -30,7 +30,6 @@ from lib.cycloidal import DEFAULT_CONFIG as DRIVE
 from lib.datum import BASE_BOTTOM_Y
 from lib.forearm import DEFAULT as FOREARM
 from lib.forearm import side_plug_room
-from lib.wrist import DEFAULT as WRIST
 from lib.yaw_coupler.params import RIM_CLEAR
 from robot import frames as F
 from tests import built
@@ -299,19 +298,20 @@ def test_any_yaw_keeps_the_arm_off_the_base():
             assert d >= CLEAR, f"yaw {yaw}: {ml} {d:.2f} mm from {fl}"
 
 
-def test_the_wrist_roll_limit_stops_short_of_the_hard_stop():
-    """The wrist roll's hard stop - the lug on its shaft's flange against the post in wrist_link's bay - lies between the
-    limit and 180 - stop_deg_width, as the forearm roll's."""
-    shaft = [p for p in _link_parts("wrist_roll_link") if p[0].endswith(":wrist_roll_shaft")]
-    frame = next(s for label, s in _link_parts("wrist_pitch_link") if label.endswith(":wrist_link"))
-    limit, nominal = PARAMS.WRIST_ROLL_LIMIT_DEG, 180.0 - WRIST.roll.stop_deg_width
-    for sign in (1.0, -1.0):
-        (_, at_limit), = _posed(shaft, ("wrist_roll", sign * limit))
-        gap = distance(at_limit, frame)
-        assert gap >= 0.5, f"roll {sign * limit:+.0f}: the shaft {gap:.2f} mm from the frame"
-        (_, at_nominal), = _posed(shaft, ("wrist_roll", sign * nominal))
-        vol = interference(at_nominal, frame)
-        assert vol > 1.0, f"roll {sign * nominal:+.0f}: the lug only {vol:.2f} mm^3 into the post - no stop"
+def _turns_free(shaft_link: str, shaft: str, frame_link: str, frame: str, joint: str):
+    """The roll shaft posed every 30 degrees all the way round stays 0.5 mm or more off its frame: no hard stop."""
+    parts = [p for p in _link_parts(shaft_link) if p[0].endswith(shaft)]
+    body = next(s for label, s in _link_parts(frame_link) if label.endswith(frame))
+    for deg in range(-180, 180, 30):
+        (_, posed), = _posed(parts, (joint, float(deg)))
+        gap = distance(posed, body)
+        assert gap >= 0.5, f"{joint} {deg:+d}: the shaft {gap:.2f} mm from the frame"
+
+
+def test_the_wrist_roll_has_no_hard_stop():
+    """No printed hard stop (WRIST_ROLL_LIMIT_DEG is the software's alone): the wrist roll shaft turns clear of
+    wrist_link all the way round, as the forearm roll's."""
+    _turns_free("wrist_roll_link", ":wrist_roll_shaft", "wrist_pitch_link", ":wrist_link", "wrist_roll")
 
 
 def test_the_gripper_rolls_clear_of_the_wrist():
@@ -329,20 +329,10 @@ def test_the_gripper_rolls_clear_of_the_wrist():
         assert d >= CLEAR, f"roll {roll}: {ml} {d:.2f} mm from {fl}"
 
 
-def test_the_forearm_roll_limit_stops_short_of_the_hard_stop():
-    """The roll's hard stop - the lug on the shaft's flange against the post on the frame's tower - lies between the limit
-    and 180 - stop_deg_width: at +/- FOREARM_ROLL_LIMIT_DEG the shaft stands clear of the frame, at the nominal angle the
-    lug is into the post (their parallel sides meet before it: lib/forearm/params.py)."""
-    shaft = [p for p in _link_parts("forearm_link") if p[0].endswith(":forearm_roll_shaft")]
-    block = next(s for label, s in _link_parts("elbow_link") if label.endswith(":forearm_roll_block"))
-    limit, nominal = PARAMS.FOREARM_ROLL_LIMIT_DEG, 180.0 - FOREARM.drive.stop_deg_width
-    for sign in (1.0, -1.0):
-        (_, at_limit), = _posed(shaft, ("forearm_roll", sign * limit))
-        gap = distance(at_limit, block)
-        assert gap >= 0.5, f"roll {sign * limit:+.0f}: the shaft {gap:.2f} mm from the frame"
-        (_, at_nominal), = _posed(shaft, ("forearm_roll", sign * nominal))
-        vol = interference(at_nominal, block)
-        assert vol > 1.0, f"roll {sign * nominal:+.0f}: the lug only {vol:.2f} mm^3 into the post - no stop"
+def test_the_forearm_roll_has_no_hard_stop():
+    """No printed hard stop (FOREARM_ROLL_LIMIT_DEG is the software's alone): the roll shaft turns clear of the
+    frame all the way round."""
+    _turns_free("forearm_link", ":forearm_roll_shaft", "elbow_link", ":forearm_roll_block", "forearm_roll")
 
 
 def _steps(lo: float, hi: float, step: int) -> list[float]:

@@ -76,7 +76,7 @@ def _turned(shape, q: float):
 
 def test_the_home_angle():
     """Home inside the travel near its lower end; the chip chip_r off the axis home_deg round from the magnet; the magnet
-    in the shaft's flange in line with the stop lug (clear of the clamp's nuts: the slow test)."""
+    in the shaft's flange at +X (clear of the clamp's nuts: the slow test)."""
     assert PARAMS.FOREARM_ROLL_HOME_DEG == H.home_deg == -160.0
     lower = -PARAMS.FOREARM_ROLL_LIMIT_DEG
     assert lower < PARAMS.FOREARM_ROLL_HOME_DEG < lower + 7.0
@@ -84,7 +84,7 @@ def test_the_home_angle():
     assert math.hypot(hx, hy) == pytest.approx(H.chip_r) and math.degrees(math.atan2(hy, hx)) == pytest.approx(-160.0)
     (mx, my, mz), rot = home_magnet_frame()
     assert (mx, my, mz) == pytest.approx((H.chip_r, 0.0, S["z_shaft_end"])) and rot == (0.0, 0.0, 0.0)
-    assert H.magnet_deg == 0.0                                                    # the stop lug's angle in the zero pose
+    assert H.magnet_deg == 0.0                                                    # +X in the zero pose
     assert D.collar_od / 2.0 - (H.chip_r + H.magnet_dia / 2.0 + H.pocket_fit) == pytest.approx(1.45)   # the flange's wall
 
 
@@ -193,7 +193,7 @@ def test_the_sensor_fits(module):
     panel = _leaf(module, "forearm_roll_back_panel")
     assert closest_points(carrier, panel).distance == pytest.approx(H.key_gap, abs=1e-3)
     assert closest_points(ky, panel).distance >= 3.6
-    assert closest_points(ky, frame).distance >= 6.4             # 6.48: the stop post on the tower's face behind bearing 1
+    assert closest_points(ky, frame).distance >= 7.8             # 7.93: the bay's wall
     p, u, n = home_wire_axis()
     for t in [n * i / 10.0 for i in range(11)] + [n + H.wire_past * 0.5]:
         assert not is_inside(frame, p[0] + u[0] * t, p[1] + u[1] * t, p[2] + u[2] * t), f"the wire hole shut at {t:.1f}"

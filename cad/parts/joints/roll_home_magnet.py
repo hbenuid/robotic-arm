@@ -2,7 +2,7 @@
 RollHomeParams magnet_dia / magnet_t: Ø6 x 3, base_yaw's).
 
 Pressed flush into its pocket in the roll shaft's rear face (forearm_roll_shaft, printed), RollHomeParams chip_r off
-the roll axis in line with the stop lug, its SOUTH pole out - toward the KY-003 on its carrier behind the shaft
+the roll axis at +X in the zero pose, its SOUTH pole out - toward the KY-003 on its carrier behind the shaft
 (ky003_hall_sensor on roll_home_carrier): the A3144 switches on a south pole at its branded face. It turns with the
 shaft (forearm_link) and stands over the chip at forearm_roll FOREARM_ROLL_HOME_DEG (lib/params.py). Check the pole
 before pressing it in (the module's LED lights with the south pole toward the chip); the pocket locates it.

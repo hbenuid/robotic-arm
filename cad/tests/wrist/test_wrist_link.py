@@ -136,7 +136,7 @@ def test_the_part_is_the_roll_frame(wrist, legacy):
     """The built DEFAULT: the roll frame, its wall on the forearm's side the plate (no plate past the frame) with the
     wrist_pitch output flange - the pancake's pocket (open down through the bottom, the far face's wall closed over it,
     its plug's groove inside the wall) and the motor plate in front of it, the front face's facets, the tower's seats and
-    lip, the bay bored through the rear with the stop post; the key and the foot the flange (its own part) stands on, the
+    lip, the bay bored through the rear; the key and the foot the flange (its own part) stands on, the
     90T's nuts in channels in the plate open to the pancake's pocket."""
     d, ST = DEFAULT.roll, stack_positions(DEFAULT)
     assert wrist.is_valid and len(wrist.solids()) == 1
@@ -175,12 +175,12 @@ def test_the_part_is_the_roll_frame(wrist, legacy):
     # the front face's two long edges faceted front_facet at 45 deg: material just inside the far face's facet, none past it
     mid = (d.frame_r - d.front_facet / 2.0, ST["z_front"] - d.front_facet / 2.0)
     assert is_inside(wrist, *_part(mid[0] - 0.35, ym, mid[1] - 0.35)) and not is_inside(wrist, *_part(mid[0] + 0.35, ym, mid[1] + 0.35))
-    # the bay behind bearing 1, bored on through the rear (under the back panel), the far face's wall closed beside it; the
-    # post at -X inside it, the lug's room at +X
-    zb = (ST["z_stop_post"] + ST["z_bearing_1"]) / 2.0
+    # the bay behind bearing 1, bored on through the rear (under the back panel), the far face's wall closed beside it;
+    # nothing standing in it (no stop post)
+    zb = ST["z_bearing_1"] - 2.0
     assert is_inside(wrist, *_part(d.frame_r - 1.0, 0.0, (ST["z_bay"] + ST["z_bearing_1"]) / 2.0))
     assert not is_inside(wrist, *_part(0.0, 0.0, ST["z_bay"])) and not is_inside(wrist, *_part(0.0, 0.0, ST["z_rear"] - 1.0))
-    assert is_inside(wrist, *_part(-21.0, 0.0, zb)) and not is_inside(wrist, *_part(21.0, 0.0, zb))
+    assert not is_inside(wrist, *_part(-21.0, 0.0, zb)) and not is_inside(wrist, *_part(21.0, 0.0, zb))
     assert is_inside(wrist, *_part(-(d.bay_r + 0.3), 0.0, ST["z_bay"] + 1.0))
     # the wrist_pitch output flange is its own part (FlangeParams, j3_coupler#2 retired; tests/wrist/test_wrist_flange.py):
     # on the coupler face only the key - an octagon, key_af across flats, a flat on each axis - nothing of the post, the

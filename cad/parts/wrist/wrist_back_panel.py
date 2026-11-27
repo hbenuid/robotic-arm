@@ -1,6 +1,6 @@
 """wrist_back_panel - the wrist frame's removable back panel (the forearm roll frame's, one joint further out): a plate
 flush with wrist_link's slanted rear over the tower, in a step, over the shaft's bay bored through the rear - lift it off
-and the wrist roll shaft, its clamp nuts and the stop post are open to reach, and the shaft goes in or out along the
+and the wrist roll shaft and its clamp nuts are open to reach, and the shaft goes in or out along the
 roll axis. Located by a ring rim on its inner face inside the bay's bore, held by 4 magnet pairs (wrist_back_magnets:
 one disc in a pocket in the frame's step, one in a pocket in its inner face); a notch at its edge toward the motor lets
 the gripper servo's cable out of the rotor's bore, another clears the MKS board's near side plug. A grill of straight

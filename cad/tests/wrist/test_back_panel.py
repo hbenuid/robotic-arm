@@ -3,7 +3,7 @@ flush with wrist_link's slanted rear in a step over the tower, over the shaft's 
 magnet pairs (wrist_back_magnets) - the forearm roll frame's (tests/forearm/test_roll_back_panel.py) one joint further
 out. Both are designed here with no reference (lib/reference.py NO_REFERENCE) - THIS file locks their numbers (pieces,
 volume, bounding box, measured on the build and written in) and what they are: the panel's outer face on the rear plane,
-one plane (it prints flat), on the step's floor, run_gap off the turning shaft and its lug, located by its rim in the
+one plane (it prints flat), on the step's floor, run_gap off the turning shaft, located by its rim in the
 bay's bore, its notches open (the gripper servo's cable's, the MKS board's near side plug's room), its grill's slots open
 onto the bay, grill_clear off the rim and the cable's notch; the frame's step and
 pockets; each magnet pressed to its pocket's bottom, the pair facing across the step's floor - and all of it clear of
@@ -156,7 +156,7 @@ def test_the_frames_step_and_pockets(frame):
 @pytest.mark.slow
 def test_the_panel_is_flush_flat_and_clear_of_the_shaft(module, frame):
     """Its outer face on the rear plane, nothing of it past it, one plane (it prints flat, outer face down); on the step's
-    floor (contact, no overlap with the frame); run_gap or more off the shaft and its lug's sweep at any roll; its rim in
+    floor (contact, no overlap with the frame); run_gap or more off the shaft and its flange's sweep at any roll; its rim in
     the bay's bore, rim_clear off it; its edge gap short of the board's window, side_clear off the plate."""
     panel, shaft = _leaf(module, PANEL), _leaf(module, "wrist_roll_shaft")
     outs = [_out(v) for v in panel.vertices()]
@@ -165,7 +165,7 @@ def test_the_panel_is_flush_flat_and_clear_of_the_shaft(module, frame):
     flats = [f for f in panel.faces() if f.geom_type == GeomType.PLANE and abs(f.normal_at().Y - ny) < 1e-6 and abs(f.normal_at().Z - nz) < 1e-6]
     assert len(flats) == 1 and max(abs(_out(v)) for v in flats[0].vertices()) < 1e-6                 # one outer face, on the plane
     assert interference(panel, frame) == pytest.approx(0.0, abs=1e-6) and closest_points(panel, frame).distance < 1e-6
-    sweep = cylinder(D.stop_lug_r[1], D.stop_lug_t, z0=S["z_shaft_end"])
+    sweep = cylinder(D.collar_od / 2.0, S["z_shoulder_1"] - S["z_shaft_end"], z0=S["z_shaft_end"])
     assert closest_points(panel, sweep).distance >= D.run_gap and closest_points(panel, shaft).distance >= D.run_gap
     # the rim: a ring rim_clear inside the bay's bore, rim_w wide, rim_h in from the panel's inner face
     mid = D.bay_r - B.rim_clear - B.rim_w / 2.0
