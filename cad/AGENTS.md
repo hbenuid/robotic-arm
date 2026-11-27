@@ -202,8 +202,7 @@ machines"; CI is the third machine: root `AGENTS.md` "CI").
   part rebuilt alone is right, so the hash gate would pass on old geometry. Seen with a source edited while `gen` ran
   (so never edit sources a running `gen` reaches), with a fresh worktree whose baseline arm came from the cache, and
   with a warm engine through an edit of a constant a module's `DEFAULT` is computed from. `gen assemblies/arm.py
-  --force` clears it, before the hash gate (it can rewrite other STEPs' bytes: settle them with `inspect diff`); right
-  after it, `./cadtool cad inspect` can still give the old volume - read the file (`cad.step.read`).
+  --force` clears it, before the hash gate (it can rewrite other STEPs' bytes: settle them with `inspect diff`).
 - Don't compare large STEP artifacts with `git diff`; compare source, `inspect` output and snapshots. A STEP edited
   (or deleted) by anything but its model comes back on the model's next run, byte for byte (`wrote …`).
 - A model run takes no options: `./cadtool gen` refuses any flag but its own `--force` (`CAD_ENGINE_MEMO=0`: every
