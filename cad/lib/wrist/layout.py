@@ -242,13 +242,12 @@ def clamp_points(cfg: WristConfig = DEFAULT) -> list[tuple[float, float]]:
             for k in range(4)]
 
 
-def clamp_nut_pocket(cfg: WristConfig = DEFAULT) -> tuple[float, float, float, float]:
-    """(r_in, r_out, z0, z1) of each clamp nut's pocket in the shaft's flange, radially along its screw's angle: from
-    inside the cable bore past the nut's corner by nut_fit; from the shaft's rear face (open: the nut goes in there) to
-    the nut's bearing face."""
+def clamp_nut_pocket(cfg: WristConfig = DEFAULT) -> tuple[float, float, float]:
+    """(af, z0, z1) of each clamp nut's pocket in the shaft's flange: a closed hex on the screw's axis, clamp_nut_af
+    across flats, a flat toward the bore (lib/geom.py nut_pocket); from the shaft's rear face (open: the nut goes in
+    there) to the nut's bearing face."""
     d, S = cfg.roll, stack_positions(cfg)
-    r_out = d.clamp_circle_dia / 2.0 + d.nut.af / math.sqrt(3.0) + d.nut_fit
-    return d.bore / 2.0 - 1.0, r_out, S["z_shaft_end"], S["z_clamp_nut_seat"]
+    return d.clamp_nut_af, S["z_shaft_end"], S["z_clamp_nut_seat"]
 
 
 def gripper_frame_in_module(cfg: WristConfig = DEFAULT) -> tuple:

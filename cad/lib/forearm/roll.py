@@ -30,7 +30,17 @@ from lib.forearm.layout import (
 )
 from lib.forearm.link import x_cylinder, yz_prism
 from lib.forearm.params import DEFAULT, ForearmConfig
-from lib.geom import box, chamfer_outline, cylinder, faceted_end, hex_prism, nut_slot, single_solid, stop_wedge, through
+from lib.geom import (
+    box,
+    chamfer_outline,
+    cylinder,
+    faceted_end,
+    hex_prism,
+    nut_pocket,
+    single_solid,
+    stop_wedge,
+    through,
+)
 from lib.pulley.teeth import gt2_ring
 from lib.sensors import A3144_HALL_DEPTH, KY003_BOARD_W, KY003_HOLE_INSET, ky003_hall_point
 from lib.units import NUDGE
@@ -394,8 +404,8 @@ def build_pulley(cfg: ForearmConfig = DEFAULT):
 def build_shaft(cfg: ForearmConfig = DEFAULT):
     """The shaft (forearm_roll_shaft) in the module frame - a collar that holds bearing 1: its journal through bearing 1
     to the bearing's front face, where the pulley's neck meets it, the Ø33 shoulder on bearing 1's inner ring, the flange
-    behind it with the rotor clamp's four nuts (pockets open to its rear face and into the bore) and the hard-stop lug;
-    the cable bore."""
+    behind it with the rotor clamp's four nuts (closed hex pockets open to its rear face) and the hard-stop lug; the
+    cable bore."""
     d, S = cfg.drive, stack_positions(cfg)
     j_r = (d.bearing_bore + d.journal_add) / 2.0
     z0 = S["z_shaft_end"]
@@ -404,10 +414,10 @@ def build_shaft(cfg: ForearmConfig = DEFAULT):
     body = body + cylinder(d.collar_od / 2.0, S["z_shoulder_1"] - z0, z0=z0)
     body = body + stop_wedge(d.stop_lug_r[0], d.stop_lug_r[1], S["z_stop_lug"], d.stop_lug_t, d.stop_deg_width, 0.0)
     body = body - cylinder(d.bore / 2.0, S["z_meet"] - z0 + 2 * NUDGE, z0=z0 - NUDGE)
-    r_in, r_out, p0, p1 = clamp_nut_pocket(cfg)
+    af, p0, p1 = clamp_nut_pocket(cfg)
     for x, y in clamp_points(cfg):
         body = body - cylinder(d.clamp_bolt_dia / 2.0, S["z_meet"] - z0 + 2 * NUDGE, (x, y), z0=z0 - NUDGE)
-        body = body - nut_slot(r_in, r_out, d.clamp_nut.af, p0 - NUDGE, p1, math.atan2(y, x))
+        body = body - nut_pocket(x, y, af, p0 - NUDGE, p1)
     return single_solid(body - home_magnet_pocket(cfg))
 
 

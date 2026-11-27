@@ -162,3 +162,15 @@ def nut_slot(r_in: float, r_out: float, af: float, z0: float, z1: float, at_rad:
     """A nut's pocket: a radial slot from r_in to r_out, af wide (a flat either side of the nut), z0 .. z1, along at_rad."""
     slot = bd.Pos((r_in + r_out) / 2.0, 0.0, z0) * bd.Box(r_out - r_in, af, z1 - z0, align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MIN))
     return bd.Rot(0.0, 0.0, math.degrees(at_rad)) * slot
+
+
+def flat_toward_axis(x: float, y: float) -> float:
+    """hex_prism's angle for a hex centred at (x, y) with a flat toward the Z axis (and one away from it): a corner 30
+    deg off its radius."""
+    return math.atan2(y, x) + math.pi / 6.0
+
+
+def nut_pocket(x: float, y: float, af: float, z0: float, z1: float):
+    """A nut's closed hex pocket on a screw parallel to Z at (x, y): af across flats, z0 .. z1, a flat toward the axis
+    (flat_toward_axis: the most wall it leaves to a bore on the axis)."""
+    return bd.Pos(x, y, z0) * hex_prism(af, flat_toward_axis(x, y), z1 - z0)

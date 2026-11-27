@@ -18,7 +18,7 @@ from lib import params as PARAMS
 from lib import placements as P
 from lib.belts import GT2_PULLEY_20T_TEETH, STANDARD_2GT_LENGTHS, closed_belt_length
 from lib.datum import to_location
-from lib.fasteners import M4_CLEAR_FINE, M4_CLEAR_UPRIGHT
+from lib.fasteners import M4_CLEAR_FINE, M4_CLEAR_UPRIGHT, M4_NUT_UPRIGHT_PRESS_AF
 from lib.forearm import (
     DEFAULT,
     ELBOW_INSET,
@@ -187,17 +187,19 @@ def test_stack():
     assert _eq(S["z_clamp_head"], S["z_wall_back"] - D.clamp_screw.head_h - D.clamp_head_clear) and S["z_wall_back"] == -w.wall_x[0]
     assert _eq(S["z_shaft_end"], S["z_clamp_head"] - D.clamp_screw_len) and math.isclose(S["z_clamp_nut"] - S["z_shaft_end"], 2 * D.clamp_pitch)
     assert math.isclose(S["z_clamp_nut_seat"] - S["z_clamp_nut"], D.clamp_nut.h) and S["z_shoulder_1"] - S["z_clamp_nut_seat"] >= 0.5 - 1e-9
-    nut_r = D.clamp_circle_dia / 2.0 + D.clamp_nut.af / math.sqrt(3.0)                      # the nut's corners off the axis
+    nut_r = math.hypot(D.clamp_circle_dia / 2.0 + D.clamp_nut.af / 2.0, D.clamp_nut.af / (2.0 * math.sqrt(3.0)))   # its outer corners off the axis
     assert S["z_bearing_1"] - S["z_clamp_nut_seat"] >= 1.5 - 1e-9 and nut_r < D.shoulder_dia / 2.0
     assert D.clamp_circle_dia / 2.0 + D.clamp_nut.af / 2.0 < (D.bearing_bore + D.journal_add) / 2.0
     clamp_r, hole_r = D.clamp_circle_dia / 2.0, D.clamp_bolt_dia / 2.0
     assert clamp_r - hole_r - D.bore / 2.0 >= 3.15 - 1e-9 and j_r - clamp_r - hole_r >= 1.525 - 1e-9 and D.neck_dia / 2.0 - clamp_r - hole_r >= 1.35 - 1e-9
     assert p_r - clamp_r - hole_r >= 1.5 - 1e-9 and D.shoulder_dia / 2.0 - clamp_r - hole_r >= 2.9 - 1e-9
-    # each nut's pocket opens into the bore whole: the slot's inner corners (af wide) well inside it - no sliver of the
-    # flange left between them
-    r_in, r_out, z0, z1 = clamp_nut_pocket(DEFAULT)
-    assert D.bore / 2.0 - math.hypot(r_in, D.clamp_nut.af / 2.0) >= 0.5
-    assert D.collar_od / 2.0 - r_out >= 3.0 and (z0, z1) == (S["z_shaft_end"], S["z_clamp_nut_seat"])
+    # each nut's pocket a closed hex, the upright press (the shaft printed rear face down), a flat toward the bore: 1.7 mm
+    # of the flange between them, 3 or more to its rim past the outer corners; from the rear face to the nut's bearing face
+    af, z0, z1 = clamp_nut_pocket(DEFAULT)
+    assert af == D.clamp_nut_af == M4_NUT_UPRIGHT_PRESS_AF and af > D.clamp_nut.af
+    assert clamp_r - af / 2.0 - D.bore / 2.0 >= 1.7 - 1e-9
+    assert D.collar_od / 2.0 - math.hypot(clamp_r + af / 2.0, af / (2.0 * math.sqrt(3.0))) >= 3.0
+    assert (z0, z1) == (S["z_shaft_end"], S["z_clamp_nut_seat"])
     # the bay behind bearing 1, bored on through the frame's back - the shaft, bearing 1 on it, goes in along the axis from
     # behind -: round the lug, wide enough for bearing 1; the tower's rear in the profile its own (tower_rear: the rear
     # line's anchor). The shaft's rear face inside the rear line, its lug 2 mm or more at any roll angle (it sweeps the
@@ -472,18 +474,20 @@ def test_frame_features(module):
         assert is_inside(block, above, y + (corner + 0.3) * t[0], z + (corner + 0.3) * t[1])
 
 
-def _nut_pocket_probes(part, points, pocket, af: float):
-    """A nut's pocket along each screw's angle: a flat either side, past the nut's corner, open into the bore."""
-    _r_in, r_out, z0, z1 = pocket
-    zn, flat = (z0 + z1) / 2.0, af / 2.0
+def _nut_pocket_probes(part, points, pocket):
+    """A nut's closed hex pocket on each screw's axis, a flat toward the bore: open inside its flats (along the radius)
+    and its corners (across it), the flange outside them - and between the inner flat and the bore."""
+    af, z0, z1 = pocket
+    zn, flat, corner = (z0 + z1) / 2.0, af / 2.0, af / math.sqrt(3.0)
     for x, y in points:
         rc = math.hypot(x, y)
-        u, t = (x / rc, y / rc), (-y / rc, x / rc)                                 # radial, tangential
-        assert not is_inside(part, x + (flat - 0.2) * t[0], y + (flat - 0.2) * t[1], zn)
-        assert is_inside(part, x + (flat + 0.3) * t[0], y + (flat + 0.3) * t[1], zn)
-        assert not is_inside(part, (r_out - 0.2) * u[0], (r_out - 0.2) * u[1], zn)
-        assert is_inside(part, (r_out + 0.3) * u[0], (r_out + 0.3) * u[1], zn)
-        assert not is_inside(part, (D.bore / 2.0 + 0.3) * u[0], (D.bore / 2.0 + 0.3) * u[1], zn)
+        u, t = (x / rc, y / rc), (-y / rc, x / rc)                                 # radial (to a flat), tangential (to a corner)
+        for k, reach in ((u, flat), (t, corner)):
+            for s in (1.0, -1.0):
+                assert not is_inside(part, x + s * (reach - 0.2) * k[0], y + s * (reach - 0.2) * k[1], zn)
+                assert is_inside(part, x + s * (reach + 0.3) * k[0], y + s * (reach + 0.3) * k[1], zn)
+        r_wall = (D.bore / 2.0 + rc - flat) / 2.0
+        assert is_inside(part, r_wall * u[0], r_wall * u[1], zn)
 
 
 @pytest.mark.slow
@@ -530,7 +534,7 @@ def test_pulley_and_shaft_features(module):
     assert not is_inside(shaft, -(D.stop_lug_r[0] + D.stop_lug_r[1]) / 2.0, 0, S["z_stop_lug"] + 1.0)
     for x, y in clamp_points(DEFAULT):
         assert not is_inside(shaft, x, y, zh) and not is_inside(shaft, x, y, S["z_shaft_end"] + 0.2)   # the hole; the pocket open at the rear face
-    _nut_pocket_probes(shaft, clamp_points(DEFAULT), clamp_nut_pocket(DEFAULT), D.clamp_nut.af)
+    _nut_pocket_probes(shaft, clamp_points(DEFAULT), clamp_nut_pocket(DEFAULT))
     bb = shaft.bounding_box()
     assert math.isclose(bb.min.Z, S["z_shaft_end"], abs_tol=1e-6) and math.isclose(bb.max.Z, S["z_meet"], abs_tol=1e-6)
 

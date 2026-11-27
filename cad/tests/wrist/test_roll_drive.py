@@ -35,7 +35,7 @@ from lib.wrist.layout import (
 )
 from robot import frames as F
 from tests import built
-from tests.helpers import interference, part_colours
+from tests.helpers import interference, is_inside, part_colours
 
 S = stack_positions(DEFAULT)
 D = DEFAULT.roll
@@ -164,7 +164,7 @@ def test_the_belt_is_a_stock_length_at_the_slots_middle():
 
 def test_the_rotor_walls():
     """Inside the band's core the clamp's M3 between the cable bore and the core (1+ mm each side); in the face the
-    connector's nut pockets clear of the clamp's counterbores; the clamp's nut pockets inside the shaft's flange."""
+    connector's nut pockets clear of the clamp's counterbores; the clamp's nut pockets closed in the shaft's flange."""
     r_core, r_bore, r_bolt = D.ring_core_dia / 2.0, D.bore / 2.0, D.bolt_dia / 2.0
     head = D.clamp_screw.head_dia / 2.0 + D.clamp_head_clear
     for x, y in clamp_points(DEFAULT):
@@ -182,8 +182,14 @@ def test_the_rotor_walls():
             u, v = cx * math.cos(a) + cy * math.sin(a), -cx * math.sin(a) + cy * math.cos(a)
             d = math.hypot(max(r_in - u, 0.0), max(abs(v) - half, 0.0))
             assert d - head >= 1.0, (bx, by, cx, cy)
-    r_in, r_out, _, _ = clamp_nut_pocket(DEFAULT)
-    assert r_out <= D.collar_od / 2.0 - 1.0
+    # the clamp's nut pockets closed hexes (the press estimate, a flat toward the bore): the inner flat two beads off the
+    # cable bore (the printability check's floor 0.8), the outer corners inside the flange's rim
+    af, z0, z1 = clamp_nut_pocket(DEFAULT)
+    clamp_r = D.clamp_circle_dia / 2.0
+    assert af == D.clamp_nut_af and af > D.nut.af
+    assert clamp_r - af / 2.0 - r_bore >= 1.0 - 1e-9
+    assert D.collar_od / 2.0 - math.hypot(clamp_r + af / 2.0, af / (2.0 * math.sqrt(3.0))) >= 1.0
+    assert (z0, z1) == (S["z_shaft_end"], S["z_clamp_nut_seat"])
 
 
 def test_the_connector_turns_with_the_gripper():
@@ -285,6 +291,26 @@ def test_the_rotor_turns_clear_of_the_frame(module, frame):
     pulley, shaft = _leaf(module, "wrist_roll_pulley"), _leaf(module, "wrist_roll_shaft")
     assert math.isclose(pulley.bounding_box().min.Z, S["z_meet"], abs_tol=1e-6) and math.isclose(shaft.bounding_box().max.Z, S["z_meet"], abs_tol=1e-6)
     assert closest_points(pulley, shaft).distance < 1e-6 and interference(pulley, shaft) < 1e-3
+
+
+@pytest.mark.slow
+def test_the_clamp_nut_pockets(module):
+    """Each clamp nut's pocket in the shaft's flange a closed hex on its screw's axis, a flat toward the bore: open inside
+    its flats (along the radius) and its corners (across it), the flange outside them - and between the inner flat and
+    the bore -, open at the shaft's rear face."""
+    shaft = _leaf(module, "wrist_roll_shaft")
+    af, z0, z1 = clamp_nut_pocket(DEFAULT)
+    zn, flat, corner = (z0 + z1) / 2.0, af / 2.0, af / math.sqrt(3.0)
+    for x, y in clamp_points(DEFAULT):
+        rc = math.hypot(x, y)
+        u, t = (x / rc, y / rc), (-y / rc, x / rc)                                 # radial (to a flat), tangential (to a corner)
+        for k, reach in ((u, flat), (t, corner)):
+            for s in (1.0, -1.0):
+                assert not is_inside(shaft, x + s * (reach - 0.2) * k[0], y + s * (reach - 0.2) * k[1], zn)
+                assert is_inside(shaft, x + s * (reach + 0.3) * k[0], y + s * (reach + 0.3) * k[1], zn)
+        r_wall = (D.bore / 2.0 + rc - flat) / 2.0
+        assert is_inside(shaft, r_wall * u[0], r_wall * u[1], zn)
+        assert not is_inside(shaft, x + (flat - 0.2) * u[0], y + (flat - 0.2) * u[1], z0 + 0.2)   # open at the rear face
 
 
 @pytest.mark.slow

@@ -438,7 +438,11 @@ class WristRollParams:
     clamp_angle_deg: float = 45.0       # [DESIGN] between the connector's bolts
     clamp_screw_len: float = 35.0       # [DESIGN] M3 x 35 (ISO 4762) from its counterbore's floor: its tip sets the shaft's rear face
     clamp_head_clear: float = 0.25      # [DESIGN] round the heads and over them
-    nut_fit: float = 0.2                # [DESIGN] each M3 nut's pocket: a slot (af wide) past its corner and over its height by this
+    nut_fit: float = 0.2                # [DESIGN] each connector M3 nut's pocket: a slot (af wide) past its corner and over its height by this
+    clamp_nut_af: float = 5.6           # [ESTIMATE] each clamp M3 nut's pocket in the shaft's flange: a closed hex, a flat toward the bore
+    #                                     (lib/geom.py nut_pocket), 1.00 of wall to it (the printability check's floor 0.8) - a press
+    #                                     taken as the measured M4's (M4_NUT_UPRIGHT_PRESS_AF, 0.1 over its nut) until the M3 NUT gauge
+    #                                     is printed; the shaft printed rear face down (the pockets open on the bed)
     stop_lug_r: tuple = (17.5, 21.6)    # [DESIGN] the rotor's hard-stop lug on the shaft's flange (rooted 0.5 inside it), at +X in the zero pose
     stop_lug_t: float = 4.5             # [DESIGN] ... from the shaft's rear face: 1.35 short of bearing 1's outer ring
     stop_post_r: tuple = (19.5, 23.1)   # [DESIGN] the frame's post at -X in the bay, fused into its wall; clear of the flange (r 18)

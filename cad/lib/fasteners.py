@@ -64,7 +64,8 @@ M5_NUT = NutSize(5.0, 8.0, 4.7)               # [DATASHEET] ISO 4032 M5
 M4_NUT_SIDE_PRESS_AF = 7.15   # [MEASURE]
 # The same press in a pocket printed UPRIGHT - its axis up, a corner across -, PETG at 0.20, the pocket opening on the
 # bed (j1_coupler_plate's test plate): the nut goes in with a push and stays when the part is turned over. Every upright
-# M4 press pocket takes it - j1_coupler_plate's (the 120T's nuts and the plate screws'); a pocket the nut drops into
+# M4 press pocket takes it - j1_coupler_plate's (the 120T's nuts and the plate screws'), forearm_roll_shaft's (the rotor
+# clamp's nuts, lib/forearm/params.py RollDriveParams.clamp_nut_af); a pocket the nut drops into
 # (the drive's housing nuts, lib/cycloidal/params.py bolt_nut_pocket_af) is no press.
 M4_NUT_UPRIGHT_PRESS_AF = 7.1   # [MEASURE]
 

@@ -44,6 +44,7 @@ from lib.fasteners import (
     M4_CLEAR_UPRIGHT,
     M4_NUT,
     M4_NUT_SIDE_PRESS_AF,
+    M4_NUT_UPRIGHT_PRESS_AF,
     M4_PITCH,
     M4_SHCS,
     M5_CLEAR,
@@ -556,10 +557,11 @@ class RollDriveParams:
     #                                       it sets)
     clamp_head_clear: float = 0.25        # [DESIGN] the wall's counterbores round the heads (on the radius) and over them: the heads that far
     #                                       under the wall's wrist face
-    clamp_nut: NutSize = M4_NUT          # [DATASHEET] ISO 4032 M4, in the shaft's flange: its pocket open to the rear face and the bore, the nut
-    #                                       2 pitches short of the tip (parts/joints/roll_clamp_nuts)
-    clamp_nut_fit: float = 0.2            # [DESIGN] each nut's pocket - a slot from inside the bore out past the nut's corner, a flat either
-    #                                       side (af wide, line to line) - its reach past the corner
+    clamp_nut: NutSize = M4_NUT          # [DATASHEET] ISO 4032 M4, in the shaft's flange: its pocket open to the rear face, the nut 2 pitches
+    #                                       short of the tip (parts/joints/roll_clamp_nuts)
+    clamp_nut_af: float = M4_NUT_UPRIGHT_PRESS_AF   # [MEASURE] 7.1, each nut's pocket: a closed hex, a flat toward the bore
+    #                                       (lib/geom.py nut_pocket) - the upright press, the shaft printed rear face down
+    #                                       (the pockets open on the bed); 1.70 of wall to the bore
     stop_lug_r: tuple = (19.5, 24.5)      # [DESIGN] the rotor's hard-stop lug on the shaft's flange (rooted 0.5 inside its Ø40), at +X in the zero pose
     stop_lug_t: float = 3.75              # [DESIGN] ... from the shaft's rear face: 2.35 short of bearing 1's rear face (the shaft's flange
     #                                       ends run_gap short of it), 2.5 of it beside the post
