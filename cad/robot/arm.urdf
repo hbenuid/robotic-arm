@@ -47,7 +47,7 @@
   PLACEHOLDERS [ESTIMATE] (cad/lib/params.py): the base_yaw limit and the shoulder's lower limit, every
   effort and velocity value; the positive-motion sign of every axis
   (cad/robot/frames.py; confirm with viewer sweeps). The other limits are [DESIGN]
-  (cad/tests/test_sweeps.py, the printed hard stops).
+  (cad/tests/test_sweeps.py).
   ASSUMPTIONS: j1_coupler (the holder) turns on the base and carries the cycloidal drive's
   stator (the held carrier - motor plate, output hub + pins -, the motor, the gear train) in its
   yoke - together shoulder_link; the drive's rotor (the turning shell: shell ring, ring pins,
@@ -66,8 +66,8 @@
   mapped; the shoulder_pitch motor is the drive's own NEMA 17 at 21:1 (cad/lib/params.py CYCLOIDAL_RATIO; config.py's
   gear_ratio 1 / 21, its ratios, limits and home angles checked against the CAD by cad/tests/test_robot.py). The
   belt motors' masses (280 g) and boards (35 g) are estimates; the wrist_pitch motor sits where the stock
-  wrist belt puts it (J2_MOTOR_SLIDE_X, WRIST_BELT_LENGTH); FOREARM_ROLL_LIMIT_DEG stops 2 deg short of the
-  printed hard stop, WRIST_ROLL_LIMIT_DEG 2 deg short of the wrist roll's. elbow_pitch's upper limit is the arm's
+  wrist belt puts it (J2_MOTOR_SLIDE_X, WRIST_BELT_LENGTH); FOREARM_ROLL_LIMIT_DEG and
+  WRIST_ROLL_LIMIT_DEG are software limits (no printed hard stop on either roll). elbow_pitch's upper limit is the arm's
   own (the forearm's board and the wrist body against the base), not the gripper's: folded past ELBOW_GRIPPER_FREE_DEG, the wrist bent down or
   the forearm rolled can put the gripper into the upper arm - a planner must check those poses.
   The jaws (the MG996R) are not on the CAN bus: config.py's JOINTS are the six revolute joints.
@@ -132,9 +132,9 @@
   </link>
   <link name="elbow_link">
     <inertial>
-      <origin xyz="0.005327 -0.017668 0.015531" rpy="0 0 0" />
-      <mass value="0.765811" />
-      <inertia ixx="1.118748e-03" ixy="1.197504e-04" ixz="-1.850063e-05" iyy="6.167321e-04" iyz="5.961129e-05" izz="1.042632e-03" />
+      <origin xyz="0.005327 -0.01766 0.015534" rpy="0 0 0" />
+      <mass value="0.7657" />
+      <inertia ixx="1.118354e-03" ixy="1.197498e-04" ixz="-1.850084e-05" iyy="6.166911e-04" iyz="5.973097e-05" izz="1.042279e-03" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -151,9 +151,9 @@
   </link>
   <link name="forearm_link">
     <inertial>
-      <origin xyz="0.006304 -0.000058 0.092765" rpy="0 0 0" />
-      <mass value="0.652826" />
-      <inertia ixx="1.393038e-03" ixy="3.633499e-06" ixz="-2.259687e-04" iyy="1.458861e-03" iyz="2.206871e-06" izz="3.261444e-04" />
+      <origin xyz="0.006301 -0.000058 0.092777" rpy="0 0 0" />
+      <mass value="0.652733" />
+      <inertia ixx="1.392301e-03" ixy="3.633583e-06" ixz="-2.261003e-04" iyy="1.458101e-03" iyz="2.206402e-06" izz="3.261206e-04" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -170,9 +170,9 @@
   </link>
   <link name="wrist_pitch_link">
     <inertial>
-      <origin xyz="0.001199 0.013009 0.007855" rpy="0 0 0" />
-      <mass value="0.449778" />
-      <inertia ixx="5.044843e-04" ixy="-2.672964e-05" ixz="-6.769129e-06" iyy="2.695213e-04" iyz="-4.206405e-05" izz="3.497467e-04" />
+      <origin xyz="0.001199 0.013004 0.007857" rpy="0 0 0" />
+      <mass value="0.449715" />
+      <inertia ixx="5.043890e-04" ixy="-2.673163e-05" ixz="-6.768280e-06" iyy="2.695052e-04" iyz="-4.209957e-05" izz="3.496673e-04" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -189,9 +189,9 @@
   </link>
   <link name="wrist_roll_link">
     <inertial>
-      <origin xyz="0.004693 0.000043 0.026896" rpy="0 0 0" />
-      <mass value="0.152359" />
-      <inertia ixx="1.518642e-04" ixy="-1.377353e-08" ixz="-1.126166e-05" iyy="1.719731e-04" iyz="9.974502e-08" izz="4.180657e-05" />
+      <origin xyz="0.004695 0.000053 0.026924" rpy="0 0 0" />
+      <mass value="0.15228" />
+      <inertia ixx="1.515983e-04" ixy="-8.186684e-09" ixz="-1.124623e-05" iyy="1.717370e-04" iyz="1.847556e-07" izz="4.177461e-05" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />

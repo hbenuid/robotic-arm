@@ -15,7 +15,7 @@ from the face, which the frame prints on -, its M5 and nut: RollIdlerParams); th
 a 12 mm spacer between them, bearing 2's front face flush with the frame's. Rotor: the pulley (forearm_roll_pulley, the
 output: the integral 90T ring on its core, the Ø33 shoulder under it on down to bearing 2, its hub down through bearing 2
 and its neck on to bearing 1, its flat front face the forearm's wall bolts onto) and the shaft (forearm_roll_shaft, a
-collar that holds bearing 1: its journal through it, the rotor clamp's nuts and the stop lug in its flange - in
+collar that holds bearing 1: its journal through it, the rotor clamp's nuts in its flange - in
 through the frame's back), clamped with the forearm's wall by 4x M4 from the wall's counterbores through the wall and
 both pieces into nuts in the shaft's flange (roll_clamp_screws, roll_clamp_nuts: on the rotor; forearm_link). The shaft's bay is closed by a removable back panel flush with the
 frame's rear face (forearm_roll_back_panel, in a step across the face, over the bay and the opening grown down below
@@ -96,9 +96,9 @@ BODIES = {"rotor": ROTOR, "stator": frozenset(part for part, _, _ in OCCURRENCES
 # Totals lock (tests/test_assembly.py, test_robot.py; robot/ inertials sum the same rows): whole module + per body.
 # Re-derive with totals() / totals("stator") after any geometry change.
 EXPECTED: dict[str, Any] = {
-    "leaves": 24, "solids": 59, "solid_volume": 390697.749,
-    "bodies": {"stator": {"leaves": 19, "solids": 48, "solid_volume": 344494.941},
-               "rotor": {"leaves": 5, "solids": 11, "solid_volume": 46202.808}},
+    "leaves": 24, "solids": 59, "solid_volume": 390537.276,
+    "bodies": {"stator": {"leaves": 19, "solids": 48, "solid_volume": 344407.426},
+               "rotor": {"leaves": 5, "solids": 11, "solid_volume": 46129.85}},
 }
 
 

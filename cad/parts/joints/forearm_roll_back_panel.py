@@ -1,7 +1,7 @@
 """forearm_roll_back_panel - the forearm roll frame's removable back panel: a plate flush with the frame's slanted rear
 face (the rear line) in a step cut across the face's full width, from the tower's top down, over the shaft's bay and the
-opening grown down below the bay's bore - lift it off and the roll shaft, its clamp nuts and the stop post are open to
-reach. Relieved where it passes over the turning shaft (run_gap off its rear face and its lug), located by a U rim on its
+opening grown down below the bay's bore - lift it off and the roll shaft and its clamp nuts are open to
+reach. Relieved where it passes over the turning shaft (run_gap off its rear face), located by a U rim on its
 inner face in the opening's lower part, held by 4 magnet pairs (roll_back_magnets: one disc in a pocket in the frame's
 step, one in a pocket in its inner face). A grill of straight slots up the face is cut through it over the bay and the
 opening, inside the rim - the turning shaft shows behind it (lib/forearm/roll.py back_grill). Nothing passes through

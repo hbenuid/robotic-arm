@@ -227,8 +227,6 @@ def stack_positions(cfg: ForearmConfig = DEFAULT) -> dict[str, float]:
         "z_clamp_nut": z_clamp_nut,
         "z_clamp_nut_seat": z_clamp_nut + d.clamp_nut.h,          # 6.35: its bearing face, toward the pulley
         "z_clamp_head": z_clamp_head,
-        "z_stop_lug": z_shaft_end,                                # 1.8 .. +stop_lug_t on the shaft's flange
-        "z_stop_post": z_bearing_1 - d.stop_post_t,               # 3.0 .. 7.85 on the tower's face behind bearing 1
         "z_shoulder_1": z_bearing_1 - d.run_gap,                  # 6.85: the shaft's Ø33 shoulder on bearing 1's inner ring
         "z_bearing_1": z_bearing_1, "z_lip": z_lip,
         "z_meet": z_meet,

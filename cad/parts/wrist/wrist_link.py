@@ -15,7 +15,7 @@ rear one slanted plane, the front face's long edges faceted - one body round the
 its pocket (open down through the bottom - the frame's end beyond the motor, where it slides in - its front wall the
 plate it bolts to, slotted for the belt's tension, the screws' heads flush in counterbores in its front face, a groove
 inside the side wall for its plug), its MKS board in a window open at the rear and the bottom; the tower: the 6806 pair
-on a lip, bearing 2's seat open through the front face, the shaft's bay with the hard stop's post bored on through the
+on a lip, bearing 2's seat open through the front face, the shaft's bay bored on through the
 rear under a removable back panel (wrist_back_panel, held by wrist_back_magnets). Nothing stands proud of the front
 face: the part prints flat on it. LEGACY (REFERENCE_BUILD) is the
 SolidWorks part: the plate with a round end on each axis, the tower on the other - an R39 wall round an R30 bore, a

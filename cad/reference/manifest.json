@@ -516,13 +516,13 @@
     146.0,
     75.85
    ],
-   "bytes": 597672,
+   "bytes": 581719,
    "file": "native/forearm_roll_block.step",
    "kind": "native",
    "origin": "native",
    "product": "forearm_roll_block - the forearm roll drive's STATOR - the roll frame (the elbow block), which the elbow's output",
-   "sha256": "38f5447e72465b28aaa0a61755b1946b33e200df2058222424a3d069fd81322e",
-   "solid_volume": 226764.992,
+   "sha256": "6c58bb01a1b415d31694639232ea2870efedf3c9de48b01bbd2c19f9c04802ae",
+   "solid_volume": 226677.477,
    "solids": 1,
    "source": "lib/forearm/roll.py:build_block(DEFAULT)",
    "units": "mm"
@@ -534,17 +534,17 @@
     1.75
    ],
    "bbox_size": [
-    44.5,
+    40.0,
     40.0,
     13.1
    ],
-   "bytes": 149795,
+   "bytes": 134664,
    "file": "native/forearm_roll_shaft.step",
    "kind": "native",
    "origin": "native",
    "product": "forearm_roll_shaft - the rear piece of the forearm roll drive's ROTOR, ELBOW_ROLL_OFFSET above the elbow axis: a collar",
-   "sha256": "fcf42bde6b3e935b89b52e2080bdbe78a063911a5980b2937136b64c68aa4645",
-   "solid_volume": 9398.312,
+   "sha256": "480e540d3abf37f6991747ce4276fc963d107d4ceeb19f6b422d76ab1a33b6b2",
+   "solid_volume": 9325.354,
    "solids": 1,
    "source": "lib/forearm/roll.py:build_shaft(DEFAULT)",
    "units": "mm"

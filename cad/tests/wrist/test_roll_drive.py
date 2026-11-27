@@ -118,7 +118,7 @@ def test_stack():
     # the frame's rear at the tower's far side the station the wrist pitch's +38 deg limit was set against
     assert S["z_bay"] == pytest.approx(S["z_shaft_end"] - (S["z_meet"] - S["z_bearing_1"]) - D.bay_clear)
     assert S["z_rear"] == pytest.approx(S["z_bay"] - D.tower_wall)
-    assert -D.bay_r - S["x_coupler"] >= 4.0 and D.bay_r > D.bearing_od / 2.0 + 1.0 and D.bay_r >= D.stop_lug_r[1] + 1.0
+    assert -D.bay_r - S["x_coupler"] >= 4.0 and D.bay_r > D.bearing_od / 2.0 + 1.0
     # the closed far face: its wall's inside outside the pancake's body and the board's housing, 7+ thick, past the plug's
     # groove a skin of 3+ (the groove plug_clear round the boss and past the tension travel)
     p = D.pancake
@@ -283,7 +283,7 @@ def test_everything_else_is_clean(module, frame):
 
 @pytest.mark.slow
 def test_the_rotor_turns_clear_of_the_frame(module, frame):
-    """The pulley and the shaft keep run_gap off the frame (the lug off the post at the zero pose); the two hubs meet face
+    """The pulley and the shaft keep run_gap off the frame; the two hubs meet face
     to face in the lip."""
     for label in ("wrist_roll_pulley", "wrist_roll_shaft"):
         gap = closest_points(_leaf(module, label), frame).distance

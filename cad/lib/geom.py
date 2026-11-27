@@ -144,14 +144,6 @@ def box(x, y, z):
     return bd.Pos(x[0], y[0], z[0]) * bd.Box(x[1] - x[0], y[1] - y[0], z[1] - z[0], align=(bd.Align.MIN, bd.Align.MIN, bd.Align.MIN))
 
 
-def stop_wedge(r_in: float, r_out: float, z0: float, height: float, deg_width: float, at_deg: float):
-    """A hard-stop lug or post: a radial box from r_in to r_out, deg_width wide at r_out (its sides parallel), standing
-    on z0, turned to at_deg about Z."""
-    half = r_out * math.tan(math.radians(deg_width / 2.0))
-    lug = bd.Pos(r_in, 0.0, z0) * bd.Box(r_out - r_in, 2 * half, height, align=(bd.Align.MIN, bd.Align.CENTER, bd.Align.MIN))
-    return bd.Rot(0.0, 0.0, at_deg) * lug
-
-
 def slot_y(x: float, y: float, width: float, length: float, z0: float, depth: float):
     """A slot `length` long along Y, `width` wide, through a plate from z0 (a motor plate's tension slots, its pilot
     slot)."""

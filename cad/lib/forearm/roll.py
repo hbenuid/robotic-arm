@@ -30,17 +30,7 @@ from lib.forearm.layout import (
 )
 from lib.forearm.link import x_cylinder, yz_prism
 from lib.forearm.params import DEFAULT, ForearmConfig
-from lib.geom import (
-    box,
-    chamfer_outline,
-    cylinder,
-    faceted_end,
-    hex_prism,
-    nut_pocket,
-    single_solid,
-    stop_wedge,
-    through,
-)
+from lib.geom import box, chamfer_outline, cylinder, faceted_end, hex_prism, nut_pocket, single_solid, through
 from lib.pulley.teeth import gt2_ring
 from lib.sensors import A3144_HALL_DEPTH, KY003_BOARD_W, KY003_HOLE_INSET, ky003_hall_point
 from lib.units import NUDGE
@@ -304,7 +294,7 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     channel under the face, the nut in from the pocket, whose far face is set back to the channel over its upper part -;
     the tower: bearing 1's seat from the shaft's bay behind it -
     bored on through the frame's back -, the lip (the spacer), bearing 2's seat open through the front face - 4 of wall
-    inside the facets, the pulley's core turning over it -, the stop post on the tower's face in the bay;
+    inside the facets, the pulley's core turning over it -;
     the rear face: the back panel's step across it, the opening grown down below the bay's bore, the magnets' pockets;
     the elbow 90T's 4x M4 up through the spigot into nuts in hex channels, open into the pocket."""
     d, S = cfg.drive, stack_positions(cfg)
@@ -341,14 +331,13 @@ def build_block(cfg: ForearmConfig = DEFAULT):
     # the shaft's bay behind bearing 1, bored on through the frame's back (the shaft, bearing 1 on it, goes in along the
     # axis from behind); the back panel's step across the rear face, full width, from the tower's top down to its bottom
     # edge, and the opening grown on down below the bay's bore, opening_depth in; the frame's magnets' pockets in the
-    # step's floor; the stop post on the tower's face inside the bay, at -X
+    # step's floor
     body = body - cylinder(d.bay_r, S["z_bearing_1"] + FAR, z0=-FAR)
     b, s_top = d.back, _back_top(cfg)
     body = body - _on_back(bd.Pos(0.0, (b.bottom + s_top) / 2.0) * bd.Rectangle(2.0 * FAR, s_top - b.bottom), -1.0, b.t + 1.0, cfg)
     body = body - _on_back(back_opening(cfg), -1.0, b.opening_depth + 1.0, cfg)
     for x, s in b.magnet_points:
         body = body - _on_back(bd.Pos(x, s) * bd.Circle(b.pocket_dia / 2.0), b.t - NUDGE, b.pocket_depth + NUDGE, cfg)
-    body = body + stop_wedge(d.stop_post_r[0], d.stop_post_r[1], S["z_stop_post"], d.stop_post_t, d.stop_deg_width, 180.0)
     # the elbow pulley's 4x M4 through the elbow flange into the frame: clearance up through the spigot to the nut seat,
     # then each nut's hex channel (a flat toward the elbow axis) on up through the floor into the motor's pocket, where the
     # nut drops in before the motor
@@ -404,15 +393,14 @@ def build_pulley(cfg: ForearmConfig = DEFAULT):
 def build_shaft(cfg: ForearmConfig = DEFAULT):
     """The shaft (forearm_roll_shaft) in the module frame - a collar that holds bearing 1: its journal through bearing 1
     to the bearing's front face, where the pulley's neck meets it, the Ø33 shoulder on bearing 1's inner ring, the flange
-    behind it with the rotor clamp's four nuts (closed hex pockets open to its rear face) and the hard-stop lug; the
-    cable bore."""
+    behind it with the rotor clamp's four nuts (closed hex pockets open to its rear face); the cable
+    bore."""
     d, S = cfg.drive, stack_positions(cfg)
     j_r = (d.bearing_bore + d.journal_add) / 2.0
     z0 = S["z_shaft_end"]
     body = cylinder(j_r, S["z_meet"] - S["z_bearing_1"], z0=S["z_bearing_1"])
     body = body + cylinder(d.shoulder_dia / 2.0, d.run_gap, z0=S["z_shoulder_1"])
     body = body + cylinder(d.collar_od / 2.0, S["z_shoulder_1"] - z0, z0=z0)
-    body = body + stop_wedge(d.stop_lug_r[0], d.stop_lug_r[1], S["z_stop_lug"], d.stop_lug_t, d.stop_deg_width, 0.0)
     body = body - cylinder(d.bore / 2.0, S["z_meet"] - z0 + 2 * NUDGE, z0=z0 - NUDGE)
     af, p0, p1 = clamp_nut_pocket(cfg)
     for x, y in clamp_points(cfg):
@@ -424,8 +412,8 @@ def build_shaft(cfg: ForearmConfig = DEFAULT):
 def build_back_panel(cfg: ForearmConfig = DEFAULT):
     """The back panel (forearm_roll_back_panel) in the module frame: a plate in the frame's step on the rear face (its
     outer face on the rear line), as wide as the frame less side_clear, from gap over the step's bottom edge up to
-    side_clear inside the tower's octagon (its top and the facets at its top corners: tower_section); relieved where it passes over the turning shaft - run_gap off its rear face and its
-    lug's sweep, inside the bay's bore -; the U rim on its inner face down into the opening's lower part (it locates the
+    side_clear inside the tower's octagon (its top and the facets at its top corners: tower_section); relieved where it passes over the turning shaft - run_gap off its rear face,
+    inside the bay's bore -; the U rim on its inner face down into the opening's lower part (it locates the
     panel); a pocket for each magnet in its inner face; the grill's slots through it over the bay and the opening
     (back_grill)."""
     d, b, S = cfg.drive, cfg.drive.back, stack_positions(cfg)

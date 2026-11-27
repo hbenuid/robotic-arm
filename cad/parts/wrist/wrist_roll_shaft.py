@@ -1,7 +1,7 @@
 """wrist_roll_shaft - the back piece of the wrist roll drive's rotor, a collar behind bearing 1: its hub a Ø30.3 journal
 through bearing 1 (the rear 6806) to the lip's middle, where the pulley's hub meets it, the Ø33 shoulder on bearing 1's
 inner ring, the Ø36 flange in the frame's bay with the rotor clamp's 4 nuts (closed hex pockets open to its rear face)
-and the hard-stop lug that meets the frame's post; the Ø10 cable bore.
+- no hard stop: it turns free -; the Ø10 cable bore.
 
 Designed here, no reference: tests/wrist/test_roll_drive.py holds its numbers (lib/wrist/roll.py build_shaft(cfg),
 every number lib/wrist/params.py WristRollParams, in the drive's MODULE frame at its stack station -

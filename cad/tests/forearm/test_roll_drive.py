@@ -201,20 +201,15 @@ def test_stack():
     assert D.collar_od / 2.0 - math.hypot(clamp_r + af / 2.0, af / (2.0 * math.sqrt(3.0))) >= 3.0
     assert (z0, z1) == (S["z_shaft_end"], S["z_clamp_nut_seat"])
     # the bay behind bearing 1, bored on through the frame's back - the shaft, bearing 1 on it, goes in along the axis from
-    # behind -: round the lug, wide enough for bearing 1; the tower's rear in the profile its own (tower_rear: the rear
-    # line's anchor). The shaft's rear face inside the rear line, its lug 2 mm or more at any roll angle (it sweeps the
-    # top: FOREARM_ROLL_LIMIT_DEG) - the elbow motor's board passes the rear line at the elbow's lower limit
+    # behind -: wide enough for bearing 1; the tower's rear in the profile its own (tower_rear: the rear line's anchor).
+    # The shaft's rear face inside the rear line, its flange 2 mm or more at any roll angle (it sweeps the top:
+    # FOREARM_ROLL_LIMIT_DEG) - the elbow motor's board passes the rear line at the elbow's lower limit. No hard stop:
+    # nothing of one left, the shaft turns free (tests/test_sweeps.py)
     assert S["z_tower_rear"] == D.tower_rear
-    assert D.bay_r >= D.stop_lug_r[1] + 1.0 and D.bay_r > r_seat and D.tower_y - D.bay_r >= 3.0
+    assert D.bay_r > r_seat and D.tower_y - D.bay_r >= 3.0
     (nu, nv), dist = rear_line(DEFAULT)
-    assert PARAMS.FOREARM_ROLL_LIMIT_DEG > 90.0 and dist - (nu * (D.stop_lug_r[1] - S["y_elbow"]) + nv * S["z_shaft_end"]) >= 2.0
-    # the stop: the lug on the shaft's flange, the post on the tower's rear face, 2.5 of each beside the other, each clear
-    # of the other's part; where they meet: tests/test_sweeps.py
-    lug_top = S["z_stop_lug"] + D.stop_lug_t
-    assert S["z_stop_lug"] == S["z_shaft_end"] and S["z_stop_post"] == S["z_bearing_1"] - D.stop_post_t
-    assert lug_top - S["z_stop_post"] >= 2.5 - 1e-9 and S["z_bearing_1"] - lug_top >= 2.0
-    assert D.stop_lug_r[0] < D.collar_od / 2.0 < D.stop_post_r[0] - 1.0 and D.bearing_od / 2.0 + 0.5 <= D.stop_post_r[0] < D.stop_lug_r[1]
-    assert D.stop_post_r[1] > D.bay_r
+    assert PARAMS.FOREARM_ROLL_LIMIT_DEG > 90.0 and dist - (nu * (D.collar_od / 2.0 - S["y_elbow"]) + nv * S["z_shaft_end"]) >= 2.0
+    assert not any(f.startswith("stop_") for f in vars(D)) and not any(k.startswith("z_stop") for k in S)
     # the motor: ON the elbow axis, centred on the roll axis in X, the drive's centre distance (a design value: the stock
     # roll belt is longer than the open loop, its idler takes up the rest - tests/forearm/test_roll_idler.py) the offset;
     # 2 mm over the pocket's floor, as far inside the side wall (as thick as the floor); its pocket round it and its
@@ -327,7 +322,7 @@ def test_everything_else_in_the_module_is_clean(module):
 @pytest.mark.slow
 def test_the_rotor_turns_clear_of_the_frame(module):
     """The pulley and the shaft keep run_gap off the frame: the ring's flange over the bearing boss, the pulley's neck in
-    the lip, the shaft's flange and lug in the bay; the pulley's neck meets the shaft's journal face to face at bearing 1's
+    the lip, the shaft's flange in the bay; the pulley's neck meets the shaft's journal face to face at bearing 1's
     front face."""
     block = _leaf(module, "forearm_roll_block")
     for label in ("forearm_roll_pulley", "forearm_roll_shaft"):
@@ -444,12 +439,12 @@ def test_frame_features(module):
         assert not is_inside(block, 0, y, zp) and is_inside(block, D.shaft_slit / 2.0 + 1.0, y, zp)
         assert is_inside(block, -D.shaft_slit / 2.0 - 1.0, y, zp)
     # the shaft's bay behind bearing 1: bored on through the frame's back (past the tower's rear, the outline's), the
-    # tower round it, the side face closed beside it; the stop post at -X only
+    # tower round it, the side face closed beside it; nothing standing in it (no stop post)
     zb = S["z_bearing_1"] - 3.0
     assert not is_inside(block, 0, 0, zb) and not is_inside(block, 0, 0, S["z_tower_rear"] - 1.0)
     assert is_inside(block, D.block_x[1] - 0.5, 0, zb) and is_inside(block, 0, D.bay_r + 1.5, S["z_bearing_1"] - 2.0)
-    zp, rp = S["z_stop_post"] + 1.0, (D.stop_post_r[0] + D.stop_post_r[1]) / 2.0
-    assert is_inside(block, -rp, 0, zp) and not is_inside(block, rp, 0, zp)
+    rp = D.bay_r - 1.0
+    assert not is_inside(block, -rp, 0, zb) and not is_inside(block, rp, 0, zb)
     # under the underside the spigot about the elbow axis (y_elbow) alone - an octagon, a flat on each axis, nothing wider
     # (the elbow flange is its own part: tests/forearm/test_elbow_flange.py) -; the pulley bolts up through it, their nut
     # channels on up through the floor into the motor's pocket
@@ -523,15 +518,15 @@ def test_pulley_and_shaft_features(module):
     bb = pulley.bounding_box()
     assert math.isclose(bb.max.Z, S["z_wall"], abs_tol=1e-6) and math.isclose(bb.min.Z, S["z_meet"], abs_tol=1e-6)
     assert math.isclose(bb.max.X, D.ring_flange_dia / 2.0, abs_tol=0.05)
-    # the shaft: the bore, the hub, the shoulder, the flange, the lug at +X, the clamp's holes and its nuts' pockets
+    # the shaft: the bore, the hub, the shoulder, the flange (round: no lug), the clamp's holes and its nuts' pockets
     zh = S["z_bearing_1"] + 3.0
     assert not is_inside(shaft, 0, 0, zh) and _round_trip(shaft, D.bore / 2.0 + 0.5, a, zh)
     s_r = (D.bearing_bore + D.journal_add) / 2.0                                # the shaft's journal (0.20)
     assert _round_trip(shaft, s_r - 0.3, a, zh) and not _round_trip(shaft, s_r + 0.3, a, zh)
     assert _round_trip(shaft, D.shoulder_dia / 2.0 - 0.3, a, S["z_shoulder_1"] + 0.5) and not _round_trip(shaft, D.shoulder_dia / 2.0 + 0.3, a, S["z_shoulder_1"] + 0.5)
     assert _round_trip(shaft, D.collar_od / 2.0 - 0.5, 90.0, S["z_shaft_end"] + 1.0) and not _round_trip(shaft, D.collar_od / 2.0 + 0.5, 90.0, S["z_shaft_end"] + 1.0)
-    assert is_inside(shaft, (D.stop_lug_r[0] + D.stop_lug_r[1]) / 2.0, 0, S["z_stop_lug"] + 1.0)
-    assert not is_inside(shaft, -(D.stop_lug_r[0] + D.stop_lug_r[1]) / 2.0, 0, S["z_stop_lug"] + 1.0)
+    for x in (D.collar_od / 2.0 + 1.0, -(D.collar_od / 2.0 + 1.0)):
+        assert not is_inside(shaft, x, 0, S["z_shaft_end"] + 1.0)
     for x, y in clamp_points(DEFAULT):
         assert not is_inside(shaft, x, y, zh) and not is_inside(shaft, x, y, S["z_shaft_end"] + 0.2)   # the hole; the pocket open at the rear face
     _nut_pocket_probes(shaft, clamp_points(DEFAULT), clamp_nut_pocket(DEFAULT))

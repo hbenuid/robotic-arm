@@ -390,7 +390,7 @@ COUPLER_PLATE_NUTS_MASS_G = STEEL_DENSITY * _SPLIT_BOLTS * nut_volume(M4_NUT)   
 
 # --- Robot description (robot/frames.py, robot/arm.urdf) --------------------------------------
 # The [ESTIMATE] joint limits and the actuator ratings are PLACEHOLDERS until measured on the hardware (the [DESIGN]
-# limits are set by the sweeps and the hard stops below); the URDF and SDF are checked against these by
+# limits are set by the sweeps and, for the rolls, the cables through them); the URDF and SDF are checked against these by
 # tools/robot/derive.py --check.
 BASE_YAW_LIMIT_DEG = 175.0        # [ESTIMATE] symmetric +/- range; j1_coupler (carrying the drive's stator) turns on the base
 # base_yaw's home: the angle where the magnet in the 120T's outer face (lib/pulley/params.py YAW_MAGNET_DEG) stands over
@@ -444,17 +444,15 @@ WRIST_PITCH_LIMITS_DEG = (-150.0, 38.0)   # [DESIGN]
 # the lower end (the edge toward + is where homing, turning toward -, stops: tests/forearm/test_wrist_home.py); the upper
 # end leaves the wrist frame only 2.41 mm from the wrist motor's board. The software homes on that edge (robot/AGENTS.md).
 WRIST_PITCH_HOME_DEG = _FOREARM.home.home_deg   # -144
-# the forearm roll: 2 deg short of its printed hard stop - the lug on the roll shaft's flange meets the post on the
-# frame's tower at +/- 168.3 (lib/forearm/params.py stop_deg_width; tests/test_sweeps.py holds it between the limit
-# and 180 - stop_deg_width), which keeps the cables from winding
+# the forearm roll: in software only - no printed hard stop, the shaft turns free all the way round (tests/test_sweeps.py);
+# short of a half turn either way, which keeps the cables through the rotor's bore from winding
 FOREARM_ROLL_LIMIT_DEG = 166.0    # [DESIGN]
 # forearm_roll's home: where the magnet pressed into the roll shaft's rear face (lib/forearm/params.py RollHomeParams)
 # stands over the KY-003's chip on its carrier in the frame's bay - the middle of the switch's zone, which runs on past
 # the lower end (the edge toward + is where homing, turning toward -, stops: tests/forearm/test_roll_home.py)
 FOREARM_ROLL_HOME_DEG = _FOREARM.drive.home.home_deg   # -160
-# the wrist roll: 2 deg short of its printed hard stop - the lug on the wrist roll shaft's flange meets the post in
-# wrist_link's bay at +/- 168.66 (lib/wrist/params.py stop_deg_width; tests/test_sweeps.py holds it between the limit
-# and 180 - stop_deg_width), which keeps the gripper servo's cable through the rotor from winding
+# the wrist roll: in software only - no printed hard stop, the shaft turns free all the way round (tests/test_sweeps.py);
+# short of a half turn either way, which keeps the gripper servo's cable through the rotor from winding
 WRIST_ROLL_LIMIT_DEG = 166.0      # [DESIGN] the pancake through 2 : 1 (not CAN-driven yet)
 # wrist_roll's home: where the magnet glued on the roll pulley face's rim (lib/wrist/params.py WristRollHomeParams)
 # stands over the KY-003's chip on its fin beside the face - the middle of the switch's zone, which runs on past the
