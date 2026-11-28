@@ -138,7 +138,7 @@ and inside `lib/` no package or leaf imports `lib/params.py` (`lib/AGENTS.md`).
 build to the engine, and a run the engine finds current never loads the kernel in the calling process — unless the
 model's import closure does, and then every run pays the kernel's import.
 **Keep the kernel lazy** in every model and its import closure: `import build123d as bd` (cad's import hook,
-`cad-lazy-kernel.pth` in the venv, binds a module the kernel loads into on its first attribute — never
+`cad.pth` in the venv, binds a module the kernel loads into on its first attribute — never
 `from build123d import …`, which reads an attribute and loads it) and use `bd.<name>` **inside function bodies only**. No kernel object in a module-level constant, a class body, a decorator or
 an argument default (`align=bd.Align.MIN` as a default is eager — `lib/geom.align_min()` is a
 function for that reason); kernel types in annotations need `from __future__ import annotations`. The rule

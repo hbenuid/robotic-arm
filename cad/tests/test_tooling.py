@@ -97,8 +97,8 @@ def test_cad_telemetry_stays_off():
 
 @pytest.mark.parametrize("switch", ["update auto", "plugin update auto"])
 def test_cad_updates_stay_off(switch):
-    """From cad 0.11.12 cad installs every newer 0.x release by itself, on by default (`update auto`), and its server
-    can run `cad plugin install` in every agent app each time cad got newer (`plugin update auto`): either takes
+    """cad installs every newer release by itself, on by default (`update auto`; a new major too from 0.11.19), and
+    its server can run `cad plugin install` in every agent app each time cad got newer (`plugin update auto`): either takes
     the machine off the pin (docs/toolchain.md Pins). `./cadtool server` stores both off before it starts the server,
     as it does the telemetry off; `./cadtool doctor` reads each back."""
     source = (CAD_DIR / "cadtool").read_text()

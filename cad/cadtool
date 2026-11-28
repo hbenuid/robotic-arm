@@ -218,7 +218,7 @@ install_server() {  # the machine's cad at the pin: the stored choices before it
     uv tool install --force --managed-python --python "$(cat "$CAD_DIR/.python-version")" "cad==$want"
   fi
   # The stored choices, per machine: what the server goes by, so stored before it starts. Telemetry; cad's own update
-  # (on by default from 0.11.12: it would install every newer 0.x release by itself); and the plugin's (it would run
+  # (on by default: it would install every newer release by itself, a new major too); and the plugin's (it would run
   # `cad plugin install` in every agent app each time cad got newer).
   "$cad" telemetry off >/dev/null && echo "cadtool: cad telemetry off (stored)"
   "$cad" update auto off >/dev/null && echo "cadtool: cad automatic updates off (stored)"
